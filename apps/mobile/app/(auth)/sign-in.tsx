@@ -185,13 +185,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     fontSize: typography.size.base,
   },
   button: {
     backgroundColor: brand.primary,
-    borderRadius: radii.smx,
+    borderRadius: radii.full,
     padding: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,

@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   actionButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm + 2,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   menuItem: {
     flexDirection: 'row',

@@ -81,7 +81,7 @@ export default function CompleteProfileScreen(): React.ReactElement {
         placeholderTextColor={colors.mutedForeground}
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.md,
+          borderRadius: radii.xl,
           padding: spacing.smx,
           fontSize: typography.size.base,
           color: colors.foreground,
@@ -113,7 +113,7 @@ export default function CompleteProfileScreen(): React.ReactElement {
         maxLength={4}
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.md,
+          borderRadius: radii.xl,
           padding: spacing.smx,
           fontSize: typography.size.base,
           color: colors.foreground,
@@ -172,7 +172,7 @@ export default function CompleteProfileScreen(): React.ReactElement {
         disabled={!isValid}
         style={{
           backgroundColor: isValid ? brand.primary : colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.full,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

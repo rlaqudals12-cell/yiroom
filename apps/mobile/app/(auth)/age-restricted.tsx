@@ -55,7 +55,7 @@ export default function AgeRestrictedScreen(): React.ReactElement {
         onPress={() => router.push('/(auth)/complete-profile')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.full,
           paddingVertical: spacing.smx,
           paddingHorizontal: spacing.xl,
           marginBottom: spacing.md,

@@ -71,7 +71,7 @@ export default function GenderScreen(): React.ReactElement {
               flexDirection: 'row',
               alignItems: 'center',
               padding: spacing.md,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               backgroundColor: selected === option.id ? brand.primary + '15' : colors.card,
               borderWidth: 2,
               borderColor: selected === option.id ? brand.primary : colors.border,
@@ -103,7 +103,7 @@ export default function GenderScreen(): React.ReactElement {
         disabled={!selected}
         style={{
           backgroundColor: selected ? brand.primary : colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.full,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

@@ -256,7 +256,7 @@ export default function OnboardingStep2() {
                       styles.customInput,
                       {
                         backgroundColor: colors.secondary,
-                        borderRadius: radii.lg + 2,
+                        borderRadius: radii.xl,
                         color: colors.foreground,
                         fontSize: typography.size.base,
                         borderWidth: 1,
@@ -282,7 +282,7 @@ export default function OnboardingStep2() {
                       styles.customInput,
                       {
                         backgroundColor: colors.secondary,
-                        borderRadius: radii.lg + 2,
+                        borderRadius: radii.xl,
                         color: colors.foreground,
                         fontSize: typography.size.base,
                         borderWidth: 1,
@@ -531,7 +531,7 @@ function Input({
       <TextInput
         style={{
           backgroundColor: colors.secondary,
-          borderRadius: radii.lg + 2,
+          borderRadius: radii.xl,
           padding: spacing.md,
           color: colors.foreground,
           fontSize: typography.size.base,
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   activityIconBox: {
     width: 36,
     height: 36,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.smx,
