@@ -123,11 +123,15 @@ export default function OnboardingStep2() {
 
         {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
         <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <View
+          <LinearGradient
+            colors={isDark
+              ? [`${STEP2_ACCENT}10`, `${STEP2_ACCENT}18`]
+              : [STEP2_HERO_BG_LIGHT, '#DBEAFE']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[
               styles.heroHeader,
               {
-                backgroundColor: isDark ? STEP2_HERO_BG_DARK : STEP2_HERO_BG_LIGHT,
                 borderRadius: radii.xl + 8,
                 borderWidth: 1,
                 borderColor: isDark ? `${STEP2_ACCENT}20` : `${STEP2_ACCENT}15`,
@@ -156,7 +160,7 @@ export default function OnboardingStep2() {
             <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
               더 정확한 맞춤 추천을 위해 필요해요
             </Text>
-          </View>
+          </LinearGradient>
         </Animated.View>
 
         {/* 성별 선택 */}
@@ -190,7 +194,7 @@ export default function OnboardingStep2() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? shadows.md : shadows.card),
+                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
                       },
                     ]}
                     onPress={() => handleGenderSelect(gender)}
@@ -339,7 +343,7 @@ export default function OnboardingStep2() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? shadows.md : shadows.card),
+                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
                       },
                     ]}
                     onPress={() => handleActivitySelect(level)}
@@ -467,11 +471,8 @@ export default function OnboardingStep2() {
               shadows.md,
               {
                 flex: 2,
-                backgroundColor: canProceed ? brand.primary : colors.secondary,
                 borderRadius: radii.full,
-                height: 52,
-                alignItems: 'center',
-                justifyContent: 'center',
+                overflow: 'hidden',
                 opacity: !canProceed ? 0.5 : pressed ? 0.9 : 1,
                 transform: [{ scale: pressed ? 0.98 : 1 }],
               },
@@ -481,15 +482,22 @@ export default function OnboardingStep2() {
             accessibilityLabel="다음"
             accessibilityState={{ disabled: !canProceed }}
           >
-            <Text
-              style={{
-                color: canProceed ? brand.primaryForeground : colors.mutedForeground,
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.bold,
-              }}
+            <LinearGradient
+              colors={canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
             >
-              다음
-            </Text>
+              <Text
+                style={{
+                  color: canProceed ? brand.primaryForeground : colors.mutedForeground,
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.bold,
+                }}
+              >
+                다음
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
       </View>

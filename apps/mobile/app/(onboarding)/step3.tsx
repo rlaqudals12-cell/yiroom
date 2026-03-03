@@ -84,11 +84,15 @@ export default function OnboardingStep3() {
 
         {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
         <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <View
+          <LinearGradient
+            colors={isDark
+              ? [`${STEP3_ACCENT}10`, `${STEP3_ACCENT}18`]
+              : [STEP3_HERO_BG_LIGHT, '#EDE9FE']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[
               styles.heroHeader,
               {
-                backgroundColor: isDark ? STEP3_HERO_BG_DARK : STEP3_HERO_BG_LIGHT,
                 borderRadius: radii.xl + 8,
                 borderWidth: 1,
                 borderColor: isDark ? `${STEP3_ACCENT}20` : `${STEP3_ACCENT}15`,
@@ -117,7 +121,7 @@ export default function OnboardingStep3() {
             <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
               마지막으로 선호도를 알려주세요
             </Text>
-          </View>
+          </LinearGradient>
         </Animated.View>
 
         {/* 운동 빈도 */}
@@ -151,7 +155,7 @@ export default function OnboardingStep3() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? shadows.md : shadows.card),
+                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
                       },
                     ]}
                     onPress={() => handleFrequencySelect(freq)}
@@ -209,7 +213,7 @@ export default function OnboardingStep3() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? shadows.md : shadows.card),
+                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
                       },
                     ]}
                     onPress={() => handleMealSelect(pref)}
@@ -444,11 +448,8 @@ export default function OnboardingStep3() {
               shadows.md,
               {
                 flex: 2,
-                backgroundColor: canComplete ? brand.primary : colors.secondary,
                 borderRadius: radii.full,
-                height: 52,
-                alignItems: 'center',
-                justifyContent: 'center',
+                overflow: 'hidden',
                 opacity: !canComplete ? 0.5 : pressed ? 0.9 : 1,
                 transform: [{ scale: pressed ? 0.98 : 1 }],
               },
@@ -458,15 +459,22 @@ export default function OnboardingStep3() {
             accessibilityLabel="시작하기"
             accessibilityState={{ disabled: !canComplete }}
           >
-            <Text
-              style={{
-                color: canComplete ? brand.primaryForeground : colors.mutedForeground,
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.bold,
-              }}
+            <LinearGradient
+              colors={canComplete ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
             >
-              시작하기
-            </Text>
+              <Text
+                style={{
+                  color: canComplete ? brand.primaryForeground : colors.mutedForeground,
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.bold,
+                }}
+              >
+                시작하기
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
       </View>

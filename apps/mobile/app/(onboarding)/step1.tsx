@@ -67,11 +67,15 @@ export default function OnboardingStep1() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
         <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <View
+          <LinearGradient
+            colors={isDark
+              ? [`${STEP1_ACCENT}10`, `${STEP1_ACCENT}18`]
+              : [STEP1_HERO_BG_LIGHT, '#FFE4E6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[
               styles.heroHeader,
               {
-                backgroundColor: isDark ? STEP1_HERO_BG_DARK : STEP1_HERO_BG_LIGHT,
                 borderRadius: radii.xl + 8,
                 borderWidth: 1,
                 borderColor: isDark ? `${STEP1_ACCENT}20` : `${STEP1_ACCENT}15`,
@@ -101,7 +105,7 @@ export default function OnboardingStep1() {
               이룸이 맞춤 추천을 제공해드릴게요{'\n'}
               (복수 선택 가능)
             </Text>
-          </View>
+          </LinearGradient>
         </Animated.View>
 
         {/* 목표 선택 카드 */}
@@ -126,7 +130,7 @@ export default function OnboardingStep1() {
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
-                      ...(isSelected ? shadows.md : shadows.card),
+                      ...(isSelected ? { ...shadows.md, shadowColor: goalColor.gradient[0], shadowOpacity: 0.18 } : shadows.card),
                     },
                   ]}
                   onPress={() => handleToggle(goal)}
@@ -268,11 +272,8 @@ export default function OnboardingStep1() {
             style={({ pressed }) => [
               shadows.md,
               {
-                backgroundColor: canProceed ? brand.primary : colors.secondary,
                 borderRadius: radii.full,
-                height: 52,
-                alignItems: 'center',
-                justifyContent: 'center',
+                overflow: 'hidden',
                 opacity: !canProceed ? 0.5 : pressed ? 0.9 : 1,
                 transform: [{ scale: pressed ? 0.98 : 1 }],
               },
@@ -282,15 +283,22 @@ export default function OnboardingStep1() {
             accessibilityLabel="다음"
             accessibilityState={{ disabled: !canProceed }}
           >
-            <Text
-              style={{
-                color: canProceed ? brand.primaryForeground : colors.mutedForeground,
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.bold,
-              }}
+            <LinearGradient
+              colors={canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
             >
-              다음
-            </Text>
+              <Text
+                style={{
+                  color: canProceed ? brand.primaryForeground : colors.mutedForeground,
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.bold,
+                }}
+              >
+                다음
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
       </View>
@@ -335,9 +343,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: radii.xl + 2,
+    width: 66,
+    height: 66,
+    borderRadius: radii.xl + 4,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
