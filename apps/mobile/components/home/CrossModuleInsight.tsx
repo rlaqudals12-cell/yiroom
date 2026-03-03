@@ -90,7 +90,7 @@ export function CrossModuleInsight({
               styles.insightItem,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.sm + 2,
               },
             ]}

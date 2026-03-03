@@ -73,7 +73,7 @@ export function ShareButton({
         styles.button,
         {
           backgroundColor: brand.primary + '15',
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.sm,
           opacity: pressed ? 0.7 : 1,

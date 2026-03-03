@@ -80,7 +80,7 @@ export function DiaryEntryForm({
               styles.conditionBtn,
               {
                 backgroundColor: condition === c.key ? module.skin.base : colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.sm,
                 paddingHorizontal: spacing.md,
               },
@@ -120,7 +120,7 @@ export function DiaryEntryForm({
           styles.input,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.sm,
             fontSize: typography.size.sm,
             color: colors.foreground,
@@ -143,7 +143,7 @@ export function DiaryEntryForm({
             styles.saveBtn,
             {
               backgroundColor: module.skin.base,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingVertical: spacing.smd,
               marginTop: spacing.md,
             },

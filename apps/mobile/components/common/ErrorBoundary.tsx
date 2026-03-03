@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   errorBox: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.xl,
     width: '100%',
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   retryButtonText: {
     fontSize: typography.size.base,

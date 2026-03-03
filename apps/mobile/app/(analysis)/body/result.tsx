@@ -463,7 +463,7 @@ const localStyles = StyleSheet.create({
   bmiBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: 3,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
   },
   bmiBadgeText: {
     fontSize: typography.size.xs,
@@ -475,7 +475,7 @@ const localStyles = StyleSheet.create({
   bodyImage: {
     width: 120,
     height: 160,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 3,
   },
   tabContent: {

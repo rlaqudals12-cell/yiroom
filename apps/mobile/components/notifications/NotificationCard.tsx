@@ -47,7 +47,7 @@ export const NotificationCard = memo(function NotificationCard({
       style={[
         {
           backgroundColor: isRead ? colors.card : brand.primary + '08',
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           flexDirection: 'row',
           gap: spacing.smx,

@@ -109,7 +109,7 @@ export const SizeRecommendationCard = memo(function SizeRecommendationCard({
           styles.sizeBox,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.md,
             marginTop: spacing.md,
           },
@@ -206,7 +206,7 @@ export const SizeRecommendationCard = memo(function SizeRecommendationCard({
                     styles.measurementItem,
                     {
                       backgroundColor: colors.secondary,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       padding: spacing.sm,
                     },
                   ]}

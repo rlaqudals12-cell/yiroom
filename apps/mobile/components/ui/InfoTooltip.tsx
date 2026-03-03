@@ -68,7 +68,7 @@ export function InfoTooltip({
             styles.tooltip,
             {
               backgroundColor: colors.secondary,
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
               padding: spacing.sm + 2,
               marginTop: spacing.xs,
             },

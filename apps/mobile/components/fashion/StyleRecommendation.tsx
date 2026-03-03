@@ -106,7 +106,7 @@ export const StyleRecommendation = memo(function StyleRecommendation({
                 styles.itemCard,
                 {
                   backgroundColor: colors.secondary,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   padding: spacing.sm,
                   opacity: pressed ? 0.85 : 1,
                 },
@@ -120,7 +120,7 @@ export const StyleRecommendation = memo(function StyleRecommendation({
                   styles.itemImage,
                   {
                     backgroundColor: colors.card,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                   },
                 ]}
               >

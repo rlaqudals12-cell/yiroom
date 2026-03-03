@@ -43,7 +43,7 @@ export function ExerciseSessionCard({
         styles.container,
         {
           backgroundColor: isActive ? `${baseColor}10` : colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           borderColor: isActive ? baseColor : colors.border,
         },
       ]}
@@ -84,10 +84,10 @@ export function ExerciseSessionCard({
       {/* 액션 버튼 */}
       {exerciseStatus === 'pending' && (
         <View style={[styles.actionRow, { marginTop: spacing.xs }]}>
-          <Pressable onPress={onStart} style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.md }]}>
+          <Pressable onPress={onStart} style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.xl }]}>
             <Text style={{ color: colors.card, fontSize: typography.size.xs, fontWeight: '600' }}>시작</Text>
           </Pressable>
-          <Pressable onPress={onSkip} style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}>
+          <Pressable onPress={onSkip} style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>건너뛰기</Text>
           </Pressable>
         </View>

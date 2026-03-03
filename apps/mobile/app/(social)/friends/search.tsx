@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingHorizontal: 14,
     height: 48,
   },
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   searchButton: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingHorizontal: 18,
     justifyContent: 'center',
   },
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     marginHorizontal: spacing.md,
     padding: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   resultCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: 14,
   },
   avatarContainer: {
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   addButton: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   addButtonText: {
     fontSize: 13,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: spacing.smx,
     paddingVertical: 6,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   statusBadgeText: {
     fontSize: typography.size.xs,

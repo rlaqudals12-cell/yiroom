@@ -104,14 +104,14 @@ export function ClosetPreviewStrip({
                 style={[
                   styles.itemCard,
                   {
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     backgroundColor: colors.secondary,
                   },
                 ]}
               >
                 <Image
                   source={{ uri: item.imageUrl }}
-                  style={[styles.itemImage, { borderRadius: radii.lg }]}
+                  style={[styles.itemImage, { borderRadius: radii.xl }]}
                   contentFit="cover"
                   transition={200}
                 />

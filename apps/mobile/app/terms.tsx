@@ -29,7 +29,7 @@ export default function TermsScreen() {
               styles.langButton,
               {
                 backgroundColor: lang === 'ko' ? brandColors.primary : colors.muted,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => setLang('ko')}
@@ -51,7 +51,7 @@ export default function TermsScreen() {
               styles.langButton,
               {
                 backgroundColor: lang === 'en' ? brandColors.primary : colors.muted,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => setLang('en')}
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   contactBox: {
     marginTop: spacing.xl,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   contactTitle: {
     fontSize: 15,

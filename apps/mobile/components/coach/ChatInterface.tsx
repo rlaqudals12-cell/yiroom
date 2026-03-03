@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   categoryTabs: {
     flexDirection: 'row',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.xs,
     marginBottom: spacing.mlg,
   },
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.smd,
     alignItems: 'center',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
   },
   categoryTabText: {
     fontSize: typography.size.sm,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     gap: spacing.smd,
   },
   quickQuestion: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     borderWidth: 1,
   },

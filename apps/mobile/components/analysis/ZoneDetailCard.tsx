@@ -119,7 +119,7 @@ export function ZoneDetailCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   statusIcon: {
     fontSize: typography.size.xs,

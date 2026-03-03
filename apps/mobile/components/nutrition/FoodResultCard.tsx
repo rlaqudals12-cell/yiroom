@@ -177,7 +177,7 @@ export function FoodResultCard({
             styles.addBtn,
             {
               backgroundColor: module.nutrition.base,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               marginTop: spacing.md,
               paddingVertical: spacing.sm,
             },

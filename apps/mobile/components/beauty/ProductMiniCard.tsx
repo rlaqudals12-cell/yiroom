@@ -53,7 +53,7 @@ export function ProductMiniCard({
         shadows.card,
         {
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           borderColor: colors.border,
           padding: spacing.sm + 2,
           opacity: pressed ? 0.92 : 1,
@@ -71,7 +71,7 @@ export function ProductMiniCard({
             styles.imageContainer,
             {
               backgroundColor: colors.secondary,
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
             },
           ]}
         >

@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   noteCard: {
     flexDirection: 'row',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.mlg,
     gap: spacing.smx,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: 'row',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.xs,
     marginBottom: spacing.mlg,
   },
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.smx,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     gap: 6,
   },
   toggleEmoji: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: moduleColors.skin.base,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     width: '100%',

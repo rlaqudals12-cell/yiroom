@@ -64,7 +64,7 @@ export function LeaderboardTabs({
   return (
     <View
       testID={testID}
-      style={[styles.container, { backgroundColor: colors.secondary, borderRadius: radii.lg }, style]}
+      style={[styles.container, { backgroundColor: colors.secondary, borderRadius: radii.xl }, style]}
       accessibilityRole="tablist"
     >
       {tabs.map((tab, index) => {
@@ -76,7 +76,7 @@ export function LeaderboardTabs({
             style={[
               styles.tab,
               {
-                borderRadius: radii.md,
+                borderRadius: radii.xl,
                 backgroundColor: isActive ? colors.card : 'transparent',
               },
               isActive && styles.activeTab,

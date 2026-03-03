@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.smx,
     padding: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   iconCircle: {

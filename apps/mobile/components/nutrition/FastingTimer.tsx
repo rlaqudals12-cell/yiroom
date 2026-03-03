@@ -157,7 +157,7 @@ export function FastingTimer({
             styles.toggleBtn,
             {
               backgroundColor: isActive ? colors.destructive : module.nutrition.base,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               marginTop: spacing.md,
               paddingVertical: spacing.sm,
             },

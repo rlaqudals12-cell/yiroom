@@ -86,7 +86,7 @@ export default function FriendProfileScreen(): React.ReactElement {
         style={{
           flexDirection: 'row',
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           marginBottom: spacing.lg,
         }}
@@ -144,7 +144,7 @@ export default function FriendProfileScreen(): React.ReactElement {
                 entering={staggeredEntry(idx)}
                 style={{
                   backgroundColor: colors.card,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   padding: spacing.md,
                   flexDirection: 'row',
                   justifyContent: 'space-between',

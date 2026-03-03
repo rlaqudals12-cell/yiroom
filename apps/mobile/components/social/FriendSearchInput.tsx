@@ -30,7 +30,7 @@ export function FriendSearchInput({
           styles.input,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             paddingVertical: spacing.sm,
             paddingHorizontal: spacing.md,
             fontSize: typography.size.sm,

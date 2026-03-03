@@ -49,7 +49,7 @@ export function StretchingRoutineCard({
       style={[
         {
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           borderLeftWidth: 4,
           borderLeftColor: moduleColors.workout.base,

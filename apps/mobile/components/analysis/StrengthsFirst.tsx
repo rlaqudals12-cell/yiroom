@@ -127,7 +127,7 @@ export function StrengthsFirst({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.smx,
   },

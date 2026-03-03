@@ -260,7 +260,7 @@ export function EWGAnalysisSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   header: {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     marginBottom: spacing.md,
   },
   statItem: {
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   cautionBox: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     marginBottom: spacing.md,
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   ingredientItem: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smx,
   },
   ingredientHeader: {

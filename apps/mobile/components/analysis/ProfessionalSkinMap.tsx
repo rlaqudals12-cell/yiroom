@@ -102,7 +102,7 @@ export function ProfessionalSkinMap({
                 styles.zoneCard,
                 {
                   backgroundColor: isSelected ? `${statusColor}20` : colors.card,
-                  borderRadius: radii.md,
+                  borderRadius: radii.xl,
                   borderColor: isSelected ? statusColor : colors.border,
                 },
               ]}
@@ -126,7 +126,7 @@ export function ProfessionalSkinMap({
 
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
-        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
+        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
           <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
             {ZONE_LABELS[selectedZone]} 상세
           </Text>

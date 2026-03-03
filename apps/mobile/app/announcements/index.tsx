@@ -103,7 +103,7 @@ export default function AnnouncementsScreen(): React.JSX.Element {
               {
                 backgroundColor: isRead ? colors.card : colors.card,
                 borderColor: item.isImportant ? catColor + '40' : colors.border,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
                 marginBottom: spacing.sm,
                 opacity: isRead ? 0.7 : 1,

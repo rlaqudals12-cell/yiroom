@@ -56,7 +56,7 @@ export function Input({
           {
             backgroundColor: colors.background,
             borderColor: error ? colors.destructive : colors.input,
-            borderRadius: radii.md,
+            borderRadius: radii.xl,
             color: colors.foreground,
             fontSize: typography.size.base,
             paddingHorizontal: spacing.md,

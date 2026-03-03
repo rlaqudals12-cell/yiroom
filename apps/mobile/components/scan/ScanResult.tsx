@@ -71,7 +71,7 @@ export function ScanResult({
               styles.imageContainer,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
           >
@@ -89,7 +89,7 @@ export function ScanResult({
               styles.imageContainer,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
           >
@@ -235,7 +235,7 @@ export function ScanResult({
               styles.actionButton,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
@@ -262,7 +262,7 @@ export function ScanResult({
               styles.actionButton,
               {
                 backgroundColor: pressed ? '#E8B4C8' : '#F8C8DC',
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 marginLeft: onDismiss ? spacing.sm : 0,
               },
             ]}

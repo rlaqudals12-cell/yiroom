@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   syncButton: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     marginLeft: spacing.smx,
   },
   syncButtonDisabled: {

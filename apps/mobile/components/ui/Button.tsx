@@ -65,7 +65,7 @@ export function Button({
         {
           backgroundColor: bgColor,
           borderColor,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingHorizontal: sizeStyle.px,
           paddingVertical: sizeStyle.py,
           opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,

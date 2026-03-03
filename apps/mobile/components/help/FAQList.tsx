@@ -68,7 +68,7 @@ export function FAQList({ items, style }: FAQListProps): React.ReactElement {
             onPress={() => toggleExpand(item.id)}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               marginHorizontal: spacing.md,
               marginBottom: index < items.length - 1 ? spacing.sm : 0,

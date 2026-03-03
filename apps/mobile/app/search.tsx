@@ -218,7 +218,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             shadows.card,
             {
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               marginBottom: spacing.sm,
               flexDirection: 'row',
@@ -231,7 +231,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           <View
             style={[
               styles.resultIcon,
-              { backgroundColor: config.color + '15', borderRadius: radii.md },
+              { backgroundColor: config.color + '15', borderRadius: radii.xl },
             ]}
           >
             <IconComponent size={18} color={config.color} />

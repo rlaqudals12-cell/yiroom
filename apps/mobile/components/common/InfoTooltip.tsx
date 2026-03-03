@@ -59,7 +59,7 @@ export function InfoTooltip({
             styles.tooltip,
             {
               backgroundColor: colors.popover,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.sm,
               marginTop: spacing.xs,
               borderWidth: 1,

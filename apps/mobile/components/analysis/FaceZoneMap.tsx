@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   detailCard: {
     width: '100%',
     padding: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     gap: 6,
   },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   scoreBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   scoreText: {
     fontSize: 13,

@@ -86,11 +86,11 @@ export function BeforeAfterSlider({
     return (
       <View testID={testID} style={[styles.sideBySide, style]}>
         <View style={styles.sideBySideHalf}>
-          <Image source={{ uri: beforeUri }} style={{ height, borderRadius: radii.lg }} contentFit="cover" />
+          <Image source={{ uri: beforeUri }} style={{ height, borderRadius: radii.xl }} contentFit="cover" />
           <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>{beforeLabel}</Text>
         </View>
         <View style={styles.sideBySideHalf}>
-          <Image source={{ uri: afterUri }} style={{ height, borderRadius: radii.lg }} contentFit="cover" />
+          <Image source={{ uri: afterUri }} style={{ height, borderRadius: radii.xl }} contentFit="cover" />
           <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>{afterLabel}</Text>
         </View>
       </View>
@@ -100,11 +100,11 @@ export function BeforeAfterSlider({
   return (
     <View testID={testID} style={style} onLayout={onLayout}>
       <GestureDetector gesture={panGesture}>
-        <View style={[styles.container, { height, borderRadius: radii.lg }]}>
+        <View style={[styles.container, { height, borderRadius: radii.xl }]}>
           {/* 이후 이미지 (전체 배경) */}
           <Image
             source={{ uri: afterUri }}
-            style={[StyleSheet.absoluteFill, { borderRadius: radii.lg }]}
+            style={[StyleSheet.absoluteFill, { borderRadius: radii.xl }]}
             contentFit="cover"
             accessibilityLabel={afterLabel}
           />

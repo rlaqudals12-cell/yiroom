@@ -115,7 +115,7 @@ export function CrossModuleAlert({
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: pressed ? colors.secondary : colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingHorizontal: spacing.smx,
               paddingVertical: spacing.smd,
               gap: spacing.sm,

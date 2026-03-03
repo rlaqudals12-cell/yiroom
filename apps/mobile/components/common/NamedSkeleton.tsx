@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.smx,
   },
   card: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     gap: spacing.sm,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     gap: spacing.sm,
   },

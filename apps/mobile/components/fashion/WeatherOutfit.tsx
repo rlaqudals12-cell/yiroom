@@ -78,7 +78,7 @@ export const WeatherOutfit = memo(function WeatherOutfit({
             styles.weatherIconBox,
             {
               backgroundColor: weatherBgColor,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
             },
           ]}
         >

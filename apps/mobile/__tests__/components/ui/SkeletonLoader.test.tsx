@@ -318,12 +318,12 @@ describe('SkeletonCard', () => {
     expect(flatStyle.height).toBe(120);
   });
 
-  it('borderRadius가 radii.lg (10)여야 한다', () => {
+  it('borderRadius가 radii.xl (16)여야 한다', () => {
     const { getByLabelText } = renderWithTheme(<SkeletonCard />);
 
     const skeleton = getByLabelText('로딩 중');
     const flatStyle = flattenStyle(skeleton.props.style);
-    expect(flatStyle.borderRadius).toBe(radii.lg);
+    expect(flatStyle.borderRadius).toBe(radii.xl);
   });
 
   it('기본 testID가 skeleton-card여야 한다', () => {

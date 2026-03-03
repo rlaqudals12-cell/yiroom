@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingHorizontal: 14,
     borderWidth: 1,
   },
@@ -477,14 +477,14 @@ const styles = StyleSheet.create({
   productItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     marginBottom: spacing.sm,
   },
   productImagePlaceholder: {
     width: 64,
     height: 64,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   matchBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: 6,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   matchBadgeText: {
     fontSize: typography.size.xs,

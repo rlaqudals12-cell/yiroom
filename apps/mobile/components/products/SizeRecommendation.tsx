@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   retryButtonText: {
     fontSize: typography.size.sm,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   confidenceBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   confidenceBadgeText: {
     fontSize: typography.size.xs,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   alternativeItem: {
     flex: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.smx,
   },
   alternativeSize: {
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   brandNote: {
     marginTop: spacing.md,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smx,
   },
   brandNoteText: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   },
   offlineNote: {
     marginTop: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smd,
     alignItems: 'center',
   },

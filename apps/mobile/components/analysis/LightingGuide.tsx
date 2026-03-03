@@ -107,7 +107,7 @@ export function LightingGuide({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   resultBox: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     padding: spacing.smx,
     marginTop: spacing.sm,
   },

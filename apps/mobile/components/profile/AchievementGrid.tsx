@@ -106,7 +106,7 @@ function AchievementItem({
         styles.item,
         {
           backgroundColor: achievement.unlocked ? colors.secondary : colors.muted,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.sm,
           opacity: achievement.unlocked ? 1 : 0.5,
         },

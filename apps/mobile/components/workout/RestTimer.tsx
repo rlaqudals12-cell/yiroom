@@ -58,7 +58,7 @@ export function RestTimer({
   return (
     <View
       testID="rest-timer"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, padding: spacing.lg }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, padding: spacing.lg }]}
       accessibilityLabel={`휴식 타이머 ${minutes}분 ${seconds}초 남음`}
     >
       <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
@@ -94,7 +94,7 @@ export function RestTimer({
       <View style={[styles.adjustRow, { marginTop: spacing.md }]}>
         <Pressable
           onPress={() => handleAdjust(-adjustStep)}
-          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}
+          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
           accessibilityRole="button"
           accessibilityLabel={`${adjustStep}초 줄이기`}
         >
@@ -102,7 +102,7 @@ export function RestTimer({
         </Pressable>
         <Pressable
           onPress={handleReset}
-          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}
+          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
           accessibilityRole="button"
           accessibilityLabel="타이머 리셋"
         >
@@ -110,7 +110,7 @@ export function RestTimer({
         </Pressable>
         <Pressable
           onPress={() => handleAdjust(adjustStep)}
-          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}
+          style={[styles.adjustBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
           accessibilityRole="button"
           accessibilityLabel={`${adjustStep}초 늘리기`}
         >

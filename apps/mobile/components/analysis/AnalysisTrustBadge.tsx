@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: spacing.smx,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     alignSelf: 'center',
   },
   badgeText: {

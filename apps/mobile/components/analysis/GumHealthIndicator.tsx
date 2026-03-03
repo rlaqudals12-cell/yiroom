@@ -56,7 +56,7 @@ export function GumHealthIndicator({
   return (
     <View
       testID="gum-health-indicator"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`잇몸 건강: ${config.label}, 염증 지수 ${result.inflammationScore}`}
     >
       {/* 상태 헤더 */}

@@ -70,7 +70,7 @@ export function LeaderboardEntry({
         {
           backgroundColor: rowBg,
           borderColor: rowBorderColor,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
         },
         isMe && styles.highlighted,
         style,

@@ -75,7 +75,7 @@ export function BarcodeInput({
                 : pressed
                   ? '#E8B4C8'
                   : brandColors.primary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               opacity: isSubmitDisabled ? 0.5 : 1,
             },
           ]}

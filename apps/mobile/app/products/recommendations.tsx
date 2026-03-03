@@ -236,7 +236,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
             <Pressable
               style={[
                 styles.ctaButton,
-                { backgroundColor: brand.primary, borderRadius: radii.lg },
+                { backgroundColor: brand.primary, borderRadius: radii.xl },
               ]}
               onPress={() => router.push('/(analysis)/skin')}
             >
@@ -307,7 +307,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   shadows.card,
                   {
                     backgroundColor: colors.card,
-                    borderRadius: radii.lg,
+                    borderRadius: radii.xl,
                     borderColor: colors.border,
                     padding: spacing.md,
                     marginBottom: spacing.sm,

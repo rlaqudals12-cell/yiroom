@@ -70,7 +70,7 @@ export function SkinConsultantCTA({
           styles.btn,
           {
             backgroundColor: 'rgba(255,255,255,0.2)',
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             paddingVertical: spacing.sm,
             marginTop: spacing.sm,
           },

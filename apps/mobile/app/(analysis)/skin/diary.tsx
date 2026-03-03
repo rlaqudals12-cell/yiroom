@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   // 월 선택
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     marginBottom: spacing.md,
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   },
   // 요약
   summaryCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   },
   // 엔트리 카드
   entryCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   emptyButtonText: {
     fontSize: typography.size.base,

@@ -156,7 +156,7 @@ export function SkinSummaryCard({
             styles.iconBg,
             {
               backgroundColor: module.skin.light + '30',
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
               padding: spacing.xs,
             },
           ]}

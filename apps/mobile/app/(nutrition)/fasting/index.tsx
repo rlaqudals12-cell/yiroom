@@ -353,7 +353,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                       shadows.card,
                       {
                         backgroundColor: isSelected ? nutritionColor : colors.card,
-                        borderRadius: radii.lg,
+                        borderRadius: radii.xl,
                         borderWidth: 1,
                         borderColor: isSelected ? nutritionColor : colors.border,
                         padding: spacing.md,
@@ -417,7 +417,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                     shadows.card,
                     {
                       backgroundColor: colors.card,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       borderWidth: 1,
                       borderColor: colors.border,
                       padding: spacing.md,
@@ -432,7 +432,7 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                       styles.logIcon,
                       {
                         backgroundColor: log.completed ? status.success + '20' : status.warning + '20',
-                        borderRadius: radii.md,
+                        borderRadius: radii.xl,
                       },
                     ]}
                   >

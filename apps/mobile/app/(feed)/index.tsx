@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     padding: spacing.smx,
     marginHorizontal: spacing.md,
     marginTop: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   levelBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   levelText: {
     fontSize: typography.size.xs,

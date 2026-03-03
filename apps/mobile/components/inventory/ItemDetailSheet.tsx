@@ -135,7 +135,7 @@ export function ItemDetailSheet({
               styles.actionBtn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -161,7 +161,7 @@ export function ItemDetailSheet({
               styles.actionBtn,
               {
                 backgroundColor: status.error,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}

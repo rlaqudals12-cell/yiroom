@@ -32,7 +32,7 @@ export function BarcodeInput({
           styles.input,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.sm,
             fontSize: typography.size.sm,
             color: colors.foreground,
@@ -52,7 +52,7 @@ export function BarcodeInput({
             styles.searchBtn,
             {
               backgroundColor: brand.primary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingHorizontal: spacing.md,
               marginLeft: spacing.sm,
             },

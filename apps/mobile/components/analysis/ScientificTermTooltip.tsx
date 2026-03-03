@@ -65,7 +65,7 @@ export function ScientificTermTooltip({
               styles.tooltip,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 padding: spacing.md,
               },

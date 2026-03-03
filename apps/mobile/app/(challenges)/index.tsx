@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.smd,
     alignItems: 'center',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
   },
   tabActive: {},
   tabText: {

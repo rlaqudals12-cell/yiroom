@@ -120,17 +120,17 @@ export function MultiAngleCapture({
 
           {images.front ? (
             <View style={styles.previewSection}>
-              <Image source={{ uri: images.front }} style={[styles.preview, { borderRadius: radii.lg }]} />
+              <Image source={{ uri: images.front }} style={[styles.preview, { borderRadius: radii.xl }]} />
               <View style={[styles.actionRow, { marginTop: spacing.sm }]}>
                 <Pressable
                   onPress={() => handleRetake('front')}
-                  style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}
+                  style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
                 >
                   <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.sm }}>다시 촬영</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setStep('additional')}
-                  style={[styles.actionBtn, { backgroundColor: brand.primary, borderRadius: radii.md }]}
+                  style={[styles.actionBtn, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
                 >
                   <Text style={{ color: brand.primaryForeground, fontSize: typography.size.sm, fontWeight: '600' }}>다음</Text>
                 </Pressable>
@@ -139,7 +139,7 @@ export function MultiAngleCapture({
           ) : (
             <Pressable
               onPress={() => handleCapture('front')}
-              style={[styles.captureBtn, { backgroundColor: brand.primary, borderRadius: radii.lg }]}
+              style={[styles.captureBtn, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
               accessibilityRole="button"
               accessibilityLabel="정면 사진 촬영"
             >
@@ -150,7 +150,7 @@ export function MultiAngleCapture({
           )}
 
           {/* 팁 */}
-          <View style={[styles.tipsBox, { backgroundColor: colors.secondary, borderRadius: radii.md, padding: spacing.sm, marginTop: spacing.md }]}>
+          <View style={[styles.tipsBox, { backgroundColor: colors.secondary, borderRadius: radii.xl, padding: spacing.sm, marginTop: spacing.md }]}>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
               💡 자연광에서, 배경이 깔끔한 곳에서 촬영하면 더 정확해요
             </Text>
@@ -173,10 +173,10 @@ export function MultiAngleCapture({
               const info = ANGLE_INFO[angle];
               const hasImage = !!images[angle];
               return (
-                <View key={angle} style={[styles.angleCard, { backgroundColor: colors.secondary, borderRadius: radii.lg }]}>
+                <View key={angle} style={[styles.angleCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
                   {hasImage ? (
                     <View style={styles.angleCardContent}>
-                      <Image source={{ uri: images[angle] }} style={[styles.anglePreview, { borderRadius: radii.md }]} />
+                      <Image source={{ uri: images[angle] }} style={[styles.anglePreview, { borderRadius: radii.xl }]} />
                       <Pressable onPress={() => handleRetake(angle)}>
                         <Text style={{ color: status.info, fontSize: typography.size.xs, marginTop: spacing.xs }}>다시 촬영</Text>
                       </Pressable>
@@ -202,7 +202,7 @@ export function MultiAngleCapture({
 
           <Pressable
             onPress={handleComplete}
-            style={[styles.completeBtn, { backgroundColor: brand.primary, borderRadius: radii.lg, marginTop: spacing.md }]}
+            style={[styles.completeBtn, { backgroundColor: brand.primary, borderRadius: radii.xl, marginTop: spacing.md }]}
             accessibilityRole="button"
             accessibilityLabel="촬영 완료"
           >

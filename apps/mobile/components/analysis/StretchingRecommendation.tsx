@@ -45,7 +45,7 @@ export function StretchingRecommendation({
     >
       {/* 안내 배너 */}
       {showGuidance && (
-        <View style={[styles.guidance, { backgroundColor: `${status.info}15`, borderRadius: radii.md, padding: spacing.sm, marginBottom: spacing.md }]}>
+        <View style={[styles.guidance, { backgroundColor: `${status.info}15`, borderRadius: radii.xl, padding: spacing.sm, marginBottom: spacing.md }]}>
           <Text style={{ color: status.info, fontSize: typography.size.sm }}>
             🧘 꾸준한 스트레칭이 자세 교정의 핵심입니다
           </Text>
@@ -60,7 +60,7 @@ export function StretchingRecommendation({
         return (
           <View
             key={item.id}
-            style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, marginBottom: spacing.sm }]}
+            style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginBottom: spacing.sm }]}
           >
             <View style={styles.cardHeader}>
               <Text style={[styles.name, { color: colors.foreground, fontSize: typography.size.base }]}>

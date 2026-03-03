@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   cup: {
     flex: 1,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 2,
     overflow: 'hidden',
     justifyContent: 'flex-end',

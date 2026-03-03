@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   retryButtonText: {
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   homeButtonText: {

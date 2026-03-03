@@ -288,7 +288,7 @@ export function ResultLayout({
                 onPress={handleExpertCta}
                 style={[
                   styles.ctaButton,
-                  { backgroundColor: accent.base, borderRadius: radii.lg },
+                  { backgroundColor: accent.base, borderRadius: radii.xl },
                 ]}
                 testID={`${testID}-expert-cta-button`}
               >
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   tabBar: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     marginBottom: spacing.mlg,
   },
   ctaContainer: {

@@ -54,7 +54,7 @@ export function StretchingGuide({
       style={[
         {
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.lg,
         },
         style,

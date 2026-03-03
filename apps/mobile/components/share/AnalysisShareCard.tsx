@@ -87,7 +87,7 @@ export function AnalysisShareCard({
               styles.btn,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -113,7 +113,7 @@ export function AnalysisShareCard({
               styles.btn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}

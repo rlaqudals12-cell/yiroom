@@ -45,7 +45,7 @@ function StatBox({
         styles.statBox,
         {
           backgroundColor: colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.sm,
         },
       ]}

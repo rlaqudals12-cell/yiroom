@@ -200,6 +200,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 6,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
 });

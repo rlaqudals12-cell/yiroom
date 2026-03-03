@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   completedBadge: {
     width: 24,
     height: 24,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },

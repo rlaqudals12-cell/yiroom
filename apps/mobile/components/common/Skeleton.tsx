@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.smx,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   listItemContent: {
     marginLeft: spacing.smx,

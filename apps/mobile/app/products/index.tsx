@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   bannerIcon: {
     fontSize: typography.size['2xl'],
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   },
   productImagePlaceholder: {
     aspectRatio: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     right: 8,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   matchBadgeText: {
     fontSize: 11,

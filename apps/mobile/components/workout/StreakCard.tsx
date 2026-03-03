@@ -28,7 +28,7 @@ export function StreakCard({
   return (
     <View
       testID="streak-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`연속 ${currentStreak}일, 이번 주 ${weeklyCompleted}/${weeklyGoal}일`}
     >
       <View style={styles.header}>

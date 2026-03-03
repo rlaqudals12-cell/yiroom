@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     margin: spacing.md,
     padding: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   errorText: {
     fontSize: typography.size.sm,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   acceptButton: {
     flex: 1,
     paddingVertical: spacing.smx,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   acceptButtonText: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   rejectButton: {
     flex: 1,
     paddingVertical: spacing.smx,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   rejectButtonText: {

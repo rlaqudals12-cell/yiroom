@@ -99,7 +99,7 @@ export function OnboardingCard({
           onPress={onNext}
           style={{
             backgroundColor: brand.primary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             paddingVertical: spacing.smx,
             alignItems: 'center',
           }}

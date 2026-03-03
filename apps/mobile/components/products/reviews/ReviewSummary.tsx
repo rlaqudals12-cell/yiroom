@@ -141,7 +141,7 @@ export function calculateReviewSummary(reviews: { rating: number }[]): ReviewSum
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   averageSection: {

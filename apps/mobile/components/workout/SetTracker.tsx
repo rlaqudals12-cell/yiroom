@@ -40,7 +40,7 @@ export function SetTracker({
   return (
     <View
       testID="set-tracker"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`${exerciseName} 세트 추적, ${completedSets}/${sets.length} 완료`}
     >
       <View style={styles.header}>
@@ -73,12 +73,12 @@ export function SetTracker({
                 styles.setRow,
                 {
                   backgroundColor: isCurrent ? `${baseColor}10` : 'transparent',
-                  borderRadius: radii.md,
+                  borderRadius: radii.xl,
                   borderBottomColor: colors.border,
                 },
               ]}
             >
-              <View style={[styles.statusIcon, { backgroundColor: statusColor, borderRadius: radii.lg }]}>
+              <View style={[styles.statusIcon, { backgroundColor: statusColor, borderRadius: radii.xl }]}>
                 <Text style={{ color: colors.card, fontSize: 10, fontWeight: '700' }}>
                   {STATUS_ICONS[set.status]}
                 </Text>

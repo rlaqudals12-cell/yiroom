@@ -86,7 +86,7 @@ export function ScanResult({
               styles.actionBtn,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.sm,
               },
             ]}
@@ -112,7 +112,7 @@ export function ScanResult({
               styles.actionBtn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.sm,
               },
             ]}

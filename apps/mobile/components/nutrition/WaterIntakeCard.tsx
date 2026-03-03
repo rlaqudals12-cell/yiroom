@@ -192,7 +192,7 @@ export function WaterIntakeCard({
               styles.addButton,
               {
                 backgroundColor: WATER_COLOR,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 marginTop: spacing.md,
                 paddingVertical: spacing.smd,
               },

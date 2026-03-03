@@ -173,7 +173,7 @@ export default function BadgesScreen(): React.JSX.Element {
                     backgroundColor: brand.primary + '20',
                     paddingHorizontal: spacing.sm,
                     paddingVertical: 3,
-                    borderRadius: radii.md,
+                    borderRadius: radii.xl,
                   }}
                 >
                   <Text style={{ fontSize: 10, fontWeight: typography.weight.semibold, color: brand.primary }}>
@@ -190,7 +190,7 @@ export default function BadgesScreen(): React.JSX.Element {
           <Pressable
             style={{
               backgroundColor: brand.primary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               alignItems: 'center',
               marginTop: spacing.sm,

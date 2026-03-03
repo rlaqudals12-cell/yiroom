@@ -67,7 +67,7 @@ export function MakeupResultCard({
   return (
     <View
       testID="makeup-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`메이크업 분석 결과: ${toneInfo.label}, 점수 ${overallScore}점`}
     >
       {/* 헤더 */}
@@ -81,7 +81,7 @@ export function MakeupResultCard({
             {toneInfo.description}
           </Text>
         </View>
-        <View style={[styles.scoreBadge, { backgroundColor: colors.background, borderRadius: radii.md }]}>
+        <View style={[styles.scoreBadge, { backgroundColor: colors.background, borderRadius: radii.xl }]}>
           <Text style={{ color: module.makeup.base, fontSize: typography.size.xl, fontWeight: '700' }}>
             {overallScore}
           </Text>
@@ -118,7 +118,7 @@ export function MakeupResultCard({
 
       {/* 인사이트 */}
       {insight && (
-        <View style={[styles.insightBox, { backgroundColor: `${module.makeup.base}10`, margin: spacing.md, borderRadius: radii.md, padding: spacing.sm }]}>
+        <View style={[styles.insightBox, { backgroundColor: `${module.makeup.base}10`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm, lineHeight: 20 }}>
             💡 {insight}
           </Text>

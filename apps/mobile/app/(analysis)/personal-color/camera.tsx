@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   permissionButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     marginBottom: spacing.md,
   },
   permissionButtonText: {

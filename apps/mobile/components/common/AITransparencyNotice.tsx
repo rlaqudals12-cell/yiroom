@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.smx,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   compactIcon: {

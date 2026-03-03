@@ -98,7 +98,7 @@ export function PriceComparisonCard({
                 {
                   paddingVertical: spacing.sm,
                   backgroundColor: isBest ? `${statusColors.success}08` : 'transparent',
-                  borderRadius: isBest ? radii.md : 0,
+                  borderRadius: isBest ? radii.xl : 0,
                   paddingHorizontal: isBest ? spacing.sm : 0,
                 },
               ]}
@@ -153,7 +153,7 @@ export function PriceComparisonCard({
           styles.summaryRow,
           {
             backgroundColor: `${statusColors.success}10`,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             marginTop: spacing.smx,
             padding: spacing.smx,
           },

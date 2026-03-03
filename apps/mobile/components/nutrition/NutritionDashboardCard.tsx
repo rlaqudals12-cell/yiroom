@@ -62,7 +62,7 @@ export function NutritionDashboardCard({
           <View
             style={[
               styles.iconBg,
-              { backgroundColor: module.nutrition.base + '20', borderRadius: radii.lg },
+              { backgroundColor: module.nutrition.base + '20', borderRadius: radii.xl },
             ]}
           >
             <Text style={{ fontSize: typography.size.lg }}>🥗</Text>

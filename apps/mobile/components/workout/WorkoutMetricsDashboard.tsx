@@ -45,7 +45,7 @@ export function WorkoutMetricsDashboard({
           { label: '소모 칼로리', value: `${metrics.totalCalories}kcal`, emoji: '🔥' },
           { label: '연속 기록', value: `${metrics.streak}일`, emoji: '🔥' },
         ].map((item) => (
-          <View key={item.label} style={[styles.metricCard, { backgroundColor: colors.card, borderRadius: radii.md, borderColor: colors.border }]}>
+          <View key={item.label} style={[styles.metricCard, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}>
             <Text style={{ fontSize: typography.size.lg }}>{item.emoji}</Text>
             <Text style={{ color: baseColor, fontSize: typography.size.lg, fontWeight: '700' }}>{item.value}</Text>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{item.label}</Text>

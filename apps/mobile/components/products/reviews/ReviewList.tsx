@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing.md,
     marginTop: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   loadMoreText: {
     fontSize: typography.size.sm,

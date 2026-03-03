@@ -104,7 +104,7 @@ export default function FAQScreen(): React.JSX.Element {
               styles.faqItem,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: isExpanded ? brand.primary + '40' : colors.border,
                 padding: spacing.md,
                 marginBottom: spacing.sm,
@@ -184,7 +184,7 @@ export default function FAQScreen(): React.JSX.Element {
           styles.searchContainer,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             marginHorizontal: spacing.md,
             marginBottom: spacing.md,
             paddingHorizontal: spacing.md,
@@ -261,7 +261,7 @@ export default function FAQScreen(): React.JSX.Element {
             styles.feedbackButton,
             {
               backgroundColor: brand.primary + '10',
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
             },
           ]}

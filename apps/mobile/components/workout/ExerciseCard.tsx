@@ -72,7 +72,7 @@ export const ExerciseCard = memo(function ExerciseCard({
     <Pressable
       testID="exercise-card"
       onPress={() => onPress?.(id)}
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityRole="button"
       accessibilityLabel={`${name}, ${diffConfig.label}, MET ${met}`}
     >

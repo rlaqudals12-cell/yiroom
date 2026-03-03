@@ -61,10 +61,10 @@ export function DrapingPreview({
       )}
 
       {/* 사진 + 오버레이 */}
-      <View style={[styles.imageContainer, { height: imageHeight, borderRadius: radii.lg }]}>
+      <View style={[styles.imageContainer, { height: imageHeight, borderRadius: radii.xl }]}>
         <Image
           source={{ uri: imageUri }}
-          style={[StyleSheet.absoluteFill, { borderRadius: radii.lg }]}
+          style={[StyleSheet.absoluteFill, { borderRadius: radii.xl }]}
           contentFit="cover"
           accessibilityLabel="사용자 사진"
         />
@@ -76,7 +76,7 @@ export function DrapingPreview({
             style={[
               StyleSheet.absoluteFill,
               styles.colorOverlay,
-              { backgroundColor: selectedColor, borderRadius: radii.lg },
+              { backgroundColor: selectedColor, borderRadius: radii.xl },
             ]}
             accessibilityLabel={`${selectedColor} 색상 드레이핑`}
           />
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: spacing.smd,
     paddingVertical: 5,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   colorDot: {
     width: 12,

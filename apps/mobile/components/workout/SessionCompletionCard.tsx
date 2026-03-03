@@ -30,7 +30,7 @@ export function SessionCompletionCard({
   return (
     <View
       testID="session-completion-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, padding: spacing.lg }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, padding: spacing.lg }]}
       accessibilityLabel={`운동 완료! ${totalDuration}분, ${totalCalories}kcal`}
     >
       <Text style={{ fontSize: typography.size['2xl'], textAlign: 'center' }}>🎉</Text>
@@ -49,7 +49,7 @@ export function SessionCompletionCard({
           { label: '운동 완료', value: `${exercisesCompleted}/${exercisesTotal}`, emoji: '💪' },
           { label: '세트 완료', value: `${setsCompleted}/${setsTotal}`, emoji: '✅' },
         ].map((stat) => (
-          <View key={stat.label} style={[styles.statItem, { backgroundColor: `${baseColor}10`, borderRadius: radii.md }]}>
+          <View key={stat.label} style={[styles.statItem, { backgroundColor: `${baseColor}10`, borderRadius: radii.xl }]}>
             <Text style={{ fontSize: typography.size.base }}>{stat.emoji}</Text>
             <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>{stat.value}</Text>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{stat.label}</Text>
@@ -70,7 +70,7 @@ export function SessionCompletionCard({
         {onShare && (
           <Pressable
             onPress={onShare}
-            style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.md }]}
+            style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.xl }]}
             accessibilityRole="button"
             accessibilityLabel="결과 공유하기"
           >
@@ -80,7 +80,7 @@ export function SessionCompletionCard({
         {onGoBack && (
           <Pressable
             onPress={onGoBack}
-            style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.md }]}
+            style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
             accessibilityRole="button"
             accessibilityLabel="돌아가기"
           >

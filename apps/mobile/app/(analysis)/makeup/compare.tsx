@@ -111,7 +111,7 @@ export default function MakeupCompareScreen(): React.ReactElement {
               key={index}
               style={{
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
                 borderLeftWidth: 3,
                 borderLeftColor: moduleColors.personalColor.base,
@@ -179,7 +179,7 @@ export default function MakeupCompareScreen(): React.ReactElement {
         onPress={() => router.push('/(analysis)/makeup')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
           marginTop: spacing.lg,

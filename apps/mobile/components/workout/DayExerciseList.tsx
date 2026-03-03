@@ -33,7 +33,7 @@ export function DayExerciseList({
   return (
     <View
       testID="day-exercise-list"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`${dayLabel} 운동 ${exercises.length}개, ${completedCount}개 완료`}
     >
       <View style={styles.header}>

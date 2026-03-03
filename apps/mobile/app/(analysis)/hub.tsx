@@ -68,7 +68,7 @@ export default function AnalysisHubScreen(): React.ReactElement {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 4,
               borderLeftColor: mod.moduleColor,

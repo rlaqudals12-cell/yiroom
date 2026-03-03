@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   levelBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   levelText: {
     fontSize: typography.size.xs,

@@ -75,7 +75,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           marginBottom: spacing.lg,
         }}
@@ -117,7 +117,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
               entering={staggeredEntry(index)}
               style={{
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
               }}
             >
@@ -165,7 +165,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.sm,
             }}
           >
@@ -196,7 +196,7 @@ export default function YearlyReviewScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: brand.primary + '15',
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.lg,
           alignItems: 'center',
         }}

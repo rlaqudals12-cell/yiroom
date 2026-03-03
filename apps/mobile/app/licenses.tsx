@@ -65,7 +65,7 @@ export default function LicensesScreen(): React.ReactElement {
             onPress={() => setExpandedName((prev) => (prev === lib.name ? null : lib.name))}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
             }}
           >

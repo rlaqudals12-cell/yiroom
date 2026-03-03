@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     marginBottom: spacing.lg,
   },
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   conditionEmoji: {
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   // 메모
   notesInput: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.sm,
     marginTop: spacing.sm,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   numericInput: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.xs,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   scoreNum: {
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   routineText: {
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: spacing.xl,
     paddingVertical: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     alignItems: 'center',
   },
   saveButtonText: {

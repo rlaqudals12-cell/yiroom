@@ -195,7 +195,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               {
                 backgroundColor:
                   selectedPeriod === tab.key ? colors.secondary : 'transparent',
-                borderRadius: radii.md,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => handlePeriodChange(tab.key)}
@@ -222,7 +222,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               styles.compareButton,
               {
                 backgroundColor: brand.primary + '18',
-                borderRadius: radii.md,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => {
@@ -281,7 +281,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             이력 조회에 실패했어요
           </Text>
           <Pressable
-            style={[styles.retryButton, { backgroundColor: brand.primary, borderRadius: radii.md }]}
+            style={[styles.retryButton, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
             onPress={refetch}
           >
             <Text style={{ color: colors.overlayForeground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>

@@ -28,7 +28,7 @@ export default function PrivacyPolicyScreen() {
               styles.langButton,
               {
                 backgroundColor: lang === 'ko' ? brandColors.primary : colors.muted,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => setLang('ko')}
@@ -50,7 +50,7 @@ export default function PrivacyPolicyScreen() {
               styles.langButton,
               {
                 backgroundColor: lang === 'en' ? brandColors.primary : colors.muted,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
             onPress={() => setLang('en')}
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
   infoBox: {
     marginTop: spacing.smx,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   infoTitle: {
     fontSize: 15,
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
   warningBox: {
     marginTop: spacing.smx,
     padding: spacing.md,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   warningText: {

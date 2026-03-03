@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   qrPlaceholder: {
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingVertical: spacing.smd,
     paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   shareText: {
     fontWeight: '600',

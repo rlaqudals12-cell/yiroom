@@ -40,7 +40,7 @@ export function WorkoutTypeCard({
         styles.container,
         {
           backgroundColor: isSelected ? `${baseColor}15` : colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           borderColor: isSelected ? baseColor : colors.border,
         },
       ]}

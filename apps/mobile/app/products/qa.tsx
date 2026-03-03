@@ -92,7 +92,7 @@ export default function ProductQAScreen(): React.ReactElement {
         accessibilityLabel="새 질문 작성"
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
           marginBottom: spacing.lg,
@@ -114,7 +114,7 @@ export default function ProductQAScreen(): React.ReactElement {
               onPress={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
               style={{
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
               }}
             >

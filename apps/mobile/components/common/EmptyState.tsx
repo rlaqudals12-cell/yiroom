@@ -91,7 +91,7 @@ export function EmptyState({
             styles.actionButton,
             {
               backgroundColor: brand.primary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.sm + 2,
               opacity: pressed ? 0.85 : 1,

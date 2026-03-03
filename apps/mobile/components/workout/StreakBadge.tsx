@@ -47,7 +47,7 @@ export function StreakBadge({ streak, compact = false }: StreakBadgeProps): Reac
   return (
     <View
       testID="streak-badge"
-      style={[styles.container, { backgroundColor: `${module.workout.base}15`, borderRadius: radii.lg }]}
+      style={[styles.container, { backgroundColor: `${module.workout.base}15`, borderRadius: radii.xl }]}
       accessibilityLabel={`${streak}일 연속 운동, ${level.label} 레벨`}
     >
       <Text style={{ fontSize: typography.size['2xl'] }}>{level.emoji}</Text>

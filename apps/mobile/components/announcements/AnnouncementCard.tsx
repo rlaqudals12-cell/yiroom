@@ -48,7 +48,7 @@ export const AnnouncementCard = memo(function AnnouncementCard({
       style={[
         {
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           borderLeftWidth: isPinned ? 4 : 0,
           borderLeftColor: isPinned ? brand.primary : undefined,

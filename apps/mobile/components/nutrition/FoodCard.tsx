@@ -54,7 +54,7 @@ export const FoodCard = memo(function FoodCard({
           styles.compact,
           {
             backgroundColor: colors.card,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.sm,
             borderWidth: 1,
             borderColor: colors.border,
@@ -221,6 +221,6 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
 });

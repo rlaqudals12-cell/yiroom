@@ -58,7 +58,7 @@ export function OralHealthResultCard({
   return (
     <View
       testID="oral-health-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`구강건강 분석 결과: ${overallScore}점`}
     >
       {/* 헤더 */}
@@ -69,7 +69,7 @@ export function OralHealthResultCard({
             구강건강 분석
           </Text>
         </View>
-        <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderRadius: radii.md }]}>
+        <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderRadius: radii.xl }]}>
           <Text style={{ color: scoreColor, fontSize: typography.size.xl, fontWeight: '700' }}>
             {overallScore}
           </Text>
@@ -169,7 +169,7 @@ export function OralHealthResultCard({
                 </View>
 
                 {whiteningGoal.overWhiteningWarning && (
-                  <View style={[styles.warningBox, { backgroundColor: `${status.warning}15`, borderRadius: radii.md, padding: spacing.sm }]}>
+                  <View style={[styles.warningBox, { backgroundColor: `${status.warning}15`, borderRadius: radii.xl, padding: spacing.sm }]}>
                     <Text style={{ color: status.warning, fontSize: typography.size.xs }}>
                       ⚠️ 과도한 화이트닝은 치아 건강에 해로울 수 있습니다
                     </Text>

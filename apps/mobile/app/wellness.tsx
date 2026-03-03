@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   // 레벨 카드
   levelCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginTop: spacing.md,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   // 영역별 상세
   breakdownCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginTop: spacing.md,
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   // 업적
   achievementSection: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginTop: spacing.md,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   guideCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     marginTop: spacing.lg,
   },
   ctaText: {

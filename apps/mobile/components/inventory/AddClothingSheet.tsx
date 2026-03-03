@@ -59,7 +59,7 @@ export function AddClothingSheet({
           styles.input,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.sm,
             fontSize: typography.size.sm,
             color: colors.foreground,
@@ -92,7 +92,7 @@ export function AddClothingSheet({
               styles.categoryBtn,
               {
                 backgroundColor: category === cat.key ? module.personalColor.base : colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.xs,
               },
             ]}
@@ -130,7 +130,7 @@ export function AddClothingSheet({
           styles.input,
           {
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.sm,
             fontSize: typography.size.sm,
             color: colors.foreground,
@@ -152,7 +152,7 @@ export function AddClothingSheet({
               styles.btn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -177,7 +177,7 @@ export function AddClothingSheet({
               styles.btn,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}

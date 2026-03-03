@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     fontSize: typography.size.base,
   },

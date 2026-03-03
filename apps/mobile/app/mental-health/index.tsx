@@ -86,7 +86,7 @@ export default function MentalHealthScreen(): React.ReactElement {
       <View
         style={{
           backgroundColor: colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.md,
           marginBottom: spacing.lg,
         }}
@@ -105,7 +105,7 @@ export default function MentalHealthScreen(): React.ReactElement {
                 style={{
                   alignItems: 'center',
                   padding: spacing.xs,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   backgroundColor: selected ? getMoodColor(option.level) + '20' : 'transparent',
                   borderWidth: selected ? 2 : 0,
                   borderColor: selected ? getMoodColor(option.level) : 'transparent',
@@ -139,7 +139,7 @@ export default function MentalHealthScreen(): React.ReactElement {
             accessibilityLabel={`${tip.title} 가이드`}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               flexDirection: 'row',
               alignItems: 'center',
@@ -175,7 +175,7 @@ export default function MentalHealthScreen(): React.ReactElement {
                 flexDirection: 'row',
                 alignItems: 'center',
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.sm,
               }}
             >

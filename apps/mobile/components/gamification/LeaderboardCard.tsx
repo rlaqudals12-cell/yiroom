@@ -35,7 +35,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({
         styles.card,
         {
           backgroundColor: isCurrentUser ? brand.primary : colors.card,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.sm,
           paddingHorizontal: spacing.md,
         },

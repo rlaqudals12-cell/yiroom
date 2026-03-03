@@ -120,14 +120,14 @@ export function TodayOutfitSuggestion({
               style={[
                 styles.outfitImageBox,
                 {
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   backgroundColor: colors.secondary,
                 },
               ]}
             >
               <Image
                 source={{ uri: rec.item.imageUrl }}
-                style={[styles.outfitImage, { borderRadius: radii.lg }]}
+                style={[styles.outfitImage, { borderRadius: radii.xl }]}
                 contentFit="cover"
                 transition={200}
               />

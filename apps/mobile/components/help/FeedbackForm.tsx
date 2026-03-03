@@ -123,7 +123,7 @@ export function FeedbackForm({
         placeholderTextColor={colors.mutedForeground}
         style={{
           backgroundColor: colors.background,
-          borderRadius: radii.md,
+          borderRadius: radii.xl,
           padding: spacing.smx,
           fontSize: typography.size.base,
           color: colors.foreground,
@@ -155,7 +155,7 @@ export function FeedbackForm({
         numberOfLines={4}
         style={{
           backgroundColor: colors.background,
-          borderRadius: radii.md,
+          borderRadius: radii.xl,
           padding: spacing.smx,
           fontSize: typography.size.base,
           color: colors.foreground,
@@ -175,7 +175,7 @@ export function FeedbackForm({
         disabled={!isValid || isSubmitting}
         style={{
           backgroundColor: isValid && !isSubmitting ? brand.primary : colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
         }}

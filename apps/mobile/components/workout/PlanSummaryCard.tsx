@@ -26,7 +26,7 @@ export function PlanSummaryCard({
   return (
     <View
       testID="plan-summary-card"
-      style={[styles.container, { backgroundColor: `${baseColor}10`, borderRadius: radii.lg, padding: spacing.md }]}
+      style={[styles.container, { backgroundColor: `${baseColor}10`, borderRadius: radii.xl, padding: spacing.md }]}
       accessibilityLabel={`계획 요약: ${totalExercises}개 운동, ${totalDays}일`}
     >
       <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
@@ -40,7 +40,7 @@ export function PlanSummaryCard({
           { label: '휴식일', value: `${restDays}일` },
           { label: '예상 소모', value: `${estimatedCalories}kcal` },
         ].map((stat) => (
-          <View key={stat.label} style={[styles.statItem, { backgroundColor: colors.card, borderRadius: radii.md }]}>
+          <View key={stat.label} style={[styles.statItem, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{stat.label}</Text>
             <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>{stat.value}</Text>
           </View>

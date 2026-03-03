@@ -56,7 +56,7 @@ export function ItemUploader({
               styles.optionBtn,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -83,7 +83,7 @@ export function ItemUploader({
               styles.optionBtn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -110,7 +110,7 @@ export function ItemUploader({
               styles.optionBtn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}

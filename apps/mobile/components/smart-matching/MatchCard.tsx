@@ -85,7 +85,7 @@ export function MatchCard({
             styles.imageContainer,
             {
               backgroundColor: colors.secondary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
             },
           ]}
         >

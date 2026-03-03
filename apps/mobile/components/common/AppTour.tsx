@@ -142,7 +142,7 @@ export function AppTour({
                 {
                   paddingVertical: spacing.sm,
                   paddingHorizontal: spacing.md,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                 },
               ]}
               onPress={handleSkip}
@@ -167,7 +167,7 @@ export function AppTour({
                   backgroundColor: brand.primary,
                   paddingVertical: spacing.sm,
                   paddingHorizontal: spacing.lg,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                 },
               ]}
               onPress={handleNext}

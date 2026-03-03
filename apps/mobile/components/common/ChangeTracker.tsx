@@ -114,7 +114,7 @@ export function ChangeTracker({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },

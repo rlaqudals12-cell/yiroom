@@ -112,7 +112,7 @@ export function HomeQuickActions({
                 <View style={{ padding: spacing.smx, alignItems: 'center' }}>
                   {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
                   <View style={[
-                    { marginBottom: spacing.sm, borderRadius: radii.smx },
+                    { marginBottom: spacing.sm, borderRadius: radii.xl },
                     !isDark ? Platform.select({
                       ios: { shadowColor: action.color, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8 },
                       android: { elevation: 3 },
@@ -125,7 +125,7 @@ export function HomeQuickActions({
                       style={{
                         width: 44,
                         height: 44,
-                        borderRadius: radii.smx,
+                        borderRadius: radii.xl,
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}

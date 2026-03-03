@@ -42,7 +42,7 @@ export function WorkoutInsightCard({ insights }: WorkoutInsightCardProps): React
       {insights.map((insight) => {
         const priorityColor = status[PRIORITY_CONFIG[insight.priority].colorKey];
         return (
-          <View key={insight.id} style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.md, borderColor: colors.border, marginBottom: spacing.sm }]}>
+          <View key={insight.id} style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginBottom: spacing.sm }]}>
             <View style={styles.cardHeader}>
               <Text style={{ fontSize: typography.size.base }}>{CATEGORY_EMOJI[insight.category]}</Text>
               <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', flex: 1, marginLeft: spacing.sm }}>

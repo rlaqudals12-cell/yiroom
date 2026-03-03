@@ -419,7 +419,7 @@ function ModuleCard({
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
           <View style={[
-            { marginRight: spacing.smx, borderRadius: radii.lg },
+            { marginRight: spacing.smx, borderRadius: radii.xl },
             !isDark ? Platform.select({
               ios: {
                 shadowColor: meta.gradientColors[1],
@@ -437,7 +437,7 @@ function ModuleCard({
               style={{
                 width: 44,
                 height: 44,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}

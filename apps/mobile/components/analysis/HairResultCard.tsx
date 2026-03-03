@@ -78,7 +78,7 @@ export function HairResultCard({
   return (
     <View
       testID="hair-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`헤어 분석 결과: ${shapeInfo.label}, 신뢰도 ${confidence}%`}
     >
       {/* 헤더 */}

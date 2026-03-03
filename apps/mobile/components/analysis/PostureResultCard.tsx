@@ -75,7 +75,7 @@ export function PostureResultCard({
   return (
     <View
       testID="posture-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`자세 분석 결과: ${info.label}, ${overallScore}점`}
     >
       {/* 헤더 */}
@@ -89,7 +89,7 @@ export function PostureResultCard({
             {info.description}
           </Text>
         </View>
-        <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderRadius: radii.md }]}>
+        <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderRadius: radii.xl }]}>
           <Text style={{ color: scoreColor, fontSize: typography.size.xl, fontWeight: '700' }}>
             {overallScore}
           </Text>
@@ -99,7 +99,7 @@ export function PostureResultCard({
 
       {/* 이슈 알림 */}
       {issueCount > 0 && (
-        <View style={[styles.issueAlert, { backgroundColor: `${status.warning}15`, margin: spacing.md, borderRadius: radii.md, padding: spacing.sm }]}>
+        <View style={[styles.issueAlert, { backgroundColor: `${status.warning}15`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
           <Text style={{ color: status.warning, fontSize: typography.size.xs }}>
             ⚠️ {issueCount}개 항목이 개선이 필요합니다
           </Text>
@@ -108,7 +108,7 @@ export function PostureResultCard({
 
       {/* 이상적 자세 확인 배너 */}
       {postureType === 'ideal' && (
-        <View style={[styles.idealBanner, { backgroundColor: `${status.success}15`, margin: spacing.md, borderRadius: radii.md, padding: spacing.sm }]}>
+        <View style={[styles.idealBanner, { backgroundColor: `${status.success}15`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
           <Text style={{ color: status.success, fontSize: typography.size.sm, fontWeight: '600' }}>
             ✨ 이상적인 자세를 유지하고 있어요!
           </Text>
@@ -123,7 +123,7 @@ export function PostureResultCard({
           </Text>
           <View style={styles.measurementGrid}>
             {frontMeasurements.map((m, index) => (
-              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.md }]}>
+              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
                 <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{m.name}</Text>
                 <Text style={{ color: getStatusColor(m.status), fontSize: typography.size.lg, fontWeight: '700' }}>
                   {m.value}{m.unit}
@@ -148,7 +148,7 @@ export function PostureResultCard({
           </Text>
           <View style={styles.measurementGrid}>
             {sideMeasurements.map((m, index) => (
-              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.md }]}>
+              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
                 <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{m.name}</Text>
                 <Text style={{ color: getStatusColor(m.status), fontSize: typography.size.lg, fontWeight: '700' }}>
                   {m.value}{m.unit}

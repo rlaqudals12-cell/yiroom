@@ -60,7 +60,7 @@ export default function BodyCompareScreen(): React.ReactElement {
             key={index}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               borderLeftWidth: 3,
               borderLeftColor: moduleColors.body.base,
@@ -102,7 +102,7 @@ export default function BodyCompareScreen(): React.ReactElement {
         onPress={() => router.push('/(analysis)/body')}
         style={{
           backgroundColor: brand.primary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           paddingVertical: spacing.smx,
           alignItems: 'center',
           marginTop: spacing.lg,

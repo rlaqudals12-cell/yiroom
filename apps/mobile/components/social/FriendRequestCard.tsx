@@ -84,7 +84,7 @@ export function FriendRequestCard({
               styles.btn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.sm,
               },
             ]}
@@ -110,7 +110,7 @@ export function FriendRequestCard({
               styles.btn,
               {
                 backgroundColor: status.success,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.sm,
               },
             ]}

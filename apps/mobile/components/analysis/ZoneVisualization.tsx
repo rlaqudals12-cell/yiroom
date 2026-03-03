@@ -78,7 +78,7 @@ export function ZoneVisualization({
       {(vitalityScore !== undefined || tUZoneDiff !== undefined) && (
         <View style={[styles.summaryRow, { marginBottom: spacing.md }]}>
           {vitalityScore !== undefined && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.md, borderColor: colors.border }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}>
               <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>피부 활력도</Text>
               <Text style={{ color: module.skin.base, fontSize: typography.size.xl, fontWeight: '700' }}>
                 {vitalityScore}
@@ -86,7 +86,7 @@ export function ZoneVisualization({
             </View>
           )}
           {tUZoneDiff !== undefined && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.md, borderColor: colors.border }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}>
               <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>T-U존 차이</Text>
               <Text style={{ color: colors.foreground, fontSize: typography.size.xl, fontWeight: '700' }}>
                 {tUZoneDiff}
@@ -109,7 +109,7 @@ export function ZoneVisualization({
                 styles.zoneItem,
                 {
                   backgroundColor: isSelected ? `${statusColor}20` : colors.card,
-                  borderRadius: radii.md,
+                  borderRadius: radii.xl,
                   borderColor: isSelected ? statusColor : colors.border,
                 },
               ]}
@@ -140,7 +140,7 @@ export function ZoneVisualization({
 
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
-        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
+        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
           <View style={styles.detailHeader}>
             <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700' }}>
               {selectedData.label} 상세

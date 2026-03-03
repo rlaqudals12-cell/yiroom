@@ -206,7 +206,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
           사용자를 찾을 수 없어요
         </Text>
         <Pressable
-          style={[styles.backButton, { backgroundColor: brand.primary, borderRadius: radii.lg, marginTop: spacing.md }]}
+          style={[styles.backButton, { backgroundColor: brand.primary, borderRadius: radii.xl, marginTop: spacing.md }]}
           onPress={() => router.back()}
         >
           <Text style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
@@ -277,7 +277,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                 <View
                   style={[
                     styles.friendButton,
-                    { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.lg },
+                    { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radii.xl },
                   ]}
                 >
                   <UserCheck size={16} color={brand.primaryForeground} />
@@ -289,7 +289,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                 <View
                   style={[
                     styles.friendButton,
-                    { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radii.lg },
+                    { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radii.xl },
                   ]}
                 >
                   <Text style={{ color: 'rgba(255,255,255,0.7)', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
@@ -300,7 +300,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                 <Pressable
                   style={[
                     styles.friendButton,
-                    { backgroundColor: colors.card, borderRadius: radii.lg },
+                    { backgroundColor: colors.card, borderRadius: radii.xl },
                   ]}
                   onPress={handleSendRequest}
                   disabled={isSendingRequest}
@@ -335,7 +335,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
             shadows.card,
             {
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               borderWidth: 1,
               borderColor: colors.border,
               margin: spacing.md,
@@ -390,7 +390,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                     {
                       flex: 1,
                       backgroundColor: colors.card,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       borderWidth: 1,
                       borderColor: colors.border,
                       padding: spacing.md,

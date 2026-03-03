@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   streakBadge: {
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   streakBadgeText: {
     fontSize: typography.size.xs,

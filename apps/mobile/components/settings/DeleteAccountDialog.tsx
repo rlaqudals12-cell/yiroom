@@ -62,7 +62,7 @@ export function DeleteAccountDialog({
               styles.btn,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}
@@ -88,7 +88,7 @@ export function DeleteAccountDialog({
               styles.btn,
               {
                 backgroundColor: status.error,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.smd,
               },
             ]}

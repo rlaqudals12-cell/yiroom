@@ -96,7 +96,7 @@ export function LevelUpModal({
             styles.closeBtn,
             {
               backgroundColor: brand.primary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               paddingVertical: spacing.smd,
               marginTop: spacing.lg,
             },

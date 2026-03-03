@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
     paddingHorizontal: spacing.smd,
     paddingVertical: spacing.xs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   price: {
     fontSize: typography.size['2xl'],
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
   },
   matchIcon: {
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   reviewCard: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.smx,
   },
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
   },
   purchaseButton: {
     flex: 1,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     paddingVertical: spacing.md,
     alignItems: 'center',
   },

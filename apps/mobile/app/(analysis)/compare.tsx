@@ -77,7 +77,7 @@ export default function CompareScreen(): React.JSX.Element {
               styles.dateRange,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 padding: spacing.md,
                 marginBottom: spacing.md,
@@ -138,7 +138,7 @@ export default function CompareScreen(): React.JSX.Element {
               styles.actionButton,
               {
                 backgroundColor: colors.card,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 borderColor: colors.border,
                 padding: spacing.md,
                 marginBottom: spacing.sm,
@@ -177,7 +177,7 @@ export default function CompareScreen(): React.JSX.Element {
               styles.actionButton,
               {
                 backgroundColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
               },
             ]}

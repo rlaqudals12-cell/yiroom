@@ -25,7 +25,7 @@ export function WorkoutStyleCard({
   return (
     <View
       testID="workout-style-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`운동 스타일: ${styleName}, 적합도 ${matchRate}%`}
     >
       <View style={styles.header}>

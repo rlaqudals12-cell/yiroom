@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   zoneOverlay: {
     position: 'absolute',
     borderWidth: 1,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },

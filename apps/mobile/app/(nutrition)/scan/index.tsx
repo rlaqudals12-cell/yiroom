@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   permissionButton: {
     paddingHorizontal: spacing.xl,
     paddingVertical: 14,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   permissionButtonText: {
     fontSize: typography.size.base,
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
   },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   productImage: {
     width: 120,
     height: 120,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     marginBottom: spacing.smx,
   },
   productName: {

@@ -82,7 +82,7 @@ export function ScanCamera({
                 width: SCAN_AREA_WIDTH,
                 height: SCAN_AREA_HEIGHT,
                 borderColor: brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
               },
             ]}
           >

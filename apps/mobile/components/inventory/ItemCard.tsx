@@ -50,7 +50,7 @@ export const ItemCard = memo(function ItemCard({
       testID="item-card"
       accessibilityLabel={`${itemBrand} ${name}${isExpired ? ', 기한 만료' : ''}`}
     >
-      <View style={[styles.emojiBox, { backgroundColor: colors.secondary, borderRadius: radii.lg }]}>
+      <View style={[styles.emojiBox, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
         <Text style={{ fontSize: typography.size.xl }}>{emoji}</Text>
       </View>
       <View style={{ marginLeft: spacing.sm, flex: 1 }}>

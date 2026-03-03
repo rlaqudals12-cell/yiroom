@@ -128,7 +128,7 @@ export function AddFriendSheet({
               styles.sendBtn,
               {
                 backgroundColor: isSent ? colors.secondary : brand.primary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingHorizontal: spacing.smx,
                 paddingVertical: spacing.xs,
                 opacity: pressed && !isSent ? 0.7 : 1,

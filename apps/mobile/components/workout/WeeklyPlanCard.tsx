@@ -32,7 +32,7 @@ export function WeeklyPlanCard({
   return (
     <View
       testID="weekly-plan-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.lg, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
       accessibilityLabel={`${weekLabel} 운동 계획, ${completedDays}일 완료`}
     >
       <View style={styles.header}>
@@ -53,7 +53,7 @@ export function WeeklyPlanCard({
               styles.dayItem,
               {
                 backgroundColor: day.isRestDay ? colors.secondary : `${baseColor}15`,
-                borderRadius: radii.md,
+                borderRadius: radii.xl,
               },
             ]}
             accessibilityRole="button"

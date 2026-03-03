@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   stepCard: {
     flexDirection: 'row',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.smx,
     marginBottom: spacing.sm,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   priorityBadge: {
     paddingHorizontal: 6,
     paddingVertical: spacing.xxs,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     marginLeft: spacing.sm,
   },
   priorityText: {

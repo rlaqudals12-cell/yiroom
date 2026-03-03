@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   typeBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
   },
   typeBadgeText: {
     fontWeight: '600',

@@ -100,7 +100,7 @@ export function ActionToast({
         animatedStyle,
         {
           backgroundColor: bgColor,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           marginHorizontal: spacing.md,
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.sm + 2,

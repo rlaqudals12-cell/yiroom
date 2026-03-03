@@ -33,7 +33,7 @@ export function LevelBadge({
         styles.container,
         {
           backgroundColor: colors.secondary,
-          borderRadius: radii.lg,
+          borderRadius: radii.xl,
           padding: spacing.sm + 4,
         },
         style,

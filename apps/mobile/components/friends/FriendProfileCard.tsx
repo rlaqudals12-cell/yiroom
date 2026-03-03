@@ -146,7 +146,7 @@ export function FriendProfileCard({
           {
             marginTop: spacing.md,
             backgroundColor: colors.secondary,
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.smx,
           },
         ]}
@@ -203,7 +203,7 @@ export function FriendProfileCard({
                 styles.actionBtn,
                 {
                   backgroundColor: brand.primary,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   paddingVertical: spacing.sm,
                   opacity: pressed ? 0.7 : 1,
                 },
@@ -231,7 +231,7 @@ export function FriendProfileCard({
                 styles.actionBtn,
                 {
                   backgroundColor: colors.secondary,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   paddingVertical: spacing.sm,
                   opacity: pressed ? 0.7 : 1,
                 },

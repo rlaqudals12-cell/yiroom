@@ -74,14 +74,14 @@ export function InlineProductCard({
             styles.imageContainer,
             {
               backgroundColor: colors.secondary,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
             },
           ]}
         >
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
-              style={[styles.image, { borderRadius: radii.lg }]}
+              style={[styles.image, { borderRadius: radii.xl }]}
               accessibilityLabel={`${name} 제품 이미지`}
             />
           ) : (
@@ -160,7 +160,7 @@ export function InlineProductCard({
           styles.reasonContainer,
           {
             backgroundColor: module.skin.light + '15',
-            borderRadius: radii.md,
+            borderRadius: radii.xl,
             marginTop: spacing.sm,
             padding: spacing.sm,
           },

@@ -59,7 +59,7 @@ export default function NotificationsScreen(): React.JSX.Element {
               key={item.id}
               style={{
                 backgroundColor: item.read ? colors.card : brand.primary + '10',
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
                 marginBottom: spacing.sm,
                 flexDirection: 'row',

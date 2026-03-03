@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   // 설명 카드
   descCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   // 섹션 카드
   sectionCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.md,

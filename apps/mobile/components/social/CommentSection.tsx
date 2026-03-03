@@ -109,7 +109,7 @@ export function CommentSection({
               styles.input,
               {
                 backgroundColor: colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 paddingVertical: spacing.xs,
                 paddingHorizontal: spacing.sm,
                 fontSize: typography.size.sm,

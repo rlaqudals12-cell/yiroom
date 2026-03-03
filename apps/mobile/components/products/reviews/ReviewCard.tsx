@@ -225,7 +225,7 @@ export function ReviewCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: radii.smx,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.smx,
     shadowColor: '#000',

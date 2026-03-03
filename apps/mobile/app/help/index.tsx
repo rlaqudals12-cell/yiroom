@@ -93,7 +93,7 @@ export default function HelpScreen(): React.JSX.Element {
             key={item.id}
             style={{
               backgroundColor: colors.card,
-              borderRadius: radii.lg,
+              borderRadius: radii.xl,
               padding: spacing.md,
               marginBottom: spacing.sm + 2,
             }}
@@ -141,7 +141,7 @@ export default function HelpScreen(): React.JSX.Element {
         <View
           style={{
             backgroundColor: brand.primary + '15',
-            borderRadius: radii.lg,
+            borderRadius: radii.xl,
             padding: spacing.md + 4,
             alignItems: 'center',
             marginTop: spacing.md,
@@ -160,7 +160,7 @@ export default function HelpScreen(): React.JSX.Element {
           <Pressable
             style={{
               backgroundColor: brand.primary,
-              borderRadius: radii.md,
+              borderRadius: radii.xl,
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.sm + 2,
             }}

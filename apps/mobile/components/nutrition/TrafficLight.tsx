@@ -98,7 +98,7 @@ export function TrafficLight({
                 styles.item,
                 {
                   backgroundColor: levelColor + '15',
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   padding: spacing.sm,
                 },
               ]}

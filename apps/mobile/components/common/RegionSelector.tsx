@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.smd,
     paddingHorizontal: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     borderWidth: 1,
   },
   flag: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.smx,
     paddingHorizontal: spacing.smx,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   optionFlag: {
     fontSize: typography.size['2xl'],

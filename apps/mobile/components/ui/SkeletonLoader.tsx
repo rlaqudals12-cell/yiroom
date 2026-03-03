@@ -170,7 +170,7 @@ export function SkeletonCard({ style, testID }: SkeletonCardProps): React.JSX.El
   return (
     <SkeletonLoader
       height={120}
-      borderRadius={radii.lg}
+      borderRadius={radii.xl}
       style={style}
       testID={testID ?? 'skeleton-card'}
     />

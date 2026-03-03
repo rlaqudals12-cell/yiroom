@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   summaryCard: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   // 카드
   card: {
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   browseBtn: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
   },
   browseBtnText: {
     fontSize: typography.size.base,

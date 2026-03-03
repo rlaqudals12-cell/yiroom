@@ -122,7 +122,7 @@ export default function FeedbackScreen(): React.JSX.Element {
                 styles.homeButton,
                 {
                   backgroundColor: brand.primary,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   marginTop: spacing.xl,
                   paddingHorizontal: spacing.xl,
                   paddingVertical: spacing.md,
@@ -188,7 +188,7 @@ export default function FeedbackScreen(): React.JSX.Element {
                     {
                       backgroundColor: isSelected ? brand.primary : colors.card,
                       borderColor: isSelected ? brand.primary : colors.border,
-                      borderRadius: radii.lg,
+                      borderRadius: radii.xl,
                       padding: spacing.md,
                     },
                   ]}
@@ -243,7 +243,7 @@ export default function FeedbackScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   color: colors.foreground,
                   fontSize: typography.size.sm,
                   padding: spacing.md,
@@ -288,7 +288,7 @@ export default function FeedbackScreen(): React.JSX.Element {
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
-                  borderRadius: radii.lg,
+                  borderRadius: radii.xl,
                   color: colors.foreground,
                   fontSize: typography.size.sm,
                   paddingHorizontal: spacing.md,
@@ -321,7 +321,7 @@ export default function FeedbackScreen(): React.JSX.Element {
               styles.submitButton,
               {
                 backgroundColor: canSubmit ? brand.primary : colors.secondary,
-                borderRadius: radii.lg,
+                borderRadius: radii.xl,
                 padding: spacing.md,
               },
             ]}
