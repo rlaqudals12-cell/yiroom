@@ -137,114 +137,127 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
-    const { uploadedImages } = await checkConsentAndUploadImages(
-      supabase,
-      userId,
-      'posture',
-      'posture-images',
-      {
-        front: frontImageBase64,
-        side: sideImageBase64,
+      // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
+      const { uploadedImages } = await checkConsentAndUploadImages(
+        supabase,
+        userId,
+        'posture',
+        'posture-images',
+        {
+          front: frontImageBase64,
+          side: sideImageBase64,
+        }
+      );
+
+      // 정면 이미지 URL (하위 호환성)
+      const frontImageUrl = uploadedImages.front || null;
+
+      // C-1 체형 정보 조회 (bodyType이 제공되지 않은 경우)
+      let finalBodyType = bodyType;
+      if (!finalBodyType) {
+        const { data: bodyData } = await supabase
+          .from('body_analyses')
+          .select('body_type')
+          .eq('clerk_user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (bodyData?.body_type) {
+          finalBodyType = bodyData.body_type;
+        }
       }
-    );
 
-    // 정면 이미지 URL (하위 호환성)
-    const frontImageUrl = uploadedImages.front || null;
+      // 자세 타입 정보 보완
+      const postureTypeInfo = POSTURE_TYPES[result.postureType as PostureType];
 
-    // C-1 체형 정보 조회 (bodyType이 제공되지 않은 경우)
-    let finalBodyType = bodyType;
-    if (!finalBodyType) {
-      const { data: bodyData } = await supabase
-        .from('body_analyses')
-        .select('body_type')
-        .eq('clerk_user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('posture_analyses')
+        .insert({
+          clerk_user_id: userId,
+          front_image_url: frontImageUrl || '',
+          posture_type: result.postureType,
+          overall_score: result.overallScore,
+          confidence: result.confidence,
+          front_analysis: result.frontAnalysis,
+          side_analysis: result.sideAnalysis,
+          concerns: result.concerns,
+          stretching_recommendations: result.stretchingRecommendations,
+          insight: result.insight,
+          analysis_evidence: result.analysisEvidence || null,
+          image_quality: result.imageQuality || null,
+          body_type: finalBodyType || null,
+          body_type_correlation: result.bodyTypeCorrelation || null,
+        })
+        .select()
         .single();
 
-      if (bodyData?.body_type) {
-        finalBodyType = bodyData.body_type;
+      if (error) {
+        console.error('[A-1] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
       }
-    }
 
-    // 자세 타입 정보 보완
-    const postureTypeInfo = POSTURE_TYPES[result.postureType as PostureType];
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
 
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('posture_analyses')
-      .insert({
-        clerk_user_id: userId,
-        front_image_url: frontImageUrl || '',
-        posture_type: result.postureType,
-        overall_score: result.overallScore,
-        confidence: result.confidence,
-        front_analysis: result.frontAnalysis,
-        side_analysis: result.sideAnalysis,
-        concerns: result.concerns,
-        stretching_recommendations: result.stretchingRecommendations,
-        insight: result.insight,
-        analysis_evidence: result.analysisEvidence || null,
-        image_quality: result.imageQuality || null,
-        body_type: finalBodyType || null,
-        body_type_correlation: result.bodyTypeCorrelation || null,
-      })
-      .select()
-      .single();
+      try {
+        // XP 추가 (분석 완료 시 10 XP)
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
 
-    if (error) {
-      console.error('[A-1] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-    }
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      // XP 추가 (분석 완료 시 10 XP)
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      // 자세 분석 완료 배지
-      const postureBadge = await awardAnalysisBadge(supabase, userId, 'posture');
-      if (postureBadge) {
-        gamificationResult.badgeResults.push(postureBadge);
+        // 자세 분석 완료 배지
+        const postureBadge = await awardAnalysisBadge(supabase, userId, 'posture');
+        if (postureBadge) {
+          gamificationResult.badgeResults.push(postureBadge);
+        }
+      } catch (gamificationError) {
+        console.error('[A-1] Gamification error:', gamificationError);
       }
-    } catch (gamificationError) {
-      console.error('[A-1] Gamification error:', gamificationError);
-    }
 
-    return NextResponse.json({
-      success: true,
-      data: data,
-      result: {
-        ...result,
-        postureTypeLabel: result.postureTypeLabel || postureTypeInfo?.label,
-        postureTypeDescription: result.postureTypeDescription || postureTypeInfo?.description,
-        analyzedAt: new Date().toISOString(),
-      },
-      bodyType: finalBodyType,
-      imagesAnalyzed,
-      usedMock,
-      gamification: gamificationResult,
-    });
+      // BeautyProfile 자동 갱신 — 자세→운동 매핑 (비차단)
+      try {
+        const { updateBeautyProfileField, mapPostureToWorkout } = await import('@/lib/capsule');
+        await updateBeautyProfileField(
+          userId,
+          'W',
+          mapPostureToWorkout({
+            posture_type: result.postureType,
+            concerns: result.concerns,
+          })
+        );
+      } catch (profileError) {
+        console.error('[A-1] BeautyProfile update failed (non-blocking):', profileError);
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: data,
+        result: {
+          ...result,
+          postureTypeLabel: result.postureTypeLabel || postureTypeInfo?.label,
+          postureTypeDescription: result.postureTypeDescription || postureTypeInfo?.description,
+          analyzedAt: new Date().toISOString(),
+        },
+        bodyType: finalBodyType,
+        imagesAnalyzed,
+        usedMock,
+        gamification: gamificationResult,
+      });
     } catch (dbOperationError) {
       // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
       console.warn('[A-1] DB operations failed, using synthetic response');
       console.error('[A-1] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({

@@ -221,99 +221,112 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('body_assessments')
-      .insert({
-        clerk_user_id: userId,
-        // v2 분석 결과를 기존 스키마에 맞게 매핑
-        body_type: mapBodyShapeToLegacy(result.bodyShape),
-        body_shape: result.bodyShape,
-        confidence: result.measurementConfidence,
-        analysis_data: {
-          version: 2,
-          bodyShape: result.bodyShape,
-          bodyShapeLabel: result.bodyShapeInfo.label,
-          bodyShapeDescription: result.bodyShapeInfo.description,
-          ratios: result.bodyRatios,
-          postureAnalysis: result.postureAnalysis,
-        },
-        styling_recommendations: result.stylingRecommendations,
-        styles_to_avoid: result.stylingRecommendations?.avoid,
-      })
-      .select()
-      .single();
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('body_assessments')
+        .insert({
+          clerk_user_id: userId,
+          // v2 분석 결과를 기존 스키마에 맞게 매핑
+          body_type: mapBodyShapeToLegacy(result.bodyShape),
+          body_shape: result.bodyShape,
+          confidence: result.measurementConfidence,
+          analysis_data: {
+            version: 2,
+            bodyShape: result.bodyShape,
+            bodyShapeLabel: result.bodyShapeInfo.label,
+            bodyShapeDescription: result.bodyShapeInfo.description,
+            ratios: result.bodyRatios,
+            postureAnalysis: result.postureAnalysis,
+          },
+          styling_recommendations: result.stylingRecommendations,
+          styles_to_avoid: result.stylingRecommendations?.avoid,
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('[C-2] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-      const syntheticId = crypto.randomUUID();
+      if (error) {
+        console.error('[C-2] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
+        const syntheticId = crypto.randomUUID();
+        return NextResponse.json({
+          success: true,
+          data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+          result,
+          usedFallback,
+          dbSaveFailed: true,
+          gamification: { badgeResults: [], xpAwarded: 0 },
+        });
+      }
+
+      // users 테이블에 C-2 결과 동기화 (비정규화 - 빠른 조회용)
+      const { error: userUpdateError } = await supabase
+        .from('users')
+        .update({
+          latest_body_assessment_id: data.id,
+          body_type: mapBodyShapeToLegacy(result.bodyShape),
+        })
+        .eq('clerk_user_id', userId);
+
+      if (userUpdateError) {
+        console.warn('[C-2] Failed to sync to users table:', userUpdateError);
+      }
+
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
+
+      try {
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+        const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
+        if (bodyBadge) {
+          gamificationResult.badgeResults.push(bodyBadge);
+        }
+
+        const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+        if (allBadge) {
+          gamificationResult.badgeResults.push(allBadge);
+        }
+      } catch (gamificationError) {
+        console.error('[C-2] Gamification error:', gamificationError);
+      }
+
+      // BeautyProfile 자동 갱신 (비차단)
+      try {
+        const { updateBeautyProfileField, mapBodyAssessment } = await import('@/lib/capsule');
+        await updateBeautyProfileField(
+          userId,
+          'C',
+          mapBodyAssessment({
+            body_shape: result.bodyShape,
+            analysis_data: { ratios: result.bodyRatios },
+          })
+        );
+      } catch (profileError) {
+        console.error('[C-2] BeautyProfile update failed (non-blocking):', profileError);
+      }
+
       return NextResponse.json({
         success: true,
-        data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+        data,
         result,
         usedFallback,
-        dbSaveFailed: true,
-        gamification: { badgeResults: [], xpAwarded: 0 },
+        gamification: gamificationResult,
       });
-    }
-
-    // users 테이블에 C-2 결과 동기화 (비정규화 - 빠른 조회용)
-    const { error: userUpdateError } = await supabase
-      .from('users')
-      .update({
-        latest_body_assessment_id: data.id,
-        body_type: mapBodyShapeToLegacy(result.bodyShape),
-      })
-      .eq('clerk_user_id', userId);
-
-    if (userUpdateError) {
-      console.warn('[C-2] Failed to sync to users table:', userUpdateError);
-    }
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
-      if (bodyBadge) {
-        gamificationResult.badgeResults.push(bodyBadge);
-      }
-
-      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
-      if (allBadge) {
-        gamificationResult.badgeResults.push(allBadge);
-      }
-    } catch (gamificationError) {
-      console.error('[C-2] Gamification error:', gamificationError);
-    }
-
-    return NextResponse.json({
-      success: true,
-      data,
-      result,
-      usedFallback,
-      gamification: gamificationResult,
-    });
     } catch (dbOperationError) {
       // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
       console.warn('[C-2] DB operations failed, using synthetic response');
       console.error('[C-2] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({

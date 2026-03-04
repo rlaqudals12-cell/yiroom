@@ -167,7 +167,11 @@ export async function POST(req: NextRequest) {
               palette,
               detailedAnalysis: {
                 skinToneLab: skinLab,
-                contrastLevel: selectByKey(geminiResult.data.brightnessLevel, { light: 'high' as const, dark: 'low' as const }, 'medium' as const)!,
+                contrastLevel: selectByKey(
+                  geminiResult.data.brightnessLevel,
+                  { light: 'high' as const, dark: 'low' as const },
+                  'medium' as const
+                )!,
                 saturationLevel: mapSaturationLevel(geminiResult.data.saturationLevel),
                 valueLevel: mapBrightnessToValueLevel(geminiResult.data.brightnessLevel),
               },
@@ -199,115 +203,130 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('personal_color_assessments')
-      .insert({
-        clerk_user_id: userId,
-        questionnaire_answers: {},
-        face_image_url: null,
-        season: mapSeasonToDb(result.classification.season),
-        undertone: mapUndertoneToDb(result.classification.undertone),
-        confidence: result.classification.confidence,
-        season_scores: generateSeasonScores(
-          result.classification.season,
-          result.classification.confidence
-        ),
-        image_analysis: {
-          // PC-2 v2 분석 결과
-          version: 2,
-          tone: result.classification.tone,
-          toneLabel: getToneLabel(result.classification.tone),
-          subtype: result.classification.subtype,
-          skinLab: result.detailedAnalysis?.skinToneLab || result.classification.measuredLab,
-          palette: result.palette,
-        },
-        best_colors: result.palette.mainColors || [],
-        worst_colors: result.palette.avoidColors || [],
-        makeup_recommendations: {
-          lipstick: result.palette.lipColors || [],
-          eyeshadow: result.palette.eyeshadowColors || [],
-          blush: result.palette.blushColors || [],
-        },
-        fashion_recommendations: {
-          clothing: result.stylingRecommendations.clothing || [],
-          accessories: result.stylingRecommendations.jewelry || [],
-        },
-      })
-      .select()
-      .single();
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('personal_color_assessments')
+        .insert({
+          clerk_user_id: userId,
+          questionnaire_answers: {},
+          face_image_url: null,
+          season: mapSeasonToDb(result.classification.season),
+          undertone: mapUndertoneToDb(result.classification.undertone),
+          confidence: result.classification.confidence,
+          season_scores: generateSeasonScores(
+            result.classification.season,
+            result.classification.confidence
+          ),
+          image_analysis: {
+            // PC-2 v2 분석 결과
+            version: 2,
+            tone: result.classification.tone,
+            toneLabel: getToneLabel(result.classification.tone),
+            subtype: result.classification.subtype,
+            skinLab: result.detailedAnalysis?.skinToneLab || result.classification.measuredLab,
+            palette: result.palette,
+          },
+          best_colors: result.palette.mainColors || [],
+          worst_colors: result.palette.avoidColors || [],
+          makeup_recommendations: {
+            lipstick: result.palette.lipColors || [],
+            eyeshadow: result.palette.eyeshadowColors || [],
+            blush: result.palette.blushColors || [],
+          },
+          fashion_recommendations: {
+            clothing: result.stylingRecommendations.clothing || [],
+            accessories: result.stylingRecommendations.jewelry || [],
+          },
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('[PC-2] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-      const syntheticId = crypto.randomUUID();
+      if (error) {
+        console.error('[PC-2] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
+        const syntheticId = crypto.randomUUID();
+        return NextResponse.json({
+          success: true,
+          data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+          result,
+          usedFallback,
+          dbSaveFailed: true,
+          gamification: { badgeResults: [], xpAwarded: 0 },
+        });
+      }
+
+      // users 테이블에 PC-2 결과 동기화 (비정규화 - 빠른 조회용)
+      const { error: userUpdateError } = await supabase
+        .from('users')
+        .update({
+          latest_pc_assessment_id: data.id,
+          personal_color_season: mapSeasonToDb(result.classification.season),
+          personal_color_undertone: mapUndertoneToDb(result.classification.undertone),
+        })
+        .eq('clerk_user_id', userId);
+
+      if (userUpdateError) {
+        console.warn('[PC-2] Failed to sync to users table:', userUpdateError);
+      }
+
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
+
+      try {
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+        const pcBadge = await awardAnalysisBadge(supabase, userId, 'personal-color');
+        if (pcBadge) {
+          gamificationResult.badgeResults.push(pcBadge);
+        }
+
+        const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+        if (allBadge) {
+          gamificationResult.badgeResults.push(allBadge);
+        }
+      } catch (gamificationError) {
+        console.error('[PC-2] Gamification error:', gamificationError);
+      }
+
+      // BeautyProfile 자동 갱신 (비차단)
+      try {
+        const { updateBeautyProfileField, mapPCAssessment } = await import('@/lib/capsule');
+        await updateBeautyProfileField(
+          userId,
+          'PC',
+          mapPCAssessment({
+            season: result.classification?.season,
+            undertone: result.classification?.undertone,
+            image_analysis: { tone: result.classification?.tone },
+            best_colors: result.palette?.mainColors,
+          })
+        );
+      } catch (profileError) {
+        console.error('[PC-2] BeautyProfile update failed (non-blocking):', profileError);
+      }
+
       return NextResponse.json({
         success: true,
-        data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+        data,
         result,
         usedFallback,
-        dbSaveFailed: true,
-        gamification: { badgeResults: [], xpAwarded: 0 },
+        gamification: gamificationResult,
       });
-    }
-
-    // users 테이블에 PC-2 결과 동기화 (비정규화 - 빠른 조회용)
-    const { error: userUpdateError } = await supabase
-      .from('users')
-      .update({
-        latest_pc_assessment_id: data.id,
-        personal_color_season: mapSeasonToDb(result.classification.season),
-        personal_color_undertone: mapUndertoneToDb(result.classification.undertone),
-      })
-      .eq('clerk_user_id', userId);
-
-    if (userUpdateError) {
-      console.warn('[PC-2] Failed to sync to users table:', userUpdateError);
-    }
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      const pcBadge = await awardAnalysisBadge(supabase, userId, 'personal-color');
-      if (pcBadge) {
-        gamificationResult.badgeResults.push(pcBadge);
-      }
-
-      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
-      if (allBadge) {
-        gamificationResult.badgeResults.push(allBadge);
-      }
-    } catch (gamificationError) {
-      console.error('[PC-2] Gamification error:', gamificationError);
-    }
-
-    return NextResponse.json({
-      success: true,
-      data,
-      result,
-      usedFallback,
-      gamification: gamificationResult,
-    });
     } catch (dbOperationError) {
       // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
       console.warn('[PC-2] DB operations failed, using synthetic response');
       console.error('[PC-2] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({

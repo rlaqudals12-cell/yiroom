@@ -236,93 +236,109 @@ async function saveAndRespond(
   usedFallback: boolean
 ) {
   try {
-  // DB에 저장 - hair_assessments 테이블 사용
-  const { data, error } = await supabase
-    .from('hair_assessments')
-    .insert({
-      clerk_user_id: userId,
-      face_shape: result.faceShapeAnalysis.faceShape,
-      face_shape_label: result.faceShapeAnalysis.faceShapeLabel,
-      confidence: result.faceShapeAnalysis.confidence,
-      analysis_data: {
-        version: 2,
-        faceShapeAnalysis: result.faceShapeAnalysis,
-        hairColorAnalysis: result.hairColorAnalysis,
-        currentHairInfo: result.currentHairInfo,
-      },
-      style_recommendations: result.styleRecommendations,
-      care_tips: result.careTips,
-      used_fallback: usedFallback,
-    })
-    .select()
-    .single();
+    // DB에 저장 - hair_assessments 테이블 사용
+    const { data, error } = await supabase
+      .from('hair_assessments')
+      .insert({
+        clerk_user_id: userId,
+        face_shape: result.faceShapeAnalysis.faceShape,
+        face_shape_label: result.faceShapeAnalysis.faceShapeLabel,
+        confidence: result.faceShapeAnalysis.confidence,
+        analysis_data: {
+          version: 2,
+          faceShapeAnalysis: result.faceShapeAnalysis,
+          hairColorAnalysis: result.hairColorAnalysis,
+          currentHairInfo: result.currentHairInfo,
+        },
+        style_recommendations: result.styleRecommendations,
+        care_tips: result.careTips,
+        used_fallback: usedFallback,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error('[H-1] Database insert error:', error);
-    // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-    const syntheticId = crypto.randomUUID();
+    if (error) {
+      console.error('[H-1] Database insert error:', error);
+      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
+      const syntheticId = crypto.randomUUID();
+      return NextResponse.json({
+        success: true,
+        data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+        result,
+        usedFallback,
+        dbSaveFailed: true,
+        gamification: { badgeResults: [], xpAwarded: 0 },
+      });
+    }
+
+    // users 테이블에 H-1 결과 동기화 (비정규화 - 빠른 조회용)
+    const { error: userUpdateError } = await supabase
+      .from('users')
+      .update({
+        latest_hair_assessment_id: data.id,
+        face_shape: result.faceShapeAnalysis.faceShape,
+      })
+      .eq('clerk_user_id', userId);
+
+    if (userUpdateError) {
+      console.warn('[H-1] Failed to sync to users table:', userUpdateError);
+    }
+
+    // 게이미피케이션 연동
+    const gamificationResult: {
+      badgeResults: BadgeAwardResult[];
+      xpAwarded: number;
+    } = {
+      badgeResults: [],
+      xpAwarded: 0,
+    };
+
+    try {
+      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+      // 'hair'는 현재 지원되는 배지 타입이 아님 (personal-color, skin, body, posture만 지원)
+      // 향후 hair 배지 추가 시 여기에 awardAnalysisBadge 호출 추가
+
+      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+      if (allBadge) {
+        gamificationResult.badgeResults.push(allBadge);
+      }
+    } catch (gamificationError) {
+      console.error('[H-1] Gamification error:', gamificationError);
+    }
+
+    // BeautyProfile 자동 갱신 (비차단)
+    try {
+      const { updateBeautyProfileField, mapHairAssessment } = await import('@/lib/capsule');
+      await updateBeautyProfileField(
+        userId,
+        'H',
+        mapHairAssessment({
+          analysis_data: {
+            currentHairInfo: result.currentHairInfo,
+            faceShapeAnalysis: result.faceShapeAnalysis,
+          },
+          care_tips: result.careTips,
+        })
+      );
+    } catch (profileError) {
+      console.error('[H-1] BeautyProfile update failed (non-blocking):', profileError);
+    }
+
     return NextResponse.json({
       success: true,
-      data: { id: syntheticId, clerk_user_id: userId, created_at: new Date().toISOString() },
+      data,
       result,
       usedFallback,
-      dbSaveFailed: true,
-      gamification: { badgeResults: [], xpAwarded: 0 },
+      gamification: gamificationResult,
     });
-  }
-
-  // users 테이블에 H-1 결과 동기화 (비정규화 - 빠른 조회용)
-  const { error: userUpdateError } = await supabase
-    .from('users')
-    .update({
-      latest_hair_assessment_id: data.id,
-      face_shape: result.faceShapeAnalysis.faceShape,
-    })
-    .eq('clerk_user_id', userId);
-
-  if (userUpdateError) {
-    console.warn('[H-1] Failed to sync to users table:', userUpdateError);
-  }
-
-  // 게이미피케이션 연동
-  const gamificationResult: {
-    badgeResults: BadgeAwardResult[];
-    xpAwarded: number;
-  } = {
-    badgeResults: [],
-    xpAwarded: 0,
-  };
-
-  try {
-    await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-    gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-    // 'hair'는 현재 지원되는 배지 타입이 아님 (personal-color, skin, body, posture만 지원)
-    // 향후 hair 배지 추가 시 여기에 awardAnalysisBadge 호출 추가
-
-    const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
-    if (allBadge) {
-      gamificationResult.badgeResults.push(allBadge);
-    }
-  } catch (gamificationError) {
-    console.error('[H-1] Gamification error:', gamificationError);
-  }
-
-  return NextResponse.json({
-    success: true,
-    data,
-    result,
-    usedFallback,
-    gamification: gamificationResult,
-  });
   } catch (dbOperationError) {
     // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
     console.warn('[H-1] DB operations failed, using synthetic response');
     console.error('[H-1] DB error details:', {
       error:
-        dbOperationError instanceof Error
-          ? dbOperationError.message
-          : String(dbOperationError),
+        dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
     });
     const syntheticId = crypto.randomUUID();
     return NextResponse.json({

@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 
 import { HomeHeader, HomeTodaySection, HomeQuickActions, CrossModuleInsight } from '../../components/home';
+import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import {
   GradientCard,
   AnimatedCard,
@@ -37,6 +38,7 @@ import {
   calculateCalorieProgress,
 } from '../../hooks';
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
+import { useDailyCapsule } from '../../lib/capsule/hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
 import { useTheme , spacing } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
@@ -54,6 +56,13 @@ export default function HomeScreen(): React.JSX.Element {
       router.replace('/(onboarding)/step1');
     }
   }, [onboardingLoading, onboardingCompleted, router]);
+
+  // Daily Capsule 훅
+  const daily = useDailyCapsule();
+
+  useEffect(() => {
+    daily.fetchToday();
+  }, [daily.fetchToday]);
 
   // 데이터 훅
   const { streak: workoutStreak, isLoading: workoutLoading, refetch: refetchWorkout } = useWorkoutData();
@@ -76,11 +85,11 @@ export default function HomeScreen(): React.JSX.Element {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchWorkout(), refetchNutrition(), refetchAnalyses()]);
+      await Promise.all([refetchWorkout(), refetchNutrition(), refetchAnalyses(), daily.fetchToday()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refetchWorkout, refetchNutrition, refetchAnalyses]);
+  }, [refetchWorkout, refetchNutrition, refetchAnalyses, daily.fetchToday]);
 
   // 교차 모듈 인사이트
   const { insights } = useCrossModuleInsights();
@@ -274,6 +283,26 @@ export default function HomeScreen(): React.JSX.Element {
         onActionPress={(route) => router.push(route as never)}
         onCoachPress={() => router.push('/(coach)')}
       />
+
+      {/* Daily Capsule 위젯 */}
+      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+        <SectionHeader
+          title="오늘의 캡슐"
+          action={{
+            label: '자세히',
+            onPress: () => router.push('/(capsule)/daily' as never),
+          }}
+          style={{ marginBottom: spacing.smx }}
+        />
+        <DailyCapsuleCard
+          capsule={daily.capsule}
+          completionRate={daily.completionRate}
+          isGenerating={daily.isGenerating}
+          onGenerate={daily.generate}
+          onCheckItem={daily.checkItem}
+          testID="home-daily-capsule"
+        />
+      </Animated.View>
 
       {/* 교차 모듈 인사이트 — staggered entry */}
       {insights.length > 0 && (

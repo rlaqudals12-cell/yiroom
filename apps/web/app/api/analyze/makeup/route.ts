@@ -148,130 +148,147 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // 이미지 업로드
-    let imageUrl: string | null = null;
-    try {
-      const fileName = `${userId}/${Date.now()}_makeup.jpg`;
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
+      // 이미지 업로드
+      let imageUrl: string | null = null;
+      try {
+        const fileName = `${userId}/${Date.now()}_makeup.jpg`;
+        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
 
-      const { data, error } = await supabase.storage
-        .from('makeup-images')
-        .upload(fileName, buffer, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
+        const { data, error } = await supabase.storage
+          .from('makeup-images')
+          .upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: false,
+          });
+
+        if (error) {
+          console.error('[M-1] Image upload error:', error);
+        } else {
+          imageUrl = data.path;
+        }
+      } catch (uploadError) {
+        console.error('[M-1] Image upload exception:', uploadError);
+      }
+
+      // metrics에서 각 지표 추출
+      const getMetricValue = (id: string) => {
+        const metric = result.metrics.find((m) => m.id === id);
+        return metric?.value ?? null;
+      };
+
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('makeup_analyses')
+        .insert({
+          clerk_user_id: userId,
+          image_url: imageUrl || '',
+          undertone: result.undertone,
+          eye_shape: result.eyeShape,
+          lip_shape: result.lipShape,
+          face_shape: result.faceShape,
+          skin_texture: getMetricValue('skinTexture'),
+          skin_tone_uniformity: getMetricValue('skinTone'),
+          hydration: getMetricValue('hydration'),
+          pore_visibility: getMetricValue('poreVisibility'),
+          oil_balance: getMetricValue('oilBalance'),
+          overall_score: result.overallScore,
+          concerns: result.concerns,
+          recommendations: {
+            insight: result.insight,
+            styles: result.recommendedStyles,
+            colors: result.colorRecommendations,
+            tips: result.makeupTips,
+            personalColorConnection: result.personalColorConnection,
+            analysisReliability: result.analysisReliability,
+          },
+          analysis_reliability: result.analysisReliability,
+        })
+        .select()
+        .single();
 
       if (error) {
-        console.error('[M-1] Image upload error:', error);
-      } else {
-        imageUrl = data.path;
+        console.error('[M-1] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
       }
-    } catch (uploadError) {
-      console.error('[M-1] Image upload exception:', uploadError);
-    }
 
-    // metrics에서 각 지표 추출
-    const getMetricValue = (id: string) => {
-      const metric = result.metrics.find((m) => m.id === id);
-      return metric?.value ?? null;
-    };
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
 
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('makeup_analyses')
-      .insert({
-        clerk_user_id: userId,
-        image_url: imageUrl || '',
-        undertone: result.undertone,
-        eye_shape: result.eyeShape,
-        lip_shape: result.lipShape,
-        face_shape: result.faceShape,
-        skin_texture: getMetricValue('skinTexture'),
-        skin_tone_uniformity: getMetricValue('skinTone'),
-        hydration: getMetricValue('hydration'),
-        pore_visibility: getMetricValue('poreVisibility'),
-        oil_balance: getMetricValue('oilBalance'),
-        overall_score: result.overallScore,
-        concerns: result.concerns,
-        recommendations: {
-          insight: result.insight,
-          styles: result.recommendedStyles,
-          colors: result.colorRecommendations,
-          tips: result.makeupTips,
-          personalColorConnection: result.personalColorConnection,
-          analysisReliability: result.analysisReliability,
+      try {
+        // XP 추가
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+        // P3: 메이크업 분석 배지 (게이미피케이션 확장 시 활성화)
+        // const makeupBadge = await awardAnalysisBadge(supabase, userId, 'makeup');
+      } catch (gamificationError) {
+        console.error('[M-1] Gamification error:', gamificationError);
+      }
+
+      // BeautyProfile 자동 갱신 (비차단)
+      try {
+        const { updateBeautyProfileField, mapMakeupAnalysis } = await import('@/lib/capsule');
+        await updateBeautyProfileField(
+          userId,
+          'M',
+          mapMakeupAnalysis({
+            undertone: result.undertone,
+            face_shape: result.faceShape,
+            eye_shape: result.eyeShape,
+            lip_shape: result.lipShape,
+            overall_score: result.overallScore,
+            recommendations: { styles: result.recommendedStyles },
+          })
+        );
+      } catch (profileError) {
+        console.error('[M-1] BeautyProfile update failed (non-blocking):', profileError);
+      }
+
+      // 크로스 모듈 알림 생성 (M-1 → N-1)
+      const alerts: CrossModuleAlertData[] = [];
+
+      // 언더톤 및 피부 고민 기반 영양 추천 알림
+      const undertone = result.undertone;
+      const skinConcerns = result.concerns || [];
+      if (skinConcerns.length > 0) {
+        alerts.push(createSkinToneNutritionAlert(undertone, skinConcerns));
+      }
+
+      // 피부 텍스처/탄력 기반 콜라겐 추천 알림
+      const skinTextureScore = getMetricValue('skinTexture') ?? 70;
+      const hydrationScore = getMetricValue('hydration') ?? 70;
+      // 피부 텍스처와 수분 점수의 평균을 탄력 proxy로 사용
+      const elasticityProxy = Math.round((skinTextureScore + hydrationScore) / 2);
+      if (elasticityProxy < 60) {
+        alerts.push(createCollagenBoostAlert(elasticityProxy));
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: data,
+        result: {
+          ...result,
+          analyzedAt: new Date().toISOString(),
         },
-        analysis_reliability: result.analysisReliability,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[M-1] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-    }
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      // XP 추가
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      // P3: 메이크업 분석 배지 (게이미피케이션 확장 시 활성화)
-      // const makeupBadge = await awardAnalysisBadge(supabase, userId, 'makeup');
-    } catch (gamificationError) {
-      console.error('[M-1] Gamification error:', gamificationError);
-    }
-
-    // 크로스 모듈 알림 생성 (M-1 → N-1)
-    const alerts: CrossModuleAlertData[] = [];
-
-    // 언더톤 및 피부 고민 기반 영양 추천 알림
-    const undertone = result.undertone;
-    const skinConcerns = result.concerns || [];
-    if (skinConcerns.length > 0) {
-      alerts.push(createSkinToneNutritionAlert(undertone, skinConcerns));
-    }
-
-    // 피부 텍스처/탄력 기반 콜라겐 추천 알림
-    const skinTextureScore = getMetricValue('skinTexture') ?? 70;
-    const hydrationScore = getMetricValue('hydration') ?? 70;
-    // 피부 텍스처와 수분 점수의 평균을 탄력 proxy로 사용
-    const elasticityProxy = Math.round((skinTextureScore + hydrationScore) / 2);
-    if (elasticityProxy < 60) {
-      alerts.push(createCollagenBoostAlert(elasticityProxy));
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: data,
-      result: {
-        ...result,
-        analyzedAt: new Date().toISOString(),
-      },
-      usedMock,
-      gamification: gamificationResult,
-      alerts, // 크로스 모듈 알림
-    });
+        usedMock,
+        gamification: gamificationResult,
+        alerts, // 크로스 모듈 알림
+      });
     } catch (dbOperationError) {
       // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
       console.warn('[M-1] DB operations failed, using synthetic response');
       console.error('[M-1] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({
