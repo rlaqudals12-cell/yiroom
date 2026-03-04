@@ -1,7 +1,7 @@
 # 이룸 문서 인덱스
 
 > **문서 허브** - 모든 프로젝트 문서의 진입점
-> **Version**: 2.9 | **Updated**: 2026-03-03
+> **Version**: 3.0 | **Updated**: 2026-03-04
 
 ---
 
@@ -137,7 +137,16 @@ P7 워크플로우 순서:
 | [ADR-024](./adr/ADR-024-ai-transparency.md)      | AI 투명성        | legal-compliance  |
 | [ADR-025](./adr/ADR-025-audit-logging.md)        | 감사 로깅        | security-patterns |
 
-#### 인프라/접근성 ADR ⭐ NEW
+#### 캡슐 에코시스템 ADR ⭐ NEW
+
+| ADR                                                        | 제목                     | 관련 원리        |
+| ---------------------------------------------------------- | ------------------------ | ---------------- |
+| [ADR-069](./adr/ADR-069-capsule-ecosystem-architecture.md) | 캡슐 에코시스템 아키텍처 | fashion-matching |
+| [ADR-070](./adr/ADR-070-safety-profile-architecture.md)    | Safety Profile 아키텍처  | safety-science   |
+| [ADR-071](./adr/ADR-071-cross-module-scoring.md)           | CCS 크로스모듈 스코어링  | -                |
+| [ADR-073](./adr/ADR-073-one-button-daily.md)               | 원버튼 Daily Capsule     | habit-formation  |
+
+#### 인프라/접근성 ADR
 
 | ADR                                                    | 제목                      | 관련 원리        |
 | ------------------------------------------------------ | ------------------------- | ---------------- |
@@ -198,7 +207,14 @@ P7 워크플로우 순서:
 | [SDD-MONITORING](./specs/SDD-MONITORING.md)         | 모니터링/관측성      | 계획됨  |
 | [SDD-ACCESSIBILITY](./specs/SDD-ACCESSIBILITY.md)   | 접근성 (WCAG 2.1 AA) | ✅ NEW  |
 
-#### 크로스 모듈 ⭐ NEW
+#### 캡슐 에코시스템 ⭐ NEW
+
+| 스펙                                                      | 설명                             | P3 점수      |
+| --------------------------------------------------------- | -------------------------------- | ------------ |
+| [SDD-CAPSULE-ECOSYSTEM](./specs/SDD-CAPSULE-ECOSYSTEM.md) | 캡슐 에코시스템 통합 스펙        | ✅ 구현 완료 |
+| [SDD-SAFETY-PROFILE](./specs/SDD-SAFETY-PROFILE.md)       | Safety Profile 암호화/파이프라인 | ✅ 구현 완료 |
+
+#### 크로스 모듈
 
 | 스펙                                                                        | 설명                | P3 점수 |
 | --------------------------------------------------------------------------- | ------------------- | ------- |
@@ -243,10 +259,10 @@ P7 워크플로우 순서:
 | 비즈니스  | 8        | 100%     |
 | 법무/규제 | 4        | 100%     |
 | 운영      | 4        | 100%     |
-| 원리      | 31       | 95%      |
-| ADR       | 61       | 95%      |
-| 스펙      | 63       | 90%      |
-| **총계**  | **180+** | **~95%** |
+| 원리      | 35       | 95%      |
+| ADR       | 75       | 95%      |
+| 스펙      | 70       | 92%      |
+| **총계**  | **205+** | **~95%** |
 
 ---
 
