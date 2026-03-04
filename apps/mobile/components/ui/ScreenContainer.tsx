@@ -7,28 +7,40 @@
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { type ReactNode } from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 /** 페이지 배경 그라디언트 변형 */
 export type BackgroundGradientVariant = 'home' | 'beauty' | 'style' | 'records' | 'profile';
 
 // 웹의 bg-gradient-to-br 패턴 매칭 — 반투명 파스텔 색조
 // 다크 모드: 미묘한 색조로 깊이감 부여 (웹 dark:from-slate-950 via-blue-950/20 매칭)
-const PAGE_GRADIENTS: Record<BackgroundGradientVariant, { light: readonly string[]; dark: readonly string[] }> = {
-  home:    { light: ['#FDFCFB', 'rgba(240,244,255,0.5)', 'rgba(238,240,255,0.5)'], dark: ['#0F0F0F', '#0F1015', '#0F0F18'] },
-  beauty:  { light: ['#FDFCFB', 'rgba(255,240,245,0.5)', 'rgba(253,242,248,0.5)'], dark: ['#0F0F0F', '#150F12', '#180F15'] },
-  style:   { light: ['#FDFCFB', 'rgba(238,242,255,0.5)', 'rgba(224,231,255,0.5)'], dark: ['#0F0F0F', '#0F0F15', '#0F0E18'] },
-  records: { light: ['#FDFCFB', 'rgba(236,253,245,0.5)', 'rgba(220,252,231,0.5)'], dark: ['#0F0F0F', '#0F1510', '#0F1810'] },
-  profile: { light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(237,233,254,0.5)'], dark: ['#0F0F0F', '#110F15', '#120E18'] },
+const PAGE_GRADIENTS: Record<
+  BackgroundGradientVariant,
+  { light: readonly string[]; dark: readonly string[] }
+> = {
+  home: {
+    light: ['#FDFCFB', 'rgba(240,244,255,0.5)', 'rgba(238,240,255,0.5)'],
+    dark: ['#0F0F0F', '#0F1015', '#0F0F18'],
+  },
+  beauty: {
+    light: ['#FDFCFB', 'rgba(255,240,245,0.5)', 'rgba(253,242,248,0.5)'],
+    dark: ['#0F0F0F', '#150F12', '#180F15'],
+  },
+  style: {
+    light: ['#FDFCFB', 'rgba(238,242,255,0.5)', 'rgba(224,231,255,0.5)'],
+    dark: ['#0F0F0F', '#0F0F15', '#0F0E18'],
+  },
+  records: {
+    light: ['#FDFCFB', 'rgba(236,253,245,0.5)', 'rgba(220,252,231,0.5)'],
+    dark: ['#0F0F0F', '#0F1510', '#0F1810'],
+  },
+  profile: {
+    light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(237,233,254,0.5)'],
+    dark: ['#0F0F0F', '#110F15', '#120E18'],
+  },
 };
 
 interface ScreenContainerProps {
@@ -70,7 +82,9 @@ export function ScreenContainer({
 
   // 배경 그라디언트 — 라이트 모드에서만 반투명 파스텔, 다크 모드는 단색
   const gradientColors = backgroundGradient
-    ? (isDark ? PAGE_GRADIENTS[backgroundGradient].dark : PAGE_GRADIENTS[backgroundGradient].light)
+    ? isDark
+      ? PAGE_GRADIENTS[backgroundGradient].dark
+      : PAGE_GRADIENTS[backgroundGradient].light
     : null;
 
   const refreshControl = onRefresh ? (
@@ -98,11 +112,7 @@ export function ScreenContainer({
       <SafeAreaView
         edges={edges}
         testID={testID}
-        style={[
-          styles.container,
-          { backgroundColor: colors.background },
-          style,
-        ]}
+        style={[styles.container, { backgroundColor: colors.background }, style]}
       >
         {backgroundLayer}
         <View style={[{ paddingHorizontal: contentPadding, flex: 1 }, contentContainerStyle]}>
@@ -116,11 +126,7 @@ export function ScreenContainer({
     <SafeAreaView
       edges={edges}
       testID={testID}
-      style={[
-        styles.container,
-        { backgroundColor: colors.background },
-        style,
-      ]}
+      style={[styles.container, { backgroundColor: colors.background }, style]}
     >
       {backgroundLayer}
       <ScrollView

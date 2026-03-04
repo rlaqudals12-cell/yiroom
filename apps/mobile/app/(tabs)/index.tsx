@@ -7,18 +7,17 @@ import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 
-import { HomeHeader, HomeTodaySection, HomeQuickActions, CrossModuleInsight } from '../../components/home';
+import {
+  HomeHeader,
+  HomeTodaySection,
+  HomeQuickActions,
+  CrossModuleInsight,
+} from '../../components/home';
 import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import {
   GradientCard,
@@ -40,7 +39,7 @@ import {
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useDailyCapsule } from '../../lib/capsule/hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
 export default function HomeScreen(): React.JSX.Element {
@@ -65,7 +64,11 @@ export default function HomeScreen(): React.JSX.Element {
   }, [daily.fetchToday]);
 
   // 데이터 훅
-  const { streak: workoutStreak, isLoading: workoutLoading, refetch: refetchWorkout } = useWorkoutData();
+  const {
+    streak: workoutStreak,
+    isLoading: workoutLoading,
+    refetch: refetchWorkout,
+  } = useWorkoutData();
   const {
     todaySummary,
     settings: nutritionSettings,
@@ -76,7 +79,7 @@ export default function HomeScreen(): React.JSX.Element {
     personalColor,
     skinAnalysis,
     bodyAnalysis,
-    isLoading: analysisLoading,
+    isLoading: _analysisLoading,
     refetch: refetchAnalyses,
   } = useUserAnalyses();
 
@@ -85,7 +88,12 @@ export default function HomeScreen(): React.JSX.Element {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchWorkout(), refetchNutrition(), refetchAnalyses(), daily.fetchToday()]);
+      await Promise.all([
+        refetchWorkout(),
+        refetchNutrition(),
+        refetchAnalyses(),
+        daily.fetchToday(),
+      ]);
     } finally {
       setRefreshing(false);
     }
@@ -239,7 +247,10 @@ export default function HomeScreen(): React.JSX.Element {
   const streakCount = workoutStreak?.currentStreak || 0;
   const calorieProgress =
     todaySummary && nutritionSettings
-      ? calculateCalorieProgress(todaySummary.totalCalories || 0, nutritionSettings.dailyCalorieGoal)
+      ? calculateCalorieProgress(
+          todaySummary.totalCalories || 0,
+          nutritionSettings.dailyCalorieGoal
+        )
       : 0;
   const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
 
@@ -269,7 +280,13 @@ export default function HomeScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="home-screen" backgroundGradient="home" contentContainerStyle={{ paddingBottom: 40 }} refreshing={refreshing} onRefresh={handleRefresh}>
+    <ScreenContainer
+      testID="home-screen"
+      backgroundGradient="home"
+      contentContainerStyle={{ paddingBottom: 40 }}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+    >
       <HomeHeader userName={userName} isLoaded={isLoaded} />
 
       <HomeTodaySection
@@ -320,7 +337,9 @@ export default function HomeScreen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
         <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.smx }} />
         <View style={{ flexDirection: 'row', gap: spacing.smx, marginBottom: spacing.lg }}>
-          <Animated.View style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}>
+          <Animated.View
+            style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}
+          >
             <StatCard
               value={streakCount}
               label="연속 운동"
@@ -352,7 +371,11 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
       <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
-        <SectionHeader title="나의 여정" gradient="extended" style={{ marginBottom: spacing.smx }} />
+        <SectionHeader
+          title="나의 여정"
+          gradient="extended"
+          style={{ marginBottom: spacing.smx }}
+        />
       </Animated.View>
       <View style={{ gap: spacing.md, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
@@ -411,10 +434,13 @@ export default function HomeScreen(): React.JSX.Element {
 }
 
 // 모듈 카드 아이콘 매핑 (웹 w-11 h-11 gradient icon square 대응)
-const MODULE_CARD_META: Record<string, {
-  icon: typeof Dumbbell;
-  gradientColors: [string, string];
-}> = {
+const MODULE_CARD_META: Record<
+  string,
+  {
+    icon: typeof Dumbbell;
+    gradientColors: [string, string];
+  }
+> = {
   workout: { icon: Dumbbell, gradientColors: ['#4ADE80', '#22C55E'] },
   nutrition: { icon: Apple, gradientColors: ['#4ADE80', '#22C55E'] },
   brand: { icon: ShoppingBag, gradientColors: ['#F8C8DC', '#FFB6C1'] },
@@ -447,18 +473,22 @@ function ModuleCard({
       <GradientCard variant={variant} padding={spacing.md}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
-          <View style={[
-            { marginRight: spacing.smx, borderRadius: radii.xl },
-            !isDark ? Platform.select({
-              ios: {
-                shadowColor: meta.gradientColors[1],
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.35,
-                shadowRadius: 10,
-              },
-              android: { elevation: 5 },
-            }) ?? {} : {},
-          ]}>
+          <View
+            style={[
+              { marginRight: spacing.smx, borderRadius: radii.xl },
+              !isDark
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: meta.gradientColors[1],
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.35,
+                      shadowRadius: 10,
+                    },
+                    android: { elevation: 5 },
+                  }) ?? {})
+                : {},
+            ]}
+          >
             <LinearGradient
               colors={meta.gradientColors}
               start={{ x: 0, y: 0 }}
