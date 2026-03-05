@@ -46,9 +46,9 @@ const popularSearches = [
 
 const defaultRecentSearches = ['비타민C 세럼', '하이웨스트', '레티놀'];
 
-const recommendedSearches = [
-  { query: '수분크림', reason: '내 피부에 맞는' },
-  { query: '니트', reason: '웨이브 체형 추천' },
+const defaultRecommendedSearches = [
+  { query: '수분크림', reason: '인기 추천' },
+  { query: '레티놀 세럼', reason: '인기 추천' },
 ];
 
 // 자동완성용 전체 검색어 데이터베이스
@@ -96,6 +96,49 @@ function getProductImageUrl(imageUrl: string | null | undefined, brand: string):
   return `https://placehold.co/200x200/${colors[colorIndex]}/888?text=`;
 }
 
+// 사용자 분석 결과 기반 맞춤 추천 검색어 생성
+function getPersonalizedSearches(
+  skinType?: string | null,
+  seasonType?: string | null
+): { query: string; reason: string }[] {
+  const results: { query: string; reason: string }[] = [];
+
+  if (skinType) {
+    const skinSearchMap: Record<string, { query: string; reason: string }> = {
+      oily: { query: '오일프리 수분크림', reason: '지성 피부 맞춤' },
+      dry: { query: '고보습 크림', reason: '건성 피부 맞춤' },
+      combination: { query: '수분 밸런싱 세럼', reason: '복합성 피부 맞춤' },
+      sensitive: { query: '시카 크림', reason: '민감 피부 맞춤' },
+      normal: { query: '수분 세럼', reason: '내 피부 맞춤' },
+    };
+    const match = skinSearchMap[skinType];
+    if (match) results.push(match);
+  }
+
+  if (seasonType) {
+    const seasonSearchMap: Record<string, { query: string; reason: string }> = {
+      spring: { query: '웜톤 립스틱', reason: '봄 웜톤 추천' },
+      summer: { query: '쿨톤 블러셔', reason: '여름 쿨톤 추천' },
+      autumn: { query: '웜톤 아이섀도', reason: '가을 웜톤 추천' },
+      winter: { query: '쿨톤 하이라이터', reason: '겨울 쿨톤 추천' },
+    };
+    const match = seasonSearchMap[seasonType];
+    if (match) results.push(match);
+  }
+
+  // 기본 추천으로 채우기
+  if (results.length < 2) {
+    for (const fallback of defaultRecommendedSearches) {
+      if (results.length >= 2) break;
+      if (!results.some((r) => r.query === fallback.query)) {
+        results.push(fallback);
+      }
+    }
+  }
+
+  return results.slice(0, 3);
+}
+
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -108,11 +151,19 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<SearchTab>('all');
   const [searches, setSearches] = useState<string[]>(defaultRecentSearches);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [userSkinType, setUserSkinType] = useState<string | null>(null);
+  const [userSeasonType, setUserSeasonType] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResults>({
     beauty: [],
     style: [],
     ingredient: [],
   });
+
+  // 맞춤 추천 검색어
+  const recommendedSearches = useMemo(
+    () => getPersonalizedSearches(userSkinType, userSeasonType),
+    [userSkinType, userSeasonType]
+  );
 
   // 디바운스된 검색어
   const debouncedQuery = useDebounce(query, 300);
@@ -123,6 +174,35 @@ export default function SearchPage() {
     const lowercaseQuery = debouncedQuery.toLowerCase();
     return allSearchTerms.filter((term) => term.toLowerCase().includes(lowercaseQuery)).slice(0, 5);
   }, [debouncedQuery]);
+
+  // 사용자 분석 데이터 로드 (맞춤 추천용)
+  useEffect(() => {
+    async function loadUserProfile(): Promise<void> {
+      const { data } = await supabase
+        .from('skin_assessments')
+        .select('skin_type')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data?.skin_type) {
+        setUserSkinType(data.skin_type);
+      }
+
+      const { data: pcData } = await supabase
+        .from('personal_color_assessments')
+        .select('season_type')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (pcData?.season_type) {
+        setUserSeasonType(pcData.season_type);
+      }
+    }
+
+    loadUserProfile();
+  }, [supabase]);
 
   // 로컬 스토리지에서 최근 검색어 로드
   useEffect(() => {
@@ -456,7 +536,7 @@ export default function SearchPage() {
                     <button
                       key={item.query}
                       onClick={() => handleSearch(item.query)}
-                      className="w-full flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl hover:from-purple-100 hover:to-pink-100 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-950/50 dark:hover:to-pink-950/50 transition-colors text-left"
                     >
                       <span className="text-sm text-muted-foreground">{item.reason}</span>
                       <span className="font-medium text-foreground">&quot;{item.query}&quot;</span>

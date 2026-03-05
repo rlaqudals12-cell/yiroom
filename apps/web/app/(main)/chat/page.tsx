@@ -54,15 +54,12 @@ export default function ChatPage() {
 
         // AI 응답 추가
         setMessages((prev) => [...prev, result.data.message]);
-      } catch (error) {
+      } catch {
         // 에러 메시지 표시
         const errorMessage: ChatMessage = {
           id: `error_${Date.now()}`,
           role: 'assistant',
-          content:
-            error instanceof Error
-              ? error.message
-              : '죄송해요, 일시적인 문제가 발생했어요. 잠시 후 다시 시도해주세요.',
+          content: '죄송해요, 일시적인 문제가 발생했어요. 잠시 후 다시 시도해주세요.',
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -92,8 +89,7 @@ export default function ChatPage() {
           <h1 className="font-semibold">AI 상담</h1>
         </div>
         <Button variant="ghost" size="sm" onClick={handleNewChat} disabled={messages.length === 0}>
-          <RotateCcw className="h-4 w-4 mr-2" />
-          새 대화
+          <RotateCcw className="h-4 w-4 mr-2" />새 대화
         </Button>
       </div>
 

@@ -17,6 +17,7 @@ import {
   X,
   Share2,
   ChevronRight,
+  Printer,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
@@ -80,6 +81,7 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { SkinConsultationChat } from '@/components/skin-consultation';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ResultPageInsights } from '@/components/insights';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
@@ -1010,6 +1012,7 @@ export default function SkinAnalysisResultPage() {
 
                   {/* 다음 분석 추천 */}
                   <ContextLinkingCard currentModule="skin" />
+                  <ResultPageInsights currentModule="skin" />
 
                   {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
                   {(analysisEvidence || imageQuality) && (
@@ -1298,7 +1301,7 @@ export default function SkinAnalysisResultPage() {
 
       {/* 하단 접이식 FAB 메뉴 - 중앙 배치 (UX 최적화) */}
       {result && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999]">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999]" data-print-hide>
           {/* 펼쳐진 메뉴 - 중앙 정렬 */}
           {isActionMenuOpen && (
             <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col gap-2 items-center animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -1367,6 +1370,27 @@ export default function SkinAnalysisResultPage() {
               >
                 <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
                 공유하기
+              </Button>
+
+              {/* PDF 저장 */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="shadow-lg bg-card whitespace-nowrap"
+                onClick={() => {
+                  const originalTitle = document.title;
+                  document.title = '이룸 피부 분석 결과';
+                  window.print();
+                  setTimeout(() => {
+                    document.title = originalTitle;
+                  }, 100);
+                  setIsActionMenuOpen(false);
+                }}
+                aria-label="PDF로 저장하기"
+                data-print-hide
+              >
+                <Printer className="w-4 h-4 mr-2" aria-hidden="true" />
+                PDF 저장
               </Button>
             </div>
           )}

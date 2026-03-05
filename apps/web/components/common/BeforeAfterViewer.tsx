@@ -82,7 +82,10 @@ export function BeforeAfterViewer({
     return (
       <div
         ref={containerRef}
-        className={cn('relative overflow-hidden rounded-xl cursor-ew-resize select-none', className)}
+        className={cn(
+          'relative overflow-hidden rounded-xl cursor-ew-resize select-none',
+          className
+        )}
         style={{ height }}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -131,6 +134,12 @@ export function BeforeAfterViewer({
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleMouseDown}
+          role="slider"
+          aria-label="비포/애프터 비교 슬라이더"
+          aria-valuenow={Math.round(sliderPosition)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          tabIndex={0}
         >
           {/* 핸들 아이콘 */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
@@ -211,6 +220,7 @@ export function BeforeAfterViewer({
           onClick={() => setShowAfter(!showAfter)}
           className="gap-2 shadow-lg"
           aria-label={showAfter ? `${beforeLabel} 보기` : `${afterLabel} 보기`}
+          aria-pressed={showAfter}
         >
           {showAfter ? (
             <>

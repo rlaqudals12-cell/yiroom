@@ -157,8 +157,8 @@ export function BmiCalculator({
               <span className="text-sm text-muted-foreground">나의 BMI</span>
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
+                  <TooltipTrigger aria-label="BMI 정보">
+                    <Info className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs text-sm">{result.disclaimer}</p>

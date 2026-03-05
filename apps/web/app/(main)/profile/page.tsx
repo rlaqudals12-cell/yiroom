@@ -78,6 +78,7 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'activity' | 'social'>('info');
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -194,9 +195,7 @@ export default function ProfilePage() {
         // 피부 타입 포맷팅
         const skinData = skinResult.data;
         const skinSuffix = skinData?.sensitivity_level ? '/' + skinData.sensitivity_level : '';
-        const skinType = skinData
-          ? `${skinData.skin_type}${skinSuffix}`
-          : null;
+        const skinType = skinData ? `${skinData.skin_type}${skinSuffix}` : null;
 
         // 체형 포맷팅
         const bodyTypeMap: Record<string, string> = {
@@ -294,6 +293,12 @@ export default function ProfilePage() {
   const weeklyRank = profileData?.weeklyRank;
   const rankChange = profileData?.rankChange ?? 0;
 
+  const PROFILE_TABS = [
+    { key: 'info' as const, label: '내 정보', icon: User },
+    { key: 'activity' as const, label: '활동', icon: Flame },
+    { key: 'social' as const, label: '소셜', icon: Users },
+  ];
+
   return (
     <div className="bg-background min-h-screen pb-20" data-testid="profile-page">
       <div className="space-y-4 px-4 py-6">
@@ -357,318 +362,353 @@ export default function ProfilePage() {
           </section>
         </FadeInUp>
 
-        {/* 내 QR 코드 */}
-        <FadeInUp>
-          <section className="bg-card rounded-2xl border p-4">
-            <button
-              onClick={() => setShowQR(!showQR)}
-              className="flex w-full items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <QrCode className="h-5 w-5 text-purple-500" />
-                <span className="font-semibold">내 QR 코드</span>
-              </div>
-              <ChevronRight
-                className={`h-4 w-4 text-muted-foreground transition-transform ${showQR ? 'rotate-90' : ''}`}
-              />
-            </button>
-            {showQR && (
-              <div className="mt-4">
-                <QRCodeDisplay
-                  type="referral"
-                  data={{ referralCode: user.id }}
-                  description="친구가 이 QR을 스캔하면 이룸에 가입할 수 있어요"
-                />
-              </div>
-            )}
-          </section>
-        </FadeInUp>
-
-        {/* 내 정보 요약 */}
-        <FadeInUp delay={1}>
-          <MyInfoSummaryCard />
-        </FadeInUp>
-
-        {/* 내 분석 결과 */}
-        <FadeInUp delay={2}>
-          <section className="bg-card rounded-2xl border p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-foreground font-semibold">📊 내 분석 결과</h3>
-              <Link href="/profile/analysis" className="text-primary text-xs hover:underline">
-                분석 다시하기
-              </Link>
-            </div>
-            <div className="space-y-2">
-              <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                <Palette className="h-4 w-4 text-rose-500" />
-                <span className="text-muted-foreground text-sm">퍼스널 컬러:</span>
-                <span className="text-sm font-medium">{personalColor}</span>
-              </div>
-              <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                <FlaskConical className="h-4 w-4 text-pink-500" />
-                <span className="text-muted-foreground text-sm">피부:</span>
-                <span className="text-sm font-medium">{skinType}</span>
-              </div>
-              <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                <User className="h-4 w-4 text-blue-500" />
-                <span className="text-muted-foreground text-sm">체형:</span>
-                <span className="text-sm font-medium">{bodyType}</span>
-              </div>
-            </div>
-          </section>
-        </FadeInUp>
-
-        {/* 친구 */}
-        <FadeInUp delay={3}>
-          <section className="bg-card rounded-2xl border p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-foreground flex items-center gap-2 font-semibold">
-                <Users className="h-5 w-5 text-blue-500" />
-                친구 ({friendCount}명)
-              </h3>
-              <Link
-                href="/profile/friends"
-                className="text-primary flex items-center gap-1 text-sm hover:underline"
+        {/* 탭 네비게이션 */}
+        <div className="flex gap-1 rounded-xl bg-muted p-1">
+          {PROFILE_TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition-colors ${
+                  activeTab === tab.key
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                전체보기 <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="mb-3 flex gap-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-muted text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full"
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── 탭: 내 정보 ── */}
+        {activeTab === 'info' && (
+          <>
+            {/* 내 QR 코드 */}
+            <FadeInUp>
+              <section className="bg-card rounded-2xl border p-4">
+                <button
+                  onClick={() => setShowQR(!showQR)}
+                  className="flex w-full items-center justify-between"
                 >
-                  👤
+                  <div className="flex items-center gap-3">
+                    <QrCode className="h-5 w-5 text-purple-500" />
+                    <span className="font-semibold">내 QR 코드</span>
+                  </div>
+                  <ChevronRight
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${showQR ? 'rotate-90' : ''}`}
+                  />
+                </button>
+                {showQR && (
+                  <div className="mt-4">
+                    <QRCodeDisplay
+                      type="referral"
+                      data={{ referralCode: user.id }}
+                      description="친구가 이 QR을 스캔하면 이룸에 가입할 수 있어요"
+                    />
+                  </div>
+                )}
+              </section>
+            </FadeInUp>
+
+            {/* 내 정보 요약 */}
+            <FadeInUp delay={1}>
+              <MyInfoSummaryCard />
+            </FadeInUp>
+
+            {/* 내 분석 결과 */}
+            <FadeInUp delay={2}>
+              <section className="bg-card rounded-2xl border p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-foreground font-semibold">내 분석 결과</h3>
+                  <Link href="/profile/analysis" className="text-primary text-xs hover:underline">
+                    분석 다시하기
+                  </Link>
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href="/friends/search"
-                className="bg-muted hover:bg-muted/80 flex-1 rounded-lg py-2 text-center text-sm font-medium"
-              >
-                친구 추가
-              </Link>
-              <Link
-                href="/friends/requests"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg py-2 text-center text-sm font-medium"
-              >
-                친구 요청 ({friendRequests})
-              </Link>
-            </div>
-          </section>
-        </FadeInUp>
+                <div className="space-y-2">
+                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
+                    <Palette className="h-4 w-4 text-rose-500" />
+                    <span className="text-muted-foreground text-sm">퍼스널 컬러:</span>
+                    <span className="text-sm font-medium">{personalColor}</span>
+                  </div>
+                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
+                    <FlaskConical className="h-4 w-4 text-pink-500" />
+                    <span className="text-muted-foreground text-sm">피부:</span>
+                    <span className="text-sm font-medium">{skinType}</span>
+                  </div>
+                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
+                    <User className="h-4 w-4 text-blue-500" />
+                    <span className="text-muted-foreground text-sm">체형:</span>
+                    <span className="text-sm font-medium">{bodyType}</span>
+                  </div>
+                </div>
+              </section>
+            </FadeInUp>
 
-        {/* 리더보드 */}
-        <FadeInUp delay={4}>
-          <section className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-foreground flex items-center gap-2 font-semibold">
-                  <Trophy className="h-5 w-5 text-amber-500" />
-                  리더보드
-                </h3>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {weeklyRank !== null ? (
-                    <>
-                      이번 주 {weeklyRank}위
-                      {rankChange !== 0 && (
-                        <span className={rankChange > 0 ? 'text-green-600' : 'text-red-600'}>
-                          {' '}
-                          ({rankChange > 0 ? '+' : ''}
-                          {rankChange}
-                          {rankChange > 0 ? '↑' : '↓'})
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    '아직 순위 없음'
-                  )}
-                </p>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Link
-                  href="/leaderboard"
-                  className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200"
-                >
-                  전체 순위
-                </Link>
-                <Link
-                  href="/leaderboard/nutrition"
-                  className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200"
-                >
-                  영양 순위
-                </Link>
-                <Link
-                  href="/leaderboard/workout"
-                  className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200"
-                >
-                  운동 순위
-                </Link>
-              </div>
-            </div>
-          </section>
-        </FadeInUp>
-
-        {/* 등급 진행률 */}
-        {profileData?.userLevelState && (
-          <section className="bg-card rounded-2xl border p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <TrendingUp className="h-5 w-5 text-purple-500" />
-              나의 등급
-            </h3>
-            <NewLevelProgress
-              level={profileData.userLevelState.level}
-              currentCount={profileData.userLevelState.totalActivityCount}
-              nextThreshold={profileData.userLevelState.nextLevelThreshold}
-              progress={profileData.userLevelState.progress}
-              showDetails
-            />
-          </section>
+            {/* 등급 진행률 */}
+            {profileData?.userLevelState && (
+              <FadeInUp delay={3}>
+                <section className="bg-card rounded-2xl border p-6">
+                  <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                    <TrendingUp className="h-5 w-5 text-purple-500" />
+                    나의 등급
+                  </h3>
+                  <NewLevelProgress
+                    level={profileData.userLevelState.level}
+                    currentCount={profileData.userLevelState.totalActivityCount}
+                    nextThreshold={profileData.userLevelState.nextLevelThreshold}
+                    progress={profileData.userLevelState.progress}
+                    showDetails
+                  />
+                </section>
+              </FadeInUp>
+            )}
+          </>
         )}
 
-        {/* 배지 */}
-        <section className="bg-card rounded-2xl border p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              배지 컬렉션
-            </h3>
-            <Link
-              href="/profile/badges"
-              className="text-primary flex items-center gap-1 text-sm hover:underline"
-            >
-              전체 보기 <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* 통계 */}
-          <div className="bg-muted/50 mb-4 rounded-lg p-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">획득한 배지</span>
-              <span className="font-medium">
-                {profileData?.badgeStats.earned || 0}/{profileData?.badgeStats.total || 0}개
-              </span>
-            </div>
-            <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
-                style={{ width: `${profileData?.badgeStats.progress || 0}%` }}
-              />
-            </div>
-          </div>
-
-          {/* 최근 획득 배지 */}
-          {profileData?.recentBadges && profileData.recentBadges.length > 0 ? (
-            <div className="flex gap-3">
-              {profileData.recentBadges
-                .filter((ub) => ub.badge !== undefined)
-                .map((ub) => (
-                  <div key={ub.id} className="flex-1">
-                    <BadgeCard badge={ub.badge!} isEarned earnedAt={ub.earnedAt} size="sm" />
+        {/* ── 탭: 활동 ── */}
+        {activeTab === 'activity' && (
+          <>
+            {/* 스트릭 */}
+            <FadeInUp>
+              <section className="bg-card rounded-2xl border p-6">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  연속 기록
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                        <span className="text-lg">💪</span>
+                      </div>
+                      <div>
+                        <div className="font-medium">운동</div>
+                        <div className="text-muted-foreground text-xs">
+                          최장 {profileData?.workoutStreak?.longest || 0}일
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        {profileData?.workoutStreak?.current || 0}일
+                      </div>
+                      <div className="text-muted-foreground text-xs">현재</div>
+                    </div>
                   </div>
-                ))}
-            </div>
-          ) : (
-            <div className="text-muted-foreground py-6 text-center">
-              <Award className="mx-auto mb-2 h-10 w-10 opacity-30" />
-              <p className="text-sm">아직 획득한 배지가 없어요</p>
-            </div>
-          )}
-        </section>
-
-        {/* 챌린지 */}
-        <section className="bg-card rounded-2xl border p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              <Target className="h-5 w-5 text-blue-500" />
-              챌린지
-            </h3>
-            <Link
-              href="/challenges"
-              className="text-primary flex items-center gap-1 text-sm hover:underline"
-            >
-              챌린지 보기 <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {profileData?.challengeStats.inProgress || 0}
-              </div>
-              <div className="text-muted-foreground mt-1 text-xs">진행 중</div>
-            </div>
-            <div className="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {profileData?.challengeStats.completed || 0}
-              </div>
-              <div className="text-muted-foreground mt-1 text-xs">완료</div>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900/20">
-              <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-                {profileData?.challengeStats.total || 0}
-              </div>
-              <div className="text-muted-foreground mt-1 text-xs">전체 참여</div>
-            </div>
-          </div>
-        </section>
-
-        {/* 스트릭 */}
-        <section className="bg-card rounded-2xl border p-6">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <Flame className="h-5 w-5 text-orange-500" />
-            연속 기록
-          </h3>
-
-          <div className="space-y-4">
-            {/* 운동 스트릭 */}
-            <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-                  <span className="text-lg">💪</span>
-                </div>
-                <div>
-                  <div className="font-medium">운동</div>
-                  <div className="text-muted-foreground text-xs">
-                    최장 {profileData?.workoutStreak?.longest || 0}일
+                  <div className="flex items-center justify-between rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                        <span className="text-lg">🥗</span>
+                      </div>
+                      <div>
+                        <div className="font-medium">식단</div>
+                        <div className="text-muted-foreground text-xs">
+                          최장 {profileData?.nutritionStreak?.longest || 0}일
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {profileData?.nutritionStreak?.current || 0}일
+                      </div>
+                      <div className="text-muted-foreground text-xs">현재</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  {profileData?.workoutStreak?.current || 0}일
-                </div>
-                <div className="text-muted-foreground text-xs">현재</div>
-              </div>
-            </div>
+              </section>
+            </FadeInUp>
 
-            {/* 영양 스트릭 */}
-            <div className="flex items-center justify-between rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <span className="text-lg">🥗</span>
+            {/* 배지 */}
+            <FadeInUp delay={1}>
+              <section className="bg-card rounded-2xl border p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold">
+                    <Trophy className="h-5 w-5 text-yellow-500" />
+                    배지 컬렉션
+                  </h3>
+                  <Link
+                    href="/profile/badges"
+                    className="text-primary flex items-center gap-1 text-sm hover:underline"
+                  >
+                    전체 보기 <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </div>
-                <div>
-                  <div className="font-medium">식단</div>
-                  <div className="text-muted-foreground text-xs">
-                    최장 {profileData?.nutritionStreak?.longest || 0}일
+                <div className="bg-muted/50 mb-4 rounded-lg p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">획득한 배지</span>
+                    <span className="font-medium">
+                      {profileData?.badgeStats.earned || 0}/{profileData?.badgeStats.total || 0}개
+                    </span>
+                  </div>
+                  <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
+                      style={{ width: `${profileData?.badgeStats.progress || 0}%` }}
+                    />
                   </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {profileData?.nutritionStreak?.current || 0}일
-                </div>
-                <div className="text-muted-foreground text-xs">현재</div>
-              </div>
-            </div>
-          </div>
-        </section>
+                {profileData?.recentBadges && profileData.recentBadges.length > 0 ? (
+                  <div className="flex gap-3">
+                    {profileData.recentBadges
+                      .filter((ub) => ub.badge !== undefined)
+                      .map((ub) => (
+                        <div key={ub.id} className="flex-1">
+                          <BadgeCard badge={ub.badge!} isEarned earnedAt={ub.earnedAt} size="sm" />
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground py-6 text-center">
+                    <Award className="mx-auto mb-2 h-10 w-10 opacity-30" />
+                    <p className="text-sm">아직 획득한 배지가 없어요</p>
+                  </div>
+                )}
+              </section>
+            </FadeInUp>
 
-        {/* 설정/도움말 링크들 */}
-        <FadeInUp delay={7}>
+            {/* 챌린지 */}
+            <FadeInUp delay={2}>
+              <section className="bg-card rounded-2xl border p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold">
+                    <Target className="h-5 w-5 text-blue-500" />
+                    챌린지
+                  </h3>
+                  <Link
+                    href="/challenges"
+                    className="text-primary flex items-center gap-1 text-sm hover:underline"
+                  >
+                    챌린지 보기 <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {profileData?.challengeStats.inProgress || 0}
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">진행 중</div>
+                  </div>
+                  <div className="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {profileData?.challengeStats.completed || 0}
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">완료</div>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900/20">
+                    <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+                      {profileData?.challengeStats.total || 0}
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">전체 참여</div>
+                  </div>
+                </div>
+              </section>
+            </FadeInUp>
+          </>
+        )}
+
+        {/* ── 탭: 소셜 ── */}
+        {activeTab === 'social' && (
+          <>
+            {/* 친구 */}
+            <FadeInUp>
+              <section className="bg-card rounded-2xl border p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-foreground flex items-center gap-2 font-semibold">
+                    <Users className="h-5 w-5 text-blue-500" />
+                    친구 ({friendCount}명)
+                  </h3>
+                  <Link
+                    href="/profile/friends"
+                    className="text-primary flex items-center gap-1 text-sm hover:underline"
+                  >
+                    전체보기 <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+                <div className="mb-3 flex gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-muted text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full"
+                    >
+                      👤
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href="/friends/search"
+                    className="bg-muted hover:bg-muted/80 flex-1 rounded-lg py-2 text-center text-sm font-medium"
+                  >
+                    친구 추가
+                  </Link>
+                  <Link
+                    href="/friends/requests"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg py-2 text-center text-sm font-medium"
+                  >
+                    친구 요청 ({friendRequests})
+                  </Link>
+                </div>
+              </section>
+            </FadeInUp>
+
+            {/* 리더보드 */}
+            <FadeInUp delay={1}>
+              <section className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:from-amber-950/30 dark:to-orange-950/30 dark:border-amber-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-foreground flex items-center gap-2 font-semibold">
+                      <Trophy className="h-5 w-5 text-amber-500" />
+                      리더보드
+                    </h3>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      {weeklyRank !== null ? (
+                        <>
+                          이번 주 {weeklyRank}위
+                          {rankChange !== 0 && (
+                            <span className={rankChange > 0 ? 'text-green-600' : 'text-red-600'}>
+                              {' '}
+                              ({rankChange > 0 ? '+' : ''}
+                              {rankChange}
+                              {rankChange > 0 ? '↑' : '↓'})
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        '아직 순위 없음'
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Link
+                      href="/leaderboard"
+                      className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
+                    >
+                      전체 순위
+                    </Link>
+                    <Link
+                      href="/leaderboard/nutrition"
+                      className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
+                    >
+                      영양 순위
+                    </Link>
+                    <Link
+                      href="/leaderboard/workout"
+                      className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
+                    >
+                      운동 순위
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            </FadeInUp>
+          </>
+        )}
+
+        {/* 설정/도움말 링크들 (항상 표시) */}
+        <FadeInUp delay={4}>
           <section className="bg-card overflow-hidden rounded-2xl border">
             <Link
               href="/profile/settings"

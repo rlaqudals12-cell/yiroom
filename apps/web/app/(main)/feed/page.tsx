@@ -3,25 +3,33 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { Users, Plus, ArrowLeft } from 'lucide-react';
+import { Users, Plus, ArrowLeft, Clock, TrendingUp, Heart } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { FeedCard } from '@/components/feed';
 import { cn } from '@/lib/utils';
-import type { FeedPostWithAuthor } from '@/lib/feed/types';
+import type { FeedPostWithAuthor, FeedSortType } from '@/lib/feed/types';
 
 /**
  * 피드 페이지 - DB 연동
  * - 탭: 내 피드 / 전체
+ * - 정렬: 최신순 / 인기순 / 친구 우선
  * - 좋아요, 댓글, 공유 인터랙션
  * - 작성 버튼 (플로팅)
  */
 
 type FeedTab = 'my' | 'all';
 
+const SORT_OPTIONS: { id: FeedSortType; label: string; icon: typeof Clock }[] = [
+  { id: 'recent', label: '최신', icon: Clock },
+  { id: 'popular', label: '인기', icon: TrendingUp },
+  { id: 'friends', label: '친구', icon: Heart },
+];
+
 export default function FeedPage() {
   const router = useRouter();
   const { userId } = useAuth();
   const [activeTab, setActiveTab] = useState<FeedTab>('all');
+  const [sortType, setSortType] = useState<FeedSortType>('recent');
   const [feedPosts, setFeedPosts] = useState<FeedPostWithAuthor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,6 +41,9 @@ export default function FeedPage() {
         const params = new URLSearchParams();
         if (activeTab === 'my' && userId) {
           params.set('user_id', userId);
+        }
+        if (activeTab === 'all') {
+          params.set('sort', sortType);
         }
 
         const res = await fetch(`/api/feed?${params.toString()}`);
@@ -49,7 +60,7 @@ export default function FeedPage() {
     };
 
     fetchFeed();
-  }, [activeTab, userId]);
+  }, [activeTab, userId, sortType]);
 
   // 좋아요 토글
   const handleLike = useCallback(async (postId: string) => {
@@ -148,25 +159,52 @@ export default function FeedPage() {
           </div>
         </div>
 
-        {/* 탭 */}
-        <div className="flex gap-2 px-4 py-2">
-          {[
-            { id: 'my', label: '내 피드' },
-            { id: 'all', label: '전체' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as FeedTab)}
-              className={cn(
-                'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
-                activeTab === tab.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* 탭 + 정렬 */}
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex gap-2">
+            {[
+              { id: 'my', label: '내 피드' },
+              { id: 'all', label: '전체' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as FeedTab)}
+                className={cn(
+                  'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+                  activeTab === tab.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 정렬 옵션 (전체 탭에서만) */}
+          {activeTab === 'all' && (
+            <div className="flex gap-1">
+              {SORT_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSortType(opt.id)}
+                    className={cn(
+                      'flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                      sortType === opt.id
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                    aria-label={`${opt.label}순 정렬`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </header>
 

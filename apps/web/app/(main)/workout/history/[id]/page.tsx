@@ -3,11 +3,23 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { ArrowLeft, Clock, Flame, Dumbbell, Calendar, Target, MessageSquare } from 'lucide-react';
+import { useMemo } from 'react';
+import {
+  ArrowLeft,
+  Clock,
+  Flame,
+  Dumbbell,
+  Calendar,
+  Target,
+  MessageSquare,
+  ShoppingBag,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { FadeInUp } from '@/components/animations';
+import { EquipmentRecommendationCard } from '@/components/smart-matching';
+import { getEquipmentRecommendations } from '@/lib/smart-matching/equipment-recommend';
 import type { WorkoutLog } from '@/lib/api/workout';
 import Link from 'next/link';
 
@@ -28,6 +40,11 @@ export default function WorkoutHistoryDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const logId = params.id as string;
+
+  // 운동기구 추천 (early return 이전에 hook 호출 필수)
+  const equipmentMatch = useMemo(() => {
+    return getEquipmentRecommendations('health', 'intermediate', true);
+  }, []);
 
   useEffect(() => {
     const loadLog = async () => {
@@ -54,7 +71,7 @@ export default function WorkoutHistoryDetailPage() {
         setLog(data as WorkoutLog);
       } catch (err) {
         console.error('[Workout History] Load error:', err);
-        setError(err instanceof Error ? err.message : '기록을 불러올 수 없어요');
+        setError('기록을 불러올 수 없어요. 다시 시도해주세요.');
       } finally {
         setIsLoading(false);
       }
@@ -219,17 +236,34 @@ export default function WorkoutHistoryDetailPage() {
         {/* 운동 노력도 */}
         {log.perceived_effort && (
           <FadeInUp delay={3}>
-            <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
-              <h3 className="text-sm font-medium text-purple-800 mb-2">체감 노력도</h3>
+            <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
+              <h3 className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">
+                체감 노력도
+              </h3>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-purple-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-purple-100 dark:bg-purple-900 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
                     style={{ width: `${log.perceived_effort * 10}%` }}
                   />
                 </div>
-                <span className="text-lg font-bold text-purple-700">{log.perceived_effort}/10</span>
+                <span className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                  {log.perceived_effort}/10
+                </span>
               </div>
+            </section>
+          </FadeInUp>
+        )}
+
+        {/* 운동기구 추천 */}
+        {equipmentMatch.recommendations.length > 0 && (
+          <FadeInUp delay={4}>
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <ShoppingBag className="h-5 w-5 text-indigo-500" />
+                <h2 className="text-lg font-semibold">추천 장비</h2>
+              </div>
+              <EquipmentRecommendationCard match={equipmentMatch} />
             </section>
           </FadeInUp>
         )}

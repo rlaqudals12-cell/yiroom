@@ -89,7 +89,7 @@ export default function EditPantryItemPage() {
         }
       } catch (err) {
         console.error('[EditPantryItem] Fetch error:', err);
-        toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
+        toast.error('오류가 발생했어요. 다시 시도해주세요.');
         router.push('/inventory/pantry');
       } finally {
         setIsLoading(false);
@@ -143,7 +143,7 @@ export default function EditPantryItemPage() {
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[EditPantryItem] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
+      toast.error('오류가 발생했어요. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +168,7 @@ export default function EditPantryItemPage() {
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[EditPantryItem] Delete error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
+      toast.error('오류가 발생했어요. 다시 시도해주세요.');
     } finally {
       setIsDeleting(false);
     }

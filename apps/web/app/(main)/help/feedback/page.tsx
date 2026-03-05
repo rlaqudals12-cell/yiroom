@@ -116,7 +116,7 @@ export default function FeedbackPage() {
         </div>
         {/* 버튼 - 지연 등장 */}
         <div className="animate-fade-in-up animation-delay-400 opacity-0">
-          <Button onClick={() => router.push('/dashboard')}>홈으로 돌아가기</Button>
+          <Button onClick={() => router.push('/home')}>홈으로 돌아가기</Button>
         </div>
       </div>
     );

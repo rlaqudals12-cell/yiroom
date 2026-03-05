@@ -22,6 +22,7 @@ import {
   TopPagesTable,
   TopFeaturesTable,
   DevicePieChart,
+  SystemMonitoringTab,
 } from './_components';
 import {
   ActiveUserStatsCard,
@@ -60,7 +61,7 @@ interface ActivityData {
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
-  const [activeTab, setActiveTab] = useState<'activity' | 'behavior'>('activity');
+  const [activeTab, setActiveTab] = useState<'activity' | 'behavior' | 'system'>('activity');
   const [data, setData] = useState<DashboardData | null>(null);
   const [activityData, setActivityData] = useState<ActivityData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,8 +94,8 @@ export default function AnalyticsPage() {
       }
 
       setData(result.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
+    } catch {
+      setError('데이터를 불러올 수 없습니다. 다시 시도해주세요.');
     }
   }, [period]);
 
@@ -158,10 +159,14 @@ export default function AnalyticsPage() {
       )}
 
       {/* 탭 네비게이션 */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'activity' | 'behavior')}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as 'activity' | 'behavior' | 'system')}
+      >
         <TabsList>
           <TabsTrigger value="activity">사용자 활동</TabsTrigger>
           <TabsTrigger value="behavior">행동 분석</TabsTrigger>
+          <TabsTrigger value="system">시스템</TabsTrigger>
         </TabsList>
 
         {/* 사용자 활동 탭 */}
@@ -216,6 +221,11 @@ export default function AnalyticsPage() {
             <TopPagesTable pages={data?.topPages ?? null} isLoading={isLoading} />
             <TopFeaturesTable features={data?.topFeatures ?? null} isLoading={isLoading} />
           </div>
+        </TabsContent>
+
+        {/* 시스템 모니터링 탭 */}
+        <TabsContent value="system" className="space-y-6 mt-6">
+          <SystemMonitoringTab />
         </TabsContent>
       </Tabs>
     </div>

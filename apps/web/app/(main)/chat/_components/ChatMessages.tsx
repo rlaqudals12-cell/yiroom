@@ -5,10 +5,11 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Bot, User } from 'lucide-react';
+import { Bot, User, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ChatMessage, ProductRecommendation } from '@/types/chat';
 import { ProductCard } from './ProductCard';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -74,6 +75,15 @@ interface MessageBubbleProps {
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const products = message.metadata?.productRecommendations;
+  const { speak, stop, isSpeaking, isSupported: ttsSupported } = useSpeechSynthesis();
+
+  const handleTtsToggle = (): void => {
+    if (isSpeaking) {
+      stop();
+    } else {
+      speak(message.content);
+    }
+  };
 
   return (
     <div
@@ -110,13 +120,29 @@ function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         )}
 
-        {/* 시간 */}
-        <p className="text-xs text-muted-foreground">
-          {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </p>
+        {/* 시간 + TTS 버튼 */}
+        <div className={cn('flex items-center gap-2', isUser && 'justify-end')}>
+          <p className="text-xs text-muted-foreground">
+            {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+          {/* AI 응답에만 TTS 버튼 표시 */}
+          {!isUser && ttsSupported && (
+            <button
+              onClick={handleTtsToggle}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={isSpeaking ? '읽기 중지' : '소리로 듣기'}
+            >
+              {isSpeaking ? (
+                <VolumeX className="h-3.5 w-3.5" />
+              ) : (
+                <Volume2 className="h-3.5 w-3.5" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

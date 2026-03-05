@@ -238,7 +238,7 @@ export function LandingContent() {
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
-                    <Link href="/dashboard">
+                    <Link href="/home">
                       <Button className="h-12 px-6 md:h-14 md:px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm md:text-base font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
                         {t.goToDashboard}
                       </Button>
@@ -295,7 +295,7 @@ export function LandingContent() {
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <Link href="/dashboard" className="grow">
+                <Link href="/home" className="grow">
                   <Button className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-10 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all duration-300 shadow-lg shadow-pink-500/20">
                     {t.ctaViewResults}
                   </Button>

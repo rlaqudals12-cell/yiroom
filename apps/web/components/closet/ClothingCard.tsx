@@ -142,7 +142,8 @@ export function ClothingCard({
                 style={{
                   backgroundColor: color.startsWith('#') ? color : undefined,
                 }}
-                title={color}
+                role="img"
+                aria-label={`색상: ${color}`}
               />
             ))}
           </div>
@@ -165,8 +166,9 @@ export function ClothingCard({
                   type="button"
                   className="p-1 rounded hover:bg-muted -mr-1"
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="옷 항목 옵션"
                 >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

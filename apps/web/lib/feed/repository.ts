@@ -29,23 +29,47 @@ export async function getFeedPosts(
   currentUserId?: string
 ): Promise<{ posts: FeedPostWithAuthor[]; total: number }> {
   const supabase = createClerkSupabaseClient();
-  const { page = 1, limit = 20, post_type, hashtag, user_id } = params;
+  const { page = 1, limit = 20, post_type, hashtag, user_id, sort = 'recent' } = params;
   const offset = (page - 1) * limit;
 
-  let query = supabase
-    .from('feed_posts')
-    .select(
-      `
+  // 친구 목록 조회 (friends 정렬 시)
+  let friendIds: string[] = [];
+  if (sort === 'friends' && currentUserId) {
+    const { data: friendships } = await supabase
+      .from('friendships')
+      .select('user_id, friend_id')
+      .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
+      .eq('status', 'accepted');
+
+    friendIds = (friendships || []).map((f) =>
+      f.user_id === currentUserId ? f.friend_id : f.user_id
+    );
+  }
+
+  let query = supabase.from('feed_posts').select(
+    `
       *,
       users!feed_posts_clerk_user_id_fkey (
         name,
         avatar_url
       )
     `,
-      { count: 'exact' }
-    )
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    { count: 'exact' }
+  );
+
+  // 정렬 방식 적용
+  if (sort === 'popular') {
+    // 인기순: 좋아요 + 댓글 수 기반
+    query = query
+      .order('likes_count', { ascending: false })
+      .order('comments_count', { ascending: false })
+      .order('created_at', { ascending: false });
+  } else {
+    // recent, friends 모두 최신순 (friends는 클라이언트에서 재정렬)
+    query = query.order('created_at', { ascending: false });
+  }
+
+  query = query.range(offset, offset + limit - 1);
 
   if (post_type) {
     query = query.eq('post_type', post_type);
@@ -97,6 +121,13 @@ export async function getFeedPosts(
       is_saved: !!userSave,
     };
   });
+
+  // 친구 우선 정렬: 친구 글을 상단에, 나머지는 최신순 유지
+  if (sort === 'friends' && friendIds.length > 0) {
+    const friendPosts = posts.filter((p) => friendIds.includes(p.clerk_user_id));
+    const otherPosts = posts.filter((p) => !friendIds.includes(p.clerk_user_id));
+    return { posts: [...friendPosts, ...otherPosts], total: count || 0 };
+  }
 
   return { posts, total: count || 0 };
 }

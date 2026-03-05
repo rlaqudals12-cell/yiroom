@@ -27,9 +27,7 @@ export function CoachHeader({ contextSummary }: CoachHeaderProps) {
               AI
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            운동, 영양, 피부 관리 맞춤 조언
-          </p>
+          <p className="text-sm text-muted-foreground">운동, 영양, 피부 관리 맞춤 조언</p>
         </div>
 
         {/* 컨텍스트 정보 버튼 */}
@@ -37,8 +35,10 @@ export function CoachHeader({ contextSummary }: CoachHeaderProps) {
           <button
             onClick={() => setShowInfo(!showInfo)}
             className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+            aria-label="분석 데이터 정보 보기"
+            aria-expanded={showInfo}
           >
-            <Info className="w-5 h-5 text-muted-foreground" />
+            <Info className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -55,8 +55,9 @@ export function CoachHeader({ contextSummary }: CoachHeaderProps) {
             <button
               onClick={() => setShowInfo(false)}
               className="p-1 rounded-full hover:bg-muted/50"
+              aria-label="정보 패널 닫기"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
         </div>

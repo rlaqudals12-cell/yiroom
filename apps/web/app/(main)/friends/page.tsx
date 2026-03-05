@@ -53,7 +53,7 @@ export default async function FriendsPage() {
       </div>
 
       {/* 통계 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
             <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
@@ -98,9 +98,7 @@ export default async function FriendsPage() {
                 >
                   <div>
                     <div className="font-medium">{request.requesterName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Lv.{request.requesterLevel}
-                    </div>
+                    <div className="text-sm text-muted-foreground">Lv.{request.requesterLevel}</div>
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline">

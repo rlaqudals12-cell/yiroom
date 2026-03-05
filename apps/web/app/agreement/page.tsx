@@ -108,7 +108,7 @@ export default function AgreementPage() {
       router.push('/dashboard');
     } catch (err) {
       console.error('[Agreement] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했습니다');
+      toast.error('오류가 발생했어요. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

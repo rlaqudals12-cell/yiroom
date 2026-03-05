@@ -56,6 +56,7 @@ export function RegionSelector({
         )}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
+        aria-label={`지역 선택: ${regionInfo.name}`}
       >
         <span className="text-lg" role="img" aria-label={regionInfo.nameEn}>
           {regionInfo.flag}
@@ -72,7 +73,11 @@ export function RegionSelector({
       {isOpen && (
         <>
           {/* 백드롭 */}
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+            role="presentation"
+          />
 
           {/* 메뉴 */}
           <div

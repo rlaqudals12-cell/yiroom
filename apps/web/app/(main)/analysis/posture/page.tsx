@@ -63,6 +63,8 @@ export default function PostureAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  // API 완료 상태 (로딩 프로그레스 동기화)
+  const [isApiComplete, setIsApiComplete] = useState(false);
   const analysisStartedRef = useRef(false);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-자세분석-결과');
 
@@ -111,6 +113,7 @@ export default function PostureAnalysisPage() {
     setSideImage(file);
     setStep('loading');
     setError(null);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -170,17 +173,20 @@ export default function PostureAnalysisPage() {
       setShowConfetti(true);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
       setStep('front-upload');
     } finally {
+      setIsApiComplete(true);
       setIsAnalyzing(false);
     }
   }, [frontImage, sideImage, isSignedIn]);
 
-  // 로딩 애니메이션 완료 시 분석 시작
-  const handleAnalysisComplete = useCallback(() => {
-    runAnalysis();
-  }, [runAnalysis]);
+  // 로딩 단계 진입 시 즉시 API 호출 시작
+  useEffect(() => {
+    if (step === 'loading') {
+      runAnalysis();
+    }
+  }, [step, runAnalysis]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {
@@ -190,6 +196,7 @@ export default function PostureAnalysisPage() {
     setStep('guide');
     setError(null);
     setShowConfetti(false);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -286,7 +293,7 @@ export default function PostureAnalysisPage() {
             </div>
           )}
 
-          {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
+          {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />

@@ -37,6 +37,18 @@ export {
   type ClothingClassificationResult,
 } from './imageProcessing';
 
+// Capsule Bridge (캡슐 연동)
+export {
+  getItemsForCapsule,
+  estimateDepletion,
+  getRepurchaseNeeded,
+  checkGapAgainstInventory,
+  type CapsuleDomain,
+  type DepletionEstimate,
+  type GapItem,
+  type GapCheckResult,
+} from './capsule-bridge';
+
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {
   calculateMatchScore,

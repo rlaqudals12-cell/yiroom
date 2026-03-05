@@ -16,11 +16,7 @@ interface LevelProgressProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function LevelProgress({
-  levelInfo,
-  showDetails = true,
-  size = 'md',
-}: LevelProgressProps) {
+export function LevelProgress({ levelInfo, showDetails = true, size = 'md' }: LevelProgressProps) {
   const tierColor = TIER_COLORS[levelInfo.tier];
   const tierGradient = TIER_GRADIENT[levelInfo.tier];
 
@@ -54,7 +50,7 @@ export function LevelProgress({
         className={cn(
           sizeClass.level,
           'flex items-center justify-center rounded-full font-bold text-white bg-gradient-to-br',
-          tierGradient,
+          tierGradient
         )}
       >
         {levelInfo.level}
@@ -75,11 +71,18 @@ export function LevelProgress({
         )}
 
         {/* 프로그레스 바 */}
-        <div className={cn(sizeClass.bar, 'bg-gray-100 rounded-full overflow-hidden')}>
+        <div
+          className={cn(sizeClass.bar, 'bg-gray-100 rounded-full overflow-hidden')}
+          role="progressbar"
+          aria-valuenow={Math.round(levelInfo.xpProgress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`레벨 진행: ${Math.round(levelInfo.xpProgress)}%`}
+        >
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500 bg-gradient-to-r',
-              tierGradient,
+              tierGradient
             )}
             style={{ width: `${levelInfo.xpProgress}%` }}
           />
@@ -107,7 +110,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
       className={cn(
         'p-4 rounded-2xl bg-white border shadow-sm space-y-4',
         tierColor.border,
-        className,
+        className
       )}
     >
       {/* 헤더 */}
@@ -116,7 +119,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
         <div
           className={cn(
             'w-16 h-16 flex items-center justify-center rounded-full font-bold text-2xl text-white bg-gradient-to-br shadow-lg',
-            tierGradient,
+            tierGradient
           )}
         >
           {levelInfo.level}
@@ -125,9 +128,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
         {/* 티어 정보 */}
         <div>
           <p className="text-sm text-gray-500">현재 레벨</p>
-          <p className={cn('text-xl font-bold', tierColor.text)}>
-            {levelInfo.tierName}
-          </p>
+          <p className={cn('text-xl font-bold', tierColor.text)}>{levelInfo.tierName}</p>
         </div>
       </div>
 
@@ -144,7 +145,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500 bg-gradient-to-r',
-              tierGradient,
+              tierGradient
             )}
             style={{ width: `${levelInfo.xpProgress}%` }}
           />
@@ -183,7 +184,7 @@ export function TierBadge({
       className={cn(
         sizeClasses[size],
         'flex items-center justify-center rounded-full font-bold text-white bg-gradient-to-br',
-        tierGradient,
+        tierGradient
       )}
       title={`레벨 ${level} - ${TIER_NAMES[tier]}`}
     >

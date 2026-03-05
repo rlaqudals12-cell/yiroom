@@ -4,7 +4,8 @@ import { LOADING_TIPS } from '@/lib/mock/skin-analysis';
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  isApiComplete?: boolean;
+  onComplete?: () => void;
 }
 
 // S-1 피부 분석 항목 목록
@@ -22,9 +23,10 @@ function SkinAnalysisItems() {
   );
 }
 
-export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export default function AnalysisLoading({ isApiComplete, onComplete }: AnalysisLoadingProps) {
   return (
     <AnalysisLoadingBase
+      isApiComplete={isApiComplete}
       onComplete={onComplete}
       tips={LOADING_TIPS}
       analysisItems={<SkinAnalysisItems />}

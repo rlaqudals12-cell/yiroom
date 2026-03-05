@@ -127,8 +127,8 @@ export default function NutritionResultPage() {
         throw new Error('Failed to save settings');
       }
 
-      // 성공 시 대시보드로 이동 (영양 섹션 포함)
-      router.push('/dashboard');
+      // 성공 시 홈으로 이동
+      router.push('/home');
     } catch (err) {
       console.error('Save error:', err);
       setError('저장 중 오류가 발생했어요. 다시 시도해주세요.');
@@ -171,12 +171,12 @@ export default function NutritionResultPage() {
         colors={['#22c55e', '#16a34a', '#15803d', '#10b981', '#6366f1']}
       />
 
-      <div ref={shareRef} className="space-y-6">
+      <div ref={shareRef} className="space-y-6" data-testid="nutrition-result-page">
         {/* 헤더 */}
         <FadeInUp>
           <div className="text-center">
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-8 w-8 text-green-600" />
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <h1 className="text-foreground mb-2 text-2xl font-bold">설정 완료!</h1>
             <p className="text-muted-foreground">맞춤 영양 목표가 준비되었어요</p>

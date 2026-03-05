@@ -7,3 +7,4 @@ export { PageViewsChart } from './PageViewsChart';
 export { TopPagesTable } from './TopPagesTable';
 export { TopFeaturesTable } from './TopFeaturesTable';
 export { DevicePieChart } from './DevicePieChart';
+export { SystemMonitoringTab } from './SystemMonitoringTab';

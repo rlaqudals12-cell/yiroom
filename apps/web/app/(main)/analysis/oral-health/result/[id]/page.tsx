@@ -9,8 +9,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { ShareButton, PrintButton } from '@/components/share';
+import { createOralHealthShareData, useAnalysisShare } from '@/hooks/useAnalysisShare';
 import type { OralHealthAssessment } from '@/types/oral-health';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { ResultPageInsights } from '@/components/insights';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const OralHealthResultCard = dynamic(
@@ -111,6 +115,30 @@ export default function OralHealthResultPage(): React.JSX.Element {
     router.push('/analysis/oral-health?forceNew=true');
   }, [router]);
 
+  // 밝기 라벨 변환
+  const brightnessLabels: Record<string, string> = {
+    very_bright: '매우 밝음',
+    bright: '밝음',
+    medium: '보통',
+    dark: '어두움',
+    very_dark: '매우 어두움',
+  };
+
+  // 공유 데이터 생성
+  const shareData = assessment
+    ? createOralHealthShareData({
+        overallScore: assessment.overallScore,
+        brightnessLabel: assessment.toothColor?.interpretation?.brightness
+          ? brightnessLabels[assessment.toothColor.interpretation.brightness]
+          : undefined,
+        inflammationScore: assessment.gumHealth?.inflammationScore,
+      })
+    : createOralHealthShareData({ overallScore: 0 });
+  const { share: handleShare, loading: shareLoading } = useAnalysisShare(
+    shareData,
+    '이룸 구강건강 분석 결과'
+  );
+
   // 로딩 상태
   if (!isLoaded || isLoading) {
     return (
@@ -185,14 +213,24 @@ export default function OralHealthResultPage(): React.JSX.Element {
             <h1 className="text-lg font-bold text-foreground">구강건강 분석 결과</h1>
             <AIBadge variant="small" />
           </div>
-          <div className="w-16" />
+          <div className="flex gap-2">
+            <ShareButton onShare={handleShare} loading={shareLoading} variant="ghost" size="sm" />
+            <PrintButton title="이룸 구강건강 분석 결과" variant="ghost" size="sm" />
+          </div>
         </header>
+
+        {/* AI Fallback 알림 */}
+        {assessment?.usedFallback && (
+          <div className="mb-6">
+            <MockDataNotice />
+          </div>
+        )}
 
         {/* 종합 점수 */}
         {assessment && (
           <>
-            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 text-center mb-6">
-              <div className="w-20 h-20 mx-auto rounded-full bg-white shadow-lg flex items-center justify-center mb-4">
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 rounded-xl p-6 text-center mb-6">
+              <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-card shadow-lg flex items-center justify-center mb-4">
                 <span className="text-3xl font-bold text-cyan-600">{assessment.overallScore}</span>
               </div>
               <h2 className="text-xl font-bold text-foreground">구강건강 점수</h2>
@@ -213,6 +251,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
 
             {/* 다음 분석 추천 */}
             <ContextLinkingCard currentModule="oral-health" />
+            <ResultPageInsights currentModule="oral-health" />
           </>
         )}
       </div>

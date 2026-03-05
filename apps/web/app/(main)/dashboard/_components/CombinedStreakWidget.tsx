@@ -145,7 +145,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
             {/* 설정 + 총 streak 숫자 */}
             <div className="flex items-center gap-3">
               <Link
-                href="/settings"
+                href="/profile/settings?tab=notifications"
                 className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
                 title="알림 설정"
               >

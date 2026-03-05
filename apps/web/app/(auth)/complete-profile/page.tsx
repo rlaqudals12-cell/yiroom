@@ -62,8 +62,8 @@ export default function CompleteProfilePage() {
         return;
       }
 
-      // 성공 - 대시보드로 이동
-      router.push('/dashboard');
+      // 성공 - 홈으로 이동
+      router.push('/home');
     } catch (err) {
       console.error('Failed to save birthdate:', err);
       setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -89,12 +89,8 @@ export default function CompleteProfilePage() {
 
         {/* 제목 */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
-            생년월일을 입력해 주세요
-          </h1>
-          <p className="text-muted-foreground">
-            서비스 이용을 위해 생년월일 확인이 필요합니다.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">생년월일을 입력해 주세요</h1>
+          <p className="text-muted-foreground">서비스 이용을 위해 생년월일 확인이 필요합니다.</p>
         </div>
 
         {/* 안내 박스 */}
@@ -102,18 +98,15 @@ export default function CompleteProfilePage() {
           <p className="text-sm text-blue-800">
             <strong>왜 생년월일이 필요한가요?</strong>
             <br />
-            한국 청소년보호법에 따라 만 {MINIMUM_AGE}세 이상만 서비스를 이용할 수
-            있습니다. 입력하신 생년월일은 연령 확인 목적으로만 사용됩니다.
+            한국 청소년보호법에 따라 만 {MINIMUM_AGE}세 이상만 서비스를 이용할 수 있습니다. 입력하신
+            생년월일은 연령 확인 목적으로만 사용됩니다.
           </p>
         </div>
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label
-              htmlFor="birthDate"
-              className="block text-sm font-medium text-foreground"
-            >
+            <label htmlFor="birthDate" className="block text-sm font-medium text-foreground">
               생년월일
             </label>
             <input

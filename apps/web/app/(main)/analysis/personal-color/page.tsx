@@ -101,6 +101,8 @@ export default function PersonalColorPage() {
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // API 완료 상태 (로딩 프로그레스 동기화)
+  const [isApiComplete, setIsApiComplete] = useState(false);
   const analysisStartedRef = useRef(false);
   // 이미지 동의 상태 (가이드 체크박스에서 설정됨)
   const [existingConsent, setExistingConsent] = useState<ImageConsent | null>(null);
@@ -382,12 +384,14 @@ export default function PersonalColorPage() {
   const handleWristPhotoSelect = useCallback((file: File) => {
     setWristImageFile(file);
     setStep('loading');
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
   // 손목 사진 건너뛰기 → 얼굴 사진만으로 분석
   const handleWristSkip = useCallback(() => {
     setStep('loading');
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -467,10 +471,11 @@ export default function PersonalColorPage() {
       router.push(`/analysis/personal-color/result/${data.data.id}`);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
       // 갤러리 플로우인지 카메라 플로우인지에 따라 돌아갈 step 결정
       setStep('guide'); // 가이드로 돌아가서 사용자가 다시 선택하도록
     } finally {
+      setIsApiComplete(true);
       setIsAnalyzing(false);
     }
   }, [
@@ -483,10 +488,12 @@ export default function PersonalColorPage() {
     currentSessionConsent,
   ]);
 
-  // 로딩 애니메이션 완료 시 분석 시작
-  const handleAnalysisComplete = useCallback(() => {
-    runAnalysis();
-  }, [runAnalysis]);
+  // 로딩 단계 진입 시 즉시 API 호출 시작
+  useEffect(() => {
+    if (step === 'loading') {
+      runAnalysis();
+    }
+  }, [step, runAnalysis]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {
@@ -502,6 +509,7 @@ export default function PersonalColorPage() {
     setStep('guide');
     setError(null);
     setCurrentSessionConsent(false); // 세션 동의 상태 초기화
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, [imageUrl]);
 
@@ -552,7 +560,7 @@ export default function PersonalColorPage() {
 
         {/* 에러 메시지 */}
         {error && (step === 'upload' || step === 'guide') && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
             <p className="font-medium">분석 중 오류가 발생했어요</p>
             <p className="mt-1 text-red-500">{error}</p>
             <p className="mt-2 text-xs text-red-400">
@@ -563,9 +571,9 @@ export default function PersonalColorPage() {
 
         {/* 기존 분석 결과 배너 (낮은 신뢰도인 경우에만 표시 - 높은 신뢰도는 자동 리디렉트) */}
         {step === 'guide' && existingAnalysis && !checkingExisting && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                 <Palette className="w-5 h-5 text-amber-600" />
               </div>
               <div>
@@ -582,13 +590,13 @@ export default function PersonalColorPage() {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-amber-700 mb-3">
+            <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
               이전 분석의 신뢰도가 낮아요. 더 정확한 결과를 위해 재분석을 권장해요.
             </p>
             <div className="flex gap-2">
               <Link
                 href={`/analysis/personal-color/result/${existingAnalysis.id}`}
-                className="flex-1 px-3 py-2 text-sm text-center bg-white border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+                className="flex-1 px-3 py-2 text-sm text-center bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
               >
                 기존 결과 보기
               </Link>
@@ -639,7 +647,7 @@ export default function PersonalColorPage() {
           />
         )}
 
-        {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
+        {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
         {step === 'result' && result && <AnalysisResult result={result} onRetry={handleRetry} />}
       </div>

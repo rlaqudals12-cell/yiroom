@@ -76,10 +76,13 @@ export interface CreateCommentInput {
   parent_id?: string;
 }
 
+export type FeedSortType = 'recent' | 'popular' | 'friends';
+
 export interface FeedListParams {
   page?: number;
   limit?: number;
   post_type?: PostType;
   hashtag?: string;
   user_id?: string;
+  sort?: FeedSortType;
 }

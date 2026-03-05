@@ -83,7 +83,7 @@ export default function YearlyReviewPage() {
     return (
       <div className="container max-w-lg mx-auto px-4 py-6" data-testid="yearly-review-loading">
         <div className="flex items-center gap-2 mb-6">
-          <Link href="/dashboard">
+          <Link href="/home">
             <Button variant="ghost" size="icon">
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -103,7 +103,7 @@ export default function YearlyReviewPage() {
     return (
       <div className="container max-w-lg mx-auto px-4 py-6" data-testid="yearly-review-error">
         <div className="flex items-center gap-2 mb-6">
-          <Link href="/dashboard">
+          <Link href="/home">
             <Button variant="ghost" size="icon">
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -113,7 +113,7 @@ export default function YearlyReviewPage() {
         <div className="text-center py-12">
           <p className="text-muted-foreground">{error || '데이터를 불러올 수 없어요.'}</p>
           <Button asChild className="mt-4">
-            <Link href="/dashboard">대시보드로 돌아가기</Link>
+            <Link href="/home">대시보드로 돌아가기</Link>
           </Button>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function YearlyReviewPage() {
 
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-6">
-        <Link href="/dashboard">
+        <Link href="/home">
           <Button variant="ghost" size="icon">
             <ChevronLeft className="w-5 h-5" />
           </Button>

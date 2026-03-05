@@ -114,6 +114,8 @@ function CommentItem({
             <button
               onClick={() => setShowReplies(!showReplies)}
               className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 mt-2 transition-colors"
+              aria-expanded={showReplies}
+              aria-label={showReplies ? '답글 숨기기' : `답글 ${comment.replies?.length}개 보기`}
             >
               {showReplies ? (
                 <>

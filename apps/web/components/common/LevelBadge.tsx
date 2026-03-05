@@ -61,9 +61,9 @@ export function LevelBadge({
         <div
           className={cn('flex items-center justify-center rounded-full font-medium', styles.badge)}
           style={{ color: color.hex }}
-          title={name}
+          aria-label={name}
         >
-          {icon}
+          <span aria-hidden="true">{icon}</span>
         </div>
       )}
       {showLabel && (

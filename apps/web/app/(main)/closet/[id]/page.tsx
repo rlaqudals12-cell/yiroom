@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -18,6 +19,7 @@ import {
   Shirt,
   TrendingUp,
   Palette,
+  Ruler,
 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
@@ -43,16 +45,47 @@ import {
   Season,
   Occasion,
 } from '@/types/inventory';
+import { SizeRecommendationCard } from '@/components/smart-matching';
+import { getSizeRecommendation } from '@/lib/smart-matching/size-recommend';
+import type { SizeRecommendation } from '@/types/smart-matching';
+import type { ClothingCategory } from '@/types/smart-matching';
+
+// sub_category → ClothingCategory 매핑
+const SUB_CATEGORY_MAP: Record<string, ClothingCategory> = {
+  top: 'top',
+  shirt: 'top',
+  tshirt: 'top',
+  blouse: 'top',
+  sweater: 'top',
+  hoodie: 'top',
+  bottom: 'bottom',
+  pants: 'bottom',
+  jeans: 'bottom',
+  skirt: 'bottom',
+  shorts: 'bottom',
+  outer: 'outer',
+  jacket: 'outer',
+  coat: 'outer',
+  cardigan: 'outer',
+  dress: 'dress',
+  onepiece: 'dress',
+  shoes: 'shoes',
+  sneakers: 'shoes',
+  boots: 'shoes',
+  sandals: 'shoes',
+};
 
 export default function ClothingDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<InventoryItemDB | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [sizeRec, setSizeRec] = useState<SizeRecommendation | null>(null);
 
   // 데이터 로드
   useEffect(() => {
@@ -77,6 +110,23 @@ export default function ClothingDetailPage() {
 
     loadItem();
   }, [supabase, itemId, router]);
+
+  // 사이즈 추천 로드 (브랜드가 있는 의류만)
+  useEffect(() => {
+    async function loadSizeRecommendation(): Promise<void> {
+      if (!user?.id || !item?.brand || item.category !== 'closet') return;
+
+      const category = SUB_CATEGORY_MAP[item.sub_category?.toLowerCase() ?? ''] ?? 'top';
+      try {
+        const rec = await getSizeRecommendation(user.id, item.brand, item.brand, category);
+        setSizeRec(rec);
+      } catch (err) {
+        console.error('[ClothingDetail] Size recommendation error:', err);
+      }
+    }
+
+    loadSizeRecommendation();
+  }, [user?.id, item?.brand, item?.category, item?.sub_category]);
 
   // 즐겨찾기 토글
   const handleFavoriteToggle = async () => {
@@ -126,10 +176,7 @@ export default function ClothingDetailPage() {
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from('user_inventory')
-        .delete()
-        .eq('id', itemId);
+      const { error } = await supabase.from('user_inventory').delete().eq('id', itemId);
 
       if (!error) {
         router.push('/closet');
@@ -181,10 +228,7 @@ export default function ClothingDetailPage() {
               onClick={handleFavoriteToggle}
               className={item.is_favorite ? 'text-red-500' : ''}
             >
-              <Heart
-                className="w-5 h-5"
-                fill={item.is_favorite ? 'currentColor' : 'none'}
-              />
+              <Heart className="w-5 h-5" fill={item.is_favorite ? 'currentColor' : 'none'} />
             </Button>
             <Button
               variant="ghost"
@@ -195,11 +239,7 @@ export default function ClothingDetailPage() {
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive"
-                >
+                <Button variant="ghost" size="icon" className="text-destructive">
                   <Trash2 className="w-5 h-5" />
                 </Button>
               </AlertDialogTrigger>
@@ -229,11 +269,7 @@ export default function ClothingDetailPage() {
       {/* 이미지 */}
       <div className="aspect-square bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.image_url}
-          alt={item.name}
-          className="w-full h-full object-contain"
-        />
+        <img src={item.image_url} alt={item.name} className="w-full h-full object-contain" />
       </div>
 
       {/* 정보 */}
@@ -241,9 +277,7 @@ export default function ClothingDetailPage() {
         {/* 기본 정보 */}
         <div>
           <h1 className="text-2xl font-bold">{item.name}</h1>
-          {item.brand && (
-            <p className="text-muted-foreground mt-1">{item.brand}</p>
-          )}
+          {item.brand && <p className="text-muted-foreground mt-1">{item.brand}</p>}
         </div>
 
         {/* 착용 통계 */}
@@ -340,10 +374,20 @@ export default function ClothingDetailPage() {
           )}
         </div>
 
+        {/* 사이즈 추천 */}
+        {sizeRec && sizeRec.confidence > 20 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Ruler className="w-5 h-5 text-blue-500" />
+              <h2 className="font-semibold">사이즈 추천</h2>
+            </div>
+            <SizeRecommendationCard recommendation={sizeRec} showFeedback={false} />
+          </div>
+        )}
+
         {/* 등록 정보 */}
         <div className="text-xs text-muted-foreground pt-4 border-t">
-          등록일:{' '}
-          {format(new Date(item.created_at), 'yyyy년 M월 d일', { locale: ko })}
+          등록일: {format(new Date(item.created_at), 'yyyy년 M월 d일', { locale: ko })}
         </div>
       </div>
     </div>

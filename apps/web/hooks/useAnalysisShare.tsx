@@ -7,7 +7,7 @@ import { AnalysisShareCard } from '@/components/share';
 import { captureElementAsImage, shareImage } from '@/lib/share';
 
 // 분석 타입
-type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
+type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
 
 // 공유 카드 데이터
 interface ShareCardData {
@@ -155,6 +155,32 @@ export function createMakeupShareData(result: MakeupData): ShareCardData {
     subtitle: '이룸 AI 분석 결과',
     score: result.overallScore,
     typeEmoji: '💄',
+    highlights,
+  };
+}
+
+// 구강건강 분석 결과에서 공유 데이터 생성
+interface OralHealthShareInput {
+  overallScore: number;
+  brightnessLabel?: string;
+  inflammationScore?: number;
+}
+
+export function createOralHealthShareData(result: OralHealthShareInput): ShareCardData {
+  const highlights: ShareCardData['highlights'] = [];
+  if (result.brightnessLabel) {
+    highlights.push({ label: '밝기', value: result.brightnessLabel });
+  }
+  if (result.inflammationScore !== undefined) {
+    highlights.push({ label: '잇몸', value: `${100 - result.inflammationScore}점` });
+  }
+
+  return {
+    analysisType: 'oral-health',
+    title: '구강건강 점수',
+    subtitle: '이룸 AI 분석 결과',
+    score: result.overallScore,
+    typeEmoji: '🦷',
     highlights,
   };
 }

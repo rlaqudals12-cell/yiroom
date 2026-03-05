@@ -4,7 +4,8 @@ import { POSTURE_LOADING_TIPS } from '@/lib/mock/posture-analysis';
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  isApiComplete?: boolean;
+  onComplete?: () => void;
 }
 
 // A-1 자세 분석 항목 목록
@@ -21,9 +22,10 @@ function PostureAnalysisItems() {
   );
 }
 
-export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export default function AnalysisLoading({ isApiComplete, onComplete }: AnalysisLoadingProps) {
   return (
     <AnalysisLoadingBase
+      isApiComplete={isApiComplete}
       onComplete={onComplete}
       tips={POSTURE_LOADING_TIPS}
       analysisItems={<PostureAnalysisItems />}

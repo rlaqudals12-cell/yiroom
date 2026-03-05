@@ -51,6 +51,8 @@ export default function BodyAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  // API 완료 상태 (로딩 프로그레스 동기화)
+  const [isApiComplete, setIsApiComplete] = useState(false);
   const analysisStartedRef = useRef(false);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-체형분석-결과');
 
@@ -146,6 +148,7 @@ export default function BodyAnalysisPage() {
     setMultiAngleImages(images);
     setStep('loading');
     setError(null);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -160,6 +163,7 @@ export default function BodyAnalysisPage() {
     setImageFile(file);
     setStep('loading');
     setError(null);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -235,14 +239,17 @@ export default function BodyAnalysisPage() {
       setError('분석에 실패했어요. 다시 시도해주세요.');
       setStep('multi-angle');
     } finally {
+      setIsApiComplete(true);
       setIsAnalyzing(false);
     }
   }, [imageFile, multiAngleImages, userInput, isSignedIn]);
 
-  // 로딩 애니메이션 완료 시 분석 시작
-  const handleAnalysisComplete = useCallback(() => {
-    runAnalysis();
-  }, [runAnalysis]);
+  // 로딩 단계 진입 시 즉시 API 호출 시작
+  useEffect(() => {
+    if (step === 'loading') {
+      runAnalysis();
+    }
+  }, [step, runAnalysis]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {
@@ -253,6 +260,7 @@ export default function BodyAnalysisPage() {
     setStep('guide');
     setError(null);
     setShowConfetti(false);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -345,7 +353,7 @@ export default function BodyAnalysisPage() {
             <KnownBodyTypeInput onSelect={handleKnownTypeSelect} onBack={handleKnownTypeBack} />
           )}
 
-          {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
+          {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />

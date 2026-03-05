@@ -114,8 +114,9 @@ export function ClothingGrid({
             type="button"
             onClick={onAddNew}
             className="aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5 transition-colors"
+            aria-label="옷 아이템 추가"
           >
-            <Plus className="w-6 h-6 text-muted-foreground" />
+            <Plus className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">추가</span>
           </button>
         )}

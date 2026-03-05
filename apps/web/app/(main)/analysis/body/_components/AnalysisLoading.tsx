@@ -4,7 +4,8 @@ import { LOADING_TIPS } from '@/lib/mock/body-analysis';
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  isApiComplete?: boolean;
+  onComplete?: () => void;
 }
 
 // C-1 체형 분석 항목 목록
@@ -21,10 +22,11 @@ function BodyAnalysisItems() {
   );
 }
 
-export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export default function AnalysisLoading({ isApiComplete, onComplete }: AnalysisLoadingProps) {
   return (
     <div data-testid="body-analysis-loading">
       <AnalysisLoadingBase
+        isApiComplete={isApiComplete}
         onComplete={onComplete}
         tips={LOADING_TIPS}
         analysisItems={<BodyAnalysisItems />}

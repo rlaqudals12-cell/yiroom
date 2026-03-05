@@ -85,7 +85,7 @@ export default function StyleOnboardingPage() {
       router.push('/style');
     } catch (err) {
       console.error('[StyleOnboarding] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
+      toast.error('정보 저장 중 오류가 발생했어요. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -182,11 +182,15 @@ export default function StyleOnboardingPage() {
                   <div
                     className={cn(
                       'h-full transition-all',
-                      classifyByRange(bmi, [
-                        { max: 18.5, result: 'bg-blue-500' },
-                        { max: 23, result: 'bg-green-500' },
-                        { max: 25, result: 'bg-yellow-500' },
-                      ], 'bg-red-500')
+                      classifyByRange(
+                        bmi,
+                        [
+                          { max: 18.5, result: 'bg-blue-500' },
+                          { max: 23, result: 'bg-green-500' },
+                          { max: 25, result: 'bg-yellow-500' },
+                        ],
+                        'bg-red-500'
+                      )
                     )}
                     style={{ width: `${Math.min((bmi / 35) * 100, 100)}%` }}
                   />

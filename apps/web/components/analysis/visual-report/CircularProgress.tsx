@@ -146,6 +146,8 @@ export function CircularProgress({
     <div
       className={cn('relative inline-flex items-center justify-center', className)}
       data-testid="circular-progress"
+      role="img"
+      aria-label={`진행도: ${displayScore}점`}
     >
       <svg
         width={config.size}

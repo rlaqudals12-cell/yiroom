@@ -1,10 +1,13 @@
 import { Suspense } from 'react';
 import { currentUser } from '@clerk/nextjs/server';
+import { BottomNav } from '@/components/BottomNav';
 import { HomeHeader } from './_components/HomeHeader';
 import { HomeGreeting } from './_components/HomeGreeting';
 import HomeAnalysisSection from './_components/HomeAnalysisSection';
 import HomeTodayRecommendation from './_components/HomeTodayRecommendation';
 import HomeRecentlyViewed from './_components/HomeRecentlyViewed';
+import HomeDashboardWidgets from './_components/HomeDashboardWidgets';
+import HomeOnboardingChecklist from './_components/HomeOnboardingChecklist';
 
 // 스켈레톤 컴포넌트 - 인라인으로 정의하여 빠른 렌더링
 function AnalysisSkeleton() {
@@ -72,15 +75,34 @@ function RecentlyViewedSkeleton() {
   );
 }
 
+function DashboardWidgetsSkeleton() {
+  return (
+    <div className="space-y-5">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm animate-pulse"
+        >
+          <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
+          <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * 홈 탭 - Server Component
  * LCP 최적화: 정적 헤더와 인사말을 Server에서 즉시 렌더링
  *
  * 구조:
  * - page.tsx (Server Component): 헤더 + 인사말 (LCP)
+ * - HomeOnboardingChecklist (Client): 신규 사용자 3단계 가이드 (P0 #3)
  * - HomeAnalysisSection (Client): 분석 데이터 (Suspense)
  * - HomeTodayRecommendation (Client): 추천 섹션 (Suspense)
  * - HomeRecentlyViewed (Client): 최근 본 제품 (Suspense)
+ * - HomeDashboardWidgets (Client): 오늘기록/성장/챌린지/옷장 (Suspense)
+ *   → /dashboard 위젯 통합 (P0 #2: 역할 혼란 해소)
  */
 export default async function HomePage() {
   // Server에서 사용자 정보 미리 가져오기 (LCP 최적화)
@@ -100,6 +122,9 @@ export default async function HomePage() {
         {/* 인사말 - Server Component (LCP 요소) */}
         <HomeGreeting userName={userName} />
 
+        {/* 온보딩 체크리스트 - 신규 사용자만 (P0 #3) */}
+        <HomeOnboardingChecklist />
+
         {/* AI 분석 섹션 - Client Component (Suspense boundary) */}
         <Suspense fallback={<AnalysisSkeleton />}>
           <HomeAnalysisSection />
@@ -114,7 +139,14 @@ export default async function HomePage() {
         <Suspense fallback={<RecentlyViewedSkeleton />}>
           <HomeRecentlyViewed />
         </Suspense>
+
+        {/* 대시보드 위젯 통합: 오늘기록/성장/챌린지/옷장 (로그인 시만) */}
+        <Suspense fallback={<DashboardWidgetsSkeleton />}>
+          <HomeDashboardWidgets />
+        </Suspense>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

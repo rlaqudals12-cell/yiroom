@@ -50,7 +50,7 @@ export function FAQClient({ faqs }: FAQClientProps) {
     <div className="container max-w-2xl py-6 space-y-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard">
+        <Link href="/home">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>

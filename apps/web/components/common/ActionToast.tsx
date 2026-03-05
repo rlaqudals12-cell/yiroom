@@ -33,10 +33,9 @@ export function ActionToast({ type, message, productName }: ActionToastProps) {
   return (
     <div
       data-testid="action-toast"
-      className={cn(
-        'flex items-center gap-3 rounded-lg border p-3',
-        TOAST_COLORS[type]
-      )}
+      className={cn('flex items-center gap-3 rounded-lg border p-3', TOAST_COLORS[type])}
+      role="status"
+      aria-live="polite"
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
         {TOAST_ICONS[type]}
@@ -44,9 +43,7 @@ export function ActionToast({ type, message, productName }: ActionToastProps) {
       <div className="flex flex-col">
         <span className="font-medium text-foreground">{message}</span>
         {productName && (
-          <span className="text-sm text-muted-foreground line-clamp-1">
-            {productName}
-          </span>
+          <span className="text-sm text-muted-foreground line-clamp-1">{productName}</span>
         )}
       </div>
     </div>

@@ -106,7 +106,7 @@ export default function AddPantryItemPage() {
       router.push('/inventory/pantry');
     } catch (err) {
       console.error('[AddPantryItem] Submit error:', err);
-      toast.error(err instanceof Error ? err.message : '오류가 발생했어요');
+      toast.error('재료 추가 중 오류가 발생했어요');
     } finally {
       setIsSubmitting(false);
     }

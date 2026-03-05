@@ -4,7 +4,8 @@ import { LOADING_TIPS } from '@/lib/mock/personal-color';
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  isApiComplete?: boolean;
+  onComplete?: () => void;
 }
 
 // PC-1 퍼스널 컬러 분석 항목 목록
@@ -21,9 +22,10 @@ function PersonalColorAnalysisItems() {
   );
 }
 
-export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export default function AnalysisLoading({ isApiComplete, onComplete }: AnalysisLoadingProps) {
   return (
     <AnalysisLoadingBase
+      isApiComplete={isApiComplete}
       onComplete={onComplete}
       tips={LOADING_TIPS}
       analysisItems={<PersonalColorAnalysisItems />}

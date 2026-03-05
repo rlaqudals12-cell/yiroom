@@ -1,22 +1,16 @@
 /**
  * AnalysisLoadingBase 컴포넌트 테스트
- * @description 공통 분석 로딩 컴포넌트 테스트
- * @version 1.0
- * @date 2025-12-09
+ * @description 공통 분석 로딩 컴포넌트 (단계별 프로그레스) 테스트
+ * @version 2.0
+ * @date 2026-03-04
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
-// lucide-react mock은 setup.ts에서 글로벌로 제공됨
-
 describe('AnalysisLoadingBase', () => {
-  const mockTips = [
-    '첫 번째 팁입니다.',
-    '두 번째 팁입니다.',
-    '세 번째 팁입니다.',
-  ];
+  const mockTips = ['첫 번째 팁입니다.', '두 번째 팁입니다.', '세 번째 팁입니다.'];
 
   const mockAnalysisItems = (
     <div data-testid="analysis-items">
@@ -46,7 +40,8 @@ describe('AnalysisLoadingBase', () => {
         />
       );
 
-      expect(screen.getByText('분석 중...')).toBeInTheDocument();
+      // preparing 단계의 기본 메시지
+      expect(screen.getByText('이미지를 준비하고 있어요')).toBeInTheDocument();
     });
 
     it('커스텀 로딩 메시지를 표시한다', () => {
@@ -100,7 +95,7 @@ describe('AnalysisLoadingBase', () => {
     });
   });
 
-  describe('프로그레스 애니메이션', () => {
+  describe('단계별 프로그레스', () => {
     it('초기 프로그레스는 0%이다', () => {
       render(
         <AnalysisLoadingBase
@@ -113,34 +108,12 @@ describe('AnalysisLoadingBase', () => {
       expect(screen.getByText('0%')).toBeInTheDocument();
     });
 
-    it('시간이 지나면 프로그레스가 증가한다', () => {
+    it('preparing 단계에서 30%까지 진행한다 (1초)', () => {
       render(
         <AnalysisLoadingBase
           onComplete={mockOnComplete}
           tips={mockTips}
           analysisItems={mockAnalysisItems}
-          duration={1000}
-        />
-      );
-
-      act(() => {
-        vi.advanceTimersByTime(500);
-      });
-
-      // 50% 정도 진행되어야 함
-      const progressBar = screen.getByRole('progressbar');
-      const value = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
-      expect(value).toBeGreaterThan(40);
-      expect(value).toBeLessThan(60);
-    });
-
-    it('duration 후 100%에 도달한다', () => {
-      render(
-        <AnalysisLoadingBase
-          onComplete={mockOnComplete}
-          tips={mockTips}
-          analysisItems={mockAnalysisItems}
-          duration={1000}
         />
       );
 
@@ -148,25 +121,102 @@ describe('AnalysisLoadingBase', () => {
         vi.advanceTimersByTime(1100);
       });
 
-      expect(screen.getByText('100%')).toBeInTheDocument();
+      const progressBar = screen.getByRole('progressbar');
+      const value = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
+      expect(value).toBeGreaterThanOrEqual(30);
     });
 
-    it('100% 도달 후 onComplete를 호출한다', () => {
+    it('analyzing 단계에서 75%까지 느리게 진행한다', () => {
       render(
         <AnalysisLoadingBase
           onComplete={mockOnComplete}
           tips={mockTips}
           analysisItems={mockAnalysisItems}
-          duration={1000}
         />
       );
 
-      // duration(1000ms) + 완료 후 지연(300ms) + 여유분
+      // preparing 완료 (1초) — phase 전환 허용
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+
+      // analyzing 진행 (5초)
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      const progressBar = screen.getByRole('progressbar');
+      const value = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
+      expect(value).toBeGreaterThan(30);
+      expect(value).toBeLessThanOrEqual(75);
+    });
+
+    it('isApiComplete=true 시 generating→complete 단계로 전환하여 100%에 도달한다', () => {
+      const { rerender } = render(
+        <AnalysisLoadingBase
+          onComplete={mockOnComplete}
+          tips={mockTips}
+          analysisItems={mockAnalysisItems}
+          isApiComplete={false}
+        />
+      );
+
+      // preparing 완료
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+
+      // API 완료 신호
+      rerender(
+        <AnalysisLoadingBase
+          onComplete={mockOnComplete}
+          tips={mockTips}
+          analysisItems={mockAnalysisItems}
+          isApiComplete={true}
+        />
+      );
+
+      // generating(0.5초) + complete 전환
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('100%')).toBeInTheDocument();
+    });
+
+    it('complete 후 onComplete를 호출한다', () => {
+      const { rerender } = render(
+        <AnalysisLoadingBase
+          onComplete={mockOnComplete}
+          tips={mockTips}
+          analysisItems={mockAnalysisItems}
+          isApiComplete={false}
+        />
+      );
+
+      // preparing 완료 → analyzing phase 전환
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+
+      // API 완료 신호 → generating phase 전환
+      rerender(
+        <AnalysisLoadingBase
+          onComplete={mockOnComplete}
+          tips={mockTips}
+          analysisItems={mockAnalysisItems}
+          isApiComplete={true}
+        />
+      );
+
+      // generating phase 진행 (50ms intervals, +2, until 95%)
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // complete phase → onComplete 지연(500ms)
       act(() => {
         vi.advanceTimersByTime(1000);
-      });
-      act(() => {
-        vi.advanceTimersByTime(500);
       });
 
       expect(mockOnComplete).toHaveBeenCalledTimes(1);
@@ -180,7 +230,6 @@ describe('AnalysisLoadingBase', () => {
           onComplete={mockOnComplete}
           tips={mockTips}
           analysisItems={mockAnalysisItems}
-          duration={10000}
         />
       );
 
@@ -205,11 +254,10 @@ describe('AnalysisLoadingBase', () => {
           onComplete={mockOnComplete}
           tips={mockTips}
           analysisItems={mockAnalysisItems}
-          duration={20000}
         />
       );
 
-      // 3번째 팁까지
+      // 3번째 팁까지 (9초) → 첫 번째로 순환
       act(() => {
         vi.advanceTimersByTime(9000);
       });

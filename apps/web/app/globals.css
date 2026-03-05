@@ -962,3 +962,49 @@
     animation: none;
   }
 }
+
+/* ========================================
+   인쇄/PDF 내보내기 스타일
+   ======================================== */
+
+@media print {
+  /* 네비게이션/UI 숨김 */
+  header[role="banner"],
+  nav[data-testid="bottom-nav"],
+  [data-print-hide],
+  .pb-bottom-nav {
+    display: none !important;
+  }
+
+  /* 본문 패딩 초기화 */
+  main#main-content {
+    padding-bottom: 0 !important;
+  }
+
+  /* 배경색/그라디언트 인쇄 허용 */
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* 페이지 여백 */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  /* 카드/섹션 페이지 나눔 방지 */
+  .print-no-break {
+    break-inside: avoid;
+  }
+
+  /* 인쇄 전용 요소 표시 */
+  [data-print-only] {
+    display: block !important;
+  }
+
+  /* 그림자/테두리 제거 (잉크 절약) */
+  .shadow-sm, .shadow-md, .shadow-lg {
+    box-shadow: none !important;
+  }
+}

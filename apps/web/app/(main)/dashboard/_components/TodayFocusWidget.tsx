@@ -169,7 +169,7 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
               </span>
             </div>
             <Link
-              href="/settings"
+              href="/profile/settings?tab=notifications"
               className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
               aria-label="알림 설정으로 이동"
             >

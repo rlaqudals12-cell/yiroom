@@ -6,12 +6,13 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShareButton } from '@/components/share';
+import { ShareButton, PrintButton } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ResultPageInsights } from '@/components/insights';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
@@ -388,7 +389,11 @@ export default function HairAnalysisResultPage() {
                           <div
                             className={cn(
                               'h-full rounded-full transition-all',
-                              mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')
+                              mapToClass(
+                                metric.status,
+                                { good: 'bg-green-500', warning: 'bg-red-500' },
+                                'bg-amber-500'
+                              )
                             )}
                             style={{ width: `${metric.value}%` }}
                           />
@@ -487,6 +492,7 @@ export default function HairAnalysisResultPage() {
 
           {/* 다음 분석 추천 */}
           <ContextLinkingCard currentModule="hair" />
+          <ResultPageInsights currentModule="hair" />
         </div>
       </div>
 
@@ -517,6 +523,7 @@ export default function HairAnalysisResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <PrintButton title="이룸 헤어 분석 결과" variant="outline" />
             </div>
           </div>
         </div>

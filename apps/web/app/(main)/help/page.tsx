@@ -135,7 +135,7 @@ export default function HelpPage() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <Link
-            href="/dashboard"
+            href="/home"
             className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
             aria-label="대시보드로 돌아가기"
           >

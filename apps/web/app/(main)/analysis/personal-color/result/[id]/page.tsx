@@ -31,7 +31,7 @@ import {
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
-import { ShareButton } from '@/components/share';
+import { ShareButton, PrintButton } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
@@ -47,6 +47,7 @@ import DetailedEvidenceReport from '@/components/analysis/personal-color/Detaile
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ResultPageInsights } from '@/components/insights';
 import { Shirt } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
@@ -258,7 +259,7 @@ export default function PersonalColorResultPage() {
         /* sessionStorage 복원 실패 무시 */
       }
 
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없어요');
+      setError('결과를 불러올 수 없어요. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -467,6 +468,7 @@ export default function PersonalColorResultPage() {
 
               {/* 다음 분석 추천 */}
               <ContextLinkingCard currentModule="personal-color" />
+              <ResultPageInsights currentModule="personal-color" />
 
               {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
               {(analysisEvidence || imageQuality) && (
@@ -520,6 +522,7 @@ export default function PersonalColorResultPage() {
                     다시 분석하기
                   </Button>
                   <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+                  <PrintButton title="이룸 퍼스널 컬러 분석 결과" variant="outline" />
                 </div>
                 {/* 소셜 공유 버튼 */}
                 <div className="flex justify-center">

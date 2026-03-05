@@ -43,6 +43,8 @@ export default function SkinAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  // API 완료 상태 (로딩 프로그레스 동기화)
+  const [isApiComplete, setIsApiComplete] = useState(false);
   // 이미지 동의 관련 상태
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [existingConsent, setExistingConsent] = useState<ImageConsent | null>(null);
@@ -219,6 +221,7 @@ export default function SkinAnalysisPage() {
       setPendingMultiAngleImages(null);
       setStep('loading');
       setError(null);
+      setIsApiComplete(false);
       analysisStartedRef.current = false;
     },
     []
@@ -400,14 +403,17 @@ export default function SkinAnalysisPage() {
       // 에러 시 촬영 모드에 따라 적절한 단계로 복귀
       setStep(captureMode === 'camera' ? 'camera' : 'upload');
     } finally {
+      setIsApiComplete(true);
       setIsAnalyzing(false);
     }
   }, [imageFile, multiAngleImages, captureMode, isSignedIn, router]);
 
-  // 로딩 애니메이션 완료 시 분석 시작
-  const handleAnalysisComplete = useCallback(() => {
-    runAnalysis();
-  }, [runAnalysis]);
+  // 로딩 단계 진입 시 즉시 API 호출 시작
+  useEffect(() => {
+    if (step === 'loading') {
+      runAnalysis();
+    }
+  }, [step, runAnalysis]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {
@@ -418,6 +424,7 @@ export default function SkinAnalysisPage() {
     setStep('guide');
     setError(null);
     setShowConfetti(false);
+    setIsApiComplete(false);
     analysisStartedRef.current = false;
   }, []);
 
@@ -575,7 +582,7 @@ export default function SkinAnalysisPage() {
             />
           )}
 
-          {step === 'loading' && <AnalysisLoading onComplete={handleAnalysisComplete} />}
+          {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
             <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />

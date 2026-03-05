@@ -3,7 +3,8 @@
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
 
 interface FoodAnalysisLoadingProps {
-  onComplete: () => void;
+  isApiComplete?: boolean;
+  onComplete?: () => void;
 }
 
 // N-1 음식 분석 로딩 팁
@@ -32,14 +33,17 @@ function FoodAnalysisItems() {
  * N-1 음식 분석 로딩 컴포넌트
  * AnalysisLoadingBase를 활용하여 음식 분석 진행 상태 표시
  */
-export default function FoodAnalysisLoading({ onComplete }: FoodAnalysisLoadingProps) {
+export default function FoodAnalysisLoading({
+  isApiComplete,
+  onComplete,
+}: FoodAnalysisLoadingProps) {
   return (
     <AnalysisLoadingBase
+      isApiComplete={isApiComplete}
       onComplete={onComplete}
       tips={LOADING_TIPS}
       analysisItems={<FoodAnalysisItems />}
       accentColor="purple"
-      duration={3000}
       loadingMessage="AI가 음식을 분석하고 있어요..."
     />
   );

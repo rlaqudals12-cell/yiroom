@@ -3,28 +3,45 @@
 /**
  * 제품 스캔 페이지
  * - 바코드 스캔으로 제품 정보 조회
+ * - 성분표 OCR 촬영 + Safety 분석
  * - 수동 입력 지원
- * - 제품 결과 표시
  */
 
 import { useState, useCallback } from 'react';
-import { ScanLine, Keyboard, ArrowLeft, Package } from 'lucide-react';
+import {
+  ScanLine,
+  Keyboard,
+  ArrowLeft,
+  Package,
+  FlaskConical,
+  ShieldCheck,
+  AlertTriangle,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { ScanCamera } from '@/components/scan/ScanCamera';
 import { BarcodeInput } from '@/components/scan/BarcodeInput';
 import { ScanResult } from '@/components/scan/ScanResult';
+import { IngredientCapture } from '@/components/scan/IngredientCapture';
 import { lookupProduct } from '@/lib/scan';
-import type { BarcodeResult } from '@/lib/scan';
+import type { BarcodeResult, OcrResult, CompatibilityResult } from '@/lib/scan';
 import type { ProductLookupResult } from '@/types/scan';
 
-type ScanMode = 'camera' | 'manual';
-type ScanState = 'scanning' | 'loading' | 'result' | 'not_found';
+type ScanMode = 'camera' | 'manual' | 'ingredient';
+type ScanState = 'scanning' | 'loading' | 'result' | 'not_found' | 'ocr_result';
 
 export default function ScanPage() {
   const [mode, setMode] = useState<ScanMode>('camera');
   const [state, setState] = useState<ScanState>('scanning');
   const [result, setResult] = useState<ProductLookupResult | null>(null);
   const [lastBarcode, setLastBarcode] = useState<string | null>(null);
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
+  const [compatibilityResult, setCompatibilityResult] = useState<CompatibilityResult | null>(null);
+  const [compatibilityLoading, setCompatibilityLoading] = useState(false);
+  const [showAllIngredients, setShowAllIngredients] = useState(false);
 
   // 바코드 조회 처리
   const handleLookup = useCallback(async (barcode: string) => {
@@ -66,6 +83,9 @@ export default function ScanPage() {
   const handleRescan = useCallback(() => {
     setResult(null);
     setLastBarcode(null);
+    setOcrResult(null);
+    setCompatibilityResult(null);
+    setShowAllIngredients(false);
     setState('scanning');
     setMode('camera');
   }, []);
@@ -89,6 +109,41 @@ export default function ScanPage() {
     }
   }, [result]);
 
+  // OCR 분석 완료 → 호환성 분석 요청
+  const handleOcrResult = useCallback(async (ocr: OcrResult) => {
+    setOcrResult(ocr);
+    setState('ocr_result');
+
+    if (ocr.success && ocr.ingredients.length > 0) {
+      setCompatibilityLoading(true);
+      try {
+        const response = await fetch('/api/scan/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ingredients: ocr.ingredients }),
+        });
+        if (response.ok) {
+          const compat: CompatibilityResult = await response.json();
+          setCompatibilityResult(compat);
+        }
+      } catch (error) {
+        console.error('[ScanPage] 호환성 분석 실패:', error);
+      } finally {
+        setCompatibilityLoading(false);
+      }
+    }
+  }, []);
+
+  // 다시 스캔 (OCR 포함)
+  const handleRescanAll = useCallback(() => {
+    setResult(null);
+    setLastBarcode(null);
+    setOcrResult(null);
+    setCompatibilityResult(null);
+    setShowAllIngredients(false);
+    setState('scanning');
+  }, []);
+
   return (
     <div data-testid="scan-page" className="min-h-screen bg-background">
       {/* 헤더 */}
@@ -96,7 +151,7 @@ export default function ScanPage() {
         <div className="container mx-auto px-4 h-14 flex items-center gap-3">
           {state !== 'scanning' && (
             <button
-              onClick={handleRescan}
+              onClick={handleRescanAll}
               className="p-2 -ml-2 hover:bg-muted rounded-lg"
               aria-label="뒤로 가기"
             >
@@ -156,27 +211,214 @@ export default function ScanPage() {
           </div>
         )}
 
+        {/* OCR 성분 분석 결과 */}
+        {state === 'ocr_result' && ocrResult && (
+          <div className="space-y-6">
+            {/* 제품 정보 (있는 경우) */}
+            {(ocrResult.productName || ocrResult.brandName) && (
+              <div className="p-4 bg-card rounded-xl border">
+                {ocrResult.brandName && (
+                  <p className="text-sm text-muted-foreground">{ocrResult.brandName}</p>
+                )}
+                {ocrResult.productName && (
+                  <h2 className="font-semibold text-lg">{ocrResult.productName}</h2>
+                )}
+              </div>
+            )}
+
+            {/* 호환성 점수 */}
+            {compatibilityLoading && (
+              <div className="p-4 bg-card rounded-xl border flex items-center gap-3">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-muted-foreground">피부 호환성을 분석하고 있어요...</span>
+              </div>
+            )}
+
+            {compatibilityResult && (
+              <div className="p-4 bg-card rounded-xl border space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">피부 호환성</h3>
+                  <span
+                    className={cn(
+                      'text-2xl font-bold',
+                      compatibilityResult.overallScore >= 80
+                        ? 'text-green-600 dark:text-green-400'
+                        : compatibilityResult.overallScore >= 60
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-red-600 dark:text-red-400'
+                    )}
+                  >
+                    {compatibilityResult.overallScore}점
+                  </span>
+                </div>
+
+                {/* 좋은 점 */}
+                {compatibilityResult.skinCompatibility.goodPoints.length > 0 && (
+                  <div className="space-y-1">
+                    {compatibilityResult.skinCompatibility.goodPoints.map((point, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm">
+                        <ShieldCheck className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>{point.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 주의 */}
+                {compatibilityResult.skinCompatibility.warnings.length > 0 && (
+                  <div className="space-y-1">
+                    {compatibilityResult.skinCompatibility.warnings.map((warning, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                        <span>{warning.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 위험 성분 */}
+                {compatibilityResult.ingredientAnalysis.avoid.length > 0 && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg space-y-1">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-300">주의 성분</p>
+                    {compatibilityResult.ingredientAnalysis.avoid.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400"
+                      >
+                        <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                        <span>
+                          {item.ingredient}: {item.reason}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 추출된 성분 목록 */}
+            <div className="p-4 bg-card rounded-xl border">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">추출된 성분 ({ocrResult.ingredients.length}개)</h3>
+                <span
+                  className={cn(
+                    'text-xs px-2 py-0.5 rounded-full',
+                    ocrResult.confidence === 'high'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : ocrResult.confidence === 'medium'
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  )}
+                >
+                  {ocrResult.confidence === 'high'
+                    ? '높은 정확도'
+                    : ocrResult.confidence === 'medium'
+                      ? '보통 정확도'
+                      : '낮은 정확도'}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {(showAllIngredients
+                  ? ocrResult.ingredients
+                  : ocrResult.ingredients.slice(0, 5)
+                ).map((ing, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between text-sm py-1 border-b border-border/50 last:border-0"
+                  >
+                    <div>
+                      <span className="text-muted-foreground mr-2">{ing.order}.</span>
+                      <span>{ing.nameKo || ing.inciName}</span>
+                      {ing.nameKo && ing.inciName && (
+                        <span className="text-xs text-muted-foreground ml-1">({ing.inciName})</span>
+                      )}
+                    </div>
+                    {ing.ewgGrade !== undefined && (
+                      <span
+                        className={cn(
+                          'text-xs font-medium px-1.5 py-0.5 rounded',
+                          ing.ewgGrade <= 2
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : ing.ewgGrade <= 6
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        )}
+                      >
+                        EWG {ing.ewgGrade}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {ocrResult.ingredients.length > 5 && (
+                <button
+                  onClick={() => setShowAllIngredients(!showAllIngredients)}
+                  className="mt-3 w-full flex items-center justify-center gap-1 text-sm text-primary hover:underline"
+                >
+                  {showAllIngredients ? (
+                    <>
+                      접기 <ChevronUp className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      전체 보기 ({ocrResult.ingredients.length - 5}개 더){' '}
+                      <ChevronDown className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* 면책 조항 */}
+            <p className="text-xs text-muted-foreground text-center px-4">
+              이 분석은 참고용이며 의학적 조언을 대체하지 않습니다. 알레르기가 있는 경우 전문가와
+              상담하세요.
+            </p>
+
+            {/* 액션 */}
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleRescanAll} className="flex-1">
+                다시 스캔
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* 스캔 모드 */}
         {state === 'scanning' && (
           <div className="space-y-6">
             {/* 모드 선택 탭 */}
-            <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <div className="flex gap-1 p-1 bg-muted rounded-lg">
               <button
                 onClick={() => setMode('camera')}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md transition-colors',
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md transition-colors text-sm',
                   mode === 'camera'
                     ? 'bg-background shadow-sm font-medium'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <ScanLine className="w-4 h-4" />
-                카메라 스캔
+                바코드
+              </button>
+              <button
+                onClick={() => setMode('ingredient')}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md transition-colors text-sm',
+                  mode === 'ingredient'
+                    ? 'bg-background shadow-sm font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <FlaskConical className="w-4 h-4" />
+                성분표
               </button>
               <button
                 onClick={() => setMode('manual')}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md transition-colors',
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md transition-colors text-sm',
                   mode === 'manual'
                     ? 'bg-background shadow-sm font-medium'
                     : 'text-muted-foreground hover:text-foreground'
@@ -200,6 +442,13 @@ export default function ScanPage() {
                 <p className="text-center text-sm text-muted-foreground">
                   제품 뒷면의 바코드를 카메라에 비춰주세요
                 </p>
+              </div>
+            )}
+
+            {/* 성분표 촬영 모드 */}
+            {mode === 'ingredient' && (
+              <div className="space-y-4">
+                <IngredientCapture onResult={handleOcrResult} onCancel={() => setMode('camera')} />
               </div>
             )}
 

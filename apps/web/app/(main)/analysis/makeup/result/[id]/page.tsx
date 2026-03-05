@@ -6,12 +6,13 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShareButton } from '@/components/share';
+import { ShareButton, PrintButton } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ResultPageInsights } from '@/components/insights';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -305,7 +306,11 @@ export default function MakeupAnalysisResultPage() {
                         <div
                           className={cn(
                             'h-full rounded-full transition-all',
-                            mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')
+                            mapToClass(
+                              metric.status,
+                              { good: 'bg-green-500', warning: 'bg-red-500' },
+                              'bg-amber-500'
+                            )
                           )}
                           style={{ width: `${metric.value}%` }}
                         />
@@ -439,6 +444,7 @@ export default function MakeupAnalysisResultPage() {
 
         {/* 다음 분석 추천 */}
         <ContextLinkingCard currentModule="makeup" />
+        <ResultPageInsights currentModule="makeup" />
       </div>
 
       {/* 하단 고정 버튼 */}
@@ -455,8 +461,11 @@ export default function MakeupAnalysisResultPage() {
               <Sparkles className="w-4 h-4 mr-2" />
               맞춤 화장품 보기
             </Button>
-            {/* 공유 버튼 */}
-            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            {/* 공유/PDF 버튼 */}
+            <div className="flex gap-2">
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <PrintButton title="이룸 메이크업 분석 결과" variant="outline" />
+            </div>
           </div>
         </div>
       )}

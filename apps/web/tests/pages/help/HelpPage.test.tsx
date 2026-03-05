@@ -57,7 +57,7 @@ describe('HelpPage', () => {
   it('has a back link to dashboard', () => {
     render(<HelpPage />);
     const backLink = screen.getByRole('link', { name: /대시보드로 돌아가기/i });
-    expect(backLink).toHaveAttribute('href', '/dashboard');
+    expect(backLink).toHaveAttribute('href', '/home');
   });
 
   describe('Help Menu Section', () => {

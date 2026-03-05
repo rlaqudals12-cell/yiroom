@@ -16,10 +16,12 @@ import {
   STRETCHING_DATABASE,
 } from '@/lib/mock/posture-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { ShareButton } from '@/components/share';
+import { ShareButton, PrintButton } from '@/components/share';
 import { useShare } from '@/hooks/useShare';
 import Link from 'next/link';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ResultPageInsights } from '@/components/insights';
 
 // DB 데이터 타입
 interface DbPostureAnalysis {
@@ -154,7 +156,7 @@ export default function PostureAnalysisResultPage() {
         /* sessionStorage 복원 실패 무시 */
       }
 
-      setError(err instanceof Error ? err.message : '결과를 불러올 수 없어요');
+      setError('결과를 불러올 수 없어요. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -255,7 +257,12 @@ export default function PostureAnalysisResultPage() {
 
           {/* 결과 표시 */}
           {result && (
-            <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
+            <>
+              <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
+              {/* 다음 분석 추천 */}
+              <ContextLinkingCard currentModule="posture" />
+              <ResultPageInsights currentModule="posture" />
+            </>
           )}
         </div>
       </div>
@@ -278,8 +285,11 @@ export default function PostureAnalysisResultPage() {
                 나에게 맞는 운동 추천
               </Button>
             )}
-            {/* 공유 버튼 */}
-            <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+            {/* 공유/PDF 버튼 */}
+            <div className="flex gap-2">
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <PrintButton title="이룸 자세 분석 결과" variant="outline" />
+            </div>
           </div>
         </div>
       )}

@@ -47,7 +47,7 @@ export function BadgeCard({
       className={cn(
         'flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200',
         onClick && 'cursor-pointer hover:scale-105',
-        isEarned ? 'bg-white' : 'bg-gray-50',
+        isEarned ? 'bg-white' : 'bg-gray-50'
       )}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
@@ -62,6 +62,7 @@ export function BadgeCard({
             }
           : undefined
       }
+      aria-label={onClick ? `배지: ${badge.name}${isEarned ? ' (획득)' : ' (미획득)'}` : undefined}
     >
       {/* 배지 아이콘 */}
       <div
@@ -70,12 +71,10 @@ export function BadgeCard({
           'flex items-center justify-center rounded-full border-2 transition-all',
           isEarned
             ? cn(rarityColor.bg, rarityColor.border, rarityColor.glow)
-            : 'bg-gray-100 border-gray-200 grayscale opacity-50',
+            : 'bg-gray-100 border-gray-200 grayscale opacity-50'
         )}
       >
-        <span className={cn(iconSizes[size], isEarned ? '' : 'opacity-30')}>
-          {badge.icon}
-        </span>
+        <span className={cn(iconSizes[size], isEarned ? '' : 'opacity-30')}>{badge.icon}</span>
       </div>
 
       {/* 배지 정보 */}
@@ -84,7 +83,7 @@ export function BadgeCard({
           <p
             className={cn(
               'font-medium text-sm line-clamp-1',
-              isEarned ? 'text-gray-900' : 'text-gray-400',
+              isEarned ? 'text-gray-900' : 'text-gray-400'
             )}
           >
             {badge.name}
@@ -96,7 +95,7 @@ export function BadgeCard({
               className={cn(
                 'inline-block px-2 py-0.5 text-xs font-medium rounded-full',
                 rarityColor.bg,
-                rarityColor.text,
+                rarityColor.text
               )}
             >
               {RARITY_NAMES[badge.rarity]}
@@ -131,11 +130,13 @@ export function BadgeMini({ badge, isEarned }: { badge: Badge; isEarned: boolean
         'w-10 h-10 flex items-center justify-center rounded-full border',
         isEarned
           ? cn(rarityColor.bg, rarityColor.border)
-          : 'bg-gray-100 border-gray-200 grayscale opacity-50',
+          : 'bg-gray-100 border-gray-200 grayscale opacity-50'
       )}
-      title={badge.name}
+      aria-label={`${badge.name}${isEarned ? '' : ' (미획득)'}`}
     >
-      <span className={cn('text-lg', isEarned ? '' : 'opacity-30')}>{badge.icon}</span>
+      <span className={cn('text-lg', isEarned ? '' : 'opacity-30')} aria-hidden="true">
+        {badge.icon}
+      </span>
     </div>
   );
 }

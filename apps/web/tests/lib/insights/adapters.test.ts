@@ -230,7 +230,7 @@ describe('Insights Adapters', () => {
       expect(result.personalColor).toBeNull();
     });
 
-    it('should ignore makeup analysis (not supported)', () => {
+    it('should convert makeup analysis to face data', () => {
       const analyses: AnalysisSummary[] = [
         {
           id: 'makeup_1',
@@ -244,8 +244,75 @@ describe('Insights Adapters', () => {
 
       const result = analysisToDataBundle(analyses);
 
-      // makeup은 insights 모듈에서 미지원
-      expect(Object.keys(result)).toHaveLength(0);
+      expect(result.face).toBeDefined();
+      expect(result.face?.faceShape).toBe('oval');
+      expect(result.face?.facialFeatures).toEqual(['warm']);
+    });
+
+    it('should return null face data when undertone is missing', () => {
+      const analyses: AnalysisSummary[] = [
+        {
+          id: 'makeup_1',
+          type: 'makeup',
+          createdAt: new Date(),
+          summary: '80점',
+          makeupScore: 80,
+        },
+      ];
+
+      const result = analysisToDataBundle(analyses);
+
+      expect(result.face).toBeNull();
+    });
+
+    it('should convert oral-health analysis', () => {
+      const analyses: AnalysisSummary[] = [
+        {
+          id: 'oh_1',
+          type: 'oral-health',
+          createdAt: new Date(),
+          summary: '85점',
+          oralHealthScore: 85,
+        },
+      ];
+
+      const result = analysisToDataBundle(analyses);
+
+      expect(result.oralHealth).toBeDefined();
+      expect(result.oralHealth?.gumHealthStatus).toBe('healthy');
+      expect(result.oralHealth?.inflammationScore).toBe(15);
+    });
+
+    it('should convert oral-health with low score to poor', () => {
+      const analyses: AnalysisSummary[] = [
+        {
+          id: 'oh_1',
+          type: 'oral-health',
+          createdAt: new Date(),
+          summary: '30점',
+          oralHealthScore: 30,
+        },
+      ];
+
+      const result = analysisToDataBundle(analyses);
+
+      expect(result.oralHealth?.gumHealthStatus).toBe('poor');
+      expect(result.oralHealth?.inflammationScore).toBe(70);
+    });
+
+    it('should return null oral-health when score is undefined', () => {
+      const analyses: AnalysisSummary[] = [
+        {
+          id: 'oh_1',
+          type: 'oral-health',
+          createdAt: new Date(),
+          summary: '분석 완료',
+        },
+      ];
+
+      const result = analysisToDataBundle(analyses);
+
+      expect(result.oralHealth).toBeNull();
     });
   });
 

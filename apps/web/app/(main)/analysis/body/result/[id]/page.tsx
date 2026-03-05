@@ -25,7 +25,7 @@ import type {
   BodyImageQuality,
 } from '@/components/analysis/BodyAnalysisEvidenceReport';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { ShareButton } from '@/components/share';
+import { ShareButton, PrintButton } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { VisualReportCard } from '@/components/analysis/visual-report';
@@ -34,6 +34,7 @@ import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ResultPageInsights } from '@/components/insights';
 import { transformDbToResult, type DbBodyAnalysis } from './_lib/transform';
 
 // 탭 전용 컴포넌트 — dynamic import (번들 분할)
@@ -404,6 +405,7 @@ export default function BodyAnalysisResultPage() {
 
                 {/* 다음 분석 추천 */}
                 <ContextLinkingCard currentModule="body" />
+                <ResultPageInsights currentModule="body" />
 
                 {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
                 {(analysisEvidence || imageQuality) && (
@@ -520,6 +522,7 @@ export default function BodyAnalysisResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <PrintButton title="이룸 체형 분석 결과" variant="outline" />
             </div>
             {/* 소셜 공유 버튼 */}
             <div className="flex justify-center">

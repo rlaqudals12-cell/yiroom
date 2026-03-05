@@ -35,20 +35,19 @@ const categories: { id: Category; label: string }[] = [
   { id: 'outfit', label: '코디' },
 ];
 
-// 임시 컬러 팔레트 (봄 웜톤)
-const colorPalette = [
-  { name: '코랄', color: '#FF6B6B' },
-  { name: '피치', color: '#FFB4A2' },
-  { name: '아이보리', color: '#FFF8E7' },
-  { name: '베이지', color: '#D4A574' },
-];
+interface ColorItem {
+  name: string;
+  color: string;
+}
 
-// 임시 제품 데이터
-const mockProducts = [
-  { id: '1', name: '크롭 니트', brand: '무신사', rating: 4.8, matchRate: 95, price: 39000 },
-  { id: '2', name: '하이웨스트 슬랙스', brand: 'W컨셉', rating: 4.7, matchRate: 92, price: 59000 },
-  { id: '3', name: '플레어 스커트', brand: '룩핀', rating: 4.6, matchRate: 90, price: 45000 },
-];
+interface ProductItem {
+  id: string;
+  name: string;
+  brand: string;
+  rating: number;
+  matchRate: number;
+  price: number;
+}
 
 export default function StylePage() {
   const router = useRouter();
@@ -64,6 +63,10 @@ export default function StylePage() {
   const [height, setHeight] = useState<string | null>(null);
   const [feature, setFeature] = useState<string | null>(null);
 
+  // DB 연결 데이터
+  const [colorPalette, setColorPalette] = useState<ColorItem[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
+
   // L-1-2: 키/몸무게 체크 상태
   const [hasMeasurements, setHasMeasurements] = useState<boolean | null>(null);
 
@@ -77,9 +80,8 @@ export default function StylePage() {
         const data = await res.json();
 
         if (!data.hasMeasurements) {
-          // 키/몸무게 없으면 온보딩으로 리다이렉트
+          // 키/몸무게 없어도 페이지 표시 (인라인 안내로 변경)
           setHasMeasurements(false);
-          router.push('/style/onboarding');
           return;
         }
 
@@ -94,13 +96,14 @@ export default function StylePage() {
     checkMeasurements();
   }, [isLoaded, user?.id, router]);
 
-  // 분석 결과 가져오기 (키/몸무게 체크 후)
+  // 분석 결과 + 제품 데이터 가져오기 (키/몸무게 체크 후)
   useEffect(() => {
     const fetchAnalysis = async () => {
-      if (!isLoaded || !user?.id || hasMeasurements !== true) return;
+      // 키/몸무게 체크 완료 후 분석 데이터 로드 (측정값 없어도 분석 결과는 표시)
+      if (!isLoaded || !user?.id || hasMeasurements === null) return;
 
       try {
-        const [bodyResult, pcResult] = await Promise.all([
+        const [bodyResult, pcResult, productsResult] = await Promise.all([
           supabase
             .from('body_analyses')
             .select('body_type, height, concerns')
@@ -110,11 +113,18 @@ export default function StylePage() {
             .maybeSingle(),
           supabase
             .from('personal_color_assessments')
-            .select('result_season, result_tone')
+            .select('result_season, result_tone, best_colors')
             .eq('clerk_user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
+          // 제품 DB에서 패션 관련 제품 가져오기
+          supabase
+            .from('cosmetic_products')
+            .select('id, product_name, brand, rating, price, color_hex')
+            .eq('category', 'fashion')
+            .order('rating', { ascending: false })
+            .limit(6),
         ]);
 
         const bodyData = bodyResult.data;
@@ -138,7 +148,36 @@ export default function StylePage() {
 
           if (pcData) {
             setPersonalColor(`${pcData.result_season} ${pcData.result_tone}`);
+
+            // best_colors에서 컬러 팔레트 추출
+            const bestColors = pcData.best_colors as Array<{
+              name?: string;
+              hex?: string;
+              color?: string;
+            }> | null;
+            if (bestColors && bestColors.length > 0) {
+              setColorPalette(
+                bestColors.slice(0, 6).map((c) => ({
+                  name: c.name ?? '',
+                  color: c.hex ?? c.color ?? '#ccc',
+                }))
+              );
+            }
           }
+        }
+
+        // 제품 데이터 매핑
+        if (productsResult.data && productsResult.data.length > 0) {
+          setProducts(
+            productsResult.data.map((p) => ({
+              id: p.id,
+              name: p.product_name,
+              brand: p.brand ?? '',
+              rating: p.rating ?? 0,
+              matchRate: 0,
+              price: p.price ?? 0,
+            }))
+          );
         }
       } catch (err) {
         console.error('[Style] Analysis fetch error:', err);
@@ -223,15 +262,30 @@ export default function StylePage() {
     );
   }
 
-  // 키/몸무게 없으면 리다이렉트 중이므로 빈 화면
-  if (hasMeasurements === false) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="style-page">
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">스타일 - 체형 맞춤 코디 추천</h1>
+
+      {/* 키/몸무게 미입력 안내 배너 */}
+      {hasMeasurements === false && (
+        <FadeInUp>
+          <div className="mx-4 mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <p className="font-medium text-amber-900 dark:text-amber-200 mb-1">
+              키/몸무게를 입력하면 더 정확한 추천을 받을 수 있어요
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
+              체형 맞춤 코디와 핏 추천을 위해 기본 정보가 필요해요
+            </p>
+            <button
+              onClick={() => router.push('/style/onboarding')}
+              className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              정보 입력하기
+            </button>
+          </div>
+        </FadeInUp>
+      )}
 
       {/* 내 체형 프로필 */}
       {hasAnalysis ? (
@@ -302,7 +356,7 @@ export default function StylePage() {
       )}
 
       {/* 내 컬러 팔레트 */}
-      {hasAnalysis && (
+      {hasAnalysis && colorPalette.length > 0 && (
         <FadeInUp delay={1}>
           <section className="px-4 py-3 border-b">
             <div className="flex items-center gap-2 mb-2">
@@ -451,26 +505,41 @@ export default function StylePage() {
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               🔥 {hasAnalysis ? '내 체형 맞춤 아이템' : '인기 아이템'}
             </h2>
-            <div className="grid grid-cols-3 gap-3">
-              {mockProducts.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => router.push(`/style/${product.id}`)}
-                  className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
-                >
-                  {hasAnalysis && (
-                    <div className="text-xs font-bold text-primary mb-1">{product.matchRate}%</div>
-                  )}
-                  <div className="w-full aspect-square bg-muted rounded-lg mb-2" />
-                  <p className="text-xs text-muted-foreground">{product.brand}</p>
-                  <p className="text-sm font-medium line-clamp-2">{product.name}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs">{product.rating}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {products.length > 0 ? (
+              <div className="grid grid-cols-3 gap-3">
+                {products.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => router.push(`/style/${product.id}`)}
+                    className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
+                  >
+                    {hasAnalysis && product.matchRate > 0 && (
+                      <div className="text-xs font-bold text-primary mb-1">
+                        {product.matchRate}%
+                      </div>
+                    )}
+                    <div className="w-full aspect-square bg-muted rounded-lg mb-2" />
+                    <p className="text-xs text-muted-foreground">{product.brand}</p>
+                    <p className="text-sm font-medium line-clamp-2">{product.name}</p>
+                    {product.rating > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs">{product.rating}</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-card rounded-xl border">
+                <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  {hasAnalysis
+                    ? '맞춤 아이템을 준비하고 있어요'
+                    : '체형 분석 후 맞춤 추천을 받아보세요'}
+                </p>
+              </div>
+            )}
           </section>
         </FadeInUp>
 

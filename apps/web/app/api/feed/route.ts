@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { getFeedPosts, createPost } from '@/lib/feed';
-import type { CreatePostInput, FeedListParams, PostType } from '@/lib/feed';
+import type { CreatePostInput, FeedListParams, PostType, FeedSortType } from '@/lib/feed';
 
 /**
  * GET /api/feed
@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
       post_type: (searchParams.get('post_type') as PostType) || undefined,
       hashtag: searchParams.get('hashtag') || undefined,
       user_id: searchParams.get('user_id') || undefined,
+      sort: (searchParams.get('sort') as FeedSortType) || 'recent',
     };
 
     const { posts, total } = await getFeedPosts(params, userId || undefined);

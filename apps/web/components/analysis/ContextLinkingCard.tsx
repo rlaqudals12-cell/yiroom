@@ -133,6 +133,38 @@ const MODULE_CONNECTIONS: Record<string, Omit<RelatedModule, 'icon'>[]> = {
       moduleVar: 'skin',
     },
   ],
+  posture: [
+    {
+      id: 'body',
+      title: '체형 분석',
+      reason: '자세와 체형을 함께 분석하면 더 정확한 운동 추천을 받을 수 있어요',
+      href: '/analysis/body',
+      moduleVar: 'body',
+    },
+    {
+      id: 'workout',
+      title: '운동 추천',
+      reason: '자세 교정에 맞는 스트레칭과 운동을 설계해보세요',
+      href: '/workout/onboarding/step1',
+      moduleVar: 'workout',
+    },
+  ],
+  'oral-health': [
+    {
+      id: 'skin',
+      title: '피부 분석',
+      reason: '구강 건강과 피부 상태의 연관성을 확인해보세요',
+      href: '/analysis/skin',
+      moduleVar: 'skin',
+    },
+    {
+      id: 'nutrition',
+      title: '영양 분석',
+      reason: '구강 건강에 도움이 되는 영양 관리를 시작해보세요',
+      href: '/nutrition',
+      moduleVar: 'nutrition',
+    },
+  ],
 };
 
 export function ContextLinkingCard({
@@ -156,7 +188,11 @@ export function ContextLinkingCard({
   }));
 
   return (
-    <section className="mt-8 p-6 bg-muted rounded-xl" data-testid="context-linking-card">
+    <section
+      className="mt-8 p-6 bg-muted rounded-xl"
+      data-testid="context-linking-card"
+      aria-label="다음 분석 추천"
+    >
       <h3 className="text-lg font-semibold text-foreground mb-4">다음 분석도 해보세요</h3>
       <div className="space-y-3">
         {modulesWithIcons.map((module) => (
