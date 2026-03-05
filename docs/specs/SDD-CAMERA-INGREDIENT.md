@@ -1,6 +1,6 @@
 # SDD-CAMERA-INGREDIENT: 카메라 성분 스캔 스펙
 
-> **Version**: 1.0 | **Created**: 2026-03-03 | **Status**: Draft
+> **Version**: 1.1 | **Created**: 2026-03-03 | **Status**: Implemented (2026-03-05)
 > **Author**: Claude Code
 > **기반 ADR**: ADR-070 (Safety Profile), ADR-071 (크로스 모듈 스코어링)
 > **원리**: [P-2: safety-science.md](../principles/safety-science.md)

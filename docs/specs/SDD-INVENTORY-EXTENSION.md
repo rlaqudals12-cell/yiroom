@@ -1,6 +1,6 @@
 # SDD-INVENTORY-EXTENSION: 인벤토리 캡슐 확장 스펙
 
-> **Version**: 1.0 | **Created**: 2026-03-03 | **Status**: Draft
+> **Version**: 1.1 | **Created**: 2026-03-03 | **Status**: Capsule Bridge Implemented (2026-03-05)
 > **Author**: Claude Code
 > **기반 ADR**: ADR-069 (캡슐 아키텍처)
 > **기존 시스템**: `lib/inventory/` (16함수)

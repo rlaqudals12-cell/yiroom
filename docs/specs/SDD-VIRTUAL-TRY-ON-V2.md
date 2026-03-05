@@ -1,6 +1,6 @@
 # SDD-VIRTUAL-TRY-ON-V2: 가상 시착 확장 스펙 v2
 
-> **Version**: 2.0 | **Created**: 2026-03-03 | **Status**: Draft
+> **Version**: 2.1 | **Created**: 2026-03-03 | **Status**: L2 Hair Implemented (2026-03-05)
 > **Author**: Claude Code
 > **기반**: ADR-072, [기존 SDD-VIRTUAL-TRY-ON-EXTENSION v1.0](./SDD-VIRTUAL-TRY-ON-EXTENSION.md)
 
