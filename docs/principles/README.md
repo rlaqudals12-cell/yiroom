@@ -42,6 +42,25 @@
 | [social-feed.md](social-feed.md)                       | 소셜 피드            | ADR-028, RLS, 피드 알고리즘                  | **1.0 (신규)** |
 | [barcode-qrcode.md](barcode-qrcode.md)                 | 바코드/QR 스캔       | EAN-13, Open Food Facts, 식품안전나라        | **1.0 (신규)** |
 | [weather-styling.md](weather-styling.md)               | 날씨 기반 스타일링   | 체감온도 레이어링, 17개 지역, OpenWeatherMap | **1.0 (신규)** |
+| [product-matching.md](product-matching.md)             | 제품 매칭            | ADR-032, Smart Matching                      | **1.0 (신규)** |
+| [draping-simulation.md](draping-simulation.md)         | 드레이핑 시뮬레이션  | PC-2, Virtual Try-On                         | **1.0 (신규)** |
+| [capsule-principle.md](capsule-principle.md)           | 캡슐 에코시스템      | ADR-069~075, BeautyProfile, CCS              | **1.0 (신규)** |
+| [safety-science.md](safety-science.md)                 | 안전성 과학          | ADR-070, Safety Profile, 법적 면책           | **1.0 (신규)** |
+| [decision-science.md](decision-science.md)             | 의사결정 과학        | Daily Capsule, Rotation Engine               | **1.0 (신규)** |
+| [habit-formation.md](habit-formation.md)               | 습관 형성            | Fogg, Nir Eyal, Streaks                      | **1.0 (신규)** |
+| [ux-design.md](ux-design.md)                           | UX 디자인 원칙       | Jobs, Rams, Norman, Laws of UX, Apple HIG    | **1.0 (신규)** |
+
+## 신규 추가 (2026-03)
+
+| 문서                 | 도메인          | 핵심 내용                                     |
+| -------------------- | --------------- | --------------------------------------------- |
+| **ux-design.md**     | UX 디자인 원칙  | Jobs/Rams/Norman 원칙, 3-State 홈, Laws of UX |
+| capsule-principle.md | 캡슐 에코시스템 | BeautyProfile, CCS 3-Layer, Daily Pipeline    |
+| safety-science.md    | 안전성 과학     | Safety Profile, 3-Level 경고, 법적 면책       |
+| decision-science.md  | 의사결정 과학   | Rotation Engine, 맥락 기반 추천               |
+| habit-formation.md   | 습관 형성       | Fogg Behavior Model, Streaks, Peak-End        |
+
+---
 
 ## 폴더 구조
 

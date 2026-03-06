@@ -8,6 +8,7 @@
 
 | 날짜       | 제목                                                                                                    | 영향 영역       | 상태      |
 | ---------- | ------------------------------------------------------------------------------------------------------- | --------------- | --------- |
+| 2026-03-07 | [Capsule API Slug 충돌 — domain vs id](./2026-03-07-capsule-api-slug-conflict.md)                       | API 라우팅      | ✅ 해결됨 |
 | 2026-03-04 | [캡슐 에코시스템 배포 — GFSA 심사 중 자동 배포 사고 방지](./2026-03-04-capsule-ecosystem-deployment.md) | Vercel 배포, DB | ✅ 해결됨 |
 | 2026-03-03 | [분석 API DB 저장 실패 시 응답 차단](./2026-03-03-analysis-api-db-resilience.md)                        | 분석 API 11개   | ✅ 해결됨 |
 | 2026-02-20 | [Expo Go 에뮬레이터 실행](./2026-02-20-expo-go-emulator-startup.md)                                     | 모바일 개발환경 | ✅ 해결됨 |
@@ -99,4 +100,9 @@ YYYY-MM-DD-이슈-제목.md
 
 ---
 
-**Updated**: 2026-03-04
+**Updated**: 2026-03-07
+
+### 라우팅 충돌 이슈
+
+- [2026-03-07] Next.js App Router dynamic slug 충돌 — `[domain]` vs `[id]` 동일 레벨 금지
+  - 해결: `[id]/check/` → `check/[id]/` 재구성
