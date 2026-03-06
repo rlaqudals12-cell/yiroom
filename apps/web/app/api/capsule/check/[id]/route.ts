@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkDailyItem } from '@/lib/capsule';
 
 /**
- * PATCH /api/capsule/[id]/check
+ * PATCH /api/capsule/check/[id]
  * Daily Capsule 아이템 체크/해제
  */
 export async function PATCH(

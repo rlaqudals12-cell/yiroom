@@ -73,7 +73,7 @@ export default function HomeDailyCapsuleWidget() {
       if (!capsule) return;
 
       try {
-        await fetch(`/api/capsule/${capsule.id}/check`, {
+        await fetch(`/api/capsule/check/${capsule.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ itemId: item.id, isChecked: !item.isChecked }),
