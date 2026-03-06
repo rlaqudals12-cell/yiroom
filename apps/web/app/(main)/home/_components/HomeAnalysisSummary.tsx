@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Palette, Sparkles, User, Scissors, Heart, SmilePlus, ChevronRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
-import { NextLevelCard } from '@/components/home/NextLevelCard';
+
+const TOTAL_ANALYSIS_TYPES = 6;
 
 // 분석 타입별 메타 정보
 const ANALYSIS_META = {
@@ -62,11 +63,7 @@ interface HomeAnalysisSummaryProps {
  */
 export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryProps) {
   const router = useRouter();
-
-  // 미완료 분석 타입
-  const completedTypes = new Set(analyses.map((a) => a.type));
-  const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup', 'oral-health'] as const;
-  const incompleteTypes = allTypes.filter((t) => !completedTypes.has(t));
+  const isAllComplete = analyses.length >= TOTAL_ANALYSIS_TYPES;
 
   return (
     <section
@@ -87,15 +84,17 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
         </button>
       </div>
 
-      {/* 진행도 바 - Archive 디자인 요소 */}
-      <AnalysisProgressBar
-        completed={analyses.length}
-        total={allTypes.length}
-        completedTypes={analyses.map((a) => a.type)}
-      />
+      {/* 진행도 바 — 100% 완료 시 숨김 */}
+      {!isAllComplete && (
+        <AnalysisProgressBar
+          completed={analyses.length}
+          total={TOTAL_ANALYSIS_TYPES}
+          completedTypes={analyses.map((a) => a.type)}
+        />
+      )}
 
       {/* 완료된 분석 요약 */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2">
         {analyses.slice(0, 6).map((analysis) => {
           const meta = ANALYSIS_META[analysis.type];
           const Icon = meta.icon;
@@ -126,9 +125,6 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
           );
         })}
       </div>
-
-      {/* 다음 레벨 카드 - Archive 디자인 요소 */}
-      <NextLevelCard completedCount={analyses.length} incompleteTypes={incompleteTypes} />
     </section>
   );
 }

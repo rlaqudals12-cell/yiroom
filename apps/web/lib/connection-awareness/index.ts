@@ -24,3 +24,9 @@ export {
   getConnectionStats,
   getExplanationDepth,
 } from './repository';
+
+export {
+  insightToExposeRequest,
+  getModuleLabel,
+  analysisToConnectionModule,
+} from './insight-bridge';
