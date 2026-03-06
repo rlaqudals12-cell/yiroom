@@ -81,6 +81,8 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { SkinConsultationChat } from '@/components/skin-consultation';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
+import { ConcernGrid } from '@/components/analysis/common';
+import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
 import { ResultPageInsights } from '@/components/insights';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 
@@ -360,6 +362,12 @@ export default function SkinAnalysisResultPage() {
   });
 
   const analysisId = params.id as string;
+
+  // ConcernCard 데이터 변환 (evidence 탭용)
+  const evidenceConcernCards = useMemo(
+    () => (result ? mapSkinMetricsToConcernCards(result.metrics) : []),
+    [result]
+  );
 
   // 공유 카드 데이터
   const shareData = useMemo(() => {
@@ -1057,7 +1065,16 @@ export default function SkinAnalysisResultPage() {
                 </TabsContent>
 
                 {/* 분석 근거 탭 */}
-                <TabsContent value="evidence" className="mt-0 pb-40">
+                <TabsContent value="evidence" className="mt-0 pb-40 space-y-6">
+                  {/* 피부 고민 개요 (ConcernCard 그리드) */}
+                  {result && evidenceConcernCards.length > 0 && (
+                    <section>
+                      <h3 className="text-base font-semibold text-foreground mb-3">
+                        피부 고민 개요
+                      </h3>
+                      <ConcernGrid items={evidenceConcernCards} />
+                    </section>
+                  )}
                   {analysisEvidence || imageQuality ? (
                     <SkinAnalysisEvidenceReport
                       evidence={analysisEvidence}

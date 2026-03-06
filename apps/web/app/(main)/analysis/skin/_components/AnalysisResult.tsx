@@ -17,6 +17,7 @@ import {
   Heart,
   Lightbulb,
   Info,
+  ChevronDown,
 } from 'lucide-react';
 
 // zoneId 기반 deterministic 변화값 생성 (Math.random() 대체)
@@ -55,6 +56,9 @@ import {
 } from '@/components/analysis/skin';
 import type { SkinMetricId } from '@/types/skin-detailed';
 import type { DetailedZoneId, DetailedZoneStatus, DetailedStatusLevel } from '@/types/skin-zones';
+import { ConcernGrid } from '@/components/analysis/common';
+import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 // 분석 근거 타입
 interface SkinAnalysisEvidence {
@@ -183,6 +187,9 @@ export default function AnalysisResult({
       worstMetric: sorted[sorted.length - 1],
     };
   }, [metrics]);
+
+  // ConcernCard 데이터 변환 (V4 Concern Card 패턴)
+  const concernCards = useMemo(() => mapSkinMetricsToConcernCards(metrics), [metrics]);
 
   // PhotoMetricOverlay용 메트릭 변환 (경쟁사 스타일 8개 지표)
   const photoMetrics = useMemo((): MetricScore[] => {
@@ -336,6 +343,17 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
+      {/* 피부 고민 개요 (Layer 1: CONCERN OVERVIEW) */}
+      <FadeInUp delay={2}>
+        <section>
+          <h2 className="text-base font-semibold text-foreground mb-3">피부 고민 한눈에 보기</h2>
+          <ConcernGrid
+            items={concernCards}
+            onCardExpand={(id) => setSelectedMetric(id as SkinMetricId)}
+          />
+        </section>
+      </FadeInUp>
+
       {/* 피부 분석 시각화 (Layer 1: WHERE) */}
       <FadeInUp delay={2}>
         {imageUrl ? (
@@ -356,21 +374,32 @@ export default function AnalysisResult({
         )}
       </FadeInUp>
 
-      {/* 7가지 지표 (Layer 2: WHAT) - 수평 바 게이지 + 동년배 비교 */}
+      {/* 7가지 지표 (Layer 2: WHAT) - Collapsible 래핑 (기본 접힘) */}
       <FadeInUp delay={3}>
-        <MetricBarGaugeList
-          metrics={
-            Object.fromEntries(
-              metrics.map((m) => [m.id, { score: m.value, status: m.status, name: m.name }])
-            ) as Record<
-              SkinMetricId,
-              { score: number; status: 'good' | 'normal' | 'warning'; name: string }
-            >
-          }
-          selectedMetric={selectedMetric}
-          onMetricClick={(metricId) => setSelectedMetric(metricId)}
-          userAge={25}
-        />
+        <Collapsible>
+          <CollapsibleTrigger
+            data-testid="metric-collapsible-trigger"
+            className="flex w-full items-center justify-between rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
+          >
+            <span className="text-sm font-semibold text-foreground">상세 수치 보기</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <MetricBarGaugeList
+              metrics={
+                Object.fromEntries(
+                  metrics.map((m) => [m.id, { score: m.value, status: m.status, name: m.name }])
+                ) as Record<
+                  SkinMetricId,
+                  { score: number; status: 'good' | 'normal' | 'warning'; name: string }
+                >
+              }
+              selectedMetric={selectedMetric}
+              onMetricClick={(metricId) => setSelectedMetric(metricId)}
+              userAge={25}
+            />
+          </CollapsibleContent>
+        </Collapsible>
       </FadeInUp>
 
       {/* AI 인사이트 (가변 보상) */}
@@ -492,10 +521,15 @@ export default function AnalysisResult({
               {ingredientWarnings.map((warning, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border ${mapToClass(warning.level, {
-                    high: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
-                    medium: 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
-                  }, 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800')}`}
+                  className={`p-3 rounded-lg border ${mapToClass(
+                    warning.level,
+                    {
+                      high: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
+                      medium:
+                        'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
+                    },
+                    'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
+                  )}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -507,10 +541,15 @@ export default function AnalysisResult({
                       )}
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${mapToClass(warning.level, {
-                        high: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-                        medium: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300',
-                      }, 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300')}`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${mapToClass(
+                        warning.level,
+                        {
+                          high: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+                          medium:
+                            'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300',
+                        },
+                        'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
+                      )}`}
                     >
                       {selectByKey(warning.level, { high: '높음', medium: '중간' }, '낮음')}
                     </span>
