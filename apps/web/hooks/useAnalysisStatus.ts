@@ -47,8 +47,8 @@ export interface AnalysisStatus {
   hasOralHealth: boolean;
   // 상태 판단 헬퍼
   isNewUser: boolean; // 분석 0개
-  isPartialUser: boolean; // 분석 1-2개
-  isActiveUser: boolean; // 분석 3개 이상
+  isGrowingUser: boolean; // 분석 1-3개
+  isActiveUser: boolean; // 분석 4개 이상
 }
 
 // 헬퍼 함수들
@@ -275,8 +275,8 @@ export function useAnalysisStatus(): AnalysisStatus {
   // 사용자 상태 판단
   const analysisCount = analyses.length;
   const isNewUser = analysisCount === 0;
-  const isPartialUser = analysisCount >= 1 && analysisCount <= 2;
-  const isActiveUser = analysisCount >= 3;
+  const isGrowingUser = analysisCount >= 1 && analysisCount <= 3;
+  const isActiveUser = analysisCount >= 4;
 
   return {
     isLoading: !isUserLoaded || isLoading,
@@ -289,7 +289,7 @@ export function useAnalysisStatus(): AnalysisStatus {
     hasMakeup,
     hasOralHealth,
     isNewUser,
-    isPartialUser,
+    isGrowingUser,
     isActiveUser,
   };
 }

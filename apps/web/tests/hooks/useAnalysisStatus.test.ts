@@ -96,7 +96,7 @@ describe('useAnalysisStatus', () => {
 
     // 분석 0개 → isNewUser = true
     expect(result.current.isNewUser).toBe(true);
-    expect(result.current.isPartialUser).toBe(false);
+    expect(result.current.isGrowingUser).toBe(false);
     expect(result.current.isActiveUser).toBe(false);
   });
 });

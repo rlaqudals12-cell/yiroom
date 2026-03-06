@@ -32,7 +32,11 @@ function WidgetSkeleton() {
   );
 }
 
-export default function HomeDashboardWidgets() {
+interface HomeDashboardWidgetsProps {
+  compact?: boolean;
+}
+
+export default function HomeDashboardWidgets({ compact = false }: HomeDashboardWidgetsProps) {
   const { user, isLoaded } = useUser();
   const {
     isLoading: analysisLoading,
