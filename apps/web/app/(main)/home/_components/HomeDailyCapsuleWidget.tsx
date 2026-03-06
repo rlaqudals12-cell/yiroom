@@ -1,12 +1,16 @@
 'use client';
 
 /**
- * 홈 Daily Capsule 위젯
- * 오늘의 추천 루틴을 컴팩트하게 표시
+ * 홈 Daily Capsule 위젯 + ConnectionAwareness 내재화 추적
+ *
+ * - 캡슐 표시 시 각 도메인별 연결 노출 기록
+ * - 아이템 체크 시 연결 확인 (상태 전이 촉진)
+ * - 내재화 수준에 따라 reason 표시 깊이 조절
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -25,6 +29,13 @@ import {
   Activity,
 } from 'lucide-react';
 import type { DailyCapsule, DailyItem, ModuleCode } from '@/types/capsule';
+import type { ExplanationDepth } from '@/lib/connection-awareness';
+import {
+  exposeConnection,
+  confirmConnection,
+  getExplanationDepth,
+  capsuleItemToExposeRequest,
+} from '@/lib/connection-awareness';
 
 // 모듈별 아이콘 매핑
 const MODULE_ICONS: Record<ModuleCode, typeof Sparkles> = {
@@ -41,16 +52,21 @@ const MODULE_ICONS: Record<ModuleCode, typeof Sparkles> = {
 
 export default function HomeDailyCapsuleWidget() {
   const { user } = useUser();
+  const userId = user?.id;
+  const supabase = useClerkSupabaseClient();
   const [capsule, setCapsule] = useState<DailyCapsule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 각 모듈의 내재화 상태 (도메인 단위 추적)
+  const [moduleDepths, setModuleDepths] = useState<Record<string, ExplanationDepth>>({});
+
   useEffect(() => {
-    if (!user?.id) {
+    if (!userId) {
       setIsLoading(false);
       return;
     }
 
-    const fetchCapsule = async () => {
+    const fetchCapsule = async (): Promise<void> => {
       try {
         const res = await fetch('/api/capsule/daily', { method: 'POST' });
         const data = await res.json();
@@ -65,12 +81,54 @@ export default function HomeDailyCapsuleWidget() {
     };
 
     fetchCapsule();
-  }, [user?.id]);
+  }, [userId]);
 
-  // 아이템 체크 토글
+  // 캡슐 아이템 로드 후 ConnectionAwareness 노출 기록
+  useEffect(() => {
+    if (!userId || !capsule || capsule.items.length === 0) return;
+
+    async function trackCapsuleExposure(): Promise<void> {
+      const depths: Record<string, ExplanationDepth> = {};
+      const trackedModules = new Set<string>();
+
+      for (const item of capsule!.items) {
+        // 이미 추적한 모듈은 건너뜀 (도메인 단위)
+        if (trackedModules.has(item.moduleCode)) continue;
+        trackedModules.add(item.moduleCode);
+
+        const request = capsuleItemToExposeRequest(item.moduleCode);
+        try {
+          const response = await exposeConnection(supabase, userId!, request);
+          depths[item.moduleCode] = getExplanationDepth(response.status);
+        } catch {
+          depths[item.moduleCode] = 'full';
+        }
+      }
+
+      setModuleDepths(depths);
+    }
+
+    trackCapsuleExposure();
+  }, [userId, capsule, supabase]);
+
+  // 아이템 체크 토글 + ConnectionAwareness 확인
   const handleCheck = useCallback(
     async (item: DailyItem) => {
-      if (!capsule) return;
+      if (!capsule || !userId) return;
+
+      // 체크 시 연결 확인 (체크 해제 시엔 추적 안 함)
+      if (!item.isChecked) {
+        const request = capsuleItemToExposeRequest(item.moduleCode);
+        try {
+          const response = await confirmConnection(supabase, userId!, request.connectionId);
+          setModuleDepths((prev) => ({
+            ...prev,
+            [item.moduleCode]: getExplanationDepth(response.status),
+          }));
+        } catch {
+          // 확인 실패 시 무시
+        }
+      }
 
       try {
         await fetch(`/api/capsule/check/${capsule.id}`, {
@@ -95,7 +153,7 @@ export default function HomeDailyCapsuleWidget() {
         // 체크 실패 시 무시
       }
     },
-    [capsule]
+    [capsule, user?.id, supabase]
   );
 
   // 로딩/데이터 없음
@@ -151,6 +209,8 @@ export default function HomeDailyCapsuleWidget() {
       <div className="space-y-1.5">
         {capsule.items.slice(0, 5).map((item) => {
           const Icon = MODULE_ICONS[item.moduleCode] || Sparkles;
+          const depth = moduleDepths[item.moduleCode] ?? 'full';
+
           return (
             <button
               key={item.id}
@@ -163,13 +223,27 @@ export default function HomeDailyCapsuleWidget() {
                 <Circle className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" />
               )}
               <Icon className="w-4 h-4 text-violet-400 shrink-0" />
-              <span
-                className={`text-sm flex-1 truncate ${
-                  item.isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
-                }`}
-              >
-                {item.name}
-              </span>
+              <div className="flex-1 min-w-0">
+                <span
+                  className={`text-sm block truncate ${
+                    item.isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
+                  }`}
+                >
+                  {item.name}
+                </span>
+                {/* reason 표시 — 내재화 수준에 따라 분기 */}
+                {depth === 'full' && item.reason && (
+                  <span className="text-[11px] text-muted-foreground truncate block">
+                    {item.reason}
+                  </span>
+                )}
+                {depth === 'brief' && item.reason && (
+                  <span className="text-[10px] text-muted-foreground/70 truncate block">
+                    {item.reason}
+                  </span>
+                )}
+                {/* minimal/none: reason 생략 — 사용자가 이미 이해함 */}
+              </div>
             </button>
           );
         })}

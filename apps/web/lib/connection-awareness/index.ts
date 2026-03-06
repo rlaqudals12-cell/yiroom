@@ -30,3 +30,5 @@ export {
   getModuleLabel,
   analysisToConnectionModule,
 } from './insight-bridge';
+
+export { capsuleItemToExposeRequest, capsuleModulesToExposeRequests } from './capsule-bridge';
