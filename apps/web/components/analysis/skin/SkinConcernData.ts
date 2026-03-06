@@ -5,17 +5,7 @@
  *
  * @see docs/specs/SDD-CONCERN-CARD.md
  */
-
-import {
-  Droplets,
-  Flame,
-  CircleDot,
-  Activity,
-  Sparkles,
-  Eye,
-  AlertCircle,
-  Shield,
-} from 'lucide-react';
+import { SKIN_ILLUSTRATIONS } from './SkinConcernIllustrations';
 import { createElement } from 'react';
 import type { SkinMetric } from '@/lib/mock/skin-analysis';
 import type { ConcernCardItem, ConcernSeverity } from '@/types/analysis-concern';
@@ -30,15 +20,13 @@ export function getSeverity(score: number): {
   return { severity: 'warning', severityLabel: '관리 필요' };
 }
 
-/** 메트릭별 아이콘 + 그라디언트 정의 */
+/** 메트릭별 팁 정의 */
 interface MetricConfig {
-  icon: typeof Droplets;
   tips: { good: string; normal: string; warning: string };
 }
 
 const METRIC_CONFIG: Record<string, MetricConfig> = {
   hydration: {
-    icon: Droplets,
     tips: {
       good: '수분 밸런스가 잘 유지되고 있어요',
       normal: '수분 크림으로 보습을 강화해보세요',
@@ -46,7 +34,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   oil: {
-    icon: Flame,
     tips: {
       good: '유분 밸런스가 좋은 상태예요',
       normal: '가벼운 수분 크림으로 밸런스를 맞춰보세요',
@@ -54,7 +41,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   pores: {
-    icon: CircleDot,
     tips: {
       good: '모공 상태가 깨끗해요',
       normal: '주기적인 각질 관리를 추천해요',
@@ -62,7 +48,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   wrinkles: {
-    icon: Activity,
     tips: {
       good: '피부결이 매끄러운 상태예요',
       normal: '자외선 차단제 꼼꼼히 발라주세요',
@@ -70,7 +55,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   elasticity: {
-    icon: Sparkles,
     tips: {
       good: '탄력이 좋은 피부예요',
       normal: '콜라겐 부스터 세럼을 시작해보세요',
@@ -78,7 +62,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   pigmentation: {
-    icon: Eye,
     tips: {
       good: '피부톤이 균일한 상태예요',
       normal: '비타민C 세럼으로 관리해보세요',
@@ -86,7 +69,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   trouble: {
-    icon: AlertCircle,
     tips: {
       good: '트러블 없이 깨끗한 피부예요',
       normal: '자극적인 음식을 줄여보세요',
@@ -94,7 +76,6 @@ const METRIC_CONFIG: Record<string, MetricConfig> = {
     },
   },
   sensitivity: {
-    icon: Shield,
     tips: {
       good: '피부 장벽이 건강한 상태예요',
       normal: '순한 클렌저 사용을 추천해요',
@@ -117,15 +98,13 @@ export function mapSkinMetricsToConcernCards(metrics: SkinMetric[]): ConcernCard
   return metrics
     .filter((m) => METRIC_CONFIG[m.id] != null)
     .map((metric) => {
-      const config = METRIC_CONFIG[metric.id];
       const { severity, severityLabel } = getSeverity(metric.value);
 
       return {
         id: metric.id,
-        icon: createElement(config.icon, {
-          className: 'h-5 w-5',
-          'aria-hidden': true,
-        }),
+        icon: SKIN_ILLUSTRATIONS[metric.id]
+          ? createElement(SKIN_ILLUSTRATIONS[metric.id], { size: 32 })
+          : null,
         label: metric.name,
         score: metric.value,
         severity,
