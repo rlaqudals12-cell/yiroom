@@ -1,6 +1,6 @@
 # SDD: 홈 3-State 리디자인
 
-> **상태**: 초안 (Draft)
+> **상태**: 구현 완료 (Implemented)
 > **날짜**: 2026-03-07
 > **ADR**: [ADR-076](../adr/ADR-076-home-3state-redesign.md)
 > **원칙**: [UX Design Principles](../principles/ux-design.md)
@@ -246,4 +246,6 @@
 ---
 
 **Version**: 1.0 | **Created**: 2026-03-07
-**P7 Status**: 리서치 Done -> 원칙 Done -> ADR Done -> **스펙 Done** -> 구현 Next
+**P7 Status**: 리서치 Done -> 원칙 Done -> ADR Done -> 스펙 Done -> **구현 Done**
+**구현 커밋**: `f79259b6` feat(web): 홈 3-State 리디자인 구현
+**검증 결과**: typecheck 0, lint 0, 13 신규 테스트 pass (getHomeState 6 + getNextStep 7)

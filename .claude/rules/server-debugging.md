@@ -178,6 +178,7 @@ curl -s http://localhost:3000/home | grep -o 'href="[^"]*\.css[^"]*"'
 - [ ] 6. `proxy.ts`의 공개 라우트 목록 확인
 - [ ] 7. 브라우저 Service Worker 등록 확인 (DevTools → Application)
 - [ ] 8. 시크릿 모드에서 동일 증상 재현 확인
+- [ ] 9. Error 1016 시: Clerk 엔드포인트 `curl -4` 직접 테스트 (530이면 Clerk 측 장애)
 
 ## 유용한 디버깅 명령어
 
@@ -198,6 +199,41 @@ tail -f /path/to/server/output
 # TypeScript 오류 확인
 cd apps/web && npx tsc --noEmit
 ```
+
+### Clerk Error 1016 (Origin DNS Error)
+
+**증상**: 브라우저에서 Cloudflare Error 1016 페이지 표시. 도메인: `*.clerk.accounts.dev`
+
+**원인 분류**:
+
+| curl 결과           | 원인                         | 해결                       |
+| ------------------- | ---------------------------- | -------------------------- |
+| DNS 해석 실패       | ISP DNS 차단 (.dev 도메인)   | Google DNS(8.8.8.8)로 변경 |
+| DNS 정상 + HTTP 530 | Clerk Cloudflare Worker 장애 | Clerk 복구 대기            |
+| DNS 정상 + HTTP 200 | 브라우저 캐시/SW             | 시크릿 모드 테스트         |
+
+**진단 명령어**:
+
+```bash
+# 1. DNS 해석 확인
+nslookup inviting-lamprey-83.clerk.accounts.dev 8.8.8.8
+
+# 2. Clerk 엔드포인트 직접 테스트 (IPv4 강제)
+curl -4 -sI "https://inviting-lamprey-83.clerk.accounts.dev/" | head -3
+
+# 3. 로컬 서버 정상 확인
+curl -sI http://localhost:3000/home | head -3
+```
+
+**DNS 변경 (SK Broadband 등 ISP 차단 시)**:
+
+```bash
+netsh interface ip set dns name="이더넷" static 8.8.8.8
+netsh interface ip add dns name="이더넷" 8.8.4.4 index=2
+ipconfig /flushdns
+```
+
+> 상세: `docs/troubleshooting/2026-03-07-clerk-error-1016-origin-dns.md`
 
 ## Clerk 디버깅
 
@@ -220,4 +256,4 @@ export const proxy = clerkMiddleware(
 
 ---
 
-**Version**: 1.1 | **Updated**: 2026-01-13 | `npm run dev:reset` 명령 추가
+**Version**: 1.2 | **Updated**: 2026-03-07 | Clerk Error 1016 진단 가이드 추가

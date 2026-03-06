@@ -14,6 +14,15 @@ interface CacheEntry {
 }
 const analysisCache = new Map<string, CacheEntry>();
 
+// 분석 완료 후 캐시 무효화 (홈 State 즉시 전환용)
+export function invalidateAnalysisCache(userId?: string): void {
+  if (userId) {
+    analysisCache.delete(userId);
+  } else {
+    analysisCache.clear();
+  }
+}
+
 // 분석 타입 정의
 export type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
 
@@ -263,6 +272,22 @@ export function useAnalysisStatus(): AnalysisStatus {
       fetchAnalyses();
     }
   }, [user?.id, isUserLoaded, supabase, getCachedData, setCachedData]);
+
+  // 페이지 포커스 복귀 시 캐시 무효화 (분석 완료 후 홈 복귀 대응)
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && user?.id) {
+        const cached = analysisCache.get(user.id);
+        if (cached && Date.now() - cached.timestamp > 30 * 1000) {
+          analysisCache.delete(user.id);
+          fetchingRef.current = false;
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user?.id]);
 
   // 각 분석 타입 존재 여부
   const hasPersonalColor = analyses.some((a) => a.type === 'personal-color');

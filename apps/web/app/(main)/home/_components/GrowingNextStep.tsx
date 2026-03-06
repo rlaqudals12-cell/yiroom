@@ -65,7 +65,7 @@ const ANALYSIS_ORDER: AnalysisType[] = [
 // 분석 타입 → URL 경로 매핑
 function getAnalysisPath(type: AnalysisType): string {
   const pathMap: Record<AnalysisType, string> = {
-    'personal-color': '/analysis/color',
+    'personal-color': '/analysis/personal-color',
     skin: '/analysis/skin',
     body: '/analysis/body',
     hair: '/analysis/hair',

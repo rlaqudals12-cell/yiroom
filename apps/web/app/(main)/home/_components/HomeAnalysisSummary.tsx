@@ -96,7 +96,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
 
       {/* 완료된 분석 요약 */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        {analyses.slice(0, 4).map((analysis) => {
+        {analyses.slice(0, 6).map((analysis) => {
           const meta = ANALYSIS_META[analysis.type];
           const Icon = meta.icon;
           const resultHref =

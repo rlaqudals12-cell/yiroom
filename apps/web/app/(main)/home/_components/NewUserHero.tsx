@@ -49,7 +49,7 @@ export default function NewUserHero() {
         {/* Primary CTA: 2개 카드 */}
         <div className="grid grid-cols-2 gap-3">
           <Link
-            href="/analysis/color"
+            href="/analysis/personal-color"
             className="flex flex-col items-center gap-2 p-4 bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
           >
             <Palette className="w-8 h-8 text-violet-500" />

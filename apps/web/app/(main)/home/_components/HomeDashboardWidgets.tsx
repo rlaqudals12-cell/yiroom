@@ -10,7 +10,8 @@
  * - ChallengeWidget: 진행 중 챌린지
  * - ClosetWidget: 옷장 + 코디 추천
  *
- * 로그인 사용자만 표시
+ * compact=true (홈): 활동 + 게이미피케이션만 표시 (정보 과부하 방지)
+ * compact=false (대시보드): 전체 위젯 표시
  */
 
 import { useUser } from '@clerk/nextjs';
@@ -20,7 +21,6 @@ import CompactActivityWidget from '../../dashboard/_components/CompactActivityWi
 import GamificationWidget from '../../dashboard/_components/GamificationWidget';
 import ChallengeWidget from '../../dashboard/_components/ChallengeWidget';
 import ClosetWidget from '../../dashboard/_components/ClosetWidget';
-import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 
 // 위젯 로딩 스켈레톤
 function WidgetSkeleton() {
@@ -64,49 +64,47 @@ export default function HomeDashboardWidgets({ compact = false }: HomeDashboardW
 
   return (
     <div className="space-y-5" data-testid="home-dashboard-widgets">
-      {/* 오늘의 루틴 (Daily Capsule) — 분석 완료 사용자만 */}
-      {!isNewUser && (
-        <section className="animate-fade-in-up animation-delay-200">
-          <HomeDailyCapsuleWidget />
-        </section>
-      )}
-
       {/* 오늘 기록 (칼로리/운동/수분) */}
       <section className="animate-fade-in-up animation-delay-300">
         <CompactActivityWidget userId={user.id} />
       </section>
-
-      {/* 크로스 모듈 인사이트 (분석 1개 이상 완료 시) */}
-      {!isNewUser && (
-        <section className="animate-fade-in-up animation-delay-300">
-          <CrossModuleCard
-            analyses={analyses}
-            hasPersonalColor={hasPersonalColor}
-            hasSkin={hasSkin}
-            hasBody={hasBody}
-          />
-        </section>
-      )}
 
       {/* 나의 성장 (레벨 + 배지) */}
       <section className="animate-fade-in-up animation-delay-400">
         <GamificationWidget userId={user.id} />
       </section>
 
-      {/* 챌린지 */}
-      <section className="animate-fade-in-up animation-delay-500">
-        <ChallengeWidget userId={user.id} />
-      </section>
+      {/* compact 모드(홈)에서는 핵심 위젯만, 전체 모드(대시보드)에서는 모두 표시 */}
+      {!compact && (
+        <>
+          {/* 크로스 모듈 인사이트 (분석 1개 이상 완료 시) */}
+          {!isNewUser && (
+            <section className="animate-fade-in-up animation-delay-300">
+              <CrossModuleCard
+                analyses={analyses}
+                hasPersonalColor={hasPersonalColor}
+                hasSkin={hasSkin}
+                hasBody={hasBody}
+              />
+            </section>
+          )}
 
-      {/* 옷장 & 코디 (분석 완료 사용자만) */}
-      {!isNewUser && (
-        <section className="animate-fade-in-up animation-delay-600">
-          <ClosetWidget
-            userId={user.id}
-            personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
-            bodyType={analyses.find((a) => a.type === 'body')?.bodyType}
-          />
-        </section>
+          {/* 챌린지 */}
+          <section className="animate-fade-in-up animation-delay-500">
+            <ChallengeWidget userId={user.id} />
+          </section>
+
+          {/* 옷장 & 코디 (분석 완료 사용자만) */}
+          {!isNewUser && (
+            <section className="animate-fade-in-up animation-delay-600">
+              <ClosetWidget
+                userId={user.id}
+                personalColor={analyses.find((a) => a.type === 'personal-color')?.seasonType}
+                bodyType={analyses.find((a) => a.type === 'body')?.bodyType}
+              />
+            </section>
+          )}
+        </>
       )}
     </div>
   );
