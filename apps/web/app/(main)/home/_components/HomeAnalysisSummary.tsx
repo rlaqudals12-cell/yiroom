@@ -22,6 +22,7 @@ const ANALYSIS_META: Record<
   {
     icon: typeof Palette;
     label: string;
+    valueHint: string;
     gradient: string;
     shadow: string;
     href: string;
@@ -31,6 +32,7 @@ const ANALYSIS_META: Record<
   'personal-color': {
     icon: Palette,
     label: '퍼스널 컬러',
+    valueHint: '나에게 어울리는 색을 알면 선택이 쉬워져요',
     gradient: 'from-violet-400 to-purple-500',
     shadow: 'shadow-violet-500/30',
     href: '/analysis/personal-color/result',
@@ -39,6 +41,7 @@ const ANALYSIS_META: Record<
   skin: {
     icon: Sparkles,
     label: '피부',
+    valueHint: '피부 상태를 알면 관리 방향이 보여요',
     gradient: 'from-rose-400 to-pink-500',
     shadow: 'shadow-rose-500/30',
     href: '/analysis/skin/result',
@@ -47,6 +50,7 @@ const ANALYSIS_META: Record<
   body: {
     icon: User,
     label: '체형',
+    valueHint: '체형을 알면 스타일링이 달라져요',
     gradient: 'from-blue-400 to-indigo-500',
     shadow: 'shadow-blue-500/30',
     href: '/analysis/body/result',
@@ -55,6 +59,7 @@ const ANALYSIS_META: Record<
   hair: {
     icon: Scissors,
     label: '헤어',
+    valueHint: '얼굴형에 맞는 헤어를 찾아보세요',
     gradient: 'from-amber-400 to-orange-500',
     shadow: 'shadow-amber-500/30',
     href: '/analysis/hair/result',
@@ -63,6 +68,7 @@ const ANALYSIS_META: Record<
   makeup: {
     icon: Heart,
     label: '메이크업',
+    valueHint: '나만의 메이크업 포인트를 발견해요',
     gradient: 'from-pink-400 to-rose-500',
     shadow: 'shadow-pink-500/30',
     href: '/analysis/makeup/result',
@@ -71,6 +77,7 @@ const ANALYSIS_META: Record<
   'oral-health': {
     icon: SmilePlus,
     label: '구강건강',
+    valueHint: '건강한 미소가 자신감의 시작이에요',
     gradient: 'from-cyan-400 to-blue-500',
     shadow: 'shadow-cyan-500/30',
     href: '/analysis/oral-health/result',
@@ -180,6 +187,9 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
               </p>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                 분석해보기
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                {ANALYSIS_META[nextAnalysis].valueHint}
               </p>
             </div>
           </button>

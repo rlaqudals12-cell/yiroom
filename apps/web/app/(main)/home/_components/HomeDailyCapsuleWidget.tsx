@@ -198,7 +198,12 @@ export default function HomeDailyCapsuleWidget() {
   }
 
   if (!capsule || capsule.items.length === 0) {
-    return null;
+    return (
+      <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5 text-center">
+        <Sparkles className="w-5 h-5 text-violet-400 mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">분석을 더 완료하면 맞춤 루틴이 생겨요</p>
+      </div>
+    );
   }
 
   const checkedCount = capsule.items.filter((i) => i.isChecked).length;

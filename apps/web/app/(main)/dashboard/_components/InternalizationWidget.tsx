@@ -126,15 +126,21 @@ export default function InternalizationWidget() {
         })}
       </div>
 
-      {/* 자립적 판단 강조 */}
-      {stats.byStatus.independent > 0 && (
-        <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
-          <p className="text-xs text-muted-foreground">
-            <span className="text-emerald-500 font-semibold">{stats.byStatus.independent}개</span>의
-            인사이트를 스스로 판단할 수 있어요
-          </p>
-        </div>
-      )}
+      {/* 성장 인정 메시지 — D7: 호기심→발견→성장→자신감 */}
+      <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+        <p className="text-xs text-muted-foreground">
+          {stats.byStatus.independent > 0 ? (
+            <>
+              <span className="text-emerald-500 font-semibold">{stats.byStatus.independent}개</span>
+              의 인사이트를 스스로 판단할 수 있게 됐어요
+            </>
+          ) : rate >= 50 ? (
+            '이해가 깊어지고 있어요, 꾸준히 성장하고 있어요'
+          ) : (
+            '새로운 발견이 쌓이고 있어요'
+          )}
+        </p>
+      </div>
     </section>
   );
 }
