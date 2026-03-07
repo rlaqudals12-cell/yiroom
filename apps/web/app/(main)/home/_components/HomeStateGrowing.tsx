@@ -5,13 +5,21 @@
  *
  * 감정 목표: "더 알고 싶다" (Behavioral)
  * 정보 블록: 4개 (발견 + 프로그레스 + 인과 추천 + 최근 본 제품)
+ *
+ * ConnectionAwareness 연동:
+ * - 발견 칩 표시 시 → 각 분석 도메인 expose
  */
 
+import { useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
 import HomeRecentlyViewed from './HomeRecentlyViewed';
+import { exposeConnection } from '@/lib/connection-awareness';
+import type { ConnectionModule } from '@/lib/connection-awareness';
 
 // 분석 타입별 아이콘/라벨
 const ANALYSIS_LABELS: Record<AnalysisType, { label: string; color: string }> = {
@@ -23,12 +31,51 @@ const ANALYSIS_LABELS: Record<AnalysisType, { label: string; color: string }> = 
   'oral-health': { label: '구강건강', color: 'text-cyan-500' },
 };
 
+// AnalysisType → ConnectionModule 매핑
+const ANALYSIS_TYPE_TO_CONNECTION: Record<AnalysisType, ConnectionModule> = {
+  'personal-color': 'personal-color',
+  skin: 'skin',
+  body: 'body',
+  hair: 'hair',
+  makeup: 'makeup',
+  'oral-health': 'oral-health',
+};
+
 interface HomeStateGrowingProps {
   analysisCount: number;
   analyses: AnalysisSummary[];
 }
 
 export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateGrowingProps) {
+  const { user } = useUser();
+  const userId = user?.id;
+  const supabase = useClerkSupabaseClient();
+
+  // 발견 칩 표시 시 각 분석 도메인 expose
+  useEffect(() => {
+    if (!userId || analyses.length === 0) return;
+
+    async function trackDiscoveryExposure(): Promise<void> {
+      for (const analysis of analyses) {
+        const connectionModule = ANALYSIS_TYPE_TO_CONNECTION[analysis.type];
+        if (!connectionModule) continue;
+
+        try {
+          await exposeConnection(supabase, userId!, {
+            connectionId: `discovery::${connectionModule}`,
+            sourceModule: connectionModule,
+            targetDomain: 'self-understanding',
+            connectionRule: `${ANALYSIS_LABELS[analysis.type]?.label ?? analysis.type} 결과 — 자기 이해의 한 조각`,
+          });
+        } catch {
+          // 추적 실패 시 무시
+        }
+      }
+    }
+
+    trackDiscoveryExposure();
+  }, [userId, analyses, supabase]);
+
   return (
     <div className="space-y-5" data-testid="home-state-growing">
       {/* 발견 디스커버리 (정보 블록 1) */}
