@@ -17,12 +17,13 @@
 | [/review](#review)                   | 종합 코드 리뷰        | 코드 품질, 보안 검토      |
 | [/sisyphus](#sisyphus)               | 적응형 오케스트레이터 | 복잡한 작업 병렬 처리     |
 | [/create-feature](#create-feature)   | 새 기능 스캐폴딩      | SDD 템플릿 생성           |
+| [/ux-check](#ux-check)               | UX 체크리스트 점검    | UI 변경 시 자동 UX 검증   |
 | [/deploy-check](#deploy-check)       | 배포 전 체크          | 배포 전 필수 검증         |
 | [/standup](#standup)                 | 일일 현황 요약        | 개발 현황 및 계획         |
 | [/wrap-up](#wrap-up)                 | 세션 메모리 관리      | 세션 저장, 컨텍스트 유지  |
 | [/quality-improve](#quality-improve) | 모듈 품질 개선        | 3-Cycle 패턴 품질 개선    |
 
-**총 명령어**: 11개
+**총 명령어**: 12개
 
 ---
 
@@ -194,6 +195,42 @@
 
 ---
 
+### /ux-check
+
+> UX 체크리스트 자동 점검
+
+**용도**:
+
+- UI 변경 후 UX 점검
+- 한국어/접근성/감정 설계 자동 판정
+- PR 제출 전 빠른 검증
+
+**사용 예시**:
+
+```
+/ux-check
+/ux-check 홈 화면
+/ux-check components/home/ActiveInsightCard.tsx
+```
+
+**점검 항목** (43개, pass/fail/warn):
+
+- 한국어 UX (영어 raw value, 해요체, err.message, 숫자/단위 일관 등)
+- 접근성 & 터치 (data-testid, 터치 44px, Safe Area, 키보드 회피, 색상 대비)
+- 3종 상태 (로딩/에러/빈 상태)
+- 감정 설계 (금지 4종 + Delight + 프라이버시 + 허용감정 + 긍정액션 + 자율성 + 비의료고지)
+- 철학 정렬 (인과 연결, L2 가치, 시간축 적응, L3 통합, AI 비가시성, 이야기형)
+- 구조 & 레이아웃 (정보 밀도, CTA 수, 위계)
+- 사용자 관점 & 비즈니스 (미완료 CTA, 재방문 가치, Aha Moment)
+
+**관련 문서**:
+
+- [ux-pr-checklist.md](../../docs/checklists/ux-pr-checklist.md) - 점검 항목 정의
+- [ux-design-principles.md](../../docs/checklists/ux-design-principles.md) - 디자인 철학
+- [ux-review-protocol.md](../../docs/checklists/ux-review-protocol.md) - 심층 리뷰 (Cycle 2)
+
+---
+
 ### /deploy-check
 
 > 배포 전 필수 체크리스트
@@ -294,6 +331,12 @@
 
 ```
 /sisyphus → 병렬 처리
+```
+
+### UI 변경 후
+
+```
+/ux-check → UX 자동 점검
 ```
 
 ### 완료 전
