@@ -143,6 +143,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
             value={activity.calories}
             target={activity.caloriesTarget}
             label="칼로리"
+            unit="kcal"
           />
           <ActivityCell
             icon={Dumbbell}

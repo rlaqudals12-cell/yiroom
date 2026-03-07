@@ -56,6 +56,7 @@ export default function HomeDailyCapsuleWidget() {
   const supabase = useClerkSupabaseClient();
   const [capsule, setCapsule] = useState<DailyCapsule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   // 각 모듈의 내재화 상태 (도메인 단위 추적)
   const [moduleDepths, setModuleDepths] = useState<Record<string, ExplanationDepth>>({});
@@ -74,7 +75,7 @@ export default function HomeDailyCapsuleWidget() {
           setCapsule(data.data);
         }
       } catch {
-        // 캡슐 로드 실패 시 위젯 숨김
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -169,6 +170,33 @@ export default function HomeDailyCapsuleWidget() {
     );
   }
 
+  if (hasError) {
+    return (
+      <div
+        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm"
+        data-testid="home-daily-capsule-error"
+      >
+        <p className="text-sm text-muted-foreground mb-2">캡슐을 불러오지 못했어요.</p>
+        <button
+          onClick={() => {
+            setHasError(false);
+            setIsLoading(true);
+            fetch('/api/capsule/daily', { method: 'POST' })
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.success && data.data) setCapsule(data.data);
+              })
+              .catch(() => setHasError(true))
+              .finally(() => setIsLoading(false));
+          }}
+          className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
+        >
+          다시 시도해볼까요?
+        </button>
+      </div>
+    );
+  }
+
   if (!capsule || capsule.items.length === 0) {
     return null;
   }
@@ -215,7 +243,7 @@ export default function HomeDailyCapsuleWidget() {
             <button
               key={item.id}
               onClick={() => handleCheck(item)}
-              className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
+              className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
             >
               {item.isChecked ? (
                 <CheckCircle2 className="w-4.5 h-4.5 text-violet-500 shrink-0" />

@@ -116,7 +116,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
         </h3>
         <button
           onClick={() => router.push('/analysis')}
-          className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1"
+          className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 min-h-[44px]"
         >
           전체보기
           <ChevronRight className="w-4 h-4" />
