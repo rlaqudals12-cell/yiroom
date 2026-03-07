@@ -38,6 +38,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
     waterTarget: 8,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     async function fetchData(): Promise<void> {
@@ -80,8 +81,8 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
           water: Math.floor(totalWater / 250),
           waterTarget: settingsRes.data?.water_goal || 8,
         });
-      } catch (error) {
-        console.error('[HomeActivityBar] 데이터 조회 실패:', error);
+      } catch {
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -95,6 +96,17 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
       <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 animate-pulse">
         <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded" />
       </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <section
+        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
+        data-testid="home-activity-bar-error"
+      >
+        <p className="text-sm text-muted-foreground">활동 데이터를 불러오지 못했어요.</p>
+      </section>
     );
   }
 
