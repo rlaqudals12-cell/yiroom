@@ -7,7 +7,7 @@
  * - 결과 통합하여 반환
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { productLogger } from '@/lib/utils/logger';
 
@@ -21,10 +21,7 @@ const TIMEOUT_MS = 3000;
 /** 최대 재시도 횟수 */
 const MAX_RETRIES = 2;
 
-// Gemini 클라이언트 초기화
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+// 모델명 (어댑터에서 기본값 사용)
 
 // =============================================================================
 // 유틸리티 함수
@@ -188,24 +185,15 @@ async function searchIngredientInDB(ingredientName: string): Promise<DBIngredien
  * DB에 없는 성분에 대해 호출
  * - 3초 타임아웃 + 2회 재시도 적용
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 async function analyzeIngredientWithAI(
   ingredientName: string,
   skinType: SkinType
 ): Promise<IngredientWarning | null> {
-  // Mock 모드 확인
-  if (process.env.FORCE_MOCK_AI === 'true') {
-    productLogger.info('[Ingredients] Using mock (FORCE_MOCK_AI=true)');
-    return null; // AI 분석 스킵, DB 결과만 사용
-  }
-
-  // Gemini 미설정 시 null 반환
-  if (!genAI) {
-    productLogger.debug('[Ingredients] Gemini not configured, skipping AI analysis');
+  // Mock 모드 또는 API 키 미설정
+  if (!isGeminiAvailable()) {
+    productLogger.debug('[Ingredients] Gemini not available, skipping AI analysis');
     return null;
   }
-
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
   const prompt = `You are a cosmetic ingredient expert. Analyze the following ingredient for skin safety.
 
@@ -232,24 +220,17 @@ Guidelines:
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       // 타임아웃 적용
-      const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
-      const response = result.response;
-      const text = response.text().trim();
+      const result = await withTimeout(generateContent({ contents: prompt }), TIMEOUT_MS);
+      const text = result.text.trim();
 
-      // JSON 파싱
-      let cleanText = text;
-      if (cleanText.startsWith('```json')) cleanText = cleanText.slice(7);
-      if (cleanText.startsWith('```')) cleanText = cleanText.slice(3);
-      if (cleanText.endsWith('```')) cleanText = cleanText.slice(0, -3);
-      cleanText = cleanText.trim();
-
-      const parsed = JSON.parse(cleanText) as {
+      // JSON 파싱 (어댑터의 parseJsonResponse 대신 직접 파싱 — isHarmful 분기 필요)
+      const parsed = parseJsonResponse<{
         isHarmful: boolean;
         warningLevel: WarningLevel;
         ewgGrade: number;
         reason: string;
         alternatives: string[] | null;
-      };
+      }>(text);
 
       // 해롭지 않으면 null 반환
       if (!parsed.isHarmful) {

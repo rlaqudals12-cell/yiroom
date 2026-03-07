@@ -8,7 +8,7 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContentStream, isGeminiAvailable } from '@/lib/gemini/client';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import {
   generateConsultationResponse,
@@ -31,9 +31,7 @@ const requestSchema = z.object({
     .optional(),
 });
 
-// Gemini 클라이언트
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+// (Gemini 클라이언트는 어댑터 사용)
 
 // 타임아웃 설정
 const AI_TIMEOUT_MS = 3000;
@@ -174,16 +172,11 @@ ${contextLines.join('\n')}
  * Gemini 스트리밍 호출
  */
 async function* streamGeminiResponse(prompt: string): AsyncGenerator<string, void, unknown> {
-  if (!genAI) {
+  if (!isGeminiAvailable()) {
     throw new Error('Gemini API key not configured');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
-  const result = await model.generateContentStream(prompt);
-
-  for await (const chunk of result.stream) {
-    const text = chunk.text();
+  for await (const text of generateContentStream({ contents: prompt })) {
     if (text) {
       yield text;
     }

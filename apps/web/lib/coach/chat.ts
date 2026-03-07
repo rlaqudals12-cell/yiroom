@@ -3,7 +3,7 @@
  * @description Gemini 기반 맞춤 웰니스 조언 채팅 + RAG 연동
  */
 
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { generateContent, generateContentStream, isGeminiAvailable } from '@/lib/gemini/client';
 import { coachLogger } from '@/lib/utils/logger';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
@@ -13,30 +13,6 @@ import { searchByPersonalColor, formatPersonalColorForPrompt } from './personal-
 import { searchFashionItems, formatFashionForPrompt } from './fashion-rag';
 import { searchNutritionItems, formatNutritionForPrompt } from './nutrition-rag';
 import { searchWorkoutItems, formatWorkoutForPrompt } from './workout-rag';
-
-// API 키 검증
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-
-// 안전 설정
-const safetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-];
 
 /**
  * 채팅 메시지 타입
@@ -452,8 +428,8 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
   const { message, userContext, chatHistory } = request;
 
   // AI 서비스 사용 불가 시 Fallback
-  if (!genAI) {
-    coachLogger.warn('Gemini API key not configured, using fallback');
+  if (!isGeminiAvailable()) {
+    coachLogger.warn('Gemini not available, using fallback');
     const category = detectQuestionCategory(message);
     return {
       message: FALLBACK_RESPONSES[category],
@@ -466,11 +442,6 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-      safetySettings,
-    });
-
     // 시스템 프롬프트 구성
     const systemPrompt = buildCoachSystemPrompt(userContext);
     const questionHint = getQuestionHint(message);
@@ -521,11 +492,9 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}
       setTimeout(() => reject(new Error('Request timeout')), 3000);
     });
 
-    const resultPromise = model.generateContent(fullPrompt);
+    const resultPromise = generateContent({ contents: fullPrompt });
     const result = await Promise.race([resultPromise, timeoutPromise]);
-
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     // 응답 정제 (이모지 개수 제한, 길이 제한)
     const cleanedResponse = cleanResponse(text);
@@ -652,17 +621,12 @@ export async function* generateCoachResponseStream(
 ): AsyncGenerator<string, void, unknown> {
   const { message, userContext, chatHistory } = request;
 
-  if (!genAI) {
+  if (!isGeminiAvailable()) {
     yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
     return;
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-      safetySettings,
-    });
-
     // 시스템 프롬프트 구성
     const systemPrompt = buildCoachSystemPrompt(userContext);
     const questionHint = getQuestionHint(message);
@@ -707,10 +671,7 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}## 사용자 질문
 
 위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
 
-    const result = await model.generateContentStream(fullPrompt);
-
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
+    for await (const text of generateContentStream({ contents: fullPrompt })) {
       if (text) {
         yield text;
       }

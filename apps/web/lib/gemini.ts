@@ -6,7 +6,8 @@
  * Week 6: PC-1 Real AI 연동
  */
 
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
+import type { GeminiContentPart } from '@/lib/gemini/client';
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
 import { compressBase64Image } from '@/lib/utils/image-compression';
@@ -32,50 +33,11 @@ import {
   type MakeupAnalysisResult as MockMakeupAnalysisResult,
 } from '@/lib/mock/makeup-analysis';
 
-// Mock 모드 환경변수
-const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
-
-// API 키 검증
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-if (!apiKey) {
-  geminiLogger.warn('GOOGLE_GENERATIVE_AI_API_KEY is not set');
-}
-
-// Gemini 클라이언트 초기화
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-
-// 안전 설정 (이미지 분석용)
-const safetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-  },
-];
-
-// 모델 설정 (환경변수로 오버라이드 가능)
-// 2025-12-22: Gemini 3 Flash로 업그레이드 (무료 티어 + 성능 향상)
-const modelConfig = {
-  model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-  safetySettings,
-  // 일관성 향상: temperature 낮춤 (0 = 완전 결정적, 1 = 창의적)
-  // 퍼스널 컬러 같은 분류 작업은 낮은 temperature가 적합
-  generationConfig: {
-    temperature: 0.1,
-    topP: 0.8,
-    topK: 40,
-  },
+// 모델 설정 (어댑터에서 기본 모델 사용, temperature/topP/topK만 전달)
+const geminiConfig = {
+  temperature: 0.1,
+  topP: 0.8,
+  topK: 40,
 };
 
 // ============================================
@@ -394,33 +356,7 @@ export interface GeminiPersonalColorResult {
   insight: string;
 }
 
-/**
- * Base64 이미지를 Gemini 형식으로 변환
- */
-function formatImageForGemini(base64Image: string): {
-  inlineData: { mimeType: string; data: string };
-} {
-  // data:image/jpeg;base64, 형식에서 실제 데이터만 추출
-  const base64Data = base64Image.includes('base64,')
-    ? base64Image.split('base64,')[1]
-    : base64Image;
-
-  // MIME 타입 추출 (기본값: jpeg)
-  let mimeType = 'image/jpeg';
-  if (base64Image.includes('data:')) {
-    const match = base64Image.match(/data:([^;]+);/);
-    if (match) {
-      mimeType = match[1];
-    }
-  }
-
-  return {
-    inlineData: {
-      mimeType,
-      data: base64Data,
-    },
-  };
-}
+// formatImageForGemini는 @/lib/gemini/client에서 import
 
 /**
  * S-1 피부 분석 프롬프트 (고도화 v2)
@@ -1261,33 +1197,29 @@ function parseJsonResponse<T>(text: string): T {
  */
 export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalysisResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[S-1] Using mock (FORCE_MOCK_AI=true)');
     return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[S-1] Gemini not configured, using mock');
-    return generateMockSkinAnalysis() as unknown as GeminiSkinAnalysisResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([SKIN_ANALYSIS_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: SKIN_ANALYSIS_PROMPT }, imagePart],
+            config: geminiConfig,
+          }),
           3000,
           '[S-1] Gemini timeout'
         ),
       2,
       1000
     );
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[S-1] Gemini analysis completed');
     return parseJsonResponse<GeminiSkinAnalysisResult>(text);
@@ -1310,33 +1242,29 @@ export async function analyzeSkinDetailed(
   imageBase64: string
 ): Promise<GeminiDetailedSkinAnalysisResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[S-1 Detailed] Using mock (FORCE_MOCK_AI=true)');
     return generateMockDetailedSkinAnalysis();
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[S-1 Detailed] Gemini not configured, using mock');
-    return generateMockDetailedSkinAnalysis();
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초) + 재시도 (최대 2회) 적용 - 12존은 분석량 많음
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([SKIN_ANALYSIS_DETAILED_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: SKIN_ANALYSIS_DETAILED_PROMPT }, imagePart],
+            config: geminiConfig,
+          }),
           5000,
           '[S-1 Detailed] Gemini timeout'
         ),
       2,
       1000
     );
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[S-1 Detailed] Gemini 12-zone analysis completed');
     return parseJsonResponse<GeminiDetailedSkinAnalysisResult>(text);
@@ -1467,21 +1395,14 @@ export async function analyzeBody(
   const imageCount =
     1 + (leftSideImageBase64 ? 1 : 0) + (rightSideImageBase64 ? 1 : 0) + (backImageBase64 ? 1 : 0);
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[C-1] Using mock (FORCE_MOCK_AI=true)');
     return generateMockBodyAnalysis() as unknown as GeminiBodyAnalysisResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[C-1] Gemini not configured, using mock');
-    return generateMockBodyAnalysis() as unknown as GeminiBodyAnalysisResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
-
     // 이미지 배열 구성
-    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+    const contentParts: (string | GeminiContentPart)[] = [];
 
     // 프롬프트 구성 (다각도 분석 안내 추가)
     let prompt = BODY_ANALYSIS_PROMPT;
@@ -1531,12 +1452,19 @@ ${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 �
     // 타임아웃 (다각도는 10초, 단일은 3초) + 재시도 (최대 2회) 적용
     const timeoutMs = hasMultiAngle ? 10000 : 3000;
     const result = await withRetry(
-      () => withTimeout(model.generateContent(contentParts), timeoutMs, '[C-1] Gemini timeout'),
+      () =>
+        withTimeout(
+          generateContent({
+            contents: contentParts.map((p) => (typeof p === 'string' ? { text: p } : p)),
+            config: geminiConfig,
+          }),
+          timeoutMs,
+          '[C-1] Gemini timeout'
+        ),
       2,
       1000
     );
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[C-1] Gemini analysis completed');
     return parseJsonResponse<GeminiBodyAnalysisResult>(text);
@@ -1595,7 +1523,7 @@ export async function analyzePersonalColor(
   const imageCount = 1 + (input.leftImageBase64 ? 1 : 0) + (input.rightImageBase64 ? 1 : 0);
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[PC-1] Using mock (FORCE_MOCK_AI=true)');
     const mockResult = generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
     // 다각도 분석 시 신뢰도 향상
@@ -1605,14 +1533,7 @@ export async function analyzePersonalColor(
     return mockResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[PC-1] Gemini not configured, using mock');
-    return generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
-
     // 이미지 압축 (타임아웃 감소를 위해 1024px + 80% 품질로 압축)
     geminiLogger.info('[PC-1] Compressing images...');
     const compressedFront = await compressBase64Image(input.frontImageBase64);
@@ -1627,7 +1548,7 @@ export async function analyzePersonalColor(
       : undefined;
 
     // 이미지 배열 구성
-    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+    const contentParts: (string | GeminiContentPart)[] = [];
 
     // 프롬프트 구성 (다각도 분석 안내 추가)
     let prompt = PERSONAL_COLOR_ANALYSIS_PROMPT;
@@ -1678,12 +1599,19 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
 
     // 타임아웃 (30초) + 재시도 (최대 5회) 적용 - 안정성 강화
     const result = await withRetry(
-      () => withTimeout(model.generateContent(contentParts), 30000, '[PC-1] Gemini timeout'),
+      () =>
+        withTimeout(
+          generateContent({
+            contents: contentParts.map((p) => (typeof p === 'string' ? { text: p } : p)),
+            config: geminiConfig,
+          }),
+          30000,
+          '[PC-1] Gemini timeout'
+        ),
       5,
       2000
     );
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[PC-1] Gemini analysis completed');
     return parseJsonResponse<GeminiPersonalColorResult>(text);
@@ -1757,29 +1685,27 @@ export async function analyzeWorkout(
   input: WorkoutAnalysisInput
 ): Promise<GeminiWorkoutAnalysisResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[W-1] Using mock (FORCE_MOCK_AI=true)');
     return generateMockWorkoutAnalysis(input) as unknown as GeminiWorkoutAnalysisResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[W-1] Gemini not configured, using mock');
-    return generateMockWorkoutAnalysis(input) as unknown as GeminiWorkoutAnalysisResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildWorkoutAnalysisPrompt(input);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
-      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      () =>
+        withTimeout(
+          generateContent({ contents: prompt, config: geminiConfig }),
+          3000,
+          '[W-1] Gemini timeout'
+        ),
       2,
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[W-1] Gemini analysis completed');
     return parseJsonResponse<GeminiWorkoutAnalysisResult>(text);
@@ -2017,33 +1943,29 @@ export async function recommendExercises(
   input: ExerciseRecommendationInput
 ): Promise<GeminiExerciseRecommendationResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[W-1] Using mock for exercise recommendation (FORCE_MOCK_AI=true)');
     return generateMockExerciseRecommendation(
       input
     ) as unknown as GeminiExerciseRecommendationResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[W-1] Gemini not configured, using mock');
-    return generateMockExerciseRecommendation(
-      input
-    ) as unknown as GeminiExerciseRecommendationResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildExerciseRecommendationPrompt(input);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
-      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      () =>
+        withTimeout(
+          generateContent({ contents: prompt, config: geminiConfig }),
+          3000,
+          '[W-1] Gemini timeout'
+        ),
       2,
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[W-1] Exercise recommendation completed');
     return parseJsonResponse<GeminiExerciseRecommendationResult>(text);
@@ -2201,29 +2123,27 @@ export async function generateWorkoutInsights(
   input: WorkoutInsightInput
 ): Promise<GeminiWorkoutInsightResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[W-1] Using mock for workout insights (FORCE_MOCK_AI=true)');
     return generateMockWorkoutInsights(input) as unknown as GeminiWorkoutInsightResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[W-1] Gemini not configured, using mock');
-    return generateMockWorkoutInsights(input) as unknown as GeminiWorkoutInsightResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildWorkoutInsightPrompt(input);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
-      () => withTimeout(model.generateContent(prompt), 3000, '[W-1] Gemini timeout'),
+      () =>
+        withTimeout(
+          generateContent({ contents: prompt, config: geminiConfig }),
+          3000,
+          '[W-1] Gemini timeout'
+        ),
       2,
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[W-1] Workout insights generated');
     return parseJsonResponse<GeminiWorkoutInsightResult>(text);
@@ -2237,15 +2157,13 @@ export async function generateWorkoutInsights(
  * Gemini 연결 테스트
  */
 export async function testConnection(): Promise<boolean> {
-  if (!genAI) {
+  if (!isGeminiAvailable()) {
     return false;
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
-    const result = await model.generateContent("Hello, respond with 'OK'");
-    const response = await result.response;
-    return response.text().includes('OK');
+    const result = await generateContent({ contents: "Hello, respond with 'OK'" });
+    return result.text.includes('OK');
   } catch {
     return false;
   }
@@ -2495,7 +2413,7 @@ export async function analyzeFoodImage(
   input: FoodAnalysisInput
 ): Promise<GeminiFoodAnalysisResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[N-1] Using mock for food analysis (FORCE_MOCK_AI=true)');
     return {
       ...generateMockFoodAnalysis(input),
@@ -2503,16 +2421,7 @@ export async function analyzeFoodImage(
     };
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[N-1] Gemini not configured, using mock');
-    return {
-      ...generateMockFoodAnalysis(input),
-      analyzedAt: new Date().toISOString(),
-    };
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildFoodAnalysisPromptFromModule(input.mealType);
     const imagePart = formatImageForGemini(input.imageBase64);
 
@@ -2520,7 +2429,7 @@ export async function analyzeFoodImage(
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([prompt, imagePart]),
+          generateContent({ contents: [{ text: prompt }, imagePart], config: geminiConfig }),
           5000,
           '[N-1] Food analysis timeout'
         ),
@@ -2528,8 +2437,7 @@ export async function analyzeFoodImage(
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     const parsed = parseJsonResponse<GeminiFoodAnalysisResult>(text);
 
@@ -2561,29 +2469,27 @@ export async function generateMealSuggestion(
   input: MealSuggestionInput
 ): Promise<GeminiMealSuggestionResult> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[N-1] Using mock for meal suggestion (FORCE_MOCK_AI=true)');
     return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[N-1] Gemini not configured, using mock');
-    return generateMockMealSuggestion(input) as unknown as GeminiMealSuggestionResult;
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildMealSuggestionPrompt(input);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
-      () => withTimeout(model.generateContent(prompt), 3000, '[N-1] Meal suggestion timeout'),
+      () =>
+        withTimeout(
+          generateContent({ contents: prompt, config: geminiConfig }),
+          3000,
+          '[N-1] Meal suggestion timeout'
+        ),
       2,
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[N-1] Meal suggestion generated');
     return parseJsonResponse<GeminiMealSuggestionResult>(text);
@@ -2690,18 +2596,12 @@ export async function askAboutImage(input: ImageQuestionInput): Promise<GeminiIm
   });
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[IMG-Q] Using mock (FORCE_MOCK_AI=true)');
     return generateMockAnswer();
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[IMG-Q] Gemini not configured, using mock');
-    return generateMockAnswer();
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildImageQuestionPrompt(input);
     const imagePart = formatImageForGemini(input.imageBase64);
 
@@ -2709,7 +2609,7 @@ export async function askAboutImage(input: ImageQuestionInput): Promise<GeminiIm
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([prompt, imagePart]),
+          generateContent({ contents: [{ text: prompt }, imagePart], config: geminiConfig }),
           5000,
           '[IMG-Q] Image question timeout'
         ),
@@ -2717,8 +2617,7 @@ export async function askAboutImage(input: ImageQuestionInput): Promise<GeminiIm
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[IMG-Q] Image question answered');
     return parseJsonResponse<GeminiImageQuestionResult>(text);
@@ -2873,29 +2772,27 @@ export async function recommendWeatherOutfit(
   };
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[WEATHER-OUTFIT] Using mock (FORCE_MOCK_AI=true)');
     return generateMockOutfit();
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[WEATHER-OUTFIT] Gemini not configured, using mock');
-    return generateMockOutfit();
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const prompt = buildWeatherOutfitPrompt(input);
 
     // 타임아웃 (3초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
-      () => withTimeout(model.generateContent(prompt), 3000, '[WEATHER-OUTFIT] Timeout'),
+      () =>
+        withTimeout(
+          generateContent({ contents: prompt, config: geminiConfig }),
+          3000,
+          '[WEATHER-OUTFIT] Timeout'
+        ),
       2,
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[WEATHER-OUTFIT] Outfit recommendation generated');
     return parseJsonResponse<GeminiWeatherOutfitResult>(text);
@@ -2973,31 +2870,28 @@ export async function validateFaceImage(
   expectedAngle: FaceAngle
 ): Promise<ValidateFaceImageResponse> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[FACE-VALIDATE] Using mock (FORCE_MOCK_AI=true)');
     return generateMockFaceValidation(expectedAngle);
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[FACE-VALIDATE] Gemini not configured, using mock');
-    return generateMockFaceValidation(expectedAngle);
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
     const prompt = buildFaceValidationPrompt(expectedAngle);
 
     // 타임아웃 (5초) + 재시도 (최대 2회) - Gemini Pro 대응
     const result = await withRetry(
       () =>
-        withTimeout(model.generateContent([prompt, imagePart]), 5000, '[FACE-VALIDATE] Timeout'),
+        withTimeout(
+          generateContent({ contents: [{ text: prompt }, imagePart], config: geminiConfig }),
+          5000,
+          '[FACE-VALIDATE] Timeout'
+        ),
       2,
       1000
     );
 
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[FACE-VALIDATE] Validation completed');
     return parseJsonResponse<ValidateFaceImageResponse>(text);
@@ -3267,23 +3161,15 @@ export async function analyzePosture(
   });
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[A-1] Using mock (FORCE_MOCK_AI=true)');
     const mockResult = generateMockPostureAnalysis(bodyType);
     return convertMockToResult(mockResult);
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[A-1] Gemini not configured, using mock');
-    const mockResult = generateMockPostureAnalysis(bodyType);
-    return convertMockToResult(mockResult);
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
-
     // 이미지 배열 구성
-    const contentParts: (string | { inlineData: { mimeType: string; data: string } })[] = [];
+    const contentParts: (string | GeminiContentPart)[] = [];
 
     // 프롬프트 구성
     let prompt = POSTURE_ANALYSIS_PROMPT;
@@ -3339,7 +3225,10 @@ bodyTypeCorrelation 필드에 체형과 자세의 연관성을 포함해주세�
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent(contentParts),
+          generateContent({
+            contents: contentParts.map((p) => (typeof p === 'string' ? { text: p } : p)),
+            config: geminiConfig,
+          }),
           timeoutMs,
           '[A-1] Posture analysis timeout'
         ),
@@ -3347,8 +3236,7 @@ bodyTypeCorrelation 필드에 체형과 자세의 연관성을 포함해주세�
       1000
     );
 
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[A-1] Posture analysis completed');
     return parseJsonResponse<GeminiPostureAnalysisResult>(text);
@@ -3541,27 +3429,23 @@ export async function analyzeHair(imageBase64: string): Promise<GeminiHairAnalys
   });
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[H-1] Using mock (FORCE_MOCK_AI=true)');
     const mockResult = generateMockHairAnalysisResult();
     return convertMockToResult(mockResult);
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[H-1] Gemini not configured, using mock');
-    const mockResult = generateMockHairAnalysisResult();
-    return convertMockToResult(mockResult);
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([HAIR_ANALYSIS_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: HAIR_ANALYSIS_PROMPT }, imagePart],
+            config: geminiConfig,
+          }),
           5000,
           '[H-1] Hair analysis timeout'
         ),
@@ -3569,8 +3453,7 @@ export async function analyzeHair(imageBase64: string): Promise<GeminiHairAnalys
       1000
     );
 
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[H-1] Hair analysis completed');
     return parseJsonResponse<GeminiHairAnalysisResult>(text);
@@ -3806,27 +3689,23 @@ export async function analyzeMakeup(imageBase64: string): Promise<GeminiMakeupAn
   });
 
   // Mock 모드 확인
-  if (FORCE_MOCK) {
+  if (!isGeminiAvailable()) {
     geminiLogger.info('[M-1] Using mock (FORCE_MOCK_AI=true)');
     const mockResult = generateMockMakeupAnalysisResult();
     return convertMockToResult(mockResult);
   }
 
-  if (!genAI) {
-    geminiLogger.warn('[M-1] Gemini not configured, using mock');
-    const mockResult = generateMockMakeupAnalysisResult();
-    return convertMockToResult(mockResult);
-  }
-
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초) + 재시도 (최대 2회) 적용
     const result = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([MAKEUP_ANALYSIS_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: MAKEUP_ANALYSIS_PROMPT }, imagePart],
+            config: geminiConfig,
+          }),
           5000,
           '[M-1] Makeup analysis timeout'
         ),
@@ -3834,8 +3713,7 @@ export async function analyzeMakeup(imageBase64: string): Promise<GeminiMakeupAn
       1000
     );
 
-    const response = await result.response;
-    const text = response.text();
+    const text = result.text;
 
     geminiLogger.info('[M-1] Makeup analysis completed');
     return parseJsonResponse<GeminiMakeupAnalysisResult>(text);

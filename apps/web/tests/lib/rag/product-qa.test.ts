@@ -7,13 +7,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { CosmeticProduct, SupplementProduct } from '@/types/product';
 
-// Google AI Mock
-vi.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
-    getGenerativeModel: vi.fn().mockReturnValue({
-      generateContent: vi.fn(),
-    }),
-  })),
+// Gemini Adapter Mock (fallback 동작 테스트)
+vi.mock('@/lib/gemini/client', () => ({
+  generateContent: vi.fn(),
+  isGeminiAvailable: vi.fn().mockReturnValue(false),
   HarmCategory: {
     HARM_CATEGORY_HARASSMENT: 'HARM_CATEGORY_HARASSMENT',
     HARM_CATEGORY_HATE_SPEECH: 'HARM_CATEGORY_HATE_SPEECH',

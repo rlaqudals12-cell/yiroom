@@ -12,14 +12,15 @@ import { generateCoachResponse, type CoachChatRequest } from '@/lib/coach/chat';
 // Mocks
 // =============================================================================
 
-// Gemini API Mock (API 키 없음 시나리오)
-vi.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => null),
+// Gemini Adapter Mock (API 미사용 시나리오 — fallback 동작 테스트)
+vi.mock('@/lib/gemini/client', () => ({
+  generateContentStream: vi.fn(),
+  isGeminiAvailable: vi.fn().mockReturnValue(false),
   HarmCategory: {
-    HARM_CATEGORY_HARASSMENT: 'HARASSMENT',
-    HARM_CATEGORY_HATE_SPEECH: 'HATE_SPEECH',
-    HARM_CATEGORY_SEXUALLY_EXPLICIT: 'SEXUALLY_EXPLICIT',
-    HARM_CATEGORY_DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
+    HARM_CATEGORY_HARASSMENT: 'HARM_CATEGORY_HARASSMENT',
+    HARM_CATEGORY_HATE_SPEECH: 'HARM_CATEGORY_HATE_SPEECH',
+    HARM_CATEGORY_SEXUALLY_EXPLICIT: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+    HARM_CATEGORY_DANGEROUS_CONTENT: 'HARM_CATEGORY_DANGEROUS_CONTENT',
   },
   HarmBlockThreshold: {
     BLOCK_ONLY_HIGH: 'BLOCK_ONLY_HIGH',
@@ -83,8 +84,6 @@ vi.mock('@/lib/coach/workout-rag', () => ({
 describe('lib/coach/chat', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // 환경변수 제거하여 fallback 동작 테스트
-    delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   });
 
   describe('generateCoachResponse', () => {

@@ -5,7 +5,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
 import type { ClothingCategory, Pattern } from '@/types/inventory';
 import { extractJsonObject } from '@/lib/utils/json-extract';
 
@@ -33,18 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Gemini API 키 확인
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey) {
-      console.warn('[Classify] No API key, using mock');
+    if (!isGeminiAvailable()) {
+      console.warn('[Classify] Gemini not available, using mock');
       return NextResponse.json(generateMockClassification());
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-      });
-
       // 프롬프트
       const prompt = `You are a fashion expert AI. Analyze this clothing item image and classify it.
 
@@ -71,34 +65,27 @@ Korean color names: 화이트, 블랙, 베이지, 네이비, 그레이, 브라�
 
 Only return the JSON object, no other text.`;
 
-      let result;
+      let imageData: string;
+      let mimeType: string;
 
       if (imageBase64) {
-        // Base64 이미지 처리
-        const imagePart = {
-          inlineData: {
-            data: imageBase64.replace(/^data:image\/\w+;base64,/, ''),
-            mimeType: 'image/png',
-          },
-        };
-        result = await model.generateContent([prompt, imagePart]);
+        imageData = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        mimeType = 'image/png';
       } else {
-        // URL 이미지 처리
         const imageResponse = await fetch(imageUrl);
         const imageBuffer = await imageResponse.arrayBuffer();
-        const base64 = Buffer.from(imageBuffer).toString('base64');
-        const mimeType = imageResponse.headers.get('content-type') || 'image/png';
-
-        const imagePart = {
-          inlineData: {
-            data: base64,
-            mimeType,
-          },
-        };
-        result = await model.generateContent([prompt, imagePart]);
+        imageData = Buffer.from(imageBuffer).toString('base64');
+        mimeType = imageResponse.headers.get('content-type') || 'image/png';
       }
 
-      const text = result.response.text();
+      const imagePart = {
+        inlineData: { data: imageData, mimeType },
+      };
+
+      const result = await generateContent({
+        contents: [{ text: prompt }, imagePart],
+      });
+      const text = result.text;
 
       // JSON 파싱 (정규식 대신 문자열 탐색으로 ReDoS 방지)
       const jsonStr = extractJsonObject(text);

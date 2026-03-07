@@ -4,7 +4,7 @@
  * - 다국어 성분 지원 (한국어, 영어, 일본어, 중국어)
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
 import type { ProductIngredient } from '@/types/scan';
 import { extractJsonObject } from '@/lib/utils/json-extract';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
@@ -20,9 +20,6 @@ export interface OcrResult {
   rawText?: string;
   error?: string;
 }
-
-// Gemini 클라이언트 초기화
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
 
 // OCR 프롬프트
 const INGREDIENT_OCR_PROMPT = `
@@ -63,7 +60,7 @@ const INGREDIENT_OCR_PROMPT = `
  */
 export async function analyzeIngredientImage(imageBase64: string): Promise<OcrResult> {
   // API 키 확인
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!isGeminiAvailable()) {
     return {
       success: false,
       ingredients: [],
@@ -74,23 +71,14 @@ export async function analyzeIngredientImage(imageBase64: string): Promise<OcrRe
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const imagePart = formatImageForGemini(imageBase64);
 
-    // Base64 데이터 정리 (data:image 접두사 제거)
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const result = await generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [imagePart, { text: INGREDIENT_OCR_PROMPT }],
+    });
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: cleanBase64,
-        },
-      },
-      INGREDIENT_OCR_PROMPT,
-    ]);
-
-    const response = result.response;
-    const text = response.text();
+    const text = result.text;
 
     // JSON 파싱
     const parsed = parseOcrResponse(text);

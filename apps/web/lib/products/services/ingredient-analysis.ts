@@ -3,7 +3,7 @@
  * @description Gemini AI를 사용한 화장품 성분 분석 및 요약
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
 import type { CosmeticIngredient } from '@/types/ingredient';
 import { extractJsonObject } from '@/lib/utils/json-extract';
 
@@ -145,9 +145,10 @@ export function generateMockIngredientSummary(
   if (hasSoothing) summaryParts.push('진정');
   if (hasAntiaging) summaryParts.push('안티에이징');
 
-  const cautionSuffix = cautionCount === 0
-    ? '자극이 적어 데일리 사용에 적합합니다.'
-    : '일부 주의 성분이 있어 민감성 피부는 주의가 필요합니다.';
+  const cautionSuffix =
+    cautionCount === 0
+      ? '자극이 적어 데일리 사용에 적합합니다.'
+      : '일부 주의 성분이 있어 민감성 피부는 주의가 필요합니다.';
   const summary =
     summaryParts.length > 0
       ? `${summaryParts.join(', ')} 효과가 기대되는 제형으로, ${cautionSuffix}`
@@ -260,14 +261,8 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export async function analyzeIngredientsWithAI(
   ingredients: CosmeticIngredient[]
 ): Promise<AIIngredientSummary> {
-  // Mock 모드 확인
-  if (process.env.FORCE_MOCK_AI === 'true') {
-    return generateMockIngredientSummary(ingredients);
-  }
-
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) {
-    console.warn('[IngredientAnalysis] No API key, using mock');
+  // Mock 모드 또는 API 키 미설정
+  if (!isGeminiAvailable()) {
     return generateMockIngredientSummary(ingredients);
   }
 
@@ -288,15 +283,9 @@ export async function analyzeIngredientsWithAI(
   // 재시도 로직
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-      });
-
       // 타임아웃 적용
-      const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
-      const response = result.response;
-      const text = response.text();
+      const result = await withTimeout(generateContent({ contents: prompt }), TIMEOUT_MS);
+      const text = result.text;
 
       // JSON 파싱 (정규식 대신 문자열 탐색으로 ReDoS 방지)
       const jsonStr = extractJsonObject(text);

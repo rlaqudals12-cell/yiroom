@@ -3,7 +3,13 @@
  * @description 제품 관련 질문에 AI 기반 답변 제공
  */
 
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import {
+  generateContent,
+  isGeminiAvailable,
+  HarmCategory,
+  HarmBlockThreshold,
+} from '@/lib/gemini/client';
+import type { GeminiSafetySetting } from '@/lib/gemini/client';
 import { ragLogger } from '@/lib/utils/logger';
 import type { AnyProduct, ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 import { extractJsonObject } from '@/lib/utils/json-extract';
@@ -18,12 +24,8 @@ const TIMEOUT_MS = 5000;
 /** 최대 재시도 횟수 */
 const MAX_RETRIES = 2;
 
-// API 키 검증
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-
 // 안전 설정
-const safetySettings = [
+const safetySettings: GeminiSafetySetting[] = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
     threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
@@ -181,21 +183,11 @@ function generateMockQAResponse(question: string): ProductQAResponse {
  * - 5초 타임아웃 + 2회 재시도 적용
  */
 export async function askProductQuestion(request: ProductQARequest): Promise<ProductQAResponse> {
-  // Mock 모드 확인
-  if (process.env.FORCE_MOCK_AI === 'true') {
-    ragLogger.info('[RAG] Using mock (FORCE_MOCK_AI=true)');
+  // Mock 모드 또는 API 키 미설정
+  if (!isGeminiAvailable()) {
+    ragLogger.info('[RAG] Gemini not available, using mock');
     return generateMockQAResponse(request.question);
   }
-
-  if (!genAI) {
-    ragLogger.warn('[RAG] Gemini not configured, using mock');
-    return generateMockQAResponse(request.question);
-  }
-
-  const model = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-    safetySettings,
-  });
 
   const prompt = buildQAPrompt(request);
 
@@ -203,9 +195,14 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       // 타임아웃 적용
-      const result = await withTimeout(model.generateContent(prompt), TIMEOUT_MS);
-      const response = result.response;
-      const text = response.text();
+      const result = await withTimeout(
+        generateContent({
+          contents: prompt,
+          config: { safetySettings },
+        }),
+        TIMEOUT_MS
+      );
+      const text = result.text;
 
       // JSON 파싱 시도 (문자열 탐색으로 ReDoS 방지)
       const jsonStr = extractJsonObject(text);

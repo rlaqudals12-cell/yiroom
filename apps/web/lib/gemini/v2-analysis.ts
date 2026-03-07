@@ -7,7 +7,7 @@
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
 import { z } from 'zod';
 import type {
   SkinZoneType,
@@ -34,19 +34,10 @@ import {
 // 설정
 // =============================================================================
 
-const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
-const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-// Gemini 클라이언트 초기화
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
-
-// 모델 설정
-const modelConfig = {
-  model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
-  generationConfig: {
-    temperature: 0.3,
-    maxOutputTokens: 4096,
-  },
+// 모델 설정 (어댑터에서 기본 모델 사용)
+const geminiV2Config = {
+  temperature: 0.3,
+  maxOutputTokens: 4096,
 };
 
 // =============================================================================
@@ -88,22 +79,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries: number, delayMs: n
 /**
  * Base64 이미지를 Gemini 형식으로 변환
  */
-function formatImageForGemini(imageBase64: string): {
-  inlineData: { mimeType: string; data: string };
-} {
-  // data:image/jpeg;base64,... 형식에서 실제 데이터만 추출
-  const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
-  if (!matches) {
-    throw new Error('Invalid base64 image format');
-  }
-
-  return {
-    inlineData: {
-      mimeType: matches[1],
-      data: matches[2],
-    },
-  };
-}
+// formatImageForGemini는 @/lib/gemini/client에서 import
 
 /**
  * JSON 응답 파싱 (마크다운 코드블록 제거)
@@ -316,15 +292,7 @@ export async function analyzeSkinV2WithGemini(
   imageBase64: string
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
-    return {
-      result: generateMockSkinAnalysisV2Result(),
-      usedFallback: true,
-    };
-  }
-
-  if (!genAI) {
-    console.warn('[S-2 Gemini] Gemini not configured, using mock');
+  if (!isGeminiAvailable()) {
     return {
       result: generateMockSkinAnalysisV2Result(),
       usedFallback: true,
@@ -332,14 +300,16 @@ export async function analyzeSkinV2WithGemini(
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([SKIN_V2_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: SKIN_V2_PROMPT }, imagePart],
+            config: geminiV2Config,
+          }),
           5000,
           '[S-2 Gemini] Timeout'
         ),
@@ -347,8 +317,7 @@ export async function analyzeSkinV2WithGemini(
       1000
     );
 
-    const response = await geminiResult.response;
-    const text = response.text();
+    const text = geminiResult.text;
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -475,24 +444,21 @@ export async function extractSkinColorWithGemini(
   imageBase64: string
 ): Promise<{ data: GeminiPersonalColorV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
-    return { data: null, usedFallback: true };
-  }
-
-  if (!genAI) {
-    console.warn('[PC-2 Gemini] Gemini not configured, using mock');
+  if (!isGeminiAvailable()) {
     return { data: null, usedFallback: true };
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (3초) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([PERSONAL_COLOR_V2_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: PERSONAL_COLOR_V2_PROMPT }, imagePart],
+            config: geminiV2Config,
+          }),
           3000,
           '[PC-2 Gemini] Timeout'
         ),
@@ -500,8 +466,7 @@ export async function extractSkinColorWithGemini(
       1000
     );
 
-    const response = await geminiResult.response;
-    const text = response.text();
+    const text = geminiResult.text;
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -625,24 +590,21 @@ export async function analyzeBodyWithGemini(
   imageBase64: string
 ): Promise<{ data: GeminiBodyV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
-    return { data: null, usedFallback: true };
-  }
-
-  if (!genAI) {
-    console.warn('[C-2 Gemini] Gemini not configured, using mock');
+  if (!isGeminiAvailable()) {
     return { data: null, usedFallback: true };
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초 - 전신 분석은 조금 더 시간 필요) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([BODY_V2_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: BODY_V2_PROMPT }, imagePart],
+            config: geminiV2Config,
+          }),
           5000,
           '[C-2 Gemini] Timeout'
         ),
@@ -650,8 +612,7 @@ export async function analyzeBodyWithGemini(
       1000
     );
 
-    const response = await geminiResult.response;
-    const text = response.text();
+    const text = geminiResult.text;
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -792,24 +753,21 @@ export async function analyzeHairWithGemini(
   imageBase64: string
 ): Promise<{ data: GeminiHairV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
-    return { data: null, usedFallback: true };
-  }
-
-  if (!genAI) {
-    console.warn('[H-1 Gemini] Gemini not configured, using mock');
+  if (!isGeminiAvailable()) {
     return { data: null, usedFallback: true };
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (4초) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([HAIR_V2_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: HAIR_V2_PROMPT }, imagePart],
+            config: geminiV2Config,
+          }),
           4000,
           '[H-1 Gemini] Timeout'
         ),
@@ -817,8 +775,7 @@ export async function analyzeHairWithGemini(
       1000
     );
 
-    const response = await geminiResult.response;
-    const text = response.text();
+    const text = geminiResult.text;
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);
@@ -981,24 +938,21 @@ export async function analyzeOralWithGemini(
   imageBase64: string
 ): Promise<{ data: GeminiOralHealthResponse | null; usedFallback: boolean }> {
   // Mock 모드 확인
-  if (FORCE_MOCK) {
-    return { data: null, usedFallback: true };
-  }
-
-  if (!genAI) {
-    console.warn('[OH-1 Gemini] Gemini not configured, using mock');
+  if (!isGeminiAvailable()) {
     return { data: null, usedFallback: true };
   }
 
   try {
-    const model = genAI.getGenerativeModel(modelConfig);
     const imagePart = formatImageForGemini(imageBase64);
 
     // 타임아웃 (5초 - 구강 분석은 복잡함) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
-          model.generateContent([ORAL_HEALTH_PROMPT, imagePart]),
+          generateContent({
+            contents: [{ text: ORAL_HEALTH_PROMPT }, imagePart],
+            config: geminiV2Config,
+          }),
           5000,
           '[OH-1 Gemini] Timeout'
         ),
@@ -1006,8 +960,7 @@ export async function analyzeOralWithGemini(
       1000
     );
 
-    const response = await geminiResult.response;
-    const text = response.text();
+    const text = geminiResult.text;
 
     // JSON 파싱 및 검증
     const parsed = parseJsonResponse<unknown>(text);

@@ -3,16 +3,12 @@
  * @description Gemini 3 Flash API 호출 및 응답 처리
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
 import { chatLogger } from '@/lib/utils/logger';
 import type { ChatMessage, ChatContext, ProductRecommendation } from '@/types/chat';
 import { buildFullPrompt, parseProductRecommendations } from './prompt';
 
-// Gemini 클라이언트 초기화
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
-
 // 모델 설정
-const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 const TIMEOUT_MS = 10000; // 10초 타임아웃
 const MAX_RETRIES = 2;
 
@@ -40,23 +36,21 @@ export async function generateChatResponse(
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: MODEL_NAME,
-        generationConfig: {
+      // 타임아웃 적용
+      const responsePromise = generateContent({
+        contents: fullPrompt,
+        config: {
           temperature: 0.7,
           topP: 0.9,
           maxOutputTokens: 1024,
         },
       });
-
-      // 타임아웃 적용
-      const responsePromise = model.generateContent(fullPrompt);
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Gemini timeout')), TIMEOUT_MS)
       );
 
       const response = await Promise.race([responsePromise, timeoutPromise]);
-      const text = response.response.text();
+      const text = response.text;
 
       // 제품 추천 파싱
       const { cleanedResponse, products } = parseProductRecommendations(text);
@@ -155,5 +149,5 @@ export function generateMockResponse(userMessage: string): {
  * 환경 변수 검증
  */
 export function isGeminiConfigured(): boolean {
-  return !!process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  return isGeminiAvailable();
 }

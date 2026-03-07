@@ -30,7 +30,7 @@
     "@clerk/localizations": "^3.26.3",
     "@clerk/nextjs": "^6.36.5",
     "@ducanh2912/next-pwa": "^10.2.9",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^1.44.0",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.15",

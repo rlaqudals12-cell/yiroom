@@ -3,8 +3,6 @@
  * Gemini AI + Mock Fallback 패턴
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export interface ParsedFoodItem {
@@ -158,9 +156,6 @@ export function parseVoiceTranscript(transcript: string): VoiceParseResult {
     usedMock: true,
   };
 }
-
-// GoogleGenerativeAI import는 향후 AI 연동을 위해 유지 (현재 미사용)
-void GoogleGenerativeAI;
 
 /** Mock 결과 생성 */
 export function generateMockVoiceParseResult(text: string): VoiceParseResult {
