@@ -28,6 +28,60 @@ import {
 import { selectText, selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
+// 한글 라벨 매핑
+// ============================================
+
+const SEASON_LABELS: Record<string, string> = {
+  spring: '봄 웜톤',
+  Spring: '봄 웜톤',
+  summer: '여름 쿨톤',
+  Summer: '여름 쿨톤',
+  autumn: '가을 웜톤',
+  Autumn: '가을 웜톤',
+  winter: '겨울 쿨톤',
+  Winter: '겨울 쿨톤',
+};
+
+const SKIN_TYPE_LABELS: Record<string, string> = {
+  dry: '건성',
+  oily: '지성',
+  combination: '복합성',
+  sensitive: '민감성',
+  normal: '중성',
+};
+
+const BODY_TYPE_LABELS: Record<string, string> = {
+  hourglass: '모래시계형',
+  pear: '서양배형',
+  apple: '사과형',
+  rectangle: '직사각형',
+  inverted_triangle: '역삼각형',
+};
+
+const HAIR_TYPE_LABELS: Record<string, string> = {
+  straight: '직모',
+  wavy: '웨이브',
+  curly: '곱슬',
+  coily: '강한 곱슬',
+};
+
+function seasonLabel(season: string): string {
+  return SEASON_LABELS[season] ?? season;
+}
+
+function skinTypeLabel(skinType: string): string {
+  return SKIN_TYPE_LABELS[skinType] ?? skinType;
+}
+
+function bodyTypeLabel(bodyType: string): string {
+  return BODY_TYPE_LABELS[bodyType] ?? bodyType;
+}
+
+function hairTypeLabel(hairType: string): string {
+  return HAIR_TYPE_LABELS[hairType] ?? hairType;
+}
+
+// ============================================
 // 유틸리티
 // ============================================
 
@@ -74,7 +128,7 @@ function generateColorSkinInsight(
 
   const description =
     language === 'ko'
-      ? `${personalColor.season} 시즌의 ${skin.skinType} 피부에 맞는 베이스 메이크업을 추천해요`
+      ? `${seasonLabel(personalColor.season)}의 ${skinTypeLabel(skin.skinType)} 피부에 맞는 베이스 메이크업을 추천해요`
       : `We recommend base makeup for ${personalColor.season} season with ${skin.skinType} skin`;
 
   return {
@@ -114,7 +168,7 @@ function generateStyleBodyInsight(
 
   const description =
     language === 'ko'
-      ? `${personalColor.season} 톤의 ${body.bodyType} 체형에 어울리는 스타일을 확인해보세요`
+      ? `${seasonLabel(personalColor.season)}의 ${bodyTypeLabel(body.bodyType)} 체형에 어울리는 스타일을 확인해보세요`
       : `Check out styles that suit ${personalColor.season} tone with ${body.bodyType} body type`;
 
   return {
@@ -212,7 +266,7 @@ function generateHairColorInsight(
 
   const description =
     language === 'ko'
-      ? `${personalColor.season} 시즌에 어울리는 헤어컬러와 ${hair.hairType} 모발 관리법을 확인해보세요`
+      ? `${seasonLabel(personalColor.season)}에 어울리는 헤어컬러와 ${hairTypeLabel(hair.hairType)} 모발 관리법을 확인해보세요`
       : `Check hair colors for ${personalColor.season} season and care tips for ${hair.hairType} hair`;
 
   return {
@@ -225,7 +279,10 @@ function generateHairColorInsight(
     priorityScore,
     createdAt: nowISO(),
     productCategory: 'hair_color',
-    reason: language === 'ko' ? '퍼스널컬러 + 모발 상태 기반' : 'Based on personal color + hair condition',
+    reason:
+      language === 'ko'
+        ? '퍼스널컬러 + 모발 상태 기반'
+        : 'Based on personal color + hair condition',
   };
 }
 
@@ -257,31 +314,59 @@ function generateOralHealthInsight(
   const urgencyKey = isUrgent ? 'urgent' : 'normal';
 
   const title = selectText(language, {
-    ko: selectByKey(urgencyKey, { urgent: '구강 건강 주의 필요', normal: '구강 건강 관리 팁' }, '구강 건강 관리 팁')!,
-    en: selectByKey(urgencyKey, { urgent: 'Oral Health Attention Required', normal: 'Oral Health Care Tips' }, 'Oral Health Care Tips')!,
+    ko: selectByKey(
+      urgencyKey,
+      { urgent: '구강 건강 주의 필요', normal: '구강 건강 관리 팁' },
+      '구강 건강 관리 팁'
+    )!,
+    en: selectByKey(
+      urgencyKey,
+      { urgent: 'Oral Health Attention Required', normal: 'Oral Health Care Tips' },
+      'Oral Health Care Tips'
+    )!,
   });
 
   const description = selectText(language, {
-    ko: selectByKey(urgencyKey, {
-      urgent: '잇몸 상태 확인이 필요해요. 치과 방문을 권장합니다.',
-      normal: '꾸준한 관리로 건강한 구강을 유지하세요',
-    }, '꾸준한 관리로 건강한 구강을 유지하세요')!,
-    en: selectByKey(urgencyKey, {
-      urgent: 'Gum condition needs attention. Dental visit recommended.',
-      normal: 'Maintain healthy oral care with regular routine',
-    }, 'Maintain healthy oral care with regular routine')!,
+    ko: selectByKey(
+      urgencyKey,
+      {
+        urgent: '잇몸 상태 확인이 필요해요. 치과 방문을 권장합니다.',
+        normal: '꾸준한 관리로 건강한 구강을 유지하세요',
+      },
+      '꾸준한 관리로 건강한 구강을 유지하세요'
+    )!,
+    en: selectByKey(
+      urgencyKey,
+      {
+        urgent: 'Gum condition needs attention. Dental visit recommended.',
+        normal: 'Maintain healthy oral care with regular routine',
+      },
+      'Maintain healthy oral care with regular routine'
+    )!,
   });
 
   // 심각도 분류: 염증 점수 범위 기반 (60+ urgent, 30+ warning, 나머지 info)
-  const severity = classifyByRange(inflammationScore, [
-    { min: 60, result: 'urgent' as const },
-    { min: 30, result: 'warning' as const },
-    { result: 'info' as const },
-  ], 'info' as const)!;
+  const severity = classifyByRange(
+    inflammationScore,
+    [
+      { min: 60, result: 'urgent' as const },
+      { min: 30, result: 'warning' as const },
+      { result: 'info' as const },
+    ],
+    'info' as const
+  )!;
 
   const recommendedAction = selectText(language, {
-    ko: selectByKey(urgencyKey, { urgent: '치과 방문 권장', normal: '정기 검진 권장' }, '정기 검진 권장')!,
-    en: selectByKey(urgencyKey, { urgent: 'Dental visit recommended', normal: 'Regular checkup recommended' }, 'Regular checkup recommended')!,
+    ko: selectByKey(
+      urgencyKey,
+      { urgent: '치과 방문 권장', normal: '정기 검진 권장' },
+      '정기 검진 권장'
+    )!,
+    en: selectByKey(
+      urgencyKey,
+      { urgent: 'Dental visit recommended', normal: 'Regular checkup recommended' },
+      'Regular checkup recommended'
+    )!,
   });
 
   return {
@@ -299,7 +384,7 @@ function generateOralHealthInsight(
 }
 
 /**
- * 종합 시너지 인사이트 생성
+ * 종합 통합 분석 인사이트 생성
  */
 function generateSynergyInsight(
   data: AnalysisDataBundle,
@@ -314,7 +399,7 @@ function generateSynergyInsight(
   if (data.hair) completedModules.push('hair');
   if (data.oralHealth) completedModules.push('oral_health');
 
-  // 3개 이상 모듈이 있어야 시너지 의미 있음
+  // 3개 이상 모듈이 있어야 의미 있음
   if (completedModules.length < 3) return null;
 
   const priorityScore = calculatePriorityScore({
@@ -327,7 +412,9 @@ function generateSynergyInsight(
   const synergyScore = Math.round((completedModules.length / 6) * 100);
 
   const title =
-    language === 'ko' ? `${completedModules.length}개 분석 시너지 달성!` : `${completedModules.length} Analysis Synergy Achieved!`;
+    language === 'ko'
+      ? `${completedModules.length}개 분석 통합 효과!`
+      : `${completedModules.length} Analysis Combined Effect!`;
 
   const description =
     language === 'ko'

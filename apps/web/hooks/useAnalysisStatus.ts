@@ -83,7 +83,7 @@ function getBodyTypeLabel(bodyType: string): string {
     rectangle: '직사각형',
     inverted_triangle: '역삼각형',
   };
-  return labels[bodyType] || bodyType;
+  return labels[bodyType] || '기타';
 }
 
 function getHairTypeLabel(hairType: string): string {
@@ -91,7 +91,7 @@ function getHairTypeLabel(hairType: string): string {
     straight: '직모',
     wavy: '웨이브',
     curly: '곱슬',
-    coily: '꼬임',
+    coily: '강한 곱슬',
   };
   return labels[hairType] || hairType;
 }

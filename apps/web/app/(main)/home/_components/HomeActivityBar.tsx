@@ -128,7 +128,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
       {/* 활동 요약 또는 빈 상태 */}
       {isEmpty ? (
         <Link
-          href="/nutrition"
+          href="/dashboard"
           className="flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
         >
           <span>오늘의 첫 기록을 시작해볼까요?</span>

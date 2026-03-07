@@ -1,20 +1,40 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Palette, Sparkles, User, Scissors, Heart, SmilePlus, ChevronRight } from 'lucide-react';
-import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
+import {
+  Palette,
+  Sparkles,
+  User,
+  Scissors,
+  Heart,
+  SmilePlus,
+  ChevronRight,
+  Plus,
+} from 'lucide-react';
+import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 
 const TOTAL_ANALYSIS_TYPES = 6;
 
 // 분석 타입별 메타 정보
-const ANALYSIS_META = {
+const ANALYSIS_META: Record<
+  AnalysisType,
+  {
+    icon: typeof Palette;
+    label: string;
+    gradient: string;
+    shadow: string;
+    href: string;
+    analysisHref: string;
+  }
+> = {
   'personal-color': {
     icon: Palette,
     label: '퍼스널 컬러',
     gradient: 'from-violet-400 to-purple-500',
     shadow: 'shadow-violet-500/30',
     href: '/analysis/personal-color/result',
+    analysisHref: '/analysis/personal-color',
   },
   skin: {
     icon: Sparkles,
@@ -22,6 +42,7 @@ const ANALYSIS_META = {
     gradient: 'from-rose-400 to-pink-500',
     shadow: 'shadow-rose-500/30',
     href: '/analysis/skin/result',
+    analysisHref: '/analysis/skin',
   },
   body: {
     icon: User,
@@ -29,6 +50,7 @@ const ANALYSIS_META = {
     gradient: 'from-blue-400 to-indigo-500',
     shadow: 'shadow-blue-500/30',
     href: '/analysis/body/result',
+    analysisHref: '/analysis/body',
   },
   hair: {
     icon: Scissors,
@@ -36,6 +58,7 @@ const ANALYSIS_META = {
     gradient: 'from-amber-400 to-orange-500',
     shadow: 'shadow-amber-500/30',
     href: '/analysis/hair/result',
+    analysisHref: '/analysis/hair',
   },
   makeup: {
     icon: Heart,
@@ -43,6 +66,7 @@ const ANALYSIS_META = {
     gradient: 'from-pink-400 to-rose-500',
     shadow: 'shadow-pink-500/30',
     href: '/analysis/makeup/result',
+    analysisHref: '/analysis/makeup',
   },
   'oral-health': {
     icon: SmilePlus,
@@ -50,8 +74,19 @@ const ANALYSIS_META = {
     gradient: 'from-cyan-400 to-blue-500',
     shadow: 'shadow-cyan-500/30',
     href: '/analysis/oral-health/result',
+    analysisHref: '/analysis/oral-health',
   },
 };
+
+// 미완료 분석 추천 순서
+const ANALYSIS_ORDER: AnalysisType[] = [
+  'personal-color',
+  'skin',
+  'body',
+  'hair',
+  'makeup',
+  'oral-health',
+];
 
 interface HomeAnalysisSummaryProps {
   analyses: AnalysisSummary[];
@@ -64,6 +99,10 @@ interface HomeAnalysisSummaryProps {
 export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryProps) {
   const router = useRouter();
   const isAllComplete = analyses.length >= TOTAL_ANALYSIS_TYPES;
+
+  // 미완료 분석 중 첫 번째 추천
+  const completedTypes = new Set(analyses.map((a) => a.type));
+  const nextAnalysis = ANALYSIS_ORDER.find((t) => !completedTypes.has(t));
 
   return (
     <section
@@ -124,6 +163,27 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
             </button>
           );
         })}
+
+        {/* 미완료 분석 CTA 슬롯 */}
+        {!isAllComplete && nextAnalysis && (
+          <button
+            onClick={() => router.push(ANALYSIS_META[nextAnalysis].analysisHref)}
+            className="group flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 transition-colors text-left"
+            data-testid="home-analysis-next-cta"
+          >
+            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 transition-colors">
+              <Plus className="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                {ANALYSIS_META[nextAnalysis].label}
+              </p>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                분석해보기
+              </p>
+            </div>
+          </button>
+        )}
       </div>
     </section>
   );

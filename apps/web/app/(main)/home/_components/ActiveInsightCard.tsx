@@ -157,7 +157,6 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
         <Sparkles className="w-5 h-5 text-violet-500" />
         <h3 className="font-semibold text-sm text-foreground">나를 위한 인사이트</h3>
-        <span className="text-xs text-muted-foreground ml-auto">{analyses.length}개 분석 기반</span>
       </div>
 
       {/* 인사이트 목록 */}
@@ -274,15 +273,15 @@ function InsightItem({
           {isConfirmed ? (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-500">
               <Check className="w-3.5 h-3.5" />
-              이해했어요
+              확인했어요
             </span>
           ) : (
             <button
               onClick={onConfirm}
-              className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-600 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-600 transition-colors min-h-[44px] min-w-[44px] px-2"
             >
               <Check className="w-3.5 h-3.5" />
-              이해했어요
+              확인했어요
             </button>
           )}
         </div>
