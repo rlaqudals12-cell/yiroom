@@ -80,7 +80,7 @@ describe('DetailedEvidenceReport', () => {
 
     expect(screen.getByTestId('color-compare-visual')).toBeInTheDocument();
     expect(screen.getByText('잘 어울리는 색')).toBeInTheDocument();
-    expect(screen.getByText('피해야 할 색')).toBeInTheDocument();
+    expect(screen.getByText('덜 어울리는 색')).toBeInTheDocument();
   });
 
   it('renders metal tone compare with silver recommended for cool tone', () => {

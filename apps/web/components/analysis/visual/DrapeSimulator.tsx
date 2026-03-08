@@ -208,7 +208,9 @@ export default function DrapeSimulator({
 
       {/* 4. 분석 버튼 */}
       <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
-        {isAnalyzing ? '분석 중...' : selectByCondition(bestResults.length > 0, '다시 분석', '전체 컬러 분석 시작')}
+        {isAnalyzing
+          ? '분석 중...'
+          : selectByCondition(bestResults.length > 0, '다시 분석', '전체 컬러 분석 시작')}
       </Button>
     </div>
   );
@@ -333,7 +335,7 @@ function ComparisonSection({
 
   return (
     <div className="space-y-2" data-testid="comparison-section">
-      <h4 className="text-sm font-medium">어울리는 색 vs 피해야 할 색</h4>
+      <h4 className="text-sm font-medium">어울리는 색 vs 덜 어울리는 색</h4>
       <div className="grid grid-cols-2 gap-3">
         {/* 베스트 1위 */}
         <div className="space-y-1.5">
@@ -364,7 +366,7 @@ function ComparisonSection({
             <canvas
               ref={worstCanvasRef}
               className="max-w-full max-h-full object-contain"
-              aria-label="피해야 할 컬러 미리보기"
+              aria-label="덜 어울리는 컬러 미리보기"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -421,10 +423,14 @@ function getKoreanColorName(hex: string): string {
   }
 
   // 채도+명도에 따른 접두사
-  const prefix = classifyByRange(l, [
-    { max: 0.35, result: '딥 ' },
-    { max: 0.75, result: '' },
-  ], '라이트 ')!;
+  const prefix = classifyByRange(
+    l,
+    [
+      { max: 0.35, result: '딥 ' },
+      { max: 0.75, result: '' },
+    ],
+    '라이트 '
+  )!;
 
   // 색상명 매핑
   if (h < 15 || h >= 345) return `${prefix}레드`;

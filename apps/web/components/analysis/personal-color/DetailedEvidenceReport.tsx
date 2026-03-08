@@ -100,13 +100,18 @@ function ToneSpectrumBar({ veinScore, tone }: { veinScore: number; tone: 'warm' 
       </p>
       <p className="text-xs text-muted-foreground mt-1">
         {classifyByRange(position, [
-          { max: 41, result: isCool
-            ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
-            : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.' },
+          {
+            max: 41,
+            result: isCool
+              ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
+              : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.',
+          },
           { max: 71, result: '중성 톤에 가까워서 다양한 색상을 소화할 수 있어요.' },
-          { result: isCool
-            ? '뚜렷한 쿨톤이에요. 시원한 계열의 색상이 잘 어울려요.'
-            : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.' },
+          {
+            result: isCool
+              ? '뚜렷한 쿨톤이에요. 시원한 계열의 색상이 잘 어울려요.'
+              : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.',
+          },
         ])}
       </p>
     </div>
@@ -146,7 +151,7 @@ function ColorCompareVisual({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Circle className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">피해야 할 색</span>
+            <span className="text-sm font-medium text-red-600">덜 어울리는 색</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {worstColors.slice(0, 6).map((color, i) => (
@@ -161,7 +166,7 @@ function ColorCompareVisual({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        어울리는 색은 피부톤과 조화를 이뤄 얼굴을 밝게 보이게 하고, 피해야 할 색은 피부와 부조화를
+        어울리는 색은 피부톤과 조화를 이뤄 얼굴을 밝게 보이게 하고, 덜 어울리는 색은 피부와 부조화를
         일으켜 칙칙해 보일 수 있어요.
       </p>
     </div>
@@ -230,27 +235,39 @@ function AnalysisFactorsVisual({ evidence }: { evidence: AnalysisEvidence }) {
     {
       name: '혈관 색상',
       description:
-        (evidence.veinColor === 'blue' || evidence.veinColor === 'purple')
+        evidence.veinColor === 'blue' || evidence.veinColor === 'purple'
           ? '파란색/보라색 → 쿨톤'
-          : selectByKey(evidence.veinColor, { green: '녹색/올리브색 → 웜톤', olive: '녹색/올리브색 → 웜톤' }, '혼합') as string,
+          : (selectByKey(
+              evidence.veinColor,
+              { green: '녹색/올리브색 → 웜톤', olive: '녹색/올리브색 → 웜톤' },
+              '혼합'
+            ) as string),
       score: evidence.veinScore,
       indicatesCool: evidence.veinColor === 'blue' || evidence.veinColor === 'purple',
     },
     {
       name: '피부 언더톤',
-      description: selectByKey(evidence.skinUndertone, {
-        pink: '핑크 기 → 쿨톤 경향',
-        yellow: '노란 기 → 웜톤 경향',
-      }, '중립') as string,
+      description: selectByKey(
+        evidence.skinUndertone,
+        {
+          pink: '핑크 기 → 쿨톤 경향',
+          yellow: '노란 기 → 웜톤 경향',
+        },
+        '중립'
+      ) as string,
       score: selectByKey(evidence.skinUndertone, { pink: 80, yellow: 20 }, 50) as number,
       indicatesCool: evidence.skinUndertone === 'pink',
     },
     {
       name: '입술 자연색',
-      description: selectByKey(evidence.lipNaturalColor, {
-        pink: '핑크빛 → 쿨톤 경향',
-        coral: '코랄빛 → 웜톤 경향',
-      }, '중립') as string,
+      description: selectByKey(
+        evidence.lipNaturalColor,
+        {
+          pink: '핑크빛 → 쿨톤 경향',
+          coral: '코랄빛 → 웜톤 경향',
+        },
+        '중립'
+      ) as string,
       score: selectByKey(evidence.lipNaturalColor, { pink: 75, coral: 25 }, 50) as number,
       indicatesCool: evidence.lipNaturalColor === 'pink',
     },
@@ -300,12 +317,16 @@ export default function DetailedEvidenceReport({
 }: DetailedEvidenceReportProps) {
   const isCool = tone === 'cool';
   const seasonExplanation = SEASON_EXPLANATIONS[seasonType];
-  const seasonLabel = selectByKey(seasonType, {
-    spring: '봄 웜톤',
-    summer: '여름 쿨톤',
-    autumn: '가을 웜톤',
-    winter: '겨울 쿨톤',
-  }, '겨울 쿨톤') as string;
+  const seasonLabel = selectByKey(
+    seasonType,
+    {
+      spring: '봄 웜톤',
+      summer: '여름 쿨톤',
+      autumn: '가을 웜톤',
+      winter: '겨울 쿨톤',
+    },
+    '겨울 쿨톤'
+  ) as string;
 
   return (
     <div className={cn('space-y-4', className)} data-testid="detailed-evidence-report">
@@ -329,9 +350,7 @@ export default function DetailedEvidenceReport({
               <p className="text-xs text-muted-foreground">{seasonExplanation.skinHarmony}</p>
             </div>
             <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30">
-              <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
-                피해야 할 이유
-              </p>
+              <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">참고할 점</p>
               <p className="text-xs text-muted-foreground">{seasonExplanation.avoidReason}</p>
             </div>
           </div>

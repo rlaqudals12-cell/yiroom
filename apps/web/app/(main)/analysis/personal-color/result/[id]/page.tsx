@@ -37,10 +37,7 @@ import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnaly
 import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AnalysisEvidenceReport, {
-  type AnalysisEvidence,
-  type ImageQuality,
-} from '@/components/analysis/AnalysisEvidenceReport';
+import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
 import { DrapingSimulationTab } from '@/components/analysis/visual';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
@@ -204,7 +201,7 @@ export default function PersonalColorResultPage() {
       }
 
       if (!json.data) {
-        throw new Error('분석 결과를 찾을 수 없습니다');
+        throw new Error('분석 결과를 찾을 수 없어요');
       }
 
       const dbData = json.data as DbPersonalColorAssessment;
@@ -470,17 +467,6 @@ export default function PersonalColorResultPage() {
               <ContextLinkingCard currentModule="personal-color" />
               <ResultPageInsights currentModule="personal-color" />
 
-              {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
-              {(analysisEvidence || imageQuality) && (
-                <AnalysisEvidenceReport
-                  evidence={analysisEvidence}
-                  imageQuality={imageQuality}
-                  seasonType={result.seasonType}
-                  tone={result.tone}
-                  className="mt-6"
-                />
-              )}
-
               {/* 성별 적응형 악세서리 추천 (K-1) */}
               <GenderAdaptiveAccessories seasonType={result.seasonType} className="mt-6" />
 
@@ -528,8 +514,8 @@ export default function PersonalColorResultPage() {
                 <div className="flex justify-center">
                   <ShareButtons
                     content={{
-                      title: `나의 퍼스널 컬러는 ${result?.seasonType?.toUpperCase() || ''} 타입!`,
-                      description: '이룸에서 AI 퍼스널 컬러 진단 받아보세요',
+                      title: `나의 퍼스널 컬러는 ${result?.seasonLabel || ''} 타입!`,
+                      description: '이룸에서 나만의 퍼스널 컬러를 알아보세요',
                       url: currentUrl,
                     }}
                   />

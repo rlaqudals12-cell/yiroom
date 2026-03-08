@@ -23,18 +23,18 @@
 
 ### KI-001: 영어 enum이 한글 변환 없이 JSX에 직접 렌더링
 
-- **발견 횟수**: 3회 (Phase 28 홈, 분석 결과 2건)
+- **발견 횟수**: 4회 (Phase 28 홈, 분석 결과 2건, **PC 결과 공유 제목**)
 - **관련 항목**: A1
-- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage
+- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage, **PersonalColorResultPage (공유)**
 - **원인**: AI/DB 반환값을 그대로 텍스트 보간에 사용. 매핑 함수 호출 누락
 - **수정 방법**: `translateSeason()`, `translateSkinType()` 등 매핑 함수 경유 필수
 - **재발 방지**: 새 모듈 추가 시 A1 영어값 목록에 enum 등록 + 매핑 함수 작성을 원자 분해에 포함
 
 ### KI-002: 터치 타겟 44px 미달 (p-2/h-8 사용) — **3회 도달, 승격 완료**
 
-- **발견 횟수**: 3회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, **홈 캡슐+분석요약 버튼**)
+- **발견 횟수**: 4회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, 홈 캡슐+분석요약 버튼, **PC ResultCardV2 악세서리 필터**)
 - **관련 항목**: B2
-- **발생 화면**: ActiveInsightCard, InternalizationWidget, **HomeDailyCapsuleWidget, HomeAnalysisSummary**
+- **발생 화면**: ActiveInsightCard, InternalizationWidget, HomeDailyCapsuleWidget, HomeAnalysisSummary, **ResultCardV2**
 - **원인**: 시각적 크기에 집중하고 터치 영역 크기를 간과
 - **수정 방법**: `min-h-[44px] min-w-[44px]` 또는 `p-3` 이상 적용
 - **재발 방지**: 버튼/링크 생성 시 p-3 기본값 습관화
@@ -85,6 +85,16 @@
 - **수정 방법**: RecentlyViewed를 별도 탭/섹션으로 분리하거나, Internalization을 ActivityBar 내부로 통합
 - **재발 방지**: 홈 화면 컴포넌트 추가 시 F1(7개 이하) 체크
 
+### KI-008: "피해야 할" 부정적 프레이밍 (D4 위반)
+
+- **발견 횟수**: 1회 (PC 결과 페이지 7개소, 타 모듈 30+개소 잔존)
+- **관련 항목**: D4 (신체 부정 언어 금지)
+- **발생 화면**: PersonalColorResultPage (ResultCardV2, DetailedEvidenceReport, AnalysisResult, DrapeSimulator, ConsultantCTA, SynergyInsightCard)
+- **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용. D4 항목이 추가되기 전에 작성된 코드
+- **수정 방법**: "피해야 할" → "덜 어울리는" 또는 "주의할" 등 중립적 표현으로 교체
+- **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인
+- **해결 커밋**: PC 결과 페이지 7개소 수정 완료. 타 모듈(body, skin, workout, nutrition, hair, oral-health)은 별도 작업 필요
+
 ---
 
 ## 승격 이력
@@ -97,5 +107,5 @@
 
 ---
 
-**Version**: 1.3 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
+**Version**: 1.4 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조

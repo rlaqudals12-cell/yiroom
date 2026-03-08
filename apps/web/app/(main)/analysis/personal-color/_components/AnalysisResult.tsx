@@ -389,7 +389,7 @@ export default function AnalysisResult({
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">피해야 할 컬러</p>
+                  <p className="text-xs text-muted-foreground mb-1">덜 어울리는 컬러</p>
                   <div className="flex flex-wrap gap-1">
                     {genderStyleDescription.easyFashion.avoid.map((color, idx) => (
                       <span
@@ -562,17 +562,23 @@ export default function AnalysisResult({
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-foreground">{foundation.shadeName}</p>
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded ${
-                            selectByKey(foundation.undertone, {
+                          className={`text-xs px-1.5 py-0.5 rounded ${selectByKey(
+                            foundation.undertone,
+                            {
                               warm: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
                               cool: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                            }, 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400')
-                          }`}
+                            },
+                            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                          )}`}
                         >
-                          {selectByKey(foundation.undertone, {
-                            warm: '웜',
-                            cool: '쿨',
-                          }, '뉴트럴')}
+                          {selectByKey(
+                            foundation.undertone,
+                            {
+                              warm: '웜',
+                              cool: '쿨',
+                            },
+                            '뉴트럴'
+                          )}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">

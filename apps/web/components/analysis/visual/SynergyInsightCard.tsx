@@ -84,7 +84,7 @@ export default function SynergyInsightCard({
           </div>
         )}
 
-        {/* 피해야 할 컬러 */}
+        {/* 덜 어울리는 컬러 */}
         {avoidColors && avoidColors.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-muted-foreground">주의할 컬러</h4>

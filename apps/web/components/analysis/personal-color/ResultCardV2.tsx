@@ -202,7 +202,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
 
               {/* 워스트 컬러 (avoidColors) */}
               <div>
-                <h4 className="text-sm font-medium mb-2 text-muted-foreground">피해야 할 컬러</h4>
+                <h4 className="text-sm font-medium mb-2 text-muted-foreground">덜 어울리는 컬러</h4>
                 <div className="flex flex-wrap gap-2">
                   <TooltipProvider>
                     {result.palette?.avoidColors?.map((color: string, idx: number) => (
@@ -248,7 +248,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setAccessoryFilter('all')}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full border transition-colors min-h-[44px] ${
                     accessoryFilter === 'all'
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-background text-muted-foreground border-border hover:border-primary/50'
@@ -258,7 +258,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                 </button>
                 <button
                   onClick={() => setAccessoryFilter('unisex')}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full border transition-colors min-h-[44px] ${
                     accessoryFilter === 'unisex'
                       ? 'bg-emerald-500 text-white border-emerald-500'
                       : 'bg-background text-muted-foreground border-border hover:border-emerald-300'
@@ -268,7 +268,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                 </button>
                 <button
                   onClick={() => setAccessoryFilter('male')}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full border transition-colors min-h-[44px] ${
                     accessoryFilter === 'male'
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'bg-background text-muted-foreground border-border hover:border-blue-300'
@@ -278,7 +278,7 @@ export function ResultCardV2({ result, showDetails = true }: ResultCardV2Props) 
                 </button>
                 <button
                   onClick={() => setAccessoryFilter('female')}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full border transition-colors min-h-[44px] ${
                     accessoryFilter === 'female'
                       ? 'bg-pink-500 text-white border-pink-500'
                       : 'bg-background text-muted-foreground border-border hover:border-pink-300'

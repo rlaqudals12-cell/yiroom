@@ -17,7 +17,7 @@ const QUICK_QUESTIONS: Record<ConsultantCategory, string[]> = {
   personalColor: [
     '내 시즌에 맞는 립 색상 추천해줘',
     '어울리는 옷 색상 조합 알려줘',
-    '피해야 할 색상은 뭐야?',
+    '덜 어울리는 색상은 뭐야?',
   ],
   fashion: ['오늘 뭐 입을까?', '면접 볼 때 코디 추천해줘', '데이트룩 추천해줘'],
   nutrition: ['냉장고 재료로 뭐 해먹지?', '다이어트 식단 추천해줘', '단백질 보충 방법 알려줘'],
