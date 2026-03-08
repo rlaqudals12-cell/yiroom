@@ -186,7 +186,7 @@ function SupplementItem({
               href={links.coupang}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-2 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-coupang)' }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.backgroundColor = 'var(--affiliate-coupang-hover)')
@@ -203,7 +203,7 @@ function SupplementItem({
               href={links.oliveyoung}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-2 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-oliveyoung)' }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.backgroundColor = 'var(--affiliate-oliveyoung-hover)')
@@ -220,7 +220,7 @@ function SupplementItem({
               href={links.iherb}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 text-white rounded transition-colors"
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-2 text-white rounded transition-colors"
               style={{ backgroundColor: 'var(--affiliate-iherb)' }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.backgroundColor = 'var(--affiliate-iherb-hover)')

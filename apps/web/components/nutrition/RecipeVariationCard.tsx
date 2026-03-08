@@ -31,6 +31,13 @@ export function RecipeVariationCard({ variation, originalNutrition }: RecipeVari
     carbs: Math.round(originalNutrition.carbs * (1 - variation.nutritionChange.carbsChange / 100)),
   };
 
+  const VARIATION_TYPE_LABELS: Record<string, string> = {
+    diet: '다이어트',
+    lean: '저지방',
+    bulk: '벌크업',
+    allergen_free: '알레르기 프리',
+  };
+
   const getGoalBadgeColor = (type: RecipeVariation['type']) => {
     const colors = {
       diet: 'bg-green-500',
@@ -47,7 +54,7 @@ export function RecipeVariationCard({ variation, originalNutrition }: RecipeVari
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{variation.name}</CardTitle>
           <Badge className={`${getGoalBadgeColor(variation.type)} text-white`}>
-            {variation.type.toUpperCase()}
+            {VARIATION_TYPE_LABELS[variation.type] ?? variation.type}
           </Badge>
         </div>
         <CardDescription>{variation.description}</CardDescription>

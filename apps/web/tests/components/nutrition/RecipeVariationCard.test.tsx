@@ -62,7 +62,7 @@ describe('RecipeVariationCard', () => {
       />
     );
 
-    expect(screen.getByText('DIET')).toBeInTheDocument();
+    expect(screen.getByText('다이어트')).toBeInTheDocument();
   });
 
   it('영양 성분 변화를 표시해야 함', () => {
@@ -123,7 +123,7 @@ describe('RecipeVariationCard', () => {
       <RecipeVariationCard variation={leanVariation} originalNutrition={mockOriginalNutrition} />
     );
 
-    expect(screen.getByText('LEAN')).toBeInTheDocument();
+    expect(screen.getByText('저지방')).toBeInTheDocument();
   });
 
   it('대체 재료가 없으면 대체 재료 섹션을 표시하지 않음', () => {
