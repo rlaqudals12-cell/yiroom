@@ -844,13 +844,13 @@ describe('ZoneDetailCard', () => {
     });
   });
 
-  describe('피해야 할 것 섹션', () => {
-    it('"피해야 할 것" 라벨을 표시한다', () => {
+  describe('주의할 점 섹션', () => {
+    it('"주의할 점" 라벨을 표시한다', () => {
       render(<ZoneDetailCard zoneId="forehead_center" score={75} onClose={vi.fn()} />);
-      expect(screen.getByText('피해야 할 것')).toBeInTheDocument();
+      expect(screen.getByText('주의할 점')).toBeInTheDocument();
     });
 
-    it('피해야 할 것 목록을 표시한다', () => {
+    it('주의할 점 목록을 표시한다', () => {
       render(<ZoneDetailCard zoneId="forehead_center" score={75} onClose={vi.fn()} />);
       expect(screen.getByText(/무거운 오일 베이스 제품/)).toBeInTheDocument();
     });

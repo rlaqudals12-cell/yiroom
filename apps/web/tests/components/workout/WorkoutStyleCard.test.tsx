@@ -66,18 +66,18 @@ describe('WorkoutStyleCard', () => {
       expect(screen.getByLabelText('펼치기')).toBeInTheDocument();
     });
 
-    it('펼치면 피해야 할 색상이 표시된다', () => {
+    it('펼치면 주의할 색상이 표시된다', () => {
       render(<WorkoutStyleCard personalColor="Summer" bodyType={null} />);
 
-      // 초기에는 피해야 할 색상이 보이지 않음
+      // 초기에는 주의할 색상이 보이지 않음
       expect(screen.queryByTestId('avoid-colors')).not.toBeInTheDocument();
 
       // 펼치기 버튼 클릭
       fireEvent.click(screen.getByLabelText('펼치기'));
 
-      // 펼치면 피해야 할 색상이 보임
+      // 펼치면 주의할 색상이 보임
       expect(screen.getByTestId('avoid-colors')).toBeInTheDocument();
-      expect(screen.getByText('피해야 할 색상')).toBeInTheDocument();
+      expect(screen.getByText('주의할 색상')).toBeInTheDocument();
     });
 
     it('펼치면 운동 소품이 표시된다', () => {
@@ -144,9 +144,7 @@ describe('WorkoutStyleCard', () => {
       // 스타일 팁은 펼치지 않아도 보여야 함
       // 랜덤이므로 특정 텍스트 대신 존재 여부만 확인
       const styleTipContainer = screen.getByTestId('workout-style-card');
-      expect(styleTipContainer.textContent).toMatch(
-        /(어스톤|테라코타|골드|브론즈)/
-      );
+      expect(styleTipContainer.textContent).toMatch(/(어스톤|테라코타|골드|브론즈)/);
     });
   });
 

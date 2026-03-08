@@ -144,12 +144,14 @@ export default function AnalysisResult({
                   <CountUp end={bmi || 0} decimals={1} duration={1200} />
                 </p>
                 <p
-                  className={`text-xs ${
-                    mapToClass(bmiCategory, {
-                      '정상': 'text-green-500',
-                      '저체중': 'text-blue-500',
-                    }, 'text-orange-500')
-                  }`}
+                  className={`text-xs ${mapToClass(
+                    bmiCategory,
+                    {
+                      정상: 'text-green-500',
+                      저체중: 'text-blue-500',
+                    },
+                    'text-orange-500'
+                  )}`}
                 >
                   {bmiCategory}
                 </p>
@@ -198,10 +200,14 @@ export default function AnalysisResult({
                 key={keyword}
                 className={`px-3 py-1 rounded-full text-sm ${
                   is3Type
-                    ? mapToClass(type3, {
-                        S: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-                        W: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
-                      }, 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300')
+                    ? mapToClass(
+                        type3,
+                        {
+                          S: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+                          W: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
+                        },
+                        'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                      )
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -294,11 +300,11 @@ export default function AnalysisResult({
                 </ul>
               </div>
 
-              {/* 피해야 할 스타일 */}
+              {/* 주의할 스타일 */}
               <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Ban className="w-3.5 h-3.5 text-red-500" />
-                  <span className="text-sm font-medium text-red-800 dark:text-red-200">피하기</span>
+                  <span className="text-sm font-medium text-red-800 dark:text-red-200">참고</span>
                 </div>
                 <ul className="text-xs text-red-700 dark:text-red-300 space-y-1">
                   {easyBodyTip.dontList.map((item, i) => (
@@ -380,13 +386,13 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
-      {/* 피해야 할 스타일 */}
+      {/* 주의할 스타일 */}
       {avoidStyles && avoidStyles.length > 0 && (
         <FadeInUp delay={5}>
           <section className="bg-card rounded-xl border p-6">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
-              <h2 className="text-lg font-semibold text-foreground">피해야 할 스타일</h2>
+              <h2 className="text-lg font-semibold text-foreground">주의할 스타일</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {avoidStyles.map((style, index) => (
@@ -502,12 +508,12 @@ export default function AnalysisResult({
               </div>
             )}
 
-            {/* 피해야 할 색상 */}
+            {/* 주의할 색상 */}
             {colorRecommendations.avoidColors.length > 0 && (
               <div className="pt-3 border-t">
                 <div className="flex items-center gap-1 mb-2">
                   <Ban className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">피해야 할 색상</span>
+                  <span className="text-sm font-medium text-muted-foreground">주의할 색상</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {colorRecommendations.avoidColors.map((color, index) => (

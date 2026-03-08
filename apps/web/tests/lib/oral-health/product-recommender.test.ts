@@ -609,25 +609,25 @@ describe('lib/oral-health/product-recommender', () => {
       }
     });
 
-    it('피해야 할 성분 정보를 포함한다', () => {
+    it('주의할 성분 정보를 포함한다', () => {
       const profile = createBaseProfile({ sensitivity: 'severe' });
       const preferences = createBasePreferences();
       const recommendation = recommendOralProducts(profile, preferences);
 
       const summary = generateProductRecommendationSummary(recommendation);
 
-      expect(summary).toContain('**피해야 할 성분**');
+      expect(summary).toContain('**주의할 성분**');
       expect(summary).toContain('SLS');
     });
 
-    it('피해야 할 성분이 없으면 해당 섹션이 없다', () => {
+    it('주의할 성분이 없으면 해당 섹션이 없다', () => {
       const profile = createBaseProfile();
       const preferences = createBasePreferences();
       const recommendation = recommendOralProducts(profile, preferences);
 
       const summary = generateProductRecommendationSummary(recommendation);
 
-      expect(summary).not.toContain('**피해야 할 성분**');
+      expect(summary).not.toContain('**주의할 성분**');
     });
   });
 });

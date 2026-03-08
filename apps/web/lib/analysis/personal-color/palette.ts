@@ -241,7 +241,7 @@ export function getToneCompatibility(tone: TwelveTone, testColor: LabColor): Col
     good: '이 색상은 당신에게 잘 어울리는 색상입니다.',
     neutral: '이 색상은 무난하게 소화할 수 있어요.',
     poor: '이 색상은 다소 어울리지 않을 수 있어요.',
-    avoid: '이 색상은 피하는 것이 좋아요.',
+    avoid: '이 색상은 덜 어울릴 수 있어요.',
   };
   return {
     color: { hex: '#000000', name: '테스트 색상', lab: testColor },

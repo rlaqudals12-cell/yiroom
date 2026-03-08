@@ -125,7 +125,11 @@ export default function BodyStylingTab({
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-500',
-                          mapToClass(bodyType, { S: 'bg-blue-500', W: 'bg-pink-500' }, 'bg-green-500')
+                          mapToClass(
+                            bodyType,
+                            { S: 'bg-blue-500', W: 'bg-pink-500' },
+                            'bg-green-500'
+                          )
                         )}
                         style={{ width: `${m.value}%` }}
                       />
@@ -189,9 +193,9 @@ export default function BodyStylingTab({
               </div>
             </div>
 
-            {/* 피해야 할 스타일 */}
+            {/* 주의할 스타일 */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-orange-600">피해야 할 스타일</h4>
+              <h4 className="text-sm font-medium text-orange-600">주의할 스타일</h4>
               <div className="flex flex-wrap gap-2">
                 {typeInfo.avoidStyles.map((style) => (
                   <span

@@ -137,10 +137,10 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
       {/* 확장 영역 */}
       {isExpanded && (
         <div className="border-t border-border/50">
-          {/* 피해야 할 색상 */}
+          {/* 주의할 색상 */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-foreground/80">피해야 할 색상</span>
+              <span className="text-sm font-medium text-foreground/80">주의할 색상</span>
             </div>
             <div className="flex gap-2 flex-wrap" data-testid="avoid-colors">
               {recommendation.avoidColors.map((color) => (
@@ -182,7 +182,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-red-500 w-12 flex-shrink-0">피하기</span>
+                  <span className="text-xs text-red-500 w-12 flex-shrink-0">참고</span>
                   <span className="text-sm text-muted-foreground">
                     {recommendation.fitRecommendation.avoid.join(', ')}
                   </span>

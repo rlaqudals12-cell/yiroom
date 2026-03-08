@@ -85,15 +85,15 @@
 - **수정 방법**: RecentlyViewed를 별도 탭/섹션으로 분리하거나, Internalization을 ActivityBar 내부로 통합
 - **재발 방지**: 홈 화면 컴포넌트 추가 시 F1(7개 이하) 체크
 
-### KI-008: "피해야 할" 부정적 프레이밍 (D4 위반)
+### KI-008: "피해야 할" 부정적 프레이밍 (D4 위반) — **해결됨**
 
-- **발견 횟수**: 3회 (PC 결과 페이지 7개소, **DrapeSimulator "피하는 게 좋아요"**, **DetailedEvidenceReport fallback 텍스트**, 타 모듈 30+개소 잔존)
+- **발견 횟수**: 4회 (PC 결과 7개소, DrapeSimulator, DetailedEvidenceReport, **전체 모듈 일괄 수정 15개소**)
 - **관련 항목**: D4 (신체 부정 언어 금지)
-- **발생 화면**: PersonalColorResultPage (ResultCardV2, DetailedEvidenceReport, AnalysisResult, **DrapeSimulator**, ConsultantCTA, SynergyInsightCard)
-- **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용. B1 fallback 텍스트 추가 시에도 D4 금지 패턴 재사용
-- **수정 방법**: "피해야 할" → "덜 어울리는" 또는 "주의할" 등 중립적 표현으로 교체
-- **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인. fallback/placeholder 텍스트도 D4 대조 필수
-- **해결 커밋**: PC 결과 페이지 7개소 + DetailedEvidenceReport fallback 수정 완료. 타 모듈(body, skin, workout, nutrition, hair, oral-health)은 별도 작업 필요
+- **발생 화면**: PersonalColorResultPage, BodyResultPage, SkinResultPage, WorkoutStyleCard, NutrientSynergyCard, OralHealth, CoachChat, MockStyling
+- **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용
+- **수정 방법**: "피해야 할" → "주의할", "피하기" → "참고", "피하는 것이 좋아요" → "덜 어울릴 수 있어요"
+- **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인
+- **해결 커밋**: PC 결과 7개소 → 전체 모듈 일괄 수정 완료 (body 3, skin 3, workout 2, nutrition 1, coach 1, oral-health 1, mock 2, palette 1). 내부 코드 주석/타입은 기능적 명칭이므로 유지
 
 ### KI-009: 탭 간 동일 콘텐츠 중복 (F4 위반)
 

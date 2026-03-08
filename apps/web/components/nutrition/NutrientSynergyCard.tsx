@@ -181,7 +181,7 @@ export function NutrientSynergyCard({
           </div>
           <div>
             <h3 className="font-bold text-lg text-foreground">영양소 상호작용</h3>
-            <p className="text-sm text-muted-foreground">함께 먹으면 좋은/피해야 할 조합</p>
+            <p className="text-sm text-muted-foreground">함께 먹으면 좋은/주의할 조합</p>
           </div>
         </div>
 

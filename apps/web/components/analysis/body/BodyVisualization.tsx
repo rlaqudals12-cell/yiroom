@@ -302,10 +302,14 @@ export function BodyVisualization({
               <PostureItem
                 label="머리 위치"
                 value={
-                  selectByKey(result.postureAnalysis.headPosition, {
-                    neutral: '정상',
-                    forward: '전방',
-                  }, '후방')!
+                  selectByKey(
+                    result.postureAnalysis.headPosition,
+                    {
+                      neutral: '정상',
+                      forward: '전방',
+                    },
+                    '후방'
+                  )!
                 }
                 isNormal={result.postureAnalysis.headPosition === 'neutral'}
               />
@@ -333,7 +337,7 @@ export function BodyVisualization({
           <Tabs defaultValue="recommend">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="recommend">추천 스타일</TabsTrigger>
-              <TabsTrigger value="avoid">피해야 할 스타일</TabsTrigger>
+              <TabsTrigger value="avoid">주의할 스타일</TabsTrigger>
             </TabsList>
 
             <TabsContent value="recommend" className="mt-4">
@@ -404,12 +408,14 @@ function RatioBar({
         />
         {/* 현재값 바 */}
         <div
-          className={`h-full transition-all ${
-            classifyByRange(Math.abs(value - optimal), [
+          className={`h-full transition-all ${classifyByRange(
+            Math.abs(value - optimal),
+            [
               { max: 0.1, result: 'bg-emerald-500' },
               { max: 0.2, result: 'bg-amber-500' },
-            ], 'bg-red-400')
-          }`}
+            ],
+            'bg-red-400'
+          )}`}
           style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
         />
       </div>

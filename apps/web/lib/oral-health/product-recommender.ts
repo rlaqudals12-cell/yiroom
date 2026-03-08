@@ -592,7 +592,7 @@ export function generateProductRecommendationSummary(
   }
 
   if (recommendation.avoidIngredients.length > 0) {
-    summary += `**피해야 할 성분**: ${recommendation.avoidIngredients.join(', ')}\n`;
+    summary += `**주의할 성분**: ${recommendation.avoidIngredients.join(', ')}\n`;
   }
 
   return summary;

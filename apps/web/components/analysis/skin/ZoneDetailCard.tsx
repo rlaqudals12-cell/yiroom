@@ -163,11 +163,11 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
           </ul>
         </div>
 
-        {/* 피해야 할 것 */}
+        {/* 주의할 점 */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <XCircle className="h-4 w-4 text-red-500" />
-            <span>피해야 할 것</span>
+            <span>주의할 점</span>
           </div>
           <ul className="space-y-1">
             {explanation.avoidance.map((avoid, index) => (

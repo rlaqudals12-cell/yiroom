@@ -467,7 +467,7 @@ export default function AnalysisResult({
               </div>
             </div>
 
-            {/* 제품 팁 & 피해야 할 것 */}
+            {/* 제품 팁 & 주의할 점 */}
             <div className="space-y-2">
               <div className="flex items-start gap-2 p-2.5 bg-green-50 dark:bg-green-950/30 rounded-lg">
                 <span className="text-green-600">✓</span>
@@ -478,7 +478,7 @@ export default function AnalysisResult({
               <div className="flex items-start gap-2 p-2.5 bg-red-50 dark:bg-red-950/30 rounded-lg">
                 <AlertTriangle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-red-800 dark:text-red-200">
-                  <span className="font-medium">피해야 할 것:</span> {easySkinTip.avoidTip}
+                  <span className="font-medium">주의할 점:</span> {easySkinTip.avoidTip}
                 </p>
               </div>
             </div>

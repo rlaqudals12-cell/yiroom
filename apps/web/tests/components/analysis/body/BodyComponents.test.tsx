@@ -714,7 +714,7 @@ describe('BodyVisualization', () => {
       render(<BodyVisualization result={result} />);
       expect(screen.getByText('스타일링 추천')).toBeInTheDocument();
       expect(screen.getByText('추천 스타일')).toBeInTheDocument();
-      expect(screen.getByText('피해야 할 스타일')).toBeInTheDocument();
+      expect(screen.getByText('주의할 스타일')).toBeInTheDocument();
     });
 
     it('추천 스타일 탭에서 스타일링 항목을 표시한다', () => {
@@ -734,7 +734,7 @@ describe('BodyVisualization', () => {
       expect(screen.getByText('하이웨이스트 팬츠')).toBeInTheDocument();
     });
 
-    it('피해야 할 스타일 탭으로 전환할 수 있다', () => {
+    it('주의할 스타일 탭으로 전환할 수 있다', () => {
       const result = createMockBodyAnalysisResult({
         stylingRecommendations: {
           tops: ['V넥 상의'],
@@ -746,8 +746,8 @@ describe('BodyVisualization', () => {
       });
       render(<BodyVisualization result={result} />);
 
-      // 피해야 할 스타일 탭 클릭
-      fireEvent.click(screen.getByText('피해야 할 스타일'));
+      // 주의할 스타일 탭 클릭
+      fireEvent.click(screen.getByText('주의할 스타일'));
 
       expect(screen.getByText('오버사이즈 상의')).toBeInTheDocument();
     });

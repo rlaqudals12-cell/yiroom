@@ -379,7 +379,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       {
         metalTone: 'silver',
         isRecommended: false,
-        description: '차가운 실버는 피하는 것이 좋아요',
+        description: '차가운 실버는 덜 어울릴 수 있어요',
       },
       {
         metalTone: 'bronze',
@@ -430,7 +430,7 @@ export const ACCESSORY_STYLING: Record<SeasonType, AccessoryStylingType> = {
       {
         metalTone: 'gold',
         isRecommended: false,
-        description: '옐로우 골드는 피하는 것이 좋아요',
+        description: '옐로우 골드는 덜 어울릴 수 있어요',
       },
       { metalTone: 'bronze', isRecommended: false, description: '브론즈는 너무 따뜻한 느낌이에요' },
     ],

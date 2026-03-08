@@ -579,7 +579,7 @@ function generateSuggestedQuestions(
     // Phase K: 퍼스널 컬러 추천 질문
     suggestions.push('내 시즌에 맞는 립 색상 추천해줘');
     if (userContext?.personalColor?.season) {
-      suggestions.push(`${userContext.personalColor.season}에 피해야 할 색은?`);
+      suggestions.push(`${userContext.personalColor.season}에 주의할 색은?`);
     }
     suggestions.push('염색하려는데 어떤 색이 어울려?');
   } else if (category === 'fashion') {

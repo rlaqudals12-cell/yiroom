@@ -85,7 +85,15 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            {selectByKey(skinType, { oily: '아침에도 가볍게 클렌징하여 밤사이 분비된 피지를 제거하세요.', dry: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.', sensitive: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.' }, '상태에 따라 선택하세요.')}
+            {selectByKey(
+              skinType,
+              {
+                oily: '아침에도 가볍게 클렌징하여 밤사이 분비된 피지를 제거하세요.',
+                dry: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.',
+                sensitive: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.',
+              },
+              '상태에 따라 선택하세요.'
+            )}
           </p>
         </div>
 
@@ -129,12 +137,12 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
           </div>
         )}
 
-        {/* 피해야 할 클렌저 */}
+        {/* 주의할 클렌저 */}
         {routine.avoid.length > 0 && (
           <div className="space-y-2 bg-red-50 dark:bg-red-950/30 rounded-lg p-3">
             <h4 className="text-sm font-medium flex items-center gap-2 text-red-600 dark:text-red-400">
               <AlertTriangle className="h-4 w-4" />
-              피해야 할 클렌저
+              주의할 클렌저
             </h4>
             <div className="flex flex-wrap gap-2">
               {routine.avoid.map((id) => (
