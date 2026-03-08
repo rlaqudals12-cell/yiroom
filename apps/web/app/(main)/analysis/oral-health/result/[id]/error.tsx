@@ -19,7 +19,7 @@ export default function OralHealthResultError({ error, reset }: ErrorProps) {
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="oral-health-result-error-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-6">
+          <div className="w-16 h-16 mx-auto rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-6">
             <span className="text-3xl">&#x1F9B7;</span>
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">결과를 불러올 수 없어요</h2>

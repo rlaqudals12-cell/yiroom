@@ -185,7 +185,7 @@ export default function GalleryMultiAngleUpload({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">정면 사진</span>
-          <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+          <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">
             필수
           </span>
         </div>
