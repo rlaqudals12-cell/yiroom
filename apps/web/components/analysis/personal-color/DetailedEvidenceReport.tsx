@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 import { BarChart3, Palette, Sparkles, Circle, CheckCircle2, HelpCircle } from 'lucide-react';
 import type { AnalysisEvidence, ImageQuality } from '../AnalysisEvidenceReport';
 import type { ColorInfo, SeasonType } from '@/lib/mock/personal-color';
@@ -141,7 +142,7 @@ function ColorCompareVisual({
                 key={i}
                 className="w-8 h-8 rounded-lg shadow-sm border border-white/50 transition-transform hover:scale-110"
                 style={{ backgroundColor: color.hex }}
-                title={color.name}
+                title={getKoreanColorName(color.hex)}
               />
             ))}
           </div>
@@ -159,7 +160,7 @@ function ColorCompareVisual({
                 key={i}
                 className="w-8 h-8 rounded-lg shadow-sm border border-white/50 opacity-75 transition-transform hover:scale-110"
                 style={{ backgroundColor: color.hex }}
-                title={color.name}
+                title={getKoreanColorName(color.hex)}
               />
             ))}
           </div>
@@ -330,7 +331,7 @@ export default function DetailedEvidenceReport({
 
   return (
     <div className={cn('space-y-4', className)} data-testid="detailed-evidence-report">
-      {/* 시즌별 설명 카드 — evidence 없이도 항상 표시 */}
+      {/* 시즌별 설명 카드 — evidence 기반 개인화 + 일반 설명 */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
@@ -338,6 +339,62 @@ export default function DetailedEvidenceReport({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {/* 개인화된 분석 근거 — evidence가 있을 때만 표시, 기본 탭과 차별화 */}
+          {evidence && (
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-2">
+              <p className="text-xs font-semibold text-primary">내 분석 근거</p>
+              <ul className="text-xs text-muted-foreground space-y-1.5">
+                {evidence.veinColor && (
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>
+                      혈관 색상이{' '}
+                      {selectByKey(
+                        evidence.veinColor,
+                        {
+                          blue: '파란색으로 관찰되어 쿨톤 경향',
+                          purple: '보라색으로 관찰되어 쿨톤 경향',
+                          green: '녹색으로 관찰되어 웜톤 경향',
+                          olive: '올리브색으로 관찰되어 웜톤 경향',
+                        },
+                        '혼합 톤'
+                      )}
+                      이에요.
+                    </span>
+                  </li>
+                )}
+                {evidence.skinUndertone && (
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>
+                      피부 언더톤이{' '}
+                      {selectByKey(
+                        evidence.skinUndertone,
+                        { pink: '핑크 기반으로 쿨톤', yellow: '노란 기반으로 웜톤' },
+                        '중립적'
+                      )}
+                      으로 분석되었어요.
+                    </span>
+                  </li>
+                )}
+                {evidence.lipNaturalColor && (
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>
+                      입술 자연색이{' '}
+                      {selectByKey(
+                        evidence.lipNaturalColor,
+                        { pink: '핑크빛이라 쿨톤 근거', coral: '코랄빛이라 웜톤 근거' },
+                        '중립적'
+                      )}
+                      가 돼요.
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
           <div className="space-y-2">
             <p className="text-sm font-medium">{seasonLabel}의 특징</p>
             <p className="text-sm text-muted-foreground">{seasonExplanation.whyThisColor}</p>
@@ -362,33 +419,43 @@ export default function DetailedEvidenceReport({
       </Card>
 
       {/* 톤 스펙트럼 카드 */}
-      {evidence && evidence.veinScore > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />톤 분석 결과
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />톤 분석 결과
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {evidence && evidence.veinScore > 0 ? (
             <ToneSpectrumBar veinScore={evidence.veinScore} tone={tone} />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {isCool
+                ? '쿨톤으로 분석되었어요. 드레이핑 탭에서 색상을 직접 비교해 보세요.'
+                : '웜톤으로 분석되었어요. 드레이핑 탭에서 색상을 직접 비교해 보세요.'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 색상 비교 카드 */}
-      {bestColors.length > 0 && worstColors.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Palette className="w-4 h-4" />
-              색상 비교
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            색상 비교
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {bestColors.length > 0 && worstColors.length > 0 ? (
             <ColorCompareVisual bestColors={bestColors} worstColors={worstColors} />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              기본 분석 탭에서 어울리는 색상과 덜 어울리는 색상을 확인할 수 있어요.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 악세서리 추천 카드 */}
       <Card>
@@ -409,16 +476,20 @@ export default function DetailedEvidenceReport({
       </Card>
 
       {/* 분석 팩터 시각화 */}
-      {evidence && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">분석 요소별 결과</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">분석 요소별 결과</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {evidence ? (
             <AnalysisFactorsVisual evidence={evidence} />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              혈관 색상, 피부 언더톤, 입술 자연색 등의 세부 분석 데이터를 준비 중이에요.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

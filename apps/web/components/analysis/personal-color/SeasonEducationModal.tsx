@@ -131,7 +131,7 @@ export function SeasonEducationModal({ seasonType, isOpen, onClose }: SeasonEduc
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-muted transition-colors cursor-pointer"
+            className="p-2.5 rounded-full hover:bg-muted transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="닫기"
           >
             <X className="w-5 h-5 text-muted-foreground" />

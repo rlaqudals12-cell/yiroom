@@ -23,18 +23,18 @@
 
 ### KI-001: 영어 enum이 한글 변환 없이 JSX에 직접 렌더링
 
-- **발견 횟수**: 4회 (Phase 28 홈, 분석 결과 2건, **PC 결과 공유 제목**)
+- **발견 횟수**: 7회 (Phase 28 홈, 분석 결과 2건, PC 결과 공유 제목, DrapeColorPalette 색상명, **AnalysisResult 베스트/워스트 4개소**, **DetailedEvidenceReport title 2개소**)
 - **관련 항목**: A1
-- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage, **PersonalColorResultPage (공유)**
+- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage, PersonalColorResultPage (공유), DrapeColorPalette, **AnalysisResult**, **DetailedEvidenceReport**
 - **원인**: AI/DB 반환값을 그대로 텍스트 보간에 사용. 매핑 함수 호출 누락
-- **수정 방법**: `translateSeason()`, `translateSkinType()` 등 매핑 함수 경유 필수
-- **재발 방지**: 새 모듈 추가 시 A1 영어값 목록에 enum 등록 + 매핑 함수 작성을 원자 분해에 포함
+- **수정 방법**: `getKoreanColorName(hex)` 공유 유틸 (`lib/utils/color-names.ts`) 사용 필수
+- **재발 방지**: 새 모듈 추가 시 A1 영어값 목록에 enum 등록 + 매핑 함수 작성을 원자 분해에 포함. HEX 색상은 `getKoreanColorName()` 사용
 
 ### KI-002: 터치 타겟 44px 미달 (p-2/h-8 사용) — **3회 도달, 승격 완료**
 
-- **발견 횟수**: 4회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, 홈 캡슐+분석요약 버튼, **PC ResultCardV2 악세서리 필터**)
+- **발견 횟수**: 6회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, 홈 캡슐+분석요약 버튼, PC ResultCardV2 악세서리 필터, DrapeColorPalette 시즌 필터, **SeasonEducationModal 닫기 버튼**)
 - **관련 항목**: B2
-- **발생 화면**: ActiveInsightCard, InternalizationWidget, HomeDailyCapsuleWidget, HomeAnalysisSummary, **ResultCardV2**
+- **발생 화면**: ActiveInsightCard, InternalizationWidget, HomeDailyCapsuleWidget, HomeAnalysisSummary, ResultCardV2, **DrapeColorPalette**
 - **원인**: 시각적 크기에 집중하고 터치 영역 크기를 간과
 - **수정 방법**: `min-h-[44px] min-w-[44px]` 또는 `p-3` 이상 적용
 - **재발 방지**: 버튼/링크 생성 시 p-3 기본값 습관화
@@ -68,9 +68,9 @@
 
 ### KI-006: 에러 상태에서 console.error만 하고 사용자 피드백 없음 — **해결됨**
 
-- **발견 횟수**: 2회 (HomeDailyCapsuleWidget 초기 발견, **/ux-check 홈 대시보드 재발견**)
+- **발견 횟수**: 3회 (HomeDailyCapsuleWidget 초기 발견, /ux-check 홈 대시보드 재발견, **PersonalColorHistoryPage**)
 - **관련 항목**: C2
-- **발생 화면**: HomeDailyCapsuleWidget (catch 블록), HomeActivityBar (catch 블록)
+- **발생 화면**: HomeDailyCapsuleWidget (catch 블록), HomeActivityBar (catch 블록), **PersonalColorHistoryPage (catch 블록)**
 - **원인**: try-catch에서 에러를 콘솔로만 출력하고 UI 상태를 업데이트하지 않음
 - **수정 방법**: catch 블록에서 `setHasError(true)` + 에러 상태 UI 표시
 - **재발 방지**: 데이터 fetch 패턴에서 에러 상태 변수 + UI 분기를 필수 포함
@@ -87,25 +87,36 @@
 
 ### KI-008: "피해야 할" 부정적 프레이밍 (D4 위반)
 
-- **발견 횟수**: 1회 (PC 결과 페이지 7개소, 타 모듈 30+개소 잔존)
+- **발견 횟수**: 3회 (PC 결과 페이지 7개소, **DrapeSimulator "피하는 게 좋아요"**, **DetailedEvidenceReport fallback 텍스트**, 타 모듈 30+개소 잔존)
 - **관련 항목**: D4 (신체 부정 언어 금지)
-- **발생 화면**: PersonalColorResultPage (ResultCardV2, DetailedEvidenceReport, AnalysisResult, DrapeSimulator, ConsultantCTA, SynergyInsightCard)
-- **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용. D4 항목이 추가되기 전에 작성된 코드
+- **발생 화면**: PersonalColorResultPage (ResultCardV2, DetailedEvidenceReport, AnalysisResult, **DrapeSimulator**, ConsultantCTA, SynergyInsightCard)
+- **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용. B1 fallback 텍스트 추가 시에도 D4 금지 패턴 재사용
 - **수정 방법**: "피해야 할" → "덜 어울리는" 또는 "주의할" 등 중립적 표현으로 교체
-- **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인
-- **해결 커밋**: PC 결과 페이지 7개소 수정 완료. 타 모듈(body, skin, workout, nutrition, hair, oral-health)은 별도 작업 필요
+- **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인. fallback/placeholder 텍스트도 D4 대조 필수
+- **해결 커밋**: PC 결과 페이지 7개소 + DetailedEvidenceReport fallback 수정 완료. 타 모듈(body, skin, workout, nutrition, hair, oral-health)은 별도 작업 필요
+
+### KI-009: 탭 간 동일 콘텐츠 중복 (F4 위반)
+
+- **발견 횟수**: 1회
+- **관련 항목**: F4
+- **발생 화면**: PersonalColorResultPage (기본 탭 SEASON_WHY ↔ 상세 탭 SEASON_EXPLANATIONS)
+- **원인**: 기본 탭에 "왜 이 색이 어울리는지" 풀텍스트 + dailyTip을 넣었으나, 상세 탭에도 동일 내용 존재
+- **수정 방법**: 기본 탭은 1줄 요약 + "상세 리포트에서 더 알아보기" 안내, dailyTip은 상세 탭에서만 제공
+- **재발 방지**: 탭 구조 설계 시 각 탭의 역할 정의 (기본=핵심 요약, 상세=심층 분석)
+- **해결 커밋**: 이 점검에서 수정 완료
 
 ---
 
 ## 승격 이력
 
-| 패턴 ID | 승격 항목      | 승격일     | 사유                                          |
-| ------- | -------------- | ---------- | --------------------------------------------- |
-| KI-002  | B2 (터치 44px) | 2026-03-08 | 3회 반복 — 이미 B2로 존재, 심각도 유지 (High) |
+| 패턴 ID | 승격 항목      | 승격일     | 사유                                                                   |
+| ------- | -------------- | ---------- | ---------------------------------------------------------------------- |
+| KI-002  | B2 (터치 44px) | 2026-03-08 | 3회 반복 — 이미 B2로 존재, 심각도 유지 (High)                          |
+| KI-008  | D4 (부정 언어) | 2026-03-08 | 3회 반복 — 이미 D4로 존재 (Critical), fallback 텍스트도 대조 필수 추가 |
 
 > 패턴이 3회 이상 반복되면 이 테이블에 기록하고, `ux-pr-checklist.md`에 정식 항목으로 추가한다.
 
 ---
 
-**Version**: 1.4 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
+**Version**: 1.7 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조

@@ -10,31 +10,31 @@ import type { DeviceCapability, MetalType } from '@/types/visual-analysis';
 // 색상 팔레트 데이터
 // ============================================
 
-/** 시즌별 기본 16색 */
+/** 시즌별 기본 16색 (한국어 이름 필수 — UX A1 규칙) */
 const BASE_COLORS = {
   spring: [
-    { hex: '#FF7F50', name: 'Coral' },
-    { hex: '#FFCBA4', name: 'Peach' },
-    { hex: '#FA8072', name: 'Salmon' },
-    { hex: '#FFFFF0', name: 'Ivory' },
+    { hex: '#FF7F50', name: 'Coral', nameKo: '코랄' },
+    { hex: '#FFCBA4', name: 'Peach', nameKo: '피치' },
+    { hex: '#FA8072', name: 'Salmon', nameKo: '살몬' },
+    { hex: '#FFFFF0', name: 'Ivory', nameKo: '아이보리' },
   ],
   summer: [
-    { hex: '#E6E6FA', name: 'Lavender' },
-    { hex: '#FF007F', name: 'Rose' },
-    { hex: '#87CEEB', name: 'Sky Blue' },
-    { hex: '#98FF98', name: 'Mint' },
+    { hex: '#E6E6FA', name: 'Lavender', nameKo: '라벤더' },
+    { hex: '#FF007F', name: 'Rose', nameKo: '로즈' },
+    { hex: '#87CEEB', name: 'Sky Blue', nameKo: '스카이블루' },
+    { hex: '#98FF98', name: 'Mint', nameKo: '민트' },
   ],
   autumn: [
-    { hex: '#E2725B', name: 'Terracotta' },
-    { hex: '#808000', name: 'Olive' },
-    { hex: '#FFDB58', name: 'Mustard' },
-    { hex: '#800020', name: 'Burgundy' },
+    { hex: '#E2725B', name: 'Terracotta', nameKo: '테라코타' },
+    { hex: '#808000', name: 'Olive', nameKo: '올리브' },
+    { hex: '#FFDB58', name: 'Mustard', nameKo: '머스타드' },
+    { hex: '#800020', name: 'Burgundy', nameKo: '버건디' },
   ],
   winter: [
-    { hex: '#FF00FF', name: 'Fuchsia' },
-    { hex: '#4169E1', name: 'Royal Blue' },
-    { hex: '#50C878', name: 'Emerald' },
-    { hex: '#000000', name: 'Black' },
+    { hex: '#FF00FF', name: 'Fuchsia', nameKo: '퓨시아' },
+    { hex: '#4169E1', name: 'Royal Blue', nameKo: '로열블루' },
+    { hex: '#50C878', name: 'Emerald', nameKo: '에메랄드' },
+    { hex: '#000000', name: 'Black', nameKo: '블랙' },
   ],
 } as const;
 
@@ -48,7 +48,7 @@ function generateExtendedColors(baseColors: typeof BASE_COLORS, count: 64 | 128)
   const colorsPerSeason = count / 4;
   const variationsPerColor = colorsPerSeason / 4;
 
-  const result: Array<{ hex: string; name: string; season: Season }> = [];
+  const result: Array<{ hex: string; name: string; nameKo: string; season: Season }> = [];
 
   (Object.keys(baseColors) as Season[]).forEach((season) => {
     const seasonColors = baseColors[season];
@@ -66,9 +66,11 @@ function generateExtendedColors(baseColors: typeof BASE_COLORS, count: 64 | 128)
         // factor 범위 제한: 0.2 ~ 1.5
         const clampedFactor = Math.max(0.2, Math.min(1.5, factor));
         const variantHex = adjustBrightness(color.hex, clampedFactor);
+        const suffix = isLighter ? `밝은 ${step}` : `어두운 ${step}`;
         result.push({
           hex: variantHex,
           name: `${color.name} ${isLighter ? 'Light' : 'Dark'} ${step}`,
+          nameKo: `${color.nameKo} ${suffix}`,
           season,
         });
       }
@@ -209,9 +211,13 @@ export default function DrapeColorPalette({
               variant={activeSeasonFilter === filter ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setActiveSeasonFilter(filter)}
-              className="text-xs px-2 py-1 h-7"
+              className="text-xs px-3 py-2 min-h-[44px]"
             >
-              {selectByKey(filter, { all: '전체 보기', spring: '봄', summer: '여름', autumn: '가을' }, '겨울')}
+              {selectByKey(
+                filter,
+                { all: '전체 보기', spring: '봄', summer: '여름', autumn: '가을' },
+                '겨울'
+              )}
               {/* 사용자 시즌 표시 */}
               {userSeason && filter === userSeason && (
                 <span className="ml-1 text-[10px] text-primary">★</span>
@@ -242,8 +248,8 @@ export default function DrapeColorPalette({
                 isAnalyzing && 'opacity-50 cursor-not-allowed'
               )}
               style={{ backgroundColor: color.hex }}
-              title={color.name}
-              aria-label={`${color.name} 색상 선택`}
+              title={color.nameKo}
+              aria-label={`${color.nameKo} 색상 선택`}
             />
           ))}
         </div>
@@ -254,14 +260,18 @@ export default function DrapeColorPalette({
         <div className="flex items-center gap-2 text-sm">
           <div className="w-6 h-6 rounded border" style={{ backgroundColor: selectedColor }} />
           <span className="text-muted-foreground">
-            {colors.find((c) => c.hex === selectedColor)?.name || selectedColor}
+            {colors.find((c) => c.hex === selectedColor)?.nameKo || selectedColor}
           </span>
         </div>
       )}
 
       {/* 성능 모드 표시 */}
       <p className="text-xs text-muted-foreground text-center">
-        {selectByKey(deviceCapability.tier, { high: '상세 모드 (128색)', medium: '표준 모드 (64색)' }, '빠른 모드 (16색)')}
+        {selectByKey(
+          deviceCapability.tier,
+          { high: '상세 모드 (128색)', medium: '표준 모드 (64색)' },
+          '빠른 모드 (16색)'
+        )}
       </p>
     </div>
   );

@@ -33,10 +33,10 @@ const SEASON_COLORS: Record<string, string[]> = {
 
 // 시즌별 그라데이션 배경
 const SEASON_GRADIENT: Record<string, string> = {
-  spring: 'from-yellow-100 to-orange-100',
-  summer: 'from-blue-100 to-purple-100',
-  autumn: 'from-amber-100 to-orange-100',
-  winter: 'from-indigo-100 to-slate-100',
+  spring: 'from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30',
+  summer: 'from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30',
+  autumn: 'from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30',
+  winter: 'from-indigo-100 to-slate-100 dark:from-indigo-900/30 dark:to-slate-900/30',
 };
 
 export default function PersonalColorHistoryPage(): React.JSX.Element {
@@ -44,10 +44,13 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
   const [period, setPeriod] = useState<PeriodFilter>('3m');
   const [analyses, setAnalyses] = useState<PersonalColorHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const fetchHistory = async (): Promise<void> => {
       setLoading(true);
+      setHasError(false);
       try {
         const res = await fetch(
           `/api/analysis/history?type=personal-color&period=${period}&limit=20`
@@ -55,16 +58,19 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
         if (res.ok) {
           const data: AnalysisHistoryResponse = await res.json();
           setAnalyses(data.analyses as PersonalColorHistoryItem[]);
+        } else {
+          setHasError(true);
         }
       } catch (error) {
         console.error('[PC-1 History] Fetch error:', error);
+        setHasError(true);
       } finally {
         setLoading(false);
       }
     };
 
     fetchHistory();
-  }, [period]);
+  }, [period, retryCount]);
 
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -120,8 +126,20 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
           </div>
         )}
 
+        {/* 에러 상태 */}
+        {!loading && hasError && (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-muted-foreground mb-4">기록을 불러올 수 없어요</p>
+              <Button variant="outline" onClick={() => setRetryCount((c) => c + 1)}>
+                다시 시도하기
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 빈 상태 */}
-        {!loading && analyses.length === 0 && (
+        {!loading && !hasError && analyses.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <Calendar

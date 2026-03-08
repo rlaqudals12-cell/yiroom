@@ -15,7 +15,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { selectByCondition, classifyByRange } from '@/lib/utils/conditional-helpers';
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 
 /**
  * PC-1+ 드레이프 시뮬레이터
@@ -185,7 +186,17 @@ export default function DrapeSimulator({
         )}
       </div>
 
-      {/* 2. 베스트 컬러 결과 (분석 완료 시 - 이미지 바로 아래) */}
+      {/* 2. 분석 전 안내 (결과 없을 때) */}
+      {bestResults.length === 0 && !isAnalyzing && (
+        <div className="p-3 bg-muted/50 rounded-lg text-center space-y-1">
+          <p className="text-sm font-medium">내 사진에 색상을 입혀볼 수 있어요</p>
+          <p className="text-xs text-muted-foreground">
+            아래 버튼을 누르면 다양한 색상을 비교 분석해서, 가장 어울리는 색을 찾아드려요.
+          </p>
+        </div>
+      )}
+
+      {/* 3. 베스트 컬러 결과 (분석 완료 시 - 이미지 바로 아래) */}
       {bestResults.length > 0 && (
         <BestColorsSection
           results={bestResults}
@@ -195,7 +206,7 @@ export default function DrapeSimulator({
         />
       )}
 
-      {/* 3. 베스트 vs 워스트 비교 (분석 완료 시) */}
+      {/* 4. 베스트 vs 워스트 비교 (분석 완료 시) */}
       {bestResults.length > 0 && worstResults.length > 0 && (
         <ComparisonSection
           bestColor={bestResults[0].color}
@@ -206,7 +217,7 @@ export default function DrapeSimulator({
         />
       )}
 
-      {/* 4. 분석 버튼 */}
+      {/* 5. 분석 버튼 */}
       <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
         {isAnalyzing
           ? '분석 중...'
@@ -378,7 +389,7 @@ function ComparisonSection({
               <p className="text-xs font-medium text-red-500 dark:text-red-400 truncate">
                 {getKoreanColorName(worstColor)}
               </p>
-              <p className="text-[10px] text-muted-foreground">피하는 게 좋아요</p>
+              <p className="text-[10px] text-muted-foreground">덜 어울려요</p>
             </div>
           </div>
         </div>
@@ -393,59 +404,7 @@ function renderStars(rank: number): string {
   return '★'.repeat(filled) + '☆'.repeat(5 - filled);
 }
 
-// HEX → 한국어 색상명 변환 (HSL 기반)
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
-function getKoreanColorName(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const l = (max + min) / 2 / 255;
-  const d = max - min;
-  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) / 255;
-
-  // 무채색 판정
-  if (s < 0.1) {
-    if (l > 0.9) return '화이트';
-    if (l > 0.7) return '라이트 그레이';
-    if (l > 0.3) return '그레이';
-    return '차콜';
-  }
-
-  // 색상(Hue) 계산
-  let h = 0;
-  if (d !== 0) {
-    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
-    else if (max === g) h = ((b - r) / d + 2) * 60;
-    else h = ((r - g) / d + 4) * 60;
-  }
-
-  // 채도+명도에 따른 접두사
-  const prefix = classifyByRange(
-    l,
-    [
-      { max: 0.35, result: '딥 ' },
-      { max: 0.75, result: '' },
-    ],
-    '라이트 '
-  )!;
-
-  // 색상명 매핑
-  if (h < 15 || h >= 345) return `${prefix}레드`;
-  if (h < 30) return `${prefix}코랄`;
-  if (h < 45) return `${prefix}오렌지`;
-  if (h < 60) return `${prefix}골드`;
-  if (h < 75) return `${prefix}옐로`;
-  if (h < 150) return `${prefix}그린`;
-  if (h < 195) return `${prefix}민트`;
-  if (h < 240) return `${prefix}블루`;
-  if (h < 270) return `${prefix}퍼플`;
-  if (h < 300) return `${prefix}바이올렛`;
-  if (h < 330) return `${prefix}핑크`;
-  return `${prefix}로즈`;
-}
+// getKoreanColorName은 @/lib/utils/color-names에서 import
 
 /**
  * 색상 팔레트 생성
