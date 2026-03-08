@@ -45,9 +45,10 @@ import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
-import { Camera, Shirt } from 'lucide-react';
+import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -163,6 +164,7 @@ export default function PersonalColorResultPage() {
   // 일시적 에러(5xx) 시 재시도 가능 여부
   const [isRetryable, setIsRetryable] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
+  const [showEducation, setShowEducation] = useState(false);
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
   const fetchedRef = useRef(false);
@@ -372,8 +374,25 @@ export default function PersonalColorResultPage() {
             <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
             <AIBadge variant="small" />
           </div>
-          <div className="w-16" />
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/analysis/personal-color/history">
+              <History className="w-4 h-4 mr-1" />
+              이전 결과
+            </Link>
+          </Button>
         </header>
+
+        {/* 이전 결과 비교 링크 */}
+        <div className="mb-4" data-testid="pc-compare-link">
+          <Link
+            href="/analysis/compare?type=personal-color"
+            className="flex items-center gap-2 p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-sm"
+          >
+            <GitCompareArrows className="w-4 h-4 text-primary flex-shrink-0" />
+            <span className="text-muted-foreground">이전 결과와 비교해보세요</span>
+            <span className="ml-auto text-primary text-xs">비교하기 →</span>
+          </Link>
+        </div>
 
         {/* AI 분석 실패 시 Mock 데이터 알림 */}
         {usedMock && (
@@ -472,6 +491,23 @@ export default function PersonalColorResultPage() {
                 evidence={analysisEvidence}
                 onTabChange={setActiveTab}
               />
+
+              {/* P16: 시즌별 교육 콘텐츠 트리거 */}
+              <button
+                type="button"
+                className="w-full p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
+                onClick={() => setShowEducation(true)}
+                data-testid="season-education-trigger"
+              >
+                <Wand2 className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    왜 {result.seasonLabel} 타입인가요?
+                  </p>
+                  <p className="text-xs text-muted-foreground">색채학 원리로 알아보기</p>
+                </div>
+                <span className="text-xs text-primary">자세히 →</span>
+              </button>
 
               {/* 다음 분석 추천 */}
               <ContextLinkingCard currentModule="personal-color" />
@@ -637,6 +673,15 @@ export default function PersonalColorResultPage() {
             >
               <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
             </Button>
+            {/* P15: 가상 메이크업 체험 */}
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => router.push(`/style/virtual-try-on?season=${result.seasonType}`)}
+            >
+              <Wand2 className="w-4 h-4 mr-2" />
+              가상 메이크업 체험
+            </Button>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -657,6 +702,15 @@ export default function PersonalColorResultPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* P16: 시즌별 교육 콘텐츠 모달 */}
+      {result && (
+        <SeasonEducationModal
+          seasonType={result.seasonType}
+          isOpen={showEducation}
+          onClose={() => setShowEducation(false)}
+        />
       )}
     </div>
   );
