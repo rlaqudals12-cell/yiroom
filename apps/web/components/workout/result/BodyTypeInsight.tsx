@@ -79,22 +79,17 @@ const CONCERN_TIPS: Record<string, string> = {
   shoulder: '어깨 운동으로 옷 핏이 달라져요.',
 };
 
-export default function BodyTypeInsight({
-  bodyType,
-  workoutType,
-  concerns,
-}: BodyTypeInsightProps) {
+export default function BodyTypeInsight({ bodyType, workoutType, concerns }: BodyTypeInsightProps) {
   // 체형 데이터가 없으면 기본 인사이트
   const insight = bodyType
-    ? BODY_TYPE_INSIGHTS[bodyType]?.[workoutType] ||
-      '당신의 체형에 맞는 운동을 시작해보세요!'
+    ? BODY_TYPE_INSIGHTS[bodyType]?.[workoutType] || '당신의 체형에 맞는 운동을 시작해보세요!'
     : '체형 분석 결과를 기반으로 맞춤 운동을 추천해드려요.';
 
   // 첫 번째 고민에 대한 팁
   const concernTip = concerns.length > 0 ? CONCERN_TIPS[concerns[0]] : null;
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
+    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800">
       <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-3">
         <Sparkles className="w-5 h-5 text-indigo-500" />
         체형 맞춤 인사이트
@@ -104,7 +99,7 @@ export default function BodyTypeInsight({
 
       {concernTip && (
         <div className="bg-card/60 rounded-xl p-4">
-          <p className="text-sm text-indigo-700">
+          <p className="text-sm text-indigo-700 dark:text-indigo-300">
             <span className="font-medium">💡 Tip:</span> {concernTip}
           </p>
         </div>

@@ -75,7 +75,7 @@ function EquipmentItem({ equipment }: { equipment: WorkoutEquipment }) {
             {equipment.targetMuscles.slice(0, 3).map((muscle, index) => (
               <span
                 key={index}
-                className="text-xs px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded"
+                className="text-xs px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded"
               >
                 {muscle}
               </span>
@@ -147,15 +147,11 @@ export default function RecommendedEquipmentCard({
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-indigo-600"
+            className="p-3 rounded-lg hover:bg-muted/50 transition-colors text-indigo-600"
             aria-label={isExpanded ? '접기' : '펼치기'}
             disabled={isLoading}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
       </div>

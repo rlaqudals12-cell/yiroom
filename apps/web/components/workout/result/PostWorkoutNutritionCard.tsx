@@ -21,8 +21,9 @@ interface PostWorkoutNutritionCardProps {
 
 // 우선순위별 배지 스타일
 const PRIORITY_STYLES = {
-  high: 'bg-orange-100 text-orange-700 border-orange-200',
-  medium: 'bg-blue-100 text-blue-700 border-blue-200',
+  high: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+  medium:
+    'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
   low: 'bg-muted text-muted-foreground border-border',
 };
 

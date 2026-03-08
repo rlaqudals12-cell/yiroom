@@ -41,11 +41,7 @@ describe('PostWorkoutSkinCareCard', () => {
   describe('운동 유형별 메시지', () => {
     it('고강도 운동(HIIT)에 맞는 메시지가 표시된다', () => {
       render(
-        <PostWorkoutSkinCareCard
-          workoutType="hiit"
-          durationMinutes={20}
-          skinAnalysis={null}
-        />
+        <PostWorkoutSkinCareCard workoutType="hiit" durationMinutes={20} skinAnalysis={null} />
       );
 
       expect(screen.getByText(/고강도/)).toBeInTheDocument();
@@ -53,11 +49,7 @@ describe('PostWorkoutSkinCareCard', () => {
 
     it('저강도 운동(yoga)에 맞는 메시지가 표시된다', () => {
       render(
-        <PostWorkoutSkinCareCard
-          workoutType="yoga"
-          durationMinutes={15}
-          skinAnalysis={null}
-        />
+        <PostWorkoutSkinCareCard workoutType="yoga" durationMinutes={15} skinAnalysis={null} />
       );
 
       expect(screen.getByText(/가벼운/)).toBeInTheDocument();
@@ -120,12 +112,7 @@ describe('PostWorkoutSkinCareCard', () => {
         trouble: 'warning',
       };
 
-      render(
-        <PostWorkoutSkinCareCard
-          {...defaultProps}
-          skinAnalysis={skinAnalysis}
-        />
-      );
+      render(<PostWorkoutSkinCareCard {...defaultProps} skinAnalysis={skinAnalysis} />);
 
       fireEvent.click(screen.getByLabelText('펼치기'));
 
@@ -139,7 +126,7 @@ describe('PostWorkoutSkinCareCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(
-        screen.getByText(/피부 분석을 완료하면 더 맞춤화된 팁을 받을 수 있어요/)
+        screen.getByText(/피부 분석을 연동하면 더욱 개인화된 팁을 제공해드려요/)
       ).toBeInTheDocument();
     });
 
@@ -166,17 +153,12 @@ describe('PostWorkoutSkinCareCard', () => {
         trouble: 'good',
       };
 
-      render(
-        <PostWorkoutSkinCareCard
-          {...defaultProps}
-          skinAnalysis={skinAnalysis}
-        />
-      );
+      render(<PostWorkoutSkinCareCard {...defaultProps} skinAnalysis={skinAnalysis} />);
 
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(
-        screen.queryByText(/피부 분석을 완료하면 더 맞춤화된 팁을 받을 수 있어요/)
+        screen.queryByText(/피부 분석을 연동하면 더욱 개인화된 팁을 제공해드려요/)
       ).not.toBeInTheDocument();
     });
   });
@@ -194,11 +176,7 @@ describe('PostWorkoutSkinCareCard', () => {
 
     it('고강도 운동 시 중요 팁에 경고 아이콘이 표시된다', () => {
       render(
-        <PostWorkoutSkinCareCard
-          workoutType="hiit"
-          durationMinutes={30}
-          skinAnalysis={null}
-        />
+        <PostWorkoutSkinCareCard workoutType="hiit" durationMinutes={30} skinAnalysis={null} />
       );
 
       // 고강도 운동은 중요 팁이 있으므로 경고 아이콘이 표시될 수 있음
@@ -232,11 +210,7 @@ describe('PostWorkoutSkinCareCard', () => {
   describe('운동 시간별 팁', () => {
     it('짧은 운동(15분)에 대한 팁이 표시된다', () => {
       render(
-        <PostWorkoutSkinCareCard
-          workoutType="cardio"
-          durationMinutes={15}
-          skinAnalysis={null}
-        />
+        <PostWorkoutSkinCareCard workoutType="cardio" durationMinutes={15} skinAnalysis={null} />
       );
 
       expect(screen.getByTestId('post-workout-skin-care-card')).toBeInTheDocument();
@@ -244,11 +218,7 @@ describe('PostWorkoutSkinCareCard', () => {
 
     it('긴 운동(60분)에 대한 팁이 표시된다', () => {
       render(
-        <PostWorkoutSkinCareCard
-          workoutType="cardio"
-          durationMinutes={60}
-          skinAnalysis={null}
-        />
+        <PostWorkoutSkinCareCard workoutType="cardio" durationMinutes={60} skinAnalysis={null} />
       );
 
       // 60분 메시지가 포함되어야 함

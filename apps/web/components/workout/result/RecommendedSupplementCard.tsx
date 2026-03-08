@@ -83,7 +83,7 @@ function SupplementItem({ supplement }: { supplement: SupplementProduct }) {
             {supplement.benefits.slice(0, 3).map((benefit, index) => (
               <span
                 key={index}
-                className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 rounded"
+                className="text-xs px-1.5 py-0.5 bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 rounded"
               >
                 {benefit}
               </span>
@@ -165,15 +165,11 @@ export default function RecommendedSupplementCard({
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-green-600"
+            className="p-3 rounded-lg hover:bg-muted/50 transition-colors text-green-600"
             aria-label={isExpanded ? '접기' : '펼치기'}
             disabled={isLoading}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
       </div>
