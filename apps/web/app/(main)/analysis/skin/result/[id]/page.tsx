@@ -213,9 +213,9 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
 
 // 점수에 따른 설명 생성
 function getDescription(name: string, value: number): string {
-  if (value >= 71) return `${name}(이)가 좋은 상태예요`;
-  if (value >= 41) return `${name}(이)가 보통 수준이에요`;
-  return `${name} 관리가 필요해요`;
+  if (value >= 71) return `${name} 관리를 잘하고 계세요! 현재 루틴을 유지해주세요`;
+  if (value >= 41) return `${name}(이)가 보통이에요. 조금만 신경 쓰면 더 좋아질 수 있어요`;
+  return `${name}에 관심을 기울여볼 시기예요. 맞춤 케어를 시작해보세요`;
 }
 
 // DB 데이터 → AnalysisResult props 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
@@ -416,7 +416,7 @@ export default function SkinAnalysisResultPage() {
       if (m.value >= 71) {
         positive.push(`${m.name} 우수`);
       } else if (m.value <= 40) {
-        negative.push(`${m.name} 개선 필요`);
+        negative.push(`${m.name} 케어 포인트`);
       }
     });
 
@@ -845,7 +845,10 @@ export default function SkinAnalysisResultPage() {
           {result && (
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted">
+                <TabsList
+                  className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted"
+                  aria-label="피부 분석 결과 탭"
+                >
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
                     <Sparkles className="w-3 h-3" />
                     분석
@@ -1022,17 +1025,6 @@ export default function SkinAnalysisResultPage() {
                   <ContextLinkingCard currentModule="skin" />
                   <ResultPageInsights currentModule="skin" />
 
-                  {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
-                  {(analysisEvidence || imageQuality) && (
-                    <SkinAnalysisEvidenceReport
-                      evidence={analysisEvidence}
-                      imageQuality={imageQuality}
-                      skinType={skinType || 'normal'}
-                      overallScore={result.overallScore}
-                      className="mt-6"
-                    />
-                  )}
-
                   {/* 맞춤 추천 제품 */}
                   {skinType && (
                     <RecommendedProducts
@@ -1208,11 +1200,11 @@ export default function SkinAnalysisResultPage() {
                   {/* 트렌드 차트 (과거 분석 이력) */}
                   <TrendChart data={trendData} metric="overall" showGoal goalScore={80} />
 
-                  {/* Phase E: 문제 영역 확대 뷰어 */}
+                  {/* Phase E: 관심 영역 확대 뷰어 */}
                   {(imageUrl || pcImageUrl) && problemAreas.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium text-muted-foreground">
-                        문제 영역 상세 (마커를 탭하세요)
+                        관심 영역 상세 (마커를 탭하세요)
                       </h3>
                       <SkinZoomViewer
                         imageUrl={(imageUrl || pcImageUrl)!}
@@ -1289,7 +1281,19 @@ export default function SkinAnalysisResultPage() {
                   className="mt-0 pb-40"
                   data-testid="consultation-tab"
                 >
-                  <div className="h-[calc(100vh-280px)] min-h-[400px]">
+                  {/* 상담 인트로 카드 */}
+                  <div className="mb-4 rounded-lg border bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border-violet-200 dark:border-violet-800 p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
+                      <MessageCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">AI 피부 상담</p>
+                      <p className="text-xs text-muted-foreground">
+                        분석 결과를 바탕으로 맞춤 조언을 받아보세요
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-[calc(100vh-340px)] min-h-[400px]">
                     <SkinConsultationChat
                       skinAnalysis={
                         result

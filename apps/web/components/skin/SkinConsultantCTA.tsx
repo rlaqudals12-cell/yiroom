@@ -85,7 +85,7 @@ export function SkinConsultantCTA({
             <button
               key={index}
               onClick={() => handleQuickQuestion(question)}
-              className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs text-primary hover:bg-primary/10 transition-colors"
+              className="rounded-full border border-primary/30 bg-primary/5 dark:bg-primary/15 px-3 py-2.5 min-h-[44px] text-xs text-primary hover:bg-primary/10 dark:hover:bg-primary/25 transition-colors"
             >
               {question}
             </button>

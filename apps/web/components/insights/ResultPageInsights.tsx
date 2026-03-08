@@ -294,16 +294,16 @@ function InsightRow({
         {depth !== 'minimal' && (
           <div className="mt-1">
             {isConfirmed ? (
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500">
-                <Check className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-emerald-500">
+                <Check className="w-4 h-4" />
                 이해했어요
               </span>
             ) : (
               <button
                 onClick={onConfirm}
-                className="inline-flex items-center gap-1 text-[11px] text-violet-500 hover:text-violet-600 transition-colors"
+                className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-3 py-2 text-xs text-violet-500 hover:text-violet-600 transition-colors"
               >
-                <Check className="w-3 h-3" />
+                <Check className="w-4 h-4" />
                 이해했어요
               </button>
             )}

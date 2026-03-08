@@ -156,7 +156,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
           <CardTitle className="text-base">상세 시각화 분석</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="p-4 rounded-lg bg-destructive/10 dark:bg-destructive/20 border border-destructive/20 dark:border-destructive/30">
             <p className="text-sm text-destructive">{error || '분석에 실패했어요'}</p>
           </div>
         </CardContent>
@@ -172,8 +172,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
           <CardTitle className="text-base flex items-center gap-2">
             <span>상세 시각화 분석</span>
             <span className="text-xs font-normal text-muted-foreground">
-              (
-              {selectByKey(deviceCapability.tier, { high: '고화질', medium: '표준' }, '경량')}{' '}
+              ({selectByKey(deviceCapability.tier, { high: '고화질', medium: '표준' }, '경량')}{' '}
               모드)
             </span>
           </CardTitle>

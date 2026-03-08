@@ -205,7 +205,7 @@ export default function DrapingSimulationTab({
           <CardTitle className="text-base">색상 입혀보기</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="p-4 rounded-lg bg-destructive/10 dark:bg-destructive/20 border border-destructive/20 dark:border-destructive/30">
             <p className="text-sm text-destructive">{error || '초기화에 실패했어요'}</p>
           </div>
         </CardContent>
