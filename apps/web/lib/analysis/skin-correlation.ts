@@ -347,7 +347,9 @@ function generateInsights(
 
   // 스트레스 관련 인사이트
   if (correlations.stressLevel.strength === 'strong') {
-    insights.push('스트레스가 피부 상태에 직접적인 영향을 주고 있어요. 스트레스 관리가 필요해요.');
+    insights.push(
+      '스트레스가 피부 상태에 직접적인 영향을 주고 있어요. 스트레스 관리에 신경쓰면 좋아요.'
+    );
   }
 
   // 루틴 관련 인사이트

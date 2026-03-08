@@ -52,7 +52,7 @@ const mockProblemArea: ProblemArea = {
   type: 'pores',
   severity: 'moderate',
   location: { x: 50, y: 40, radius: 12 },
-  description: '모공이 넓어져 있어요. 피지 관리가 필요해요.',
+  description: '모공이 넓어져 있어요. 피지 케어에 신경쓰면 좋아요.',
   recommendations: ['BHA 토너', '클레이 마스크'],
 };
 

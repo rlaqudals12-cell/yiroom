@@ -153,7 +153,7 @@ export function PostureGuide({
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <CardTitle className="text-sm font-medium text-amber-800">
-                주의가 필요한 자세 문제
+                참고할 자세 포인트
               </CardTitle>
             </div>
           </CardHeader>

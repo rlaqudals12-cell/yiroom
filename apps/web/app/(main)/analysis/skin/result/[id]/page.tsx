@@ -121,7 +121,7 @@ function getZoneConcerns(zoneId: FaceZoneId, metrics: MetricItem[]): string[] {
   if (zoneId === 'cheeks' || zoneId === 'uZone') {
     const hydration = findMetric(metrics, 'hydration');
     const sensitivity = findMetric(metrics, 'sensitivity');
-    if (hydration && hydration.value <= 40) concerns.push('수분이 부족해요');
+    if (hydration && hydration.value <= 40) concerns.push('수분이 낮아요');
     if (sensitivity && sensitivity.value <= 40) concerns.push('민감한 편이에요');
   }
   return concerns;
@@ -181,7 +181,7 @@ const SKIN_TYPE_EXPLANATIONS: Record<
     characteristics:
       'T존은 유분이 많고 U존은 건조한, 두 가지 특성이 공존하는 타입이에요. 부위별 맞춤 관리가 중요해요.',
     tZone: 'T존(이마, 코)은 피지 분비가 활발해 번들거려요',
-    uZone: 'U존(볼, 턱)은 수분이 부족해 당기거나 각질이 생겨요',
+    uZone: 'U존(볼, 턱)은 수분이 낮아 당기거나 각질이 생겨요',
     careFocus:
       '부위별 다른 제품을 사용하는 멀티케어가 효과적이에요. T존엔 BHA, U존엔 히알루론산을 추천해요.',
     avoidReason: '한 가지 제품으로 전체를 관리하면 한쪽이 과하거나 부족할 수 있어요.',

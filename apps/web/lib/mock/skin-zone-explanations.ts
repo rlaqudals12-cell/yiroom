@@ -77,7 +77,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '모공 크기',
         normalRange: '0.02-0.05mm',
-        description: '피지 분비가 많으면 모공이 넓어질 수 있어요. 정기적인 관리가 필요해요.',
+        description: '피지 분비가 많으면 모공이 넓어질 수 있어요. 정기적인 케어를 추천해요.',
       },
     ],
     recommendations: [
@@ -209,7 +209,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '피부 두께',
         normalRange: '0.3-0.5mm',
-        description: '볼 피부의 1/4 두께밖에 안 돼요. 특별히 부드러운 관리가 필요해요.',
+        description: '볼 피부의 1/4 두께밖에 안 돼요. 부드러운 케어가 중요해요.',
       },
       {
         indicator: '수분도',
@@ -243,7 +243,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
     zoneId: 'eye_right',
     zoneName: '오른쪽 눈가',
     zoneCharacteristic:
-      '왼쪽 눈가와 동일하게 가장 섬세한 관리가 필요한 영역이에요. 표정을 지을 때 주름이 생기기 쉽고, 피로가 바로 드러나요.',
+      '왼쪽 눈가와 동일하게 섬세한 케어가 중요한 영역이에요. 표정을 지을 때 주름이 생기기 쉽고, 피로가 바로 드러나요.',
     concerns: [
       '다크서클 (색소형/혈관형/구조형)',
       '까마귀 발자국 (눈꼬리 주름)',
@@ -255,7 +255,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '주름 깊이',
         normalRange: '0.1mm 이하',
-        description: '웃을 때 생기는 주름이 0.1mm를 넘으면 관리가 필요해요.',
+        description: '웃을 때 생기는 주름이 0.1mm를 넘으면 케어를 시작하면 좋아요.',
       },
       {
         indicator: '다크서클 지수',
@@ -310,7 +310,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '홍조 지수',
         normalRange: 'a값 10 이하',
-        description: '피부 붉은기를 측정해요. 10 이상이면 홍조 관리가 필요할 수 있어요.',
+        description: '피부 붉은기를 측정해요. 10 이상이면 홍조 케어를 추천해요.',
       },
       {
         indicator: '색소침착 정도',
@@ -406,7 +406,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '블랙헤드 밀도',
         normalRange: 'cm2당 5개 이하',
-        description: '5개 이상이면 딥 클렌징과 각질 관리가 필요해요.',
+        description: '5개 이상이면 딥 클렌징과 각질 케어를 추천해요.',
       },
       {
         indicator: '각질 두께',
@@ -457,7 +457,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '피지 필라멘트',
         normalRange: '밝은 회색 ~ 연한 노란색',
-        description: '어두운 색이면 블랙헤드로 진행된 상태예요. 정기적 관리가 필요해요.',
+        description: '어두운 색이면 블랙헤드로 진행된 상태예요. 정기적인 케어를 추천해요.',
       },
     ],
     recommendations: [
@@ -497,7 +497,7 @@ export const ZONE_DETAILED_EXPLANATIONS: Record<DetailedZoneId, ZoneDetailedExpl
       {
         indicator: '트러블 발생 빈도',
         normalRange: '월 0-2개',
-        description: '3개 이상이면 호르몬 밸런스나 스트레스 관리가 필요해요.',
+        description: '3개 이상이면 호르몬 밸런스나 스트레스 케어를 추천해요.',
       },
       {
         indicator: '피지 분비량',

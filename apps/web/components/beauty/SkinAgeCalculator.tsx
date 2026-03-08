@@ -141,17 +141,20 @@ export function SkinAgeCalculator({
 
   // 차이 표시
   const trendDir = getTrendDirection(result.difference);
-  const DifferenceIcon = selectByKey(trendDir, { up: TrendingUp, down: TrendingDown, neutral: Minus }) ?? Minus;
-  const differenceColor = selectByKey(trendDir, {
-    up: 'text-green-600',
-    down: 'text-amber-600',
-    neutral: 'text-muted-foreground',
-  }) ?? 'text-muted-foreground';
-  const differenceText = selectByKey(trendDir, {
-    up: '젊어 보여요!',
-    down: '관리가 필요해요',
-    neutral: '적정 상태',
-  }) ?? '적정 상태';
+  const DifferenceIcon =
+    selectByKey(trendDir, { up: TrendingUp, down: TrendingDown, neutral: Minus }) ?? Minus;
+  const differenceColor =
+    selectByKey(trendDir, {
+      up: 'text-green-600',
+      down: 'text-amber-600',
+      neutral: 'text-muted-foreground',
+    }) ?? 'text-muted-foreground';
+  const differenceText =
+    selectByKey(trendDir, {
+      up: '젊어 보여요!',
+      down: '케어에 신경쓰면 좋아요',
+      neutral: '적정 상태',
+    }) ?? '적정 상태';
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="skin-age-calculator">
@@ -184,7 +187,8 @@ export function SkinAgeCalculator({
           <div className={cn('flex items-center justify-center gap-2', differenceColor)}>
             <DifferenceIcon className="h-5 w-5" />
             <span className="font-bold text-lg">
-              {Math.abs(result.difference)}살 {selectByKey(trendDir, { up: '어려', down: '많아', neutral: '' })}
+              {Math.abs(result.difference)}살{' '}
+              {selectByKey(trendDir, { up: '어려', down: '많아', neutral: '' })}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">{differenceText}</p>
@@ -192,14 +196,20 @@ export function SkinAgeCalculator({
 
         {/* 등급 배지 */}
         <div className="flex justify-center mb-6">
-          <div className={cn(
-            'px-4 py-2 rounded-full font-bold text-lg',
-            result.grade === 'A' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-            result.grade === 'B' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-            result.grade === 'C' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-            result.grade === 'D' && 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-            result.grade === 'F' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-          )}>
+          <div
+            className={cn(
+              'px-4 py-2 rounded-full font-bold text-lg',
+              result.grade === 'A' &&
+                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+              result.grade === 'B' &&
+                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+              result.grade === 'C' &&
+                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+              result.grade === 'D' &&
+                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+              result.grade === 'F' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+            )}
+          >
             피부 등급: {result.grade}
           </div>
         </div>
@@ -215,16 +225,22 @@ export function SkinAgeCalculator({
               >
                 <span className="text-sm">{factor.name}</span>
                 <div className="flex items-center gap-1">
-                  <span className={cn(
-                    'text-sm font-medium',
-                    factor.impact === 'positive' && 'text-green-600',
-                    factor.impact === 'negative' && 'text-red-600',
-                    factor.impact === 'neutral' && 'text-muted-foreground',
-                  )}>
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      factor.impact === 'positive' && 'text-green-600',
+                      factor.impact === 'negative' && 'text-red-600',
+                      factor.impact === 'neutral' && 'text-muted-foreground'
+                    )}
+                  >
                     {factor.value}점
                   </span>
-                  {factor.impact === 'positive' && <TrendingUp className="h-3 w-3 text-green-600" />}
-                  {factor.impact === 'negative' && <TrendingDown className="h-3 w-3 text-red-600" />}
+                  {factor.impact === 'positive' && (
+                    <TrendingUp className="h-3 w-3 text-green-600" />
+                  )}
+                  {factor.impact === 'negative' && (
+                    <TrendingDown className="h-3 w-3 text-red-600" />
+                  )}
                 </div>
               </div>
             ))}

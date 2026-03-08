@@ -477,7 +477,7 @@ function generateUniformityDescription(
   const gradeDescriptions: Record<UniformityGrade, string> = {
     excellent: '피부 톤이 매우 균일해요! 깨끗하고 건강한 피부입니다.',
     good: '피부 톤이 대체로 균일해요. 약간의 케어로 더 좋아질 수 있어요.',
-    fair: '피부 톤에 다소 불균일함이 있어요. 꾸준한 관리가 필요해요.',
+    fair: '피부 톤에 다소 불균일함이 있어요. 꾸준한 케어를 추천해요.',
     poor: '피부 톤 불균일이 두드러져요. 집중 케어를 권장해요.',
   };
 

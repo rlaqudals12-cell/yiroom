@@ -121,19 +121,23 @@ function getDescriptionForType(
   type: ProblemArea['type'],
   severity: ProblemArea['severity']
 ): string {
-  const severityText = selectByKey(severity, {
-    severe: '심한',
-    moderate: '보통의',
-  }, '가벼운')!;
+  const severityText = selectByKey(
+    severity,
+    {
+      severe: '심한',
+      moderate: '보통의',
+    },
+    '가벼운'
+  )!;
 
   const descriptions: Record<ProblemArea['type'], string> = {
-    pores: `${severityText} 모공 확장이 관찰돼요. 피지 관리가 필요해 보여요.`,
+    pores: `${severityText} 모공 확장이 관찰돼요. 피지 케어를 추천해요.`,
     pigmentation: `${severityText} 색소침착이 있어요. 미백 케어를 권장해요.`,
     dryness: `${severityText} 건조함이 보여요. 수분 공급이 필요해요.`,
     wrinkles: `${severityText} 주름이 관찰돼요. 탄력 케어가 도움이 될 거예요.`,
     acne: `${severityText} 트러블이 있어요. 진정 케어를 추천해요.`,
-    oiliness: `${severityText} 유분이 많아요. 유수분 밸런스 관리가 필요해요.`,
-    redness: `${severityText} 붉은기가 있어요. 진정 케어가 필요해요.`,
+    oiliness: `${severityText} 유분이 많아요. 유수분 밸런스 케어를 추천해요.`,
+    redness: `${severityText} 붉은기가 있어요. 진정 케어를 추천해요.`,
     darkCircles: `${severityText} 다크서클이 있어요. 아이 케어가 도움이 될 거예요.`,
   };
 

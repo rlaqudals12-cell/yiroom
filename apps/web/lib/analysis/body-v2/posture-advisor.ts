@@ -495,7 +495,7 @@ export function generatePostureSummary(analysis: PostureAnalysis): string {
     if (mainIssue) {
       return `${getPostureIssueLabel(mainIssue.type)}이(가) 감지되었어요. 가벼운 스트레칭을 권장해요.`;
     }
-    return '약간의 자세 개선이 필요해요.';
+    return '가벼운 자세 스트레칭을 추천해요.';
   }
 
   if (score >= 50) {

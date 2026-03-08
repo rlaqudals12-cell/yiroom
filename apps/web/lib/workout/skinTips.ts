@@ -8,7 +8,14 @@
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 
 // S-1 피부 지표 키 (skin-analysis.ts의 metric.id와 일치)
-export type SkinMetricKey = 'hydration' | 'oil' | 'pores' | 'wrinkles' | 'elasticity' | 'pigmentation' | 'trouble';
+export type SkinMetricKey =
+  | 'hydration'
+  | 'oil'
+  | 'pores'
+  | 'wrinkles'
+  | 'elasticity'
+  | 'pigmentation'
+  | 'trouble';
 
 // 운동 유형 (땀 배출량 기준)
 export type WorkoutIntensity = 'low' | 'medium' | 'high';
@@ -48,13 +55,15 @@ const WORKOUT_CATEGORY_TIPS: Record<WorkoutCategory, SkinCareTip[]> = {
     {
       icon: '💧',
       title: '수분 보충 필수',
-      description: '유산소 운동으로 많은 땀을 흘렸어요. 운동 직후 물을 충분히 마시고, 미스트로 피부에도 수분을 공급해 주세요.',
+      description:
+        '유산소 운동으로 많은 땀을 흘렸어요. 운동 직후 물을 충분히 마시고, 미스트로 피부에도 수분을 공급해 주세요.',
       priority: 'high',
     },
     {
       icon: '🧴',
       title: '즉시 세안하기',
-      description: '땀과 피지가 섞여 모공을 막을 수 있어요. 30분 이내에 순한 클렌저로 세안해 주세요.',
+      description:
+        '땀과 피지가 섞여 모공을 막을 수 있어요. 30분 이내에 순한 클렌저로 세안해 주세요.',
       priority: 'high',
     },
   ],
@@ -62,7 +71,8 @@ const WORKOUT_CATEGORY_TIPS: Record<WorkoutCategory, SkinCareTip[]> = {
     {
       icon: '💪',
       title: '혈액순환 활성화',
-      description: '근력 운동으로 혈액순환이 좋아졌어요. 세안 후 가벼운 마사지로 효과를 높여보세요.',
+      description:
+        '근력 운동으로 혈액순환이 좋아졌어요. 세안 후 가벼운 마사지로 효과를 높여보세요.',
       priority: 'medium',
     },
     {
@@ -76,7 +86,8 @@ const WORKOUT_CATEGORY_TIPS: Record<WorkoutCategory, SkinCareTip[]> = {
     {
       icon: '🧘',
       title: '릴렉싱 케어',
-      description: '스트레칭과 요가는 스트레스 해소에 좋아요. 아로마 오일로 마무리하면 피부 진정에도 도움이 됩니다.',
+      description:
+        '스트레칭과 요가는 스트레스 해소에 좋아요. 아로마 오일로 마무리하면 피부 진정에도 도움이 됩니다.',
       priority: 'low',
     },
     {
@@ -146,7 +157,7 @@ const SKIN_METRIC_TIPS: Record<SkinMetricKey, Record<MetricStatus, SkinCareTip |
     warning: {
       icon: '🚨',
       title: '수분 집중 케어',
-      description: '피부 수분이 부족해요! 운동 후 반드시 수분 크림과 미스트로 집중 보습해 주세요.',
+      description: '피부 수분이 낮아요! 운동 후 반드시 수분 크림과 미스트로 집중 보습해 주세요.',
       priority: 'high',
     },
   },
@@ -221,7 +232,8 @@ const SKIN_METRIC_TIPS: Record<SkinMetricKey, Record<MetricStatus, SkinCareTip |
     warning: {
       icon: '🆘',
       title: '트러블 케어',
-      description: '트러블이 있으시네요. 운동 후 즉시 세안하고 살리실산 성분 제품으로 케어해 주세요.',
+      description:
+        '트러블이 있으시네요. 운동 후 즉시 세안하고 살리실산 성분 제품으로 케어해 주세요.',
       priority: 'high',
     },
   },
@@ -252,18 +264,26 @@ const GENERAL_TIPS: SkinCareTip[] = [
 /**
  * 운동 카테고리 추론 (운동 타입 기반)
  */
-export function inferWorkoutCategory(
-  workoutType: string
-): WorkoutCategory {
+export function inferWorkoutCategory(workoutType: string): WorkoutCategory {
   const type = workoutType.toLowerCase();
 
-  if (type.includes('cardio') || type.includes('running') || type.includes('cycling') || type === 'burner') {
+  if (
+    type.includes('cardio') ||
+    type.includes('running') ||
+    type.includes('cycling') ||
+    type === 'burner'
+  ) {
     return 'cardio';
   }
   if (type.includes('hiit') || type.includes('crossfit') || type.includes('circuit')) {
     return 'hiit';
   }
-  if (type.includes('yoga') || type.includes('pilates') || type.includes('stretch') || type === 'flexer') {
+  if (
+    type.includes('yoga') ||
+    type.includes('pilates') ||
+    type.includes('stretch') ||
+    type === 'flexer'
+  ) {
     return 'flexibility';
   }
   if (type.includes('recovery') || type.includes('foam') || type.includes('rest')) {
@@ -324,8 +344,13 @@ export function getPostWorkoutSkinCareTips(
 
   if (skinAnalysis) {
     const metricKeys: SkinMetricKey[] = [
-      'hydration', 'oil', 'pores', 'wrinkles',
-      'elasticity', 'pigmentation', 'trouble'
+      'hydration',
+      'oil',
+      'pores',
+      'wrinkles',
+      'elasticity',
+      'pigmentation',
+      'trouble',
     ];
 
     for (const key of metricKeys) {
@@ -389,10 +414,13 @@ export function convertToSkinSummary(
   skinMetrics: Array<{ id: string; status: MetricStatus }>
 ): SkinAnalysisSummary {
   // metrics 배열을 id로 인덱싱
-  const metricsById = skinMetrics.reduce((acc, metric) => {
-    acc[metric.id] = metric.status;
-    return acc;
-  }, {} as Record<string, MetricStatus>);
+  const metricsById = skinMetrics.reduce(
+    (acc, metric) => {
+      acc[metric.id] = metric.status;
+      return acc;
+    },
+    {} as Record<string, MetricStatus>
+  );
 
   return {
     hydration: metricsById.hydration ?? 'normal',
@@ -406,9 +434,4 @@ export function convertToSkinSummary(
 }
 
 // 상수 내보내기 (테스트 및 외부 사용)
-export {
-  WORKOUT_CATEGORY_TIPS,
-  INTENSITY_TIPS,
-  SKIN_METRIC_TIPS,
-  GENERAL_TIPS,
-};
+export { WORKOUT_CATEGORY_TIPS, INTENSITY_TIPS, SKIN_METRIC_TIPS, GENERAL_TIPS };

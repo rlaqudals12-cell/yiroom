@@ -95,7 +95,7 @@ export default function AnalysisResult({
 
   // 키워드 (3타입이면 typeInfo3에서, 아니면 레거시 변환)
   const keywords = (result as { keywords?: string[] }).keywords || typeInfo3.keywords;
-  // 피해야 할 스타일
+  // 참고할 스타일
   const avoidStyles = (result as { avoidStyles?: string[] }).avoidStyles || typeInfo3.avoidStyles;
 
   // 체형 + 퍼스널 컬러 조합 코디 예시
@@ -508,12 +508,12 @@ export default function AnalysisResult({
               </div>
             )}
 
-            {/* 주의할 색상 */}
+            {/* 참고 색상 */}
             {colorRecommendations.avoidColors.length > 0 && (
               <div className="pt-3 border-t">
                 <div className="flex items-center gap-1 mb-2">
                   <Ban className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">주의할 색상</span>
+                  <span className="text-sm font-medium text-muted-foreground">참고 색상</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {colorRecommendations.avoidColors.map((color, index) => (

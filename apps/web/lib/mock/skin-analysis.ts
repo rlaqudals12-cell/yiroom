@@ -131,7 +131,7 @@ export const SKIN_CONCERNS: SkinConcernInfo[] = [
     id: 'dehydration',
     label: '수분 부족',
     emoji: '🏜️',
-    description: '일시적으로 피부에 수분이 부족해요',
+    description: '일시적으로 피부 수분이 낮아요',
   },
   {
     id: 'sensitivity',

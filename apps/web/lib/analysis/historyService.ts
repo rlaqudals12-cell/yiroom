@@ -265,7 +265,7 @@ export function generateCompareInsights(
     } else if (overallChange > 0) {
       insights.push('모발 상태가 조금씩 좋아지고 있어요.');
     } else if (overallChange < -5) {
-      insights.push('모발 관리가 필요해 보여요.');
+      insights.push('모발 케어에 신경쓰면 좋아요.');
     }
 
     if (detailChanges.scalpHealth && detailChanges.scalpHealth > 5) {

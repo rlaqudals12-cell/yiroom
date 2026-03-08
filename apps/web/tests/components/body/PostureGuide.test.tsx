@@ -38,7 +38,7 @@ describe('PostureGuide', () => {
   it('displays common issues for body type when no detected issues provided', () => {
     render(<PostureGuide bodyType="pear" />);
     // pear 체형의 기본 문제들이 표시되어야 함
-    expect(screen.getByText('주의가 필요한 자세 문제')).toBeInTheDocument();
+    expect(screen.getByText('참고할 자세 포인트')).toBeInTheDocument();
   });
 
   it('displays three tabs: exercises, tips, issues', () => {

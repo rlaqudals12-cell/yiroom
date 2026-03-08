@@ -198,7 +198,7 @@ const mockMonthlyReport = {
   },
   insights: {
     highlights: ['한 달간 꾸준히 기록하셨어요'],
-    improvements: ['주말 식단 관리가 필요해요'],
+    improvements: ['주말 식단 케어에 신경쓰면 좋아요'],
     tips: ['다음 달에는 운동 빈도를 높여보세요'],
   },
   streak: {
@@ -492,12 +492,10 @@ describe('GET /api/reports/monthly', () => {
               eq: vi.fn().mockReturnValue({
                 gte: vi.fn().mockReturnValue({
                   lte: vi.fn().mockReturnValue({
-                    order: vi
-                      .fn()
-                      .mockResolvedValue({
-                        data: null,
-                        error: { code: 'OTHER', message: 'DB Error' },
-                      }),
+                    order: vi.fn().mockResolvedValue({
+                      data: null,
+                      error: { code: 'OTHER', message: 'DB Error' },
+                    }),
                   }),
                 }),
               }),

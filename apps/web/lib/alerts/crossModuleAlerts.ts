@@ -207,11 +207,15 @@ export function createHairLossPreventionAlert(
   riskLevel: 'low' | 'medium' | 'high'
 ): CrossModuleAlertData {
   const config = ALERT_TYPE_CONFIG.hair_loss_prevention;
-  const level: AlertLevel = selectByKey(riskLevel, { high: 'danger' as const, medium: 'warning' as const }, 'info' as const)!;
+  const level: AlertLevel = selectByKey(
+    riskLevel,
+    { high: 'danger' as const, medium: 'warning' as const },
+    'info' as const
+  )!;
 
   const messages: Record<string, string> = {
     high: '모발 밀도가 낮아요. 단백질, 철분 섭취를 강화해보세요',
-    medium: '모발 건강 관리가 필요해요. 영양 섭취에 신경 써주세요',
+    medium: '모발 건강 케어에 신경쓰면 좋아요. 영양 섭취를 강화해보세요',
     low: '모발 건강을 유지하려면 균형 잡힌 식단을 권장해요',
   };
 

@@ -334,7 +334,7 @@ function generateSyncNote(
       spot_treatment: '스팟 트리트먼트',
     };
     const missing = missingCategories.map((c) => categoryLabels[c]).join(', ');
-    note += `${missing}이 부족해요. `;
+    note += `${missing}을 추가하면 좋아요. `;
   }
 
   if (conflictCount > 0) {

@@ -161,13 +161,13 @@ export function getGumHealthGrade(inflammationScore: number): {
     return {
       grade: 'B',
       label: '좋음',
-      description: '잇몸 상태가 양호하지만 관리가 필요해요.',
+      description: '잇몸 상태가 양호해요. 꾸준한 케어를 추천해요.',
     };
   } else if (inflammationScore < 60) {
     return {
       grade: 'C',
       label: '보통',
-      description: '경미한 염증이 있어 개선이 필요해요.',
+      description: '경미한 염증이 있어 케어를 추천해요.',
     };
   } else if (inflammationScore < 80) {
     return {

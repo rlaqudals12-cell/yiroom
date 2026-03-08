@@ -619,7 +619,7 @@ export function generateUserStatus(metricId: SkinMetricId, score: number): strin
     hydration: {
       good: '촉촉하고 건강해요',
       normal: '약간 건조해요',
-      warning: '수분이 많이 부족해요',
+      warning: '수분이 많이 낮아요',
     },
     oil: {
       good: '피지 밸런스가 좋아요',
@@ -634,17 +634,17 @@ export function generateUserStatus(metricId: SkinMetricId, score: number): strin
     wrinkles: {
       good: '주름이 거의 없어요',
       normal: '잔주름이 약간 있어요',
-      warning: '주름 관리가 필요해요',
+      warning: '주름 케어를 추천해요',
     },
     elasticity: {
       good: '피부가 탱탱해요',
       normal: '탄력이 약간 떨어져요',
-      warning: '탄력 개선이 필요해요',
+      warning: '탄력 케어를 추천해요',
     },
     pigmentation: {
       good: '피부 톤이 균일해요',
       normal: '약간의 색소침착이 있어요',
-      warning: '색소침착 관리가 필요해요',
+      warning: '색소침착 케어를 추천해요',
     },
     trouble: {
       good: '트러블 없이 깨끗해요',
@@ -658,11 +658,15 @@ export function generateUserStatus(metricId: SkinMetricId, score: number): strin
     },
   };
 
-  const statusKey = classifyByRange(score, [
-    { max: 41, result: 'warning' as const },
-    { max: 71, result: 'normal' as const },
-    { min: 71, result: 'good' as const },
-  ], 'warning' as const)!;
+  const statusKey = classifyByRange(
+    score,
+    [
+      { max: 41, result: 'warning' as const },
+      { max: 71, result: 'normal' as const },
+      { min: 71, result: 'good' as const },
+    ],
+    'warning' as const
+  )!;
   const statusText = thresholds[metricId][statusKey];
 
   return `당신의 상태: ${statusText} (${score}점)`;
@@ -679,11 +683,15 @@ export function getMetricExplanation(
   score: number
 ): MetricExplanationTemplate & { score: number; status: 'good' | 'normal' | 'warning' } {
   const template = METRIC_EXPLANATIONS[metricId];
-  const status = classifyByRange(score, [
-    { max: 41, result: 'warning' as const },
-    { max: 71, result: 'normal' as const },
-    { min: 71, result: 'good' as const },
-  ], 'warning' as const)!;
+  const status = classifyByRange(
+    score,
+    [
+      { max: 41, result: 'warning' as const },
+      { max: 71, result: 'normal' as const },
+      { min: 71, result: 'good' as const },
+    ],
+    'warning' as const
+  )!;
 
   return {
     ...template,

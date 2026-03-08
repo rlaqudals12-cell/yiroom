@@ -110,7 +110,7 @@ export function classifyWHR(whr: number, gender: Gender): WHRClassification {
   const description =
     status === 'normal'
       ? `정상 범위예요 (기준: ${threshold} 미만)`
-      : `주의가 필요해요 (기준: ${threshold} 이상)`;
+      : `참고해 주세요 (기준: ${threshold} 이상)`;
 
   return {
     value: whr,
@@ -144,7 +144,7 @@ export function classifyWHtR(whtr: number): WHtRClassification {
     description = '정상 범위예요. 허리 둘레가 신장의 절반 미만으로 건강해요.';
   } else if (whtr < 0.6) {
     status = 'caution';
-    description = '주의가 필요해요. 생활습관 개선을 권장해요.';
+    description = '생활습관 개선을 권장해요.';
   } else {
     status = 'risk';
     description = '위험 범위예요. 의료 상담을 권장해요.';

@@ -224,7 +224,7 @@ export default function ShelfDetailPage() {
                 <div className="text-sm text-muted-foreground">
                   {classifyByRange(item.compatibilityScore, [
                     { min: 80, result: '내 피부에 잘 맞아요!' },
-                    { min: 60, result: '주의가 필요해요' },
+                    { min: 60, result: '참고해 주세요' },
                     { result: '주의 성분이 있어요' },
                   ])}
                 </div>
@@ -305,11 +305,15 @@ export default function ShelfDetailPage() {
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">스캔 방법</dt>
                 <dd>
-                  {selectByKey(item.scanMethod, {
-                    barcode: '바코드 스캔',
-                    ocr: '성분 OCR',
-                    search: '검색',
-                  }, '수동 입력')}
+                  {selectByKey(
+                    item.scanMethod,
+                    {
+                      barcode: '바코드 스캔',
+                      ocr: '성분 OCR',
+                      search: '검색',
+                    },
+                    '수동 입력'
+                  )}
                 </dd>
               </div>
               {item.productBarcode && (

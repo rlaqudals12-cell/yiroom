@@ -213,7 +213,7 @@ export function CleanserTypeCard({
             <div>
               <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
-                주의가 필요한 피부 타입
+                참고할 피부 타입
               </h4>
               <div className="flex flex-wrap gap-1">
                 {cleanser.notRecommendedFor.map((type) => (

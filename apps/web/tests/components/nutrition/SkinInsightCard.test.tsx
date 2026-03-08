@@ -55,12 +55,7 @@ describe('SkinInsightCard', () => {
 
     it('피부 분석 버튼 클릭 시 핸들러를 호출한다', () => {
       const onNavigate = vi.fn();
-      render(
-        <SkinInsightCard
-          skinAnalysis={null}
-          onNavigateToSkinAnalysis={onNavigate}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={null} onNavigateToSkinAnalysis={onNavigate} />);
 
       fireEvent.click(screen.getByTestId('navigate-skin-analysis'));
 
@@ -107,12 +102,7 @@ describe('SkinInsightCard', () => {
 
     it('음식 추천 클릭 시 핸들러를 호출한다', () => {
       const onClick = vi.fn();
-      render(
-        <SkinInsightCard
-          skinAnalysis={warningSkin}
-          onFoodRecommendationClick={onClick}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={warningSkin} onFoodRecommendationClick={onClick} />);
 
       fireEvent.click(screen.getByTestId('food-recommendation-hydration'));
 
@@ -127,24 +117,14 @@ describe('SkinInsightCard', () => {
 
   describe('수분 연동', () => {
     it('현재 수분량과 목표를 표시한다', () => {
-      render(
-        <SkinInsightCard
-          skinAnalysis={normalSkin}
-          currentWaterMl={1500}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={normalSkin} currentWaterMl={1500} />);
 
       expect(screen.getByText('1,500ml')).toBeInTheDocument();
       expect(screen.getByText('2,000ml')).toBeInTheDocument();
     });
 
     it('수분 진행률 바를 표시한다', () => {
-      render(
-        <SkinInsightCard
-          skinAnalysis={normalSkin}
-          currentWaterMl={1000}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={normalSkin} currentWaterMl={1000} />);
 
       const progressbar = screen.getByRole('progressbar');
       expect(progressbar).toBeInTheDocument();
@@ -152,12 +132,7 @@ describe('SkinInsightCard', () => {
     });
 
     it('수분 부족 피부일 때 목표가 2500ml로 증가한다', () => {
-      render(
-        <SkinInsightCard
-          skinAnalysis={warningSkin}
-          currentWaterMl={1000}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={warningSkin} currentWaterMl={1000} />);
 
       expect(screen.getByText('2,500ml')).toBeInTheDocument();
     });
@@ -177,16 +152,11 @@ describe('SkinInsightCard', () => {
 
       render(<SkinInsightCard skinAnalysis={manyWarningSkin} />);
 
-      expect(screen.getByText(/피부 관리가 필요해요/)).toBeInTheDocument();
+      expect(screen.getByText(/피부 케어에 신경쓰면 좋아요/)).toBeInTheDocument();
     });
 
     it('피부 개선 목표일 때 추가 메시지를 표시한다', () => {
-      render(
-        <SkinInsightCard
-          skinAnalysis={warningSkin}
-          nutritionGoal="skin_improvement"
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={warningSkin} nutritionGoal="skin_improvement" />);
 
       expect(screen.getByText(/피부 개선 목표/)).toBeInTheDocument();
     });
@@ -194,12 +164,7 @@ describe('SkinInsightCard', () => {
 
   describe('접근성', () => {
     it('progressbar에 올바른 aria 속성이 있다', () => {
-      render(
-        <SkinInsightCard
-          skinAnalysis={normalSkin}
-          currentWaterMl={1500}
-        />
-      );
+      render(<SkinInsightCard skinAnalysis={normalSkin} currentWaterMl={1500} />);
 
       const progressbar = screen.getByRole('progressbar');
       expect(progressbar).toHaveAttribute('aria-valuemin', '0');

@@ -181,9 +181,9 @@ function getWeightChangeMessage(
     case 'slight_loss':
       return `${weekText} 체중 -${absChange}kg 감소했어요. 잘하고 있어요!`;
     case 'significant_gain':
-      return `체중이 +${absChange}kg 증가했어요. 식단 점검이 필요해요.`;
+      return `체중이 +${absChange}kg 증가했어요. 식단 점검을 해보면 좋아요.`;
     case 'slight_gain':
-      return `체중이 +${absChange}kg 증가했어요. 관리가 필요해요.`;
+      return `체중이 +${absChange}kg 증가했어요. 식단 조절에 신경쓰면 좋아요.`;
     case 'stable':
       return '체중이 안정적으로 유지되고 있어요. 👍';
   }

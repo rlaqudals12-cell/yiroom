@@ -72,8 +72,7 @@ const SKIN_FOOD_RECOMMENDATIONS: Record<
     warning: {
       icon: '💧',
       title: '수분 보충 식품',
-      description:
-        '피부 수분이 부족해요! 수분 함량이 높은 음식으로 내부부터 촉촉하게 관리해 보세요.',
+      description: '피부 수분이 낮아요! 수분 함량이 높은 음식으로 내부부터 촉촉하게 가꿔 보세요.',
       foods: ['수박', '오이', '토마토', '딸기', '셀러리', '양상추'],
       priority: 'high',
       relatedMetric: 'hydration',
@@ -91,8 +90,7 @@ const SKIN_FOOD_RECOMMENDATIONS: Record<
     warning: {
       icon: '🥗',
       title: '피지 조절 식품',
-      description:
-        '유분이 많은 피부예요. 저지방 식품과 비타민A가 풍부한 음식이 도움이 됩니다.',
+      description: '유분이 많은 피부예요. 저지방 식품과 비타민A가 풍부한 음식이 도움이 됩니다.',
       foods: ['당근', '시금치', '고구마', '브로콜리', '녹차'],
       priority: 'high',
       relatedMetric: 'oil',
@@ -114,8 +112,7 @@ const SKIN_FOOD_RECOMMENDATIONS: Record<
     warning: {
       icon: '🥚',
       title: '콜라겐 생성 식품',
-      description:
-        '주름 개선을 위해 콜라겐 생성을 돕는 비타민C와 단백질 식품을 섭취해 보세요.',
+      description: '주름 개선을 위해 콜라겐 생성을 돕는 비타민C와 단백질 식품을 섭취해 보세요.',
       foods: ['달걀', '연어', '닭가슴살', '레몬', '키위', '파프리카'],
       priority: 'high',
       relatedMetric: 'wrinkles',
@@ -155,8 +152,7 @@ const SKIN_FOOD_RECOMMENDATIONS: Record<
     warning: {
       icon: '🥦',
       title: '트러블 진정 식품',
-      description:
-        '트러블 완화를 위해 저당 식품과 항염 효과가 있는 음식을 추천해요.',
+      description: '트러블 완화를 위해 저당 식품과 항염 효과가 있는 음식을 추천해요.',
       foods: ['브로콜리', '양배추', '강황', '생강', '녹색 채소', '요거트'],
       priority: 'high',
       relatedMetric: 'trouble',
@@ -176,8 +172,7 @@ const SKIN_FOOD_RECOMMENDATIONS: Record<
 const HYDRATION_TARGETS: Record<MetricStatus, { targetMl: number; message: string }> = {
   warning: {
     targetMl: 2500,
-    message:
-      '피부 수분이 부족해요! 오늘은 물을 2.5L 이상 마시는 것을 목표로 해보세요. 💧',
+    message: '피부 수분이 낮아요! 오늘은 물을 2.5L 이상 마시는 것을 목표로 해보세요. 💧',
   },
   normal: {
     targetMl: 2000,
@@ -261,7 +256,11 @@ export function getSkinNutritionInsight(
     message: hydrationTarget.message,
     targetMl: hydrationTarget.targetMl,
     currentMl: currentWaterMl,
-    priority: selectByKey(hydrationStatus, { warning: 'high' as const, good: 'low' as const }, 'medium' as const)!,
+    priority: selectByKey(
+      hydrationStatus,
+      { warning: 'high' as const, good: 'low' as const },
+      'medium' as const
+    )!,
   };
 
   // 요약 메시지 생성
@@ -269,8 +268,7 @@ export function getSkinNutritionInsight(
   const warningCount = Object.values(skinAnalysis).filter((s) => s === 'warning').length;
 
   if (warningCount >= 3) {
-    summaryMessage =
-      '피부 관리가 필요해요! 추천 식품으로 내부부터 건강하게 케어해 보세요.';
+    summaryMessage = '피부 케어에 신경쓰면 좋아요! 추천 식품으로 내부부터 건강하게 가꿔 보세요.';
   } else if (warningCount >= 1) {
     summaryMessage = '피부 상태에 맞는 음식으로 더 건강한 피부를 만들어 보세요.';
   } else {
@@ -293,9 +291,7 @@ export function getSkinNutritionInsight(
 /**
  * 피부 수분 상태에 따른 수분 섭취 목표 계산
  */
-export function getHydrationTargetFromSkin(
-  skinAnalysis: SkinAnalysisSummary | null
-): number {
+export function getHydrationTargetFromSkin(skinAnalysis: SkinAnalysisSummary | null): number {
   if (!skinAnalysis) {
     return 2000; // 기본값
   }
@@ -320,7 +316,7 @@ export function getSkinHydrationMessage(
 
   if (hydrationStatus === 'warning') {
     if (percentage < 50) {
-      return '피부 수분이 부족해요! 물 마시기 챌린지를 시작해볼까요? 💧';
+      return '피부 수분이 낮아요! 물 마시기 챌린지를 시작해볼까요? 💧';
     }
     if (percentage < 80) {
       return '조금만 더! 피부 수분을 위해 물을 더 마셔주세요.';

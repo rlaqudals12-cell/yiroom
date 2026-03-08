@@ -375,7 +375,7 @@ function generateRecommendations(
     } else if (metrics.cva < CVA_THRESHOLDS.mild) {
       recommendations.push('거북목 교정이 필요해요. 턱당기기 운동을 추천해요.');
     } else {
-      recommendations.push('경추 자세 개선이 필요해요. 스트레칭을 권장해요.');
+      recommendations.push('경추 자세 스트레칭을 추천해요.');
     }
   }
 
