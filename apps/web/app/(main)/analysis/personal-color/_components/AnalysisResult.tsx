@@ -10,6 +10,7 @@ import {
   Brush,
   Tag,
   Droplets,
+  PartyPopper,
 } from 'lucide-react';
 import {
   type PersonalColorResult,
@@ -32,6 +33,36 @@ import {
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getGenderAdaptiveTerm } from '@/lib/content/gender-adaptive';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+
+// 시즌별 핵심 설명 (DetailedEvidenceReport와 동일 소스) — 기본 탭에서 "왜" 설명 제공 (E2 L2 가치)
+const SEASON_WHY: Record<string, { whyThisColor: string; dailyTip: string; celebration: string }> =
+  {
+    spring: {
+      whyThisColor:
+        '따뜻하고 맑은 색상이 피부의 노란 언더톤과 조화를 이루어 밝고 건강한 인상을 줘요.',
+      dailyTip: '코랄·살몬·밝은 베이지 같은 색을 상의에 활용하면 얼굴이 한결 화사해져요.',
+      celebration: '따뜻한 봄빛처럼 생기 넘치는 컬러가 어울리는 당신!',
+    },
+    summer: {
+      whyThisColor:
+        '부드럽고 시원한 파스텔 계열이 피부의 핑크 언더톤과 자연스럽게 어울려 맑고 우아해 보여요.',
+      dailyTip: '라벤더·로즈·스카이블루 톤의 옷이 피부를 투명하고 우아하게 보이게 해줘요.',
+      celebration: '시원한 여름 하늘처럼 맑고 우아한 컬러가 어울리는 당신!',
+    },
+    autumn: {
+      whyThisColor:
+        '깊고 따뜻한 어스 톤이 피부의 황금빛 언더톤과 조화를 이루어 풍성하고 고급스러운 인상을 줘요.',
+      dailyTip:
+        '올리브 그린·캐멀·와인 같은 깊은 톤을 메인 컬러로 활용하면 고급스러운 분위기가 나요.',
+      celebration: '깊고 풍성한 가을빛처럼 고급스러운 컬러가 어울리는 당신!',
+    },
+    winter: {
+      whyThisColor:
+        '선명하고 대비가 강한 색이 피부의 푸른 언더톤과 어우러져 생동감 있고 세련된 인상을 줘요.',
+      dailyTip: '블랙·화이트 대비에 레드나 로열블루를 포인트로 넣으면 세련된 인상을 줄 수 있어요.',
+      celebration: '선명하고 강렬한 겨울빛처럼 세련된 컬러가 어울리는 당신!',
+    },
+  };
 
 // 분석 근거 타입 (AnalysisEvidenceReport와 호환)
 interface AnalysisEvidence {
@@ -98,11 +129,16 @@ export default function AnalysisResult({
 
   return (
     <div className="space-y-6">
-      {/* 퍼스널 컬러 타입 카드 - 메인 결과로 ScaleIn 강조 */}
+      {/* 퍼스널 컬러 타입 카드 - 메인 결과로 ScaleIn 강조 (D5 Delight + D7 감정 유도) */}
       <ScaleIn>
         <section
           className={`rounded-xl border p-6 text-center ${getSeasonLightBgColor(seasonType)} ${getSeasonBorderColor(seasonType)}`}
         >
+          {/* 축하 메시지 — 발견의 순간 (D5 Delight, D7 호기심→발견) */}
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <PartyPopper className={`w-4 h-4 ${getSeasonColor(seasonType)}`} />
+            <p className="text-sm font-medium text-foreground/80">나에게 어울리는 색을 찾았어요!</p>
+          </div>
           <p className="text-sm text-muted-foreground mb-2">당신의 퍼스널 컬러</p>
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className={`text-4xl font-bold ${getSeasonColor(seasonType)}`}>
@@ -110,6 +146,10 @@ export default function AnalysisResult({
             </span>
             <span className="text-3xl">{info.emoji}</span>
           </div>
+          {/* 개인화된 한 줄 요약 — 자신감 유도 (D7 발견→자신감) */}
+          <p className={`text-sm font-medium ${getSeasonColor(seasonType)} mb-1`}>
+            {SEASON_WHY[seasonType]?.celebration}
+          </p>
           <p className="text-muted-foreground">{seasonDescription}</p>
           <p className="mt-2 text-sm text-muted-foreground">{info.characteristics}</p>
           <div className="mt-4 inline-flex items-center gap-1 px-3 py-1 bg-card/70 rounded-full">
@@ -146,6 +186,15 @@ export default function AnalysisResult({
               </div>
             ))}
           </div>
+          {/* "왜 이 색이 어울리는지" 인과 설명 (E2 L2 가치 — 판단력 성장) */}
+          {SEASON_WHY[seasonType] && (
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <Lightbulb className="w-3 h-3 inline-block mr-1 text-amber-500" />
+                {SEASON_WHY[seasonType].whyThisColor}
+              </p>
+            </div>
+          )}
         </section>
       </FadeInUp>
 
@@ -220,11 +269,15 @@ export default function AnalysisResult({
             </div>
           </div>
 
-          {/* 안내 텍스트 */}
-          <p className="text-xs text-muted-foreground mt-4">
-            위의 <span className="font-medium text-foreground">베스트 컬러</span>를 활용하면 피부가
-            더 {isMale ? '깔끔해' : '화사해'} 보여요
-          </p>
+          {/* 오늘 바로 실천할 수 있는 팁 (D9 성장 프레이밍 + E2 L2 가치) */}
+          <div className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 rounded-lg border border-amber-100 dark:border-amber-900/30">
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">
+              오늘 바로 해볼 수 있어요
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400/80 leading-relaxed">
+              {SEASON_WHY[seasonType]?.dailyTip}
+            </p>
+          </div>
         </section>
       </FadeInUp>
 
