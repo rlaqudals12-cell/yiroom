@@ -66,14 +66,15 @@
 - **수정 방법**: 칼로리 셀에 `unit="kcal"` 전달, ActivityCell에서 `{value.toLocaleString()}{unit}` 렌더링
 - **재발 방지**: 숫자 표시 컴포넌트에 unit prop 필수화
 
-### KI-006: 에러 상태에서 console.error만 하고 사용자 피드백 없음
+### KI-006: 에러 상태에서 console.error만 하고 사용자 피드백 없음 — **해결됨**
 
 - **발견 횟수**: 2회 (HomeDailyCapsuleWidget 초기 발견, **/ux-check 홈 대시보드 재발견**)
 - **관련 항목**: C2
-- **발생 화면**: HomeDailyCapsuleWidget (catch 블록)
+- **발생 화면**: HomeDailyCapsuleWidget (catch 블록), HomeActivityBar (catch 블록)
 - **원인**: try-catch에서 에러를 콘솔로만 출력하고 UI 상태를 업데이트하지 않음
-- **수정 방법**: catch 블록에서 `setError(true)` 등으로 에러 상태 UI 표시
+- **수정 방법**: catch 블록에서 `setHasError(true)` + 에러 상태 UI 표시
 - **재발 방지**: 데이터 fetch 패턴에서 에러 상태 변수 + UI 분기를 필수 포함
+- **해결 커밋**: `84174b7b` (HomeActivityBar), `226e3b5f` (HomeDailyCapsuleWidget)
 
 ### KI-007: 홈 화면 정보 블록 7개 초과
 
@@ -96,5 +97,5 @@
 
 ---
 
-**Version**: 1.2 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
+**Version**: 1.3 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조

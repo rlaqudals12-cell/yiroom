@@ -6,17 +6,18 @@
 
 ## 문서 목록
 
-| 날짜       | 제목                                                                                                    | 영향 영역       | 상태       |
-| ---------- | ------------------------------------------------------------------------------------------------------- | --------------- | ---------- |
-| 2026-03-07 | [Clerk Error 1016 — Origin DNS Error](./2026-03-07-clerk-error-1016-origin-dns.md)                      | Clerk 인증, DNS | ⏳ 대기 중 |
-| 2026-03-07 | [Capsule API Slug 충돌 — domain vs id](./2026-03-07-capsule-api-slug-conflict.md)                       | API 라우팅      | ✅ 해결됨  |
-| 2026-03-04 | [캡슐 에코시스템 배포 — GFSA 심사 중 자동 배포 사고 방지](./2026-03-04-capsule-ecosystem-deployment.md) | Vercel 배포, DB | ✅ 해결됨  |
-| 2026-03-03 | [분석 API DB 저장 실패 시 응답 차단](./2026-03-03-analysis-api-db-resilience.md)                        | 분석 API 11개   | ✅ 해결됨  |
-| 2026-02-20 | [Expo Go 에뮬레이터 실행](./2026-02-20-expo-go-emulator-startup.md)                                     | 모바일 개발환경 | ✅ 해결됨  |
-| 2026-02-18 | [Expo Router URL 충돌](./2026-02-18-expo-router-url-collision.md)                                       | 모바일 라우팅   | ✅ 해결됨  |
-| 2026-02-10 | [C-1 갤러리 업로드 버그 + 4각도 확장](./2026-02-10-body-multi-angle-gallery-bug.md)                     | 체형 분석, DB   | ✅ 해결됨  |
-| 2026-02-09 | [레이아웃 깨짐 조사](./2026-02-09-layout-collapse-investigation.md)                                     | 전체 페이지     | ✅ 해결됨  |
-| 2026-02-05 | [퍼스널컬러 분석 UX 이슈](./2026-02-05-personal-color-ux-issues.md)                                     | UI, API         | ✅ 해결됨  |
+| 날짜       | 제목                                                                                                    | 영향 영역         | 상태       |
+| ---------- | ------------------------------------------------------------------------------------------------------- | ----------------- | ---------- |
+| 2026-03-08 | [홈 화면 UX 정제 — 반복 점검 기반 개선](./2026-03-08-home-ux-refinement.md)                             | 홈 UX, 5 컴포넌트 | 해결됨     |
+| 2026-03-07 | [Clerk Error 1016 — Origin DNS Error](./2026-03-07-clerk-error-1016-origin-dns.md)                      | Clerk 인증, DNS   | ⏳ 대기 중 |
+| 2026-03-07 | [Capsule API Slug 충돌 — domain vs id](./2026-03-07-capsule-api-slug-conflict.md)                       | API 라우팅        | ✅ 해결됨  |
+| 2026-03-04 | [캡슐 에코시스템 배포 — GFSA 심사 중 자동 배포 사고 방지](./2026-03-04-capsule-ecosystem-deployment.md) | Vercel 배포, DB   | ✅ 해결됨  |
+| 2026-03-03 | [분석 API DB 저장 실패 시 응답 차단](./2026-03-03-analysis-api-db-resilience.md)                        | 분석 API 11개     | ✅ 해결됨  |
+| 2026-02-20 | [Expo Go 에뮬레이터 실행](./2026-02-20-expo-go-emulator-startup.md)                                     | 모바일 개발환경   | ✅ 해결됨  |
+| 2026-02-18 | [Expo Router URL 충돌](./2026-02-18-expo-router-url-collision.md)                                       | 모바일 라우팅     | ✅ 해결됨  |
+| 2026-02-10 | [C-1 갤러리 업로드 버그 + 4각도 확장](./2026-02-10-body-multi-angle-gallery-bug.md)                     | 체형 분석, DB     | ✅ 해결됨  |
+| 2026-02-09 | [레이아웃 깨짐 조사](./2026-02-09-layout-collapse-investigation.md)                                     | 전체 페이지       | ✅ 해결됨  |
+| 2026-02-05 | [퍼스널컬러 분석 UX 이슈](./2026-02-05-personal-color-ux-issues.md)                                     | UI, API           | ✅ 해결됨  |
 
 ---
 
@@ -32,6 +33,7 @@
 
 ### UI/UX 이슈
 
+- [2026-03-08] 홈 대시보드 UX 정제 — `/ux-check` 반복 점검으로 67% → 97% 개선 (7개 항목 수정)
 - [2026-02-05] 좌/우 사진 카드 크기 및 정렬 문제
 
 ### 모바일 개발 환경 이슈
@@ -103,7 +105,7 @@ YYYY-MM-DD-이슈-제목.md
 
 ---
 
-**Updated**: 2026-03-07
+**Updated**: 2026-03-08
 
 ### 라우팅 충돌 이슈
 
