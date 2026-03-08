@@ -295,6 +295,8 @@ export interface PersonalColorResult {
   styleDescription: StyleDescription; // 연예인 매칭 대체
   insight: string;
   analyzedAt: Date;
+  // 서브톤 표시 (DB undertone 또는 시즌 기반 fallback)
+  undertoneLabel?: string;
   // 초보자 친화 필드 (선택적, 하위 호환)
   easyInsight?: EasyInsight;
 }

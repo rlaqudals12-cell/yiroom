@@ -45,7 +45,7 @@ import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
-import { Shirt } from 'lucide-react';
+import { Camera, Shirt } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 
@@ -99,6 +99,14 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
   const info = SEASON_INFO[seasonType] || SEASON_INFO.spring;
   const { tone, depth } = getSeasonToneDepth(seasonType);
 
+  // 서브톤 라벨 생성: DB undertone 우선, 없으면 시즌 기반 fallback
+  const TONE_LABELS: Record<string, string> = { warm: '웜톤', cool: '쿨톤', neutral: '뉴트럴' };
+  const toneLabel = dbData.undertone
+    ? (TONE_LABELS[dbData.undertone] ?? '뉴트럴')
+    : (TONE_LABELS[tone] ?? '웜톤');
+  const depthLabel = depth === 'light' ? '라이트' : '딥';
+  const undertoneLabel = `${toneLabel} · ${depthLabel}`;
+
   // Hybrid 전략: 표시 데이터는 항상 최신 Mock 사용 (코드 업데이트 시 기존 사용자도 혜택)
   const mockBestColors = BEST_COLORS[seasonType] || [];
   const mockWorstColors = WORST_COLORS[seasonType] || [];
@@ -114,6 +122,7 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     tone,
     depth,
     confidence: dbData.confidence || 85,
+    undertoneLabel,
     // 컬러 데이터: 최신 Mock 사용 (초보자 친화 이름 적용)
     bestColors: mockBestColors,
     worstColors: mockWorstColors,
@@ -350,7 +359,7 @@ export default function PersonalColorResultPage() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted">
-      <div className="max-w-lg mx-auto px-4 py-8">
+      <div className="max-w-lg mx-auto px-4 py-8 pb-36">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="sm" asChild>
@@ -375,21 +384,21 @@ export default function PersonalColorResultPage() {
 
         {/* 낮은 신뢰도 경고 배너 */}
         {result && result.confidence < LOW_CONFIDENCE_THRESHOLD && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-foreground">분석 신뢰도가 낮아요</p>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                   더 정확한 결과를 위해 밝은 자연광 아래에서 다시 촬영해보세요.
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleNewAnalysis}
-                  className="mt-3 border-amber-300 text-amber-700 hover:bg-amber-100"
+                  className="mt-3 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   다시 분석하기
@@ -461,6 +470,7 @@ export default function PersonalColorResultPage() {
                 result={result}
                 onRetry={handleNewAnalysis}
                 evidence={analysisEvidence}
+                onTabChange={setActiveTab}
               />
 
               {/* 다음 분석 추천 */}
@@ -480,46 +490,45 @@ export default function PersonalColorResultPage() {
                 className="mt-8"
               />
 
-              {/* AI 컬러 상담 CTA */}
-              <div className="mt-6 p-4 bg-card rounded-xl border border-border">
-                <ConsultantCTA
-                  category="personalColor"
-                  params={{ season: result.seasonType }}
-                  showQuickQuestions
-                />
-              </div>
-
-              {/* AI 투명성 고지 */}
-              <AITransparencyNotice compact className="mt-8" />
-
-              {/* 액션 버튼 (탭 내부) */}
-              <div className="mt-8 mb-4 space-y-2">
-                <Button
-                  className="w-full"
-                  onClick={() =>
-                    router.push(`/products?season=${result.seasonType}&category=makeup`)
-                  }
-                >
-                  <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
-                </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    다시 분석하기
-                  </Button>
-                  <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-                  <PrintButton title="이룸 퍼스널 컬러 분석 결과" variant="outline" />
-                </div>
-                {/* 소셜 공유 버튼 */}
-                <div className="flex justify-center">
-                  <ShareButtons
-                    content={{
-                      title: `나의 퍼스널 컬러는 ${result?.seasonLabel || ''} 타입!`,
-                      description: '이룸에서 나만의 퍼스널 컬러를 알아보세요',
-                      url: currentUrl,
-                    }}
+              {/* AI 컬러 상담 + 투명성 고지 (접힘 기본) */}
+              <details className="mt-6 bg-card rounded-xl border border-border">
+                <summary className="p-4 cursor-pointer text-sm font-medium text-foreground flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  AI 컬러 상담 받기
+                </summary>
+                <div className="px-4 pb-4">
+                  <ConsultantCTA
+                    category="personalColor"
+                    params={{ season: result.seasonType }}
+                    showQuickQuestions
                   />
+                  <AITransparencyNotice compact className="mt-4" />
                 </div>
+              </details>
+
+              {/* P7: 드레이핑 시뮬레이션 연결 배너 */}
+              <div className="mt-6 mb-4">
+                <button
+                  type="button"
+                  className="w-full p-4 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
+                  onClick={() => {
+                    if (imageUrl) {
+                      setActiveTab('draping');
+                    }
+                  }}
+                  disabled={!imageUrl}
+                >
+                  <Shirt className="w-8 h-8 text-primary flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm">내 사진에 색상 입혀보기</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {imageUrl
+                        ? '드레이핑 탭에서 내 얼굴에 시즌 컬러를 입혀볼 수 있어요'
+                        : '분석 이미지가 없어 이용할 수 없어요. 다시 분석해보세요'}
+                    </p>
+                  </div>
+                  {imageUrl && <span className="text-primary text-sm">→</span>}
+                </button>
               </div>
             </TabsContent>
 
@@ -543,9 +552,13 @@ export default function PersonalColorResultPage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     분석 이미지가 없어 색상을 입혀볼 수 없어요.
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mb-4">
                     다시 분석하면 내 얼굴에 색상을 입혀볼 수 있어요.
                   </p>
+                  <Button onClick={handleNewAnalysis} variant="outline" size="sm">
+                    <Camera className="w-4 h-4 mr-1.5" />
+                    다시 분석하기
+                  </Button>
                 </div>
               )}
             </TabsContent>
@@ -588,10 +601,63 @@ export default function PersonalColorResultPage() {
                   </div>
                 </div>
               </div>
+
+              {/* P2: 상세 탭 하단 CTA */}
+              <div className="mt-6 flex flex-col items-center gap-2 text-sm">
+                <button
+                  type="button"
+                  className="text-primary hover:underline underline-offset-2 cursor-pointer"
+                  onClick={() =>
+                    router.push(`/products?season=${result.seasonType}&category=makeup`)
+                  }
+                >
+                  <Palette className="w-3.5 h-3.5 inline-block mr-1" />
+                  맞춤 제품 보기
+                </button>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer"
+                  onClick={() => setActiveTab('basic')}
+                >
+                  ← 기본 분석 보기
+                </button>
+              </div>
             </TabsContent>
           </Tabs>
         )}
       </div>
+
+      {/* P14: 하단 고정 액션바 */}
+      {result && (
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
+          <div className="max-w-md mx-auto space-y-2">
+            <Button
+              className="w-full"
+              onClick={() => router.push(`/products?season=${result.seasonType}&category=makeup`)}
+            >
+              <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                다시 분석하기
+              </Button>
+              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <PrintButton title="이룸 퍼스널 컬러 분석 결과" variant="outline" />
+            </div>
+            {/* 소셜 공유 버튼 */}
+            <div className="flex justify-center">
+              <ShareButtons
+                content={{
+                  title: `나의 퍼스널 컬러는 ${result?.seasonLabel || ''} 타입!`,
+                  description: '이룸에서 나만의 퍼스널 컬러를 알아보세요',
+                  url: currentUrl,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
