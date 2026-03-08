@@ -18,6 +18,7 @@ import type {
   BodyAnalysisHistoryItem,
   HairAnalysisHistoryItem,
   MakeupAnalysisHistoryItem,
+  PersonalColorHistoryItem,
 } from '@/types/analysis-history';
 
 // 인사이트 생성 함수
@@ -91,6 +92,39 @@ function generateInsights(
     if (changes.damageLevel && changes.damageLevel < -5) {
       insights.push('모발 손상도가 줄었어요!');
     }
+  } else if (type === 'personal-color') {
+    const beforeSeason = (before.season as string) || '';
+    const afterSeason = (after.season as string) || '';
+    const beforeConfidence = (before.confidence as number) || 0;
+    const afterConfidence = (after.confidence as number) || 0;
+
+    if (beforeSeason && afterSeason && beforeSeason !== afterSeason) {
+      insights.push(`퍼스널 컬러 시즌이 ${beforeSeason}에서 ${afterSeason}(으)로 변화했어요! 🌈`);
+      insights.push('시즌 변화에 맞춰 컬러 팔레트를 업데이트해보세요.');
+    } else if (beforeSeason === afterSeason) {
+      insights.push(`${afterSeason} 시즌이 유지되고 있어요. 컬러 일관성이 좋아요! 🎨`);
+    }
+
+    const confidenceChange = afterConfidence - beforeConfidence;
+    if (confidenceChange > 10) {
+      insights.push('분석 신뢰도가 크게 향상되었어요! 촬영 환경이 좋아졌나봐요.');
+    } else if (confidenceChange < -10) {
+      insights.push('신뢰도가 낮아졌어요. 자연광에서 다시 촬영해보세요.');
+    }
+
+    // 베스트 컬러 비교
+    const beforeBest = (before.best_colors as Array<{ hex: string }>) || [];
+    const afterBest = (after.best_colors as Array<{ hex: string }>) || [];
+    if (beforeBest.length > 0 && afterBest.length > 0) {
+      const beforeHexes = new Set(beforeBest.map((c) => c.hex));
+      const afterHexes = new Set(afterBest.map((c) => c.hex));
+      const commonCount = [...afterHexes].filter((h) => beforeHexes.has(h)).length;
+      if (commonCount === afterHexes.size) {
+        insights.push('추천 컬러 팔레트가 동일해요. 안정적인 결과예요.');
+      } else if (commonCount > 0) {
+        insights.push('추천 컬러 일부가 변화했어요. 새로운 팔레트를 확인해보세요.');
+      }
+    }
   } else if (type === 'makeup') {
     insights.push('메이크업 스타일 변화를 확인해보세요! 💄');
   }
@@ -146,14 +180,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing from or to parameter' }, { status: 400 });
     }
 
-    // 퍼스널 컬러는 점수 비교가 의미없으므로 지원하지 않음
-    if (type === 'personal-color') {
-      return NextResponse.json(
-        { error: 'Personal color comparison not supported' },
-        { status: 400 }
-      );
-    }
-
     const supabase = createClerkSupabaseClient();
 
     // 테이블 선택
@@ -196,12 +222,14 @@ export async function GET(request: Request) {
       | SkinAnalysisHistoryItem
       | BodyAnalysisHistoryItem
       | HairAnalysisHistoryItem
-      | MakeupAnalysisHistoryItem;
+      | MakeupAnalysisHistoryItem
+      | PersonalColorHistoryItem;
     let afterItem:
       | SkinAnalysisHistoryItem
       | BodyAnalysisHistoryItem
       | HairAnalysisHistoryItem
-      | MakeupAnalysisHistoryItem;
+      | MakeupAnalysisHistoryItem
+      | PersonalColorHistoryItem;
     let detailChanges: Record<string, number> = {};
 
     if (type === 'skin') {
@@ -341,6 +369,40 @@ export async function GET(request: Request) {
         hairThickness: afterItem.details.hairThickness - beforeItem.details.hairThickness,
         damageLevel: afterItem.details.damageLevel - beforeItem.details.damageLevel,
       };
+    } else if (type === 'personal-color') {
+      // 퍼스널 컬러는 시즌/신뢰도 비교
+      const fromConfidence = fromData.confidence || 0;
+      const toConfidence = toData.confidence || 0;
+
+      beforeItem = {
+        id: fromData.id,
+        date: fromData.created_at,
+        overallScore: fromConfidence,
+        imageUrl: fromData.face_image_url,
+        type: 'personal-color',
+        details: {
+          season: fromData.season || '',
+          undertone: fromData.undertone || '',
+          confidence: fromConfidence,
+        },
+      };
+
+      afterItem = {
+        id: toData.id,
+        date: toData.created_at,
+        overallScore: toConfidence,
+        imageUrl: toData.face_image_url,
+        type: 'personal-color',
+        details: {
+          season: toData.season || '',
+          undertone: toData.undertone || '',
+          confidence: toConfidence,
+        },
+      };
+
+      detailChanges = {
+        confidence: toConfidence - fromConfidence,
+      };
     } else if (type === 'makeup') {
       // makeup은 점수 비교보다는 스타일 변화 확인용
       const fromScore = fromData.overall_score || 75;
@@ -377,11 +439,7 @@ export async function GET(request: Request) {
       // makeup은 점수 변화보다 스타일 변화가 중요
       detailChanges = {};
     } else {
-      // personal-color는 점수 비교가 의미없으므로 지원하지 않음
-      return NextResponse.json(
-        { error: 'Personal color comparison not supported' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Unsupported analysis type' }, { status: 400 });
     }
 
     const overallChange = afterItem.overallScore - beforeItem.overallScore;

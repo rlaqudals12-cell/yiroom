@@ -19,7 +19,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { selectByKey, selectByCondition, getTrendDirection, getTrendColorClass } from '@/lib/utils/conditional-helpers';
+import {
+  selectByKey,
+  selectByCondition,
+  getTrendDirection,
+  getTrendColorClass,
+} from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type {
   AnalysisType,
@@ -97,7 +102,12 @@ function ChangeItem({
         <span
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
-            selectByCondition(change === 0 ? null : isGood, 'text-green-600', 'text-red-600', 'text-muted-foreground')
+            selectByCondition(
+              change === 0 ? null : isGood,
+              'text-green-600',
+              'text-red-600',
+              'text-muted-foreground'
+            )
           )}
         >
           <Icon className="h-3 w-3" aria-hidden="true" />
@@ -180,6 +190,66 @@ function DetailChanges({
     );
   }
 
+  if (type === 'personal-color' && 'details' in before && 'details' in after) {
+    const beforeDetails = (before as { details: Record<string, string | number> }).details;
+    const afterDetails = (after as { details: Record<string, string | number> }).details;
+
+    const seasonLabels: Record<string, string> = {
+      Spring: '봄 웜',
+      Summer: '여름 쿨',
+      Autumn: '가을 웜',
+      Winter: '겨울 쿨',
+    };
+
+    const beforeSeason = String(beforeDetails.season || '');
+    const afterSeason = String(afterDetails.season || '');
+    const seasonChanged = beforeSeason !== afterSeason;
+
+    return (
+      <div data-testid="pc-detail-changes">
+        {/* 시즌 변화 */}
+        <div className="flex items-center justify-between py-2 border-b">
+          <span className="text-sm text-muted-foreground">시즌</span>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'text-sm font-medium px-2 py-0.5 rounded-full',
+                seasonChanged
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                  : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+              )}
+            >
+              {seasonLabels[beforeSeason] || beforeSeason}
+              {seasonChanged && (
+                <>
+                  {' → '}
+                  {seasonLabels[afterSeason] || afterSeason}
+                </>
+              )}
+              {!seasonChanged && ' (유지)'}
+            </span>
+          </div>
+        </div>
+
+        {/* 언더톤 변화 */}
+        <div className="flex items-center justify-between py-2 border-b">
+          <span className="text-sm text-muted-foreground">언더톤</span>
+          <span className="text-sm">
+            {String(beforeDetails.undertone || '-')} → {String(afterDetails.undertone || '-')}
+          </span>
+        </div>
+
+        {/* 신뢰도 변화 */}
+        <ChangeItem
+          label="신뢰도"
+          before={Number(beforeDetails.confidence) || 0}
+          after={Number(afterDetails.confidence) || 0}
+          unit="%"
+        />
+      </div>
+    );
+  }
+
   if (type === 'hair' && 'details' in before && 'details' in after) {
     const beforeDetails = (before as { details: Record<string, number> }).details;
     const afterDetails = (after as { details: Record<string, number> }).details;
@@ -230,8 +300,7 @@ function CompareContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 지원하는 분석 타입 (personal-color 제외)
-  const supportedTypes: AnalysisType[] = ['skin', 'body', 'hair'];
+  const supportedTypes: AnalysisType[] = ['skin', 'body', 'personal-color', 'hair'];
 
   // 비교 데이터 로드
   useEffect(() => {
@@ -372,7 +441,7 @@ function CompareContent() {
           onValueChange={(v) => handleTypeChange(v as AnalysisType)}
           className="w-full"
         >
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
             {supportedTypes.map((type) => (
               <TabsTrigger key={type} value={type}>
                 {TYPE_LABELS[type]}
@@ -407,7 +476,9 @@ function CompareContent() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <TypeIcon className="h-4 w-4" aria-hidden="true" />
-              전체 {TYPE_LABELS[activeType]} 점수
+              {activeType === 'personal-color'
+                ? '퍼스널 컬러 신뢰도'
+                : `전체 ${TYPE_LABELS[activeType]} 점수`}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -439,12 +510,18 @@ function CompareContent() {
         {/* 타임라인 차트 */}
         {timelineData.length > 1 && (
           <TimelineChart
-            title="점수 변화 추이"
+            title={activeType === 'personal-color' ? '신뢰도 변화 추이' : '점수 변화 추이'}
             data={timelineData.reverse()}
-            variant={selectByKey(activeType, { skin: 'skin' as const, body: 'body' as const }, 'hair' as const)!}
+            variant={
+              selectByKey(
+                activeType,
+                { skin: 'skin' as const, body: 'body' as const },
+                'hair' as const
+              )!
+            }
             trend={historyData?.trend || 'stable'}
             height={180}
-            unit="점"
+            unit={activeType === 'personal-color' ? '%' : '점'}
           />
         )}
 
