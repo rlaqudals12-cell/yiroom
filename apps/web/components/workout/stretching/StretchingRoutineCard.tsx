@@ -142,7 +142,9 @@ export function StretchingRoutineCard({
         </Button>
 
         {/* 면책 조항 */}
-        <p className="text-xs text-muted-foreground text-center">통증이 발생하면 즉시 중단하세요</p>
+        <p className="text-xs text-muted-foreground text-center">
+          불편함이 느껴지면 즉시 멈춰주세요
+        </p>
       </CardContent>
     </Card>
   );

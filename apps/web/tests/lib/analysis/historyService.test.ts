@@ -111,7 +111,7 @@ describe('historyService', () => {
       it('generates insight for decline', () => {
         const after = { ...baseAfter, overallScore: 60 };
         const insights = generateCompareInsights('skin', baseBefore, after, {});
-        expect(insights).toContain('피부 상태가 다소 악화되었어요. 관리가 필요해요.');
+        expect(insights).toContain('피부 상태 변화가 있어요. 꾸준한 케어를 추천해요.');
       });
 
       it('generates hydration insight', () => {

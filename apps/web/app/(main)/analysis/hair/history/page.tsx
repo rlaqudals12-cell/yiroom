@@ -89,8 +89,16 @@ export default function HairHistoryPage() {
   };
 
   const TrendIcon = selectByKey(trend, { improving: TrendingUp, declining: TrendingDown }, Minus)!;
-  const trendColor = selectByKey(trend, { improving: 'text-green-600', declining: 'text-red-600' }, 'text-muted-foreground')!;
-  const trendLabel = selectByKey(trend, { improving: '개선되고 있어요', declining: '관리가 필요해요' }, '유지 중이에요')!;
+  const trendColor = selectByKey(
+    trend,
+    { improving: 'text-green-600', declining: 'text-red-600' },
+    'text-muted-foreground'
+  )!;
+  const trendLabel = selectByKey(
+    trend,
+    { improving: '개선되고 있어요', declining: '더 신경쓰면 좋아요' },
+    '유지 중이에요'
+  )!;
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="hair-history-page">

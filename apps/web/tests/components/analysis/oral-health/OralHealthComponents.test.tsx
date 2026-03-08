@@ -268,9 +268,9 @@ describe('GumHealthIndicator', () => {
       expect(screen.getByText('잇몸 건강')).toBeInTheDocument();
     });
 
-    it('관리 방법 섹션이 표시된다', () => {
+    it('케어 방법 섹션이 표시된다', () => {
       render(<GumHealthIndicator result={createMockGumHealthResult()} />);
-      expect(screen.getByText('관리 방법')).toBeInTheDocument();
+      expect(screen.getByText('케어 방법')).toBeInTheDocument();
     });
 
     it('염증 지수 텍스트가 표시된다', () => {
@@ -298,7 +298,7 @@ describe('GumHealthIndicator', () => {
       {
         status: 'moderate_gingivitis',
         label: '중등도 염증',
-        description: '잇몸 염증이 있어요. 관리가 필요해요.',
+        description: '잇몸 염증이 있어요. 케어에 신경쓰면 좋아요.',
       },
       {
         status: 'severe_inflammation',
@@ -345,9 +345,9 @@ describe('GumHealthIndicator', () => {
       expect(screen.getByText('주의 필요')).toBeInTheDocument();
     });
 
-    it('60 이상일 때 관리 필요 표시', () => {
+    it('60 이상일 때 케어 권장 표시', () => {
       render(<GumHealthIndicator result={createMockGumHealthResult({ inflammationScore: 75 })} />);
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('케어 권장')).toBeInTheDocument();
     });
 
     it('경계값: 29일 때 정상 범위', () => {
@@ -365,9 +365,9 @@ describe('GumHealthIndicator', () => {
       expect(screen.getByText('주의 필요')).toBeInTheDocument();
     });
 
-    it('경계값: 60일 때 관리 필요', () => {
+    it('경계값: 60일 때 케어 권장', () => {
       render(<GumHealthIndicator result={createMockGumHealthResult({ inflammationScore: 60 })} />);
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('케어 권장')).toBeInTheDocument();
     });
   });
 
@@ -408,7 +408,7 @@ describe('GumHealthIndicator', () => {
   describe('영향 받은 영역', () => {
     it('영향 받은 영역이 없으면 섹션이 숨겨진다', () => {
       render(<GumHealthIndicator result={createMockGumHealthResult({ affectedAreas: [] })} />);
-      expect(screen.queryByText('주의가 필요한 영역')).not.toBeInTheDocument();
+      expect(screen.queryByText('주목할 영역')).not.toBeInTheDocument();
     });
 
     it('영향 받은 영역이 있으면 표시된다', () => {
@@ -422,7 +422,7 @@ describe('GumHealthIndicator', () => {
           })}
         />
       );
-      expect(screen.getByText('주의가 필요한 영역')).toBeInTheDocument();
+      expect(screen.getByText('주목할 영역')).toBeInTheDocument();
       expect(screen.getByText('윗니 앞쪽')).toBeInTheDocument();
       expect(screen.getByText('아랫니 뒤쪽')).toBeInTheDocument();
     });

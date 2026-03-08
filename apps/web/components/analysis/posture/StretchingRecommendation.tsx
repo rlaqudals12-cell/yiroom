@@ -12,11 +12,11 @@ interface StretchingRecommendationProps {
 function getDifficultyColor(difficulty: 'easy' | 'medium' | 'hard'): string {
   switch (difficulty) {
     case 'easy':
-      return 'bg-green-100 text-green-700';
+      return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
     case 'medium':
-      return 'bg-amber-100 text-amber-700';
+      return 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
     case 'hard':
-      return 'bg-red-100 text-red-700';
+      return 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
   }
 }
 
@@ -47,7 +47,7 @@ function StretchingCard({
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
             <Dumbbell className="w-5 h-5 text-green-600" />
           </div>
           <div>
@@ -103,8 +103,8 @@ export default function StretchingRecommendation({
       </div>
 
       {/* 안내 문구 */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-xs text-blue-700">
+      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+        <p className="text-xs text-blue-700 dark:text-blue-300">
           꾸준한 스트레칭이 자세 교정의 핵심이에요. 매일 10-15분씩 실천해보세요!
         </p>
       </div>

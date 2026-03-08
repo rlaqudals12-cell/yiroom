@@ -82,7 +82,7 @@ describe('PostureResultCard', () => {
 
     it('이상적인 자세일 때 개선 필요 메시지가 표시되지 않는다', () => {
       render(<PostureResultCard {...createDefaultProps()} />);
-      expect(screen.queryByText(/개선이 필요해요/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/개선 기회가 있어요/)).not.toBeInTheDocument();
     });
   });
 
@@ -124,8 +124,8 @@ describe('PostureResultCard', () => {
         },
       });
       render(<PostureResultCard {...props} />);
-      // 3개 항목(warning 2 + alert 1)에서 개선 필요
-      expect(screen.getByText(/3개 항목에서 개선이 필요해요/)).toBeInTheDocument();
+      // 3개 항목(warning 2 + alert 1)에서 개선 기회
+      expect(screen.getByText(/3개 항목에서 개선 기회가 있어요/)).toBeInTheDocument();
     });
 
     it('모든 측정값이 good이면 개선 메시지가 표시되지 않는다 (non-ideal 타입이어도)', () => {
@@ -134,7 +134,7 @@ describe('PostureResultCard', () => {
         // 모든 측정값 good
       });
       render(<PostureResultCard {...props} />);
-      expect(screen.queryByText(/개선이 필요해요/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/개선 기회가 있어요/)).not.toBeInTheDocument();
     });
   });
 
@@ -167,7 +167,7 @@ describe('PostureResultCard', () => {
       expect(screen.getByText('주의')).toBeInTheDocument();
     });
 
-    it('alert 상태는 개선필요 뱃지를 표시한다', () => {
+    it('alert 상태는 개선 권장 뱃지를 표시한다', () => {
       const props = createDefaultProps({
         postureType: 'lordosis' as PostureType,
         sideAnalysis: {
@@ -178,7 +178,7 @@ describe('PostureResultCard', () => {
         },
       });
       render(<PostureResultCard {...props} />);
-      expect(screen.getByText('개선필요')).toBeInTheDocument();
+      expect(screen.getByText('개선 권장')).toBeInTheDocument();
     });
   });
 

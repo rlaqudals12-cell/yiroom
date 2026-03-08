@@ -24,9 +24,17 @@ interface MakeupResultCardProps {
 
 // 언더톤별 스타일
 const UNDERTONE_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
-  warm: { bg: 'bg-amber-50', text: 'text-amber-800', icon: '🌅' },
-  cool: { bg: 'bg-sky-50', text: 'text-sky-800', icon: '❄️' },
-  neutral: { bg: 'bg-gray-50', text: 'text-gray-800', icon: '⚖️' },
+  warm: {
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-800 dark:text-amber-300',
+    icon: '🌅',
+  },
+  cool: { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-800 dark:text-sky-300', icon: '❄️' },
+  neutral: {
+    bg: 'bg-gray-50 dark:bg-gray-900/40',
+    text: 'text-gray-800 dark:text-gray-300',
+    icon: '⚖️',
+  },
 };
 
 // 메이크업 스타일 정보
@@ -73,7 +81,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
     if (result.overallScore >= 80) return { label: '매우 좋음', color: 'text-emerald-600' };
     if (result.overallScore >= 60) return { label: '좋음', color: 'text-blue-600' };
     if (result.overallScore >= 40) return { label: '보통', color: 'text-amber-600' };
-    return { label: '관리 필요', color: 'text-red-600' };
+    return { label: '관리 권장', color: 'text-red-600' };
   }, [result.overallScore]);
 
   return (
@@ -112,7 +120,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
 
       <CardContent className="pt-6">
         {/* 인사이트 */}
-        <div className="p-4 bg-gray-50 rounded-lg mb-6">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-lg mb-6">
           <p className="text-sm leading-relaxed">{result.insight}</p>
         </div>
 
@@ -177,7 +185,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
             <div className="space-y-4">
               {result.makeupTips.map((tipGroup, idx) => (
                 <div key={idx} className="border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-2 font-medium text-sm">
+                  <div className="bg-gray-50 dark:bg-gray-900/40 px-4 py-2 font-medium text-sm">
                     {tipGroup.category}
                   </div>
                   <div className="p-4 space-y-2">
@@ -207,7 +215,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
         {showDetails && result.personalColorConnection && (
           <div className="mt-6 pt-4 border-t">
             <h4 className="text-sm font-medium mb-3">퍼스널컬러 연동</h4>
-            <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
+            <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{result.personalColorConnection.season}</p>
@@ -223,10 +231,14 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
                   }
                 >
                   호환성:{' '}
-                  {selectByKey(result.personalColorConnection.compatibility, {
-                    high: '높음',
-                    medium: '보통',
-                  }, '낮음')}
+                  {selectByKey(
+                    result.personalColorConnection.compatibility,
+                    {
+                      high: '높음',
+                      medium: '보통',
+                    },
+                    '낮음'
+                  )}
                 </Badge>
               </div>
             </div>
@@ -262,7 +274,7 @@ function ColorCategoryCard({ category }: { category: ColorRecommendation }) {
                   aria-label={`${color.name} (${color.hex})`}
                 >
                   <div
-                    className="w-8 h-8 rounded-lg shadow-sm border border-gray-200"
+                    className="w-8 h-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
                     style={{ backgroundColor: color.hex }}
                     aria-hidden="true"
                   />
@@ -309,17 +321,21 @@ function MetricBar({
           <span className="text-sm font-bold">{metric.value}점</span>
           <Badge
             variant="outline"
-            className={mapToClass(metric.status, {
-              good: 'text-emerald-600 border-emerald-200',
-              warning: 'text-red-600 border-red-200',
-            }, 'text-amber-600 border-amber-200')}
+            className={mapToClass(
+              metric.status,
+              {
+                good: 'text-emerald-600 border-emerald-200',
+                warning: 'text-red-600 border-red-200',
+              },
+              'text-amber-600 border-amber-200'
+            )}
           >
             {selectByKey(metric.status, { good: '양호', warning: '주의' }, '보통')}
           </Badge>
         </div>
       </div>
       <div
-        className="h-2 bg-gray-100 rounded-full overflow-hidden"
+        className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
         role="progressbar"
         aria-valuenow={metric.value}
         aria-valuemin={0}

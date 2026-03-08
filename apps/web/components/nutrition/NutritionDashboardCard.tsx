@@ -122,7 +122,7 @@ export default function NutritionDashboardCard({
   // 칼로리 상태 (부족/적정/초과)
   const calorieStatus = useMemo(() => {
     const ratio = current.calories / calculatedTargets.calories;
-    if (ratio < 0.8) return { label: '부족', color: 'text-blue-500', icon: TrendingDown };
+    if (ratio < 0.8) return { label: '낮음', color: 'text-blue-500', icon: TrendingDown };
     if (ratio > 1.1) return { label: '초과', color: 'text-red-500', icon: TrendingUp };
     return { label: '적정', color: 'text-green-500', icon: Target };
   }, [current.calories, calculatedTargets.calories]);
@@ -130,7 +130,7 @@ export default function NutritionDashboardCard({
   // 단백질 상태
   const proteinStatus = useMemo(() => {
     const ratio = current.protein / calculatedTargets.protein;
-    if (ratio < 0.6) return { warning: true, message: '단백질이 부족해요!' };
+    if (ratio < 0.6) return { warning: true, message: '단백질을 더 섭취하면 좋아요!' };
     return { warning: false, message: null };
   }, [current.protein, calculatedTargets.protein]);
 
@@ -228,7 +228,7 @@ export default function NutritionDashboardCard({
 
         {/* 단백질 부족 경고 */}
         {proteinStatus.warning && (
-          <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-lg p-3">
+          <div className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 rounded-lg p-3">
             <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium">{proteinStatus.message}</p>

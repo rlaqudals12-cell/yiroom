@@ -95,7 +95,7 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
 function getDescription(name: string, value: number): string {
   if (value >= 71) return `${name}(이)가 좋은 상태예요`;
   if (value >= 41) return `${name}(이)가 보통 수준이에요`;
-  return `${name} 관리가 필요해요`;
+  return `${name}에 집중하면 좋아요`;
 }
 
 // DB 데이터 → 뷰 데이터 변환

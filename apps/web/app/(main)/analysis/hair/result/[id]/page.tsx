@@ -55,7 +55,7 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
 function getDescription(name: string, value: number): string {
   if (value >= 71) return `${name} 상태가 좋아요`;
   if (value >= 41) return `${name} 상태가 보통이에요`;
-  return `${name} 관리가 필요해요`;
+  return `${name}에 집중하면 좋아요`;
 }
 
 // DB 타입 정의

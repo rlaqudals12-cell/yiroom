@@ -38,7 +38,7 @@ function StatusIcon({ status }: { status: 'good' | 'warning' | 'alert' }) {
 function getStatusLabel(status: 'good' | 'warning' | 'alert'): string {
   if (status === 'good') return '양호';
   if (status === 'warning') return '주의';
-  return '개선 필요';
+  return '개선 권장';
 }
 
 // 측정값 바 컴포넌트
@@ -56,20 +56,28 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-xs px-1.5 py-0.5 rounded ${mapToClass(measurement.status, {
-              good: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-              warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-              alert: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-            }, 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300')}`}
+            className={`text-xs px-1.5 py-0.5 rounded ${mapToClass(
+              measurement.status,
+              {
+                good: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                alert: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+              },
+              'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+            )}`}
           >
             {getStatusLabel(measurement.status)}
           </span>
           <span
-            className={`text-sm font-semibold ${mapToClass(measurement.status, {
-              good: 'text-green-500',
-              warning: 'text-amber-500',
-              alert: 'text-red-500',
-            }, 'text-red-500')}`}
+            className={`text-sm font-semibold ${mapToClass(
+              measurement.status,
+              {
+                good: 'text-green-500',
+                warning: 'text-amber-500',
+                alert: 'text-red-500',
+              },
+              'text-red-500'
+            )}`}
           >
             {measurement.value}
           </span>
@@ -83,11 +91,15 @@ function MeasurementBar({ measurement }: { measurement: PostureMeasurement }) {
 
         {/* 값 표시 바 */}
         <div
-          className={`absolute top-0 h-full transition-all ${mapToClass(measurement.status, {
-            good: 'bg-green-400',
-            warning: 'bg-amber-400',
-            alert: 'bg-red-400',
-          }, 'bg-red-400')}`}
+          className={`absolute top-0 h-full transition-all ${mapToClass(
+            measurement.status,
+            {
+              good: 'bg-green-400',
+              warning: 'bg-amber-400',
+              alert: 'bg-red-400',
+            },
+            'bg-red-400'
+          )}`}
           style={{
             left: isLeft ? `${measurement.value}%` : '50%',
             width: `${deviation}%`,
@@ -113,7 +125,7 @@ function MeasurementLegend() {
         <span className="w-2 h-2 rounded-full bg-amber-400" /> 주의
       </span>
       <span className="flex items-center gap-1">
-        <span className="w-2 h-2 rounded-full bg-red-400" /> 개선 필요
+        <span className="w-2 h-2 rounded-full bg-red-400" /> 개선 권장
       </span>
     </div>
   );
@@ -284,17 +296,26 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
                     <p className="text-xs text-muted-foreground">타깃: {stretch.targetArea}</p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${mapToClass(stretch.difficulty, {
-                      easy: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-                      medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                      hard: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                    }, 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300')}`}
+                    className={`text-xs px-2 py-1 rounded-full ${mapToClass(
+                      stretch.difficulty,
+                      {
+                        easy: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                        medium:
+                          'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                        hard: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                      },
+                      'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                    )}`}
                   >
-                    {selectByKey(stretch.difficulty, {
-                      easy: '쉬움',
-                      medium: '보통',
-                      hard: '어려움',
-                    }, '어려움')}
+                    {selectByKey(
+                      stretch.difficulty,
+                      {
+                        easy: '쉬움',
+                        medium: '보통',
+                        hard: '어려움',
+                      },
+                      '어려움'
+                    )}
                   </span>
                 </div>
                 <p className="text-sm text-foreground/80 mb-2">{stretch.description}</p>

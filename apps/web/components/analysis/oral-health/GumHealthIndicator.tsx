@@ -52,7 +52,7 @@ const STATUS_CONFIG: Record<
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-100 dark:bg-orange-900/40',
     icon: AlertTriangle,
-    description: '잇몸 염증이 있어요. 관리가 필요해요.',
+    description: '잇몸 염증이 있어요. 케어에 신경쓰면 좋아요.',
   },
   severe_inflammation: {
     label: '심한 염증',
@@ -107,10 +107,14 @@ export function GumHealthIndicator({
           indicatorClassName={getProgressColor(result.inflammationScore)}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          {classifyByRange(result.inflammationScore, [
-            { max: 30, result: '정상 범위' },
-            { max: 60, result: '주의 필요' },
-          ], '관리 필요')}
+          {classifyByRange(
+            result.inflammationScore,
+            [
+              { max: 30, result: '정상 범위' },
+              { max: 60, result: '주의 필요' },
+            ],
+            '케어 권장'
+          )}
         </p>
       </div>
 
@@ -133,17 +137,22 @@ export function GumHealthIndicator({
       {/* 영향 받은 영역 */}
       {result.affectedAreas && result.affectedAreas.length > 0 && (
         <div className="mb-4">
-          <p className="mb-2 text-sm font-medium">주의가 필요한 영역</p>
+          <p className="mb-2 text-sm font-medium">주목할 영역</p>
           <div className="flex flex-wrap gap-2">
             {result.affectedAreas.map((area, index) => (
               <span
                 key={index}
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium',
-                  selectByKey(area.severity, {
-                    severe: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                    moderate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-                  }, 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300')
+                  selectByKey(
+                    area.severity,
+                    {
+                      severe: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                      moderate:
+                        'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+                    },
+                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                  )
                 )}
               >
                 {getAreaLabel(area.region)}
@@ -155,7 +164,7 @@ export function GumHealthIndicator({
 
       {/* 추천 사항 */}
       <div>
-        <p className="mb-2 text-sm font-medium">관리 방법</p>
+        <p className="mb-2 text-sm font-medium">케어 방법</p>
         <ul className="space-y-1">
           {result.recommendations.slice(0, compact ? 2 : 4).map((rec, index) => (
             <li key={index} className="flex items-start gap-2 text-sm">

@@ -29,13 +29,41 @@ interface HairResultCardProps {
 
 // 얼굴형별 아이콘/색상 매핑
 const FACE_SHAPE_STYLES: Record<FaceShapeType, { bg: string; text: string; icon: string }> = {
-  oval: { bg: 'bg-emerald-50', text: 'text-emerald-800', icon: '🥚' },
-  round: { bg: 'bg-rose-50', text: 'text-rose-800', icon: '🔵' },
-  square: { bg: 'bg-amber-50', text: 'text-amber-800', icon: '🟧' },
-  heart: { bg: 'bg-pink-50', text: 'text-pink-800', icon: '💗' },
-  oblong: { bg: 'bg-blue-50', text: 'text-blue-800', icon: '📏' },
-  diamond: { bg: 'bg-violet-50', text: 'text-violet-800', icon: '💎' },
-  rectangle: { bg: 'bg-slate-50', text: 'text-slate-800', icon: '🟫' },
+  oval: {
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    text: 'text-emerald-800 dark:text-emerald-300',
+    icon: '🥚',
+  },
+  round: {
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    text: 'text-rose-800 dark:text-rose-300',
+    icon: '🔵',
+  },
+  square: {
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-800 dark:text-amber-300',
+    icon: '🟧',
+  },
+  heart: {
+    bg: 'bg-pink-50 dark:bg-pink-950/30',
+    text: 'text-pink-800 dark:text-pink-300',
+    icon: '💗',
+  },
+  oblong: {
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    text: 'text-blue-800 dark:text-blue-300',
+    icon: '📏',
+  },
+  diamond: {
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    text: 'text-violet-800 dark:text-violet-300',
+    icon: '💎',
+  },
+  rectangle: {
+    bg: 'bg-slate-50 dark:bg-slate-950/30',
+    text: 'text-slate-800 dark:text-slate-300',
+    icon: '🟫',
+  },
 };
 
 // 헤어 길이 라벨
@@ -113,7 +141,7 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
                   <h4 className="text-sm font-medium mb-2">현재 헤어 컬러</h4>
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-lg shadow-sm border border-gray-200"
+                      className="w-12 h-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
                       style={{ backgroundColor: hairColorAnalysis.currentColor.hexColor }}
                     />
                     <div>
@@ -142,7 +170,10 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
           <TabsContent value="care" className="mt-4">
             <div className="space-y-3">
               {careTips.map((tip, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded-lg flex items-start gap-3">
+                <div
+                  key={idx}
+                  className="p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg flex items-start gap-3"
+                >
                   <span className="text-lg">💡</span>
                   <p className="text-sm">{tip}</p>
                 </div>
@@ -219,8 +250,8 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
 
         {/* Fallback 알림 */}
         {result.usedFallback && (
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-800">
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-sm text-amber-800 dark:text-amber-300">
               AI 분석이 지연되어 예측 결과를 표시하고 있어요. 정확한 분석을 위해 재분석을 권장해요.
             </p>
           </div>
@@ -276,7 +307,7 @@ function ColorCard({ color }: { color: HairColorRecommendation }) {
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                className="w-10 h-10 rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform border border-gray-200"
+                className="w-10 h-10 rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform border border-gray-200 dark:border-gray-700"
                 style={{ backgroundColor: color.hexColor }}
               />
             </TooltipTrigger>
@@ -313,7 +344,7 @@ function RatioBar({ label, value, maxValue }: { label: string; value: number; ma
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-muted-foreground w-8">{label}</span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
         <div
           className="h-full bg-primary rounded-full transition-all"
           style={{ width: `${percentage}%` }}

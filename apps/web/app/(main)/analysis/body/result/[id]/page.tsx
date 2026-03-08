@@ -307,7 +307,10 @@ export default function BodyAnalysisResultPage() {
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted">
+              <TabsList
+                className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted"
+                aria-label="체형 분석 결과 탭"
+              >
                 <TabsTrigger
                   value="basic"
                   className="gap-1 text-xs"
@@ -343,7 +346,7 @@ export default function BodyAnalysisResultPage() {
               </TabsList>
 
               {/* 기본 분석 탭 */}
-              <TabsContent value="basic" className="mt-0">
+              <TabsContent value="basic" className="mt-0 pb-60">
                 {/* 비주얼 리포트 카드 */}
                 <VisualReportCard
                   analysisType="body"
@@ -407,18 +410,6 @@ export default function BodyAnalysisResultPage() {
                 <ContextLinkingCard currentModule="body" />
                 <ResultPageInsights currentModule="body" />
 
-                {/* 분석 근거 리포트 (메인 탭에 직접 표시) */}
-                {(analysisEvidence || imageQuality) && (
-                  <BodyAnalysisEvidenceReport
-                    evidence={analysisEvidence}
-                    imageQuality={imageQuality}
-                    bodyType={result.bodyType}
-                    confidence={confidence}
-                    matchedFeatures={matchedFeatures}
-                    className="mt-6"
-                  />
-                )}
-
                 {/* 맞춤 추천 제품 */}
                 <RecommendedProducts
                   analysisType="body"
@@ -435,7 +426,7 @@ export default function BodyAnalysisResultPage() {
                 <AITransparencyNotice compact className="mt-8" />
 
                 {/* AI 코디 상담 CTA */}
-                <div className="mt-6 p-4 bg-card rounded-xl border border-border pb-32">
+                <div className="mt-6 p-4 bg-card rounded-xl border border-border">
                   <ConsultantCTA
                     category="fashion"
                     params={{ bodyType: result.bodyType }}

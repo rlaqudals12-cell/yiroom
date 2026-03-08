@@ -248,7 +248,7 @@ describe('StretchingRoutineCard', () => {
   describe('면책 조항', () => {
     it('안전 경고가 표시된다', () => {
       render(<StretchingRoutineCard {...defaultProps} />);
-      expect(screen.getByText('통증이 발생하면 즉시 중단하세요')).toBeInTheDocument();
+      expect(screen.getByText('불편함이 느껴지면 즉시 멈춰주세요')).toBeInTheDocument();
     });
   });
 });

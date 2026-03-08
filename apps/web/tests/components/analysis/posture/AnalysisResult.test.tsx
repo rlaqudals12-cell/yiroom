@@ -229,10 +229,10 @@ describe('AnalysisResult (자세 분석 결과)', () => {
       expect(warningLabels.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('"개선 필요" 배지가 존재한다', () => {
+    it('"개선 권장" 배지가 존재한다', () => {
       render(<AnalysisResult result={createMockResult()} onRetry={mockOnRetry} />);
 
-      const alertLabels = screen.getAllByText('개선 필요');
+      const alertLabels = screen.getAllByText('개선 권장');
       // headForwardAngle(alert) + Legend 2개
       expect(alertLabels.length).toBeGreaterThanOrEqual(1);
     });

@@ -20,39 +20,42 @@ const INSIGHT_TYPE_STYLES: Record<
 > = {
   balance: {
     icon: <Scale className="w-5 h-5" />,
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
     iconColor: 'text-blue-500',
-    borderColor: 'border-blue-200',
+    borderColor: 'border-blue-200 dark:border-blue-800',
   },
   progress: {
     icon: <TrendingUp className="w-5 h-5" />,
-    bgColor: 'bg-green-50',
+    bgColor: 'bg-green-50 dark:bg-green-950/30',
     iconColor: 'text-green-500',
-    borderColor: 'border-green-200',
+    borderColor: 'border-green-200 dark:border-green-800',
   },
   streak: {
     icon: <Flame className="w-5 h-5" />,
-    bgColor: 'bg-orange-50',
+    bgColor: 'bg-orange-50 dark:bg-orange-950/30',
     iconColor: 'text-orange-500',
-    borderColor: 'border-orange-200',
+    borderColor: 'border-orange-200 dark:border-orange-800',
   },
   comparison: {
     icon: <Users className="w-5 h-5" />,
-    bgColor: 'bg-purple-50',
+    bgColor: 'bg-purple-50 dark:bg-purple-950/30',
     iconColor: 'text-purple-500',
-    borderColor: 'border-purple-200',
+    borderColor: 'border-purple-200 dark:border-purple-800',
   },
   tip: {
     icon: <Lightbulb className="w-5 h-5" />,
-    bgColor: 'bg-yellow-50',
+    bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
     iconColor: 'text-yellow-600',
-    borderColor: 'border-yellow-200',
+    borderColor: 'border-yellow-200 dark:border-yellow-800',
   },
 };
 
 // 우선순위별 라벨 스타일
 const PRIORITY_STYLES: Record<string, { label: string; className: string }> = {
-  high: { label: '중요', className: 'bg-red-100 text-red-700' },
+  high: {
+    label: '중요',
+    className: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  },
   medium: { label: '참고', className: 'bg-muted text-muted-foreground' },
   low: { label: '팁', className: 'bg-muted/50 text-muted-foreground' },
 };
@@ -63,7 +66,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
   return (
     <div
       data-testid="workout-insight-card"
-      className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl p-6 border border-indigo-100"
+      className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800"
     >
       {/* 헤더 */}
       <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-4">
@@ -75,7 +78,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
       {weeklyHighlight && (
         <div className="bg-card/70 rounded-xl p-4 mb-4 border border-indigo-100">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
               <Star className="w-4 h-4 text-indigo-600" />
             </div>
             <div>
@@ -125,13 +128,15 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
                       <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                         {insight.data.trend && (
                           <span
-                            className={`flex items-center gap-1 ${
-                              mapToClass(insight.data.trend, {
+                            className={`flex items-center gap-1 ${mapToClass(
+                              insight.data.trend,
+                              {
                                 up: 'text-green-600',
                                 down: 'text-red-600',
                                 stable: 'text-muted-foreground',
-                              }, 'text-muted-foreground')
-                            }`}
+                              },
+                              'text-muted-foreground'
+                            )}`}
                           >
                             {insight.data.trend === 'up' && '↑'}
                             {insight.data.trend === 'down' && '↓'}

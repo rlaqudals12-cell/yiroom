@@ -211,7 +211,7 @@ function createMockResult(overrides: Partial<MakeupAnalysisResult> = {}): Makeup
         description: '균일한 편',
       },
       { id: 'hydration', label: '수분도', value: 60, status: 'normal', description: '보통 수준' },
-      { id: 'pore', label: '모공 상태', value: 35, status: 'warning', description: '관리 필요' },
+      { id: 'pore', label: '모공 상태', value: 35, status: 'warning', description: '관리 권장' },
     ],
     concerns: ['dark-circles', 'oily-tzone'],
     insight: '웜톤 피부에 아몬드형 눈이 잘 어울려요. 코랄 계열 메이크업을 추천해요.',
@@ -363,7 +363,7 @@ describe('MakeupResultCard', () => {
     it('관리 필요 (0-39)', () => {
       const result = createMockResult({ overallScore: 30 });
       render(<MakeupResultCard result={result} />);
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('관리 권장')).toBeInTheDocument();
     });
 
     it('경계값: 80점은 매우 좋음', () => {
@@ -387,7 +387,7 @@ describe('MakeupResultCard', () => {
     it('경계값: 0점은 관리 필요', () => {
       const result = createMockResult({ overallScore: 0 });
       render(<MakeupResultCard result={result} />);
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('관리 권장')).toBeInTheDocument();
     });
 
     it('경계값: 100점은 매우 좋음', () => {
@@ -721,7 +721,7 @@ describe('MakeupResultCard', () => {
       clickTab('피부 지표');
       expect(screen.getByText('균일한 편')).toBeInTheDocument();
       expect(screen.getByText('보통 수준')).toBeInTheDocument();
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('관리 권장')).toBeInTheDocument();
     });
 
     it('빈 지표 배열이면 지표 항목이 없다', () => {
@@ -973,7 +973,7 @@ describe('MakeupResultCard', () => {
       const result = createMockResult({ overallScore: 0 });
       render(<MakeupResultCard result={result} />);
       expect(screen.getByText('0')).toBeInTheDocument();
-      expect(screen.getByText('관리 필요')).toBeInTheDocument();
+      expect(screen.getByText('관리 권장')).toBeInTheDocument();
     });
 
     it('점수 100점이 정상 렌더링된다', () => {

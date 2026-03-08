@@ -236,8 +236,8 @@ export default function OralHealthResultPage(): React.JSX.Element {
               <h2 className="text-xl font-bold text-foreground">구강건강 점수</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {classifyByRange(assessment.overallScore, [
-                  { max: 60, result: '적극적인 관리가 필요해요' },
-                  { max: 80, result: '괜찮지만 관리가 필요한 부분이 있어요' },
+                  { max: 60, result: '적극적인 케어를 시작하면 좋아요' },
+                  { max: 80, result: '좋은 상태이지만 더 신경쓸 부분이 있어요' },
                   { min: 80, result: '전반적으로 건강한 상태예요' },
                 ])}
               </p>

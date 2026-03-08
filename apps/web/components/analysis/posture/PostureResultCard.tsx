@@ -32,7 +32,7 @@ interface PostureResultCardProps {
 function StatusBadge({ status }: { status: 'good' | 'warning' | 'alert' }) {
   if (status === 'good') {
     return (
-      <span className="flex items-center gap-1 text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+      <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-2 py-0.5 rounded-full">
         <CheckCircle className="w-3 h-3" />
         양호
       </span>
@@ -40,16 +40,16 @@ function StatusBadge({ status }: { status: 'good' | 'warning' | 'alert' }) {
   }
   if (status === 'warning') {
     return (
-      <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+      <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
         <AlertTriangle className="w-3 h-3" />
         주의
       </span>
     );
   }
   return (
-    <span className="flex items-center gap-1 text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+    <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-2 py-0.5 rounded-full">
       <AlertTriangle className="w-3 h-3" />
-      개선필요
+      개선 권장
     </span>
   );
 }
@@ -94,10 +94,10 @@ export default function PostureResultCard({
       data-testid="posture-result-card"
     >
       {/* 헤더 */}
-      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
               <span className="text-2xl">{typeInfo.emoji}</span>
             </div>
             <div>
@@ -120,17 +120,17 @@ export default function PostureResultCard({
       {/* 요약 */}
       <div className="p-4">
         {!isIdeal && issueCount > 0 && (
-          <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs text-amber-700">
+          <div className="mb-3 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-xs text-amber-700 dark:text-amber-300">
               <AlertTriangle className="w-3 h-3 inline mr-1" />
-              {issueCount}개 항목에서 개선이 필요해요
+              {issueCount}개 항목에서 개선 기회가 있어요
             </p>
           </div>
         )}
 
         {isIdeal && (
-          <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-xs text-green-700">
+          <div className="mb-3 p-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+            <p className="text-xs text-green-700 dark:text-green-300">
               <CheckCircle className="w-3 h-3 inline mr-1" />
               전반적으로 좋은 자세를 유지하고 있어요!
             </p>

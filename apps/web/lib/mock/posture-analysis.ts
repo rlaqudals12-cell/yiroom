@@ -110,7 +110,7 @@ export const POSTURE_TYPES: Record<
     description: '머리가 어깨보다 앞으로 나온 자세',
     emoji: '🐢',
     characteristics: ['목이 앞으로 기울어짐', '턱이 앞으로 돌출', '목 뒤 근육 긴장'],
-    riskFactors: ['목 통증', '두통', '어깨 결림', '디스크 위험 증가'],
+    riskFactors: ['목 유연성 강화', '어깨 안정성', '목·어깨 이완'],
     recommendations: ['턱 당기기 운동', '목 스트레칭', '모니터 높이 조절'],
   },
   rounded_shoulders: {
@@ -118,7 +118,7 @@ export const POSTURE_TYPES: Record<
     description: '어깨가 앞으로 말린 자세',
     emoji: '🦐',
     characteristics: ['어깨가 앞으로 말림', '가슴 근육 단축', '등 상부 근육 약화'],
-    riskFactors: ['어깨 통증', '호흡 제한', '자세 불균형'],
+    riskFactors: ['어깨 유연성', '호흡 효율 개선', '자세 균형'],
     recommendations: ['가슴 스트레칭', '로우 운동', '어깨 외회전 강화'],
   },
   swayback: {
@@ -126,7 +126,7 @@ export const POSTURE_TYPES: Record<
     description: '골반이 앞으로 밀리고 등 상부가 뒤로 젖혀진 자세',
     emoji: '📐',
     characteristics: ['골반이 앞으로 밀림', '등 상부가 뒤로 젖혀짐', '무릎 과신전'],
-    riskFactors: ['허리 통증', '고관절 문제', '무릎 부담 증가'],
+    riskFactors: ['허리 지지력 강화', '고관절 가동성', '무릎 안정성'],
     recommendations: ['코어 강화', '고관절 굴곡근 스트레칭', '자세 인식 훈련'],
   },
   flatback: {
@@ -134,7 +134,7 @@ export const POSTURE_TYPES: Record<
     description: '허리의 자연스러운 곡선이 줄어든 자세',
     emoji: '📏',
     characteristics: ['요추 전만 감소', '골반 후방 경사', '허리가 평평해 보임'],
-    riskFactors: ['충격 흡수력 저하', '허리 통증', '디스크 압박 증가'],
+    riskFactors: ['충격 흡수력 강화', '허리 지지력', '척추 쿠션 관리'],
     recommendations: ['요추 전만 운동', '고관절 굴곡근 강화', '브릿지 운동'],
   },
   lordosis: {
@@ -142,7 +142,7 @@ export const POSTURE_TYPES: Record<
     description: '허리가 과도하게 앞으로 휜 자세',
     emoji: '🔄',
     characteristics: ['허리가 과도하게 휨', '복부 돌출', '골반 전방 경사'],
-    riskFactors: ['허리 통증', '근육 불균형', '척추 관절 부담'],
+    riskFactors: ['허리 유연성', '근육 밸런스', '척추 정렬 최적화'],
     recommendations: ['복근 강화', '고관절 굴곡근 스트레칭', '글루트 강화'],
   },
 };
@@ -159,39 +159,39 @@ export const BODY_TYPE_POSTURE_CORRELATION: Record<
   S: {
     tendencies: ['forward_head', 'rounded_shoulders'],
     note: '스트레이트 체형은 상체 근육이 발달하여 어깨가 앞으로 말리기 쉬워요',
-    riskFactors: ['거북목', '어깨 긴장'],
+    riskFactors: ['목 정렬 관리', '어깨 이완'],
   },
   W: {
     tendencies: ['lordosis', 'swayback'],
-    note: '웨이브 체형은 하체에 무게 중심이 있어 골반 전방 경사 경향이 있어요',
-    riskFactors: ['요추 전만', '골반 불균형'],
+    note: '웨이브 체형은 하체에 무게 중심이 있어 골반 정렬에 신경쓰면 좋아요',
+    riskFactors: ['요추 곡선 관리', '골반 밸런스'],
   },
   N: {
     tendencies: ['flatback', 'ideal'],
     note: '내추럴 체형은 골격이 큰 편이라 자세가 비교적 안정적이에요',
-    riskFactors: ['일자 허리 가능성'],
+    riskFactors: ['요추 곡선 유지'],
   },
   // 레거시 8타입 지원
   X: { tendencies: ['ideal'], note: '균형 잡힌 체형으로 자세 유지가 용이해요', riskFactors: [] },
   A: {
     tendencies: ['lordosis'],
-    note: '하체 발달로 골반 경사 주의가 필요해요',
-    riskFactors: ['골반 전방 경사'],
+    note: '하체 발달로 골반 정렬에 신경쓰면 좋아요',
+    riskFactors: ['골반 정렬 관리'],
   },
   V: {
     tendencies: ['rounded_shoulders'],
-    note: '어깨 발달로 라운드 숄더 주의가 필요해요',
-    riskFactors: ['어깨 긴장'],
+    note: '어깨 발달로 어깨 이완에 신경쓰면 좋아요',
+    riskFactors: ['어깨 이완'],
   },
   H: {
     tendencies: ['flatback'],
     note: '직선 체형으로 요추 곡선 유지가 중요해요',
-    riskFactors: ['일자 허리'],
+    riskFactors: ['요추 곡선 유지'],
   },
   O: {
     tendencies: ['lordosis', 'swayback'],
-    note: '복부 무게로 허리 곡선 변화에 주의가 필요해요',
-    riskFactors: ['요추 전만'],
+    note: '복부 무게로 허리 곡선 유지에 신경쓰면 좋아요',
+    riskFactors: ['요추 곡선 관리'],
   },
 };
 
@@ -229,7 +229,7 @@ export const STRETCHING_DATABASE: Record<PostureType, StretchingRecommendation[]
       targetArea: '등 상부',
       duration: '10회 x 2세트',
       frequency: '매일',
-      description: '굳어진 등 상부의 움직임을 개선해요',
+      description: '등 상부의 유연성을 높여요',
       difficulty: 'medium',
     },
   ],
@@ -239,7 +239,7 @@ export const STRETCHING_DATABASE: Record<PostureType, StretchingRecommendation[]
       targetArea: '가슴',
       duration: '30초 x 3회',
       frequency: '하루 2-3회',
-      description: '단축된 가슴 근육을 늘려줘요',
+      description: '가슴 근육의 유연성을 높여줘요',
       difficulty: 'easy',
     },
     {
@@ -247,7 +247,7 @@ export const STRETCHING_DATABASE: Record<PostureType, StretchingRecommendation[]
       targetArea: '등 상부',
       duration: '15회 x 3세트',
       frequency: '주 3-4회',
-      description: '약해진 등 근육을 강화해요',
+      description: '등 근육을 활성화해요',
       difficulty: 'medium',
     },
     {
@@ -273,7 +273,7 @@ export const STRETCHING_DATABASE: Record<PostureType, StretchingRecommendation[]
       targetArea: '고관절 굴곡근',
       duration: '각 60초',
       frequency: '매일',
-      description: '단축된 고관절 굴곡근을 이완해요',
+      description: '고관절 굴곡근의 유연성을 높여요',
       difficulty: 'easy',
     },
     {
@@ -325,7 +325,7 @@ export const STRETCHING_DATABASE: Record<PostureType, StretchingRecommendation[]
       targetArea: '고관절 굴곡근',
       duration: '각 45초',
       frequency: '매일',
-      description: '단축된 장요근을 이완해요',
+      description: '장요근의 유연성을 높여요',
       difficulty: 'easy',
     },
     {
@@ -360,7 +360,7 @@ const INSIGHTS: Record<PostureType, string[]> = {
   ],
   rounded_shoulders: [
     '어깨가 앞으로 말려 있어요. 가슴 스트레칭과 등 운동으로 개선할 수 있어요.',
-    '상체 자세에 주의가 필요해요. 어깨를 뒤로 젖히는 습관과 스트레칭을 병행해보세요.',
+    '상체 자세를 더 좋게 만들 수 있어요. 어깨를 뒤로 젖히는 습관과 스트레칭을 병행해보세요.',
   ],
   swayback: [
     '골반이 앞으로 밀려 있는 스웨이백 자세가 보여요. 코어 강화와 자세 인식이 중요해요.',
@@ -368,11 +368,11 @@ const INSIGHTS: Record<PostureType, string[]> = {
   ],
   flatback: [
     '허리의 자연스러운 곡선이 줄어든 일자 허리예요. 요추 전만을 만들어주는 운동이 필요해요.',
-    '척추의 충격 흡수력이 약해질 수 있어요. 브릿지와 캣카우 운동을 꾸준히 해주세요.',
+    '척추의 충격 흡수력을 높여줄 수 있어요. 브릿지와 캣카우 운동을 꾸준히 해주세요.',
   ],
   lordosis: [
     '허리가 과하게 휘어 있어요. 복근 강화와 고관절 스트레칭으로 교정할 수 있어요.',
-    '골반이 앞으로 기울어져 허리에 부담이 갈 수 있어요. 플랭크와 런지 스트레칭을 추천해요.',
+    '골반 정렬을 잡아주면 허리가 더 편해져요. 플랭크와 런지 스트레칭을 추천해요.',
   ],
 };
 

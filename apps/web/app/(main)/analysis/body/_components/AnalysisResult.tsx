@@ -227,7 +227,7 @@ export default function AnalysisResult({
                 {typeInfo3.celebrities.map((celeb) => (
                   <span
                     key={celeb}
-                    className="px-2 py-1 bg-muted rounded-md text-sm text-foreground/80"
+                    className="min-h-[44px] px-3 py-2 bg-muted rounded-md text-sm text-foreground/80 inline-flex items-center"
                   >
                     {celeb}
                   </span>

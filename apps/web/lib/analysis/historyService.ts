@@ -228,7 +228,7 @@ export function generateCompareInsights(
     } else if (overallChange > 0) {
       insights.push('피부 상태가 조금씩 좋아지고 있어요.');
     } else if (overallChange < -5) {
-      insights.push('피부 상태가 다소 악화되었어요. 관리가 필요해요.');
+      insights.push('피부 상태 변화가 있어요. 꾸준한 케어를 추천해요.');
     }
 
     if (detailChanges.hydration && detailChanges.hydration > 5) {
