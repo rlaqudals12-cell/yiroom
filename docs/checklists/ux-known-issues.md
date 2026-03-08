@@ -143,7 +143,7 @@
 | 13  | FAB 발견성                    | 56px Material Design 표준 FAB, 문제없음                                  |
 | 16  | B3 FAB aria-label             | 6개 모두 aria-label 존재 확인                                            |
 
-### 수정 완료 (8건)
+### 수정 완료 (11건 — 8건 초기 + 3건 Tier 1 개선)
 
 | #   | 파일                     | 수정 내용                                    | 심각도   |
 | --- | ------------------------ | -------------------------------------------- | -------- |
@@ -155,8 +155,15 @@
 | 6   | VisualAnalysisTab.tsx    | 에러 박스 dark: 추가                         | High     |
 | 7   | page.tsx:1027-1033       | 기본 탭 SkinAnalysisEvidenceReport 중복 제거 | High     |
 | 8   | page.tsx:1211            | 주석 "문제 영역" → "관심 영역"               | Low      |
+| 9   | page.tsx:848             | TabsList aria-label 추가 (B7 키보드 접근성)  | Medium   |
+| 10  | page.tsx:1281            | 상담탭 인트로 카드 추가 (H3 밀도 균형)       | Medium   |
+| 11  | page.tsx:215             | getDescription() 내러티브 전환 (E7)          | Medium   |
+
+**커밋**: `6be7c8be`
+**통과율**: 70% → 93% (+23%p, 40/43 통과, 남은 3건 warn은 기획 필요)
+**상세 이력**: [history/2026-03-08-skin-result.md](./history/2026-03-08-skin-result.md)
 
 ---
 
-**Version**: 1.8 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
+**Version**: 1.9 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조
