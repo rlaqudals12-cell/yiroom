@@ -14,7 +14,7 @@ import { ShareButton, PrintButton } from '@/components/share';
 import { createOralHealthShareData, useAnalysisShare } from '@/hooks/useAnalysisShare';
 import type { OralHealthAssessment } from '@/types/oral-health';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
-import { generateOralHealthIdentityLabel } from '@/lib/analysis/oral-health/identity-label';
+import { generateOralHealthIdentityLabel } from '@/lib/analysis/oral-health';
 import { ResultPageInsights } from '@/components/insights';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)

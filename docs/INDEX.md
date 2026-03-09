@@ -146,6 +146,13 @@ P7 워크플로우 순서:
 | [ADR-071](./adr/ADR-071-cross-module-scoring.md)           | CCS 크로스모듈 스코어링  | -                |
 | [ADR-073](./adr/ADR-073-one-button-daily.md)               | 원버튼 Daily Capsule     | habit-formation  |
 
+#### UX/프레이밍 ADR ⭐ NEW
+
+| ADR                                                       | 제목                         | 관련 원리 |
+| --------------------------------------------------------- | ---------------------------- | --------- |
+| [ADR-080](./adr/ADR-080-identity-first-result-framing.md) | Identity-First 결과 프레이밍 | -         |
+| [ADR-081](./adr/ADR-081-ai-framing-principle.md)          | AI 프레이밍 원칙             | -         |
+
 #### 인프라/접근성 ADR
 
 | ADR                                                    | 제목                      | 관련 원리        |
