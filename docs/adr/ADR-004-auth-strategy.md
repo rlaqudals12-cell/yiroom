@@ -15,19 +15,19 @@
 
 ### 물리적 한계
 
-| 한계 | 설명 |
-|------|------|
+| 한계         | 설명               |
+| ------------ | ------------------ |
 | Clerk 의존성 | SaaS 서비스 가용성 |
-| JWT 크기 | 클레임 제한 |
+| JWT 크기     | 클레임 제한        |
 
 ### 100점 기준
 
-| 지표 | 100점 기준 |
-|------|-----------|
-| RLS 커버리지 | 모든 테이블 100% |
-| 인증 방식 | 소셜 5+ (Google, Apple, Kakao 등) |
-| 감사 로그 | 민감 작업 100% 기록 |
-| 권한 테스트 | 수평적 권한 상승 0건 |
+| 지표         | 100점 기준                        |
+| ------------ | --------------------------------- |
+| RLS 커버리지 | 모든 테이블 100%                  |
+| 인증 방식    | 소셜 5+ (Google, Apple, Kakao 등) |
+| 감사 로그    | 민감 작업 100% 기록               |
+| 권한 테스트  | 수평적 권한 상승 0건              |
 
 ### 현재 달성률
 
@@ -35,10 +35,28 @@
 
 ### 의도적 제외
 
-| 제외 항목 | 이유 |
-|----------|------|
-| MFA 강제 | UX 우선 (선택적 제공) |
+| 제외 항목                | 이유                  |
+| ------------------------ | --------------------- |
+| MFA 강제                 | UX 우선 (선택적 제공) |
 | 역할 기반 접근제어(RBAC) | 현재 단일 역할로 충분 |
+
+---
+
+## 소셜 로그인 확장 (2026-03-09)
+
+### 추가된 OAuth 프로바이더
+
+| 프로바이더 | 설정 방식                            | 비고             |
+| ---------- | ------------------------------------ | ---------------- |
+| **카카오** | Clerk Dashboard → Social connections | 한국 사용자 필수 |
+| **네이버** | Clerk Dashboard → Social connections | 한국 사용자 필수 |
+
+### 구현 방식
+
+- Clerk `<SignIn>` / `<SignUp>` 컴포넌트가 Dashboard 설정 기반으로 소셜 버튼 자동 렌더링
+- **코드 변경 최소화**: proxy.ts CSP에 Naver 도메인 추가만 필요
+- Kakao CDN은 공유 기능용으로 CSP에 이미 등록되어 있음
+- Clerk webhook (`user.created`)이 소셜 로그인 후 Supabase users 테이블 자동 동기화
 
 ---
 
@@ -78,19 +96,19 @@
 
 ### Supabase 클라이언트 패턴 (DIP)
 
-| 컨텍스트 | 함수 | 파일 |
-|----------|------|------|
-| Client Component | `useClerkSupabaseClient()` | `lib/supabase/clerk-client.ts` |
-| Server Component/API | `createClerkSupabaseClient()` | `lib/supabase/server.ts` |
-| 관리자 (RLS 우회) | `createServiceRoleClient()` | `lib/supabase/service-role.ts` |
+| 컨텍스트             | 함수                          | 파일                           |
+| -------------------- | ----------------------------- | ------------------------------ |
+| Client Component     | `useClerkSupabaseClient()`    | `lib/supabase/clerk-client.ts` |
+| Server Component/API | `createClerkSupabaseClient()` | `lib/supabase/server.ts`       |
+| 관리자 (RLS 우회)    | `createServiceRoleClient()`   | `lib/supabase/service-role.ts` |
 
 ## 대안 (Alternatives Considered)
 
-| 대안 | 장점 | 단점 | 제외 사유 |
-|------|------|------|----------|
-| NextAuth.js | 무료, 유연성 | 직접 구현 필요 | `HIGH_COMPLEXITY` - 세션 관리 복잡 |
-| Supabase Auth 단독 | 통합 간편 | 소셜 로그인 제한 | `ALT_SUFFICIENT` - Clerk이 더 풍부한 기능 |
-| Firebase Auth | Google 생태계 | Supabase와 이중 관리 | `LOW_ROI` - 불필요한 복잡도 |
+| 대안               | 장점          | 단점                 | 제외 사유                                 |
+| ------------------ | ------------- | -------------------- | ----------------------------------------- |
+| NextAuth.js        | 무료, 유연성  | 직접 구현 필요       | `HIGH_COMPLEXITY` - 세션 관리 복잡        |
+| Supabase Auth 단독 | 통합 간편     | 소셜 로그인 제한     | `ALT_SUFFICIENT` - Clerk이 더 풍부한 기능 |
+| Firebase Auth      | Google 생태계 | Supabase와 이중 관리 | `LOW_ROI` - 불필요한 복잡도               |
 
 ## 결과 (Consequences)
 
@@ -140,9 +158,9 @@ const isPublicRoute = createRouteMatcher([
   '/announcements',
   '/help(.*)',
   '/api/webhooks(.*)',
-  '/terms',              // 법적 필수
-  '/privacy-policy',     // 법적 필수
-  '/age-verification',   // N-1
+  '/terms', // 법적 필수
+  '/privacy-policy', // 법적 필수
+  '/age-verification', // N-1
 ]);
 ```
 
@@ -176,10 +194,12 @@ claude.ai 딥 리서치 요청:
 ## 관련 문서
 
 ### 원리 문서 (과학적 기초)
+
 - [원리: 보안 패턴](../principles/security-patterns.md) - RLS, JWT, 다층 방어
 - [원리: 법적 준수](../principles/legal-compliance.md) - 개인정보보호법, 민감정보
 
 ### 관련 ADR/스펙
+
 - [ADR-022: 연령 인증](./ADR-022-age-verification.md)
 - [ADR-025: 감사 로깅](./ADR-025-audit-logging.md)
 - [Supabase DB Rules](../../.claude/rules/supabase-db.md)

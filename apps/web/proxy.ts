@@ -37,22 +37,22 @@ function generateCSP(isDev: boolean): string {
   const directives = [
     // 기본 소스
     "default-src 'self'",
-    // 스크립트 소스 (Clerk, Kakao SDK, Vercel Analytics 포함)
+    // 스크립트 소스 (Clerk, Kakao SDK, Naver OAuth, Tawk.to, Vercel Analytics)
     isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://va.vercel-scripts.com"
-      : "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://va.vercel-scripts.com",
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://*.naver.com https://static.nid.naver.com https://embed.tawk.to https://va.vercel-scripts.com"
+      : "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.yiroom.app https://*.kakaocdn.net https://*.naver.com https://static.nid.naver.com https://embed.tawk.to https://va.vercel-scripts.com",
     // 스타일 소스 (inline style 허용 - Tailwind)
     "style-src 'self' 'unsafe-inline'",
-    // 이미지 소스
-    "img-src 'self' data: blob: https://*.supabase.co https://*.clerk.accounts.dev https://img.clerk.com https:",
-    // 폰트 소스
-    "font-src 'self'",
-    // 연결 소스 (API, Supabase, Clerk, Gemini, Sentry)
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.dev https://clerk-telemetry.com https://*.google.com https://*.googleapis.com https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://*.sentry.io",
+    // 이미지 소스 (Naver 프로필, Tawk.to 포함)
+    "img-src 'self' data: blob: https://*.supabase.co https://*.clerk.accounts.dev https://img.clerk.com https://*.naver.net https://*.tawk.to https:",
+    // 폰트 소스 (Tawk.to 포함)
+    "font-src 'self' https://*.tawk.to",
+    // 연결 소스 (API, Supabase, Clerk, Gemini, Naver OAuth, Tawk.to, Sentry)
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.dev https://clerk-telemetry.com https://*.google.com https://*.googleapis.com https://generativelanguage.googleapis.com https://nid.naver.com https://openapi.naver.com https://*.tawk.to wss://*.tawk.to https://va.vercel-scripts.com https://*.sentry.io",
     // Worker 소스 (Clerk에서 blob workers 사용)
     "worker-src 'self' blob:",
-    // 프레임 소스 (Clerk, Cloudflare Turnstile)
-    "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+    // 프레임 소스 (Clerk, Cloudflare Turnstile, Naver OAuth, Tawk.to)
+    "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com https://nid.naver.com https://tawk.to",
     // 프레임 조상 (클릭재킹 방지)
     "frame-ancestors 'none'",
     // 폼 액션
