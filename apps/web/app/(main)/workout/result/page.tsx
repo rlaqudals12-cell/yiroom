@@ -49,10 +49,11 @@ const RecommendedExerciseList = dynamic(
 import type { SkinAnalysisSummary, WorkoutType } from '@/lib/workout';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
 import { Exercise, BodyType } from '@/types/workout';
-import { Dumbbell, Calendar } from 'lucide-react';
+import { Dumbbell, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
+import { AITransparencyNotice } from '@/components/common/AIBadge';
 const ConsultantCTA = dynamic(
   () => import('@/components/coach/ConsultantCTA').then((mod) => ({ default: mod.ConsultantCTA })),
   { ssr: false }
@@ -77,6 +78,21 @@ export default function ResultPage() {
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
   const [skinAnalysis, setSkinAnalysis] = useState<SkinAnalysisSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Zustand persist 하이드레이션 대기
+  useEffect(() => {
+    const unsub = useWorkoutInputStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+    });
+    // 이미 하이드레이션이 완료된 경우
+    if (useWorkoutInputStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+    }
+    return () => {
+      unsub();
+    };
+  }, []);
 
   // Server Action을 통해 분석 결과를 DB에 저장하는 함수
   const saveAnalysisToDatabase = useCallback(
@@ -109,8 +125,8 @@ export default function ResultPage() {
   );
 
   useEffect(() => {
-    // 사용자 로드 대기
-    if (!isUserLoaded) {
+    // 사용자 로드 + Zustand 하이드레이션 대기
+    if (!isUserLoaded || !isHydrated) {
       return;
     }
 
@@ -193,7 +209,7 @@ export default function ResultPage() {
     }, 2000); // 2초 로딩 (UX용)
 
     return () => clearTimeout(analyzeTimer);
-  }, [getInputData, isUserLoaded, saveAnalysisToDatabase, supabase]);
+  }, [getInputData, isUserLoaded, isHydrated, saveAnalysisToDatabase, supabase]);
 
   // 다시 시작
   const handleRestart = () => {
@@ -214,7 +230,10 @@ export default function ResultPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <AnalyzingLoader title="AI가 분석 중이에요" subtitle="당신에게 맞는 운동을 찾고 있어요..." />
+      <AnalyzingLoader
+        title="맞춤 운동을 찾고 있어요"
+        subtitle="체형과 목표에 맞는 운동을 분석하고 있어요..."
+      />
     );
   }
 
@@ -253,59 +272,23 @@ export default function ResultPage() {
         </FadeInUp>
 
         {/* PC-1 연동: 운동복 스타일 가이드 */}
-        {personalColor && (
+        {personalColor ? (
           <FadeInUp delay={3}>
             <WorkoutStyleCard personalColor={personalColor} bodyType={bodyType} />
           </FadeInUp>
-        )}
-
-        {/* S-1 연동: 운동 후 피부 관리 팁 */}
-        {result && (
-          <FadeInUp delay={4}>
-            <PostWorkoutSkinCareCard
-              workoutType={result.type}
-              durationMinutes={durationMinutes}
-              skinAnalysis={skinAnalysis}
-            />
+        ) : (
+          <FadeInUp delay={3}>
+            <div className="bg-card border-border/50 rounded-2xl border p-5 shadow-sm">
+              <p className="text-sm font-medium text-foreground mb-1">운동복 스타일 가이드</p>
+              <p className="text-sm text-muted-foreground">
+                퍼스널 컬러 진단을 받으면 나에게 어울리는 운동복 색상을 추천받을 수 있어요.
+              </p>
+            </div>
           </FadeInUp>
         )}
-
-        {/* N-1 연동 준비: 운동 후 영양 가이드 */}
-        {result && (
-          <FadeInUp delay={5}>
-            <PostWorkoutNutritionCard
-              workoutType={result.type as WorkoutType}
-              durationMinutes={durationMinutes}
-            />
-          </FadeInUp>
-        )}
-
-        {/* 운동 기구 추천 */}
-        <FadeInUp delay={6}>
-          <RecommendedEquipmentCard
-            skillLevel="beginner"
-            useLocation={selectByKey(location, { gym: 'gym' as const, outdoor: 'outdoor' as const }, 'home' as const)!}
-          />
-        </FadeInUp>
-
-        {/* 영양제 추천 */}
-        <FadeInUp delay={7}>
-          <RecommendedSupplementCard workoutGoals={goals} concerns={concerns} />
-        </FadeInUp>
-
-        {/* AI 운동 상담 CTA */}
-        <FadeInUp delay={8}>
-          <div className="p-4 bg-card rounded-xl border border-border">
-            <ConsultantCTA
-              category="workout"
-              params={{ goal: goals[0] || '' }}
-              showQuickQuestions
-            />
-          </div>
-        </FadeInUp>
 
         {/* 추천 운동 섹션 */}
-        <FadeInUp delay={9}>
+        <FadeInUp delay={6}>
           <div className="bg-card border-border/50 rounded-2xl border p-6 shadow-sm">
             <h3 className="text-foreground mb-4 text-lg font-bold">추천 운동</h3>
             {exercises.length > 0 ? (
@@ -325,12 +308,12 @@ export default function ResultPage() {
         </FadeInUp>
 
         {/* 액션 버튼 */}
-        <FadeInUp delay={10}>
+        <FadeInUp delay={7}>
           <div className="space-y-3">
             <button
               onClick={handleViewPlan}
               aria-label="주간 운동 플랜 보기"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 py-4 font-medium text-white transition-colors hover:bg-indigo-600"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 dark:bg-indigo-600 py-4 font-medium text-white transition-colors hover:bg-indigo-600 dark:hover:bg-indigo-700"
             >
               <Calendar className="h-5 w-5" />
               주간 플랜 보기
@@ -338,12 +321,39 @@ export default function ResultPage() {
             <button
               onClick={handleStartWorkout}
               aria-label="바로 운동 시작하기"
-              className="bg-card flex w-full items-center justify-center gap-2 rounded-xl border-2 border-indigo-500 py-4 font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+              className="bg-card flex w-full items-center justify-center gap-2 rounded-xl border-2 border-indigo-500 py-4 font-medium text-indigo-600 dark:text-indigo-400 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
             >
               <Dumbbell className="h-5 w-5" />
               바로 운동 시작
             </button>
           </div>
+        </FadeInUp>
+
+        {/* 더 알아보기 — 접이식 보조 카드 그룹 (F1/F3 해결) */}
+        <DetailCardsSection
+          result={result}
+          durationMinutes={durationMinutes}
+          skinAnalysis={skinAnalysis}
+          location={location}
+          goals={goals}
+          concerns={concerns}
+          selectByKey={selectByKey}
+        />
+
+        {/* AI 운동 상담 CTA */}
+        <FadeInUp delay={8}>
+          <div className="p-4 bg-card rounded-xl border border-border">
+            <ConsultantCTA
+              category="workout"
+              params={{ goal: goals[0] || '' }}
+              showQuickQuestions
+            />
+          </div>
+        </FadeInUp>
+
+        {/* AI 기술 사용 안내 (K1/K2) */}
+        <FadeInUp delay={9}>
+          <AITransparencyNotice compact />
         </FadeInUp>
 
         {/* 다시 분석하기 */}
@@ -364,5 +374,86 @@ export default function ResultPage() {
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * 접이식 보조 카드 섹션 — 피부 관리, 영양 가이드, 운동 기구, 영양제
+ * F1(정보 밀도 ≤7) + F3(스크롤 깊이) 해결
+ */
+function DetailCardsSection({
+  result,
+  durationMinutes,
+  skinAnalysis,
+  location,
+  goals,
+  concerns,
+  selectByKey: selectByKeyFn,
+}: {
+  result: WorkoutTypeResult;
+  durationMinutes: number;
+  skinAnalysis: SkinAnalysisSummary | null;
+  location: 'home' | 'gym' | 'outdoor';
+  goals: string[];
+  concerns: string[];
+  selectByKey: typeof selectByKey;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <FadeInUp delay={8}>
+      <div className="bg-card border-border/50 rounded-2xl border shadow-sm overflow-hidden">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          aria-expanded={isExpanded}
+          aria-label={isExpanded ? '상세 가이드 접기' : '상세 가이드 펼치기'}
+        >
+          <div className="text-left">
+            <p className="font-medium text-foreground">운동 후 관리 & 추천 제품</p>
+            <p className="text-sm text-muted-foreground">
+              피부 관리, 영양 가이드, 운동 기구, 영양제
+            </p>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          )}
+        </button>
+
+        {isExpanded && (
+          <div className="px-5 pb-5 space-y-4 border-t border-border/50 pt-4">
+            {/* S-1 연동: 운동 후 피부 관리 팁 */}
+            <PostWorkoutSkinCareCard
+              workoutType={result.type}
+              durationMinutes={durationMinutes}
+              skinAnalysis={skinAnalysis}
+            />
+
+            {/* N-1 연동: 운동 후 영양 가이드 */}
+            <PostWorkoutNutritionCard
+              workoutType={result.type as WorkoutType}
+              durationMinutes={durationMinutes}
+            />
+
+            {/* 운동 기구 추천 */}
+            <RecommendedEquipmentCard
+              skillLevel="beginner"
+              useLocation={
+                selectByKeyFn(
+                  location,
+                  { gym: 'gym' as const, outdoor: 'outdoor' as const },
+                  'home' as const
+                )!
+              }
+            />
+
+            {/* 영양제 추천 */}
+            <RecommendedSupplementCard workoutGoals={goals} concerns={concerns} />
+          </div>
+        )}
+      </div>
+    </FadeInUp>
   );
 }

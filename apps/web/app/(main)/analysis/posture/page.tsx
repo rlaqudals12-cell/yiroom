@@ -39,7 +39,7 @@ function formatDate(date: Date): string {
 // 자세 타입 라벨 헬퍼
 function getPostureTypeLabel(postureType: string): string {
   const info = POSTURE_TYPES[postureType as PostureType];
-  return info?.label || postureType;
+  return info?.label || '알 수 없음';
 }
 
 // 기존 분석 결과 타입
@@ -303,7 +303,7 @@ export default function PostureAnalysisPage() {
 
       {/* 공유 버튼 - 결과 화면에서만 하단 고정 */}
       {step === 'result' && result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto">
             <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>

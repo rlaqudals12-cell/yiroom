@@ -96,6 +96,20 @@ function SessionPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Zustand persist 하이드레이션 대기
+  useEffect(() => {
+    const unsub = useWorkoutInputStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+    });
+    if (useWorkoutInputStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+    }
+    return () => {
+      unsub();
+    };
+  }, []);
 
   // P3-5.2: 운동 타입 (영양 추천용)
   const [workoutType, setWorkoutType] = useState<WorkoutType>('builder');
@@ -114,6 +128,8 @@ function SessionPageContent() {
 
   // 세션 초기화
   useEffect(() => {
+    if (!isHydrated) return;
+
     const inputData = getInputData();
 
     // 유효성 검증
@@ -152,7 +168,7 @@ function SessionPageContent() {
     setWorkoutType(typeResult.type); // P3-5.2: 영양 추천용
     initSession(weeklyPlan.id, targetDay, userId, typeResult.type);
     setIsLoading(false);
-  }, [getInputData, dayParam, initSession, user?.id]);
+  }, [getInputData, dayParam, initSession, user?.id, isHydrated]);
 
   // 경과 시간 추적
   useEffect(() => {
@@ -340,7 +356,7 @@ function SessionPageContent() {
       <>
         {saveError && (
           <div
-            className="fixed top-4 left-4 right-4 z-[60] bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between"
+            className="fixed top-4 left-4 right-4 z-[60] bg-red-500 dark:bg-red-600 text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between"
             role="alert"
             data-testid="save-error-alert"
           >
@@ -412,7 +428,7 @@ function SessionPageContent() {
             </p>
             <button
               onClick={startSession}
-              className="w-full py-4 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-colors"
+              className="w-full py-4 bg-indigo-500 dark:bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors"
             >
               운동 시작하기
             </button>
@@ -461,14 +477,14 @@ function SessionPageContent() {
               {currentExerciseIndex < exerciseRecords.length - 1 ? (
                 <button
                   onClick={moveToNextExercise}
-                  className="w-full py-4 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-colors"
+                  className="w-full py-4 bg-indigo-500 dark:bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors"
                 >
                   다음 운동으로
                 </button>
               ) : (
                 <button
                   onClick={endSession}
-                  className="w-full py-4 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors"
+                  className="w-full py-4 bg-green-500 dark:bg-green-600 text-white font-bold rounded-xl hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
                 >
                   운동 완료하기
                 </button>
@@ -500,7 +516,7 @@ function SessionPageContent() {
               </button>
               <button
                 onClick={handleExit}
-                className="flex-1 py-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors"
+                className="flex-1 py-3 bg-red-500 dark:bg-red-600 text-white font-medium rounded-xl hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
               >
                 종료하기
               </button>

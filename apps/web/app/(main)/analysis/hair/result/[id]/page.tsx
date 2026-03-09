@@ -11,7 +11,7 @@ import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare'
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { AIBadge } from '@/components/common/AIBadge';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { ResultPageInsights } from '@/components/insights';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 
@@ -51,11 +51,11 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
   return 'warning';
 }
 
-// 점수에 따른 설명 생성
+// 점수에 따른 설명 생성 (인과 연결 포함)
 function getDescription(name: string, value: number): string {
-  if (value >= 71) return `${name} 상태가 좋아요`;
-  if (value >= 41) return `${name} 상태가 보통이에요`;
-  return `${name}에 집중하면 좋아요`;
+  if (value >= 71) return `${name} 상태가 좋아서 현재 루틴을 유지하면 돼요`;
+  if (value >= 41) return `${name} 상태가 보통이라 조금만 관리하면 더 좋아질 수 있어요`;
+  return `${name} 수치가 낮은 편이라 집중 케어하면 개선될 수 있어요`;
 }
 
 // DB 타입 정의
@@ -105,6 +105,7 @@ interface HairAnalysisResultView {
   insight: string;
   recommendedIngredients: string[];
   careTips: string[];
+  analysisReliability: 'high' | 'medium' | 'low';
   analyzedAt: Date;
 }
 
@@ -118,12 +119,11 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
     description: getDescription(name, value ?? 50),
   });
 
-  const hairTypeLabel =
-    HAIR_TYPES.find((t) => t.id === dbData.hair_type)?.label || dbData.hair_type;
+  // A1: 영어 raw value 노출 방지 — fallback은 한글 기본값
+  const hairTypeLabel = HAIR_TYPES.find((t) => t.id === dbData.hair_type)?.label || '알 수 없음';
   const hairThicknessLabel =
-    HAIR_THICKNESS.find((t) => t.id === dbData.hair_thickness)?.label || dbData.hair_thickness;
-  const scalpTypeLabel =
-    SCALP_TYPES.find((t) => t.id === dbData.scalp_type)?.label || dbData.scalp_type;
+    HAIR_THICKNESS.find((t) => t.id === dbData.hair_thickness)?.label || '알 수 없음';
+  const scalpTypeLabel = SCALP_TYPES.find((t) => t.id === dbData.scalp_type)?.label || '알 수 없음';
 
   return {
     overallScore: dbData.overall_score,
@@ -145,6 +145,7 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
     insight: dbData.recommendations?.insight || '더 나은 헤어 케어를 위한 팁을 확인해보세요',
     recommendedIngredients: dbData.recommendations?.ingredients || [],
     careTips: dbData.recommendations?.careTips || [],
+    analysisReliability: dbData.recommendations?.analysisReliability || 'medium',
     analyzedAt: new Date(dbData.created_at),
   };
 }
@@ -328,7 +329,19 @@ export default function HairAnalysisResultPage() {
             </Button>
             <div className="flex flex-col items-center gap-1">
               <h1 className="text-lg font-bold text-foreground">헤어 분석 결과</h1>
-              <AIBadge variant="small" />
+              <div className="flex items-center gap-2">
+                <AIBadge variant="small" />
+                {result && (
+                  <span className="text-xs text-muted-foreground">
+                    신뢰도{' '}
+                    {result.analysisReliability === 'high'
+                      ? '높음'
+                      : result.analysisReliability === 'medium'
+                        ? '보통'
+                        : '낮음'}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="w-16" />
           </header>
@@ -341,9 +354,9 @@ export default function HairAnalysisResultPage() {
                   <Sparkles className="w-4 h-4" aria-hidden="true" />
                   기본 분석
                 </TabsTrigger>
-                <TabsTrigger value="details" className="gap-1" aria-label="상세 분석 정보 보기">
+                <TabsTrigger value="details" className="gap-1" aria-label="케어 가이드 보기">
                   <ClipboardList className="w-4 h-4" aria-hidden="true" />
-                  상세 정보
+                  케어 가이드
                 </TabsTrigger>
               </TabsList>
 
@@ -398,6 +411,7 @@ export default function HairAnalysisResultPage() {
                             style={{ width: `${metric.value}%` }}
                           />
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
                       </div>
                     ))}
                   </div>
@@ -412,7 +426,7 @@ export default function HairAnalysisResultPage() {
                         const concernData = HAIR_CONCERNS.find((c) => c.id === concern);
                         return (
                           <Badge key={concern} variant="secondary" className="text-sm">
-                            {concernData?.emoji} {concernData?.label || concern}
+                            {concernData?.emoji} {concernData?.label || '기타'}
                           </Badge>
                         );
                       })}
@@ -421,8 +435,28 @@ export default function HairAnalysisResultPage() {
                 )}
               </TabsContent>
 
-              {/* 상세 정보 탭 */}
-              <TabsContent value="details" className="mt-0 space-y-6 pb-32">
+              {/* 케어 가이드 탭 */}
+              <TabsContent value="details" className="mt-0 space-y-6">
+                {/* 콘텐츠 없는 경우 안내 */}
+                {result.recommendedIngredients.length === 0 &&
+                  result.careTips.length === 0 &&
+                  !imageUrl && (
+                    <div className="bg-card rounded-xl p-8 shadow-sm text-center">
+                      <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-3">
+                        <ClipboardList
+                          className="w-6 h-6 text-amber-600 dark:text-amber-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        케어 가이드 정보가 아직 준비되지 않았어요
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        다시 분석하면 더 상세한 케어 팁을 받을 수 있어요
+                      </p>
+                    </div>
+                  )}
+
                 {/* 추천 케어 성분 */}
                 {result.recommendedIngredients.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
@@ -489,18 +523,13 @@ export default function HairAnalysisResultPage() {
               className="mt-6"
             />
           )}
-
-          {/* 다음 분석 추천 */}
-          <ContextLinkingCard currentModule="hair" />
-          <ResultPageInsights currentModule="hair" />
         </div>
       </div>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
-            {/* 제품 추천 버튼 */}
             <Button
               className="w-full"
               onClick={() =>
@@ -511,7 +540,6 @@ export default function HairAnalysisResultPage() {
               <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
               헤어 맞춤 제품 보기
             </Button>
-            {/* 다시 분석하기 + 공유 */}
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -528,6 +556,16 @@ export default function HairAnalysisResultPage() {
           </div>
         </div>
       )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      <div className="max-w-lg mx-auto px-4 pb-8">
+        <AITransparencyNotice compact className="mt-6" />
+        <p className="text-xs text-muted-foreground text-center mt-4 px-2">
+          분석 결과는 참고용이며, 전문가 진단을 대체하지 않아요
+        </p>
+        <ContextLinkingCard currentModule="hair" />
+        <ResultPageInsights currentModule="hair" />
+      </div>
     </>
   );
 }

@@ -26,19 +26,26 @@ const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
 
 // 목표별 칼로리 조정 (TDEE 대비)
 const GOAL_CALORIE_ADJUSTMENT: Record<NutritionGoal, number> = {
-  weight_loss: -500,  // 500kcal 적자 (주당 ~0.5kg 감량)
+  weight_loss: -500, // 500kcal 적자 (주당 ~0.5kg 감량)
   maintain: 0,
-  muscle: 300,        // 300kcal 잉여 (근육 성장용)
-  skin: 0,            // 유지 + 영양소 중심
-  health: 0,          // 유지
+  muscle: 300, // 300kcal 잉여 (근육 성장용)
+  skin: 0, // 유지 + 영양소 중심
+  health: 0, // 유지
 };
 
 /**
  * 생년월일로 나이 계산
+ * NaN/Invalid Date 방어 + 최소 나이 14세 검증 (SDD-N-1-AGE-VERIFICATION)
  */
 export function calculateAge(birthDate: string): number {
+  if (!birthDate) return 0;
+
   const today = new Date();
   const birth = new Date(birthDate);
+
+  // Invalid Date 방어
+  if (isNaN(birth.getTime())) return 0;
+
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
 
@@ -58,14 +65,9 @@ export function calculateAge(birthDate: string): number {
  * @param age - 나이 (years)
  * @returns BMR (kcal/day)
  */
-export function calculateBMR(
-  gender: Gender,
-  weight: number,
-  height: number,
-  age: number
-): number {
-  // 유효성 검사
-  if (weight <= 0 || height <= 0 || age <= 0) {
+export function calculateBMR(gender: Gender, weight: number, height: number, age: number): number {
+  // 유효성 검사 (NaN 방어 포함)
+  if (!weight || !height || !age || weight <= 0 || height <= 0 || age <= 0) {
     return 0;
   }
 
@@ -73,11 +75,15 @@ export function calculateBMR(
 
   if (gender === 'male') {
     // 남성: 88.362 + (13.397 × 체중) + (4.799 × 키) - (5.677 × 나이)
-    bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    bmr = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
   } else {
     // 여성: 447.593 + (9.247 × 체중) + (3.098 × 키) - (4.330 × 나이)
-    bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    bmr = 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
   }
+
+  // 한국인 체질 보정 계수 (리서치 N-1-R1 기반, 서양인 대비 5-7% 낮음)
+  const koreanAdjustment = gender === 'male' ? 0.95 : 0.93;
+  bmr *= koreanAdjustment;
 
   // 반올림하여 정수 반환
   return Math.round(bmr);
@@ -91,7 +97,7 @@ export function calculateBMR(
  * @returns TDEE (kcal/day)
  */
 export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number {
-  if (bmr <= 0) {
+  if (!bmr || bmr <= 0 || isNaN(bmr)) {
     return 0;
   }
 
@@ -104,14 +110,12 @@ export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number
  *
  * @param tdee - TDEE (kcal/day)
  * @param goal - 영양 목표
- * @returns 일일 칼로리 목표 (kcal/day)
+ * @returns 일일 칼로리 목표 (kcal/day), 최소 1200kcal 보장
  */
-export function calculateDailyCalorieTarget(
-  tdee: number,
-  goal: NutritionGoal
-): number {
-  if (tdee <= 0) {
-    return 0;
+export function calculateDailyCalorieTarget(tdee: number, goal: NutritionGoal): number {
+  // NaN/0 방어 — 입력 데이터 불완전 시 안전 기본값 반환
+  if (!tdee || tdee <= 0 || isNaN(tdee)) {
+    return 1200;
   }
 
   const adjustment = GOAL_CALORIE_ADJUSTMENT[goal];
@@ -192,25 +196,26 @@ export function calculateAll(
 }
 
 // 활동 수준 레이블
-export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, { label: string; description: string }> = {
-  sedentary: {
-    label: '비활동적',
-    description: '주로 앉아서 생활, 운동 거의 안 함',
-  },
-  light: {
-    label: '가벼운 활동',
-    description: '가벼운 운동/산책 주 1-3회',
-  },
-  moderate: {
-    label: '보통 활동',
-    description: '적당한 운동 주 3-5회',
-  },
-  active: {
-    label: '활동적',
-    description: '강도 높은 운동 주 6-7회',
-  },
-  very_active: {
-    label: '매우 활동적',
-    description: '매우 힘든 운동 또는 육체 노동',
-  },
-};
+export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, { label: string; description: string }> =
+  {
+    sedentary: {
+      label: '비활동적',
+      description: '주로 앉아서 생활, 운동 거의 안 함',
+    },
+    light: {
+      label: '가벼운 활동',
+      description: '가벼운 운동/산책 주 1-3회',
+    },
+    moderate: {
+      label: '보통 활동',
+      description: '적당한 운동 주 3-5회',
+    },
+    active: {
+      label: '활동적',
+      description: '강도 높은 운동 주 6-7회',
+    },
+    very_active: {
+      label: '매우 활동적',
+      description: '매우 힘든 운동 또는 육체 노동',
+    },
+  };

@@ -19,7 +19,7 @@ import AnalysisResult from '../../_components/AnalysisResult';
 import { ShareButton, PrintButton } from '@/components/share';
 import { useShare } from '@/hooks/useShare';
 import Link from 'next/link';
-import { AIBadge } from '@/components/common/AIBadge';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 
@@ -65,7 +65,7 @@ function transformDbToResult(dbData: DbPostureAnalysis): PostureAnalysisResult {
 
   return {
     postureType,
-    postureTypeLabel: typeInfo?.label || postureType,
+    postureTypeLabel: typeInfo?.label || '알 수 없음',
     postureTypeDescription: typeInfo?.description || '',
     overallScore: dbData.overall_score,
     confidence: dbData.confidence,
@@ -259,19 +259,15 @@ export default function PostureAnalysisResultPage() {
           {result && (
             <>
               <AnalysisResult result={result} onRetry={handleNewAnalysis} shareRef={shareRef} />
-              {/* 다음 분석 추천 */}
-              <ContextLinkingCard currentModule="posture" />
-              <ResultPageInsights currentModule="posture" />
             </>
           )}
         </div>
       </div>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
-            {/* 운동 추천 버튼 (체형 연동이 있는 경우) */}
             {result.bodyTypeCorrelation && (
               <Button
                 className="w-full"
@@ -285,12 +281,20 @@ export default function PostureAnalysisResultPage() {
                 나에게 맞는 운동 추천
               </Button>
             )}
-            {/* 공유/PDF 버튼 */}
             <div className="flex gap-2">
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <PrintButton title="이룸 자세 분석 결과" variant="outline" />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      {result && (
+        <div className="max-w-lg mx-auto px-4 pb-8">
+          <ContextLinkingCard currentModule="posture" />
+          <ResultPageInsights currentModule="posture" />
+          <AITransparencyNotice compact className="mt-8" />
         </div>
       )}
     </>

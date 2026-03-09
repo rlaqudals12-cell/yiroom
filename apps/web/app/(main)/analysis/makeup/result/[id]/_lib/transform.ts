@@ -81,6 +81,7 @@ export interface MakeupResultView {
     compatibility: 'high' | 'medium' | 'low';
     note: string;
   };
+  analysisReliability: 'high' | 'medium' | 'low';
   analyzedAt: Date;
 }
 
@@ -108,14 +109,11 @@ export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView 
     description: getDescription(name, value ?? 50),
   });
 
-  const undertoneLabel =
-    UNDERTONES.find((t) => t.id === dbData.undertone)?.label || dbData.undertone;
-  const eyeShapeLabel =
-    EYE_SHAPES.find((t) => t.id === dbData.eye_shape)?.label || dbData.eye_shape;
-  const lipShapeLabel =
-    LIP_SHAPES.find((t) => t.id === dbData.lip_shape)?.label || dbData.lip_shape;
-  const faceShapeLabel =
-    FACE_SHAPES.find((t) => t.id === dbData.face_shape)?.label || dbData.face_shape;
+  // A1: 영어 raw value 노출 방지 — fallback은 한글 기본값
+  const undertoneLabel = UNDERTONES.find((t) => t.id === dbData.undertone)?.label || '알 수 없음';
+  const eyeShapeLabel = EYE_SHAPES.find((t) => t.id === dbData.eye_shape)?.label || '알 수 없음';
+  const lipShapeLabel = LIP_SHAPES.find((t) => t.id === dbData.lip_shape)?.label || '알 수 없음';
+  const faceShapeLabel = FACE_SHAPES.find((t) => t.id === dbData.face_shape)?.label || '알 수 없음';
 
   return {
     overallScore: dbData.overall_score,
@@ -140,6 +138,8 @@ export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView 
     colorRecommendations: dbData.recommendations?.colors || [],
     makeupTips: dbData.recommendations?.tips || [],
     personalColorConnection: dbData.recommendations?.personalColorConnection,
+    analysisReliability:
+      dbData.analysis_reliability || dbData.recommendations?.analysisReliability || 'medium',
     analyzedAt: new Date(dbData.created_at),
   };
 }

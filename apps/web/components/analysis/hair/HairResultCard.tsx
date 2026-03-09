@@ -118,9 +118,15 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
         {/* 탭 컨텐츠 */}
         <Tabs defaultValue="styles" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="styles">추천 스타일</TabsTrigger>
-            <TabsTrigger value="colors">헤어 컬러</TabsTrigger>
-            <TabsTrigger value="care">케어 팁</TabsTrigger>
+            <TabsTrigger value="styles" aria-label="추천 헤어스타일 보기">
+              추천 스타일
+            </TabsTrigger>
+            <TabsTrigger value="colors" aria-label="추천 헤어 컬러 보기">
+              헤어 컬러
+            </TabsTrigger>
+            <TabsTrigger value="care" aria-label="헤어 케어 팁 보기">
+              케어 팁
+            </TabsTrigger>
           </TabsList>
 
           {/* 추천 스타일 탭 */}

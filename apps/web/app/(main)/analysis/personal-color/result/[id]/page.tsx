@@ -361,7 +361,7 @@ export default function PersonalColorResultPage() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted">
-      <div className="max-w-lg mx-auto px-4 py-8 pb-36">
+      <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="sm" asChild>
@@ -508,10 +508,6 @@ export default function PersonalColorResultPage() {
                 </div>
                 <span className="text-xs text-primary">자세히 →</span>
               </button>
-
-              {/* 다음 분석 추천 */}
-              <ContextLinkingCard currentModule="personal-color" />
-              <ResultPageInsights currentModule="personal-color" />
 
               {/* 성별 적응형 악세서리 추천 (K-1) */}
               <GenderAdaptiveAccessories seasonType={result.seasonType} className="mt-6" />
@@ -663,9 +659,9 @@ export default function PersonalColorResultPage() {
         )}
       </div>
 
-      {/* P14: 하단 고정 액션바 */}
+      {/* P14: 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
             <Button
               className="w-full"
@@ -701,6 +697,15 @@ export default function PersonalColorResultPage() {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      {result && (
+        <div className="max-w-lg mx-auto px-4 pb-8">
+          <ContextLinkingCard currentModule="personal-color" />
+          <ResultPageInsights currentModule="personal-color" />
+          <AITransparencyNotice compact className="mt-4" />
         </div>
       )}
 

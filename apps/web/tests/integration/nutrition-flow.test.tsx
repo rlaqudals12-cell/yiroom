@@ -300,7 +300,8 @@ describe('N-1 통합 테스트: 엣지 케이스', () => {
     expect(calculateBMR('male', 0, 175, 30)).toBe(0);
     expect(calculateBMR('male', 70, 0, 30)).toBe(0);
     expect(calculateTDEE(0, 'moderate')).toBe(0);
-    expect(calculateDailyCalorieTarget(0, 'maintain')).toBe(0);
+    // NaN/0 방어 — 안전 기본값 1200kcal 반환
+    expect(calculateDailyCalorieTarget(0, 'maintain')).toBe(1200);
   });
 
   it('알레르기 여러 개 선택 가능', () => {

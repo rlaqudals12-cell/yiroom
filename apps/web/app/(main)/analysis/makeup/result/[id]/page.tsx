@@ -10,7 +10,7 @@ import { ShareButton, PrintButton } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
 import Image from 'next/image';
 import Link from 'next/link';
-import { AIBadge } from '@/components/common/AIBadge';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
@@ -220,7 +220,19 @@ export default function MakeupAnalysisResultPage() {
           </Button>
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-lg font-bold text-foreground">메이크업 분석 결과</h1>
-            <AIBadge variant="small" />
+            <div className="flex items-center gap-2">
+              <AIBadge variant="small" />
+              {result && (
+                <span className="text-xs text-muted-foreground">
+                  신뢰도{' '}
+                  {result.analysisReliability === 'high'
+                    ? '높음'
+                    : result.analysisReliability === 'medium'
+                      ? '보통'
+                      : '낮음'}
+                </span>
+              )}
+            </div>
           </div>
           <div className="w-16" />
         </header>
@@ -277,7 +289,7 @@ export default function MakeupAnalysisResultPage() {
                       const style = MAKEUP_STYLES.find((s) => s.id === styleId);
                       return (
                         <Badge key={styleId} variant="secondary" className="text-sm px-3 py-1">
-                          {style?.emoji} {style?.label || styleId}
+                          {style?.emoji} {style?.label || '스타일'}
                         </Badge>
                       );
                     })}
@@ -329,7 +341,7 @@ export default function MakeupAnalysisResultPage() {
                       const concernData = MAKEUP_CONCERNS.find((c) => c.id === concern);
                       return (
                         <Badge key={concern} variant="secondary" className="text-sm">
-                          {concernData?.emoji} {concernData?.label || concern}
+                          {concernData?.emoji} {concernData?.label || '기타'}
                         </Badge>
                       );
                     })}
@@ -375,8 +387,7 @@ export default function MakeupAnalysisResultPage() {
                   </div>
                   <p className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
                     추정 시즌:{' '}
-                    {SEASON_LABELS[result.personalColorConnection.season] ||
-                      result.personalColorConnection.season}
+                    {SEASON_LABELS[result.personalColorConnection.season] || '알 수 없음'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {result.personalColorConnection.note}
@@ -386,7 +397,7 @@ export default function MakeupAnalysisResultPage() {
             </TabsContent>
 
             {/* 메이크업 팁 탭 */}
-            <TabsContent value="tips" className="mt-0 space-y-6 pb-32">
+            <TabsContent value="tips" className="mt-0 space-y-6">
               {result.makeupTips.length > 0 ? (
                 result.makeupTips.map((tipGroup) => (
                   <div key={tipGroup.category} className="bg-card rounded-xl p-6 shadow-sm">
@@ -441,17 +452,12 @@ export default function MakeupAnalysisResultPage() {
             className="mt-6"
           />
         )}
-
-        {/* 다음 분석 추천 */}
-        <ContextLinkingCard currentModule="makeup" />
-        <ResultPageInsights currentModule="makeup" />
       </div>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
-            {/* 제품 추천 버튼 */}
             <Button
               className="w-full"
               onClick={() =>
@@ -461,7 +467,6 @@ export default function MakeupAnalysisResultPage() {
               <Sparkles className="w-4 h-4 mr-2" />
               맞춤 화장품 보기
             </Button>
-            {/* 공유/PDF 버튼 */}
             <div className="flex gap-2">
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <PrintButton title="이룸 메이크업 분석 결과" variant="outline" />
@@ -469,6 +474,13 @@ export default function MakeupAnalysisResultPage() {
           </div>
         </div>
       )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      <div className="max-w-lg mx-auto px-4 pb-8">
+        <ContextLinkingCard currentModule="makeup" />
+        <ResultPageInsights currentModule="makeup" />
+        <AITransparencyNotice compact className="mt-8" />
+      </div>
     </div>
   );
 }

@@ -103,7 +103,7 @@ export default function Step3Page() {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="workout-step3-page">
       {/* 진행 표시 - 3단계 중 3단계 */}
       <ProgressIndicator currentStep={3} totalSteps={3} />
 
@@ -161,10 +161,10 @@ export default function Step3Page() {
 
       {/* 선택 현황 (부상) */}
       {injuries.length > 0 && !injuries.includes('none') && (
-        <div className="bg-orange-50 rounded-xl p-4">
-          <p className="text-sm text-orange-700">
+        <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl p-4">
+          <p className="text-sm text-orange-700 dark:text-orange-300">
             <span className="font-medium">{injuries.length}개</span> 부위 선택됨
-            <span className="block mt-1 text-orange-600">
+            <span className="block mt-1 text-orange-600 dark:text-orange-400">
               해당 부위에 무리가 가지 않는 운동을 추천해 드릴게요
             </span>
           </p>
@@ -241,11 +241,17 @@ export default function Step3Page() {
 
             {/* 설정된 목표 요약 */}
             {(targetWeight || targetDate) && (
-              <div className="bg-indigo-50 rounded-xl p-4 space-y-1">
-                <p className="text-sm font-medium text-indigo-700">설정된 목표</p>
-                {targetWeight && <p className="text-sm text-indigo-600">체중: {targetWeight}kg</p>}
+              <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded-xl p-4 space-y-1">
+                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  설정된 목표
+                </p>
+                {targetWeight && (
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                    체중: {targetWeight}kg
+                  </p>
+                )}
                 {targetDate && (
-                  <p className="text-sm text-indigo-600">
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400">
                     날짜: {new Date(targetDate).toLocaleDateString('ko-KR')}
                   </p>
                 )}
@@ -256,9 +262,9 @@ export default function Step3Page() {
       </div>
 
       {/* 안내 문구 */}
-      <div className="bg-amber-50 rounded-xl p-4">
-        <p className="text-sm text-amber-700">
-          건강 정보는 선택사항입니다. 입력하지 않아도 맞춤 운동 추천을 받을 수 있어요.
+      <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4">
+        <p className="text-sm text-amber-700 dark:text-amber-300">
+          건강 정보는 선택사항이에요. 입력하지 않아도 맞춤 운동 추천을 받을 수 있어요.
         </p>
       </div>
 

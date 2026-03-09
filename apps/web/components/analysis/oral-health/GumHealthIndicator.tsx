@@ -225,7 +225,7 @@ function getAreaLabel(region: string): string {
     lower_front: '아랫니 앞쪽',
     lower_back: '아랫니 뒤쪽',
   };
-  return labels[region] || region;
+  return labels[region] || '알 수 없음';
 }
 
 export default GumHealthIndicator;

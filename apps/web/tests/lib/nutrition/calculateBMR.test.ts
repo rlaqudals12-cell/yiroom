@@ -47,16 +47,18 @@ describe('calculateBMR', () => {
     // 남성, 70kg, 175cm, 30세
     // BMR = 88.362 + (13.397 × 70) + (4.799 × 175) - (5.677 × 30)
     // BMR = 88.362 + 937.79 + 839.825 - 170.31 = 1695.667
+    // 한국인 보정 계수 ×0.95 → 1695.667 × 0.95 = 1610.884 → 1611
     const bmr = calculateBMR('male', 70, 175, 30);
-    expect(bmr).toBeCloseTo(1696, 0);
+    expect(bmr).toBeCloseTo(1611, 0);
   });
 
   it('calculates BMR for female correctly', () => {
     // 여성, 55kg, 160cm, 25세
     // BMR = 447.593 + (9.247 × 55) + (3.098 × 160) - (4.330 × 25)
     // BMR = 447.593 + 508.585 + 495.68 - 108.25 = 1343.608
+    // 한국인 보정 계수 ×0.93 → 1343.608 × 0.93 = 1249.555 → 1250
     const bmr = calculateBMR('female', 55, 160, 25);
-    expect(bmr).toBeCloseTo(1344, 0);
+    expect(bmr).toBeCloseTo(1250, 0);
   });
 
   it('returns 0 for invalid inputs', () => {
@@ -113,8 +115,9 @@ describe('calculateDailyCalorieTarget', () => {
     expect(target).toBe(1200); // 1500 - 500 = 1000, but minimum is 1200
   });
 
-  it('returns 0 for invalid TDEE', () => {
-    expect(calculateDailyCalorieTarget(0, 'maintain')).toBe(0);
+  it('returns safety minimum 1200 for invalid TDEE', () => {
+    // NaN/0 방어 — 안전 기본값 1200kcal 반환
+    expect(calculateDailyCalorieTarget(0, 'maintain')).toBe(1200);
   });
 });
 
@@ -149,14 +152,7 @@ describe('calculateMacroTargets', () => {
 
 describe('calculateAll', () => {
   it('calculates complete BMR result', () => {
-    const result = calculateAll(
-      'male',
-      70,
-      175,
-      '1995-06-15',
-      'moderate',
-      'maintain'
-    );
+    const result = calculateAll('male', 70, 175, '1995-06-15', 'moderate', 'maintain');
 
     expect(result.bmr).toBeGreaterThan(1500);
     expect(result.bmr).toBeLessThan(2000);
@@ -168,14 +164,7 @@ describe('calculateAll', () => {
   });
 
   it('applies weight loss deficit correctly', () => {
-    const result = calculateAll(
-      'female',
-      55,
-      160,
-      '2000-01-01',
-      'light',
-      'weight_loss'
-    );
+    const result = calculateAll('female', 55, 160, '2000-01-01', 'light', 'weight_loss');
 
     // TDEE보다 500 적거나, 최소 1200
     expect(result.dailyCalorieTarget).toBeLessThanOrEqual(result.tdee);

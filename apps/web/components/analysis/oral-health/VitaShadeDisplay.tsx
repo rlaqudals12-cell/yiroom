@@ -104,7 +104,7 @@ export function VitaShadeDisplay({
           className="flex h-16 w-16 items-center justify-center rounded-full border-2 shadow-inner"
           style={{ backgroundColor: SHADE_COLORS[currentShade] }}
         >
-          <span className="text-lg font-bold text-gray-700">{currentShade}</span>
+          <span className="text-lg font-bold text-gray-700 dark:text-gray-200">{currentShade}</span>
         </div>
         <div>
           <p className="font-medium">현재 셰이드</p>
@@ -119,7 +119,9 @@ export function VitaShadeDisplay({
             className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed shadow-inner"
             style={{ backgroundColor: SHADE_COLORS[targetShade] }}
           >
-            <span className="text-lg font-bold text-gray-700">{targetShade}</span>
+            <span className="text-lg font-bold text-gray-700 dark:text-gray-200">
+              {targetShade}
+            </span>
           </div>
           <div>
             <p className="font-medium">목표 셰이드</p>
@@ -146,7 +148,7 @@ export function VitaShadeDisplay({
                 style={{ backgroundColor: SHADE_COLORS[shade] }}
                 title={`${shade}: ${getShadeDescription(shade)}`}
               >
-                <span className="text-gray-600">{shade}</span>
+                <span className="text-gray-600 dark:text-gray-300">{shade}</span>
               </div>
             ))}
           </div>
@@ -206,7 +208,7 @@ function getBrightnessLabel(brightness: string): string {
     dark: '어두움',
     very_dark: '매우 어두움',
   };
-  return labels[brightness] || brightness;
+  return labels[brightness] || '알 수 없음';
 }
 
 /**
@@ -219,7 +221,7 @@ function getYellownessLabel(yellowness: string): string {
     moderate: '보통',
     significant: '상당',
   };
-  return labels[yellowness] || yellowness;
+  return labels[yellowness] || '알 수 없음';
 }
 
 export default VitaShadeDisplay;

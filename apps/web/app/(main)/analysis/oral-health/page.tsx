@@ -222,8 +222,8 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                   잇몸 상태를 확인하려면 잇몸이 잘 보이게 해주세요
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">&#10007;</span>
-                  음식물이 묻어있거나 립스틱을 바른 상태는 피해주세요
+                  <span className="text-cyan-500">&#10003;</span>
+                  깨끗한 상태에서 촬영하면 더 정확해요
                 </li>
               </ul>
             </div>
@@ -295,6 +295,10 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                 </div>
               </button>
             )}
+
+            <p className="text-xs text-center text-muted-foreground">
+              사진은 분석에만 사용되며, 서버에 별도 저장되지 않아요
+            </p>
 
             <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
               &#8592; 가이드로 돌아가기

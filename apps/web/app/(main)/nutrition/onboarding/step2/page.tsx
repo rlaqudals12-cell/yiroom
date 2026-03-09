@@ -60,14 +60,16 @@ export default function NutritionStep2Page() {
   const canProceed = mealStyle && cookingSkill && budget;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="nutrition-step2-page">
       {/* 진행 표시 - 3단계 중 2단계 */}
       <ProgressIndicator currentStep={2} totalSteps={3} />
 
       {/* 섹션 1: 식사 스타일 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">선호 식사 스타일</h2>
+          <h2 className="text-lg font-bold text-foreground">
+            선호 식사 스타일 <span className="text-red-500 text-sm">*</span>
+          </h2>
           <p className="text-muted-foreground text-sm mt-1">평소 어떤 식사를 선호하세요?</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -92,7 +94,9 @@ export default function NutritionStep2Page() {
       {/* 섹션 2: 요리 실력 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">요리 실력</h2>
+          <h2 className="text-lg font-bold text-foreground">
+            요리 실력 <span className="text-red-500 text-sm">*</span>
+          </h2>
           <p className="text-muted-foreground text-sm mt-1">평소 요리 실력은 어느 정도인가요?</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -117,7 +121,9 @@ export default function NutritionStep2Page() {
       {/* 섹션 3: 예산 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">식비 예산</h2>
+          <h2 className="text-lg font-bold text-foreground">
+            식비 예산 <span className="text-red-500 text-sm">*</span>
+          </h2>
           <p className="text-muted-foreground text-sm mt-1">한 끼 식사에 사용할 예산은?</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -138,9 +144,9 @@ export default function NutritionStep2Page() {
 
       {/* 선택 현황 */}
       {(mealStyle || cookingSkill || budget) && (
-        <div className="bg-green-50 rounded-xl p-4 space-y-1">
+        <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 space-y-1">
           {mealStyle && (
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300">
               스타일:{' '}
               <span className="font-medium">
                 {MEAL_STYLES.find((s) => s.id === mealStyle)?.title}
@@ -148,7 +154,7 @@ export default function NutritionStep2Page() {
             </p>
           )}
           {cookingSkill && (
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300">
               요리:{' '}
               <span className="font-medium">
                 {COOKING_SKILLS.find((s) => s.id === cookingSkill)?.title}
@@ -156,7 +162,7 @@ export default function NutritionStep2Page() {
             </p>
           )}
           {budget && (
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300">
               예산:{' '}
               <span className="font-medium">
                 {BUDGET_OPTIONS.find((b) => b.id === budget)?.title}

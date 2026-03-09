@@ -10,7 +10,7 @@ import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/wor
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 import { BODY_TYPES, type BodyType } from '@/lib/mock/body-analysis';
 import { workoutFunnel, durationTrackers } from '@/lib/analytics';
-import { Loader2, AlertCircle, CheckCircle2, Palette, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // body_analyses 테이블 데이터 타입
 interface BodyAnalysis {
@@ -24,21 +24,6 @@ interface BodyAnalysis {
   strengths: string[] | null;
   created_at: string;
 }
-
-// personal_color_assessments 테이블 데이터 타입
-interface PersonalColorAssessment {
-  id: string;
-  season: PersonalColorSeason;
-  created_at: string;
-}
-
-// PC 시즌 한글 레이블
-const PC_SEASON_LABELS: Record<PersonalColorSeason, string> = {
-  Spring: '봄 웜톤',
-  Summer: '여름 쿨톤',
-  Autumn: '가을 웜톤',
-  Winter: '겨울 쿨톤',
-};
 
 // 운동 목표 옵션 (Step 2에서 통합)
 const GOALS = [
@@ -68,7 +53,6 @@ export default function Step1Page() {
     useWorkoutInputStore();
 
   const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysis | null>(null);
-  const [pcAssessment, setPcAssessment] = useState<PersonalColorAssessment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showBodyInfo, setShowBodyInfo] = useState(false);
@@ -135,8 +119,7 @@ export default function Step1Page() {
         }
 
         if (pcData) {
-          setPcAssessment(pcData);
-          // Store에 퍼스널 컬러 저장
+          // Store에 퍼스널 컬러 저장 (결과 페이지 연동용)
           setPersonalColor(pcData.season as PersonalColorSeason);
         }
       } catch (err) {
@@ -218,17 +201,17 @@ export default function Step1Page() {
   const canProceed = !!bodyAnalysis && goals.length > 0 && concerns.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="workout-step1-page">
       {/* 진행 표시 - 3단계 중 1단계 */}
       <ProgressIndicator currentStep={1} totalSteps={3} />
 
       {/* 면책 조항 (스펙 16.3: 앱 최초 실행 시 표시) */}
-      <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-        <p className="text-xs text-amber-700 leading-relaxed">
+      <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4 border border-amber-100 dark:border-amber-800">
+        <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
           <span className="font-medium">서비스 이용 안내</span>
           <br />
           <br />본 서비스는 전문 의료 조언을 대체하지 않아요. 부상이나 통증이 있는 경우 전문가와
-          상담 후 운동하세요.
+          상담 후 운동하면 좋아요.
         </p>
       </div>
 
@@ -265,14 +248,7 @@ export default function Step1Page() {
                   <p className="font-medium text-foreground">
                     {bodyTypeInfo?.label || '체형 정보'}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {pcAssessment && (
-                      <>
-                        <Palette className="w-3 h-3" />
-                        <span>{PC_SEASON_LABELS[pcAssessment.season]}</span>
-                      </>
-                    )}
-                  </div>
+                  <p className="text-sm text-muted-foreground">체형 분석 결과</p>
                 </div>
               </div>
               {showBodyInfo ? (
@@ -303,14 +279,18 @@ export default function Step1Page() {
                   <div className="flex gap-4 pt-2 border-t border-border/30">
                     {bodyAnalysis.height && (
                       <div className="text-center">
-                        <p className="text-lg font-bold text-foreground">{bodyAnalysis.height}</p>
-                        <p className="text-xs text-muted-foreground">cm</p>
+                        <p className="text-lg font-bold text-foreground">
+                          {bodyAnalysis.height}{' '}
+                          <span className="text-sm font-normal text-muted-foreground">cm</span>
+                        </p>
                       </div>
                     )}
                     {bodyAnalysis.weight && (
                       <div className="text-center">
-                        <p className="text-lg font-bold text-foreground">{bodyAnalysis.weight}</p>
-                        <p className="text-xs text-muted-foreground">kg</p>
+                        <p className="text-lg font-bold text-foreground">
+                          {bodyAnalysis.weight}{' '}
+                          <span className="text-sm font-normal text-muted-foreground">kg</span>
+                        </p>
                       </div>
                     )}
                   </div>
@@ -371,14 +351,14 @@ export default function Step1Page() {
 
           {/* 선택 현황 */}
           {(goals.length > 0 || concerns.length > 0) && (
-            <div className="bg-indigo-50 rounded-xl p-4 space-y-1">
+            <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded-xl p-4 space-y-1">
               {goals.length > 0 && (
-                <p className="text-sm text-indigo-700">
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">
                   목표: <span className="font-medium">{goals.length}개</span> 선택됨
                 </p>
               )}
               {concerns.length > 0 && (
-                <p className="text-sm text-indigo-700">
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">
                   부위: <span className="font-medium">{concerns.length}개</span> 선택됨
                 </p>
               )}

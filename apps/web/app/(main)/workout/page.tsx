@@ -118,7 +118,11 @@ export default function WorkoutPage() {
                 {typeInfo.description.slice(0, 30)}...
               </p>
             </div>
-            <Link href="/workout/result" aria-label="분석 결과 보기">
+            <Link
+              href="/workout/result"
+              aria-label="분석 결과 보기"
+              className="p-2 -m-2 rounded-full hover:bg-muted/50 transition-colors"
+            >
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </Link>
           </div>

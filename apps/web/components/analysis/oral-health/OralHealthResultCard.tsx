@@ -67,50 +67,59 @@ export function OralHealthResultCard({
       </div>
 
       {/* 탭 컨텐츠 */}
-      <Tabs defaultValue={hasToothColor ? 'tooth' : 'gum'} className="p-4">
-        <TabsList className="mb-4 w-full" aria-label="구강건강 분석 결과 탭">
+      {!hasToothColor && !hasGumHealth && !whiteningGoal ? (
+        <div className="p-6 text-center">
+          <p className="text-muted-foreground">상세 분석 데이터를 준비하고 있어요</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">
+            종합 점수와 추천 사항을 참고해주세요
+          </p>
+        </div>
+      ) : (
+        <Tabs defaultValue={hasToothColor ? 'tooth' : 'gum'} className="p-4">
+          <TabsList className="mb-4 w-full" aria-label="구강건강 분석 결과 탭">
+            {hasToothColor && (
+              <TabsTrigger value="tooth" className="flex-1" aria-label="치아 색상 분석 결과 보기">
+                치아 색상
+              </TabsTrigger>
+            )}
+            {hasGumHealth && (
+              <TabsTrigger value="gum" className="flex-1" aria-label="잇몸 건강 분석 결과 보기">
+                잇몸 건강
+              </TabsTrigger>
+            )}
+            {whiteningGoal && (
+              <TabsTrigger value="whitening" className="flex-1" aria-label="미백 목표 및 추천 보기">
+                미백 목표
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {/* 치아 색상 탭 */}
           {hasToothColor && (
-            <TabsTrigger value="tooth" className="flex-1">
-              치아 색상
-            </TabsTrigger>
+            <TabsContent value="tooth">
+              <VitaShadeDisplay
+                currentShade={assessment.toothColor!.matchedShade}
+                targetShade={assessment.whiteningGoal?.targetShade}
+                result={assessment.toothColor}
+              />
+            </TabsContent>
           )}
+
+          {/* 잇몸 건강 탭 */}
           {hasGumHealth && (
-            <TabsTrigger value="gum" className="flex-1">
-              잇몸 건강
-            </TabsTrigger>
+            <TabsContent value="gum">
+              <GumHealthIndicator result={assessment.gumHealth!} />
+            </TabsContent>
           )}
+
+          {/* 미백 목표 탭 */}
           {whiteningGoal && (
-            <TabsTrigger value="whitening" className="flex-1">
-              미백 목표
-            </TabsTrigger>
+            <TabsContent value="whitening">
+              <WhiteningGoalSection goal={whiteningGoal} />
+            </TabsContent>
           )}
-        </TabsList>
-
-        {/* 치아 색상 탭 */}
-        {hasToothColor && (
-          <TabsContent value="tooth">
-            <VitaShadeDisplay
-              currentShade={assessment.toothColor!.matchedShade}
-              targetShade={assessment.whiteningGoal?.targetShade}
-              result={assessment.toothColor}
-            />
-          </TabsContent>
-        )}
-
-        {/* 잇몸 건강 탭 */}
-        {hasGumHealth && (
-          <TabsContent value="gum">
-            <GumHealthIndicator result={assessment.gumHealth!} />
-          </TabsContent>
-        )}
-
-        {/* 미백 목표 탭 */}
-        {whiteningGoal && (
-          <TabsContent value="whitening">
-            <WhiteningGoalSection goal={whiteningGoal} />
-          </TabsContent>
-        )}
-      </Tabs>
+        </Tabs>
+      )}
 
       {/* 추천 사항 */}
       <div className="border-t p-4">
@@ -269,7 +278,7 @@ function getMethodLabel(method: string): string {
     professional_bleaching: '전문가 미백',
     in_office: '병원 미백',
   };
-  return labels[method] || method;
+  return labels[method] || '알 수 없음';
 }
 
 export default OralHealthResultCard;

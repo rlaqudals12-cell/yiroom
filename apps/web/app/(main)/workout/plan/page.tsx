@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 import { classifyWorkoutType, createWeeklyPlanFromInput, generatePlanSummary } from '@/lib/workout';
 import { validateAllSteps } from '@/lib/utils/workoutValidation';
+import { AITransparencyNotice } from '@/components/common/AIBadge';
 import {
   WeeklyPlanCard,
   DayExerciseList,
@@ -26,8 +27,24 @@ export default function PlanPage() {
   const [selectedDay, setSelectedDay] = useState<DayPlan | null>(null);
   const [userWeight, setUserWeight] = useState(60);
   const [frequency, setFrequency] = useState('3-4');
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Zustand persist 하이드레이션 대기
+  useEffect(() => {
+    const unsub = useWorkoutInputStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+    });
+    if (useWorkoutInputStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+    }
+    return () => {
+      unsub();
+    };
+  }, []);
 
   useEffect(() => {
+    if (!isHydrated) return;
+
     const inputData = getInputData();
 
     // 유효성 검증
@@ -71,7 +88,7 @@ export default function PlanPage() {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [getInputData]);
+  }, [getInputData, isHydrated]);
 
   // 뒤로가기
   const handleBack = () => {
@@ -177,7 +194,7 @@ export default function PlanPage() {
           {!selectedDay.isRestDay && selectedDay.exercises.length > 0 && (
             <button
               onClick={handleStartWorkout}
-              className="w-full py-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full py-4 bg-indigo-500 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               <Play className="w-5 h-5" />
               {selectedDay.dayLabel} 운동 시작
@@ -185,6 +202,9 @@ export default function PlanPage() {
           )}
         </div>
       )}
+
+      {/* AI 기술 사용 안내 */}
+      <AITransparencyNotice compact />
     </div>
   );
 }

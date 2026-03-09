@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useNutritionInputStore } from '@/lib/stores/nutritionInputStore';
 import { calculateAll } from '@/lib/nutrition';
 import { AnalyzingLoader, ErrorState } from '@/components/workout/common';
-import { Check, ChevronRight, Utensils, Flame, Activity, Target } from 'lucide-react';
+import { Check, ChevronRight, Utensils, Flame, Target } from 'lucide-react';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { FadeInUp, ScaleIn, Confetti } from '@/components/animations';
@@ -127,8 +127,8 @@ export default function NutritionResultPage() {
         throw new Error('Failed to save settings');
       }
 
-      // 성공 시 홈으로 이동
-      router.push('/home');
+      // 성공 시 영양 대시보드로 이동
+      router.push('/nutrition');
     } catch (err) {
       console.error('Save error:', err);
       setError('저장 중 오류가 발생했어요. 다시 시도해주세요.');
@@ -207,18 +207,23 @@ export default function NutritionResultPage() {
             </div>
             <p className="mb-2 text-5xl font-bold">
               {result.dailyCalorieTarget.toLocaleString()}
-              <span className="ml-1 text-2xl font-normal">kcal</span>
+              <span className="text-2xl font-normal">kcal</span>
             </p>
             <div className="mt-4 flex gap-4 border-t border-green-400/30 pt-4">
               <div className="flex-1">
-                <p className="mb-1 text-xs text-green-100">기초대사량</p>
-                <p className="font-semibold">{result.bmr.toLocaleString()} kcal</p>
+                <p className="mb-1 text-xs text-green-100">
+                  기초대사량 (가만히 있어도 쓰는 에너지)
+                </p>
+                <p className="font-semibold">{result.bmr.toLocaleString()}kcal</p>
               </div>
               <div className="flex-1">
-                <p className="mb-1 text-xs text-green-100">활동대사량</p>
-                <p className="font-semibold">{result.tdee.toLocaleString()} kcal</p>
+                <p className="mb-1 text-xs text-green-100">활동대사량 (일상+운동 포함)</p>
+                <p className="font-semibold">{result.tdee.toLocaleString()}kcal</p>
               </div>
             </div>
+            <p className="mt-3 text-xs text-green-200">
+              선택하신 활동 수준 기반으로 계산했어요. 운동량 변경 시 설정에서 수정할 수 있어요.
+            </p>
           </div>
         </ScaleIn>
 
@@ -231,26 +236,26 @@ export default function NutritionResultPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               {/* 탄수화물 */}
-              <div className="rounded-xl bg-amber-50 p-3 text-center">
-                <p className="mb-1 text-xs text-amber-600">탄수화물</p>
-                <p className="text-2xl font-bold text-amber-700">
-                  {result.carbsTarget}
+              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
+                <p className="mb-1 text-xs text-amber-600 dark:text-amber-400">탄수화물</p>
+                <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                  {result.carbsTarget.toLocaleString()}
                   <span className="text-sm font-normal">g</span>
                 </p>
               </div>
               {/* 단백질 */}
-              <div className="rounded-xl bg-red-50 p-3 text-center">
-                <p className="mb-1 text-xs text-red-600">단백질</p>
-                <p className="text-2xl font-bold text-red-700">
-                  {result.proteinTarget}
+              <div className="rounded-xl bg-red-50 dark:bg-red-950/30 p-3 text-center">
+                <p className="mb-1 text-xs text-red-600 dark:text-red-400">단백질</p>
+                <p className="text-2xl font-bold text-red-700 dark:text-red-300">
+                  {result.proteinTarget.toLocaleString()}
                   <span className="text-sm font-normal">g</span>
                 </p>
               </div>
               {/* 지방 */}
-              <div className="rounded-xl bg-blue-50 p-3 text-center">
-                <p className="mb-1 text-xs text-blue-600">지방</p>
-                <p className="text-2xl font-bold text-blue-700">
-                  {result.fatTarget}
+              <div className="rounded-xl bg-blue-50 dark:bg-blue-950/30 p-3 text-center">
+                <p className="mb-1 text-xs text-blue-600 dark:text-blue-400">지방</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                  {result.fatTarget.toLocaleString()}
                   <span className="text-sm font-normal">g</span>
                 </p>
               </div>
@@ -271,29 +276,15 @@ export default function NutritionResultPage() {
               </p>
               <p className="mt-2 text-3xl font-bold text-orange-600">
                 ~{Math.round(result.dailyCalorieTarget / inputData.mealCount).toLocaleString()}
-                <span className="ml-1 text-lg font-normal">kcal</span>
+                <span className="text-lg font-normal">kcal</span>
               </p>
             </div>
           </FadeInUp>
         )}
 
-        {/* 활동 수준 */}
-        <FadeInUp delay={5}>
-          <div className="bg-card border-border/50 rounded-2xl border p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <Activity className="h-5 w-5 text-indigo-500" />
-              <h2 className="text-foreground font-bold">활동 수준 반영</h2>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              선택하신 활동 수준을 기반으로 일일 에너지 소비량(TDEE)을 계산했어요. 운동량이 변하면
-              설정에서 수정할 수 있어요.
-            </p>
-          </div>
-        </FadeInUp>
-
         {/* 영양제 추천 (목표 기반) */}
         {inputData.goal && (
-          <FadeInUp delay={6}>
+          <FadeInUp delay={5}>
             <SupplementRecommendationCardDynamic
               goal={inputData.goal as NutritionGoal}
               defaultExpanded={false}
@@ -302,7 +293,7 @@ export default function NutritionResultPage() {
         )}
 
         {/* 액션 버튼 */}
-        <FadeInUp delay={7}>
+        <FadeInUp delay={6}>
           <div className="space-y-3 pt-4">
             <button
               onClick={handleSaveAndContinue}

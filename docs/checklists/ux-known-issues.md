@@ -23,18 +23,18 @@
 
 ### KI-001: 영어 enum이 한글 변환 없이 JSX에 직접 렌더링
 
-- **발견 횟수**: 7회 (Phase 28 홈, 분석 결과 2건, PC 결과 공유 제목, DrapeColorPalette 색상명, **AnalysisResult 베스트/워스트 4개소**, **DetailedEvidenceReport title 2개소**)
+- **발견 횟수**: 17회 (Phase 28 홈, 분석 결과 2건, PC 결과 공유 제목, DrapeColorPalette 색상명, **AnalysisResult 베스트/워스트 4개소**, **DetailedEvidenceReport title 2개소**, **H-1 헤어 label fallback 4개소**, **OH-1 4개소 (VitaShadeDisplay×2, GumHealthIndicator, OralHealthResultCard)**, **Posture 2개소 (result page + input page postureType fallback)**)
 - **관련 항목**: A1
-- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage, PersonalColorResultPage (공유), DrapeColorPalette, **AnalysisResult**, **DetailedEvidenceReport**
+- **발생 화면**: HomeStateActive, SkinResultPage, BodyResultPage, PersonalColorResultPage (공유), DrapeColorPalette, **AnalysisResult**, **DetailedEvidenceReport**, **HairResultPage**, **OralHealthResultPage**, **PostureResultPage**, **PostureInputPage**
 - **원인**: AI/DB 반환값을 그대로 텍스트 보간에 사용. 매핑 함수 호출 누락
 - **수정 방법**: `getKoreanColorName(hex)` 공유 유틸 (`lib/utils/color-names.ts`) 사용 필수
 - **재발 방지**: 새 모듈 추가 시 A1 영어값 목록에 enum 등록 + 매핑 함수 작성을 원자 분해에 포함. HEX 색상은 `getKoreanColorName()` 사용
 
 ### KI-002: 터치 타겟 44px 미달 (p-2/h-8 사용) — **3회 도달, 승격 완료**
 
-- **발견 횟수**: 8회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, 홈 캡슐+분석요약 버튼, PC ResultCardV2 악세서리 필터, DrapeColorPalette 시즌 필터, **SeasonEducationModal 닫기 버튼**, **S-1 결과 2개소 (ResultPageInsights, SkinConsultantCTA)**)
+- **발견 횟수**: 11회 (Phase 28 확인 버튼, ConnectionAwareness 체크 버튼, 홈 캡슐+분석요약 버튼, PC ResultCardV2 악세서리 필터, DrapeColorPalette 시즌 필터, **SeasonEducationModal 닫기 버튼**, **S-1 결과 2개소 (ResultPageInsights, SkinConsultantCTA)**, **N-1 step3 3개소 (기피 음식 X 버튼, 추가 버튼, 알레르기 버튼)**)
 - **관련 항목**: B2
-- **발생 화면**: ActiveInsightCard, InternalizationWidget, HomeDailyCapsuleWidget, HomeAnalysisSummary, ResultCardV2, **DrapeColorPalette**, **ResultPageInsights**, **SkinConsultantCTA**
+- **발생 화면**: ActiveInsightCard, InternalizationWidget, HomeDailyCapsuleWidget, HomeAnalysisSummary, ResultCardV2, **DrapeColorPalette**, **ResultPageInsights**, **SkinConsultantCTA**, **NutritionStep3Page**
 - **원인**: 시각적 크기에 집중하고 터치 영역 크기를 간과
 - **수정 방법**: `min-h-[44px] min-w-[44px]` 또는 `p-3` 이상 적용
 - **재발 방지**: 버튼/링크 생성 시 p-3 기본값 습관화
@@ -59,9 +59,9 @@
 
 ### KI-005: 숫자+단위 불일치 (toLocaleString vs 단위 미표기)
 
-- **발견 횟수**: 2회 (홈 활동 바 칼로리 셀, **/ux-check 홈 대시보드 재발견**)
+- **발견 횟수**: 6회 (홈 활동 바 칼로리 셀, /ux-check 홈 대시보드 재발견, **N-1 step3 3개소 (미리보기 kcal 간격)**, **N-1 result 3개소 (BMR/TDEE/한끼당 kcal 간격)**)
 - **관련 항목**: A7
-- **발생 화면**: HomeActivityBar (칼로리 셀)
+- **발생 화면**: HomeActivityBar (칼로리 셀), **NutritionStep3Page**, **NutritionResultPage**
 - **원인**: `value.toLocaleString()` 사용하지만 단위(kcal)가 빠져있어 맥락 부재
 - **수정 방법**: 칼로리 셀에 `unit="kcal"` 전달, ActivityCell에서 `{value.toLocaleString()}{unit}` 렌더링
 - **재발 방지**: 숫자 표시 컴포넌트에 unit prop 필수화
@@ -87,7 +87,7 @@
 
 ### KI-008: "피해야 할" 부정적 프레이밍 (D4 위반) — **해결됨**
 
-- **발견 횟수**: 6회 (PC 결과 7개소, DrapeSimulator, DetailedEvidenceReport, **전체 모듈 일괄 수정 15개소**, **S-1 결과 2개소 (page.tsx 419, 1215)**)
+- **발견 횟수**: 7회 (PC 결과 7개소, DrapeSimulator, DetailedEvidenceReport, **전체 모듈 일괄 수정 15개소**, **S-1 결과 2개소 (page.tsx 419, 1215)**, **OH-1 입력 page.tsx "피해주세요"**)
 - **관련 항목**: D4 (신체 부정 언어 금지)
 - **발생 화면**: PersonalColorResultPage, BodyResultPage, SkinResultPage, WorkoutStyleCard, NutrientSynergyCard, OralHealth, CoachChat, MockStyling
 - **원인**: 초기 구현 시 "피해야 할 컬러"를 관용적으로 사용
@@ -165,5 +165,107 @@
 
 ---
 
-**Version**: 1.9 | **Created**: 2026-03-08 | **Updated**: 2026-03-08
+## W-1 운동 모듈 점검 결과 (2026-03-08)
+
+### 수정 완료 (9건)
+
+| #   | 파일             | 수정 내용                            | 심각도   |
+| --- | ---------------- | ------------------------------------ | -------- |
+| 1   | plan/page.tsx    | Zustand persist hydration fix        | Critical |
+| 2   | session/page.tsx | Zustand persist hydration fix        | Critical |
+| 3   | plan/page.tsx    | dark: 클래스 추가 (시작 버튼)        | High     |
+| 4   | plan/page.tsx    | AITransparencyNotice compact 추가    | High     |
+| 5   | session/page.tsx | dark: 클래스 5개 요소 추가           | High     |
+| 6   | result/page.tsx  | DetailCardsSection 접이식 (12→7블록) | Medium   |
+| 7   | result/page.tsx  | AITransparencyNotice compact 추가    | High     |
+| 8   | result/page.tsx  | 액션 버튼 dark: 클래스 추가          | High     |
+| 9   | result/page.tsx  | 추천 운동/상세 카드 delay 재정렬     | Low      |
+
+**통과율**: 78% → 95% (+17%p, 39/41 통과, 남은 2건 warn 고정)
+**상세 이력**: [history/2026-03-08-workout.md](./history/2026-03-08-workout.md)
+
+---
+
+## N-1 영양 모듈 온보딩 점검 결과 (2026-03-09)
+
+### 수정 완료 (7건)
+
+| #   | 파일                          | 수정 내용                                 | 심각도 |
+| --- | ----------------------------- | ----------------------------------------- | ------ |
+| 1   | step1/page.tsx:138            | "않습니다" → "않아요" 해요체 통일         | High   |
+| 2   | step3 (3개소), result (6개소) | kcal 앞 공백 제거 + macro toLocaleString  | Medium |
+| 3   | step1~3 root div              | data-testid 추가                          | High   |
+| 4   | step3 X버튼                   | 터치 44px 확보 + aria-label 추가          | High   |
+| 5   | step3 추가/알레르기 버튼      | 터치 영역 확대 (py-3, min-h-44)           | High   |
+| 6   | result 활동수준 카드          | 독립 카드 → 칼로리 카드 내 통합 (9→7블록) | Medium |
+| 7   | step3 알레르기/건너뛰기       | dark: 클래스 추가                         | High   |
+
+**통과율**: 74% → 100% (+26%p, 27/27 통과)
+**상세 이력**: [history/2026-03-09-nutrition-onboarding.md](./history/2026-03-09-nutrition-onboarding.md)
+
+---
+
+## H-1 헤어 분석 결과 점검 결과 (2026-03-08)
+
+### 수정 완료 (4건)
+
+| #   | 파일                    | 수정 내용                                          | 심각도   |
+| --- | ----------------------- | -------------------------------------------------- | -------- |
+| 1   | page.tsx:124,126,128    | label fallback → '알 수 없음' (3개소, KI-001 재발) | Critical |
+| 2   | page.tsx:431            | concern fallback → '기타' (KI-003 재발)            | Critical |
+| 3   | page.tsx:82,108,150,339 | analysisReliability 필드 + 헤더 한글 표시          | Medium   |
+| 4   | page.tsx:542            | bottom bar dark: 클래스 추가                       | High     |
+
+**통과율**: 교차 모듈 일관성 A1/I4/J1/K1 전 항목 통과
+**상세 이력**: [history/2026-03-08-hair-result.md](./history/2026-03-08-hair-result.md)
+
+---
+
+## OH-1 구강건강 분석 전체 점검 결과 (2026-03-09)
+
+### 수정 완료 (9건)
+
+| #   | 파일                         | 수정 내용                                                         | 심각도   |
+| --- | ---------------------------- | ----------------------------------------------------------------- | -------- |
+| 1   | VitaShadeDisplay:209,222     | brightness/yellowness fallback → '알 수 없음' (KI-001)            | Critical |
+| 2   | GumHealthIndicator:228       | region fallback → '알 수 없음' (KI-001)                           | Critical |
+| 3   | OralHealthResultCard:272     | method fallback → '알 수 없음' (KI-001)                           | Critical |
+| 4   | page.tsx:227                 | "피해주세요" → "깨끗한 상태에서 촬영하면 더 정확해요" (D4 KI-008) | Critical |
+| 5   | result/page.tsx              | D10 비의료 고지 추가 (치과 전문의 상담 안내)                      | Critical |
+| 6   | page.tsx upload 단계         | D6 프라이버시 안내 추가 ("서버에 별도 저장되지 않아요")           | High     |
+| 7   | OralHealthResultCard:70-113  | H4 데이터 없을 때 fallback 메시지 추가                            | High     |
+| 8   | VitaShadeDisplay:107,122,149 | J1 셰이드 라벨 dark: 클래스 추가                                  | High     |
+| 9   | result/page.tsx 점수 카드    | K1 분석 신뢰도 % 표시 추가                                        | Medium   |
+
+### B3 개선 (3건)
+
+| #   | 파일                                       | 수정 내용                             |
+| --- | ------------------------------------------ | ------------------------------------- |
+| 1   | OralHealthResultCard TabsTrigger tooth     | aria-label="치아 색상 분석 결과 보기" |
+| 2   | OralHealthResultCard TabsTrigger gum       | aria-label="잇몸 건강 분석 결과 보기" |
+| 3   | OralHealthResultCard TabsTrigger whitening | aria-label="미백 목표 및 추천 보기"   |
+
+**통과율**: 80% → 96% (+16%p, 44/46 통과, 남은 2건 warn: E2 수동확인, H5 아코디언 접힘)
+**100인 시뮬**: 전문가 19/20, 심사관 17/20, 투자자 15/20, 소비자 12/20, 인플루언서 14/20 지적 → 전원 해소
+
+---
+
+## M-1 메이크업 분석 결과 점검 결과 (2026-03-08)
+
+### 수정 완료 (5건)
+
+| #   | 파일                                       | 수정 내용                                        | 심각도   |
+| --- | ------------------------------------------ | ------------------------------------------------ | -------- |
+| 1   | transform.ts:113-120                       | label fallback → '알 수 없음' (KI-003 재발 방지) | Critical |
+| 2   | page.tsx:13,462                            | AITransparencyNotice import + compact 추가       | High     |
+| 3   | page.tsx:467                               | bottom bar dark: 클래스 추가                     | High     |
+| 4   | transform.ts:84,145-148 + page.tsx:225-234 | analysisReliability 필드 + 헤더 한글 표시        | Medium   |
+| 5   | page.tsx:462                               | AITransparencyNotice → K2 분석 한계 안내 커버    | Medium   |
+
+**통과율**: 89% → 100% (+11%p, 46/46 통과)
+**상세 이력**: [history/2026-03-08-makeup-result.md](./history/2026-03-08-makeup-result.md)
+
+---
+
+**Version**: 2.3 | **Created**: 2026-03-08 | **Updated**: 2026-03-09
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조

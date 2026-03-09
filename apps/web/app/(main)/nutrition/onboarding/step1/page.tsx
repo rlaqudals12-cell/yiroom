@@ -16,7 +16,7 @@ import { Loader2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 영양 목표 옵션
 const NUTRITION_GOALS: { id: NutritionGoal; icon: string; title: string; desc: string }[] = [
-  { id: 'weight_loss', icon: '🔥', title: '체중 감량', desc: '칼로리 적자 식단' },
+  { id: 'weight_loss', icon: '🔥', title: '체중 감량', desc: '살 빼기에 맞춘 식단' },
   { id: 'maintain', icon: '⚖️', title: '체중 유지', desc: '균형 잡힌 식단' },
   { id: 'muscle', icon: '💪', title: '근육 증가', desc: '고단백 식단' },
   { id: 'skin', icon: '✨', title: '피부 개선', desc: '피부 친화 식단' },
@@ -126,24 +126,26 @@ export default function NutritionStep1Page() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="nutrition-step1-page">
       {/* 진행 표시 - 3단계 중 1단계 */}
       <ProgressIndicator currentStep={1} totalSteps={3} />
 
       {/* 면책 조항 */}
-      <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-        <p className="text-xs text-amber-700 leading-relaxed">
+      <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4 border border-amber-100 dark:border-amber-800">
+        <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
           <span className="font-medium">서비스 이용 안내</span>
           <br />
-          <br />본 서비스는 전문 의료 조언을 대체하지 않습니다. 특정 질환이 있거나 임신 중인 경우
-          전문가와 상담 후 이용하세요.
+          <br />본 서비스는 전문 의료 조언을 대체하지 않아요. 특정 질환이 있거나 임신 중인 경우
+          전문가와 상담 후 이용해 주세요.
         </p>
       </div>
 
       {/* 섹션 1: 식사 목표 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">식사 목표</h2>
+          <h2 className="text-lg font-bold text-foreground">
+            식사 목표 <span className="text-red-500 text-sm">*</span>
+          </h2>
           <p className="text-muted-foreground text-sm mt-1">원하는 목표를 선택해 주세요</p>
         </div>
         <div className="space-y-2">
@@ -175,23 +177,30 @@ export default function NutritionStep1Page() {
 
         {/* C-1 연동 알림 */}
         {hasC1Data && (
-          <div className="bg-green-50 rounded-xl p-4 flex items-center gap-3 mb-4">
+          <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 flex items-center gap-3 mb-4">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-            <p className="text-sm text-green-700">체형 분석 데이터에서 키/체중을 불러왔어요</p>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              체형 분석 데이터에서 키/체중을 불러왔어요 (직접 수정 가능)
+            </p>
           </div>
         )}
 
         {/* 성별 선택 */}
         <div className="space-y-3 mb-4">
-          <label className="block text-sm font-medium text-foreground/80">성별</label>
-          <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm font-medium text-foreground/80">
+            성별 <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="성별 선택">
             {GENDER_OPTIONS.map((option) => (
               <button
                 key={option.id}
                 onClick={() => setGender(option.id)}
+                role="radio"
+                aria-checked={gender === option.id}
+                aria-label={option.title}
                 className={`p-4 rounded-xl border-2 transition-all ${
                   gender === option.id
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
                     : 'border-border hover:border-border/80'
                 }`}
               >
@@ -204,7 +213,9 @@ export default function NutritionStep1Page() {
 
         {/* 생년월일 */}
         <div className="space-y-2 mb-4">
-          <label className="block text-sm font-medium text-foreground/80">생년월일</label>
+          <label className="block text-sm font-medium text-foreground/80">
+            생년월일 <span className="text-red-500">*</span>
+          </label>
           <input
             type="date"
             value={birthDate || ''}
@@ -217,7 +228,9 @@ export default function NutritionStep1Page() {
         {/* 키/체중 */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground/80">키 (cm)</label>
+            <label className="block text-sm font-medium text-foreground/80">
+              키 (cm) <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
               value={height || ''}
@@ -229,7 +242,9 @@ export default function NutritionStep1Page() {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground/80">체중 (kg)</label>
+            <label className="block text-sm font-medium text-foreground/80">
+              체중 (kg) <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
               value={weight || ''}
@@ -249,7 +264,9 @@ export default function NutritionStep1Page() {
             className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
             <div className="text-left">
-              <p className="font-medium text-foreground">활동 수준</p>
+              <p className="font-medium text-foreground">
+                활동 수준 <span className="text-red-500">*</span>
+              </p>
               <p className="text-sm text-muted-foreground">
                 {activityLevel ? ACTIVITY_LEVEL_LABELS[activityLevel].label : '선택해 주세요'}
               </p>
@@ -286,9 +303,9 @@ export default function NutritionStep1Page() {
 
       {/* 선택 현황 */}
       {(goal || gender) && (
-        <div className="bg-green-50 rounded-xl p-4 space-y-1">
+        <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 space-y-1">
           {goal && (
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300">
               목표:{' '}
               <span className="font-medium">
                 {NUTRITION_GOALS.find((g) => g.id === goal)?.title}
@@ -296,7 +313,7 @@ export default function NutritionStep1Page() {
             </p>
           )}
           {gender && height && weight && (
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300">
               {GENDER_OPTIONS.find((g) => g.id === gender)?.title}, {height}cm, {weight}kg
             </p>
           )}

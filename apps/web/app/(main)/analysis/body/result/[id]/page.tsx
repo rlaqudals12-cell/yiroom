@@ -346,7 +346,7 @@ export default function BodyAnalysisResultPage() {
               </TabsList>
 
               {/* 기본 분석 탭 */}
-              <TabsContent value="basic" className="mt-0 pb-60">
+              <TabsContent value="basic" className="mt-0">
                 {/* 비주얼 리포트 카드 */}
                 <VisualReportCard
                   analysisType="body"
@@ -406,10 +406,6 @@ export default function BodyAnalysisResultPage() {
                   evidence={analysisEvidence}
                 />
 
-                {/* 다음 분석 추천 */}
-                <ContextLinkingCard currentModule="body" />
-                <ResultPageInsights currentModule="body" />
-
                 {/* 맞춤 추천 제품 */}
                 <RecommendedProducts
                   analysisType="body"
@@ -422,9 +418,6 @@ export default function BodyAnalysisResultPage() {
                   className="mt-8"
                 />
 
-                {/* AI 투명성 고지 */}
-                <AITransparencyNotice compact className="mt-8" />
-
                 {/* AI 코디 상담 CTA */}
                 <div className="mt-6 p-4 bg-card rounded-xl border border-border">
                   <ConsultantCTA
@@ -436,7 +429,7 @@ export default function BodyAnalysisResultPage() {
               </TabsContent>
 
               {/* 분석 근거 탭 */}
-              <TabsContent value="evidence" className="mt-0 pb-32">
+              <TabsContent value="evidence" className="mt-0">
                 {analysisEvidence || imageQuality ? (
                   <BodyAnalysisEvidenceReport
                     evidence={analysisEvidence}
@@ -455,7 +448,7 @@ export default function BodyAnalysisResultPage() {
               </TabsContent>
 
               {/* 스타일 가이드 탭 (C-1+) */}
-              <TabsContent value="styling" className="mt-0 pb-32">
+              <TabsContent value="styling" className="mt-0">
                 <BodyStylingTab
                   bodyType={result.bodyType as BodyType3}
                   measurements={result.measurements}
@@ -464,7 +457,7 @@ export default function BodyAnalysisResultPage() {
               </TabsContent>
 
               {/* 드레이핑 시뮬레이션 탭 (PC-1 연동) */}
-              <TabsContent value="draping" className="mt-0 pb-32" data-testid="draping-tab">
+              <TabsContent value="draping" className="mt-0" data-testid="draping-tab">
                 {pcImageUrl ? (
                   <DrapingSimulationTab imageUrl={pcImageUrl} className="w-full" />
                 ) : (
@@ -490,11 +483,10 @@ export default function BodyAnalysisResultPage() {
         </div>
       </div>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
-            {/* 운동 추천 버튼 */}
             <Button
               className="w-full"
               onClick={() =>
@@ -506,7 +498,6 @@ export default function BodyAnalysisResultPage() {
               <Dumbbell className="w-4 h-4 mr-2" />
               나에게 맞는 운동 추천
             </Button>
-            {/* 다시 분석하기 + 공유 */}
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -515,7 +506,6 @@ export default function BodyAnalysisResultPage() {
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <PrintButton title="이룸 체형 분석 결과" variant="outline" />
             </div>
-            {/* 소셜 공유 버튼 */}
             <div className="flex justify-center">
               <ShareButtons
                 content={{
@@ -528,6 +518,13 @@ export default function BodyAnalysisResultPage() {
           </div>
         </div>
       )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      <div className="max-w-lg mx-auto px-4 pb-8">
+        <ContextLinkingCard currentModule="body" />
+        <ResultPageInsights currentModule="body" />
+        <AITransparencyNotice compact className="mt-8" />
+      </div>
     </>
   );
 }

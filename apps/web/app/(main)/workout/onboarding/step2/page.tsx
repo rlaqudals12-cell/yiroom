@@ -68,7 +68,7 @@ export default function Step2Page() {
   const canProceed = !!frequency && !!location && equipment.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="workout-step2-page">
       {/* 진행 표시 - 3단계 중 2단계 */}
       <ProgressIndicator currentStep={2} totalSteps={3} />
 
@@ -147,9 +147,9 @@ export default function Step2Page() {
 
       {/* 선택 현황 */}
       {(frequency || location || equipment.length > 0) && (
-        <div className="bg-blue-50 rounded-xl p-4 space-y-1">
+        <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 space-y-1">
           {frequency && (
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               빈도:{' '}
               <span className="font-medium">
                 {FREQUENCIES.find((f) => f.id === frequency)?.title}
@@ -157,13 +157,13 @@ export default function Step2Page() {
             </p>
           )}
           {location && (
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               장소:{' '}
               <span className="font-medium">{LOCATIONS.find((l) => l.id === location)?.title}</span>
             </p>
           )}
           {equipment.length > 0 && (
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               장비: <span className="font-medium">{equipment.length}개</span> 선택됨
             </p>
           )}
