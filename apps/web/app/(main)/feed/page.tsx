@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { Users, Plus, ArrowLeft, Clock, TrendingUp, Heart } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
-import { FeedCard } from '@/components/feed';
+import { FeedCard, ReportModal, BlockConfirmDialog } from '@/components/feed';
 import { cn } from '@/lib/utils';
-import type { FeedPostWithAuthor, FeedSortType } from '@/lib/feed/types';
+import type { FeedPostWithAuthor, FeedSortType, ReportReason } from '@/lib/feed/types';
 
 /**
  * 피드 페이지 - DB 연동
@@ -32,6 +32,10 @@ export default function FeedPage() {
   const [sortType, setSortType] = useState<FeedSortType>('recent');
   const [feedPosts, setFeedPosts] = useState<FeedPostWithAuthor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 신고/차단 상태
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
+  const [blockTarget, setBlockTarget] = useState<{ userId: string; name: string } | null>(null);
 
   // 피드 데이터 로드
   useEffect(() => {
@@ -139,6 +143,38 @@ export default function FeedPage() {
     }
   }, []);
 
+  // 신고 제출
+  const handleReport = useCallback(
+    async (postId: string, reason: ReportReason, description?: string) => {
+      const res = await fetch(`/api/feed/${postId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, description }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || '신고에 실패했어요.');
+      }
+    },
+    []
+  );
+
+  // 차단 확인
+  const handleBlockConfirm = useCallback(async (blockedUserId: string) => {
+    const res = await fetch('/api/user/blocks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blockedUserId }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // 차단된 사용자의 게시물 즉시 제거
+      setFeedPosts((prev) => prev.filter((post) => post.clerk_user_id !== blockedUserId));
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background" data-testid="feed-page">
       {/* 헤더 */}
@@ -234,6 +270,8 @@ export default function FeedPage() {
                   onSave={handleSave}
                   onShare={handleShare}
                   onDelete={handleDelete}
+                  onReport={(postId) => setReportPostId(postId)}
+                  onBlock={(blockedUserId, name) => setBlockTarget({ userId: blockedUserId, name })}
                   isOwnPost={post.clerk_user_id === userId}
                 />
               </FadeInUp>
@@ -250,6 +288,23 @@ export default function FeedPage() {
       >
         <Plus className="w-6 h-6" />
       </button>
+
+      {/* 신고 모달 */}
+      <ReportModal
+        open={!!reportPostId}
+        onOpenChange={(open) => !open && setReportPostId(null)}
+        postId={reportPostId || ''}
+        onSubmit={handleReport}
+      />
+
+      {/* 차단 확인 다이얼로그 */}
+      <BlockConfirmDialog
+        open={!!blockTarget}
+        onOpenChange={(open) => !open && setBlockTarget(null)}
+        authorName={blockTarget?.name || ''}
+        blockedUserId={blockTarget?.userId || ''}
+        onConfirm={handleBlockConfirm}
+      />
     </div>
   );
 }

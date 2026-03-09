@@ -2,13 +2,22 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  MoreHorizontal,
+  Flag,
+  ShieldBan,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -20,6 +29,8 @@ interface FeedCardProps {
   onSave: (postId: string) => void;
   onShare?: (post: FeedPostWithAuthor) => void;
   onDelete?: (postId: string) => void;
+  onReport?: (postId: string) => void;
+  onBlock?: (userId: string, authorName: string) => void;
   isOwnPost?: boolean;
   className?: string;
 }
@@ -77,6 +88,8 @@ export function FeedCard({
   onSave,
   onShare,
   onDelete,
+  onReport,
+  onBlock,
   isOwnPost = false,
   className,
 }: FeedCardProps) {
@@ -123,25 +136,48 @@ export function FeedCard({
           {postTypeLabels[post.post_type]}
         </span>
 
-        {/* 더보기 메뉴 (본인 게시물인 경우) */}
-        {isOwnPost && onDelete && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="w-4 h-4" />
-                <span className="sr-only">더보기</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/feed/edit/${post.id}`)}>
-                수정하기
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(post.id)} className="text-destructive">
-                삭제하기
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        {/* 더보기 메뉴 */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="sr-only">더보기</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {isOwnPost ? (
+              <>
+                <DropdownMenuItem onClick={() => router.push(`/feed/edit/${post.id}`)}>
+                  수정하기
+                </DropdownMenuItem>
+                {onDelete && (
+                  <DropdownMenuItem onClick={() => onDelete(post.id)} className="text-destructive">
+                    삭제하기
+                  </DropdownMenuItem>
+                )}
+              </>
+            ) : (
+              <>
+                {onReport && (
+                  <DropdownMenuItem onClick={() => onReport(post.id)}>
+                    <Flag className="w-4 h-4 mr-2" />
+                    신고하기
+                  </DropdownMenuItem>
+                )}
+                {onReport && onBlock && <DropdownMenuSeparator />}
+                {onBlock && (
+                  <DropdownMenuItem
+                    onClick={() => onBlock(post.clerk_user_id, post.author.name)}
+                    className="text-destructive"
+                  >
+                    <ShieldBan className="w-4 h-4 mr-2" />
+                    차단하기
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* 콘텐츠 */}
@@ -182,13 +218,7 @@ export function FeedCard({
                 post.media_urls.length === 1 ? 'aspect-video' : 'aspect-square'
               )}
             >
-              <Image
-                src={url}
-                alt={`이미지 ${i + 1}`}
-                fill
-                className="object-cover"
-                unoptimized
-              />
+              <Image src={url} alt={`이미지 ${i + 1}`} fill className="object-cover" unoptimized />
               {/* 4장 초과 시 오버레이 */}
               {i === 3 && post.media_urls.length > 4 && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

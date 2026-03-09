@@ -10,9 +10,12 @@ import type {
   FeedInteraction,
   FeedComment,
   FeedCommentWithAuthor,
+  FeedReport,
+  UserBlock,
   CreatePostInput,
   UpdatePostInput,
   CreateCommentInput,
+  CreateReportInput,
   FeedListParams,
   InteractionType,
 } from './types';
@@ -31,6 +34,16 @@ export async function getFeedPosts(
   const supabase = createClerkSupabaseClient();
   const { page = 1, limit = 20, post_type, hashtag, user_id, sort = 'recent' } = params;
   const offset = (page - 1) * limit;
+
+  // 양방향 차단 사용자 조회
+  let allBlockedIds: string[] = [];
+  if (currentUserId) {
+    const [blockedIds, blockedByIds] = await Promise.all([
+      getBlockedUserIds(currentUserId),
+      getBlockedByUserIds(currentUserId),
+    ]);
+    allBlockedIds = [...new Set([...blockedIds, ...blockedByIds])];
+  }
 
   // 친구 목록 조회 (friends 정렬 시)
   let friendIds: string[] = [];
@@ -81,6 +94,11 @@ export async function getFeedPosts(
 
   if (user_id) {
     query = query.eq('clerk_user_id', user_id);
+  }
+
+  // 차단 사용자 게시물 제외
+  if (allBlockedIds.length > 0) {
+    query = query.not('clerk_user_id', 'in', `(${allBlockedIds.join(',')})`);
   }
 
   const { data, error, count } = await query;
@@ -403,4 +421,112 @@ export async function deleteComment(commentId: string, userId: string): Promise<
     console.error('[Feed] Error deleting comment:', error);
     throw error;
   }
+}
+
+// ============================================================
+// 신고/차단
+// ============================================================
+
+/**
+ * 게시물 신고
+ */
+export async function reportPost(userId: string, input: CreateReportInput): Promise<FeedReport> {
+  const supabase = createClerkSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('feed_reports')
+    .insert({
+      reporter_clerk_user_id: userId,
+      post_id: input.post_id,
+      reason: input.reason,
+      description: input.description || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Feed] Error reporting post:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * 사용자 차단
+ */
+export async function blockUser(blockerUserId: string, blockedUserId: string): Promise<UserBlock> {
+  const supabase = createClerkSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('user_blocks')
+    .insert({
+      blocker_clerk_user_id: blockerUserId,
+      blocked_clerk_user_id: blockedUserId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Feed] Error blocking user:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * 사용자 차단 해제
+ */
+export async function unblockUser(blockerUserId: string, blockedUserId: string): Promise<void> {
+  const supabase = createClerkSupabaseClient();
+
+  const { error } = await supabase
+    .from('user_blocks')
+    .delete()
+    .eq('blocker_clerk_user_id', blockerUserId)
+    .eq('blocked_clerk_user_id', blockedUserId);
+
+  if (error) {
+    console.error('[Feed] Error unblocking user:', error);
+    throw error;
+  }
+}
+
+/**
+ * 차단한 사용자 ID 목록 조회
+ */
+export async function getBlockedUserIds(userId: string): Promise<string[]> {
+  const supabase = createClerkSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('user_blocks')
+    .select('blocked_clerk_user_id')
+    .eq('blocker_clerk_user_id', userId);
+
+  if (error) {
+    console.error('[Feed] Error fetching blocked users:', error);
+    throw error;
+  }
+
+  return (data || []).map((b) => b.blocked_clerk_user_id);
+}
+
+/**
+ * 나를 차단한 사용자 ID 목록 조회
+ */
+export async function getBlockedByUserIds(userId: string): Promise<string[]> {
+  const supabase = createClerkSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('user_blocks')
+    .select('blocker_clerk_user_id')
+    .eq('blocked_clerk_user_id', userId);
+
+  if (error) {
+    console.error('[Feed] Error fetching blocked-by users:', error);
+    throw error;
+  }
+
+  return (data || []).map((b) => b.blocker_clerk_user_id);
 }

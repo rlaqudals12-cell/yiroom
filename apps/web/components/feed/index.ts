@@ -4,3 +4,5 @@
 
 export { FeedCard } from './FeedCard';
 export { CommentSection } from './CommentSection';
+export { ReportModal } from './ReportModal';
+export { BlockConfirmDialog } from './BlockConfirmDialog';

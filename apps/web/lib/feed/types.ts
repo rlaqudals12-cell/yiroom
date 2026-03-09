@@ -76,6 +76,52 @@ export interface CreateCommentInput {
   parent_id?: string;
 }
 
+// ============================================================
+// 신고/차단 타입
+// ============================================================
+
+export type ReportReason =
+  | 'spam'
+  | 'harassment'
+  | 'inappropriate_content'
+  | 'misinformation'
+  | 'other';
+export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+
+export interface FeedReport {
+  id: string;
+  reporter_clerk_user_id: string;
+  post_id: string;
+  reason: ReportReason;
+  description: string | null;
+  status: ReportStatus;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+}
+
+export interface UserBlock {
+  id: string;
+  blocker_clerk_user_id: string;
+  blocked_clerk_user_id: string;
+  created_at: string;
+}
+
+export interface CreateReportInput {
+  post_id: string;
+  reason: ReportReason;
+  description?: string;
+}
+
+// 신고 사유 한국어 라벨
+export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
+  spam: '스팸/광고',
+  harassment: '괴롭힘/욕설',
+  inappropriate_content: '부적절한 콘텐츠',
+  misinformation: '잘못된 정보',
+  other: '기타',
+};
+
 export type FeedSortType = 'recent' | 'popular' | 'friends';
 
 export interface FeedListParams {
