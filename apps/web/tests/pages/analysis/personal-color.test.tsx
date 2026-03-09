@@ -58,6 +58,11 @@ vi.mock('@clerk/nextjs', () => ({
   }),
 }));
 
+// Mock 이미지 압축 유틸리티
+vi.mock('@/lib/utils/image-compression', () => ({
+  compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),
+}));
+
 // Mock Supabase client
 const mockSupabaseSelect = vi.fn();
 const mockSupabaseFrom = vi.fn(() => ({
@@ -72,9 +77,15 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
 
 // Mock components
 vi.mock('@/app/(main)/analysis/personal-color/_components/LightingGuide', () => ({
-  default: ({ onContinue, onSkip }: { onContinue: () => void; onSkip: () => void }) => (
+  default: ({
+    onContinue,
+    onSkip,
+  }: {
+    onContinue: (consentToSaveImage: boolean) => void;
+    onSkip: () => void;
+  }) => (
     <div data-testid="lighting-guide">
-      <button onClick={onContinue} data-testid="continue-button">
+      <button onClick={() => onContinue(false)} data-testid="continue-button">
         계속하기
       </button>
       <button onClick={onSkip} data-testid="skip-button">
@@ -157,11 +168,9 @@ vi.mock('@/app/(main)/analysis/personal-color/_components/KnownPersonalColorInpu
 }));
 
 vi.mock('@/app/(main)/analysis/personal-color/_components/AnalysisLoading', () => ({
-  default: ({ onComplete }: { onComplete: () => void }) => {
-    // 자동으로 onComplete 호출
-    setTimeout(onComplete, 100);
-    return <div data-testid="analysis-loading">분석 중...</div>;
-  },
+  default: ({ isApiComplete }: { isApiComplete?: boolean }) => (
+    <div data-testid="analysis-loading">분석 중...{isApiComplete && <span>완료</span>}</div>
+  ),
 }));
 
 vi.mock('@/app/(main)/analysis/personal-color/_components/AnalysisResult', () => ({
@@ -178,19 +187,38 @@ vi.mock('@/app/(main)/analysis/personal-color/_components/AnalysisResult', () =>
 import PersonalColorPage from '@/app/(main)/analysis/personal-color/page';
 
 describe('PersonalColorPage', () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsSignedIn.mockReturnValue(true);
     mockIsLoaded.mockReturnValue(true);
 
-    // Supabase 기본 응답 설정 (기존 분석 없음)
+    // 기본 fetch mock — init 시 /api/analyze/personal-color 호출 대응
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ data: null }),
+    });
+
+    // Supabase 기본 응답 설정 (기존 분석 없음 + 동의 없음)
     mockSupabaseSelect.mockReturnValue({
+      // consent 쿼리: .select().eq().maybeSingle()
+      eq: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }),
+      // 기존 분석 쿼리: .select().order().limit().maybeSingle()
       order: vi.fn().mockReturnValue({
         limit: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         }),
       }),
     });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   describe('렌더링', () => {
@@ -221,6 +249,18 @@ describe('PersonalColorPage', () => {
 
   describe('정상 플로우: 다각도 촬영', () => {
     it('가이드 → 다각도촬영 → 손목촬영 → 분석 단계로 진행된다', async () => {
+      // init fetch는 빠르게 응답, 분석 fetch는 영원히 대기 → 로딩 상태 유지
+      let fetchCallCount = 0;
+      global.fetch = vi.fn().mockImplementation(() => {
+        fetchCallCount++;
+        // 첫 2회 호출(init 시 checkExistingAnalysis 등)은 빠르게 응답
+        if (fetchCallCount <= 2) {
+          return Promise.resolve({ ok: false, status: 404, json: async () => ({ data: null }) });
+        }
+        // 이후 호출(분석 API)은 영원히 대기
+        return new Promise(() => {});
+      });
+
       const user = userEvent.setup();
       render(<PersonalColorPage />);
 
@@ -252,6 +292,16 @@ describe('PersonalColorPage', () => {
     });
 
     it('손목 사진 건너뛰기가 가능하다', async () => {
+      // init fetch는 빠르게 응답, 분석 fetch는 영원히 대기
+      let fetchCallCount = 0;
+      global.fetch = vi.fn().mockImplementation(() => {
+        fetchCallCount++;
+        if (fetchCallCount <= 2) {
+          return Promise.resolve({ ok: false, status: 404, json: async () => ({ data: null }) });
+        }
+        return new Promise(() => {});
+      });
+
       const user = userEvent.setup();
       render(<PersonalColorPage />);
 
@@ -361,8 +411,12 @@ describe('PersonalColorPage', () => {
   describe('기존 분석 결과', () => {
     it('기존 분석이 있으면 배너가 표시된다', async () => {
       // 낮은 신뢰도 (< 70)면 자동 리디렉트 대신 배너 표시
-      // 실제 쿼리: .select().order().limit().maybeSingle()
       mockSupabaseSelect.mockReturnValue({
+        // consent 쿼리: .select().eq().maybeSingle()
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+        // 기존 분석 쿼리: .select().order().limit().maybeSingle()
         order: vi.fn().mockReturnValue({
           limit: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue({
@@ -400,6 +454,16 @@ describe('PersonalColorPage', () => {
 
   describe('AI 분석', () => {
     it('분석 중 메시지가 표시된다', async () => {
+      // init fetch는 빠르게 응답, 분석 fetch는 영원히 대기
+      let fetchCallCount = 0;
+      global.fetch = vi.fn().mockImplementation(() => {
+        fetchCallCount++;
+        if (fetchCallCount <= 2) {
+          return Promise.resolve({ ok: false, status: 404, json: async () => ({ data: null }) });
+        }
+        return new Promise(() => {});
+      });
+
       const user = userEvent.setup();
       render(<PersonalColorPage />);
 

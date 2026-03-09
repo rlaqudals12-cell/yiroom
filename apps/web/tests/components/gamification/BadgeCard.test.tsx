@@ -137,10 +137,10 @@ describe('BadgeMini', () => {
     expect(mini).toHaveClass('grayscale');
   });
 
-  it('title 속성에 배지명', () => {
+  it('aria-label에 배지명', () => {
     render(<BadgeMini badge={mockBadge} isEarned={true} />);
 
     const mini = screen.getByTestId('badge-mini');
-    expect(mini).toHaveAttribute('title', '일주일 스트릭');
+    expect(mini).toHaveAttribute('aria-label', '일주일 스트릭');
   });
 });

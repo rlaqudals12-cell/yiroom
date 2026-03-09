@@ -275,6 +275,9 @@ vi.mock('lucide-react', () => ({
   Watch: createIconMock('Watch'),
   Glasses: createIconMock('Glasses'),
 
+  // Celebration
+  PartyPopper: createIconMock('PartyPopper'),
+
   // Misc
   Calendar: createIconMock('Calendar'),
   Lock: createIconMock('Lock'),
@@ -307,8 +310,17 @@ vi.mock('lucide-react', () => ({
   Copy: createIconMock('Copy'),
   Link: createIconMock('Link'),
 
+  // Print
+  Printer: createIconMock('Printer'),
+
   // Posture (PST-1)
   ArrowUpRight: createIconMock('ArrowUpRight'),
+
+  // Compare & Diff
+  GitCompareArrows: createIconMock('GitCompareArrows'),
+
+  // Scan
+  Scan: createIconMock('Scan'),
 
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),

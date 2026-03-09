@@ -503,11 +503,9 @@ describe('POST /api/analyze/posture', () => {
       expect(mockInsert).toHaveBeenCalled();
     });
 
-    it('DB 저장 실패 시 500 반환', async () => {
-      mockInsertSingle.mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST204', message: 'Database insert failed' },
-      });
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
+      // DB insert가 throw하면 catch 블록에서 dbSaveFailed: true 반환
+      mockInsertSingle.mockRejectedValue(new Error('Database insert failed'));
 
       const req = createMockPostRequest({
         frontImageBase64: 'data:image/jpeg;base64,abc',
@@ -517,9 +515,8 @@ describe('POST /api/analyze/posture', () => {
       const response = await POST(req);
       const data = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(data.code).toBe('DB_ERROR');
-      expect(data.error).toBe('분석 결과 저장에 실패했습니다.');
+      expect(response.status).toBe(200);
+      expect(data.dbSaveFailed).toBe(true);
     });
   });
 

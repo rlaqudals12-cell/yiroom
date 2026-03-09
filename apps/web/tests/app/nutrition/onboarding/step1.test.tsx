@@ -86,15 +86,15 @@ describe('NutritionStep1Page', () => {
     await screen.findByText('서비스 이용 안내');
 
     expect(screen.getByText('서비스 이용 안내')).toBeInTheDocument();
-    expect(screen.getByText(/전문 의료 조언을 대체하지 않습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/전문 의료 조언을 대체하지 않아요/)).toBeInTheDocument();
   });
 
   it('shows goal descriptions', async () => {
     render(<NutritionStep1Page />);
 
-    await screen.findByText('칼로리 적자 식단');
+    await screen.findByText('살 빼기에 맞춘 식단');
 
-    expect(screen.getByText('칼로리 적자 식단')).toBeInTheDocument();
+    expect(screen.getByText('살 빼기에 맞춘 식단')).toBeInTheDocument();
     expect(screen.getByText('균형 잡힌 식단')).toBeInTheDocument();
     expect(screen.getByText('고단백 식단')).toBeInTheDocument();
     expect(screen.getByText('피부 친화 식단')).toBeInTheDocument();

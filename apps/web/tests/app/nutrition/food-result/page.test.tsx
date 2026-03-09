@@ -207,7 +207,7 @@ describe('FoodResultPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /저장하기/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('저장에 실패했습니다.')).toBeInTheDocument();
+      expect(screen.getByText('저장에 실패했어요.')).toBeInTheDocument();
     });
   });
 

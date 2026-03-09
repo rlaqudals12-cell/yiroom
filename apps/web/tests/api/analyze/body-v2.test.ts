@@ -309,7 +309,10 @@ describe('POST /api/analyze/body-v2', () => {
 
     it('33개가 아닌 랜드마크는 이미지 분석으로 폴백한다', async () => {
       const landmarks = Array.from({ length: 20 }, () => ({
-        x: 0, y: 0, z: 0, visibility: 0.9,
+        x: 0,
+        y: 0,
+        z: 0,
+        visibility: 0.9,
       }));
 
       const response = await POST(
@@ -395,7 +398,13 @@ describe('POST /api/analyze/body-v2', () => {
 
   describe('체형 분류', () => {
     it('5가지 체형이 올바르게 분류된다', async () => {
-      const bodyShapes = ['rectangle', 'inverted-triangle', 'triangle', 'oval', 'hourglass'] as const;
+      const bodyShapes = [
+        'rectangle',
+        'inverted-triangle',
+        'triangle',
+        'oval',
+        'hourglass',
+      ] as const;
 
       for (const shape of bodyShapes) {
         vi.mocked(classifyBodyType).mockReturnValue(shape);
@@ -489,7 +498,7 @@ describe('POST /api/analyze/body-v2', () => {
       expect(usersUpdateMock).toHaveBeenCalled();
     });
 
-    it('DB 저장 실패 시 500을 반환한다', async () => {
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
         if (table === 'body_assessments') {
           return {
@@ -511,8 +520,8 @@ describe('POST /api/analyze/body-v2', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(json.code).toBe('DB_ERROR');
+      expect(response.status).toBe(200);
+      expect(json.dbSaveFailed).toBe(true);
     });
   });
 
@@ -629,7 +638,10 @@ describe('GET /api/analyze/body-v2', () => {
     });
 
     it('DB 에러 시 500을 반환한다', async () => {
-      mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error', code: 'OTHER' } });
+      mockSupabase.single.mockResolvedValue({
+        data: null,
+        error: { message: 'DB Error', code: 'OTHER' },
+      });
 
       const response = await GET();
       const json = await response.json();

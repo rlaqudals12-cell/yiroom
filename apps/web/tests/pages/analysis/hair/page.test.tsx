@@ -57,6 +57,11 @@ vi.mock('@/lib/mock/hair-analysis', async () => {
   };
 });
 
+// Mock 이미지 압축 유틸리티
+vi.mock('@/lib/utils/image-compression', () => ({
+  compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),
+}));
+
 // Mock fetch (분석 API 호출)
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

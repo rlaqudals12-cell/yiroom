@@ -187,7 +187,7 @@ export default function DrapeColorPalette({
           size="sm"
           onClick={() => onMetalTypeChange('silver')}
           disabled={isAnalyzing}
-          className="flex-1"
+          className="flex-1 min-h-[44px]"
         >
           <span className="mr-1">🥈</span> 실버
         </Button>
@@ -196,7 +196,7 @@ export default function DrapeColorPalette({
           size="sm"
           onClick={() => onMetalTypeChange('gold')}
           disabled={isAnalyzing}
-          className="flex-1"
+          className="flex-1 min-h-[44px]"
         >
           <span className="mr-1">🥇</span> 골드
         </Button>

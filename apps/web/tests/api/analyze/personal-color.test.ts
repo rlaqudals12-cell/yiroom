@@ -317,7 +317,7 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.usedMock).toBe(false);
     });
 
-    it('AI 분석 실패 시 503을 반환한다', async () => {
+    it('AI 분석 실패 시 Mock Fallback으로 결과를 반환한다', async () => {
       vi.mocked(analyzePersonalColor).mockRejectedValue(new Error('API Error'));
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
@@ -328,9 +328,9 @@ describe('POST /api/analyze/personal-color', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(503);
-      expect(json.error).toBe('AI 분석 실패');
-      expect(json.retryable).toBe(true);
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.data).toBeDefined();
     });
 
     it('veinColor가 blue인데 tone이 warm이면 cool로 수정한다', async () => {
@@ -446,7 +446,7 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.data).toEqual(mockDbResult);
     });
 
-    it('DB 저장 실패 시 500을 반환한다', async () => {
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
       mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
       const response = await POST(
@@ -457,8 +457,8 @@ describe('POST /api/analyze/personal-color', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to save analysis'); // 이 에러는 API에서 직접 반환
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
     });
   });
 

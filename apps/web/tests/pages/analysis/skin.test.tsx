@@ -56,6 +56,11 @@ vi.mock('@/lib/analysis/photo-reuse', () => ({
   checkPhotoReuseEligibility: vi.fn().mockResolvedValue({ eligible: false, reason: 'no_image' }),
 }));
 
+// Mock 이미지 압축 유틸리티
+vi.mock('@/lib/utils/image-compression', () => ({
+  compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),
+}));
+
 // Mock Supabase client - 기존 분석/동의 조회용
 const mockMaybeSingle = vi.fn();
 const mockSingle = vi.fn();
@@ -228,11 +233,9 @@ vi.mock('@/app/(main)/analysis/skin/_components/GalleryMultiAngleSkinUpload', ()
 }));
 
 vi.mock('@/app/(main)/analysis/skin/_components/AnalysisLoading', () => ({
-  default: ({ onComplete }: { onComplete: () => void }) => {
-    // 즉시 완료 호출
-    setTimeout(onComplete, 0);
-    return <div data-testid="analysis-loading">분석 중...</div>;
-  },
+  default: ({ isApiComplete }: { isApiComplete?: boolean }) => (
+    <div data-testid="analysis-loading">분석 중...{isApiComplete && <span>완료</span>}</div>
+  ),
 }));
 
 vi.mock('@/app/(main)/analysis/skin/_components/AnalysisResult', () => ({
@@ -621,7 +624,7 @@ describe('SkinAnalysisPage', () => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
 
-      expect(screen.getByText(/Analysis failed/)).toBeInTheDocument();
+      expect(screen.getAllByText(/분석 중 오류가 발생했어요/).length).toBeGreaterThan(0);
       expect(screen.getByTestId('multi-angle-skin-capture')).toBeInTheDocument();
     });
   });

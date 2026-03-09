@@ -367,21 +367,27 @@ describe('POST /api/analyze/hair', () => {
       expect(json.data.hair_type).toBe('normal');
     });
 
-    it('DB 저장 실패 시 dbError를 반환한다', async () => {
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
+      // DB insert가 throw하면 catch 블록에서 dbSaveFailed: true 반환
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
         if (table === 'hair_analyses') {
           return {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: 'Database insert error' },
-                }),
+                single: vi.fn().mockRejectedValue(new Error('Database insert error')),
               }),
             }),
           };
         }
-        return mockSupabase.from(table);
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        };
       });
 
       const response = await POST(
@@ -392,8 +398,8 @@ describe('POST /api/analyze/hair', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(json.error).toBe('분석 결과 저장에 실패했습니다.');
+      expect(response.status).toBe(200);
+      expect(json.dbSaveFailed).toBe(true);
     });
   });
 

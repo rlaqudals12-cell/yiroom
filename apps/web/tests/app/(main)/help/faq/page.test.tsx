@@ -145,11 +145,11 @@ describe('FAQPage (via FAQClient)', () => {
       expect(screen.getByTestId('arrow-left-icon')).toBeInTheDocument();
     });
 
-    it('대시보드 링크', () => {
+    it('홈 링크', () => {
       render(<FAQClient faqs={mockFAQs} />);
       const links = screen.getAllByRole('link');
-      const dashboardLink = links.find((link) => link.getAttribute('href') === '/dashboard');
-      expect(dashboardLink).toBeDefined();
+      const homeLink = links.find((link) => link.getAttribute('href') === '/home');
+      expect(homeLink).toBeDefined();
     });
 
     it('HelpCircle 아이콘 표시', () => {

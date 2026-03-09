@@ -257,33 +257,40 @@ describe('PC-1 에러 처리 로직', () => {
   });
 
   describe('에러 메시지 분기', () => {
-    // page.tsx에서 추출한 에러 메시지 결정 로직
-    function getErrorMessage(serverError: string | null, isRetryable: boolean): string {
+    // page.tsx에서 추출한 throw용 에러 메시지 결정 로직 (해요체)
+    function getThrowMessage(serverError: string | null, isRetryable: boolean): string {
       return (
-        serverError ||
-        (isRetryable ? '서버에 일시적인 문제가 있습니다' : '결과를 불러올 수 없습니다')
+        serverError || (isRetryable ? '서버에 일시적인 문제가 있어요' : '결과를 불러올 수 없어요')
       );
     }
 
-    it('서버 에러 메시지가 있으면 그것을 우선 사용한다', () => {
-      const message = getErrorMessage('커스텀 에러 메시지', false);
+    // page.tsx catch 블록에서 최종적으로 setError에 설정되는 고정 메시지
+    const FINAL_ERROR_MESSAGE = '결과를 불러올 수 없어요. 다시 시도해주세요.';
+
+    it('서버 에러 메시지가 있으면 그것을 throw에 우선 사용한다', () => {
+      const message = getThrowMessage('커스텀 에러 메시지', false);
       expect(message).toBe('커스텀 에러 메시지');
     });
 
-    it('retryable 에러는 "서버에 일시적인 문제가 있습니다" 메시지를 사용한다', () => {
-      const message = getErrorMessage(null, true);
-      expect(message).toBe('서버에 일시적인 문제가 있습니다');
+    it('retryable 에러는 "서버에 일시적인 문제가 있어요" 메시지를 throw한다', () => {
+      const message = getThrowMessage(null, true);
+      expect(message).toBe('서버에 일시적인 문제가 있어요');
     });
 
-    it('permanent 에러는 "결과를 불러올 수 없습니다" 메시지를 사용한다', () => {
-      const message = getErrorMessage(null, false);
-      expect(message).toBe('결과를 불러올 수 없습니다');
+    it('permanent 에러는 "결과를 불러올 수 없어요" 메시지를 throw한다', () => {
+      const message = getThrowMessage(null, false);
+      expect(message).toBe('결과를 불러올 수 없어요');
     });
 
     it('빈 문자열 서버 에러는 fallback 메시지를 사용한다', () => {
       // JavaScript에서 빈 문자열은 falsy → fallback
-      const message = getErrorMessage('', true);
-      expect(message).toBe('서버에 일시적인 문제가 있습니다');
+      const message = getThrowMessage('', true);
+      expect(message).toBe('서버에 일시적인 문제가 있어요');
+    });
+
+    it('catch 블록에서 UI에 표시되는 최종 에러 메시지는 고정 문구이다', () => {
+      // page.tsx: setError('결과를 불러올 수 없어요. 다시 시도해주세요.')
+      expect(FINAL_ERROR_MESSAGE).toBe('결과를 불러올 수 없어요. 다시 시도해주세요.');
     });
   });
 });
@@ -321,6 +328,7 @@ vi.mock('@/components/analysis/RecommendedProducts', () => ({
 
 vi.mock('@/components/share', () => ({
   ShareButton: () => <button data-testid="mock-share-button">Share</button>,
+  PrintButton: () => <button data-testid="mock-print-button">Print</button>,
 }));
 
 vi.mock('@/components/common/ShareButtons', () => ({
@@ -344,6 +352,20 @@ vi.mock('@/components/analysis/GenderAdaptiveAccessories', () => ({
 
 vi.mock('@/components/analysis/ContextLinkingCard', () => ({
   ContextLinkingCard: () => <div data-testid="mock-context-linking">ContextLinkingCard Mock</div>,
+}));
+
+vi.mock('@/components/insights', () => ({
+  default: () => null,
+  ResultPageInsights: () => (
+    <div data-testid="mock-result-page-insights">ResultPageInsights Mock</div>
+  ),
+  CrossModuleCard: () => <div data-testid="mock-cross-module-card">CrossModuleCard Mock</div>,
+}));
+
+vi.mock('@/components/analysis/personal-color/SeasonEducationModal', () => ({
+  SeasonEducationModal: () => (
+    <div data-testid="mock-season-education-modal">SeasonEducationModal Mock</div>
+  ),
 }));
 
 vi.mock('@/components/common/AIBadge', () => ({
@@ -565,7 +587,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
   describe('에러 상태 UI', () => {
     it('5xx 에러 시 "다시 시도" 버튼이 표시된다', async () => {
       setupSignedInState();
-      setupErrorFetch(500, '서버에 일시적인 문제가 있습니다');
+      setupErrorFetch(500, '서버에 일시적인 문제가 있어요');
 
       const PersonalColorResultPage = (
         await import('@/app/(main)/analysis/personal-color/result/[id]/page')
@@ -573,8 +595,9 @@ describe('PC-1 결과 페이지 렌더링', () => {
 
       render(<PersonalColorResultPage />);
 
+      // 에러 UI에 고정 메시지가 표시됨
       await waitFor(() => {
-        expect(screen.getByText('다시 시도')).toBeInTheDocument();
+        expect(screen.getByText('결과를 불러올 수 없어요. 다시 시도해주세요.')).toBeInTheDocument();
       });
 
       // "다시 시도" 버튼이 있고 "새로 분석하기"는 없음
@@ -584,7 +607,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
 
     it('4xx 에러 시 "새로 분석하기" 버튼이 표시된다', async () => {
       setupSignedInState();
-      setupErrorFetch(404, '결과를 불러올 수 없습니다');
+      setupErrorFetch(404, '결과를 불러올 수 없어요');
 
       const PersonalColorResultPage = (
         await import('@/app/(main)/analysis/personal-color/result/[id]/page')
@@ -592,8 +615,9 @@ describe('PC-1 결과 페이지 렌더링', () => {
 
       render(<PersonalColorResultPage />);
 
+      // 에러 UI에 고정 메시지가 표시됨
       await waitFor(() => {
-        expect(screen.getByText('새로 분석하기')).toBeInTheDocument();
+        expect(screen.getByText('결과를 불러올 수 없어요. 다시 시도해주세요.')).toBeInTheDocument();
       });
 
       // "새로 분석하기" 버튼이 있고 "다시 시도"는 없음

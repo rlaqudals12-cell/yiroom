@@ -60,6 +60,11 @@ vi.mock('@clerk/nextjs', () => ({
   }),
 }));
 
+// Mock 이미지 압축 유틸리티
+vi.mock('@/lib/utils/image-compression', () => ({
+  compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),
+}));
+
 // Mock Supabase client
 const mockSupabaseSelect = vi.fn();
 const mockSupabaseFrom = vi.fn(() => ({
@@ -177,17 +182,11 @@ vi.mock('@/app/(main)/analysis/body/_components/KnownBodyTypeInput', () => ({
   ),
 }));
 
-vi.mock('@/app/(main)/analysis/body/_components/AnalysisLoading', () => {
-  // 컴포넌트 이름을 대문자로 시작하여 React Hook 규칙 준수
-  const MockAnalysisLoading = ({ onComplete }: { onComplete: () => void }) => {
-    React.useEffect(() => {
-      const timer = setTimeout(onComplete, 100);
-      return () => clearTimeout(timer);
-    }, [onComplete]);
-    return <div data-testid="analysis-loading">분석 중...</div>;
-  };
-  return { default: MockAnalysisLoading };
-});
+vi.mock('@/app/(main)/analysis/body/_components/AnalysisLoading', () => ({
+  default: ({ isApiComplete }: { isApiComplete?: boolean }) => (
+    <div data-testid="analysis-loading">분석 중...{isApiComplete && <span>완료</span>}</div>
+  ),
+}));
 
 vi.mock('@/app/(main)/analysis/body/_components/AnalysisResult', () => ({
   default: ({ result, onRetry }: { result: unknown; onRetry: () => void }) => (
@@ -259,6 +258,9 @@ describe('BodyAnalysisPage', () => {
 
   describe('정상 플로우: 가이드 → 입력 → 다각도촬영 → 분석', () => {
     it('가이드 → 입력 폼 → 다각도 촬영 → 분석 단계로 진행된다', async () => {
+      // fetch가 영원히 대기하도록 설정 → 로딩 상태 유지
+      global.fetch = vi.fn().mockReturnValue(new Promise(() => {}));
+
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
@@ -398,6 +400,9 @@ describe('BodyAnalysisPage', () => {
     });
 
     it('분석 중 메시지가 표시된다', async () => {
+      // fetch가 영원히 대기하도록 설정 → 로딩 상태 유지
+      global.fetch = vi.fn().mockReturnValue(new Promise(() => {}));
+
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
@@ -410,7 +415,7 @@ describe('BodyAnalysisPage', () => {
       await user.click(screen.getByTestId('multi-angle-complete'));
 
       await waitFor(() => {
-        expect(screen.getByText(/AI가 분석 중이에요/)).toBeInTheDocument();
+        expect(screen.getByTestId('analysis-loading')).toBeInTheDocument();
       });
     });
   });

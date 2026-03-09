@@ -279,11 +279,15 @@ describe('NutritionPage', () => {
     it('칼로리 요약을 표시한다', async () => {
       render(<NutritionPage />);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('daily-calorie-summary')).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('consumed-calories')).toHaveTextContent('1,200');
+      // 설정 로딩 완료 후 칼로리 요약이 표시될 때까지 대기
+      // 모든 assertion을 waitFor 안에 포함 (비동기 상태 전환 타이밍 이슈 방지)
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('daily-calorie-summary')).toBeInTheDocument();
+          expect(screen.getByTestId('consumed-calories')).toHaveTextContent('1,200');
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('식사 섹션들을 표시한다', async () => {
@@ -368,20 +372,37 @@ describe('NutritionPage', () => {
 
   describe('에러 처리', () => {
     it('API 에러 시 에러 상태를 표시한다', async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve({
+      // 설정은 성공하지만 meals는 실패하도록 설정
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes('/api/nutrition/settings')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockSettingsResponse),
+          });
+        }
+        if (url.includes('/api/nutrition/water')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockWaterResponse),
+          });
+        }
+        // meals 및 기타 API는 실패
+        return Promise.resolve({
           ok: false,
           status: 500,
-        })
-      );
+        });
+      });
 
       render(<NutritionPage />);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('nutrition-page-error')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('nutrition-page-error')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
-      expect(screen.getByText('데이터를 불러올 수 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('데이터를 불러올 수 없어요')).toBeInTheDocument();
     });
 
     it('401 에러 시 로그인 페이지로 이동한다', async () => {

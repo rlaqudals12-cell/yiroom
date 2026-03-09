@@ -51,10 +51,10 @@ export async function generateAnalysisMetadata(
       return fallback;
     }
 
-    const rawValue = data[titleField];
+    const rawValue = (data as any)[titleField];
     // 숫자 값은 '점' 접미사 추가 (예: overall_score → "85점")
     let displayValue = rawValue;
-    if (titleMapper && rawValue in titleMapper) {
+    if (titleMapper && typeof rawValue === 'string' && rawValue in titleMapper) {
       displayValue = titleMapper[rawValue];
     } else if (typeof rawValue === 'number') {
       displayValue = `${rawValue}점`;

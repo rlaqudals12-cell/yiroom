@@ -438,7 +438,7 @@ describe('POST /api/analyze/hair-v2', () => {
       expect(json.data.id).toBe('hair-123');
     });
 
-    it('DB 저장 실패 시 500을 반환한다', async () => {
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
         if (table === 'hair_assessments') {
           return {
@@ -460,8 +460,8 @@ describe('POST /api/analyze/hair-v2', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(json.code).toBe('DB_ERROR');
+      expect(response.status).toBe(200);
+      expect(json.dbSaveFailed).toBe(true);
     });
   });
 

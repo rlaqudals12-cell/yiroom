@@ -193,17 +193,17 @@ export default function NutritionStep3Page() {
         <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-green-800 dark:text-green-300">일일 권장 칼로리</p>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-            {previewCalories.dailyCalorieTarget.toLocaleString()}kcal
+            {previewCalories.dailyCalorieTarget.toLocaleString()} kcal
           </p>
           <div className="text-xs text-green-700 dark:text-green-400 space-x-4">
-            <span>기초대사량: {previewCalories.bmr.toLocaleString()}kcal</span>
-            <span>활동대사량: {previewCalories.tdee.toLocaleString()}kcal</span>
+            <span>기초대사량: {previewCalories.bmr.toLocaleString()} kcal</span>
+            <span>활동대사량: {previewCalories.tdee.toLocaleString()} kcal</span>
           </div>
           {mealCount >= 2 && (
             <p className="text-sm text-green-700 dark:text-green-400 pt-2 border-t border-green-200 dark:border-green-800">
               한 끼당 약{' '}
               <span className="font-bold">
-                {Math.round(previewCalories.dailyCalorieTarget / mealCount).toLocaleString()}kcal
+                {Math.round(previewCalories.dailyCalorieTarget / mealCount).toLocaleString()} kcal
               </span>
             </p>
           )}

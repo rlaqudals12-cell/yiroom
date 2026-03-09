@@ -50,9 +50,7 @@ describe('Analysis Compare API', () => {
     });
 
     it('type 파라미터 누락 시 400을 반환한다', async () => {
-      const request = createRequest(
-        'http://localhost/api/analysis/compare?from=uuid1&to=uuid2'
-      );
+      const request = createRequest('http://localhost/api/analysis/compare?from=uuid1&to=uuid2');
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -61,9 +59,7 @@ describe('Analysis Compare API', () => {
     });
 
     it('from 파라미터 누락 시 400을 반환한다', async () => {
-      const request = createRequest(
-        'http://localhost/api/analysis/compare?type=skin&to=uuid2'
-      );
+      const request = createRequest('http://localhost/api/analysis/compare?type=skin&to=uuid2');
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -72,9 +68,7 @@ describe('Analysis Compare API', () => {
     });
 
     it('to 파라미터 누락 시 400을 반환한다', async () => {
-      const request = createRequest(
-        'http://localhost/api/analysis/compare?type=skin&from=uuid1'
-      );
+      const request = createRequest('http://localhost/api/analysis/compare?type=skin&from=uuid1');
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -215,15 +209,40 @@ describe('Analysis Compare API', () => {
       expect(data.changes.details.shoulder).toBe(5); // 75 - 70
     });
 
-    it('퍼스널 컬러 비교는 지원하지 않는다', async () => {
+    it('퍼스널 컬러 비교 결과를 반환한다', async () => {
+      const fromData = {
+        id: 'pc1',
+        created_at: '2025-01-01T10:00:00Z',
+        face_image_url: 'https://example.com/pc-before.jpg',
+        season: 'spring',
+        undertone: 'warm',
+        confidence: 85,
+      };
+
+      const toData = {
+        id: 'pc2',
+        created_at: '2025-01-15T10:00:00Z',
+        face_image_url: 'https://example.com/pc-after.jpg',
+        season: 'spring',
+        undertone: 'warm',
+        confidence: 92,
+      };
+
+      mockSingle
+        .mockResolvedValueOnce({ data: fromData, error: null })
+        .mockResolvedValueOnce({ data: toData, error: null });
+
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=personal-color&from=pc1&to=pc2'
       );
       const response = await GET(request);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data.error).toContain('not supported');
+
+      expect(data.before.id).toBe('pc1');
+      expect(data.after.id).toBe('pc2');
+      expect(data.changes.period).toBe('2주');
     });
 
     it('개선 인사이트가 생성된다', async () => {

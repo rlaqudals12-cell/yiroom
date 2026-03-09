@@ -20,6 +20,7 @@ vi.mock('next/navigation', () => ({
 // Mock Clerk
 vi.mock('@clerk/nextjs', () => ({
   useAuth: () => ({ isSignedIn: true, isLoaded: true }),
+  useUser: () => ({ user: { id: 'user-1' }, isLoaded: true, isSignedIn: true }),
 }));
 
 // Mock Supabase client
@@ -59,6 +60,35 @@ vi.mock('@/hooks/useAnalysisShare', () => ({
 vi.mock('@/components/animations', () => ({
   CelebrationEffect: ({ trigger }: { trigger: boolean }) =>
     trigger ? <div data-testid="celebration">축하!</div> : null,
+}));
+
+// Mock ResultPageInsights (복잡한 의존성 체인 우회)
+vi.mock('@/components/insights', () => ({
+  ResultPageInsights: () => <div data-testid="result-page-insights" />,
+}));
+
+// Mock AIBadge
+vi.mock('@/components/common/AIBadge', () => ({
+  AIBadge: () => <span data-testid="ai-badge" />,
+  AITransparencyNotice: () => <div data-testid="ai-transparency" />,
+}));
+
+// Mock conditional-helpers
+vi.mock('@/lib/utils/conditional-helpers', () => ({
+  mapToClass: (value: unknown, map: Record<string, string>, fallback: string) => {
+    const key = String(value);
+    return map[key] || fallback || '';
+  },
+}));
+
+// Mock share 컴포넌트 (cascading 의존성 우회)
+vi.mock('@/components/share', () => ({
+  ShareButton: ({ onShare }: { onShare?: () => void }) => (
+    <button data-testid="share-button" onClick={onShare}>
+      공유
+    </button>
+  ),
+  PrintButton: () => <button data-testid="print-button">PDF 저장</button>,
 }));
 
 // Mock share utils
@@ -165,7 +195,7 @@ describe('HairAnalysisResultPage', () => {
         expect(screen.getByText('항목별 점수')).toBeInTheDocument();
       });
 
-      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
+      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
       await user.click(detailTab);
 
       await waitFor(() => {
@@ -231,8 +261,8 @@ describe('HairAnalysisResultPage', () => {
         expect(screen.getByText('항목별 점수')).toBeInTheDocument();
       });
 
-      // 상세 정보 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
+      // 케어 가이드 탭으로 전환
+      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
       await user.click(detailTab);
 
       await waitFor(() => {
@@ -250,8 +280,8 @@ describe('HairAnalysisResultPage', () => {
         expect(screen.getByTestId('hair-result-page')).toBeInTheDocument();
       });
 
-      // 상세 정보 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /상세 분석 정보/i });
+      // 케어 가이드 탭으로 전환
+      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
       await user.click(detailTab);
 
       await waitFor(() => {

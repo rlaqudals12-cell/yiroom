@@ -37,6 +37,11 @@ vi.stubGlobal('sessionStorage', {
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
+// image-compression mock (Canvas API 미지원 환경 대응)
+vi.mock('@/lib/utils/image-compression', () => ({
+  compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64Data'),
+}));
+
 describe('FoodCapturePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -250,7 +255,7 @@ describe('FoodCapturePage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('분석 실패')).toBeInTheDocument();
-        expect(screen.getByText('서버 오류')).toBeInTheDocument();
+        expect(screen.getByText('음식 분석에 실패했어요.')).toBeInTheDocument();
       });
     });
 

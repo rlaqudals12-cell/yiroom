@@ -21,7 +21,7 @@
 
 ## 누적 패턴
 
-### KI-001: 영어 enum이 한글 변환 없이 JSX에 직접 렌더링
+### KI-001: 영어 enum이 한글 변환 없이 JSX에 직접 렌더링 — **해결됨**
 
 - **발견 횟수**: 17회 (Phase 28 홈, 분석 결과 2건, PC 결과 공유 제목, DrapeColorPalette 색상명, **AnalysisResult 베스트/워스트 4개소**, **DetailedEvidenceReport title 2개소**, **H-1 헤어 label fallback 4개소**, **OH-1 4개소 (VitaShadeDisplay×2, GumHealthIndicator, OralHealthResultCard)**, **Posture 2개소 (result page + input page postureType fallback)**)
 - **관련 항목**: A1
@@ -29,6 +29,7 @@
 - **원인**: AI/DB 반환값을 그대로 텍스트 보간에 사용. 매핑 함수 호출 누락
 - **수정 방법**: `getKoreanColorName(hex)` 공유 유틸 (`lib/utils/color-names.ts`) 사용 필수
 - **재발 방지**: 새 모듈 추가 시 A1 영어값 목록에 enum 등록 + 매핑 함수 작성을 원자 분해에 포함. HEX 색상은 `getKoreanColorName()` 사용
+- **해결 커밋**: 전체 17개소 매핑 함수 적용 완료 (OH-1, H-1, Posture, PC, Body, Skin 포함)
 
 ### KI-002: 터치 타겟 44px 미달 (p-2/h-8 사용) — **3회 도달, 승격 완료**
 
@@ -38,8 +39,9 @@
 - **원인**: 시각적 크기에 집중하고 터치 영역 크기를 간과
 - **수정 방법**: `min-h-[44px] min-w-[44px]` 또는 `p-3` 이상 적용
 - **재발 방지**: 버튼/링크 생성 시 p-3 기본값 습관화
+- **최종 수정**: DrapeColorPalette 금속 테스트 버튼(실버/골드) `min-h-[44px]` 추가 (전체 11개소 수정 완료)
 
-### KI-003: 체형 분석 fallback에서 raw 영어값 노출
+### KI-003: 체형 분석 fallback에서 raw 영어값 노출 — **해결됨**
 
 - **발견 횟수**: 1회
 - **관련 항목**: A1
@@ -47,8 +49,9 @@
 - **원인**: 주 매핑에는 한글이 있지만 fallback/default 분기에서 raw값 반환
 - **수정 방법**: switch/map의 default 케이스에도 한글 fallback 텍스트 반환
 - **재발 방지**: 매핑 함수에 exhaustive check 또는 "알 수 없음" 기본값
+- **해결 커밋**: KI-001 일괄 수정 시 함께 해결
 
-### KI-004: "시너지 달성!" 등 어색한 한국어 표현
+### KI-004: "시너지 달성!" 등 어색한 한국어 표현 — **해결됨**
 
 - **발견 횟수**: 1회
 - **관련 항목**: A2 (해요체 통일과 별개로 톤 문제)
@@ -56,15 +59,17 @@
 - **원인**: 영어 직역 또는 게임화 용어 직접 사용
 - **수정 방법**: 자연스러운 한국어로 교체 ("연결 인사이트가 생겼어요")
 - **재발 방지**: UX 라이팅 시 "소리 내어 읽기" 테스트
+- **해결 커밋**: Phase 28 홈 리디자인 시 수정
 
-### KI-005: 숫자+단위 불일치 (toLocaleString vs 단위 미표기)
+### KI-005: 숫자+단위 불일치 (toLocaleString vs 단위 미표기) — **해결됨**
 
 - **발견 횟수**: 6회 (홈 활동 바 칼로리 셀, /ux-check 홈 대시보드 재발견, **N-1 step3 3개소 (미리보기 kcal 간격)**, **N-1 result 3개소 (BMR/TDEE/한끼당 kcal 간격)**)
 - **관련 항목**: A7
 - **발생 화면**: HomeActivityBar (칼로리 셀), **NutritionStep3Page**, **NutritionResultPage**
-- **원인**: `value.toLocaleString()` 사용하지만 단위(kcal)가 빠져있어 맥락 부재
-- **수정 방법**: 칼로리 셀에 `unit="kcal"` 전달, ActivityCell에서 `{value.toLocaleString()}{unit}` 렌더링
+- **원인**: `value.toLocaleString()` 뒤에 단위(kcal)와 공백 없이 붙어 렌더링 ("1500kcal" → "1500 kcal")
+- **수정 방법**: 숫자와 단위 사이 공백 추가 (`{value} kcal`)
 - **재발 방지**: 숫자 표시 컴포넌트에 unit prop 필수화
+- **해결 커밋**: 테스트 수정 + KI-005 공백 누락 일괄 수정
 
 ### KI-006: 에러 상태에서 console.error만 하고 사용자 피드백 없음 — **해결됨**
 

@@ -38,7 +38,7 @@ describe('TermsPage', () => {
   it('renders all terms sections', () => {
     render(<TermsPage />);
 
-    // 10개 조항 + 부칙
+    // 11개 조항 + 부칙
     expect(screen.getByText('제1조 (목적)')).toBeInTheDocument();
     expect(screen.getByText('제2조 (정의)')).toBeInTheDocument();
     expect(screen.getByText('제3조 (약관의 효력 및 변경)')).toBeInTheDocument();
@@ -46,9 +46,10 @@ describe('TermsPage', () => {
     expect(screen.getByText('제5조 (서비스의 제공)')).toBeInTheDocument();
     expect(screen.getByText('제6조 (회사의 의무)')).toBeInTheDocument();
     expect(screen.getByText('제7조 (이용자의 의무)')).toBeInTheDocument();
-    expect(screen.getByText('제8조 (서비스 이용 제한 및 해지)')).toBeInTheDocument();
-    expect(screen.getByText('제9조 (면책조항)')).toBeInTheDocument();
-    expect(screen.getByText('제10조 (분쟁 해결)')).toBeInTheDocument();
+    expect(screen.getByText('제8조 (계정 관리 및 해지)')).toBeInTheDocument();
+    expect(screen.getByText('제9조 (지적재산권)')).toBeInTheDocument();
+    expect(screen.getByText('제10조 (면책조항)')).toBeInTheDocument();
+    expect(screen.getByText('제11조 (분쟁 해결)')).toBeInTheDocument();
     expect(screen.getByText('부칙')).toBeInTheDocument();
   });
 

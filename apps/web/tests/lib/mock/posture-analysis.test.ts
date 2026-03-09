@@ -142,7 +142,7 @@ describe('posture-analysis', () => {
 
     it('forward_head 타입 - 위험 요소 있음', () => {
       expect(POSTURE_TYPES.forward_head.riskFactors.length).toBeGreaterThan(0);
-      expect(POSTURE_TYPES.forward_head.riskFactors).toContain('목 통증');
+      expect(POSTURE_TYPES.forward_head.riskFactors).toContain('목 유연성 강화');
     });
 
     it('모든 타입에 특징 포함', () => {
@@ -176,7 +176,7 @@ describe('posture-analysis', () => {
 
       expect(correlation.tendencies).toContain('forward_head');
       expect(correlation.tendencies).toContain('rounded_shoulders');
-      expect(correlation.riskFactors).toContain('거북목');
+      expect(correlation.riskFactors).toContain('목 정렬 관리');
     });
 
     it('W 체형 경향 검증', () => {

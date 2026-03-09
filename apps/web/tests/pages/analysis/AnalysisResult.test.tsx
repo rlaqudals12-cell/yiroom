@@ -1,8 +1,8 @@
 /**
  * AnalysisResult 컴포넌트 테스트
  * @description PC-1 퍼스널 컬러 분석 결과 컴포넌트 테스트
- * @version 1.0
- * @date 2025-12-09
+ * @version 2.0
+ * @date 2026-03-09
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -10,7 +10,16 @@ import { render, screen } from '@testing-library/react';
 import AnalysisResult from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
-// lucide-react mock은 setup.ts에서 글로벌로 제공됨
+// lucide-react mock은 setup.ts에서 글로벌로 제공됨 (PartyPopper 포함)
+
+// sonner mock
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
 
 // useUserProfile mock - 성별에 따른 키워드 변환 테스트용
 vi.mock('@/hooks/useUserProfile', () => ({
@@ -22,6 +31,11 @@ vi.mock('@/hooks/useUserProfile', () => ({
     updateProfile: vi.fn().mockResolvedValue(true),
     refetch: vi.fn(),
   }),
+}));
+
+// PersonalColorEvidenceSummary mock — 외부 의존성 최소화
+vi.mock('@/components/analysis/EvidenceSummary', () => ({
+  PersonalColorEvidenceSummary: () => null,
 }));
 
 describe('AnalysisResult', () => {
@@ -67,6 +81,12 @@ describe('AnalysisResult', () => {
 
   beforeEach(() => {
     mockOnRetry.mockClear();
+    // clipboard mock
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    });
   });
 
   describe('퍼스널 컬러 타입 표시', () => {
@@ -87,37 +107,61 @@ describe('AnalysisResult', () => {
 
       expect(screen.getByText('신뢰도 85%')).toBeInTheDocument();
     });
+
+    it('축하 메시지를 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByText('나에게 어울리는 색을 찾았어요!')).toBeInTheDocument();
+    });
+
+    it('시즌별 celebration 메시지를 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(
+        screen.getByText('따뜻한 봄빛처럼 생기 넘치는 컬러가 어울리는 당신!')
+      ).toBeInTheDocument();
+    });
   });
 
   describe('베스트/워스트 컬러', () => {
     it('베스트 컬러 섹션을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 베스트 컬러가 여러 곳에 나타날 수 있음
+      // 베스트 컬러 헤더
       const bestColorElements = screen.getAllByText('베스트 컬러');
       expect(bestColorElements.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('베스트 컬러 이름을 표시한다', () => {
+    it('베스트 컬러를 getKoreanColorName으로 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 컬러 이름이 여러 곳에 나타날 수 있으므로 getAllByText 사용
-      expect(screen.getAllByText('피치').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('살구색').length).toBeGreaterThan(0);
+      // 컴포넌트는 color.name이 아닌 getKoreanColorName(hex)로 표시
+      // #FF7F50 → "코랄", #FFDAB9 → "라이트 코랄", #FFFFF0 → "라이트 옐로"
+      expect(screen.getAllByText('코랄').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('라이트 코랄').length).toBeGreaterThan(0);
     });
 
-    it('워스트 컬러 섹션을 표시한다', () => {
+    it('컬러 비교 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 나머지 주의 컬러 섹션 (worstColors[1:] 표시)
+      // "컬러가 주는 인상 차이"는 details summary 안에 있음
+      expect(screen.getByText('컬러가 주는 인상 차이')).toBeInTheDocument();
+    });
+
+    it('나머지 주의 컬러 섹션을 표시한다 (details 내부)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // <details> 내부지만 DOM에 존재
       expect(screen.getByText('나머지 주의 컬러 (참고용)')).toBeInTheDocument();
     });
 
-    it('워스트 컬러 이름을 표시한다', () => {
+    it('워스트 컬러를 getKoreanColorName으로 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('블랙')).toBeInTheDocument();
-      expect(screen.getByText('네이비')).toBeInTheDocument();
+      // #000080 (네이비) → "딥 블루", #722F37 (와인) → "딥 레드"
+      // worstColors[0]은 비교 카드에, worstColors[1:]은 나머지 주의 컬러
+      // #000000 → "차콜" (무채색, l<=0.3)
+      expect(screen.getAllByText('차콜').length).toBeGreaterThan(0);
     });
   });
 
@@ -128,44 +172,49 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('스타일 인사이트')).toBeInTheDocument();
     });
 
-    it('인사이트 내용을 표시한다', () => {
+    it('insight 텍스트를 표시한다 (easyInsight가 없을 때)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // easyInsight가 없으므로 insight 필드의 텍스트가 표시됨
       expect(screen.getByText(/밝고 따뜻한 색상이 잘 어울리는/)).toBeInTheDocument();
     });
   });
 
   describe('스타일 가이드', () => {
-    it('스타일 키워드 섹션을 표시한다', () => {
+    it('스타일 키워드 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // <details> summary 안에 존재
       expect(screen.getByText('나의 스타일 키워드')).toBeInTheDocument();
     });
 
-    it('스타일 키워드를 표시한다', () => {
+    it('스타일 키워드를 표시한다 (details 내부)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // female 성별이므로 getGenderAdaptiveTerm이 원래 값을 그대로 반환
       expect(screen.getByText('화사한')).toBeInTheDocument();
       expect(screen.getByText('생기있는')).toBeInTheDocument();
     });
 
-    it('스타일 가이드 섹션을 표시한다', () => {
+    it('스타일 가이드 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
       expect(screen.getByText('스타일 가이드')).toBeInTheDocument();
     });
 
-    it('메이크업 스타일을 표시한다', () => {
+    it('메이크업 스타일을 표시한다 (여성 프로필)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // 여성: makeupStyle fallback 텍스트 (easyMakeup이 없을 때)
       expect(screen.getByText(/코랄, 피치 계열의 따뜻한 컬러 메이크업/)).toBeInTheDocument();
     });
   });
 
   describe('립스틱 추천', () => {
-    it('추천 립스틱 섹션을 표시한다', () => {
+    it('추천 립스틱 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // <details> summary 안에 존재 (여성 프로필)
       expect(screen.getByText('추천 립스틱')).toBeInTheDocument();
     });
 
@@ -184,9 +233,10 @@ describe('AnalysisResult', () => {
   });
 
   describe('의류 추천', () => {
-    it('추천 스타일링 섹션을 표시한다', () => {
+    it('추천 스타일링 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
+      // <details> summary 안에 존재
       expect(screen.getByText('추천 스타일링')).toBeInTheDocument();
     });
 
@@ -194,7 +244,6 @@ describe('AnalysisResult', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
       expect(screen.getByText(/블라우스/)).toBeInTheDocument();
-      // 아이보리가 베스트 컬러와 의류 추천 모두에 나타남
       expect(screen.getAllByText(/아이보리/).length).toBeGreaterThan(0);
     });
 
@@ -212,6 +261,7 @@ describe('AnalysisResult', () => {
         seasonType: 'summer',
         seasonLabel: '여름 쿨톤',
         seasonDescription: '부드럽고 차분한 색상이 어울려요',
+        tone: 'cool',
       };
 
       render(<AnalysisResult result={summerResult} onRetry={mockOnRetry} />);
@@ -238,11 +288,26 @@ describe('AnalysisResult', () => {
         seasonType: 'winter',
         seasonLabel: '겨울 쿨톤',
         seasonDescription: '선명하고 차가운 색상이 어울려요',
+        tone: 'cool',
       };
 
       render(<AnalysisResult result={winterResult} onRetry={mockOnRetry} />);
 
       expect(screen.getByText('겨울 쿨톤')).toBeInTheDocument();
+    });
+  });
+
+  describe('통계 및 메타 정보', () => {
+    it('통계 정보를 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByText(/봄 웜톤이에요/)).toBeInTheDocument();
+    });
+
+    it('분석 시간을 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByText(/분석 시간:/)).toBeInTheDocument();
     });
   });
 });

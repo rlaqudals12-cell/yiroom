@@ -433,30 +433,15 @@ describe('POST /api/analyze/body', () => {
       expect(json.data).toEqual(mockDbResult);
     });
 
-    it('DB 저장 실패 시 500을 반환한다', async () => {
+    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
+      // DB insert가 throw하면 catch 블록에서 dbSaveFailed: true 반환
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
         if (table === 'body_analyses') {
           return {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
+                single: vi.fn().mockRejectedValue(new Error('DB Error')),
               }),
-            }),
-          };
-        }
-        // user_levels (gamification)
-        if (table === 'user_levels') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: { id: 'level-123', level: 1, current_xp: 0, total_xp: 0, tier: 'beginner' },
-                  error: null,
-                }),
-              }),
-            }),
-            update: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ error: null }),
             }),
           };
         }
@@ -479,8 +464,8 @@ describe('POST /api/analyze/body', () => {
       );
       const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(json.error).toBe('분석 결과 저장에 실패했습니다.');
+      expect(response.status).toBe(200);
+      expect(json.dbSaveFailed).toBe(true);
     });
   });
 

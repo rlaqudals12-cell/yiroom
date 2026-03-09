@@ -214,11 +214,11 @@ export default function NutritionResultPage() {
                 <p className="mb-1 text-xs text-green-100">
                   기초대사량 (가만히 있어도 쓰는 에너지)
                 </p>
-                <p className="font-semibold">{result.bmr.toLocaleString()}kcal</p>
+                <p className="font-semibold">{result.bmr.toLocaleString()} kcal</p>
               </div>
               <div className="flex-1">
                 <p className="mb-1 text-xs text-green-100">활동대사량 (일상+운동 포함)</p>
-                <p className="font-semibold">{result.tdee.toLocaleString()}kcal</p>
+                <p className="font-semibold">{result.tdee.toLocaleString()} kcal</p>
               </div>
             </div>
             <p className="mt-3 text-xs text-green-200">

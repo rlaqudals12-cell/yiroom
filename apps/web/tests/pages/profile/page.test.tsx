@@ -267,6 +267,12 @@ describe('ProfilePage', () => {
     it('배지 컬렉션 섹션을 표시한다', async () => {
       render(<ProfilePage />);
 
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
+
       await vi.waitFor(() => {
         expect(screen.getByText('배지 컬렉션')).toBeInTheDocument();
       });
@@ -275,6 +281,12 @@ describe('ProfilePage', () => {
     it('챌린지 섹션을 표시한다', async () => {
       render(<ProfilePage />);
 
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
+
       await vi.waitFor(() => {
         expect(screen.getByText('챌린지')).toBeInTheDocument();
       });
@@ -282,6 +294,12 @@ describe('ProfilePage', () => {
 
     it('연속 기록 섹션을 표시한다', async () => {
       render(<ProfilePage />);
+
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
 
       await vi.waitFor(() => {
         expect(screen.getByText('연속 기록')).toBeInTheDocument();
@@ -309,6 +327,12 @@ describe('ProfilePage', () => {
 
     it('리더보드 섹션을 표시한다', async () => {
       render(<ProfilePage />);
+
+      // 소셜 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('소셜')).toBeInTheDocument();
+      });
+      screen.getByText('소셜').click();
 
       await vi.waitFor(() => {
         expect(screen.getByText('리더보드')).toBeInTheDocument();
@@ -350,6 +374,12 @@ describe('ProfilePage', () => {
       });
 
       render(<ProfilePage />);
+
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
 
       await vi.waitFor(() => {
         expect(screen.getByText('2')).toBeInTheDocument(); // 진행 중
@@ -394,6 +424,12 @@ describe('ProfilePage', () => {
 
       render(<ProfilePage />);
 
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
+
       await vi.waitFor(() => {
         expect(screen.getByText('아직 획득한 배지가 없어요')).toBeInTheDocument();
       });
@@ -423,6 +459,12 @@ describe('ProfilePage', () => {
       ]);
 
       render(<ProfilePage />);
+
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
 
       await vi.waitFor(() => {
         expect(screen.getByText('1/23개')).toBeInTheDocument();

@@ -210,8 +210,7 @@ function ActivityCell({
       </div>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-semibold text-foreground">
-        {value.toLocaleString()}
-        {unit}
+        {value.toLocaleString()} {unit}
       </p>
       {/* 미니 프로그레스 */}
       <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-1 mx-2">
