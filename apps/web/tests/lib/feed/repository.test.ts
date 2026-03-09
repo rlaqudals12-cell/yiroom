@@ -183,9 +183,22 @@ describe('lib/feed/repository', () => {
     });
 
     it('should include user interaction status when currentUserId provided', async () => {
+      const mockBlockChain = {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        }),
+      };
       const mockSupabase = {
         from: vi
           .fn()
+          // getBlockedUserIds (user_blocks)
+          .mockReturnValueOnce(mockBlockChain)
+          // getBlockedByUserIds (user_blocks)
+          .mockReturnValueOnce(mockBlockChain)
+          // getFeedPosts main query
           .mockReturnValueOnce({
             select: vi.fn().mockReturnValue({
               order: vi.fn().mockReturnValue({
@@ -197,6 +210,7 @@ describe('lib/feed/repository', () => {
               }),
             }),
           })
+          // feed_interactions query
           .mockReturnValueOnce({
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({

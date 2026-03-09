@@ -156,7 +156,7 @@ describe('FeedCard', () => {
       expect(screen.getByRole('button', { name: /더보기/ })).toBeInTheDocument();
     });
 
-    it('타인 게시물에 더보기 메뉴 미표시', () => {
+    it('타인 게시물에도 더보기 메뉴 표시 (신고/차단)', () => {
       render(
         <FeedCard
           post={mockPost}
@@ -165,7 +165,7 @@ describe('FeedCard', () => {
           isOwnPost={false}
         />
       );
-      expect(screen.queryByRole('button', { name: /더보기/ })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /더보기/ })).toBeInTheDocument();
     });
   });
 
