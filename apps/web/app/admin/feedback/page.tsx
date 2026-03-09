@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Filter, RefreshCw, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,32 @@ import {
   sortFeedbackByDate,
 } from '@/lib/feedback';
 import type { Feedback, FeedbackStatus, FeedbackType } from '@/types/feedback';
+
+// 상태 순환 순서
+const STATUS_CYCLE: FeedbackStatus[] = ['pending', 'in_progress', 'resolved', 'closed'];
+
+function getNextStatus(current: FeedbackStatus): FeedbackStatus {
+  const idx = STATUS_CYCLE.indexOf(current);
+  return STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+}
+
+// 관리자 API를 통한 피드백 상태/메모 업데이트
+async function patchFeedback(
+  feedbackId: string,
+  updates: { status?: FeedbackStatus; adminNotes?: string }
+): Promise<boolean> {
+  try {
+    const res = await fetch('/api/admin/feedback', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedbackId, ...updates }),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error('[AdminFeedback] Patch error:', error);
+    return false;
+  }
+}
 
 // 피드백 API 호출 함수
 async function fetchFeedbacks(): Promise<Feedback[]> {
@@ -58,6 +85,47 @@ export default function AdminFeedbackPage() {
   const [typeFilter, setTypeFilter] = useState<FeedbackType | 'all'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // 상태 순환 변경 핸들러
+  const handleStatusChange = useCallback(async (feedback: Feedback) => {
+    const nextStatus = getNextStatus(feedback.status);
+    setUpdatingId(feedback.id);
+    const success = await patchFeedback(feedback.id, { status: nextStatus });
+    setUpdatingId(null);
+
+    if (success) {
+      // 로컬 상태 업데이트
+      setFeedbacks((prev) =>
+        prev.map((f) => (f.id === feedback.id ? { ...f, status: nextStatus } : f))
+      );
+      toast.success(`상태가 "${FEEDBACK_STATUS_NAMES[nextStatus]}"(으)로 변경되었습니다.`);
+    } else {
+      toast.error('상태 변경에 실패했습니다.');
+    }
+  }, []);
+
+  // 관리자 메모 추가 핸들러
+  const handleAddNotes = useCallback(async (feedback: Feedback) => {
+    const notes = window.prompt('관리자 메모를 입력하세요:', feedback.adminNotes || '');
+    if (notes === null) return; // 취소
+
+    setUpdatingId(feedback.id);
+    const success = await patchFeedback(feedback.id, {
+      status: feedback.status,
+      adminNotes: notes,
+    });
+    setUpdatingId(null);
+
+    if (success) {
+      setFeedbacks((prev) =>
+        prev.map((f) => (f.id === feedback.id ? { ...f, adminNotes: notes } : f))
+      );
+      toast.success('메모가 저장되었습니다.');
+    } else {
+      toast.error('메모 저장에 실패했습니다.');
+    }
+  }, []);
 
   // 피드백 로드 (초기 로드 및 새로고침에서 재사용)
   const loadFeedbackData = useCallback(async () => {
@@ -174,7 +242,8 @@ export default function AdminFeedbackPage() {
             </CardContent>
           </Card>
         )}
-        {!isLoading && filteredFeedbacks.length > 0 && (
+        {!isLoading &&
+          filteredFeedbacks.length > 0 &&
           filteredFeedbacks.map((feedback) => (
             <Collapsible
               key={feedback.id}
@@ -244,10 +313,22 @@ export default function AdminFeedbackPage() {
 
                       {/* 액션 버튼 */}
                       <div className="flex gap-2 pt-2">
-                        <Button variant="outline" size="sm">
-                          상태 변경
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={updatingId === feedback.id}
+                          onClick={() => handleStatusChange(feedback)}
+                        >
+                          {updatingId === feedback.id
+                            ? '처리 중...'
+                            : `상태 변경 → ${FEEDBACK_STATUS_NAMES[getNextStatus(feedback.status)]}`}
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={updatingId === feedback.id}
+                          onClick={() => handleAddNotes(feedback)}
+                        >
                           메모 추가
                         </Button>
                       </div>
@@ -256,8 +337,7 @@ export default function AdminFeedbackPage() {
                 </CollapsibleContent>
               </Card>
             </Collapsible>
-          ))
-        )}
+          ))}
       </div>
     </div>
   );

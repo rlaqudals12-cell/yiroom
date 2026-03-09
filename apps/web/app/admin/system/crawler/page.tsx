@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  RefreshCw,
-  Play,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Package,
-} from 'lucide-react';
+import { RefreshCw, Play, Clock, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -62,9 +55,7 @@ function completeCrawlerState(
   itemsUpdated: number
 ): CrawlerStatus[] {
   return crawlers.map((c) =>
-    c.name === name
-      ? { ...c, status: 'success' as const, lastRun: new Date(), itemsUpdated }
-      : c
+    c.name === name ? { ...c, status: 'success' as const, lastRun: new Date(), itemsUpdated } : c
   );
 }
 
@@ -74,20 +65,35 @@ export default function CrawlerPage() {
 
   // 개별 크롤러 실행
   const runCrawler = async (name: string) => {
-    setCrawlers((prev) =>
-      prev.map((c) => (c.name === name ? { ...c, status: 'running' } : c))
-    );
+    setCrawlers((prev) => prev.map((c) => (c.name === name ? { ...c, status: 'running' } : c)));
 
-    // 실제 구현: API 호출
-    // const response = await fetch(`/api/admin/crawler/${name}`, { method: 'POST' });
+    try {
+      // API 엔드포인트 호출 시도
+      const response = await fetch(`/api/admin/crawler/${name}`, { method: 'POST' });
 
-    // 시뮬레이션 (2-5초 후 완료)
-    const completeCrawler = (): void => {
-      const itemsUpdated = Math.floor(Math.random() * 50) + 10;
-      setCrawlers((prev) => completeCrawlerState(prev, name, itemsUpdated));
-      toast.success(`${name} 크롤러 완료: ${itemsUpdated}개 업데이트`);
-    };
-    setTimeout(completeCrawler, 2000 + Math.random() * 3000);
+      if (response.ok) {
+        const result = await response.json();
+        const itemsUpdated = result.itemsUpdated ?? 0;
+        setCrawlers((prev) => completeCrawlerState(prev, name, itemsUpdated));
+        toast.success(`${name} 크롤러 완료: ${itemsUpdated}개 업데이트`);
+        return;
+      }
+
+      // 404 등 실패 시 시뮬레이션 폴백
+      // TODO: /api/admin/crawler/[name] 엔드포인트 구현 필요
+      await simulateCrawler(name);
+    } catch {
+      // 네트워크 오류 등 — 시뮬레이션 폴백
+      await simulateCrawler(name);
+    }
+  };
+
+  // API 미구현 시 기존 시뮬레이션 폴백
+  const simulateCrawler = async (name: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000));
+    const itemsUpdated = Math.floor(Math.random() * 50) + 10;
+    setCrawlers((prev) => completeCrawlerState(prev, name, itemsUpdated));
+    toast.success(`${name} 크롤러 완료: ${itemsUpdated}개 업데이트 (시뮬레이션)`);
   };
 
   // 전체 크롤러 실행
@@ -139,9 +145,7 @@ export default function CrawlerPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">크롤러 관리</h2>
-          <p className="text-gray-500 mt-1">
-            제품 가격을 최신 상태로 유지하세요.
-          </p>
+          <p className="text-gray-500 mt-1">제품 가격을 최신 상태로 유지하세요.</p>
         </div>
         <Button
           onClick={runAllCrawlers}
@@ -156,8 +160,8 @@ export default function CrawlerPage() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
         <p className="font-medium">크롤러 정보</p>
         <p className="mt-1">
-          크롤러는 각 쇼핑몰에서 제품 가격을 수집합니다. 자동 실행은 매일 새벽
-          3시에 진행되며, 필요 시 수동으로 실행할 수 있습니다.
+          크롤러는 각 쇼핑몰에서 제품 가격을 수집합니다. 자동 실행은 매일 새벽 3시에 진행되며, 필요
+          시 수동으로 실행할 수 있습니다.
         </p>
       </div>
 
@@ -179,13 +183,15 @@ export default function CrawlerPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">상태</span>
                   <span
-                    className={`font-medium ${
-                      selectByKey(crawler.status, {
+                    className={`font-medium ${selectByKey(
+                      crawler.status,
+                      {
                         running: 'text-blue-600',
                         success: 'text-green-600',
                         error: 'text-red-600',
-                      }, 'text-gray-600')
-                    }`}
+                      },
+                      'text-gray-600'
+                    )}`}
                   >
                     {getStatusText(crawler.status)}
                   </span>
@@ -194,9 +200,7 @@ export default function CrawlerPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">마지막 실행</span>
                   <span className="text-gray-900">
-                    {crawler.lastRun
-                      ? crawler.lastRun.toLocaleString('ko-KR')
-                      : '-'}
+                    {crawler.lastRun ? crawler.lastRun.toLocaleString('ko-KR') : '-'}
                   </span>
                 </div>
 
