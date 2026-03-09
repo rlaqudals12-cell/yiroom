@@ -9,6 +9,7 @@ import {
   Settings,
   ToggleLeft,
   RefreshCw,
+  Flag,
   ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { href: '/admin/system', label: '시스템 설정', icon: Settings },
   { href: '/admin/system/features', label: 'Feature Flags', icon: ToggleLeft },
   { href: '/admin/system/crawler', label: '크롤러', icon: RefreshCw },
+  { href: '/admin/reports', label: '신고 관리', icon: Flag },
 ];
 
 export function AdminSidebar() {
@@ -48,9 +50,7 @@ export function AdminSidebar() {
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const isActive =
-            item.href === '/admin'
-              ? pathname === '/admin'
-              : pathname.startsWith(item.href);
+            item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
           const Icon = item.icon;
 
           return (
