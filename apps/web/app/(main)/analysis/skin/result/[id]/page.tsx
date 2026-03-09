@@ -22,7 +22,11 @@ import {
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
-import { SKIN_TYPE_LABELS, type SkinTypeV2 } from '@/lib/analysis/skin-v2';
+import {
+  SKIN_TYPE_LABELS,
+  type SkinTypeV2,
+  generateSkinIdentityLabelFromMetrics,
+} from '@/lib/analysis/skin-v2';
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
@@ -368,6 +372,17 @@ export default function SkinAnalysisResultPage() {
     () => (result ? mapSkinMetricsToConcernCards(result.metrics) : []),
     [result]
   );
+
+  // Identity-First 타입 라벨 (ADR-080)
+  const skinIdentityLabel = useMemo(() => {
+    if (!result || !skinType) return null;
+    const validType = skinType as SkinTypeV2;
+    if (!SKIN_TYPE_LABELS[validType]) return null;
+    return generateSkinIdentityLabelFromMetrics(
+      validType,
+      result.metrics.map((m) => ({ id: m.id, value: m.value }))
+    );
+  }, [result, skinType]);
 
   // 공유 카드 데이터
   const shareData = useMemo(() => {
@@ -814,9 +829,13 @@ export default function SkinAnalysisResultPage() {
             </div>
           )}
 
-          {/* 히어로 섹션: 점수 원형 게이지 + 변화 배지 */}
+          {/* 히어로 섹션: 타입 라벨 + 점수 원형 게이지 + 변화 배지 */}
           {result && (
             <div className="flex flex-col items-center mb-6">
+              {/* Identity-First: 타입 라벨 1순위 (ADR-080) */}
+              {skinIdentityLabel && (
+                <p className="text-xl font-bold text-foreground mb-3">{skinIdentityLabel}</p>
+              )}
               <div className="relative">
                 <CircularProgress
                   score={result.overallScore}

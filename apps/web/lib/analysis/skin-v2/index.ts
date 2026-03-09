@@ -85,3 +85,9 @@ export {
   generateMockZoneAnalysis,
   generateMockZoneMetrics,
 } from './mock';
+
+// =============================================================================
+// Identity Label (ADR-080)
+// =============================================================================
+
+export { generateSkinIdentityLabel, generateSkinIdentityLabelFromMetrics } from './identity-label';

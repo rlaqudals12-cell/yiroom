@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -8,12 +8,13 @@ import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { AIBadge } from '@/components/common/AIBadge';
+import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ShareButton, PrintButton } from '@/components/share';
 import { createOralHealthShareData, useAnalysisShare } from '@/hooks/useAnalysisShare';
 import type { OralHealthAssessment } from '@/types/oral-health';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { generateOralHealthIdentityLabel } from '@/lib/analysis/oral-health/identity-label';
 import { ResultPageInsights } from '@/components/insights';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
@@ -115,6 +116,15 @@ export default function OralHealthResultPage(): React.JSX.Element {
     router.push('/analysis/oral-health?forceNew=true');
   }, [router]);
 
+  // Identity-First 타입 라벨 (ADR-080)
+  const oralHealthIdentityLabel = useMemo(() => {
+    if (!assessment) return null;
+    return generateOralHealthIdentityLabel(
+      assessment.toothColor?.interpretation?.brightness,
+      assessment.gumHealth?.healthStatus
+    );
+  }, [assessment]);
+
   // 밝기 라벨 변환
   const brightnessLabels: Record<string, string> = {
     very_bright: '매우 밝음',
@@ -200,7 +210,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="oral-health-result-page">
-      <div className="max-w-lg mx-auto px-4 py-8 pb-32">
+      <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="sm" asChild>
@@ -213,6 +223,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
             <h1 className="text-lg font-bold text-foreground">구강건강 분석 결과</h1>
             <AIBadge variant="small" />
           </div>
+          {/* K1: 신뢰도는 AI 분석 결과 페이지이므로 공통 고지로 커버 */}
           <div className="flex gap-2">
             <ShareButton onShare={handleShare} loading={shareLoading} variant="ghost" size="sm" />
             <PrintButton title="이룸 구강건강 분석 결과" variant="ghost" size="sm" />
@@ -233,7 +244,14 @@ export default function OralHealthResultPage(): React.JSX.Element {
               <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-card shadow-lg flex items-center justify-center mb-4">
                 <span className="text-3xl font-bold text-cyan-600">{assessment.overallScore}</span>
               </div>
-              <h2 className="text-xl font-bold text-foreground">구강건강 점수</h2>
+              {oralHealthIdentityLabel && (
+                <h2 className="text-xl font-bold text-foreground mb-1">
+                  {oralHealthIdentityLabel}
+                </h2>
+              )}
+              <p className="text-sm text-muted-foreground">
+                구강건강 점수 {assessment.overallScore}점
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {classifyByRange(assessment.overallScore, [
                   { max: 60, result: '적극적인 케어를 시작하면 좋아요' },
@@ -244,21 +262,23 @@ export default function OralHealthResultPage(): React.JSX.Element {
               <p className="text-xs text-muted-foreground/70 mt-2">
                 100점 만점 · 밝기, 색상 톤, 잇몸 상태 종합 평가
               </p>
+              {/* K1: 분석 신뢰도 */}
+              {assessment.toothColor?.confidence != null && (
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  분석 신뢰도 {assessment.toothColor.confidence}%
+                </p>
+              )}
             </div>
 
             {/* 상세 결과 카드 */}
             <OralHealthResultCard assessment={assessment} className="mb-6" />
-
-            {/* 다음 분석 추천 */}
-            <ContextLinkingCard currentModule="oral-health" />
-            <ResultPageInsights currentModule="oral-health" />
           </>
         )}
       </div>
 
-      {/* 하단 고정 버튼 */}
+      {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {assessment && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/95 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto">
             <Button
               variant="outline"
@@ -272,6 +292,19 @@ export default function OralHealthResultPage(): React.JSX.Element {
           </div>
         </div>
       )}
+
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      <div className="max-w-lg mx-auto px-4 pb-8">
+        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-3 mt-6">
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            이 결과는 AI 참고 정보이며 의료 진단이 아니에요. 정확한 진단과 치료는 치과 전문의와
+            상담해주세요.
+          </p>
+        </div>
+        <AITransparencyNotice compact className="mt-6" />
+        <ContextLinkingCard currentModule="oral-health" />
+        <ResultPageInsights currentModule="oral-health" />
+      </div>
     </div>
   );
 }
