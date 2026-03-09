@@ -107,6 +107,10 @@
   스마트 알림 (신규):
     54. smart_notifications         # 스마트 알림
 
+  소셜 모더레이션 (신규):
+    55. feed_reports                # 피드 신고 (2026-03-09)
+    56. user_blocks                 # 사용자 차단 (2026-03-09)
+
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
   users (1) ━━━━━ (N) skin_analyses
@@ -2261,6 +2265,97 @@ COMMENT ON TABLE smart_notifications IS '스마트 알림 - 개인화된 알림 
 
 ---
 
-**버전**: v6.0 (마이그레이션 동기화 완료)
-**최종 업데이트**: 2026년 2월 1일
-**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K 동기화 완료 ✅
+## 39. feed_reports 테이블 (피드 신고)
+
+피드 게시물 신고 내역. ADR-082 참조.
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS feed_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_clerk_user_id TEXT NOT NULL,
+  post_id UUID NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL CHECK (reason IN ('spam', 'harassment', 'inappropriate_content', 'misinformation', 'other')),
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'dismissed')),
+  reviewed_at TIMESTAMPTZ,
+  reviewed_by TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(reporter_clerk_user_id, post_id)
+);
+
+CREATE INDEX idx_feed_reports_post ON feed_reports(post_id);
+CREATE INDEX idx_feed_reports_pending ON feed_reports(status) WHERE status = 'pending';
+ALTER TABLE feed_reports ENABLE ROW LEVEL SECURITY;
+```
+
+### RLS 정책
+
+```sql
+-- 본인 신고만 생성 가능
+CREATE POLICY "users_create_own_reports" ON feed_reports
+  FOR INSERT
+  WITH CHECK (reporter_clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- 본인 신고만 조회 가능
+CREATE POLICY "users_read_own_reports" ON feed_reports
+  FOR SELECT
+  USING (reporter_clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+```
+
+### 필드 설명
+
+| 필드                   | 타입 | 설명                                                                 |
+| ---------------------- | ---- | -------------------------------------------------------------------- |
+| reporter_clerk_user_id | TEXT | 신고자 Clerk ID                                                      |
+| post_id                | UUID | 신고 대상 게시물 (feed_posts FK)                                     |
+| reason                 | TEXT | 사유: spam, harassment, inappropriate_content, misinformation, other |
+| description            | TEXT | 상세 설명 (선택)                                                     |
+| status                 | TEXT | 처리 상태: pending → reviewed → resolved/dismissed                   |
+| reviewed_by            | TEXT | 처리한 관리자 ID                                                     |
+
+---
+
+## 40. user_blocks 테이블 (사용자 차단)
+
+양방향 차단 — 차단 시 서로의 게시물 비표시. ADR-082 참조.
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS user_blocks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  blocker_clerk_user_id TEXT NOT NULL,
+  blocked_clerk_user_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(blocker_clerk_user_id, blocked_clerk_user_id),
+  CHECK (blocker_clerk_user_id != blocked_clerk_user_id)
+);
+
+CREATE INDEX idx_user_blocks_blocker ON user_blocks(blocker_clerk_user_id);
+CREATE INDEX idx_user_blocks_blocked ON user_blocks(blocked_clerk_user_id);
+ALTER TABLE user_blocks ENABLE ROW LEVEL SECURITY;
+```
+
+### RLS 정책
+
+```sql
+-- 본인 차단만 관리 (조회/생성/삭제)
+CREATE POLICY "users_manage_own_blocks" ON user_blocks
+  FOR ALL
+  USING (blocker_clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+```
+
+### 필드 설명
+
+| 필드                  | 타입 | 설명                     |
+| --------------------- | ---- | ------------------------ |
+| blocker_clerk_user_id | TEXT | 차단한 사용자 Clerk ID   |
+| blocked_clerk_user_id | TEXT | 차단당한 사용자 Clerk ID |
+
+---
+
+**버전**: v7.0 (소셜 모더레이션 추가)
+**최종 업데이트**: 2026년 3월 9일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 동기화 완료 ✅

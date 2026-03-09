@@ -153,6 +153,13 @@ P7 워크플로우 순서:
 | [ADR-080](./adr/ADR-080-identity-first-result-framing.md) | Identity-First 결과 프레이밍 | -         |
 | [ADR-081](./adr/ADR-081-ai-framing-principle.md)          | AI 프레이밍 원칙             | -         |
 
+#### 소셜/모더레이션 ADR ⭐ NEW
+
+| ADR                                                 | 제목                 | 관련 원리 |
+| --------------------------------------------------- | -------------------- | --------- |
+| [ADR-028](./adr/ADR-028-social-feed.md)             | 소셜 피드 아키텍처   | -         |
+| [ADR-082](./adr/ADR-082-report-block-moderation.md) | 신고/차단 모더레이션 | -         |
+
 #### 인프라/접근성 ADR
 
 | ADR                                                    | 제목                      | 관련 원리        |
