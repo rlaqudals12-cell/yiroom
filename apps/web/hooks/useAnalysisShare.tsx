@@ -49,6 +49,7 @@ export function createPersonalColorShareData(result: PersonalColorData): ShareCa
 // 피부 분석 결과에서 공유 데이터 생성
 interface SkinData {
   overallScore: number;
+  identityLabel?: string;
   metrics?: Array<{ name: string; value: number }>;
 }
 
@@ -64,9 +65,10 @@ export function createSkinShareData(result: SkinData): ShareCardData {
 
   return {
     analysisType: 'skin',
-    title: '피부 건강 점수',
+    title: result.identityLabel || '피부 건강 점수',
     subtitle: '이룸 AI 분석 결과',
     score: result.overallScore,
+    typeLabel: result.identityLabel,
     highlights,
   };
 }
@@ -162,6 +164,7 @@ export function createMakeupShareData(result: MakeupData): ShareCardData {
 // 구강건강 분석 결과에서 공유 데이터 생성
 interface OralHealthShareInput {
   overallScore: number;
+  identityLabel?: string;
   brightnessLabel?: string;
   inflammationScore?: number;
 }
@@ -177,9 +180,10 @@ export function createOralHealthShareData(result: OralHealthShareInput): ShareCa
 
   return {
     analysisType: 'oral-health',
-    title: '구강건강 점수',
+    title: result.identityLabel || '구강건강 점수',
     subtitle: '이룸 AI 분석 결과',
     score: result.overallScore,
+    typeLabel: result.identityLabel,
     typeEmoji: '🦷',
     highlights,
   };

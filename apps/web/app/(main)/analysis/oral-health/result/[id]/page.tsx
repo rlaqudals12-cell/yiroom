@@ -138,6 +138,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
   const shareData = assessment
     ? createOralHealthShareData({
         overallScore: assessment.overallScore,
+        identityLabel: oralHealthIdentityLabel ?? undefined,
         brightnessLabel: assessment.toothColor?.interpretation?.brightness
           ? brightnessLabels[assessment.toothColor.interpretation.brightness]
           : undefined,

@@ -389,9 +389,10 @@ export default function SkinAnalysisResultPage() {
     if (!result) return null;
     return createSkinShareData({
       overallScore: result.overallScore,
+      identityLabel: skinIdentityLabel ?? undefined,
       metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
     });
-  }, [result]);
+  }, [result, skinIdentityLabel]);
 
   // 얼굴 존 상태 계산 (메트릭 기반) - FaceZoneMapProps.zones 형식
   const zoneStatuses = useMemo((): FaceZoneMapProps['zones'] => {
