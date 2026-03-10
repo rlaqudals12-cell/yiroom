@@ -15,11 +15,7 @@ interface WorkoutSummaryCardProps {
   hasData: boolean;
 }
 
-export function WorkoutSummaryCard({
-  summary,
-  trend,
-  hasData,
-}: WorkoutSummaryCardProps) {
+export function WorkoutSummaryCard({ summary, trend, hasData }: WorkoutSummaryCardProps) {
   if (!hasData) {
     return (
       <Card data-testid="workout-summary-card">
@@ -32,12 +28,8 @@ export function WorkoutSummaryCard({
         <CardContent>
           <div className="text-center py-6">
             <Activity className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-sm text-muted-foreground">
-              이번 주 운동 기록이 없어요
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              운동을 기록하면 여기에 표시됩니다
-            </p>
+            <p className="text-sm text-muted-foreground">이번 주 운동 기록이 없어요</p>
+            <p className="text-xs text-muted-foreground mt-1">운동을 기록하면 여기에 표시돼요</p>
           </div>
         </CardContent>
       </Card>
@@ -81,9 +73,7 @@ export function WorkoutSummaryCard({
         <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">운동 일관성</span>
-            <span className="text-lg font-bold text-green-600">
-              {trend.consistencyScore}%
-            </span>
+            <span className="text-lg font-bold text-green-600">{trend.consistencyScore}%</span>
           </div>
           <div className="mt-2 h-2 bg-green-100 dark:bg-green-900/30 rounded-full overflow-hidden">
             <div
@@ -100,15 +90,7 @@ export function WorkoutSummaryCard({
   );
 }
 
-function StatItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function StatItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
       {icon}

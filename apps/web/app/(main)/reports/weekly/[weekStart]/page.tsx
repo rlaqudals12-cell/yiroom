@@ -19,9 +19,15 @@ import {
   StreakBadge,
   CalorieTrendChartDynamic,
   BeautyNutritionCard,
+  ReportSummaryCard,
+  BestDayHighlightCard,
+  CalorieBalanceCard,
 } from '@/components/reports';
 import { EmptyStateCard } from '@/components/common';
+import { ShareButton } from '@/components/share/ShareButton';
+import { PrintButton } from '@/components/share/PrintButton';
 import { Button } from '@/components/ui/button';
+import { useShare } from '@/hooks/useShare';
 import type { WeeklyReport, WeeklyReportResponse } from '@/types/report';
 
 interface WeeklyReportPageProps {
@@ -35,6 +41,7 @@ export default function WeeklyReportPage({ params }: WeeklyReportPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(true);
+  const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-주간-리포트');
 
   useEffect(() => {
     fetchReport(weekStart);
@@ -144,8 +151,24 @@ export default function WeeklyReportPage({ params }: WeeklyReportPageProps) {
         canGoNext={canGoNext}
       />
 
+      {/* 공유/인쇄 버튼 */}
+      <div className="flex justify-end gap-1 mb-4" data-print-hide>
+        <ShareButton onShare={share} loading={shareLoading} variant="outline" size="sm" />
+        <PrintButton title={`이룸 주간 리포트 ${weekStart}`} variant="outline" size="sm" />
+      </div>
+
       {/* 리포트 내용 */}
-      <div className="space-y-4">
+      <div ref={shareRef} className="space-y-4">
+        {/* 맞춤 요약 (Phase 3) */}
+        <ReportSummaryCard
+          periodLabel="이번 주"
+          achievement={report.nutrition.achievement}
+          trend={report.nutrition.trend}
+          workoutSummary={report.workout.summary}
+          calorieBalanceStatus={report.calorieBalance.status}
+          hasWorkoutData={report.workout.hasData}
+        />
+
         {/* 영양 요약 */}
         <NutritionSummaryCard
           summary={report.nutrition.summary}
@@ -159,6 +182,15 @@ export default function WeeklyReportPage({ params }: WeeklyReportPageProps) {
           hasData={report.workout.hasData}
         />
 
+        {/* 칼로리 밸런스 (Phase 3) */}
+        <CalorieBalanceCard
+          totalIntake={report.calorieBalance.totalIntake}
+          totalBurned={report.calorieBalance.totalBurned}
+          netCalories={report.calorieBalance.netCalories}
+          status={report.calorieBalance.status}
+          avgNetPerDay={report.calorieBalance.avgNetPerDay}
+        />
+
         {/* 칼로리 트렌드 차트 (Dynamic Import) */}
         <CalorieTrendChartDynamic
           dailyData={report.nutrition.dailyBreakdown}
@@ -166,12 +198,24 @@ export default function WeeklyReportPage({ params }: WeeklyReportPageProps) {
           targetCalories={targetCalories}
         />
 
+        {/* 베스트 데이 하이라이트 (Phase 3) */}
+        <BestDayHighlightCard
+          bestDay={report.highlights.bestDay}
+          bestDayScore={report.highlights.bestDayScore}
+          worstDay={report.highlights.worstDay}
+          worstDayScore={report.highlights.worstDayScore}
+        />
+
         {/* 인사이트 */}
         <InsightCard insights={report.insights} />
 
         {/* 뷰티-영양 상관관계 (H-1/M-1 연동) */}
-        {report.beautyNutritionCorrelation && (
+        {report.beautyNutritionCorrelation ? (
           <BeautyNutritionCard correlation={report.beautyNutritionCorrelation} />
+        ) : (
+          <div className="rounded-xl border bg-card p-4 text-center text-sm text-muted-foreground">
+            <p>뷰티 분석을 완료하면 영양과의 상관관계를 확인할 수 있어요</p>
+          </div>
         )}
 
         {/* 스트릭 */}

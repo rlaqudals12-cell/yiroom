@@ -29,10 +29,7 @@ interface WeeklyComparisonChartProps {
   };
 }
 
-export function WeeklyComparisonChart({
-  weeklyData,
-  highlights,
-}: WeeklyComparisonChartProps) {
+export function WeeklyComparisonChart({ weeklyData, highlights }: WeeklyComparisonChartProps) {
   // 차트 데이터 변환
   const chartData = weeklyData.map((week, index) => ({
     weekNum: `${index + 1}주차`,
@@ -62,21 +59,9 @@ export function WeeklyComparisonChart({
       <CardContent>
         <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="hsl(var(--muted))"
-              />
-              <XAxis
-                dataKey="weekNum"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+              <XAxis dataKey="weekNum" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis
                 yAxisId="calories"
                 orientation="left"
@@ -101,22 +86,14 @@ export function WeeklyComparisonChart({
                     <div className="bg-background border rounded-lg shadow-lg p-2 text-sm">
                       <div className="font-medium mb-1">
                         {data.weekNum}
-                        {data.isBest && (
-                          <span className="ml-2 text-green-500">Best</span>
-                        )}
-                        {data.isWorst && (
-                          <span className="ml-2 text-orange-500">Need Focus</span>
-                        )}
+                        {data.isBest && <span className="ml-2 text-green-500">최고</span>}
+                        {data.isWorst && <span className="ml-2 text-orange-500">집중 필요</span>}
                       </div>
                       <div className="text-orange-500">
                         평균 칼로리: {data.avgCalories.toLocaleString()}kcal
                       </div>
-                      <div className="text-blue-500">
-                        평균 단백질: {data.avgProtein}g
-                      </div>
-                      <div className="text-green-500">
-                        운동 횟수: {data.workoutCount}회
-                      </div>
+                      <div className="text-blue-500">평균 단백질: {data.avgProtein}g</div>
+                      <div className="text-green-500">운동 횟수: {data.workoutCount}회</div>
                       <div className="text-muted-foreground">
                         음식 품질 점수: {data.foodQuality}점
                       </div>
@@ -165,13 +142,10 @@ export function WeeklyComparisonChart({
             }
             const weekHighlightClass = weekHighlightMap[weekNumber] ?? 'bg-muted/50';
             return (
-            <div
-              key={week.weekStart}
-              className={`p-2 rounded-lg ${weekHighlightClass}`}
-            >
-              <div className="font-medium">{index + 1}주</div>
-              <div className="text-muted-foreground">{week.mealCount}끼</div>
-            </div>
+              <div key={week.weekStart} className={`p-2 rounded-lg ${weekHighlightClass}`}>
+                <div className="font-medium">{index + 1}주</div>
+                <div className="text-muted-foreground">{week.mealCount}끼</div>
+              </div>
             );
           })}
         </div>

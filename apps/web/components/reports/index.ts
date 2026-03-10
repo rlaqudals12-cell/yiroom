@@ -22,3 +22,9 @@ export { GoalProgressCard } from './GoalProgressCard';
 
 // 뷰티-영양 상관관계 (H-1/M-1 연동)
 export { BeautyNutritionCard } from './BeautyNutritionCard';
+
+// Phase 3: AI 내러티브 + 하이라이트 + 밸런스
+export { ReportSummaryCard } from './ReportSummaryCard';
+export { BestDayHighlightCard } from './BestDayHighlightCard';
+export { BestWeekHighlightCard } from './BestWeekHighlightCard';
+export { CalorieBalanceCard } from './CalorieBalanceCard';

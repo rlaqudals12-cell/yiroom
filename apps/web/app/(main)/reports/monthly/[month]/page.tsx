@@ -191,8 +191,12 @@ export default function MonthlyReportPage({ params }: MonthlyReportPageProps) {
         <InsightCard insights={report.insights} />
 
         {/* 뷰티-영양 상관관계 (H-1/M-1 연동) */}
-        {report.beautyNutritionCorrelation && (
+        {report.beautyNutritionCorrelation ? (
           <BeautyNutritionCard correlation={report.beautyNutritionCorrelation} />
+        ) : (
+          <div className="rounded-xl border bg-card p-4 text-center text-sm text-muted-foreground">
+            <p>뷰티 분석을 완료하면 영양과의 상관관계를 확인할 수 있어요</p>
+          </div>
         )}
 
         {/* 스트릭 */}

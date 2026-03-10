@@ -53,9 +53,7 @@ export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
         <div className="space-y-4">
           {/* 목표 타입 */}
           <div className="flex items-center justify-between">
-            <span className={`font-medium ${goalColors[goal]}`}>
-              {goalLabels[goal]}
-            </span>
+            <span className={`font-medium ${goalColors[goal]}`}>{goalLabels[goal]}</span>
             <span className="text-sm text-muted-foreground">
               {isOnTrack ? (
                 <span className="flex items-center gap-1 text-green-500">
@@ -65,7 +63,7 @@ export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
               ) : (
                 <span className="flex items-center gap-1 text-orange-500">
                   <AlertCircle className="h-4 w-4" />
-                  개선 필요
+                  조금만 더 힘내봐요
                 </span>
               )}
             </span>
@@ -77,11 +75,7 @@ export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
               <span className="text-muted-foreground">달성률</span>
               <span className="font-bold">{achievementRate}%</span>
             </div>
-            <Progress
-              value={achievementRate}
-              className="h-3"
-              indicatorClassName={progressColor}
-            />
+            <Progress value={achievementRate} className="h-3" indicatorClassName={progressColor} />
           </div>
 
           {/* 메시지 */}

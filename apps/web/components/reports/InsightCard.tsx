@@ -5,7 +5,7 @@
 
 'use client';
 
-import { Lightbulb, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { Lightbulb, CheckCircle2, AlertCircle, Sparkles, Award } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { ReportInsights } from '@/types/report';
 
@@ -17,7 +17,8 @@ export function InsightCard({ insights }: InsightCardProps) {
   const hasAnyInsight =
     insights.highlights.length > 0 ||
     insights.improvements.length > 0 ||
-    insights.tips.length > 0;
+    insights.tips.length > 0 ||
+    (insights.achievements && insights.achievements.length > 0);
 
   if (!hasAnyInsight) {
     return (
@@ -49,6 +50,17 @@ export function InsightCard({ insights }: InsightCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* 달성 사항 (마일스톤) */}
+        {insights.achievements && insights.achievements.length > 0 && (
+          <InsightSection
+            icon={<Award className="h-4 w-4 text-purple-500" />}
+            title="달성한 것"
+            items={insights.achievements}
+            bgColor="bg-purple-50 dark:bg-purple-950/20"
+            textColor="text-purple-700 dark:text-purple-300"
+          />
+        )}
+
         {/* 하이라이트 (긍정적) */}
         {insights.highlights.length > 0 && (
           <InsightSection
