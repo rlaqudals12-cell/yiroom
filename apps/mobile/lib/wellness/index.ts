@@ -6,6 +6,27 @@
  * @module lib/wellness
  */
 
+// ─── 확장 모듈 re-export ─────────────────────────────
+
+export type {
+  WellnessDataInput,
+  WellnessHistoryRecord,
+  WellnessGoal,
+  WeeklyWellnessSummary,
+} from './types';
+
+export {
+  convertToWellnessInput,
+  calculateWellnessFromData,
+  generateWeeklySummary,
+} from './calculator';
+
+export {
+  getWellnessHistory,
+  upsertWellnessScore,
+  getLatestAnalysisScores,
+} from './queries';
+
 // ─── 타입 ────────────────────────────────────────────
 
 export interface WellnessScore {

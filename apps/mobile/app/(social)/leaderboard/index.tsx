@@ -4,33 +4,41 @@
 
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
 import { Image } from 'expo-image';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
-} from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../../components/ui';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, FlatList, ActivityIndicator } from 'react-native';
 
-import { getTierColor, getTierLabel, type RankingEntry } from '../../../lib/social';
-import {
-  useLeaderboard,
-  useFriendsLeaderboard,
-  useMyRanking,
-} from '../../../lib/social/useLeaderboard';
+import { ScreenContainer } from '@/components/ui';
+import { getTierColor, getTierLabel, type RankingEntry } from '@/lib/social';
+import { useLeaderboard, useFriendsLeaderboard, useMyRanking } from '@/lib/social/useLeaderboard';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 type TabType = 'all' | 'friends';
+type CategoryType = 'xp' | 'level' | 'wellness' | 'workout' | 'nutrition';
+
+const CATEGORIES: { id: CategoryType; label: string; emoji: string }[] = [
+  { id: 'xp', label: 'XP', emoji: '⭐' },
+  { id: 'level', label: '레벨', emoji: '🏅' },
+  { id: 'wellness', label: '웰니스', emoji: '💚' },
+  { id: 'workout', label: '운동', emoji: '💪' },
+  { id: 'nutrition', label: '영양', emoji: '🥗' },
+];
+
+const CATEGORY_SCORE_LABELS: Record<CategoryType, string> = {
+  xp: 'XP',
+  level: 'Lv',
+  wellness: '점',
+  workout: 'kcal',
+  nutrition: '점',
+};
 
 export default function LeaderboardScreen() {
-  const { colors, brand, module: moduleColors, typography, spacing, radii} = useTheme();
+  // typography, spacing, radii는 모듈 스코프 import 사용 (섀도잉 방지)
+  const { colors, brand, module: moduleColors } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
+  const [activeCategory, setActiveCategory] = useState<CategoryType>('xp');
 
   const { rankings: allRankings, isLoading: allLoading, refetch: refetchAll } = useLeaderboard();
   const {
@@ -47,6 +55,11 @@ export default function LeaderboardScreen() {
   const handleTabChange = (tab: TabType) => {
     Haptics.selectionAsync();
     setActiveTab(tab);
+  };
+
+  const handleCategoryChange = (category: CategoryType) => {
+    Haptics.selectionAsync();
+    setActiveCategory(category);
   };
 
   const getRankBadge = (rankNum: number) => {
@@ -98,7 +111,13 @@ export default function LeaderboardScreen() {
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={[styles.userName, { color: colors.foreground }, isMe && { color: brand.primary }]}>
+          <Text
+            style={[
+              styles.userName,
+              { color: colors.foreground },
+              isMe && { color: brand.primary },
+            ]}
+          >
             {item.displayName} {isMe && '(나)'}
           </Text>
           <View style={styles.userMeta}>
@@ -115,7 +134,9 @@ export default function LeaderboardScreen() {
           <Text style={[styles.scoreValue, { color: colors.foreground }]}>
             {item.score.toLocaleString()}
           </Text>
-          <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>XP</Text>
+          <Text style={[styles.scoreLabel, { color: colors.mutedForeground }]}>
+            {CATEGORY_SCORE_LABELS[activeCategory]}
+          </Text>
         </View>
       </View>
     );
@@ -144,6 +165,36 @@ export default function LeaderboardScreen() {
           </View>
         </View>
       )}
+
+      {/* 카테고리 세그먼트 */}
+      <View
+        style={[styles.categoryRow, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}
+      >
+        {CATEGORIES.map((cat) => (
+          <Pressable
+            key={cat.id}
+            style={[
+              styles.categoryChip,
+              {
+                backgroundColor: activeCategory === cat.id ? brand.primary : colors.card,
+                borderColor: activeCategory === cat.id ? brand.primary : colors.border,
+                borderWidth: 1,
+              },
+            ]}
+            onPress={() => handleCategoryChange(cat.id)}
+          >
+            <Text style={{ fontSize: 12 }}>{cat.emoji}</Text>
+            <Text
+              style={[
+                styles.categoryLabel,
+                { color: activeCategory === cat.id ? brand.primaryForeground : colors.foreground },
+              ]}
+            >
+              {cat.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       {/* 탭 */}
       <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
@@ -213,9 +264,6 @@ export default function LeaderboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -270,7 +318,6 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
-  tabTextActive: {},
   listContent: {
     padding: spacing.md,
     gap: spacing.smd,
@@ -332,7 +379,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: typography.weight.semibold,
   },
-  userNameMe: {},
+
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -369,5 +416,22 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     textAlign: 'center',
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  categoryChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radii.xl,
+    gap: spacing.xxs,
+  },
+  categoryLabel: {
+    fontSize: 11,
+    fontWeight: typography.weight.semibold,
   },
 });

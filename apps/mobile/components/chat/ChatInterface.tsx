@@ -1,0 +1,398 @@
+/**
+ * AI 채팅 인터페이스
+ * 코치 ChatInterface 패턴 복제 — 범용 AI 채팅용
+ */
+
+import * as Haptics from 'expo-haptics';
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+
+import {
+  useChat,
+  CHAT_QUICK_QUESTIONS,
+  type ChatMessage,
+  type ChatQuestionCategory,
+} from '../../lib/chat';
+import { useNetworkStatus } from '../../lib/offline';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
+
+export function ChatInterface() {
+  const { colors, brand, status } = useTheme();
+  const { isConnected } = useNetworkStatus();
+
+  const {
+    messages,
+    isLoading,
+    error,
+    suggestedQuestions,
+    sendMessage,
+  } = useChat();
+
+  const [input, setInput] = useState('');
+  const [activeCategory, setActiveCategory] = useState<ChatQuestionCategory>('general');
+  const flatListRef = useRef<FlatList>(null);
+
+  // 메시지 추가 시 스크롤
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
+
+  const handleSend = async (): Promise<void> => {
+    if (!input.trim() || isLoading) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const message = input;
+    setInput('');
+    await sendMessage(message);
+  };
+
+  const handleQuickQuestion = async (question: string): Promise<void> => {
+    if (isLoading) return;
+    Haptics.selectionAsync();
+    await sendMessage(question);
+  };
+
+  const handleCategoryChange = (category: ChatQuestionCategory): void => {
+    Haptics.selectionAsync();
+    setActiveCategory(category);
+  };
+
+  const categories: { key: ChatQuestionCategory; label: string }[] = [
+    { key: 'general', label: '일반' },
+    { key: 'beauty', label: '뷰티' },
+    { key: 'wellness', label: '웰니스' },
+    { key: 'lifestyle', label: '라이프' },
+  ];
+
+  const renderMessage = ({ item }: { item: ChatMessage }): React.ReactElement => {
+    const isUser = item.role === 'user';
+    return (
+      <View
+        style={[
+          styles.messageBubble,
+          isUser
+            ? [styles.userBubble, { backgroundColor: brand.primary }]
+            : [styles.assistantBubble, { backgroundColor: colors.card }],
+        ]}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            { color: isUser ? brand.primaryForeground : colors.foreground },
+          ]}
+        >
+          {item.content}
+        </Text>
+      </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      testID="chat-interface"
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={90}
+    >
+      {/* 오프라인 배너 */}
+      {!isConnected && (
+        <View style={[styles.statusBanner, { backgroundColor: status.warning + '20' }]}>
+          <Text style={[styles.statusBannerText, { color: status.warning }]}>
+            오프라인 모드 - 기본 응답만 제공됩니다
+          </Text>
+        </View>
+      )}
+
+      {/* 에러 메시지 */}
+      {error && (
+        <View style={[styles.statusBanner, { backgroundColor: status.error + '15' }]}>
+          <Text style={[styles.statusBannerText, { color: status.error }]}>{error}</Text>
+        </View>
+      )}
+
+      {/* 메시지 목록 또는 빠른 질문 */}
+      {messages.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          {/* 헤더 */}
+          <View style={styles.header}>
+            <Text style={styles.headerEmoji}>💬</Text>
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI 채팅</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
+              뷰티, 웰니스, 라이프스타일에 대해 자유롭게 물어보세요!
+            </Text>
+          </View>
+
+          {/* 카테고리 탭 */}
+          <View style={[styles.categoryTabs, { backgroundColor: colors.muted }]}>
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              return (
+                <Pressable
+                  key={cat.key}
+                  style={[styles.categoryTab, isActive && { backgroundColor: colors.card }]}
+                  onPress={() => handleCategoryChange(cat.key)}
+                  accessibilityRole="tab"
+                  accessibilityLabel={`${cat.label} 카테고리`}
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <Text
+                    style={[
+                      styles.categoryTabText,
+                      { color: isActive ? brand.primary : colors.mutedForeground },
+                    ]}
+                  >
+                    {cat.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* 빠른 질문 */}
+          <View style={styles.quickQuestions}>
+            {CHAT_QUICK_QUESTIONS[activeCategory].map((question, index) => (
+              <Pressable
+                key={index}
+                style={[
+                  styles.quickQuestion,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+                onPress={() => handleQuickQuestion(question)}
+                accessibilityRole="button"
+                accessibilityLabel={question}
+                accessibilityHint="이 질문을 AI에게 전송합니다"
+              >
+                <Text style={[styles.quickQuestionText, { color: colors.foreground }]}>
+                  {question}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : (
+        <>
+          {/* 메시지 목록 */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.messageList}
+            showsVerticalScrollIndicator={false}
+          />
+
+          {/* 추천 질문 */}
+          {suggestedQuestions.length > 0 && !isLoading && (
+            <View style={styles.suggestedContainer}>
+              {suggestedQuestions.map((question, index) => (
+                <Pressable
+                  key={index}
+                  style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
+                  onPress={() => handleQuickQuestion(question)}
+                  accessibilityRole="button"
+                  accessibilityLabel={question}
+                  accessibilityHint="이 질문을 AI에게 전송합니다"
+                >
+                  <Text style={[styles.suggestedText, { color: colors.foreground }]}>
+                    {question}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </>
+      )}
+
+      {/* 로딩 인디케이터 */}
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={brand.primary} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>생각 중...</Text>
+        </View>
+      )}
+
+      {/* 입력 영역 */}
+      <View
+        style={[
+          styles.inputContainer,
+          { backgroundColor: colors.card, borderTopColor: colors.border },
+        ]}
+      >
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+          placeholder="무엇이든 물어보세요..."
+          placeholderTextColor={colors.mutedForeground}
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={handleSend}
+          returnKeyType="send"
+          multiline
+          maxLength={500}
+          accessibilityLabel="AI에게 보낼 메시지"
+          accessibilityHint="메시지를 입력한 후 전송 버튼을 눌러주세요"
+        />
+        <Pressable
+          style={[
+            styles.sendButton,
+            {
+              backgroundColor: !input.trim() || isLoading ? colors.border : brand.primary,
+            },
+          ]}
+          onPress={handleSend}
+          disabled={!input.trim() || isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="메시지 전송"
+          accessibilityState={{ disabled: !input.trim() || isLoading }}
+        >
+          <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  statusBanner: {
+    padding: spacing.sm,
+    alignItems: 'center',
+  },
+  statusBannerText: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.medium,
+  },
+  emptyContainer: {
+    flex: 1,
+    paddingHorizontal: spacing.md,
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: spacing.xl,
+  },
+  headerEmoji: {
+    fontSize: spacing.xxl,
+    marginBottom: spacing.smx,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: typography.weight.bold,
+    marginBottom: spacing.sm,
+  },
+  headerSubtitle: {
+    fontSize: typography.size.sm,
+    textAlign: 'center',
+  },
+  categoryTabs: {
+    flexDirection: 'row',
+    borderRadius: radii.xl,
+    padding: spacing.xs,
+    marginBottom: spacing.mlg,
+  },
+  categoryTab: {
+    flex: 1,
+    paddingVertical: spacing.smd,
+    alignItems: 'center',
+    borderRadius: radii.xl,
+  },
+  categoryTabText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+  },
+  quickQuestions: {
+    gap: spacing.smd,
+  },
+  quickQuestion: {
+    borderRadius: radii.xl,
+    padding: spacing.md,
+    borderWidth: 1,
+  },
+  quickQuestionText: {
+    fontSize: 15,
+  },
+  messageList: {
+    padding: spacing.md,
+    gap: spacing.smx,
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: 14,
+    borderRadius: radii.xl,
+  },
+  userBubble: {
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
+  },
+  assistantBubble: {
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  suggestedContainer: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  suggestedButton: {
+    paddingHorizontal: 14,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.circle,
+  },
+  suggestedText: {
+    fontSize: 13,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.smx,
+    gap: spacing.sm,
+  },
+  loadingText: {
+    fontSize: 13,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: spacing.smx,
+    borderTopWidth: 1,
+    gap: spacing.smd,
+  },
+  input: {
+    flex: 1,
+    borderRadius: radii.circle,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.smd,
+    fontSize: 15,
+    maxHeight: 100,
+  },
+  sendButton: {
+    paddingHorizontal: 18,
+    paddingVertical: spacing.smd,
+    borderRadius: radii.circle,
+  },
+  sendButtonText: {
+    fontSize: 15,
+    fontWeight: typography.weight.semibold,
+  },
+});

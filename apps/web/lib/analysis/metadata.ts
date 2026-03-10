@@ -63,6 +63,10 @@ export async function generateAnalysisMetadata(
     const title = `${moduleName}: ${displayValue} | 이룸`;
     const description = `이룸 ${moduleName} 분석 결과 — ${displayValue}. AI 기반 통합 웰니스 분석을 경험해보세요.`;
 
+    // OG 이미지 URL 생성 (분석 타입 + 결과 라벨)
+    const analysisType = tableName.replace('_assessments', '').replace(/_/g, '-');
+    const ogImageUrl = `${BASE_URL}/api/og/${analysisType}?label=${encodeURIComponent(String(displayValue))}`;
+
     return {
       title,
       description,
@@ -72,6 +76,20 @@ export async function generateAnalysisMetadata(
         url: `${BASE_URL}/analysis/${tableName.replace('_assessments', '')}/result/${id}`,
         siteName: '이룸',
         type: 'article',
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${moduleName} 분석 결과: ${displayValue}`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [ogImageUrl],
       },
     };
   } catch {

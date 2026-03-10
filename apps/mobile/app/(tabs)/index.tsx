@@ -299,6 +299,7 @@ export default function HomeScreen(): React.JSX.Element {
         actions={quickActions}
         onActionPress={(route) => router.push(route as never)}
         onCoachPress={() => router.push('/(coach)')}
+        onChatPress={() => router.push('/(chat)')}
       />
 
       {/* Daily Capsule 위젯 */}

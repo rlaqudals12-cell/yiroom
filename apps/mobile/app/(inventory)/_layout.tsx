@@ -49,6 +49,18 @@ export default function InventoryLayout(): React.JSX.Element {
           animation: 'slide_from_bottom',
         }}
       />
+      <Stack.Screen
+        name="shelf"
+        options={{
+          title: '내 제품함',
+        }}
+      />
+      <Stack.Screen
+        name="shelf-detail/[id]"
+        options={{
+          title: '제품 상세',
+        }}
+      />
     </Stack>
   );
 }

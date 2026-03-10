@@ -48,6 +48,7 @@ function ThemedStack() {
         <Stack.Screen name="(analysis)" options={{ headerShown: false }} />
         <Stack.Screen name="(challenges)" options={{ headerShown: false }} />
         <Stack.Screen name="(closet)" options={{ headerShown: false }} />
+        <Stack.Screen name="(chat)" options={{ headerShown: false }} />
         <Stack.Screen name="(coach)" options={{ headerShown: false }} />
         <Stack.Screen name="(feed)" options={{ headerShown: false }} />
         <Stack.Screen name="(nutrition)" options={{ headerShown: false }} />

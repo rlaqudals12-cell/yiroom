@@ -83,6 +83,36 @@ export default function NutritionLayout() {
           title: '영양 히스토리',
         }}
       />
+      <Stack.Screen
+        name="onboarding/index"
+        options={{
+          title: '영양 온보딩',
+        }}
+      />
+      <Stack.Screen
+        name="onboarding/step1"
+        options={{
+          title: '기본 정보',
+        }}
+      />
+      <Stack.Screen
+        name="onboarding/step2"
+        options={{
+          title: '식사 스타일',
+        }}
+      />
+      <Stack.Screen
+        name="onboarding/step3"
+        options={{
+          title: '알레르기 & 미리보기',
+        }}
+      />
+      <Stack.Screen
+        name="result/index"
+        options={{
+          title: '영양 플랜 결과',
+        }}
+      />
     </Stack>
   );
 }

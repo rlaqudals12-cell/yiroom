@@ -260,6 +260,23 @@ jobs:
         run: npm run quality:duplicates -w @yiroom/web
         continue-on-error: true
 
+  # 보안 감사 (npm audit)
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: npm audit (high/critical)
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
   # 빌드 (lint, typecheck, test 완료 후)
   build:
     needs: [lint, typecheck, test]
@@ -303,7 +320,7 @@ jobs:
 
   # CI 요약 리포트
   summary:
-    needs: [lint, typecheck, test, accessibility, build, quality, mobile-lint, mobile-typecheck, mobile-test]
+    needs: [lint, typecheck, test, accessibility, build, quality, security, mobile-lint, mobile-typecheck, mobile-test]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -319,6 +336,7 @@ jobs:
           echo "| Accessibility | ${{ needs.accessibility.result == 'success' && '✅ Passed' || needs.accessibility.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || needs.build.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || needs.quality.result == 'skipped' && '⏭️ Skipped' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result == 'success' && '✅ Passed' || needs.security.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Mobile Lint | ${{ needs.mobile-lint.result == 'success' && '✅ Passed' || needs.mobile-lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Mobile Typecheck | ${{ needs.mobile-typecheck.result == 'success' && '✅ Passed' || needs.mobile-typecheck.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Mobile Test | ${{ needs.mobile-test.result == 'success' && '✅ Passed' || needs.mobile-test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY

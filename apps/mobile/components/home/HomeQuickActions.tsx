@@ -24,6 +24,7 @@ interface HomeQuickActionsProps {
   actions: QuickAction[];
   onActionPress: (route: string) => void;
   onCoachPress: () => void;
+  onChatPress?: () => void;
 }
 
 // 퀵 액션 아이콘 메타 — 그라디언트 + 이모지 (웹 gradient icon square 대응)
@@ -37,6 +38,7 @@ export function HomeQuickActions({
   actions,
   onActionPress,
   onCoachPress,
+  onChatPress,
 }: HomeQuickActionsProps): React.JSX.Element {
   const { colors, spacing, radii, typography, status, module: moduleColors, shadows, isDark, brand } = useTheme();
 
@@ -48,6 +50,11 @@ export function HomeQuickActions({
   const handleCoachPress = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onCoachPress();
+  };
+
+  const handleChatPress = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onChatPress?.();
   };
 
   return (
@@ -92,6 +99,50 @@ export function HomeQuickActions({
           </GradientBackground>
         </Pressable>
       </Animated.View>
+
+      {/* AI 채팅 카드 */}
+      {onChatPress && (
+        <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
+          <Pressable
+            style={({ pressed }) => [
+              {
+                opacity: pressed ? 0.9 : 1,
+                marginBottom: spacing.lg,
+                borderRadius: radii.xl + 4,
+              },
+              isDark ? {} : Platform.select({
+                ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
+                android: { elevation: 3 },
+              }) ?? {},
+            ]}
+            onPress={handleChatPress}
+            accessibilityRole="button"
+            accessibilityLabel="AI 채팅"
+            accessibilityHint="자유롭게 AI와 대화할 수 있어요"
+          >
+            <View
+              style={{
+                borderRadius: radii.xl + 4,
+                padding: spacing.md,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <View style={[styles.coachIcon, { backgroundColor: `${brand.primary}15` }]}>
+                <Text style={{ fontSize: 22 }}>🤖</Text>
+              </View>
+              <View style={styles.coachContent}>
+                <Text style={[styles.coachTitle, { color: colors.foreground }]}>AI 채팅</Text>
+                <Text style={[styles.coachSubtitle, { color: colors.mutedForeground }]}>뷰티, 웰니스, 라이프스타일 자유 대화</Text>
+              </View>
+              <Text style={[styles.coachArrow, { color: colors.mutedForeground }]}>›</Text>
+            </View>
+          </Pressable>
+        </Animated.View>
+      )}
 
       {/* 퀵 액션 */}
       <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
