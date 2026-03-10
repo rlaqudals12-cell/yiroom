@@ -17,9 +17,8 @@ export type { GreetingType } from './useTimeGreeting';
 // 온라인 상태
 export { useOnlineStatus } from './useOnlineStatus';
 
-// 앱 투어
-export { useAppTour, DEFAULT_APP_TOUR_STEPS } from './useAppTour';
-export type { AppTourStep, UseAppTourOptions, UseAppTourReturn } from './useAppTour';
+// 앱 투어: dead code 정리 (OnboardingTutorial이 layout.tsx에서 사용됨)
+// useAppTour 및 AppTour는 미사용 중복 시스템 (P4 단순화)
 
 // A/B 테스트 실험
 export { useExperiment } from './useExperiment';

@@ -7,7 +7,7 @@ export { Footer } from './Footer';
 export { ErrorBoundary } from './ErrorBoundary';
 export { PWAInstallPrompt } from './PWAInstallPrompt';
 export { OrganizationJsonLd, WebApplicationJsonLd, BreadcrumbJsonLd, FAQJsonLd } from './JsonLd';
-export { AppTour } from './AppTour';
+// AppTour: dead code (OnboardingTutorial이 layout.tsx에서 사용됨, P4 중복 정리)
 
 // 등급 시스템
 export { LevelBadge, LevelBadgeFilled } from './LevelBadge';

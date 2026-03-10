@@ -15,6 +15,34 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { ConnectionStats } from '@/lib/connection-awareness';
 import { getConnectionStats } from '@/lib/connection-awareness';
 
+// 4단계 내재화 상태별 세그먼트 설정
+const STATUS_SEGMENTS = [
+  {
+    key: 'exposed' as const,
+    label: '발견',
+    color: 'bg-slate-300 dark:bg-slate-600',
+    dot: 'bg-slate-400',
+  },
+  {
+    key: 'recognized' as const,
+    label: '인식',
+    color: 'bg-violet-300 dark:bg-violet-700',
+    dot: 'bg-violet-400',
+  },
+  {
+    key: 'internalized' as const,
+    label: '내재화',
+    color: 'bg-indigo-400 dark:bg-indigo-600',
+    dot: 'bg-indigo-400',
+  },
+  {
+    key: 'independent' as const,
+    label: '자립',
+    color: 'bg-emerald-400 dark:bg-emerald-600',
+    dot: 'bg-emerald-400',
+  },
+];
+
 interface DailyActivity {
   calories: number;
   caloriesTarget: number;
@@ -117,23 +145,45 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
       data-testid="home-activity-bar"
     >
-      {/* 내재화 진행도 */}
+      {/* 내재화 진행도 — 4단계 세그먼트 바 (InternalizationWidget 통합) */}
       {stats && stats.totalConnections > 0 && (
-        <div className="flex items-center gap-2 mb-3">
-          <Brain className="w-4 h-4 text-violet-500" />
-          <span className="text-xs font-semibold text-foreground">
-            자기 이해 {Math.round(stats.internalizationRate * 100)}%
-          </span>
-          {/* 내재화 프로그레스 바 */}
-          <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-violet-500 transition-all duration-500"
-              style={{ width: `${Math.min(stats.internalizationRate * 100, 100)}%` }}
-            />
+        <div className="mb-3" data-testid="internalization-segment-bar">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Brain className="w-4 h-4 text-violet-500" />
+            <span className="text-xs font-semibold text-foreground">
+              자기 이해 {Math.round(stats.internalizationRate * 100)}%
+            </span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {stats.byStatus.independent + stats.byStatus.internalized}/{stats.totalConnections}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {stats.byStatus.independent + stats.byStatus.internalized}/{stats.totalConnections}
-          </span>
+          {/* 4-status 세그먼트 바 */}
+          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
+            {STATUS_SEGMENTS.map(({ key, color }) => {
+              const count = stats.byStatus[key];
+              if (count === 0) return null;
+              const pct = (count / stats.totalConnections) * 100;
+              return (
+                <div
+                  key={key}
+                  className={`${color} transition-all duration-500`}
+                  style={{ width: `${pct}%` }}
+                />
+              );
+            })}
+          </div>
+          {/* 컴팩트 범례 */}
+          <div className="flex gap-3 mt-1.5">
+            {STATUS_SEGMENTS.map(({ key, label, dot }) => (
+              <span
+                key={key}
+                className="text-[10px] text-muted-foreground flex items-center gap-0.5"
+              >
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot}`} />
+                {label} {stats.byStatus[key]}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

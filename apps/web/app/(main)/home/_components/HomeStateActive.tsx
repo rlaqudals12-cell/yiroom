@@ -4,7 +4,8 @@
  * Home State: Active (분석 4+개)
  *
  * 감정 목표: "없으면 불편한 앱" (Reflective)
- * 정보 블록: 6개 (인사이트 + 캡슐 + 분석 요약 + 내재화 + 활동 + 최근 본)
+ * 정보 블록: 5개 (인사이트 + 캡슐 + 분석 요약 + 활동 + 최근 본)
+ * KI-007 개선: 내재화 위젯을 HomeActivityBar 헤더에 통합하여 6→5블록 축소
  */
 
 import { useUser } from '@clerk/nextjs';
@@ -14,7 +15,6 @@ import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 import HomeAnalysisSummary from './HomeAnalysisSummary';
 import HomeRecentlyViewed from './HomeRecentlyViewed';
 import HomeActivityBar from './HomeActivityBar';
-import InternalizationWidget from '../../dashboard/_components/InternalizationWidget';
 
 interface HomeStateActiveProps {
   analyses: AnalysisSummary[];
@@ -34,13 +34,10 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
       {/* 분석 요약 (정보 블록 3) */}
       <HomeAnalysisSummary analyses={analyses} />
 
-      {/* 내재화 진행도 (정보 블록 4) */}
-      <InternalizationWidget />
-
-      {/* 활동 요약 (정보 블록 5) */}
+      {/* 활동 요약 + 내재화 진행도 통합 (정보 블록 4) */}
       {user?.id && <HomeActivityBar userId={user.id} />}
 
-      {/* 최근 본 제품 (정보 블록 6) */}
+      {/* 최근 본 제품 (정보 블록 5) */}
       <HomeRecentlyViewed />
     </div>
   );
