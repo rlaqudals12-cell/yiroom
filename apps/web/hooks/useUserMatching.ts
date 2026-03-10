@@ -68,16 +68,8 @@ export function useUserMatching(): UseUserMatchingResult {
       }
 
       try {
-        // 병렬로 모든 분석 데이터 조회 (5개 모듈)
-        const [
-          skinResult,
-          colorResult,
-          bodyResult,
-          hairResult,
-          makeupResult,
-          workoutResult,
-          nutritionResult,
-        ] = await Promise.all([
+        // 병렬로 모든 분석 데이터 조회 — 하나 실패해도 나머지는 사용
+        const results = await Promise.allSettled([
           // S-1 피부 분석
           supabase
             .from('skin_assessments')
@@ -139,6 +131,20 @@ export function useUserMatching(): UseUserMatchingResult {
             .eq('clerk_user_id', user.id)
             .maybeSingle(),
         ]);
+
+        // 개별 결과 추출 — rejected된 쿼리는 null로 처리
+        const settled = <T>(r: PromiseSettledResult<T>): T => {
+          if (r.status === 'fulfilled') return r.value;
+          console.warn('[useUserMatching] 쿼리 실패 (부분 로딩 계속):', r.reason);
+          return { data: null, error: null } as T;
+        };
+        const skinResult = settled(results[0]);
+        const colorResult = settled(results[1]);
+        const bodyResult = settled(results[2]);
+        const hairResult = settled(results[3]);
+        const makeupResult = settled(results[4]);
+        const workoutResult = settled(results[5]);
+        const nutritionResult = settled(results[6]);
 
         // 프로필 구성
         const userProfile: UserProfile = {};

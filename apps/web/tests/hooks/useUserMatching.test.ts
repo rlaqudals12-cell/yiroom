@@ -317,6 +317,7 @@ describe('useUserMatching', () => {
       });
 
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       mockSupabaseClient.single.mockRejectedValue(new Error('Database error'));
 
@@ -327,6 +328,87 @@ describe('useUserMatching', () => {
       }).not.toThrow();
 
       consoleError.mockRestore();
+      consoleWarn.mockRestore();
+    });
+
+    it('일부 쿼리 실패해도 성공한 데이터는 로드한다 (Promise.allSettled)', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // S-1 성공, PC-1 성공, C-1 실패(reject), H-1 실패(reject), M-1 성공
+      mockSupabaseClient.single
+        .mockResolvedValueOnce({
+          data: { skin_type: 'oily', concerns: ['pore'] },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { season: '여름 쿨톤' },
+          error: null,
+        })
+        .mockRejectedValueOnce(new Error('Network timeout'))
+        .mockRejectedValueOnce(new Error('Connection refused'))
+        .mockResolvedValueOnce({
+          data: { undertone: 'cool', face_shape: 'round' },
+          error: null,
+        });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // 성공한 쿼리 데이터 확인
+      expect(result.current.skinType).toBe('oily');
+      expect(result.current.personalColor).toBe('여름 쿨톤');
+      expect(result.current.undertone).toBe('cool');
+
+      // 실패한 쿼리는 null
+      expect(result.current.bodyType).toBe(null);
+      expect(result.current.hairType).toBe(null);
+
+      // 부분 데이터라도 hasAnalysis는 true
+      expect(result.current.hasAnalysis).toBe(true);
+
+      consoleWarn.mockRestore();
+    });
+
+    it('모든 쿼리 실패해도 크래시 없이 빈 프로필 반환', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // 모든 single/maybeSingle reject
+      mockSupabaseClient.single.mockRejectedValue(new Error('All DB down'));
+      mockSupabaseClient.maybeSingle.mockRejectedValue(new Error('All DB down'));
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // 모든 값 null이지만 크래시 없음
+      expect(result.current.skinType).toBe(null);
+      expect(result.current.personalColor).toBe(null);
+      expect(result.current.bodyType).toBe(null);
+      expect(result.current.hairType).toBe(null);
+      expect(result.current.undertone).toBe(null);
+      expect(result.current.workoutGoal).toBe(null);
+      expect(result.current.nutritionGoal).toBe(null);
+      expect(result.current.hasAnalysis).toBe(false);
+      expect(result.current.profile).toBeDefined();
+
+      consoleWarn.mockRestore();
     });
   });
 });
