@@ -74,6 +74,7 @@ yiroom/
 | P3    | 캡슐 에코시스템 5-Phase, 스캔UI, 헤어엔진, 캡슐브릿지  | ✅   |
 | P3+   | Virtual Try-On V2 (립/블러셔/헤어), 모니터링, 홈위젯   | ✅   |
 | 출시  | 소셜로그인, CS위젯, 신고/차단, Dynamic OG              | ✅   |
+| 철학  | Identity-First Framing, ConnectionAwareness            | ✅   |
 
 ## 슬래시 명령어
 
@@ -113,4 +114,4 @@ yiroom/
 
 ---
 
-**Version**: 16.0 | **Updated**: 2026-03-05 | P3+ Virtual Try-On V2 + 모니터링 + 홈위젯 커밋 완료
+**Version**: 17.0 | **Updated**: 2026-03-10 | 출시 4-WS + Identity-First + ConnectionAwareness 완료, 고도화 로드맵 수립
