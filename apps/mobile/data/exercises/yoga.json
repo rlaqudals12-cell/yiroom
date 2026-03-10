@@ -1,0 +1,660 @@
+[
+  {
+    "id": "YOG-001",
+    "name": "산 자세",
+    "nameEn": "Mountain Pose",
+    "category": "lower",
+    "bodyParts": ["thigh", "calf"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "발을 모으고 선다",
+      "체중을 균등하게 분배한다",
+      "척추를 길게 늘린다",
+      "어깨를 뒤로 내린다",
+      "팔을 옆에 자연스럽게 둔다"
+    ],
+    "tips": ["발 전체로 균등하게 체중을 분배한다", "정수리가 천장을 향하도록"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "A", "Y", "H", "O"],
+      "goals": ["posture", "balance"],
+      "contraindications": ["현기증", "저혈압(장시간 유지 시)"]
+    },
+    "style": "yoga",
+    "sanskritName": "Tadasana",
+    "breathingGuide": "자연스러운 복식호흡",
+    "variations": {
+      "easier": null,
+      "harder": "Urdhva Hastasana (팔 위로)"
+    },
+    "physicalEffects": ["자세 개선", "균형감 향상", "척추 정렬"],
+    "mentalEffects": ["집중력 향상", "안정감"]
+  },
+  {
+    "id": "YOG-002",
+    "name": "전사 자세 1",
+    "nameEn": "Warrior I",
+    "category": "lower",
+    "bodyParts": ["thigh", "hip"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "런지 자세로 시작한다",
+      "뒷발을 45도 회전시킨다",
+      "골반이 정면을 향하게 한다",
+      "양팔을 머리 위로 올린다",
+      "앞무릎을 90도로 유지한다"
+    ],
+    "tips": ["앞무릎이 발끝을 넘지 않도록", "골반을 정면으로 유지"],
+    "caloriesPerMinute": 3.5,
+    "met": 3.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "Y", "O"],
+      "goals": ["strength", "flexibility"],
+      "contraindications": ["고관절 통증", "무릎 부상", "고혈압"]
+    },
+    "style": "yoga",
+    "sanskritName": "Virabhadrasana I",
+    "breathingGuide": "들숨: 팔 올리기, 날숨: 더 깊이 런지",
+    "variations": {
+      "easier": "손 엉덩이에",
+      "harder": "Humble Warrior"
+    },
+    "physicalEffects": ["하체 강화", "고관절 유연성", "가슴 열림"],
+    "mentalEffects": ["자신감 증가", "집중력 향상"]
+  },
+  {
+    "id": "YOG-003",
+    "name": "전사 자세 2",
+    "nameEn": "Warrior II",
+    "category": "lower",
+    "bodyParts": ["thigh", "hip"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "다리를 넓게 벌린다",
+      "앞발 90도, 뒷발 약간 안쪽",
+      "앞무릎을 구부린다",
+      "팔을 T자로 펼친다",
+      "시선을 앞손가락으로"
+    ],
+    "tips": ["앞무릎이 발목 위에 오도록", "어깨가 올라가지 않도록"],
+    "caloriesPerMinute": 3.5,
+    "met": 3.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "Y", "O"],
+      "goals": ["strength", "endurance"],
+      "contraindications": ["무릎 부상", "고관절 골관절염"]
+    },
+    "style": "yoga",
+    "sanskritName": "Virabhadrasana II",
+    "breathingGuide": "균일한 호흡 유지, 날숨에 더 깊이",
+    "variations": {
+      "easier": "스탠스 좁히기",
+      "harder": "Extended Side Angle"
+    },
+    "physicalEffects": ["하체 근력", "고관절 열림", "지구력 향상"],
+    "mentalEffects": ["용기", "결단력", "집중력"]
+  },
+  {
+    "id": "YOG-004",
+    "name": "삼각 자세",
+    "nameEn": "Triangle Pose",
+    "category": "lower",
+    "bodyParts": ["thigh", "waist"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "다리를 넓게 벌린다",
+      "앞발을 90도 회전시킨다",
+      "팔을 T자로 펼친다",
+      "옆으로 기울이며 앞손을 바닥/정강이에",
+      "위팔을 천장으로 올린다"
+    ],
+    "tips": ["허리가 아닌 옆구리로 기울인다", "양쪽 옆구리를 균등하게 늘린다"],
+    "caloriesPerMinute": 3,
+    "met": 2.5,
+    "suitableFor": {
+      "bodyTypes": ["X", "H"],
+      "goals": ["flexibility", "balance"],
+      "contraindications": ["편두통", "설사", "저/고혈압", "목/허리 부상"]
+    },
+    "style": "yoga",
+    "sanskritName": "Trikonasana",
+    "breathingGuide": "들숨: 옆구리 길게, 날숨: 회전하며 열기",
+    "variations": {
+      "easier": "블록 사용",
+      "harder": "Revolved Triangle"
+    },
+    "physicalEffects": ["햄스트링/내전근 스트레칭", "척추 유연성", "소화 촉진"],
+    "mentalEffects": ["스트레스 해소", "안정감"]
+  },
+  {
+    "id": "YOG-005",
+    "name": "나무 자세",
+    "nameEn": "Tree Pose",
+    "category": "lower",
+    "bodyParts": ["thigh", "calf"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "한 발로 선다",
+      "반대 발바닥을 허벅지 안쪽에 둔다",
+      "손을 합장 또는 위로 올린다",
+      "시선을 고정한다",
+      "균형을 유지한다"
+    ],
+    "tips": ["무릎에 발을 대지 않는다", "시선을 고정하면 균형이 쉬워진다"],
+    "caloriesPerMinute": 3,
+    "met": 2.5,
+    "suitableFor": {
+      "bodyTypes": ["X", "Y"],
+      "goals": ["balance", "focus"],
+      "contraindications": ["무릎/발목 부상", "어지러움"]
+    },
+    "style": "yoga",
+    "sanskritName": "Vrksasana",
+    "breathingGuide": "안정적인 호흡으로 균형 유지",
+    "variations": {
+      "easier": "발을 종아리/발목에",
+      "harder": "눈 감기"
+    },
+    "physicalEffects": ["균형감 향상", "하체 강화", "고관절 열림"],
+    "mentalEffects": ["집중력", "안정감", "자신감"]
+  },
+  {
+    "id": "YOG-006",
+    "name": "의자 자세",
+    "nameEn": "Chair Pose",
+    "category": "lower",
+    "bodyParts": ["thigh", "hip"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "발을 모으고 선다",
+      "무릎을 구부리며 뒤로 앉는다",
+      "체중을 발뒤꿈치로 이동",
+      "팔을 귀 옆으로 올린다",
+      "척추를 길게 유지한다"
+    ],
+    "tips": ["무릎이 발끝 앞으로 나가지 않도록", "허리를 과도하게 젖히지 않는다"],
+    "caloriesPerMinute": 3.5,
+    "met": 3.0,
+    "suitableFor": {
+      "bodyTypes": ["Y", "O"],
+      "goals": ["strength", "endurance"],
+      "contraindications": ["무릎 부상", "불면증", "저혈압"]
+    },
+    "style": "yoga",
+    "sanskritName": "Utkatasana",
+    "breathingGuide": "들숨: 팔 올리기, 날숨: 더 깊이 앉기",
+    "variations": {
+      "easier": "손 합장",
+      "harder": "발뒤꿈치 들기"
+    },
+    "physicalEffects": ["하체 근력 강화", "발목 안정성", "자세 개선"],
+    "mentalEffects": ["의지력", "집중력"]
+  },
+  {
+    "id": "YOG-007",
+    "name": "반달 자세",
+    "nameEn": "Half Moon Pose",
+    "category": "lower",
+    "bodyParts": ["hip", "thigh"],
+    "equipment": ["mat"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "삼각 자세에서 시작한다",
+      "앞손을 바닥에 둔다",
+      "뒷다리를 들어올린다",
+      "엉덩이를 열어준다",
+      "위팔을 천장으로 올린다"
+    ],
+    "tips": ["시선을 위로 향하면 균형에 도움", "코어를 단단히 유지"],
+    "caloriesPerMinute": 4,
+    "met": 3.5,
+    "suitableFor": {
+      "bodyTypes": ["A", "H"],
+      "goals": ["balance", "strength"],
+      "contraindications": ["저혈압", "편두통", "설사", "불면증"]
+    },
+    "style": "yoga",
+    "sanskritName": "Ardha Chandrasana",
+    "breathingGuide": "균일한 호흡, 날숨에 더 열기",
+    "variations": {
+      "easier": "블록 사용",
+      "harder": "바인드 추가"
+    },
+    "physicalEffects": ["균형감", "고관절 열림", "하체 강화", "척추 안정화"],
+    "mentalEffects": ["집중력", "자신감"]
+  },
+  {
+    "id": "YOG-008",
+    "name": "편안한 자세",
+    "nameEn": "Easy Pose",
+    "category": "core",
+    "bodyParts": ["hip"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "바닥에 앉는다",
+      "다리를 교차한다",
+      "척추를 세운다",
+      "손을 무릎에 둔다",
+      "어깨를 이완한다"
+    ],
+    "tips": ["골반이 무릎보다 높으면 쿠션 사용", "척추를 자연스럽게 세운다"],
+    "caloriesPerMinute": 2,
+    "met": 1.5,
+    "suitableFor": {
+      "bodyTypes": ["X", "A", "Y", "H", "O"],
+      "goals": ["meditation", "relaxation"],
+      "contraindications": ["무릎 통증", "고관절 부상"]
+    },
+    "style": "yoga",
+    "sanskritName": "Sukhasana",
+    "breathingGuide": "깊고 느린 복식호흡",
+    "variations": {
+      "easier": "쿠션 위에 앉기, 벽에 등 기대기",
+      "harder": null
+    },
+    "physicalEffects": ["고관절 열림", "척추 정렬"],
+    "mentalEffects": ["마음 진정", "명상 준비", "스트레스 해소"]
+  },
+  {
+    "id": "YOG-009",
+    "name": "앉아서 전굴 자세",
+    "nameEn": "Seated Forward Bend",
+    "category": "core",
+    "bodyParts": ["back", "thigh"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "다리를 펴고 앉는다",
+      "척추를 세운다",
+      "들숨에 팔을 올린다",
+      "날숨에 앞으로 접는다",
+      "손으로 발을 잡는다"
+    ],
+    "tips": ["허리가 아닌 고관절에서 접는다", "무릎을 살짝 구부려도 됨"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["X"],
+      "goals": ["flexibility", "relaxation"],
+      "contraindications": ["추간판 탈출증", "좌골신경통", "허리 부상", "임신"]
+    },
+    "style": "yoga",
+    "sanskritName": "Paschimottanasana",
+    "breathingGuide": "들숨: 척추 길게, 날숨: 더 깊이 접기",
+    "variations": {
+      "easier": "무릎 구부리기, 스트랩 사용",
+      "harder": "Head-to-Knee"
+    },
+    "physicalEffects": ["햄스트링/척추 스트레칭", "소화 촉진", "내장 마사지"],
+    "mentalEffects": ["스트레스 해소", "마음 진정", "불안 감소"]
+  },
+  {
+    "id": "YOG-010",
+    "name": "나비 자세",
+    "nameEn": "Butterfly Pose",
+    "category": "core",
+    "bodyParts": ["hip", "thigh"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "앉아서 발바닥을 붙인다",
+      "발뒤꿈치를 골반 쪽으로 당긴다",
+      "무릎을 바닥 향해 내린다",
+      "척추를 세운다",
+      "발을 잡고 유지한다"
+    ],
+    "tips": ["무릎을 억지로 누르지 않는다", "시간이 지나면서 자연스럽게 내려감"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["Y", "H"],
+      "goals": ["hip flexibility", "relaxation"],
+      "contraindications": ["사타구니/무릎 부상"]
+    },
+    "style": "yoga",
+    "sanskritName": "Baddha Konasana",
+    "breathingGuide": "깊은 호흡, 날숨에 무릎 더 내리기",
+    "variations": {
+      "easier": "쿠션 위에 앉기",
+      "harder": "앞으로 접기, 누운 나비 자세"
+    },
+    "physicalEffects": ["고관절/사타구니 열림", "생식기관 자극", "혈액순환"],
+    "mentalEffects": ["진정", "피로 해소"]
+  },
+  {
+    "id": "YOG-011",
+    "name": "반 척추 비틀기 자세",
+    "nameEn": "Half Lord of the Fishes Pose",
+    "category": "core",
+    "bodyParts": ["waist", "back"],
+    "equipment": ["mat"],
+    "difficulty": "intermediate",
+    "instructions": [
+      "한 다리를 구부려 세운다",
+      "반대 다리는 아래로",
+      "세운 다리를 반대쪽으로 넘긴다",
+      "상체를 비튼다",
+      "팔로 무릎을 감싼다"
+    ],
+    "tips": ["척추를 먼저 길게 세운 후 비튼다", "양쪽 좌골이 바닥에 닿도록"],
+    "caloriesPerMinute": 3,
+    "met": 2.5,
+    "suitableFor": {
+      "bodyTypes": ["H"],
+      "goals": ["flexibility", "digestion"],
+      "contraindications": ["척추 부상", "임신", "생리 중(깊은 비틀기 피함)"]
+    },
+    "style": "yoga",
+    "sanskritName": "Ardha Matsyendrasana",
+    "breathingGuide": "들숨: 척추 길게, 날숨: 더 비틀기",
+    "variations": {
+      "easier": "간단한 비틀기",
+      "harder": "바인드 추가"
+    },
+    "physicalEffects": ["척추 유연성", "소화 촉진", "내장 마사지"],
+    "mentalEffects": ["에너지 흐름 개선", "긴장 해소"]
+  },
+  {
+    "id": "YOG-012",
+    "name": "머리-무릎 자세",
+    "nameEn": "Head-to-Knee Forward Bend",
+    "category": "core",
+    "bodyParts": ["thigh", "back"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "한 다리를 펴고 앉는다",
+      "반대 무릎을 구부려 허벅지에 둔다",
+      "몸을 펴진 다리 쪽으로 회전한다",
+      "앞으로 접는다",
+      "손으로 발을 잡는다"
+    ],
+    "tips": ["펴진 다리 쪽으로 배꼽을 향하게", "무릎을 살짝 구부려도 됨"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "A"],
+      "goals": ["flexibility", "relaxation"],
+      "contraindications": ["무릎 부상", "설사", "천식"]
+    },
+    "style": "yoga",
+    "sanskritName": "Janu Sirsasana",
+    "breathingGuide": "들숨: 길게, 날숨: 접기",
+    "variations": {
+      "easier": "스트랩 사용",
+      "harder": "비틀기 추가"
+    },
+    "physicalEffects": ["햄스트링 스트레칭", "소화 촉진", "간/신장 자극"],
+    "mentalEffects": ["불안 해소", "마음 진정"]
+  },
+  {
+    "id": "YOG-013",
+    "name": "시체 자세",
+    "nameEn": "Corpse Pose",
+    "category": "core",
+    "bodyParts": ["abs"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "등을 대고 눕는다",
+      "다리를 어깨 너비로 벌린다",
+      "팔을 옆에, 손바닥을 위로",
+      "눈을 감는다",
+      "완전히 이완한다"
+    ],
+    "tips": ["모든 근육을 의식적으로 이완", "호흡에 집중하며 마음을 비운다"],
+    "caloriesPerMinute": 1.5,
+    "met": 1.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "A", "Y", "H", "O"],
+      "goals": ["relaxation", "meditation"],
+      "contraindications": ["임신 후기(옆으로 눕기 권장)", "우울증(장시간 피함)"]
+    },
+    "style": "yoga",
+    "sanskritName": "Savasana",
+    "breathingGuide": "자연스러운 호흡, 점점 깊게",
+    "variations": {
+      "easier": "무릎 아래 베개, 눈 위 안대",
+      "harder": null
+    },
+    "physicalEffects": ["혈압 감소", "근육 이완", "피로 회복"],
+    "mentalEffects": ["스트레스 해소", "명상 상태", "숙면 유도"]
+  },
+  {
+    "id": "YOG-014",
+    "name": "누운 비틀기 자세",
+    "nameEn": "Supine Spinal Twist",
+    "category": "core",
+    "bodyParts": ["waist", "back"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "등을 대고 눕는다",
+      "한쪽 무릎을 가슴으로 당긴다",
+      "반대편으로 무릎을 넘긴다",
+      "반대쪽 손으로 무릎을 누른다",
+      "시선은 열린 팔 방향"
+    ],
+    "tips": ["양 어깨가 바닥에 닿도록 유지", "호흡과 함께 깊어지도록"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "H"],
+      "goals": ["flexibility", "relaxation"],
+      "contraindications": ["척추 부상", "허리 통증"]
+    },
+    "style": "yoga",
+    "sanskritName": "Supta Matsyendrasana",
+    "breathingGuide": "깊은 호흡, 날숨에 더 깊이 비틀기",
+    "variations": {
+      "easier": "무릎 아래 베개",
+      "harder": "양다리 모아서 비틀기"
+    },
+    "physicalEffects": ["척추 유연성", "소화 촉진", "허리 긴장 완화"],
+    "mentalEffects": ["이완", "스트레스 해소"]
+  },
+  {
+    "id": "YOG-015",
+    "name": "다리 벽에 올리기",
+    "nameEn": "Legs Up the Wall",
+    "category": "core",
+    "bodyParts": ["thigh", "hip"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "벽 옆에 엉덩이를 붙이고 눕는다",
+      "다리를 벽 위로 올린다",
+      "팔을 옆에 편안히 둔다",
+      "눈을 감고 이완한다"
+    ],
+    "tips": ["엉덩이를 벽에 최대한 가깝게", "허리가 불편하면 약간 떨어져도 됨"],
+    "caloriesPerMinute": 2,
+    "met": 1.5,
+    "suitableFor": {
+      "bodyTypes": ["X", "A", "Y", "H", "O"],
+      "goals": ["relaxation", "recovery"],
+      "contraindications": ["고혈압", "녹내장", "생리 중"]
+    },
+    "style": "yoga",
+    "sanskritName": "Viparita Karani",
+    "breathingGuide": "깊고 느린 호흡",
+    "variations": {
+      "easier": "엉덩이 아래 쿠션",
+      "harder": "다리 벌리기(나비)"
+    },
+    "physicalEffects": ["하체 부종 완화", "피로 회복", "혈액순환 개선"],
+    "mentalEffects": ["깊은 이완", "불안 감소"]
+  },
+  {
+    "id": "YOG-016",
+    "name": "행복한 아기 자세",
+    "nameEn": "Happy Baby Pose",
+    "category": "core",
+    "bodyParts": ["hip", "back"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "등을 대고 눕는다",
+      "무릎을 가슴 쪽으로 당긴다",
+      "발바닥이 천장을 향하게 한다",
+      "손으로 발 바깥쪽을 잡는다",
+      "무릎을 겨드랑이 쪽으로 당긴다"
+    ],
+    "tips": ["허리가 바닥에서 뜨지 않도록", "좌우로 롤링하면 마사지 효과"],
+    "caloriesPerMinute": 2.5,
+    "met": 2.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "H"],
+      "goals": ["hip flexibility", "relaxation"],
+      "contraindications": ["목 부상", "무릎 부상", "임신 후기"]
+    },
+    "style": "yoga",
+    "sanskritName": "Ananda Balasana",
+    "breathingGuide": "깊은 호흡, 날숨에 더 당기기",
+    "variations": {
+      "easier": "스트랩 사용",
+      "harder": "좌우로 롤링"
+    },
+    "physicalEffects": ["고관절 열림", "허리 긴장 완화", "내전근 스트레칭"],
+    "mentalEffects": ["이완", "스트레스 해소"]
+  },
+  {
+    "id": "YOG-017",
+    "name": "다리 자세",
+    "nameEn": "Bridge Pose",
+    "category": "core",
+    "bodyParts": ["hip", "back"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "등을 대고 눕는다",
+      "무릎을 구부리고 발을 바닥에 둔다",
+      "팔을 옆에 둔다",
+      "골반을 들어올린다",
+      "어깨-엉덩이-무릎 일직선"
+    ],
+    "tips": ["목에 체중이 실리지 않도록", "둔근을 조이며 들어올린다"],
+    "caloriesPerMinute": 3,
+    "met": 2.5,
+    "suitableFor": {
+      "bodyTypes": ["Y", "H"],
+      "goals": ["strength", "flexibility"],
+      "contraindications": ["목 부상", "허리 부상"]
+    },
+    "style": "yoga",
+    "sanskritName": "Setu Bandhasana",
+    "breathingGuide": "들숨: 준비, 날숨: 들어올리기",
+    "variations": {
+      "easier": "가동범위 줄이기",
+      "harder": "한 다리 들기"
+    },
+    "physicalEffects": ["척추 유연성", "가슴 열림", "둔근 강화"],
+    "mentalEffects": ["피로 회복", "불안 감소"]
+  },
+  {
+    "id": "YOG-018",
+    "name": "플랭크 자세",
+    "nameEn": "Plank Pose",
+    "category": "core",
+    "bodyParts": ["abs", "shoulder"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "손과 발끝으로 몸을 지지한다",
+      "손은 어깨 바로 아래",
+      "몸을 일직선으로 유지한다",
+      "코어를 단단히 조인다"
+    ],
+    "tips": ["허리가 처지거나 올라가지 않도록", "시선은 바닥 약간 앞"],
+    "caloriesPerMinute": 5,
+    "met": 4.0,
+    "suitableFor": {
+      "bodyTypes": ["A", "O"],
+      "goals": ["core", "total body"],
+      "contraindications": ["손목 부상", "어깨 부상"]
+    },
+    "style": "yoga",
+    "sanskritName": "Phalakasana",
+    "breathingGuide": "자연스러운 호흡 유지",
+    "variations": {
+      "easier": "무릎 대고 플랭크",
+      "harder": "한 팔/다리 들기"
+    },
+    "physicalEffects": ["코어 강화", "전신 근력", "자세 개선"],
+    "mentalEffects": ["정신력 강화", "집중력"]
+  },
+  {
+    "id": "YOG-019",
+    "name": "코브라 자세",
+    "nameEn": "Cobra Pose",
+    "category": "core",
+    "bodyParts": ["back", "chest"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "엎드려 손을 어깨 옆에 둔다",
+      "다리를 모으고 발등을 바닥에 둔다",
+      "들숨에 가슴을 들어올린다",
+      "팔꿈치를 약간 구부린다",
+      "어깨를 뒤로 내린다"
+    ],
+    "tips": ["목을 과도하게 젖히지 않는다", "하체는 이완 상태 유지"],
+    "caloriesPerMinute": 3,
+    "met": 2.5,
+    "suitableFor": {
+      "bodyTypes": ["A"],
+      "goals": ["back strength", "flexibility"],
+      "contraindications": ["허리 부상", "임신", "손목 터널 증후군"]
+    },
+    "style": "yoga",
+    "sanskritName": "Bhujangasana",
+    "breathingGuide": "들숨: 들어올리기, 날숨: 내려오기",
+    "variations": {
+      "easier": "Baby Cobra (낮게)",
+      "harder": "Upward Dog"
+    },
+    "physicalEffects": ["척추 유연성", "가슴 열림", "복부 스트레칭"],
+    "mentalEffects": ["에너지 증가", "스트레스 해소"]
+  },
+  {
+    "id": "YOG-020",
+    "name": "하향견 자세",
+    "nameEn": "Downward-Facing Dog",
+    "category": "upper",
+    "bodyParts": ["shoulder", "back", "thigh"],
+    "equipment": ["mat"],
+    "difficulty": "beginner",
+    "instructions": [
+      "네발기기에서 시작한다",
+      "손으로 밀어 엉덩이를 위로 올린다",
+      "역V자 모양을 만든다",
+      "발뒤꿈치를 바닥으로 누른다",
+      "목을 이완하고 시선은 배꼽"
+    ],
+    "tips": ["어깨가 귀에서 멀어지도록", "무릎을 살짝 구부려도 됨"],
+    "caloriesPerMinute": 3.5,
+    "met": 3.0,
+    "suitableFor": {
+      "bodyTypes": ["X", "A", "O"],
+      "goals": ["total body", "energy"],
+      "contraindications": ["손목 터널 증후군", "고혈압", "임신 후기"]
+    },
+    "style": "yoga",
+    "sanskritName": "Adho Mukha Svanasana",
+    "breathingGuide": "들숨: 척추 길게, 날숨: 발뒤꿈치 내리기",
+    "variations": {
+      "easier": "무릎 구부리기",
+      "harder": "한 다리 들기"
+    },
+    "physicalEffects": ["전신 스트레칭", "어깨/햄스트링 유연성", "혈액순환 개선"],
+    "mentalEffects": ["마음 진정", "에너지 회복"]
+  }
+]

@@ -121,6 +121,81 @@ export async function callGeminiAPI(
   }
 }
 
+// =============================================================================
+// 웹 호환 API (Phase 3 동기화용)
+// =============================================================================
+
+/**
+ * Gemini 사용 가능 여부 (웹 호환)
+ */
+export function isGeminiAvailable(): boolean {
+  return !!GEMINI_API_KEY;
+}
+
+/** 웹 호환 Gemini 콘텐츠 파트 */
+interface GeminiContentPart {
+  inlineData: { mimeType: string; data: string };
+}
+
+/**
+ * 이미지를 Gemini 입력 포맷으로 변환 (웹 호환)
+ */
+export function formatImageForGemini(base64Image: string): GeminiContentPart {
+  const data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+  return {
+    inlineData: { mimeType: 'image/jpeg', data },
+  };
+}
+
+/** 웹 호환 Gemini 응답 */
+interface GeminiResponse {
+  text: string;
+}
+
+/** 웹 호환 Gemini 호출 파라미터 */
+interface GeminiCallParams {
+  prompt?: string;
+  imageBase64?: string;
+  model?: string;
+  contents?: unknown;
+  config?: Record<string, unknown>;
+}
+
+/**
+ * Gemini 콘텐츠 생성 (웹 호환 래퍼)
+ *
+ * 웹에서 사용하는 다양한 호출 방식을 모바일의 callGeminiAPI로 변환
+ */
+export async function generateContent(params: GeminiCallParams): Promise<GeminiResponse> {
+  // contents 배열에서 prompt 추출
+  let prompt = params.prompt ?? '';
+  let imageBase64: string | undefined;
+
+  if (params.contents) {
+    if (typeof params.contents === 'string') {
+      prompt = params.contents;
+    } else if (Array.isArray(params.contents)) {
+      for (const part of params.contents) {
+        if (typeof part === 'string') {
+          prompt += part;
+        } else if (part && typeof part === 'object') {
+          const p = part as Record<string, unknown>;
+          if ('text' in p && typeof p.text === 'string') {
+            prompt += p.text;
+          }
+          if ('inlineData' in p) {
+            const inlineData = p.inlineData as { data?: string };
+            imageBase64 = inlineData?.data;
+          }
+        }
+      }
+    }
+  }
+
+  const text = await callGeminiAPI(prompt, imageBase64 ?? params.imageBase64);
+  return { text };
+}
+
 /**
  * Gemini API 설정 검증
  */
@@ -130,4 +205,21 @@ export function validateGeminiConfig(): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Gemini JSON 응답 파싱 (웹 호환)
+ * ```json 마커 제거 후 JSON.parse
+ */
+export function parseJsonResponse<T>(text: string): T {
+  const cleanText = text
+    .replace(/```json\s*/g, '')
+    .replace(/```/g, '')
+    .trim();
+
+  try {
+    return JSON.parse(cleanText) as T;
+  } catch {
+    throw new Error('Failed to parse Gemini response as JSON');
+  }
 }
