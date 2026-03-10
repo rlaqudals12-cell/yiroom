@@ -12,7 +12,7 @@ import type { AnyProduct, ProductWithMatch } from '@/types/product';
 
 /**
  * 사용자 프로필 기반 제품 매칭 훅
- * - 사용자의 분석 결과(피부, 체형, 퍼스널컬러)를 조회
+ * - 사용자의 분석 결과(피부, 체형, 퍼스널컬러, 헤어, 메이크업)를 조회
  * - 제품에 매칭 점수 계산
  * - 매칭률 필터링 지원
  */
@@ -28,6 +28,8 @@ interface UseUserMatchingResult {
   skinConcerns: string[];
   personalColor: string | null;
   bodyType: string | null;
+  hairType: string | null;
+  undertone: string | null;
 
   // 매칭 함수
   calculateProductMatch: (product: AnyProduct) => number;
@@ -50,19 +52,21 @@ export function useUserMatching(): UseUserMatchingResult {
   const [skinConcerns, setSkinConcerns] = useState<string[]>([]);
   const [personalColor, setPersonalColor] = useState<string | null>(null);
   const [bodyType, setBodyType] = useState<string | null>(null);
+  const [hairType, setHairType] = useState<string | null>(null);
+  const [undertone, setUndertone] = useState<string | null>(null);
 
   // 사용자 분석 데이터 로드
   useEffect(() => {
-    async function loadUserProfile() {
+    async function loadUserProfile(): Promise<void> {
       if (!isLoaded || !user) {
         setIsLoading(false);
         return;
       }
 
       try {
-        // 병렬로 모든 분석 데이터 조회
-        const [skinResult, colorResult, bodyResult] = await Promise.all([
-          // 피부 분석
+        // 병렬로 모든 분석 데이터 조회 (5개 모듈)
+        const [skinResult, colorResult, bodyResult, hairResult, makeupResult] = await Promise.all([
+          // S-1 피부 분석
           supabase
             .from('skin_assessments')
             .select('skin_type, concerns')
@@ -71,7 +75,7 @@ export function useUserMatching(): UseUserMatchingResult {
             .limit(1)
             .single(),
 
-          // 퍼스널컬러 분석
+          // PC-1 퍼스널컬러 분석
           supabase
             .from('personal_color_assessments')
             .select('season')
@@ -80,12 +84,30 @@ export function useUserMatching(): UseUserMatchingResult {
             .limit(1)
             .single(),
 
-          // 체형 분석
+          // C-1 체형 분석
           supabase
             .from('body_assessments')
             .select('body_type')
             .eq('clerk_user_id', user.id)
             .order('assessed_at', { ascending: false })
+            .limit(1)
+            .single(),
+
+          // H-1 헤어 분석
+          supabase
+            .from('hair_analyses')
+            .select('hair_type, scalp_type, concerns')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+
+          // M-1 메이크업 분석
+          supabase
+            .from('makeup_analyses')
+            .select('undertone, face_shape')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
             .limit(1)
             .single(),
         ]);
@@ -109,6 +131,21 @@ export function useUserMatching(): UseUserMatchingResult {
           setBodyType(bodyResult.data.body_type);
         }
 
+        // H-1 헤어 데이터 매핑
+        if (hairResult.data) {
+          userProfile.hairType = hairResult.data.hair_type;
+          userProfile.scalpType = hairResult.data.scalp_type;
+          userProfile.hairConcerns = hairResult.data.concerns || [];
+          setHairType(hairResult.data.hair_type);
+        }
+
+        // M-1 메이크업 데이터 매핑
+        if (makeupResult.data) {
+          userProfile.undertone = makeupResult.data.undertone;
+          userProfile.faceShape = makeupResult.data.face_shape;
+          setUndertone(makeupResult.data.undertone);
+        }
+
         setProfile(userProfile);
       } catch (error) {
         console.error('[useUserMatching] Error loading profile:', error);
@@ -122,8 +159,8 @@ export function useUserMatching(): UseUserMatchingResult {
 
   // 분석 완료 여부
   const hasAnalysis = useMemo(() => {
-    return !!(skinType || personalColor || bodyType);
-  }, [skinType, personalColor, bodyType]);
+    return !!(skinType || personalColor || bodyType || hairType || undertone);
+  }, [skinType, personalColor, bodyType, hairType, undertone]);
 
   // 단일 제품 매칭 점수 계산
   const calculateProductMatch = useCallback(
@@ -169,6 +206,8 @@ export function useUserMatching(): UseUserMatchingResult {
     skinConcerns,
     personalColor,
     bodyType,
+    hairType,
+    undertone,
     calculateProductMatch,
     getMatchedProducts,
     filterByMatchRate,

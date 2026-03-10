@@ -82,7 +82,7 @@ describe('useUserMatching', () => {
         user: { id: 'user_123' },
       });
 
-      // Supabase 응답 모킹
+      // Supabase 응답 모킹 (skin, color, body, hair, makeup)
       mockSupabaseClient.single
         .mockResolvedValueOnce({
           data: { skin_type: 'dry', concerns: ['acne', 'aging'] },
@@ -94,6 +94,14 @@ describe('useUserMatching', () => {
         })
         .mockResolvedValueOnce({
           data: { body_type: '웨이브' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { hair_type: 'dry', scalp_type: 'dry', concerns: ['damage'] },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { undertone: 'warm', face_shape: 'oval' },
           error: null,
         });
 
@@ -108,6 +116,8 @@ describe('useUserMatching', () => {
       expect(result.current.skinConcerns).toEqual(['acne', 'aging']);
       expect(result.current.personalColor).toBe('봄 웜톤');
       expect(result.current.bodyType).toBe('웨이브');
+      expect(result.current.hairType).toBe('dry');
+      expect(result.current.undertone).toBe('warm');
       expect(result.current.hasAnalysis).toBe(true);
     });
 
@@ -117,11 +127,19 @@ describe('useUserMatching', () => {
         user: { id: 'user_123' },
       });
 
-      // 피부 타입만 있고 나머지는 없는 경우
+      // 피부 타입만 있고 나머지는 없는 경우 (skin, color, body, hair, makeup)
       mockSupabaseClient.single
         .mockResolvedValueOnce({
           data: { skin_type: 'oily', concerns: [] },
           error: null,
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { code: 'PGRST116', message: 'No rows found' },
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { code: 'PGRST116', message: 'No rows found' },
         })
         .mockResolvedValueOnce({
           data: null,
@@ -181,12 +199,14 @@ describe('useUserMatching', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      const products = [{
-        id: '1',
-        name: 'Product A',
-        brand: 'Test Brand',
-        category: 'serum',
-      } as CosmeticProduct];
+      const products = [
+        {
+          id: '1',
+          name: 'Product A',
+          brand: 'Test Brand',
+          category: 'serum',
+        } as CosmeticProduct,
+      ];
       const matched = result.current.getMatchedProducts(products);
 
       expect(matched).toHaveLength(1);
@@ -208,9 +228,21 @@ describe('useUserMatching', () => {
       });
 
       const products = [
-        { product: { id: '1', name: 'A', brand: 'B', category: 'serum' } as CosmeticProduct, matchScore: 90, matchReasons: [] },
-        { product: { id: '2', name: 'B', brand: 'B', category: 'serum' } as CosmeticProduct, matchScore: 70, matchReasons: [] },
-        { product: { id: '3', name: 'C', brand: 'B', category: 'serum' } as CosmeticProduct, matchScore: 50, matchReasons: [] },
+        {
+          product: { id: '1', name: 'A', brand: 'B', category: 'serum' } as CosmeticProduct,
+          matchScore: 90,
+          matchReasons: [],
+        },
+        {
+          product: { id: '2', name: 'B', brand: 'B', category: 'serum' } as CosmeticProduct,
+          matchScore: 70,
+          matchReasons: [],
+        },
+        {
+          product: { id: '3', name: 'C', brand: 'B', category: 'serum' } as CosmeticProduct,
+          matchScore: 50,
+          matchReasons: [],
+        },
       ];
 
       const filtered = result.current.filterByMatchRate(products, 75);
@@ -274,6 +306,14 @@ describe('useStyleMatching', () => {
       .mockResolvedValueOnce({
         data: { body_type: '웨이브' },
         error: null,
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
       });
 
     const useStyleMatching = await loadHook();
@@ -306,6 +346,14 @@ describe('useStyleMatching', () => {
       .mockResolvedValueOnce({
         data: { body_type: '웨이브' },
         error: null,
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
       });
 
     const useStyleMatching = await loadHook();
@@ -328,6 +376,14 @@ describe('useStyleMatching', () => {
     });
 
     mockSupabaseClient.single
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
       .mockResolvedValueOnce({
         data: null,
         error: { code: 'PGRST116' },
