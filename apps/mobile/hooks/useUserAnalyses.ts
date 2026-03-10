@@ -11,13 +11,17 @@ import { analysisLogger } from '../lib/utils/logger';
 // 분석 결과 타입
 export interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
   createdAt: Date;
   summary: string;
   // 타입별 추가 데이터
   seasonType?: string;
   skinScore?: number;
   bodyType?: string;
+  hairType?: string;
+  hairScore?: number;
+  undertone?: string;
+  oralHealthScore?: number;
 }
 
 export interface PersonalColorResult {
