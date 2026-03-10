@@ -30,6 +30,8 @@ interface UseUserMatchingResult {
   bodyType: string | null;
   hairType: string | null;
   undertone: string | null;
+  workoutGoal: string | null;
+  nutritionGoal: string | null;
 
   // 매칭 함수
   calculateProductMatch: (product: AnyProduct) => number;
@@ -54,6 +56,8 @@ export function useUserMatching(): UseUserMatchingResult {
   const [bodyType, setBodyType] = useState<string | null>(null);
   const [hairType, setHairType] = useState<string | null>(null);
   const [undertone, setUndertone] = useState<string | null>(null);
+  const [workoutGoal, setWorkoutGoal] = useState<string | null>(null);
+  const [nutritionGoal, setNutritionGoal] = useState<string | null>(null);
 
   // 사용자 분석 데이터 로드
   useEffect(() => {
@@ -65,7 +69,15 @@ export function useUserMatching(): UseUserMatchingResult {
 
       try {
         // 병렬로 모든 분석 데이터 조회 (5개 모듈)
-        const [skinResult, colorResult, bodyResult, hairResult, makeupResult] = await Promise.all([
+        const [
+          skinResult,
+          colorResult,
+          bodyResult,
+          hairResult,
+          makeupResult,
+          workoutResult,
+          nutritionResult,
+        ] = await Promise.all([
           // S-1 피부 분석
           supabase
             .from('skin_assessments')
@@ -110,6 +122,22 @@ export function useUserMatching(): UseUserMatchingResult {
             .order('created_at', { ascending: false })
             .limit(1)
             .single(),
+
+          // W-1 운동 분석
+          supabase
+            .from('workout_analyses')
+            .select('goal, workout_type')
+            .eq('clerk_user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+
+          // N-1 영양 설정
+          supabase
+            .from('nutrition_settings')
+            .select('goal')
+            .eq('clerk_user_id', user.id)
+            .maybeSingle(),
         ]);
 
         // 프로필 구성
@@ -144,6 +172,18 @@ export function useUserMatching(): UseUserMatchingResult {
           userProfile.undertone = makeupResult.data.undertone;
           userProfile.faceShape = makeupResult.data.face_shape;
           setUndertone(makeupResult.data.undertone);
+        }
+
+        // W-1 운동 데이터 매핑
+        if (workoutResult.data) {
+          userProfile.workoutGoals = workoutResult.data.goal ? [workoutResult.data.goal] : [];
+          setWorkoutGoal(workoutResult.data.goal);
+        }
+
+        // N-1 영양 데이터 매핑
+        if (nutritionResult.data) {
+          userProfile.nutritionGoals = nutritionResult.data.goal ? [nutritionResult.data.goal] : [];
+          setNutritionGoal(nutritionResult.data.goal);
         }
 
         setProfile(userProfile);
@@ -208,6 +248,8 @@ export function useUserMatching(): UseUserMatchingResult {
     bodyType,
     hairType,
     undertone,
+    workoutGoal,
+    nutritionGoal,
     calculateProductMatch,
     getMatchedProducts,
     filterByMatchRate,

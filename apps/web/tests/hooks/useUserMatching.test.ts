@@ -20,6 +20,7 @@ const mockSupabaseClient = {
   order: vi.fn().mockReturnThis(),
   limit: vi.fn().mockReturnThis(),
   single: vi.fn(),
+  maybeSingle: vi.fn(),
 };
 
 vi.mock('@/lib/supabase/clerk-client', () => ({
@@ -42,6 +43,9 @@ vi.mock('@/lib/products/matching', () => ({
 }));
 
 describe('useUserMatching', () => {
+  // W-1/N-1은 maybeSingle 사용 — 기본 응답
+  const noRowResult = { data: null, error: null };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSupabaseClient.from.mockReturnThis();
@@ -49,6 +53,8 @@ describe('useUserMatching', () => {
     mockSupabaseClient.eq.mockReturnThis();
     mockSupabaseClient.order.mockReturnThis();
     mockSupabaseClient.limit.mockReturnThis();
+    // W-1/N-1 기본 응답 (maybeSingle)
+    mockSupabaseClient.maybeSingle.mockResolvedValue(noRowResult);
   });
 
   const loadHook = async () => {
@@ -159,6 +165,58 @@ describe('useUserMatching', () => {
 
       expect(result.current.skinType).toBe('oily');
       expect(result.current.personalColor).toBe(null);
+      expect(result.current.hasAnalysis).toBe(true);
+    });
+
+    it('W-1/N-1 운동·영양 데이터를 로드한다', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      // S-1, PC-1, C-1, H-1, M-1 (single)
+      mockSupabaseClient.single
+        .mockResolvedValueOnce({
+          data: { skin_type: 'dry', concerns: [] },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { season: '봄 웜톤' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { body_type: '웨이브' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { code: 'PGRST116' },
+        })
+        .mockResolvedValueOnce({
+          data: null,
+          error: { code: 'PGRST116' },
+        });
+
+      // W-1, N-1 (maybeSingle)
+      mockSupabaseClient.maybeSingle
+        .mockResolvedValueOnce({
+          data: { goal: '근력 증가', workout_type: 'strength' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { goal: '체중 감량' },
+          error: null,
+        });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.workoutGoal).toBe('근력 증가');
+      expect(result.current.nutritionGoal).toBe('체중 감량');
       expect(result.current.hasAnalysis).toBe(true);
     });
   });
@@ -274,6 +332,8 @@ describe('useUserMatching', () => {
 });
 
 describe('useStyleMatching', () => {
+  const noRowResult = { data: null, error: null };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSupabaseClient.from.mockReturnThis();
@@ -281,6 +341,7 @@ describe('useStyleMatching', () => {
     mockSupabaseClient.eq.mockReturnThis();
     mockSupabaseClient.order.mockReturnThis();
     mockSupabaseClient.limit.mockReturnThis();
+    mockSupabaseClient.maybeSingle.mockResolvedValue(noRowResult);
   });
 
   const loadHook = async () => {
