@@ -26,7 +26,10 @@ import {
   BeautyNutritionCard,
 } from '@/components/reports';
 import { EmptyStateCard } from '@/components/common';
+import { ShareButton } from '@/components/share/ShareButton';
+import { PrintButton } from '@/components/share/PrintButton';
 import { Button } from '@/components/ui/button';
+import { useShare } from '@/hooks/useShare';
 import type { MonthlyReport, MonthlyReportResponse } from '@/types/report';
 
 interface MonthlyReportPageProps {
@@ -40,6 +43,7 @@ export default function MonthlyReportPage({ params }: MonthlyReportPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(true);
+  const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-월간-리포트');
 
   useEffect(() => {
     fetchReport(month);
@@ -153,8 +157,14 @@ export default function MonthlyReportPage({ params }: MonthlyReportPageProps) {
         canGoNext={canGoNext}
       />
 
+      {/* 공유/인쇄 버튼 */}
+      <div className="flex justify-end gap-1 mb-4" data-print-hide>
+        <ShareButton onShare={share} loading={shareLoading} variant="outline" size="sm" />
+        <PrintButton title={`이룸 월간 리포트 ${month}`} variant="outline" size="sm" />
+      </div>
+
       {/* 리포트 내용 */}
-      <div className="space-y-4">
+      <div ref={shareRef} className="space-y-4">
         {/* 목표 진행률 */}
         <GoalProgressCard goalProgress={report.goalProgress} />
 
