@@ -206,6 +206,24 @@ export const sentryLogger = createLogger('Sentry');
 /** 코치 AI 로거 */
 export const coachLogger = createLogger('Coach');
 
+/** 스마트 매칭 로거 */
+export const smartMatchingLogger = createLogger('SmartMatching');
+
+/** 스캔 로거 */
+export const scanLogger = createLogger('Scan');
+
+/** 성분 분석 로거 */
+export const ingredientLogger = createLogger('Ingredient');
+
+/** 게이미피케이션 로거 */
+export const gamificationLogger = createLogger('Gamification');
+
+/** 챌린지 로거 (상세) */
+export const challengesLogger = createLogger('Challenges');
+
+/** 위시리스트 로거 */
+export const wishlistLogger = createLogger('Wishlist');
+
 // ============================================
 // 유틸리티
 // ============================================
