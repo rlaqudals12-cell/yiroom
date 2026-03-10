@@ -35,8 +35,7 @@ export default function NewUserHero() {
       <div className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-2xl p-6 mb-4">
         <h2 className="text-lg font-bold text-foreground mb-2">
           나에게 어울리는 색, 피부, 스타일을
-          <br />
-          AI가 알려줄게요
+          <br />한 번에 알아보세요
         </h2>
 
         {/* Social Proof */}

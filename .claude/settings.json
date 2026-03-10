@@ -29,7 +29,20 @@
       "Bash(ls -1d /c/dev/yiroom/apps/web/app/\\\\\\(main\\\\\\)/*)",
       "Bash(ls \"/c/dev/yiroom/apps/web/app/\\(main\\)/\")",
       "Bash(grep -l \"generateMetadata\\\\|export const metadata\" /c/dev/yiroom/apps/web/app/\\\\\\(main\\\\\\)/analysis/*/result/*/page.tsx)",
-      "Bash(git add docs/adr/ADR-082-report-block-moderation.md supabase/migrations/20260309_feed_reports_blocks.sql apps/web/lib/feed/types.ts apps/web/lib/feed/repository.ts apps/web/app/api/feed/[id]/report/route.ts apps/web/app/api/user/blocks/route.ts apps/web/components/feed/ReportModal.tsx apps/web/components/feed/BlockConfirmDialog.tsx apps/web/components/feed/FeedCard.tsx apps/web/components/feed/index.ts \"apps/web/app/\\(main\\)/feed/page.tsx\" apps/web/tests/lib/feed/report-block.test.ts)"
+      "Bash(git add docs/adr/ADR-082-report-block-moderation.md supabase/migrations/20260309_feed_reports_blocks.sql apps/web/lib/feed/types.ts apps/web/lib/feed/repository.ts apps/web/app/api/feed/[id]/report/route.ts apps/web/app/api/user/blocks/route.ts apps/web/components/feed/ReportModal.tsx apps/web/components/feed/BlockConfirmDialog.tsx apps/web/components/feed/FeedCard.tsx apps/web/components/feed/index.ts \"apps/web/app/\\(main\\)/feed/page.tsx\" apps/web/tests/lib/feed/report-block.test.ts)",
+      "Bash(tee /tmp/vitest-output.txt)",
+      "Bash(sed -i \"s|제8조 \\(서비스 이용 제한 및 해지\\)|제8조 \\(계정 관리 및 해지\\)|\" tests/pages/legal/TermsPage.test.tsx)",
+      "Bash(sed -i \"s|제9조 \\(면책조항\\)|제9조 \\(지적재산권\\)|\" tests/pages/legal/TermsPage.test.tsx)",
+      "Bash(sed -i \"s|제10조 \\(분쟁 해결\\)|제10조 \\(면책조항\\)|\" tests/pages/legal/TermsPage.test.tsx)",
+      "Bash(sed -i \"/제10조 \\(면책조항\\)/a\\\\    expect\\(screen.getByText\\(''제11조 \\(분쟁 해결\\)''\\)\\).toBeInTheDocument\\(\\);\" tests/pages/legal/TermsPage.test.tsx)",
+      "Bash(sed -i \"s|// 10개 조항 + 부칙|// 11개 조항 + 부칙|\" tests/pages/legal/TermsPage.test.tsx)",
+      "Bash(ls \"c:/dev/yiroom/apps/web/app/\\(main\\)/analysis/body/_components/\")",
+      "Bash(npx vitest run tests/pages/analysis/personal-color.test.tsx tests/pages/analysis/skin.test.tsx tests/pages/analysis/body.test.tsx tests/pages/analysis/hair/ tests/api/analyze/ tests/app/nutrition/ tests/components/analysis/personal-color-result-tabs.test.tsx tests/pages/analysis/AnalysisResult.test.tsx tests/components/gamification/BadgeCard.test.tsx tests/app/\\\\\\(main\\\\\\)/help/faq/ tests/pages/legal/TermsPage.test.tsx tests/pages/profile/page.test.tsx tests/lib/mock/posture-analysis.test.ts)",
+      "Bash(tee /tmp/vitest-out.txt)",
+      "Bash(npx eslint app/\\\\\\(main\\\\\\)/record/report/page.tsx components/reports/WeeklyComparisonChart.tsx components/reports/GoalProgressCard.tsx components/reports/WorkoutSummaryCard.tsx app/\\\\\\(main\\\\\\)/reports/weekly/[weekStart]/page.tsx app/\\\\\\(main\\\\\\)/reports/monthly/[month]/page.tsx)",
+      "Bash(npx eslint app/\\\\\\(main\\\\\\)/record/report/page.tsx)",
+      "Bash(npx eslint apps/web/components/reports/ReportSummaryCard.tsx apps/web/components/reports/BestDayHighlightCard.tsx apps/web/components/reports/CalorieBalanceCard.tsx apps/web/components/reports/InsightCard.tsx apps/web/app/\\\\\\(main\\\\\\)/record/report/page.tsx apps/web/app/\\\\\\(main\\\\\\)/reports/weekly/[weekStart]/page.tsx)",
+      "Bash(grep -n \"ShareButton\\\\|useAnalysisShare\\\\|share\\(\" /c/dev/yiroom/apps/web/app/\\\\\\(main\\\\\\)/analysis/personal-color/result/[id]/page.tsx)"
     ],
     "additionalDirectories": ["\\tmp"]
   }

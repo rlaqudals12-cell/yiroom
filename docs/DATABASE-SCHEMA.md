@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v6.1 (Phase K + 동기화 완료)
+# 🗄️ Database 스키마 v7.1 (모더레이션 + ConnectionAwareness)
 
-**버전**: v6.1 (K-1 gender_preference 추가)
-**업데이트**: 2026년 2월 2일
+**버전**: v7.1 (모더레이션 + ConnectionAwareness 추가)
+**업데이트**: 2026년 3월 10일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -111,6 +111,9 @@
     55. feed_reports                # 피드 신고 (2026-03-09)
     56. user_blocks                 # 사용자 차단 (2026-03-09)
 
+  ConnectionAwareness (신규):
+    57. connection_awareness        # 교차 인사이트 연결 내재화 (2026-03-07)
+
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
   users (1) ━━━━━ (N) skin_analyses
@@ -119,6 +122,7 @@
   users (1) ━━━━━ (N) hair_analyses
   users (1) ━━━━━ (N) mental_health_logs
   users (1) ━━━━━ (N) skin_diary_entries
+  users (1) ━━━━━ (N) connection_awareness
 
 논리적 연동:
   personal_color_assessments.season → skin_analyses
@@ -2356,6 +2360,64 @@ CREATE POLICY "users_manage_own_blocks" ON user_blocks
 
 ---
 
-**버전**: v7.0 (소셜 모더레이션 추가)
-**최종 업데이트**: 2026년 3월 9일
-**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 동기화 완료 ✅
+## 41. connection_awareness 테이블 (교차 인사이트 연결 내재화)
+
+> "A라서 B" 연결의 내재화 추적. 4단계 상태 전이: exposed → recognized → internalized → independent
+> 마이그레이션: `supabase/migrations/20260307_connection_awareness.sql`
+
+```sql
+CREATE TABLE IF NOT EXISTS connection_awareness (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  connection_id TEXT NOT NULL,        -- 연결 식별자 (예: pc-warm-coral-lip)
+  source_module TEXT NOT NULL,        -- 소스 분석 모듈 (personal-color, skin 등)
+  target_domain TEXT NOT NULL,        -- 타겟 도메인
+  connection_rule TEXT NOT NULL,      -- "A라서 B" 형태의 자연어 연결 규칙
+  exposure_count INTEGER DEFAULT 0,
+  confirmed_count INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'exposed'
+    CHECK (status IN ('exposed', 'recognized', 'internalized', 'independent')),
+  last_exposed_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (clerk_user_id, connection_id)
+);
+
+-- RLS
+ALTER TABLE connection_awareness ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_own_connections_select" ON connection_awareness FOR SELECT USING (clerk_user_id = auth.get_user_id());
+CREATE POLICY "user_own_connections_insert" ON connection_awareness FOR INSERT WITH CHECK (clerk_user_id = auth.get_user_id());
+CREATE POLICY "user_own_connections_update" ON connection_awareness FOR UPDATE USING (clerk_user_id = auth.get_user_id());
+
+-- 인덱스
+CREATE INDEX idx_connection_awareness_user ON connection_awareness(clerk_user_id);
+CREATE INDEX idx_connection_awareness_status ON connection_awareness(clerk_user_id, status);
+CREATE INDEX idx_connection_awareness_module ON connection_awareness(clerk_user_id, source_module);
+```
+
+### 상태 전이 조건
+
+| 상태         | 최소 노출 횟수 | 최소 확인 횟수 | ExplanationDepth |
+| ------------ | -------------- | -------------- | ---------------- |
+| exposed      | 1              | 0              | full             |
+| recognized   | 3              | 1              | brief            |
+| internalized | 5              | 3              | minimal          |
+| independent  | 7              | 5              | none             |
+
+### 필드 설명
+
+| 필드            | 타입    | 설명                                           |
+| --------------- | ------- | ---------------------------------------------- |
+| connection_id   | TEXT    | 연결 식별자 (예: `pc-warm-coral-lip`)          |
+| source_module   | TEXT    | 소스 분석 모듈 (personal-color, skin, body 등) |
+| target_domain   | TEXT    | 타겟 도메인                                    |
+| connection_rule | TEXT    | "A라서 B" 자연어 규칙                          |
+| exposure_count  | INTEGER | 노출 횟수                                      |
+| confirmed_count | INTEGER | 사용자 확인 횟수                               |
+| status          | TEXT    | 내재화 상태 (4단계)                            |
+
+---
+
+**버전**: v7.1 (ConnectionAwareness 추가)
+**최종 업데이트**: 2026년 3월 10일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness 동기화 완료 ✅

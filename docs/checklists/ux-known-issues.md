@@ -100,6 +100,16 @@
 - **재발 방지**: 새 컴포넌트에서 "피해야", "약점", "결점" 등 D4 금지 패턴 사용 여부를 코드 리뷰에서 확인
 - **해결 커밋**: PC 결과 7개소 → 전체 모듈 일괄 수정 완료 (body 3, skin 3, workout 2, nutrition 1, coach 1, oral-health 1, mock 2, palette 1). 내부 코드 주석/타입은 기능적 명칭이므로 유지
 
+### KI-010: H4 조건부 렌더링에서 fallback UI 누락
+
+- **발견 횟수**: 3회 (뷰티 페이지 3개소: 랭킹 섹션, 매칭 토글, 피부나이 계산기)
+- **관련 항목**: H4
+- **발생 화면**: BeautyPage (랭킹 섹션, 90%+ 매칭 토글, SkinAgeCalculator)
+- **원인**: `{hasAnalysis && <Component>}` 패턴 사용 시 미분석 사용자에게 빈 영역 노출
+- **수정 방법**: `{hasAnalysis ? <Component> : <FallbackCard>}` 패턴으로 전환. fallback에 분석 안내 + CTA 포함
+- **재발 방지**: 조건부 렌더링 사용 시 else 분기에 유용한 대안 UI 존재 여부 확인
+- **해결 커밋**: 뷰티 페이지 3개소 fallback 추가 완료 (2026-03-10)
+
 ### KI-009: 탭 간 동일 콘텐츠 중복 (F4 위반)
 
 - **발견 횟수**: 1회
@@ -272,5 +282,28 @@
 
 ---
 
-**Version**: 2.3 | **Created**: 2026-03-08 | **Updated**: 2026-03-09
+## Beauty 뷰티/제품 페이지 점검 결과 (2026-03-10)
+
+### 수정 완료 (6건)
+
+| #   | 파일                    | 수정 내용                                          | 심각도 |
+| --- | ----------------------- | -------------------------------------------------- | ------ |
+| 1   | useUserMatching.ts      | H-1 헤어 분석 쿼리 추가 (hair_analyses)            | High   |
+| 2   | useUserMatching.ts      | M-1 메이크업 분석 쿼리 추가 (makeup_analyses)      | High   |
+| 3   | beauty/page.tsx:1095    | H4 랭킹 섹션 fallback (피부 분석 안내 CTA)         | High   |
+| 4   | beauty/page.tsx:1004    | H4 매칭 토글 fallback ("분석하면 매칭률 확인" CTA) | High   |
+| 5   | beauty/page.tsx:1376    | H4 피부나이 계산기 fallback (피부 분석 안내 CTA)   | High   |
+| 6   | useUserMatching.test.ts | 5개 테스트에 H-1/M-1 mock 추가                     | -      |
+
+### 교차 모듈 매칭 확장
+
+`useUserMatching` 훅이 3개 모듈(S-1, PC-1, C-1)에서 **5개 모듈**(+ H-1 헤어, M-1 메이크업)로 확장됨.
+`lib/products/matching.ts`의 `UserProfile` 인터페이스는 이미 6개 모듈을 지원하고 있었으나, 실제 데이터 로딩이 3개뿐이었던 갭 해소.
+
+**통과율**: 84% (41/49 통과, 3 fail→0 fail, 5 warn 유지)
+**궁극의 형태**: 55% (UI 셸 80%+ / 핵심 AI 매칭 55% — W-1/N-1 매칭 미연결)
+
+---
+
+**Version**: 2.4 | **Created**: 2026-03-08 | **Updated**: 2026-03-10
 **관련**: [ux-pr-checklist.md](./ux-pr-checklist.md) 변경 프로토콜 참조

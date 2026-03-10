@@ -194,9 +194,8 @@ vi.mock('@/app/(main)/analysis/skin/_components/KnownSkinTypeInput', () => ({
 }));
 
 vi.mock('@/app/(main)/analysis/skin/_components/AnalysisLoading', () => ({
-  default: ({ onComplete }: { onComplete: () => void }) => {
-    setTimeout(onComplete, 0);
-    return <div data-testid="analysis-loading">분석 중...</div>;
+  default: ({ isApiComplete }: { isApiComplete?: boolean }) => {
+    return <div data-testid="analysis-loading">{isApiComplete ? '완료' : '분석 중...'}</div>;
   },
 }));
 

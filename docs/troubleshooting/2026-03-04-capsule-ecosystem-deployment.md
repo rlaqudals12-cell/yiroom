@@ -68,12 +68,17 @@
 
 ```
 □ Vercel Settings → General → Ignored Build Step → "Automatic" 으로 변경
-□ supabase db push 실행 (7테이블 생성)
+□ supabase db push 실행 (3개 마이그레이션, 10+ 테이블 생성)
+  - 20260305_capsule_ecosystem.sql (캡슐 7테이블)
+  - 20260307_connection_awareness.sql (ConnectionAwareness 1테이블)
+  - 20260309_feed_reports_blocks.sql (모더레이션 2테이블)
 □ 새 배포 트리거: npx vercel --prod 또는 git push 후 자동 배포
 □ 배포 후 yiroom.vercel.app 동작 확인
 □ 캡슐 API 엔드포인트 동작 확인 (/api/capsule/profile 등)
+□ ConnectionAwareness API 확인 (/api/connection-awareness)
+□ 모더레이션 API 확인 (/api/feed/[id]/report, /api/user/blocks)
 ```
 
 ---
 
-**Updated**: 2026-03-04
+**Updated**: 2026-03-10

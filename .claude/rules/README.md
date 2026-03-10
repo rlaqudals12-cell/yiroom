@@ -8,18 +8,18 @@
 
 ## 빠른 탐색
 
-| 카테고리                      | 파일 수 | 설명                        |
-| ----------------------------- | ------- | --------------------------- |
-| [제1원칙](#1-제1원칙-최우선)  | 3개     | 모든 규칙의 기반            |
-| [코드 스타일](#2-코드-스타일) | 5개     | 코딩 표준, 패턴             |
-| [프레임워크](#3-프레임워크)   | 3개     | Next.js, React, Mobile      |
-| [데이터](#4-데이터)           | 2개     | 마이그레이션, Mock Fallback |
-| [AI/ML](#5-aiml)              | 4개     | AI 통합, 프롬프트, Hybrid   |
-| [품질](#6-품질)               | 3개     | 테스트, 보안, 코드 리뷰     |
-| [운영](#7-운영)               | 4개     | Git, Feature Flags, 디버깅  |
-| [설계 원칙](#8-설계-원칙)     | 1개     | OCP, 확장성                 |
+| 카테고리                      | 파일 수 | 설명                                   |
+| ----------------------------- | ------- | -------------------------------------- |
+| [제1원칙](#1-제1원칙-최우선)  | 3개     | 모든 규칙의 기반                       |
+| [코드 스타일](#2-코드-스타일) | 5개     | 코딩 표준, 패턴                        |
+| [프레임워크](#3-프레임워크)   | 3개     | Next.js, React, Mobile                 |
+| [데이터](#4-데이터)           | 2개     | 마이그레이션, Mock Fallback            |
+| [AI/ML](#5-aiml)              | 4개     | AI 통합, 프롬프트, Hybrid              |
+| [품질](#6-품질)               | 3개     | 테스트, 보안, 코드 리뷰                |
+| [운영](#7-운영)               | 5개     | Git, Feature Flags, 디버깅, 문서동기화 |
+| [설계 원칙](#8-설계-원칙)     | 1개     | OCP, 확장성                            |
 
-**총 규칙 파일**: 26개
+**총 규칙 파일**: 27개
 
 ---
 
@@ -96,6 +96,7 @@
 | [server-debugging.md](./server-debugging.md) | Next.js 16 서버 디버깅 가이드     | P5        |
 | [sisyphus-trigger.md](./sisyphus-trigger.md) | 시지푸스 자동 트리거 규칙         | P3        |
 | [agent-roadmap.md](./agent-roadmap.md)       | 에이전트 로드맵, 도입 기준        | P6        |
+| [doc-sync.md](./doc-sync.md)                 | 문서 동기화 규칙, 변경 시 체크    | P7        |
 
 ---
 
@@ -120,7 +121,7 @@
 | **P4: 단순화**        | code-style.md, typescript-strict.md, error-handling-patterns.md, hybrid-data-pattern.md             |
 | **P5: 속도**          | performance-guidelines.md, feature-flags.md, server-debugging.md                                    |
 | **P6: 자동화**        | git-workflow.md, feature-flags.md, agent-roadmap.md                                                 |
-| **P7: 워크플로우**    | principles-guide.md, db-migration-rules.md, git-workflow.md                                         |
+| **P7: 워크플로우**    | principles-guide.md, db-migration-rules.md, git-workflow.md, doc-sync.md                            |
 | **P8: 모듈 경계**     | encapsulation.md, ocp-patterns.md                                                                   |
 
 ---
