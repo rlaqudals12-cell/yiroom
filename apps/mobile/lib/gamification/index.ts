@@ -340,3 +340,17 @@ export async function getUserLevelInfo(
 
   return calculateLevelInfo(data?.total_xp ?? 0);
 }
+
+// ============================================
+// 웹 호환 re-export
+// ============================================
+export {
+  checkAndAwardStreakBadges,
+  checkWorkoutCountBadges,
+} from './streak-integration';
+
+export { awardBadgeById } from './badges';
+export { RARITY_COLORS } from './constants';
+
+export type { BadgeAwardResult } from '@/types/gamification';
+export type { LevelUpResult } from '@/types/gamification';

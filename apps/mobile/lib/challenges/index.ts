@@ -336,3 +336,8 @@ export function getDaysRemaining(targetEndAt: Date): number {
   const diff = targetEndAt.getTime() - now.getTime();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
+
+// ============================================
+// 웹 호환 re-export (integration.ts)
+// ============================================
+export { updateChallengesOnWorkout, type ChallengeUpdateResult } from './integration';
