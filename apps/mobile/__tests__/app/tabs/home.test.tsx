@@ -197,7 +197,8 @@ describe('HomeScreen', () => {
   describe('온보딩 미완료 상태', () => {
     it('온보딩 로딩 중에는 스켈레톤 로더를 표시한다', () => {
       const { useOnboardingCheck } = require('../../../lib/onboarding');
-      useOnboardingCheck.mockReturnValueOnce({
+      // React 18 strict mode double-invocation 대응: mockReturnValue 사용
+      useOnboardingCheck.mockReturnValue({
         isCompleted: false,
         isLoading: true,
       });
@@ -206,6 +207,12 @@ describe('HomeScreen', () => {
       // 로딩 중에는 home-screen testID가 없음 (스켈레톤 표시)
       expect(queryByTestId('home-screen')).toBeNull();
       expect(queryByTestId('skeleton-hero')).toBeTruthy();
+
+      // 기본 mock 복원
+      useOnboardingCheck.mockReturnValue({
+        isCompleted: true,
+        isLoading: false,
+      });
     });
   });
 });
