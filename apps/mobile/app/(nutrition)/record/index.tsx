@@ -56,8 +56,7 @@ export default function NutritionRecordScreen() {
       {
         text: '촬영하기',
         onPress: () => {
-          // TODO: 카메라 연동
-          Alert.alert('준비 중', 'AI 음식 인식 기능은 준비 중입니다.');
+          router.push('/(nutrition)/camera');
         },
       },
     ]);

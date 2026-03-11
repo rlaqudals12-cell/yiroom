@@ -104,8 +104,7 @@ export default function ClosetScreen() {
 
   const handleAddPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: 아이템 추가 화면으로 이동
-    router.push('/(closet)/recommend');
+    router.push('/(closet)/add');
   };
 
   if (isLoading) {

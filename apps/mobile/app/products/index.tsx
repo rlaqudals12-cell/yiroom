@@ -56,7 +56,7 @@ export default function ProductsScreen() {
   // 분석 결과에서 넘어온 쿼리 파라미터
   const {
     skinType,
-    concerns: _concerns, // TODO: 향후 고민 기반 필터링에 사용
+    concerns,
     season: querySeason,
     category: initialCategory,
   } = useLocalSearchParams<{
@@ -97,14 +97,16 @@ export default function ProductsScreen() {
 
   // 쿼리 파라미터 기반 필터 소스 설정
   useEffect(() => {
-    if (skinType) {
+    if (skinType && concerns) {
+      setFilterSource('피부 분석 + 고민 기반');
+    } else if (skinType) {
       setFilterSource('피부 분석 결과 기반');
     } else if (querySeason) {
       setFilterSource('퍼스널 컬러 분석 기반');
     } else {
       setFilterSource(null);
     }
-  }, [skinType, querySeason]);
+  }, [skinType, concerns, querySeason]);
 
   // 매칭 점수 계산 (분석 결과 기반)
   const calculateMatchScore = useCallback(
@@ -136,6 +138,17 @@ export default function ProductsScreen() {
         const colorKey = seasonMap[querySeason];
         if (colorKey && product.personalColors && product.personalColors.includes(colorKey)) {
           score += 15;
+        }
+      }
+
+      // 피부 고민 매칭
+      if (concerns && product.skinConcerns) {
+        const userConcerns = concerns.split(',').map((c) => c.trim().toLowerCase());
+        const matchedConcerns = product.skinConcerns.filter((sc) =>
+          userConcerns.includes(sc.toLowerCase())
+        );
+        if (matchedConcerns.length > 0) {
+          score += Math.min(matchedConcerns.length * 5, 15);
         }
       }
 

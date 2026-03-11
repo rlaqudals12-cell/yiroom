@@ -102,7 +102,9 @@ export default function FeedDetailScreen() {
           createdAt: new Date(feedData.created_at),
           likes: feedData.likes_count || 0,
           comments: feedData.comments_count || 0,
-          isLiked: false, // TODO: 실제 좋아요 상태 조회
+          isLiked: Array.isArray(feedData.metadata?.liked_by)
+            ? feedData.metadata.liked_by.includes(user?.id ?? '')
+            : false,
         });
       }
 
