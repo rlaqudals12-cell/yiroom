@@ -23,7 +23,22 @@ export type {
 } from './types';
 
 // 프로세서 익스포트
+export { runCIEPipeline, runCIEPipelineWithTimeout } from './processor';
+
+// 하이브리드 파이프라인 익스포트
+export type {
+  AIAnalysisBase,
+  ConfidenceModifier,
+  HybridAnalysisResult,
+  HybridPipelineOptions,
+} from './hybrid';
+
 export {
-  runCIEPipeline,
-  runCIEPipelineWithTimeout,
-} from './processor';
+  calculateCIEModifiers,
+  calculateAIModifiers,
+  calculateCrossValidationModifiers,
+  calculateTrustScore,
+  generateQualityWarnings,
+  generateImprovementSuggestion,
+  runHybridAnalysis,
+} from './hybrid';
