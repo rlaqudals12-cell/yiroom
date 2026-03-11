@@ -97,3 +97,50 @@ export {
 // =============================================================================
 
 export { generateSkinIdentityLabel, generateSkinIdentityLabelFromMetrics } from './identity-label';
+
+// =============================================================================
+// 12-Zone Expansion (S-2 확장)
+// =============================================================================
+
+export {
+  extractTwelveZoneRegions,
+  analyzeDetailedZoneConcerns,
+  generateDetailedZoneRecommendations,
+} from './twelve-zone-extractor';
+
+export type { DetailedZoneRegion, TwelveZoneExtractionResult } from './twelve-zone-extractor';
+
+export { scoreDetailedZone, analyzeTwelveZones } from './twelve-zone-scorer';
+
+export type { TwelveZoneAnalysis } from './twelve-zone-scorer';
+
+export {
+  analyzeExtendedTUZone,
+  analyzeSymmetry,
+  detectProblemClusters,
+  analyzeZoneInteractions,
+} from './zone-interaction';
+
+export type {
+  ExtendedTUAnalysis,
+  SymmetryAnalysis,
+  SymmetryPair,
+  ProblemCluster,
+  ZoneInteractionAnalysis,
+} from './zone-interaction';
+
+export {
+  analyzeSkinTrend,
+  detectDeteriorationAlerts,
+  calculateDiaryStreak,
+  createDiaryEntryFromAnalysis,
+} from './skin-diary-zone';
+
+export type {
+  SkinDiaryEntry,
+  TrendDirection,
+  ZoneTrend,
+  SkinTrendAnalysis,
+  DeteriorationAlert,
+  DiaryStreak,
+} from './skin-diary-zone';

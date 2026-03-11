@@ -32,3 +32,9 @@ export * from './feedback';
 
 // 알림
 export * from './notifications';
+
+// 한국 브랜드 사이즈 차트
+export * from './korean-brands';
+
+// 핏 선호도 학습
+export * from './fit-preference-learner';
