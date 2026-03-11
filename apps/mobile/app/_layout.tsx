@@ -23,7 +23,7 @@ import { appLogger } from '../lib/utils/logger';
 
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
 function ThemedStack() {
-  const { colors, isDark, spacing} = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
     <>

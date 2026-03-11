@@ -18,6 +18,16 @@
 export { applyLipColor } from './lip-engine';
 export { applyBlush } from './blush-engine';
 export { applyHairColor } from './hair-engine';
+export { applyEyeshadow } from './eyeshadow-engine';
+export { applyFoundation } from './foundation-engine';
 export type { MakeupType, MakeupConfig, MakeupResult, RgbaColor } from './types';
 export type { HairColorConfig, HairColorResult } from './types';
-export { LIP_PRESETS, BLUSH_PRESETS, HAIR_PRESETS } from './types';
+export type { EyeshadowConfig, EyeshadowResult } from './types';
+export type { FoundationConfig, FoundationResult } from './types';
+export {
+  LIP_PRESETS,
+  BLUSH_PRESETS,
+  HAIR_PRESETS,
+  EYESHADOW_PRESETS,
+  FOUNDATION_PRESETS,
+} from './types';

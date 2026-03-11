@@ -16,13 +16,17 @@ import {
   applyLipColor,
   applyBlush,
   applyHairColor,
+  applyEyeshadow,
+  applyFoundation,
   LIP_PRESETS,
   BLUSH_PRESETS,
   HAIR_PRESETS,
+  EYESHADOW_PRESETS,
+  FOUNDATION_PRESETS,
 } from '@/lib/virtual-try-on';
 import type { MakeupType, RgbaColor, MakeupResult } from '@/lib/virtual-try-on';
 
-type Tab = 'lip' | 'blush' | 'hair-color';
+type Tab = 'lip' | 'blush' | 'hair-color' | 'eyeshadow' | 'foundation';
 
 export default function VirtualTryOnPage(): React.JSX.Element {
   const [tab, setTab] = useState<Tab>('lip');
@@ -41,12 +45,16 @@ export default function VirtualTryOnPage(): React.JSX.Element {
   const getTabLabel = (): string => {
     if (tab === 'lip') return '립스틱 적용';
     if (tab === 'blush') return '블러셔 적용';
+    if (tab === 'eyeshadow') return '아이섀도 적용';
+    if (tab === 'foundation') return '파운데이션 적용';
     return '헤어 컬러 적용';
   };
 
-  const getPresets = (): typeof LIP_PRESETS | typeof BLUSH_PRESETS => {
+  const getPresets = (): Array<{ name: string; color: RgbaColor }> => {
     if (tab === 'lip') return LIP_PRESETS;
     if (tab === 'blush') return BLUSH_PRESETS;
+    if (tab === 'eyeshadow') return EYESHADOW_PRESETS;
+    if (tab === 'foundation') return FOUNDATION_PRESETS;
     return []; // hair-color는 별도 프리셋 사용
   };
 
@@ -57,6 +65,12 @@ export default function VirtualTryOnPage(): React.JSX.Element {
       setSelectedColor(HAIR_PRESETS[0].displayColor);
       setSelectedHairHsl(HAIR_PRESETS[0].targetHsl);
       setOpacity(0.6);
+    } else if (newTab === 'eyeshadow') {
+      setSelectedColor(EYESHADOW_PRESETS[0].color);
+      setOpacity(0.4);
+    } else if (newTab === 'foundation') {
+      setSelectedColor(FOUNDATION_PRESETS[0].color);
+      setOpacity(0.25);
     } else {
       setSelectedColor(newTab === 'lip' ? LIP_PRESETS[0].color : BLUSH_PRESETS[0].color);
       setOpacity(newTab === 'lip' ? 0.55 : 0.3);
@@ -115,6 +129,26 @@ export default function VirtualTryOnPage(): React.JSX.Element {
           config: { type: 'hair-color', color: selectedColor, opacity },
           processingTimeMs: hairResult.processingTimeMs,
         };
+      } else if (tab === 'eyeshadow') {
+        const eyeshadowResult = await applyEyeshadow(img, {
+          color: selectedColor,
+          opacity,
+        });
+        makeupResult = {
+          dataUrl: eyeshadowResult.dataUrl,
+          config: { type: 'eyeshadow', color: selectedColor, opacity },
+          processingTimeMs: eyeshadowResult.processingTimeMs,
+        };
+      } else if (tab === 'foundation') {
+        const foundationResult = await applyFoundation(img, {
+          color: selectedColor,
+          opacity,
+        });
+        makeupResult = {
+          dataUrl: foundationResult.dataUrl,
+          config: { type: 'foundation', color: selectedColor, opacity },
+          processingTimeMs: foundationResult.processingTimeMs,
+        };
       } else {
         const config = {
           type: tab as MakeupType,
@@ -150,14 +184,14 @@ export default function VirtualTryOnPage(): React.JSX.Element {
       <div className="px-4 pt-6 pb-4">
         <h1 className="text-2xl font-bold">가상 스타일링</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          사진에 립스틱, 블러셔, 헤어 컬러를 가상으로 적용해 보세요
+          사진에 메이크업과 헤어 컬러를 가상으로 적용해 보세요
         </p>
       </div>
 
       {/* 탭 */}
       <div className="px-4 mb-4">
         <div className="flex gap-2">
-          {(['lip', 'blush', 'hair-color'] as Tab[]).map((t) => (
+          {(['lip', 'blush', 'eyeshadow', 'foundation', 'hair-color'] as Tab[]).map((t) => (
             <Button
               key={t}
               variant={tab === t ? 'default' : 'outline'}
@@ -166,6 +200,8 @@ export default function VirtualTryOnPage(): React.JSX.Element {
             >
               {t === 'lip' && '립스틱'}
               {t === 'blush' && '블러셔'}
+              {t === 'eyeshadow' && '아이섀도'}
+              {t === 'foundation' && '파운데이션'}
               {t === 'hair-color' && '헤어 컬러'}
             </Button>
           ))}
@@ -226,6 +262,8 @@ export default function VirtualTryOnPage(): React.JSX.Element {
               <CardTitle className="text-base">
                 {tab === 'lip' && '립 컬러'}
                 {tab === 'blush' && '블러셔 컬러'}
+                {tab === 'eyeshadow' && '아이섀도 컬러'}
+                {tab === 'foundation' && '파운데이션 셰이드'}
                 {tab === 'hair-color' && '헤어 컬러'}
               </CardTitle>
             </CardHeader>
