@@ -44,6 +44,12 @@ export default function StyleLayout(): React.JSX.Element {
           title: '카테고리',
         }}
       />
+      <Stack.Screen
+        name="virtual-try-on"
+        options={{
+          title: '가상 시착',
+        }}
+      />
     </Stack>
   );
 }
