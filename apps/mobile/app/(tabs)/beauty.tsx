@@ -22,6 +22,7 @@ import type { BeautyProduct } from '../../components/beauty';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
   CollapsibleSection,
+  GlassCard,
   MenuCard,
   GradientBackground,
   ScreenContainer,
@@ -288,74 +289,76 @@ export default function BeautyTab(): React.JSX.Element {
         />
       </Animated.View>
 
-      <View style={{ gap: spacing.sm + 4 }}>
-        <Animated.View entering={staggeredEntry(0)}>
-          <MenuCard
-            icon={<Droplets size={20} color={moduleColors.skin.dark} />}
-            iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
-            title="피부 분석"
-            description="AI가 피부 상태를 분석하고 맞춤 케어를 추천해요"
-            badge="추천"
-            onPress={() => router.push('/(analysis)/skin')}
-            testID="menu-skin"
-          />
-        </Animated.View>
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ gap: spacing.sm + 4 }}>
+          <Animated.View entering={staggeredEntry(0)}>
+            <MenuCard
+              icon={<Droplets size={20} color={moduleColors.skin.dark} />}
+              iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
+              title="피부 분석"
+              description="AI가 피부 상태를 분석하고 맞춤 케어를 추천해요"
+              badge="추천"
+              onPress={() => router.push('/(analysis)/skin')}
+              testID="menu-skin"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(1)}>
-          <MenuCard
-            icon={<Calendar size={20} color={moduleColors.skin.base} />}
-            iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
-            title="스킨케어 루틴"
-            description="내 피부에 맞는 아침/저녁 스킨케어 루틴을 확인해요"
-            onPress={() => router.push('/(analysis)/skin/routine')}
-            testID="menu-routine"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(1)}>
+            <MenuCard
+              icon={<Calendar size={20} color={moduleColors.skin.base} />}
+              iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
+              title="스킨케어 루틴"
+              description="내 피부에 맞는 아침/저녁 스킨케어 루틴을 확인해요"
+              onPress={() => router.push('/(analysis)/skin/routine')}
+              testID="menu-routine"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(2)}>
-          <MenuCard
-            icon={<Palette size={20} color={moduleColors.personalColor.dark} />}
-            iconBg={moduleColors.personalColor.light + ICON_BG_OPACITY}
-            title="퍼스널 컬러"
-            description="나에게 어울리는 색상을 찾아보세요"
-            onPress={() => router.push('/(analysis)/personal-color')}
-            testID="menu-personal-color"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(2)}>
+            <MenuCard
+              icon={<Palette size={20} color={moduleColors.personalColor.dark} />}
+              iconBg={moduleColors.personalColor.light + ICON_BG_OPACITY}
+              title="퍼스널 컬러"
+              description="나에게 어울리는 색상을 찾아보세요"
+              onPress={() => router.push('/(analysis)/personal-color')}
+              testID="menu-personal-color"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(3)}>
-          <MenuCard
-            icon={<Scissors size={20} color={moduleColors.hair.dark} />}
-            iconBg={moduleColors.hair.light + ICON_BG_OPACITY}
-            title="헤어 분석"
-            description="모발 유형과 두피 상태를 분석하고 케어 루틴을 추천해요"
-            onPress={() => router.push('/(analysis)/hair')}
-            testID="menu-hair"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(3)}>
+            <MenuCard
+              icon={<Scissors size={20} color={moduleColors.hair.dark} />}
+              iconBg={moduleColors.hair.light + ICON_BG_OPACITY}
+              title="헤어 분석"
+              description="모발 유형과 두피 상태를 분석하고 케어 루틴을 추천해요"
+              onPress={() => router.push('/(analysis)/hair')}
+              testID="menu-hair"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(4)}>
-          <MenuCard
-            icon={<Brush size={20} color={moduleColors.makeup.dark} />}
-            iconBg={moduleColors.makeup.light + ICON_BG_OPACITY}
-            title="메이크업 분석"
-            description="얼굴형과 톤에 맞는 메이크업 스타일을 찾아보세요"
-            onPress={() => router.push('/(analysis)/makeup')}
-            testID="menu-makeup"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(4)}>
+            <MenuCard
+              icon={<Brush size={20} color={moduleColors.makeup.dark} />}
+              iconBg={moduleColors.makeup.light + ICON_BG_OPACITY}
+              title="메이크업 분석"
+              description="얼굴형과 톤에 맞는 메이크업 스타일을 찾아보세요"
+              onPress={() => router.push('/(analysis)/makeup')}
+              testID="menu-makeup"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(5)}>
-          <MenuCard
-            icon={<SmilePlus size={20} color={moduleColors.oralHealth.dark} />}
-            iconBg={moduleColors.oralHealth.light + ICON_BG_OPACITY}
-            title="구강건강 분석"
-            description="치아 색상과 잇몸 건강을 체크해요"
-            onPress={() => router.push('/(analysis)/oral-health')}
-            testID="menu-oral-health"
-          />
-        </Animated.View>
-      </View>
+          <Animated.View entering={staggeredEntry(5)}>
+            <MenuCard
+              icon={<SmilePlus size={20} color={moduleColors.oralHealth.dark} />}
+              iconBg={moduleColors.oralHealth.light + ICON_BG_OPACITY}
+              title="구강건강 분석"
+              description="치아 색상과 잇몸 건강을 체크해요"
+              onPress={() => router.push('/(analysis)/oral-health')}
+              testID="menu-oral-health"
+            />
+          </Animated.View>
+        </GlassCard>
+      </Animated.View>
     </ScreenContainer>
   );
 }

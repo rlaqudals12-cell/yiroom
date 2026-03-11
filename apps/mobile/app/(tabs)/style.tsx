@@ -5,12 +5,17 @@
 import { useRouter } from 'expo-router';
 import { Shirt, Ruler, ShoppingBag, Package, Wand2, PersonStanding } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { EmptyState } from '../../components/common/EmptyState';
 import { BodyProfileCard, ClosetPreviewStrip, TodayOutfitSuggestion } from '../../components/style';
-import { MenuCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
+import {
+  GlassCard,
+  MenuCard,
+  GradientBackground,
+  ScreenContainer,
+  SectionHeader,
+} from '../../components/ui';
 import { useUserAnalyses } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import {
@@ -129,84 +134,84 @@ export default function StyleTab(): React.JSX.Element {
         <SectionHeader title="분석" gradient="body" style={{ marginBottom: spacing.sm + 4 }} />
       </Animated.View>
 
-      <View style={{ gap: spacing.sm + 4 }}>
-        <Animated.View entering={staggeredEntry(0)}>
-          <MenuCard
-            icon={<Ruler size={20} color={moduleColors.body.dark} />}
-            iconBg={moduleColors.body.light + ICON_BG_OPACITY}
-            title="체형 분석"
-            description="AI가 체형을 분석하고 어울리는 스타일을 추천해요"
-            onPress={() => router.push('/(analysis)/body')}
-            testID="menu-body"
-          />
-        </Animated.View>
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
+          <Animated.View entering={staggeredEntry(0)}>
+            <MenuCard
+              icon={<Ruler size={20} color={moduleColors.body.dark} />}
+              iconBg={moduleColors.body.light + ICON_BG_OPACITY}
+              title="체형 분석"
+              description="AI가 체형을 분석하고 어울리는 스타일을 추천해요"
+              onPress={() => router.push('/(analysis)/body')}
+              testID="menu-body"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(1)}>
-          <MenuCard
-            icon={<PersonStanding size={20} color={moduleColors.posture.dark} />}
-            iconBg={moduleColors.posture.light + ICON_BG_OPACITY}
-            title="자세 분석"
-            description="자세 유형을 분석하고 교정 운동을 추천해요"
-            onPress={() => router.push('/(analysis)/posture')}
-            testID="menu-posture"
-          />
-        </Animated.View>
-      </View>
+          <Animated.View entering={staggeredEntry(1)}>
+            <MenuCard
+              icon={<PersonStanding size={20} color={moduleColors.posture.dark} />}
+              iconBg={moduleColors.posture.light + ICON_BG_OPACITY}
+              title="자세 분석"
+              description="자세 유형을 분석하고 교정 운동을 추천해요"
+              onPress={() => router.push('/(analysis)/posture')}
+              testID="menu-posture"
+            />
+          </Animated.View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 스타일링 */}
       <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
-        <SectionHeader
-          title="스타일링"
-          gradient="body"
-          style={{ marginTop: spacing.lg, marginBottom: spacing.sm + 4 }}
-        />
+        <SectionHeader title="스타일링" gradient="body" style={{ marginBottom: spacing.sm + 4 }} />
       </Animated.View>
 
-      <View style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
-        <Animated.View entering={staggeredEntry(0)}>
-          <MenuCard
-            icon={<Shirt size={20} color={moduleColors.body.base} />}
-            iconBg={moduleColors.body.light + ICON_BG_OPACITY}
-            title="패션 추천"
-            description="체형과 퍼스널 컬러에 맞는 옷을 추천받으세요"
-            onPress={() => router.push('/products?category=fashion')}
-            testID="menu-fashion"
-          />
-        </Animated.View>
+      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ gap: spacing.sm + 4, marginBottom: spacing.lg }}>
+          <Animated.View entering={staggeredEntry(0)}>
+            <MenuCard
+              icon={<Shirt size={20} color={moduleColors.body.base} />}
+              iconBg={moduleColors.body.light + ICON_BG_OPACITY}
+              title="패션 추천"
+              description="체형과 퍼스널 컬러에 맞는 옷을 추천받으세요"
+              onPress={() => router.push('/products?category=fashion')}
+              testID="menu-fashion"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(1)}>
-          <MenuCard
-            icon={<Package size={20} color={moduleColors.body.dark} />}
-            iconBg={moduleColors.body.light + ICON_BG_OPACITY}
-            title="내 옷장"
-            description="옷장을 관리하고 AI 코디 추천을 받으세요"
-            onPress={() => router.push('/(closet)')}
-            testID="menu-closet"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(1)}>
+            <MenuCard
+              icon={<Package size={20} color={moduleColors.body.dark} />}
+              iconBg={moduleColors.body.light + ICON_BG_OPACITY}
+              title="내 옷장"
+              description="옷장을 관리하고 AI 코디 추천을 받으세요"
+              onPress={() => router.push('/(closet)')}
+              testID="menu-closet"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(2)}>
-          <MenuCard
-            icon={<Wand2 size={20} color={moduleColors.personalColor.dark} />}
-            iconBg={moduleColors.personalColor.light + ICON_BG_OPACITY}
-            title="오늘의 코디"
-            description="퍼스널컬러와 체형에 맞는 코디를 추천받으세요"
-            onPress={() => router.push('/(closet)/recommend')}
-            testID="menu-coord"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(2)}>
+            <MenuCard
+              icon={<Wand2 size={20} color={moduleColors.personalColor.dark} />}
+              iconBg={moduleColors.personalColor.light + ICON_BG_OPACITY}
+              title="오늘의 코디"
+              description="퍼스널컬러와 체형에 맞는 코디를 추천받으세요"
+              onPress={() => router.push('/(closet)/recommend')}
+              testID="menu-coord"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(3)}>
-          <MenuCard
-            icon={<ShoppingBag size={20} color={status.success} />}
-            iconBg={status.success + ICON_BG_OPACITY}
-            title="제품 둘러보기"
-            description="인기 제품과 할인 정보를 확인하세요"
-            onPress={() => router.push('/products')}
-            testID="menu-shopping"
-          />
-        </Animated.View>
-      </View>
+          <Animated.View entering={staggeredEntry(3)}>
+            <MenuCard
+              icon={<ShoppingBag size={20} color={status.success} />}
+              iconBg={status.success + ICON_BG_OPACITY}
+              title="제품 둘러보기"
+              description="인기 제품과 할인 정보를 확인하세요"
+              onPress={() => router.push('/products')}
+              testID="menu-shopping"
+            />
+          </Animated.View>
+        </GlassCard>
+      </Animated.View>
     </ScreenContainer>
   );
 }

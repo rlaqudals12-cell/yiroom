@@ -15,14 +15,16 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../components/ui';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { EWGAnalysis } from '../../components/products/ingredients/EWGAnalysis';
 import { SizeRecommendation } from '../../components/products/SizeRecommendation';
-import { lookupIngredients } from '../../lib/ingredients/ewg-database';
+import { GlassCard, ScreenContainer } from '../../components/ui';
 import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
+import { lookupIngredients } from '../../lib/ingredients/ewg-database';
 import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { shareLogger } from '../../lib/utils/logger';
@@ -193,7 +195,7 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function ProductDetailScreen() {
-  const { colors, brand, status, typography, spacing, radii} = useTheme();
+  const { colors, brand, status, typography, spacing, radii } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -364,7 +366,7 @@ export default function ProductDetailScreen() {
 
   if (isLoading || !product) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="beauty">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
@@ -378,6 +380,7 @@ export default function ProductDetailScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="beauty"
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* 이미지 영역 */}
@@ -430,25 +433,27 @@ export default function ProductDetailScreen() {
           </Text>
 
           {/* 매칭 점수 */}
-          <View style={[styles.matchCard, { backgroundColor: colors.card }]}>
-            <Text style={styles.matchIcon}>🎯</Text>
-            <View style={styles.matchInfo}>
-              <Text style={[styles.matchLabel, { color: colors.mutedForeground }]}>
-                나와의 매칭
-              </Text>
-              <View style={[styles.matchBarContainer, { backgroundColor: colors.border }]}>
-                <View
-                  style={[
-                    styles.matchBar,
-                    { width: `${product.matchScore}%`, backgroundColor: brand.primary },
-                  ]}
-                />
+          <Animated.View entering={FadeInUp.duration(TIMING.normal).delay(TIMING.fast)}>
+            <GlassCard shadowSize="md" style={styles.matchCard}>
+              <Text style={styles.matchIcon}>🎯</Text>
+              <View style={styles.matchInfo}>
+                <Text style={[styles.matchLabel, { color: colors.mutedForeground }]}>
+                  나와의 매칭
+                </Text>
+                <View style={[styles.matchBarContainer, { backgroundColor: colors.border }]}>
+                  <View
+                    style={[
+                      styles.matchBar,
+                      { width: `${product.matchScore}%`, backgroundColor: brand.primary },
+                    ]}
+                  />
+                </View>
               </View>
-            </View>
-            <Text style={[styles.matchScore, { color: brand.primaryForeground }]}>
-              {product.matchScore}%
-            </Text>
-          </View>
+              <Text style={[styles.matchScore, { color: brand.primaryForeground }]}>
+                {product.matchScore}%
+              </Text>
+            </GlassCard>
+          </Animated.View>
 
           {/* 사이즈 추천 (의류 제품만) */}
           {product.hasSize && product.clothingCategory && (
@@ -529,26 +534,31 @@ export default function ProductDetailScreen() {
 
           {activeTab === 'reviews' && (
             <>
-              {reviews.map((review) => (
-                <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.card }]}>
-                  <View style={styles.reviewHeader}>
-                    <Text style={[styles.reviewUser, { color: colors.foreground }]}>
-                      {review.userName}
+              {reviews.map((review, index) => (
+                <Animated.View
+                  key={review.id}
+                  entering={FadeInUp.duration(TIMING.normal).delay(index * TIMING.staggerInterval)}
+                >
+                  <GlassCard shadowSize="md" style={styles.reviewCard}>
+                    <View style={styles.reviewHeader}>
+                      <Text style={[styles.reviewUser, { color: colors.foreground }]}>
+                        {review.userName}
+                      </Text>
+                      <Text style={[styles.reviewRating, { color: status.warning }]}>
+                        {'★'.repeat(review.rating)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.reviewDate, { color: colors.mutedForeground }]}>
+                      {review.date}
                     </Text>
-                    <Text style={[styles.reviewRating, { color: status.warning }]}>
-                      {'★'.repeat(review.rating)}
+                    <Text style={[styles.reviewContent, { color: colors.mutedForeground }]}>
+                      {review.content}
                     </Text>
-                  </View>
-                  <Text style={[styles.reviewDate, { color: colors.mutedForeground }]}>
-                    {review.date}
-                  </Text>
-                  <Text style={[styles.reviewContent, { color: colors.mutedForeground }]}>
-                    {review.content}
-                  </Text>
-                  <Text style={[styles.reviewHelpful, { color: colors.mutedForeground }]}>
-                    👍 {review.helpful}명에게 도움이 됨
-                  </Text>
-                </View>
+                    <Text style={[styles.reviewHelpful, { color: colors.mutedForeground }]}>
+                      👍 {review.helpful}명에게 도움이 됨
+                    </Text>
+                  </GlassCard>
+                </Animated.View>
               ))}
             </>
           )}
@@ -658,8 +668,8 @@ const styles = StyleSheet.create({
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.xl,
     padding: spacing.md,
+    marginBottom: spacing.md,
   },
   matchIcon: {
     fontSize: typography.size['2xl'],
@@ -731,7 +741,6 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
   },
   reviewCard: {
-    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.smx,
   },

@@ -16,9 +16,12 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '@/lib/animations';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
+
+import { GlassCard, ScreenContainer } from '../../components/ui';
 
 type Gender = 'male' | 'female' | 'other';
 
@@ -48,7 +51,7 @@ const SKIN_TYPE_OPTIONS: { key: SkinType; label: string }[] = [
 ];
 
 export default function MyInfoScreen(): React.JSX.Element {
-  const { colors, brand, typography, spacing, radii } = useTheme();
+  const { colors, brand } = useTheme();
 
   const [info, setInfo] = useState<UserInfo>({
     nickname: '',
@@ -101,16 +104,20 @@ export default function MyInfoScreen(): React.JSX.Element {
         <ScreenContainer
           testID="settings-my-info-screen"
           edges={['bottom']}
+          backgroundGradient="profile"
         >
           {/* 기본 정보 */}
-          <View style={styles.section}>
+          <Animated.View
+            entering={FadeInUp.delay(0).duration(TIMING.normal)}
+            style={styles.section}
+          >
             <Text
               accessibilityRole="header"
               style={[styles.sectionTitle, { color: colors.mutedForeground }]}
             >
               기본 정보
             </Text>
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
+            <GlassCard shadowSize="md" style={styles.card}>
               {/* 닉네임 */}
               <View style={styles.fieldGroup}>
                 <Text style={[styles.fieldLabel, { color: colors.foreground }]}>닉네임</Text>
@@ -191,18 +198,21 @@ export default function MyInfoScreen(): React.JSX.Element {
                   })}
                 </View>
               </View>
-            </View>
-          </View>
+            </GlassCard>
+          </Animated.View>
 
           {/* 신체 정보 */}
-          <View style={styles.section}>
+          <Animated.View
+            entering={FadeInUp.delay(80).duration(TIMING.normal)}
+            style={styles.section}
+          >
             <Text
               accessibilityRole="header"
               style={[styles.sectionTitle, { color: colors.mutedForeground }]}
             >
               신체 정보
             </Text>
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
+            <GlassCard shadowSize="md" style={styles.card}>
               {/* 키 */}
               <View style={styles.fieldGroup}>
                 <Text style={[styles.fieldLabel, { color: colors.foreground }]}>키</Text>
@@ -256,18 +266,21 @@ export default function MyInfoScreen(): React.JSX.Element {
                   <Text style={[styles.unitLabel, { color: colors.mutedForeground }]}>kg</Text>
                 </View>
               </View>
-            </View>
-          </View>
+            </GlassCard>
+          </Animated.View>
 
           {/* 피부 타입 */}
-          <View style={styles.section}>
+          <Animated.View
+            entering={FadeInUp.delay(160).duration(TIMING.normal)}
+            style={styles.section}
+          >
             <Text
               accessibilityRole="header"
               style={[styles.sectionTitle, { color: colors.mutedForeground }]}
             >
               피부 타입
             </Text>
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
+            <GlassCard shadowSize="md" style={styles.card}>
               <View style={styles.fieldGroup}>
                 <Text style={[styles.fieldLabel, { color: colors.foreground }]}>피부 타입</Text>
                 <View style={styles.skinTypeGrid}>
@@ -300,8 +313,8 @@ export default function MyInfoScreen(): React.JSX.Element {
                   })}
                 </View>
               </View>
-            </View>
-          </View>
+            </GlassCard>
+          </Animated.View>
 
           {/* 저장 버튼 */}
           <Pressable
@@ -310,9 +323,7 @@ export default function MyInfoScreen(): React.JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="정보 저장"
           >
-            <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>
-              저장
-            </Text>
+            <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>저장</Text>
           </Pressable>
 
           {/* 안내 */}
@@ -344,7 +355,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   card: {
-    borderRadius: radii.xl,
     overflow: 'hidden',
   },
   fieldGroup: {

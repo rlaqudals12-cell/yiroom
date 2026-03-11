@@ -9,12 +9,13 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../components/ui';
+import { BottomSheet } from '../../components/ui/BottomSheet';
+import { TIMING } from '../../lib/animations';
 import { useTheme, typography, spacing, radii, coloredShadow, brand } from '../../lib/theme';
 import type { ThemeMode } from '../../lib/theme';
-import { ScreenContainer } from '../../components/ui';
-import { BottomSheet } from '../../components/ui/BottomSheet';
 
 // 테마 모드 옵션
 const THEME_OPTIONS: { key: ThemeMode; label: string; icon: string }[] = [
@@ -24,7 +25,7 @@ const THEME_OPTIONS: { key: ThemeMode; label: string; icon: string }[] = [
 ];
 
 export default function SettingsScreen() {
-  const { colors, isDark, brand, spacing, radii, typography, themeMode, setThemeMode } = useTheme();
+  const { colors, isDark, brand, radii, typography, themeMode, setThemeMode } = useTheme();
   const { signOut } = useAuth();
 
   const appVersion = Constants.expoConfig?.version || '0.1.0';
@@ -52,184 +53,168 @@ export default function SettingsScreen() {
   // 로그아웃 확인 후 실행
   const handleLogout = useCallback((): void => {
     setIsAccountSheetOpen(false);
-    Alert.alert(
-      '로그아웃',
-      '정말 로그아웃 하시겠어요?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '로그아웃',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              router.replace('/(auth)/sign-in');
-            } catch {
-              Alert.alert('오류', '로그아웃에 실패했어요. 다시 시도해주세요.');
-            }
-          },
+    Alert.alert('로그아웃', '정말 로그아웃 하시겠어요?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '로그아웃',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await signOut();
+            router.replace('/(auth)/sign-in');
+          } catch {
+            Alert.alert('오류', '로그아웃에 실패했어요. 다시 시도해주세요.');
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, [signOut]);
 
   return (
-    <ScreenContainer
-      testID="settings-screen"
-      edges={['bottom']}
-    >
-        {/* 테마 */}
-        <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>테마</Text>
-          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-            {THEME_OPTIONS.map((option) => {
-              const isSelected = themeMode === option.key;
-              return (
-                <Pressable
-                  key={option.key}
+    <ScreenContainer testID="settings-screen" edges={['bottom']} backgroundGradient="profile">
+      {/* 테마 */}
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>테마</Text>
+        <GlassCard shadowSize="md" style={styles.themeSelector}>
+          {THEME_OPTIONS.map((option) => {
+            const isSelected = themeMode === option.key;
+            return (
+              <Pressable
+                key={option.key}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: isSelected ? brand.primary : 'transparent',
+                    borderRadius: radii.xl,
+                    borderWidth: 1,
+                    borderColor: isSelected ? 'transparent' : colors.border,
+                  },
+                ]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setThemeMode(option.key);
+                }}
+                testID={`theme-option-${option.key}`}
+                accessibilityRole="button"
+                accessibilityLabel={`${option.label} 모드`}
+                accessibilityState={{ selected: isSelected }}
+              >
+                <Text style={styles.themeOptionIcon}>{option.icon}</Text>
+                <Text
                   style={[
-                    styles.themeOption,
+                    styles.themeOptionLabel,
                     {
-                      backgroundColor: isSelected ? brand.primary : 'transparent',
-                      borderRadius: radii.xl,
-                      borderWidth: 1,
-                      borderColor: isSelected ? 'transparent' : colors.border,
+                      color: isSelected ? brand.primaryForeground : colors.foreground,
+                      fontWeight: isSelected
+                        ? typography.weight.semibold
+                        : typography.weight.normal,
                     },
                   ]}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setThemeMode(option.key);
-                  }}
-                  testID={`theme-option-${option.key}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${option.label} 모드`}
-                  accessibilityState={{ selected: isSelected }}
                 >
-                  <Text style={styles.themeOptionIcon}>{option.icon}</Text>
-                  <Text
-                    style={[
-                      styles.themeOptionLabel,
-                      {
-                        color: isSelected ? brand.primaryForeground : colors.foreground,
-                        fontWeight: isSelected ? typography.weight.semibold : typography.weight.normal,
-                      },
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Animated.View>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </GlassCard>
+      </Animated.View>
 
-        {/* 알림 및 목표 */}
-        <Animated.View entering={FadeInDown.delay(80).duration(300)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
-          <SettingsItem
-            icon="🔔"
-            title="알림 설정"
-            subtitle="물, 운동, 식사 알림"
+      {/* 알림 및 목표 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
+        <SettingsItem
+          icon="🔔"
+          title="알림 설정"
+          subtitle="물, 운동, 식사 알림"
+          onPress={() => handlePress('/settings/notifications')}
+        />
+        <SettingsItem
+          icon="🎯"
+          title="목표 설정"
+          subtitle="일일 물, 칼로리 목표"
+          onPress={() => handlePress('/settings/goals')}
+        />
+      </Animated.View>
 
-            onPress={() => handlePress('/settings/notifications')}
-          />
-          <SettingsItem
-            icon="🎯"
-            title="목표 설정"
-            subtitle="일일 물, 칼로리 목표"
+      {/* 위젯 */}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
+        <SettingsItem
+          icon="📱"
+          title="위젯 설정"
+          subtitle="홈 화면 위젯 미리보기"
+          onPress={() => handlePress('/settings/widgets')}
+        />
+      </Animated.View>
 
-            onPress={() => handlePress('/settings/goals')}
-          />
-        </Animated.View>
+      {/* 앱 정보 — 네이티브 페이지로 이동 */}
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>앱 정보</Text>
+        <SettingsItem icon="📖" title="이용약관" onPress={() => handlePress('/terms')} />
+        <SettingsItem
+          icon="🔒"
+          title="개인정보 처리방침"
+          onPress={() => handlePress('/privacy-policy')}
+        />
+        <SettingsItem icon="❓" title="도움말/FAQ" onPress={() => handlePress('/help')} />
+        <SettingsItem
+          icon="💬"
+          title="피드백 보내기"
+          onPress={() => handleLink('mailto:support@yiroom.app')}
+        />
+      </Animated.View>
 
-        {/* 위젯 */}
-        <Animated.View entering={FadeInDown.delay(160).duration(300)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
-          <SettingsItem
-            icon="📱"
-            title="위젯 설정"
-            subtitle="홈 화면 위젯 미리보기"
-
-            onPress={() => handlePress('/settings/widgets')}
-          />
-        </Animated.View>
-
-        {/* 앱 정보 — 네이티브 페이지로 이동 */}
-        <Animated.View entering={FadeInDown.delay(240).duration(300)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>앱 정보</Text>
-          <SettingsItem
-            icon="📖"
-            title="이용약관"
-
-            onPress={() => handlePress('/terms')}
-          />
-          <SettingsItem
-            icon="🔒"
-            title="개인정보 처리방침"
-
-            onPress={() => handlePress('/privacy-policy')}
-          />
-          <SettingsItem
-            icon="❓"
-            title="도움말/FAQ"
-
-            onPress={() => handlePress('/help')}
-          />
-          <SettingsItem
-            icon="💬"
-            title="피드백 보내기"
-
-            onPress={() => handleLink('mailto:support@yiroom.app')}
-          />
-        </Animated.View>
-
-        {/* 계정 관리 */}
-        <Animated.View entering={FadeInDown.delay(320).duration(300)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>계정</Text>
-          <SettingsItem
-            icon="👤"
-            title="계정 관리"
-            subtitle="로그아웃, 데이터 관리"
-
-            onPress={handleOpenAccountSheet}
-          />
-        </Animated.View>
-
-        {/* 계정 바텀 시트 */}
-        <BottomSheet
-          isVisible={isAccountSheetOpen}
-          onClose={handleCloseAccountSheet}
-          snapPoints={['30%']}
+      {/* 계정 관리 */}
+      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>계정</Text>
+        <SettingsItem
+          icon="👤"
           title="계정 관리"
-          testID="settings-account-sheet"
-        >
-          <Pressable
-            style={[styles.accountOption, { backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)', borderRadius: radii.xl }]}
-            onPress={handleLogout}
-            testID="settings-logout-button"
-          >
-            <Text style={[styles.accountOptionText, { color: colors.destructive }]}>
-              로그아웃
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
-            onPress={handleCloseAccountSheet}
-            testID="settings-account-cancel"
-          >
-            <Text style={[styles.accountOptionText, { color: colors.foreground }]}>
-              취소
-            </Text>
-          </Pressable>
-        </BottomSheet>
+          subtitle="로그아웃, 데이터 관리"
+          onPress={handleOpenAccountSheet}
+        />
+      </Animated.View>
 
-        {/* 버전 정보 */}
-        <Animated.View entering={FadeInDown.delay(400).duration(300)} style={styles.versionSection}>
-          <Text style={[styles.versionLabel, { color: colors.foreground }]}>이룸</Text>
-          <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
-            버전 {appVersion}
-          </Text>
-        </Animated.View>
+      {/* 계정 바텀 시트 */}
+      <BottomSheet
+        isVisible={isAccountSheetOpen}
+        onClose={handleCloseAccountSheet}
+        snapPoints={['30%']}
+        title="계정 관리"
+        testID="settings-account-sheet"
+      >
+        <Pressable
+          style={[
+            styles.accountOption,
+            {
+              backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
+              borderRadius: radii.xl,
+            },
+          ]}
+          onPress={handleLogout}
+          testID="settings-logout-button"
+        >
+          <Text style={[styles.accountOptionText, { color: colors.destructive }]}>로그아웃</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
+          onPress={handleCloseAccountSheet}
+          testID="settings-account-cancel"
+        >
+          <Text style={[styles.accountOptionText, { color: colors.foreground }]}>취소</Text>
+        </Pressable>
+      </BottomSheet>
+
+      {/* 버전 정보 */}
+      <Animated.View
+        entering={FadeInUp.delay(400).duration(TIMING.normal)}
+        style={styles.versionSection}
+      >
+        <Text style={[styles.versionLabel, { color: colors.foreground }]}>이룸</Text>
+        <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
+          버전 {appVersion}
+        </Text>
+      </Animated.View>
     </ScreenContainer>
   );
 }
@@ -349,6 +334,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: spacing.xs,
     gap: spacing.xs,
+    marginBottom: 0,
   },
   themeOption: {
     flex: 1,

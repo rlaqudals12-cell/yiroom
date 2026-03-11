@@ -12,20 +12,15 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Sparkles, ChevronRight, Star, ShoppingBag } from 'lucide-react-native';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { staggeredEntry } from '@/lib/animations';
-import { ScreenContainer } from '../../components/ui';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+import { staggeredEntry, TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { GlassCard, ScreenContainer } from '../../components/ui';
 import {
   getRecommendedProductsBySkin,
   getRecommendedProductsByColor,
@@ -40,7 +35,7 @@ interface RecommendationSection {
 }
 
 export default function RecommendationsScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows, isDark } = useTheme();
+  const { colors, spacing, radii, typography, brand, status } = useTheme();
   const supabase = useClerkSupabaseClient();
   const { personalColor, skinAnalysis, isLoading: analysisLoading } = useUserAnalyses();
 
@@ -116,20 +111,16 @@ export default function RecommendationsScreen(): React.JSX.Element {
       testID="recommendations-screen"
       edges={['bottom']}
       onRefresh={fetchRecommendations}
+      backgroundGradient="beauty"
     >
-        {/* 헤더 카드 */}
-        <Animated.View
-          entering={staggeredEntry(0)}
-          style={[
-            styles.heroCard,
-            shadows.card,
-            {
-              backgroundColor: brand.primary,
-              borderRadius: radii.xl,
-              padding: spacing.lg,
-              marginBottom: spacing.lg,
-            },
-          ]}
+      {/* 헤더 카드 */}
+      <Animated.View entering={staggeredEntry(0)} style={{ marginBottom: spacing.lg }}>
+        <GlassCard
+          shadowSize="lg"
+          style={{
+            backgroundColor: brand.primary,
+            padding: spacing.lg,
+          }}
         >
           <View style={styles.heroRow}>
             <Sparkles size={24} color={brand.primaryForeground} />
@@ -176,42 +167,30 @@ export default function RecommendationsScreen(): React.JSX.Element {
               )}
             </View>
           )}
-        </Animated.View>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 로딩 */}
-        {loading && (
-          <View style={[styles.center, { paddingVertical: spacing.xxl }]}>
-            <ActivityIndicator size="large" color={brand.primary} />
-            <Text
-              style={{
-                marginTop: spacing.sm,
-                fontSize: typography.size.sm,
-                color: colors.mutedForeground,
-              }}
-            >
-              추천 제품을 찾고 있어요
-            </Text>
-          </View>
-        )}
-
-        {/* 분석 없음 → CTA */}
-        {noAnalysis && !loading && (
-          <Animated.View
-            entering={staggeredEntry(1)}
-            style={[
-              styles.ctaCard,
-              shadows.card,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                padding: spacing.lg,
-              },
-            ]}
+      {/* 로딩 */}
+      {loading && (
+        <View style={[styles.center, { paddingVertical: spacing.xxl }]}>
+          <ActivityIndicator size="large" color={brand.primary} />
+          <Text
+            style={{
+              marginTop: spacing.sm,
+              fontSize: typography.size.sm,
+              color: colors.mutedForeground,
+            }}
           >
-            <Text style={{ fontSize: 48, textAlign: 'center', marginBottom: spacing.sm }}>
-              🔬
-            </Text>
+            추천 제품을 찾고 있어요
+          </Text>
+        </View>
+      )}
+
+      {/* 분석 없음 → CTA */}
+      {noAnalysis && !loading && (
+        <Animated.View entering={staggeredEntry(1)}>
+          <GlassCard shadowSize="md" style={{ ...styles.ctaCard, padding: spacing.lg }}>
+            <Text style={{ fontSize: 48, textAlign: 'center', marginBottom: spacing.sm }}>🔬</Text>
             <Text
               style={{
                 fontSize: typography.size.base,
@@ -234,204 +213,200 @@ export default function RecommendationsScreen(): React.JSX.Element {
               피부 분석이나 퍼스널 컬러 진단을{'\n'}먼저 진행해주세요
             </Text>
             <Pressable
-              style={[
-                styles.ctaButton,
-                { backgroundColor: brand.primary, borderRadius: radii.xl },
-              ]}
+              style={[styles.ctaButton, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
               onPress={() => router.push('/(analysis)/skin')}
             >
-              <Text style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
+              <Text
+                style={{
+                  color: brand.primaryForeground,
+                  fontWeight: typography.weight.semibold,
+                  fontSize: typography.size.sm,
+                }}
+              >
                 분석 시작하기
               </Text>
             </Pressable>
-          </Animated.View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
 
-        {/* 추천 섹션 */}
-        {sections.map((section, sIdx) => (
-          <Animated.View
-            key={section.title}
-            entering={staggeredEntry(sIdx + 1)}
-            style={{ marginBottom: spacing.lg }}
-          >
-            {/* 섹션 헤더 */}
-            <View style={styles.sectionHeader}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: typography.size.base,
-                    fontWeight: typography.weight.bold,
-                    color: colors.foreground,
-                  }}
-                >
-                  {section.title}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.xs,
-                    color: colors.mutedForeground,
-                    marginTop: spacing.xxs,
-                  }}
-                >
-                  {section.description}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: '/products',
-                    params: { category: 'skincare' },
-                  })
-                }
-                style={styles.seeAllButton}
-              >
-                <Text
-                  style={{
-                    fontSize: typography.size.xs,
-                    color: brand.primary,
-                    fontWeight: typography.weight.semibold,
-                  }}
-                >
-                  전체 보기
-                </Text>
-                <ChevronRight size={14} color={brand.primary} />
-              </Pressable>
-            </View>
-
-            {/* 제품 카드 */}
-            {section.products.slice(0, 5).map((product, pIdx) => (
-              <Pressable
-                key={product.id}
-                style={[
-                  styles.productCard,
-                  shadows.card,
-                  {
-                    backgroundColor: colors.card,
-                    borderRadius: radii.xl,
-                    borderColor: colors.border,
-                    padding: spacing.md,
-                    marginBottom: spacing.sm,
-                  },
-                ]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push(`/products/${product.id}`);
+      {/* 추천 섹션 */}
+      {sections.map((section, sIdx) => (
+        <Animated.View
+          key={section.title}
+          entering={staggeredEntry(sIdx + 1)}
+          style={{ marginBottom: spacing.lg }}
+        >
+          {/* 섹션 헤더 */}
+          <View style={styles.sectionHeader}>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.bold,
+                  color: colors.foreground,
                 }}
               >
-                <View style={styles.productRow}>
-                  {/* 순위 뱃지 */}
-                  <View
-                    style={[
-                      styles.rankBadge,
-                      {
-                        backgroundColor: pIdx < 3 ? brand.primary : colors.secondary,
-                        borderRadius: radii.sm,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        fontSize: typography.size.xs,
-                        fontWeight: typography.weight.bold,
-                        color: pIdx < 3 ? brand.primaryForeground : colors.mutedForeground,
-                      }}
-                    >
-                      {pIdx + 1}
-                    </Text>
-                  </View>
+                {section.title}
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: colors.mutedForeground,
+                  marginTop: spacing.xxs,
+                }}
+              >
+                {section.description}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: '/products',
+                  params: { category: 'skincare' },
+                })
+              }
+              style={styles.seeAllButton}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: brand.primary,
+                  fontWeight: typography.weight.semibold,
+                }}
+              >
+                전체 보기
+              </Text>
+              <ChevronRight size={14} color={brand.primary} />
+            </Pressable>
+          </View>
 
-                  {/* 제품 정보 */}
-                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        fontSize: typography.size.sm,
-                        fontWeight: typography.weight.semibold,
-                        color: colors.foreground,
-                      }}
+          {/* 제품 카드 */}
+          {section.products.slice(0, 5).map((product, pIdx) => (
+            <Animated.View
+              key={product.id}
+              entering={FadeInUp.duration(TIMING.normal).delay(pIdx * TIMING.staggerInterval)}
+              style={{ marginBottom: spacing.sm }}
+            >
+              <GlassCard shadowSize="md" style={styles.productCard}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/products/${product.id}`);
+                  }}
+                >
+                  <View style={styles.productRow}>
+                    {/* 순위 뱃지 */}
+                    <View
+                      style={[
+                        styles.rankBadge,
+                        {
+                          backgroundColor: pIdx < 3 ? brand.primary : colors.secondary,
+                          borderRadius: radii.sm,
+                        },
+                      ]}
                     >
-                      {product.name}
-                    </Text>
-                    {product.brand && (
                       <Text
                         style={{
                           fontSize: typography.size.xs,
-                          color: colors.mutedForeground,
-                          marginTop: spacing.xxs,
+                          fontWeight: typography.weight.bold,
+                          color: pIdx < 3 ? brand.primaryForeground : colors.mutedForeground,
                         }}
                       >
-                        {product.brand}
+                        {pIdx + 1}
                       </Text>
-                    )}
+                    </View>
+
+                    {/* 제품 정보 */}
+                    <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          fontSize: typography.size.sm,
+                          fontWeight: typography.weight.semibold,
+                          color: colors.foreground,
+                        }}
+                      >
+                        {product.name}
+                      </Text>
+                      {product.brand && (
+                        <Text
+                          style={{
+                            fontSize: typography.size.xs,
+                            color: colors.mutedForeground,
+                            marginTop: spacing.xxs,
+                          }}
+                        >
+                          {product.brand}
+                        </Text>
+                      )}
+                    </View>
+
+                    {/* 매칭 점수 */}
+                    <View style={styles.matchBadge}>
+                      <Star size={12} color={status.success} fill={status.success} />
+                      <Text
+                        style={{
+                          fontSize: typography.size.xs,
+                          fontWeight: typography.weight.bold,
+                          color: status.success,
+                          marginLeft: spacing.xxs,
+                        }}
+                      >
+                        {product.matchScore}%
+                      </Text>
+                    </View>
                   </View>
 
-                  {/* 매칭 점수 */}
-                  <View style={styles.matchBadge}>
-                    <Star
-                      size={12}
-                      color={status.success}
-                      fill={status.success}
-                    />
+                  {/* 가격 */}
+                  {product.price != null && (
                     <Text
                       style={{
                         fontSize: typography.size.xs,
-                        fontWeight: typography.weight.bold,
-                        color: status.success,
-                        marginLeft: spacing.xxs,
+                        color: colors.mutedForeground,
+                        marginTop: spacing.xs,
+                        marginLeft: 36,
                       }}
                     >
-                      {product.matchScore}%
+                      {product.price.toLocaleString()}원
                     </Text>
-                  </View>
-                </View>
+                  )}
+                </Pressable>
+              </GlassCard>
+            </Animated.View>
+          ))}
+        </Animated.View>
+      ))}
 
-                {/* 가격 */}
-                {product.price != null && (
-                  <Text
-                    style={{
-                      fontSize: typography.size.xs,
-                      color: colors.mutedForeground,
-                      marginTop: spacing.xs,
-                      marginLeft: 36,
-                    }}
-                  >
-                    {product.price.toLocaleString()}원
-                  </Text>
-                )}
-              </Pressable>
-            ))}
-          </Animated.View>
-        ))}
-
-        {/* 결과 없음 (분석 있는데 제품 없음) */}
-        {!loading && !noAnalysis && sections.length === 0 && (
-          <Animated.View
-            entering={staggeredEntry(1)}
-            style={[styles.center, { paddingVertical: spacing.xxl }]}
+      {/* 결과 없음 (분석 있는데 제품 없음) */}
+      {!loading && !noAnalysis && sections.length === 0 && (
+        <Animated.View
+          entering={staggeredEntry(1)}
+          style={[styles.center, { paddingVertical: spacing.xxl }]}
+        >
+          <ShoppingBag size={48} color={colors.mutedForeground} />
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginTop: spacing.md,
+            }}
           >
-            <ShoppingBag size={48} color={colors.mutedForeground} />
-            <Text
-              style={{
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginTop: spacing.md,
-              }}
-            >
-              추천 제품이 아직 없어요
-            </Text>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                color: colors.mutedForeground,
-                textAlign: 'center',
-                marginTop: spacing.xs,
-              }}
-            >
-              제품 DB가 업데이트되면 맞춤 추천을 보여드릴게요
-            </Text>
-          </Animated.View>
-        )}
+            추천 제품이 아직 없어요
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              color: colors.mutedForeground,
+              textAlign: 'center',
+              marginTop: spacing.xs,
+            }}
+          >
+            제품 DB가 업데이트되면 맞춤 추천을 보여드릴게요
+          </Text>
+        </Animated.View>
+      )}
     </ScreenContainer>
   );
 }
@@ -439,18 +414,25 @@ export default function RecommendationsScreen(): React.JSX.Element {
 // 헬퍼
 function getSeasonLabel(season: string): string {
   const labels: Record<string, string> = {
-    Spring: '봄 웜톤', Summer: '여름 쿨톤',
-    Autumn: '가을 웜톤', Winter: '겨울 쿨톤',
-    spring: '봄 웜톤', summer: '여름 쿨톤',
-    autumn: '가을 웜톤', winter: '겨울 쿨톤',
+    Spring: '봄 웜톤',
+    Summer: '여름 쿨톤',
+    Autumn: '가을 웜톤',
+    Winter: '겨울 쿨톤',
+    spring: '봄 웜톤',
+    summer: '여름 쿨톤',
+    autumn: '가을 웜톤',
+    winter: '겨울 쿨톤',
   };
   return labels[season] || season;
 }
 
 function getSkinTypeLabel(skinType: string): string {
   const labels: Record<string, string> = {
-    dry: '건성', oily: '지성', combination: '복합성',
-    normal: '중성', sensitive: '민감성',
+    dry: '건성',
+    oily: '지성',
+    combination: '복합성',
+    normal: '중성',
+    sensitive: '민감성',
   };
   return labels[skinType] || skinType;
 }
@@ -478,7 +460,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaCard: {
-    borderWidth: 1,
+    marginBottom: spacing.md,
   },
   ctaButton: {
     paddingVertical: spacing.smx,
@@ -494,7 +476,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productCard: {
-    borderWidth: 1,
+    padding: spacing.md,
   },
   productRow: {
     flexDirection: 'row',

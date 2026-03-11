@@ -4,10 +4,11 @@
 
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
+
 import { useTheme } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
 
 import { ChatInterface } from '../../components/coach/ChatInterface';
+import { ScreenContainer } from '../../components/ui';
 
 export default function CoachScreen() {
   const { colors } = useTheme();
@@ -19,6 +20,7 @@ export default function CoachScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="home"
     >
       <ChatInterface initialSessionId={sessionId} />
     </ScreenContainer>

@@ -5,23 +5,24 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 
+import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import {
   HomeHeader,
   HomeTodaySection,
   HomeQuickActions,
   CrossModuleInsight,
 } from '../../components/home';
-import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import {
   GradientCard,
   AnimatedCard,
+  GlassCard,
   SectionHeader,
   StatCard,
   SkeletonText,
@@ -337,37 +338,42 @@ export default function HomeScreen(): React.JSX.Element {
       {/* 오늘의 요약 — StatCard 사용, staggered entry */}
       <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
         <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.smx }} />
-        <View style={{ flexDirection: 'row', gap: spacing.smx, marginBottom: spacing.lg }}>
-          <Animated.View
-            style={[{ flex: 1 }, streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>)]}
-          >
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          <View style={{ flexDirection: 'row', gap: spacing.smx }}>
+            <Animated.View
+              style={[
+                { flex: 1 },
+                streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>),
+              ]}
+            >
+              <StatCard
+                value={streakCount}
+                label="연속 운동"
+                suffix="일"
+                emoji="🔥"
+                moduleColor="workout"
+                testID="stat-workout"
+              />
+            </Animated.View>
             <StatCard
-              value={streakCount}
-              label="연속 운동"
-              suffix="일"
-              emoji="🔥"
-              moduleColor="workout"
-              testID="stat-workout"
+              value={calorieProgress}
+              label="칼로리"
+              suffix="%"
+              emoji="🍽️"
+              moduleColor="nutrition"
+              style={{ flex: 1 }}
+              testID="stat-calorie"
             />
-          </Animated.View>
-          <StatCard
-            value={calorieProgress}
-            label="칼로리"
-            suffix="%"
-            emoji="🍽️"
-            moduleColor="nutrition"
-            style={{ flex: 1 }}
-            testID="stat-calorie"
-          />
-          <StatCard
-            value={analysisCount}
-            label="분석 완료"
-            suffix="/3"
-            emoji="✨"
-            style={{ flex: 1 }}
-            testID="stat-analysis"
-          />
-        </View>
+            <StatCard
+              value={analysisCount}
+              label="분석 완료"
+              suffix="/3"
+              emoji="✨"
+              style={{ flex: 1 }}
+              testID="stat-analysis"
+            />
+          </View>
+        </GlassCard>
       </Animated.View>
 
       {/* 모듈 카드 — staggeredEntry 적용 */}
@@ -378,7 +384,7 @@ export default function HomeScreen(): React.JSX.Element {
           style={{ marginBottom: spacing.smx }}
         />
       </Animated.View>
-      <View style={{ gap: spacing.md, marginBottom: spacing.lg }}>
+      <GlassCard shadowSize="md" style={{ gap: spacing.md, marginBottom: spacing.lg }}>
         <Animated.View entering={staggeredEntry(0)}>
           <ModuleCard
             title="운동"
@@ -403,7 +409,7 @@ export default function HomeScreen(): React.JSX.Element {
             onPress={() => router.push('/products')}
           />
         </Animated.View>
-      </View>
+      </GlassCard>
 
       {/* 팁 — GradientCard */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>

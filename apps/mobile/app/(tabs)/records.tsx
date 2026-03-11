@@ -16,6 +16,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import {
+  WeeklyCalorieChart,
+  MacroBreakdownBar,
+  WorkoutWeekHeatmap,
+  NutrientRadar,
+  type DayCalorie,
+  type WeekDay,
+} from '../../components/records';
+import {
   MenuCard,
   SectionHeader,
   GlassCard,
@@ -28,14 +36,6 @@ import {
   SkeletonText,
   SkeletonCard,
 } from '../../components/ui';
-import {
-  WeeklyCalorieChart,
-  MacroBreakdownBar,
-  WorkoutWeekHeatmap,
-  NutrientRadar,
-  type DayCalorie,
-  type WeekDay,
-} from '../../components/records';
 import { useWorkoutData, useNutritionData, calculateCalorieProgress } from '../../hooks';
 import type { DailyNutritionSummary, WorkoutLog } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';

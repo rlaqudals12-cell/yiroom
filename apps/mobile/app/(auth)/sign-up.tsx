@@ -14,10 +14,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignUpScreen() {
@@ -107,22 +108,19 @@ export default function SignUpScreen() {
   if (pendingVerification) {
     return (
       <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colors.card }]}
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.header}>
+        <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
             <Text style={[styles.title, { color: colors.foreground }]}>이메일 인증</Text>
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
               {email}로 전송된 인증 코드를 입력해주세요
             </Text>
           </Animated.View>
 
-          <View style={styles.form}>
-            <Animated.View entering={FadeInDown.delay(100).duration(300)}>
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={styles.card}>
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: colors.foreground }]}>인증 코드</Text>
                 <TextInput
@@ -142,23 +140,23 @@ export default function SignUpScreen() {
                   maxLength={6}
                 />
               </View>
-            </Animated.View>
+            </GlassCard>
+          </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(200).duration(300)}>
-              <Pressable
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={handleVerify}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color={brand.primaryForeground} />
-                ) : (
-                  <Text style={styles.buttonText}>인증 완료</Text>
-                )}
-              </Pressable>
-            </Animated.View>
-          </View>
-        </ScrollView>
+          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+            <Pressable
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleVerify}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={brand.primaryForeground} />
+              ) : (
+                <Text style={styles.buttonText}>인증 완료</Text>
+              )}
+            </Pressable>
+          </Animated.View>
+        </ScreenContainer>
       </KeyboardAvoidingView>
     );
   }
@@ -167,21 +165,21 @@ export default function SignUpScreen() {
   return (
     <KeyboardAvoidingView
       testID="auth-signup-screen"
-      style={[styles.container, { backgroundColor: colors.card }]}
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
         {/* 로고/타이틀 */}
-        <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.header}>
+        <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>회원가입</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             이룸과 함께 시작하세요
           </Text>
         </Animated.View>
 
-        <View style={styles.form}>
-          {/* 입력 필드 */}
-          <Animated.View entering={FadeInDown.delay(100).duration(300)}>
+        {/* 입력 필드 */}
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={styles.card}>
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
               <TextInput
@@ -242,46 +240,45 @@ export default function SignUpScreen() {
                 secureTextEntry
               />
             </View>
-          </Animated.View>
+          </GlassCard>
+        </Animated.View>
 
-          {/* 버튼 */}
-          <Animated.View entering={FadeInDown.delay(200).duration(300)}>
-            <Pressable
-              testID="signup-submit-button"
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleSignUp}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={brand.primaryForeground} />
-              ) : (
-                <Text style={styles.buttonText}>회원가입</Text>
-              )}
+        {/* 버튼 */}
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <Pressable
+            testID="signup-submit-button"
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleSignUp}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={brand.primaryForeground} />
+            ) : (
+              <Text style={styles.buttonText}>회원가입</Text>
+            )}
+          </Pressable>
+
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
+              이미 계정이 있으신가요?
+            </Text>
+            <Pressable onPress={handleSignIn}>
+              <Text style={styles.linkText}>로그인</Text>
             </Pressable>
-
-            <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-                이미 계정이 있으신가요?
-              </Text>
-              <Pressable onPress={handleSignIn}>
-                <Text style={styles.linkText}>로그인</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-        </View>
-      </ScrollView>
+          </View>
+        </Animated.View>
+      </ScreenContainer>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: spacing.lg,
   },
   header: {
     alignItems: 'center',
@@ -296,8 +293,9 @@ const styles = StyleSheet.create({
     fontSize: typography.size.base,
     textAlign: 'center',
   },
-  form: {
-    gap: spacing.md,
+  card: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   inputContainer: {
     gap: spacing.sm,

@@ -16,12 +16,11 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
-import { ScreenContainer } from '../../components/ui';
-import { staggeredEntry } from '../../lib/animations';
-
+import { GlassCard, ScreenContainer } from '../../components/ui';
 import {
   getAffiliateProducts,
   getRecommendedProductsBySkin,
@@ -29,6 +28,7 @@ import {
   type AffiliateProduct,
   type AffiliateProductFilter,
 } from '../../lib/affiliate';
+import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { productLogger } from '../../lib/utils/logger';
 
@@ -246,22 +246,25 @@ export default function ProductsScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="beauty"
     >
       {/* 맞춤 추천 배너 */}
       {(filterSource || userSeason) && (
-        <View style={[styles.banner, { backgroundColor: brand.primary + '10' }]}>
-          <Text style={styles.bannerIcon}>{filterSource ? '🎯' : '✨'}</Text>
-          <View style={styles.bannerContent}>
-            <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
-              {filterSource ? '맞춤 제품 추천' : '나를 위한 추천'}
-            </Text>
-            <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
-              {filterSource
-                ? filterSource
-                : `${getSeasonLabel(userSeason!)}에 맞는 제품을 추천해드려요`}
-            </Text>
-          </View>
-        </View>
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={styles.bannerWrapper}>
+          <GlassCard shadowSize="md" style={styles.banner}>
+            <Text style={styles.bannerIcon}>{filterSource ? '🎯' : '✨'}</Text>
+            <View style={styles.bannerContent}>
+              <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
+                {filterSource ? '맞춤 제품 추천' : '나를 위한 추천'}
+              </Text>
+              <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
+                {filterSource
+                  ? filterSource
+                  : `${getSeasonLabel(userSeason!)}에 맞는 제품을 추천해드려요`}
+              </Text>
+            </View>
+          </GlassCard>
+        </Animated.View>
       )}
 
       {/* 카테고리 */}
@@ -325,57 +328,58 @@ export default function ProductsScreen() {
           }
           renderItem={({ item: product, index }) => (
             <Animated.View entering={staggeredEntry(index)} style={{ flex: 1, maxWidth: '50%' }}>
-            <Pressable
-              style={styles.productCard}
-              onPress={() => handleProductPress(product.id)}
-            >
-              {/* 이미지 플레이스홀더 */}
-              <View style={styles.productImageContainer}>
-                <View style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}>
-                  <Text style={styles.placeholderEmoji}>
-                    {product.category === 'skincare'
-                      ? '🧴'
-                      : product.category === 'makeup'
-                        ? '💄'
-                        : product.category === 'haircare'
-                          ? '💇'
-                          : product.category === 'supplement'
-                            ? '💊'
-                            : product.category === 'fashion'
-                              ? '👗'
-                              : '🏋️'}
-                  </Text>
-                </View>
-                {/* 매칭 점수 배지 */}
-                <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
-                  <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
-                    {product.matchScore}%
-                  </Text>
-                </View>
-              </View>
+              <GlassCard shadowSize="md" style={styles.productCard}>
+                <Pressable onPress={() => handleProductPress(product.id)}>
+                  {/* 이미지 플레이스홀더 */}
+                  <View style={styles.productImageContainer}>
+                    <View
+                      style={[styles.productImagePlaceholder, { backgroundColor: colors.muted }]}
+                    >
+                      <Text style={styles.placeholderEmoji}>
+                        {product.category === 'skincare'
+                          ? '🧴'
+                          : product.category === 'makeup'
+                            ? '💄'
+                            : product.category === 'haircare'
+                              ? '💇'
+                              : product.category === 'supplement'
+                                ? '💊'
+                                : product.category === 'fashion'
+                                  ? '👗'
+                                  : '🏋️'}
+                      </Text>
+                    </View>
+                    {/* 매칭 점수 배지 */}
+                    <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
+                      <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
+                        {product.matchScore}%
+                      </Text>
+                    </View>
+                  </View>
 
-              {/* 제품 정보 */}
-              <View style={styles.productInfo}>
-                <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
-                  {product.brand}
-                </Text>
-                <Text
-                  style={[styles.productName, { color: colors.foreground }]}
-                  numberOfLines={2}
-                >
-                  {product.name}
-                </Text>
-                <View style={styles.ratingRow}>
-                  <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
-                  <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
-                    {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
-                  </Text>
-                </View>
-                <Text style={[styles.productPrice, { color: colors.foreground }]}>
-                  {formatPrice(product.price)}
-                </Text>
-              </View>
-            </Pressable>
+                  {/* 제품 정보 */}
+                  <View style={styles.productInfo}>
+                    <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
+                      {product.brand}
+                    </Text>
+                    <Text
+                      style={[styles.productName, { color: colors.foreground }]}
+                      numberOfLines={2}
+                    >
+                      {product.name}
+                    </Text>
+                    <View style={styles.ratingRow}>
+                      <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
+                      <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                        {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
+                      </Text>
+                    </View>
+                    <Text style={[styles.productPrice, { color: colors.foreground }]}>
+                      {formatPrice(product.price)}
+                    </Text>
+                  </View>
+                </Pressable>
+              </GlassCard>
             </Animated.View>
           )}
           ListEmptyComponent={
@@ -395,13 +399,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  bannerWrapper: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+  },
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
     padding: spacing.md,
-    borderRadius: radii.xl,
   },
   bannerIcon: {
     fontSize: typography.size['2xl'],
@@ -450,7 +455,8 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flex: 1,
-    padding: spacing.xs,
+    margin: spacing.xs,
+    overflow: 'hidden',
   },
   productImageContainer: {
     position: 'relative',

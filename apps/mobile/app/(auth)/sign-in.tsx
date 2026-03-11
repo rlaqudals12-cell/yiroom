@@ -14,10 +14,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignInScreen() {
@@ -64,21 +65,21 @@ export default function SignInScreen() {
   return (
     <KeyboardAvoidingView
       testID="auth-signin-screen"
-      style={[styles.container, { backgroundColor: colors.card }]}
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
         {/* 로고/타이틀 */}
-        <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.header}>
+        <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>이룸</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             온전한 나를 만나다
           </Text>
         </Animated.View>
 
-        <View style={styles.form}>
-          {/* 입력 필드 */}
-          <Animated.View entering={FadeInDown.delay(100).duration(300)}>
+        {/* 입력 필드 */}
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={styles.card}>
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
               <TextInput
@@ -120,46 +121,45 @@ export default function SignInScreen() {
                 secureTextEntry
               />
             </View>
-          </Animated.View>
+          </GlassCard>
+        </Animated.View>
 
-          {/* 버튼 */}
-          <Animated.View entering={FadeInDown.delay(200).duration(300)}>
-            <Pressable
-              testID="signin-submit-button"
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleSignIn}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={brand.primaryForeground} />
-              ) : (
-                <Text style={styles.buttonText}>로그인</Text>
-              )}
+        {/* 버튼 */}
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <Pressable
+            testID="signin-submit-button"
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleSignIn}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={brand.primaryForeground} />
+            ) : (
+              <Text style={styles.buttonText}>로그인</Text>
+            )}
+          </Pressable>
+
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
+              계정이 없으신가요?
+            </Text>
+            <Pressable onPress={handleSignUp}>
+              <Text style={styles.linkText}>회원가입</Text>
             </Pressable>
-
-            <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-                계정이 없으신가요?
-              </Text>
-              <Pressable onPress={handleSignUp}>
-                <Text style={styles.linkText}>회원가입</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-        </View>
-      </ScrollView>
+          </View>
+        </Animated.View>
+      </ScreenContainer>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: spacing.lg,
   },
   header: {
     alignItems: 'center',
@@ -173,8 +173,9 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: typography.size.base,
   },
-  form: {
-    gap: spacing.md,
+  card: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   inputContainer: {
     gap: spacing.sm,
