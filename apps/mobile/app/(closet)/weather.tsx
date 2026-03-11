@@ -4,8 +4,11 @@
  * 현재 날씨와 기온에 맞는 코디를 추천한다.
  */
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface WeatherOutfit {
@@ -56,122 +59,150 @@ export default function WeatherOutfitScreen(): React.ReactElement {
   };
 
   return (
-    <ScrollView
-      testID="weather-outfit-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
+    <ScreenContainer testID="weather-outfit-screen" backgroundGradient="style" contentPadding={0}>
       {/* 날씨 정보 카드 */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.lg,
-          alignItems: 'center',
-          marginBottom: spacing.lg,
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md, marginBottom: spacing.lg }}
       >
-        <Text style={{ fontSize: 48 }}>{MOCK_WEATHER.emoji}</Text>
-        <Text
+        <GlassCard
+          shadowSize="md"
           style={{
-            fontSize: typography.size['3xl'],
-            fontWeight: typography.weight.bold,
-            color: getTemperatureColor(MOCK_WEATHER.temperature),
-            marginTop: spacing.xs,
+            borderRadius: radii.xl,
+            padding: spacing.lg,
+            alignItems: 'center',
           }}
         >
-          {MOCK_WEATHER.temperature}°C
-        </Text>
-        <Text
-          style={{
-            fontSize: typography.size.base,
-            color: colors.mutedForeground,
-            marginTop: spacing.xxs,
-          }}
-        >
-          {MOCK_WEATHER.condition} · 습도 {MOCK_WEATHER.humidity}%
-        </Text>
-      </View>
-
-      {/* 추천 코디 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
-      >
-        오늘의 추천 코디
-      </Text>
-
-      <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-        {MOCK_OUTFITS.map((outfit) => (
-          <Pressable
-            key={outfit.id}
-            accessibilityLabel={`${outfit.name} 코디`}
-            onPress={() => router.push({ pathname: '/(closet)/outfit/[id]' as never, params: { id: outfit.id } })}
+          <Text style={{ fontSize: 48 }}>{MOCK_WEATHER.emoji}</Text>
+          <Text
             style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              borderLeftWidth: 3,
-              borderLeftColor: moduleColors.body.base,
+              fontSize: typography.size['3xl'],
+              fontWeight: typography.weight.bold,
+              color: getTemperatureColor(MOCK_WEATHER.temperature),
+              marginTop: spacing.xs,
             }}
           >
-            <Text
+            {MOCK_WEATHER.temperature}°C
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
+            {MOCK_WEATHER.condition} · 습도 {MOCK_WEATHER.humidity}%
+          </Text>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 추천 코디 */}
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.sm }}
+      >
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+        >
+          오늘의 추천 코디
+        </Text>
+      </Animated.View>
+
+      <View style={{ paddingHorizontal: spacing.md, gap: spacing.sm, marginBottom: spacing.lg }}>
+        {MOCK_OUTFITS.map((outfit, index) => (
+          <Animated.View
+            key={outfit.id}
+            entering={FadeInUp.delay(160 + index * 80).duration(TIMING.normal)}
+          >
+            <Pressable
+              accessibilityLabel={`${outfit.name} 코디`}
+              onPress={() =>
+                router.push({
+                  pathname: '/(closet)/outfit/[id]' as never,
+                  params: { id: outfit.id },
+                })
+              }
               style={{
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.xs,
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                borderLeftWidth: 3,
+                borderLeftColor: moduleColors.body.base,
               }}
             >
-              {outfit.name}
-            </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm }}>
-              {outfit.items.map((item, idx) => (
-                <View
-                  key={idx}
-                  style={{
-                    paddingHorizontal: spacing.sm,
-                    paddingVertical: spacing.xxs,
-                    borderRadius: radii.full,
-                    backgroundColor: colors.secondary,
-                  }}
-                >
-                  <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>{item}</Text>
-                </View>
-              ))}
-            </View>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-              {outfit.reason}
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                {outfit.name}
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: spacing.xs,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                {outfit.items.map((item, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: spacing.xxs,
+                      borderRadius: radii.full,
+                      backgroundColor: colors.secondary,
+                    }}
+                  >
+                    <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                {outfit.reason}
+              </Text>
+            </Pressable>
+          </Animated.View>
         ))}
       </View>
 
       {/* 옷장 바로가기 */}
-      <Pressable
-        accessibilityLabel="내 옷장 보기"
-        onPress={() => router.push('/(closet)')}
-        style={{
-          backgroundColor: brand.primary,
-          borderRadius: radii.xl,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(400).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xl }}
       >
-        <Text
+        <Pressable
+          accessibilityLabel="내 옷장 보기"
+          onPress={() => router.push('/(closet)')}
           style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.bold,
-            color: brand.primaryForeground,
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
           }}
         >
-          내 옷장에서 선택하기
-        </Text>
-      </Pressable>
-    </ScrollView>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: brand.primaryForeground,
+            }}
+          >
+            내 옷장에서 선택하기
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

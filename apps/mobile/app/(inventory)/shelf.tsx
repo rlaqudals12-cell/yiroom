@@ -7,7 +7,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
@@ -63,7 +63,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function ShelfScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [statusFilter, setStatusFilter] = useState<ShelfStatus>('all');
 
   const filteredItems =
@@ -76,34 +76,41 @@ export default function ShelfScreen() {
   }, []);
 
   return (
-    <ScreenContainer edges={['bottom']} contentPadding={0} testID="shelf-screen">
+    <ScreenContainer
+      edges={['bottom']}
+      contentPadding={0}
+      testID="shelf-screen"
+      backgroundGradient="beauty"
+    >
       {/* 상태 필터 */}
-      <View style={[styles.filterRow, { paddingHorizontal: spacing.mlg }]}>
-        {STATUS_FILTERS.map((f) => (
-          <Pressable
-            key={f.id}
-            style={[
-              styles.filterChip,
-              {
-                backgroundColor: statusFilter === f.id ? colors.foreground : colors.card,
-                borderColor: colors.border,
-                borderWidth: statusFilter === f.id ? 0 : 1,
-              },
-            ]}
-            onPress={() => setStatusFilter(f.id)}
-          >
-            <Text style={{ fontSize: 14 }}>{f.emoji}</Text>
-            <Text
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.filterRow, paddingHorizontal: spacing.mlg }}>
+          {STATUS_FILTERS.map((f) => (
+            <Pressable
+              key={f.id}
               style={[
-                styles.filterLabel,
-                { color: statusFilter === f.id ? colors.background : colors.foreground },
+                styles.filterChip,
+                {
+                  backgroundColor: statusFilter === f.id ? colors.foreground : colors.card,
+                  borderColor: colors.border,
+                  borderWidth: statusFilter === f.id ? 0 : 1,
+                },
               ]}
+              onPress={() => setStatusFilter(f.id)}
             >
-              {f.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+              <Text style={{ fontSize: 14 }}>{f.emoji}</Text>
+              <Text
+                style={[
+                  styles.filterLabel,
+                  { color: statusFilter === f.id ? colors.background : colors.foreground },
+                ]}
+              >
+                {f.label}
+              </Text>
+            </Pressable>
+          ))}
+        </GlassCard>
+      </Animated.View>
 
       {/* 제품 목록 */}
       <FlatList

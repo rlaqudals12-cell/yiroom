@@ -6,18 +6,11 @@
 import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Switch,
-  Pressable,
-  Alert,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
+
+import { ScreenContainer, GlassCard } from '../../components/ui';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
 
 interface PrivacySettings {
   analyticsConsent: boolean;
@@ -34,7 +27,7 @@ const DEFAULT_SETTINGS: PrivacySettings = {
 };
 
 export default function PrivacySettingsScreen(): React.JSX.Element {
-  const { colors, brand, status, typography, spacing, radii } = useTheme();
+  const { colors, brand } = useTheme();
 
   const [settings, setSettings] = useState<PrivacySettings>(DEFAULT_SETTINGS);
 
@@ -82,6 +75,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
       <ScreenContainer
         testID="settings-privacy-screen"
         edges={['bottom']}
+        backgroundGradient="profile"
       >
         {/* 데이터 수집 */}
         <View style={styles.section}>
@@ -91,7 +85,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
           >
             데이터 수집
           </Text>
-          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+          <GlassCard shadowSize="md">
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>📊</Text>
@@ -137,7 +131,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
                 accessibilityRole="switch"
               />
             </View>
-          </View>
+          </GlassCard>
         </View>
 
         {/* 프로필 공개 */}
@@ -148,7 +142,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
           >
             프로필 공개
           </Text>
-          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+          <GlassCard shadowSize="md">
             <View style={styles.settingsRow}>
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>👤</Text>
@@ -194,7 +188,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
                 accessibilityRole="switch"
               />
             </View>
-          </View>
+          </GlassCard>
         </View>
 
         {/* 데이터 관리 */}
@@ -205,7 +199,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
           >
             데이터 관리
           </Text>
-          <View style={[styles.settingsCard, { backgroundColor: colors.card }]}>
+          <GlassCard shadowSize="md">
             <Pressable
               style={styles.actionRow}
               onPress={handleDownloadData}
@@ -247,7 +241,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
               </View>
               <Text style={[styles.actionArrow, { color: colors.mutedForeground }]}>›</Text>
             </Pressable>
-          </View>
+          </GlassCard>
         </View>
 
         {/* 안내 */}

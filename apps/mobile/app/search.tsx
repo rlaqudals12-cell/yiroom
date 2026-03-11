@@ -33,11 +33,11 @@ import {
   Platform,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { ScreenContainer } from '@/components/ui';
 
-import { moduleColors, statusColors, useTheme, typography, spacing } from '@/lib/theme';
+import { ScreenContainer, GlassCard } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
+import { moduleColors, statusColors, useTheme, typography, spacing } from '@/lib/theme';
 
 interface SearchResult {
   id: string;
@@ -70,7 +70,7 @@ const QUICK_SEARCHES = [
 ];
 
 export default function UnifiedSearchScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, shadows } = useTheme();
+  const { colors, radii, brand, shadows } = useTheme();
   const supabase = useClerkSupabaseClient();
 
   const [query, setQuery] = useState('');
@@ -226,7 +226,6 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             },
           ]}
           onPress={() => handleResultPress(item)}
-
         >
           <View
             style={[
@@ -239,13 +238,21 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           <View style={{ flex: 1, marginLeft: spacing.sm }}>
             <Text
               numberOfLines={1}
-              style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+              }}
             >
               {item.title}
             </Text>
             <Text
               numberOfLines={1}
-              style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}
+              style={{
+                fontSize: typography.size.xs,
+                color: colors.mutedForeground,
+                marginTop: spacing.xxs,
+              }}
             >
               {item.subtitle}
             </Text>
@@ -256,18 +263,26 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
               { backgroundColor: config.color + '15', borderRadius: radii.sm },
             ]}
           >
-            <Text style={{ fontSize: 10, color: config.color, fontWeight: typography.weight.semibold }}>
+            <Text
+              style={{ fontSize: 10, color: config.color, fontWeight: typography.weight.semibold }}
+            >
               {config.label}
             </Text>
           </View>
         </Pressable>
       );
     },
-    [colors, radii, spacing, typography, shadows, handleResultPress]
+    [colors, radii, shadows, handleResultPress]
   );
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="unified-search-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="unified-search-screen"
+      edges={['bottom']}
+      backgroundGradient="home"
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -289,7 +304,10 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           >
             <Search size={18} color={colors.mutedForeground} />
             <TextInput
-              style={[styles.searchInput, { color: colors.foreground, fontSize: typography.size.base }]}
+              style={[
+                styles.searchInput,
+                { color: colors.foreground, fontSize: typography.size.base },
+              ]}
               placeholder="검색어를 입력하세요"
               placeholderTextColor={colors.mutedForeground}
               value={query}
@@ -312,40 +330,42 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
             entering={FadeInUp.delay(80).duration(TIMING.normal)}
             style={{ padding: spacing.md }}
           >
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.sm,
-              }}
-            >
-              빠른 검색
-            </Text>
-            <View style={[styles.quickGrid, { gap: spacing.xs }]}>
-              {QUICK_SEARCHES.map((term) => (
-                <Pressable
-                  key={term}
-                  style={[
-                    styles.quickChip,
-                    {
-                      backgroundColor: colors.secondary,
-                      borderRadius: radii.full,
-                      paddingHorizontal: spacing.md,
-                      paddingVertical: spacing.xs,
-                    },
-                  ]}
-                  onPress={() => {
-                    setQuery(term);
-                    handleSearch(term);
-                  }}
-                >
-                  <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
-                    {term}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            <GlassCard shadowSize="md">
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                빠른 검색
+              </Text>
+              <View style={[styles.quickGrid, { gap: spacing.xs }]}>
+                {QUICK_SEARCHES.map((term) => (
+                  <Pressable
+                    key={term}
+                    style={[
+                      styles.quickChip,
+                      {
+                        backgroundColor: colors.secondary,
+                        borderRadius: radii.full,
+                        paddingHorizontal: spacing.md,
+                        paddingVertical: spacing.xs,
+                      },
+                    ]}
+                    onPress={() => {
+                      setQuery(term);
+                      handleSearch(term);
+                    }}
+                  >
+                    <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
+                      {term}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </GlassCard>
           </Animated.View>
         )}
 

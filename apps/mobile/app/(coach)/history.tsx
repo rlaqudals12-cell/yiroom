@@ -16,14 +16,17 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../components/ui';
+import { TIMING } from '../../lib/animations';
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 export default function CoachHistoryScreen() {
-  const { colors, brand, typography, spacing, radii} = useTheme();
+  const { colors, brand } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -126,10 +129,7 @@ export default function CoachHistoryScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer
-        scrollable={false}
-        edges={['bottom']}
-      >
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="home">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
@@ -143,16 +143,28 @@ export default function CoachHistoryScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="home"
     >
       {/* 새 대화 버튼 */}
-      <Pressable
-        style={[styles.newSessionButton, { backgroundColor: brand.primary }]}
-        onPress={handleNewSession}
+      <Animated.View
+        entering={FadeInUp.duration(TIMING.normal)}
+        style={{
+          paddingHorizontal: spacing.md,
+          paddingTop: spacing.md,
+          paddingBottom: spacing.smx,
+        }}
       >
-        <Text style={[styles.newSessionButtonText, { color: brand.primaryForeground }]}>
-          + 새 대화 시작
-        </Text>
-      </Pressable>
+        <GlassCard shadowSize="md" style={{}}>
+          <Pressable
+            style={[styles.newSessionButton, { backgroundColor: brand.primary }]}
+            onPress={handleNewSession}
+          >
+            <Text style={[styles.newSessionButtonText, { color: brand.primaryForeground }]}>
+              + 새 대화 시작
+            </Text>
+          </Pressable>
+        </GlassCard>
+      </Animated.View>
 
       {/* 세션 목록 */}
       {sessions.length === 0 ? (
@@ -196,9 +208,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   newSessionButton: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.smx,
     paddingVertical: 14,
     borderRadius: radii.full,
     alignItems: 'center',

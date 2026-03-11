@@ -6,15 +6,12 @@
 import { useLocalSearchParams } from 'expo-router';
 import { SlidersHorizontal, Sparkles } from 'lucide-react-native';
 import { useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../../../components/ui';
+import { GlassCard, ScreenContainer } from '../../../../components/ui';
+
+import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 interface CategoryItem {
@@ -46,11 +43,41 @@ const SORT_OPTIONS: { id: SortOption; label: string }[] = [
 
 // 예시 데이터 (추후 API 연동)
 const SAMPLE_ITEMS: CategoryItem[] = [
-  { id: '1', name: '데일리 베이직 룩', description: '깔끔한 기본 아이템 조합', likeCount: 34, createdAt: '2026-03-01' },
-  { id: '2', name: '레이어드 스타일링', description: '겹겹이 쌓아 만드는 무드', likeCount: 28, createdAt: '2026-02-28' },
-  { id: '3', name: '원포인트 악세서리', description: '심플한 코디에 포인트 하나', likeCount: 42, createdAt: '2026-02-27' },
-  { id: '4', name: '컬러 매칭 가이드', description: '색상 조합으로 완성하는 스타일', likeCount: 19, createdAt: '2026-02-25' },
-  { id: '5', name: '시즌 트랜드 룩', description: '이번 시즌 주목할 아이템', likeCount: 56, createdAt: '2026-03-02' },
+  {
+    id: '1',
+    name: '데일리 베이직 룩',
+    description: '깔끔한 기본 아이템 조합',
+    likeCount: 34,
+    createdAt: '2026-03-01',
+  },
+  {
+    id: '2',
+    name: '레이어드 스타일링',
+    description: '겹겹이 쌓아 만드는 무드',
+    likeCount: 28,
+    createdAt: '2026-02-28',
+  },
+  {
+    id: '3',
+    name: '원포인트 악세서리',
+    description: '심플한 코디에 포인트 하나',
+    likeCount: 42,
+    createdAt: '2026-02-27',
+  },
+  {
+    id: '4',
+    name: '컬러 매칭 가이드',
+    description: '색상 조합으로 완성하는 스타일',
+    likeCount: 19,
+    createdAt: '2026-02-25',
+  },
+  {
+    id: '5',
+    name: '시즌 트랜드 룩',
+    description: '이번 시즌 주목할 아이템',
+    likeCount: 56,
+    createdAt: '2026-03-02',
+  },
 ];
 
 export default function StyleCategoryDetailScreen(): React.JSX.Element {
@@ -90,26 +117,15 @@ export default function StyleCategoryDetailScreen(): React.JSX.Element {
         accessibilityLabel={`${item.name}, 좋아요 ${item.likeCount}개`}
       >
         {/* 이미지 플레이스홀더 */}
-        <View
-          style={[
-            styles.itemImage,
-            { backgroundColor: colors.muted, borderRadius: radii.xl },
-          ]}
-        >
+        <View style={[styles.itemImage, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
           <Sparkles size={24} color={colors.mutedForeground} />
         </View>
 
         <View style={styles.itemContent}>
-          <Text
-            numberOfLines={1}
-            style={[styles.itemName, { color: colors.foreground }]}
-          >
+          <Text numberOfLines={1} style={[styles.itemName, { color: colors.foreground }]}>
             {item.name}
           </Text>
-          <Text
-            numberOfLines={2}
-            style={[styles.itemDesc, { color: colors.mutedForeground }]}
-          >
+          <Text numberOfLines={2} style={[styles.itemDesc, { color: colors.mutedForeground }]}>
             {item.description}
           </Text>
           <Text style={[styles.itemLike, { color: colors.mutedForeground }]}>
@@ -124,76 +140,83 @@ export default function StyleCategoryDetailScreen(): React.JSX.Element {
   return (
     <ScreenContainer
       testID="style-category-detail-screen"
+      backgroundGradient="style"
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
     >
       {/* 카테고리 헤더 */}
-      <View style={styles.header}>
-        <Text
-          style={[styles.headerTitle, { color: colors.foreground }]}
-          accessibilityRole="header"
-        >
-          {meta.title}
-        </Text>
-        <Text style={[styles.headerDesc, { color: colors.mutedForeground }]}>
-          {meta.description}
-        </Text>
-      </View>
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.header }}>
+          <Text
+            style={[styles.headerTitle, { color: colors.foreground }]}
+            accessibilityRole="header"
+          >
+            {meta.title}
+          </Text>
+          <Text style={[styles.headerDesc, { color: colors.mutedForeground }]}>
+            {meta.description}
+          </Text>
+        </GlassCard>
+      </Animated.View>
 
       {/* 정렬 옵션 */}
-      <View style={styles.sortRow}>
-        <SlidersHorizontal size={14} color={colors.mutedForeground} />
-        {SORT_OPTIONS.map((option) => {
-          const isActive = option.id === sortBy;
-          return (
-            <Pressable
-              key={option.id}
-              style={[
-                styles.sortChip,
-                {
-                  backgroundColor: isActive ? brand.primary : colors.secondary,
-                  borderRadius: radii.full,
-                },
-              ]}
-              onPress={() => setSortBy(option.id)}
-              accessibilityLabel={`${option.label}으로 정렬`}
-              accessibilityRole="button"
-            >
-              <Text
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <View style={styles.sortRow}>
+          <SlidersHorizontal size={14} color={colors.mutedForeground} />
+          {SORT_OPTIONS.map((option) => {
+            const isActive = option.id === sortBy;
+            return (
+              <Pressable
+                key={option.id}
                 style={[
-                  styles.sortChipText,
-                  { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  styles.sortChip,
+                  {
+                    backgroundColor: isActive ? brand.primary : colors.secondary,
+                    borderRadius: radii.full,
+                  },
                 ]}
+                onPress={() => setSortBy(option.id)}
+                accessibilityLabel={`${option.label}으로 정렬`}
+                accessibilityRole="button"
               >
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text
+                  style={[
+                    styles.sortChipText,
+                    { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
 
       {/* 아이템 목록 */}
-      {sortedItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Sparkles size={48} color={colors.mutedForeground} />
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            아직 아이템이 없어요
-          </Text>
-          <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
-            이 카테고리에 해당하는 스타일을 준비 중이에요
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={sortedItems}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-      )}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)} style={{ flex: 1 }}>
+        {sortedItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Sparkles size={48} color={colors.mutedForeground} />
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+              아직 아이템이 없어요
+            </Text>
+            <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
+              이 카테고리에 해당하는 스타일을 준비 중이에요
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={sortedItems}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+          />
+        )}
+      </Animated.View>
     </ScreenContainer>
   );
 }

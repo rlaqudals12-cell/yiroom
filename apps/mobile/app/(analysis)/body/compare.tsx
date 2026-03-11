@@ -4,8 +4,11 @@
  * 체형 분석 결과의 비포/애프터를 비교한다.
  */
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface CompareMetric {
@@ -28,96 +31,139 @@ export default function BodyCompareScreen(): React.ReactElement {
   const { colors, brand, spacing, radii, typography, status, module: moduleColors } = useTheme();
 
   return (
-    <ScrollView
-      testID="body-compare-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
-      >
-        체형 변화 비교
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        이전 분석 결과와 비교합니다
-      </Text>
+    <ScreenContainer testID="body-compare-screen" backgroundGradient="analysis" edges={['bottom']}>
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
+          }}
+        >
+          체형 변화 비교
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            color: colors.mutedForeground,
+            marginBottom: spacing.lg,
+          }}
+        >
+          이전 분석 결과와 비교합니다
+        </Text>
+      </Animated.View>
 
       {/* 지표 비교 카드 */}
       <View style={{ gap: spacing.sm }}>
         {MOCK_METRICS.map((metric, index) => (
-          <View
+          <Animated.View
             key={index}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              borderLeftWidth: 3,
-              borderLeftColor: moduleColors.body.base,
-            }}
+            entering={FadeInUp.delay(80 + index * 80).duration(TIMING.normal)}
           >
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.sm,
-              }}
+            <GlassCard
+              shadowSize="md"
+              style={{ borderLeftWidth: 3, borderLeftColor: moduleColors.body.base }}
             >
-              {metric.label}
-            </Text>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginBottom: spacing.xxs }}>이전</Text>
-                <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: colors.mutedForeground }}>{metric.before}</Text>
-              </View>
-
-              <Text style={{ fontSize: typography.size.lg, color: metric.improved ? status.success : status.error, marginHorizontal: spacing.sm }}>
-                {metric.improved ? '▲' : '▼'}
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                {metric.label}
               </Text>
 
-              <View style={{ alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginBottom: spacing.xxs }}>현재</Text>
-                <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: colors.foreground }}>{metric.after}</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs,
+                      color: colors.mutedForeground,
+                      marginBottom: spacing.xxs,
+                    }}
+                  >
+                    이전
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xl,
+                      fontWeight: typography.weight.bold,
+                      color: colors.mutedForeground,
+                    }}
+                  >
+                    {metric.before}
+                  </Text>
+                </View>
+
+                <Text
+                  style={{
+                    fontSize: typography.size.lg,
+                    color: metric.improved ? status.success : status.error,
+                    marginHorizontal: spacing.sm,
+                  }}
+                >
+                  {metric.improved ? '▲' : '▼'}
+                </Text>
+
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs,
+                      color: colors.mutedForeground,
+                      marginBottom: spacing.xxs,
+                    }}
+                  >
+                    현재
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xl,
+                      fontWeight: typography.weight.bold,
+                      color: colors.foreground,
+                    }}
+                  >
+                    {metric.after}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </View>
+            </GlassCard>
+          </Animated.View>
         ))}
       </View>
 
       {/* 다시 분석 버튼 */}
-      <Pressable
-        accessibilityLabel="체형 다시 분석하기"
-        onPress={() => router.push('/(analysis)/body')}
-        style={{
-          backgroundColor: brand.primary,
-          borderRadius: radii.xl,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-          marginTop: spacing.lg,
-        }}
-      >
-        <Text
+      <Animated.View entering={FadeInUp.delay(480).duration(TIMING.normal)}>
+        <Pressable
+          accessibilityLabel="체형 다시 분석하기"
+          onPress={() => router.push('/(analysis)/body')}
           style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.bold,
-            color: brand.primaryForeground,
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
+            marginTop: spacing.lg,
           }}
         >
-          다시 분석하기
-        </Text>
-      </Pressable>
-    </ScrollView>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: brand.primaryForeground,
+            }}
+          >
+            다시 분석하기
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

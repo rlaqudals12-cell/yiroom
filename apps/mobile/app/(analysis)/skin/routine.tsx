@@ -8,23 +8,19 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '../../../components/ui';
-import { staggeredEntry } from '../../../lib/animations';
+import { ScreenContainer, GlassCard, DataStateWrapper } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
+
 import {
   useSkincareRoutine,
   getCategoryInfo,
   type TimeOfDay,
   type RoutineStep,
 } from '@/lib/skincare';
-import { moduleColors, useTheme, typography, radii , spacing } from '@/lib/theme';
+import { moduleColors, useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function SkincareRoutineScreen() {
   const { colors } = useTheme();
@@ -82,6 +78,7 @@ export default function SkincareRoutineScreen() {
   return (
     <ScreenContainer
       testID="analysis-skin-routine-screen"
+      backgroundGradient="analysis"
       edges={['bottom']}
       refreshing={refreshing}
       onRefresh={handleRefresh}
@@ -100,7 +97,7 @@ export default function SkincareRoutineScreen() {
         isEmpty={!skinData}
       >
         {/* 헤더 */}
-        <Animated.View entering={staggeredEntry(0)} style={styles.header}>
+        <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>오늘의 스킨케어 루틴</Text>
           {skinData && (
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -111,16 +108,21 @@ export default function SkincareRoutineScreen() {
 
         {/* 개인화 노트 */}
         {personalizationNote && (
-          <Animated.View entering={staggeredEntry(1)} style={[styles.noteCard, { backgroundColor: colors.secondary }]}>
-            <Text style={styles.noteEmoji}>✨</Text>
-            <Text style={[styles.noteText, { color: colors.foreground }]}>
-              {personalizationNote}
-            </Text>
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.noteCard }}>
+              <Text style={styles.noteEmoji}>✨</Text>
+              <Text style={[styles.noteText, { color: colors.foreground }]}>
+                {personalizationNote}
+              </Text>
+            </GlassCard>
           </Animated.View>
         )}
 
         {/* 아침/저녁 토글 */}
-        <Animated.View entering={staggeredEntry(2)} style={[styles.toggleContainer, { backgroundColor: colors.muted }]}>
+        <Animated.View
+          entering={FadeInUp.delay(160).duration(TIMING.normal)}
+          style={[styles.toggleContainer, { backgroundColor: colors.muted }]}
+        >
           <Pressable
             style={[
               styles.toggleButton,
@@ -160,14 +162,17 @@ export default function SkincareRoutineScreen() {
         </Animated.View>
 
         {/* 루틴 정보 */}
-        <View style={styles.routineInfo}>
+        <Animated.View
+          entering={FadeInUp.delay(240).duration(TIMING.normal)}
+          style={styles.routineInfo}
+        >
           <Text style={[styles.routineInfoText, { color: colors.foreground }]}>
             {timeLabel} 루틴 • {currentSteps.length}단계
           </Text>
           <Text style={[styles.routineTime, { color: colors.mutedForeground }]}>
             예상 {formattedTime}
           </Text>
-        </View>
+        </Animated.View>
 
         {/* 루틴 단계 목록 */}
         <View style={styles.stepsList}>
@@ -179,7 +184,9 @@ export default function SkincareRoutineScreen() {
         {/* 하단 버튼 */}
         <View style={styles.footer}>
           <Pressable style={styles.primaryButton} onPress={handleProductRecommendation}>
-            <Text style={[styles.primaryButtonText, { color: colors.card }]}>🧴 피부 맞춤 제품 보기</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.card }]}>
+              🧴 피부 맞춤 제품 보기
+            </Text>
           </Pressable>
           <Text style={[styles.footerNote, { color: colors.mutedForeground }]}>
             파트너사 링크를 통해 구매하시면 이룸에 도움이 돼요
@@ -204,51 +211,49 @@ function RoutineStepCard({ step }: { step: RoutineStep }) {
   };
 
   return (
-    <Pressable
-      style={[styles.stepCard, { backgroundColor: colors.card }]}
-      onPress={toggleExpand}
-
-    >
-      <View style={styles.stepHeader}>
-        <View style={styles.stepOrderContainer}>
-          <Text style={[styles.stepOrder, { color: colors.card }]}>{step.order}</Text>
-        </View>
-        <View style={styles.stepInfo}>
-          <View style={styles.stepTitleRow}>
-            <Text style={styles.stepEmoji}>{categoryInfo.emoji}</Text>
-            <Text style={[styles.stepName, { color: colors.foreground }]}>{step.name}</Text>
-            {step.isOptional && (
-              <View style={[styles.optionalBadge, { backgroundColor: colors.muted }]}>
-                <Text style={[styles.optionalText, { color: colors.mutedForeground }]}>선택</Text>
-              </View>
+    <GlassCard shadowSize="md" style={{ ...styles.stepCard }}>
+      <Pressable onPress={toggleExpand}>
+        <View style={styles.stepHeader}>
+          <View style={styles.stepOrderContainer}>
+            <Text style={[styles.stepOrder, { color: colors.card }]}>{step.order}</Text>
+          </View>
+          <View style={styles.stepInfo}>
+            <View style={styles.stepTitleRow}>
+              <Text style={styles.stepEmoji}>{categoryInfo.emoji}</Text>
+              <Text style={[styles.stepName, { color: colors.foreground }]}>{step.name}</Text>
+              {step.isOptional && (
+                <View style={[styles.optionalBadge, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.optionalText, { color: colors.mutedForeground }]}>선택</Text>
+                </View>
+              )}
+            </View>
+            <Text style={[styles.stepPurpose, { color: colors.mutedForeground }]}>
+              {step.purpose}
+            </Text>
+            {step.duration && (
+              <Text style={[styles.stepDuration, { color: colors.mutedForeground }]}>
+                ⏱ {step.duration}
+              </Text>
             )}
           </View>
-          <Text style={[styles.stepPurpose, { color: colors.mutedForeground }]}>
-            {step.purpose}
+          <Text style={[styles.expandIcon, { color: colors.mutedForeground }]}>
+            {expanded ? '▲' : '▼'}
           </Text>
-          {step.duration && (
-            <Text style={[styles.stepDuration, { color: colors.mutedForeground }]}>
-              ⏱ {step.duration}
-            </Text>
-          )}
         </View>
-        <Text style={[styles.expandIcon, { color: colors.mutedForeground }]}>
-          {expanded ? '▲' : '▼'}
-        </Text>
-      </View>
 
-      {/* 팁 (확장 시 표시) */}
-      {expanded && step.tips.length > 0 && (
-        <View style={[styles.tipsContainer, { borderTopColor: colors.border }]}>
-          <Text style={[styles.tipsTitle, { color: colors.foreground }]}>💡 사용 팁</Text>
-          {step.tips.map((tip, index) => (
-            <Text key={index} style={[styles.tipText, { color: colors.mutedForeground }]}>
-              • {tip}
-            </Text>
-          ))}
-        </View>
-      )}
-    </Pressable>
+        {/* 팁 (확장 시 표시) */}
+        {expanded && step.tips.length > 0 && (
+          <View style={[styles.tipsContainer, { borderTopColor: colors.border }]}>
+            <Text style={[styles.tipsTitle, { color: colors.foreground }]}>💡 사용 팁</Text>
+            {step.tips.map((tip, index) => (
+              <Text key={index} style={[styles.tipText, { color: colors.mutedForeground }]}>
+                • {tip}
+              </Text>
+            ))}
+          </View>
+        )}
+      </Pressable>
+    </GlassCard>
   );
 }
 
@@ -266,8 +271,6 @@ const styles = StyleSheet.create({
   },
   noteCard: {
     flexDirection: 'row',
-    borderRadius: radii.xl,
-    padding: spacing.md,
     marginBottom: spacing.mlg,
     gap: spacing.smx,
     alignItems: 'flex-start',
@@ -320,8 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   stepCard: {
-    borderRadius: radii.xl,
-    padding: spacing.md,
+    marginBottom: 0,
   },
   stepHeader: {
     flexDirection: 'row',

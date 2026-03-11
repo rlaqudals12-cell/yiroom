@@ -9,20 +9,15 @@
 import * as Haptics from 'expo-haptics';
 import { Clock, Play, Square, History, Utensils, Timer } from 'lucide-react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography, spacing } from '@/lib/theme';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
+
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
+import { staggeredEntry } from '@/lib/animations';
+import { useClerkSupabaseClient } from '@/lib/supabase';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 interface FastingPattern {
   id: string;
@@ -73,7 +68,14 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 export default function FastingTrackerScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows, isDark, module: moduleColors } = useTheme();
+  const {
+    colors,
+    radii,
+    status,
+    shadows,
+    isDark,
+    module: moduleColors,
+  } = useTheme();
   const nutritionColor = moduleColors.nutrition.base;
   const supabase = useClerkSupabaseClient();
 
@@ -99,7 +101,8 @@ export default function FastingTrackerScreen(): React.JSX.Element {
 
       if (active) {
         setStartTime(new Date(active.started_at));
-        const pattern = FASTING_PATTERNS.find((p) => p.id === active.pattern) ?? FASTING_PATTERNS[0];
+        const pattern =
+          FASTING_PATTERNS.find((p) => p.id === active.pattern) ?? FASTING_PATTERNS[0];
         setSelectedPattern(pattern);
         setFastingState('fasting');
       } else {
@@ -181,7 +184,9 @@ export default function FastingTrackerScreen(): React.JSX.Element {
     const completed = durationMinutes >= targetMinutes;
 
     Haptics.notificationAsync(
-      completed ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning
+      completed
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Warning
     );
 
     try {
@@ -222,13 +227,11 @@ export default function FastingTrackerScreen(): React.JSX.Element {
       testID="fasting-tracker-screen"
       edges={['bottom']}
       contentPadding={spacing.md}
+      backgroundGradient="nutrition"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <DataStateWrapper
-        isLoading={fastingState === 'loading'}
-        isEmpty={false}
-      >
+      <DataStateWrapper isLoading={fastingState === 'loading'} isEmpty={false}>
         {/* 타이머 카드 */}
         <Animated.View
           entering={staggeredEntry(0)}
@@ -263,7 +266,10 @@ export default function FastingTrackerScreen(): React.JSX.Element {
           <Text
             style={{
               fontSize: typography.size.sm,
-              color: fastingState === 'fasting' ? `${colors.overlayForeground}CC` : colors.mutedForeground,
+              color:
+                fastingState === 'fasting'
+                  ? `${colors.overlayForeground}CC`
+                  : colors.mutedForeground,
               marginTop: spacing.xs,
             }}
           >
@@ -277,7 +283,11 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             <View
               style={[
                 styles.progressBar,
-                { backgroundColor: `${colors.overlayForeground}33`, borderRadius: radii.sm, marginTop: spacing.md },
+                {
+                  backgroundColor: `${colors.overlayForeground}33`,
+                  borderRadius: radii.sm,
+                  marginTop: spacing.md,
+                },
               ]}
             >
               <View
@@ -298,15 +308,21 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             style={[
               styles.actionButton,
               {
-                backgroundColor: fastingState === 'fasting' ? `${colors.overlayForeground}40` : nutritionColor,
+                backgroundColor:
+                  fastingState === 'fasting' ? `${colors.overlayForeground}40` : nutritionColor,
                 borderRadius: radii.full,
                 marginTop: spacing.lg,
               },
               fastingState !== 'fasting' && !isDark
-                ? Platform.select({
-                    ios: { shadowColor: nutritionColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: nutritionColor,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                    },
                     android: { elevation: 4 },
-                  }) ?? {}
+                  }) ?? {})
                 : {},
             ]}
             onPress={fastingState === 'fasting' ? handleStopFasting : handleStartFasting}
@@ -314,14 +330,24 @@ export default function FastingTrackerScreen(): React.JSX.Element {
             {fastingState === 'fasting' ? (
               <>
                 <Square size={18} color={colors.overlayForeground} />
-                <Text style={[styles.actionText, { color: colors.overlayForeground, marginLeft: spacing.xs }]}>
+                <Text
+                  style={[
+                    styles.actionText,
+                    { color: colors.overlayForeground, marginLeft: spacing.xs },
+                  ]}
+                >
                   단식 종료
                 </Text>
               </>
             ) : (
               <>
                 <Play size={18} color={colors.overlayForeground} />
-                <Text style={[styles.actionText, { color: colors.overlayForeground, marginLeft: spacing.xs }]}>
+                <Text
+                  style={[
+                    styles.actionText,
+                    { color: colors.overlayForeground, marginLeft: spacing.xs },
+                  ]}
+                >
                   단식 시작
                 </Text>
               </>
@@ -332,16 +358,18 @@ export default function FastingTrackerScreen(): React.JSX.Element {
         {/* 패턴 선택 (단식 중이 아닐 때만) */}
         {fastingState === 'idle' && (
           <Animated.View entering={staggeredEntry(1)}>
-            <Text
-              style={{
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.bold,
-                color: colors.foreground,
-                marginBottom: spacing.sm,
-              }}
-            >
-              단식 패턴 선택
-            </Text>
+            <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.bold,
+                  color: colors.foreground,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                단식 패턴 선택
+              </Text>
+            </GlassCard>
             <View style={[styles.patternGrid, { gap: spacing.sm }]}>
               {FASTING_PATTERNS.map((pattern) => {
                 const isSelected = pattern.id === selectedPattern.id;
@@ -376,7 +404,9 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                     <Text
                       style={{
                         fontSize: typography.size.xs,
-                        color: isSelected ? `${colors.overlayForeground}CC` : colors.mutedForeground,
+                        color: isSelected
+                          ? `${colors.overlayForeground}CC`
+                          : colors.mutedForeground,
                         marginTop: spacing.xxs,
                       }}
                     >
@@ -431,7 +461,9 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                     style={[
                       styles.logIcon,
                       {
-                        backgroundColor: log.completed ? status.success + '20' : status.warning + '20',
+                        backgroundColor: log.completed
+                          ? status.success + '20'
+                          : status.warning + '20',
                         borderRadius: radii.xl,
                       },
                     ]}
@@ -444,23 +476,45 @@ export default function FastingTrackerScreen(): React.JSX.Element {
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+                      <Text
+                        style={{
+                          fontSize: typography.size.sm,
+                          fontWeight: typography.weight.semibold,
+                          color: colors.foreground,
+                        }}
+                      >
                         {pattern?.label ?? log.pattern}
                       </Text>
                       {log.completed && (
                         <View
                           style={[
                             styles.completeBadge,
-                            { backgroundColor: status.success + '20', borderRadius: radii.sm, marginLeft: spacing.xs },
+                            {
+                              backgroundColor: status.success + '20',
+                              borderRadius: radii.sm,
+                              marginLeft: spacing.xs,
+                            },
                           ]}
                         >
-                          <Text style={{ fontSize: 10, color: status.success, fontWeight: typography.weight.semibold }}>
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: status.success,
+                              fontWeight: typography.weight.semibold,
+                            }}
+                          >
                             완료
                           </Text>
                         </View>
                       )}
                     </View>
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+                    <Text
+                      style={{
+                        fontSize: typography.size.xs,
+                        color: colors.mutedForeground,
+                        marginTop: spacing.xxs,
+                      }}
+                    >
                       {formatRelativeDate(log.startedAt)} · {hours}시간 {mins}분
                     </Text>
                   </View>

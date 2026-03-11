@@ -7,8 +7,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
-
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
@@ -17,15 +15,17 @@ import {
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
+import { AIBadge } from '@/components/common/AIBadge';
+import { ScreenContainer, GlassCard } from '@/components/ui';
+import { CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import {
   analyzePosture as analyzeWithGemini,
   imageToBase64,
   type PostureAnalysisResult,
 } from '@/lib/gemini';
-import { CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
-import { typography, radii , spacing } from '@/lib/theme';
+import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
@@ -89,12 +89,7 @@ export default function PostureResultScreen() {
   };
 
   if (isLoading) {
-    return (
-      <AnalysisLoadingState
-        message="자세를 분석 중이에요..."
-        testID="posture-loading"
-      />
-    );
+    return <AnalysisLoadingState message="자세를 분석 중이에요..." testID="posture-loading" />;
   }
 
   if (!result) {
@@ -110,25 +105,26 @@ export default function PostureResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '🧘', name: '자세 교정사', description: '자세 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ScreenContainer
-      testID="analysis-posture-result-screen"
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      edges={['bottom']}
-    >
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '🧘', name: '자세 교정사', description: '자세 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ScreenContainer
+        testID="analysis-posture-result-screen"
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        backgroundGradient="analysis"
+        edges={['bottom']}
+      >
         {imageUri && (
           <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.imageContainer}>
             <Image
@@ -139,71 +135,81 @@ export default function PostureResultScreen() {
         )}
 
         {/* 주요 결과 */}
-        <Animated.View entering={FadeInDown.delay(60).duration(300)} style={styles.resultCard}>
-          <AnalysisTrustBadge
-            type={usedFallback ? 'questionnaire' : 'ai'}
-            testID="posture-trust-badge"
-          />
-          <AIBadge variant="small" />
-          <Text style={styles.label}>자세 유형 분석 결과</Text>
-          <Text style={[localStyles.mainResult, { color: accent.base }]}>
-            {POSTURE_TYPE_LABELS[result.postureType]}
-          </Text>
-          <Text style={styles.subLabel}>종합 점수 {result.overallScore}점</Text>
+        <Animated.View entering={FadeInDown.delay(60).duration(TIMING.normal)}>
+          <GlassCard shadowSize="lg" style={{ ...styles.resultCard }}>
+            <AnalysisTrustBadge
+              type={usedFallback ? 'questionnaire' : 'ai'}
+              testID="posture-trust-badge"
+            />
+            <AIBadge variant="small" />
+            <Text style={styles.label}>자세 유형 분석 결과</Text>
+            <Text style={[localStyles.mainResult, { color: accent.base }]}>
+              {POSTURE_TYPE_LABELS[result.postureType]}
+            </Text>
+            <Text style={styles.subLabel}>종합 점수 {result.overallScore}점</Text>
+          </GlassCard>
         </Animated.View>
 
         {/* 점수 */}
-        <Animated.View entering={FadeInDown.delay(120).duration(300)} style={styles.section}>
-          <Text style={styles.sectionTitle}>정렬 점수</Text>
-          <View style={localStyles.metricsGap}>
-            <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
-            <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
-            <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
-            <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
-          </View>
+        <Animated.View entering={FadeInDown.delay(120).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.section }}>
+            <Text style={styles.sectionTitle}>정렬 점수</Text>
+            <View style={localStyles.metricsGap}>
+              <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
+              <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
+              <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
+              <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
+            </View>
+          </GlassCard>
         </Animated.View>
 
         {/* 발견된 문제 */}
         {result.issues.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(180).duration(300)} style={styles.section}>
-            <Text style={styles.sectionTitle}>발견된 문제</Text>
-            {result.issues.map((issue, i) => (
-              <Text key={i} style={styles.listItem}>
-                · {issue}
-              </Text>
-            ))}
+          <Animated.View entering={FadeInDown.delay(180).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>발견된 문제</Text>
+              {result.issues.map((issue, i) => (
+                <Text key={i} style={styles.listItem}>
+                  · {issue}
+                </Text>
+              ))}
+            </GlassCard>
           </Animated.View>
         )}
 
         {/* 교정 운동 */}
         {result.exercises.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(240).duration(300)} style={styles.section}>
-            <Text style={styles.sectionTitle}>추천 교정 운동</Text>
-            {result.exercises.map((exercise, i) => (
-              <View key={i} style={localStyles.exerciseCard}>
-                <Text style={[localStyles.exerciseName, { color: colors.foreground }]}>
-                  {i + 1}. {exercise.name}
-                </Text>
-                <Text style={[localStyles.exerciseDesc, { color: colors.mutedForeground }]}>
-                  {exercise.description}
-                </Text>
-                <Text style={[localStyles.exerciseDuration, { color: colors.mutedForeground }]}>
-                  {exercise.duration}
-                </Text>
-              </View>
-            ))}
+          <Animated.View entering={FadeInDown.delay(240).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>추천 교정 운동</Text>
+              {result.exercises.map((exercise, i) => (
+                <View key={i} style={localStyles.exerciseCard}>
+                  <Text style={[localStyles.exerciseName, { color: colors.foreground }]}>
+                    {i + 1}. {exercise.name}
+                  </Text>
+                  <Text style={[localStyles.exerciseDesc, { color: colors.mutedForeground }]}>
+                    {exercise.description}
+                  </Text>
+                  <Text style={[localStyles.exerciseDuration, { color: colors.mutedForeground }]}>
+                    {exercise.duration}
+                  </Text>
+                </View>
+              ))}
+            </GlassCard>
           </Animated.View>
         )}
 
         {/* 생활 습관 팁 */}
         {result.dailyTips.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(300).duration(300)} style={styles.section}>
-            <Text style={styles.sectionTitle}>생활 습관 조언</Text>
-            {result.dailyTips.map((tip, i) => (
-              <Text key={i} style={styles.listItem}>
-                {i + 1}. {tip}
-              </Text>
-            ))}
+          <Animated.View entering={FadeInDown.delay(300).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>생활 습관 조언</Text>
+              {result.dailyTips.map((tip, i) => (
+                <Text key={i} style={styles.listItem}>
+                  {i + 1}. {tip}
+                </Text>
+              ))}
+            </GlassCard>
           </Animated.View>
         )}
 
@@ -214,7 +220,7 @@ export default function PostureResultScreen() {
           onRetry={handleRetry}
           testID="posture-result-buttons"
         />
-    </ScreenContainer>
+      </ScreenContainer>
     </>
   );
 }

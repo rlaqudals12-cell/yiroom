@@ -6,17 +6,8 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Heart, Trash2, Edit2 } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Image,
-  Alert,
-} from 'react-native';
-import { SkeletonCard } from '@/components/ui/SkeletonLoader';
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
+import { View, Text, StyleSheet, Pressable, Image, Alert } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
   useCloset,
@@ -28,8 +19,13 @@ import {
   type Occasion,
 } from '../../lib/inventory';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
+
 export default function ItemDetailScreen() {
-  const { colors, status, module: moduleTheme, typography, spacing, radii} = useTheme();
+  const { colors, status, module: moduleTheme, spacing, radii } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -79,8 +75,22 @@ export default function ItemDetailScreen() {
       <ScreenContainer scrollable={false} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <SkeletonCard style={{ width: '100%', aspectRatio: 1 }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 120, borderRadius: radii.xl }} />
-          <SkeletonCard style={{ marginHorizontal: spacing.md, marginTop: spacing.md, height: 80, borderRadius: radii.xl }} />
+          <SkeletonCard
+            style={{
+              marginHorizontal: spacing.md,
+              marginTop: spacing.md,
+              height: 120,
+              borderRadius: radii.xl,
+            }}
+          />
+          <SkeletonCard
+            style={{
+              marginHorizontal: spacing.md,
+              marginTop: spacing.md,
+              height: 80,
+              borderRadius: radii.xl,
+            }}
+          />
         </View>
       </ScreenContainer>
     );
@@ -93,8 +103,13 @@ export default function ItemDetailScreen() {
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             아이템을 찾을 수 없어요
           </Text>
-          <Pressable style={[styles.backButton, { backgroundColor: moduleTheme.body.dark }]} onPress={() => router.back()}>
-            <Text style={[styles.backButtonText, { color: colors.overlayForeground }]}>돌아가기</Text>
+          <Pressable
+            style={[styles.backButton, { backgroundColor: moduleTheme.body.dark }]}
+            onPress={() => router.back()}
+          >
+            <Text style={[styles.backButtonText, { color: colors.overlayForeground }]}>
+              돌아가기
+            </Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -112,25 +127,30 @@ export default function ItemDetailScreen() {
   return (
     <ScreenContainer
       testID="closet-detail-screen"
+      backgroundGradient="style"
       edges={['bottom']}
       contentPadding={0}
       contentContainerStyle={styles.content}
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-        {/* 이미지 */}
-        <View style={styles.imageContainer}>
-          {item.imageUrl ? (
-            <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <View style={[styles.placeholder, { backgroundColor: colors.muted }]}>
-              <Text style={styles.placeholderText}>📷</Text>
-            </View>
-          )}
-        </View>
+      {/* 이미지 */}
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={styles.imageContainer}
+      >
+        {item.imageUrl ? (
+          <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <View style={[styles.placeholder, { backgroundColor: colors.muted }]}>
+            <Text style={styles.placeholderText}>📷</Text>
+          </View>
+        )}
+      </Animated.View>
 
-        {/* 기본 정보 */}
-        <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+      {/* 기본 정보 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.infoCard }}>
           <View style={styles.infoHeader}>
             <View style={styles.infoHeaderContent}>
               <Text style={[styles.itemName, { color: colors.foreground }]}>{item.name}</Text>
@@ -165,25 +185,32 @@ export default function ItemDetailScreen() {
             <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>착용 횟수</Text>
             <Text style={[styles.infoValue, { color: colors.foreground }]}>{item.useCount}회</Text>
           </View>
-        </View>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 색상 */}
-        {metadata.color && metadata.color.length > 0 && (
-          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+      {/* 색상 */}
+      {metadata.color && metadata.color.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.infoCard }}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>색상</Text>
             <View style={styles.tagsContainer}>
               {metadata.color.map((color, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
+                <View
+                  key={index}
+                  style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}
+                >
                   <Text style={[styles.tagText, { color: moduleTheme.body.dark }]}>{color}</Text>
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
 
-        {/* 계절 */}
-        {metadata.season && metadata.season.length > 0 && (
-          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+      {/* 계절 */}
+      {metadata.season && metadata.season.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.infoCard }}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>계절</Text>
             <View style={styles.tagsContainer}>
               {metadata.season.map((season, index) => (
@@ -194,12 +221,14 @@ export default function ItemDetailScreen() {
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
 
-        {/* 상황 */}
-        {metadata.occasion && metadata.occasion.length > 0 && (
-          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+      {/* 상황 */}
+      {metadata.occasion && metadata.occasion.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.infoCard }}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>상황</Text>
             <View style={styles.tagsContainer}>
               {metadata.occasion.map((occasion, index) => (
@@ -210,12 +239,14 @@ export default function ItemDetailScreen() {
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
 
-        {/* 태그 */}
-        {item.tags && item.tags.length > 0 && (
-          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+      {/* 태그 */}
+      {item.tags && item.tags.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.infoCard }}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>태그</Text>
             <View style={styles.tagsContainer}>
               {item.tags.map((tag, index) => (
@@ -224,11 +255,17 @@ export default function ItemDetailScreen() {
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          </GlassCard>
+        </Animated.View>
+      )}
       {/* 하단 액션 버튼 */}
-      <View style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-        <Pressable style={[styles.actionButton, { backgroundColor: colors.destructive + '15' }]} onPress={handleDelete}>
+      <View
+        style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}
+      >
+        <Pressable
+          style={[styles.actionButton, { backgroundColor: colors.destructive + '15' }]}
+          onPress={handleDelete}
+        >
           <Trash2 size={20} color={colors.destructive} />
           <Text style={[styles.actionButtonText, { color: colors.destructive }]}>삭제</Text>
         </Pressable>

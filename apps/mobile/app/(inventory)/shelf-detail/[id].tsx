@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
@@ -58,7 +58,12 @@ export default function ShelfDetailScreen() {
 
   if (!detail) {
     return (
-      <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen">
+      <ScreenContainer
+        edges={['bottom']}
+        contentPadding={20}
+        testID="shelf-detail-screen"
+        backgroundGradient="beauty"
+      >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📦</Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.base }}>
@@ -70,15 +75,15 @@ export default function ShelfDetailScreen() {
   }
 
   return (
-    <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen">
+    <ScreenContainer
+      edges={['bottom']}
+      contentPadding={20}
+      testID="shelf-detail-screen"
+      backgroundGradient="beauty"
+    >
       {/* 제품 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <View
-          style={[
-            styles.headerCard,
-            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
-          ]}
-        >
+        <GlassCard shadowSize="md" style={{ ...styles.headerCard }}>
           <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
             <Text style={{ fontSize: 36 }}>🧴</Text>
           </View>
@@ -86,30 +91,20 @@ export default function ShelfDetailScreen() {
           <Text style={[styles.brand, { color: colors.mutedForeground }]}>
             {detail.brand} · {detail.category}
           </Text>
-        </View>
+        </GlassCard>
       </Animated.View>
 
       {/* 사용기한 */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
-          ]}
-        >
+        <GlassCard shadowSize="md" style={{ ...styles.card }}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>사용기한</Text>
           <Text style={[styles.expiryDate, { color: colors.foreground }]}>{detail.expiresAt}</Text>
-        </View>
+        </GlassCard>
       </Animated.View>
 
       {/* 주요 성분 */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
-          ]}
-        >
+        <GlassCard shadowSize="md" style={{ ...styles.card }}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>주요 성분</Text>
           <View style={styles.ingredientList}>
             {detail.ingredients.map((ing, idx) => (
@@ -118,7 +113,7 @@ export default function ShelfDetailScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </GlassCard>
       </Animated.View>
 
       {/* 성분 충돌 경고 */}

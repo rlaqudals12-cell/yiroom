@@ -2,7 +2,9 @@
  * 피부 다이어리 엔트리 작성/수정 화면
  * 컨디션 + 생활요인 + 루틴 입력
  */
-import { useState, useCallback, useEffect } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Check } from 'lucide-react-native';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +16,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Check } from 'lucide-react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   type SkinConditionScore,
@@ -31,10 +30,12 @@ import {
   WEATHER_LABELS,
   WEATHER_ICONS,
 } from '../../../lib/skincare/diary-types';
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
-const WEATHER_OPTIONS: WeatherType[] = [
-  'sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid', 'dry',
-];
+import { ScreenContainer, GlassCard } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
+
+const WEATHER_OPTIONS: WeatherType[] = ['sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid', 'dry'];
 
 const CONDITION_SCORES: SkinConditionScore[] = [1, 2, 3, 4, 5];
 const QUALITY_SCORES: SleepQualityScore[] = [1, 2, 3, 4, 5];
@@ -57,7 +58,7 @@ const SLEEP_QUALITY_LABELS: Record<SleepQualityScore, string> = {
 };
 
 export default function SkinDiaryEntryScreen(): React.JSX.Element {
-  const { colors, isDark, typography, spacing} = useTheme();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ date?: string; entryId?: string }>();
   const { saveEntry, getEntryForDate } = useSkinDiary();
   const [saving, setSaving] = useState(false);
@@ -67,30 +68,20 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
   const isEdit = !!existingEntry;
 
   // 폼 상태
-  const [condition, setCondition] = useState<SkinConditionScore>(
-    existingEntry?.skinCondition ?? 3,
-  );
+  const [condition, setCondition] = useState<SkinConditionScore>(existingEntry?.skinCondition ?? 3);
   const [notes, setNotes] = useState(existingEntry?.conditionNotes ?? '');
-  const [sleepHours, setSleepHours] = useState(
-    existingEntry?.sleepHours?.toString() ?? '',
-  );
+  const [sleepHours, setSleepHours] = useState(existingEntry?.sleepHours?.toString() ?? '');
   const [sleepQuality, setSleepQuality] = useState<SleepQualityScore | null>(
-    existingEntry?.sleepQuality ?? null,
+    existingEntry?.sleepQuality ?? null
   );
-  const [waterMl, setWaterMl] = useState(
-    existingEntry?.waterIntakeMl?.toString() ?? '',
-  );
-  const [stress, setStress] = useState<StressLevelScore | null>(
-    existingEntry?.stressLevel ?? null,
-  );
-  const [weather, setWeather] = useState<WeatherType | null>(
-    existingEntry?.weather ?? null,
-  );
+  const [waterMl, setWaterMl] = useState(existingEntry?.waterIntakeMl?.toString() ?? '');
+  const [stress, setStress] = useState<StressLevelScore | null>(existingEntry?.stressLevel ?? null);
+  const [weather, setWeather] = useState<WeatherType | null>(existingEntry?.weather ?? null);
   const [morningRoutine, setMorningRoutine] = useState(
-    existingEntry?.morningRoutineCompleted ?? false,
+    existingEntry?.morningRoutineCompleted ?? false
   );
   const [eveningRoutine, setEveningRoutine] = useState(
-    existingEntry?.eveningRoutineCompleted ?? false,
+    existingEntry?.eveningRoutineCompleted ?? false
   );
 
   const handleSave = useCallback(async (): Promise<void> => {
@@ -119,15 +110,22 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
       setSaving(false);
     }
   }, [
-    entryDate, condition, notes, sleepHours, sleepQuality,
-    waterMl, stress, weather, morningRoutine, eveningRoutine, saveEntry,
+    entryDate,
+    condition,
+    notes,
+    sleepHours,
+    sleepQuality,
+    waterMl,
+    stress,
+    weather,
+    morningRoutine,
+    eveningRoutine,
+    saveEntry,
   ]);
 
   // 섹션 제목
   const SectionTitle = ({ title }: { title: string }): React.JSX.Element => (
-    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-      {title}
-    </Text>
+    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
   );
 
   // 점수 선택 버튼 그룹
@@ -181,256 +179,268 @@ export default function SkinDiaryEntryScreen(): React.JSX.Element {
   );
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-entry-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="skin-diary-entry-screen"
+      backgroundGradient="analysis"
+      edges={['bottom']}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.content}
-        >
-        {/* 날짜 표시 */}
-        <View
-          style={[
-            styles.dateHeader,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
-          <Text style={[styles.dateText, { color: colors.foreground }]}>
-            {formatDisplayDate(entryDate)}
-          </Text>
-          {isEdit && (
-            <Text style={[styles.editBadge, { color: brand.primary }]}>
-              수정 중
-            </Text>
-          )}
-        </View>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+          {/* 날짜 표시 */}
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.dateHeader }}>
+              <Text style={[styles.dateText, { color: colors.foreground }]}>
+                {formatDisplayDate(entryDate)}
+              </Text>
+              {isEdit && <Text style={[styles.editBadge, { color: brand.primary }]}>수정 중</Text>}
+            </GlassCard>
+          </Animated.View>
 
-        {/* 피부 컨디션 */}
-        <SectionTitle title="오늘의 피부 컨디션" />
-        <View style={styles.conditionGrid}>
-          {CONDITION_SCORES.map((score) => {
-            const isActive = condition === score;
-            return (
-              <Pressable
-                key={score}
+          {/* 피부 컨디션 */}
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.conditionCard }}>
+              <SectionTitle title="오늘의 피부 컨디션" />
+              <View style={styles.conditionGrid}>
+                {CONDITION_SCORES.map((score) => {
+                  const isActive = condition === score;
+                  return (
+                    <Pressable
+                      key={score}
+                      style={[
+                        styles.conditionItem,
+                        {
+                          backgroundColor: isActive ? brand.primary + '15' : colors.card,
+                          borderColor: isActive ? brand.primary : colors.border,
+                        },
+                      ]}
+                      onPress={() => setCondition(score)}
+                    >
+                      <Text style={styles.conditionEmoji}>{CONDITION_EMOJIS[score]}</Text>
+                      <Text
+                        style={[
+                          styles.conditionText,
+                          { color: isActive ? brand.primary : colors.foreground },
+                        ]}
+                      >
+                        {CONDITION_LABELS[score]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* 메모 */}
+              <TextInput
                 style={[
-                  styles.conditionItem,
+                  styles.notesInput,
                   {
-                    backgroundColor: isActive ? brand.primary + '15' : colors.card,
-                    borderColor: isActive ? brand.primary : colors.border,
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    color: colors.foreground,
                   },
                 ]}
-                onPress={() => setCondition(score)}
-              >
-                <Text style={styles.conditionEmoji}>
-                  {CONDITION_EMOJIS[score]}
-                </Text>
-                <Text
+                placeholder="오늘 피부 상태를 자유롭게 메모해보세요"
+                placeholderTextColor={colors.muted}
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </GlassCard>
+          </Animated.View>
+
+          {/* 수면 */}
+          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+              <SectionTitle title="수면" />
+              <View style={styles.inputRow}>
+                <Text style={[styles.inputLabel, { color: colors.foreground }]}>수면 시간</Text>
+                <View style={styles.inputWithUnit}>
+                  <TextInput
+                    style={[
+                      styles.numericInput,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                        color: colors.foreground,
+                      },
+                    ]}
+                    placeholder="7"
+                    placeholderTextColor={colors.muted}
+                    value={sleepHours}
+                    onChangeText={setSleepHours}
+                    keyboardType="decimal-pad"
+                    maxLength={4}
+                  />
+                  <Text style={[styles.unitText, { color: colors.muted }]}>시간</Text>
+                </View>
+              </View>
+
+              <Text style={[styles.subLabel, { color: colors.muted }]}>수면 품질</Text>
+              <ScoreSelector
+                scores={QUALITY_SCORES}
+                selected={sleepQuality}
+                onSelect={setSleepQuality}
+                labels={SLEEP_QUALITY_LABELS}
+              />
+            </GlassCard>
+          </Animated.View>
+
+          {/* 수분 섭취 */}
+          <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+              <SectionTitle title="수분 섭취" />
+              <View style={styles.inputRow}>
+                <Text style={[styles.inputLabel, { color: colors.foreground }]}>수분 섭취량</Text>
+                <View style={styles.inputWithUnit}>
+                  <TextInput
+                    style={[
+                      styles.numericInput,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                        color: colors.foreground,
+                      },
+                    ]}
+                    placeholder="2000"
+                    placeholderTextColor={colors.muted}
+                    value={waterMl}
+                    onChangeText={setWaterMl}
+                    keyboardType="number-pad"
+                    maxLength={5}
+                  />
+                  <Text style={[styles.unitText, { color: colors.muted }]}>ml</Text>
+                </View>
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* 스트레스 */}
+          <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+              <SectionTitle title="스트레스" />
+              <ScoreSelector
+                scores={STRESS_SCORES}
+                selected={stress}
+                onSelect={setStress}
+                labels={STRESS_LABELS}
+              />
+            </GlassCard>
+          </Animated.View>
+
+          {/* 날씨 */}
+          <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+              <SectionTitle title="날씨" />
+              <View style={styles.weatherGrid}>
+                {WEATHER_OPTIONS.map((w) => {
+                  const isActive = weather === w;
+                  return (
+                    <Pressable
+                      key={w}
+                      style={[
+                        styles.weatherChip,
+                        {
+                          backgroundColor: isActive ? brand.primary + '15' : colors.card,
+                          borderColor: isActive ? brand.primary : colors.border,
+                        },
+                      ]}
+                      onPress={() => setWeather(isActive ? null : w)}
+                    >
+                      <Text style={styles.weatherEmoji}>{WEATHER_ICONS[w]}</Text>
+                      <Text
+                        style={[
+                          styles.weatherLabel,
+                          { color: isActive ? brand.primary : colors.foreground },
+                        ]}
+                      >
+                        {WEATHER_LABELS[w]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* 루틴 */}
+          <Animated.View entering={FadeInUp.delay(480).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+              <SectionTitle title="스킨케어 루틴" />
+              <View style={styles.routineRow}>
+                <Pressable
                   style={[
-                    styles.conditionText,
-                    { color: isActive ? brand.primary : colors.foreground },
+                    styles.routineToggle,
+                    {
+                      backgroundColor: morningRoutine ? brand.primary + '15' : colors.card,
+                      borderColor: morningRoutine ? brand.primary : colors.border,
+                    },
                   ]}
+                  onPress={() => setMorningRoutine(!morningRoutine)}
                 >
-                  {CONDITION_LABELS[score]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* 메모 */}
-        <TextInput
-          style={[
-            styles.notesInput,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-              color: colors.foreground,
-            },
-          ]}
-          placeholder="오늘 피부 상태를 자유롭게 메모해보세요"
-          placeholderTextColor={colors.muted}
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          numberOfLines={3}
-          textAlignVertical="top"
-        />
-
-        {/* 수면 */}
-        <SectionTitle title="수면" />
-        <View style={styles.inputRow}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>
-            수면 시간
-          </Text>
-          <View style={styles.inputWithUnit}>
-            <TextInput
-              style={[
-                styles.numericInput,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                },
-              ]}
-              placeholder="7"
-              placeholderTextColor={colors.muted}
-              value={sleepHours}
-              onChangeText={setSleepHours}
-              keyboardType="decimal-pad"
-              maxLength={4}
-            />
-            <Text style={[styles.unitText, { color: colors.muted }]}>시간</Text>
-          </View>
-        </View>
-
-        <Text style={[styles.subLabel, { color: colors.muted }]}>수면 품질</Text>
-        <ScoreSelector
-          scores={QUALITY_SCORES}
-          selected={sleepQuality}
-          onSelect={setSleepQuality}
-          labels={SLEEP_QUALITY_LABELS}
-        />
-
-        {/* 수분 섭취 */}
-        <SectionTitle title="수분 섭취" />
-        <View style={styles.inputRow}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>
-            수분 섭취량
-          </Text>
-          <View style={styles.inputWithUnit}>
-            <TextInput
-              style={[
-                styles.numericInput,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                },
-              ]}
-              placeholder="2000"
-              placeholderTextColor={colors.muted}
-              value={waterMl}
-              onChangeText={setWaterMl}
-              keyboardType="number-pad"
-              maxLength={5}
-            />
-            <Text style={[styles.unitText, { color: colors.muted }]}>ml</Text>
-          </View>
-        </View>
-
-        {/* 스트레스 */}
-        <SectionTitle title="스트레스" />
-        <ScoreSelector
-          scores={STRESS_SCORES}
-          selected={stress}
-          onSelect={setStress}
-          labels={STRESS_LABELS}
-        />
-
-        {/* 날씨 */}
-        <SectionTitle title="날씨" />
-        <View style={styles.weatherGrid}>
-          {WEATHER_OPTIONS.map((w) => {
-            const isActive = weather === w;
-            return (
-              <Pressable
-                key={w}
-                style={[
-                  styles.weatherChip,
-                  {
-                    backgroundColor: isActive ? brand.primary + '15' : colors.card,
-                    borderColor: isActive ? brand.primary : colors.border,
-                  },
-                ]}
-                onPress={() => setWeather(isActive ? null : w)}
-              >
-                <Text style={styles.weatherEmoji}>{WEATHER_ICONS[w]}</Text>
-                <Text
+                  {morningRoutine && <Check size={16} color={brand.primary} />}
+                  <Text
+                    style={[
+                      styles.routineText,
+                      {
+                        color: morningRoutine ? brand.primary : colors.foreground,
+                      },
+                    ]}
+                  >
+                    🌅 아침 루틴
+                  </Text>
+                </Pressable>
+                <Pressable
                   style={[
-                    styles.weatherLabel,
-                    { color: isActive ? brand.primary : colors.foreground },
+                    styles.routineToggle,
+                    {
+                      backgroundColor: eveningRoutine ? brand.primary + '15' : colors.card,
+                      borderColor: eveningRoutine ? brand.primary : colors.border,
+                    },
                   ]}
+                  onPress={() => setEveningRoutine(!eveningRoutine)}
                 >
-                  {WEATHER_LABELS[w]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  {eveningRoutine && <Check size={16} color={brand.primary} />}
+                  <Text
+                    style={[
+                      styles.routineText,
+                      {
+                        color: eveningRoutine ? brand.primary : colors.foreground,
+                      },
+                    ]}
+                  >
+                    🌙 저녁 루틴
+                  </Text>
+                </Pressable>
+              </View>
+            </GlassCard>
+          </Animated.View>
 
-        {/* 루틴 */}
-        <SectionTitle title="스킨케어 루틴" />
-        <View style={styles.routineRow}>
-          <Pressable
-            style={[
-              styles.routineToggle,
-              {
-                backgroundColor: morningRoutine
-                  ? brand.primary + '15'
-                  : colors.card,
-                borderColor: morningRoutine ? brand.primary : colors.border,
-              },
-            ]}
-            onPress={() => setMorningRoutine(!morningRoutine)}
-          >
-            {morningRoutine && <Check size={16} color={brand.primary} />}
-            <Text
+          {/* 저장 버튼 */}
+          <Animated.View entering={FadeInUp.delay(560).duration(TIMING.normal)}>
+            <Pressable
               style={[
-                styles.routineText,
+                styles.saveButton,
                 {
-                  color: morningRoutine ? brand.primary : colors.foreground,
+                  backgroundColor: brand.primary,
+                  opacity: saving ? 0.6 : 1,
                 },
               ]}
+              onPress={handleSave}
+              disabled={saving}
+              testID="save-diary-btn"
             >
-              🌅 아침 루틴
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[
-              styles.routineToggle,
-              {
-                backgroundColor: eveningRoutine
-                  ? brand.primary + '15'
-                  : colors.card,
-                borderColor: eveningRoutine ? brand.primary : colors.border,
-              },
-            ]}
-            onPress={() => setEveningRoutine(!eveningRoutine)}
-          >
-            {eveningRoutine && <Check size={16} color={brand.primary} />}
-            <Text
-              style={[
-                styles.routineText,
-                {
-                  color: eveningRoutine ? brand.primary : colors.foreground,
-                },
-              ]}
-            >
-              🌙 저녁 루틴
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* 저장 버튼 */}
-        <Pressable
-          style={[
-            styles.saveButton,
-            {
-              backgroundColor: brand.primary,
-              opacity: saving ? 0.6 : 1,
-            },
-          ]}
-          onPress={handleSave}
-          disabled={saving}
-          testID="save-diary-btn"
-        >
-          <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>
-            {saving ? '저장 중...' : isEdit ? '수정하기' : '기록하기'}
-          </Text>
-        </Pressable>
+              <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>
+                {saving ? '저장 중...' : isEdit ? '수정하기' : '기록하기'}
+              </Text>
+            </Pressable>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
@@ -458,10 +468,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: spacing.md,
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  conditionCard: {
+    marginBottom: spacing.sm,
+  },
+  sectionCard: {
+    marginBottom: spacing.sm,
   },
   dateText: {
     fontSize: typography.size.lg,

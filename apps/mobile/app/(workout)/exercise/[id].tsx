@@ -3,10 +3,13 @@
  *
  * V2: 웹 비주얼 싱크 — 카드 그림자/테두리, pill CTA + glow
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Platform, View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, coloredShadow } from '../../../lib/theme';
+import { ScreenContainer, GlassCard } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
+import { useTheme } from '../../../lib/theme';
 
 interface ExerciseDetail {
   name: string;
@@ -55,7 +58,6 @@ const MOCK_EXERCISE: ExerciseDetail = {
 };
 
 export default function ExerciseDetailScreen(): React.ReactElement {
-  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors, spacing, radii, typography, status, isDark, module: moduleColors } = useTheme();
   const workoutColor = moduleColors.workout.base;
@@ -63,17 +65,17 @@ export default function ExerciseDetailScreen(): React.ReactElement {
   const exercise = MOCK_EXERCISE;
   const diffConfig = DIFFICULTY_LABELS[exercise.difficulty];
 
-  // 카드 공통 그림자 (웹 shadow-sm border 매칭)
-  const cardShadow = !isDark ? coloredShadow(workoutColor, 'sm') : {};
-
   return (
-    <ScrollView
+    <ScreenContainer
       testID="exercise-detail-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
+      edges={['bottom']}
+      backgroundGradient="workout"
     >
       {/* 운동 헤더 */}
-      <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+      <Animated.View
+        entering={FadeInUp.duration(TIMING.normal)}
+        style={{ alignItems: 'center', marginBottom: spacing.lg }}
+      >
         <Text style={{ fontSize: 48 }}>{exercise.emoji}</Text>
         <Text
           style={{
@@ -86,54 +88,91 @@ export default function ExerciseDetailScreen(): React.ReactElement {
           {exercise.name}
         </Text>
         <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
-          <View style={{ paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs, borderRadius: radii.full, backgroundColor: colors.secondary }}>
-            <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>{exercise.category}</Text>
+          <View
+            style={{
+              paddingHorizontal: spacing.sm,
+              paddingVertical: spacing.xxs,
+              borderRadius: radii.full,
+              backgroundColor: colors.secondary,
+            }}
+          >
+            <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
+              {exercise.category}
+            </Text>
           </View>
-          <View style={{ paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs, borderRadius: radii.full, backgroundColor: diffConfig?.color + '20' }}>
-            <Text style={{ fontSize: typography.size.xs, color: diffConfig?.color, fontWeight: typography.weight.semibold }}>
+          <View
+            style={{
+              paddingHorizontal: spacing.sm,
+              paddingVertical: spacing.xxs,
+              borderRadius: radii.full,
+              backgroundColor: diffConfig?.color + '20',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                color: diffConfig?.color,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
               {diffConfig?.label}
             </Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* 운동 스펙 */}
-      <View
-        style={[
-          {
-            flexDirection: 'row',
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            marginBottom: spacing.lg,
-            borderWidth: 1,
-            borderColor: colors.border,
-          },
-          cardShadow,
-        ]}
-      >
-        {[
-          { label: '세트', value: `${exercise.sets}세트` },
-          { label: '반복', value: exercise.reps },
-          { label: '휴식', value: `${exercise.restSeconds}초` },
-          { label: 'MET', value: exercise.met.toFixed(1) },
-        ].map((spec) => (
-          <View key={spec.label} style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: workoutColor }}>
-              {spec.value}
-            </Text>
-            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
-              {spec.label}
-            </Text>
-          </View>
-        ))}
-      </View>
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <View style={{ flexDirection: 'row' }}>
+          {[
+            { label: '세트', value: `${exercise.sets}세트` },
+            { label: '반복', value: exercise.reps },
+            { label: '휴식', value: `${exercise.restSeconds}초` },
+            { label: 'MET', value: exercise.met.toFixed(1) },
+          ].map((spec) => (
+            <View key={spec.label} style={{ flex: 1, alignItems: 'center' }}>
+              <Text
+                style={{
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.bold,
+                  color: workoutColor,
+                }}
+              >
+                {spec.value}
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: colors.mutedForeground,
+                  marginTop: spacing.xxs,
+                }}
+              >
+                {spec.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </GlassCard>
 
       {/* 타겟 근육 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+      >
         타겟 근육
       </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: spacing.sm,
+          marginBottom: spacing.lg,
+        }}
+      >
         {exercise.targetMuscles.map((muscle) => (
           <View
             key={muscle}
@@ -150,24 +189,28 @@ export default function ExerciseDetailScreen(): React.ReactElement {
       </View>
 
       {/* 수행 방법 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+      >
         수행 방법
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
         {exercise.instructions.map((step, index) => (
           <View
             key={index}
-            style={[
-              {
-                flexDirection: 'row',
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-                borderWidth: 1,
-                borderColor: colors.border,
-              },
-              cardShadow,
-            ]}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
           >
             <View
               style={{
@@ -180,11 +223,24 @@ export default function ExerciseDetailScreen(): React.ReactElement {
                 marginRight: spacing.smx,
               }}
             >
-              <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.bold,
+                  color: colors.overlayForeground,
+                }}
+              >
                 {index + 1}
               </Text>
             </View>
-            <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground, lineHeight: 20 }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: typography.size.sm,
+                color: colors.foreground,
+                lineHeight: 20,
+              }}
+            >
               {step}
             </Text>
           </View>
@@ -192,32 +248,43 @@ export default function ExerciseDetailScreen(): React.ReactElement {
       </View>
 
       {/* 팁 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+      >
         주의사항
       </Text>
-      <View
-        style={[
-          {
-            backgroundColor: status.warning + '10',
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            gap: spacing.sm,
-            marginBottom: spacing.lg,
-            borderWidth: 1,
-            borderColor: status.warning + '30',
-          },
-          cardShadow,
-        ]}
-      >
-        {exercise.tips.map((tip, index) => (
-          <View key={index} style={{ flexDirection: 'row' }}>
-            <Text style={{ fontSize: typography.size.sm, color: status.warning, marginRight: spacing.xs }}>⚠️</Text>
-            <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground, lineHeight: 20 }}>
-              {tip}
-            </Text>
-          </View>
-        ))}
-      </View>
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <View style={{ gap: spacing.sm }}>
+          {exercise.tips.map((tip, index) => (
+            <View key={index} style={{ flexDirection: 'row' }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: status.warning,
+                  marginRight: spacing.xs,
+                }}
+              >
+                ⚠️
+              </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: typography.size.sm,
+                  color: colors.foreground,
+                  lineHeight: 20,
+                }}
+              >
+                {tip}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </GlassCard>
 
       {/* 운동 시작 — pill CTA with glow */}
       <Pressable
@@ -231,17 +298,28 @@ export default function ExerciseDetailScreen(): React.ReactElement {
             alignItems: 'center',
           },
           !isDark
-            ? Platform.select({
-                ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+            ? (Platform.select({
+                ios: {
+                  shadowColor: workoutColor,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
+                },
                 android: { elevation: 4 },
-              }) ?? {}
+              }) ?? {})
             : {},
         ]}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            fontWeight: typography.weight.bold,
+            color: colors.overlayForeground,
+          }}
+        >
           운동 시작하기
         </Text>
       </Pressable>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

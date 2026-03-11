@@ -4,9 +4,9 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
-import { Image } from 'expo-image';
 import {
   View,
   Text,
@@ -16,12 +16,15 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import { useTheme, typography, radii , spacing, coloredShadow, brand } from '@/lib/theme';
-import { ScreenContainer } from '../../../components/ui';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
 import { shareLogger } from '../../../lib/utils/logger';
+
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
 
 const TABS: { id: FeedTab; label: string }[] = [
   { id: 'my', label: '내 피드' },
@@ -30,7 +33,7 @@ const TABS: { id: FeedTab; label: string }[] = [
 ];
 
 export default function FeedScreen() {
-  const { colors, brand, status, module: moduleColors, typography, spacing, radii} = useTheme();
+  const { colors, status, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const {
@@ -136,7 +139,12 @@ export default function FeedScreen() {
 
             <Pressable
               style={styles.actionButton}
-              onPress={() => router.push({ pathname: '/(social)/feed/comments', params: { activityId: item.id } })}
+              onPress={() =>
+                router.push({
+                  pathname: '/(social)/feed/comments',
+                  params: { activityId: item.id },
+                })
+              }
             >
               <Text style={styles.actionIcon}>💬</Text>
               <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
@@ -214,7 +222,7 @@ export default function FeedScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="social">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
           <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
@@ -231,32 +239,35 @@ export default function FeedScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
       {/* 탭 바 */}
-      <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              style={[
-                styles.tabButton,
-                { backgroundColor: isActive ? brand.primary : colors.muted },
-              ]}
-              onPress={() => onTabChange(tab.id)}
-            >
-              <Text
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={styles.tabBar}>
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <Pressable
+                key={tab.id}
                 style={[
-                  styles.tabButtonText,
-                  { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  styles.tabButton,
+                  { backgroundColor: isActive ? brand.primary : colors.muted },
                 ]}
+                onPress={() => onTabChange(tab.id)}
               >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text
+                  style={[
+                    styles.tabButtonText,
+                    { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </GlassCard>
+      </Animated.View>
 
       {/* 피드 리스트 */}
       <FlatList
@@ -303,8 +314,8 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.smx,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.smx,
     gap: spacing.sm,
   },
   tabButton: {

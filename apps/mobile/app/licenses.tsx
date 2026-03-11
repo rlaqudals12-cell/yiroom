@@ -4,10 +4,10 @@
  * 앱에서 사용하는 오픈소스 라이브러리의 라이선스 정보를 표시한다.
  */
 import { useState } from 'react';
-import { View, Text, Pressable, Linking, ScrollView } from 'react-native';
+import { View, Text, Pressable, Linking } from 'react-native';
 
+import { ScreenContainer, GlassCard } from '../components/ui';
 import { useTheme } from '../lib/theme';
-import { ScreenContainer } from '../components/ui';
 
 interface LicenseItem {
   name: string;
@@ -18,17 +18,57 @@ interface LicenseItem {
 
 const OPEN_SOURCE_LICENSES: LicenseItem[] = [
   { name: 'React', version: '19.x', license: 'MIT', url: 'https://github.com/facebook/react' },
-  { name: 'React Native', version: '0.76.x', license: 'MIT', url: 'https://github.com/facebook/react-native' },
+  {
+    name: 'React Native',
+    version: '0.76.x',
+    license: 'MIT',
+    url: 'https://github.com/facebook/react-native',
+  },
   { name: 'Expo', version: '54.x', license: 'MIT', url: 'https://github.com/expo/expo' },
   { name: 'Expo Router', version: '4.x', license: 'MIT', url: 'https://github.com/expo/router' },
-  { name: 'React Native Reanimated', version: '3.x', license: 'MIT', url: 'https://github.com/software-mansion/react-native-reanimated' },
-  { name: 'React Native Gesture Handler', version: '2.x', license: 'MIT', url: 'https://github.com/software-mansion/react-native-gesture-handler' },
-  { name: '@clerk/clerk-expo', version: '2.x', license: 'MIT', url: 'https://github.com/clerk/javascript' },
-  { name: '@supabase/supabase-js', version: '2.x', license: 'MIT', url: 'https://github.com/supabase/supabase-js' },
-  { name: 'NativeWind', version: '4.x', license: 'MIT', url: 'https://github.com/marklawlor/nativewind' },
+  {
+    name: 'React Native Reanimated',
+    version: '3.x',
+    license: 'MIT',
+    url: 'https://github.com/software-mansion/react-native-reanimated',
+  },
+  {
+    name: 'React Native Gesture Handler',
+    version: '2.x',
+    license: 'MIT',
+    url: 'https://github.com/software-mansion/react-native-gesture-handler',
+  },
+  {
+    name: '@clerk/clerk-expo',
+    version: '2.x',
+    license: 'MIT',
+    url: 'https://github.com/clerk/javascript',
+  },
+  {
+    name: '@supabase/supabase-js',
+    version: '2.x',
+    license: 'MIT',
+    url: 'https://github.com/supabase/supabase-js',
+  },
+  {
+    name: 'NativeWind',
+    version: '4.x',
+    license: 'MIT',
+    url: 'https://github.com/marklawlor/nativewind',
+  },
   { name: 'Zod', version: '3.x', license: 'MIT', url: 'https://github.com/colinhacks/zod' },
-  { name: 'TypeScript', version: '5.x', license: 'Apache-2.0', url: 'https://github.com/microsoft/TypeScript' },
-  { name: '@react-native-async-storage', version: '2.x', license: 'MIT', url: 'https://github.com/react-native-async-storage/async-storage' },
+  {
+    name: 'TypeScript',
+    version: '5.x',
+    license: 'Apache-2.0',
+    url: 'https://github.com/microsoft/TypeScript',
+  },
+  {
+    name: '@react-native-async-storage',
+    version: '2.x',
+    license: 'MIT',
+    url: 'https://github.com/react-native-async-storage/async-storage',
+  },
 ];
 
 export default function LicensesScreen(): React.ReactElement {
@@ -36,26 +76,27 @@ export default function LicensesScreen(): React.ReactElement {
   const [expandedName, setExpandedName] = useState<string | null>(null);
 
   return (
-    <ScreenContainer testID="licenses-screen" edges={['bottom']}>
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
-      >
-        오픈소스 라이선스
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        이룸은 다음의 오픈소스 라이브러리를 사용해요
-      </Text>
+    <ScreenContainer testID="licenses-screen" edges={['bottom']} backgroundGradient="profile">
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
+          }}
+        >
+          오픈소스 라이선스
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            color: colors.mutedForeground,
+          }}
+        >
+          이룸은 다음의 오픈소스 라이브러리를 사용해요
+        </Text>
+      </GlassCard>
 
       <View style={{ gap: spacing.sm }}>
         {OPEN_SOURCE_LICENSES.map((lib) => (
@@ -99,10 +140,7 @@ export default function LicensesScreen(): React.ReactElement {
             </View>
 
             {expandedName === lib.name && (
-              <Pressable
-                onPress={() => Linking.openURL(lib.url)}
-                style={{ marginTop: spacing.sm }}
-              >
+              <Pressable onPress={() => Linking.openURL(lib.url)} style={{ marginTop: spacing.sm }}>
                 <Text
                   style={{
                     fontSize: typography.size.sm,

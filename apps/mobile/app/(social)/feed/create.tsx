@@ -18,13 +18,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { ScreenContainer } from '@/components/ui';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-
-import { useClerkSupabaseClient } from '../../../lib/supabase';
 import type { FeedItemType } from '../../../lib/feed';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
+
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { BottomSheet } from '@/components/ui/BottomSheet';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 const FEED_CATEGORIES: { type: FeedItemType; emoji: string; label: string }[] = [
   { type: 'workout', emoji: '💪', label: '운동' },
@@ -100,7 +102,13 @@ export default function FeedCreateScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="feed-create-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="feed-create-screen"
+      edges={['bottom']}
+      backgroundGradient="social"
+    >
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -108,7 +116,16 @@ export default function FeedCreateScreen(): React.JSX.Element {
         <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md }}>
           {/* 카테고리 선택 */}
           <View>
-            <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }]}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                },
+              ]}
+            >
               카테고리
             </Text>
             <View style={[styles.categoryRow, { marginTop: spacing.sm }]}>
@@ -148,77 +165,113 @@ export default function FeedCreateScreen(): React.JSX.Element {
           </View>
 
           {/* 카테고리 바텀 시트에서도 선택 가능 */}
-          <Pressable
-            onPress={handleOpenCategorySheet}
-            testID="feed-category-expand"
-          >
-            <Text style={{ color: brand.primary, fontSize: typography.size.xs, marginTop: spacing.xs }}>
+          <Pressable onPress={handleOpenCategorySheet} testID="feed-category-expand">
+            <Text
+              style={{ color: brand.primary, fontSize: typography.size.xs, marginTop: spacing.xs }}
+            >
               전체 카테고리 보기
             </Text>
           </Pressable>
 
           {/* 제목 */}
-          <View>
-            <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }]}>
-              제목
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.card,
-                  color: colors.foreground,
-                  borderRadius: radii.xl,
-                  fontSize: typography.size.base,
-                  marginTop: spacing.sm,
-                },
-              ]}
-              placeholder="무슨 이야기를 나눌까요?"
-              placeholderTextColor={colors.mutedForeground}
-              value={title}
-              onChangeText={setTitle}
-              maxLength={100}
-              testID="feed-title-input"
-            />
-            <Text style={[styles.charCount, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-              {title.length}/100
-            </Text>
-          </View>
+          <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={styles.formSection}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  {
+                    color: colors.foreground,
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                  },
+                ]}
+              >
+                제목
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.muted,
+                    color: colors.foreground,
+                    borderRadius: radii.xl,
+                    fontSize: typography.size.base,
+                    marginTop: spacing.sm,
+                  },
+                ]}
+                placeholder="무슨 이야기를 나눌까요?"
+                placeholderTextColor={colors.mutedForeground}
+                value={title}
+                onChangeText={setTitle}
+                maxLength={100}
+                testID="feed-title-input"
+              />
+              <Text
+                style={[
+                  styles.charCount,
+                  { color: colors.mutedForeground, fontSize: typography.size.xs },
+                ]}
+              >
+                {title.length}/100
+              </Text>
+            </GlassCard>
+          </Animated.View>
 
           {/* 설명 */}
-          <View>
-            <Text style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }]}>
-              설명 (선택)
-            </Text>
-            <TextInput
-              style={[
-                styles.textArea,
-                {
-                  backgroundColor: colors.card,
-                  color: colors.foreground,
-                  borderRadius: radii.xl,
-                  fontSize: typography.size.base,
-                  marginTop: spacing.sm,
-                },
-              ]}
-              placeholder="자세한 이야기를 적어보세요..."
-              placeholderTextColor={colors.mutedForeground}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={4}
-              maxLength={500}
-              textAlignVertical="top"
-              testID="feed-description-input"
-            />
-            <Text style={[styles.charCount, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-              {description.length}/500
-            </Text>
-          </View>
+          <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={styles.formSection}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  {
+                    color: colors.foreground,
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                  },
+                ]}
+              >
+                설명 (선택)
+              </Text>
+              <TextInput
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: colors.muted,
+                    color: colors.foreground,
+                    borderRadius: radii.xl,
+                    fontSize: typography.size.base,
+                    marginTop: spacing.sm,
+                  },
+                ]}
+                placeholder="자세한 이야기를 적어보세요..."
+                placeholderTextColor={colors.mutedForeground}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+                textAlignVertical="top"
+                testID="feed-description-input"
+              />
+              <Text
+                style={[
+                  styles.charCount,
+                  { color: colors.mutedForeground, fontSize: typography.size.xs },
+                ]}
+              >
+                {description.length}/500
+              </Text>
+            </GlassCard>
+          </Animated.View>
         </ScrollView>
 
         {/* 하단 제출 버튼 */}
-        <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <View
+          style={[
+            styles.footer,
+            { backgroundColor: colors.background, borderTopColor: colors.border },
+          ]}
+        >
           <Pressable
             style={[
               styles.submitButton,
@@ -293,9 +346,16 @@ export default function FeedCreateScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flex: { flex: 1 },
+  formSection: { marginBottom: spacing.sm },
   sectionTitle: { marginBottom: spacing.xs },
   categoryRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: spacing.sm, gap: spacing.xs },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
   categoryEmoji: { fontSize: typography.size.base },
   categoryLabel: {},
   input: { padding: 14, height: 48 },

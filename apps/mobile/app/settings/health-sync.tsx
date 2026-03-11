@@ -16,12 +16,13 @@ import {
   Platform,
 } from 'react-native';
 
+import { ScreenContainer, GlassCard } from '../../components/ui';
+
 import { useHealthData } from '@/hooks/useHealthData';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function HealthSyncScreen() {
-  const { colors, brand, status, typography, spacing, radii} = useTheme();
+  const { colors, brand, status } = useTheme();
 
   const {
     isAvailable,
@@ -81,113 +82,117 @@ export default function HealthSyncScreen() {
       <ScreenContainer
         testID="settings-health-sync-screen"
         edges={['bottom']}
+        backgroundGradient="profile"
       >
-          {/* 플랫폼 체크 */}
-          {!isAvailable && (
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.warningText, { color: colors.foreground }]}>
-                ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
-                {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
+        {/* 플랫폼 체크 */}
+        {!isAvailable && (
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+            <Text style={[styles.warningText, { color: colors.foreground }]}>
+              ⚠️ {Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit'}를 사용할 수 없습니다.
+              {'\n'}시뮬레이터에서는 Mock 데이터로 테스트됩니다.
+            </Text>
+          </GlassCard>
+        )}
+
+        {/* 연동 토글 */}
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+          <View style={styles.toggleRow}>
+            <View>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                {info.icon} {info.name} 연동
+              </Text>
+              <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                걸음수, 심박수, 수면 데이터 동기화
               </Text>
             </View>
-          )}
+            <Switch
+              value={isEnabled}
+              onValueChange={handleToggle}
+              disabled={isLoading}
+              trackColor={{
+                false: colors.mutedForeground,
+                true: status.success,
+              }}
+            />
+          </View>
+        </GlassCard>
 
-          {/* 연동 토글 */}
-          <View style={[styles.card, { backgroundColor: colors.card }]}>
-            <View style={styles.toggleRow}>
-              <View>
-                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                  {info.icon} {info.name} 연동
-                </Text>
-                <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-                  걸음수, 심박수, 수면 데이터 동기화
-                </Text>
-              </View>
-              <Switch
-                value={isEnabled}
-                onValueChange={handleToggle}
-                disabled={isLoading}
-                trackColor={{
-                  false: colors.mutedForeground,
-                  true: status.success,
-                }}
+        {/* 연동 데이터 설명 */}
+        {isEnabled && (
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>📊 연동 데이터</Text>
+            <View style={styles.dataList}>
+              <DataItem label="걸음수" emoji="👟" />
+              <DataItem label="활동 칼로리" emoji="🔥" />
+              <DataItem label="심박수" emoji="❤️" />
+              <DataItem label="수면" emoji="😴" />
+            </View>
+          </GlassCard>
+        )}
+
+        {/* 오늘의 데이터 */}
+        {isEnabled && todayData && (
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>📈 오늘의 데이터</Text>
+            <View style={styles.statsGrid}>
+              <StatItem label="걸음" value={todayData.steps.toLocaleString()} />
+              <StatItem label="칼로리" value={`${todayData.activeCalories}kcal`} />
+              <StatItem
+                label="심박"
+                value={todayData.heartRate ? `${todayData.heartRate.average}bpm` : '-'}
+              />
+              <StatItem
+                label="수면"
+                value={
+                  todayData.sleep
+                    ? `${Math.round(todayData.sleep.totalSleepMinutes / 60)}시간`
+                    : '-'
+                }
               />
             </View>
-          </View>
+          </GlassCard>
+        )}
 
-          {/* 연동 데이터 설명 */}
-          {isEnabled && (
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>📊 연동 데이터</Text>
-              <View style={styles.dataList}>
-                <DataItem label="걸음수" emoji="👟" />
-                <DataItem label="활동 칼로리" emoji="🔥" />
-                <DataItem label="심박수" emoji="❤️" />
-                <DataItem label="수면" emoji="😴" />
+        {/* 동기화 상태 */}
+        {isEnabled && (
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+            <View style={styles.syncRow}>
+              <View>
+                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                  🔄 마지막 동기화
+                </Text>
+                <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                  {formatTime(lastSyncTime)}
+                </Text>
               </View>
-            </View>
-          )}
-
-          {/* 오늘의 데이터 */}
-          {isEnabled && todayData && (
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>📈 오늘의 데이터</Text>
-              <View style={styles.statsGrid}>
-                <StatItem label="걸음" value={todayData.steps.toLocaleString()} />
-                <StatItem
-                  label="칼로리"
-                  value={`${todayData.activeCalories}kcal`}
-                />
-                <StatItem
-                  label="심박"
-                  value={todayData.heartRate ? `${todayData.heartRate.average}bpm` : '-'}
-                />
-                <StatItem
-                  label="수면"
-                  value={
-                    todayData.sleep
-                      ? `${Math.round(todayData.sleep.totalSleepMinutes / 60)}시간`
-                      : '-'
-                  }
-                />
-              </View>
-            </View>
-          )}
-
-          {/* 동기화 상태 */}
-          {isEnabled && (
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <View style={styles.syncRow}>
-                <View>
-                  <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                    🔄 마지막 동기화
+              <Pressable
+                style={[
+                  styles.syncButton,
+                  { backgroundColor: brand.primary },
+                  isSyncing && styles.syncButtonDisabled,
+                ]}
+                onPress={handleSync}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <ActivityIndicator size="small" color={brand.primaryForeground} />
+                ) : (
+                  <Text style={[styles.syncButtonText, { color: brand.primaryForeground }]}>
+                    동기화
                   </Text>
-                  <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-                    {formatTime(lastSyncTime)}
-                  </Text>
-                </View>
-                <Pressable
-                  style={[styles.syncButton, { backgroundColor: brand.primary }, isSyncing && styles.syncButtonDisabled]}
-                  onPress={handleSync}
-                  disabled={isSyncing}
-                >
-                  {isSyncing ? (
-                    <ActivityIndicator size="small" color={brand.primaryForeground} />
-                  ) : (
-                    <Text style={[styles.syncButtonText, { color: brand.primaryForeground }]}>동기화</Text>
-                  )}
-                </Pressable>
-              </View>
+                )}
+              </Pressable>
             </View>
-          )}
+          </GlassCard>
+        )}
 
-          {/* 개인정보 안내 */}
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-              🔒 건강 데이터는 안전하게 암호화되어 저장됩니다.
-              {'\n'}설정 {'>'} 개인정보 보호에서 권한을 관리할 수 있습니다.
-            </Text>
-          </View>
+        {/* 개인정보 안내 */}
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
+            🔒 건강 데이터는 안전하게 암호화되어 저장됩니다.
+            {'\n'}설정 {'>'} 개인정보 보호에서 권한을 관리할 수 있습니다.
+          </Text>
+        </View>
       </ScreenContainer>
     </>
   );

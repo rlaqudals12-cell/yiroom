@@ -6,9 +6,9 @@ import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
+import { ScreenContainer, GlassCard } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData } from '../../hooks';
-import { useTheme, typography, spacing } from '../../lib/theme';
-import { ScreenContainer } from '../../components/ui';
+import { useTheme } from '../../lib/theme';
 
 interface Badge {
   id: string;
@@ -101,113 +101,120 @@ export default function BadgesScreen(): React.JSX.Element {
     <ScreenContainer
       testID="badges-screen"
       edges={['bottom']}
+      backgroundGradient="home"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-        {/* 헤더 */}
-        <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.sm }}>🏅</Text>
-          <Text
-            style={{
-              fontSize: typography.size.xl,
-              fontWeight: typography.weight.bold,
-              color: colors.foreground,
-              marginBottom: spacing.xs,
-            }}
-          >
-            나의 뱃지
-          </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.mutedForeground,
-            }}
-          >
-            {earnedCount}/{badges.length}개 획득
-          </Text>
-        </View>
+      {/* 헤더 */}
+      <GlassCard shadowSize="md" style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+        <Text style={{ fontSize: 48, marginBottom: spacing.sm }}>🏅</Text>
+        <Text
+          style={{
+            fontSize: typography.size.xl,
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
+          }}
+        >
+          나의 뱃지
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+          }}
+        >
+          {earnedCount}/{badges.length}개 획득
+        </Text>
+      </GlassCard>
 
-        {/* 뱃지 그리드 */}
-        <View style={styles.grid}>
-          {badges.map((badge) => (
-            <View
-              key={badge.id}
-              style={{
-                width: '48%',
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-                alignItems: 'center',
-                opacity: badge.earned ? 1 : 0.4,
-                marginBottom: spacing.sm + 4,
-              }}
-            >
-              <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>
-                {badge.earned ? badge.emoji : '🔒'}
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  textAlign: 'center',
-                  marginBottom: spacing.xs,
-                }}
-              >
-                {badge.title}
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.xs,
-                  color: colors.mutedForeground,
-                  textAlign: 'center',
-                  lineHeight: 16,
-                }}
-              >
-                {badge.description}
-              </Text>
-              {badge.earned && (
-                <View
-                  style={{
-                    marginTop: spacing.sm,
-                    backgroundColor: brand.primary + '20',
-                    paddingHorizontal: spacing.sm,
-                    paddingVertical: 3,
-                    borderRadius: radii.xl,
-                  }}
-                >
-                  <Text style={{ fontSize: 10, fontWeight: typography.weight.semibold, color: brand.primary }}>
-                    획득 완료
-                  </Text>
-                </View>
-              )}
-            </View>
-          ))}
-        </View>
-
-        {/* 분석 CTA */}
-        {earnedCount < badges.length && (
-          <Pressable
+      {/* 뱃지 그리드 */}
+      <View style={styles.grid}>
+        {badges.map((badge) => (
+          <View
+            key={badge.id}
             style={{
-              backgroundColor: brand.primary,
+              width: '48%',
+              backgroundColor: colors.card,
               borderRadius: radii.xl,
               padding: spacing.md,
               alignItems: 'center',
-              marginTop: spacing.sm,
+              opacity: badge.earned ? 1 : 0.4,
+              marginBottom: spacing.sm + 4,
             }}
-            onPress={() => router.back()}
           >
+            <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>
+              {badge.earned ? badge.emoji : '🔒'}
+            </Text>
             <Text
               style={{
-                color: brand.primaryForeground,
-                fontSize: typography.size.base,
+                fontSize: typography.size.sm,
                 fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+                textAlign: 'center',
+                marginBottom: spacing.xs,
               }}
             >
-              더 많은 뱃지를 획득해보세요!
+              {badge.title}
             </Text>
-          </Pressable>
-        )}
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                color: colors.mutedForeground,
+                textAlign: 'center',
+                lineHeight: 16,
+              }}
+            >
+              {badge.description}
+            </Text>
+            {badge.earned && (
+              <View
+                style={{
+                  marginTop: spacing.sm,
+                  backgroundColor: brand.primary + '20',
+                  paddingHorizontal: spacing.sm,
+                  paddingVertical: 3,
+                  borderRadius: radii.xl,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: typography.weight.semibold,
+                    color: brand.primary,
+                  }}
+                >
+                  획득 완료
+                </Text>
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
+
+      {/* 분석 CTA */}
+      {earnedCount < badges.length && (
+        <Pressable
+          style={{
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            alignItems: 'center',
+            marginTop: spacing.sm,
+          }}
+          onPress={() => router.back()}
+        >
+          <Text
+            style={{
+              color: brand.primaryForeground,
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.semibold,
+            }}
+          >
+            더 많은 뱃지를 획득해보세요!
+          </Text>
+        </Pressable>
+      )}
     </ScreenContainer>
   );
 }

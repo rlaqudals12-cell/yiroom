@@ -2,23 +2,21 @@
  * 피부 다이어리 메인 화면
  * 월별 엔트리 목록 + 요약 통계 + 기록 추가
  */
+import { router } from 'expo-router';
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import {
   View,
   Text,
   FlatList,
   Pressable,
-  ScrollView,
   ActivityIndicator,
   Alert,
   RefreshControl,
   StyleSheet,
 } from 'react-native';
-import { router } from 'expo-router';
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, coloredShadow, moduleColors, brand, typography, spacing, radii } from '../../../lib/theme';
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   CONDITION_LABELS,
@@ -27,20 +25,23 @@ import {
   WEATHER_LABELS,
   type SkinDiaryEntry,
 } from '../../../lib/skincare/diary-types';
+import {
+  useTheme,
+  coloredShadow,
+  moduleColors,
+  brand,
+  typography,
+  spacing,
+  radii,
+} from '../../../lib/theme';
+
+import { ScreenContainer, GlassCard } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 
 export default function SkinDiaryScreen(): React.JSX.Element {
   const { colors, isDark } = useTheme();
-  const {
-    entries,
-    loading,
-    error,
-    summary,
-    year,
-    month,
-    setMonth,
-    deleteEntry,
-    refresh,
-  } = useSkinDiary();
+  const { entries, loading, error, summary, year, month, setMonth, deleteEntry, refresh } =
+    useSkinDiary();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async (): Promise<void> => {
@@ -76,40 +77,33 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
   const handleDeleteEntry = useCallback(
     (entry: SkinDiaryEntry): void => {
-      Alert.alert(
-        '기록 삭제',
-        `${entry.entryDate} 기록을 삭제할까요?`,
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '삭제',
-            style: 'destructive',
-            onPress: () => deleteEntry(entry.id),
-          },
-        ],
-      );
+      Alert.alert('기록 삭제', `${entry.entryDate} 기록을 삭제할까요?`, [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: () => deleteEntry(entry.id),
+        },
+      ]);
     },
-    [deleteEntry],
+    [deleteEntry]
   );
 
   // 월 셀렉터
   const renderMonthSelector = (): React.JSX.Element => (
-    <View
-      style={[
-        styles.monthSelector,
-        { backgroundColor: colors.card, borderColor: colors.border },
-      ]}
-    >
-      <Pressable onPress={handlePrevMonth} hitSlop={12}>
-        <ChevronLeft size={24} color={colors.foreground} />
-      </Pressable>
-      <Text style={[styles.monthTitle, { color: colors.foreground }]}>
-        {year}년 {month}월
-      </Text>
-      <Pressable onPress={handleNextMonth} hitSlop={12}>
-        <ChevronRight size={24} color={colors.foreground} />
-      </Pressable>
-    </View>
+    <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+      <GlassCard shadowSize="md" style={{ ...styles.monthSelector }}>
+        <Pressable onPress={handlePrevMonth} hitSlop={12}>
+          <ChevronLeft size={24} color={colors.foreground} />
+        </Pressable>
+        <Text style={[styles.monthTitle, { color: colors.foreground }]}>
+          {year}년 {month}월
+        </Text>
+        <Pressable onPress={handleNextMonth} hitSlop={12}>
+          <ChevronRight size={24} color={colors.foreground} />
+        </Pressable>
+      </GlassCard>
+    </Animated.View>
   );
 
   // 요약 카드
@@ -124,53 +118,38 @@ export default function SkinDiaryScreen(): React.JSX.Element {
           : '안정적 ➡️';
 
     return (
-      <View
-        style={[
-          styles.summaryCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: colors.foreground }]}>
-          이번 달 요약
-        </Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-              {summary.totalEntries}일
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.muted }]}>
-              기록
-            </Text>
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.summaryCard }}>
+          <Text style={[styles.summaryTitle, { color: colors.foreground }]}>이번 달 요약</Text>
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                {summary.totalEntries}일
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.muted }]}>기록</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                {summary.avgCondition}
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.muted }]}>평균 컨디션</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                {summary.routineRate.morning}%
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.muted }]}>아침 루틴</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                {summary.routineRate.evening}%
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.muted }]}>저녁 루틴</Text>
+            </View>
           </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-              {summary.avgCondition}
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.muted }]}>
-              평균 컨디션
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-              {summary.routineRate.morning}%
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.muted }]}>
-              아침 루틴
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-              {summary.routineRate.evening}%
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.muted }]}>
-              저녁 루틴
-            </Text>
-          </View>
-        </View>
-        <Text style={[styles.trendText, { color: colors.muted }]}>
-          트렌드: {trendText}
-        </Text>
-      </View>
+          <Text style={[styles.trendText, { color: colors.muted }]}>트렌드: {trendText}</Text>
+        </GlassCard>
+      </Animated.View>
     );
   };
 
@@ -184,10 +163,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
     return (
       <Pressable
         onPress={() => handleEditEntry(item)}
-        style={[
-          styles.entryCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
+        style={[styles.entryCard, { backgroundColor: colors.card, borderColor: colors.border }]}
         testID="diary-entry-card"
       >
         <View style={styles.entryHeader}>
@@ -201,27 +177,18 @@ export default function SkinDiaryScreen(): React.JSX.Element {
               </Text>
             )}
           </View>
-          <Pressable
-            onPress={() => handleDeleteEntry(item)}
-            hitSlop={8}
-            testID="delete-entry-btn"
-          >
+          <Pressable onPress={() => handleDeleteEntry(item)} hitSlop={8} testID="delete-entry-btn">
             <Trash2 size={16} color={colors.muted} />
           </Pressable>
         </View>
 
         <View style={styles.conditionRow}>
           <Text style={styles.conditionEmoji}>{emoji}</Text>
-          <Text style={[styles.conditionLabel, { color: colors.foreground }]}>
-            {label}
-          </Text>
+          <Text style={[styles.conditionLabel, { color: colors.foreground }]}>{label}</Text>
         </View>
 
         {item.conditionNotes ? (
-          <Text
-            style={[styles.notes, { color: colors.muted }]}
-            numberOfLines={2}
-          >
+          <Text style={[styles.notes, { color: colors.muted }]} numberOfLines={2}>
             {item.conditionNotes}
           </Text>
         ) : null}
@@ -229,7 +196,10 @@ export default function SkinDiaryScreen(): React.JSX.Element {
         <View style={styles.factorRow}>
           {item.sleepHours != null && (
             <View
-              style={[styles.factorChip, { backgroundColor: isDark ? colors.card : colors.muted + '20' }]}
+              style={[
+                styles.factorChip,
+                { backgroundColor: isDark ? colors.card : colors.muted + '20' },
+              ]}
             >
               <Text style={[styles.factorText, { color: colors.foreground }]}>
                 💤 {item.sleepHours}시간
@@ -238,7 +208,10 @@ export default function SkinDiaryScreen(): React.JSX.Element {
           )}
           {item.waterIntakeMl != null && (
             <View
-              style={[styles.factorChip, { backgroundColor: isDark ? colors.card : colors.muted + '20' }]}
+              style={[
+                styles.factorChip,
+                { backgroundColor: isDark ? colors.card : colors.muted + '20' },
+              ]}
             >
               <Text style={[styles.factorText, { color: colors.foreground }]}>
                 💧 {item.waterIntakeMl}ml
@@ -247,20 +220,22 @@ export default function SkinDiaryScreen(): React.JSX.Element {
           )}
           {item.morningRoutineCompleted && (
             <View
-              style={[styles.factorChip, { backgroundColor: isDark ? colors.card : colors.muted + '20' }]}
+              style={[
+                styles.factorChip,
+                { backgroundColor: isDark ? colors.card : colors.muted + '20' },
+              ]}
             >
-              <Text style={[styles.factorText, { color: colors.foreground }]}>
-                🌅 아침루틴
-              </Text>
+              <Text style={[styles.factorText, { color: colors.foreground }]}>🌅 아침루틴</Text>
             </View>
           )}
           {item.eveningRoutineCompleted && (
             <View
-              style={[styles.factorChip, { backgroundColor: isDark ? colors.card : colors.muted + '20' }]}
+              style={[
+                styles.factorChip,
+                { backgroundColor: isDark ? colors.card : colors.muted + '20' },
+              ]}
             >
-              <Text style={[styles.factorText, { color: colors.foreground }]}>
-                🌙 저녁루틴
-              </Text>
+              <Text style={[styles.factorText, { color: colors.foreground }]}>🌙 저녁루틴</Text>
             </View>
           )}
         </View>
@@ -272,9 +247,7 @@ export default function SkinDiaryScreen(): React.JSX.Element {
   const renderEmpty = (): React.JSX.Element => (
     <View style={styles.emptyContainer}>
       <Text style={[styles.emptyEmoji]}>📝</Text>
-      <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-        아직 기록이 없어요
-      </Text>
+      <Text style={[styles.emptyTitle, { color: colors.foreground }]}>아직 기록이 없어요</Text>
       <Text style={[styles.emptyDesc, { color: colors.muted }]}>
         매일 피부 상태를 기록하면{'\n'}나만의 피부 패턴을 발견할 수 있어요
       </Text>
@@ -291,7 +264,13 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
   if (loading && entries.length === 0) {
     return (
-      <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        testID="skin-diary-screen"
+        backgroundGradient="analysis"
+        edges={['bottom']}
+      >
         <View style={styles.center}>
           <ActivityIndicator size="large" color={brand.primary} />
           <Text style={[styles.loadingText, { color: colors.muted }]}>
@@ -304,15 +283,16 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
   if (error && entries.length === 0) {
     return (
-      <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        testID="skin-diary-screen"
+        backgroundGradient="analysis"
+        edges={['bottom']}
+      >
         <View style={styles.center}>
-          <Text style={[styles.errorText, { color: colors.destructive }]}>
-            {error}
-          </Text>
-          <Pressable
-            style={[styles.retryButton, { borderColor: brand.primary }]}
-            onPress={refresh}
-          >
+          <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+          <Pressable style={[styles.retryButton, { borderColor: brand.primary }]} onPress={refresh}>
             <Text style={{ color: brand.primary }}>다시 시도</Text>
           </Pressable>
         </View>
@@ -321,7 +301,13 @@ export default function SkinDiaryScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="skin-diary-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="skin-diary-screen"
+      backgroundGradient="analysis"
+      edges={['bottom']}
+    >
       <FlatList
         data={entries}
         keyExtractor={(item) => item.id}
@@ -346,7 +332,11 @@ export default function SkinDiaryScreen(): React.JSX.Element {
 
       {/* FAB: 새 기록 추가 */}
       <Pressable
-        style={[styles.fab, { backgroundColor: brand.primary }, !isDark ? coloredShadow(moduleColors.skin.base, 'md') : {}]}
+        style={[
+          styles.fab,
+          { backgroundColor: brand.primary },
+          !isDark ? coloredShadow(moduleColors.skin.base, 'md') : {},
+        ]}
         onPress={handleAddEntry}
         testID="add-diary-btn"
       >
@@ -397,10 +387,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.xl,
-    borderWidth: 1,
     marginBottom: spacing.md,
   },
   monthTitle: {
@@ -409,9 +395,6 @@ const styles = StyleSheet.create({
   },
   // 요약
   summaryCard: {
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.md,
     marginBottom: spacing.md,
   },
   summaryTitle: {

@@ -3,27 +3,21 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image } from 'expo-image';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
-} from 'react-native';
-import Animated from 'react-native-reanimated';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../../components/ui';
-import { staggeredEntry } from '../../../lib/animations';
+import { View, Text, StyleSheet, Pressable, FlatList, ActivityIndicator } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../../components/ui';
+import { TIMING, staggeredEntry } from '../../../lib/animations';
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 export default function FriendsScreen() {
-  const { colors, brand, module: moduleColors, typography, spacing, radii} = useTheme();
+  const { colors, brand, module: moduleColors } = useTheme();
   const router = useRouter();
 
   const { friends, isLoading, refetch } = useFriends();
@@ -64,7 +58,9 @@ export default function FriendsScreen() {
         </View>
         <View style={styles.friendInfo}>
           <Text style={[styles.friendName, { color: colors.foreground }]}>{item.displayName}</Text>
-          <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>Lv.{item.level}</Text>
+          <Text style={[styles.friendLevel, { color: colors.mutedForeground }]}>
+            Lv.{item.level}
+          </Text>
         </View>
       </Pressable>
     </Animated.View>
@@ -72,7 +68,7 @@ export default function FriendsScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="social">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
@@ -86,6 +82,7 @@ export default function FriendsScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
       {/* 상단 액션 */}
       <View style={styles.header}>
@@ -108,28 +105,30 @@ export default function FriendsScreen() {
       </View>
 
       {/* 통계 */}
-      <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
-        <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {stats?.totalFriends ?? 0}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>친구</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {stats?.pendingRequests ?? 0}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>받은 요청</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.foreground }]}>
-            {stats?.sentRequests ?? 0}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보낸 요청</Text>
-        </View>
-      </View>
+      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={styles.statsCard}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
+              {stats?.totalFriends ?? 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>친구</Text>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
+              {stats?.pendingRequests ?? 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>받은 요청</Text>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.foreground }]}>
+              {stats?.sentRequests ?? 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보낸 요청</Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 친구 목록 */}
       {friends.length === 0 ? (

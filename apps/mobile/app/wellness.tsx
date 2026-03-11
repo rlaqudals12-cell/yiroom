@@ -2,21 +2,21 @@
  * 웰니스 점수 상세 페이지
  * 종합 점수 + 영역별 분석 + 업적 + 개선 가이드
  */
-import { useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { WellnessScoreRing, AchievementGrid } from '../components/profile';
+import { ScreenContainer, GlassCard } from '../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../hooks';
 import { useTheme, brand, typography, spacing, radii } from '../lib/theme';
-import { ScreenContainer } from '../components/ui';
 
 // 영역별 개선 가이드
 function getImprovementTips(
   analysisScore: number,
   workoutScore: number,
-  nutritionScore: number,
+  nutritionScore: number
 ): { area: string; icon: typeof TrendingUp; tips: string[] }[] {
   const guides: { area: string; icon: typeof TrendingUp; tips: string[] }[] = [];
 
@@ -65,7 +65,7 @@ function getImprovementTips(
 }
 
 export default function WellnessScorePage(): React.JSX.Element {
-  const { colors, isDark, typography, spacing} = useTheme();
+  const { colors, spacing } = useTheme();
   const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
   const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();
   const { streak: nutritionStreak, refetch: refetchNutrition } = useNutritionData();
@@ -92,7 +92,7 @@ export default function WellnessScorePage(): React.JSX.Element {
   const improvementTips = getImprovementTips(
     breakdown.analysis,
     breakdown.workout,
-    breakdown.nutrition,
+    breakdown.nutrition
   );
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
@@ -101,6 +101,7 @@ export default function WellnessScorePage(): React.JSX.Element {
     <ScreenContainer
       testID="wellness-score-screen"
       edges={['bottom']}
+      backgroundGradient="home"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
@@ -108,12 +109,7 @@ export default function WellnessScorePage(): React.JSX.Element {
       <WellnessScoreRing score={score} breakdown={breakdown} />
 
       {/* 레벨 정보 */}
-      <View
-        style={[
-          styles.levelCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
+      <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
         <View style={styles.levelHeader}>
           <Text style={[styles.levelTitle, { color: colors.foreground }]}>
             Lv.{level.level} {level.title}
@@ -133,18 +129,11 @@ export default function WellnessScorePage(): React.JSX.Element {
             ]}
           />
         </View>
-      </View>
+      </GlassCard>
 
       {/* 영역별 상세 */}
-      <View
-        style={[
-          styles.breakdownCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          영역별 점수
-        </Text>
+      <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>영역별 점수</Text>
         <BreakdownRow
           label="분석 완료"
           emoji="🔬"
@@ -166,54 +155,41 @@ export default function WellnessScorePage(): React.JSX.Element {
           weight="30%"
           colors={colors}
         />
-      </View>
+      </GlassCard>
 
       {/* 업적 */}
-      <View
-        style={[
-          styles.achievementSection,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
+      <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
         <View style={styles.achievementHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            업적
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>업적</Text>
           <Text style={[styles.achievementCount, { color: colors.muted }]}>
             {unlockedCount} / {achievements.length}
           </Text>
         </View>
         <AchievementGrid achievements={achievements} />
-      </View>
+      </GlassCard>
 
       {/* 개선 가이드 */}
       {improvementTips.length > 0 && (
         <View style={styles.guideSection}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground, marginBottom: spacing.sm }]}>
+          <Text
+            style={[styles.sectionTitle, { color: colors.foreground, marginBottom: spacing.sm }]}
+          >
             점수 올리기
           </Text>
           {improvementTips.map((guide) => {
             const Icon = guide.icon;
             return (
-              <View
-                key={guide.area}
-                style={[
-                  styles.guideCard,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                ]}
-              >
+              <GlassCard key={guide.area} shadowSize="md" style={{ marginBottom: spacing.sm }}>
                 <View style={styles.guideHeader}>
                   <Icon size={18} color={brand.primary} />
-                  <Text style={[styles.guideArea, { color: colors.foreground }]}>
-                    {guide.area}
-                  </Text>
+                  <Text style={[styles.guideArea, { color: colors.foreground }]}>{guide.area}</Text>
                 </View>
                 {guide.tips.map((tip, i) => (
                   <Text key={i} style={[styles.guideTip, { color: colors.muted }]}>
                     • {tip}
                   </Text>
                 ))}
-              </View>
+              </GlassCard>
             );
           })}
         </View>
@@ -226,9 +202,7 @@ export default function WellnessScorePage(): React.JSX.Element {
           onPress={() => router.push('/(tabs)')}
         >
           <Target size={18} color={brand.primaryForeground} />
-          <Text style={[styles.ctaText, { color: brand.primaryForeground }]}>
-            점수 올리러 가기
-          </Text>
+          <Text style={[styles.ctaText, { color: brand.primaryForeground }]}>점수 올리러 가기</Text>
         </Pressable>
       )}
     </ScreenContainer>
@@ -253,12 +227,8 @@ function BreakdownRow({
     <View style={styles.breakdownRow}>
       <View style={styles.breakdownLabel}>
         <Text style={styles.breakdownEmoji}>{emoji}</Text>
-        <Text style={[styles.breakdownText, { color: colors.foreground }]}>
-          {label}
-        </Text>
-        <Text style={[styles.breakdownWeight, { color: colors.muted }]}>
-          ({weight})
-        </Text>
+        <Text style={[styles.breakdownText, { color: colors.foreground }]}>{label}</Text>
+        <Text style={[styles.breakdownWeight, { color: colors.muted }]}>({weight})</Text>
       </View>
       <View style={styles.breakdownBarContainer}>
         <View style={[styles.breakdownBarBg, { backgroundColor: colors.border }]}>
@@ -272,9 +242,7 @@ function BreakdownRow({
             ]}
           />
         </View>
-        <Text style={[styles.breakdownScore, { color: colors.foreground }]}>
-          {score}
-        </Text>
+        <Text style={[styles.breakdownScore, { color: colors.foreground }]}>{score}</Text>
       </View>
     </View>
   );

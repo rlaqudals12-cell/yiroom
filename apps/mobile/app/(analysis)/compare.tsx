@@ -10,14 +10,14 @@
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeftRight, RefreshCw, Clock, BarChart3 } from 'lucide-react-native';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
 import { ComparisonCard } from '@/components/analysis/ComparisonCard';
-import { useTheme , spacing } from '@/lib/theme';
-import { staggeredEntry } from '@/lib/animations';
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { useAnalysisComparison } from '@/hooks/useAnalysisComparison';
 import type { AnalysisModuleType } from '@/hooks/useAnalysisHistory';
+import { TIMING } from '@/lib/animations';
+import { useTheme } from '@/lib/theme';
 
 // 모듈별 이력 화면 경로
 const MODULE_HISTORY_PATH: Record<AnalysisModuleType, string> = {
@@ -48,14 +48,14 @@ function formatDate(date: Date): string {
 }
 
 export default function CompareScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, shadows, isDark, brand } = useTheme();
+  const { colors, spacing, radii, typography, brand } = useTheme();
   const params = useLocalSearchParams<{ module?: string }>();
   const moduleType = (params.module || 'skin') as AnalysisModuleType;
 
   const { data, isLoading, error, refetch } = useAnalysisComparison(moduleType);
 
   return (
-    <ScreenContainer testID="compare-screen" edges={['bottom']}>
+    <ScreenContainer testID="compare-screen" backgroundGradient="analysis" edges={['bottom']}>
       <DataStateWrapper
         isLoading={isLoading}
         error={error ? String(error) : undefined}
@@ -71,104 +71,87 @@ export default function CompareScreen(): React.JSX.Element {
       >
         {/* 날짜 범위 표시 */}
         {data && data.previousDate && data.currentDate && (
-          <Animated.View
-            entering={staggeredEntry(0)}
-            style={[
-              styles.dateRange,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                padding: spacing.md,
-                marginBottom: spacing.md,
-              },
-              shadows.card,
-            ]}
-          >
-            <View style={styles.dateItem}>
-              <Clock size={14} color={colors.mutedForeground} />
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: colors.mutedForeground,
-                  marginLeft: spacing.xs,
-                }}
-              >
-                이전: {formatDate(data.previousDate)}
-              </Text>
-            </View>
-            <ArrowLeftRight size={16} color={brand.primary} />
-            <View style={styles.dateItem}>
-              <Clock size={14} color={brand.primary} />
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: colors.foreground,
-                  fontWeight: typography.weight.semibold,
-                  marginLeft: spacing.xs,
-                }}
-              >
-                현재: {formatDate(data.currentDate)}
-              </Text>
-            </View>
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.dateRange, marginBottom: spacing.md }}>
+              <View style={styles.dateItem}>
+                <Clock size={14} color={colors.mutedForeground} />
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                    marginLeft: spacing.xs,
+                  }}
+                >
+                  이전: {formatDate(data.previousDate)}
+                </Text>
+              </View>
+              <ArrowLeftRight size={16} color={brand.primary} />
+              <View style={styles.dateItem}>
+                <Clock size={14} color={brand.primary} />
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.foreground,
+                    fontWeight: typography.weight.semibold,
+                    marginLeft: spacing.xs,
+                  }}
+                >
+                  현재: {formatDate(data.currentDate)}
+                </Text>
+              </View>
+            </GlassCard>
           </Animated.View>
         )}
 
         {/* 비교 카드 */}
         {data && (
-          <ComparisonCard
-            title={data.title}
-            metrics={data.metrics}
-            previousTotal={data.previousTotal}
-            currentTotal={data.currentTotal}
-            isFirstAnalysis={data.isFirstAnalysis}
-            testID="comparison-card"
-          />
+          <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+            <ComparisonCard
+              title={data.title}
+              metrics={data.metrics}
+              previousTotal={data.previousTotal}
+              currentTotal={data.currentTotal}
+              isFirstAnalysis={data.isFirstAnalysis}
+              testID="comparison-card"
+            />
+          </Animated.View>
         )}
 
         {/* 액션 버튼 */}
         <Animated.View
-          entering={staggeredEntry(2)}
+          entering={FadeInUp.delay(200).duration(TIMING.normal)}
           style={{ marginTop: spacing.lg }}
         >
           {/* 이력 보기 */}
-          <Pressable
-            onPress={() => router.push(MODULE_HISTORY_PATH[moduleType] as `/${string}`)}
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                padding: spacing.md,
-                marginBottom: spacing.sm,
-              },
-              shadows.card,
-            ]}
-            testID="view-history-button"
-          >
-            <BarChart3 size={20} color={brand.primary} />
-            <View style={{ flex: 1, marginLeft: spacing.sm }}>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                }}
-              >
-                전체 이력 보기
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.xs,
-                  color: colors.mutedForeground,
-                  marginTop: spacing.xxs,
-                }}
-              >
-                과거 분석 결과를 모두 확인해요
-              </Text>
-            </View>
-          </Pressable>
+          <GlassCard shadowSize="md" style={{ ...styles.actionButton, marginBottom: spacing.sm }}>
+            <Pressable
+              onPress={() => router.push(MODULE_HISTORY_PATH[moduleType] as `/${string}`)}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+              testID="view-history-button"
+            >
+              <BarChart3 size={20} color={brand.primary} />
+              <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
+                  전체 이력 보기
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    color: colors.mutedForeground,
+                    marginTop: spacing.xxs,
+                  }}
+                >
+                  과거 분석 결과를 모두 확인해요
+                </Text>
+              </View>
+            </Pressable>
+          </GlassCard>
 
           {/* 새 분석 시작 */}
           <Pressable
@@ -216,7 +199,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
   },
   dateItem: {
     flexDirection: 'row',
@@ -225,7 +207,5 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
   },
 });

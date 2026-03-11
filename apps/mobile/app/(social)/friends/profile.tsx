@@ -3,12 +3,12 @@
  *
  * 개별 친구의 프로필, 활동, 공유 분석 결과를 확인한다.
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../../lib/theme';
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { staggeredEntry, TIMING } from '../../../lib/animations';
+import { useTheme } from '../../../lib/theme';
 
 interface FriendProfile {
   nickname: string;
@@ -46,17 +46,17 @@ const MOCK_FRIEND: FriendProfile = {
 };
 
 export default function FriendProfileScreen(): React.ReactElement {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const { colors, brand, spacing, radii, typography, module: moduleColors } = useTheme();
+  const { colors, brand, spacing, radii, typography } = useTheme();
 
   const friend = MOCK_FRIEND;
 
   return (
-    <ScrollView
+    <ScreenContainer
       testID="friend-profile-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
+      scrollable
+      edges={['bottom']}
+      contentPadding={spacing.md}
+      backgroundGradient="social"
     >
       {/* 프로필 헤더 */}
       <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
@@ -73,45 +73,78 @@ export default function FriendProfileScreen(): React.ReactElement {
         >
           <Text style={{ fontSize: typography.size['4xl'] }}>{friend.emoji}</Text>
         </View>
-        <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color: colors.foreground }}>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+          }}
+        >
           {friend.nickname}
         </Text>
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            marginTop: spacing.xxs,
+          }}
+        >
           Lv.{friend.level} · {friend.joinDate}부터
         </Text>
       </View>
 
       {/* 요약 스탯 */}
+      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ flexDirection: 'row', marginBottom: spacing.lg }}>
+          {[
+            { label: '레벨', value: `${friend.level}` },
+            { label: '연속', value: `${friend.streakDays}일` },
+            { label: '뱃지', value: `${friend.badges.length}개` },
+          ].map((stat) => (
+            <View key={stat.label} style={{ flex: 1, alignItems: 'center' }}>
+              <Text
+                style={{
+                  fontSize: typography.size.xl,
+                  fontWeight: typography.weight.bold,
+                  color: brand.primary,
+                }}
+              >
+                {stat.value}
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: colors.mutedForeground,
+                  marginTop: spacing.xxs,
+                }}
+              >
+                {stat.label}
+              </Text>
+            </View>
+          ))}
+        </GlassCard>
+      </Animated.View>
+
+      {/* 뱃지 */}
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+        accessibilityRole="header"
+      >
+        획득 뱃지
+      </Text>
       <View
         style={{
           flexDirection: 'row',
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
+          flexWrap: 'wrap',
+          gap: spacing.sm,
           marginBottom: spacing.lg,
         }}
       >
-        {[
-          { label: '레벨', value: `${friend.level}` },
-          { label: '연속', value: `${friend.streakDays}일` },
-          { label: '뱃지', value: `${friend.badges.length}개` },
-        ].map((stat) => (
-          <View key={stat.label} style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: brand.primary }}>
-              {stat.value}
-            </Text>
-            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
-              {stat.label}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      {/* 뱃지 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
-        획득 뱃지
-      </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg }}>
         {friend.badges.map((badge) => (
           <View
             key={badge.name}
@@ -126,48 +159,80 @@ export default function FriendProfileScreen(): React.ReactElement {
             }}
           >
             <Text style={{ fontSize: typography.size.sm }}>{badge.emoji}</Text>
-            <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>{badge.name}</Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
+              {badge.name}
+            </Text>
           </View>
         ))}
       </View>
 
       {/* 공유 분석 결과 */}
       {friend.sharedResults.length > 0 && (
-        <>
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
+        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <Text
+            style={{
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.sm,
+            }}
+            accessibilityRole="header"
+          >
             공유된 분석 결과
           </Text>
-          <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-            {friend.sharedResults.map((result, idx) => (
-              <Animated.View
-                key={result.type}
-                entering={staggeredEntry(idx)}
-                style={{
-                  backgroundColor: colors.card,
-                  borderRadius: radii.xl,
-                  padding: spacing.md,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <View>
-                  <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-                    {result.label}
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+            <View style={{ gap: spacing.sm }}>
+              {friend.sharedResults.map((result, idx) => (
+                <Animated.View
+                  key={result.type}
+                  entering={staggeredEntry(idx)}
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingVertical: spacing.xs,
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: typography.size.base,
+                        fontWeight: typography.weight.semibold,
+                        color: colors.foreground,
+                      }}
+                    >
+                      {result.label}
+                    </Text>
+                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                      {result.date}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: typography.size.base,
+                      fontWeight: typography.weight.bold,
+                      color: brand.primary,
+                    }}
+                  >
+                    {result.value}
                   </Text>
-                  <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{result.date}</Text>
-                </View>
-                <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: brand.primary }}>
-                  {result.value}
-                </Text>
-              </Animated.View>
-            ))}
-          </View>
-        </>
+                </Animated.View>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
       )}
 
       {/* 최근 활동 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+        accessibilityRole="header"
+      >
         최근 활동
       </Text>
       <View style={{ gap: spacing.xs }}>
@@ -192,13 +257,19 @@ export default function FriendProfileScreen(): React.ReactElement {
                 marginRight: spacing.sm,
               }}
             >
-              <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>{activity.module}</Text>
+              <Text style={{ fontSize: typography.size.xs, color: colors.foreground }}>
+                {activity.module}
+              </Text>
             </View>
-            <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground }}>{activity.action}</Text>
-            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{activity.date}</Text>
+            <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground }}>
+              {activity.action}
+            </Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+              {activity.date}
+            </Text>
           </Animated.View>
         ))}
       </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

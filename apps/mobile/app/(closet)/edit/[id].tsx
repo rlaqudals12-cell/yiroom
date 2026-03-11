@@ -3,10 +3,13 @@
  *
  * 기존 의류 아이템의 이름, 카테고리, 브랜드, 사이즈, 계절, 상황 태그를 수정한다.
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, useMemo } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { View, Text, TextInput, Pressable, Alert } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface EditableFields {
@@ -34,7 +37,6 @@ const OCCASIONS = [
 
 export default function EditClosetItemScreen(): React.ReactElement {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, brand, spacing, radii, typography } = useTheme();
 
   // 예시 초기값 — 실제로는 DB에서 가져옴
@@ -73,179 +75,240 @@ export default function EditClosetItemScreen(): React.ReactElement {
   };
 
   return (
-    <ScrollView
-      testID="edit-closet-item-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        아이템 편집
-      </Text>
-
-      {/* 이름 */}
-      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.xs }}>
-        이름
-      </Text>
-      <TextInput
-        testID="edit-name-input"
-        accessibilityLabel="아이템 이름"
-        value={fields.name}
-        onChangeText={(text) => setFields((prev) => ({ ...prev, name: text }))}
-        placeholder="아이템 이름을 입력하세요"
-        placeholderTextColor={colors.mutedForeground}
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.smx,
-          fontSize: typography.size.base,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: colors.border,
-          marginBottom: spacing.md,
-        }}
-      />
-
-      {/* 브랜드 */}
-      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.xs }}>
-        브랜드
-      </Text>
-      <TextInput
-        accessibilityLabel="브랜드"
-        value={fields.brand}
-        onChangeText={(text) => setFields((prev) => ({ ...prev, brand: text }))}
-        placeholder="브랜드 (선택)"
-        placeholderTextColor={colors.mutedForeground}
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.smx,
-          fontSize: typography.size.base,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: colors.border,
-          marginBottom: spacing.md,
-        }}
-      />
-
-      {/* 사이즈 */}
-      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.xs }}>
-        사이즈
-      </Text>
-      <TextInput
-        accessibilityLabel="사이즈"
-        value={fields.size}
-        onChangeText={(text) => setFields((prev) => ({ ...prev, size: text }))}
-        placeholder="예: M, 95, Free"
-        placeholderTextColor={colors.mutedForeground}
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.smx,
-          fontSize: typography.size.base,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: colors.border,
-          marginBottom: spacing.md,
-        }}
-      />
-
-      {/* 계절 */}
-      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
-        계절
-      </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md }}>
-        {SEASONS.map((season) => {
-          const selected = fields.selectedSeasons.includes(season.id);
-          return (
-            <Pressable
-              key={season.id}
-              accessibilityLabel={`${season.label}${selected ? ', 선택됨' : ''}`}
-              onPress={() => toggleSeason(season.id)}
-              style={{
-                paddingHorizontal: spacing.smx,
-                paddingVertical: spacing.sm,
-                borderRadius: radii.full,
-                backgroundColor: selected ? brand.primary : colors.secondary,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: selected ? brand.primaryForeground : colors.foreground,
-                  fontWeight: selected ? typography.weight.semibold : typography.weight.normal,
-                }}
-              >
-                {season.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* 상황 */}
-      <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
-        상황
-      </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xl }}>
-        {OCCASIONS.map((occasion) => {
-          const selected = fields.selectedOccasions.includes(occasion.id);
-          return (
-            <Pressable
-              key={occasion.id}
-              accessibilityLabel={`${occasion.label}${selected ? ', 선택됨' : ''}`}
-              onPress={() => toggleOccasion(occasion.id)}
-              style={{
-                paddingHorizontal: spacing.smx,
-                paddingVertical: spacing.sm,
-                borderRadius: radii.full,
-                backgroundColor: selected ? brand.primary : colors.secondary,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: selected ? brand.primaryForeground : colors.foreground,
-                  fontWeight: selected ? typography.weight.semibold : typography.weight.normal,
-                }}
-              >
-                {occasion.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* 저장 버튼 */}
-      <Pressable
-        testID="save-button"
-        accessibilityLabel="변경사항 저장"
-        onPress={handleSave}
-        disabled={!isValid}
-        style={{
-          backgroundColor: isValid ? brand.primary : colors.secondary,
-          borderRadius: radii.xl,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-          marginBottom: spacing.lg,
-        }}
+    <ScreenContainer testID="edit-closet-item-screen" backgroundGradient="style" contentPadding={0}>
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}
       >
         <Text
           style={{
-            fontSize: typography.size.base,
+            fontSize: typography.size['2xl'],
             fontWeight: typography.weight.bold,
-            color: isValid ? brand.primaryForeground : colors.mutedForeground,
+            color: colors.foreground,
+            marginBottom: spacing.lg,
           }}
         >
-          저장하기
+          아이템 편집
         </Text>
-      </Pressable>
-    </ScrollView>
+      </Animated.View>
+
+      {/* 기본 정보 */}
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.md }}
+      >
+        <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
+          {/* 이름 */}
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.xs,
+            }}
+          >
+            이름
+          </Text>
+          <TextInput
+            testID="edit-name-input"
+            accessibilityLabel="아이템 이름"
+            value={fields.name}
+            onChangeText={(text) => setFields((prev) => ({ ...prev, name: text }))}
+            placeholder="아이템 이름을 입력하세요"
+            placeholderTextColor={colors.mutedForeground}
+            style={{
+              backgroundColor: colors.secondary,
+              borderRadius: radii.xl,
+              padding: spacing.smx,
+              fontSize: typography.size.base,
+              color: colors.foreground,
+              borderWidth: 1,
+              borderColor: colors.border,
+              marginBottom: spacing.md,
+            }}
+          />
+
+          {/* 브랜드 */}
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.xs,
+            }}
+          >
+            브랜드
+          </Text>
+          <TextInput
+            accessibilityLabel="브랜드"
+            value={fields.brand}
+            onChangeText={(text) => setFields((prev) => ({ ...prev, brand: text }))}
+            placeholder="브랜드 (선택)"
+            placeholderTextColor={colors.mutedForeground}
+            style={{
+              backgroundColor: colors.secondary,
+              borderRadius: radii.xl,
+              padding: spacing.smx,
+              fontSize: typography.size.base,
+              color: colors.foreground,
+              borderWidth: 1,
+              borderColor: colors.border,
+              marginBottom: spacing.md,
+            }}
+          />
+
+          {/* 사이즈 */}
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.xs,
+            }}
+          >
+            사이즈
+          </Text>
+          <TextInput
+            accessibilityLabel="사이즈"
+            value={fields.size}
+            onChangeText={(text) => setFields((prev) => ({ ...prev, size: text }))}
+            placeholder="예: M, 95, Free"
+            placeholderTextColor={colors.mutedForeground}
+            style={{
+              backgroundColor: colors.secondary,
+              borderRadius: radii.xl,
+              padding: spacing.smx,
+              fontSize: typography.size.base,
+              color: colors.foreground,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          />
+        </GlassCard>
+      </Animated.View>
+
+      {/* 계절 */}
+      <Animated.View
+        entering={FadeInUp.delay(160).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.md }}
+      >
+        <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.sm,
+            }}
+          >
+            계절
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+            {SEASONS.map((season) => {
+              const selected = fields.selectedSeasons.includes(season.id);
+              return (
+                <Pressable
+                  key={season.id}
+                  accessibilityLabel={`${season.label}${selected ? ', 선택됨' : ''}`}
+                  onPress={() => toggleSeason(season.id)}
+                  style={{
+                    paddingHorizontal: spacing.smx,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radii.full,
+                    backgroundColor: selected ? brand.primary : colors.secondary,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: selected ? brand.primaryForeground : colors.foreground,
+                      fontWeight: selected ? typography.weight.semibold : typography.weight.normal,
+                    }}
+                  >
+                    {season.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 상황 */}
+      <Animated.View
+        entering={FadeInUp.delay(240).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}
+      >
+        <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginBottom: spacing.sm,
+            }}
+          >
+            상황
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+            {OCCASIONS.map((occasion) => {
+              const selected = fields.selectedOccasions.includes(occasion.id);
+              return (
+                <Pressable
+                  key={occasion.id}
+                  accessibilityLabel={`${occasion.label}${selected ? ', 선택됨' : ''}`}
+                  onPress={() => toggleOccasion(occasion.id)}
+                  style={{
+                    paddingHorizontal: spacing.smx,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radii.full,
+                    backgroundColor: selected ? brand.primary : colors.secondary,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: selected ? brand.primaryForeground : colors.foreground,
+                      fontWeight: selected ? typography.weight.semibold : typography.weight.normal,
+                    }}
+                  >
+                    {occasion.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 저장 버튼 */}
+      <Animated.View
+        entering={FadeInUp.delay(320).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xl }}
+      >
+        <Pressable
+          testID="save-button"
+          accessibilityLabel="변경사항 저장"
+          onPress={handleSave}
+          disabled={!isValid}
+          style={{
+            backgroundColor: isValid ? brand.primary : colors.secondary,
+            borderRadius: radii.xl,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: isValid ? brand.primaryForeground : colors.mutedForeground,
+            }}
+          >
+            저장하기
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

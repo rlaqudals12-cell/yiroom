@@ -5,15 +5,16 @@
  * 한/영 토글 지원.
  */
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+
+import { useTheme, typography, spacing, radii } from '../lib/theme';
 
 import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, spacing, radii } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
 export default function TermsScreen() {
-  const { colors, brand: brandColors, radii, isDark, typography } = useTheme();
+  const { colors, brand: brandColors } = useTheme();
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
@@ -21,56 +22,57 @@ export default function TermsScreen() {
       edges={['bottom']}
       testID="terms-screen"
       contentContainerStyle={styles.content}
+      backgroundGradient="profile"
     >
-        {/* 언어 토글 */}
-        <View style={styles.langToggle}>
-          <Pressable
+      {/* 언어 토글 */}
+      <View style={styles.langToggle}>
+        <Pressable
+          style={[
+            styles.langButton,
+            {
+              backgroundColor: lang === 'ko' ? brandColors.primary : colors.muted,
+              borderRadius: radii.xl,
+            },
+          ]}
+          onPress={() => setLang('ko')}
+          accessibilityLabel="한국어로 보기"
+        >
+          <Text
             style={[
-              styles.langButton,
+              styles.langButtonText,
               {
-                backgroundColor: lang === 'ko' ? brandColors.primary : colors.muted,
-                borderRadius: radii.xl,
+                color: lang === 'ko' ? brandColors.primaryForeground : colors.mutedForeground,
               },
             ]}
-            onPress={() => setLang('ko')}
-            accessibilityLabel="한국어로 보기"
           >
-            <Text
-              style={[
-                styles.langButtonText,
-                {
-                  color: lang === 'ko' ? brandColors.primaryForeground : colors.mutedForeground,
-                },
-              ]}
-            >
-              한국어
-            </Text>
-          </Pressable>
-          <Pressable
+            한국어
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.langButton,
+            {
+              backgroundColor: lang === 'en' ? brandColors.primary : colors.muted,
+              borderRadius: radii.xl,
+            },
+          ]}
+          onPress={() => setLang('en')}
+          accessibilityLabel="View in English"
+        >
+          <Text
             style={[
-              styles.langButton,
+              styles.langButtonText,
               {
-                backgroundColor: lang === 'en' ? brandColors.primary : colors.muted,
-                borderRadius: radii.xl,
+                color: lang === 'en' ? brandColors.primaryForeground : colors.mutedForeground,
               },
             ]}
-            onPress={() => setLang('en')}
-            accessibilityLabel="View in English"
           >
-            <Text
-              style={[
-                styles.langButtonText,
-                {
-                  color: lang === 'en' ? brandColors.primaryForeground : colors.mutedForeground,
-                },
-              ]}
-            >
-              English
-            </Text>
-          </Pressable>
-        </View>
+            English
+          </Text>
+        </Pressable>
+      </View>
 
-        {lang === 'ko' ? <KoreanTerms colors={colors} /> : <EnglishTerms colors={colors} />}
+      {lang === 'ko' ? <KoreanTerms colors={colors} /> : <EnglishTerms colors={colors} />}
     </ScreenContainer>
   );
 }

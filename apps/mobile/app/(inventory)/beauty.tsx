@@ -21,12 +21,13 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
-import { staggeredEntry } from '@/lib/animations';
-import { ScreenContainer } from '../../components/ui';
+import { GlassCard, ScreenContainer } from '../../components/ui';
+
+import { TIMING, staggeredEntry } from '@/lib/animations';
 import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 // 뷰티 서브 카테고리 필터
 const BEAUTY_FILTERS = [
@@ -61,17 +62,14 @@ function formatExpiryLabel(expiryDate: string | null): string | null {
 }
 
 export default function BeautyInventoryScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows } = useTheme();
-  const { items, isLoading, error, refetch, deleteItem, toggleFavorite } =
-    useInventory('beauty');
+  const { colors, radii, brand, status, shadows } = useTheme();
+  const { items, isLoading, refetch, deleteItem, toggleFavorite } = useInventory('beauty');
 
   const [selectedFilter, setSelectedFilter] = useState('all');
 
   // 필터링
   const filteredItems =
-    selectedFilter === 'all'
-      ? items
-      : items.filter((item) => item.subCategory === selectedFilter);
+    selectedFilter === 'all' ? items : items.filter((item) => item.subCategory === selectedFilter);
 
   // 유통기한 임박 제품 수
   const expiringCount = items.filter(
@@ -209,18 +207,13 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               style={[
                 styles.expiryBadge,
                 {
-                  backgroundColor: expired
-                    ? status.error + '20'
-                    : status.warning + '20',
+                  backgroundColor: expired ? status.error + '20' : status.warning + '20',
                   borderRadius: radii.sm,
                   marginTop: spacing.xs,
                 },
               ]}
             >
-              <Clock
-                size={12}
-                color={expired ? status.error : status.warning}
-              />
+              <Clock size={12} color={expired ? status.error : status.warning} />
               <Text
                 style={{
                   fontSize: typography.size.xs,
@@ -271,43 +264,48 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="beauty"
     >
       {/* 헤더 요약 */}
-      <View
-        style={[
-          styles.summaryRow,
-          { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-        ]}
-      >
-        <View style={styles.summaryItem}>
-          <Package size={16} color={brand.primary} />
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.foreground,
-              fontWeight: typography.weight.semibold,
-              marginLeft: spacing.xs,
-            }}
-          >
-            {items.length}개
-          </Text>
-        </View>
-        {expiringCount > 0 && (
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard
+          shadowSize="md"
+          style={{
+            ...styles.summaryRow,
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
+          }}
+        >
           <View style={styles.summaryItem}>
-            <Clock size={16} color={status.warning} />
+            <Package size={16} color={brand.primary} />
             <Text
               style={{
                 fontSize: typography.size.sm,
-                color: status.warning,
+                color: colors.foreground,
                 fontWeight: typography.weight.semibold,
                 marginLeft: spacing.xs,
               }}
             >
-              기한 임박 {expiringCount}개
+              {items.length}개
             </Text>
           </View>
-        )}
-      </View>
+          {expiringCount > 0 && (
+            <View style={styles.summaryItem}>
+              <Clock size={16} color={status.warning} />
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: status.warning,
+                  fontWeight: typography.weight.semibold,
+                  marginLeft: spacing.xs,
+                }}
+              >
+                기한 임박 {expiringCount}개
+              </Text>
+            </View>
+          )}
+        </GlassCard>
+      </Animated.View>
 
       {/* 필터 */}
       <FlatList
@@ -321,10 +319,8 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             style={[
               styles.filterChip,
               {
-                backgroundColor:
-                  selectedFilter === f.key ? brand.primary : colors.card,
-                borderColor:
-                  selectedFilter === f.key ? brand.primary : colors.border,
+                backgroundColor: selectedFilter === f.key ? brand.primary : colors.card,
+                borderColor: selectedFilter === f.key ? brand.primary : colors.border,
                 borderRadius: radii.full,
               },
             ]}
@@ -340,10 +336,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
               style={{
                 fontSize: typography.size.xs,
                 fontWeight: typography.weight.semibold,
-                color:
-                  selectedFilter === f.key
-                    ? colors.overlayForeground
-                    : colors.foreground,
+                color: selectedFilter === f.key ? colors.overlayForeground : colors.foreground,
               }}
             >
               {f.label}
@@ -367,9 +360,7 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             paddingBottom: spacing.xxl,
             flexGrow: filteredItems.length === 0 ? 1 : undefined,
           }}
-          refreshControl={
-            <RefreshControl refreshing={false} onRefresh={refetch} />
-          }
+          refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} />}
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={{ fontSize: 48, marginBottom: spacing.md }}>💄</Text>
@@ -423,16 +414,10 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
 
         {/* 수동 추가 — 향후 추가 모달 구현 */}
         <Pressable
-          style={[
-            styles.fabMain,
-            { backgroundColor: brand.primary },
-            shadows.card,
-          ]}
+          style={[styles.fabMain, { backgroundColor: brand.primary }, shadows.card]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            Alert.alert('제품 추가', '바코드 스캔으로 제품을 추가할 수 있어요', [
-              { text: '확인' },
-            ]);
+            Alert.alert('제품 추가', '바코드 스캔으로 제품을 추가할 수 있어요', [{ text: '확인' }]);
           }}
           testID="add-product-fab"
           accessibilityRole="button"

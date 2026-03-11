@@ -14,8 +14,10 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
+
+import { ScreenContainer, GlassCard } from '../../components/ui';
+
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 interface Product {
   id: string;
@@ -159,7 +161,7 @@ const POPULAR_SEARCHES = ['수분크림', '선크림', '립스틱', '비타민',
 const RECENT_SEARCHES = ['아이오페', '롬앤 립스틱'];
 
 export default function ProductSearchScreen() {
-  const { colors, brand, status, typography, spacing, radii} = useTheme();
+  const { colors, brand, status } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -226,13 +228,14 @@ export default function ProductSearchScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="beauty"
     >
       {/* 검색 바 */}
-      <View style={styles.searchSection}>
+      <GlassCard shadowSize="md" style={{ margin: spacing.md, marginBottom: spacing.sm }}>
         <View
           style={[
             styles.searchInputContainer,
-            { backgroundColor: colors.card, borderColor: colors.border },
+            { backgroundColor: colors.secondary, borderColor: colors.border },
           ]}
         >
           <Text style={styles.searchIcon}>🔍</Text>
@@ -252,7 +255,7 @@ export default function ProductSearchScreen() {
             </Pressable>
           )}
         </View>
-      </View>
+      </GlassCard>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {searchQuery.length === 0 ? (

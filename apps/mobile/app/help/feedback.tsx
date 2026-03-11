@@ -1,6 +1,9 @@
 /**
  * 피드백 화면 — 사용자 피드백 폼
  */
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { Bug, Lightbulb, MessageSquare, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import {
   View,
@@ -14,12 +17,9 @@ import {
   Alert,
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, BounceIn } from 'react-native-reanimated';
-import { Bug, Lightbulb, MessageSquare, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
 
-import { useTheme } from '@/lib/theme';
 import { ScreenContainer } from '@/components/ui';
+import { useTheme } from '@/lib/theme';
 
 type FeedbackType = 'bug' | 'feature' | 'general' | 'other';
 
@@ -42,25 +42,42 @@ export default function FeedbackScreen(): React.JSX.Element {
   const feedbackOptions: FeedbackOption[] = [
     {
       type: 'bug',
-      icon: <Bug size={20} color={feedbackType === 'bug' ? brand.primaryForeground : status.error} />,
+      icon: (
+        <Bug size={20} color={feedbackType === 'bug' ? brand.primaryForeground : status.error} />
+      ),
       label: '버그 제보',
       description: '오류나 문제점',
     },
     {
       type: 'feature',
-      icon: <Lightbulb size={20} color={feedbackType === 'feature' ? brand.primaryForeground : status.warning} />,
+      icon: (
+        <Lightbulb
+          size={20}
+          color={feedbackType === 'feature' ? brand.primaryForeground : status.warning}
+        />
+      ),
       label: '기능 제안',
       description: '새로운 아이디어',
     },
     {
       type: 'general',
-      icon: <MessageSquare size={20} color={feedbackType === 'general' ? brand.primaryForeground : brand.primary} />,
+      icon: (
+        <MessageSquare
+          size={20}
+          color={feedbackType === 'general' ? brand.primaryForeground : brand.primary}
+        />
+      ),
       label: '일반 의견',
       description: '사용 경험 공유',
     },
     {
       type: 'other',
-      icon: <HelpCircle size={20} color={feedbackType === 'other' ? brand.primaryForeground : colors.mutedForeground} />,
+      icon: (
+        <HelpCircle
+          size={20}
+          color={feedbackType === 'other' ? brand.primaryForeground : colors.mutedForeground}
+        />
+      ),
       label: '기타',
       description: '그 외 문의',
     },
@@ -149,7 +166,12 @@ export default function FeedbackScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="feedback-screen" scrollable={false} edges={['bottom']}>
+    <ScreenContainer
+      testID="feedback-screen"
+      scrollable={false}
+      edges={['bottom']}
+      backgroundGradient="profile"
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -169,7 +191,8 @@ export default function FeedbackScreen(): React.JSX.Element {
                 marginBottom: spacing.lg,
               }}
             >
-              이룸을 사용하면서 느낀 점을 알려주세요.{'\n'}여러분의 피드백이 더 나은 서비스를 만들어요.
+              이룸을 사용하면서 느낀 점을 알려주세요.{'\n'}여러분의 피드백이 더 나은 서비스를
+              만들어요.
             </Text>
           </Animated.View>
 
@@ -226,7 +249,10 @@ export default function FeedbackScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 내용 입력 */}
-          <Animated.View entering={FadeInDown.delay(200).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInDown.delay(200).duration(300)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -271,7 +297,10 @@ export default function FeedbackScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 이메일 (선택) */}
-          <Animated.View entering={FadeInDown.delay(300).duration(300)} style={{ marginTop: spacing.md }}>
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(300)}
+            style={{ marginTop: spacing.md }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,

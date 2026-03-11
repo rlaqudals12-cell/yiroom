@@ -3,11 +3,12 @@
  *
  * 한 해 동안의 웰니스 여정을 요약하고 주요 성과를 보여준다.
  */
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { ScreenContainer, GlassCard } from '../../components/ui';
 import { staggeredEntry, TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
 
 interface YearlyStats {
   year: number;
@@ -48,39 +49,64 @@ const MOCK_YEARLY: YearlyStats = {
 };
 
 export default function YearlyReviewScreen(): React.ReactElement {
-  const { colors, brand, spacing, radii, typography, status, score: scoreColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, status } = useTheme();
 
   const review = MOCK_YEARLY;
 
   return (
-    <ScrollView
+    <ScreenContainer
       testID="yearly-review-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
+      backgroundGradient="home"
+      contentPadding={0}
       contentContainerStyle={{ padding: spacing.md }}
     >
       {/* 연도 헤더 */}
-      <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-        <Text style={{ fontSize: typography.size['4xl'], fontWeight: typography.weight.bold, color: brand.primary }}>
+      <Animated.View
+        entering={FadeInUp.duration(TIMING.normal)}
+        style={{ alignItems: 'center', marginBottom: spacing.lg }}
+      >
+        <Text
+          style={{
+            fontSize: typography.size['4xl'],
+            fontWeight: typography.weight.bold,
+            color: brand.primary,
+          }}
+        >
           {review.year}
         </Text>
-        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.semibold, color: colors.foreground, marginTop: spacing.xs }} accessibilityRole="header">
+        <Text
+          style={{
+            fontSize: typography.size.xl,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginTop: spacing.xs,
+          }}
+          accessibilityRole="header"
+        >
           나의 웰니스 여정
         </Text>
-        <Text style={{ fontSize: typography.size.base, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            color: colors.mutedForeground,
+            marginTop: spacing.xxs,
+          }}
+        >
           한 해 동안의 변화를 돌아보세요
         </Text>
-      </View>
+      </Animated.View>
 
       {/* 전체 통계 */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          marginBottom: spacing.lg,
-        }}
-      >
-        <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm, textAlign: 'center' }}>
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+            textAlign: 'center',
+          }}
+        >
           올해의 숫자
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -92,19 +118,39 @@ export default function YearlyReviewScreen(): React.ReactElement {
             { label: '획득 뱃지', value: `${review.badgesEarned}개`, emoji: '🏅' },
             { label: '레벨 성장', value: `+${review.levelGained}`, emoji: '⭐' },
           ].map((stat) => (
-            <View key={stat.label} style={{ width: '33.33%', alignItems: 'center', paddingVertical: spacing.sm }}>
+            <View
+              key={stat.label}
+              style={{ width: '33.33%', alignItems: 'center', paddingVertical: spacing.sm }}
+            >
               <Text style={{ fontSize: typography.size['2xl'] }}>{stat.emoji}</Text>
-              <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: colors.foreground, marginTop: spacing.xxs }}>
+              <Text
+                style={{
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.bold,
+                  color: colors.foreground,
+                  marginTop: spacing.xxs,
+                }}
+              >
                 {stat.value}
               </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{stat.label}</Text>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                {stat.label}
+              </Text>
             </View>
           ))}
         </View>
-      </View>
+      </GlassCard>
 
       {/* 개선 지표 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+        accessibilityRole="header"
+      >
         성장 지표
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -121,19 +167,47 @@ export default function YearlyReviewScreen(): React.ReactElement {
                 padding: spacing.md,
               }}
             >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
-                <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: spacing.xs,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
                   {item.label}
                 </Text>
-                <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: improved ? status.success : status.warning }}>
-                  {improved ? '+' : ''}{percent}%
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.bold,
+                    color: improved ? status.success : status.warning,
+                  }}
+                >
+                  {improved ? '+' : ''}
+                  {percent}%
                 </Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                 <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                  {item.before}{item.unit}
+                  {item.before}
+                  {item.unit}
                 </Text>
-                <View style={{ flex: 1, height: 4, backgroundColor: colors.secondary, borderRadius: radii.full }}>
+                <View
+                  style={{
+                    flex: 1,
+                    height: 4,
+                    backgroundColor: colors.secondary,
+                    borderRadius: radii.full,
+                  }}
+                >
                   <View
                     style={{
                       height: 4,
@@ -143,8 +217,15 @@ export default function YearlyReviewScreen(): React.ReactElement {
                     }}
                   />
                 </View>
-                <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: improved ? status.success : colors.foreground }}>
-                  {item.after}{item.unit}
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.bold,
+                    color: improved ? status.success : colors.foreground,
+                  }}
+                >
+                  {item.after}
+                  {item.unit}
                 </Text>
               </View>
             </Animated.View>
@@ -153,7 +234,15 @@ export default function YearlyReviewScreen(): React.ReactElement {
       </View>
 
       {/* 하이라이트 타임라인 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+        accessibilityRole="header"
+      >
         하이라이트
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
@@ -183,29 +272,39 @@ export default function YearlyReviewScreen(): React.ReactElement {
               <Text style={{ fontSize: typography.size.lg }}>{highlight.emoji}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                }}
+              >
                 {highlight.event}
               </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{highlight.month}</Text>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                {highlight.month}
+              </Text>
             </View>
           </Animated.View>
         ))}
       </View>
 
       {/* 가장 많이 사용한 모듈 */}
-      <View
-        style={{
-          backgroundColor: brand.primary + '15',
-          borderRadius: radii.xl,
-          padding: spacing.lg,
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>가장 많이 사용한 모듈</Text>
-        <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color: brand.primary, marginTop: spacing.xs }}>
+      <GlassCard shadowSize="md" style={{ alignItems: 'center' }}>
+        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+          가장 많이 사용한 모듈
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: brand.primary,
+            marginTop: spacing.xs,
+          }}
+        >
           {review.topModule}
         </Text>
-      </View>
-    </ScrollView>
+      </GlassCard>
+    </ScreenContainer>
   );
 }

@@ -4,9 +4,12 @@
  * V2: 웹 비주얼 싱크 — 카드 그림자/테두리, 탭 pill 강화
  */
 import { useState } from 'react';
-import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
+import { Platform, View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, coloredShadow } from '../../../lib/theme';
+import { ScreenContainer, GlassCard } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
+import { useTheme } from '../../../lib/theme';
 
 type StretchType = 'warmup' | 'cooldown' | 'daily';
 
@@ -27,22 +30,106 @@ const STRETCH_TABS: { id: StretchType; label: string; emoji: string }[] = [
 
 const MOCK_STRETCHES: Record<StretchType, StretchExercise[]> = {
   warmup: [
-    { id: '1', name: '팔 돌리기', emoji: '💪', duration: '30초', targetArea: '어깨', instruction: '양팔을 크게 원을 그리며 앞뒤로 돌리세요.' },
-    { id: '2', name: '무릎 높이 들기', emoji: '🦵', duration: '30초', targetArea: '허벅지', instruction: '제자리에서 무릎을 번갈아 높이 들어올리세요.' },
-    { id: '3', name: '몸통 회전', emoji: '🔄', duration: '30초', targetArea: '허리', instruction: '양발을 어깨너비로 벌리고 상체를 좌우로 회전하세요.' },
-    { id: '4', name: '발목 돌리기', emoji: '🦶', duration: '20초', targetArea: '발목', instruction: '한 발을 들고 발목을 안쪽과 바깥쪽으로 돌리세요.' },
+    {
+      id: '1',
+      name: '팔 돌리기',
+      emoji: '💪',
+      duration: '30초',
+      targetArea: '어깨',
+      instruction: '양팔을 크게 원을 그리며 앞뒤로 돌리세요.',
+    },
+    {
+      id: '2',
+      name: '무릎 높이 들기',
+      emoji: '🦵',
+      duration: '30초',
+      targetArea: '허벅지',
+      instruction: '제자리에서 무릎을 번갈아 높이 들어올리세요.',
+    },
+    {
+      id: '3',
+      name: '몸통 회전',
+      emoji: '🔄',
+      duration: '30초',
+      targetArea: '허리',
+      instruction: '양발을 어깨너비로 벌리고 상체를 좌우로 회전하세요.',
+    },
+    {
+      id: '4',
+      name: '발목 돌리기',
+      emoji: '🦶',
+      duration: '20초',
+      targetArea: '발목',
+      instruction: '한 발을 들고 발목을 안쪽과 바깥쪽으로 돌리세요.',
+    },
   ],
   cooldown: [
-    { id: '5', name: '허벅지 스트레칭', emoji: '🦵', duration: '30초', targetArea: '대퇴사두근', instruction: '한 발을 뒤로 접어 손으로 잡고 당겨주세요.' },
-    { id: '6', name: '햄스트링 스트레칭', emoji: '🧎', duration: '30초', targetArea: '뒷허벅지', instruction: '앉아서 한 다리를 뻗고 발끝을 향해 상체를 숙이세요.' },
-    { id: '7', name: '종아리 스트레칭', emoji: '🦶', duration: '20초', targetArea: '종아리', instruction: '벽에 손을 짚고 한 발을 뒤로 뻗어 종아리를 늘려주세요.' },
-    { id: '8', name: '어깨 스트레칭', emoji: '💪', duration: '20초', targetArea: '어깨', instruction: '한 팔을 가슴 앞으로 당기고 반대 손으로 잡아주세요.' },
+    {
+      id: '5',
+      name: '허벅지 스트레칭',
+      emoji: '🦵',
+      duration: '30초',
+      targetArea: '대퇴사두근',
+      instruction: '한 발을 뒤로 접어 손으로 잡고 당겨주세요.',
+    },
+    {
+      id: '6',
+      name: '햄스트링 스트레칭',
+      emoji: '🧎',
+      duration: '30초',
+      targetArea: '뒷허벅지',
+      instruction: '앉아서 한 다리를 뻗고 발끝을 향해 상체를 숙이세요.',
+    },
+    {
+      id: '7',
+      name: '종아리 스트레칭',
+      emoji: '🦶',
+      duration: '20초',
+      targetArea: '종아리',
+      instruction: '벽에 손을 짚고 한 발을 뒤로 뻗어 종아리를 늘려주세요.',
+    },
+    {
+      id: '8',
+      name: '어깨 스트레칭',
+      emoji: '💪',
+      duration: '20초',
+      targetArea: '어깨',
+      instruction: '한 팔을 가슴 앞으로 당기고 반대 손으로 잡아주세요.',
+    },
   ],
   daily: [
-    { id: '9', name: '고양이-소 자세', emoji: '🐱', duration: '1분', targetArea: '척추', instruction: '네 발로 엎드려 등을 둥글게 말았다 펴기를 반복하세요.' },
-    { id: '10', name: '아이 자세', emoji: '🧒', duration: '1분', targetArea: '허리/등', instruction: '무릎을 꿇고 앞으로 팔을 뻗어 이마를 바닥에 대세요.' },
-    { id: '11', name: '목 스트레칭', emoji: '🙇', duration: '30초', targetArea: '목', instruction: '고개를 좌우로 천천히 기울여 목 옆을 늘려주세요.' },
-    { id: '12', name: '비둘기 자세', emoji: '🕊️', duration: '1분', targetArea: '엉덩이', instruction: '한 다리를 앞으로 접고 반대 다리는 뒤로 뻗어주세요.' },
+    {
+      id: '9',
+      name: '고양이-소 자세',
+      emoji: '🐱',
+      duration: '1분',
+      targetArea: '척추',
+      instruction: '네 발로 엎드려 등을 둥글게 말았다 펴기를 반복하세요.',
+    },
+    {
+      id: '10',
+      name: '아이 자세',
+      emoji: '🧒',
+      duration: '1분',
+      targetArea: '허리/등',
+      instruction: '무릎을 꿇고 앞으로 팔을 뻗어 이마를 바닥에 대세요.',
+    },
+    {
+      id: '11',
+      name: '목 스트레칭',
+      emoji: '🙇',
+      duration: '30초',
+      targetArea: '목',
+      instruction: '고개를 좌우로 천천히 기울여 목 옆을 늘려주세요.',
+    },
+    {
+      id: '12',
+      name: '비둘기 자세',
+      emoji: '🕊️',
+      duration: '1분',
+      targetArea: '엉덩이',
+      instruction: '한 다리를 앞으로 접고 반대 다리는 뒤로 뻗어주세요.',
+    },
   ],
 };
 
@@ -57,114 +144,118 @@ export default function StretchingScreen(): React.ReactElement {
     return sum + seconds;
   }, 0);
 
-  // 카드 공통 그림자 (웹 shadow-sm border 매칭)
-  const cardShadow = !isDark ? coloredShadow(workoutColor, 'sm') : {};
-
   return (
-    <ScrollView
-      testID="stretching-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
-      >
-        스트레칭 가이드
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        부상 방지와 유연성 향상을 위해 스트레칭하세요
-      </Text>
+    <ScreenContainer testID="stretching-screen" edges={['bottom']} backgroundGradient="workout">
+      {/* 탭 + 헤더 */}
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          <Text
+            style={{
+              fontSize: typography.size['2xl'],
+              fontWeight: typography.weight.bold,
+              color: colors.foreground,
+              marginBottom: spacing.xs,
+            }}
+          >
+            스트레칭 가이드
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              color: colors.mutedForeground,
+              marginBottom: spacing.lg,
+            }}
+          >
+            부상 방지와 유연성 향상을 위해 스트레칭하세요
+          </Text>
 
-      {/* 탭 */}
-      <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
-        {STRETCH_TABS.map((tab) => {
-          const active = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              accessibilityLabel={`${tab.label} 스트레칭`}
-              onPress={() => setActiveTab(tab.id)}
-              style={[
-                {
-                  flex: 1,
-                  paddingVertical: spacing.sm,
-                  borderRadius: radii.xl,
-                  backgroundColor: active ? workoutColor : colors.card,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: active ? workoutColor : colors.border,
-                },
-                active && !isDark
-                  ? Platform.select({
-                      ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 8 },
-                      android: { elevation: 3 },
-                    }) ?? {}
-                  : {},
-                !active ? cardShadow : {},
-              ]}
+          {/* 탭 */}
+          <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
+            {STRETCH_TABS.map((tab) => {
+              const active = activeTab === tab.id;
+              return (
+                <Pressable
+                  key={tab.id}
+                  accessibilityLabel={`${tab.label} 스트레칭`}
+                  onPress={() => setActiveTab(tab.id)}
+                  style={[
+                    {
+                      flex: 1,
+                      paddingVertical: spacing.sm,
+                      borderRadius: radii.xl,
+                      backgroundColor: active ? workoutColor : colors.secondary,
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: active ? workoutColor : colors.border,
+                    },
+                    active && !isDark
+                      ? (Platform.select({
+                          ios: {
+                            shadowColor: workoutColor,
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 8,
+                          },
+                          android: { elevation: 3 },
+                        }) ?? {})
+                      : {},
+                  ]}
+                >
+                  <Text style={{ fontSize: typography.size.sm }}>{tab.emoji}</Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs,
+                      fontWeight: active ? typography.weight.bold : typography.weight.normal,
+                      color: active ? colors.overlayForeground : colors.foreground,
+                      marginTop: spacing.xxs,
+                    }}
+                  >
+                    {tab.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* 총 소요시간 */}
+          <View
+            style={{
+              backgroundColor: workoutColor + '15',
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: workoutColor + '30',
+            }}
+          >
+            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              예상 소요시간
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.size.xl,
+                fontWeight: typography.weight.bold,
+                color: workoutColor,
+              }}
             >
-              <Text style={{ fontSize: typography.size.sm }}>{tab.emoji}</Text>
-              <Text
-                style={{
-                  fontSize: typography.size.xs,
-                  fontWeight: active ? typography.weight.bold : typography.weight.normal,
-                  color: active ? colors.overlayForeground : colors.foreground,
-                  marginTop: spacing.xxs,
-                }}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* 총 소요시간 */}
-      <View
-        style={[
-          {
-            backgroundColor: workoutColor + '15',
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            alignItems: 'center',
-            marginBottom: spacing.lg,
-            borderWidth: 1,
-            borderColor: workoutColor + '30',
-          },
-        ]}
-      >
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>예상 소요시간</Text>
-        <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: workoutColor }}>
-          약 {Math.ceil(totalDuration / 60)}분
-        </Text>
-      </View>
+              약 {Math.ceil(totalDuration / 60)}분
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 스트레칭 목록 */}
       <View style={{ gap: spacing.sm }}>
         {stretches.map((stretch, index) => (
           <View
             key={stretch.id}
-            style={[
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-                borderWidth: 1,
-                borderColor: colors.border,
-              },
-              cardShadow,
-            ]}
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
               <View
@@ -178,13 +269,27 @@ export default function StretchingScreen(): React.ReactElement {
                   marginRight: spacing.smx,
                 }}
               >
-                <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: workoutColor }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    fontWeight: typography.weight.bold,
+                    color: workoutColor,
+                  }}
+                >
                   {index + 1}
                 </Text>
               </View>
-              <Text style={{ fontSize: typography.size.lg, marginRight: spacing.xs }}>{stretch.emoji}</Text>
+              <Text style={{ fontSize: typography.size.lg, marginRight: spacing.xs }}>
+                {stretch.emoji}
+              </Text>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
                   {stretch.name}
                 </Text>
                 <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
@@ -192,12 +297,18 @@ export default function StretchingScreen(): React.ReactElement {
                 </Text>
               </View>
             </View>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, lineHeight: 20 }}>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                color: colors.mutedForeground,
+                lineHeight: 20,
+              }}
+            >
               {stretch.instruction}
             </Text>
           </View>
         ))}
       </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

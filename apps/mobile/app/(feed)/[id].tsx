@@ -21,11 +21,14 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '../../lib/animations';
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
+
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {
@@ -46,7 +49,7 @@ interface Comment {
 }
 
 export default function FeedDetailScreen() {
-  const { colors, brand, typography, spacing, radii} = useTheme();
+  const { colors, brand } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
@@ -287,7 +290,7 @@ export default function FeedDetailScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="social">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
         </View>
@@ -297,7 +300,7 @@ export default function FeedDetailScreen() {
 
   if (!feedItem) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="social">
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: colors.foreground }]}>
             게시물을 찾을 수 없습니다.
@@ -312,6 +315,7 @@ export default function FeedDetailScreen() {
       testID="feed-detail-screen"
       scrollable={false}
       edges={['bottom']}
+      backgroundGradient="social"
     >
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -323,68 +327,72 @@ export default function FeedDetailScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
           ListHeaderComponent={
-            <View style={[styles.postContainer, { backgroundColor: colors.card }]}>
-              {/* 게시물 헤더 */}
-              <View style={styles.postHeader}>
-                <View style={styles.userInfo}>
-                  <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
-                    <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
-                      {feedItem.userName.charAt(0).toUpperCase()}
+            <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.postContainer }}>
+                {/* 게시물 헤더 */}
+                <View style={styles.postHeader}>
+                  <View style={styles.userInfo}>
+                    <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
+                      <Text style={[styles.avatarText, { color: colors.mutedForeground }]}>
+                        {feedItem.userName.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.userMeta}>
+                      <Text style={[styles.userName, { color: colors.foreground }]}>
+                        {feedItem.userName}
+                      </Text>
+                      <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>
+                        {formatTime(feedItem.createdAt)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
+                    <Text style={[styles.levelText, { color: brand.primary }]}>
+                      Lv.{feedItem.userLevel}
                     </Text>
                   </View>
-                  <View style={styles.userMeta}>
-                    <Text style={[styles.userName, { color: colors.foreground }]}>
-                      {feedItem.userName}
+                </View>
+
+                {/* 게시물 컨텐츠 */}
+                <View style={styles.postContent}>
+                  <View style={styles.typeRow}>
+                    <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[feedItem.type] || '📝'}</Text>
+                    <Text style={[styles.typeLabel, { color: colors.mutedForeground }]}>
+                      {feedItem.type}
                     </Text>
-                    <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>
-                      {formatTime(feedItem.createdAt)}
+                  </View>
+                  <Text style={[styles.contentText, { color: colors.foreground }]}>
+                    {feedItem.content}
+                  </Text>
+                  {feedItem.detail && (
+                    <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
+                      {feedItem.detail}
+                    </Text>
+                  )}
+                </View>
+
+                {/* 액션 버튼 */}
+                <View style={[styles.postActions, { borderTopColor: colors.border }]}>
+                  <Pressable style={styles.actionButton} onPress={handleLike}>
+                    <Text style={styles.actionIcon}>{feedItem.isLiked ? '❤️' : '🤍'}</Text>
+                    <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
+                      좋아요 {feedItem.likes}
+                    </Text>
+                  </Pressable>
+                  <View style={styles.actionButton}>
+                    <Text style={styles.actionIcon}>💬</Text>
+                    <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
+                      댓글 {comments.length}
                     </Text>
                   </View>
                 </View>
-                <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
-                  <Text style={[styles.levelText, { color: brand.primary }]}>Lv.{feedItem.userLevel}</Text>
-                </View>
-              </View>
 
-              {/* 게시물 컨텐츠 */}
-              <View style={styles.postContent}>
-                <View style={styles.typeRow}>
-                  <Text style={styles.typeIcon}>{FEED_TYPE_ICONS[feedItem.type] || '📝'}</Text>
-                  <Text style={[styles.typeLabel, { color: colors.mutedForeground }]}>
-                    {feedItem.type}
-                  </Text>
+                {/* 댓글 헤더 */}
+                <View style={[styles.commentsHeader, { borderTopColor: colors.border }]}>
+                  <Text style={[styles.commentsTitle, { color: colors.foreground }]}>댓글</Text>
                 </View>
-                <Text style={[styles.contentText, { color: colors.foreground }]}>
-                  {feedItem.content}
-                </Text>
-                {feedItem.detail && (
-                  <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
-                    {feedItem.detail}
-                  </Text>
-                )}
-              </View>
-
-              {/* 액션 버튼 */}
-              <View style={[styles.postActions, { borderTopColor: colors.border }]}>
-                <Pressable style={styles.actionButton} onPress={handleLike}>
-                  <Text style={styles.actionIcon}>{feedItem.isLiked ? '❤️' : '🤍'}</Text>
-                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
-                    좋아요 {feedItem.likes}
-                  </Text>
-                </Pressable>
-                <View style={styles.actionButton}>
-                  <Text style={styles.actionIcon}>💬</Text>
-                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
-                    댓글 {comments.length}
-                  </Text>
-                </View>
-              </View>
-
-              {/* 댓글 헤더 */}
-              <View style={[styles.commentsHeader, { borderTopColor: colors.border }]}>
-                <Text style={[styles.commentsTitle, { color: colors.foreground }]}>댓글</Text>
-              </View>
-            </View>
+              </GlassCard>
+            </Animated.View>
           }
           ListEmptyComponent={
             <View style={styles.emptyComments}>

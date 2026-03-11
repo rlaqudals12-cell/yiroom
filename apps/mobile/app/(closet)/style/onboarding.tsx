@@ -8,15 +8,17 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, {
   FadeIn,
+  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
 
-import { useTheme, spacing, radii, typography } from '@/lib/theme';
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 
-import { ScreenContainer } from '../../../components/ui';
+import { TIMING } from '@/lib/animations';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 const STYLE_OPTIONS = [
   { id: 'casual', label: '캐주얼' },
@@ -79,35 +81,40 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
   return (
     <ScreenContainer
       testID="style-onboarding-screen"
+      backgroundGradient="style"
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
     >
       {/* 진행률 바 */}
-      <View style={[styles.progressContainer, { paddingHorizontal: spacing.md }]}>
-        <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                backgroundColor: brand.primary,
-                width: `${((step + 1) / 3) * 100}%`,
-              },
-            ]}
-          />
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <View style={[styles.progressContainer, { paddingHorizontal: spacing.md }]}>
+          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: brand.primary,
+                  width: `${((step + 1) / 3) * 100}%`,
+                },
+              ]}
+            />
+          </View>
+          <Text style={[styles.stepIndicator, { color: colors.mutedForeground }]}>
+            {step + 1} / 3
+          </Text>
         </View>
-        <Text style={[styles.stepIndicator, { color: colors.mutedForeground }]}>
-          {step + 1} / 3
-        </Text>
-      </View>
+      </Animated.View>
 
       {/* 단계 제목 */}
-      <Text
-        style={[styles.title, { color: colors.foreground, paddingHorizontal: spacing.md }]}
-        accessibilityRole="header"
-      >
-        {STEP_TITLES[step]}
-      </Text>
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <Text
+          style={[styles.title, { color: colors.foreground, paddingHorizontal: spacing.md }]}
+          accessibilityRole="header"
+        >
+          {STEP_TITLES[step]}
+        </Text>
+      </Animated.View>
 
       {/* Step 1: 스타일 선택 */}
       {step === 0 && (
@@ -174,48 +181,48 @@ export default function StyleOnboardingScreen(): React.JSX.Element {
           contentContainerStyle={styles.summaryContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View
-            style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}
-          >
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
-              선호 스타일
-            </Text>
-            <View style={styles.summaryTags}>
-              {selectedStyles.map((id) => {
-                const option = STYLE_OPTIONS.find((o) => o.id === id);
-                return (
-                  <View
-                    key={id}
-                    style={[styles.summaryTag, { backgroundColor: brand.primary + '20' }]}
-                  >
-                    <Text style={[styles.summaryTagText, { color: brand.primary }]}>
-                      {option?.label}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
+          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.summaryCard }}>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
+                선호 스타일
+              </Text>
+              <View style={styles.summaryTags}>
+                {selectedStyles.map((id) => {
+                  const option = STYLE_OPTIONS.find((o) => o.id === id);
+                  return (
+                    <View
+                      key={id}
+                      style={[styles.summaryTag, { backgroundColor: brand.primary + '20' }]}
+                    >
+                      <Text style={[styles.summaryTagText, { color: brand.primary }]}>
+                        {option?.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
 
-            <Text
-              style={[
-                styles.summaryLabel,
-                { color: colors.mutedForeground, marginTop: spacing.md },
-              ]}
-            >
-              자주 입는 컬러
-            </Text>
-            <View style={styles.summaryColorRow}>
-              {selectedColors.map((id) => {
-                const option = COLOR_OPTIONS.find((o) => o.id === id);
-                return (
-                  <View
-                    key={id}
-                    style={[styles.summaryColorDot, { backgroundColor: option?.hex }]}
-                  />
-                );
-              })}
-            </View>
-          </View>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: colors.mutedForeground, marginTop: spacing.md },
+                ]}
+              >
+                자주 입는 컬러
+              </Text>
+              <View style={styles.summaryColorRow}>
+                {selectedColors.map((id) => {
+                  const option = COLOR_OPTIONS.find((o) => o.id === id);
+                  return (
+                    <View
+                      key={id}
+                      style={[styles.summaryColorDot, { backgroundColor: option?.hex }]}
+                    />
+                  );
+                })}
+              </View>
+            </GlassCard>
+          </Animated.View>
 
           <Text style={[styles.completionText, { color: status.success }]}>
             맞춤 스타일 추천을 시작할 준비가 됐어요

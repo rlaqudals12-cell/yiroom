@@ -17,12 +17,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { ScreenContainer } from '@/components/ui';
 
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
-
-import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { formatRelativeTime } from '../../../lib/feed';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
+
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 interface Comment {
   id: string;
@@ -142,21 +142,43 @@ export default function CommentsScreen(): React.JSX.Element {
             {item.userName.charAt(0)}
           </Text>
         </View>
-        <Text style={[styles.commentUser, { color: colors.foreground, fontWeight: typography.weight.semibold, fontSize: typography.size.sm }]}>
+        <Text
+          style={[
+            styles.commentUser,
+            {
+              color: colors.foreground,
+              fontWeight: typography.weight.semibold,
+              fontSize: typography.size.sm,
+            },
+          ]}
+        >
           {item.userName}
         </Text>
-        <Text style={[styles.commentTime, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.commentTime,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           {formatRelativeTime(item.createdAt)}
         </Text>
       </View>
-      <Text style={[styles.commentContent, { color: colors.foreground, fontSize: typography.size.sm }]}>
+      <Text
+        style={[styles.commentContent, { color: colors.foreground, fontSize: typography.size.sm }]}
+      >
         {item.content}
       </Text>
     </View>
   );
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="comments-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="comments-screen"
+      edges={['bottom']}
+      backgroundGradient="social"
+    >
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -169,7 +191,12 @@ export default function CommentsScreen(): React.JSX.Element {
         ) : comments.length === 0 ? (
           <View style={styles.center}>
             <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>💬</Text>
-            <Text style={[styles.emptyText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+            <Text
+              style={[
+                styles.emptyText,
+                { color: colors.mutedForeground, fontSize: typography.size.sm },
+              ]}
+            >
               아직 댓글이 없어요. 첫 댓글을 남겨보세요!
             </Text>
           </View>
@@ -184,7 +211,7 @@ export default function CommentsScreen(): React.JSX.Element {
         )}
 
         {/* 댓글 입력 */}
-        <View style={[styles.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+        <GlassCard shadowSize="md" style={{ ...styles.inputBar, borderTopColor: colors.border }}>
           <TextInput
             style={[
               styles.commentInput,
@@ -217,12 +244,17 @@ export default function CommentsScreen(): React.JSX.Element {
             {isSending ? (
               <ActivityIndicator size="small" color={brand.primaryForeground} />
             ) : (
-              <Text style={{ color: newComment.trim() ? brand.primaryForeground : colors.mutedForeground, fontWeight: typography.weight.bold }}>
+              <Text
+                style={{
+                  color: newComment.trim() ? brand.primaryForeground : colors.mutedForeground,
+                  fontWeight: typography.weight.bold,
+                }}
+              >
                 전송
               </Text>
             )}
           </Pressable>
-        </View>
+        </GlassCard>
       </KeyboardAvoidingView>
     </ScreenContainer>
   );
@@ -234,13 +266,30 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { textAlign: 'center' },
   commentCard: { padding: spacing.smx },
-  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm },
-  commentAvatar: { width: 28, height: 28, borderRadius: radii.xlg, justifyContent: 'center', alignItems: 'center' },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
+  commentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: radii.xlg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   commentAvatarText: { fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
   commentUser: {},
   commentTime: { marginLeft: 'auto' },
   commentContent: { lineHeight: 20, paddingLeft: 36 },
-  inputBar: { flexDirection: 'row', padding: spacing.smx, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
+  inputBar: {
+    flexDirection: 'row',
+    padding: spacing.smx,
+    gap: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+  },
   commentInput: { flex: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.smd },
   sendButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.smd },
 });

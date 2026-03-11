@@ -20,17 +20,18 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
-import { staggeredEntry } from '@/lib/animations';
-import { ScreenContainer } from '../../components/ui';
+import { GlassCard, ScreenContainer } from '../../components/ui';
+
+import { TIMING, staggeredEntry } from '@/lib/animations';
 import {
   useInventory,
   type InventoryItem,
   type PantryMetadata,
   type SupplementMetadata,
 } from '@/lib/inventory';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 // 탭
 type PantryTab = 'pantry' | 'supplement';
@@ -74,7 +75,7 @@ function getStorageLabel(type: string): string {
 }
 
 export default function PantryScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows } = useTheme();
+  const { colors, radii, brand, status, shadows } = useTheme();
 
   const [activeTab, setActiveTab] = useState<PantryTab>('pantry');
   const [storageFilter, setStorageFilter] = useState('all');
@@ -211,10 +212,7 @@ export default function PantryScreen(): React.JSX.Element {
               <Text
                 style={{
                   fontSize: typography.size.xs,
-                  color:
-                    suppMeta.remainingServings <= 5
-                      ? status.warning
-                      : colors.mutedForeground,
+                  color: suppMeta.remainingServings <= 5 ? status.warning : colors.mutedForeground,
                 }}
               >
                 잔여 {suppMeta.remainingServings}회분
@@ -240,13 +238,7 @@ export default function PantryScreen(): React.JSX.Element {
             >
               <Clock
                 size={12}
-                color={
-                  expired
-                    ? status.error
-                    : expiring
-                      ? status.warning
-                      : colors.mutedForeground
-                }
+                color={expired ? status.error : expiring ? status.warning : colors.mutedForeground}
               />
               <Text
                 style={{
@@ -283,117 +275,103 @@ export default function PantryScreen(): React.JSX.Element {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="beauty"
     >
       {/* 탭 전환 */}
-      <View
-        style={[
-          styles.tabRow,
-          {
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard
+          shadowSize="md"
+          style={{
+            ...styles.tabRow,
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.sm,
-            borderBottomWidth: 1,
             borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Pressable
-          style={[
-            styles.tab,
-            {
-              backgroundColor:
-                activeTab === 'pantry' ? brand.primary : 'transparent',
-              borderRadius: radii.xl,
-            },
-          ]}
-          onPress={() => {
-            Haptics.selectionAsync();
-            setActiveTab('pantry');
           }}
         >
-          <Refrigerator
-            size={16}
-            color={
-              activeTab === 'pantry'
-                ? colors.overlayForeground
-                : colors.mutedForeground
-            }
-          />
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              fontWeight: typography.weight.semibold,
-              color:
-                activeTab === 'pantry'
-                  ? colors.overlayForeground
-                  : colors.mutedForeground,
-              marginLeft: spacing.xs,
+          <Pressable
+            style={[
+              styles.tab,
+              {
+                backgroundColor: activeTab === 'pantry' ? brand.primary : 'transparent',
+                borderRadius: radii.xl,
+              },
+            ]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveTab('pantry');
             }}
           >
-            냉장고
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.tab,
-            {
-              backgroundColor:
-                activeTab === 'supplement' ? brand.primary : 'transparent',
-              borderRadius: radii.xl,
-            },
-          ]}
-          onPress={() => {
-            Haptics.selectionAsync();
-            setActiveTab('supplement');
-          }}
-        >
-          <Pill
-            size={16}
-            color={
-              activeTab === 'supplement'
-                ? colors.overlayForeground
-                : colors.mutedForeground
-            }
-          />
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              fontWeight: typography.weight.semibold,
-              color:
-                activeTab === 'supplement'
-                  ? colors.overlayForeground
-                  : colors.mutedForeground,
-              marginLeft: spacing.xs,
-            }}
-          >
-            영양제
-          </Text>
-        </Pressable>
-        <View style={{ flex: 1 }} />
-        {expiringCount > 0 && (
-          <View style={styles.warningBadge}>
-            <Clock size={14} color={status.warning} />
+            <Refrigerator
+              size={16}
+              color={activeTab === 'pantry' ? colors.overlayForeground : colors.mutedForeground}
+            />
             <Text
               style={{
-                fontSize: typography.size.xs,
-                color: status.warning,
+                fontSize: typography.size.sm,
                 fontWeight: typography.weight.semibold,
+                color: activeTab === 'pantry' ? colors.overlayForeground : colors.mutedForeground,
                 marginLeft: spacing.xs,
               }}
             >
-              {expiringCount}
+              냉장고
             </Text>
-          </View>
-        )}
-        <Text
-          style={{
-            fontSize: typography.size.xs,
-            color: colors.mutedForeground,
-            marginLeft: spacing.sm,
-          }}
-        >
-          {activeItems.length}개
-        </Text>
-      </View>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              {
+                backgroundColor: activeTab === 'supplement' ? brand.primary : 'transparent',
+                borderRadius: radii.xl,
+              },
+            ]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveTab('supplement');
+            }}
+          >
+            <Pill
+              size={16}
+              color={activeTab === 'supplement' ? colors.overlayForeground : colors.mutedForeground}
+            />
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color:
+                  activeTab === 'supplement' ? colors.overlayForeground : colors.mutedForeground,
+                marginLeft: spacing.xs,
+              }}
+            >
+              영양제
+            </Text>
+          </Pressable>
+          <View style={{ flex: 1 }} />
+          {expiringCount > 0 && (
+            <View style={styles.warningBadge}>
+              <Clock size={14} color={status.warning} />
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: status.warning,
+                  fontWeight: typography.weight.semibold,
+                  marginLeft: spacing.xs,
+                }}
+              >
+                {expiringCount}
+              </Text>
+            </View>
+          )}
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginLeft: spacing.sm,
+            }}
+          >
+            {activeItems.length}개
+          </Text>
+        </GlassCard>
+      </Animated.View>
 
       {/* 보관 위치 필터 (팬트리 탭만) */}
       {activeTab === 'pantry' && (
@@ -411,10 +389,8 @@ export default function PantryScreen(): React.JSX.Element {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor:
-                    storageFilter === f.key ? brand.primary : colors.card,
-                  borderColor:
-                    storageFilter === f.key ? brand.primary : colors.border,
+                  backgroundColor: storageFilter === f.key ? brand.primary : colors.card,
+                  borderColor: storageFilter === f.key ? brand.primary : colors.border,
                   borderRadius: radii.full,
                 },
               ]}
@@ -427,10 +403,7 @@ export default function PantryScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   fontWeight: typography.weight.semibold,
-                  color:
-                    storageFilter === f.key
-                      ? colors.overlayForeground
-                      : colors.foreground,
+                  color: storageFilter === f.key ? colors.overlayForeground : colors.foreground,
                 }}
               >
                 {f.label}
@@ -455,9 +428,7 @@ export default function PantryScreen(): React.JSX.Element {
             paddingBottom: spacing.xxl,
             flexGrow: filteredItems.length === 0 ? 1 : undefined,
           }}
-          refreshControl={
-            <RefreshControl refreshing={false} onRefresh={activeRefetch} />
-          }
+          refreshControl={<RefreshControl refreshing={false} onRefresh={activeRefetch} />}
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={{ fontSize: 48, marginBottom: spacing.md }}>{emptyIcon}</Text>

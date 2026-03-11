@@ -3,17 +3,11 @@
  * 피부 고민별 타겟 솔루션 + 추천 성분/루틴
  */
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../../components/ui';
-import { staggeredEntry } from '../../../lib/animations';
+import { ScreenContainer, GlassCard } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
 // 고민 카테고리
@@ -40,7 +34,8 @@ interface SolutionData {
 // 솔루션 데이터 (mock)
 const SOLUTIONS: Record<ConcernId, SolutionData> = {
   acne: {
-    description: '트러블은 과도한 피지와 모공 막힘이 주원인이에요. 적절한 각질 관리와 진정 케어가 핵심이에요.',
+    description:
+      '트러블은 과도한 피지와 모공 막힘이 주원인이에요. 적절한 각질 관리와 진정 케어가 핵심이에요.',
     keyIngredients: [
       { name: '살리실산 (BHA)', effect: '모공 속 각질·피지 용해' },
       { name: '나이아신아마이드', effect: '피지 조절 + 진정' },
@@ -62,7 +57,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   wrinkles: {
-    description: '주름은 콜라겐 감소와 자외선 손상이 주원인이에요. 자외선 차단과 세포 재생 촉진이 핵심이에요.',
+    description:
+      '주름은 콜라겐 감소와 자외선 손상이 주원인이에요. 자외선 차단과 세포 재생 촉진이 핵심이에요.',
     keyIngredients: [
       { name: '레티놀 (비타민 A)', effect: '세포 턴오버 촉진' },
       { name: '비타민 C', effect: '콜라겐 합성 촉진' },
@@ -84,7 +80,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   pigmentation: {
-    description: '색소침착은 자외선 노출과 염증 후 과색소침착이 주원인이에요. 멜라닌 생성 억제와 각질 관리가 핵심이에요.',
+    description:
+      '색소침착은 자외선 노출과 염증 후 과색소침착이 주원인이에요. 멜라닌 생성 억제와 각질 관리가 핵심이에요.',
     keyIngredients: [
       { name: '비타민 C (아스코르브산)', effect: '멜라닌 생성 억제' },
       { name: '알부틴', effect: '미백 효과' },
@@ -106,7 +103,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   pores: {
-    description: '넓은 모공은 과다 피지와 피부 탄력 저하가 주원인이에요. 피지 조절과 모공 타이트닝이 핵심이에요.',
+    description:
+      '넓은 모공은 과다 피지와 피부 탄력 저하가 주원인이에요. 피지 조절과 모공 타이트닝이 핵심이에요.',
     keyIngredients: [
       { name: 'BHA (살리실산)', effect: '모공 속 피지 용해' },
       { name: '나이아신아마이드', effect: '모공 축소 + 피지 조절' },
@@ -128,7 +126,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   dryness: {
-    description: '건조한 피부는 수분 장벽 손상과 유·수분 불균형이 주원인이에요. 보습 강화와 장벽 회복이 핵심이에요.',
+    description:
+      '건조한 피부는 수분 장벽 손상과 유·수분 불균형이 주원인이에요. 보습 강화와 장벽 회복이 핵심이에요.',
     keyIngredients: [
       { name: '세라마이드', effect: '피부 장벽 회복' },
       { name: '히알루론산', effect: '수분 흡착·보유' },
@@ -150,7 +149,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   redness: {
-    description: '홍조는 혈관 확장과 피부 염증이 주원인이에요. 진정 케어와 자극 최소화가 핵심이에요.',
+    description:
+      '홍조는 혈관 확장과 피부 염증이 주원인이에요. 진정 케어와 자극 최소화가 핵심이에요.',
     keyIngredients: [
       { name: '센텔라아시아티카', effect: '진정 + 재생' },
       { name: '알란토인', effect: '자극 완화' },
@@ -172,7 +172,8 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
     ],
   },
   dullness: {
-    description: '칙칙한 피부는 각질 축적과 혈액순환 저하가 주원인이에요. 각질 관리와 영양 공급이 핵심이에요.',
+    description:
+      '칙칙한 피부는 각질 축적과 혈액순환 저하가 주원인이에요. 각질 관리와 영양 공급이 핵심이에요.',
     keyIngredients: [
       { name: '비타민 C', effect: '브라이트닝 + 항산화' },
       { name: 'AHA (글리콜산)', effect: '각질 제거' },
@@ -196,7 +197,7 @@ const SOLUTIONS: Record<ConcernId, SolutionData> = {
 };
 
 export default function SkinSolutionScreen(): React.JSX.Element {
-  const { colors, isDark, typography, spacing} = useTheme();
+  const { colors } = useTheme();
   const [selectedConcern, setSelectedConcern] = useState<ConcernId>('acne');
 
   const handleSelectConcern = useCallback((id: ConcernId): void => {
@@ -207,7 +208,7 @@ export default function SkinSolutionScreen(): React.JSX.Element {
   const selectedCategory = CONCERN_CATEGORIES.find((c) => c.id === selectedConcern);
 
   return (
-    <ScreenContainer testID="skin-solution-screen" edges={['bottom']}>
+    <ScreenContainer testID="skin-solution-screen" backgroundGradient="analysis" edges={['bottom']}>
       {/* 고민 선택 */}
       <ScrollView
         horizontal
@@ -243,105 +244,77 @@ export default function SkinSolutionScreen(): React.JSX.Element {
       </ScrollView>
 
       {/* 설명 */}
-      <Animated.View
-        entering={staggeredEntry(0)}
-        style={[
-          styles.descCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.descTitle, { color: colors.foreground }]}>
-          {selectedCategory?.emoji} {selectedCategory?.label} 솔루션
-        </Text>
-        <Text style={[styles.descText, { color: colors.foreground }]}>
-          {solution.description}
-        </Text>
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.descCard }}>
+          <Text style={[styles.descTitle, { color: colors.foreground }]}>
+            {selectedCategory?.emoji} {selectedCategory?.label} 솔루션
+          </Text>
+          <Text style={[styles.descText, { color: colors.foreground }]}>
+            {solution.description}
+          </Text>
+        </GlassCard>
       </Animated.View>
 
       {/* 추천 성분 */}
-      <Animated.View
-        entering={staggeredEntry(1)}
-        style={[
-          styles.sectionCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          추천 성분
-        </Text>
-        {solution.keyIngredients.map((ingredient, i) => (
-          <View
-            key={i}
-            style={[
-              styles.ingredientRow,
-              i < solution.keyIngredients.length - 1 && {
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.ingredientName, { color: colors.foreground }]}>
-              {ingredient.name}
-            </Text>
-            <Text style={[styles.ingredientEffect, { color: colors.muted }]}>
-              {ingredient.effect}
-            </Text>
-          </View>
-        ))}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추천 성분</Text>
+          {solution.keyIngredients.map((ingredient, i) => (
+            <View
+              key={i}
+              style={[
+                styles.ingredientRow,
+                i < solution.keyIngredients.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.ingredientName, { color: colors.foreground }]}>
+                {ingredient.name}
+              </Text>
+              <Text style={[styles.ingredientEffect, { color: colors.muted }]}>
+                {ingredient.effect}
+              </Text>
+            </View>
+          ))}
+        </GlassCard>
       </Animated.View>
 
       {/* 루틴 팁 */}
-      <Animated.View
-        entering={staggeredEntry(2)}
-        style={[
-          styles.sectionCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          루틴 가이드
-        </Text>
-        {solution.routineTips.map((tip, i) => (
-          <Text key={i} style={[styles.tipText, { color: colors.foreground }]}>
-            {i + 1}. {tip}
-          </Text>
-        ))}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>루틴 가이드</Text>
+          {solution.routineTips.map((tip, i) => (
+            <Text key={i} style={[styles.tipText, { color: colors.foreground }]}>
+              {i + 1}. {tip}
+            </Text>
+          ))}
+        </GlassCard>
       </Animated.View>
 
       {/* 피해야 할 성분 */}
-      <Animated.View
-        entering={staggeredEntry(3)}
-        style={[
-          styles.sectionCard,
-          { backgroundColor: isDark ? colors.card : colors.destructive + '10', borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          피해야 할 성분
-        </Text>
-        {solution.avoidIngredients.map((item, i) => (
-          <Text key={i} style={[styles.avoidText, { color: colors.foreground }]}>
-            ⚠️ {item}
-          </Text>
-        ))}
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>피해야 할 성분</Text>
+          {solution.avoidIngredients.map((item, i) => (
+            <Text key={i} style={[styles.avoidText, { color: colors.foreground }]}>
+              ⚠️ {item}
+            </Text>
+          ))}
+        </GlassCard>
       </Animated.View>
 
       {/* 생활 습관 팁 */}
-      <Animated.View
-        entering={staggeredEntry(4)}
-        style={[
-          styles.sectionCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          생활 습관 팁
-        </Text>
-        {solution.lifestyleTips.map((tip, i) => (
-          <Text key={i} style={[styles.tipText, { color: colors.foreground }]}>
-            • {tip}
-          </Text>
-        ))}
+      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.sectionCard }}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>생활 습관 팁</Text>
+          {solution.lifestyleTips.map((tip, i) => (
+            <Text key={i} style={[styles.tipText, { color: colors.foreground }]}>
+              • {tip}
+            </Text>
+          ))}
+        </GlassCard>
       </Animated.View>
     </ScreenContainer>
   );
@@ -372,9 +345,6 @@ const styles = StyleSheet.create({
   },
   // 설명 카드
   descCard: {
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.md,
     marginBottom: spacing.md,
   },
   descTitle: {
@@ -388,9 +358,6 @@ const styles = StyleSheet.create({
   },
   // 섹션 카드
   sectionCard: {
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.md,
     marginBottom: spacing.md,
   },
   sectionTitle: {

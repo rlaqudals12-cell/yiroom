@@ -16,11 +16,12 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
-import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
+
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
 
 // 스톱라이트 타입
 type TrafficLight = 'green' | 'yellow' | 'red';
@@ -38,18 +39,126 @@ interface FoodItem {
 
 // DB 조회 실패 시 사용하는 기본 음식 데이터
 const FALLBACK_FOODS: FoodItem[] = [
-  { id: '1', name: '흰쌀밥', calories: 300, protein: 6, carbs: 65, fat: 1, trafficLight: 'yellow', category: '밥' },
-  { id: '2', name: '현미밥', calories: 280, protein: 7, carbs: 58, fat: 2, trafficLight: 'green', category: '밥' },
-  { id: '3', name: '비빔밥', calories: 550, protein: 18, carbs: 65, fat: 12, trafficLight: 'yellow', category: '밥' },
-  { id: '4', name: '라면', calories: 500, protein: 10, carbs: 70, fat: 18, trafficLight: 'red', category: '면' },
-  { id: '5', name: '된장찌개', calories: 120, protein: 9, carbs: 8, fat: 5, trafficLight: 'green', category: '국' },
-  { id: '6', name: '김치찌개', calories: 150, protein: 12, carbs: 10, fat: 6, trafficLight: 'green', category: '국' },
-  { id: '7', name: '불고기', calories: 350, protein: 28, carbs: 15, fat: 20, trafficLight: 'yellow', category: '고기' },
-  { id: '8', name: '닭가슴살', calories: 165, protein: 31, carbs: 0, fat: 4, trafficLight: 'green', category: '고기' },
-  { id: '9', name: '삼겹살', calories: 500, protein: 25, carbs: 2, fat: 45, trafficLight: 'red', category: '고기' },
-  { id: '10', name: '샐러드', calories: 80, protein: 3, carbs: 10, fat: 3, trafficLight: 'green', category: '채소' },
-  { id: '11', name: '떡볶이', calories: 380, protein: 6, carbs: 65, fat: 10, trafficLight: 'red', category: '분식' },
-  { id: '12', name: '아메리카노', calories: 10, protein: 0, carbs: 2, fat: 0, trafficLight: 'green', category: '음료' },
+  {
+    id: '1',
+    name: '흰쌀밥',
+    calories: 300,
+    protein: 6,
+    carbs: 65,
+    fat: 1,
+    trafficLight: 'yellow',
+    category: '밥',
+  },
+  {
+    id: '2',
+    name: '현미밥',
+    calories: 280,
+    protein: 7,
+    carbs: 58,
+    fat: 2,
+    trafficLight: 'green',
+    category: '밥',
+  },
+  {
+    id: '3',
+    name: '비빔밥',
+    calories: 550,
+    protein: 18,
+    carbs: 65,
+    fat: 12,
+    trafficLight: 'yellow',
+    category: '밥',
+  },
+  {
+    id: '4',
+    name: '라면',
+    calories: 500,
+    protein: 10,
+    carbs: 70,
+    fat: 18,
+    trafficLight: 'red',
+    category: '면',
+  },
+  {
+    id: '5',
+    name: '된장찌개',
+    calories: 120,
+    protein: 9,
+    carbs: 8,
+    fat: 5,
+    trafficLight: 'green',
+    category: '국',
+  },
+  {
+    id: '6',
+    name: '김치찌개',
+    calories: 150,
+    protein: 12,
+    carbs: 10,
+    fat: 6,
+    trafficLight: 'green',
+    category: '국',
+  },
+  {
+    id: '7',
+    name: '불고기',
+    calories: 350,
+    protein: 28,
+    carbs: 15,
+    fat: 20,
+    trafficLight: 'yellow',
+    category: '고기',
+  },
+  {
+    id: '8',
+    name: '닭가슴살',
+    calories: 165,
+    protein: 31,
+    carbs: 0,
+    fat: 4,
+    trafficLight: 'green',
+    category: '고기',
+  },
+  {
+    id: '9',
+    name: '삼겹살',
+    calories: 500,
+    protein: 25,
+    carbs: 2,
+    fat: 45,
+    trafficLight: 'red',
+    category: '고기',
+  },
+  {
+    id: '10',
+    name: '샐러드',
+    calories: 80,
+    protein: 3,
+    carbs: 10,
+    fat: 3,
+    trafficLight: 'green',
+    category: '채소',
+  },
+  {
+    id: '11',
+    name: '떡볶이',
+    calories: 380,
+    protein: 6,
+    carbs: 65,
+    fat: 10,
+    trafficLight: 'red',
+    category: '분식',
+  },
+  {
+    id: '12',
+    name: '아메리카노',
+    calories: 10,
+    protein: 0,
+    carbs: 2,
+    fat: 0,
+    trafficLight: 'green',
+    category: '음료',
+  },
 ];
 
 // 식사 타입
@@ -68,7 +177,7 @@ interface SelectedFood extends FoodItem {
 }
 
 export default function FoodSearchScreen() {
-  const { colors, typography, spacing, radii} = useTheme();
+  const { colors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -232,7 +341,13 @@ export default function FoodSearchScreen() {
   };
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-search-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="nutrition-search-screen"
+      edges={['bottom']}
+      backgroundGradient="nutrition"
+    >
       {/* 검색 바 */}
       <View style={styles.searchSection}>
         <TextInput
@@ -272,7 +387,12 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.mealTypeLabel,
-                { color: selectedMealType === meal.id ? colors.overlayForeground : colors.mutedForeground },
+                {
+                  color:
+                    selectedMealType === meal.id
+                      ? colors.overlayForeground
+                      : colors.mutedForeground,
+                },
               ]}
             >
               {meal.label}
@@ -304,7 +424,12 @@ export default function FoodSearchScreen() {
             <Text
               style={[
                 styles.categoryText,
-                { color: selectedCategory === category ? colors.overlayForeground : colors.mutedForeground },
+                {
+                  color:
+                    selectedCategory === category
+                      ? colors.overlayForeground
+                      : colors.mutedForeground,
+                },
               ]}
             >
               {category}
@@ -318,7 +443,9 @@ export default function FoodSearchScreen() {
         {foodsLoading ? (
           <View style={styles.emptyState}>
             <ActivityIndicator size="small" color={moduleColors.nutrition.dark} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground, marginTop: spacing.sm }]}>
+            <Text
+              style={[styles.emptyText, { color: colors.mutedForeground, marginTop: spacing.sm }]}
+            >
               음식 데이터를 불러오는 중...
             </Text>
           </View>
@@ -399,7 +526,9 @@ export default function FoodSearchScreen() {
             {isSaving ? (
               <ActivityIndicator color={colors.overlayForeground} />
             ) : (
-              <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록하기</Text>
+              <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>
+                기록하기
+              </Text>
             )}
           </Pressable>
         </View>

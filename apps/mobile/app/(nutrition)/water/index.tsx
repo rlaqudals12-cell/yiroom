@@ -5,19 +5,13 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Alert,
-} from 'react-native';
-
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { useTheme, spacing, radii, typography } from '@/lib/theme';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { waterLogger } from '../../../lib/utils/logger';
+
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 // 빠른 추가 옵션 (ml)
 const QUICK_ADD_OPTIONS = [
@@ -43,7 +37,7 @@ interface WaterRecord {
 }
 
 export default function WaterTrackingScreen() {
-  const { colors, status, typography, spacing, radii, isDark } = useTheme();
+  const { colors, status } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -177,31 +171,34 @@ export default function WaterTrackingScreen() {
       testID="nutrition-water-screen"
       edges={['bottom']}
       contentPadding={20}
+      backgroundGradient="nutrition"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <DataStateWrapper
-        isLoading={isLoading}
-        isEmpty={false}
-      >
+      <DataStateWrapper isLoading={isLoading} isEmpty={false}>
         {/* 진행 상황 */}
-        <View style={styles.progressSection}>
-          <Text style={styles.progressIcon}>💧</Text>
-          <Text style={[styles.progressValue, { color: colors.foreground }]}>
-            {totalIntake.toLocaleString()} ml
-          </Text>
-          <View style={[styles.progressBarContainer, { backgroundColor: colors.border }]}>
-            <View
-              style={[styles.progressBar, { width: `${progress}%`, backgroundColor: status.info }]}
-            />
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          <View style={styles.progressSection}>
+            <Text style={styles.progressIcon}>💧</Text>
+            <Text style={[styles.progressValue, { color: colors.foreground }]}>
+              {totalIntake.toLocaleString()} ml
+            </Text>
+            <View style={[styles.progressBarContainer, { backgroundColor: colors.border }]}>
+              <View
+                style={[
+                  styles.progressBar,
+                  { width: `${progress}%`, backgroundColor: status.info },
+                ]}
+              />
+            </View>
+            <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
+              목표: {goalAmount.toLocaleString()} ml ({Math.round(progress)}%)
+            </Text>
           </View>
-          <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
-            목표: {goalAmount.toLocaleString()} ml ({Math.round(progress)}%)
-          </Text>
-        </View>
+        </GlassCard>
 
         {/* 음료 타입 선택 */}
-        <View style={styles.section}>
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>음료 종류</Text>
           <View style={styles.drinkTypeGrid}>
             {DRINK_TYPES.map((drink) => (
@@ -224,7 +221,12 @@ export default function WaterTrackingScreen() {
                 <Text
                   style={[
                     styles.drinkTypeLabel,
-                    { color: selectedDrinkType === drink.id ? colors.overlayForeground : colors.foreground },
+                    {
+                      color:
+                        selectedDrinkType === drink.id
+                          ? colors.overlayForeground
+                          : colors.foreground,
+                    },
                   ]}
                 >
                   {drink.label}
@@ -232,7 +234,7 @@ export default function WaterTrackingScreen() {
               </Pressable>
             ))}
           </View>
-        </View>
+        </GlassCard>
 
         {/* 빠른 추가 */}
         <View style={styles.section}>

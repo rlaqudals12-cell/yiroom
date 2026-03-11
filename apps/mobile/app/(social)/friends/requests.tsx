@@ -14,14 +14,17 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../../components/ui';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
 import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 export default function FriendRequestsScreen() {
-  const { colors, brand, status, module: moduleColors, typography, spacing} = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
 
   const { requests, isLoading, error, accept, reject, refetch } = useFriendRequests();
 
@@ -105,7 +108,7 @@ export default function FriendRequestsScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer scrollable={false} edges={['bottom']}>
+      <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="social">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={moduleColors.body.dark} />
         </View>
@@ -119,6 +122,7 @@ export default function FriendRequestsScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
       {/* 에러 메시지 */}
       {error && (
@@ -141,12 +145,14 @@ export default function FriendRequestsScreen() {
       ) : (
         <>
           {/* 헤더 */}
-          <View style={styles.header}>
-            <Text style={[styles.headerTitle, { color: colors.foreground }]}>받은 요청</Text>
-            <Text style={[styles.headerCount, { color: colors.mutedForeground }]}>
-              {requests.length}개
-            </Text>
-          </View>
+          <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={styles.header}>
+              <Text style={[styles.headerTitle, { color: colors.foreground }]}>받은 요청</Text>
+              <Text style={[styles.headerCount, { color: colors.mutedForeground }]}>
+                {requests.length}개
+              </Text>
+            </GlassCard>
+          </Animated.View>
 
           <FlatList
             data={requests}

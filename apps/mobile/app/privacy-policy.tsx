@@ -6,20 +6,19 @@
  */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { ScreenContainer } from '@/components/ui';
+
 import { useTheme, typography, spacing, brand, radii } from '../lib/theme';
+
+import { ScreenContainer } from '@/components/ui';
 
 type Lang = 'ko' | 'en';
 
 export default function PrivacyPolicyScreen() {
-  const { colors, brand: brandColors, radii, typography } = useTheme();
+  const { colors, brand: brandColors } = useTheme();
   const [lang, setLang] = useState<Lang>('ko');
 
   return (
-    <ScreenContainer
-      edges={['bottom']}
-      testID="privacy-policy-screen"
-    >
+    <ScreenContainer edges={['bottom']} testID="privacy-policy-screen" backgroundGradient="profile">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 언어 토글 */}
         <View style={styles.langToggle}>
@@ -69,11 +68,7 @@ export default function PrivacyPolicyScreen() {
           </Pressable>
         </View>
 
-        {lang === 'ko' ? (
-          <KoreanContent colors={colors} />
-        ) : (
-          <EnglishContent colors={colors} />
-        )}
+        {lang === 'ko' ? <KoreanContent colors={colors} /> : <EnglishContent colors={colors} />}
       </ScrollView>
     </ScreenContainer>
   );
@@ -230,12 +225,7 @@ function KoreanContent({ colors }: ContentProps) {
             },
           ]}
         >
-          <Text
-            style={[
-              styles.warningText,
-              { color: status.warning },
-            ]}
-          >
+          <Text style={[styles.warningText, { color: status.warning }]}>
             안내: 이미지 저장에 동의하지 않아도 분석 서비스는 이용 가능합니다. 다만 이전 분석
             결과와의 비교(변화 추적) 기능은 사용할 수 없습니다.
           </Text>
@@ -265,9 +255,7 @@ function KoreanContent({ colors }: ContentProps) {
             이룸의 AI 분석 기능(퍼스널컬러, 피부, 체형 등)은 Google Gemini API를 활용합니다. 분석 시
             사용자의 이미지 데이터가 Google의 AI 서버로 전송되어 처리됩니다.
           </Text>
-          <Pressable
-            onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}
-          >
+          <Pressable onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}>
             <Text style={styles.linkText}>Google Gemini API Terms of Service →</Text>
           </Pressable>
         </InfoBox>
@@ -478,12 +466,7 @@ function EnglishContent({ colors }: ContentProps) {
             },
           ]}
         >
-          <Text
-            style={[
-              styles.warningText,
-              { color: status.warning },
-            ]}
-          >
+          <Text style={[styles.warningText, { color: status.warning }]}>
             Note: Analysis services are available even without consenting to image storage. However,
             comparison with previous results (progress tracking) will not be available.
           </Text>
@@ -514,9 +497,7 @@ function EnglishContent({ colors }: ContentProps) {
             Gemini API. When you use these features, your image data is transmitted to and processed
             by Google's AI servers.
           </Text>
-          <Pressable
-            onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}
-          >
+          <Pressable onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}>
             <Text style={styles.linkText}>Google Gemini API Terms of Service →</Text>
           </Pressable>
         </InfoBox>

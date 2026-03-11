@@ -5,25 +5,18 @@
 
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  Linking,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, Platform, Linking, Pressable } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../components/ui';
-
+import { ScreenContainer, GlassCard } from '../../components/ui';
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
 import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget';
 import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 export default function WidgetSettingsScreen() {
-  const { colors, brand, typography, spacing, radii} = useTheme();
+  const { colors, brand } = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 
   const [widgetData, setWidgetData] = useState<TodaySummaryData>(DEFAULT_SUMMARY_DATA);
@@ -57,110 +50,152 @@ export default function WidgetSettingsScreen() {
     <ScreenContainer
       testID="settings-widgets-screen"
       edges={['bottom']}
+      backgroundGradient="profile"
     >
-        {/* 안내 배너 */}
-        <View style={[styles.infoBanner, { backgroundColor: colors.muted }]}>
-          <Text style={styles.infoIcon}>📱</Text>
-          <View style={styles.infoContent}>
-            <Text style={[styles.infoTitle, { color: colors.foreground }]}>
-              홈 화면에 위젯 추가하기
-            </Text>
-            <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-              {Platform.OS === 'ios'
-                ? '홈 화면을 길게 눌러 편집 모드에서 "이룸" 위젯을 추가하세요.'
-                : '홈 화면을 길게 눌러 위젯 메뉴에서 "이룸" 위젯을 찾아 추가하세요.'}
-            </Text>
-          </View>
-        </View>
-
-        {/* 위젯 크기 선택 */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>위젯 미리보기</Text>
-        <View style={styles.sizeSelector}>
-          {(['small', 'medium', 'large'] as const).map((size) => (
-            <Pressable
-              key={size}
-              style={[
-                styles.sizeButton,
-                { backgroundColor: colors.card, borderColor: colors.border },
-                selectedSize === size && { backgroundColor: brand.primary, borderColor: brand.primary },
-              ]}
-              onPress={() => handleSizeChange(size)}
-            >
-              <Text
-                style={[
-                  styles.sizeButtonText,
-                  { color: colors.foreground },
-                  selectedSize === size && { color: brand.primaryForeground, fontWeight: typography.weight.semibold },
-                ]}
-              >
-                {size === 'small' ? '소형' : size === 'medium' ? '중형' : '대형'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* 오늘 요약 위젯 미리보기 */}
-        <View style={styles.widgetSection}>
-          <Text style={[styles.widgetLabel, { color: colors.mutedForeground }]}>오늘 요약</Text>
-          <View style={styles.widgetPreview}>
-            <TodaySummaryWidget data={widgetData} size={selectedSize} />
-          </View>
-        </View>
-
-        {/* 빠른 실행 위젯 미리보기 */}
-        {selectedSize !== 'large' && (
-          <View style={styles.widgetSection}>
-            <Text style={[styles.widgetLabel, { color: colors.mutedForeground }]}>빠른 실행</Text>
-            <View style={styles.widgetPreview}>
-              <QuickActionsWidget size={selectedSize === 'small' ? 'small' : 'medium'} />
-            </View>
-          </View>
-        )}
-
-        {/* 위젯 추가 도움말 버튼 */}
-        <Pressable
-          style={[styles.helpButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={handleAddWidgetHelp}
-        >
-          <Text style={styles.helpButtonIcon}>❓</Text>
-          <Text style={[styles.helpButtonText, { color: colors.foreground }]}>
-            위젯 추가 방법 알아보기
+      {/* 안내 배너 */}
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <Text style={styles.infoIcon}>📱</Text>
+        <View style={styles.infoContent}>
+          <Text style={[styles.infoTitle, { color: colors.foreground }]}>
+            홈 화면에 위젯 추가하기
           </Text>
-        </Pressable>
+          <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
+            {Platform.OS === 'ios'
+              ? '홈 화면을 길게 눌러 편집 모드에서 "이룸" 위젯을 추가하세요.'
+              : '홈 화면을 길게 눌러 위젯 메뉴에서 "이룸" 위젯을 찾아 추가하세요.'}
+          </Text>
+        </View>
+      </GlassCard>
 
-        {/* 지원 위젯 목록 */}
-        <View style={styles.widgetList}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>지원 위젯</Text>
+      {/* 위젯 크기 선택 */}
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>위젯 미리보기</Text>
+      <View style={styles.sizeSelector}>
+        {(['small', 'medium', 'large'] as const).map((size) => (
+          <Pressable
+            key={size}
+            style={[
+              styles.sizeButton,
+              { backgroundColor: colors.card, borderColor: colors.border },
+              selectedSize === size && {
+                backgroundColor: brand.primary,
+                borderColor: brand.primary,
+              },
+            ]}
+            onPress={() => handleSizeChange(size)}
+          >
+            <Text
+              style={[
+                styles.sizeButtonText,
+                { color: colors.foreground },
+                selectedSize === size && {
+                  color: brand.primaryForeground,
+                  fontWeight: typography.weight.semibold,
+                },
+              ]}
+            >
+              {size === 'small' ? '소형' : size === 'medium' ? '중형' : '대형'}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
-          <View style={[styles.widgetItem, { backgroundColor: colors.card }]}>
-            <Text style={styles.widgetItemIcon}>📊</Text>
-            <View style={styles.widgetItemContent}>
-              <Text style={[styles.widgetItemTitle, { color: colors.foreground }]}>오늘 요약</Text>
-              <Text style={[styles.widgetItemDesc, { color: colors.mutedForeground }]}>
-                운동, 물 섭취, 칼로리 현황을 한눈에
-              </Text>
-            </View>
-            <View style={styles.sizeBadges}>
-              <Text style={[styles.sizeBadge, { backgroundColor: colors.muted, color: colors.mutedForeground }]}>S</Text>
-              <Text style={[styles.sizeBadge, { backgroundColor: colors.muted, color: colors.mutedForeground }]}>M</Text>
-              <Text style={[styles.sizeBadge, { backgroundColor: colors.muted, color: colors.mutedForeground }]}>L</Text>
-            </View>
-          </View>
+      {/* 오늘 요약 위젯 미리보기 */}
+      <View style={styles.widgetSection}>
+        <Text style={[styles.widgetLabel, { color: colors.mutedForeground }]}>오늘 요약</Text>
+        <View style={styles.widgetPreview}>
+          <TodaySummaryWidget data={widgetData} size={selectedSize} />
+        </View>
+      </View>
 
-          <View style={[styles.widgetItem, { backgroundColor: colors.card }]}>
-            <Text style={styles.widgetItemIcon}>⚡</Text>
-            <View style={styles.widgetItemContent}>
-              <Text style={[styles.widgetItemTitle, { color: colors.foreground }]}>빠른 실행</Text>
-              <Text style={[styles.widgetItemDesc, { color: colors.mutedForeground }]}>
-                원탭으로 물 추가, 운동 시작
-              </Text>
-            </View>
-            <View style={styles.sizeBadges}>
-              <Text style={[styles.sizeBadge, { backgroundColor: colors.muted, color: colors.mutedForeground }]}>S</Text>
-              <Text style={[styles.sizeBadge, { backgroundColor: colors.muted, color: colors.mutedForeground }]}>M</Text>
-            </View>
+      {/* 빠른 실행 위젯 미리보기 */}
+      {selectedSize !== 'large' && (
+        <View style={styles.widgetSection}>
+          <Text style={[styles.widgetLabel, { color: colors.mutedForeground }]}>빠른 실행</Text>
+          <View style={styles.widgetPreview}>
+            <QuickActionsWidget size={selectedSize === 'small' ? 'small' : 'medium'} />
           </View>
         </View>
+      )}
+
+      {/* 위젯 추가 도움말 버튼 */}
+      <Pressable
+        style={[styles.helpButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+        onPress={handleAddWidgetHelp}
+      >
+        <Text style={styles.helpButtonIcon}>❓</Text>
+        <Text style={[styles.helpButtonText, { color: colors.foreground }]}>
+          위젯 추가 방법 알아보기
+        </Text>
+      </Pressable>
+
+      {/* 지원 위젯 목록 */}
+      <View style={styles.widgetList}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>지원 위젯</Text>
+
+        <View style={[styles.widgetItem, { backgroundColor: colors.card }]}>
+          <Text style={styles.widgetItemIcon}>📊</Text>
+          <View style={styles.widgetItemContent}>
+            <Text style={[styles.widgetItemTitle, { color: colors.foreground }]}>오늘 요약</Text>
+            <Text style={[styles.widgetItemDesc, { color: colors.mutedForeground }]}>
+              운동, 물 섭취, 칼로리 현황을 한눈에
+            </Text>
+          </View>
+          <View style={styles.sizeBadges}>
+            <Text
+              style={[
+                styles.sizeBadge,
+                { backgroundColor: colors.muted, color: colors.mutedForeground },
+              ]}
+            >
+              S
+            </Text>
+            <Text
+              style={[
+                styles.sizeBadge,
+                { backgroundColor: colors.muted, color: colors.mutedForeground },
+              ]}
+            >
+              M
+            </Text>
+            <Text
+              style={[
+                styles.sizeBadge,
+                { backgroundColor: colors.muted, color: colors.mutedForeground },
+              ]}
+            >
+              L
+            </Text>
+          </View>
+        </View>
+
+        <View style={[styles.widgetItem, { backgroundColor: colors.card }]}>
+          <Text style={styles.widgetItemIcon}>⚡</Text>
+          <View style={styles.widgetItemContent}>
+            <Text style={[styles.widgetItemTitle, { color: colors.foreground }]}>빠른 실행</Text>
+            <Text style={[styles.widgetItemDesc, { color: colors.mutedForeground }]}>
+              원탭으로 물 추가, 운동 시작
+            </Text>
+          </View>
+          <View style={styles.sizeBadges}>
+            <Text
+              style={[
+                styles.sizeBadge,
+                { backgroundColor: colors.muted, color: colors.mutedForeground },
+              ]}
+            >
+              S
+            </Text>
+            <Text
+              style={[
+                styles.sizeBadge,
+                { backgroundColor: colors.muted, color: colors.mutedForeground },
+              ]}
+            >
+              M
+            </Text>
+          </View>
+        </View>
+      </View>
     </ScreenContainer>
   );
 }

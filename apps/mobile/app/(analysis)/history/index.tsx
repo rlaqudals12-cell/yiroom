@@ -8,17 +8,9 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeftRight } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
-import Animated from 'react-native-reanimated';
-import { ScreenContainer } from '@/components/ui';
-import { staggeredEntry } from '@/lib/animations';
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+
 import { AnalysisHistoryCard } from '../../../components/analysis/AnalysisHistoryCard';
 import {
   useAnalysisHistory,
@@ -27,6 +19,9 @@ import {
   type AnalysisHistoryItem,
 } from '../../../hooks/useAnalysisHistory';
 import { useTheme, spacing, radii, typography } from '../../../lib/theme';
+
+import { ScreenContainer } from '@/components/ui';
+import { staggeredEntry, TIMING } from '@/lib/animations';
 
 // 모듈 필터 탭
 const MODULE_TABS: { key: AnalysisModuleType | 'all'; label: string }[] = [
@@ -86,7 +81,10 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
     };
     const route = routeMap[item.moduleType];
     if (route) {
-      router.push({ pathname: route as '/(analysis)/personal-color/result', params: { historyId: item.id } });
+      router.push({
+        pathname: route as '/(analysis)/personal-color/result',
+        params: { historyId: item.id },
+      });
     }
   }, []);
 
@@ -145,10 +143,14 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
       scrollable={false}
       contentPadding={0}
       testID="analysis-history-screen"
+      backgroundGradient="analysis"
       edges={['bottom']}
     >
       {/* 모듈 필터 */}
-      <View style={styles.filterSection}>
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={styles.filterSection}
+      >
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -160,10 +162,8 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor:
-                    selectedModule === tab.key ? brand.primary : colors.card,
-                  borderColor:
-                    selectedModule === tab.key ? brand.primary : colors.border,
+                  backgroundColor: selectedModule === tab.key ? brand.primary : colors.card,
+                  borderColor: selectedModule === tab.key ? brand.primary : colors.border,
                 },
               ]}
               onPress={() => handleModuleChange(tab.key)}
@@ -172,10 +172,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
                 style={{
                   fontSize: typography.size.xs,
                   fontWeight: typography.weight.semibold,
-                  color:
-                    selectedModule === tab.key
-                      ? colors.overlayForeground
-                      : colors.foreground,
+                  color: selectedModule === tab.key ? colors.overlayForeground : colors.foreground,
                 }}
               >
                 {tab.label}
@@ -183,18 +180,20 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             </Pressable>
           )}
         />
-      </View>
+      </Animated.View>
 
       {/* 기간 필터 */}
-      <View style={[styles.periodRow, { paddingHorizontal: spacing.md }]}>
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
+        style={[styles.periodRow, { paddingHorizontal: spacing.md }]}
+      >
         {PERIOD_TABS.map((tab) => (
           <Pressable
             key={tab.key}
             style={[
               styles.periodChip,
               {
-                backgroundColor:
-                  selectedPeriod === tab.key ? colors.secondary : 'transparent',
+                backgroundColor: selectedPeriod === tab.key ? colors.secondary : 'transparent',
                 borderRadius: radii.xl,
               },
             ]}
@@ -204,10 +203,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
               style={{
                 fontSize: typography.size.xs,
                 fontWeight: selectedPeriod === tab.key ? '600' : '400',
-                color:
-                  selectedPeriod === tab.key
-                    ? colors.foreground
-                    : colors.mutedForeground,
+                color: selectedPeriod === tab.key ? colors.foreground : colors.mutedForeground,
               }}
             >
               {tab.label}
@@ -253,7 +249,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
         >
           {items.length}건
         </Text>
-      </View>
+      </Animated.View>
 
       {/* 로딩 */}
       {isLoading && items.length === 0 ? (
@@ -284,7 +280,13 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
             style={[styles.retryButton, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
             onPress={refetch}
           >
-            <Text style={{ color: colors.overlayForeground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }}>
+            <Text
+              style={{
+                color: colors.overlayForeground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
               다시 시도
             </Text>
           </Pressable>

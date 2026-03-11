@@ -5,15 +5,12 @@
  */
 import { CloudSun, Thermometer, Droplets, Wind } from 'lucide-react-native';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../../components/ui';
+import { GlassCard, ScreenContainer } from '../../../components/ui';
+
+import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 interface OutfitSuggestion {
@@ -63,121 +60,99 @@ const MOCK_SUGGESTIONS: OutfitSuggestion[] = [
 ];
 
 export default function WeatherOutfitScreen(): React.JSX.Element {
-  const { colors, brand, status, shadows } = useTheme();
+  const { colors, brand, status } = useTheme();
   const [weather] = useState(MOCK_WEATHER);
   const [suggestions] = useState(MOCK_SUGGESTIONS);
 
   return (
     <ScreenContainer
       testID="weather-outfit-screen"
+      backgroundGradient="style"
       edges={['bottom']}
       contentPadding={0}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* 현재 날씨 카드 */}
-        <View
-          style={[
-            styles.weatherCard,
-            shadows.card,
-            { backgroundColor: colors.card, borderRadius: radii.xl },
-          ]}
-          accessibilityLabel={`현재 날씨 ${weather.temp}도 ${weather.condition}`}
-        >
-          <View style={styles.weatherHeader}>
-            <CloudSun size={36} color={brand.primary} />
-            <View style={styles.weatherTempBlock}>
-              <Text style={[styles.tempText, { color: colors.foreground }]}>
-                {weather.temp}°C
-              </Text>
-              <Text style={[styles.conditionText, { color: colors.mutedForeground }]}>
-                {weather.condition}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.weatherDetailsRow}>
-            <View style={styles.weatherDetail}>
-              <Thermometer size={14} color={colors.mutedForeground} />
-              <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
-                체감 {weather.feelsLike}°C
-              </Text>
-            </View>
-            <View style={styles.weatherDetail}>
-              <Droplets size={14} color={colors.mutedForeground} />
-              <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
-                습도 {weather.humidity}%
-              </Text>
-            </View>
-            <View style={styles.weatherDetail}>
-              <Wind size={14} color={colors.mutedForeground} />
-              <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
-                풍속 {weather.wind}m/s
-              </Text>
-            </View>
-          </View>
-
-          {/* 온도 범위 태그 */}
-          <View style={[styles.tempTag, { backgroundColor: status.info + '20' }]}>
-            <Text style={[styles.tempTagText, { color: status.info }]}>
-              체감 온도 기반 추천
-            </Text>
-          </View>
-        </View>
-
-        {/* 오늘의 추천 코디 섹션 */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          오늘의 추천 코디
-        </Text>
-
-        {suggestions.map((suggestion) => (
-          <View
-            key={suggestion.id}
-            style={[
-              styles.suggestionCard,
-              shadows.card,
-              { backgroundColor: colors.card, borderRadius: radii.xl },
-            ]}
-            accessibilityLabel={`추천 코디: ${suggestion.title}`}
-          >
-            <View style={styles.suggestionHeader}>
-              <Text style={[styles.suggestionTitle, { color: colors.foreground }]}>
-                {suggestion.title}
-              </Text>
-              <View style={[styles.tempBadge, { backgroundColor: brand.primary + '20' }]}>
-                <Text style={[styles.tempBadgeText, { color: brand.primary }]}>
-                  {suggestion.temperatureTag}
+        <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.weatherCard }}>
+            <View style={styles.weatherHeader}>
+              <CloudSun size={36} color={brand.primary} />
+              <View style={styles.weatherTempBlock}>
+                <Text style={[styles.tempText, { color: colors.foreground }]}>
+                  {weather.temp}°C
+                </Text>
+                <Text style={[styles.conditionText, { color: colors.mutedForeground }]}>
+                  {weather.condition}
                 </Text>
               </View>
             </View>
 
-            <Text style={[styles.suggestionDesc, { color: colors.mutedForeground }]}>
-              {suggestion.description}
-            </Text>
+            <View style={styles.weatherDetailsRow}>
+              <View style={styles.weatherDetail}>
+                <Thermometer size={14} color={colors.mutedForeground} />
+                <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
+                  체감 {weather.feelsLike}°C
+                </Text>
+              </View>
+              <View style={styles.weatherDetail}>
+                <Droplets size={14} color={colors.mutedForeground} />
+                <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
+                  습도 {weather.humidity}%
+                </Text>
+              </View>
+              <View style={styles.weatherDetail}>
+                <Wind size={14} color={colors.mutedForeground} />
+                <Text style={[styles.detailText, { color: colors.mutedForeground }]}>
+                  풍속 {weather.wind}m/s
+                </Text>
+              </View>
+            </View>
 
-            {/* 아이템 목록 */}
-            <View style={styles.itemsRow}>
-              {suggestion.items.map((item) => (
-                <View
-                  key={item}
-                  style={[styles.itemChip, { backgroundColor: colors.secondary }]}
-                >
-                  <Text style={[styles.itemChipText, { color: colors.foreground }]}>
-                    {item}
+            {/* 온도 범위 태그 */}
+            <View style={[styles.tempTag, { backgroundColor: status.info + '20' }]}>
+              <Text style={[styles.tempTagText, { color: status.info }]}>체감 온도 기반 추천</Text>
+            </View>
+          </GlassCard>
+        </Animated.View>
+
+        {/* 오늘의 추천 코디 섹션 */}
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>오늘의 추천 코디</Text>
+
+        {suggestions.map((suggestion) => (
+          <Animated.View key={suggestion.id} entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.suggestionCard }}>
+              <View style={styles.suggestionHeader}>
+                <Text style={[styles.suggestionTitle, { color: colors.foreground }]}>
+                  {suggestion.title}
+                </Text>
+                <View style={[styles.tempBadge, { backgroundColor: brand.primary + '20' }]}>
+                  <Text style={[styles.tempBadgeText, { color: brand.primary }]}>
+                    {suggestion.temperatureTag}
                   </Text>
                 </View>
-              ))}
-            </View>
+              </View>
 
-            {/* 매칭 이유 */}
-            <View style={[styles.reasonRow, { borderTopColor: colors.border }]}>
-              <Text style={[styles.reasonText, { color: status.info }]}>
-                {suggestion.matchReason}
+              <Text style={[styles.suggestionDesc, { color: colors.mutedForeground }]}>
+                {suggestion.description}
               </Text>
-            </View>
-          </View>
+
+              {/* 아이템 목록 */}
+              <View style={styles.itemsRow}>
+                {suggestion.items.map((item) => (
+                  <View key={item} style={[styles.itemChip, { backgroundColor: colors.secondary }]}>
+                    <Text style={[styles.itemChipText, { color: colors.foreground }]}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* 매칭 이유 */}
+              <View style={[styles.reasonRow, { borderTopColor: colors.border }]}>
+                <Text style={[styles.reasonText, { color: status.info }]}>
+                  {suggestion.matchReason}
+                </Text>
+              </View>
+            </GlassCard>
+          </Animated.View>
         ))}
       </ScrollView>
     </ScreenContainer>

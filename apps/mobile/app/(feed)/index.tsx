@@ -14,12 +14,14 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useTheme, typography, radii , spacing, coloredShadow, brand } from '@/lib/theme';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../components/ui';
-
+import { GlassCard, ScreenContainer } from '../../components/ui';
+import { TIMING } from '../../lib/animations';
 import type { FeedItem, FeedTab } from '../../lib/feed/types';
 import { useFeed } from '../../lib/feed/useFeed';
+
+import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {
@@ -47,7 +49,7 @@ const TAB_LABELS: Record<FeedTab, string> = {
 };
 
 export default function FeedScreen() {
-  const { colors, brand, status, typography, spacing, radii} = useTheme();
+  const { colors, brand, status } = useTheme();
   const router = useRouter();
 
   const {
@@ -98,7 +100,6 @@ export default function FeedScreen() {
       <Pressable
         style={[styles.feedCard, { backgroundColor: colors.card }]}
         onPress={() => handleItemPress(item.id)}
-
       >
         {/* 헤더 */}
         <View style={styles.cardHeader}>
@@ -185,32 +186,39 @@ export default function FeedScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
       {/* 탭 */}
-      <View
-        style={[
-          styles.tabContainer,
-          { backgroundColor: colors.card, borderBottomColor: colors.border },
-        ]}
-      >
-        {(['my', 'friends', 'all'] as FeedTab[]).map((tab) => (
-          <Pressable
-            key={tab}
-            style={[styles.tab, activeTab === tab && { borderBottomWidth: 2, borderBottomColor: brand.primary }]}
-            onPress={() => handleTabChange(tab)}
-          >
-            <Text
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard
+          shadowSize="md"
+          style={{ ...styles.tabContainer, borderBottomColor: colors.border }}
+        >
+          {(['my', 'friends', 'all'] as FeedTab[]).map((tab) => (
+            <Pressable
+              key={tab}
               style={[
-                styles.tabText,
-                { color: colors.mutedForeground },
-                activeTab === tab && { color: brand.primary, fontWeight: typography.weight.semibold },
+                styles.tab,
+                activeTab === tab && { borderBottomWidth: 2, borderBottomColor: brand.primary },
               ]}
+              onPress={() => handleTabChange(tab)}
             >
-              {TAB_LABELS[tab]}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.tabText,
+                  { color: colors.mutedForeground },
+                  activeTab === tab && {
+                    color: brand.primary,
+                    fontWeight: typography.weight.semibold,
+                  },
+                ]}
+              >
+                {TAB_LABELS[tab]}
+              </Text>
+            </Pressable>
+          ))}
+        </GlassCard>
+      </Animated.View>
 
       {/* 에러 */}
       {error && (

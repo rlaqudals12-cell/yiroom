@@ -9,18 +9,15 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Clock, Flame, Dumbbell, MessageSquare, TrendingUp } from 'lucide-react-native';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { useTheme, typography, spacing } from '@/lib/theme';
+import { workoutLogger } from '../../../lib/utils/logger';
+
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { workoutLogger } from '../../../lib/utils/logger';
+import { useTheme, typography, spacing } from '@/lib/theme';
 
 interface ExerciseLog {
   exercise_name: string;
@@ -74,7 +71,10 @@ function getEffortLabel(effort: number | null): string {
   return '매우 힘듦';
 }
 
-function getDifficultyColor(difficulty: number, status: { success: string; warning: string; error: string }): string {
+function getDifficultyColor(
+  difficulty: number,
+  status: { success: string; warning: string; error: string }
+): string {
   if (difficulty <= 3) return status.success;
   if (difficulty <= 6) return status.warning;
   return status.error;
@@ -89,7 +89,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function WorkoutDetailScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status, shadows, module: moduleColors } = useTheme();
+  const { colors, radii, status, shadows, module: moduleColors } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const params = useLocalSearchParams<{ id?: string }>();
   const supabase = useClerkSupabaseClient();
@@ -104,7 +104,9 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
     try {
       const { data, error } = await supabase
         .from('workout_logs')
-        .select('id, workout_date, actual_duration, actual_calories, perceived_effort, mood, notes, exercise_logs')
+        .select(
+          'id, workout_date, actual_duration, actual_calories, perceived_effort, mood, notes, exercise_logs'
+        )
         .eq('id', params.id)
         .single();
 
@@ -139,6 +141,7 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
     <ScreenContainer
       testID="workout-detail-screen"
       edges={['bottom']}
+      backgroundGradient="workout"
       refreshing={false}
       onRefresh={fetchDetail}
     >
@@ -152,206 +155,262 @@ export default function WorkoutDetailScreen(): React.JSX.Element {
         }}
         onRetry={fetchDetail}
       >
-        {detail && (<>
-        {/* 날짜 + 요약 */}
-        <Animated.View
-          entering={staggeredEntry(0)}
-          style={[
-            shadows.card,
-            {
-              backgroundColor: workoutColor,
-              borderRadius: radii.xl,
-              padding: spacing.lg,
-              marginBottom: spacing.lg,
-            },
-          ]}
-        >
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
-            {formatDate(detail.workoutDate)}
-          </Text>
-          <View style={[styles.summaryRow, { marginTop: spacing.md }]}>
-            {detail.actualDuration != null && (
-              <View style={styles.summaryItem}>
-                <Clock size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.actualDuration}분</Text>
-                <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>운동 시간</Text>
-              </View>
-            )}
-            {detail.actualCalories != null && (
-              <View style={styles.summaryItem}>
-                <Flame size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.actualCalories}kcal</Text>
-                <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>소모 칼로리</Text>
-              </View>
-            )}
-            {detail.exerciseLogs.length > 0 && (
-              <View style={styles.summaryItem}>
-                <Dumbbell size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>{detail.exerciseLogs.length}종목</Text>
-                <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>운동 수</Text>
-              </View>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* 운동 종목 */}
-        {detail.exerciseLogs.length > 0 && (
-          <Animated.View entering={staggeredEntry(1)}>
-            <Text
-              style={{
-                fontSize: typography.size.base,
-                fontWeight: typography.weight.bold,
-                color: colors.foreground,
-                marginBottom: spacing.sm,
-              }}
+        {detail && (
+          <>
+            {/* 날짜 + 요약 */}
+            <Animated.View
+              entering={staggeredEntry(0)}
+              style={[
+                shadows.card,
+                {
+                  backgroundColor: workoutColor,
+                  borderRadius: radii.xl,
+                  padding: spacing.lg,
+                  marginBottom: spacing.lg,
+                },
+              ]}
             >
-              운동 종목
-            </Text>
-            {detail.exerciseLogs.map((ex, idx) => (
-              <View
-                key={`${ex.exercise_name}-${idx}`}
-                style={[
-                  styles.exerciseCard,
-                  shadows.card,
-                  {
-                    backgroundColor: colors.card,
-                    borderRadius: radii.xl,
-                    borderColor: colors.border,
-                    padding: spacing.md,
-                    marginBottom: spacing.sm,
-                  },
-                ]}
+              <Text
+                style={{
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.bold,
+                  color: colors.overlayForeground,
+                }}
               >
-                <View style={styles.exerciseHeader}>
-                  <Text
-                    style={{
-                      fontSize: typography.size.sm,
-                      fontWeight: typography.weight.semibold,
-                      color: colors.foreground,
-                      flex: 1,
-                    }}
-                  >
-                    {ex.exercise_name}
-                  </Text>
+                {formatDate(detail.workoutDate)}
+              </Text>
+              <View style={[styles.summaryRow, { marginTop: spacing.md }]}>
+                {detail.actualDuration != null && (
+                  <View style={styles.summaryItem}>
+                    <Clock size={16} color="rgba(255,255,255,0.8)" />
+                    <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>
+                      {detail.actualDuration}분
+                    </Text>
+                    <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>
+                      운동 시간
+                    </Text>
+                  </View>
+                )}
+                {detail.actualCalories != null && (
+                  <View style={styles.summaryItem}>
+                    <Flame size={16} color="rgba(255,255,255,0.8)" />
+                    <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>
+                      {detail.actualCalories}kcal
+                    </Text>
+                    <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>
+                      소모 칼로리
+                    </Text>
+                  </View>
+                )}
+                {detail.exerciseLogs.length > 0 && (
+                  <View style={styles.summaryItem}>
+                    <Dumbbell size={16} color="rgba(255,255,255,0.8)" />
+                    <Text style={[styles.summaryValue, { color: colors.overlayForeground }]}>
+                      {detail.exerciseLogs.length}종목
+                    </Text>
+                    <Text style={[styles.summaryLabel, { color: 'rgba(255,255,255,0.7)' }]}>
+                      운동 수
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Animated.View>
+
+            {/* 운동 종목 */}
+            {detail.exerciseLogs.length > 0 && (
+              <Animated.View entering={staggeredEntry(1)}>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.bold,
+                    color: colors.foreground,
+                    marginBottom: spacing.sm,
+                  }}
+                >
+                  운동 종목
+                </Text>
+                {detail.exerciseLogs.map((ex, idx) => (
                   <View
+                    key={`${ex.exercise_name}-${idx}`}
                     style={[
-                      styles.diffBadge,
+                      styles.exerciseCard,
+                      shadows.card,
                       {
-                        backgroundColor: getDifficultyColor(ex.difficulty, status) + '20',
-                        borderRadius: radii.sm,
+                        backgroundColor: colors.card,
+                        borderRadius: radii.xl,
+                        borderColor: colors.border,
+                        padding: spacing.md,
+                        marginBottom: spacing.sm,
                       },
                     ]}
                   >
+                    <View style={styles.exerciseHeader}>
+                      <Text
+                        style={{
+                          fontSize: typography.size.sm,
+                          fontWeight: typography.weight.semibold,
+                          color: colors.foreground,
+                          flex: 1,
+                        }}
+                      >
+                        {ex.exercise_name}
+                      </Text>
+                      <View
+                        style={[
+                          styles.diffBadge,
+                          {
+                            backgroundColor: getDifficultyColor(ex.difficulty, status) + '20',
+                            borderRadius: radii.sm,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={{
+                            fontSize: typography.size.xs,
+                            fontWeight: typography.weight.semibold,
+                            color: getDifficultyColor(ex.difficulty, status),
+                          }}
+                        >
+                          난이도 {ex.difficulty}/10
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={[styles.exerciseMeta, { marginTop: spacing.xs }]}>
+                      {ex.sets > 0 && (
+                        <Text
+                          style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}
+                        >
+                          {ex.sets}세트
+                        </Text>
+                      )}
+                      {ex.reps > 0 && (
+                        <Text
+                          style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}
+                        >
+                          {ex.reps}회
+                        </Text>
+                      )}
+                      {ex.weight != null && ex.weight > 0 && (
+                        <Text
+                          style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}
+                        >
+                          {ex.weight}kg
+                        </Text>
+                      )}
+                      {ex.duration != null && ex.duration > 0 && (
+                        <Text
+                          style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}
+                        >
+                          {ex.duration}분
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </Animated.View>
+            )}
+
+            {/* 체감/기분 */}
+            {(detail.perceivedEffort != null || detail.mood) && (
+              <Animated.View entering={staggeredEntry(2)}>
+                <GlassCard
+                  shadowSize="md"
+                  style={{ marginTop: spacing.sm, marginBottom: spacing.sm }}
+                >
+                  <View style={styles.feelRow}>
+                    {detail.perceivedEffort != null && (
+                      <View style={styles.feelItem}>
+                        <TrendingUp size={16} color={workoutColor} />
+                        <Text
+                          style={{
+                            fontSize: typography.size.sm,
+                            fontWeight: typography.weight.semibold,
+                            color: colors.foreground,
+                            marginLeft: spacing.xs,
+                          }}
+                        >
+                          체감 강도
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: typography.size.xs,
+                            color: colors.mutedForeground,
+                            marginLeft: spacing.xs,
+                          }}
+                        >
+                          {detail.perceivedEffort}/10 ({getEffortLabel(detail.perceivedEffort)})
+                        </Text>
+                      </View>
+                    )}
+                    {detail.mood && (
+                      <View
+                        style={[
+                          styles.feelItem,
+                          { marginTop: detail.perceivedEffort != null ? spacing.sm : 0 },
+                        ]}
+                      >
+                        <Text style={{ fontSize: typography.size.base }}>
+                          {getMoodEmoji(detail.mood)}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: typography.size.sm,
+                            fontWeight: typography.weight.semibold,
+                            color: colors.foreground,
+                            marginLeft: spacing.xs,
+                          }}
+                        >
+                          기분
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: typography.size.xs,
+                            color: colors.mutedForeground,
+                            marginLeft: spacing.xs,
+                          }}
+                        >
+                          {getMoodLabel(detail.mood)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </GlassCard>
+              </Animated.View>
+            )}
+
+            {/* 메모 */}
+            {detail.notes && (
+              <Animated.View entering={staggeredEntry(3)}>
+                <GlassCard shadowSize="md" style={{ marginTop: spacing.sm }}>
+                  <View
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}
+                  >
+                    <MessageSquare size={14} color={colors.mutedForeground} />
                     <Text
                       style={{
-                        fontSize: typography.size.xs,
+                        fontSize: typography.size.sm,
                         fontWeight: typography.weight.semibold,
-                        color: getDifficultyColor(ex.difficulty, status),
+                        color: colors.foreground,
+                        marginLeft: spacing.xs,
                       }}
                     >
-                      난이도 {ex.difficulty}/10
+                      메모
                     </Text>
                   </View>
-                </View>
-                <View style={[styles.exerciseMeta, { marginTop: spacing.xs }]}>
-                  {ex.sets > 0 && (
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                      {ex.sets}세트
-                    </Text>
-                  )}
-                  {ex.reps > 0 && (
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                      {ex.reps}회
-                    </Text>
-                  )}
-                  {ex.weight != null && ex.weight > 0 && (
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                      {ex.weight}kg
-                    </Text>
-                  )}
-                  {ex.duration != null && ex.duration > 0 && (
-                    <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                      {ex.duration}분
-                    </Text>
-                  )}
-                </View>
-              </View>
-            ))}
-          </Animated.View>
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: colors.mutedForeground,
+                      lineHeight: 20,
+                    }}
+                  >
+                    {detail.notes}
+                  </Text>
+                </GlassCard>
+              </Animated.View>
+            )}
+          </>
         )}
-
-        {/* 체감/기분 */}
-        {(detail.perceivedEffort != null || detail.mood) && (
-          <Animated.View
-            entering={staggeredEntry(2)}
-            style={[
-              shadows.card,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                borderWidth: 1,
-                padding: spacing.md,
-                marginTop: spacing.sm,
-                marginBottom: spacing.sm,
-              },
-            ]}
-          >
-            <View style={styles.feelRow}>
-              {detail.perceivedEffort != null && (
-                <View style={styles.feelItem}>
-                  <TrendingUp size={16} color={workoutColor} />
-                  <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
-                    체감 강도
-                  </Text>
-                  <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
-                    {detail.perceivedEffort}/10 ({getEffortLabel(detail.perceivedEffort)})
-                  </Text>
-                </View>
-              )}
-              {detail.mood && (
-                <View style={[styles.feelItem, { marginTop: detail.perceivedEffort != null ? spacing.sm : 0 }]}>
-                  <Text style={{ fontSize: typography.size.base }}>{getMoodEmoji(detail.mood)}</Text>
-                  <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
-                    기분
-                  </Text>
-                  <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
-                    {getMoodLabel(detail.mood)}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </Animated.View>
-        )}
-
-        {/* 메모 */}
-        {detail.notes && (
-          <Animated.View
-            entering={staggeredEntry(3)}
-            style={[
-              shadows.card,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                borderWidth: 1,
-                padding: spacing.md,
-                marginTop: spacing.sm,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
-              <MessageSquare size={14} color={colors.mutedForeground} />
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground, marginLeft: spacing.xs }}>
-                메모
-              </Text>
-            </View>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, lineHeight: 20 }}>
-              {detail.notes}
-            </Text>
-          </Animated.View>
-        )}
-        </>)}
       </DataStateWrapper>
     </ScreenContainer>
   );

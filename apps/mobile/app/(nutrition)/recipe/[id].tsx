@@ -3,10 +3,13 @@
  *
  * 개별 레시피의 재료, 조리법, 영양 정보를 표시한다.
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { View, Text, Pressable, Platform } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, coloredShadow } from '../../../lib/theme';
+import { ScreenContainer, GlassCard } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
+import { useTheme } from '../../../lib/theme';
 
 interface Ingredient {
   name: string;
@@ -50,21 +53,24 @@ const MOCK_RECIPE = {
 };
 
 export default function RecipeDetailScreen(): React.ReactElement {
-  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, module: moduleColors, nutrient: nutrientColors, isDark } = useTheme();
-
-  // 카드 공통 그림자 (웹 shadow-sm border 매칭)
-  const cardShadow = !isDark ? coloredShadow(moduleColors.nutrition.base, 'sm') : {};
+  const {
+    colors,
+    spacing,
+    radii,
+    typography,
+    module: moduleColors,
+    nutrient: nutrientColors,
+    isDark,
+  } = useTheme();
 
   const recipe = MOCK_RECIPE;
-  const totalMacro = recipe.nutrition.carbs + recipe.nutrition.protein + recipe.nutrition.fat;
 
   return (
-    <ScrollView
+    <ScreenContainer
       testID="recipe-detail-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
+      edges={['bottom']}
+      backgroundGradient="nutrition"
     >
       {/* 레시피 헤더 */}
       <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
@@ -80,110 +86,172 @@ export default function RecipeDetailScreen(): React.ReactElement {
           {recipe.name}
         </Text>
         <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm }}>
-          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>⏱ {recipe.prepTime}</Text>
-          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>👤 {recipe.servings}인분</Text>
-          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>📊 {recipe.difficulty}</Text>
+          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+            ⏱ {recipe.prepTime}
+          </Text>
+          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+            👤 {recipe.servings}인분
+          </Text>
+          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+            📊 {recipe.difficulty}
+          </Text>
         </View>
       </View>
 
-      <Text style={{ fontSize: typography.size.base, color: colors.mutedForeground, marginBottom: spacing.lg, lineHeight: 22 }}>
+      <Text
+        style={{
+          fontSize: typography.size.base,
+          color: colors.mutedForeground,
+          marginBottom: spacing.lg,
+          lineHeight: 22,
+        }}
+      >
         {recipe.description}
       </Text>
 
       {/* 영양 정보 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
-        영양 정보
-      </Text>
-      <View
-        style={[
-          {
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            marginBottom: spacing.lg,
-            borderWidth: 1,
-            borderColor: colors.border,
-          },
-          cardShadow,
-        ]}
-      >
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <Text
           style={{
-            fontSize: typography.size['3xl'],
-            fontWeight: typography.weight.bold,
-            color: moduleColors.nutrition.base,
-            textAlign: 'center',
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
             marginBottom: spacing.sm,
           }}
         >
-          {recipe.nutrition.calories} kcal
+          영양 정보
         </Text>
-
-        {/* 매크로 바 */}
-        <View style={{ flexDirection: 'row', height: 8, borderRadius: radii.full, overflow: 'hidden', marginBottom: spacing.sm }}>
-          <View style={{ flex: recipe.nutrition.carbs, backgroundColor: nutrientColors.carbs }} />
-          <View style={{ flex: recipe.nutrition.protein, backgroundColor: nutrientColors.protein }} />
-          <View style={{ flex: recipe.nutrition.fat, backgroundColor: nutrientColors.fat }} />
-        </View>
-
-        <View style={{ flexDirection: 'row' }}>
-          {[
-            { label: '탄수화물', value: `${recipe.nutrition.carbs}g`, color: nutrientColors.carbs },
-            { label: '단백질', value: `${recipe.nutrition.protein}g`, color: nutrientColors.protein },
-            { label: '지방', value: `${recipe.nutrition.fat}g`, color: nutrientColors.fat },
-          ].map((macro) => (
-            <View key={macro.label} style={{ flex: 1, alignItems: 'center' }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: macro.color, marginBottom: spacing.xxs }} />
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: colors.foreground }}>
-                {macro.value}
-              </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{macro.label}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* 재료 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
-        재료
-      </Text>
-      <View
-        style={[
-          {
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md,
-            marginBottom: spacing.lg,
-            borderWidth: 1,
-            borderColor: colors.border,
-          },
-          cardShadow,
-        ]}
-      >
-        {recipe.ingredients.map((ingredient, index) => (
-          <View
-            key={ingredient.name}
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          <Text
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingVertical: spacing.xs,
-              borderBottomWidth: index < recipe.ingredients.length - 1 ? 1 : 0,
-              borderBottomColor: colors.border,
+              fontSize: typography.size['3xl'],
+              fontWeight: typography.weight.bold,
+              color: moduleColors.nutrition.base,
+              textAlign: 'center',
+              marginBottom: spacing.sm,
             }}
           >
-            <Text style={{ fontSize: typography.size.base, color: colors.foreground }}>{ingredient.name}</Text>
-            <Text style={{ fontSize: typography.size.base, color: colors.mutedForeground }}>{ingredient.amount}</Text>
+            {recipe.nutrition.calories} kcal
+          </Text>
+
+          {/* 매크로 바 */}
+          <View
+            style={{
+              flexDirection: 'row',
+              height: 8,
+              borderRadius: radii.full,
+              overflow: 'hidden',
+              marginBottom: spacing.sm,
+            }}
+          >
+            <View style={{ flex: recipe.nutrition.carbs, backgroundColor: nutrientColors.carbs }} />
+            <View
+              style={{ flex: recipe.nutrition.protein, backgroundColor: nutrientColors.protein }}
+            />
+            <View style={{ flex: recipe.nutrition.fat, backgroundColor: nutrientColors.fat }} />
           </View>
-        ))}
-      </View>
+
+          <View style={{ flexDirection: 'row' }}>
+            {[
+              {
+                label: '탄수화물',
+                value: `${recipe.nutrition.carbs}g`,
+                color: nutrientColors.carbs,
+              },
+              {
+                label: '단백질',
+                value: `${recipe.nutrition.protein}g`,
+                color: nutrientColors.protein,
+              },
+              { label: '지방', value: `${recipe.nutrition.fat}g`, color: nutrientColors.fat },
+            ].map((macro) => (
+              <View key={macro.label} style={{ flex: 1, alignItems: 'center' }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: macro.color,
+                    marginBottom: spacing.xxs,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.bold,
+                    color: colors.foreground,
+                  }}
+                >
+                  {macro.value}
+                </Text>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  {macro.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 재료 */}
+      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+        >
+          재료
+        </Text>
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          {recipe.ingredients.map((ingredient, index) => (
+            <View
+              key={ingredient.name}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingVertical: spacing.xs,
+                borderBottomWidth: index < recipe.ingredients.length - 1 ? 1 : 0,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <Text style={{ fontSize: typography.size.base, color: colors.foreground }}>
+                {ingredient.name}
+              </Text>
+              <Text style={{ fontSize: typography.size.base, color: colors.mutedForeground }}>
+                {ingredient.amount}
+              </Text>
+            </View>
+          ))}
+        </GlassCard>
+      </Animated.View>
 
       {/* 조리법 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }}>
+      <Text
+        style={{
+          fontSize: typography.size.lg,
+          fontWeight: typography.weight.semibold,
+          color: colors.foreground,
+          marginBottom: spacing.sm,
+        }}
+      >
         조리법
       </Text>
       <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
         {recipe.steps.map((step, index) => (
-          <View key={index} style={[{ flexDirection: 'row', backgroundColor: colors.card, borderRadius: radii.xl, padding: spacing.md, borderWidth: 1, borderColor: colors.border }, cardShadow]}>
+          <View
+            key={index}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
             <View
               style={{
                 width: 24,
@@ -195,11 +263,24 @@ export default function RecipeDetailScreen(): React.ReactElement {
                 marginRight: spacing.smx,
               }}
             >
-              <Text style={{ fontSize: typography.size.xs, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.bold,
+                  color: colors.overlayForeground,
+                }}
+              >
                 {index + 1}
               </Text>
             </View>
-            <Text style={{ flex: 1, fontSize: typography.size.sm, color: colors.foreground, lineHeight: 20 }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: typography.size.sm,
+                color: colors.foreground,
+                lineHeight: 20,
+              }}
+            >
               {step}
             </Text>
           </View>
@@ -218,17 +299,28 @@ export default function RecipeDetailScreen(): React.ReactElement {
             alignItems: 'center',
           },
           !isDark
-            ? Platform.select({
-                ios: { shadowColor: moduleColors.nutrition.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+            ? (Platform.select({
+                ios: {
+                  shadowColor: moduleColors.nutrition.base,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
+                },
                 android: { elevation: 4 },
-              }) ?? {}
+              }) ?? {})
             : {},
         ]}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            fontWeight: typography.weight.bold,
+            color: colors.overlayForeground,
+          }}
+        >
           식사 기록하기
         </Text>
       </Pressable>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

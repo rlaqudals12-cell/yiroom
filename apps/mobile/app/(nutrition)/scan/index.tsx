@@ -17,8 +17,6 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
-import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 import {
   lookupBarcode,
@@ -29,6 +27,9 @@ import {
 } from '../../../lib/nutrition/barcodeService';
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
+
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 // 식사 타입
 const MEAL_TYPES = [
@@ -41,7 +42,7 @@ const MEAL_TYPES = [
 type ScreenState = 'scanning' | 'loading' | 'result' | 'not-found';
 
 export default function BarcodeScanScreen() {
-  const { colors, status, module: moduleColors, typography, spacing, radii} = useTheme();
+  const { colors, status, module: moduleColors } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [permission, requestPermission] = useCameraPermissions();
@@ -122,7 +123,7 @@ export default function BarcodeScanScreen() {
       <ScreenContainer
         scrollable={false}
         contentPadding={0}
-        style={{ backgroundColor: colors.background }}
+        backgroundGradient="nutrition"
         testID="barcode-scan-screen"
       >
         <View style={styles.permissionContainer}>
@@ -151,7 +152,7 @@ export default function BarcodeScanScreen() {
       <ScreenContainer
         scrollable={false}
         contentPadding={0}
-        style={{ backgroundColor: colors.background }}
+        backgroundGradient="nutrition"
         testID="barcode-scan-screen"
       >
         <View style={styles.loadingContainer}>
@@ -173,7 +174,7 @@ export default function BarcodeScanScreen() {
       <ScreenContainer
         scrollable={false}
         contentPadding={0}
-        style={{ backgroundColor: colors.background }}
+        backgroundGradient="nutrition"
         testID="barcode-scan-screen"
       >
         <View style={styles.notFoundContainer}>
@@ -201,9 +202,7 @@ export default function BarcodeScanScreen() {
               style={[styles.searchButton, { borderColor: colors.border }]}
               onPress={() => router.replace('/(nutrition)/search')}
             >
-              <Text style={[styles.searchButtonText, { color: colors.foreground }]}>
-                직접 검색
-              </Text>
+              <Text style={[styles.searchButtonText, { color: colors.foreground }]}>직접 검색</Text>
             </Pressable>
           </View>
         </View>
@@ -219,16 +218,14 @@ export default function BarcodeScanScreen() {
       <ScreenContainer
         scrollable={false}
         contentPadding={0}
-        style={{ backgroundColor: colors.background }}
+        backgroundGradient="nutrition"
         edges={['bottom']}
         testID="barcode-scan-screen"
       >
         <ScrollView style={styles.resultScroll} showsVerticalScrollIndicator={false}>
           {/* 제품 정보 */}
           <View style={[styles.productCard, { backgroundColor: colors.card }]}>
-            {food.imageUrl && (
-              <Image source={{ uri: food.imageUrl }} style={styles.productImage} />
-            )}
+            {food.imageUrl && <Image source={{ uri: food.imageUrl }} style={styles.productImage} />}
             <Text style={[styles.productName, { color: colors.foreground }]}>{food.name}</Text>
             {food.brand && (
               <Text style={[styles.productBrand, { color: colors.mutedForeground }]}>
@@ -244,7 +241,8 @@ export default function BarcodeScanScreen() {
           <View style={[styles.nutritionCard, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>영양 정보</Text>
             <Text style={[styles.servingNote, { color: colors.mutedForeground }]}>
-              {food.servingSize}{food.servingUnit} 기준 × {servings}인분
+              {food.servingSize}
+              {food.servingUnit} 기준 × {servings}인분
             </Text>
 
             <View style={styles.macroGrid}>
@@ -267,9 +265,7 @@ export default function BarcodeScanScreen() {
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>탄수화물</Text>
               </View>
               <View style={[styles.macroItem, { backgroundColor: colors.background }]}>
-                <Text style={[styles.macroValue, { color: status.error }]}>
-                  {nutrition.fat}g
-                </Text>
+                <Text style={[styles.macroValue, { color: status.error }]}>{nutrition.fat}g</Text>
                 <Text style={[styles.macroLabel, { color: colors.mutedForeground }]}>지방</Text>
               </View>
             </View>
@@ -312,9 +308,7 @@ export default function BarcodeScanScreen() {
                         backgroundColor: isSelected
                           ? moduleColors.nutrition.base
                           : colors.background,
-                        borderColor: isSelected
-                          ? moduleColors.nutrition.base
-                          : colors.border,
+                        borderColor: isSelected ? moduleColors.nutrition.base : colors.border,
                       },
                     ]}
                     onPress={() => {

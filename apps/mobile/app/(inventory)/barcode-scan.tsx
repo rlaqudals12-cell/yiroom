@@ -35,13 +35,14 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, spacing } from '@/lib/theme';
+import { productLogger } from '../../lib/utils/logger';
+
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useInventory } from '@/lib/inventory';
 import { isValidBarcode } from '@/lib/nutrition/barcodeService';
-import { productLogger } from '../../lib/utils/logger';
+import { useClerkSupabaseClient } from '@/lib/supabase';
+import { useTheme, spacing } from '@/lib/theme';
 
 interface BeautyProduct {
   id: string;
@@ -182,7 +183,12 @@ export default function BarcodeScanScreen(): React.JSX.Element {
     // 권한 미부여: 안내 화면
     if (!permission?.granted) {
       return (
-        <ScreenContainer testID="barcode-scan-screen" scrollable={false} edges={['bottom']}>
+        <ScreenContainer
+          testID="barcode-scan-screen"
+          scrollable={false}
+          edges={['bottom']}
+          backgroundGradient="beauty"
+        >
           <View style={styles.permissionContainer}>
             <Camera size={48} color={brand.primary} />
             <Text
@@ -305,7 +311,12 @@ export default function BarcodeScanScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="barcode-scan-screen" scrollable={false} edges={['bottom']}>
+    <ScreenContainer
+      testID="barcode-scan-screen"
+      scrollable={false}
+      edges={['bottom']}
+      backgroundGradient="beauty"
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -320,40 +331,33 @@ export default function BarcodeScanScreen(): React.JSX.Element {
           {/* 안내 카드 */}
           <Animated.View
             entering={FadeInUp.duration(TIMING.normal)}
-            style={[
-              styles.infoCard,
-              shadows.card,
-              {
-                backgroundColor: brand.primary,
-                borderRadius: radii.xl,
-                padding: spacing.lg,
-                marginBottom: spacing.lg,
-              },
-            ]}
+            style={{ marginBottom: spacing.lg }}
           >
-            <View style={styles.infoRow}>
-              <ScanBarcode size={24} color={brand.primaryForeground} />
+            <GlassCard shadowSize="md" style={{ backgroundColor: brand.primary }}>
+              <View style={styles.infoRow}>
+                <ScanBarcode size={24} color={brand.primaryForeground} />
+                <Text
+                  style={{
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.bold,
+                    color: brand.primaryForeground,
+                    marginLeft: spacing.sm,
+                  }}
+                >
+                  뷰티 바코드 스캔
+                </Text>
+              </View>
               <Text
                 style={{
-                  fontSize: typography.size.lg,
-                  fontWeight: typography.weight.bold,
-                  color: brand.primaryForeground,
-                  marginLeft: spacing.sm,
+                  fontSize: typography.size.sm,
+                  color: brand.primaryForeground + 'D9',
+                  marginTop: spacing.xs,
+                  lineHeight: 20,
                 }}
               >
-                뷰티 바코드 스캔
+                화장품 바코드를 입력하면 제품 정보를 조회하고{'\n'}내 화장대에 추가할 수 있어요
               </Text>
-            </View>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                color: brand.primaryForeground + 'D9',
-                marginTop: spacing.xs,
-                lineHeight: 20,
-              }}
-            >
-              화장품 바코드를 입력하면 제품 정보를 조회하고{'\n'}내 화장대에 추가할 수 있어요
-            </Text>
+            </GlassCard>
           </Animated.View>
 
           {/* 모드 전환 토글 */}
@@ -431,70 +435,62 @@ export default function BarcodeScanScreen(): React.JSX.Element {
           {/* 바코드 수동 입력 */}
           <Animated.View
             entering={FadeInUp.delay(80).duration(TIMING.normal)}
-            style={[
-              styles.inputCard,
-              shadows.card,
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                borderColor: colors.border,
-                padding: spacing.md,
-                marginBottom: spacing.lg,
-              },
-            ]}
+            style={{ marginBottom: spacing.lg }}
           >
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.sm,
-              }}
-            >
-              바코드 번호 입력
-            </Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    flex: 1,
-                    backgroundColor: colors.secondary,
-                    borderRadius: radii.xl,
-                    paddingHorizontal: spacing.md,
-                    paddingVertical: spacing.sm,
-                    fontSize: typography.size.base,
-                    color: colors.foreground,
-                  },
-                ]}
-                value={barcode}
-                onChangeText={setBarcode}
-                placeholder="8~14자리 바코드 숫자"
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="number-pad"
-                maxLength={14}
-                returnKeyType="search"
-                onSubmitEditing={handleSearch}
-              />
-              <Pressable
-                style={[
-                  styles.searchButton,
-                  {
-                    backgroundColor: brand.primary,
-                    borderRadius: radii.xl,
-                    marginLeft: spacing.sm,
-                  },
-                ]}
-                onPress={handleSearch}
-                disabled={scanState === 'searching'}
+            <GlassCard shadowSize="md">
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.sm,
+                }}
               >
-                {scanState === 'searching' ? (
-                  <ActivityIndicator size="small" color={brand.primaryForeground} />
-                ) : (
-                  <Search size={20} color={brand.primaryForeground} />
-                )}
-              </Pressable>
-            </View>
+                바코드 번호 입력
+              </Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      flex: 1,
+                      backgroundColor: colors.secondary,
+                      borderRadius: radii.xl,
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      fontSize: typography.size.base,
+                      color: colors.foreground,
+                    },
+                  ]}
+                  value={barcode}
+                  onChangeText={setBarcode}
+                  placeholder="8~14자리 바코드 숫자"
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="number-pad"
+                  maxLength={14}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearch}
+                />
+                <Pressable
+                  style={[
+                    styles.searchButton,
+                    {
+                      backgroundColor: brand.primary,
+                      borderRadius: radii.xl,
+                      marginLeft: spacing.sm,
+                    },
+                  ]}
+                  onPress={handleSearch}
+                  disabled={scanState === 'searching'}
+                >
+                  {scanState === 'searching' ? (
+                    <ActivityIndicator size="small" color={brand.primaryForeground} />
+                  ) : (
+                    <Search size={20} color={brand.primaryForeground} />
+                  )}
+                </Pressable>
+              </View>
+            </GlassCard>
           </Animated.View>
 
           {/* 검색 결과 */}

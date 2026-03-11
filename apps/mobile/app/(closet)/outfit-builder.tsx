@@ -3,8 +3,8 @@
  * 옷장에서 아이템을 직접 선택해서 코디 조합을 만들고 저장
  */
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { Check, X, Save, ChevronDown, ChevronUp } from 'lucide-react-native';
 import React, { useState, useCallback, useMemo } from 'react';
 import {
@@ -17,21 +17,19 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
-import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
-import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
-import type {
-  ClothingCategory,
-  Season,
-  Occasion,
-  InventoryItem,
-} from '../../lib/inventory/types';
+import type { ClothingCategory, Season, Occasion, InventoryItem } from '../../lib/inventory/types';
 import {
   CLOTHING_CATEGORY_LABELS,
   SEASON_LABELS,
   OCCASION_LABELS,
 } from '../../lib/inventory/types';
+import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
+import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
+
+import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 
 const CATEGORY_ORDER: ClothingCategory[] = [
   'outer',
@@ -54,7 +52,7 @@ const CATEGORY_EMOJIS: Record<ClothingCategory, string> = {
 };
 
 export default function OutfitBuilderScreen(): React.JSX.Element {
-  const { colors, isDark, typography } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { items, isLoading } = useCloset();
   const { saveOutfit } = useSavedOutfits();
@@ -93,30 +91,25 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
     [items, selectedIds]
   );
 
-  const toggleItem = useCallback(
-    (id: string) => {
-      Haptics.selectionAsync();
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(id)) {
-          next.delete(id);
-        } else {
-          next.add(id);
-        }
-        return next;
-      });
-    },
-    []
-  );
+  const toggleItem = useCallback((id: string) => {
+    Haptics.selectionAsync();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
   const toggleCategory = useCallback((cat: ClothingCategory) => {
     setExpandedCategory((prev) => (prev === cat ? null : cat));
   }, []);
 
   const toggleSeason = useCallback((s: Season) => {
-    setSeasons((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
+    setSeasons((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -166,117 +159,135 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="outfit-builder-screen">
+    <ScreenContainer
+      backgroundGradient="style"
+      scrollable={false}
+      contentPadding={0}
+      testID="outfit-builder-screen"
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 선택된 아이템 미리보기 */}
         {selectedItems.length > 0 && (
-          <View style={[styles.previewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              선택한 아이템 ({selectedItems.length})
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.previewRow}>
-                {selectedItems.map((item) => (
-                  <Pressable
-                    key={item.id}
-                    style={styles.previewItem}
-                    onPress={() => toggleItem(item.id)}
-                  >
-                    {item.imageUrl ? (
-                      <Image
-                        source={{ uri: item.imageUrl }}
-                        style={styles.previewImage}
-                        contentFit="cover"
-                        transition={200}
-                      />
-                    ) : (
-                      <View style={[styles.previewPlaceholder, { backgroundColor: colors.border }]}>
-                        <Text style={styles.previewEmoji}>
-                          {CATEGORY_EMOJIS[(item.subCategory || 'top') as ClothingCategory]}
-                        </Text>
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.previewCard }}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                선택한 아이템 ({selectedItems.length})
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.previewRow}>
+                  {selectedItems.map((item) => (
+                    <Pressable
+                      key={item.id}
+                      style={styles.previewItem}
+                      onPress={() => toggleItem(item.id)}
+                    >
+                      {item.imageUrl ? (
+                        <Image
+                          source={{ uri: item.imageUrl }}
+                          style={styles.previewImage}
+                          contentFit="cover"
+                          transition={200}
+                        />
+                      ) : (
+                        <View
+                          style={[styles.previewPlaceholder, { backgroundColor: colors.border }]}
+                        >
+                          <Text style={styles.previewEmoji}>
+                            {CATEGORY_EMOJIS[(item.subCategory || 'top') as ClothingCategory]}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={[styles.removeIcon, { backgroundColor: colors.destructive }]}>
+                        <X size={10} color={colors.overlayForeground} />
                       </View>
-                    )}
-                    <View style={[styles.removeIcon, { backgroundColor: colors.destructive }]}>
-                      <X size={10} color={colors.overlayForeground} />
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            </GlassCard>
+          </Animated.View>
         )}
 
         {/* 코디 이름 입력 */}
-        <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>코디 이름</Text>
-          <TextInput
-            style={[styles.textInput, { color: colors.foreground, borderColor: colors.border }]}
-            value={outfitName}
-            onChangeText={setOutfitName}
-            placeholder="예: 출근룩, 주말 나들이"
-            placeholderTextColor={colors.muted}
-          />
-        </View>
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.inputCard }}>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>코디 이름</Text>
+            <TextInput
+              style={[styles.textInput, { color: colors.foreground, borderColor: colors.border }]}
+              value={outfitName}
+              onChangeText={setOutfitName}
+              placeholder="예: 출근룩, 주말 나들이"
+              placeholderTextColor={colors.muted}
+            />
+          </GlassCard>
+        </Animated.View>
 
         {/* 상황 선택 */}
-        <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>상황</Text>
-          <View style={styles.chipRow}>
-            {(Object.keys(OCCASION_LABELS) as Occasion[]).map((o) => (
-              <Pressable
-                key={o}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor:
-                      occasion === o ? brand.primary : isDark ? colors.card : colors.muted + '20',
-                    borderColor: occasion === o ? brand.primary : colors.border,
-                  },
-                ]}
-                onPress={() => setOccasion(o)}
-              >
-                <Text
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.inputCard }}>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>상황</Text>
+            <View style={styles.chipRow}>
+              {(Object.keys(OCCASION_LABELS) as Occasion[]).map((o) => (
+                <Pressable
+                  key={o}
                   style={[
-                    styles.chipText,
-                    { color: occasion === o ? brand.primaryForeground : colors.foreground },
+                    styles.chip,
+                    {
+                      backgroundColor:
+                        occasion === o ? brand.primary : isDark ? colors.card : colors.muted + '20',
+                      borderColor: occasion === o ? brand.primary : colors.border,
+                    },
                   ]}
+                  onPress={() => setOccasion(o)}
                 >
-                  {OCCASION_LABELS[o]}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: occasion === o ? brand.primaryForeground : colors.foreground },
+                    ]}
+                  >
+                    {OCCASION_LABELS[o]}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 계절 선택 */}
-        <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>계절 (선택)</Text>
-          <View style={styles.chipRow}>
-            {(Object.keys(SEASON_LABELS) as Season[]).map((s) => (
-              <Pressable
-                key={s}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor:
-                      seasons.includes(s) ? brand.primary : isDark ? colors.card : colors.muted + '20',
-                    borderColor: seasons.includes(s) ? brand.primary : colors.border,
-                  },
-                ]}
-                onPress={() => toggleSeason(s)}
-              >
-                <Text
+        <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.inputCard }}>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>계절 (선택)</Text>
+            <View style={styles.chipRow}>
+              {(Object.keys(SEASON_LABELS) as Season[]).map((s) => (
+                <Pressable
+                  key={s}
                   style={[
-                    styles.chipText,
-                    { color: seasons.includes(s) ? brand.primaryForeground : colors.foreground },
+                    styles.chip,
+                    {
+                      backgroundColor: seasons.includes(s)
+                        ? brand.primary
+                        : isDark
+                          ? colors.card
+                          : colors.muted + '20',
+                      borderColor: seasons.includes(s) ? brand.primary : colors.border,
+                    },
                   ]}
+                  onPress={() => toggleSeason(s)}
                 >
-                  {SEASON_LABELS[s]}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: seasons.includes(s) ? brand.primaryForeground : colors.foreground },
+                    ]}
+                  >
+                    {SEASON_LABELS[s]}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </GlassCard>
+        </Animated.View>
 
         {/* 카테고리별 아이템 선택 */}
         <Text style={[styles.sectionHeader, { color: colors.foreground }]}>아이템 선택</Text>
@@ -289,7 +300,10 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
           return (
             <View key={cat}>
               <Pressable
-                style={[styles.categoryHeader, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[
+                  styles.categoryHeader,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
                 onPress={() => toggleCategory(cat)}
               >
                 <View style={styles.categoryLeft}>
@@ -340,7 +354,9 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
                             transition={200}
                           />
                         ) : (
-                          <View style={[styles.itemPlaceholder, { backgroundColor: colors.border }]}>
+                          <View
+                            style={[styles.itemPlaceholder, { backgroundColor: colors.border }]}
+                          >
                             <Text style={styles.itemPlaceholderEmoji}>{CATEGORY_EMOJIS[cat]}</Text>
                           </View>
                         )}
@@ -366,7 +382,12 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
       </ScrollView>
 
       {/* 저장 버튼 */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      <View
+        style={[
+          styles.footer,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ]}
+      >
         <Pressable
           style={[
             styles.saveButton,

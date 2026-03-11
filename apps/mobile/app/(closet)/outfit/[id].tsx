@@ -4,8 +4,11 @@
  * 저장된 코디의 구성 아이템, 착용 기록, 계절/상황 정보를 확인한다.
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface OutfitItem {
@@ -39,38 +42,40 @@ export default function OutfitDetailScreen(): React.ReactElement {
   const outfit = MOCK_OUTFIT;
 
   return (
-    <ScrollView
-      testID="outfit-detail-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
+    <ScreenContainer testID="outfit-detail-screen" backgroundGradient="style" contentPadding={0}>
       {/* 코디 이름 */}
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md, marginBottom: spacing.lg }}
       >
-        {outfit.name}
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        {outfit.description}
-      </Text>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
+          }}
+        >
+          {outfit.name}
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            color: colors.mutedForeground,
+          }}
+        >
+          {outfit.description}
+        </Text>
+      </Animated.View>
 
       {/* 메타 정보 */}
-      <View
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
         style={{
           flexDirection: 'row',
           gap: spacing.sm,
           marginBottom: spacing.lg,
+          paddingHorizontal: spacing.md,
         }}
       >
         {outfit.season.map((s) => (
@@ -83,7 +88,13 @@ export default function OutfitDetailScreen(): React.ReactElement {
               backgroundColor: status.info + '20',
             }}
           >
-            <Text style={{ fontSize: typography.size.xs, color: status.info, fontWeight: typography.weight.medium }}>
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                color: status.info,
+                fontWeight: typography.weight.medium,
+              }}
+            >
               {s}
             </Text>
           </View>
@@ -96,85 +107,128 @@ export default function OutfitDetailScreen(): React.ReactElement {
             backgroundColor: status.success + '20',
           }}
         >
-          <Text style={{ fontSize: typography.size.xs, color: status.success, fontWeight: typography.weight.medium }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: status.success,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             {outfit.occasion}
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* 착용 정보 */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          marginBottom: spacing.lg,
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(160).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}
       >
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: colors.foreground }}>
-            {outfit.wearCount}
-          </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-            착용 횟수
-          </Text>
-        </View>
-        <View style={{ width: 1, backgroundColor: colors.border }} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-            {outfit.lastWornAt}
-          </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-            마지막 착용
-          </Text>
-        </View>
-      </View>
+        <GlassCard
+          shadowSize="md"
+          style={{
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+          }}
+        >
+          <View style={{ alignItems: 'center' }}>
+            <Text
+              style={{
+                fontSize: typography.size.xl,
+                fontWeight: typography.weight.bold,
+                color: colors.foreground,
+              }}
+            >
+              {outfit.wearCount}
+            </Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+              착용 횟수
+            </Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: colors.border }} />
+          <View style={{ alignItems: 'center' }}>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+              }}
+            >
+              {outfit.lastWornAt}
+            </Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+              마지막 착용
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 구성 아이템 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(240).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}
       >
-        구성 아이템
-      </Text>
-      <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-        {outfit.items.map((item) => (
-          <Pressable
-            key={item.id}
-            accessibilityLabel={`${item.name}, ${item.category}`}
-            onPress={() => router.push({ pathname: '/(closet)/[id]', params: { id: item.id } })}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              borderLeftWidth: 3,
-              borderLeftColor: moduleColors.body.base,
-            }}
-          >
-            <Text style={{ fontSize: typography.size.lg, marginRight: spacing.smx }}>{item.emoji}</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-                {item.name}
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+        >
+          구성 아이템
+        </Text>
+        <View style={{ gap: spacing.sm }}>
+          {outfit.items.map((item) => (
+            <Pressable
+              key={item.id}
+              accessibilityLabel={`${item.name}, ${item.category}`}
+              onPress={() => router.push({ pathname: '/(closet)/[id]', params: { id: item.id } })}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+                borderLeftWidth: 3,
+                borderLeftColor: moduleColors.body.base,
+              }}
+            >
+              <Text style={{ fontSize: typography.size.lg, marginRight: spacing.smx }}>
+                {item.emoji}
               </Text>
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                {item.category}
-              </Text>
-            </View>
-            <Text style={{ fontSize: typography.size.lg, color: colors.mutedForeground }}>›</Text>
-          </Pressable>
-        ))}
-      </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
+                  {item.name}
+                </Text>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  {item.category}
+                </Text>
+              </View>
+              <Text style={{ fontSize: typography.size.lg, color: colors.mutedForeground }}>›</Text>
+            </Pressable>
+          ))}
+        </View>
+      </Animated.View>
 
       {/* 액션 버튼 */}
-      <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg }}>
+      <Animated.View
+        entering={FadeInUp.delay(320).duration(TIMING.normal)}
+        style={{
+          flexDirection: 'row',
+          gap: spacing.sm,
+          marginBottom: spacing.lg,
+          paddingHorizontal: spacing.md,
+        }}
+      >
         <Pressable
           accessibilityLabel="오늘 입었어요"
           onPress={() => {}}
@@ -186,13 +240,24 @@ export default function OutfitDetailScreen(): React.ReactElement {
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: brand.primaryForeground,
+            }}
+          >
             오늘 입었어요
           </Text>
         </Pressable>
         <Pressable
           accessibilityLabel="코디 편집"
-          onPress={() => router.push({ pathname: '/(closet)/outfit/edit/[id]' as never, params: { id: id ?? '' } })}
+          onPress={() =>
+            router.push({
+              pathname: '/(closet)/outfit/edit/[id]' as never,
+              params: { id: id ?? '' },
+            })
+          }
           style={{
             flex: 1,
             backgroundColor: colors.secondary,
@@ -201,11 +266,17 @@ export default function OutfitDetailScreen(): React.ReactElement {
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.foreground }}>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: colors.foreground,
+            }}
+          >
             편집
           </Text>
         </Pressable>
-      </View>
-    </ScrollView>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

@@ -7,7 +7,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { ScreenContainer, GlassCard } from '@/components/ui';
 import { useAffiliateProducts } from '@/lib/affiliate/useAffiliateProducts';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
@@ -66,45 +66,52 @@ export default function BeautyCategoryScreen() {
   }, [refetch]);
 
   return (
-    <ScreenContainer edges={['bottom']} contentPadding={0} testID={`beauty-category-${slug}`}>
-      {/* 헤더 */}
+    <ScreenContainer
+      edges={['bottom']}
+      contentPadding={0}
+      testID={`beauty-category-${slug}`}
+      backgroundGradient="beauty"
+    >
+      {/* 헤더 + 정렬 필터 */}
       <Animated.View
         entering={FadeInUp.duration(TIMING.normal)}
-        style={[styles.header, { paddingHorizontal: spacing.mlg }]}
+        style={{ margin: spacing.md, marginBottom: spacing.sm }}
       >
-        <Text style={{ fontSize: 32 }}>{category.emoji}</Text>
-        <Text style={[styles.title, { color: colors.foreground }]}>{category.label}</Text>
-        <Text style={[styles.count, { color: colors.mutedForeground }]}>
-          {sortedProducts.length}개 제품
-        </Text>
-      </Animated.View>
-
-      {/* 정렬 필터 */}
-      <View style={[styles.sortRow, { paddingHorizontal: spacing.mlg, marginBottom: spacing.sm }]}>
-        {SORT_OPTIONS.map((opt) => (
-          <Pressable
-            key={opt.id}
-            style={[
-              styles.sortChip,
-              {
-                backgroundColor: sortBy === opt.id ? colors.foreground : colors.card,
-                borderColor: colors.border,
-                borderWidth: sortBy === opt.id ? 0 : 1,
-              },
-            ]}
-            onPress={() => setSortBy(opt.id)}
-          >
-            <Text
-              style={[
-                styles.sortLabel,
-                { color: sortBy === opt.id ? colors.background : colors.foreground },
-              ]}
-            >
-              {opt.label}
+        <GlassCard shadowSize="md">
+          <View style={[styles.header]}>
+            <Text style={{ fontSize: 32 }}>{category.emoji}</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>{category.label}</Text>
+            <Text style={[styles.count, { color: colors.mutedForeground }]}>
+              {sortedProducts.length}개 제품
             </Text>
-          </Pressable>
-        ))}
-      </View>
+          </View>
+          <View style={[styles.sortRow]}>
+            {SORT_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.id}
+                style={[
+                  styles.sortChip,
+                  {
+                    backgroundColor: sortBy === opt.id ? colors.foreground : colors.secondary,
+                    borderColor: colors.border,
+                    borderWidth: sortBy === opt.id ? 0 : 1,
+                  },
+                ]}
+                onPress={() => setSortBy(opt.id)}
+              >
+                <Text
+                  style={[
+                    styles.sortLabel,
+                    { color: sortBy === opt.id ? colors.background : colors.foreground },
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 제품 그리드 */}
       <FlatList

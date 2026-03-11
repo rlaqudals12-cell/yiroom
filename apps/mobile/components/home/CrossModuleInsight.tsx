@@ -1,17 +1,45 @@
 /**
- * CrossModuleInsight — 교차 모듈 인사이트 카드
+ * CrossModuleInsight — 교차 모듈 인사이트 카드 + ConnectionAwareness 내재화 추적
  *
  * 분석/영양/운동 데이터 교차 분석 결과를 카드 리스트로 표시.
- * useCrossModuleInsights 훅 결과를 시각화.
+ * CA 통합: 인사이트 노출 시 expose, "이해했어요" 시 confirm
+ * 내재화 상태에 따라 설명 깊이 분기 (full → brief → minimal → none)
  */
 import { LinearGradient } from 'expo-linear-gradient';
-import { Lightbulb } from 'lucide-react-native';
-import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Check, Lightbulb } from 'lucide-react-native';
+import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, typography } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
+import { useConnectionExposure } from '../../hooks/useConnectionExposure';
 import type { CrossModuleInsight as InsightType } from '../../hooks/useCrossModuleInsights';
+import { TIMING } from '../../lib/animations';
+import type { ExplanationDepth, ExposeRequest } from '../../lib/connection-awareness';
+import { useTheme, typography } from '../../lib/theme';
+
+// 모바일 인사이트 모듈 → ConnectionAwareness 모듈 매핑
+const MODULE_TO_CONNECTION: Record<string, string> = {
+  skin: 'skin',
+  body: 'body',
+  personalColor: 'personal-color',
+  workout: 'workout',
+  nutrition: 'nutrition',
+};
+
+// 인사이트 → ExposeRequest 변환
+function insightToExposeRequest(insight: InsightType): ExposeRequest {
+  const sourceModule = insight.modules[0] ?? 'skin';
+  const targetDomain =
+    insight.modules.length > 1
+      ? (MODULE_TO_CONNECTION[insight.modules[1]] ?? 'skin')
+      : (MODULE_TO_CONNECTION[sourceModule] ?? 'skin');
+
+  return {
+    connectionId: `cross_insight::${insight.id}`,
+    sourceModule: MODULE_TO_CONNECTION[sourceModule] ?? sourceModule,
+    targetDomain,
+    connectionRule: insight.title,
+  };
+}
 
 interface CrossModuleInsightProps {
   insights: InsightType[];
@@ -49,15 +77,24 @@ export function CrossModuleInsight({
         style,
       ]}
     >
-      {/* 헤더 — 그라디언트 아이콘 배지 (웹 gradient icon square 패턴) */}
+      {/* 헤더 — 그라디언트 아이콘 배지 */}
       <View style={styles.header}>
-        <View style={[
-          styles.iconBadge,
-          !isDark ? Platform.select({
-            ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6 },
-            android: { elevation: 3 },
-          }) ?? {} : {},
-        ]}>
+        <View
+          style={[
+            styles.iconBadge,
+            !isDark
+              ? (Platform.select({
+                  ios: {
+                    shadowColor: brand.primary,
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 6,
+                  },
+                  android: { elevation: 3 },
+                }) ?? {})
+              : {},
+          ]}
+        >
           <LinearGradient
             colors={[brand.primary, brand.gradientEnd]}
             start={{ x: 0, y: 0 }}
@@ -80,46 +117,105 @@ export function CrossModuleInsight({
         </Text>
       </View>
 
-      {/* 인사이트 목록 */}
+      {/* 인사이트 목록 (CA 통합) */}
       <View style={{ marginTop: spacing.sm, gap: spacing.sm }}>
         {visibleInsights.map((insight, idx) => (
-          <Animated.View
-            key={insight.id}
-            entering={FadeInUp.delay(idx * 80).duration(TIMING.normal)}
-            style={[
-              styles.insightItem,
-              {
-                backgroundColor: colors.secondary,
-                borderRadius: radii.xl,
-                padding: spacing.sm + 2,
-              },
-            ]}
-          >
-            <Text style={styles.emoji}>{insight.emoji}</Text>
-            <View style={{ flex: 1, marginLeft: spacing.sm }}>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                }}
-              >
-                {insight.title}
-              </Text>
-              <Text
-                numberOfLines={2}
-                style={{
-                  marginTop: spacing.xxs,
-                  fontSize: typography.size.xs,
-                  color: colors.mutedForeground,
-                }}
-              >
-                {insight.description}
-              </Text>
-            </View>
-          </Animated.View>
+          <InsightItemWithCA key={insight.id} insight={insight} index={idx} />
         ))}
       </View>
+    </Animated.View>
+  );
+}
+
+/**
+ * 개별 인사이트 카드 — CA expose/confirm 통합
+ */
+function InsightItemWithCA({
+  insight,
+  index,
+}: {
+  insight: InsightType;
+  index: number;
+}): React.JSX.Element {
+  const { colors, spacing, radii, typography, isDark } = useTheme();
+
+  const exposeRequest = insightToExposeRequest(insight);
+  const { depth, isConfirmed, confirm } = useConnectionExposure(exposeRequest);
+
+  // 내재화 상태에 따른 설명 깊이 분기
+  const showDescription = depth === 'full' || depth === 'brief';
+  const showTitle = depth !== 'none';
+  // independent(none) 단계에서는 카드 자체를 숨김
+  if (depth === 'none') return <View />;
+
+  return (
+    <Animated.View
+      entering={FadeInUp.delay(index * 80).duration(TIMING.normal)}
+      style={[
+        styles.insightItem,
+        {
+          backgroundColor: colors.secondary,
+          borderRadius: radii.xl,
+          padding: spacing.sm + 2,
+        },
+      ]}
+    >
+      <Text style={styles.emoji}>{insight.emoji}</Text>
+      <View style={{ flex: 1, marginLeft: spacing.sm }}>
+        {showTitle && (
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+            }}
+          >
+            {insight.title}
+          </Text>
+        )}
+        {showDescription && (
+          <Text
+            numberOfLines={depth === 'brief' ? 1 : 2}
+            style={{
+              marginTop: spacing.xxs,
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+            }}
+          >
+            {insight.description}
+          </Text>
+        )}
+      </View>
+
+      {/* 확인 버튼 — 아직 확인 안 한 경우만 */}
+      {!isConfirmed && depth !== 'minimal' ? (
+        <Pressable
+          onPress={confirm}
+          hitSlop={8}
+          style={[
+            styles.confirmButton,
+            {
+              backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+              borderRadius: radii.md,
+            },
+          ]}
+          testID={`confirm-insight-${insight.id}`}
+        >
+          <Check size={14} color={isDark ? '#94a3b8' : '#64748b'} />
+        </Pressable>
+      ) : isConfirmed ? (
+        <View
+          style={[
+            styles.confirmButton,
+            {
+              backgroundColor: isDark ? '#064e3b' : '#d1fae5',
+              borderRadius: radii.md,
+            },
+          ]}
+        >
+          <Check size={14} color={isDark ? '#34d399' : '#059669'} />
+        </View>
+      ) : null}
     </Animated.View>
   );
 }
@@ -150,5 +246,12 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: typography.size['2xl'],
+  },
+  confirmButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
 });

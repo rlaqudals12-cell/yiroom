@@ -18,6 +18,7 @@ import {
   HomeTodaySection,
   HomeQuickActions,
   CrossModuleInsight,
+  InternalizationWidget,
 } from '../../components/home';
 import {
   GradientCard,
@@ -323,9 +324,17 @@ export default function HomeScreen(): React.JSX.Element {
         />
       </Animated.View>
 
+      {/* 내재화 위젯 — CA 4-status 세그먼트 바 */}
+      <Animated.View entering={FadeInUp.delay(340).duration(TIMING.normal)}>
+        <InternalizationWidget
+          style={{ marginBottom: spacing.smx }}
+          testID="home-internalization-widget"
+        />
+      </Animated.View>
+
       {/* 교차 모듈 인사이트 — staggered entry */}
       {insights.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
+        <Animated.View entering={FadeInUp.delay(380).duration(TIMING.normal)}>
           <CrossModuleInsight
             insights={insights}
             maxItems={3}

@@ -8,3 +8,4 @@ export { HomeHeader } from './HomeHeader';
 export { HomeTodaySection } from './HomeTodaySection';
 export { HomeQuickActions } from './HomeQuickActions';
 export { CrossModuleInsight } from './CrossModuleInsight';
+export { InternalizationWidget } from './InternalizationWidget';

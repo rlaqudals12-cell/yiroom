@@ -15,14 +15,17 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
-import { ScreenContainer } from '../../../components/ui';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 export default function FriendSearchScreen() {
-  const { colors, brand, status, module: moduleColors, typography, spacing, radii} = useTheme();
+  const { colors, brand, status, module: moduleColors } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, isLoading, error, search, sendRequest, clear } = useUserSearch();
@@ -116,34 +119,37 @@ export default function FriendSearchScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
       {/* 검색바 */}
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: colors.card }]}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="닉네임으로 검색"
-            placeholderTextColor={colors.mutedForeground}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-            autoFocus
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={handleClear}>
-              <Text style={[styles.clearIcon, { color: colors.mutedForeground }]}>✕</Text>
-            </Pressable>
-          )}
-        </View>
-        <Pressable
-          style={[styles.searchButton, { backgroundColor: brand.primary }]}
-          onPress={handleSearch}
-        >
-          <Text style={[styles.searchButtonText, { color: brand.primaryForeground }]}>검색</Text>
-        </Pressable>
-      </View>
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={styles.searchContainer}>
+          <View style={[styles.searchBar, { backgroundColor: colors.muted }]}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={[styles.searchInput, { color: colors.foreground }]}
+              placeholder="닉네임으로 검색"
+              placeholderTextColor={colors.mutedForeground}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
+              autoFocus
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={handleClear}>
+                <Text style={[styles.clearIcon, { color: colors.mutedForeground }]}>✕</Text>
+              </Pressable>
+            )}
+          </View>
+          <Pressable
+            style={[styles.searchButton, { backgroundColor: brand.primary }]}
+            onPress={handleSearch}
+          >
+            <Text style={[styles.searchButtonText, { color: brand.primaryForeground }]}>검색</Text>
+          </Pressable>
+        </GlassCard>
+      </Animated.View>
 
       {/* 에러 메시지 */}
       {error && (

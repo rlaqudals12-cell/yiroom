@@ -4,8 +4,11 @@
  * 옷장 아이템의 색상 분포를 분석하고 퍼스널컬러와의 조화를 확인한다.
  */
 import { useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface ColorGroup {
@@ -36,178 +39,207 @@ export default function ColorAnalysisScreen(): React.ReactElement {
   const router = useRouter();
   const { colors, brand, spacing, radii, typography, status, module: moduleColors } = useTheme();
 
-  const matchingCount = MOCK_COLOR_GROUPS.filter((c) => c.matchesPersonalColor).reduce((sum, c) => sum + c.count, 0);
+  const matchingCount = MOCK_COLOR_GROUPS.filter((c) => c.matchesPersonalColor).reduce(
+    (sum, c) => sum + c.count,
+    0
+  );
   const totalCount = MOCK_COLOR_GROUPS.reduce((sum, c) => sum + c.count, 0);
   const matchRate = Math.round((matchingCount / totalCount) * 100);
 
   return (
-    <ScrollView
-      testID="color-analysis-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      <Text
-        style={{
-          fontSize: typography.size['2xl'],
-          fontWeight: typography.weight.bold,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        }}
+    <ScreenContainer testID="color-analysis-screen" backgroundGradient="style" contentPadding={0}>
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}
       >
-        옷장 색상 분석
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        내 옷장의 색상 구성을 확인해보세요
-      </Text>
+        <Text
+          style={{
+            fontSize: typography.size['2xl'],
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
+          }}
+        >
+          옷장 색상 분석
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            color: colors.mutedForeground,
+            marginBottom: spacing.lg,
+          }}
+        >
+          내 옷장의 색상 구성을 확인해보세요
+        </Text>
+      </Animated.View>
 
       {/* 퍼스널컬러 매칭률 */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.lg,
-          alignItems: 'center',
-          marginBottom: spacing.lg,
-          borderWidth: 1,
-          borderColor: moduleColors.personalColor.base + '40',
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}
       >
-        <Text style={{ fontSize: 32 }}>{MOCK_PERSONAL_COLOR.emoji}</Text>
+        <GlassCard
+          shadowSize="md"
+          style={{
+            padding: spacing.lg,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: moduleColors.personalColor.base + '40',
+          }}
+        >
+          <Text style={{ fontSize: 32 }}>{MOCK_PERSONAL_COLOR.emoji}</Text>
+          <Text
+            style={{
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+              marginTop: spacing.xs,
+            }}
+          >
+            {MOCK_PERSONAL_COLOR.season}
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size['3xl'],
+              fontWeight: typography.weight.bold,
+              color: matchRate >= 50 ? status.success : status.warning,
+              marginTop: spacing.sm,
+            }}
+          >
+            {matchRate}%
+          </Text>
+          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+            퍼스널컬러 조화율
+          </Text>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 색상 분포 */}
+      <Animated.View
+        entering={FadeInUp.delay(160).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}
+      >
         <Text
           style={{
             fontSize: typography.size.lg,
             fontWeight: typography.weight.semibold,
             color: colors.foreground,
-            marginTop: spacing.xs,
+            marginBottom: spacing.sm,
           }}
         >
-          {MOCK_PERSONAL_COLOR.season}
+          색상 분포
         </Text>
-        <Text
+
+        {/* 색상 바 */}
+        <View
           style={{
-            fontSize: typography.size['3xl'],
-            fontWeight: typography.weight.bold,
-            color: matchRate >= 50 ? status.success : status.warning,
-            marginTop: spacing.sm,
+            flexDirection: 'row',
+            height: 12,
+            borderRadius: radii.full,
+            overflow: 'hidden',
+            marginBottom: spacing.md,
           }}
         >
-          {matchRate}%
-        </Text>
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-          퍼스널컬러 조화율
-        </Text>
-      </View>
-
-      {/* 색상 분포 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
-      >
-        색상 분포
-      </Text>
-
-      {/* 색상 바 */}
-      <View
-        style={{
-          flexDirection: 'row',
-          height: 12,
-          borderRadius: radii.full,
-          overflow: 'hidden',
-          marginBottom: spacing.md,
-        }}
-      >
-        {MOCK_COLOR_GROUPS.map((group) => (
-          <View
-            key={group.name}
-            style={{
-              flex: group.percentage,
-              backgroundColor: group.hex,
-            }}
-          />
-        ))}
-      </View>
-
-      {/* 색상 리스트 */}
-      <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-        {MOCK_COLOR_GROUPS.map((group) => (
-          <View
-            key={group.name}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-            }}
-          >
+          {MOCK_COLOR_GROUPS.map((group) => (
             <View
+              key={group.name}
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
+                flex: group.percentage,
                 backgroundColor: group.hex,
-                borderWidth: 1,
-                borderColor: colors.border,
-                marginRight: spacing.smx,
               }}
             />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-                {group.name}
-              </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                {group.count}개 · {group.percentage}%
-              </Text>
-            </View>
-            {group.matchesPersonalColor && (
+          ))}
+        </View>
+
+        {/* 색상 리스트 */}
+        <View style={{ gap: spacing.sm }}>
+          {MOCK_COLOR_GROUPS.map((group) => (
+            <View
+              key={group.name}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                padding: spacing.md,
+              }}
+            >
               <View
                 style={{
-                  paddingHorizontal: spacing.sm,
-                  paddingVertical: spacing.xxs,
-                  borderRadius: radii.full,
-                  backgroundColor: status.success + '20',
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: group.hex,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginRight: spacing.smx,
                 }}
-              >
-                <Text style={{ fontSize: typography.size.xs, color: status.success, fontWeight: typography.weight.medium }}>
-                  PC 매칭
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
+                  {group.name}
+                </Text>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  {group.count}개 · {group.percentage}%
                 </Text>
               </View>
-            )}
-          </View>
-        ))}
-      </View>
+              {group.matchesPersonalColor && (
+                <View
+                  style={{
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xxs,
+                    borderRadius: radii.full,
+                    backgroundColor: status.success + '20',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs,
+                      color: status.success,
+                      fontWeight: typography.weight.medium,
+                    }}
+                  >
+                    PC 매칭
+                  </Text>
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
+      </Animated.View>
 
       {/* 퍼스널컬러 분석 CTA */}
-      <Pressable
-        accessibilityLabel="퍼스널컬러 분석하기"
-        onPress={() => router.push('/(analysis)/personal-color')}
-        style={{
-          backgroundColor: brand.primary,
-          borderRadius: radii.xl,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(240).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xl }}
       >
-        <Text
+        <Pressable
+          accessibilityLabel="퍼스널컬러 분석하기"
+          onPress={() => router.push('/(analysis)/personal-color')}
           style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.bold,
-            color: brand.primaryForeground,
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
           }}
         >
-          퍼스널컬러 다시 분석하기
-        </Text>
-      </Pressable>
-    </ScrollView>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: brand.primaryForeground,
+            }}
+          >
+            퍼스널컬러 다시 분석하기
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

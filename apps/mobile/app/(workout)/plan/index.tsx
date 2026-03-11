@@ -4,11 +4,12 @@
  * 사용자의 운동 유형 결과 기반으로 주간 운동 계획을 표시한다.
  */
 import { useRouter } from 'expo-router';
-import { Platform, View, Text, ScrollView, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { Platform, View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, coloredShadow } from '../../../lib/theme';
-import { staggeredEntry } from '../../../lib/animations';
+import { ScreenContainer, GlassCard } from '../../../components/ui';
+import { TIMING, staggeredEntry } from '../../../lib/animations';
+import { useTheme } from '../../../lib/theme';
 
 interface DayPlan {
   day: string;
@@ -84,75 +85,98 @@ const MOCK_WEEK_PLAN: DayPlan[] = [
 
 export default function WorkoutPlanScreen(): React.ReactElement {
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, status, shadows, isDark, module: moduleColors } = useTheme();
+  const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
 
   return (
-    <ScrollView
-      testID="workout-plan-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      {/* 타이틀 + 운동 모듈 accent 바 */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
-        <View style={{ width: 4, height: 24, borderRadius: 2, backgroundColor: moduleColors.workout.base, marginRight: spacing.sm }} />
-        <Text
-          style={{
-            fontSize: typography.size['2xl'],
-            fontWeight: typography.weight.bold,
-            color: colors.foreground,
-          }}
-        >
-          주간 운동 플랜
-        </Text>
-      </View>
-      <Text
-        style={{
-          fontSize: typography.size.base,
-          color: colors.mutedForeground,
-          marginBottom: spacing.lg,
-        }}
-      >
-        이번 주 운동 계획이에요
-      </Text>
-
-      {/* 요일 인디케이터 */}
-      <View style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg }}>
-        {MOCK_WEEK_PLAN.map((day) => (
-          <View
-            key={day.day}
-            style={[
-              {
-                flex: 1,
-                alignItems: 'center',
-                paddingVertical: spacing.smx,
-                borderRadius: radii.xl,
-                backgroundColor: day.isToday ? moduleColors.workout.base : day.isRest ? colors.secondary : colors.card,
-                borderWidth: 1,
-                borderColor: day.isToday ? moduleColors.workout.base : colors.border,
-              },
-              day.isToday && !isDark
-                ? Platform.select({
-                    ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 8 },
-                    android: { elevation: 3 },
-                  }) ?? {}
-                : {},
-            ]}
-          >
+    <ScreenContainer testID="workout-plan-screen" edges={['bottom']} backgroundGradient="workout">
+      {/* 타이틀 + 요일 인디케이터 */}
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
+            <View
+              style={{
+                width: 4,
+                height: 24,
+                borderRadius: 2,
+                backgroundColor: moduleColors.workout.base,
+                marginRight: spacing.sm,
+              }}
+            />
             <Text
               style={{
-                fontSize: typography.size.xs,
-                fontWeight: day.isToday ? typography.weight.bold : typography.weight.normal,
-                color: day.isToday ? colors.overlayForeground : colors.mutedForeground,
+                fontSize: typography.size['2xl'],
+                fontWeight: typography.weight.bold,
+                color: colors.foreground,
               }}
             >
-              {day.dayShort}
-            </Text>
-            <Text style={{ fontSize: 10, marginTop: spacing.xxs, color: day.isToday ? colors.overlayForeground : colors.mutedForeground }}>
-              {day.isRest ? '휴식' : `${day.exercises.length}개`}
+              주간 운동 플랜
             </Text>
           </View>
-        ))}
-      </View>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              color: colors.mutedForeground,
+              marginBottom: spacing.lg,
+            }}
+          >
+            이번 주 운동 계획이에요
+          </Text>
+
+          {/* 요일 인디케이터 */}
+          <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+            {MOCK_WEEK_PLAN.map((day) => (
+              <View
+                key={day.day}
+                style={[
+                  {
+                    flex: 1,
+                    alignItems: 'center',
+                    paddingVertical: spacing.smx,
+                    borderRadius: radii.xl,
+                    backgroundColor: day.isToday
+                      ? moduleColors.workout.base
+                      : day.isRest
+                        ? colors.secondary
+                        : colors.card,
+                    borderWidth: 1,
+                    borderColor: day.isToday ? moduleColors.workout.base : colors.border,
+                  },
+                  day.isToday && !isDark
+                    ? (Platform.select({
+                        ios: {
+                          shadowColor: moduleColors.workout.base,
+                          shadowOffset: { width: 0, height: 3 },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 8,
+                        },
+                        android: { elevation: 3 },
+                      }) ?? {})
+                    : {},
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    fontWeight: day.isToday ? typography.weight.bold : typography.weight.normal,
+                    color: day.isToday ? colors.overlayForeground : colors.mutedForeground,
+                  }}
+                >
+                  {day.dayShort}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    marginTop: spacing.xxs,
+                    color: day.isToday ? colors.overlayForeground : colors.mutedForeground,
+                  }}
+                >
+                  {day.isRest ? '휴식' : `${day.exercises.length}개`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 일별 상세 */}
       <View style={{ gap: spacing.smx }}>
@@ -160,29 +184,46 @@ export default function WorkoutPlanScreen(): React.ReactElement {
           <Animated.View
             key={day.day}
             entering={staggeredEntry(index)}
-            style={[
-              {
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-                borderLeftWidth: day.isToday ? 3 : 0,
-                borderLeftColor: day.isToday ? moduleColors.workout.base : undefined,
-                borderWidth: 1,
-                borderColor: colors.border,
-                opacity: day.isRest ? 0.6 : 1,
-              },
-              !isDark ? coloredShadow(moduleColors.workout.base, 'sm') : {},
-            ]}
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              borderLeftWidth: day.isToday ? 3 : 0,
+              borderLeftColor: day.isToday ? moduleColors.workout.base : undefined,
+              borderWidth: 1,
+              borderColor: colors.border,
+              opacity: day.isRest ? 0.6 : 1,
+            }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: day.isRest ? 0 : spacing.sm }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground, flex: 1 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: day.isRest ? 0 : spacing.sm,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  flex: 1,
+                }}
+              >
                 {day.day}
                 {day.isToday && (
-                  <Text style={{ color: moduleColors.workout.base, fontWeight: typography.weight.bold }}> (오늘)</Text>
+                  <Text
+                    style={{ color: moduleColors.workout.base, fontWeight: typography.weight.bold }}
+                  >
+                    {' '}
+                    (오늘)
+                  </Text>
                 )}
               </Text>
               {day.isRest && (
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>🛌 휴식일</Text>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  🛌 휴식일
+                </Text>
               )}
             </View>
 
@@ -198,19 +239,32 @@ export default function WorkoutPlanScreen(): React.ReactElement {
                 }}
               >
                 {/* 운동 이모지 colored 서클 배경 */}
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: `${moduleColors.workout.base}18`,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: spacing.smx,
-                }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: `${moduleColors.workout.base}18`,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: spacing.smx,
+                  }}
+                >
                   <Text style={{ fontSize: 18 }}>{ex.emoji}</Text>
                 </View>
-                <Text style={{ flex: 1, fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground }}>{ex.name}</Text>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>{ex.duration}</Text>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.medium,
+                    color: colors.foreground,
+                  }}
+                >
+                  {ex.name}
+                </Text>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  {ex.duration}
+                </Text>
               </View>
             ))}
           </Animated.View>
@@ -230,17 +284,28 @@ export default function WorkoutPlanScreen(): React.ReactElement {
             marginTop: spacing.lg,
           },
           !isDark
-            ? Platform.select({
-                ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+            ? (Platform.select({
+                ios: {
+                  shadowColor: moduleColors.workout.base,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
+                },
                 android: { elevation: 4 },
-              }) ?? {}
+              }) ?? {})
             : {},
         ]}
       >
-        <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color: colors.overlayForeground }}>
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            fontWeight: typography.weight.bold,
+            color: colors.overlayForeground,
+          }}
+        >
           오늘 운동 시작하기
         </Text>
       </Pressable>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

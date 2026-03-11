@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { View, Text, Pressable, Linking, StyleSheet } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
-import { ScreenContainer } from '../../components/ui';
+import { ScreenContainer, GlassCard } from '../../components/ui';
+import { useTheme } from '../../lib/theme';
 
 interface FAQItem {
   id: string;
@@ -61,122 +61,118 @@ export default function HelpScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenContainer
-      testID="help-screen"
-      edges={['bottom']}
-    >
-        {/* 헤더 */}
-        <View style={{ marginBottom: spacing.lg }}>
-          <Text
-            style={{
-              fontSize: typography.size.xl,
-              fontWeight: typography.weight.bold,
-              color: colors.foreground,
-              marginBottom: spacing.xs,
-            }}
-          >
-            도움말
-          </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.mutedForeground,
-            }}
-          >
-            자주 묻는 질문을 확인해보세요
-          </Text>
-        </View>
-
-        {/* FAQ 목록 */}
-        {FAQ_LIST.map((item) => (
-          <Pressable
-            key={item.id}
-            style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              marginBottom: spacing.sm + 2,
-            }}
-            onPress={() => toggleExpand(item.id)}
-
-          >
-            <View style={styles.questionRow}>
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: typography.size.base,
-                  fontWeight: typography.weight.medium,
-                  color: colors.foreground,
-                  lineHeight: 22,
-                }}
-              >
-                {item.question}
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.base,
-                  color: colors.mutedForeground,
-                  marginLeft: spacing.sm,
-                }}
-              >
-                {expandedId === item.id ? '▲' : '▼'}
-              </Text>
-            </View>
-            {expandedId === item.id && (
-              <Text
-                style={{
-                  marginTop: spacing.sm + 2,
-                  fontSize: typography.size.sm,
-                  color: colors.mutedForeground,
-                  lineHeight: 22,
-                }}
-              >
-                {item.answer}
-              </Text>
-            )}
-          </Pressable>
-        ))}
-
-        {/* 문의하기 */}
-        <View
+    <ScreenContainer testID="help-screen" edges={['bottom']} backgroundGradient="profile">
+      {/* 헤더 */}
+      <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+        <Text
           style={{
-            backgroundColor: brand.primary + '15',
-            borderRadius: radii.xl,
-            padding: spacing.md + 4,
-            alignItems: 'center',
-            marginTop: spacing.md,
+            fontSize: typography.size.xl,
+            fontWeight: typography.weight.bold,
+            color: colors.foreground,
+            marginBottom: spacing.xs,
           }}
+        >
+          도움말
+        </Text>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+          }}
+        >
+          자주 묻는 질문을 확인해보세요
+        </Text>
+      </GlassCard>
+
+      {/* FAQ 목록 */}
+      {FAQ_LIST.map((item) => (
+        <Pressable
+          key={item.id}
+          style={{
+            backgroundColor: colors.card,
+            borderRadius: radii.xl,
+            padding: spacing.md,
+            marginBottom: spacing.sm + 2,
+          }}
+          onPress={() => toggleExpand(item.id)}
+        >
+          <View style={styles.questionRow}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.medium,
+                color: colors.foreground,
+                lineHeight: 22,
+              }}
+            >
+              {item.question}
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.size.base,
+                color: colors.mutedForeground,
+                marginLeft: spacing.sm,
+              }}
+            >
+              {expandedId === item.id ? '▲' : '▼'}
+            </Text>
+          </View>
+          {expandedId === item.id && (
+            <Text
+              style={{
+                marginTop: spacing.sm + 2,
+                fontSize: typography.size.sm,
+                color: colors.mutedForeground,
+                lineHeight: 22,
+              }}
+            >
+              {item.answer}
+            </Text>
+          )}
+        </Pressable>
+      ))}
+
+      {/* 문의하기 */}
+      <View
+        style={{
+          backgroundColor: brand.primary + '15',
+          borderRadius: radii.xl,
+          padding: spacing.md + 4,
+          alignItems: 'center',
+          marginTop: spacing.md,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: typography.size.base,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+        >
+          찾는 답이 없나요?
+        </Text>
+        <Pressable
+          style={{
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            paddingHorizontal: spacing.lg,
+            paddingVertical: spacing.sm + 2,
+          }}
+          onPress={() => Linking.openURL('mailto:support@yiroom.app')}
         >
           <Text
             style={{
-              fontSize: typography.size.base,
+              color: brand.primaryForeground,
+              fontSize: typography.size.sm,
               fontWeight: typography.weight.semibold,
-              color: colors.foreground,
-              marginBottom: spacing.sm,
             }}
           >
-            찾는 답이 없나요?
+            문의하기
           </Text>
-          <Pressable
-            style={{
-              backgroundColor: brand.primary,
-              borderRadius: radii.xl,
-              paddingHorizontal: spacing.lg,
-              paddingVertical: spacing.sm + 2,
-            }}
-            onPress={() => Linking.openURL('mailto:support@yiroom.app')}
-          >
-            <Text
-              style={{
-                color: brand.primaryForeground,
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-              }}
-            >
-              문의하기
-            </Text>
-          </Pressable>
-        </View>
+        </Pressable>
+      </View>
     </ScreenContainer>
   );
 }

@@ -1,6 +1,9 @@
 /**
  * 의류 아이템 편집 화면
  */
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Check, X } from 'lucide-react-native';
 import { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -13,14 +16,12 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Check, X } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
-import { router, useLocalSearchParams } from 'expo-router';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '@/lib/theme';
 import { ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useCloset, type ClothingMetadata } from '@/lib/inventory';
+import { useTheme } from '@/lib/theme';
 
 const CATEGORIES = [
   { key: 'top', label: '상의' },
@@ -37,7 +38,7 @@ const SEASONS = ['봄', '여름', '가을', '겨울'];
 const OCCASIONS = ['데일리', '출근', '데이트', '운동', '여행', '포멀'];
 
 export default function EditClosetItemScreen(): React.JSX.Element {
-  const { colors, spacing, radii, typography, brand, status } = useTheme();
+  const { colors, spacing, radii, typography, brand } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { items, updateItem } = useCloset();
 
@@ -125,7 +126,12 @@ export default function EditClosetItemScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer testID="edit-closet-item-screen" scrollable={false} edges={['bottom']}>
+    <ScreenContainer
+      testID="edit-closet-item-screen"
+      backgroundGradient="style"
+      scrollable={false}
+      edges={['bottom']}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -136,7 +142,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* 이름 */}
-          <Animated.View entering={FadeInDown.delay(0).duration(300)}>
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -168,7 +174,10 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 카테고리 */}
-          <Animated.View entering={FadeInDown.delay(50).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInUp.delay(50).duration(TIMING.normal)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -219,7 +228,10 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 브랜드 */}
-          <Animated.View entering={FadeInDown.delay(100).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInUp.delay(100).duration(TIMING.normal)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -251,7 +263,10 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 사이즈 */}
-          <Animated.View entering={FadeInDown.delay(150).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInUp.delay(150).duration(TIMING.normal)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -283,7 +298,10 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 계절 */}
-          <Animated.View entering={FadeInDown.delay(200).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInUp.delay(200).duration(TIMING.normal)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -331,7 +349,10 @@ export default function EditClosetItemScreen(): React.JSX.Element {
           </Animated.View>
 
           {/* 착용 상황 */}
-          <Animated.View entering={FadeInDown.delay(250).duration(300)} style={{ marginTop: spacing.lg }}>
+          <Animated.View
+            entering={FadeInUp.delay(250).duration(TIMING.normal)}
+            style={{ marginTop: spacing.lg }}
+          >
             <Text
               style={{
                 fontSize: typography.size.sm,

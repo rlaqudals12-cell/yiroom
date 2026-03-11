@@ -16,15 +16,16 @@
  * ```
  */
 
+import { useUser } from '@clerk/clerk-expo';
 import { useEffect, useState, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+
 import type { ConnectionStatus, ExplanationDepth, ExposeRequest } from '@/lib/connection-awareness';
 import {
   exposeConnection,
   confirmConnection,
   getExplanationDepth,
 } from '@/lib/connection-awareness';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 
 interface UseConnectionExposureResult {
   /** 현재 내재화 상태 */

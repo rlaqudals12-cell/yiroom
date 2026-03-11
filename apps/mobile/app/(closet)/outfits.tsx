@@ -3,15 +3,9 @@
  * 코디 목록 + 상세 보기 + 착용 기록 + 삭제
  */
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import {
-  Plus,
-  Shirt,
-  Calendar,
-  Trash2,
-  CheckCircle,
-} from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { Plus, Shirt, Calendar, Trash2, CheckCircle } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -22,16 +16,27 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
-import { useTheme, brand, typography, spacing, radii, coloredShadow, moduleColors } from '../../lib/theme';
-import { useSavedOutfits } from '../../lib/inventory/useInventory';
-import { useCloset } from '../../lib/inventory/useInventory';
 import type { SavedOutfit, InventoryItem, Season, Occasion } from '../../lib/inventory/types';
 import { SEASON_LABELS, OCCASION_LABELS } from '../../lib/inventory/types';
+import { useSavedOutfits } from '../../lib/inventory/useInventory';
+import { useCloset } from '../../lib/inventory/useInventory';
+import {
+  useTheme,
+  brand,
+  typography,
+  spacing,
+  radii,
+  coloredShadow,
+  moduleColors,
+} from '../../lib/theme';
+
+import { ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 
 export default function OutfitsScreen(): React.JSX.Element {
-  const { colors, isDark, typography, spacing} = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { outfits, isLoading, deleteOutfit, recordWear } = useSavedOutfits();
   const { items: closetItems } = useCloset();
@@ -49,23 +54,19 @@ export default function OutfitsScreen(): React.JSX.Element {
 
   const handleDelete = useCallback(
     (outfit: SavedOutfit) => {
-      Alert.alert(
-        '코디 삭제',
-        `"${outfit.name || '이름 없음'}"을(를) 삭제할까요?`,
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '삭제',
-            style: 'destructive',
-            onPress: async () => {
-              const ok = await deleteOutfit(outfit.id);
-              if (ok) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              }
-            },
+      Alert.alert('코디 삭제', `"${outfit.name || '이름 없음'}"을(를) 삭제할까요?`, [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: async () => {
+            const ok = await deleteOutfit(outfit.id);
+            if (ok) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
           },
-        ]
-      );
+        },
+      ]);
     },
     [deleteOutfit]
   );
@@ -99,10 +100,7 @@ export default function OutfitsScreen(): React.JSX.Element {
 
     return (
       <Pressable
-        style={[
-          styles.outfitCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
+        style={[styles.outfitCard, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => toggleExpand(outfit.id)}
         testID="outfit-card"
       >
@@ -113,11 +111,14 @@ export default function OutfitsScreen(): React.JSX.Element {
               {outfit.name || '이름 없는 코디'}
             </Text>
             <View style={styles.metaRow}>
-              <Text style={[styles.metaText, { color: colors.muted }]}>
-                {dateStr}
-              </Text>
+              <Text style={[styles.metaText, { color: colors.muted }]}>{dateStr}</Text>
               {outfit.occasion && (
-                <View style={[styles.metaChip, { backgroundColor: isDark ? colors.card : colors.muted + '20' }]}>
+                <View
+                  style={[
+                    styles.metaChip,
+                    { backgroundColor: isDark ? colors.card : colors.muted + '20' },
+                  ]}
+                >
                   <Text style={[styles.metaChipText, { color: colors.foreground }]}>
                     {OCCASION_LABELS[outfit.occasion as Occasion] || outfit.occasion}
                   </Text>
@@ -131,9 +132,7 @@ export default function OutfitsScreen(): React.JSX.Element {
             </View>
           </View>
           <View style={styles.wearBadge}>
-            <Text style={[styles.wearCount, { color: colors.foreground }]}>
-              {outfit.wearCount}
-            </Text>
+            <Text style={[styles.wearCount, { color: colors.foreground }]}>{outfit.wearCount}</Text>
             <Text style={[styles.wearLabel, { color: colors.muted }]}>회</Text>
           </View>
         </View>
@@ -201,9 +200,7 @@ export default function OutfitsScreen(): React.JSX.Element {
         onPress={() => router.push('/(closet)/outfit-builder')}
       >
         <Plus size={18} color={brand.primaryForeground} />
-        <Text style={[styles.emptyBtnText, { color: brand.primaryForeground }]}>
-          코디 만들기
-        </Text>
+        <Text style={[styles.emptyBtnText, { color: brand.primaryForeground }]}>코디 만들기</Text>
       </Pressable>
     </View>
   );
@@ -219,12 +216,26 @@ export default function OutfitsScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="outfits-screen">
+    <ScreenContainer
+      backgroundGradient="style"
+      scrollable={false}
+      contentPadding={0}
+      testID="outfits-screen"
+    >
       <FlatList
         data={outfits}
         keyExtractor={(item) => item.id}
         renderItem={renderOutfit}
         ListEmptyComponent={renderEmpty}
+        ListHeaderComponent={
+          outfits.length > 0 ? (
+            <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+              <Text style={[styles.listHeader, { color: colors.mutedForeground }]}>
+                {outfits.length}개의 코디
+              </Text>
+            </Animated.View>
+          ) : null
+        }
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         contentContainerStyle={styles.listContent}
       />
@@ -251,11 +262,7 @@ function ScrollableItemPreview({
   colors: { border: string; muted: string };
 }): React.JSX.Element {
   if (items.length === 0) {
-    return (
-      <Text style={[styles.noItemsText, { color: colors.muted }]}>
-        아이템 정보 없음
-      </Text>
-    );
+    return <Text style={[styles.noItemsText, { color: colors.muted }]}>아이템 정보 없음</Text>;
   }
 
   return (
@@ -296,6 +303,10 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.md,
     paddingBottom: spacing.xl * 2,
+  },
+  listHeader: {
+    fontSize: typography.size.sm,
+    marginBottom: spacing.sm,
   },
   // 코디 카드
   outfitCard: {

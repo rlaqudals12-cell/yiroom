@@ -4,31 +4,27 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Bookmark, RefreshCw, Thermometer, CloudRain, Sun, Cloud } from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Image } from 'expo-image';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { useUserAnalyses } from '@/hooks/useUserAnalyses';
-import { ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import { useTheme, typography, radii , spacing, coloredShadow, moduleColors } from '@/lib/theme';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer, SuccessCheckmark } from '../../components/ui';
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
-import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import {
   useClosetMatcher,
   type OutfitSuggestion,
   type PersonalColorSeason,
   type BodyType3,
 } from '../../lib/inventory/useClosetMatcher';
+import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useWeather } from '../../lib/weather';
+
+import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 // DB 체형 → 3타입 매핑
 function mapBodyType(dbBodyType: string | undefined): BodyType3 {
@@ -58,7 +54,13 @@ function mapSeason(dbSeason: string | undefined): PersonalColorSeason {
 }
 
 // 날씨 아이콘 컴포넌트
-function WeatherIcon({ condition, color }: { condition: string; color: string }): React.JSX.Element {
+function WeatherIcon({
+  condition,
+  color,
+}: {
+  condition: string;
+  color: string;
+}): React.JSX.Element {
   if (condition.includes('비') || condition.includes('소나기')) {
     return <CloudRain size={16} color={color} />;
   }
@@ -69,7 +71,7 @@ function WeatherIcon({ condition, color }: { condition: string; color: string })
 }
 
 export default function RecommendScreen() {
-  const { colors, module: moduleTheme, status, typography, spacing} = useTheme();
+  const { colors, module: moduleTheme, status } = useTheme();
   const router = useRouter();
 
   // 실제 사용자 분석 결과에서 가져오기
@@ -78,7 +80,12 @@ export default function RecommendScreen() {
   const bodyType = mapBodyType(bodyAnalysis?.bodyType);
 
   // 날씨 서비스 연동
-  const { temp, locationName, weather, isLoading: weatherLoading } = useWeather({
+  const {
+    temp,
+    locationName,
+    weather,
+    isLoading: weatherLoading,
+  } = useWeather({
     region: 'seoul',
   });
 
@@ -267,11 +274,13 @@ export default function RecommendScreen() {
   return (
     <ScreenContainer
       testID="closet-recommend-screen"
+      backgroundGradient="style"
       edges={['bottom']}
       contentPadding={0}
     >
-        {/* 날씨 정보 */}
-        <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
+      {/* 날씨 정보 */}
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.weatherCard }}>
           <View style={styles.weatherRow}>
             <View style={styles.weatherItem}>
               <Text style={styles.weatherIcon}>📍</Text>
@@ -285,7 +294,10 @@ export default function RecommendScreen() {
             </View>
             {weather?.current && (
               <View style={styles.weatherItem}>
-                <WeatherIcon condition={weather.current.description} color={colors.mutedForeground} />
+                <WeatherIcon
+                  condition={weather.current.description}
+                  color={colors.mutedForeground}
+                />
                 <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
                   {weather.current.description}
                 </Text>
@@ -304,96 +316,94 @@ export default function RecommendScreen() {
               </Text>
             </View>
           </View>
-        </View>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 코디 추천 */}
-        {outfit ? (
-          <View style={styles.outfitSection}>
-            <View style={styles.outfitHeader}>
-              <Text style={[styles.outfitTitle, { color: colors.foreground }]}>
-                오늘의 추천 코디
+      {/* 코디 추천 */}
+      {outfit ? (
+        <View style={styles.outfitSection}>
+          <View style={styles.outfitHeader}>
+            <Text style={[styles.outfitTitle, { color: colors.foreground }]}>오늘의 추천 코디</Text>
+            <View style={[styles.scoreCircle, { backgroundColor: moduleTheme.body.dark }]}>
+              <Text style={[styles.scoreCircleText, { color: colors.card }]}>
+                {outfit.totalScore}
               </Text>
-              <View style={[styles.scoreCircle, { backgroundColor: moduleTheme.body.dark }]}>
-                <Text style={[styles.scoreCircleText, { color: colors.card }]}>
-                  {outfit.totalScore}
-                </Text>
-              </View>
             </View>
+          </View>
 
-            <View style={styles.outfitGrid}>
-              {renderOutfitItem('아우터', outfit.outer)}
-              {renderOutfitItem('상의', outfit.top)}
-              {renderOutfitItem('하의', outfit.bottom)}
-              {renderOutfitItem('신발', outfit.shoes)}
-              {renderOutfitItem('가방', outfit.bag)}
-              {renderOutfitItem('악세서리', outfit.accessory)}
-            </View>
+          <View style={styles.outfitGrid}>
+            {renderOutfitItem('아우터', outfit.outer)}
+            {renderOutfitItem('상의', outfit.top)}
+            {renderOutfitItem('하의', outfit.bottom)}
+            {renderOutfitItem('신발', outfit.shoes)}
+            {renderOutfitItem('가방', outfit.bag)}
+            {renderOutfitItem('악세서리', outfit.accessory)}
+          </View>
 
-            {/* 코디 팁 */}
-            {outfit.tips.length > 0 && (
-              <View style={[styles.tipsCard, { backgroundColor: colors.card }]}>
+          {/* 코디 팁 */}
+          {outfit.tips.length > 0 && (
+            <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.tipsCard }}>
                 <Text style={[styles.tipsTitle, { color: colors.foreground }]}>💡 코디 팁</Text>
                 {outfit.tips.map((tip, index) => (
                   <Text key={index} style={[styles.tipText, { color: colors.mutedForeground }]}>
                     • {tip}
                   </Text>
                 ))}
-              </View>
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* 코디 저장 버튼 */}
+          <Pressable
+            style={[
+              styles.saveOutfitButton,
+              {
+                backgroundColor: isOutfitAlreadySaved() ? colors.muted : moduleTheme.body.dark,
+              },
+              isSaving && styles.saveOutfitButtonDisabled,
+            ]}
+            onPress={handleSaveOutfit}
+            disabled={isSaving || isOutfitAlreadySaved()}
+            testID="save-outfit-button"
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color={colors.card} />
+            ) : (
+              <>
+                <Bookmark
+                  size={18}
+                  color={isOutfitAlreadySaved() ? colors.mutedForeground : colors.card}
+                  fill={isOutfitAlreadySaved() ? colors.mutedForeground : 'none'}
+                />
+                <Text
+                  style={[
+                    styles.saveOutfitButtonText,
+                    {
+                      color: isOutfitAlreadySaved() ? colors.mutedForeground : colors.card,
+                    },
+                  ]}
+                >
+                  {isOutfitAlreadySaved() ? '저장됨' : '코디 저장'}
+                </Text>
+              </>
             )}
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.noOutfitContainer}>
+          <Text style={[styles.noOutfitText, { color: colors.mutedForeground }]}>
+            추천할 코디를 찾지 못했어요
+          </Text>
+          <Text style={[styles.noOutfitSubtext, { color: colors.mutedForeground }]}>
+            상의와 하의가 필요해요
+          </Text>
+        </View>
+      )}
 
-            {/* 코디 저장 버튼 */}
-            <Pressable
-              style={[
-                styles.saveOutfitButton,
-                {
-                  backgroundColor: isOutfitAlreadySaved()
-                    ? colors.muted
-                    : moduleTheme.body.dark,
-                },
-                isSaving && styles.saveOutfitButtonDisabled,
-              ]}
-              onPress={handleSaveOutfit}
-              disabled={isSaving || isOutfitAlreadySaved()}
-              testID="save-outfit-button"
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color={colors.card} />
-              ) : (
-                <>
-                  <Bookmark
-                    size={18}
-                    color={isOutfitAlreadySaved() ? colors.mutedForeground : colors.card}
-                    fill={isOutfitAlreadySaved() ? colors.mutedForeground : 'none'}
-                  />
-                  <Text
-                    style={[
-                      styles.saveOutfitButtonText,
-                      {
-                        color: isOutfitAlreadySaved()
-                          ? colors.mutedForeground
-                          : colors.card,
-                      },
-                    ]}
-                  >
-                    {isOutfitAlreadySaved() ? '저장됨' : '코디 저장'}
-                  </Text>
-                </>
-              )}
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.noOutfitContainer}>
-            <Text style={[styles.noOutfitText, { color: colors.mutedForeground }]}>
-              추천할 코디를 찾지 못했어요
-            </Text>
-            <Text style={[styles.noOutfitSubtext, { color: colors.mutedForeground }]}>
-              상의와 하의가 필요해요
-            </Text>
-          </View>
-        )}
-
-        {/* 옷장 요약 */}
-        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
+      {/* 옷장 요약 */}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ ...styles.summaryCard }}>
           <Text style={[styles.summaryTitle, { color: colors.foreground }]}>내 옷장 분석</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -425,7 +435,8 @@ export default function RecommendScreen() {
               ))}
             </View>
           )}
-        </View>
+        </GlassCard>
+      </Animated.View>
       {/* 새로고침 버튼 */}
       <Pressable
         style={[styles.refreshButton, { backgroundColor: moduleTheme.body.dark }]}

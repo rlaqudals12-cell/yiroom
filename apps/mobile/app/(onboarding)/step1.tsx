@@ -5,20 +5,13 @@
  *     border-2 카드 + 도트 ProgressIndicator
  */
 
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import {
-  Target,
-  TrendingDown,
-  Dumbbell,
-  HeartPulse,
-  Wind,
-  Moon,
-  Check,
-} from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Target, TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Check } from 'lucide-react-native';
 import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
-import { ProgressIndicator, ScreenContainer } from '../../components/ui';
+
+import { GlassCard, ProgressIndicator, ScreenContainer } from '../../components/ui';
 import { TIMING, staggeredEntry } from '../../lib/animations';
 import {
   useOnboarding,
@@ -27,12 +20,11 @@ import {
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
 } from '../../lib/onboarding';
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 // 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
 const STEP1_ACCENT = '#F43F5E';
 const STEP1_HERO_BG_LIGHT = '#FFF1F2';
-const STEP1_HERO_BG_DARK = `${STEP1_ACCENT}15`;
 
 // Lucide 아이콘 매핑
 const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
@@ -63,14 +55,19 @@ export default function OnboardingStep1() {
   };
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step1">
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="onboarding-step1"
+      backgroundGradient="home"
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
         <Animated.View entering={FadeIn.duration(TIMING.slow)}>
           <LinearGradient
-            colors={isDark
-              ? [`${STEP1_ACCENT}10`, `${STEP1_ACCENT}18`]
-              : [STEP1_HERO_BG_LIGHT, '#FFE4E6']}
+            colors={
+              isDark ? [`${STEP1_ACCENT}10`, `${STEP1_ACCENT}18`] : [STEP1_HERO_BG_LIGHT, '#FFE4E6']
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[
@@ -79,23 +76,37 @@ export default function OnboardingStep1() {
                 borderRadius: radii.xl + 8,
                 borderWidth: 1,
                 borderColor: isDark ? `${STEP1_ACCENT}20` : `${STEP1_ACCENT}15`,
-                ...(isDark ? {} : Platform.select({
-                  ios: { shadowColor: STEP1_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
-                  android: { elevation: 2 },
-                }) ?? {}),
+                ...(isDark
+                  ? {}
+                  : (Platform.select({
+                      ios: {
+                        shadowColor: STEP1_ACCENT,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.08,
+                        shadowRadius: 12,
+                      },
+                      android: { elevation: 2 },
+                    }) ?? {})),
               },
             ]}
           >
-            <View style={[
-              styles.heroIconWrap,
-              {
-                backgroundColor: STEP1_ACCENT,
-                ...(Platform.select({
-                  ios: { shadowColor: STEP1_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-                  android: { elevation: 6 },
-                }) ?? {}),
-              },
-            ]}>
+            <View
+              style={[
+                styles.heroIconWrap,
+                {
+                  backgroundColor: STEP1_ACCENT,
+                  ...(Platform.select({
+                    ios: {
+                      shadowColor: STEP1_ACCENT,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 8,
+                    },
+                    android: { elevation: 6 },
+                  }) ?? {}),
+                },
+              ]}
+            >
               <Target size={36} color={colors.overlayForeground} strokeWidth={2} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -121,16 +132,16 @@ export default function OnboardingStep1() {
                   style={({ pressed }) => [
                     styles.goalCard,
                     {
-                      backgroundColor: isSelected
-                        ? `${goalColor.gradient[0]}18`
-                        : colors.card,
+                      backgroundColor: isSelected ? `${goalColor.gradient[0]}18` : colors.card,
                       borderRadius: radii.xl,
                       borderColor: isSelected ? goalColor.gradient[0] : colors.border,
                       borderWidth: isSelected ? 2 : 1,
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
-                      ...(isSelected ? { ...shadows.md, shadowColor: goalColor.gradient[0], shadowOpacity: 0.18 } : shadows.card),
+                      ...(isSelected
+                        ? { ...shadows.md, shadowColor: goalColor.gradient[0], shadowOpacity: 0.18 }
+                        : shadows.card),
                     },
                   ]}
                   onPress={() => handleToggle(goal)}
@@ -150,17 +161,8 @@ export default function OnboardingStep1() {
                       <IconComponent size={24} color={colors.overlayForeground} strokeWidth={2} />
                     </LinearGradient>
                   ) : (
-                    <View
-                      style={[
-                        styles.iconBox,
-                        { backgroundColor: goalColor.bg },
-                      ]}
-                    >
-                      <IconComponent
-                        size={24}
-                        color={goalColor.gradient[0]}
-                        strokeWidth={2}
-                      />
+                    <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
+                      <IconComponent size={24} color={goalColor.gradient[0]} strokeWidth={2} />
                     </View>
                   )}
 
@@ -191,10 +193,7 @@ export default function OnboardingStep1() {
 
                   {/* 체크마크 */}
                   {isSelected && (
-                    <LinearGradient
-                      colors={goalColor.gradient}
-                      style={styles.checkmark}
-                    >
+                    <LinearGradient colors={goalColor.gradient} style={styles.checkmark}>
                       <Check size={14} color={colors.overlayForeground} strokeWidth={3} />
                     </LinearGradient>
                   )}
@@ -207,17 +206,7 @@ export default function OnboardingStep1() {
         {/* 선택 현황 요약 (웹 동일 패턴 — indigo-50 selection status) */}
         {data.goals.length > 0 && (
           <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
-            <View
-              style={{
-                backgroundColor: `${brand.primary}12`,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-                marginTop: spacing.md,
-                borderWidth: 1,
-                borderColor: `${brand.primary}25`,
-                ...shadows.sm,
-              }}
-            >
+            <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
               <Text
                 style={{
                   fontSize: typography.size.sm,
@@ -237,7 +226,7 @@ export default function OnboardingStep1() {
               >
                 {data.goals.map((g) => GOAL_LABELS[g]).join(' · ')}
               </Text>
-            </View>
+            </GlassCard>
           </Animated.View>
         )}
 
@@ -284,7 +273,9 @@ export default function OnboardingStep1() {
             accessibilityState={{ disabled: !canProceed }}
           >
             <LinearGradient
-              colors={canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              colors={
+                canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}

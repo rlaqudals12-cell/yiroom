@@ -18,11 +18,13 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
 // 카테고리 옵션
@@ -85,7 +87,7 @@ export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
   const { addItem } = useCloset();
-  const { colors, typography, spacing, radii} = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
 
   const [formData, setFormData] = useState<FormData>({
@@ -243,212 +245,232 @@ export default function ClosetAddScreen() {
         }}
       />
 
-      <ScreenContainer scrollable={false} contentPadding={0} testID="closet-add-screen" edges={['bottom']}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        testID="closet-add-screen"
+        backgroundGradient="style"
+        edges={['bottom']}
       >
-        {/* 이미지 섹션 */}
-        <View style={styles.imageSection}>
-          {formData.imageUri ? (
-            <Pressable onPress={handleImagePick}>
-              <Image source={{ uri: formData.imageUri }} style={styles.previewImage} />
-              <View style={styles.imageOverlay}>
-                <Text style={styles.imageOverlayText}>변경</Text>
-              </View>
-            </Pressable>
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.imagePlaceholderIcon}>📷</Text>
-              <Text style={styles.imagePlaceholderText}>사진을 추가해주세요</Text>
-              <View style={styles.imageButtons}>
-                <Pressable
-                  onPress={handleCamera}
-                  style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
-                >
-                  <Text style={styles.imageButtonText}>📸 촬영</Text>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+          {/* 이미지 섹션 */}
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.imageSection }}>
+              {formData.imageUri ? (
+                <Pressable onPress={handleImagePick}>
+                  <Image source={{ uri: formData.imageUri }} style={styles.previewImage} />
+                  <View style={styles.imageOverlay}>
+                    <Text style={styles.imageOverlayText}>변경</Text>
+                  </View>
                 </Pressable>
-                <Pressable
-                  onPress={handleImagePick}
-                  style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
-                >
-                  <Text style={styles.imageButtonText}>🖼️ 앨범</Text>
-                </Pressable>
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Text style={styles.imagePlaceholderIcon}>📷</Text>
+                  <Text style={styles.imagePlaceholderText}>사진을 추가해주세요</Text>
+                  <View style={styles.imageButtons}>
+                    <Pressable
+                      onPress={handleCamera}
+                      style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
+                    >
+                      <Text style={styles.imageButtonText}>📸 촬영</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleImagePick}
+                      style={({ pressed }) => [styles.imageButton, pressed && { opacity: 0.7 }]}
+                    >
+                      <Text style={styles.imageButtonText}>🖼️ 앨범</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+            </GlassCard>
+          </Animated.View>
+
+          {/* 기본 정보 */}
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>기본 정보</Text>
+
+              <Text style={styles.label}>아이템 이름 *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.name}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, name: text }))}
+                placeholder="예: 화이트 셔츠"
+                placeholderTextColor={colors.mutedForeground}
+              />
+
+              <Text style={styles.label}>브랜드</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.brand}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, brand: text }))}
+                placeholder="예: ZARA"
+                placeholderTextColor={colors.mutedForeground}
+              />
+            </GlassCard>
+          </Animated.View>
+
+          {/* 카테고리 */}
+          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>카테고리 *</Text>
+              <View style={styles.optionGrid}>
+                {CATEGORIES.map((cat) => (
+                  <Pressable
+                    key={cat.value}
+                    onPress={() => selectCategory(cat.value)}
+                    style={[
+                      styles.optionButton,
+                      formData.category === cat.value && styles.optionButtonSelected,
+                    ]}
+                  >
+                    <Text style={styles.optionIcon}>{cat.icon}</Text>
+                    <Text
+                      style={[
+                        styles.optionLabel,
+                        formData.category === cat.value && styles.optionLabelSelected,
+                      ]}
+                    >
+                      {cat.label}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
-            </View>
-          )}
+            </GlassCard>
+          </Animated.View>
+
+          {/* 색상 */}
+          <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>색상 * (복수 선택)</Text>
+              <View style={styles.colorGrid}>
+                {COLORS.map((color) => (
+                  <Pressable
+                    key={color.value}
+                    onPress={() => toggleSelection('colors', color.value)}
+                    style={[
+                      styles.colorButton,
+                      formData.colors.includes(color.value) && styles.colorButtonSelected,
+                    ]}
+                  >
+                    <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
+                    <Text
+                      style={[
+                        styles.colorLabel,
+                        formData.colors.includes(color.value) && styles.colorLabelSelected,
+                      ]}
+                    >
+                      {color.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* 시즌 */}
+          <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>시즌 * (복수 선택)</Text>
+              <View style={styles.optionRow}>
+                {SEASONS.map((season) => (
+                  <Pressable
+                    key={season.value}
+                    onPress={() => toggleSelection('seasons', season.value)}
+                    style={[
+                      styles.seasonButton,
+                      formData.seasons.includes(season.value) && styles.seasonButtonSelected,
+                    ]}
+                  >
+                    <Text style={styles.seasonIcon}>{season.icon}</Text>
+                    <Text
+                      style={[
+                        styles.seasonLabel,
+                        formData.seasons.includes(season.value) && styles.seasonLabelSelected,
+                      ]}
+                    >
+                      {season.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* 상황 */}
+          <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>착용 상황 (선택)</Text>
+              <View style={styles.chipContainer}>
+                {OCCASIONS.map((occ) => (
+                  <Pressable
+                    key={occ.value}
+                    onPress={() => toggleSelection('occasions', occ.value)}
+                    style={[
+                      styles.chip,
+                      formData.occasions.includes(occ.value) && styles.chipSelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        formData.occasions.includes(occ.value) && styles.chipTextSelected,
+                      ]}
+                    >
+                      {occ.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* 메모 */}
+          <Animated.View entering={FadeInUp.delay(480).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.section }}>
+              <Text style={styles.sectionTitle}>메모</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.notes}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, notes: text }))}
+                placeholder="이 아이템에 대한 메모를 남겨보세요"
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={3}
+              />
+            </GlassCard>
+          </Animated.View>
+
+          {/* 하단 여백 */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+
+        {/* 저장 버튼 */}
+        <View style={styles.bottomBar}>
+          <Pressable
+            onPress={handleSubmit}
+            disabled={!isValid() || isSubmitting}
+            style={({ pressed }) => [
+              styles.submitButton,
+              (!isValid() || isSubmitting) && styles.submitButtonDisabled,
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={colors.overlayForeground} />
+            ) : (
+              <Text style={styles.submitButtonText}>옷장에 추가</Text>
+            )}
+          </Pressable>
         </View>
 
-        {/* 기본 정보 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>기본 정보</Text>
-
-          <Text style={styles.label}>아이템 이름 *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.name}
-            onChangeText={(text) => setFormData((prev) => ({ ...prev, name: text }))}
-            placeholder="예: 화이트 셔츠"
-            placeholderTextColor={colors.mutedForeground}
-          />
-
-          <Text style={styles.label}>브랜드</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.brand}
-            onChangeText={(text) => setFormData((prev) => ({ ...prev, brand: text }))}
-            placeholder="예: ZARA"
-            placeholderTextColor={colors.mutedForeground}
-          />
-        </View>
-
-        {/* 카테고리 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>카테고리 *</Text>
-          <View style={styles.optionGrid}>
-            {CATEGORIES.map((cat) => (
-              <Pressable
-                key={cat.value}
-                onPress={() => selectCategory(cat.value)}
-                style={[
-                  styles.optionButton,
-                  formData.category === cat.value && styles.optionButtonSelected,
-                ]}
-              >
-                <Text style={styles.optionIcon}>{cat.icon}</Text>
-                <Text
-                  style={[
-                    styles.optionLabel,
-                    formData.category === cat.value && styles.optionLabelSelected,
-                  ]}
-                >
-                  {cat.label}
-                </Text>
-              </Pressable>
-            ))}
+        {/* 저장 완료 애니메이션 */}
+        {showSuccess && (
+          <View style={styles.successOverlay}>
+            <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
           </View>
-        </View>
-
-        {/* 색상 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>색상 * (복수 선택)</Text>
-          <View style={styles.colorGrid}>
-            {COLORS.map((color) => (
-              <Pressable
-                key={color.value}
-                onPress={() => toggleSelection('colors', color.value)}
-                style={[
-                  styles.colorButton,
-                  formData.colors.includes(color.value) && styles.colorButtonSelected,
-                ]}
-              >
-                <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
-                <Text
-                  style={[
-                    styles.colorLabel,
-                    formData.colors.includes(color.value) && styles.colorLabelSelected,
-                  ]}
-                >
-                  {color.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* 시즌 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>시즌 * (복수 선택)</Text>
-          <View style={styles.optionRow}>
-            {SEASONS.map((season) => (
-              <Pressable
-                key={season.value}
-                onPress={() => toggleSelection('seasons', season.value)}
-                style={[
-                  styles.seasonButton,
-                  formData.seasons.includes(season.value) && styles.seasonButtonSelected,
-                ]}
-              >
-                <Text style={styles.seasonIcon}>{season.icon}</Text>
-                <Text
-                  style={[
-                    styles.seasonLabel,
-                    formData.seasons.includes(season.value) && styles.seasonLabelSelected,
-                  ]}
-                >
-                  {season.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* 상황 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>착용 상황 (선택)</Text>
-          <View style={styles.chipContainer}>
-            {OCCASIONS.map((occ) => (
-              <Pressable
-                key={occ.value}
-                onPress={() => toggleSelection('occasions', occ.value)}
-                style={[styles.chip, formData.occasions.includes(occ.value) && styles.chipSelected]}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    formData.occasions.includes(occ.value) && styles.chipTextSelected,
-                  ]}
-                >
-                  {occ.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* 메모 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>메모</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.notes}
-            onChangeText={(text) => setFormData((prev) => ({ ...prev, notes: text }))}
-            placeholder="이 아이템에 대한 메모를 남겨보세요"
-            placeholderTextColor={colors.mutedForeground}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        {/* 하단 여백 */}
-        <View style={{ height: 100 }} />
-      </ScrollView>
-
-      {/* 저장 버튼 */}
-      <View style={styles.bottomBar}>
-        <Pressable
-          onPress={handleSubmit}
-          disabled={!isValid() || isSubmitting}
-          style={({ pressed }) => [
-            styles.submitButton,
-            (!isValid() || isSubmitting) && styles.submitButtonDisabled,
-            pressed && { opacity: 0.8 },
-          ]}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={colors.overlayForeground} />
-          ) : (
-            <Text style={styles.submitButtonText}>옷장에 추가</Text>
-          )}
-        </Pressable>
-      </View>
-
-      {/* 저장 완료 애니메이션 */}
-      {showSuccess && (
-        <View style={styles.successOverlay}>
-          <SuccessCheckmark visible size={80} onComplete={() => router.back()} />
-        </View>
-      )}
+        )}
       </ScreenContainer>
     </>
   );

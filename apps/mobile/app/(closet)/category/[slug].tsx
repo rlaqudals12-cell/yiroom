@@ -4,8 +4,11 @@
  * 특정 카테고리의 옷장 아이템을 그리드로 표시한다.
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 interface CategoryItem {
@@ -51,57 +54,64 @@ export default function CategoryScreen(): React.ReactElement {
   const categoryEmoji = CATEGORY_EMOJIS[slug ?? ''] ?? '👗';
 
   return (
-    <ScrollView
-      testID="category-screen"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.md }}
-    >
-      {/* 카테고리 헤더 */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
-        <Text style={{ fontSize: 32, marginRight: spacing.sm }}>{categoryEmoji}</Text>
-        <View>
-          <Text
-            style={{
-              fontSize: typography.size['2xl'],
-              fontWeight: typography.weight.bold,
-              color: colors.foreground,
-            }}
-          >
-            {categoryLabel}
-          </Text>
-          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-            {MOCK_ITEMS.length}개 아이템
-          </Text>
-        </View>
-      </View>
+    <ScreenContainer testID="category-screen" backgroundGradient="style" contentPadding={0}>
+      <Animated.View
+        entering={FadeInUp.delay(0).duration(TIMING.normal)}
+        style={{ padding: spacing.md }}
+      >
+        <GlassCard shadowSize="md" style={{ padding: spacing.md, marginBottom: spacing.md }}>
+          {/* 카테고리 헤더 */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+            <Text style={{ fontSize: 32, marginRight: spacing.sm }}>{categoryEmoji}</Text>
+            <View>
+              <Text
+                style={{
+                  fontSize: typography.size['2xl'],
+                  fontWeight: typography.weight.bold,
+                  color: colors.foreground,
+                }}
+              >
+                {categoryLabel}
+              </Text>
+              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                {MOCK_ITEMS.length}개 아이템
+              </Text>
+            </View>
+          </View>
 
-      {/* 정렬 옵션 */}
-      <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
-        {['최신순', '착용순', '이름순'].map((label) => (
-          <Pressable
-            key={label}
-            style={{
-              paddingHorizontal: spacing.smx,
-              paddingVertical: spacing.xs,
-              borderRadius: radii.full,
-              backgroundColor: label === '최신순' ? brand.primary : colors.secondary,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: typography.size.xs,
-                color: label === '최신순' ? brand.primaryForeground : colors.foreground,
-                fontWeight: label === '최신순' ? typography.weight.semibold : typography.weight.normal,
-              }}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+          {/* 정렬 옵션 */}
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            {['최신순', '착용순', '이름순'].map((label) => (
+              <Pressable
+                key={label}
+                style={{
+                  paddingHorizontal: spacing.smx,
+                  paddingVertical: spacing.xs,
+                  borderRadius: radii.full,
+                  backgroundColor: label === '최신순' ? brand.primary : colors.secondary,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    color: label === '최신순' ? brand.primaryForeground : colors.foreground,
+                    fontWeight:
+                      label === '최신순' ? typography.weight.semibold : typography.weight.normal,
+                  }}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 아이템 목록 */}
-      <View style={{ gap: spacing.sm }}>
+      <Animated.View
+        entering={FadeInUp.delay(80).duration(TIMING.normal)}
+        style={{ gap: spacing.sm, paddingHorizontal: spacing.md }}
+      >
         {MOCK_ITEMS.map((item) => (
           <Pressable
             key={item.id}
@@ -129,7 +139,13 @@ export default function CategoryScreen(): React.ReactElement {
               <Text style={{ fontSize: typography.size.xl }}>{item.emoji}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.base,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                }}
+              >
                 {item.name}
               </Text>
               <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
@@ -137,37 +153,49 @@ export default function CategoryScreen(): React.ReactElement {
               </Text>
             </View>
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: colors.foreground }}>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.bold,
+                  color: colors.foreground,
+                }}
+              >
                 {item.wearCount}
               </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>회</Text>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                회
+              </Text>
             </View>
           </Pressable>
         ))}
-      </View>
+      </Animated.View>
 
       {/* 아이템 추가 */}
-      <Pressable
-        accessibilityLabel="아이템 추가"
-        onPress={() => router.push('/(closet)/add')}
-        style={{
-          backgroundColor: brand.primary,
-          borderRadius: radii.xl,
-          paddingVertical: spacing.smx,
-          alignItems: 'center',
-          marginTop: spacing.lg,
-        }}
+      <Animated.View
+        entering={FadeInUp.delay(160).duration(TIMING.normal)}
+        style={{ paddingHorizontal: spacing.md, marginTop: spacing.lg, paddingBottom: spacing.xl }}
       >
-        <Text
+        <Pressable
+          accessibilityLabel="아이템 추가"
+          onPress={() => router.push('/(closet)/add')}
           style={{
-            fontSize: typography.size.base,
-            fontWeight: typography.weight.bold,
-            color: brand.primaryForeground,
+            backgroundColor: brand.primary,
+            borderRadius: radii.xl,
+            paddingVertical: spacing.smx,
+            alignItems: 'center',
           }}
         >
-          아이템 추가하기
-        </Text>
-      </Pressable>
-    </ScrollView>
+          <Text
+            style={{
+              fontSize: typography.size.base,
+              fontWeight: typography.weight.bold,
+              color: brand.primaryForeground,
+            }}
+          >
+            아이템 추가하기
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </ScreenContainer>
   );
 }

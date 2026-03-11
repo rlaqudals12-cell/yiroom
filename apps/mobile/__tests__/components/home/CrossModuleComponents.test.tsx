@@ -2,10 +2,11 @@
  * 교차 모듈 인사이트 테스트
  *
  * CrossModuleInsight 컴포넌트, _testOnly_generateInsights
+ * CA 통합: useConnectionExposure mock 포함
  */
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -24,6 +25,18 @@ import {
   _testOnly_generateInsights,
   type CrossModuleInsight as InsightType,
 } from '../../../hooks/useCrossModuleInsights';
+
+// Mock useConnectionExposure — 기본: full depth, 미확인
+const mockConfirm = jest.fn();
+jest.mock('../../../hooks/useConnectionExposure', () => ({
+  useConnectionExposure: jest.fn(() => ({
+    status: 'exposed',
+    depth: 'full',
+    isConfirmed: false,
+    exposureCount: 1,
+    confirm: mockConfirm,
+  })),
+}));
 
 function createThemeValue(isDark = false): ThemeContextValue {
   return {
@@ -221,6 +234,19 @@ describe('CrossModuleInsight', () => {
     },
   ];
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // 기본 mock 복원
+    const { useConnectionExposure } = require('../../../hooks/useConnectionExposure');
+    useConnectionExposure.mockReturnValue({
+      status: 'exposed',
+      depth: 'full',
+      isConfirmed: false,
+      exposureCount: 1,
+      confirm: mockConfirm,
+    });
+  });
+
   it('맞춤 인사이트 타이틀을 표시해야 한다', () => {
     const { getByText } = renderWithTheme(
       <CrossModuleInsight insights={mockInsights} />
@@ -288,5 +314,76 @@ describe('CrossModuleInsight', () => {
     );
     expect(getByText('💧')).toBeTruthy();
     expect(getByText('💪')).toBeTruthy();
+  });
+
+  it('확인 버튼을 렌더링해야 한다 (CA 통합)', () => {
+    const { getAllByTestId } = renderWithTheme(
+      <CrossModuleInsight insights={mockInsights} />
+    );
+    // full depth에서는 각 인사이트에 confirm 버튼 존재
+    const confirmButtons = getAllByTestId(/^confirm-insight-/);
+    expect(confirmButtons.length).toBe(3); // maxItems=3
+  });
+
+  it('확인 버튼 클릭 시 confirm을 호출해야 한다 (CA 통합)', () => {
+    const { getAllByTestId } = renderWithTheme(
+      <CrossModuleInsight insights={mockInsights} />
+    );
+    const buttons = getAllByTestId(/^confirm-insight-/);
+    fireEvent.press(buttons[0]);
+    expect(mockConfirm).toHaveBeenCalled();
+  });
+
+  it('depth=none일 때 인사이트 카드를 숨겨야 한다 (CA 통합)', () => {
+    // depth를 none으로 변경
+    const { useConnectionExposure } = require('../../../hooks/useConnectionExposure');
+    useConnectionExposure.mockReturnValue({
+      status: 'independent',
+      depth: 'none',
+      isConfirmed: true,
+      exposureCount: 10,
+      confirm: mockConfirm,
+    });
+
+    const { queryByText } = renderWithTheme(
+      <CrossModuleInsight insights={mockInsights} />
+    );
+    // none depth에서는 제목이 표시되지 않아야 함
+    expect(queryByText('피부 수분이 부족해요')).toBeNull();
+  });
+
+  it('depth=brief일 때 설명을 1줄로 제한해야 한다 (CA 통합)', () => {
+    const { useConnectionExposure } = require('../../../hooks/useConnectionExposure');
+    useConnectionExposure.mockReturnValue({
+      status: 'recognized',
+      depth: 'brief',
+      isConfirmed: false,
+      exposureCount: 3,
+      confirm: mockConfirm,
+    });
+
+    const { getByText } = renderWithTheme(
+      <CrossModuleInsight insights={mockInsights} />
+    );
+    // brief depth에서는 제목은 보이고 설명도 보여야 함 (1줄 제한)
+    expect(getByText('피부 수분이 부족해요')).toBeTruthy();
+  });
+
+  it('isConfirmed=true일 때 확인 완료 표시해야 한다 (CA 통합)', () => {
+    const { useConnectionExposure } = require('../../../hooks/useConnectionExposure');
+    useConnectionExposure.mockReturnValue({
+      status: 'recognized',
+      depth: 'full',
+      isConfirmed: true,
+      exposureCount: 3,
+      confirm: mockConfirm,
+    });
+
+    const { queryAllByTestId } = renderWithTheme(
+      <CrossModuleInsight insights={mockInsights} />
+    );
+    // 확인 완료 상태에서는 클릭 가능한 confirm 버튼이 없어야 함
+    const confirmButtons = queryAllByTestId(/^confirm-insight-/);
+    expect(confirmButtons.length).toBe(0);
   });
 });

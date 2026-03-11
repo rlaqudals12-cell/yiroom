@@ -5,15 +5,12 @@
  */
 import { Heart, Sparkles } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '../../../components/ui';
+
+import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 interface InspirationItem {
@@ -48,15 +45,22 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
   const [items, setItems] = useState<InspirationItem[]>(SAMPLE_ITEMS);
 
   // 필터 적용
-  const filteredItems = selectedFilter === 'all'
-    ? items
-    : items.filter((item) => item.tags.some((t) => t === FILTER_CHIPS.find((c) => c.id === selectedFilter)?.label));
+  const filteredItems =
+    selectedFilter === 'all'
+      ? items
+      : items.filter((item) =>
+          item.tags.some((t) => t === FILTER_CHIPS.find((c) => c.id === selectedFilter)?.label)
+        );
 
   const handleToggleLike = useCallback((id: string) => {
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, isLiked: !item.isLiked, likeCount: item.isLiked ? item.likeCount - 1 : item.likeCount + 1 }
+          ? {
+              ...item,
+              isLiked: !item.isLiked,
+              likeCount: item.isLiked ? item.likeCount - 1 : item.likeCount + 1,
+            }
           : item
       )
     );
@@ -80,7 +84,11 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
         <View
           style={[
             styles.imagePlaceholder,
-            { backgroundColor: colors.muted, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl },
+            {
+              backgroundColor: colors.muted,
+              borderTopLeftRadius: radii.xl,
+              borderTopRightRadius: radii.xl,
+            },
           ]}
           accessibilityLabel={`${item.name} 이미지`}
         >
@@ -88,23 +96,15 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
         </View>
 
         <View style={styles.cardBody}>
-          <Text
-            numberOfLines={1}
-            style={[styles.cardTitle, { color: colors.foreground }]}
-          >
+          <Text numberOfLines={1} style={[styles.cardTitle, { color: colors.foreground }]}>
             {item.name}
           </Text>
 
           {/* 태그 */}
           <View style={styles.tagRow}>
             {item.tags.map((tag) => (
-              <View
-                key={tag}
-                style={[styles.tag, { backgroundColor: brand.primary + '20' }]}
-              >
-                <Text style={[styles.tagText, { color: brand.primary }]}>
-                  {tag}
-                </Text>
+              <View key={tag} style={[styles.tag, { backgroundColor: brand.primary + '20' }]}>
+                <Text style={[styles.tagText, { color: brand.primary }]}>{tag}</Text>
               </View>
             ))}
           </View>
@@ -134,67 +134,72 @@ export default function StyleInspirationGalleryScreen(): React.JSX.Element {
   return (
     <ScreenContainer
       testID="style-inspiration-gallery-screen"
+      backgroundGradient="style"
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
     >
       {/* 필터 칩 */}
-      <FlatList
-        horizontal
-        data={FILTER_CHIPS}
-        keyExtractor={(c) => c.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterList}
-        renderItem={({ item: chip }) => {
-          const isActive = chip.id === selectedFilter;
-          return (
-            <Pressable
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor: isActive ? brand.primary : colors.secondary,
-                  borderRadius: radii.full,
-                },
-              ]}
-              onPress={() => setSelectedFilter(chip.id)}
-              accessibilityLabel={`${chip.label} 필터`}
-              accessibilityRole="button"
-            >
-              <Text
+      <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
+        <FlatList
+          horizontal
+          data={FILTER_CHIPS}
+          keyExtractor={(c) => c.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterList}
+          renderItem={({ item: chip }) => {
+            const isActive = chip.id === selectedFilter;
+            return (
+              <Pressable
                 style={[
-                  styles.filterChipText,
-                  { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  styles.filterChip,
+                  {
+                    backgroundColor: isActive ? brand.primary : colors.secondary,
+                    borderRadius: radii.full,
+                  },
                 ]}
+                onPress={() => setSelectedFilter(chip.id)}
+                accessibilityLabel={`${chip.label} 필터`}
+                accessibilityRole="button"
               >
-                {chip.label}
-              </Text>
-            </Pressable>
-          );
-        }}
-      />
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    { color: isActive ? brand.primaryForeground : colors.mutedForeground },
+                  ]}
+                >
+                  {chip.label}
+                </Text>
+              </Pressable>
+            );
+          }}
+        />
+      </Animated.View>
 
       {/* 갤러리 그리드 또는 빈 상태 */}
-      {filteredItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Sparkles size={48} color={colors.mutedForeground} />
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            아직 영감이 없어요
-          </Text>
-          <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
-            이 카테고리에 해당하는 스타일을 준비 중이에요
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.gridContainer}
-          renderItem={renderCard}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)} style={{ flex: 1 }}>
+        {filteredItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Sparkles size={48} color={colors.mutedForeground} />
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+              아직 영감이 없어요
+            </Text>
+            <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
+              이 카테고리에 해당하는 스타일을 준비 중이에요
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
+            contentContainerStyle={styles.gridContainer}
+            renderItem={renderCard}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </Animated.View>
     </ScreenContainer>
   );
 }

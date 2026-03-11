@@ -7,8 +7,8 @@
  * - 그리드/리스트 뷰 전환
  */
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Grid3X3, List, Shirt, Search } from 'lucide-react-native';
 import { useState, useCallback, useEffect } from 'react';
 import {
@@ -22,11 +22,12 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useTheme, typography, spacing } from '@/lib/theme';
-import { staggeredEntry } from '@/lib/animations';
 import { ScreenContainer } from '../../components/ui';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { closetLogger } from '../../lib/utils/logger';
+
+import { staggeredEntry } from '@/lib/animations';
+import { useClerkSupabaseClient } from '@/lib/supabase';
+import { useTheme, spacing } from '@/lib/theme';
 
 interface ClosetItem {
   id: string;
@@ -137,12 +138,14 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           },
         ]}
         onPress={() => handleItemPress(item.id)}
-
       >
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
-            style={[styles.gridImage, { borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl }]}
+            style={[
+              styles.gridImage,
+              { borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl },
+            ]}
             contentFit="cover"
             transition={200}
           />
@@ -151,7 +154,11 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             style={[
               styles.gridImage,
               styles.gridPlaceholder,
-              { backgroundColor: colors.muted, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl },
+              {
+                backgroundColor: colors.muted,
+                borderTopLeftRadius: radii.xl,
+                borderTopRightRadius: radii.xl,
+              },
             ]}
           >
             <Shirt size={32} color={colors.mutedForeground} />
@@ -160,7 +167,11 @@ export default function StyleGalleryScreen(): React.JSX.Element {
         <View style={{ padding: spacing.sm }}>
           <Text
             numberOfLines={1}
-            style={{ fontSize: typography.size.xs, fontWeight: typography.weight.semibold, color: colors.foreground }}
+            style={{
+              fontSize: typography.size.xs,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+            }}
           >
             {item.name}
           </Text>
@@ -200,7 +211,6 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           },
         ]}
         onPress={() => handleItemPress(item.id)}
-
       >
         {item.imageUrl ? (
           <Image
@@ -210,15 +220,34 @@ export default function StyleGalleryScreen(): React.JSX.Element {
             transition={200}
           />
         ) : (
-          <View style={[styles.listImage, styles.listPlaceholder, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
+          <View
+            style={[
+              styles.listImage,
+              styles.listPlaceholder,
+              { backgroundColor: colors.muted, borderRadius: radii.xl },
+            ]}
+          >
             <Shirt size={20} color={colors.mutedForeground} />
           </View>
         )}
         <View style={{ flex: 1, marginLeft: spacing.sm }}>
-          <Text numberOfLines={1} style={{ fontSize: typography.size.sm, fontWeight: typography.weight.semibold, color: colors.foreground }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+              color: colors.foreground,
+            }}
+          >
             {item.name}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
             {item.brand ?? '브랜드 미지정'} {item.color ? `· ${item.color}` : ''}
           </Text>
         </View>
@@ -231,6 +260,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
   return (
     <ScreenContainer
       testID="style-gallery-screen"
+      backgroundGradient="style"
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
@@ -282,7 +312,11 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           data={CATEGORIES}
           keyExtractor={(c) => c.id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: spacing.md, paddingVertical: spacing.sm, gap: spacing.xs }}
+          contentContainerStyle={{
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
+            gap: spacing.xs,
+          }}
           renderItem={({ item: cat }) => {
             const isActive = cat.id === selectedCategory;
             return (
