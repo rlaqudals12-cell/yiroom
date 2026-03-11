@@ -401,3 +401,88 @@ export async function runHybridAnalysis<T extends AIAnalysisBase>(
     totalProcessingTime: Date.now() - startTime,
   };
 }
+
+// ============================================================================
+// Progressive Enhancement (T4.4.9)
+// ============================================================================
+
+/** 환경 능력 감지 결과 */
+export interface EnvironmentCapabilities {
+  /** 브라우저 환경인가 (SSR이 아닌가) */
+  isBrowser: boolean;
+  /** MediaPipe Face Mesh가 로드되어 있는가 */
+  isFaceMeshReady: boolean;
+  /** Canvas API 사용 가능한가 */
+  hasCanvasSupport: boolean;
+}
+
+/**
+ * 현재 환경의 CIE 파이프라인 실행 능력을 감지
+ *
+ * @param checkFaceMesh - MediaPipe 로드 상태 확인 함수 (DI로 주입)
+ */
+export function detectCapabilities(
+  checkFaceMesh: () => boolean = () => false
+): EnvironmentCapabilities {
+  const isBrowser = typeof window !== 'undefined';
+
+  return {
+    isBrowser,
+    isFaceMeshReady: isBrowser && checkFaceMesh(),
+    hasCanvasSupport:
+      isBrowser &&
+      typeof document !== 'undefined' &&
+      typeof document.createElement === 'function' &&
+      !!document.createElement('canvas').getContext,
+  };
+}
+
+/**
+ * Progressive Enhancement 기반 하이브리드 분석
+ *
+ * 환경 능력에 따라 자동으로 최적 경로를 선택:
+ * - Full: CIE + AI (MediaPipe + Canvas 가용)
+ * - Partial: AI only (MediaPipe 불가, Canvas 가용)
+ * - Minimal: AI only, CIE 건너뛰기 (SSR 또는 Canvas 불가)
+ *
+ * @example
+ * ```ts
+ * const result = await runProgressiveAnalysis(
+ *   () => runCIEPipeline(imageData),
+ *   () => analyzeWithGemini(input),
+ *   () => generateMock(input),
+ *   { checkFaceMesh: () => isFaceMeshLoaded() }
+ * );
+ * ```
+ */
+export async function runProgressiveAnalysis<T extends AIAnalysisBase>(
+  runCIE: () => Promise<PipelineResult>,
+  runAI: () => Promise<T>,
+  runMock: () => T,
+  options: HybridPipelineOptions & {
+    /** MediaPipe 로드 상태 확인 함수 */
+    checkFaceMesh?: () => boolean;
+  } = {}
+): Promise<HybridAnalysisResult<T>> {
+  const { checkFaceMesh, ...hybridOptions } = options;
+  const caps = detectCapabilities(checkFaceMesh);
+
+  // SSR 환경 또는 Canvas 미지원 → AI only
+  if (!caps.isBrowser || !caps.hasCanvasSupport) {
+    return runHybridAnalysis(runCIE, runAI, runMock, {
+      ...hybridOptions,
+      skipCIE: true,
+    });
+  }
+
+  // MediaPipe 미로드 → AI only (CIE는 MediaPipe 의존)
+  if (!caps.isFaceMeshReady) {
+    return runHybridAnalysis(runCIE, runAI, runMock, {
+      ...hybridOptions,
+      skipCIE: true,
+    });
+  }
+
+  // Full capability → CIE + AI
+  return runHybridAnalysis(runCIE, runAI, runMock, hybridOptions);
+}

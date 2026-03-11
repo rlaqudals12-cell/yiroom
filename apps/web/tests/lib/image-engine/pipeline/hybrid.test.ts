@@ -1,5 +1,5 @@
 /**
- * T4.4.8 Gemini 하이브리드 파이프라인 테스트
+ * T4.4.8 Gemini 하이브리드 파이프라인 + T4.4.9 Progressive Enhancement 테스트
  *
  * @module tests/lib/image-engine/pipeline/hybrid
  */
@@ -13,6 +13,8 @@ import {
   generateQualityWarnings,
   generateImprovementSuggestion,
   runHybridAnalysis,
+  detectCapabilities,
+  runProgressiveAnalysis,
 } from '@/lib/image-engine/pipeline/hybrid';
 import type { AIAnalysisBase, ConfidenceModifier } from '@/lib/image-engine/pipeline/hybrid';
 import type { PipelineResult } from '@/lib/image-engine/pipeline/types';
@@ -48,18 +50,24 @@ function createMockCIEResult(
       imageInfo: { width: 640, height: 480, aspectRatio: 4 / 3 },
     },
     isSuitableForAnalysis: isSuitable,
+    success: true,
+    stage: 'complete',
+    totalProcessingTime: 100,
     cie1:
       cie1Sharpness !== null
         ? ({
             sharpness: { score: cie1Sharpness, isSharp: cie1Sharpness >= 40 },
-          } as PipelineResult['cie1'])
+          } as unknown as PipelineResult['cie1'])
         : undefined,
     cie2: cie2Success
-      ? ({ success: true } as PipelineResult['cie2'])
-      : ({ success: false } as PipelineResult['cie2']),
+      ? ({ success: true } as unknown as PipelineResult['cie2'])
+      : ({ success: false } as unknown as PipelineResult['cie2']),
     cie3: undefined,
-    cie4: cie4Score !== null ? ({ overallScore: cie4Score } as PipelineResult['cie4']) : undefined,
-  } as PipelineResult;
+    cie4:
+      cie4Score !== null
+        ? ({ overallScore: cie4Score } as unknown as PipelineResult['cie4'])
+        : undefined,
+  } as unknown as PipelineResult;
 }
 
 /** AI 분석 결과 Mock 생성 */
@@ -488,5 +496,109 @@ describe('runHybridAnalysis', () => {
     );
 
     expect(result.totalProcessingTime).toBeGreaterThanOrEqual(0);
+  });
+});
+
+// ============================================================================
+// detectCapabilities (T4.4.9)
+// ============================================================================
+
+describe('detectCapabilities', () => {
+  it('브라우저 환경 감지', () => {
+    const caps = detectCapabilities(() => true);
+    expect(caps.isBrowser).toBe(true);
+  });
+
+  it('FaceMesh 로드 상태 반영', () => {
+    const capsReady = detectCapabilities(() => true);
+    expect(capsReady.isFaceMeshReady).toBe(true);
+
+    const capsNotReady = detectCapabilities(() => false);
+    expect(capsNotReady.isFaceMeshReady).toBe(false);
+  });
+
+  it('기본값 checkFaceMesh는 false', () => {
+    const caps = detectCapabilities();
+    expect(caps.isFaceMeshReady).toBe(false);
+  });
+
+  it('Canvas 지원 감지', () => {
+    const caps = detectCapabilities();
+    // jsdom 환경에서는 canvas getContext가 null 반환할 수 있음
+    expect(typeof caps.hasCanvasSupport).toBe('boolean');
+  });
+});
+
+// ============================================================================
+// runProgressiveAnalysis (T4.4.9)
+// ============================================================================
+
+describe('runProgressiveAnalysis', () => {
+  const mockCIE = createMockCIEResult({ qualityScore: 80 });
+  const mockAI = createMockAIResult({ confidence: 85, reliability: 'high' });
+
+  it('FaceMesh 가용 시 CIE + AI 실행', async () => {
+    const cieFn = vi.fn().mockResolvedValue(mockCIE);
+
+    const result = await runProgressiveAnalysis(
+      cieFn,
+      () => Promise.resolve(mockAI),
+      () => createMockAIResult({ confidence: 50 }),
+      {
+        checkFaceMesh: () => true,
+      }
+    );
+
+    expect(cieFn).toHaveBeenCalled();
+    expect(result.cieResult).not.toBeNull();
+    expect(result.usedFallback).toBe(false);
+  });
+
+  it('FaceMesh 미로드 시 AI only (CIE 건너뛰기)', async () => {
+    const cieFn = vi.fn().mockResolvedValue(mockCIE);
+
+    const result = await runProgressiveAnalysis(
+      cieFn,
+      () => Promise.resolve(mockAI),
+      () => createMockAIResult({ confidence: 50 }),
+      {
+        checkFaceMesh: () => false,
+      }
+    );
+
+    expect(cieFn).not.toHaveBeenCalled();
+    expect(result.cieResult).toBeNull();
+  });
+
+  it('checkFaceMesh 미제공 시 AI only', async () => {
+    const cieFn = vi.fn().mockResolvedValue(mockCIE);
+
+    const result = await runProgressiveAnalysis(
+      cieFn,
+      () => Promise.resolve(mockAI),
+      () => createMockAIResult({ confidence: 50 })
+    );
+
+    expect(cieFn).not.toHaveBeenCalled();
+    expect(result.cieResult).toBeNull();
+  });
+
+  it('기존 hybridOptions 전달', async () => {
+    const aiFn = vi.fn().mockResolvedValue(mockAI);
+
+    const result = await runProgressiveAnalysis(
+      () => Promise.resolve(createMockCIEResult({ qualityScore: 20 })),
+      aiFn,
+      () => createMockAIResult({ confidence: 50 }),
+      {
+        checkFaceMesh: () => true,
+        continueOnCIEFail: false,
+        minQualityForAI: 30,
+      }
+    );
+
+    // 품질 미달 → AI 건너뛰기
+    expect(aiFn).not.toHaveBeenCalled();
+    expect(result.usedFallback).toBe(true);
   });
 });

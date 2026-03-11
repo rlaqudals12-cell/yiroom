@@ -31,6 +31,7 @@ export type {
   ConfidenceModifier,
   HybridAnalysisResult,
   HybridPipelineOptions,
+  EnvironmentCapabilities,
 } from './hybrid';
 
 export {
@@ -41,4 +42,6 @@ export {
   generateQualityWarnings,
   generateImprovementSuggestion,
   runHybridAnalysis,
+  detectCapabilities,
+  runProgressiveAnalysis,
 } from './hybrid';
