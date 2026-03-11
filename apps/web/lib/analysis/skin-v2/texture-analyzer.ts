@@ -6,7 +6,25 @@
  * @see docs/principles/skin-physiology.md
  */
 
-import type { GLCMResult, LBPResult, TextureAnalysis } from './types';
+import type { GLCMResult, LBPResult, TextureAnalysis, SkinZoneType } from './types';
+import type { ZoneRegion } from './zone-extractor';
+
+/** 존별 텍스처 분석 결과 */
+export interface ZoneTextureResult {
+  zone: SkinZoneType;
+  texture: TextureAnalysis;
+  /** 존 내 유효 픽셀 수 */
+  pixelCount: number;
+}
+
+/** 전체 존별 텍스처 분석 결과 */
+export interface AllZonesTextureResult {
+  zones: Partial<Record<SkinZoneType, ZoneTextureResult>>;
+  /** 분석된 존 수 */
+  analyzedCount: number;
+  /** 존 간 텍스처 편차 (0-100, 낮을수록 균일) */
+  textureVariance: number;
+}
 
 /**
  * GLCM (Gray Level Co-occurrence Matrix) 계산
@@ -253,7 +271,7 @@ export function calculatePoreScore(glcm: GLCMResult, lbp: LBPResult): number {
   const contrastScore = Math.max(0, 100 - glcm.contrast * 0.5);
   const uniformScore = lbp.uniformPatternRatio * 100;
 
-  return Math.round((contrastScore * 0.6 + uniformScore * 0.4));
+  return Math.round(contrastScore * 0.6 + uniformScore * 0.4);
 }
 
 /**
@@ -266,7 +284,7 @@ export function calculateWrinkleScore(glcm: GLCMResult): number {
   const entropyScore = Math.max(0, 100 - glcm.entropy * 10);
   const homogeneityScore = glcm.homogeneity * 100;
 
-  return Math.round((entropyScore * 0.5 + homogeneityScore * 0.5));
+  return Math.round(entropyScore * 0.5 + homogeneityScore * 0.5);
 }
 
 /**
@@ -278,9 +296,7 @@ export function calculateTextureScore(glcm: GLCMResult, lbp: LBPResult): number 
   const uniformityScore = lbp.uniformPatternRatio * 100;
   const lowContrastScore = Math.max(0, 100 - glcm.contrast * 0.3);
 
-  return Math.round(
-    smoothnessScore * 0.4 + uniformityScore * 0.3 + lowContrastScore * 0.3
-  );
+  return Math.round(smoothnessScore * 0.4 + uniformityScore * 0.3 + lowContrastScore * 0.3);
 }
 
 /**
@@ -299,9 +315,11 @@ export function analyzeTexture(
 
   const glcm: GLCMResult = {
     contrast: (glcm0.contrast + glcm45.contrast + glcm90.contrast + glcm135.contrast) / 4,
-    homogeneity: (glcm0.homogeneity + glcm45.homogeneity + glcm90.homogeneity + glcm135.homogeneity) / 4,
+    homogeneity:
+      (glcm0.homogeneity + glcm45.homogeneity + glcm90.homogeneity + glcm135.homogeneity) / 4,
     energy: (glcm0.energy + glcm45.energy + glcm90.energy + glcm135.energy) / 4,
-    correlation: (glcm0.correlation + glcm45.correlation + glcm90.correlation + glcm135.correlation) / 4,
+    correlation:
+      (glcm0.correlation + glcm45.correlation + glcm90.correlation + glcm135.correlation) / 4,
     entropy: (glcm0.entropy + glcm45.entropy + glcm90.entropy + glcm135.entropy) / 4,
   };
 
@@ -332,4 +350,147 @@ export function toGrayscale(imageData: ImageData): Uint8Array {
   }
 
   return grayPixels;
+}
+
+/**
+ * RGBA 픽셀 배열을 그레이스케일로 변환
+ */
+export function rgbaToGrayscale(
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number
+): Uint8Array {
+  const grayPixels = new Uint8Array(width * height);
+  for (let i = 0; i < width * height; i++) {
+    const r = pixels[i * 4];
+    const g = pixels[i * 4 + 1];
+    const b = pixels[i * 4 + 2];
+    grayPixels[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+  }
+  return grayPixels;
+}
+
+/**
+ * 존 영역의 그레이스케일 픽셀을 크롭
+ * 원형 마스크 적용 — 존 중심에서 반경 내 픽셀만 추출
+ */
+export function cropZoneGrayscale(
+  grayPixels: Uint8Array,
+  imgWidth: number,
+  imgHeight: number,
+  zone: ZoneRegion
+): { pixels: Uint8Array; width: number; height: number; pixelCount: number } {
+  const cx = Math.round(zone.center.x);
+  const cy = Math.round(zone.center.y);
+  const r = Math.round(zone.radius);
+
+  // 바운딩 박스 (이미지 경계 클램프)
+  const x0 = Math.max(0, cx - r);
+  const y0 = Math.max(0, cy - r);
+  const x1 = Math.min(imgWidth - 1, cx + r);
+  const y1 = Math.min(imgHeight - 1, cy + r);
+
+  const cropW = x1 - x0 + 1;
+  const cropH = y1 - y0 + 1;
+
+  if (cropW <= 0 || cropH <= 0) {
+    return { pixels: new Uint8Array(0), width: 0, height: 0, pixelCount: 0 };
+  }
+
+  const croppedPixels = new Uint8Array(cropW * cropH);
+  let pixelCount = 0;
+  const rSquared = r * r;
+
+  for (let dy = 0; dy < cropH; dy++) {
+    for (let dx = 0; dx < cropW; dx++) {
+      const px = x0 + dx;
+      const py = y0 + dy;
+
+      // 원형 마스크: 중심에서 반경 내만 실제 픽셀, 외부는 0
+      const distSq = (px - cx) * (px - cx) + (py - cy) * (py - cy);
+      if (distSq <= rSquared) {
+        croppedPixels[dy * cropW + dx] = grayPixels[py * imgWidth + px];
+        pixelCount++;
+      }
+    }
+  }
+
+  return { pixels: croppedPixels, width: cropW, height: cropH, pixelCount };
+}
+
+/**
+ * 단일 존에 대한 텍스처 분석
+ */
+export function analyzeZoneTexture(
+  grayPixels: Uint8Array,
+  imgWidth: number,
+  imgHeight: number,
+  zone: ZoneRegion
+): ZoneTextureResult {
+  const cropped = cropZoneGrayscale(grayPixels, imgWidth, imgHeight, zone);
+
+  // 최소 크기 미달 시 기본값 반환
+  if (cropped.width < 3 || cropped.height < 3 || cropped.pixelCount < 9) {
+    return {
+      zone: zone.zone,
+      texture: {
+        glcm: { contrast: 0, homogeneity: 1, energy: 1, correlation: 0, entropy: 0 },
+        lbp: { histogram: new Array(256).fill(0), uniformPatternRatio: 1, roughnessScore: 100 },
+        poreScore: 100,
+        wrinkleScore: 100,
+        textureScore: 100,
+      },
+      pixelCount: cropped.pixelCount,
+    };
+  }
+
+  const texture = analyzeTexture(cropped.pixels, cropped.width, cropped.height);
+
+  return {
+    zone: zone.zone,
+    texture,
+    pixelCount: cropped.pixelCount,
+  };
+}
+
+/**
+ * 모든 존에 대한 텍스처 분석
+ *
+ * @param grayPixels - 전체 이미지 그레이스케일 (rgbaToGrayscale 결과)
+ * @param imgWidth - 이미지 너비
+ * @param imgHeight - 이미지 높이
+ * @param zoneRegions - 존 영역 맵 (extractZoneRegions 결과)
+ */
+export function analyzeAllZonesTexture(
+  grayPixels: Uint8Array,
+  imgWidth: number,
+  imgHeight: number,
+  zoneRegions: Partial<Record<SkinZoneType, ZoneRegion>>
+): AllZonesTextureResult {
+  const zones: Partial<Record<SkinZoneType, ZoneTextureResult>> = {};
+  const textureScores: number[] = [];
+
+  for (const [zoneType, region] of Object.entries(zoneRegions) as [SkinZoneType, ZoneRegion][]) {
+    const result = analyzeZoneTexture(grayPixels, imgWidth, imgHeight, region);
+    zones[zoneType] = result;
+    if (result.pixelCount >= 9) {
+      textureScores.push(result.texture.textureScore);
+    }
+  }
+
+  // 존 간 텍스처 편차 계산
+  let textureVariance = 0;
+  if (textureScores.length >= 2) {
+    const mean = textureScores.reduce((a, b) => a + b, 0) / textureScores.length;
+    const variance =
+      textureScores.reduce((sum, s) => sum + (s - mean) ** 2, 0) / textureScores.length;
+    // 표준편차 → 0-100 스케일 (stdDev 20 이상이면 100)
+    textureVariance = Math.min(100, Math.round(Math.sqrt(variance) * 5));
+  }
+
+  return {
+    zones,
+    analyzedCount: Object.keys(zones).length,
+    textureVariance,
+  };
 }

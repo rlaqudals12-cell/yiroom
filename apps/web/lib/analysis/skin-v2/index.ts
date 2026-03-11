@@ -57,7 +57,13 @@ export {
   calculateWrinkleScore,
   calculateTextureScore,
   toGrayscale,
+  rgbaToGrayscale,
+  cropZoneGrayscale,
+  analyzeZoneTexture,
+  analyzeAllZonesTexture,
 } from './texture-analyzer';
+
+export type { ZoneTextureResult, AllZonesTextureResult } from './texture-analyzer';
 
 // =============================================================================
 // Scoring
