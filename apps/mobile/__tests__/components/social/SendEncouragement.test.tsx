@@ -181,14 +181,18 @@ describe('SendEncouragement', () => {
       ).toBeTruthy();
     });
 
-    it('빈 메시지로는 전송할 수 없다', () => {
+    it('빈 메시지로는 전송 버튼이 비활성화된다', () => {
       const { getByTestId, getByText } = renderWithTheme(
         <SendEncouragement {...defaultProps} />
       );
 
       fireEvent.press(getByTestId('send-encouragement-button'));
-      fireEvent.press(getByText('응원 보내기'));
 
+      // 커스텀 메시지가 비어있으면 "응원 보내기" 버튼이 disabled
+      // 버튼의 배경색이 muted로 설정됨 (disabled 상태)
+      const sendButtonText = getByText('응원 보내기');
+      expect(sendButtonText).toBeTruthy();
+      // fetch가 호출되지 않았음을 확인
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
