@@ -48,7 +48,7 @@ export interface GeminiResponse {
 // --- 상수 ---
 
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-pro-preview-06-05';
 
 // 기본 안전 설정 (기존 프로젝트와 동일)
 export const DEFAULT_SAFETY_SETTINGS: GeminiSafetySetting[] = [
