@@ -42,3 +42,13 @@ export type { ChallengeCardProps } from './ChallengeCard';
 // 리더보드
 export { LeaderboardCard } from './LeaderboardCard';
 export type { LeaderboardCardProps } from './LeaderboardCard';
+
+// 신고/차단/응원 (모더레이션)
+export { ReportModal } from './ReportModal';
+export type { ReportModalProps } from './ReportModal';
+
+export { BlockConfirmDialog } from './BlockConfirmDialog';
+export type { BlockConfirmDialogProps } from './BlockConfirmDialog';
+
+export { SendEncouragement } from './SendEncouragement';
+export type { SendEncouragementProps } from './SendEncouragement';
