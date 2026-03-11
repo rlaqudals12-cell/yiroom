@@ -37,7 +37,7 @@ export type RGBColor = _RGBColor;
  * - D 계열: 적회색 (Reddish Grey)
  * - 0M: Bleached (추가 셰이드)
  */
-export type VitaShade =
+export type VitaClassicalShade =
   | 'B1'
   | 'A1'
   | 'B2'
@@ -53,13 +53,62 @@ export type VitaShade =
   | 'B4'
   | 'C3'
   | 'A4'
-  | 'C4'
-  | '0M1'
-  | '0M2'
-  | '0M3';
+  | 'C4';
 
 /**
- * VITA 시리즈
+ * VITA 3D-Master 26색 셰이드
+ * 명도 그룹(1-5) × 채도(L/M/R) 조합
+ */
+export type Vita3DMasterShade =
+  | '1M1'
+  | '1M2'
+  | '2L1.5'
+  | '2L2.5'
+  | '2M1'
+  | '2M2'
+  | '2M3'
+  | '2R1.5'
+  | '2R2.5'
+  | '3L1.5'
+  | '3L2.5'
+  | '3M1'
+  | '3M2'
+  | '3M3'
+  | '3R1.5'
+  | '3R2.5'
+  | '4L1.5'
+  | '4L2.5'
+  | '4M1'
+  | '4M2'
+  | '4M3'
+  | '4R1.5'
+  | '4R2.5'
+  | '5M1'
+  | '5M2'
+  | '5M3';
+
+/**
+ * Bleached 셰이드 (미백 후 목표)
+ */
+export type VitaBleachedShade = '0M1' | '0M2' | '0M3';
+
+/**
+ * VITA 통합 셰이드 (Classical + Bleached — 기존 호환)
+ */
+export type VitaShade = VitaClassicalShade | VitaBleachedShade;
+
+/**
+ * VITA 3D-Master 명도 그룹
+ */
+export type Vita3DValueGroup = 0 | 1 | 2 | 3 | 4 | 5;
+
+/**
+ * VITA 3D-Master 채도 분류
+ */
+export type Vita3DChroma = 'L' | 'M' | 'R';
+
+/**
+ * VITA 시리즈 (Classical)
  */
 export type VitaSeries = 'A' | 'B' | 'C' | 'D';
 
@@ -73,6 +122,24 @@ export interface VitaShadeReference {
   brightnessRank: number; // 1 = 가장 밝음, 16 = 가장 어두움, 0 = Bleached
   description?: string;
 }
+
+/**
+ * VITA 3D-Master 셰이드 참조값
+ */
+export interface Vita3DShadeReference {
+  shade: Vita3DMasterShade | VitaBleachedShade;
+  lab: LabColor;
+  valueGroup: Vita3DValueGroup;
+  chroma: Vita3DChroma;
+  brightnessRank: number;
+  classicalEquivalent?: VitaClassicalShade;
+  description?: string;
+}
+
+/**
+ * 미백 변색 원인 분류 (4종)
+ */
+export type DiscolorationCause = 'surface' | 'intrinsic' | 'aging' | 'antibiotic';
 
 // =============================================================================
 // 치아 색상 분석

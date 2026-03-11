@@ -92,7 +92,7 @@ describe('피드 차단 필터링 통합 테스트', () => {
           data: [{ id: 'post_1', clerk_user_id: 'user_normal', users: { name: '정상유저' } }],
           error: null,
         },
-      }) as ReturnType<typeof createClerkSupabaseClient>
+      }) as unknown as ReturnType<typeof createClerkSupabaseClient>
     );
 
     const { getFeedPosts } = await import('@/lib/feed/repository');
@@ -116,7 +116,7 @@ describe('피드 차단 필터링 통합 테스트', () => {
           error: null,
         },
         feed_posts: { data: [], error: null },
-      }) as ReturnType<typeof createClerkSupabaseClient>
+      }) as unknown as ReturnType<typeof createClerkSupabaseClient>
     );
 
     const { getFeedPosts } = await import('@/lib/feed/repository');
@@ -134,7 +134,7 @@ describe('피드 차단 필터링 통합 테스트', () => {
         user_blocks_by_me: { data: [], error: null },
         user_blocks_by_them: { data: [], error: null },
         feed_posts: { data: [], error: null },
-      }) as ReturnType<typeof createClerkSupabaseClient>
+      }) as unknown as ReturnType<typeof createClerkSupabaseClient>
     );
 
     const { getFeedPosts } = await import('@/lib/feed/repository');
@@ -155,7 +155,7 @@ describe('피드 차단 필터링 통합 테스트', () => {
           ],
           error: null,
         },
-      }) as ReturnType<typeof createClerkSupabaseClient>
+      }) as unknown as ReturnType<typeof createClerkSupabaseClient>
     );
 
     const { getFeedPosts } = await import('@/lib/feed/repository');
@@ -185,7 +185,7 @@ describe('피드 차단 필터링 통합 테스트', () => {
           error: null,
         },
         feed_posts: { data: [], error: null },
-      }) as ReturnType<typeof createClerkSupabaseClient>
+      }) as unknown as ReturnType<typeof createClerkSupabaseClient>
     );
 
     const { getFeedPosts } = await import('@/lib/feed/repository');

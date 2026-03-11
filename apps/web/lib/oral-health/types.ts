@@ -12,8 +12,17 @@ export type {
 
   // VITA 셰이드 시스템
   VitaShade,
+  VitaClassicalShade,
+  VitaBleachedShade,
+  Vita3DMasterShade,
   VitaSeries,
   VitaShadeReference,
+  Vita3DShadeReference,
+  Vita3DValueGroup,
+  Vita3DChroma,
+
+  // 변색 원인
+  DiscolorationCause,
 
   // 치아 색상 분석
   ToothColorInput,

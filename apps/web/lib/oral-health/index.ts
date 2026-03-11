@@ -46,21 +46,28 @@ export {
 } from './whitening-goal-calculator';
 
 // 제품 추천
-export {
-  recommendOralProducts,
-  generateProductRecommendationSummary,
-} from './product-recommender';
+export { recommendOralProducts, generateProductRecommendationSummary } from './product-recommender';
 
 // Note: clearGeminiCache는 internal 함수이므로 export하지 않음 (P8 모듈 경계 원칙)
 // 캐시 관리가 필요한 경우 별도 public API 설계 필요
+
+// 미백 원인별 세분화
+export { calculateWhiteningGoalByCause } from './whitening-cause-calculator';
 
 // 공개 타입
 export type {
   LabColor,
   RGBColor,
   VitaShade,
+  VitaClassicalShade,
+  VitaBleachedShade,
+  Vita3DMasterShade,
   VitaSeries,
   VitaShadeReference,
+  Vita3DShadeReference,
+  Vita3DValueGroup,
+  Vita3DChroma,
+  DiscolorationCause,
   ToothColorInput,
   ToothColorResult,
   GumHealthStatus,
