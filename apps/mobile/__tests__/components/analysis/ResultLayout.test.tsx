@@ -27,6 +27,10 @@ import {
   darkColors,
   moduleColors,
   statusColors,
+  gradeColors,
+  nutrientColors,
+  scoreColors,
+  trustColors,
   spacing,
   radii,
   shadows,
@@ -148,6 +152,12 @@ function createThemeValue(isDark = false): ThemeContextValue {
     typography,
     isDark,
     colorScheme: isDark ? 'dark' : 'light',
+    themeMode: 'system' as const,
+    setThemeMode: jest.fn(),
+    grade: gradeColors,
+    nutrient: nutrientColors,
+    score: scoreColors,
+    trust: trustColors,
   };
 }
 

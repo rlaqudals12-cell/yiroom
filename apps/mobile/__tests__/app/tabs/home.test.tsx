@@ -19,6 +19,10 @@ import {
   darkColors,
   moduleColors,
   statusColors,
+  gradeColors,
+  nutrientColors,
+  scoreColors,
+  trustColors,
   spacing,
   radii,
   shadows,
@@ -106,6 +110,53 @@ jest.mock('../../../components/home', () => {
     HomeTodaySection: () => <View testID="home-today-section" />,
     HomeQuickActions: () => <View testID="home-quick-actions" />,
     CrossModuleInsight: () => <View testID="cross-module-insight" />,
+    InternalizationWidget: () => <View testID="internalization-widget" />,
+  };
+});
+
+// 캡슐 컴포넌트 mock
+jest.mock('../../../components/capsule/DailyCapsuleCard', () => {
+  const { View } = require('react-native');
+  return {
+    DailyCapsuleCard: () => <View testID="daily-capsule-card" />,
+  };
+});
+
+// 캡슐 hooks mock
+jest.mock('../../../lib/capsule/hooks', () => ({
+  useDailyCapsule: jest.fn(() => ({
+    capsule: null,
+    isLoading: false,
+    refresh: jest.fn(),
+    fetchToday: jest.fn(),
+  })),
+}));
+
+// UI 컴포넌트 mock
+jest.mock('../../../components/ui', () => {
+  const { View, Text } = require('react-native');
+  return {
+    GradientCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
+    AnimatedCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
+    SectionHeader: ({ title, ...props }: { title: string; [key: string]: unknown }) => (
+      <View {...props}><Text>{title}</Text></View>
+    ),
+    StatCard: ({ label, value, ...props }: { label: string; value: string; [key: string]: unknown }) => (
+      <View testID="stat-card" {...props}><Text>{label}</Text><Text>{value}</Text></View>
+    ),
+    SkeletonText: () => <View />,
+    SkeletonCard: (props: Record<string, unknown>) => <View testID={props.testID as string} />,
+    SkeletonCircle: () => <View />,
+    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string; [key: string]: unknown }) => (
+      <View testID={testID}>{children}</View>
+    ),
   };
 });
 
@@ -125,6 +176,63 @@ jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',
 }));
 
+// expo-haptics mock
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
+}));
+
+// lucide-react-native mock
+jest.mock('lucide-react-native', () => {
+  const { View } = require('react-native');
+  return new Proxy({}, {
+    get: () => (props: Record<string, unknown>) => <View {...props} />,
+  });
+});
+
+// react-native-reanimated mock (체이닝 전체 지원)
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  // 모든 체이닝 메서드를 지원하는 Proxy
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
+  const AnimatedView = View;
+  return {
+    __esModule: true,
+    default: {
+      View: AnimatedView,
+      createAnimatedComponent: (c: unknown) => c,
+    },
+    FadeInUp: createChainable(),
+    FadeIn: createChainable(),
+    FadeInDown: createChainable(),
+    ZoomIn: createChainable(),
+    SlideInRight: createChainable(),
+    SlideInLeft: createChainable(),
+    Easing: {
+      out: () => ({}),
+      exp: {},
+      bezier: () => ({}),
+      linear: {},
+      ease: {},
+      in: () => ({}),
+      inOut: () => ({}),
+    },
+    useSharedValue: (v: unknown) => ({ value: v }),
+    useAnimatedStyle: () => ({}),
+    withTiming: (v: unknown) => v,
+    withSpring: (v: unknown) => v,
+    withDelay: (_d: unknown, v: unknown) => v,
+  };
+});
+
+// lib/animations mock (presets에서 Reanimated 체이닝 우회)
+jest.mock('../../../lib/animations', () => ({
+  TIMING: { fast: 200, normal: 300, slow: 500 },
+  ENTERING: {},
+  staggeredEntry: jest.fn(() => undefined),
+  usePulseGlow: jest.fn(() => ({ opacity: 1, transform: [{ scale: 1 }] })),
+}));
+
 import HomeScreen from '../../../app/(tabs)/index';
 
 function createThemeValue(isDark = false): ThemeContextValue {
@@ -139,6 +247,12 @@ function createThemeValue(isDark = false): ThemeContextValue {
     typography,
     isDark,
     colorScheme: isDark ? 'dark' : 'light',
+    themeMode: 'system' as const,
+    setThemeMode: jest.fn(),
+    grade: gradeColors,
+    nutrient: nutrientColors,
+    score: scoreColors,
+    trust: trustColors,
   };
 }
 
@@ -204,9 +318,8 @@ describe('HomeScreen', () => {
       });
 
       const { queryByTestId } = renderWithTheme(<HomeScreen />);
-      // 로딩 중에는 home-screen testID가 없음 (스켈레톤 표시)
-      expect(queryByTestId('home-screen')).toBeNull();
-      expect(queryByTestId('skeleton-hero')).toBeTruthy();
+      // 로딩 중에는 home-screen-loading testID 표시 (스켈레톤)
+      expect(queryByTestId('home-screen-loading')).toBeTruthy();
 
       // 기본 mock 복원
       useOnboardingCheck.mockReturnValue({

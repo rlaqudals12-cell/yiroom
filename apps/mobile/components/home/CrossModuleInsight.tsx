@@ -13,11 +13,11 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useConnectionExposure } from '../../hooks/useConnectionExposure';
 import type { CrossModuleInsight as InsightType } from '../../hooks/useCrossModuleInsights';
 import { TIMING } from '../../lib/animations';
-import type { ExplanationDepth, ExposeRequest } from '../../lib/connection-awareness';
+import type { ConnectionModule, ExposeRequest } from '../../lib/connection-awareness';
 import { useTheme, typography } from '../../lib/theme';
 
 // 모바일 인사이트 모듈 → ConnectionAwareness 모듈 매핑
-const MODULE_TO_CONNECTION: Record<string, string> = {
+const MODULE_TO_CONNECTION: Record<string, ConnectionModule> = {
   skin: 'skin',
   body: 'body',
   personalColor: 'personal-color',
@@ -35,7 +35,7 @@ function insightToExposeRequest(insight: InsightType): ExposeRequest {
 
   return {
     connectionId: `cross_insight::${insight.id}`,
-    sourceModule: MODULE_TO_CONNECTION[sourceModule] ?? sourceModule,
+    sourceModule: MODULE_TO_CONNECTION[sourceModule] ?? (sourceModule as ConnectionModule),
     targetDomain,
     connectionRule: insight.title,
   };
