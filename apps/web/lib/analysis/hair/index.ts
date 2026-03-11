@@ -57,6 +57,42 @@ export {
 } from './style-recommender';
 
 // =============================================================================
+// 텍스처 분류
+// =============================================================================
+
+export type {
+  TextureCode,
+  TextureGroup,
+  TextureSubgroup,
+  Porosity,
+  TextureClassification,
+} from './texture-classifier';
+export {
+  getTextureInfo,
+  classifyTexture,
+  getTextureGroupLabel,
+  getRecommendedProductCategories,
+  getAllTextures,
+  getTexturesByGroup,
+} from './texture-classifier';
+
+// =============================================================================
+// 계절별 추천
+// =============================================================================
+
+export type {
+  Season,
+  SeasonalContext,
+  SeasonalHazard,
+  SeasonalRecommendation,
+} from './seasonal-recommender';
+export {
+  getCurrentSeason,
+  getSeasonalRecommendation,
+  getYearlyCarePlan,
+} from './seasonal-recommender';
+
+// =============================================================================
 // Mock 데이터
 // =============================================================================
 

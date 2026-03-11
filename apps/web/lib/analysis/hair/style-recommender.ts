@@ -25,7 +25,9 @@ import { FACE_SHAPE_STYLE_MAPPING } from './types';
  * 헤어스타일 카탈로그
  */
 const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
-  // 숏 스타일
+  // =========================================================================
+  // 숏 스타일 (16종)
+  // =========================================================================
   {
     name: '픽시컷',
     description: '짧고 경쾌한 스타일로, 얼굴 윤곽을 강조해요.',
@@ -38,17 +40,110 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
     description: '턱선 위 길이의 클래식한 보브 스타일입니다.',
     length: 'short',
     suitability: 0,
-    tags: ['숏', '클래식', '페미닌'],
+    tags: ['숏', '클래식', '페미닌', '보브'],
   },
   {
     name: '레이어드 숏',
     description: '층이 있어 볼륨감을 주는 숏 스타일입니다.',
     length: 'short',
     suitability: 0,
-    tags: ['숏', '볼륨', '내추럴'],
+    tags: ['숏', '볼륨', '내추럴', '레이어드'],
+  },
+  {
+    name: '투블록',
+    description: '사이드와 백을 짧게 밀고 윗머리에 볼륨을 준 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '클린', '남녀공용'],
+  },
+  {
+    name: '크롭컷',
+    description: '이마 위까지 짧게 자른 미니멀한 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '미니멀', '관리 용이'],
+  },
+  {
+    name: '텍스처드 숏',
+    description: '자연스러운 텍스처를 살린 움직임 있는 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '내추럴', '볼륨'],
+  },
+  {
+    name: '슬릭백 숏',
+    description: '뒤로 넘기는 깔끔한 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '포멀', '세련됨'],
+  },
+  {
+    name: '사이드 파트 숏',
+    description: '옆가르마로 정돈된 느낌의 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '클래식', '포멀'],
+  },
+  {
+    name: '마이크로 보브',
+    description: '귀 아래 길이의 초단발 보브 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '보브', '모던'],
+  },
+  {
+    name: '울프컷 숏',
+    description: '멀렛 감성의 레이어드 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '트렌디', '레이어드'],
+  },
+  {
+    name: '커틀릿 뱅 숏',
+    description: '커튼 뱅과 함께하는 프레임 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '프린지', '페미닌'],
+  },
+  {
+    name: '비대칭 숏',
+    description: '한쪽이 더 긴 비대칭 라인의 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '개성', '모던'],
+  },
+  {
+    name: '내추럴 컬 숏',
+    description: '자연 곱슬을 살린 숏 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '볼륨', '웨이브'],
+  },
+  {
+    name: '프렌치 보브',
+    description: '턱선에 맞춘 프랑스 감성의 보브입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '보브', '세련됨'],
+  },
+  {
+    name: '벨 보브',
+    description: '아래로 갈수록 풍성해지는 종 모양 보브입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '보브', '볼륨'],
+  },
+  {
+    name: '가르송컷',
+    description: '소년 같은 느낌의 짧고 자유로운 스타일입니다.',
+    length: 'short',
+    suitability: 0,
+    tags: ['숏', '캐주얼', '내추럴'],
   },
 
-  // 미디엄 스타일
+  // =========================================================================
+  // 미디엄 스타일 (18종)
+  // =========================================================================
   {
     name: '미디엄 레이어드',
     description: '어깨 정도 길이의 레이어드 컷으로, 다양한 스타일링이 가능해요.',
@@ -75,10 +170,110 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
     description: '층을 많이 준 볼륨감 있는 미디엄 스타일입니다.',
     length: 'medium',
     suitability: 0,
-    tags: ['미디엄', '볼륨', '트렌디'],
+    tags: ['미디엄', '볼륨', '트렌디', '레이어드'],
+  },
+  {
+    name: '울프컷',
+    description: '멀렛에서 영감을 받은 레이어드 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '트렌디', '레이어드'],
+  },
+  {
+    name: '쉐그컷',
+    description: '풍성한 레이어와 자연스러운 텍스처의 레트로 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '레이어드', '볼륨', '레트로'],
+  },
+  {
+    name: '미디엄 스트레이트',
+    description: '어깨 아래 길이의 매끈한 스트레이트 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '스트레이트', '깔끔'],
+  },
+  {
+    name: '커튼 뱅 미디엄',
+    description: '이마 양옆으로 갈라지는 커튼 뱅과 미디엄 길이의 조합입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '프린지', '페미닌'],
+  },
+  {
+    name: 'C컬 미디엄',
+    description: '모발 끝이 안쪽으로 말리는 C자 컬 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '웨이브', '단아함'],
+  },
+  {
+    name: 'S컬 미디엄',
+    description: '자연스러운 S라인 웨이브의 미디엄 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '웨이브', '로맨틱'],
+  },
+  {
+    name: '블런트 롭',
+    description: '끝을 일자로 자른 깔끔한 롱 보브 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '보브', '모던'],
+  },
+  {
+    name: '이탈리안 보브',
+    description: '볼륨감 있고 풍성한 이탈리아 감성의 보브입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '보브', '볼륨'],
+  },
+  {
+    name: '옥토퍼스컷',
+    description: '상단은 짧고 하단은 긴 문어 다리 같은 레이어드 컷입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '레이어드', '개성'],
+  },
+  {
+    name: '미디엄 펌',
+    description: '자연스러운 볼륨감을 주는 디지털 펌 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '웨이브', '볼륨'],
+  },
+  {
+    name: '레트로 플립',
+    description: '끝이 바깥으로 뒤집히는 레트로 감성 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '레트로', '개성'],
+  },
+  {
+    name: '하프 업다운',
+    description: '상단만 묶고 하단은 내리는 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '업스타일', '캐주얼'],
+  },
+  {
+    name: '사이드 스윕',
+    description: '한쪽으로 넘기는 우아한 미디엄 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '세련됨', '포멀'],
+  },
+  {
+    name: '테슬컷',
+    description: '술처럼 끝을 가볍게 정리한 미디엄 스타일입니다.',
+    length: 'medium',
+    suitability: 0,
+    tags: ['미디엄', '레이어드', '내추럴'],
   },
 
-  // 롱 스타일
+  // =========================================================================
+  // 롱 스타일 (18종)
+  // =========================================================================
   {
     name: '롱 레이어드',
     description: '긴 머리에 층을 주어 움직임을 살린 스타일입니다.',
@@ -106,6 +301,104 @@ const HAIRSTYLE_CATALOG: HairstyleRecommendation[] = [
     length: 'long',
     suitability: 0,
     tags: ['롱', '개성', '동양적'],
+  },
+  {
+    name: '머메이드 웨이브',
+    description: '인어공주처럼 큰 물결의 웨이브 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '웨이브', '로맨틱'],
+  },
+  {
+    name: '비치 웨이브',
+    description: '해변에서 자연 건조한 듯한 내추럴 웨이브입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '웨이브', '캐주얼'],
+  },
+  {
+    name: '글래머 컬',
+    description: '크고 풍성한 컬이 돋보이는 화려한 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '웨이브', '볼륨', '포멀'],
+  },
+  {
+    name: '워터폴 레이어드',
+    description: '폭포처럼 자연스럽게 흘러내리는 레이어드 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '레이어드', '내추럴'],
+  },
+  {
+    name: '커튼 뱅 롱',
+    description: '얼굴을 부드럽게 감싸는 커튼 뱅과 롱 헤어의 조합입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '프린지', '페미닌'],
+  },
+  {
+    name: '사이드 파트 롱',
+    description: '옆가르마로 자연스럽게 흘리는 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '세련됨', '포멀'],
+  },
+  {
+    name: '센터 파트 롱',
+    description: '가운데 가르마의 깔끔한 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '모던', '미니멀'],
+  },
+  {
+    name: '볼륨 롱 레이어드',
+    description: '정수리부터 풍성한 볼륨감의 레이어드 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '레이어드', '볼륨'],
+  },
+  {
+    name: '보헤미안 웨이브',
+    description: '자유분방한 감성의 불규칙 웨이브 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '웨이브', '캐주얼'],
+  },
+  {
+    name: '롱 시스루 뱅',
+    description: '이마가 비치는 시스루 뱅과 롱 헤어의 조합입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '프린지', '트렌디'],
+  },
+  {
+    name: '로우 포니테일',
+    description: '낮게 묶는 우아한 포니테일 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '업스타일', '포멀'],
+  },
+  {
+    name: '하프 번',
+    description: '상단만 번으로 묶는 캐주얼 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '업스타일', '캐주얼'],
+  },
+  {
+    name: '브레이드 롱',
+    description: '편한 느낌의 느슨한 브레이드 롱 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '업스타일', '내추럴'],
+  },
+  {
+    name: '롱 울프컷',
+    description: '롱 길이에 울프컷의 레이어를 적용한 트렌디 스타일입니다.',
+    length: 'long',
+    suitability: 0,
+    tags: ['롱', '레이어드', '트렌디'],
   },
 ];
 
