@@ -174,9 +174,46 @@ export async function getUserConnections(
 }
 
 /**
- * 내재화 통계
+ * 내재화 통계 (캐시 우선, 실시간 폴백)
+ *
+ * connection_awareness_stats 캐시 테이블에서 먼저 읽고,
+ * 캐시 miss 시 실시간 집계로 폴백한다.
  */
 export async function getConnectionStats(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<ConnectionStats> {
+  // 캐시 테이블에서 읽기 시도
+  const { data: cached } = await supabase
+    .from('connection_awareness_stats')
+    .select(
+      'total_connections, exposed_count, recognized_count, internalized_count, independent_count, internalization_rate'
+    )
+    .eq('clerk_user_id', userId)
+    .single();
+
+  if (cached) {
+    return {
+      totalConnections: cached.total_connections as number,
+      internalizationRate: Number(cached.internalization_rate),
+      independentCount: cached.independent_count as number,
+      byStatus: {
+        exposed: cached.exposed_count as number,
+        recognized: cached.recognized_count as number,
+        internalized: cached.internalized_count as number,
+        independent: cached.independent_count as number,
+      },
+    };
+  }
+
+  // 캐시 miss → 실시간 집계
+  return getConnectionStatsLive(supabase, userId);
+}
+
+/**
+ * 실시간 집계 (캐시 없을 때 폴백, 테스트용 export)
+ */
+export async function getConnectionStatsLive(
   supabase: SupabaseClient,
   userId: string
 ): Promise<ConnectionStats> {

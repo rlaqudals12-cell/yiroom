@@ -3,7 +3,7 @@
  *
  * @module tests/lib/connection-awareness/repository
  * @description exposeConnection, confirmConnection, getUserConnections,
- *              getConnectionStats, getExplanationDepth 테스트
+ *              getConnectionStatsLive, getExplanationDepth 테스트
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -11,7 +11,7 @@ import {
   exposeConnection,
   confirmConnection,
   getUserConnections,
-  getConnectionStats,
+  getConnectionStatsLive,
   getExplanationDepth,
 } from '@/lib/connection-awareness/repository';
 import type { ExposeRequest } from '@/lib/connection-awareness/types';
@@ -369,10 +369,10 @@ describe('getUserConnections', () => {
 });
 
 // =============================================================================
-// getConnectionStats
+// getConnectionStatsLive (캐시 우선 getConnectionStats는 connection-stats-batch.test.ts에서 테스트)
 // =============================================================================
 
-describe('getConnectionStats', () => {
+describe('getConnectionStatsLive', () => {
   it('상태별 통계를 정확히 계산한다', async () => {
     const rows = [
       { status: 'exposed' },
@@ -393,7 +393,7 @@ describe('getConnectionStats', () => {
       from: vi.fn(() => chainObj),
     };
 
-    const stats = await getConnectionStats(mockSupabase as any, userId);
+    const stats = await getConnectionStatsLive(mockSupabase as any, userId);
 
     expect(stats.totalConnections).toBe(5);
     expect(stats.byStatus.exposed).toBe(2);
@@ -415,7 +415,7 @@ describe('getConnectionStats', () => {
       from: vi.fn(() => chainObj),
     };
 
-    const stats = await getConnectionStats(mockSupabase as any, userId);
+    const stats = await getConnectionStatsLive(mockSupabase as any, userId);
 
     expect(stats.totalConnections).toBe(0);
     expect(stats.internalizationRate).toBe(0);
@@ -433,7 +433,9 @@ describe('getConnectionStats', () => {
       from: vi.fn(() => chainObj),
     };
 
-    await expect(getConnectionStats(mockSupabase as any, userId)).rejects.toThrow('통계 조회 실패');
+    await expect(getConnectionStatsLive(mockSupabase as any, userId)).rejects.toThrow(
+      '통계 조회 실패'
+    );
   });
 
   it('모두 independent면 internalizationRate가 1이다', async () => {
@@ -448,7 +450,7 @@ describe('getConnectionStats', () => {
       from: vi.fn(() => chainObj),
     };
 
-    const stats = await getConnectionStats(mockSupabase as any, userId);
+    const stats = await getConnectionStatsLive(mockSupabase as any, userId);
 
     expect(stats.internalizationRate).toBe(1);
     expect(stats.independentCount).toBe(2);

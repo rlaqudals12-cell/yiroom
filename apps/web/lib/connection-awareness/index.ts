@@ -22,6 +22,7 @@ export {
   confirmConnection,
   getUserConnections,
   getConnectionStats,
+  getConnectionStatsLive,
   getExplanationDepth,
 } from './repository';
 
