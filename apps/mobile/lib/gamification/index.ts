@@ -7,6 +7,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { LevelUpResult } from '@/types/gamification';
 
 // ─── 타입 ────────────────────────────────────────────
 
@@ -294,13 +295,13 @@ export async function unlockBadge(
 }
 
 /**
- * XP 추가
+ * XP 추가 — LevelUpResult 반환 (이전/이후 레벨 비교 포함)
  */
 export async function addXp(
   supabase: SupabaseClient,
   userId: string,
   amount: number
-): Promise<LevelInfo | null> {
+): Promise<LevelUpResult | null> {
   // 현재 XP 조회
   const { data: current } = await supabase
     .from('user_levels')
@@ -309,20 +310,30 @@ export async function addXp(
     .maybeSingle();
 
   const currentXp = current?.total_xp ?? 0;
+  const previousLevel = current?.level ?? getLevelFromTotalXp(currentXp);
+  const previousTier = getTierForLevel(previousLevel) as LevelUpResult['previousTier'];
   const newTotalXp = currentXp + amount;
   const newLevel = getLevelFromTotalXp(newTotalXp);
-  const tier = getTierForLevel(newLevel);
+  const newTier = getTierForLevel(newLevel) as LevelUpResult['newTier'];
 
   // XP 업데이트 (upsert)
   await supabase.from('user_levels').upsert({
     clerk_user_id: userId,
     total_xp: newTotalXp,
     level: newLevel,
-    tier,
+    tier: newTier,
     updated_at: new Date().toISOString(),
   });
 
-  return calculateLevelInfo(newTotalXp);
+  return {
+    previousLevel,
+    newLevel,
+    previousTier,
+    newTier,
+    tierChanged: previousTier !== newTier,
+    xpGained: amount,
+    totalXp: newTotalXp,
+  };
 }
 
 /**
