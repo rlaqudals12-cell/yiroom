@@ -563,14 +563,14 @@ describe('VitaShadeDisplay', () => {
   describe('셰이드 스케일', () => {
     it('compact=false일 때 셰이드 스케일이 표시된다', () => {
       render(<VitaShadeDisplay currentShade="A2" compact={false} />);
-      expect(screen.getByText('VITA 셰이드 스케일')).toBeInTheDocument();
-      expect(screen.getByText('밝음')).toBeInTheDocument();
-      expect(screen.getByText('어두움')).toBeInTheDocument();
+      // T3.6: 탭 UI로 변경됨 (Classical/3D-Master)
+      expect(screen.getByText('Classical (16색)')).toBeInTheDocument();
+      expect(screen.getByText('3D-Master (29색)')).toBeInTheDocument();
     });
 
     it('compact=true일 때 셰이드 스케일이 숨겨진다', () => {
       render(<VitaShadeDisplay currentShade="A2" compact={true} />);
-      expect(screen.queryByText('VITA 셰이드 스케일')).not.toBeInTheDocument();
+      expect(screen.queryByText('Classical (16색)')).not.toBeInTheDocument();
     });
   });
 

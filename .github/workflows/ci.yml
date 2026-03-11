@@ -318,9 +318,50 @@ jobs:
           path: apps/web/.next
           retention-days: 1
 
+  # E2E 테스트 (빌드 완료 후)
+  e2e:
+    needs: [build]
+    if: needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: apps/web/.next
+
+      - name: Run E2E Tests (Smoke)
+        run: npx playwright test e2e/smoke.spec.ts --project=chromium
+        working-directory: apps/web
+        env:
+          SKIP_ENV_VALIDATION: true
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
+
   # CI 요약 리포트
   summary:
-    needs: [lint, typecheck, test, accessibility, build, quality, security, mobile-lint, mobile-typecheck, mobile-test]
+    needs: [lint, typecheck, test, accessibility, build, e2e, quality, security, mobile-lint, mobile-typecheck, mobile-test]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -335,6 +376,7 @@ jobs:
           echo "| Test | ${{ needs.test.result == 'success' && '✅ Passed' || needs.test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Accessibility | ${{ needs.accessibility.result == 'success' && '✅ Passed' || needs.accessibility.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || needs.build.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E | ${{ needs.e2e.result == 'success' && '✅ Passed' || needs.e2e.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || needs.quality.result == 'skipped' && '⏭️ Skipped' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security | ${{ needs.security.result == 'success' && '✅ Passed' || needs.security.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Mobile Lint | ${{ needs.mobile-lint.result == 'success' && '✅ Passed' || needs.mobile-lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY

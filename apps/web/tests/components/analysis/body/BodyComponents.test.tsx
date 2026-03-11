@@ -69,6 +69,15 @@ vi.mock('lucide-react', () => {
     CheckCircle2: createIcon('check-circle2'),
     PlayCircle: createIcon('play-circle'),
     Info: createIcon('info'),
+    Crown: createIcon('crown'),
+    Shirt: createIcon('shirt'),
+    Sparkles: createIcon('sparkles'),
+    Heart: createIcon('heart'),
+    Wind: createIcon('wind'),
+    Layers: createIcon('layers'),
+    ShoppingBag: createIcon('shopping-bag'),
+    ExternalLink: createIcon('external-link'),
+    Palette: createIcon('palette'),
   };
 });
 
@@ -300,29 +309,32 @@ describe('BodyStyleImage', () => {
       expect(screen.getByTestId('body-style-image')).toBeInTheDocument();
     });
 
-    it('S 체형의 스타일 이미지 3장을 렌더링한다', () => {
+    it('S 체형의 스타일 카드 3개를 렌더링한다', () => {
       render(<BodyStyleImage bodyType="S" />);
-      const images = screen.getAllByTestId('next-image');
-      expect(images).toHaveLength(3);
+      // 아이콘 기반 카드 3개 확인 (스타일 라벨로 검증)
+      expect(screen.getByText('포멀')).toBeInTheDocument();
+      expect(screen.getByText('캐주얼')).toBeInTheDocument();
+      expect(screen.getByText('미니멀')).toBeInTheDocument();
     });
 
-    it('W 체형의 스타일 이미지 3장을 렌더링한다', () => {
+    it('W 체형의 스타일 카드 3개를 렌더링한다', () => {
       render(<BodyStyleImage bodyType="W" />);
-      const images = screen.getAllByTestId('next-image');
-      expect(images).toHaveLength(3);
+      expect(screen.getByText('페미닌')).toBeInTheDocument();
+      expect(screen.getByText('로맨틱')).toBeInTheDocument();
+      expect(screen.getByText('엘레강스')).toBeInTheDocument();
     });
 
-    it('N 체형의 스타일 이미지 3장을 렌더링한다', () => {
+    it('N 체형의 스타일 카드 3개를 렌더링한다', () => {
       render(<BodyStyleImage bodyType="N" />);
-      const images = screen.getAllByTestId('next-image');
-      expect(images).toHaveLength(3);
+      expect(screen.getByText('릴렉스드')).toBeInTheDocument();
+      expect(screen.getByText('오버사이즈')).toBeInTheDocument();
     });
 
-    it('각 이미지에 올바른 alt 텍스트가 있다', () => {
+    it('각 카드에 키 아이템이 표시된다', () => {
       render(<BodyStyleImage bodyType="S" />);
-      expect(screen.getByAltText('스트레이트 체형 포멀 스타일')).toBeInTheDocument();
-      expect(screen.getByAltText('스트레이트 체형 캐주얼 스타일')).toBeInTheDocument();
-      expect(screen.getByAltText('스트레이트 체형 미니멀 스타일')).toBeInTheDocument();
+      expect(screen.getByText('테일러드 재킷')).toBeInTheDocument();
+      expect(screen.getByText('V넥 니트')).toBeInTheDocument();
+      expect(screen.getByText('베이직 셔츠')).toBeInTheDocument();
     });
   });
 
@@ -350,7 +362,7 @@ describe('BodyStyleImage', () => {
   });
 
   describe('클릭 이벤트', () => {
-    it('이미지 클릭 시 onImageClick 핸들러를 호출한다', () => {
+    it('카드 클릭 시 onImageClick 핸들러를 호출한다', () => {
       const handleClick = vi.fn();
       render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
 
@@ -361,7 +373,7 @@ describe('BodyStyleImage', () => {
       expect(handleClick).toHaveBeenCalledWith(0);
     });
 
-    it('두 번째 이미지 클릭 시 index 1로 호출한다', () => {
+    it('두 번째 카드 클릭 시 index 1로 호출한다', () => {
       const handleClick = vi.fn();
       render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
 
@@ -372,16 +384,15 @@ describe('BodyStyleImage', () => {
       expect(handleClick).toHaveBeenCalledWith(1);
     });
 
-    it('onImageClick이 없어도 에러 없이 렌더링된다', () => {
+    it('onImageClick이 없으면 role=button이 없다', () => {
       render(<BodyStyleImage bodyType="N" />);
       const container = screen.getByTestId('body-style-image');
-      const buttons = within(container).getAllByRole('button');
-      expect(() => fireEvent.click(buttons[0])).not.toThrow();
+      expect(within(container).queryAllByRole('button')).toHaveLength(0);
     });
   });
 
   describe('키보드 접근성', () => {
-    it('Enter 키로 이미지를 선택할 수 있다', () => {
+    it('Enter 키로 카드를 선택할 수 있다', () => {
       const handleClick = vi.fn();
       render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
 
@@ -392,7 +403,7 @@ describe('BodyStyleImage', () => {
       expect(handleClick).toHaveBeenCalledWith(0);
     });
 
-    it('Space 키로 이미지를 선택할 수 있다', () => {
+    it('Space 키로 카드를 선택할 수 있다', () => {
       const handleClick = vi.fn();
       render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
 
@@ -403,50 +414,21 @@ describe('BodyStyleImage', () => {
       expect(handleClick).toHaveBeenCalledWith(2);
     });
 
-    it('각 이미지에 aria-label이 있다', () => {
-      render(<BodyStyleImage bodyType="W" />);
-      expect(screen.getByLabelText('웨이브 체형 페미닌 스타일')).toBeInTheDocument();
-      expect(screen.getByLabelText('웨이브 체형 로맨틱 스타일')).toBeInTheDocument();
+    it('각 카드에 aria-label이 있다', () => {
+      const handleClick = vi.fn();
+      render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
+      expect(screen.getByLabelText('포멀 스타일 - 깔끔한 I라인 실루엣')).toBeInTheDocument();
+      expect(screen.getByLabelText('캐주얼 스타일 - 심플하고 단정한 룩')).toBeInTheDocument();
     });
 
-    it('각 이미지에 tabIndex가 설정되어 있다', () => {
-      render(<BodyStyleImage bodyType="S" />);
+    it('onImageClick 시 각 카드에 tabIndex가 설정되어 있다', () => {
+      const handleClick = vi.fn();
+      render(<BodyStyleImage bodyType="S" onImageClick={handleClick} />);
       const container = screen.getByTestId('body-style-image');
       const buttons = within(container).getAllByRole('button');
       buttons.forEach((button) => {
         expect(button).toHaveAttribute('tabindex', '0');
       });
-    });
-  });
-
-  describe('이미지 에러 처리', () => {
-    it('이미지 로드 실패 시 플레이스홀더를 표시한다', () => {
-      render(<BodyStyleImage bodyType="S" />);
-      const images = screen.getAllByTestId('next-image');
-
-      // 첫 번째 이미지 에러 발생
-      fireEvent.error(images[0]);
-
-      // 플레이스홀더 텍스트 확인
-      expect(screen.getByText('스타일 이미지 준비 중')).toBeInTheDocument();
-    });
-
-    it('이미지 로드 중에 로딩 스피너가 표시된다', () => {
-      render(<BodyStyleImage bodyType="S" />);
-      // 초기 상태에서 로딩 아이콘이 존재
-      const loaders = screen.getAllByTestId('icon-loader2');
-      expect(loaders.length).toBeGreaterThan(0);
-    });
-
-    it('이미지 로드 완료 후 로딩 스피너가 사라진다', () => {
-      render(<BodyStyleImage bodyType="S" />);
-      const images = screen.getAllByTestId('next-image');
-
-      // 모든 이미지 로드 완료
-      images.forEach((img) => fireEvent.load(img));
-
-      // 로딩 스피너가 없어야 함
-      expect(screen.queryByTestId('icon-loader2')).not.toBeInTheDocument();
     });
   });
 
@@ -458,15 +440,14 @@ describe('BodyStyleImage', () => {
     });
   });
 
-  describe('체형별 이미지 경로', () => {
+  describe('체형별 설명 텍스트', () => {
     it.each<[BodyType3, string]>([
-      ['S', '/images/body-types/straight-formal.jpg'],
-      ['W', '/images/body-types/wave-feminine.jpg'],
-      ['N', '/images/body-types/natural-casual.jpg'],
-    ])('%s 체형의 첫 번째 이미지 경로가 올바르다', (bodyType, expectedSrc) => {
+      ['S', '깔끔한 I라인 실루엣'],
+      ['W', '부드러운 X라인 실루엣'],
+      ['N', '편안한 오버핏 룩'],
+    ])('%s 체형의 첫 번째 스타일 설명이 올바르다', (bodyType, expectedDesc) => {
       render(<BodyStyleImage bodyType={bodyType} />);
-      const images = screen.getAllByTestId('next-image');
-      expect(images[0]).toHaveAttribute('src', expectedSrc);
+      expect(screen.getByText(expectedDesc)).toBeInTheDocument();
     });
   });
 });
