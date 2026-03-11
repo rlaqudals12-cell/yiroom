@@ -1,6 +1,6 @@
 /**
  * 피부 상담 화면
- * 빠른 질문 기반 AI 피부 상담 (로컬 mock → 향후 API 연동)
+ * 빠른 질문 기반 AI 피부 상담 (API 연동 + 로컬 폴백)
  */
 import { Send } from 'lucide-react-native';
 import { useState, useCallback, useRef } from 'react';

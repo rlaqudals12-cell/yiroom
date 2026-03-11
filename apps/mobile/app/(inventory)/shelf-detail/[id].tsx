@@ -1,47 +1,26 @@
 /**
  * 제품 상세 (사용기한, 성분 충돌 경고)
  */
+import { useAuth } from '@clerk/clerk-expo';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
-// 목업 데이터 (API 연동 전)
-const MOCK_DETAILS: Record<
-  string,
-  {
-    name: string;
-    brand: string;
-    category: string;
-    status: string;
-    expiresAt: string;
-    ingredients: string[];
-    conflicts: { ingredient: string; reason: string }[];
-  }
-> = {
-  '1': {
-    name: '아이소이 수분 크림',
-    brand: '아이소이',
-    category: '스킨케어',
-    status: 'in_use',
-    expiresAt: '2026-08',
-    ingredients: ['히알루론산', '세라마이드', '나이아신아마이드'],
-    conflicts: [],
-  },
-  '2': {
-    name: '라운드랩 자작나무 토너',
-    brand: '라운드랩',
-    category: '스킨케어',
-    status: 'in_use',
-    expiresAt: '2026-12',
-    ingredients: ['자작나무수', 'BHA', '판테놀'],
-    conflicts: [{ ingredient: 'BHA', reason: '레티놀과 함께 사용 시 자극 주의' }],
-  },
-};
+interface ShelfDetail {
+  name: string;
+  brand: string;
+  category: string;
+  status: string;
+  expiresAt: string | null;
+  ingredients: string[];
+  conflicts: { ingredient: string; reason: string }[];
+}
 
 const STATUS_ACTIONS = [
   { id: 'stored', label: '보관중', emoji: '🗄️' },
@@ -49,21 +28,58 @@ const STATUS_ACTIONS = [
   { id: 'finished', label: '다 씀', emoji: '✅' },
 ];
 
-export default function ShelfDetailScreen() {
+export default function ShelfDetailScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, isDark } = useTheme();
+  const { userId } = useAuth();
+  const supabase = useClerkSupabaseClient();
+  const [detail, setDetail] = useState<ShelfDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [status, setStatus] = useState('stored');
 
-  const detail = MOCK_DETAILS[id ?? ''];
-  const [status, setStatus] = useState(detail?.status ?? 'stored');
+  // Supabase에서 제품 상세 조회
+  useEffect(() => {
+    if (!userId || !id) return;
+    const fetchDetail = async (): Promise<void> => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('user_inventory')
+        .select('name, brand, category, status, expires_at, metadata')
+        .eq('id', id)
+        .eq('clerk_user_id', userId)
+        .single();
+
+      if (!error && data) {
+        const meta = (data.metadata as Record<string, unknown>) ?? {};
+        setDetail({
+          name: data.name ?? '이름 없음',
+          brand: data.brand ?? '',
+          category: data.category ?? '스킨케어',
+          status: data.status ?? 'stored',
+          expiresAt: data.expires_at,
+          ingredients: (meta.ingredients as string[]) ?? [],
+          conflicts: (meta.conflicts as { ingredient: string; reason: string }[]) ?? [],
+        });
+        setStatus(data.status ?? 'stored');
+      }
+      setIsLoading(false);
+    };
+    fetchDetail();
+  }, [userId, id, supabase]);
+
+  if (isLoading) {
+    return (
+      <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen" backgroundGradient="beauty">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   if (!detail) {
     return (
-      <ScreenContainer
-        edges={['bottom']}
-        contentPadding={20}
-        testID="shelf-detail-screen"
-        backgroundGradient="beauty"
-      >
+      <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen" backgroundGradient="beauty">
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📦</Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.base }}>

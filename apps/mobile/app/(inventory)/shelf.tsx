@@ -2,16 +2,27 @@
  * 내 제품함 (선반) 목록
  * 상태 필터: 보관중/사용중/다씀
  */
+import { useAuth } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 type ShelfStatus = 'all' | 'stored' | 'in_use' | 'finished';
+
+interface ShelfItem {
+  id: string;
+  name: string;
+  brand: string;
+  status: 'stored' | 'in_use' | 'finished';
+  expiresAt: string | null;
+  category: string;
+}
 
 const STATUS_FILTERS: { id: ShelfStatus; label: string; emoji: string }[] = [
   { id: 'all', label: '전체', emoji: '📦' },
@@ -20,56 +31,48 @@ const STATUS_FILTERS: { id: ShelfStatus; label: string; emoji: string }[] = [
   { id: 'finished', label: '다 씀', emoji: '✅' },
 ];
 
-// 목업 데이터 (API 연동 전)
-const MOCK_SHELF_ITEMS = [
-  {
-    id: '1',
-    name: '아이소이 수분 크림',
-    brand: '아이소이',
-    status: 'in_use' as const,
-    expiresAt: '2026-08',
-    category: 'skincare',
-  },
-  {
-    id: '2',
-    name: '라운드랩 자작나무 토너',
-    brand: '라운드랩',
-    status: 'in_use' as const,
-    expiresAt: '2026-12',
-    category: 'skincare',
-  },
-  {
-    id: '3',
-    name: '달바 선크림',
-    brand: '달바',
-    status: 'stored' as const,
-    expiresAt: '2027-03',
-    category: 'suncare',
-  },
-  {
-    id: '4',
-    name: '이니스프리 그린티 세럼',
-    brand: '이니스프리',
-    status: 'finished' as const,
-    expiresAt: '2026-01',
-    category: 'skincare',
-  },
-];
-
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   stored: { label: '보관중', color: '#3B82F6' },
   in_use: { label: '사용중', color: '#10B981' },
   finished: { label: '다 씀', color: '#9CA3AF' },
 };
 
-export default function ShelfScreen() {
+export default function ShelfScreen(): React.JSX.Element {
   const { colors } = useTheme();
+  const { userId } = useAuth();
+  const supabase = useClerkSupabaseClient();
   const [statusFilter, setStatusFilter] = useState<ShelfStatus>('all');
+  const [items, setItems] = useState<ShelfItem[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchItems = async (): Promise<void> => {
+      const { data, error } = await supabase
+        .from('user_inventory')
+        .select('id, name, brand, status, expires_at, category')
+        .eq('clerk_user_id', userId)
+        .order('updated_at', { ascending: false });
+
+      if (!error && data) {
+        setItems(
+          data.map((row) => ({
+            id: row.id,
+            name: row.name ?? '이름 없음',
+            brand: row.brand ?? '',
+            status: row.status ?? 'stored',
+            expiresAt: row.expires_at,
+            category: row.category ?? 'skincare',
+          }))
+        );
+      }
+    };
+    fetchItems();
+  }, [userId, supabase]);
 
   const filteredItems =
     statusFilter === 'all'
-      ? MOCK_SHELF_ITEMS
-      : MOCK_SHELF_ITEMS.filter((item) => item.status === statusFilter);
+      ? items
+      : items.filter((item) => item.status === statusFilter);
 
   const handleItemPress = useCallback((id: string) => {
     router.push({ pathname: '/(inventory)/shelf-detail/[id]', params: { id } });

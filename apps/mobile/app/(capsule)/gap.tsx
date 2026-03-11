@@ -13,7 +13,7 @@ import { staggeredEntry } from '../../lib/animations';
 import { useBeautyProfile } from '../../lib/capsule/hooks';
 import { useTheme } from '../../lib/theme';
 
-// 갭 아이템 (Phase 5d에서 API 연동 예정, 현재 placeholder)
+// 갭 아이템 (useBeautyProfile()에서 실제 Supabase 데이터 기반 갭 추론)
 interface GapItem {
   category: string;
   reason: string;

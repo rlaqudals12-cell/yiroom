@@ -3,11 +3,14 @@
  *
  * 개별 친구의 프로필, 활동, 공유 분석 결과를 확인한다.
  */
-import { View, Text } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { staggeredEntry, TIMING } from '../../../lib/animations';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { useTheme } from '../../../lib/theme';
 
 interface FriendProfile {
@@ -21,34 +24,77 @@ interface FriendProfile {
   sharedResults: { type: string; label: string; value: string; date: string }[];
 }
 
-const MOCK_FRIEND: FriendProfile = {
-  nickname: '뷰티러버',
-  emoji: '🌸',
-  level: 15,
-  joinDate: '2025-11-01',
-  streakDays: 42,
-  badges: [
-    { name: '피부 마스터', emoji: '🧴' },
-    { name: '운동 7일 연속', emoji: '💪' },
-    { name: '영양 균형왕', emoji: '🥗' },
-    { name: '얼리어답터', emoji: '🚀' },
-  ],
-  recentActivities: [
-    { date: '2026-03-01', action: '피부 분석 완료', module: '피부' },
-    { date: '2026-02-28', action: '운동 세션 30분', module: '운동' },
-    { date: '2026-02-28', action: '식사 기록', module: '영양' },
-    { date: '2026-02-27', action: '퍼스널컬러 분석', module: '분석' },
-  ],
-  sharedResults: [
-    { type: 'personal-color', label: '퍼스널컬러', value: '봄 웜톤', date: '2026-02-27' },
-    { type: 'skin', label: '피부 타입', value: '복합성', date: '2026-02-25' },
-  ],
-};
-
 export default function FriendProfileScreen(): React.ReactElement {
   const { colors, brand, spacing, radii, typography } = useTheme();
+  const { friendId } = useLocalSearchParams<{ friendId: string }>();
+  const supabase = useClerkSupabaseClient();
+  const [friend, setFriend] = useState<FriendProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const friend = MOCK_FRIEND;
+  // Supabase에서 친구 프로필 조회
+  useEffect(() => {
+    if (!friendId) return;
+    const fetchProfile = async (): Promise<void> => {
+      setIsLoading(true);
+
+      // 사용자 기본 정보
+      const { data: userData } = await supabase
+        .from('users')
+        .select('nickname, avatar_emoji, created_at')
+        .eq('clerk_user_id', friendId)
+        .single();
+
+      // 레벨 정보
+      const { data: levelData } = await supabase
+        .from('user_levels')
+        .select('level, streak_days')
+        .eq('clerk_user_id', friendId)
+        .single();
+
+      // 뱃지 정보
+      const { data: badgeData } = await supabase
+        .from('user_badges')
+        .select('name, emoji')
+        .eq('clerk_user_id', friendId)
+        .order('earned_at', { ascending: false })
+        .limit(8);
+
+      if (userData) {
+        setFriend({
+          nickname: userData.nickname ?? '사용자',
+          emoji: userData.avatar_emoji ?? '🌸',
+          level: levelData?.level ?? 1,
+          joinDate: userData.created_at?.slice(0, 10) ?? '',
+          streakDays: levelData?.streak_days ?? 0,
+          badges: badgeData ?? [],
+          recentActivities: [],
+          sharedResults: [],
+        });
+      }
+      setIsLoading(false);
+    };
+    fetchProfile();
+  }, [friendId, supabase]);
+
+  if (isLoading) {
+    return (
+      <ScreenContainer testID="friend-profile-screen" backgroundGradient="social">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!friend) {
+    return (
+      <ScreenContainer testID="friend-profile-screen" backgroundGradient="social">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: colors.mutedForeground }}>프로필을 찾을 수 없습니다</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer
