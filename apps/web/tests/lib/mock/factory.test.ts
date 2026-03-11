@@ -4,7 +4,7 @@
  * @see lib/mock/factory.ts
  * @see ADR-007 Mock Fallback 전략
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   registerMock,
   getMock,

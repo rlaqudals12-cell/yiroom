@@ -4,6 +4,18 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+
+// lucide-react 아이콘 mock
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  return {
+    ...actual,
+    ShieldAlert: (props: Record<string, unknown>) => (
+      <svg data-testid="shield-alert-icon" {...props} />
+    ),
+  };
+});
+
 import { BlockConfirmDialog } from '@/components/feed/BlockConfirmDialog';
 
 describe('BlockConfirmDialog', () => {
