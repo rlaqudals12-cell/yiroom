@@ -120,3 +120,11 @@ export {
   validateLabRange,
   validateAnalysisResult,
 } from './prompts';
+
+// ============================================
+// 6존 Lab 샘플링 (CIE-2 연동)
+// ============================================
+
+export { sampleZoneLab, sampleAllZonesLab } from './zone-sampler';
+
+export type { ColorZoneType, ZoneLabSample, ZoneLabSamplingResult } from './zone-sampler';
