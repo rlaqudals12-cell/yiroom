@@ -3,11 +3,12 @@
  */
 import * as Haptics from 'expo-haptics';
 import { Bell, ChevronRight, Megaphone, AlertTriangle, Sparkles, Info } from 'lucide-react-native';
-import { useState, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { ScreenContainer, BottomSheet } from '@/components/ui';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 
 interface Announcement {
@@ -29,33 +30,15 @@ const CATEGORY_CONFIG: Record<
   maintenance: { label: '점검', color: (t) => t.status.warning, Icon: AlertTriangle },
 };
 
-// 샘플 데이터 (향후 API 연동)
-const ANNOUNCEMENTS: Announcement[] = [
+// 샘플 데이터 (DB 비어있을 때 폴백)
+const FALLBACK_announcements: Announcement[] = [
   {
-    id: '1',
-    title: '이룸 v2.0 업데이트 안내',
+    id: 'fallback-1',
+    title: '이룸에 오신 것을 환영해요!',
     content:
-      '안녕하세요, 이룸팀이에요!\n\n이번 업데이트에서는 다음과 같은 기능이 추가되었어요:\n\n• AI 피부 분석 정확도 향상\n• 구강건강 분석 모듈 추가\n• 다크모드 지원\n• 접근성 개선\n\n더 나은 이룸으로 찾아뵐게요. 감사합니다!',
-    category: 'update',
-    date: '2026-03-01',
-    isImportant: true,
-  },
-  {
-    id: '2',
-    title: '3월 뷰티 챌린지 시작!',
-    content:
-      '3월 한 달간 매일 스킨케어 루틴을 기록하고 뱃지를 획득하세요!\n\n🎯 참여 방법: 피부 일기 매일 작성\n🏆 보상: 스킨케어 마스터 뱃지\n📅 기간: 3/1 ~ 3/31',
-    category: 'event',
-    date: '2026-03-01',
-    isImportant: false,
-  },
-  {
-    id: '3',
-    title: '서비스 이용약관 변경 안내',
-    content:
-      '2026년 3월 15일부터 개정된 이용약관이 적용돼요.\n\n주요 변경 사항:\n• AI 분석 결과의 참고용 안내 강화\n• 개인정보 보호 조항 구체화\n• 사용자 권리 보호 강화\n\n자세한 내용은 설정 > 이용약관에서 확인해주세요.',
+      '안녕하세요, 이룸팀이에요!\n\n이룸은 AI 기반 통합 웰니스 플랫폼이에요.\n\n• 퍼스널컬러, 피부, 체형 AI 분석\n• 맞춤 운동·영양 플랜\n• 뷰티 제품 추천\n\n새로운 소식이 생기면 이곳에서 알려드릴게요.',
     category: 'notice',
-    date: '2026-02-28',
+    date: new Date().toISOString().split('T')[0],
     isImportant: false,
   },
 ];
@@ -68,9 +51,50 @@ function formatDate(dateStr: string): string {
 export default function AnnouncementsScreen(): React.JSX.Element {
   const theme = useTheme();
   const { colors, spacing, radii, typography, brand } = theme;
+  const supabase = useClerkSupabaseClient();
 
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<Announcement | null>(null);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  // Supabase에서 공지사항 조회
+  useEffect(() => {
+    async function fetchAnnouncements(): Promise<void> {
+      try {
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('id, title, content, category, created_at, is_important')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setAnnouncements(
+            data.map((row) => ({
+              id: row.id,
+              title: row.title,
+              content: row.content,
+              category: row.category as Announcement['category'],
+              date: row.created_at?.split('T')[0] ?? '',
+              isImportant: row.is_important ?? false,
+            }))
+          );
+        } else {
+          setAnnouncements(FALLBACK_announcements);
+        }
+      } catch {
+        // DB 테이블 미존재 또는 에러 시 폴백
+        setAnnouncements(FALLBACK_announcements);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchAnnouncements();
+  }, [supabase]);
 
   const handleSelect = useCallback((item: Announcement) => {
     Haptics.selectionAsync();
@@ -187,14 +211,19 @@ export default function AnnouncementsScreen(): React.JSX.Element {
       edges={['bottom']}
       backgroundGradient="profile"
     >
+      {isLoading && (
+        <View style={{ alignItems: 'center', paddingVertical: spacing.xxl }}>
+          <ActivityIndicator size="large" color={brand.primary} />
+        </View>
+      )}
       <FlatList
-        data={ANNOUNCEMENTS}
+        data={announcements}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{
           padding: spacing.md,
           paddingBottom: spacing.xxl,
-          flexGrow: ANNOUNCEMENTS.length === 0 ? 1 : undefined,
+          flexGrow: announcements.length === 0 ? 1 : undefined,
         }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>

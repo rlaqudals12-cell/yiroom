@@ -25,6 +25,8 @@ import {
   getRecommendedProductsBySkin,
   getRecommendedProductsByColor,
   type AffiliateProduct,
+  type AffiliatePersonalColor,
+  type AffiliateSkinType,
 } from '../../lib/affiliate';
 import { productLogger } from '../../lib/utils/logger';
 
@@ -61,7 +63,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
             description: `${getSkinTypeLabel(skinAnalysis.skinType)}에 좋은 제품`,
             products: skinProducts.map((p) => ({
               ...p,
-              matchScore: Math.floor(70 + Math.random() * 25), // 매칭 점수 (향후 실제 계산)
+              matchScore: calculateProductMatchScore(p, { skinType: skinAnalysis.skinType }),
             })),
           });
         }
@@ -81,7 +83,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
             description: `${getSeasonLabel(personalColor.season)}에 어울리는 제품`,
             products: colorProducts.map((p) => ({
               ...p,
-              matchScore: Math.floor(70 + Math.random() * 25),
+              matchScore: calculateProductMatchScore(p, { season: personalColor.season }),
             })),
           });
         }
@@ -409,6 +411,55 @@ export default function RecommendationsScreen(): React.JSX.Element {
       )}
     </ScreenContainer>
   );
+}
+
+// 제품-사용자 매칭 점수 계산
+function calculateProductMatchScore(
+  product: AffiliateProduct,
+  userProfile: { skinType?: string; season?: string }
+): number {
+  let score = 55; // 기본 점수
+
+  // 피부 타입 매칭 (제품의 추천 피부 타입과 사용자 피부 타입 비교)
+  if (userProfile.skinType && product.skinTypes) {
+    const userSkin = userProfile.skinType as AffiliateSkinType;
+    if (product.skinTypes.includes(userSkin)) {
+      score += 20;
+    }
+  }
+
+  // 퍼스널컬러 시즌 매칭 (제품의 personalColors와 사용자 시즌 비교)
+  if (userProfile.season && product.personalColors) {
+    const seasonLower = userProfile.season.toLowerCase();
+    // 시즌→personalColor 매핑 (spring→spring_warm 등)
+    const seasonMap: Record<string, string> = {
+      spring: 'spring_warm',
+      summer: 'summer_cool',
+      autumn: 'autumn_warm',
+      winter: 'winter_cool',
+    };
+    const targetColor = seasonMap[seasonLower];
+    if (targetColor && product.personalColors.includes(targetColor as AffiliatePersonalColor)) {
+      score += 20;
+    } else if (product.personalColors.length === 0) {
+      // 컬러 제한 없는 제품은 무난
+      score += 10;
+    }
+  }
+
+  // 피부 고민 매칭
+  if (product.skinConcerns && product.skinConcerns.length > 0) {
+    score += Math.min(product.skinConcerns.length * 3, 12);
+  }
+
+  // 평점 보너스
+  if (product.rating && product.rating >= 4.5) {
+    score += 5;
+  } else if (product.rating && product.rating >= 4.0) {
+    score += 3;
+  }
+
+  return Math.min(score, 98); // 최대 98%
 }
 
 // 헬퍼

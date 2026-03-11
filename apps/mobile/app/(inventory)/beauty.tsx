@@ -14,6 +14,7 @@ import { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   FlatList,
   Pressable,
@@ -23,7 +24,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '../../components/ui';
+import { BottomSheet, GlassCard, ScreenContainer } from '../../components/ui';
 
 import { TIMING, staggeredEntry } from '@/lib/animations';
 import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
@@ -63,9 +64,14 @@ function formatExpiryLabel(expiryDate: string | null): string | null {
 
 export default function BeautyInventoryScreen(): React.JSX.Element {
   const { colors, radii, brand, status, shadows } = useTheme();
-  const { items, isLoading, refetch, deleteItem, toggleFavorite } = useInventory('beauty');
+  const { items, isLoading, refetch, deleteItem, toggleFavorite, addItem } =
+    useInventory('beauty');
 
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductBrand, setNewProductBrand] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState('skincare');
 
   // 필터링
   const filteredItems =
@@ -97,6 +103,29 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
     },
     [toggleFavorite]
   );
+
+  const handleAddProduct = useCallback(async () => {
+    if (!newProductName.trim()) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await addItem({
+      category: 'beauty',
+      subCategory: newProductCategory,
+      name: newProductName.trim(),
+      brand: newProductBrand.trim() || null,
+      imageUrl: '',
+      originalImageUrl: null,
+      tags: [],
+      isFavorite: false,
+      useCount: 0,
+      lastUsedAt: null,
+      expiryDate: null,
+      metadata: {},
+    });
+    setNewProductName('');
+    setNewProductBrand('');
+    setNewProductCategory('skincare');
+    setShowAddModal(false);
+  }, [addItem, newProductName, newProductBrand, newProductCategory]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: InventoryItem; index: number }) => {
@@ -412,12 +441,12 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           <Scan size={20} color={brand.primary} />
         </Pressable>
 
-        {/* 수동 추가 — 향후 추가 모달 구현 */}
+        {/* 수동 추가 */}
         <Pressable
           style={[styles.fabMain, { backgroundColor: brand.primary }, shadows.card]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            Alert.alert('제품 추가', '바코드 스캔으로 제품을 추가할 수 있어요', [{ text: '확인' }]);
+            setShowAddModal(true);
           }}
           testID="add-product-fab"
           accessibilityRole="button"
@@ -426,6 +455,152 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           <Plus size={24} color={colors.overlayForeground} />
         </Pressable>
       </View>
+
+      {/* 수동 추가 BottomSheet */}
+      <BottomSheet
+        isVisible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        snapPoints={['60%']}
+        title="제품 추가"
+        testID="add-product-sheet"
+      >
+        <View style={{ padding: spacing.md, gap: spacing.md }}>
+          <View>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+                marginBottom: spacing.xs,
+              }}
+            >
+              제품명 *
+            </Text>
+            <TextInput
+              style={[
+                styles.addInput,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  paddingHorizontal: spacing.md,
+                },
+              ]}
+              placeholder="예: 토너, 크림, 세럼..."
+              placeholderTextColor={colors.mutedForeground}
+              value={newProductName}
+              onChangeText={setNewProductName}
+              accessibilityLabel="제품명 입력"
+            />
+          </View>
+
+          <View>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+                marginBottom: spacing.xs,
+              }}
+            >
+              브랜드 (선택)
+            </Text>
+            <TextInput
+              style={[
+                styles.addInput,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  paddingHorizontal: spacing.md,
+                },
+              ]}
+              placeholder="브랜드명"
+              placeholderTextColor={colors.mutedForeground}
+              value={newProductBrand}
+              onChangeText={setNewProductBrand}
+              accessibilityLabel="브랜드 입력"
+            />
+          </View>
+
+          <View>
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+                marginBottom: spacing.xs,
+              }}
+            >
+              카테고리
+            </Text>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={BEAUTY_FILTERS.filter((f) => f.key !== 'all')}
+              keyExtractor={(f) => f.key}
+              renderItem={({ item: f }) => (
+                <Pressable
+                  style={[
+                    styles.filterChip,
+                    {
+                      backgroundColor:
+                        newProductCategory === f.key ? brand.primary : colors.card,
+                      borderColor:
+                        newProductCategory === f.key ? brand.primary : colors.border,
+                      borderRadius: radii.full,
+                    },
+                  ]}
+                  onPress={() => setNewProductCategory(f.key)}
+                >
+                  <Text
+                    style={{
+                      fontSize: typography.size.xs,
+                      fontWeight: typography.weight.semibold,
+                      color:
+                        newProductCategory === f.key
+                          ? colors.overlayForeground
+                          : colors.foreground,
+                    }}
+                  >
+                    {f.label}
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </View>
+
+          <Pressable
+            style={{
+              backgroundColor: newProductName.trim() ? brand.primary : colors.secondary,
+              borderRadius: radii.xl,
+              paddingVertical: spacing.md,
+              alignItems: 'center',
+              marginTop: spacing.sm,
+            }}
+            onPress={handleAddProduct}
+            disabled={!newProductName.trim()}
+            accessibilityRole="button"
+            accessibilityLabel="제품 추가하기"
+          >
+            <Text
+              style={{
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+                color: newProductName.trim()
+                  ? colors.overlayForeground
+                  : colors.mutedForeground,
+              }}
+            >
+              추가하기
+            </Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
     </ScreenContainer>
   );
 }
@@ -498,5 +673,9 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  addInput: {
+    borderWidth: 1,
+    height: 44,
   },
 });

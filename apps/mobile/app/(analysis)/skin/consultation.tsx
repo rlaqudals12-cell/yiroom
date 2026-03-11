@@ -13,6 +13,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
@@ -101,10 +102,12 @@ export default function SkinConsultationScreen(): React.JSX.Element {
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
-  // 응답 생성 (mock)
-  const generateResponse = useCallback((question: string): ChatMessage => {
+  const [isTyping, setIsTyping] = useState(false);
+
+  // 로컬 키워드 매칭으로 폴백 응답 생성
+  const generateLocalResponse = useCallback((question: string): ChatMessage => {
     const lowerQ = question.toLowerCase();
-    let concern = 'dry'; // 기본값
+    let concern = 'dry';
     if (lowerQ.includes('유분') || lowerQ.includes('피지') || lowerQ.includes('번들'))
       concern = 'oil';
     else if (lowerQ.includes('트러블') || lowerQ.includes('여드름')) concern = 'acne';
@@ -122,10 +125,44 @@ export default function SkinConsultationScreen(): React.JSX.Element {
     };
   }, []);
 
+  // AI 응답 생성 (API 호출 → 실패 시 로컬 폴백)
+  const generateResponse = useCallback(
+    async (question: string): Promise<ChatMessage> => {
+      try {
+        const apiBase = process.env.EXPO_PUBLIC_API_URL;
+        if (!apiBase) throw new Error('API URL not configured');
+
+        const response = await fetch(`${apiBase}/api/coach`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: question,
+            context: 'skin_consultation',
+          }),
+          signal: AbortSignal.timeout(5000),
+        });
+
+        if (!response.ok) throw new Error('API error');
+
+        const data = await response.json();
+        return {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: data.message ?? data.response ?? '답변을 생성하지 못했어요.',
+          tips: data.tips,
+        };
+      } catch {
+        // API 실패 시 로컬 응답 사용
+        return generateLocalResponse(question);
+      }
+    },
+    [generateLocalResponse]
+  );
+
   const handleSend = useCallback(
-    (text?: string): void => {
+    async (text?: string): Promise<void> => {
       const msg = text ?? inputText.trim();
-      if (!msg) return;
+      if (!msg || isTyping) return;
 
       const userMsg: ChatMessage = {
         id: `user-${Date.now()}`,
@@ -133,13 +170,17 @@ export default function SkinConsultationScreen(): React.JSX.Element {
         content: msg,
       };
 
-      const assistantMsg = generateResponse(msg);
-
-      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      setMessages((prev) => [...prev, userMsg]);
       setInputText('');
+      setIsTyping(true);
+
+      const assistantMsg = await generateResponse(msg);
+
+      setMessages((prev) => [...prev, assistantMsg]);
+      setIsTyping(false);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     },
-    [inputText, generateResponse]
+    [inputText, isTyping, generateResponse]
   );
 
   const handleQuickQuestion = useCallback(
@@ -207,6 +248,21 @@ export default function SkinConsultationScreen(): React.JSX.Element {
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             contentContainerStyle={styles.chatContent}
+            ListHeaderComponent={
+              isTyping ? (
+                <View style={[styles.messageContainer, styles.assistantMessage]}>
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      { backgroundColor: colors.card, borderColor: colors.border },
+                    ]}
+                  >
+                    <ActivityIndicator size="small" color={brand.primary} />
+                  </View>
+                </View>
+              ) : null
+            }
+            inverted={false}
             ListFooterComponent={
               <View style={styles.quickQuestionsContainer}>
                 <Text style={[styles.quickTitle, { color: colors.muted }]}>빠른 질문</Text>
@@ -254,10 +310,10 @@ export default function SkinConsultationScreen(): React.JSX.Element {
             <Pressable
               style={[
                 styles.sendButton,
-                { backgroundColor: inputText.trim() ? brand.primary : colors.muted },
+                { backgroundColor: inputText.trim() && !isTyping ? brand.primary : colors.muted },
               ]}
               onPress={() => handleSend()}
-              disabled={!inputText.trim()}
+              disabled={!inputText.trim() || isTyping}
             >
               <Send size={18} color={brand.primaryForeground} />
             </Pressable>

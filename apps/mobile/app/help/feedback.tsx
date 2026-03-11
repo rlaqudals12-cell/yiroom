@@ -18,7 +18,10 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, BounceIn } from 'react-native-reanimated';
 
+import { useUser } from '@clerk/clerk-expo';
+
 import { ScreenContainer } from '@/components/ui';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 
 type FeedbackType = 'bug' | 'feature' | 'general' | 'other';
@@ -32,6 +35,8 @@ interface FeedbackOption {
 
 export default function FeedbackScreen(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand, status } = useTheme();
+  const supabase = useClerkSupabaseClient();
+  const { user } = useUser();
 
   const [feedbackType, setFeedbackType] = useState<FeedbackType | null>(null);
   const [content, setContent] = useState('');
@@ -92,8 +97,14 @@ export default function FeedbackScreen(): React.JSX.Element {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // 피드백 제출 (향후 API 연동)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Supabase에 피드백 저장
+      const { error } = await supabase.from('feedback').insert({
+        type: feedbackType,
+        content: content.trim(),
+        email: email.trim() || null,
+        source: 'mobile',
+      });
+      if (error) throw error;
       setIsSubmitted(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
@@ -101,7 +112,7 @@ export default function FeedbackScreen(): React.JSX.Element {
     } finally {
       setIsSubmitting(false);
     }
-  }, [canSubmit, isSubmitting]);
+  }, [canSubmit, isSubmitting, supabase, feedbackType, content, email]);
 
   if (isSubmitted) {
     return (

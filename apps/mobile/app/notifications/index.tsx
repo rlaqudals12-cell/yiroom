@@ -2,12 +2,14 @@
  * 알림 인박스 스크린
  * 받은 알림 목록 표시
  */
-import { View, Text, StyleSheet } from 'react-native';
+import { useUser } from '@clerk/clerk-expo';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 import { ScreenContainer, GlassCard } from '../../components/ui';
+import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
 
-// 알림 항목 (향후 DB 연동)
 interface NotificationItem {
   id: string;
   emoji: string;
@@ -17,13 +19,72 @@ interface NotificationItem {
   read: boolean;
 }
 
-// 초기에는 빈 상태 + 샘플 알림으로 구성
-const SAMPLE_NOTIFICATIONS: NotificationItem[] = [];
+// 상대 시간 포맷
+function formatRelativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes}분 전`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+  const days = Math.floor(hours / 24);
+  return `${days}일 전`;
+}
+
+// 알림 타입별 이모지
+const TYPE_EMOJI: Record<string, string> = {
+  analysis: '🔬',
+  workout: '💪',
+  nutrition: '🥗',
+  badge: '🏆',
+  system: '📢',
+  reminder: '⏰',
+};
 
 export default function NotificationsScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
+  const supabase = useClerkSupabaseClient();
+  const { user } = useUser();
 
-  const notifications = SAMPLE_NOTIFICATIONS;
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchNotifications(): Promise<void> {
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('id, type, title, body, is_read, created_at')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (error) throw error;
+
+        if (data) {
+          setNotifications(
+            data.map((row) => ({
+              id: row.id,
+              emoji: TYPE_EMOJI[row.type] ?? '🔔',
+              title: row.title,
+              body: row.body ?? '',
+              time: formatRelativeTime(row.created_at),
+              read: row.is_read ?? false,
+            }))
+          );
+        }
+      } catch {
+        // DB 테이블 미존재 시 빈 목록 유지
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchNotifications();
+  }, [supabase, user?.id]);
 
   return (
     <ScreenContainer testID="notifications-screen" edges={['bottom']} backgroundGradient="profile">
