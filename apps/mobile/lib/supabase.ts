@@ -42,26 +42,28 @@ export function useClerkSupabaseClient(): SupabaseClient {
   const client = useMemo(() => {
     return createClient(
       SUPABASE_URL || 'https://placeholder.supabase.co',
-      SUPABASE_ANON_KEY || 'placeholder-anon-key', {
-      global: {
-        fetch: async (url, options = {}) => {
-          // ref에서 최신 getToken 함수 사용
-          const clerkToken = await getTokenRef.current({
-            template: 'supabase',
-          });
+      SUPABASE_ANON_KEY || 'placeholder-anon-key',
+      {
+        global: {
+          fetch: async (url, options = {}) => {
+            // ref에서 최신 getToken 함수 사용
+            const clerkToken = await getTokenRef.current({
+              template: 'supabase',
+            });
 
-          const headers = new Headers(options.headers);
-          if (clerkToken) {
-            headers.set('Authorization', `Bearer ${clerkToken}`);
-          }
+            const headers = new Headers(options.headers);
+            if (clerkToken) {
+              headers.set('Authorization', `Bearer ${clerkToken}`);
+            }
 
-          return fetch(url, {
-            ...options,
-            headers,
-          });
+            return fetch(url, {
+              ...options,
+              headers,
+            });
+          },
         },
-      },
-    });
+      }
+    );
   }, []); // 의존성 배열 비움 - 클라이언트 한 번만 생성
 
   return client;

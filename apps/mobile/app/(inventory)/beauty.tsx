@@ -64,8 +64,7 @@ function formatExpiryLabel(expiryDate: string | null): string | null {
 
 export default function BeautyInventoryScreen(): React.JSX.Element {
   const { colors, radii, brand, status, shadows } = useTheme();
-  const { items, isLoading, refetch, deleteItem, toggleFavorite, addItem } =
-    useInventory('beauty');
+  const { items, isLoading, refetch, deleteItem, toggleFavorite, addItem } = useInventory('beauty');
 
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -466,11 +465,30 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
       >
         <View style={[styles.sheetContent, { padding: spacing.md, gap: spacing.md }]}>
           <View>
-            <Text style={[styles.fieldLabel, { fontSize: typography.size.sm, color: colors.foreground, marginBottom: spacing.xs }]}>
+            <Text
+              style={[
+                styles.fieldLabel,
+                {
+                  fontSize: typography.size.sm,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                },
+              ]}
+            >
               제품명 *
             </Text>
             <TextInput
-              style={[styles.addInput, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: radii.xl, color: colors.foreground, fontSize: typography.size.sm, paddingHorizontal: spacing.md }]}
+              style={[
+                styles.addInput,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  paddingHorizontal: spacing.md,
+                },
+              ]}
               placeholder="예: 토너, 크림, 세럼..."
               placeholderTextColor={colors.mutedForeground}
               value={newProductName}
@@ -480,11 +498,30 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           </View>
 
           <View>
-            <Text style={[styles.fieldLabel, { fontSize: typography.size.sm, color: colors.foreground, marginBottom: spacing.xs }]}>
+            <Text
+              style={[
+                styles.fieldLabel,
+                {
+                  fontSize: typography.size.sm,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                },
+              ]}
+            >
               브랜드 (선택)
             </Text>
             <TextInput
-              style={[styles.addInput, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: radii.xl, color: colors.foreground, fontSize: typography.size.sm, paddingHorizontal: spacing.md }]}
+              style={[
+                styles.addInput,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  paddingHorizontal: spacing.md,
+                },
+              ]}
               placeholder="브랜드명"
               placeholderTextColor={colors.mutedForeground}
               value={newProductBrand}
@@ -494,7 +531,16 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           </View>
 
           <View>
-            <Text style={[styles.fieldLabel, { fontSize: typography.size.sm, color: colors.foreground, marginBottom: spacing.xs }]}>
+            <Text
+              style={[
+                styles.fieldLabel,
+                {
+                  fontSize: typography.size.sm,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                },
+              ]}
+            >
               카테고리
             </Text>
             <FlatList
@@ -506,10 +552,25 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
                 const isSelected = newProductCategory === f.key;
                 return (
                   <Pressable
-                    style={[styles.filterChip, { backgroundColor: isSelected ? brand.primary : colors.card, borderColor: isSelected ? brand.primary : colors.border, borderRadius: radii.full }]}
+                    style={[
+                      styles.filterChip,
+                      {
+                        backgroundColor: isSelected ? brand.primary : colors.card,
+                        borderColor: isSelected ? brand.primary : colors.border,
+                        borderRadius: radii.full,
+                      },
+                    ]}
                     onPress={() => setNewProductCategory(f.key)}
                   >
-                    <Text style={[styles.chipText, { fontSize: typography.size.xs, color: isSelected ? colors.overlayForeground : colors.foreground }]}>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        {
+                          fontSize: typography.size.xs,
+                          color: isSelected ? colors.overlayForeground : colors.foreground,
+                        },
+                      ]}
+                    >
                       {f.label}
                     </Text>
                   </Pressable>
@@ -519,13 +580,29 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
           </View>
 
           <Pressable
-            style={[styles.submitButton, { backgroundColor: newProductName.trim() ? brand.primary : colors.secondary, borderRadius: radii.xl, paddingVertical: spacing.md, marginTop: spacing.sm }]}
+            style={[
+              styles.submitButton,
+              {
+                backgroundColor: newProductName.trim() ? brand.primary : colors.secondary,
+                borderRadius: radii.xl,
+                paddingVertical: spacing.md,
+                marginTop: spacing.sm,
+              },
+            ]}
             onPress={handleAddProduct}
             disabled={!newProductName.trim()}
             accessibilityRole="button"
             accessibilityLabel="제품 추가하기"
           >
-            <Text style={[styles.submitText, { fontSize: typography.size.base, color: newProductName.trim() ? colors.overlayForeground : colors.mutedForeground }]}>
+            <Text
+              style={[
+                styles.submitText,
+                {
+                  fontSize: typography.size.base,
+                  color: newProductName.trim() ? colors.overlayForeground : colors.mutedForeground,
+                },
+              ]}
+            >
               추가하기
             </Text>
           </Pressable>

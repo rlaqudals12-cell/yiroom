@@ -282,7 +282,11 @@ export function generateMockPostureResult(): PostureAnalysisResult {
         description: '문틀에 팔 짚고 가슴 열기',
         duration: '30초 × 3세트',
       },
-      { name: '고양이-소 스트레칭', description: '네 발로 엎드려 등 굽히고 펴기', duration: '10회' },
+      {
+        name: '고양이-소 스트레칭',
+        description: '네 발로 엎드려 등 굽히고 펴기',
+        duration: '10회',
+      },
     ],
     dailyTips: ['1시간마다 스트레칭', '모니터 눈높이 맞추기', '의자 등받이 활용'],
   };

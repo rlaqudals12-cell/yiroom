@@ -183,16 +183,16 @@ export function calculateTUZoneDifference(
   const tZoneHydration = (zones.forehead.metrics.hydration + zones.nose.metrics.hydration) / 2;
 
   // U존: 양볼, 턱
-  const uZoneOiliness = (
-    zones.leftCheek.metrics.oiliness +
-    zones.rightCheek.metrics.oiliness +
-    zones.chin.metrics.oiliness
-  ) / 3;
-  const uZoneHydration = (
-    zones.leftCheek.metrics.hydration +
-    zones.rightCheek.metrics.hydration +
-    zones.chin.metrics.hydration
-  ) / 3;
+  const uZoneOiliness =
+    (zones.leftCheek.metrics.oiliness +
+      zones.rightCheek.metrics.oiliness +
+      zones.chin.metrics.oiliness) /
+    3;
+  const uZoneHydration =
+    (zones.leftCheek.metrics.hydration +
+      zones.rightCheek.metrics.hydration +
+      zones.chin.metrics.hydration) /
+    3;
 
   const oilinessDiff = tZoneOiliness - uZoneOiliness;
   const hydrationDiff = tZoneHydration - uZoneHydration;
@@ -233,9 +233,8 @@ export function calculateGroupAverages(
   };
 
   for (const [group, scores] of Object.entries(groupScores) as [ZoneGroup, number[]][]) {
-    groupAverages[group] = scores.length > 0
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : 0;
+    groupAverages[group] =
+      scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   }
 
   return groupAverages;
@@ -274,10 +273,7 @@ export function analyzeZoneConcerns(metrics: ZoneMetricsV2): string[] {
 /**
  * 존별 케어 추천 생성
  */
-export function generateZoneRecommendations(
-  zone: SkinZoneType,
-  concerns: string[]
-): string[] {
+export function generateZoneRecommendations(zone: SkinZoneType, concerns: string[]): string[] {
   const recommendations: string[] = [];
   const zoneLabel = ZONE_LABELS[zone];
 

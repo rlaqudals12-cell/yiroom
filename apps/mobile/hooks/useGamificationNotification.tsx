@@ -37,13 +37,10 @@ export function useGamificationNotification() {
   const showBadgeToast = useCallback((result: BadgeAwardResult) => {
     if (!result.success || result.alreadyOwned || !result.badge) return;
 
-    toast.custom(
-      () => <BadgeToast badge={result.badge} />,
-      {
-        duration: 4000,
-        position: 'top-center',
-      }
-    );
+    toast.custom(() => <BadgeToast badge={result.badge} />, {
+      duration: 4000,
+      position: 'top-center',
+    });
   }, []);
 
   /**

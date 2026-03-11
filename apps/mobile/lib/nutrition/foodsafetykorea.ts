@@ -112,9 +112,7 @@ function parseAllergens(allergyInfo: string): string[] | undefined {
  * @param barcode EAN-13/EAN-8 바코드
  * @returns 식품 정보 또는 미발견
  */
-export async function lookupFoodSafetyKorea(
-  barcode: string
-): Promise<FoodSafetyKoreaResult> {
+export async function lookupFoodSafetyKorea(barcode: string): Promise<FoodSafetyKoreaResult> {
   // API 키 확인
   const apiKey = process.env.FOOD_SAFETY_KOREA_API_KEY;
   if (!apiKey) {
@@ -152,11 +150,7 @@ export async function lookupFoodSafetyKorea(
     const data: FoodSafetyKoreaResponse = await response.json();
 
     // 결과 확인
-    if (
-      data.header.resultCode !== '00' ||
-      !data.body.items ||
-      data.body.items.length === 0
-    ) {
+    if (data.header.resultCode !== '00' || !data.body.items || data.body.items.length === 0) {
       return { found: false };
     }
 
@@ -164,9 +158,7 @@ export async function lookupFoodSafetyKorea(
 
     // 영양성분 파싱
     const nutriInfo = item.NUTRI_CONT_INFO || '';
-    const { size: servingSize, unit: servingUnit } = parseCapacity(
-      item.CAPACITY || ''
-    );
+    const { size: servingSize, unit: servingUnit } = parseCapacity(item.CAPACITY || '');
 
     // BarcodeFood 형식으로 변환
     const food: BarcodeFood = {

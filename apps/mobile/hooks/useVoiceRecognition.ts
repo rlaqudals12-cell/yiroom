@@ -60,7 +60,7 @@ export function useVoiceRecognition(
   options: UseVoiceRecognitionOptions = {}
 ): UseVoiceRecognitionReturn {
   const {
-    lang = "ko-KR",
+    lang = 'ko-KR',
     continuous = false,
     interimResults = true,
     maxDuration = 30000,
@@ -68,8 +68,8 @@ export function useVoiceRecognition(
     onError,
   } = options;
 
-  const [transcript, setTranscript] = useState("");
-  const [finalTranscript, setFinalTranscript] = useState("");
+  const [transcript, setTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(false);
@@ -79,7 +79,7 @@ export function useVoiceRecognition(
 
   useEffect(() => {
     const SpeechRecognitionAPI =
-      typeof window !== "undefined"
+      typeof window !== 'undefined'
         ? window.SpeechRecognition || window.webkitSpeechRecognition
         : null;
 
@@ -92,8 +92,8 @@ export function useVoiceRecognition(
       recognition.interimResults = interimResults;
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
-        let interimText = "";
-        let finalText = "";
+        let interimText = '';
+        let finalText = '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
@@ -148,13 +148,13 @@ export function useVoiceRecognition(
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current) {
-      setError("음성 인식이 지원되지 않는 브라우저입니다");
+      setError('음성 인식이 지원되지 않는 브라우저입니다');
       return;
     }
 
     setError(null);
-    setTranscript("");
-    setFinalTranscript("");
+    setTranscript('');
+    setFinalTranscript('');
 
     try {
       recognitionRef.current.start();
@@ -165,7 +165,7 @@ export function useVoiceRecognition(
         }
       }, maxDuration);
     } catch (err) {
-      console.warn("[VoiceRecognition] Start error:", err);
+      console.warn('[VoiceRecognition] Start error:', err);
     }
   }, [maxDuration, isListening]);
 
@@ -180,8 +180,8 @@ export function useVoiceRecognition(
   }, []);
 
   const resetTranscript = useCallback(() => {
-    setTranscript("");
-    setFinalTranscript("");
+    setTranscript('');
+    setFinalTranscript('');
     setError(null);
   }, []);
 
@@ -199,20 +199,20 @@ export function useVoiceRecognition(
 
 function getErrorMessage(errorCode: string): string {
   switch (errorCode) {
-    case "no-speech":
-      return "음성이 감지되지 않았습니다. 다시 시도해주세요.";
-    case "audio-capture":
-      return "마이크를 찾을 수 없습니다. 마이크 연결을 확인해주세요.";
-    case "not-allowed":
-      return "마이크 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.";
-    case "network":
-      return "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.";
-    case "aborted":
-      return "음성 인식이 취소되었습니다.";
-    case "service-not-allowed":
-      return "음성 인식 서비스를 사용할 수 없습니다.";
+    case 'no-speech':
+      return '음성이 감지되지 않았습니다. 다시 시도해주세요.';
+    case 'audio-capture':
+      return '마이크를 찾을 수 없습니다. 마이크 연결을 확인해주세요.';
+    case 'not-allowed':
+      return '마이크 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.';
+    case 'network':
+      return '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
+    case 'aborted':
+      return '음성 인식이 취소되었습니다.';
+    case 'service-not-allowed':
+      return '음성 인식 서비스를 사용할 수 없습니다.';
     default:
-      return "음성 인식 오류: " + errorCode;
+      return '음성 인식 오류: ' + errorCode;
   }
 }
 

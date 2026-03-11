@@ -134,7 +134,14 @@ export default function CompleteProfileScreen(): React.ReactElement {
       >
         피부 타입 (선택)
       </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xl }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: spacing.sm,
+          marginBottom: spacing.xl,
+        }}
+      >
         {SKIN_TYPES.map((type) => (
           <Pressable
             key={type.id}
@@ -155,7 +162,8 @@ export default function CompleteProfileScreen(): React.ReactElement {
               style={{
                 fontSize: typography.size.sm,
                 color: skinType === type.id ? brand.primaryForeground : colors.foreground,
-                fontWeight: skinType === type.id ? typography.weight.semibold : typography.weight.normal,
+                fontWeight:
+                  skinType === type.id ? typography.weight.semibold : typography.weight.normal,
               }}
             >
               {type.label}

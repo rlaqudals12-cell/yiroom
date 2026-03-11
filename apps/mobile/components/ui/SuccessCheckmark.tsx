@@ -121,23 +121,13 @@ export function SuccessCheckmark({
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { width: size, height: size },
-        containerStyle,
-      ]}
+      style={[styles.container, { width: size, height: size }, containerStyle]}
       accessibilityLabel="성공"
       accessibilityRole="image"
     >
       <Svg width={size} height={size} viewBox="0 0 24 24">
         {/* 배경 원 */}
-        <Circle
-          cx={12}
-          cy={12}
-          r={10}
-          fill={`${successColor}15`}
-          stroke="none"
-        />
+        <Circle cx={12} cy={12} r={10} fill={`${successColor}15`} stroke="none" />
         {/* 애니메이션 원 */}
         <AnimatedCircle
           cx={12}

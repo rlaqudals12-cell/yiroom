@@ -9,17 +9,48 @@
 // ---- 민감 필드 목록 ----
 
 const PII_FIELDS = [
-  'email', 'phone', 'phoneNumber',
-  'birthDate', 'birth_date', 'birthYear', 'birth_year',
-  'address', 'clerk_user_id', 'clerkUserId', 'userId', 'user_id',
-  'faceImage', 'face_image', 'faceImageUrl', 'face_image_url',
-  'bodyImage', 'body_image', 'bodyImageUrl', 'body_image_url',
-  'skinImage', 'skin_image', 'wristImage', 'wrist_image',
-  'imageUrl', 'image_url',
-  'name', 'fullName', 'full_name', 'firstName', 'first_name',
-  'lastName', 'last_name',
-  'password', 'token', 'accessToken', 'refreshToken',
-  'apiKey', 'api_key', 'secret', 'ssn', 'socialSecurityNumber',
+  'email',
+  'phone',
+  'phoneNumber',
+  'birthDate',
+  'birth_date',
+  'birthYear',
+  'birth_year',
+  'address',
+  'clerk_user_id',
+  'clerkUserId',
+  'userId',
+  'user_id',
+  'faceImage',
+  'face_image',
+  'faceImageUrl',
+  'face_image_url',
+  'bodyImage',
+  'body_image',
+  'bodyImageUrl',
+  'body_image_url',
+  'skinImage',
+  'skin_image',
+  'wristImage',
+  'wrist_image',
+  'imageUrl',
+  'image_url',
+  'name',
+  'fullName',
+  'full_name',
+  'firstName',
+  'first_name',
+  'lastName',
+  'last_name',
+  'password',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'apiKey',
+  'api_key',
+  'secret',
+  'ssn',
+  'socialSecurityNumber',
 ] as const;
 
 const PII_FIELD_SET = new Set<string>(PII_FIELDS);
@@ -37,9 +68,7 @@ function maskEmail(email: string): string {
 
   const maskedLocal = localPart.length > 1 ? localPart[0] + '***' : '*';
   const maskedDomain =
-    dotIndex > 0
-      ? domainPart[0] + '***' + domainPart.slice(dotIndex)
-      : '[REDACTED_DOMAIN]';
+    dotIndex > 0 ? domainPart[0] + '***' + domainPart.slice(dotIndex) : '[REDACTED_DOMAIN]';
 
   return `${maskedLocal}@${maskedDomain}`;
 }
@@ -117,11 +146,19 @@ export const redactPii = {
     if (lowerField.includes('phone')) return maskPhone(value);
     if (lowerField.includes('user') && lowerField.includes('id')) return maskUserId(value);
     if (lowerField === 'clerk_user_id' || lowerField === 'clerkuserid') return maskUserId(value);
-    if ((lowerField.includes('image') || lowerField.includes('url')) &&
-        (value.startsWith('http') || value.startsWith('data:'))) return maskImageUrl(value);
+    if (
+      (lowerField.includes('image') || lowerField.includes('url')) &&
+      (value.startsWith('http') || value.startsWith('data:'))
+    )
+      return maskImageUrl(value);
     if (lowerField.includes('birth') && lowerField.includes('date')) return maskBirthDate(value);
-    if (lowerField.includes('password') || lowerField.includes('token') ||
-        lowerField.includes('secret') || lowerField.includes('key')) return '[REDACTED_SECRET]';
+    if (
+      lowerField.includes('password') ||
+      lowerField.includes('token') ||
+      lowerField.includes('secret') ||
+      lowerField.includes('key')
+    )
+      return '[REDACTED_SECRET]';
     if (lowerField.includes('name')) return maskGeneral(value, 2);
     if (lowerField.includes('address')) return maskGeneral(value, 5);
 
@@ -134,9 +171,7 @@ export function isPiiField(fieldName: string): boolean {
   if (PII_FIELD_SET.has(fieldName)) return true;
 
   const lowerField = fieldName.toLowerCase();
-  const camelCase = lowerField.replace(/_([a-z])/g, (_, char: string) =>
-    char.toUpperCase()
-  );
+  const camelCase = lowerField.replace(/_([a-z])/g, (_, char: string) => char.toUpperCase());
   if (PII_FIELD_SET.has(camelCase)) return true;
 
   for (const piiField of PII_FIELDS) {
@@ -181,17 +216,12 @@ export function sanitizeError(error: unknown): {
   if (error instanceof Error) {
     return {
       name: error.name,
-      message: error.message.replace(
-        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-        '[EMAIL_REDACTED]'
-      ).replace(
-        /user_[a-zA-Z0-9]+/g,
-        '[USER_ID_REDACTED]'
-      ),
-      stack: error.stack ? error.stack.replace(
-        /C:\\Users\\[^\\]+\\/g,
-        'C:\\Users\\[USER]\\'
-      ) : undefined,
+      message: error.message
+        .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]')
+        .replace(/user_[a-zA-Z0-9]+/g, '[USER_ID_REDACTED]'),
+      stack: error.stack
+        ? error.stack.replace(/C:\\Users\\[^\\]+\\/g, 'C:\\Users\\[USER]\\')
+        : undefined,
     };
   }
 

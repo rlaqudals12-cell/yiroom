@@ -14,7 +14,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 type ToastType = 'info' | 'success' | 'error';
 
@@ -82,11 +82,7 @@ export function ActionToast({
   }));
 
   const bgColor =
-    type === 'success'
-      ? status.success
-      : type === 'error'
-        ? status.error
-        : colors.foreground;
+    type === 'success' ? status.success : type === 'error' ? status.error : colors.foreground;
 
   if (!visible) return null;
 
@@ -123,10 +119,7 @@ export function ActionToast({
           onPress={onAction}
           accessibilityRole="button"
           accessibilityLabel={actionLabel}
-          style={({ pressed }) => [
-            styles.actionButton,
-            { opacity: pressed ? 0.7 : 1 },
-          ]}
+          style={({ pressed }) => [styles.actionButton, { opacity: pressed ? 0.7 : 1 }]}
         >
           <Text
             style={{

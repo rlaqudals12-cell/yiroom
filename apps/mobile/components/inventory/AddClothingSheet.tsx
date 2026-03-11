@@ -51,7 +51,13 @@ export function AddClothingSheet({
       </Text>
 
       {/* 이름 입력 */}
-      <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginBottom: spacing.xs }}>
+      <Text
+        style={{
+          fontSize: typography.size.sm,
+          color: colors.mutedForeground,
+          marginBottom: spacing.xs,
+        }}
+      >
         이름
       </Text>
       <TextInput
@@ -91,7 +97,8 @@ export function AddClothingSheet({
             style={[
               styles.categoryBtn,
               {
-                backgroundColor: category === cat.key ? module.personalColor.base : colors.secondary,
+                backgroundColor:
+                  category === cat.key ? module.personalColor.base : colors.secondary,
                 borderRadius: radii.xl,
                 paddingVertical: spacing.xs,
               },

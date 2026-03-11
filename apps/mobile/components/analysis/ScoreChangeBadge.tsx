@@ -23,7 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // ============================================
 // 타입 정의
@@ -72,10 +72,7 @@ const SIZE_CONFIG = {
 } as const;
 
 // 방향별 색상 — status 토큰 기반으로 light/dark 변형 생성
-function getDirectionColors(
-  themeStatus: { success: string; error: string },
-  mutedFg: string,
-) {
+function getDirectionColors(themeStatus: { success: string; error: string }, mutedFg: string) {
   return {
     up: {
       bg: `${themeStatus.success}18`,

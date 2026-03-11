@@ -77,7 +77,8 @@ export function RankingCard({
         </Text>
         {changeArrow && (
           <Text style={[styles.changeText, { color: changeColor, fontSize: typography.size.xs }]}>
-            {changeArrow}{Math.abs(item.rankChange!)}
+            {changeArrow}
+            {Math.abs(item.rankChange!)}
           </Text>
         )}
       </View>
@@ -107,7 +108,8 @@ export function RankingCard({
 
       {/* 점수 */}
       <Text style={[styles.score, { color: brand.primary, fontSize: typography.size.base }]}>
-        {item.score.toLocaleString()}{scoreUnit}
+        {item.score.toLocaleString()}
+        {scoreUnit}
       </Text>
     </Container>
   );

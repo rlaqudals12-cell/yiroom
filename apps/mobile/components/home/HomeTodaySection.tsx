@@ -100,7 +100,11 @@ export function HomeTodaySection({
           }}
         >
           <Text style={{ fontSize: 16, marginRight: spacing.sm }}>
-            {notifications[0].type === 'success' ? '🎉' : notifications[0].type === 'warning' ? '⚠️' : '💡'}
+            {notifications[0].type === 'success'
+              ? '🎉'
+              : notifications[0].type === 'warning'
+                ? '⚠️'
+                : '💡'}
           </Text>
           <Text
             style={{
@@ -148,7 +152,9 @@ export function HomeTodaySection({
                 },
               ]}
             >
-              {task.completed && <Text style={[styles.checkmark, { color: colors.overlayForeground }]}>✓</Text>}
+              {task.completed && (
+                <Text style={[styles.checkmark, { color: colors.overlayForeground }]}>✓</Text>
+              )}
             </View>
             <Text
               style={[

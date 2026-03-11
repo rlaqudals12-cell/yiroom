@@ -21,11 +21,7 @@ export {
   generateWeeklySummary,
 } from './calculator';
 
-export {
-  getWellnessHistory,
-  upsertWellnessScore,
-  getLatestAnalysisScores,
-} from './queries';
+export { getWellnessHistory, upsertWellnessScore, getLatestAnalysisScores } from './queries';
 
 // ─── 타입 ────────────────────────────────────────────
 
@@ -101,10 +97,7 @@ const STREAK_BONUS_THRESHOLDS = [
  * - 주 3회 이상 운동: 만점 기준
  * - 주 150분 이상: WHO 권장
  */
-export function calculateWorkoutScore(
-  weeklyMinutes: number,
-  weeklyDays: number
-): number {
+export function calculateWorkoutScore(weeklyMinutes: number, weeklyDays: number): number {
   // 빈도 점수 (0-15): 주 5일 이상 = 만점
   const frequencyScore = Math.min(15, (weeklyDays / 5) * 15);
 
@@ -149,9 +142,8 @@ export function calculateSkinScore(
   routineConsistency: number
 ): number {
   // AI 분석 점수 (0-15)
-  const analysisScore = skinAnalysisScore != null
-    ? Math.min(15, (skinAnalysisScore / 100) * 15)
-    : 7.5; // 분석 미완료 시 중간값
+  const analysisScore =
+    skinAnalysisScore != null ? Math.min(15, (skinAnalysisScore / 100) * 15) : 7.5; // 분석 미완료 시 중간값
 
   // 루틴 일관성 (0-10): 0-1 비율
   const consistencyScore = Math.min(10, routineConsistency * 10);
@@ -170,14 +162,10 @@ export function calculateBodyScore(
   postureScore: number | null
 ): number {
   // 체형 분석 (0-5)
-  const bodyPart = bodyAnalysisScore != null
-    ? Math.min(5, (bodyAnalysisScore / 100) * 5)
-    : 2.5;
+  const bodyPart = bodyAnalysisScore != null ? Math.min(5, (bodyAnalysisScore / 100) * 5) : 2.5;
 
   // 자세 분석 (0-5)
-  const posturePart = postureScore != null
-    ? Math.min(5, (postureScore / 100) * 5)
-    : 2.5;
+  const posturePart = postureScore != null ? Math.min(5, (postureScore / 100) * 5) : 2.5;
 
   return Math.round(bodyPart + posturePart);
 }
@@ -200,23 +188,14 @@ export function calculateStreakBonus(currentStreak: number): number {
  * 종합 웰니스 점수 계산 (0-100)
  */
 export function calculateWellnessScore(input: WellnessInput): WellnessScore {
-  const workout = calculateWorkoutScore(
-    input.weeklyWorkoutMinutes,
-    input.weeklyWorkoutDays
-  );
+  const workout = calculateWorkoutScore(input.weeklyWorkoutMinutes, input.weeklyWorkoutDays);
   const nutrition = calculateNutritionScore(
     input.avgCalorieAccuracy,
     input.avgMacroBalance,
     input.waterIntakeRatio
   );
-  const skin = calculateSkinScore(
-    input.skinScore,
-    input.skinRoutineConsistency
-  );
-  const body = calculateBodyScore(
-    input.bodyScore,
-    input.postureScore
-  );
+  const skin = calculateSkinScore(input.skinScore, input.skinRoutineConsistency);
+  const body = calculateBodyScore(input.bodyScore, input.postureScore);
   const streakBonus = calculateStreakBonus(input.currentStreak);
 
   const subtotal = workout + nutrition + skin + body;
@@ -290,9 +269,12 @@ export function calculateTrend(
  */
 export function getTrendLabel(trend: 'up' | 'down' | 'stable'): string {
   switch (trend) {
-    case 'up': return '상승 중 📈';
-    case 'down': return '하락 중 📉';
-    case 'stable': return '안정적 ➡️';
+    case 'up':
+      return '상승 중 📈';
+    case 'down':
+      return '하락 중 📉';
+    case 'stable':
+      return '안정적 ➡️';
   }
 }
 
@@ -305,15 +287,30 @@ export function getImprovementSuggestions(
   breakdown: WellnessBreakdown
 ): { area: string; message: string }[] {
   const suggestions: { area: string; message: string; score: number; max: number }[] = [
-    { area: '운동', message: '주 3회 이상 운동을 추천해요', score: breakdown.workout, max: WEIGHTS.workout },
-    { area: '영양', message: '균형 잡힌 식단을 기록해보세요', score: breakdown.nutrition, max: WEIGHTS.nutrition },
-    { area: '피부', message: '스킨케어 루틴을 시작해보세요', score: breakdown.skin, max: WEIGHTS.skin },
+    {
+      area: '운동',
+      message: '주 3회 이상 운동을 추천해요',
+      score: breakdown.workout,
+      max: WEIGHTS.workout,
+    },
+    {
+      area: '영양',
+      message: '균형 잡힌 식단을 기록해보세요',
+      score: breakdown.nutrition,
+      max: WEIGHTS.nutrition,
+    },
+    {
+      area: '피부',
+      message: '스킨케어 루틴을 시작해보세요',
+      score: breakdown.skin,
+      max: WEIGHTS.skin,
+    },
     { area: '체형', message: '자세 분석을 받아보세요', score: breakdown.body, max: WEIGHTS.body },
   ];
 
   // 비율이 낮은 순으로 정렬
   return suggestions
-    .sort((a, b) => (a.score / a.max) - (b.score / b.max))
+    .sort((a, b) => a.score / a.max - b.score / b.max)
     .slice(0, 2)
     .map(({ area, message }) => ({ area, message }));
 }

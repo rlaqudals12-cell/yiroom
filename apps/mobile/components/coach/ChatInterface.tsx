@@ -19,7 +19,7 @@ import {
 import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
 import { useCoach } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
@@ -29,14 +29,7 @@ export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
   const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
 
-  const {
-    messages,
-    isLoading,
-    error,
-    suggestedQuestions,
-    sendMessage,
-    loadSession,
-  } = useCoach();
+  const { messages, isLoading, error, suggestedQuestions, sendMessage, loadSession } = useCoach();
 
   const [input, setInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<QuestionCategory>('general');

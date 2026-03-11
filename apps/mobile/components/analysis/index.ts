@@ -84,11 +84,7 @@ export type {
 } from './DetailedFaceZoneMap';
 
 export { PhotoOverlayMap } from './PhotoOverlayMap';
-export type {
-  PhotoOverlayMapProps,
-  OverlayZoneId,
-  OverlayZoneStatus,
-} from './PhotoOverlayMap';
+export type { PhotoOverlayMapProps, OverlayZoneId, OverlayZoneStatus } from './PhotoOverlayMap';
 
 export { ContextLinkingCard } from './ContextLinkingCard';
 export type { ContextLinkingCardProps, ContextLink } from './ContextLinkingCard';
@@ -102,49 +98,59 @@ export type { ScientificTermTooltipProps } from './ScientificTermTooltip';
 
 export { HairResultCard } from './HairResultCard';
 export type {
-  HairResultCardProps, FaceShapeType, HairStyle, HairColor, HairCareTip,
+  HairResultCardProps,
+  FaceShapeType,
+  HairStyle,
+  HairColor,
+  HairCareTip,
 } from './HairResultCard';
 
 export { MakeupResultCard } from './MakeupResultCard';
 export type {
-  MakeupResultCardProps, UndertoneType, MakeupColorCategory, MakeupStyle,
+  MakeupResultCardProps,
+  UndertoneType,
+  MakeupColorCategory,
+  MakeupStyle,
 } from './MakeupResultCard';
 
 export { GumHealthIndicator } from './GumHealthIndicator';
 export type {
-  GumHealthIndicatorProps, GumHealthStatus, GumHealthResult, AffectedArea,
+  GumHealthIndicatorProps,
+  GumHealthStatus,
+  GumHealthResult,
+  AffectedArea,
 } from './GumHealthIndicator';
 
 export { OralHealthResultCard } from './OralHealthResultCard';
 export type {
-  OralHealthResultCardProps, ToothColorInfo, WhiteningGoal,
+  OralHealthResultCardProps,
+  ToothColorInfo,
+  WhiteningGoal,
 } from './OralHealthResultCard';
 
 export { PostureResultCard } from './PostureResultCard';
-export type {
-  PostureResultCardProps, PostureType, PostureMeasurement,
-} from './PostureResultCard';
+export type { PostureResultCardProps, PostureType, PostureMeasurement } from './PostureResultCard';
 
 export { StretchingRecommendation } from './StretchingRecommendation';
 export type {
-  StretchingRecommendationProps, StretchingItem, DifficultyLevel,
+  StretchingRecommendationProps,
+  StretchingItem,
+  DifficultyLevel,
 } from './StretchingRecommendation';
 
 export { MultiAngleCapture } from './MultiAngleCapture';
-export type {
-  MultiAngleCaptureProps, FaceAngle, MultiAngleImages,
-} from './MultiAngleCapture';
+export type { MultiAngleCaptureProps, FaceAngle, MultiAngleImages } from './MultiAngleCapture';
 
 export { ZoneVisualization } from './ZoneVisualization';
 export type {
-  ZoneVisualizationProps, ZoneId, ZoneStatusLevel, ZoneData,
+  ZoneVisualizationProps,
+  ZoneId,
+  ZoneStatusLevel,
+  ZoneData,
 } from './ZoneVisualization';
 
 export { ProfessionalSkinMap } from './ProfessionalSkinMap';
-export type {
-  ProfessionalSkinMapProps, ViewMode,
-} from './ProfessionalSkinMap';
+export type { ProfessionalSkinMapProps, ViewMode } from './ProfessionalSkinMap';
 
 // 동적 스타일 훅 (useTheme 기반)
 export { useAnalysisStyles } from './styles/useAnalysisStyles';
-

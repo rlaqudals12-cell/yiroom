@@ -202,7 +202,7 @@ export function recommendSize(
   gender: 'male' | 'female'
 ): SizeRecommendation {
   // BMI 기반 간단 추천
-  const bmi = weightKg / ((heightCm / 100) ** 2);
+  const bmi = weightKg / (heightCm / 100) ** 2;
 
   let top: string;
   let bottom: string;
@@ -210,23 +210,63 @@ export function recommendSize(
   let fit: FitType;
 
   if (gender === 'female') {
-    if (bmi < 19) { top = 'XS'; bottom = 'XS'; outer = 'S'; fit = 'slim'; }
-    else if (bmi < 21) { top = 'S'; bottom = 'S'; outer = 'S'; fit = 'slim'; }
-    else if (bmi < 23) { top = 'M'; bottom = 'M'; outer = 'M'; fit = 'regular'; }
-    else if (bmi < 26) { top = 'L'; bottom = 'L'; outer = 'L'; fit = 'regular'; }
-    else { top = 'XL'; bottom = 'XL'; outer = 'XL'; fit = 'relaxed'; }
+    if (bmi < 19) {
+      top = 'XS';
+      bottom = 'XS';
+      outer = 'S';
+      fit = 'slim';
+    } else if (bmi < 21) {
+      top = 'S';
+      bottom = 'S';
+      outer = 'S';
+      fit = 'slim';
+    } else if (bmi < 23) {
+      top = 'M';
+      bottom = 'M';
+      outer = 'M';
+      fit = 'regular';
+    } else if (bmi < 26) {
+      top = 'L';
+      bottom = 'L';
+      outer = 'L';
+      fit = 'regular';
+    } else {
+      top = 'XL';
+      bottom = 'XL';
+      outer = 'XL';
+      fit = 'relaxed';
+    }
   } else {
-    if (bmi < 20) { top = 'S'; bottom = '28'; outer = 'S'; fit = 'slim'; }
-    else if (bmi < 23) { top = 'M'; bottom = '30'; outer = 'M'; fit = 'regular'; }
-    else if (bmi < 26) { top = 'L'; bottom = '32'; outer = 'L'; fit = 'regular'; }
-    else if (bmi < 29) { top = 'XL'; bottom = '34'; outer = 'XL'; fit = 'relaxed'; }
-    else { top = 'XXL'; bottom = '36'; outer = 'XXL'; fit = 'relaxed'; }
+    if (bmi < 20) {
+      top = 'S';
+      bottom = '28';
+      outer = 'S';
+      fit = 'slim';
+    } else if (bmi < 23) {
+      top = 'M';
+      bottom = '30';
+      outer = 'M';
+      fit = 'regular';
+    } else if (bmi < 26) {
+      top = 'L';
+      bottom = '32';
+      outer = 'L';
+      fit = 'regular';
+    } else if (bmi < 29) {
+      top = 'XL';
+      bottom = '34';
+      outer = 'XL';
+      fit = 'relaxed';
+    } else {
+      top = 'XXL';
+      bottom = '36';
+      outer = 'XXL';
+      fit = 'relaxed';
+    }
   }
 
   // 신발 추정 (키 기반)
-  const shoes = gender === 'female'
-    ? Math.round(heightCm * 0.152)
-    : Math.round(heightCm * 0.158);
+  const shoes = gender === 'female' ? Math.round(heightCm * 0.152) : Math.round(heightCm * 0.158);
 
   return { top, bottom, outer, shoes, fit };
 }
@@ -252,9 +292,27 @@ function generateItemsForStyle(
   palette: string[]
 ): OutfitItem[] {
   const items: OutfitItem[] = [
-    { category: 'top', name: `${STYLE_LABELS[style]} 상의`, color: palette[0], style, season: [season] },
-    { category: 'bottom', name: `${STYLE_LABELS[style]} 하의`, color: palette[1], style, season: [season] },
-    { category: 'shoes', name: `${STYLE_LABELS[style]} 신발`, color: palette[2], style, season: [season] },
+    {
+      category: 'top',
+      name: `${STYLE_LABELS[style]} 상의`,
+      color: palette[0],
+      style,
+      season: [season],
+    },
+    {
+      category: 'bottom',
+      name: `${STYLE_LABELS[style]} 하의`,
+      color: palette[1],
+      style,
+      season: [season],
+    },
+    {
+      category: 'shoes',
+      name: `${STYLE_LABELS[style]} 신발`,
+      color: palette[2],
+      style,
+      season: [season],
+    },
   ];
 
   // 겨울/가을엔 아우터 추가

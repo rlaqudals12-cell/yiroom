@@ -17,10 +17,7 @@ const activeTimers: Map<string, ActiveTimer> = new Map();
 /**
  * 사용 시간 측정 시작
  */
-export function startDurationTracking(
-  feature: string,
-  metadata?: Record<string, unknown>
-): void {
+export function startDurationTracking(feature: string, metadata?: Record<string, unknown>): void {
   // 이미 진행 중인 타이머가 있으면 종료
   if (activeTimers.has(feature)) {
     stopDurationTracking(feature);

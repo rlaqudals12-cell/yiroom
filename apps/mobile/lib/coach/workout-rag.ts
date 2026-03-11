@@ -268,9 +268,7 @@ function filterExercisesByGoal(
         break;
       case 'flexibility':
         // 유연성: core (스트레칭류 포함) 또는 저강도 운동
-        filtered = exercises.filter(
-          (e) => e.category === 'core' || e.difficulty === 'beginner'
-        );
+        filtered = exercises.filter((e) => e.category === 'core' || e.difficulty === 'beginner');
         break;
     }
   }
@@ -283,9 +281,7 @@ function filterExercisesByGoal(
       break;
     case 'stretch':
       // 스트레칭: 저강도, 코어 카테고리
-      filtered = filtered.filter(
-        (e) => e.difficulty === 'beginner' || e.category === 'core'
-      );
+      filtered = filtered.filter((e) => e.difficulty === 'beginner' || e.category === 'core');
       break;
     case 'muscle':
       // 근육: 근력 운동

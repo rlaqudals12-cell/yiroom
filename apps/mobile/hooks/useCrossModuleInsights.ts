@@ -127,8 +127,12 @@ export function useCrossModuleInsights(): {
   insights: CrossModuleInsight[];
   isLoading: boolean;
 } {
-  const { personalColor, skinAnalysis, bodyAnalysis, isLoading: analysisLoading } =
-    useUserAnalyses();
+  const {
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    isLoading: analysisLoading,
+  } = useUserAnalyses();
   const { streak, isLoading: workoutLoading } = useWorkoutData();
   const {
     todaySummary,

@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface ChangeIndicatorProps {
   /** 현재 값 */

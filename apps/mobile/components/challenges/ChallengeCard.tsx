@@ -83,9 +83,7 @@ export function ChallengeCard({
           style={[
             styles.typeBadge,
             {
-              backgroundColor: type === 'team'
-                ? `${accentColor}20`
-                : `${module.workout.dark}20`,
+              backgroundColor: type === 'team' ? `${accentColor}20` : `${module.workout.dark}20`,
               borderRadius: radii.full,
             },
           ]}

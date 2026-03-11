@@ -212,59 +212,57 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '🎨', name: '컬러 전문가', description: '퍼스널 컬러 진단 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="personalColor"
-      title="퍼스널 컬러 진단"
-      imageUri={imageUri}
-      imageStyle={localStyles.resultImage}
-      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
-      confidence={usedFallback ? undefined : result.confidence}
-      usedFallback={usedFallback}
-      headerContent={
-        <>
-          <AIBadge variant="small" />
-          <HeaderContent
-            seasonName={season.name}
-            subType={season.subType}
-            accentColor={accent.base}
-            description={result.description || season.description}
-            textColor={colors.mutedForeground}
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '🎨', name: '컬러 전문가', description: '퍼스널 컬러 진단 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="personalColor"
+        title="퍼스널 컬러 진단"
+        imageUri={imageUri}
+        imageStyle={localStyles.resultImage}
+        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+        confidence={usedFallback ? undefined : result.confidence}
+        usedFallback={usedFallback}
+        headerContent={
+          <>
+            <AIBadge variant="small" />
+            <HeaderContent
+              seasonName={season.name}
+              subType={season.subType}
+              accentColor={accent.base}
+              description={result.description || season.description}
+              textColor={colors.mutedForeground}
+            />
+          </>
+        }
+        summaryTab={<SummaryTab season={season} accent={accent} colors={colors} />}
+        detailTab={
+          <DetailTab
+            warmScore={warmScore}
+            coolScore={coolScore}
+            season={season}
+            accent={accent}
+            colors={colors}
           />
-        </>
-      }
-      summaryTab={
-        <SummaryTab season={season} accent={accent} colors={colors} />
-      }
-      detailTab={
-        <DetailTab
-          warmScore={warmScore}
-          coolScore={coolScore}
-          season={season}
-          accent={accent}
-          colors={colors}
-        />
-      }
-      recommendTab={
-        <RecommendTab season={season} accent={accent} colors={colors} imageUri={imageUri} />
-      }
-      primaryActionText="💄 내 색상에 맞는 제품"
-      onPrimaryAction={handleProductRecommendation}
-      retryPath="/(analysis)/personal-color"
-      testID="analysis-personal-color-result-screen"
-    />
+        }
+        recommendTab={
+          <RecommendTab season={season} accent={accent} colors={colors} imageUri={imageUri} />
+        }
+        primaryActionText="💄 내 색상에 맞는 제품"
+        onPrimaryAction={handleProductRecommendation}
+        retryPath="/(analysis)/personal-color"
+        testID="analysis-personal-color-result-screen"
+      />
     </>
   );
 }
@@ -397,7 +395,12 @@ function DetailTab({
 }
 
 /** 추천 탭: 스타일링 팁 + 메이크업 포인트 */
-function RecommendTab({ season, accent, colors, imageUri }: TabProps & { imageUri?: string }): React.JSX.Element {
+function RecommendTab({
+  season,
+  accent,
+  colors,
+  imageUri,
+}: TabProps & { imageUri?: string }): React.JSX.Element {
   return (
     <View style={localStyles.tabContent}>
       {/* 드레이핑 프리뷰 — 내 사진에 색상 입혀보기 */}

@@ -17,10 +17,7 @@ interface PriceTrendBadgeProps {
 }
 
 // 추세별 색상/아이콘/라벨 매핑
-const TREND_CONFIG: Record<
-  PriceTrend,
-  { color: string; arrow: string; label: string }
-> = {
+const TREND_CONFIG: Record<PriceTrend, { color: string; arrow: string; label: string }> = {
   up: { color: statusColors.error, arrow: '↑', label: '상승' },
   down: { color: statusColors.success, arrow: '↓', label: '하락' },
   stable: { color: statusColors.info, arrow: '→', label: '유지' },
@@ -35,8 +32,7 @@ export function PriceTrendBadge({
 
   // 유지 상태는 0%로 표시
   const displayPercentage = trend === 'stable' ? 0 : Math.abs(percentage);
-  const percentageText =
-    trend === 'stable' ? '변동없음' : `${displayPercentage.toFixed(1)}%`;
+  const percentageText = trend === 'stable' ? '변동없음' : `${displayPercentage.toFixed(1)}%`;
 
   return (
     <View

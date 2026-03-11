@@ -5,11 +5,7 @@
  * @see SDD-RATE-LIMITING.md
  */
 
-import {
-  RateLimitCategory,
-  RateLimitResult,
-  RATE_LIMIT_CONFIGS,
-} from '@/types/rate-limit';
+import { RateLimitCategory, RateLimitResult, RATE_LIMIT_CONFIGS } from '@/types/rate-limit';
 import {
   checkRateLimit,
   createRateLimitHeaders,
@@ -71,10 +67,7 @@ if (typeof setInterval !== 'undefined') {
  * @param identifier 식별자
  * @param category Rate Limit 카테고리
  */
-function checkRateLimitMemory(
-  identifier: string,
-  category: RateLimitCategory
-): RateLimitResult {
+function checkRateLimitMemory(identifier: string, category: RateLimitCategory): RateLimitResult {
   const config = RATE_LIMIT_CONFIGS[category];
   const key = `${category}:${identifier}`;
   const now = Date.now();

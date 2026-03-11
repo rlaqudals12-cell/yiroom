@@ -16,7 +16,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-import { useTheme, radii , spacing } from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 type DimensionValue = number | `${number}%` | 'auto';
 

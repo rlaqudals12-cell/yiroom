@@ -39,10 +39,14 @@ export function CapsuleProgressBar({
     <View testID={testID} style={styles.container}>
       {showLabel ? (
         <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+          <Text
+            style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+          >
             {current}/{optimal}
           </Text>
-          <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+          <Text
+            style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+          >
             {percentage}%
           </Text>
         </View>

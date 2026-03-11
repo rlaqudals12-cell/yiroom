@@ -130,7 +130,8 @@ export function LeaderboardCard({
                 fontWeight: typography.weight.semibold,
               }}
             >
-              {' '}(나)
+              {' '}
+              (나)
             </Text>
           )}
         </Text>

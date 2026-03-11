@@ -54,11 +54,7 @@ export function LeaderboardEntry({
   const medal = getMedalInfo(rank);
 
   // 본인 항목 강조 배경색
-  const rowBg = isMe
-    ? isDark
-      ? `${brand.primary}15`
-      : `${brand.primary}10`
-    : 'transparent';
+  const rowBg = isMe ? (isDark ? `${brand.primary}15` : `${brand.primary}10`) : 'transparent';
 
   const rowBorderColor = isMe ? brand.primary : 'transparent';
 
@@ -135,7 +131,8 @@ export function LeaderboardEntry({
                 fontWeight: typography.weight.medium,
               }}
             >
-              {' '}(나)
+              {' '}
+              (나)
             </Text>
           )}
         </Text>

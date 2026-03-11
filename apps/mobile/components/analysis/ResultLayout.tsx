@@ -127,12 +127,11 @@ export function ResultLayout({
     : [`${accent.light}70`, `${accent.light}30`, 'transparent'];
 
   // GradeDisplay에 사용할 신뢰도 퍼센트 (0-1 → 0-100)
-  const confidencePercent =
-    confidence !== undefined ? Math.round(confidence * 100) : undefined;
+  const confidencePercent = confidence !== undefined ? Math.round(confidence * 100) : undefined;
 
   // GradientCard variant 매핑
-  const cardVariant = (MODULE_TO_VARIANT[moduleKey] || 'brand') as
-    import('../ui/GradientCard').GradientCardVariant;
+  const cardVariant = (MODULE_TO_VARIANT[moduleKey] ||
+    'brand') as import('../ui/GradientCard').GradientCardVariant;
 
   const handleGoHome = useCallback(() => {
     router.replace('/(tabs)');
@@ -158,10 +157,7 @@ export function ResultLayout({
       style={[styles.container, { backgroundColor: colors.background }]}
       testID={testID}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* 강화된 그라디언트 헤더 (더 깊은 모듈 악센트) */}
         {/* 높은 신뢰도(>80%)에 borderGlow 강조 */}
         <LinearGradient
@@ -183,10 +179,7 @@ export function ResultLayout({
 
           {/* 신뢰도 배지 */}
           <Animated.View entering={FadeIn.delay(100).duration(TIMING.normal)}>
-            <AnalysisTrustBadge
-              type={trustBadgeType}
-              confidence={confidence}
-            />
+            <AnalysisTrustBadge type={trustBadgeType} confidence={confidence} />
           </Animated.View>
 
           {/* Mock 경고 — MockDataNotice 컴포넌트 (AI 투명성) */}
@@ -207,11 +200,7 @@ export function ResultLayout({
             >
               <Image
                 source={{ uri: imageUri }}
-                style={[
-                  styles.defaultImage,
-                  { borderColor: accent.base },
-                  imageStyle,
-                ]}
+                style={[styles.defaultImage, { borderColor: accent.base }, imageStyle]}
                 resizeMode="cover"
               />
             </Animated.View>
@@ -230,10 +219,7 @@ export function ResultLayout({
               entering={FadeInUp.delay(400).duration(TIMING.slow)}
               style={styles.gradeContainer}
             >
-              <GradeDisplay
-                confidence={confidencePercent}
-                testID={`${testID}-grade`}
-              />
+              <GradeDisplay confidence={confidencePercent} testID={`${testID}-grade`} />
             </Animated.View>
           )}
         </LinearGradient>
@@ -286,13 +272,15 @@ export function ResultLayout({
               </View>
               <Pressable
                 onPress={handleExpertCta}
-                style={[
-                  styles.ctaButton,
-                  { backgroundColor: accent.base, borderRadius: radii.xl },
-                ]}
+                style={[styles.ctaButton, { backgroundColor: accent.base, borderRadius: radii.xl }]}
                 testID={`${testID}-expert-cta-button`}
               >
-                <Text style={[styles.ctaButtonText, { fontSize: typography.size.sm, color: brand.primaryForeground }]}>
+                <Text
+                  style={[
+                    styles.ctaButtonText,
+                    { fontSize: typography.size.sm, color: brand.primaryForeground },
+                  ]}
+                >
                   상담하기
                 </Text>
               </Pressable>

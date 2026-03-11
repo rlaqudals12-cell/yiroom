@@ -9,14 +9,7 @@
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 import { GlassCard } from '../ui/GlassCard';
@@ -199,7 +192,9 @@ export function DailyCapsuleCard({
                 styles.itemRow,
                 {
                   backgroundColor: item.isChecked
-                    ? (isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)')
+                    ? isDark
+                      ? 'rgba(34,197,94,0.08)'
+                      : 'rgba(34,197,94,0.06)'
                     : 'transparent',
                   borderRadius: radii.md,
                   padding: spacing.sm,
@@ -217,17 +212,13 @@ export function DailyCapsuleCard({
                   },
                 ]}
               >
-                {item.isChecked ? (
-                  <Text style={styles.checkmark}>✓</Text>
-                ) : null}
+                {item.isChecked ? <Text style={styles.checkmark}>✓</Text> : null}
               </View>
 
               {/* 모듈 이모지 + 이름 + 이유 */}
               <View style={styles.itemContent}>
                 <View style={styles.itemTitleRow}>
-                  <Text style={styles.moduleEmoji}>
-                    {MODULE_EMOJI[item.moduleCode] ?? '✨'}
-                  </Text>
+                  <Text style={styles.moduleEmoji}>{MODULE_EMOJI[item.moduleCode] ?? '✨'}</Text>
                   <Text
                     style={[
                       styles.itemName,

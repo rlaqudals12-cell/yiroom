@@ -40,13 +40,16 @@ function getShadowStyle(
   size: GlassCardShadowSize,
   shadows: ReturnType<typeof useTheme>['shadows'],
   glowColor?: string,
-  isDark?: boolean,
+  isDark?: boolean
 ): ViewStyle {
   if (isDark) return {};
 
   // 글로우 색상이 지정되면 iOS에서 컬러 쉐도우 적용
   if (glowColor && Platform.OS === 'ios') {
-    const configs: Record<GlassCardShadowSize, { offset: number; opacity: number; radius: number }> = {
+    const configs: Record<
+      GlassCardShadowSize,
+      { offset: number; opacity: number; radius: number }
+    > = {
       md: { offset: 4, opacity: 0.12, radius: 12 },
       lg: { offset: 6, opacity: 0.15, radius: 20 },
       xl: { offset: 8, opacity: 0.18, radius: 28 },

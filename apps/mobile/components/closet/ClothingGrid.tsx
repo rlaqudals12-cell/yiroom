@@ -84,11 +84,7 @@ export function ClothingGrid({
         contentContainerStyle={{ gap: spacing.sm }}
         scrollEnabled={false}
         renderItem={({ item }) => (
-          <ClosetClothingCard
-            {...item}
-            onPress={onItemPress}
-            style={{ width: cardWidth }}
-          />
+          <ClosetClothingCard {...item} onPress={onItemPress} style={{ width: cardWidth }} />
         )}
       />
     </View>

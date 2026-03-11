@@ -64,17 +64,29 @@ export function ZoneDetailCard({
 
       {/* 점수 + 상태 */}
       <View style={styles.scoreRow}>
-        <Text style={[styles.score, { color: colors.foreground, fontSize: typography.size['2xl'] }]}>
+        <Text
+          style={[styles.score, { color: colors.foreground, fontSize: typography.size['2xl'] }]}
+        >
           {score}
         </Text>
-        <Text style={[styles.scoreUnit, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+        <Text
+          style={[
+            styles.scoreUnit,
+            { color: colors.mutedForeground, fontSize: typography.size.sm },
+          ]}
+        >
           /100
         </Text>
         <View style={[styles.statusBadge, { backgroundColor: `${statusConfig.color}15` }]}>
           <Text style={[styles.statusIcon, { color: statusConfig.color }]}>
             {statusConfig.icon}
           </Text>
-          <Text style={[styles.statusLabel, { color: statusConfig.color, fontSize: typography.size.xs }]}>
+          <Text
+            style={[
+              styles.statusLabel,
+              { color: statusConfig.color, fontSize: typography.size.xs },
+            ]}
+          >
             {statusConfig.label}
           </Text>
         </View>
@@ -83,13 +95,24 @@ export function ZoneDetailCard({
       {/* 발견된 문제 */}
       {concerns.length > 0 && (
         <View style={styles.section}>
-          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text
+            accessibilityRole="header"
+            style={[
+              styles.sectionTitle,
+              { color: colors.foreground, fontSize: typography.size.sm },
+            ]}
+          >
             발견된 문제
           </Text>
           {concerns.map((concern, i) => (
             <View key={i} style={styles.bulletRow}>
               <Text style={[styles.bulletIcon, { color: statusColors.warning }]}>⚠</Text>
-              <Text style={[styles.bulletText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.bulletText,
+                  { color: colors.mutedForeground, fontSize: typography.size.sm },
+                ]}
+              >
                 {concern}
               </Text>
             </View>
@@ -100,13 +123,24 @@ export function ZoneDetailCard({
       {/* 추천 관리법 */}
       {recommendations.length > 0 && (
         <View style={styles.section}>
-          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text
+            accessibilityRole="header"
+            style={[
+              styles.sectionTitle,
+              { color: colors.foreground, fontSize: typography.size.sm },
+            ]}
+          >
             추천 관리
           </Text>
           {recommendations.map((rec, i) => (
             <View key={i} style={styles.bulletRow}>
               <Text style={[styles.bulletIcon, { color: statusColors.info }]}>💡</Text>
-              <Text style={[styles.bulletText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.bulletText,
+                  { color: colors.mutedForeground, fontSize: typography.size.sm },
+                ]}
+              >
                 {rec}
               </Text>
             </View>

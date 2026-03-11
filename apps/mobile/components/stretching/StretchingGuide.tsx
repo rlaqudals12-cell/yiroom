@@ -88,7 +88,13 @@ export function StretchingGuide({
             borderRadius: radii.full,
           }}
         >
-          <Text style={{ fontSize: typography.size.xs, color: difficultyColor, fontWeight: typography.weight.semibold }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: difficultyColor,
+              fontWeight: typography.weight.semibold,
+            }}
+          >
             {DIFFICULTY_LABEL[difficulty]}
           </Text>
         </View>

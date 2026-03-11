@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface DayEntry {
   date: number;
@@ -50,9 +50,12 @@ export function DiaryCalendar({
 
   const conditionColor = (cond: DayEntry['condition']): string => {
     switch (cond) {
-      case 'good': return status.success;
-      case 'normal': return status.warning;
-      case 'bad': return status.error;
+      case 'good':
+        return status.success;
+      case 'normal':
+        return status.warning;
+      case 'bad':
+        return status.error;
     }
   };
 
@@ -150,14 +153,7 @@ export function DiaryCalendar({
                 >
                   {day}
                 </Text>
-                {cond && (
-                  <View
-                    style={[
-                      styles.dot,
-                      { backgroundColor: conditionColor(cond) },
-                    ]}
-                  />
-                )}
+                {cond && <View style={[styles.dot, { backgroundColor: conditionColor(cond) }]} />}
               </Pressable>
             );
           })}

@@ -74,10 +74,7 @@ export const GOAL_DESCRIPTIONS: Record<OnboardingGoal, string> = {
   better_sleep: '수면 패턴 분석으로 숙면을 도와요',
 };
 
-export const GOAL_COLORS: Record<
-  OnboardingGoal,
-  { gradient: [string, string]; bg: string }
-> = {
+export const GOAL_COLORS: Record<OnboardingGoal, { gradient: [string, string]; bg: string }> = {
   weight_loss: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
   muscle_gain: { gradient: ['#A78BFA', '#8B5CF6'], bg: '#F5F3FF' },
   health_maintenance: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },

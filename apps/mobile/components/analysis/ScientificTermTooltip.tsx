@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface ScientificTermTooltipProps {
   /** 과학 용어 (예: "TEWL", "pH") */
@@ -53,12 +53,7 @@ export function ScientificTermTooltip({
         </Text>
       </Pressable>
 
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleClose}
-      >
+      <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
         <Pressable style={styles.overlay} onPress={handleClose}>
           <View
             style={[
@@ -72,10 +67,7 @@ export function ScientificTermTooltip({
             ]}
           >
             <Text
-              style={[
-                styles.tooltipTerm,
-                { color: brand.primary, fontSize: typography.size.lg },
-              ]}
+              style={[styles.tooltipTerm, { color: brand.primary, fontSize: typography.size.lg }]}
             >
               {term}
             </Text>

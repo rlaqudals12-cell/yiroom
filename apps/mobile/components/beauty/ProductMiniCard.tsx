@@ -8,7 +8,7 @@ import { Image } from 'expo-image';
 import { Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface BeautyProduct {
   id: string;
@@ -84,7 +84,9 @@ export function ProductMiniCard({
               accessibilityLabel={`${product.name} 제품 이미지`}
             />
           ) : (
-            <Text style={{ fontSize: 28 }} accessibilityLabel={`${product.name} 기본 아이콘`}>🧴</Text>
+            <Text style={{ fontSize: 28 }} accessibilityLabel={`${product.name} 기본 아이콘`}>
+              🧴
+            </Text>
           )}
         </View>
 

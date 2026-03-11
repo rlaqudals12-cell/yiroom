@@ -9,7 +9,7 @@
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { ColorSwatch, type ColorSwatchProps } from './ColorSwatch';
 
 export interface ColorItem {

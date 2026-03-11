@@ -36,11 +36,7 @@ export function ChangeTracker({
   const { colors, brand, status, typography } = useTheme();
 
   const accentColor =
-    variant === 'beauty'
-      ? brand.primary
-      : variant === 'fitness'
-        ? status.success
-        : brand.primary;
+    variant === 'beauty' ? brand.primary : variant === 'fitness' ? status.success : brand.primary;
 
   return (
     <View
@@ -49,20 +45,38 @@ export function ChangeTracker({
       accessibilityLabel={`${title} 변화 추적`}
       testID="change-tracker"
     >
-      <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground, fontSize: typography.size.lg }]}>
+      <Text
+        accessibilityRole="header"
+        style={[styles.title, { color: colors.foreground, fontSize: typography.size.lg }]}
+      >
         {title}
       </Text>
 
       {/* 헤더 */}
       <View style={styles.headerRow}>
         <View style={styles.labelCol} />
-        <Text style={[styles.headerText, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.headerText,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           {beforeLabel}
         </Text>
-        <Text style={[styles.headerText, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.headerText,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           {afterLabel}
         </Text>
-        <Text style={[styles.headerText, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.headerText,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           변화
         </Text>
       </View>
@@ -86,7 +100,10 @@ export function ChangeTracker({
             key={item.label}
             style={[
               styles.itemRow,
-              index < items.length - 1 && { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth },
+              index < items.length - 1 && {
+                borderBottomColor: colors.border,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+              },
             ]}
             accessibilityLabel={`${item.label}: ${item.before}${unit}에서 ${item.after}${unit}으로 ${Math.abs(diff)}${unit} ${diff > 0 ? '증가' : diff < 0 ? '감소' : '유지'}`}
           >
@@ -96,14 +113,33 @@ export function ChangeTracker({
             >
               {item.label}
             </Text>
-            <Text style={[styles.itemValue, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-              {item.before}{unit}
+            <Text
+              style={[
+                styles.itemValue,
+                { color: colors.mutedForeground, fontSize: typography.size.sm },
+              ]}
+            >
+              {item.before}
+              {unit}
             </Text>
-            <Text style={[styles.itemValue, { color: accentColor, fontSize: typography.size.sm, fontWeight: '600' }]}>
-              {item.after}{unit}
+            <Text
+              style={[
+                styles.itemValue,
+                { color: accentColor, fontSize: typography.size.sm, fontWeight: '600' },
+              ]}
+            >
+              {item.after}
+              {unit}
             </Text>
-            <Text style={[styles.itemChange, { color: changeColor, fontSize: typography.size.sm, fontWeight: '600' }]}>
-              {arrow}{Math.abs(diff)}{unit}
+            <Text
+              style={[
+                styles.itemChange,
+                { color: changeColor, fontSize: typography.size.sm, fontWeight: '600' },
+              ]}
+            >
+              {arrow}
+              {Math.abs(diff)}
+              {unit}
             </Text>
           </View>
         );

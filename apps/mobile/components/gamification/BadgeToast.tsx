@@ -16,10 +16,7 @@ export function BadgeToast({ badge }: BadgeToastProps) {
   const rarityColor = RARITY_COLORS[badge.rarity];
 
   return (
-    <div
-      data-testid="badge-toast"
-      className="flex items-center gap-3 p-1"
-    >
+    <div data-testid="badge-toast" className="flex items-center gap-3 p-1">
       {/* 배지 아이콘 */}
       <div
         className={cn(
@@ -35,13 +32,9 @@ export function BadgeToast({ badge }: BadgeToastProps) {
 
       {/* 텍스트 */}
       <div className="flex flex-col">
-        <span className="text-xs font-medium text-muted-foreground">
-          배지 획득!
-        </span>
+        <span className="text-xs font-medium text-muted-foreground">배지 획득!</span>
         <span className="font-semibold">{badge.name}</span>
-        <span className="text-xs text-muted-foreground line-clamp-1">
-          {badge.description}
-        </span>
+        <span className="text-xs text-muted-foreground line-clamp-1">{badge.description}</span>
       </div>
     </div>
   );

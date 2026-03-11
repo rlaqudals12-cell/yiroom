@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '../../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -241,18 +241,33 @@ export function EWGAnalysisSkeleton() {
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
-        <View style={[styles.skeleton, { width: 80, height: 20, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 120, height: 14, marginTop: spacing.xs, backgroundColor: colors.border }]} />
+        <View
+          style={[styles.skeleton, { width: 80, height: 20, backgroundColor: colors.border }]}
+        />
+        <View
+          style={[
+            styles.skeleton,
+            { width: 120, height: 14, marginTop: spacing.xs, backgroundColor: colors.border },
+          ]}
+        />
       </View>
       <View style={[styles.statsRow, { backgroundColor: colors.secondary }]}>
         {[1, 2, 3].map((i) => (
           <View key={i} style={styles.statItem}>
-            <View style={[styles.skeleton, { width: 60, height: 16, backgroundColor: colors.border }]} />
+            <View
+              style={[styles.skeleton, { width: 60, height: 16, backgroundColor: colors.border }]}
+            />
           </View>
         ))}
       </View>
       {[1, 2, 3].map((i) => (
-        <View key={i} style={[styles.skeleton, { height: 56, marginTop: spacing.sm, backgroundColor: colors.border }]} />
+        <View
+          key={i}
+          style={[
+            styles.skeleton,
+            { height: 56, marginTop: spacing.sm, backgroundColor: colors.border },
+          ]}
+        />
       ))}
     </View>
   );

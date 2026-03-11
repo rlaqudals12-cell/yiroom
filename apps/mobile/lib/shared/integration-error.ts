@@ -54,11 +54,7 @@ export class IntegrationError extends Error {
   public readonly context: IntegrationErrorContext;
   public readonly timestamp: string;
 
-  constructor(
-    code: IntegrationErrorCode,
-    message: string,
-    context: IntegrationErrorContext = {}
-  ) {
+  constructor(code: IntegrationErrorCode, message: string, context: IntegrationErrorContext = {}) {
     super(message);
     this.name = 'IntegrationError';
     this.code = code;
@@ -91,11 +87,10 @@ export class IntegrationError extends Error {
  */
 export class IntegrationDataNotFoundError extends IntegrationError {
   constructor(sourceModule: SourceModule | string, userId: string) {
-    super(
-      INTEGRATION_ERROR_CODES.DATA_NOT_FOUND,
-      `${sourceModule} 분석 결과가 없습니다`,
-      { sourceModule, userId }
-    );
+    super(INTEGRATION_ERROR_CODES.DATA_NOT_FOUND, `${sourceModule} 분석 결과가 없습니다`, {
+      sourceModule,
+      userId,
+    });
   }
 }
 
@@ -103,11 +98,7 @@ export class IntegrationDataNotFoundError extends IntegrationError {
  * 소스 데이터 만료 에러
  */
 export class IntegrationDataExpiredError extends IntegrationError {
-  constructor(
-    sourceModule: SourceModule | string,
-    userId: string,
-    expiredAt: string
-  ) {
+  constructor(sourceModule: SourceModule | string, userId: string, expiredAt: string) {
     super(
       INTEGRATION_ERROR_CODES.DATA_EXPIRED,
       `${sourceModule} 분석 결과가 만료되었습니다 (${expiredAt})`,
@@ -137,10 +128,7 @@ export class IntegrationSchemaMismatchError extends IntegrationError {
  * 타임아웃 에러
  */
 export class IntegrationTimeoutError extends IntegrationError {
-  constructor(
-    sourceModule: SourceModule | string,
-    timeoutMs: number
-  ) {
+  constructor(sourceModule: SourceModule | string, timeoutMs: number) {
     super(
       INTEGRATION_ERROR_CODES.TIMEOUT,
       `${sourceModule} 데이터 조회 타임아웃 (${timeoutMs}ms)`,
@@ -153,10 +141,7 @@ export class IntegrationTimeoutError extends IntegrationError {
  * 검증 실패 에러
  */
 export class IntegrationValidationError extends IntegrationError {
-  constructor(
-    sourceModule: SourceModule | string,
-    validationErrors: string[]
-  ) {
+  constructor(sourceModule: SourceModule | string, validationErrors: string[]) {
     super(
       INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
       `${sourceModule} 데이터 검증 실패: ${validationErrors.join(', ')}`,
@@ -191,8 +176,7 @@ export interface IntegrationResult<T> extends IntegrationResultFlags {
  */
 export const USER_MESSAGES: Record<IntegrationErrorCode, string> = {
   [INTEGRATION_ERROR_CODES.DATA_NOT_FOUND]: '먼저 분석을 완료해주세요',
-  [INTEGRATION_ERROR_CODES.DATA_EXPIRED]:
-    '분석 결과가 오래되었습니다. 다시 분석하시겠습니까?',
+  [INTEGRATION_ERROR_CODES.DATA_EXPIRED]: '분석 결과가 오래되었습니다. 다시 분석하시겠습니까?',
   [INTEGRATION_ERROR_CODES.SCHEMA_MISMATCH]: '', // 내부 처리, 사용자 노출 없음
   [INTEGRATION_ERROR_CODES.TIMEOUT]: '일시적인 문제가 발생했습니다',
   [INTEGRATION_ERROR_CODES.VALIDATION_ERROR]: '', // 내부 처리
@@ -300,10 +284,7 @@ export function isIntegrationError(error: unknown): error is IntegrationError {
 /**
  * 특정 에러 코드인지 확인
  */
-export function hasErrorCode(
-  error: unknown,
-  code: IntegrationErrorCode
-): boolean {
+export function hasErrorCode(error: unknown, code: IntegrationErrorCode): boolean {
   return isIntegrationError(error) && error.code === code;
 }
 
@@ -329,20 +310,15 @@ export function isUserFacingError(error: IntegrationError): boolean {
 /**
  * 에러를 안전하게 래핑
  */
-export function wrapError(
-  error: unknown,
-  sourceModule?: SourceModule | string
-): IntegrationError {
+export function wrapError(error: unknown, sourceModule?: SourceModule | string): IntegrationError {
   if (isIntegrationError(error)) {
     return error;
   }
 
-  const message =
-    error instanceof Error ? error.message : 'Unknown error occurred';
+  const message = error instanceof Error ? error.message : 'Unknown error occurred';
 
-  return new IntegrationError(
-    INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-    message,
-    { sourceModule, originalError: String(error) }
-  );
+  return new IntegrationError(INTEGRATION_ERROR_CODES.VALIDATION_ERROR, message, {
+    sourceModule,
+    originalError: String(error),
+  });
 }

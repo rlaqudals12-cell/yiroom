@@ -30,7 +30,7 @@ import {
 import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography, radii , spacing } from '@/lib/theme';
+import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const GUM_HEALTH_LABELS: Record<OralHealthAnalysisResult['gumHealth'], string> = {
@@ -100,10 +100,7 @@ export default function OralHealthResultScreen() {
 
   if (isLoading) {
     return (
-      <AnalysisLoadingState
-        message="구강 상태를 분석 중이에요..."
-        testID="oral-health-loading"
-      />
+      <AnalysisLoadingState message="구강 상태를 분석 중이에요..." testID="oral-health-loading" />
     );
   }
 
@@ -130,14 +127,10 @@ export default function OralHealthResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
-      <Animated.View style={result.overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}>
-        <CircularProgress
-          score={result.overallScore}
-          size="lg"
-          animate
-          showScore
-          showGradeLabel
-        />
+      <Animated.View
+        style={result.overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}
+      >
+        <CircularProgress score={result.overallScore} size="lg" animate showScore showGradeLabel />
       </Animated.View>
       <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
         치아 색조 {result.toothShade} · {GUM_HEALTH_LABELS[result.gumHealth]}
@@ -177,13 +170,8 @@ export default function OralHealthResultScreen() {
   // --- 상세 탭 ---
   const detailTab = (
     <View style={localStyles.tabContent}>
-      <Animated.View
-        entering={FadeInUp.duration(TIMING.normal)}
-        style={localStyles.chartContainer}
-      >
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          구강건강 차트
-        </Text>
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>구강건강 차트</Text>
         <RadarChart
           data={radarData}
           size={220}
@@ -196,15 +184,11 @@ export default function OralHealthResultScreen() {
       {/* 발견된 문제 */}
       {result.concerns.length > 0 && (
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            발견된 문제
-          </Text>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>발견된 문제</Text>
           <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
             {result.concerns.map((concern, i) => (
               <View key={i} style={localStyles.tipItem}>
-                <Text style={[localStyles.tipBullet, { color: status.error }]}>
-                  !
-                </Text>
+                <Text style={[localStyles.tipBullet, { color: status.error }]}>!</Text>
                 <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>
               </View>
             ))}
@@ -219,9 +203,7 @@ export default function OralHealthResultScreen() {
     <View style={localStyles.tabContent}>
       {result.recommendations.length > 0 && (
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            관리 추천
-          </Text>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>관리 추천</Text>
           <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
             {result.recommendations.map((rec, i) => (
               <View key={i} style={localStyles.tipItem}>
@@ -235,7 +217,12 @@ export default function OralHealthResultScreen() {
 
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
         <GradientCard variant="oralHealth" style={localStyles.tipsCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground, marginBottom: spacing.xs }]}>
+          <Text
+            style={[
+              localStyles.sectionTitle,
+              { color: colors.foreground, marginBottom: spacing.xs },
+            ]}
+          >
             일반 관리 팁
           </Text>
           <View style={localStyles.tipItem}>
@@ -263,35 +250,35 @@ export default function OralHealthResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '🦷', name: '구강건강 전문가', description: '구강건강 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="oralHealth"
-      title="구강건강 분석 결과"
-      imageUri={imageUri}
-      imageStyle={localStyles.oralImage}
-      headerContent={headerContent}
-      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
-      usedFallback={usedFallback}
-      summaryTab={summaryTab}
-      detailTab={detailTab}
-      recommendTab={recommendTab}
-      primaryActionText="🦷 구강관리 제품 추천"
-      onPrimaryAction={handleProductRecommendation}
-      retryPath="/(analysis)/oral-health"
-      testID="oral-health-analysis-result"
-    />
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '🦷', name: '구강건강 전문가', description: '구강건강 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="oralHealth"
+        title="구강건강 분석 결과"
+        imageUri={imageUri}
+        imageStyle={localStyles.oralImage}
+        headerContent={headerContent}
+        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+        usedFallback={usedFallback}
+        summaryTab={summaryTab}
+        detailTab={detailTab}
+        recommendTab={recommendTab}
+        primaryActionText="🦷 구강관리 제품 추천"
+        onPrimaryAction={handleProductRecommendation}
+        retryPath="/(analysis)/oral-health"
+        testID="oral-health-analysis-result"
+      />
     </>
   );
 }

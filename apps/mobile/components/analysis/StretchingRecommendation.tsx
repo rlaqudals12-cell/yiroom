@@ -26,7 +26,10 @@ export interface StretchingRecommendationProps {
   showGuidance?: boolean;
 }
 
-const DIFFICULTY_CONFIG: Record<DifficultyLevel, { label: string; colorKey: 'success' | 'warning' | 'error' }> = {
+const DIFFICULTY_CONFIG: Record<
+  DifficultyLevel,
+  { label: string; colorKey: 'success' | 'warning' | 'error' }
+> = {
   easy: { label: '쉬움', colorKey: 'success' },
   medium: { label: '보통', colorKey: 'warning' },
   hard: { label: '어려움', colorKey: 'error' },
@@ -45,7 +48,17 @@ export function StretchingRecommendation({
     >
       {/* 안내 배너 */}
       {showGuidance && (
-        <View style={[styles.guidance, { backgroundColor: `${status.info}15`, borderRadius: radii.xl, padding: spacing.sm, marginBottom: spacing.md }]}>
+        <View
+          style={[
+            styles.guidance,
+            {
+              backgroundColor: `${status.info}15`,
+              borderRadius: radii.xl,
+              padding: spacing.sm,
+              marginBottom: spacing.md,
+            },
+          ]}
+        >
           <Text style={{ color: status.info, fontSize: typography.size.sm }}>
             🧘 꾸준한 스트레칭이 자세 교정의 핵심입니다
           </Text>
@@ -60,20 +73,45 @@ export function StretchingRecommendation({
         return (
           <View
             key={item.id}
-            style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginBottom: spacing.sm }]}
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.card,
+                borderRadius: radii.xl,
+                borderColor: colors.border,
+                marginBottom: spacing.sm,
+              },
+            ]}
           >
             <View style={styles.cardHeader}>
-              <Text style={[styles.name, { color: colors.foreground, fontSize: typography.size.base }]}>
+              <Text
+                style={[styles.name, { color: colors.foreground, fontSize: typography.size.base }]}
+              >
                 {item.name}
               </Text>
-              <View style={[styles.diffBadge, { backgroundColor: `${diffColor}20`, borderRadius: radii.full }]}>
+              <View
+                style={[
+                  styles.diffBadge,
+                  { backgroundColor: `${diffColor}20`, borderRadius: radii.full },
+                ]}
+              >
                 <Text style={{ color: diffColor, fontSize: typography.size.xs, fontWeight: '600' }}>
                   {diffConfig.label}
                 </Text>
               </View>
             </View>
 
-            <View style={[styles.targetBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm, alignSelf: 'flex-start', marginBottom: spacing.sm }]}>
+            <View
+              style={[
+                styles.targetBadge,
+                {
+                  backgroundColor: colors.secondary,
+                  borderRadius: radii.sm,
+                  alignSelf: 'flex-start',
+                  marginBottom: spacing.sm,
+                },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 {item.targetArea}
               </Text>
@@ -89,7 +127,14 @@ export function StretchingRecommendation({
             </View>
 
             {item.description && (
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginTop: 6 }}>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.xs,
+                  lineHeight: 18,
+                  marginTop: 6,
+                }}
+              >
                 {item.description}
               </Text>
             )}
@@ -103,7 +148,12 @@ export function StretchingRecommendation({
 const styles = StyleSheet.create({
   guidance: {},
   card: { borderWidth: 1, padding: 14 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
   name: { fontWeight: '600', flex: 1 },
   diffBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   targetBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },

@@ -208,28 +208,29 @@ export const DOMAIN_NAMES: Record<ChallengeDomain, string> = {
 };
 
 /** 도메인별 색상 */
-export const DOMAIN_COLORS: Record<ChallengeDomain, { bg: string; text: string; border: string }> = {
-  workout: {
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    border: 'border-orange-300',
-  },
-  nutrition: {
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    border: 'border-green-300',
-  },
-  skin: {
-    bg: 'bg-pink-100',
-    text: 'text-pink-700',
-    border: 'border-pink-300',
-  },
-  combined: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    border: 'border-purple-300',
-  },
-};
+export const DOMAIN_COLORS: Record<ChallengeDomain, { bg: string; text: string; border: string }> =
+  {
+    workout: {
+      bg: 'bg-orange-100',
+      text: 'text-orange-700',
+      border: 'border-orange-300',
+    },
+    nutrition: {
+      bg: 'bg-green-100',
+      text: 'text-green-700',
+      border: 'border-green-300',
+    },
+    skin: {
+      bg: 'bg-pink-100',
+      text: 'text-pink-700',
+      border: 'border-pink-300',
+    },
+    combined: {
+      bg: 'bg-purple-100',
+      text: 'text-purple-700',
+      border: 'border-purple-300',
+    },
+  };
 
 /** 난이도별 이름 */
 export const DIFFICULTY_NAMES: Record<ChallengeDifficulty, string> = {

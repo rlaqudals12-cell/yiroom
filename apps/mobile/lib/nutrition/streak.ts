@@ -41,14 +41,15 @@ export const NUTRITION_STREAK_MILESTONES = [3, 7, 14, 30, 60, 100] as const;
 /**
  * 마일스톤별 배지 정의
  */
-export const NUTRITION_STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> = {
-  3: { id: '3day', name: '3일 연속', emoji: '🌱' },
-  7: { id: '7day', name: '7일 연속', emoji: '🔥' },
-  14: { id: '14day', name: '2주 연속', emoji: '💪' },
-  30: { id: '30day', name: '30일 연속', emoji: '🏆' },
-  60: { id: '60day', name: '60일 연속', emoji: '⭐' },
-  100: { id: '100day', name: '100일 연속', emoji: '👑' },
-};
+export const NUTRITION_STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> =
+  {
+    3: { id: '3day', name: '3일 연속', emoji: '🌱' },
+    7: { id: '7day', name: '7일 연속', emoji: '🔥' },
+    14: { id: '14day', name: '2주 연속', emoji: '💪' },
+    30: { id: '30day', name: '30일 연속', emoji: '🏆' },
+    60: { id: '60day', name: '60일 연속', emoji: '⭐' },
+    100: { id: '100day', name: '100일 연속', emoji: '👑' },
+  };
 
 /**
  * 마일스톤별 보상 정의
@@ -133,7 +134,7 @@ export function getDaysToNextMilestone(currentStreak: number): number | null {
  * 달성한 마일스톤 목록 조회
  */
 export function getAchievedMilestones(currentStreak: number): number[] {
-  return NUTRITION_STREAK_MILESTONES.filter(m => currentStreak >= m);
+  return NUTRITION_STREAK_MILESTONES.filter((m) => currentStreak >= m);
 }
 
 /**
@@ -146,7 +147,7 @@ export function getNewlyAchievedMilestones(
   const previousMilestones = getAchievedMilestones(previousStreak);
   const currentMilestones = getAchievedMilestones(currentStreak);
 
-  return currentMilestones.filter(m => !previousMilestones.includes(m));
+  return currentMilestones.filter((m) => !previousMilestones.includes(m));
 }
 
 // =====================================================
@@ -158,21 +159,18 @@ export function getNewlyAchievedMilestones(
  */
 export function getBadgesForMilestones(milestones: number[]): string[] {
   return milestones
-    .filter(m => NUTRITION_STREAK_BADGES[m])
-    .map(m => NUTRITION_STREAK_BADGES[m].id);
+    .filter((m) => NUTRITION_STREAK_BADGES[m])
+    .map((m) => NUTRITION_STREAK_BADGES[m].id);
 }
 
 /**
  * 새로 획득해야 할 배지 확인
  */
-export function getNewBadges(
-  currentStreak: number,
-  existingBadges: string[]
-): string[] {
+export function getNewBadges(currentStreak: number, existingBadges: string[]): string[] {
   const achievedMilestones = getAchievedMilestones(currentStreak);
   const allBadges = getBadgesForMilestones(achievedMilestones);
 
-  return allBadges.filter(badge => !existingBadges.includes(badge));
+  return allBadges.filter((badge) => !existingBadges.includes(badge));
 }
 
 // =====================================================
@@ -199,7 +197,11 @@ export function getStreakMessage(streak: NutritionStreak | null): string {
   }
 
   // 마일스톤 달성
-  if (NUTRITION_STREAK_MILESTONES.includes(currentStreak as typeof NUTRITION_STREAK_MILESTONES[number])) {
+  if (
+    NUTRITION_STREAK_MILESTONES.includes(
+      currentStreak as (typeof NUTRITION_STREAK_MILESTONES)[number]
+    )
+  ) {
     const badge = NUTRITION_STREAK_BADGES[currentStreak];
     return `${badge?.emoji || '🎉'} ${currentStreak}일 연속 달성! 대단해요!`;
   }

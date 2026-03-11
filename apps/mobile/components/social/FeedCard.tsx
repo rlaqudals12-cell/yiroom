@@ -56,7 +56,9 @@ export function FeedCard({
     >
       {/* 헤더 */}
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
+        <View
+          style={[styles.avatar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}
+        >
           <Text style={{ fontSize: typography.size.sm }}>{userName.charAt(0)}</Text>
         </View>
         <View style={{ marginLeft: spacing.sm, flex: 1 }}>
@@ -96,9 +98,7 @@ export function FeedCard({
           accessibilityLabel={`좋아요 ${likeCount}개${isLiked ? ', 좋아요함' : ''}`}
           accessibilityRole="button"
         >
-          <Text style={{ fontSize: typography.size.sm }}>
-            {isLiked ? '❤️' : '🤍'}
-          </Text>
+          <Text style={{ fontSize: typography.size.sm }}>{isLiked ? '❤️' : '🤍'}</Text>
           <Text
             style={{
               fontSize: typography.size.xs,

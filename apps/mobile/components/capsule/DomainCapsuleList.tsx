@@ -60,7 +60,7 @@ export function DomainCapsuleList({
           padding: spacing.md,
         },
         !isDark
-          ? Platform.select({
+          ? (Platform.select({
               ios: {
                 shadowColor: accentColor ?? '#000',
                 shadowOffset: { width: 0, height: 2 },
@@ -68,7 +68,7 @@ export function DomainCapsuleList({
                 shadowRadius: 8,
               },
               android: { elevation: 2 },
-            }) ?? {}
+            }) ?? {})
           : {},
       ]}
     >

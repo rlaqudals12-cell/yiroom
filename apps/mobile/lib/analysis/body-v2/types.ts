@@ -98,11 +98,11 @@ export interface BodyRatios {
 
 /** 체형 유형 */
 export type BodyShapeType =
-  | 'rectangle'         // 사각형 (일자)
+  | 'rectangle' // 사각형 (일자)
   | 'inverted-triangle' // 역삼각형
-  | 'triangle'          // 삼각형 (배형)
-  | 'oval'              // 타원형
-  | 'hourglass';        // 모래시계형
+  | 'triangle' // 삼각형 (배형)
+  | 'oval' // 타원형
+  | 'hourglass'; // 모래시계형
 
 /** 체형 정보 */
 export interface BodyShapeInfo {
@@ -132,11 +132,7 @@ export const BODY_SHAPE_INFO: Record<BodyShapeType, Omit<BodyShapeInfo, 'type'>>
   'inverted-triangle': {
     label: '역삼각형',
     description: '어깨가 넓고 힙이 좁음',
-    characteristics: [
-      '넓은 어깨와 좁은 힙',
-      '상체가 발달',
-      'V자 실루엣',
-    ],
+    characteristics: ['넓은 어깨와 좁은 힙', '상체가 발달', 'V자 실루엣'],
     stylingTips: [
       '하체 볼륨을 주는 와이드 팬츠',
       '어깨 패드 없는 상의',
@@ -146,44 +142,20 @@ export const BODY_SHAPE_INFO: Record<BodyShapeType, Omit<BodyShapeInfo, 'type'>>
   triangle: {
     label: '삼각형',
     description: '힙이 어깨보다 넓음',
-    characteristics: [
-      '좁은 어깨와 넓은 힙',
-      '하체가 발달',
-      'A자 실루엣',
-    ],
-    stylingTips: [
-      '어깨 볼륨을 주는 상의',
-      '보트넥, 오프숄더 추천',
-      '다크 컬러 하의로 시각적 균형',
-    ],
+    characteristics: ['좁은 어깨와 넓은 힙', '하체가 발달', 'A자 실루엣'],
+    stylingTips: ['어깨 볼륨을 주는 상의', '보트넥, 오프숄더 추천', '다크 컬러 하의로 시각적 균형'],
   },
   oval: {
     label: '타원형',
     description: '허리가 가장 넓은 체형',
-    characteristics: [
-      '중심부가 가장 넓음',
-      '부드러운 곡선 실루엣',
-      '사지가 상대적으로 가늘음',
-    ],
-    stylingTips: [
-      '세로선을 강조하는 디자인',
-      '허리를 너무 강조하지 않기',
-      'V넥, 롱 카디건 활용',
-    ],
+    characteristics: ['중심부가 가장 넓음', '부드러운 곡선 실루엣', '사지가 상대적으로 가늘음'],
+    stylingTips: ['세로선을 강조하는 디자인', '허리를 너무 강조하지 않기', 'V넥, 롱 카디건 활용'],
   },
   hourglass: {
     label: '모래시계형',
     description: '어깨와 힙이 비슷하고 허리가 잘록함',
-    characteristics: [
-      '균형 잡힌 상하체',
-      '잘록한 허리 라인',
-      '여성스러운 곡선 실루엣',
-    ],
-    stylingTips: [
-      '허리를 강조하는 핏',
-      '바디컨 실루엣',
-      '랩 드레스, 하이웨이스트 추천',
-    ],
+    characteristics: ['균형 잡힌 상하체', '잘록한 허리 라인', '여성스러운 곡선 실루엣'],
+    stylingTips: ['허리를 강조하는 핏', '바디컨 실루엣', '랩 드레스, 하이웨이스트 추천'],
   },
 };
 
@@ -204,7 +176,13 @@ export interface PostureAnalysis {
 /** 자세 문제 */
 export interface PostureIssue {
   /** 문제 유형 */
-  type: 'shoulder-imbalance' | 'hip-imbalance' | 'forward-head' | 'rounded-shoulders' | 'lordosis' | 'kyphosis';
+  type:
+    | 'shoulder-imbalance'
+    | 'hip-imbalance'
+    | 'forward-head'
+    | 'rounded-shoulders'
+    | 'lordosis'
+    | 'kyphosis';
   /** 심각도 (1-5) */
   severity: number;
   /** 설명 */

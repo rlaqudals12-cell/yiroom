@@ -21,7 +21,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 
-import { useTheme , spacing, gradeColors } from '../../lib/theme';
+import { useTheme, spacing, gradeColors } from '../../lib/theme';
 
 // ============================================
 // 등급 계산 헬퍼
@@ -201,9 +201,7 @@ export function GradeDisplay({
                   styles.milestone,
                   {
                     left: `${milestone}%`,
-                    backgroundColor: isDark
-                      ? 'rgba(255, 255, 255, 0.3)'
-                      : 'rgba(0, 0, 0, 0.2)',
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)',
                   },
                 ]}
               />

@@ -20,8 +20,14 @@ export interface SessionCompletionCardProps {
 }
 
 export function SessionCompletionCard({
-  totalDuration, totalCalories, exercisesCompleted, exercisesTotal,
-  setsCompleted, setsTotal, onShare, onGoBack,
+  totalDuration,
+  totalCalories,
+  exercisesCompleted,
+  exercisesTotal,
+  setsCompleted,
+  setsTotal,
+  onShare,
+  onGoBack,
 }: SessionCompletionCardProps): React.ReactElement {
   const { colors, module, status, brand, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -30,14 +36,32 @@ export function SessionCompletionCard({
   return (
     <View
       testID="session-completion-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, padding: spacing.lg }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.card,
+          borderRadius: radii.xl,
+          borderColor: colors.border,
+          padding: spacing.lg,
+        },
+      ]}
       accessibilityLabel={`운동 완료! ${totalDuration}분, ${totalCalories}kcal`}
     >
       <Text style={{ fontSize: typography.size['2xl'], textAlign: 'center' }}>🎉</Text>
-      <Text style={{ color: colors.foreground, fontSize: typography.size.xl, fontWeight: '700', textAlign: 'center', marginTop: spacing.xs }}>
+      <Text
+        style={{
+          color: colors.foreground,
+          fontSize: typography.size.xl,
+          fontWeight: '700',
+          textAlign: 'center',
+          marginTop: spacing.xs,
+        }}
+      >
         운동 완료!
       </Text>
-      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+      <Text
+        style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}
+      >
         수고하셨어요
       </Text>
 
@@ -49,10 +73,17 @@ export function SessionCompletionCard({
           { label: '운동 완료', value: `${exercisesCompleted}/${exercisesTotal}`, emoji: '💪' },
           { label: '세트 완료', value: `${setsCompleted}/${setsTotal}`, emoji: '✅' },
         ].map((stat) => (
-          <View key={stat.label} style={[styles.statItem, { backgroundColor: `${baseColor}10`, borderRadius: radii.xl }]}>
+          <View
+            key={stat.label}
+            style={[styles.statItem, { backgroundColor: `${baseColor}10`, borderRadius: radii.xl }]}
+          >
             <Text style={{ fontSize: typography.size.base }}>{stat.emoji}</Text>
-            <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>{stat.value}</Text>
-            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{stat.label}</Text>
+            <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>
+              {stat.value}
+            </Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+              {stat.label}
+            </Text>
           </View>
         ))}
       </View>
@@ -60,7 +91,13 @@ export function SessionCompletionCard({
       {/* 완성도 */}
       <View style={[styles.completionRow, { marginTop: spacing.md }]}>
         <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>완성도</Text>
-        <Text style={{ color: completionRate >= 80 ? status.success : status.warning, fontSize: typography.size.lg, fontWeight: '700' }}>
+        <Text
+          style={{
+            color: completionRate >= 80 ? status.success : status.warning,
+            fontSize: typography.size.lg,
+            fontWeight: '700',
+          }}
+        >
           {completionRate}%
         </Text>
       </View>
@@ -74,13 +111,18 @@ export function SessionCompletionCard({
             accessibilityRole="button"
             accessibilityLabel="결과 공유하기"
           >
-            <Text style={{ color: colors.card, fontSize: typography.size.sm, fontWeight: '600' }}>공유하기</Text>
+            <Text style={{ color: colors.card, fontSize: typography.size.sm, fontWeight: '600' }}>
+              공유하기
+            </Text>
           </Pressable>
         )}
         {onGoBack && (
           <Pressable
             onPress={onGoBack}
-            style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
+            style={[
+              styles.actionBtn,
+              { backgroundColor: colors.secondary, borderRadius: radii.xl },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="돌아가기"
           >
@@ -96,7 +138,12 @@ const styles = StyleSheet.create({
   container: { borderWidth: 1, alignItems: 'center' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, width: '100%' },
   statItem: { width: '47%', alignItems: 'center', padding: spacing.smx, gap: spacing.xxs },
-  completionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
+  completionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
   actionRow: { flexDirection: 'row', gap: spacing.smd },
   actionBtn: { paddingHorizontal: spacing.mlg, paddingVertical: spacing.smd },
 });

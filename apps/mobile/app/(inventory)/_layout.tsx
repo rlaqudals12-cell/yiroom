@@ -5,7 +5,7 @@
 import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 
 export default function InventoryLayout(): React.JSX.Element {
   const { colors, isDark, typography } = useTheme();

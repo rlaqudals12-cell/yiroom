@@ -93,9 +93,7 @@ export interface IngredientInteractionRow {
 // ================================================
 
 /** DB row → 프론트엔드 타입 변환 */
-export function toIngredientInteraction(
-  row: IngredientInteractionRow
-): IngredientInteraction {
+export function toIngredientInteraction(row: IngredientInteractionRow): IngredientInteraction {
   return {
     id: row.id,
     ingredientA: row.ingredient_a,

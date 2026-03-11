@@ -53,9 +53,7 @@ interface ScrollAnimationReturn {
   parallaxAnimatedStyle: ViewStyle;
 }
 
-export function useScrollAnimation(
-  options: ScrollAnimationOptions = {}
-): ScrollAnimationReturn {
+export function useScrollAnimation(options: ScrollAnimationOptions = {}): ScrollAnimationReturn {
   const { maxScroll = 120, minHeaderHeight = 0, maxHeaderHeight = 180 } = options;
 
   const scrollY = useSharedValue(0);

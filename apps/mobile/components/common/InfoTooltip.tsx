@@ -43,10 +43,7 @@ export function InfoTooltip({
           accessibilityRole="button"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Info
-            size={16}
-            color={isVisible ? colors.foreground : colors.mutedForeground}
-          />
+          <Info size={16} color={isVisible ? colors.foreground : colors.mutedForeground} />
         </Pressable>
       </View>
 

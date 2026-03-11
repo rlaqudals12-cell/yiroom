@@ -30,13 +30,7 @@ export function ChatInterface() {
   const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
 
-  const {
-    messages,
-    isLoading,
-    error,
-    suggestedQuestions,
-    sendMessage,
-  } = useChat();
+  const { messages, isLoading, error, suggestedQuestions, sendMessage } = useChat();
 
   const [input, setInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<ChatQuestionCategory>('general');

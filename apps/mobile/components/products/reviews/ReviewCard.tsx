@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '../../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 
@@ -148,9 +148,7 @@ export function ReviewCard({
 
           <View style={styles.userMeta}>
             <View style={styles.nameRow}>
-              <Text style={[styles.userName, { color: colors.foreground }]}>
-                {review.userName}
-              </Text>
+              <Text style={[styles.userName, { color: colors.foreground }]}>{review.userName}</Text>
               {review.verifiedPurchase && (
                 <View style={[styles.verifiedBadge, { backgroundColor: status.info + '20' }]}>
                   <Text style={[styles.verifiedText, { color: status.info }]}>구매인증</Text>

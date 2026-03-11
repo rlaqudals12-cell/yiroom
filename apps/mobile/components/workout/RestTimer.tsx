@@ -18,7 +18,10 @@ export interface RestTimerProps {
 }
 
 export function RestTimer({
-  initialSeconds, onComplete, onSkip, adjustStep = 10,
+  initialSeconds,
+  onComplete,
+  onSkip,
+  adjustStep = 10,
 }: RestTimerProps): React.ReactElement {
   const { colors, module, status, typography, radii, spacing } = useTheme();
   const [remaining, setRemaining] = useState(initialSeconds);
@@ -58,26 +61,43 @@ export function RestTimer({
   return (
     <View
       testID="rest-timer"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, padding: spacing.lg }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.card,
+          borderRadius: radii.xl,
+          borderColor: colors.border,
+          padding: spacing.lg,
+        },
+      ]}
       accessibilityLabel={`휴식 타이머 ${minutes}분 ${seconds}초 남음`}
     >
-      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+      <Text
+        style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}
+      >
         휴식 시간
       </Text>
 
       {/* 시간 표시 */}
-      <Text style={{
-        color: isWarning ? status.error : baseColor,
-        fontSize: typography.size['4xl'],
-        fontWeight: '700',
-        textAlign: 'center',
-        marginVertical: spacing.sm,
-      }}>
+      <Text
+        style={{
+          color: isWarning ? status.error : baseColor,
+          fontSize: typography.size['4xl'],
+          fontWeight: '700',
+          textAlign: 'center',
+          marginVertical: spacing.sm,
+        }}
+      >
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </Text>
 
       {/* 진행 바 */}
-      <View style={[styles.progressBar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
+      <View
+        style={[
+          styles.progressBar,
+          { backgroundColor: colors.secondary, borderRadius: radii.full },
+        ]}
+      >
         <View
           style={[
             styles.progressFill,
@@ -98,7 +118,9 @@ export function RestTimer({
           accessibilityRole="button"
           accessibilityLabel={`${adjustStep}초 줄이기`}
         >
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>-{adjustStep}s</Text>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>
+            -{adjustStep}s
+          </Text>
         </Pressable>
         <Pressable
           onPress={handleReset}
@@ -114,7 +136,9 @@ export function RestTimer({
           accessibilityRole="button"
           accessibilityLabel={`${adjustStep}초 늘리기`}
         >
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>+{adjustStep}s</Text>
+          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>
+            +{adjustStep}s
+          </Text>
         </Pressable>
       </View>
 
@@ -126,7 +150,9 @@ export function RestTimer({
           accessibilityRole="button"
           accessibilityLabel="휴식 건너뛰기"
         >
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>건너뛰기</Text>
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
+            건너뛰기
+          </Text>
         </Pressable>
       )}
     </View>

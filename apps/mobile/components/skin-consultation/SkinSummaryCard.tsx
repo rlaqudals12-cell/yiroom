@@ -32,7 +32,10 @@ function getSkinTypeLabel(type: string): string {
 }
 
 /** 점수에 따른 색상 반환 */
-function getScoreColor(value: number, status: { success: string; warning: string; error: string }): string {
+function getScoreColor(
+  value: number,
+  status: { success: string; warning: string; error: string }
+): string {
   if (value >= 70) return status.success;
   if (value >= 40) return status.warning;
   return status.error;
@@ -188,11 +191,7 @@ export function SkinSummaryCard({
       </View>
 
       {/* 지표 바 */}
-      <MiniProgressBar
-        label="수분"
-        value={hydration}
-        color={getScoreColor(hydration, status)}
-      />
+      <MiniProgressBar label="수분" value={hydration} color={getScoreColor(hydration, status)} />
       <MiniProgressBar
         label="유분"
         value={oiliness}

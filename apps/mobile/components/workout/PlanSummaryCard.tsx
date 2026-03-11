@@ -18,7 +18,12 @@ export interface PlanSummaryCardProps {
 }
 
 export function PlanSummaryCard({
-  totalExercises, totalDays, restDays, estimatedCalories, focusAreas, difficulty,
+  totalExercises,
+  totalDays,
+  restDays,
+  estimatedCalories,
+  focusAreas,
+  difficulty,
 }: PlanSummaryCardProps): React.ReactElement {
   const { colors, module, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -26,10 +31,20 @@ export function PlanSummaryCard({
   return (
     <View
       testID="plan-summary-card"
-      style={[styles.container, { backgroundColor: `${baseColor}10`, borderRadius: radii.xl, padding: spacing.md }]}
+      style={[
+        styles.container,
+        { backgroundColor: `${baseColor}10`, borderRadius: radii.xl, padding: spacing.md },
+      ]}
       accessibilityLabel={`계획 요약: ${totalExercises}개 운동, ${totalDays}일`}
     >
-      <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
+      <Text
+        style={{
+          color: colors.foreground,
+          fontSize: typography.size.base,
+          fontWeight: '700',
+          marginBottom: spacing.sm,
+        }}
+      >
         계획 요약
       </Text>
 
@@ -40,23 +55,48 @@ export function PlanSummaryCard({
           { label: '휴식일', value: `${restDays}일` },
           { label: '예상 소모', value: `${estimatedCalories}kcal` },
         ].map((stat) => (
-          <View key={stat.label} style={[styles.statItem, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{stat.label}</Text>
-            <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>{stat.value}</Text>
+          <View
+            key={stat.label}
+            style={[styles.statItem, { backgroundColor: colors.card, borderRadius: radii.xl }]}
+          >
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+              {stat.label}
+            </Text>
+            <Text style={{ color: baseColor, fontSize: typography.size.base, fontWeight: '700' }}>
+              {stat.value}
+            </Text>
           </View>
         ))}
       </View>
 
       <View style={[styles.infoRow, { marginTop: spacing.sm }]}>
         <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>난이도</Text>
-        <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>{difficulty}</Text>
+        <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
+          {difficulty}
+        </Text>
       </View>
 
       <View style={[styles.focusRow, { marginTop: spacing.xs }]}>
-        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginRight: spacing.sm }}>집중 부위</Text>
+        <Text
+          style={{
+            color: colors.mutedForeground,
+            fontSize: typography.size.xs,
+            marginRight: spacing.sm,
+          }}
+        >
+          집중 부위
+        </Text>
         {focusAreas.slice(0, 3).map((area, i) => (
-          <View key={i} style={[styles.focusBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
-            <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>{area}</Text>
+          <View
+            key={i}
+            style={[
+              styles.focusBadge,
+              { backgroundColor: colors.secondary, borderRadius: radii.sm },
+            ]}
+          >
+            <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
+              {area}
+            </Text>
           </View>
         ))}
       </View>

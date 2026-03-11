@@ -9,13 +9,13 @@
 
 /** 피부 존 타입 (7개 영역) */
 export type SkinZoneType =
-  | 'forehead'    // 이마
-  | 'nose'        // 코
-  | 'leftCheek'   // 왼쪽 볼
-  | 'rightCheek'  // 오른쪽 볼
-  | 'chin'        // 턱
-  | 'eyeArea'     // 눈가
-  | 'lipArea';    // 입술 주변
+  | 'forehead' // 이마
+  | 'nose' // 코
+  | 'leftCheek' // 왼쪽 볼
+  | 'rightCheek' // 오른쪽 볼
+  | 'chin' // 턱
+  | 'eyeArea' // 눈가
+  | 'lipArea'; // 입술 주변
 
 /** 존 그룹 (분석 단위) */
 export type ZoneGroup = 'tZone' | 'uZone' | 'eyeZone' | 'lipZone';
@@ -134,11 +134,11 @@ export interface SixZoneAnalysisV2 {
 
 /** 피부 타입 */
 export type SkinTypeV2 =
-  | 'dry'          // 건성
-  | 'oily'         // 지성
-  | 'combination'  // 복합성
-  | 'normal'       // 정상
-  | 'sensitive';   // 민감성
+  | 'dry' // 건성
+  | 'oily' // 지성
+  | 'combination' // 복합성
+  | 'normal' // 정상
+  | 'sensitive'; // 민감성
 
 /** 피부 타입 라벨 */
 export const SKIN_TYPE_LABELS: Record<SkinTypeV2, string> = {
@@ -217,11 +217,11 @@ export interface SkinAnalysisV2Result {
 
 /** 바이탈리티 등급 기준 */
 export const VITALITY_GRADE_THRESHOLDS = {
-  S: 90,  // 90+ → S
-  A: 75,  // 75-89 → A
-  B: 60,  // 60-74 → B
-  C: 40,  // 40-59 → C
-  D: 0,   // 0-39 → D
+  S: 90, // 90+ → S
+  A: 75, // 75-89 → A
+  B: 60, // 60-74 → B
+  C: 40, // 40-59 → C
+  D: 0, // 0-39 → D
 } as const;
 
 /** 피부 상태별 추천 성분 */

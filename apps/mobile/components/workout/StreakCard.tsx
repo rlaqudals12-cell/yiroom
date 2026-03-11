@@ -20,7 +20,11 @@ export interface StreakCardProps {
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
 
 export function StreakCard({
-  currentStreak, longestStreak, weeklyGoal, weeklyCompleted, recentDays = [],
+  currentStreak,
+  longestStreak,
+  weeklyGoal,
+  weeklyCompleted,
+  recentDays = [],
 }: StreakCardProps): React.ReactElement {
   const { colors, module, status, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -28,7 +32,10 @@ export function StreakCard({
   return (
     <View
       testID="streak-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`연속 ${currentStreak}일, 이번 주 ${weeklyCompleted}/${weeklyGoal}일`}
     >
       <View style={styles.header}>
@@ -37,11 +44,15 @@ export function StreakCard({
           <Text style={{ color: baseColor, fontSize: typography.size['2xl'], fontWeight: '700' }}>
             {currentStreak}일
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>연속 운동</Text>
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+            연속 운동
+          </Text>
         </View>
         <View style={styles.longestBadge}>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>최고</Text>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
+          <Text
+            style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}
+          >
             {longestStreak}일
           </Text>
         </View>
@@ -52,8 +63,22 @@ export function StreakCard({
         <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
           이번 주 {weeklyCompleted}/{weeklyGoal}
         </Text>
-        <View style={[styles.progressBar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
-          <View style={[styles.progressFill, { width: `${Math.min(100, (weeklyCompleted / weeklyGoal) * 100)}%`, backgroundColor: baseColor, borderRadius: radii.full }]} />
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: colors.secondary, borderRadius: radii.full },
+          ]}
+        >
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${Math.min(100, (weeklyCompleted / weeklyGoal) * 100)}%`,
+                backgroundColor: baseColor,
+                borderRadius: radii.full,
+              },
+            ]}
+          />
         </View>
       </View>
 
@@ -62,7 +87,9 @@ export function StreakCard({
         <View style={[styles.dotsRow, { marginTop: spacing.sm }]}>
           {recentDays.slice(-7).map((done, i) => (
             <View key={i} style={styles.dotItem}>
-              <View style={[styles.dot, { backgroundColor: done ? status.success : colors.secondary }]} />
+              <View
+                style={[styles.dot, { backgroundColor: done ? status.success : colors.secondary }]}
+              />
               <Text style={{ color: colors.mutedForeground, fontSize: 10 }}>{DAY_LABELS[i]}</Text>
             </View>
           ))}

@@ -44,10 +44,7 @@ export function FriendRequestCard({
     >
       <View style={styles.row}>
         <View
-          style={[
-            styles.avatar,
-            { backgroundColor: colors.secondary, borderRadius: radii.full },
-          ]}
+          style={[styles.avatar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}
         >
           <Text style={{ fontSize: typography.size.lg }}>{name.charAt(0)}</Text>
         </View>

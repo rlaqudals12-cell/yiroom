@@ -143,9 +143,7 @@ export function BodyProfileCard({
         <Badge variant="outline" style={{ marginRight: 6 }}>
           {`${weight}kg`}
         </Badge>
-        <Badge variant="outline">
-          {bmiLabel}
-        </Badge>
+        <Badge variant="outline">{bmiLabel}</Badge>
       </View>
     </Animated.View>
   );

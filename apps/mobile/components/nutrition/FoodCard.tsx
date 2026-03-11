@@ -166,13 +166,28 @@ export const FoodCard = memo(function FoodCard({
       {(carbs !== undefined || protein !== undefined || fat !== undefined) && (
         <View style={[styles.macroRow, { marginTop: spacing.sm }]}>
           {carbs !== undefined && (
-            <NutrientPill label="탄" value={carbs} color={nutrientColors.carbs} typography={typography} />
+            <NutrientPill
+              label="탄"
+              value={carbs}
+              color={nutrientColors.carbs}
+              typography={typography}
+            />
           )}
           {protein !== undefined && (
-            <NutrientPill label="단" value={protein} color={nutrientColors.protein} typography={typography} />
+            <NutrientPill
+              label="단"
+              value={protein}
+              color={nutrientColors.protein}
+              typography={typography}
+            />
           )}
           {fat !== undefined && (
-            <NutrientPill label="지" value={fat} color={nutrientColors.fat} typography={typography} />
+            <NutrientPill
+              label="지"
+              value={fat}
+              color={nutrientColors.fat}
+              typography={typography}
+            />
           )}
         </View>
       )}

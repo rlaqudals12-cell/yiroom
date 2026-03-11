@@ -13,29 +13,57 @@ import type { UserContext } from './index';
 const SEASON_COLORS: Record<string, { recommended: string[]; avoid: string[] }> = {
   Spring: {
     recommended: [
-      '코랄', '피치', '살구', '웜 핑크', '아이보리',
-      '밝은 오렌지', '골드', '카멜', '따뜻한 베이지',
+      '코랄',
+      '피치',
+      '살구',
+      '웜 핑크',
+      '아이보리',
+      '밝은 오렌지',
+      '골드',
+      '카멜',
+      '따뜻한 베이지',
     ],
     avoid: ['블루 그레이', '차가운 핑크', '순수 화이트', '블랙'],
   },
   Summer: {
     recommended: [
-      '라벤더', '로즈', '스카이 블루', '민트', '소프트 핑크',
-      '쿨 그레이', '라일락', '파우더 블루', '모브',
+      '라벤더',
+      '로즈',
+      '스카이 블루',
+      '민트',
+      '소프트 핑크',
+      '쿨 그레이',
+      '라일락',
+      '파우더 블루',
+      '모브',
     ],
     avoid: ['오렌지', '머스타드', '카멜', '진한 골드'],
   },
   Autumn: {
     recommended: [
-      '버건디', '올리브', '머스타드', '테라코타', '카키',
-      '브라운', '다크 오렌지', '딥 골드', '와인',
+      '버건디',
+      '올리브',
+      '머스타드',
+      '테라코타',
+      '카키',
+      '브라운',
+      '다크 오렌지',
+      '딥 골드',
+      '와인',
     ],
     avoid: ['핑크', '라벤더', '파스텔 블루', '네온 컬러'],
   },
   Winter: {
     recommended: [
-      '블랙', '퓨어 화이트', '네이비', '로열 블루', '체리 레드',
-      '실버', '아이시 핑크', '딥 퍼플', '에메랄드',
+      '블랙',
+      '퓨어 화이트',
+      '네이비',
+      '로열 블루',
+      '체리 레드',
+      '실버',
+      '아이시 핑크',
+      '딥 퍼플',
+      '에메랄드',
     ],
     avoid: ['베이지', '카멜', '머스타드', '살구'],
   },
@@ -64,10 +92,7 @@ const SEASON_TIPS: Record<string, string[]> = {
   ],
 };
 
-export function getPersonalColorRAG(
-  ctx: UserContext,
-  query: string
-): string | null {
+export function getPersonalColorRAG(ctx: UserContext, query: string): string | null {
   const season = ctx.personalColor?.season;
   if (!season || !SEASON_COLORS[season]) return null;
 
@@ -130,10 +155,7 @@ const SKIN_TYPE_TIPS: Record<string, string[]> = {
   ],
 };
 
-export function getSkinRAG(
-  ctx: UserContext,
-  query: string
-): string | null {
+export function getSkinRAG(ctx: UserContext, query: string): string | null {
   const skinType = ctx.skinAnalysis?.skinType;
   if (!skinType) return null;
 
@@ -141,7 +163,9 @@ export function getSkinRAG(
   const concerns = ctx.skinAnalysis?.concerns || [];
 
   const parts: string[] = [];
-  parts.push(`${skinType === 'dry' ? '건성' : skinType === 'oily' ? '지성' : skinType === 'combination' ? '복합성' : skinType === 'sensitive' ? '민감성' : '정상'} 피부 맞춤 조언이에요.`);
+  parts.push(
+    `${skinType === 'dry' ? '건성' : skinType === 'oily' ? '지성' : skinType === 'combination' ? '복합성' : skinType === 'sensitive' ? '민감성' : '정상'} 피부 맞춤 조언이에요.`
+  );
 
   // 질문 기반 팁 선택
   const lq = query.toLowerCase();
@@ -192,10 +216,7 @@ const GOAL_WORKOUT: Record<string, string[]> = {
   ],
 };
 
-export function getWorkoutRAG(
-  ctx: UserContext,
-  query: string
-): string | null {
+export function getWorkoutRAG(ctx: UserContext, query: string): string | null {
   const parts: string[] = [];
 
   // 스트릭 격려
@@ -236,10 +257,7 @@ export function getWorkoutRAG(
 // 영양 RAG
 // ============================================
 
-export function getNutritionRAG(
-  ctx: UserContext,
-  query: string
-): string | null {
+export function getNutritionRAG(ctx: UserContext, query: string): string | null {
   const parts: string[] = [];
   const target = ctx.nutrition?.targetCalories;
   const streak = ctx.nutrition?.streak;
@@ -281,23 +299,31 @@ export function getNutritionRAG(
 // ============================================
 
 const BODY_TYPE_FASHION: Record<string, string[]> = {
-  hourglass: ['허리 라인을 강조하는 벨트나 핏된 옷이 잘 어울려요', 'A라인 원피스도 좋은 선택이에요'],
+  hourglass: [
+    '허리 라인을 강조하는 벨트나 핏된 옷이 잘 어울려요',
+    'A라인 원피스도 좋은 선택이에요',
+  ],
   pear: ['상의에 포인트를 주면 밸런스가 좋아져요', 'A라인 스커트나 와이드 팬츠를 추천해요'],
-  apple: ['V넥이나 세로 라인이 날씬해 보이는 효과가 있어요', '원포인트 액세서리로 시선을 분산해보세요'],
+  apple: [
+    'V넥이나 세로 라인이 날씬해 보이는 효과가 있어요',
+    '원포인트 액세서리로 시선을 분산해보세요',
+  ],
   rectangle: ['허리에 벨트를 하면 곡선이 생겨요', '레이어드 스타일링으로 볼륨감을 줘보세요'],
-  inverted_triangle: ['하의에 볼륨감을 주면 밸런스가 좋아요', '와이드 팬츠나 플레어 스커트를 추천해요'],
+  inverted_triangle: [
+    '하의에 볼륨감을 주면 밸런스가 좋아요',
+    '와이드 팬츠나 플레어 스커트를 추천해요',
+  ],
 };
 
-export function getFashionRAG(
-  ctx: UserContext,
-  query: string
-): string | null {
+export function getFashionRAG(ctx: UserContext, query: string): string | null {
   const parts: string[] = [];
 
   // 퍼스널 컬러 연동
   const season = ctx.personalColor?.season;
   if (season && SEASON_COLORS[season]) {
-    parts.push(`${season} 타입에 어울리는 색상: ${SEASON_COLORS[season].recommended.slice(0, 4).join(', ')}`);
+    parts.push(
+      `${season} 타입에 어울리는 색상: ${SEASON_COLORS[season].recommended.slice(0, 4).join(', ')}`
+    );
   }
 
   // 체형별 팁
@@ -332,23 +358,60 @@ export function classifyQuestion(query: string): DomainCategory {
   const lq = query.toLowerCase();
 
   // 퍼스널 컬러
-  if (lq.includes('퍼스널') || lq.includes('컬러') || lq.includes('색') || lq.includes('립스틱') || lq.includes('톤')) {
+  if (
+    lq.includes('퍼스널') ||
+    lq.includes('컬러') ||
+    lq.includes('색') ||
+    lq.includes('립스틱') ||
+    lq.includes('톤')
+  ) {
     return 'personalColor';
   }
   // 패션/코디
-  if (lq.includes('옷') || lq.includes('코디') || lq.includes('패션') || lq.includes('스타일') || lq.includes('데이트룩') || lq.includes('출근')) {
+  if (
+    lq.includes('옷') ||
+    lq.includes('코디') ||
+    lq.includes('패션') ||
+    lq.includes('스타일') ||
+    lq.includes('데이트룩') ||
+    lq.includes('출근')
+  ) {
     return 'fashion';
   }
   // 운동
-  if (lq.includes('운동') || lq.includes('헬스') || lq.includes('근육') || lq.includes('스트레칭') || lq.includes('요가') || lq.includes('러닝')) {
+  if (
+    lq.includes('운동') ||
+    lq.includes('헬스') ||
+    lq.includes('근육') ||
+    lq.includes('스트레칭') ||
+    lq.includes('요가') ||
+    lq.includes('러닝')
+  ) {
     return 'workout';
   }
   // 영양
-  if (lq.includes('먹') || lq.includes('음식') || lq.includes('칼로리') || lq.includes('다이어트') || lq.includes('단백질') || lq.includes('간식') || lq.includes('물') || lq.includes('영양')) {
+  if (
+    lq.includes('먹') ||
+    lq.includes('음식') ||
+    lq.includes('칼로리') ||
+    lq.includes('다이어트') ||
+    lq.includes('단백질') ||
+    lq.includes('간식') ||
+    lq.includes('물') ||
+    lq.includes('영양')
+  ) {
     return 'nutrition';
   }
   // 피부
-  if (lq.includes('피부') || lq.includes('화장품') || lq.includes('스킨케어') || lq.includes('보습') || lq.includes('여드름') || lq.includes('트러블') || lq.includes('세럼')) {
+  if (
+    lq.includes('피부') ||
+    lq.includes('화장품') ||
+    lq.includes('스킨케어') ||
+    lq.includes('보습') ||
+    lq.includes('여드름') ||
+    lq.includes('트러블') ||
+    lq.includes('세럼')
+  ) {
     return 'skin';
   }
 
@@ -359,10 +422,7 @@ export function classifyQuestion(query: string): DomainCategory {
  * 도메인별 RAG 컨텍스트 가져오기
  * 오프라인/에러 시 사용자 분석 결과 기반 맞춤 응답을 위한 보강 컨텍스트
  */
-export function getRAGContext(
-  ctx: UserContext | undefined,
-  query: string
-): string | null {
+export function getRAGContext(ctx: UserContext | undefined, query: string): string | null {
   if (!ctx) return null;
 
   const domain = classifyQuestion(query);

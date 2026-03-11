@@ -17,12 +17,7 @@ export interface ActivityLevel {
   title: string;
 }
 
-export type ActivityCategory =
-  | 'analysis'
-  | 'workout'
-  | 'nutrition'
-  | 'skincare'
-  | 'social';
+export type ActivityCategory = 'analysis' | 'workout' | 'nutrition' | 'skincare' | 'social';
 
 export interface LevelReward {
   level: number;
@@ -171,10 +166,7 @@ export function getCategoryTitle(category: ActivityCategory, level: number): str
 /**
  * 레벨 보상 목록 생성
  */
-export function getLevelRewards(
-  category: ActivityCategory,
-  currentLevel: number
-): LevelReward[] {
+export function getLevelRewards(category: ActivityCategory, currentLevel: number): LevelReward[] {
   const config = LEVEL_CONFIGS[category];
   return config.milestones.map((milestone) => ({
     level: milestone,
@@ -246,9 +238,7 @@ export function getAllCategoryLevels(
 /**
  * 종합 레벨 (카테고리 평균)
  */
-export function getOverallLevel(
-  xpByCategory: Record<ActivityCategory, number>
-): number {
+export function getOverallLevel(xpByCategory: Record<ActivityCategory, number>): number {
   const levels = getAllCategoryLevels(xpByCategory);
   const sum = levels.reduce((acc, l) => acc + l.level, 0);
   return Math.round(sum / levels.length);

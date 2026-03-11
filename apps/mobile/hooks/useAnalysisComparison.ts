@@ -109,9 +109,7 @@ const MODULE_LABELS: Record<AnalysisModuleType, string> = {
   posture: '자세',
 };
 
-export function useAnalysisComparison(
-  moduleType: AnalysisModuleType
-): UseAnalysisComparisonReturn {
+export function useAnalysisComparison(moduleType: AnalysisModuleType): UseAnalysisComparisonReturn {
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -179,7 +177,9 @@ export function useAnalysisComparison(
         .filter((m) => {
           const prev = previous[m.column];
           const curr = current[m.column];
-          return prev != null && curr != null && typeof prev === 'number' && typeof curr === 'number';
+          return (
+            prev != null && curr != null && typeof prev === 'number' && typeof curr === 'number'
+          );
         })
         .map((m) => ({
           label: m.label,

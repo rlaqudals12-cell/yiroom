@@ -130,10 +130,7 @@ export function SkinProfileCard({
             </Badge>
           ))}
           {concerns.length > 4 && (
-            <Badge
-              variant="outline"
-              style={{ marginBottom: spacing.xs }}
-            >
+            <Badge variant="outline" style={{ marginBottom: spacing.xs }}>
               {`+${concerns.length - 4}`}
             </Badge>
           )}

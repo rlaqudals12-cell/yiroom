@@ -51,18 +51,10 @@ export {
 } from './fallback';
 
 // Upstash 관련
-export {
-  isUpstashAvailable,
-  testRedisConnection,
-  UPSTASH_ENABLED,
-} from './upstash';
+export { isUpstashAvailable, testRedisConnection, UPSTASH_ENABLED } from './upstash';
 
 // 모니터링
-export {
-  logRateLimitExceeded,
-  logRateLimitUsage,
-  logFallbackUsed,
-} from './monitoring';
+export { logRateLimitExceeded, logRateLimitUsage, logFallbackUsed } from './monitoring';
 
 // 타입 re-export
 export type {

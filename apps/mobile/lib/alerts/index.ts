@@ -111,9 +111,7 @@ export function createCalorieSurplusAlert(surplus: number): CrossModuleAlert {
 /**
  * 운동 후 영양 알림
  */
-export function createPostWorkoutNutritionAlert(
-  caloriesBurned: number
-): CrossModuleAlert {
+export function createPostWorkoutNutritionAlert(caloriesBurned: number): CrossModuleAlert {
   return createAlert(
     'post_workout_nutrition',
     '운동 후 영양 보충',
@@ -161,13 +159,7 @@ export function createWeightChangeAlert(
       ? `최근 ${changeKg}kg 증가했어요. 식단을 확인해보세요`
       : `최근 ${changeKg}kg 감소했어요. 영양 섭취를 확인해보세요`;
 
-  return createAlert(
-    'weight_change',
-    '체중 변화 알림',
-    msg,
-    '영양 대시보드',
-    '/(tabs)/nutrition'
-  );
+  return createAlert('weight_change', '체중 변화 알림', msg, '영양 대시보드', '/(tabs)/nutrition');
 }
 
 /**
@@ -201,9 +193,7 @@ export function createCollagenBoostAlert(): CrossModuleAlert {
 /**
  * 우선순위 정렬
  */
-export function sortAlertsByPriority(
-  alerts: CrossModuleAlert[]
-): CrossModuleAlert[] {
+export function sortAlertsByPriority(alerts: CrossModuleAlert[]): CrossModuleAlert[] {
   return [...alerts].sort(
     (a, b) => ALERT_PRIORITY_ORDER[a.priority] - ALERT_PRIORITY_ORDER[b.priority]
   );
@@ -212,9 +202,7 @@ export function sortAlertsByPriority(
 /**
  * 만료 알림 필터링
  */
-export function filterExpiredAlerts(
-  alerts: CrossModuleAlert[]
-): CrossModuleAlert[] {
+export function filterExpiredAlerts(alerts: CrossModuleAlert[]): CrossModuleAlert[] {
   const now = Date.now();
   return alerts.filter((alert) => {
     if (!alert.expiresAt) return true;
@@ -225,9 +213,6 @@ export function filterExpiredAlerts(
 /**
  * 표시할 알림 가져오기 (만료 제외 + 우선순위순)
  */
-export function getVisibleAlerts(
-  alerts: CrossModuleAlert[],
-  maxCount = 5
-): CrossModuleAlert[] {
+export function getVisibleAlerts(alerts: CrossModuleAlert[], maxCount = 5): CrossModuleAlert[] {
   return sortAlertsByPriority(filterExpiredAlerts(alerts)).slice(0, maxCount);
 }

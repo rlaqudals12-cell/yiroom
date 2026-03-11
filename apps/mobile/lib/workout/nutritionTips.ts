@@ -28,7 +28,7 @@ export interface PostWorkoutNutrition {
   mealTips: NutritionTip[];
   hydrationTip: NutritionTip;
   timing: {
-    optimal: string;  // 최적 섭취 시간
+    optimal: string; // 최적 섭취 시간
     deadline: string; // 권장 마감 시간
   };
 }
@@ -41,11 +41,11 @@ export interface CalorieEstimate {
 
 // 운동 타입별 칼로리 소모율 (kcal/분)
 const CALORIE_RATES: Record<WorkoutType, number> = {
-  toner: 6,      // 토닝 - 중간 강도
-  builder: 8,    // 근력 - 높은 강도
-  burner: 10,    // 유산소 - 최고 강도
-  mover: 7,      // 기능성 - 중상 강도
-  flexer: 4,     // 유연성 - 낮은 강도
+  toner: 6, // 토닝 - 중간 강도
+  builder: 8, // 근력 - 높은 강도
+  burner: 10, // 유산소 - 최고 강도
+  mover: 7, // 기능성 - 중상 강도
+  flexer: 4, // 유연성 - 낮은 강도
 };
 
 // 운동 타입별 단백질 팁
@@ -54,14 +54,16 @@ const PROTEIN_TIPS: Record<WorkoutType, NutritionTip[]> = {
     {
       icon: '🥩',
       title: '고단백 식사',
-      description: '근력 운동 후 30분~1시간 내에 체중 1kg당 0.3g의 단백질을 섭취하면 근육 회복에 효과적이에요.',
+      description:
+        '근력 운동 후 30분~1시간 내에 체중 1kg당 0.3g의 단백질을 섭취하면 근육 회복에 효과적이에요.',
       priority: 'high',
       category: 'protein',
     },
     {
       icon: '🥛',
       title: '유청 단백질 추천',
-      description: '빠른 흡수를 위해 유청 단백질 쉐이크가 좋아요. 없다면 닭가슴살, 계란도 좋은 선택이에요.',
+      description:
+        '빠른 흡수를 위해 유청 단백질 쉐이크가 좋아요. 없다면 닭가슴살, 계란도 좋은 선택이에요.',
       priority: 'medium',
       category: 'protein',
     },
@@ -352,10 +354,4 @@ export function calculateProteinRecommendation(
 }
 
 // 상수 내보내기 (테스트 및 외부 사용)
-export {
-  CALORIE_RATES,
-  PROTEIN_TIPS,
-  MEAL_TIPS,
-  HYDRATION_TIPS,
-  TIMING,
-};
+export { CALORIE_RATES, PROTEIN_TIPS, MEAL_TIPS, HYDRATION_TIPS, TIMING };

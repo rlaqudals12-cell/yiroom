@@ -257,7 +257,11 @@ export function generateMockSynergyInsight(
       'normal',
     ];
     reason = reasons[Math.floor(Math.random() * reasons.length)];
-    colorAdjustment = selectByKey(reason, { normal: 'neutral' as const, low_hydration: 'bright' as const }, 'muted' as const)!;
+    colorAdjustment = selectByKey(
+      reason,
+      { normal: 'neutral' as const, low_hydration: 'bright' as const },
+      'muted' as const
+    )!;
   }
 
   return {

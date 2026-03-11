@@ -65,14 +65,17 @@ export function Button({
         styles.base,
         needsShadow && !isDark && shadows.sm,
         {
-          backgroundColor: pressed && !isDisabled && isGhostLike
-            ? (isDark ? colors.secondary : colors.muted)
-            : bgColor,
+          backgroundColor:
+            pressed && !isDisabled && isGhostLike
+              ? isDark
+                ? colors.secondary
+                : colors.muted
+              : bgColor,
           borderColor,
           borderRadius: radii.xl,
           paddingHorizontal: sizeStyle.px,
           paddingVertical: sizeStyle.py,
-          opacity: isDisabled ? 0.5 : (pressed && !isGhostLike ? 0.9 : 1),
+          opacity: isDisabled ? 0.5 : pressed && !isGhostLike ? 0.9 : 1,
         },
         variant === 'outline' && styles.outlined,
         externalStyle,

@@ -123,9 +123,7 @@ export function classifyWHtR(whtr: number): WHtRClassification {
 export function calculateAllRatios(measurements: BodyMeasurements): BodyRatios {
   return {
     whr: calculateWHR(measurements.waist, measurements.hip),
-    shr: measurements.shoulder
-      ? calculateSHR(measurements.shoulder, measurements.hip)
-      : null,
+    shr: measurements.shoulder ? calculateSHR(measurements.shoulder, measurements.hip) : null,
     whtr: calculateWHtR(measurements.waist, measurements.height),
   };
 }
@@ -255,7 +253,10 @@ export function analyzeBMI(weightKg: number, heightCm: number): BMIResult {
 // ─── 한국인 표준 ──────────────────────────────────────
 
 // Size Korea 8차 조사 (2020) 평균값
-export const KOREAN_STANDARDS: Record<Gender, Record<AgeGroup, { waist: number; hip: number; shoulder: number; height: number }>> = {
+export const KOREAN_STANDARDS: Record<
+  Gender,
+  Record<AgeGroup, { waist: number; hip: number; shoulder: number; height: number }>
+> = {
   female: {
     '20s': { waist: 68.5, hip: 93.8, shoulder: 36.2, height: 161.4 },
     '30s': { waist: 72.1, hip: 95.2, shoulder: 36.5, height: 160.8 },

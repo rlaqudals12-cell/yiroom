@@ -33,9 +33,7 @@ export function QuickQuestions({
       style={({ pressed }) => [
         styles.chip,
         {
-          backgroundColor: pressed
-            ? module.skin.light + '40'
-            : colors.card,
+          backgroundColor: pressed ? module.skin.light + '40' : colors.card,
           borderColor: colors.border,
           borderRadius: radii.circle,
           paddingHorizontal: spacing.smx,
@@ -48,11 +46,7 @@ export function QuickQuestions({
       accessibilityRole="button"
       testID={`quick-question-${item.id}`}
     >
-      <HelpCircle
-        size={14}
-        color={module.skin.base}
-        style={{ marginRight: spacing.xs }}
-      />
+      <HelpCircle size={14} color={module.skin.base} style={{ marginRight: spacing.xs }} />
       <Text
         style={{
           fontSize: typography.size.xs,

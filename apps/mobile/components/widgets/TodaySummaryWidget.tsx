@@ -46,7 +46,9 @@ export function TodaySummaryWidget({
           <Text style={[styles.title, { color: colors.foreground }]}>오늘의 이룸</Text>
           {data.currentStreak > 0 && (
             <View style={[styles.streakBadge, { backgroundColor: brand.primary }]}>
-              <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>{data.currentStreak}일</Text>
+              <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>
+                {data.currentStreak}일
+              </Text>
             </View>
           )}
         </View>
@@ -93,7 +95,9 @@ export function TodaySummaryWidget({
         <Text style={[styles.title, { color: colors.foreground }]}>오늘의 이룸</Text>
         {data.currentStreak > 0 && (
           <View style={[styles.streakBadge, { backgroundColor: brand.primary }]}>
-            <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>{data.currentStreak}일 연속</Text>
+            <Text style={[styles.streakBadgeText, { color: brand.primaryForeground }]}>
+              {data.currentStreak}일 연속
+            </Text>
           </View>
         )}
       </View>

@@ -43,7 +43,9 @@ export function StrengthsFirst({
     }
     if (analysisType === 'body' && strengths) {
       return {
-        topItems: strengths.slice(0, maxStrengths).map((s, i) => ({ id: `s${i}`, name: s, value: 0 })),
+        topItems: strengths
+          .slice(0, maxStrengths)
+          .map((s, i) => ({ id: `s${i}`, name: s, value: 0 })),
         growthItems: [],
         allExcellent: true,
       };
@@ -51,19 +53,26 @@ export function StrengthsFirst({
     return { topItems: [], growthItems: [], allExcellent: false };
   }, [analysisType, metrics, strengths, maxStrengths, maxGrowthAreas]);
 
-  const moduleColor = analysisType === 'skin'
-    ? module.skin.base
-    : analysisType === 'body'
-      ? module.body.base
-      : module.personalColor.base;
+  const moduleColor =
+    analysisType === 'skin'
+      ? module.skin.base
+      : analysisType === 'body'
+        ? module.body.base
+        : module.personalColor.base;
 
   return (
     <View testID="strengths-first">
       {/* 강점 섹션 */}
       <View
-        style={[styles.section, { backgroundColor: `${status.success}10`, borderColor: `${status.success}30` }]}
+        style={[
+          styles.section,
+          { backgroundColor: `${status.success}10`, borderColor: `${status.success}30` },
+        ]}
       >
-        <Text accessibilityRole="header" style={[styles.sectionTitle, { color: status.success, fontSize: typography.size.sm }]}>
+        <Text
+          accessibilityRole="header"
+          style={[styles.sectionTitle, { color: status.success, fontSize: typography.size.sm }]}
+        >
           나의 강점
         </Text>
 
@@ -72,7 +81,12 @@ export function StrengthsFirst({
             {bestColors.slice(0, 6).map((c, i) => (
               <View key={i} style={styles.colorItem}>
                 <View style={[styles.colorCircle, { backgroundColor: c.hex }]} />
-                <Text style={[styles.colorName, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+                <Text
+                  style={[
+                    styles.colorName,
+                    { color: colors.mutedForeground, fontSize: typography.size.xs },
+                  ]}
+                >
                   {c.name}
                 </Text>
               </View>
@@ -82,11 +96,21 @@ export function StrengthsFirst({
           topItems.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <Text style={[styles.strengthIcon, { color: status.success }]}>●</Text>
-              <Text style={[styles.itemName, { color: colors.foreground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.itemName,
+                  { color: colors.foreground, fontSize: typography.size.sm },
+                ]}
+              >
                 {item.name}
               </Text>
               {item.value > 0 && (
-                <Text style={[styles.itemScore, { color: status.success, fontSize: typography.size.sm }]}>
+                <Text
+                  style={[
+                    styles.itemScore,
+                    { color: status.success, fontSize: typography.size.sm },
+                  ]}
+                >
                   {item.value}점
                 </Text>
               )}
@@ -98,15 +122,27 @@ export function StrengthsFirst({
       {/* 성장 가능성 섹션 */}
       {!allExcellent && growthItems.length > 0 ? (
         <View
-          style={[styles.section, styles.growthSection, { backgroundColor: `${status.warning}10`, borderColor: `${status.warning}30` }]}
+          style={[
+            styles.section,
+            styles.growthSection,
+            { backgroundColor: `${status.warning}10`, borderColor: `${status.warning}30` },
+          ]}
         >
-          <Text accessibilityRole="header" style={[styles.sectionTitle, { color: status.warning, fontSize: typography.size.sm }]}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.sectionTitle, { color: status.warning, fontSize: typography.size.sm }]}
+          >
             성장 가능성
           </Text>
           {growthItems.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <Text style={[styles.strengthIcon, { color: status.warning }]}>○</Text>
-              <Text style={[styles.itemName, { color: colors.foreground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.itemName,
+                  { color: colors.foreground, fontSize: typography.size.sm },
+                ]}
+              >
                 {item.name}을(를) 개선하면 더 좋아질 수 있어요
               </Text>
             </View>
@@ -114,9 +150,15 @@ export function StrengthsFirst({
         </View>
       ) : allExcellent && topItems.length > 0 ? (
         <View
-          style={[styles.section, styles.growthSection, { backgroundColor: `${status.info}10`, borderColor: `${status.info}30` }]}
+          style={[
+            styles.section,
+            styles.growthSection,
+            { backgroundColor: `${status.info}10`, borderColor: `${status.info}30` },
+          ]}
         >
-          <Text style={[styles.excellentText, { color: status.info, fontSize: typography.size.sm }]}>
+          <Text
+            style={[styles.excellentText, { color: status.info, fontSize: typography.size.sm }]}
+          >
             모든 항목이 우수해요! 🎉
           </Text>
         </View>

@@ -3,11 +3,7 @@
  * @description 여러 플랫폼의 가격을 비교하고 최적 구매처 추천
  */
 
-import type {
-  PriceComparison,
-  PurchaseOption,
-  DeliveryType,
-} from '@/types/smart-matching';
+import type { PriceComparison, PurchaseOption, DeliveryType } from '@/types/smart-matching';
 import { getPriceHistory, getLowestPrice, getPriceChangePercent } from './price-watches';
 
 // ============================================
@@ -144,12 +140,7 @@ async function fetchPriceFromPlatforms(
 
     if (history.length > 0) {
       const latest = history[0];
-      const option = createPurchaseOption(
-        platform,
-        latest.price,
-        latest.originalPrice,
-        productId
-      );
+      const option = createPurchaseOption(platform, latest.price, latest.originalPrice, productId);
       options.push(option);
     }
   }
@@ -168,14 +159,12 @@ function createPurchaseOption(
 ): PurchaseOption {
   const salePrice = price;
   const original = originalPrice || price;
-  const discountPercent = original > salePrice
-    ? Math.round(((original - salePrice) / original) * 100)
-    : 0;
+  const discountPercent =
+    original > salePrice ? Math.round(((original - salePrice) / original) * 100) : 0;
 
   // 배송비 계산
-  const deliveryFee = platform.freeDeliveryThreshold && salePrice >= platform.freeDeliveryThreshold
-    ? 0
-    : 3000; // 기본 배송비
+  const deliveryFee =
+    platform.freeDeliveryThreshold && salePrice >= platform.freeDeliveryThreshold ? 0 : 3000; // 기본 배송비
 
   // 적립 포인트 계산 (일반적으로 1%)
   const points = Math.floor(salePrice * 0.01);
@@ -341,11 +330,13 @@ export async function analyzePriceTrend(
   return {
     trend,
     changePercent: changePercent || 0,
-    lowestEver: lowest ? {
-      price: lowest.price,
-      date: lowest.recordedAt,
-      platform: lowest.platform,
-    } : null,
+    lowestEver: lowest
+      ? {
+          price: lowest.price,
+          date: lowest.recordedAt,
+          platform: lowest.platform,
+        }
+      : null,
     suggestion,
   };
 }

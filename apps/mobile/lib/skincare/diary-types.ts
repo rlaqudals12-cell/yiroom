@@ -8,14 +8,7 @@ export type SkinConditionScore = 1 | 2 | 3 | 4 | 5;
 export type SleepQualityScore = 1 | 2 | 3 | 4 | 5;
 export type StressLevelScore = 1 | 2 | 3 | 4 | 5;
 
-export type WeatherType =
-  | 'sunny'
-  | 'cloudy'
-  | 'rainy'
-  | 'cold'
-  | 'hot'
-  | 'humid'
-  | 'dry';
+export type WeatherType = 'sunny' | 'cloudy' | 'rainy' | 'cold' | 'hot' | 'humid' | 'dry';
 
 export type TrendDirection = 'improving' | 'stable' | 'declining';
 
@@ -125,13 +118,9 @@ export function transformDbToEntry(row: DbSkinDiaryEntry): SkinDiaryEntry {
     skinCondition: row.skin_condition as SkinConditionScore,
     conditionNotes: row.condition_notes ?? undefined,
     sleepHours: row.sleep_hours ?? undefined,
-    sleepQuality: row.sleep_quality != null
-      ? (row.sleep_quality as SleepQualityScore)
-      : undefined,
+    sleepQuality: row.sleep_quality != null ? (row.sleep_quality as SleepQualityScore) : undefined,
     waterIntakeMl: row.water_intake_ml ?? undefined,
-    stressLevel: row.stress_level != null
-      ? (row.stress_level as StressLevelScore)
-      : undefined,
+    stressLevel: row.stress_level != null ? (row.stress_level as StressLevelScore) : undefined,
     weather: (row.weather as WeatherType) ?? undefined,
     morningRoutineCompleted: row.morning_routine_completed,
     eveningRoutineCompleted: row.evening_routine_completed,

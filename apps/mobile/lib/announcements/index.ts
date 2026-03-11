@@ -10,12 +10,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ─── 타입 ────────────────────────────────────────────
 
-export type AnnouncementCategory =
-  | 'update'
-  | 'bug_fix'
-  | 'feature'
-  | 'event'
-  | 'maintenance';
+export type AnnouncementCategory = 'update' | 'bug_fix' | 'feature' | 'event' | 'maintenance';
 
 export interface Announcement {
   id: string;
@@ -27,12 +22,7 @@ export interface Announcement {
   expiresAt?: string;
 }
 
-export type FAQCategory =
-  | 'general'
-  | 'account'
-  | 'workout'
-  | 'nutrition'
-  | 'technical';
+export type FAQCategory = 'general' | 'account' | 'workout' | 'nutrition' | 'technical';
 
 export interface FAQ {
   id: string;
@@ -152,9 +142,7 @@ export function formatAnnouncementDate(dateStr: string): string {
 /**
  * 공지사항 조회
  */
-export async function getAnnouncements(
-  supabase: SupabaseClient
-): Promise<Announcement[]> {
+export async function getAnnouncements(supabase: SupabaseClient): Promise<Announcement[]> {
   const { data } = await supabase
     .from('announcements')
     .select('id, title, content, category, is_important, published_at, expires_at')
@@ -175,9 +163,7 @@ export async function getUnreadCount(
   userId: string,
   lastReadAt?: string
 ): Promise<number> {
-  let query = supabase
-    .from('announcements')
-    .select('id', { count: 'exact', head: true });
+  let query = supabase.from('announcements').select('id', { count: 'exact', head: true });
 
   if (lastReadAt) {
     query = query.gt('published_at', lastReadAt);
@@ -192,9 +178,7 @@ export async function getUnreadCount(
 /**
  * FAQ 카테고리별 그룹핑
  */
-export function groupFAQsByCategory(
-  faqs: FAQ[]
-): Record<FAQCategory, FAQ[]> {
+export function groupFAQsByCategory(faqs: FAQ[]): Record<FAQCategory, FAQ[]> {
   const groups: Record<FAQCategory, FAQ[]> = {
     general: [],
     account: [],

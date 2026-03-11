@@ -54,10 +54,17 @@ export function ContextLinkingCard({
         >
           <Text style={styles.linkIcon}>{link.icon}</Text>
           <View style={styles.linkContent}>
-            <Text style={[styles.linkTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+            <Text
+              style={[styles.linkTitle, { color: colors.foreground, fontSize: typography.size.sm }]}
+            >
               {link.title}
             </Text>
-            <Text style={[styles.linkDesc, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+            <Text
+              style={[
+                styles.linkDesc,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
               {link.description}
             </Text>
           </View>

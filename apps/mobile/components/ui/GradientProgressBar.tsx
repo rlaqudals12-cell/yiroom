@@ -94,9 +94,7 @@ export function GradientProgressBar({
     width: `${animatedWidth.value * 100}%` as never,
   }));
 
-  const labelText = labelFormat
-    ? labelFormat(value, max)
-    : `${Math.round(percentage * 100)}%`;
+  const labelText = labelFormat ? labelFormat(value, max) : `${Math.round(percentage * 100)}%`;
 
   return (
     <View testID={testID} style={style}>
@@ -131,11 +129,7 @@ export function GradientProgressBar({
           colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={[
-            styles.fill,
-            { height, borderRadius: radii.full },
-            widthStyle,
-          ]}
+          style={[styles.fill, { height, borderRadius: radii.full }, widthStyle]}
         />
       </View>
     </View>

@@ -23,10 +23,7 @@ interface IngredientConflictAlertProps {
 }
 
 // 심각도별 색상/라벨/아이콘 매핑
-const SEVERITY_CONFIG: Record<
-  ConflictSeverity,
-  { color: string; label: string; icon: string }
-> = {
+const SEVERITY_CONFIG: Record<ConflictSeverity, { color: string; label: string; icon: string }> = {
   low: { color: statusColors.info, label: '참고', icon: 'ℹ️' },
   medium: { color: statusColors.warning, label: '주의', icon: '⚠️' },
   high: { color: statusColors.error, label: '위험', icon: '🚨' },
@@ -42,13 +39,10 @@ export function IngredientConflictAlert({
   if (conflicts.length === 0) return null;
 
   // 가장 높은 심각도로 전체 알림 색상 결정
-  const maxSeverity = conflicts.reduce<ConflictSeverity>(
-    (max, c) => {
-      const order: ConflictSeverity[] = ['low', 'medium', 'high'];
-      return order.indexOf(c.severity) > order.indexOf(max) ? c.severity : max;
-    },
-    'low'
-  );
+  const maxSeverity = conflicts.reduce<ConflictSeverity>((max, c) => {
+    const order: ConflictSeverity[] = ['low', 'medium', 'high'];
+    return order.indexOf(c.severity) > order.indexOf(max) ? c.severity : max;
+  }, 'low');
   const alertConfig = SEVERITY_CONFIG[maxSeverity];
 
   return (
@@ -86,10 +80,7 @@ export function IngredientConflictAlert({
           <Pressable
             testID="conflict-alert-dismiss"
             onPress={onDismiss}
-            style={({ pressed }) => [
-              styles.dismissButton,
-              { opacity: pressed ? 0.6 : 1 },
-            ]}
+            style={({ pressed }) => [styles.dismissButton, { opacity: pressed ? 0.6 : 1 }]}
             accessibilityRole="button"
             accessibilityLabel="알림 닫기"
           >

@@ -39,12 +39,16 @@ export function WeeklyCalorieChart({
     label: d.label,
     value: d.calories,
     maxValue: Math.max(goal * 1.3, ...data.map((dd) => dd.calories)),
-    color: d.calories > goal * 1.1 ? status.error : d.calories > goal * 0.8 ? brand.primary : status.warning,
+    color:
+      d.calories > goal * 1.1
+        ? status.error
+        : d.calories > goal * 0.8
+          ? brand.primary
+          : status.warning,
   }));
 
-  const avgCalories = data.length > 0
-    ? Math.round(data.reduce((sum, d) => sum + d.calories, 0) / data.length)
-    : 0;
+  const avgCalories =
+    data.length > 0 ? Math.round(data.reduce((sum, d) => sum + d.calories, 0) / data.length) : 0;
 
   return (
     <Animated.View

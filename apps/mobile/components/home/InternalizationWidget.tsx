@@ -17,22 +17,15 @@ import { useTheme } from '@/lib/theme';
 import { TIMING } from '@/lib/animations';
 
 // 상태별 색상 + 라벨
-const STATUS_CONFIG: Record<
-  ConnectionStatus,
-  { label: string; color: string; darkColor: string }
-> = {
-  exposed: { label: '발견', color: '#cbd5e1', darkColor: '#475569' },
-  recognized: { label: '인식', color: '#c4b5fd', darkColor: '#6d28d9' },
-  internalized: { label: '내재화', color: '#818cf8', darkColor: '#4f46e5' },
-  independent: { label: '자립', color: '#34d399', darkColor: '#059669' },
-};
+const STATUS_CONFIG: Record<ConnectionStatus, { label: string; color: string; darkColor: string }> =
+  {
+    exposed: { label: '발견', color: '#cbd5e1', darkColor: '#475569' },
+    recognized: { label: '인식', color: '#c4b5fd', darkColor: '#6d28d9' },
+    internalized: { label: '내재화', color: '#818cf8', darkColor: '#4f46e5' },
+    independent: { label: '자립', color: '#34d399', darkColor: '#059669' },
+  };
 
-const STATUS_ORDER: ConnectionStatus[] = [
-  'exposed',
-  'recognized',
-  'internalized',
-  'independent',
-];
+const STATUS_ORDER: ConnectionStatus[] = ['exposed', 'recognized', 'internalized', 'independent'];
 
 interface InternalizationWidgetProps {
   style?: ViewStyle;

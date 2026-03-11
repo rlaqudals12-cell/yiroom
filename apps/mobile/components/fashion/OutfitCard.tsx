@@ -152,12 +152,7 @@ export const OutfitCard = memo(function OutfitCard({
               key={`${item.name}-${index}`}
               style={[styles.itemRow, { marginTop: index > 0 ? spacing.xxs : 0 }]}
             >
-              <View
-                style={[
-                  styles.dot,
-                  { backgroundColor: moduleColors.personalColor.base },
-                ]}
-              />
+              <View style={[styles.dot, { backgroundColor: moduleColors.personalColor.base }]} />
               <Text
                 style={{
                   fontSize: typography.size.sm,

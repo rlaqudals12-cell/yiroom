@@ -5,7 +5,15 @@
  */
 
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  Modal,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -26,7 +34,12 @@ export interface ReportModalProps {
   onSubmit: (postId: string, reason: ReportReason, description?: string) => Promise<void>;
 }
 
-export function ReportModal({ visible, onClose, postId, onSubmit }: ReportModalProps): React.JSX.Element | null {
+export function ReportModal({
+  visible,
+  onClose,
+  postId,
+  onSubmit,
+}: ReportModalProps): React.JSX.Element | null {
   const { colors } = useTheme();
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [description, setDescription] = useState('');
@@ -51,12 +64,7 @@ export function ReportModal({ visible, onClose, postId, onSubmit }: ReportModalP
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View className="flex-1 justify-end bg-black/50" testID="report-modal">
         <View
           className="rounded-t-2xl px-5 pt-5 pb-8 max-h-[80%]"
@@ -132,7 +140,8 @@ export function ReportModal({ visible, onClose, postId, onSubmit }: ReportModalP
               disabled={!selectedReason || isSubmitting}
               className="flex-1 py-3 rounded-lg items-center"
               style={{
-                backgroundColor: !selectedReason || isSubmitting ? colors.muted : colors.destructive,
+                backgroundColor:
+                  !selectedReason || isSubmitting ? colors.muted : colors.destructive,
               }}
             >
               {isSubmitting ? (

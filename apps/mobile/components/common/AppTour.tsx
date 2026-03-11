@@ -62,10 +62,7 @@ export function AppTour({
 
   return (
     <Modal transparent visible={isVisible} animationType="none" testID={testID}>
-      <Animated.View
-        entering={FadeIn.duration(300)}
-        style={[styles.overlay, cardPositionStyle]}
-      >
+      <Animated.View entering={FadeIn.duration(300)} style={[styles.overlay, cardPositionStyle]}>
         {/* 닫기 버튼 */}
         <Pressable
           style={[styles.closeBtn, { top: 50, right: spacing.md }]}

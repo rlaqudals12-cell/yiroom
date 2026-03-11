@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { moduleColors, brand as brandTokens, trustColors } from '../../lib/theme/tokens';
 
 /** 기본 뱃지 스타일 variant */
@@ -90,7 +90,7 @@ export function Badge({
 function getBadgeBackground(
   variant: BadgeVariant,
   colors: ReturnType<typeof useTheme>['colors'],
-  brand: ReturnType<typeof useTheme>['brand'],
+  brand: ReturnType<typeof useTheme>['brand']
 ): string {
   switch (variant) {
     case 'default':
@@ -109,7 +109,7 @@ function getBadgeBackground(
 function getBadgeForeground(
   variant: BadgeVariant,
   colors: ReturnType<typeof useTheme>['colors'],
-  brand: ReturnType<typeof useTheme>['brand'],
+  brand: ReturnType<typeof useTheme>['brand']
 ): string {
   switch (variant) {
     case 'default':

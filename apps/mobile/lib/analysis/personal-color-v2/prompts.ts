@@ -283,19 +283,13 @@ export function validateToneValue(tone: string): TwelveTone | null {
  * @param lab - Lab 객체
  * @returns 유효 여부
  */
-export function validateLabRange(lab: {
-  L?: number;
-  a?: number;
-  b?: number;
-}): boolean {
+export function validateLabRange(lab: { L?: number; a?: number; b?: number }): boolean {
   if (typeof lab.L !== 'number' || typeof lab.a !== 'number' || typeof lab.b !== 'number') {
     return false;
   }
 
   return (
-    lab.L >= 0 && lab.L <= 100 &&
-    lab.a >= -128 && lab.a <= 127 &&
-    lab.b >= -128 && lab.b <= 127
+    lab.L >= 0 && lab.L <= 100 && lab.a >= -128 && lab.a <= 127 && lab.b >= -128 && lab.b <= 127
   );
 }
 
@@ -321,7 +315,10 @@ export function validateAnalysisResult(result: unknown): boolean {
     return false;
   }
 
-  if (!r.measuredLab || !validateLabRange(r.measuredLab as { L?: number; a?: number; b?: number })) {
+  if (
+    !r.measuredLab ||
+    !validateLabRange(r.measuredLab as { L?: number; a?: number; b?: number })
+  ) {
     return false;
   }
 

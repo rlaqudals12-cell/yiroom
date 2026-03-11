@@ -5,7 +5,15 @@
  */
 
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  Modal,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 
 import { useTheme, brand } from '../../lib/theme';
 
@@ -95,16 +103,13 @@ export function SendEncouragement({
         testID="send-encouragement-button"
       >
         <Text style={{ color: brand.primary }}>♥</Text>
-        <Text className="text-sm" style={{ color: colors.foreground }}>응원</Text>
+        <Text className="text-sm" style={{ color: colors.foreground }}>
+          응원
+        </Text>
       </Pressable>
 
       {/* 응원 바텀시트 */}
-      <Modal
-        visible={isOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={handleClose}
-      >
+      <Modal visible={isOpen} transparent animationType="slide" onRequestClose={handleClose}>
         <Pressable className="flex-1 justify-end bg-black/50" onPress={handleClose}>
           <Pressable
             className="rounded-t-2xl px-5 pt-5 pb-8"
@@ -157,7 +162,9 @@ export function SendEncouragement({
                 {/* 구분선 */}
                 <View className="flex-row items-center gap-2 mb-4">
                   <View className="flex-1 h-px" style={{ backgroundColor: colors.border }} />
-                  <Text className="text-xs" style={{ color: colors.mutedForeground }}>또는</Text>
+                  <Text className="text-xs" style={{ color: colors.mutedForeground }}>
+                    또는
+                  </Text>
                   <View className="flex-1 h-px" style={{ backgroundColor: colors.border }} />
                 </View>
 

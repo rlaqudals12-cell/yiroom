@@ -35,11 +35,7 @@ const LEVEL_LABELS: Record<TrafficLightLevel, string> = {
   red: '주의',
 };
 
-export function TrafficLight({
-  items,
-  productName,
-  style,
-}: TrafficLightProps): React.JSX.Element {
+export function TrafficLight({ items, productName, style }: TrafficLightProps): React.JSX.Element {
   const { colors, spacing, typography, radii, shadows, status } = useTheme();
 
   // status 토큰을 사용하기 위해 컴포넌트 내부에서 색상 맵 정의

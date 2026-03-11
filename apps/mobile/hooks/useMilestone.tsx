@@ -14,10 +14,19 @@ export function useMilestone() {
    * 마일스톤 달성 Toast 표시
    */
   const showMilestoneToast = useCallback((milestone: Milestone) => {
-    toast.custom(() => <MilestoneToast title={milestone.title} description={milestone.description} emoji={milestone.icon} />, {
-      duration: 4000,
-      position: 'top-center',
-    });
+    toast.custom(
+      () => (
+        <MilestoneToast
+          title={milestone.title}
+          description={milestone.description}
+          emoji={milestone.icon}
+        />
+      ),
+      {
+        duration: 4000,
+        position: 'top-center',
+      }
+    );
   }, []);
 
   /**

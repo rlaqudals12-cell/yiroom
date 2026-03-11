@@ -70,10 +70,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
  *
  * userId를 시드로 결정적(deterministic) 할당
  */
-export function assignVariant(
-  experiment: Experiment,
-  userId: string
-): ExperimentVariant {
+export function assignVariant(experiment: Experiment, userId: string): ExperimentVariant {
   if (!experiment.isActive) return 'control';
 
   // userId 해시 → 0~99 범위
@@ -94,9 +91,7 @@ export function assignVariant(
 /**
  * 모든 활성 실험에 대해 변형 할당
  */
-export function assignAllExperiments(
-  userId: string
-): UserExperimentAssignment[] {
+export function assignAllExperiments(userId: string): UserExperimentAssignment[] {
   return Object.values(EXPERIMENTS)
     .filter((exp) => exp.isActive)
     .map((exp) => ({
@@ -134,9 +129,7 @@ export async function loadExperimentAssignments(): Promise<UserExperimentAssignm
 /**
  * 특정 실험의 할당된 변형 조회
  */
-export async function getExperimentVariant(
-  experimentKey: string
-): Promise<ExperimentVariant> {
+export async function getExperimentVariant(experimentKey: string): Promise<ExperimentVariant> {
   const assignments = await loadExperimentAssignments();
   const assignment = assignments.find((a) => a.experimentKey === experimentKey);
   return assignment?.variant ?? 'control';
@@ -177,7 +170,7 @@ function simpleHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // 32bit integer
   }
   return hash;

@@ -109,28 +109,58 @@ export default function DailyCapsuleScreen(): React.JSX.Element {
             {/* 상태 */}
             <View style={[styles.statusRow, { marginTop: spacing.md }]}>
               <View style={styles.statusItem}>
-                <Text style={[styles.statusValue, { color: colors.foreground, fontWeight: typography.weight.bold }]}>
+                <Text
+                  style={[
+                    styles.statusValue,
+                    { color: colors.foreground, fontWeight: typography.weight.bold },
+                  ]}
+                >
                   {capsule.items.length}
                 </Text>
-                <Text style={[styles.statusLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+                <Text
+                  style={[
+                    styles.statusLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.xs },
+                  ]}
+                >
                   총 아이템
                 </Text>
               </View>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <View style={styles.statusItem}>
-                <Text style={[styles.statusValue, { color: '#22C55E', fontWeight: typography.weight.bold }]}>
+                <Text
+                  style={[
+                    styles.statusValue,
+                    { color: '#22C55E', fontWeight: typography.weight.bold },
+                  ]}
+                >
                   {capsule.items.filter((i) => i.isChecked).length}
                 </Text>
-                <Text style={[styles.statusLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+                <Text
+                  style={[
+                    styles.statusLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.xs },
+                  ]}
+                >
                   완료
                 </Text>
               </View>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <View style={styles.statusItem}>
-                <Text style={[styles.statusValue, { color: '#F59E0B', fontWeight: typography.weight.bold }]}>
+                <Text
+                  style={[
+                    styles.statusValue,
+                    { color: '#F59E0B', fontWeight: typography.weight.bold },
+                  ]}
+                >
                   {capsule.items.filter((i) => !i.isChecked).length}
                 </Text>
-                <Text style={[styles.statusLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+                <Text
+                  style={[
+                    styles.statusLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.xs },
+                  ]}
+                >
                   남음
                 </Text>
               </View>
@@ -140,7 +170,10 @@ export default function DailyCapsuleScreen(): React.JSX.Element {
       ) : null}
 
       {/* 캡슐 설명 */}
-      <Animated.View entering={staggeredEntry(2)} style={{ marginTop: spacing.lg, marginBottom: spacing.xl }}>
+      <Animated.View
+        entering={staggeredEntry(2)}
+        style={{ marginTop: spacing.lg, marginBottom: spacing.xl }}
+      >
         <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
           <Text
             style={{
@@ -159,9 +192,9 @@ export default function DailyCapsuleScreen(): React.JSX.Element {
               lineHeight: typography.size.xs * 1.6,
             }}
           >
-            뷰티 프로필 기반으로 AI가 매일 최적의 루틴을 구성해 드려요.
-            스킨케어, 메이크업, 영양, 운동 등 모든 영역에서 나에게 딱 맞는
-            아이템만 엄선해요. 캡슐 호환도(CCS)가 70 이상이면 좋은 조합이에요.
+            뷰티 프로필 기반으로 AI가 매일 최적의 루틴을 구성해 드려요. 스킨케어, 메이크업, 영양,
+            운동 등 모든 영역에서 나에게 딱 맞는 아이템만 엄선해요. 캡슐 호환도(CCS)가 70 이상이면
+            좋은 조합이에요.
           </Text>
         </GlassCard>
       </Animated.View>

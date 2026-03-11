@@ -32,7 +32,10 @@ export interface GumHealthIndicatorProps {
   compact?: boolean;
 }
 
-const STATUS_CONFIG: Record<GumHealthStatus, { label: string; emoji: string; colorKey: 'success' | 'warning' | 'error' }> = {
+const STATUS_CONFIG: Record<
+  GumHealthStatus,
+  { label: string; emoji: string; colorKey: 'success' | 'warning' | 'error' }
+> = {
   healthy: { label: '건강', emoji: '✅', colorKey: 'success' },
   mild_gingivitis: { label: '경미한 치은염', emoji: '⚠️', colorKey: 'warning' },
   moderate_gingivitis: { label: '중등도 치은염', emoji: '🟠', colorKey: 'warning' },
@@ -56,7 +59,10 @@ export function GumHealthIndicator({
   return (
     <View
       testID="gum-health-indicator"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`잇몸 건강: ${config.label}, 염증 지수 ${result.inflammationScore}`}
     >
       {/* 상태 헤더 */}
@@ -65,7 +71,9 @@ export function GumHealthIndicator({
           {config.emoji}
         </Text>
         <View style={styles.statusText}>
-          <Text style={[styles.statusLabel, { color: statusColor, fontSize: typography.size.base }]}>
+          <Text
+            style={[styles.statusLabel, { color: statusColor, fontSize: typography.size.base }]}
+          >
             {config.label}
           </Text>
           {result.needsDentalVisit && (
@@ -79,12 +87,19 @@ export function GumHealthIndicator({
       {/* 염증 지수 바 */}
       <View style={[styles.inflammationSection, { paddingHorizontal: spacing.md }]}>
         <View style={styles.inflammationHeader}>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>염증 지수</Text>
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+            염증 지수
+          </Text>
           <Text style={{ color: statusColor, fontSize: typography.size.sm, fontWeight: '700' }}>
             {result.inflammationScore}
           </Text>
         </View>
-        <View style={[styles.progressBg, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
+        <View
+          style={[
+            styles.progressBg,
+            { backgroundColor: colors.secondary, borderRadius: radii.full },
+          ]}
+        >
           <View
             style={[
               styles.progressFill,
@@ -104,17 +119,39 @@ export function GumHealthIndicator({
       {/* 영향 부위 */}
       {!compact && result.affectedAreas && result.affectedAreas.length > 0 && (
         <View style={[styles.areasSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              marginBottom: spacing.sm,
+            }}
+          >
             영향 부위
           </Text>
           <View style={styles.areasList}>
             {result.affectedAreas.map((area, index) => {
-              const severityColor = area.severity === 'severe' ? status.error
-                : area.severity === 'moderate' ? status.warning
-                : colors.mutedForeground;
+              const severityColor =
+                area.severity === 'severe'
+                  ? status.error
+                  : area.severity === 'moderate'
+                    ? status.warning
+                    : colors.mutedForeground;
               return (
-                <View key={index} style={[styles.areaBadge, { backgroundColor: `${severityColor}15`, borderRadius: radii.sm }]}>
-                  <Text style={{ color: severityColor, fontSize: typography.size.xs, fontWeight: '500' }}>
+                <View
+                  key={index}
+                  style={[
+                    styles.areaBadge,
+                    { backgroundColor: `${severityColor}15`, borderRadius: radii.sm },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: severityColor,
+                      fontSize: typography.size.xs,
+                      fontWeight: '500',
+                    }}
+                  >
                     {area.name} ({SEVERITY_LABELS[area.severity] ?? area.severity})
                   </Text>
                 </View>
@@ -127,11 +164,26 @@ export function GumHealthIndicator({
       {/* 추천사항 */}
       {!compact && result.recommendations && result.recommendations.length > 0 && (
         <View style={[styles.recsSection, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              marginBottom: spacing.sm,
+            }}
+          >
             추천사항
           </Text>
           {result.recommendations.slice(0, 4).map((rec, index) => (
-            <Text key={index} style={{ color: colors.mutedForeground, fontSize: typography.size.xs, lineHeight: 18, marginBottom: spacing.xs }}>
+            <Text
+              key={index}
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.xs,
+                lineHeight: 18,
+                marginBottom: spacing.xs,
+              }}
+            >
               • {rec}
             </Text>
           ))}

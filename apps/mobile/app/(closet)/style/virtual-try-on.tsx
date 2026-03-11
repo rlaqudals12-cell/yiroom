@@ -118,17 +118,11 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
         ) : (
           <View className="w-full aspect-[3/4] rounded-2xl bg-muted items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
             <Camera size={48} color={colors.mutedForeground} />
-            <Text
-              className="mt-3 text-base font-medium"
-              style={{ color: colors.mutedForeground }}
-            >
+            <Text className="mt-3 text-base font-medium" style={{ color: colors.mutedForeground }}>
               사진을 선택해주세요
             </Text>
             <View className="flex-row gap-3 mt-4">
-              <Pressable
-                onPress={takePhoto}
-                className="px-4 py-2 rounded-full bg-primary"
-              >
+              <Pressable onPress={takePhoto} className="px-4 py-2 rounded-full bg-primary">
                 <Text className="text-white text-sm font-medium">촬영</Text>
               </Pressable>
               <Pressable
@@ -157,9 +151,7 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
               }`}
             >
               <Text
-                className={`text-sm font-medium ${
-                  isActive ? 'text-white' : ''
-                }`}
+                className={`text-sm font-medium ${isActive ? 'text-white' : ''}`}
                 style={isActive ? undefined : { color: colors.foreground }}
               >
                 {cat.label}
@@ -171,10 +163,7 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
 
       {/* 컬러 프리셋 */}
       <View className="px-4 mt-4">
-        <Text
-          className="text-sm font-medium mb-2"
-          style={{ color: colors.mutedForeground }}
-        >
+        <Text className="text-sm font-medium mb-2" style={{ color: colors.mutedForeground }}>
           {category === 'lip' ? '립 컬러' : category === 'blush' ? '블러셔 컬러' : '헤어 컬러'}
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>

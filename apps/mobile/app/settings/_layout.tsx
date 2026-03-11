@@ -3,7 +3,7 @@
  */
 import { Stack } from 'expo-router';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 
 export default function SettingsLayout() {
   const { colors, typography } = useTheme();

@@ -66,33 +66,97 @@ export function NutritionSummaryCard({
       </View>
 
       <View style={{ marginTop: spacing.sm }}>
-        <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: module.nutrition.base }}>
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.bold,
+            color: module.nutrition.base,
+          }}
+        >
           평균 {avgCalories}kcal
         </Text>
       </View>
 
       <View style={[styles.macroRow, { marginTop: spacing.sm, gap: spacing.sm }]}>
-        <View style={[styles.macroItem, { backgroundColor: nutrient.carbs + '20', borderRadius: radii.xl, padding: spacing.sm }]}>
-          <Text style={{ fontSize: typography.size.xs, color: nutrient.carbs, fontWeight: typography.weight.medium }}>
+        <View
+          style={[
+            styles.macroItem,
+            { backgroundColor: nutrient.carbs + '20', borderRadius: radii.xl, padding: spacing.sm },
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrient.carbs,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             탄수화물
           </Text>
-          <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: nutrient.carbs, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.bold,
+              color: nutrient.carbs,
+              marginTop: spacing.xxs,
+            }}
+          >
             {avgCarbs}g
           </Text>
         </View>
-        <View style={[styles.macroItem, { backgroundColor: nutrient.protein + '20', borderRadius: radii.xl, padding: spacing.sm }]}>
-          <Text style={{ fontSize: typography.size.xs, color: nutrient.protein, fontWeight: typography.weight.medium }}>
+        <View
+          style={[
+            styles.macroItem,
+            {
+              backgroundColor: nutrient.protein + '20',
+              borderRadius: radii.xl,
+              padding: spacing.sm,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrient.protein,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             단백질
           </Text>
-          <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: nutrient.protein, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.bold,
+              color: nutrient.protein,
+              marginTop: spacing.xxs,
+            }}
+          >
             {avgProtein}g
           </Text>
         </View>
-        <View style={[styles.macroItem, { backgroundColor: nutrient.fat + '20', borderRadius: radii.xl, padding: spacing.sm }]}>
-          <Text style={{ fontSize: typography.size.xs, color: nutrient.fat, fontWeight: typography.weight.medium }}>
+        <View
+          style={[
+            styles.macroItem,
+            { backgroundColor: nutrient.fat + '20', borderRadius: radii.xl, padding: spacing.sm },
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrient.fat,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             지방
           </Text>
-          <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: nutrient.fat, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.bold,
+              color: nutrient.fat,
+              marginTop: spacing.xxs,
+            }}
+          >
             {avgFat}g
           </Text>
         </View>

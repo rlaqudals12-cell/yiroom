@@ -70,9 +70,7 @@ export default function ShelfScreen(): React.JSX.Element {
   }, [userId, supabase]);
 
   const filteredItems =
-    statusFilter === 'all'
-      ? items
-      : items.filter((item) => item.status === statusFilter);
+    statusFilter === 'all' ? items : items.filter((item) => item.status === statusFilter);
 
   const handleItemPress = useCallback((id: string) => {
     router.push({ pathname: '/(inventory)/shelf-detail/[id]', params: { id } });

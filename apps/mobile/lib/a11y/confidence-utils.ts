@@ -84,10 +84,7 @@ export function getConfidenceColorKey(
 /**
  * 신뢰도 접근성 라벨
  */
-export function getConfidenceA11yLabel(
-  confidence: number,
-  usedFallback: boolean = false
-): string {
+export function getConfidenceA11yLabel(confidence: number, usedFallback: boolean = false): string {
   const info = getConfidenceLevelInfo(confidence, usedFallback);
   return `${info.label}, ${Math.round(confidence)}%. ${info.description}`;
 }

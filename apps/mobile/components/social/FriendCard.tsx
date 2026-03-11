@@ -6,7 +6,7 @@
 import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, radii} from '../../lib/theme';
+import { useTheme, radii } from '../../lib/theme';
 
 export interface FriendCardProps {
   id: string;

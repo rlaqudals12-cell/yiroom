@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { FriendCard, type FriendCardProps } from './FriendCard';
 
 export interface FriendListProps {
@@ -60,9 +60,7 @@ export function FriendList({
       <FlatList
         data={friends}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <FriendCard {...item} onPress={onFriendPress} />
-        )}
+        renderItem={({ item }) => <FriendCard {...item} onPress={onFriendPress} />}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         scrollEnabled={false}
       />

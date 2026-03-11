@@ -42,9 +42,7 @@ export function SkinConsultantCTA({
       accessibilityRole="button"
     >
       <View style={styles.content}>
-        <Text style={{ fontSize: typography.size.xl, marginBottom: spacing.xs }}>
-          💬
-        </Text>
+        <Text style={{ fontSize: typography.size.xl, marginBottom: spacing.xs }}>💬</Text>
         <Text
           style={{
             fontSize: typography.size.base,

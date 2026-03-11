@@ -56,7 +56,10 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
       testID="capsule-dashboard-screen"
     >
       {/* 프로필 완성도 헤더 */}
-      <Animated.View entering={staggeredEntry(0)} style={[styles.profileSection, { marginTop: spacing.md }]}>
+      <Animated.View
+        entering={staggeredEntry(0)}
+        style={[styles.profileSection, { marginTop: spacing.md }]}
+      >
         <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
           <View style={styles.profileHeader}>
             <View style={{ flex: 1 }}>
@@ -101,12 +104,18 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
             </View>
           </View>
           {/* 완성도 바 */}
-          <View style={[styles.progressTrack, { backgroundColor: colors.muted, borderRadius: radii.full, marginTop: spacing.sm }]}>
+          <View
+            style={[
+              styles.progressTrack,
+              { backgroundColor: colors.muted, borderRadius: radii.full, marginTop: spacing.sm },
+            ]}
+          >
             <View
               style={[
                 styles.progressFill,
                 {
-                  width: `${Math.round((completedCount / totalModules) * 100)}%` as unknown as number,
+                  width:
+                    `${Math.round((completedCount / totalModules) * 100)}%` as unknown as number,
                   backgroundColor: brand.primary,
                   borderRadius: radii.full,
                 },
@@ -139,10 +148,7 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
       {/* 에러 표시 */}
       {daily.error ? (
         <Animated.View entering={staggeredEntry(2)} style={{ marginTop: spacing.sm }}>
-          <ErrorState
-            message={daily.error.message}
-            onRetry={daily.fetchToday}
-          />
+          <ErrorState message={daily.error.message} onRetry={daily.fetchToday} />
         </Animated.View>
       ) : null}
 
@@ -172,10 +178,15 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
                     padding: spacing.md,
                   },
                   !isDark
-                    ? Platform.select({
-                        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4 },
+                    ? (Platform.select({
+                        ios: {
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 1 },
+                          shadowOpacity: 0.05,
+                          shadowRadius: 4,
+                        },
                         android: { elevation: 1 },
-                      }) ?? {}
+                      }) ?? {})
                     : {},
                 ]}
               >
@@ -218,7 +229,10 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
       </Animated.View>
 
       {/* 갭 분석 바로가기 */}
-      <Animated.View entering={staggeredEntry(3)} style={{ marginTop: spacing.lg, marginBottom: spacing.xl }}>
+      <Animated.View
+        entering={staggeredEntry(3)}
+        style={{ marginTop: spacing.lg, marginBottom: spacing.xl }}
+      >
         <Pressable
           onPress={() => router.push('/(capsule)/gap')}
           accessibilityRole="button"

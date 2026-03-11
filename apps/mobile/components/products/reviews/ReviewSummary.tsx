@@ -91,16 +91,42 @@ export function ReviewSummarySkeleton() {
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
       <View style={[styles.averageSection, { borderRightColor: colors.border }]}>
-        <View style={[styles.skeleton, { width: 60, height: 48, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 120, height: 24, marginTop: spacing.sm, backgroundColor: colors.border }]} />
-        <View style={[styles.skeleton, { width: 80, height: 16, marginTop: spacing.sm, backgroundColor: colors.border }]} />
+        <View
+          style={[styles.skeleton, { width: 60, height: 48, backgroundColor: colors.border }]}
+        />
+        <View
+          style={[
+            styles.skeleton,
+            { width: 120, height: 24, marginTop: spacing.sm, backgroundColor: colors.border },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeleton,
+            { width: 80, height: 16, marginTop: spacing.sm, backgroundColor: colors.border },
+          ]}
+        />
       </View>
       <View style={styles.distributionSection}>
         {[1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={styles.ratingRow}>
-            <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
-            <View style={[styles.skeleton, { flex: 1, height: 8, marginHorizontal: spacing.sm, backgroundColor: colors.border }]} />
-            <View style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]} />
+            <View
+              style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]}
+            />
+            <View
+              style={[
+                styles.skeleton,
+                {
+                  flex: 1,
+                  height: 8,
+                  marginHorizontal: spacing.sm,
+                  backgroundColor: colors.border,
+                },
+              ]}
+            />
+            <View
+              style={[styles.skeleton, { width: 24, height: 16, backgroundColor: colors.border }]}
+            />
           </View>
         ))}
       </View>

@@ -149,7 +149,9 @@ export function ChallengeProgress({
           },
         ]}
       >
-        {current}{unit} / {target}{unit}
+        {current}
+        {unit} / {target}
+        {unit}
       </Text>
     </View>
   );

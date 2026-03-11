@@ -41,11 +41,12 @@ export interface MakeupResultCardProps {
   insight?: string;
 }
 
-const UNDERTONE_INFO: Record<UndertoneType, { label: string; emoji: string; description: string }> = {
-  warm: { label: '웜톤', emoji: '🌅', description: '노란/골드 계열이 잘 어울려요' },
-  cool: { label: '쿨톤', emoji: '❄️', description: '핑크/실버 계열이 잘 어울려요' },
-  neutral: { label: '뉴트럴', emoji: '⚖️', description: '다양한 색상이 잘 어울려요' },
-};
+const UNDERTONE_INFO: Record<UndertoneType, { label: string; emoji: string; description: string }> =
+  {
+    warm: { label: '웜톤', emoji: '🌅', description: '노란/골드 계열이 잘 어울려요' },
+    cool: { label: '쿨톤', emoji: '❄️', description: '핑크/실버 계열이 잘 어울려요' },
+    neutral: { label: '뉴트럴', emoji: '⚖️', description: '다양한 색상이 잘 어울려요' },
+  };
 
 type TabType = 'colors' | 'styles';
 
@@ -67,22 +68,36 @@ export function MakeupResultCard({
   return (
     <View
       testID="makeup-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`메이크업 분석 결과: ${toneInfo.label}, 점수 ${overallScore}점`}
     >
       {/* 헤더 */}
-      <View style={[styles.header, { backgroundColor: `${module.makeup.base}15`, padding: spacing.md }]}>
+      <View
+        style={[styles.header, { backgroundColor: `${module.makeup.base}15`, padding: spacing.md }]}
+      >
         <Text style={{ fontSize: typography.size['2xl'] }}>{toneInfo.emoji}</Text>
         <View style={styles.headerText}>
-          <Text style={[styles.toneLabel, { color: colors.foreground, fontSize: typography.size.lg }]}>
+          <Text
+            style={[styles.toneLabel, { color: colors.foreground, fontSize: typography.size.lg }]}
+          >
             {toneInfo.label}
           </Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
             {toneInfo.description}
           </Text>
         </View>
-        <View style={[styles.scoreBadge, { backgroundColor: colors.background, borderRadius: radii.xl }]}>
-          <Text style={{ color: module.makeup.base, fontSize: typography.size.xl, fontWeight: '700' }}>
+        <View
+          style={[
+            styles.scoreBadge,
+            { backgroundColor: colors.background, borderRadius: radii.xl },
+          ]}
+        >
+          <Text
+            style={{ color: module.makeup.base, fontSize: typography.size.xl, fontWeight: '700' }}
+          >
             {overallScore}
           </Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>점</Text>
@@ -91,23 +106,40 @@ export function MakeupResultCard({
 
       {/* 얼굴 특징 뱃지 */}
       {features && (
-        <View style={[styles.featureRow, { paddingHorizontal: spacing.md, paddingTop: spacing.sm }]}>
+        <View
+          style={[styles.featureRow, { paddingHorizontal: spacing.md, paddingTop: spacing.sm }]}
+        >
           {features.eyeShape && (
-            <View style={[styles.featureBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
+            <View
+              style={[
+                styles.featureBadge,
+                { backgroundColor: colors.secondary, borderRadius: radii.sm },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 👁️ {features.eyeShape}
               </Text>
             </View>
           )}
           {features.lipShape && (
-            <View style={[styles.featureBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
+            <View
+              style={[
+                styles.featureBadge,
+                { backgroundColor: colors.secondary, borderRadius: radii.sm },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 👄 {features.lipShape}
               </Text>
             </View>
           )}
           {features.faceShape && (
-            <View style={[styles.featureBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
+            <View
+              style={[
+                styles.featureBadge,
+                { backgroundColor: colors.secondary, borderRadius: radii.sm },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 🔲 {features.faceShape}
               </Text>
@@ -118,7 +150,17 @@ export function MakeupResultCard({
 
       {/* 인사이트 */}
       {insight && (
-        <View style={[styles.insightBox, { backgroundColor: `${module.makeup.base}10`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
+        <View
+          style={[
+            styles.insightBox,
+            {
+              backgroundColor: `${module.makeup.base}10`,
+              margin: spacing.md,
+              borderRadius: radii.xl,
+              padding: spacing.sm,
+            },
+          ]}
+        >
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm, lineHeight: 20 }}>
             💡 {insight}
           </Text>
@@ -126,7 +168,9 @@ export function MakeupResultCard({
       )}
 
       {/* 탭 */}
-      <View style={[styles.tabs, { borderBottomColor: colors.border, marginHorizontal: spacing.md }]}>
+      <View
+        style={[styles.tabs, { borderBottomColor: colors.border, marginHorizontal: spacing.md }]}
+      >
         {[
           { key: 'colors' as TabType, label: '추천 컬러' },
           { key: 'styles' as TabType, label: '추천 스타일' },
@@ -134,7 +178,13 @@ export function MakeupResultCard({
           <Pressable
             key={tab.key}
             onPress={() => handleTabChange(tab.key)}
-            style={[styles.tab, activeTab === tab.key && { borderBottomColor: module.makeup.base, borderBottomWidth: 2 }]}
+            style={[
+              styles.tab,
+              activeTab === tab.key && {
+                borderBottomColor: module.makeup.base,
+                borderBottomWidth: 2,
+              },
+            ]}
           >
             <Text
               style={{
@@ -154,22 +204,48 @@ export function MakeupResultCard({
         {activeTab === 'colors' && (
           <View>
             {colorCategories.length === 0 ? (
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.sm,
+                  textAlign: 'center',
+                }}
+              >
                 추천 컬러 정보가 없습니다
               </Text>
             ) : (
               colorCategories.map((cat) => (
                 <View key={cat.id} style={[styles.colorCategory, { marginBottom: spacing.md }]}>
-                  <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
+                  <Text
+                    style={{
+                      color: colors.foreground,
+                      fontSize: typography.size.sm,
+                      fontWeight: '600',
+                      marginBottom: spacing.sm,
+                    }}
+                  >
                     {cat.category}
                   </Text>
                   <View style={styles.swatchRow}>
                     {cat.colors.slice(0, 6).map((c, i) => (
                       <View key={i} style={styles.swatchItem}>
                         <View
-                          style={[styles.swatch, { backgroundColor: c.hex, borderRadius: radii.full, borderColor: colors.border }]}
+                          style={[
+                            styles.swatch,
+                            {
+                              backgroundColor: c.hex,
+                              borderRadius: radii.full,
+                              borderColor: colors.border,
+                            },
+                          ]}
                         />
-                        <Text style={{ color: colors.mutedForeground, fontSize: 10, textAlign: 'center' }}>
+                        <Text
+                          style={{
+                            color: colors.mutedForeground,
+                            fontSize: 10,
+                            textAlign: 'center',
+                          }}
+                        >
                           {c.name}
                         </Text>
                       </View>
@@ -184,21 +260,45 @@ export function MakeupResultCard({
         {activeTab === 'styles' && (
           <View>
             {makeupStyles.length === 0 ? (
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.sm,
+                  textAlign: 'center',
+                }}
+              >
                 추천 스타일 정보가 없습니다
               </Text>
             ) : (
               makeupStyles.slice(0, 6).map((s) => (
                 <View key={s.id} style={[styles.styleItem, { borderBottomColor: colors.border }]}>
                   <View style={styles.styleHeader}>
-                    <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
+                    <Text
+                      style={{
+                        color: colors.foreground,
+                        fontSize: typography.size.sm,
+                        fontWeight: '600',
+                      }}
+                    >
                       {s.name}
                     </Text>
-                    <Text style={{ color: module.makeup.base, fontSize: typography.size.xs, fontWeight: '600' }}>
+                    <Text
+                      style={{
+                        color: module.makeup.base,
+                        fontSize: typography.size.xs,
+                        fontWeight: '600',
+                      }}
+                    >
                       {s.suitability}%
                     </Text>
                   </View>
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xxs }}>
+                  <Text
+                    style={{
+                      color: colors.mutedForeground,
+                      fontSize: typography.size.xs,
+                      marginTop: spacing.xxs,
+                    }}
+                  >
                     {s.description}
                   </Text>
                 </View>

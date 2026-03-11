@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface TimelineDataPoint {
   date: string;
@@ -48,19 +48,19 @@ export function TimelineChart({
           : brand.primary;
 
   // 트렌드 계산
-  const trend =
-    data.length >= 2
-      ? data[data.length - 1].score - data[data.length - 2].score
-      : 0;
+  const trend = data.length >= 2 ? data[data.length - 1].score - data[data.length - 2].score : 0;
   const trendLabel = trend > 0 ? '↑ 상승' : trend < 0 ? '↓ 하락' : '→ 유지';
-  const trendColor = trend > 0 ? status.success : trend < 0 ? colors.destructive : colors.mutedForeground;
+  const trendColor =
+    trend > 0 ? status.success : trend < 0 ? colors.destructive : colors.mutedForeground;
 
   return (
     <View testID="timeline-chart">
       {/* 타이틀 + 트렌드 */}
       {title && (
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
+          <Text
+            style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}
+          >
             {title}
           </Text>
           {data.length >= 2 && (
@@ -102,7 +102,12 @@ export function TimelineChart({
                 <View style={styles.barColumn}>
                   {/* 점수 라벨 */}
                   {(isLast || index === 0) && (
-                    <Text style={[styles.scoreLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+                    <Text
+                      style={[
+                        styles.scoreLabel,
+                        { color: colors.mutedForeground, fontSize: typography.size.xs },
+                      ]}
+                    >
                       {point.score}
                     </Text>
                   )}
@@ -121,7 +126,10 @@ export function TimelineChart({
                 </View>
                 {/* 날짜 라벨 */}
                 <Text
-                  style={[styles.dateLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+                  style={[
+                    styles.dateLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.xs },
+                  ]}
                   numberOfLines={1}
                 >
                   {point.label ?? formatShortDate(point.date)}

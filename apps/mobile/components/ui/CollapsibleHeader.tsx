@@ -14,7 +14,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface CollapsibleHeaderProps {
   /** 헤더 타이틀 */
@@ -70,12 +70,7 @@ export function CollapsibleHeader({
 
   // 확장 콘텐츠 페이드아웃
   const expandedContentStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, scrollRange * 0.6],
-      [1, 0],
-      Extrapolation.CLAMP
-    );
+    const opacity = interpolate(scrollY.value, [0, scrollRange * 0.6], [1, 0], Extrapolation.CLAMP);
     const translateYVal = interpolate(
       scrollY.value,
       [0, scrollRange],
@@ -101,12 +96,7 @@ export function CollapsibleHeader({
 
   // 배경 스케일 효과 (overscroll 시 약간 확대)
   const backgroundAnimatedStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [-100, 0],
-      [1.3, 1],
-      Extrapolation.CLAMP
-    );
+    const scale = interpolate(scrollY.value, [-100, 0], [1.3, 1], Extrapolation.CLAMP);
     return {
       transform: [{ scale }],
     };
@@ -159,11 +149,7 @@ export function CollapsibleHeader({
 
         {/* 축소 상태 타이틀 (스크롤 시 페이드인) */}
         <Animated.View
-          style={[
-            styles.collapsedTitle,
-            { height: collapsedHeight },
-            collapsedTitleStyle,
-          ]}
+          style={[styles.collapsedTitle, { height: collapsedHeight }, collapsedTitleStyle]}
           testID={`${testID}-collapsed`}
         >
           <Text

@@ -41,9 +41,7 @@ export function EncouragementBell({
       accessibilityLabel={`응원하기${isRung ? ', 응원함' : ''}, ${count}명 응원`}
       accessibilityRole="button"
     >
-      <Text style={{ fontSize: typography.size.base }}>
-        {isRung ? '🔔' : '🔕'}
-      </Text>
+      <Text style={{ fontSize: typography.size.base }}>{isRung ? '🔔' : '🔕'}</Text>
       <Text
         style={{
           fontSize: typography.size.sm,

@@ -36,9 +36,7 @@ export function ExerciseDetailCard({
   const { colors, module, spacing, typography, radii, shadows } = useTheme();
 
   // 세트x반복 + 중량 문자열
-  const setRepText = weight
-    ? `${sets}세트 x ${reps}회 (${weight}kg)`
-    : `${sets}세트 x ${reps}회`;
+  const setRepText = weight ? `${sets}세트 x ${reps}회 (${weight}kg)` : `${sets}세트 x ${reps}회`;
 
   return (
     <Animated.View entering={FadeInDown.duration(400)} testID={testID}>

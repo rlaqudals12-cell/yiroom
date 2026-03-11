@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface MonthlyReportCardProps {
   year: number;
@@ -33,8 +33,10 @@ export function MonthlyReportCard({
 }: MonthlyReportCardProps): React.JSX.Element {
   const { colors, spacing, typography, radii, shadows, status, module } = useTheme();
 
-  const trendLabel = trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
-  const trendColor = trend === 'improving' ? status.success : trend === 'declining' ? status.error : status.warning;
+  const trendLabel =
+    trend === 'improving' ? '개선 중' : trend === 'declining' ? '주의 필요' : '유지 중';
+  const trendColor =
+    trend === 'improving' ? status.success : trend === 'declining' ? status.error : status.warning;
   const total = goodDays + normalDays + badDays;
 
   return (
@@ -102,10 +104,7 @@ export function MonthlyReportCard({
             ]}
           />
           <View
-            style={[
-              styles.barSegment,
-              { backgroundColor: status.warning, flex: normalDays },
-            ]}
+            style={[styles.barSegment, { backgroundColor: status.warning, flex: normalDays }]}
           />
           <View
             style={[

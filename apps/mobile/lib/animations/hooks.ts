@@ -58,10 +58,7 @@ export function useShimmer(width = 200): ReturnType<typeof useAnimatedStyle> {
  * @param minScale 최소 스케일. 기본 1
  * @param maxScale 최대 스케일. 기본 1.05
  */
-export function usePulse(
-  minScale = 1,
-  maxScale = 1.05
-): ReturnType<typeof useAnimatedStyle> {
+export function usePulse(minScale = 1, maxScale = 1.05): ReturnType<typeof useAnimatedStyle> {
   const scale = useSharedValue(minScale);
 
   useEffect(() => {
@@ -122,10 +119,7 @@ export function usePressScale(pressedScale = 0.97): {
  * @param target 목표 숫자
  * @param duration 애니메이션 시간 (ms). 기본 1000
  */
-export function useCountUp(
-  target: number,
-  duration = 1000
-): SharedValue<number> {
+export function useCountUp(target: number, duration = 1000): SharedValue<number> {
   const value = useSharedValue(0);
 
   useEffect(() => {
@@ -148,10 +142,7 @@ export function useCountUp(
  * @param intensity 최대 글로우 강도 (shadowOpacity). 기본 0.25
  * @returns Animated style (shadowOpacity + elevation 변화)
  */
-export function usePulseGlow(
-  color: string,
-  intensity = 0.25
-): ReturnType<typeof useAnimatedStyle> {
+export function usePulseGlow(color: string, intensity = 0.25): ReturnType<typeof useAnimatedStyle> {
   const glow = useSharedValue(intensity * 0.4);
 
   useEffect(() => {
@@ -184,10 +175,7 @@ export function usePulseGlow(
  * @param amplitude 수직 이동량 (px). 기본 4
  * @param duration 한 주기 (ms). 기본 1500
  */
-export function useWeave(
-  amplitude = 4,
-  duration = 1500
-): ReturnType<typeof useAnimatedStyle> {
+export function useWeave(amplitude = 4, duration = 1500): ReturnType<typeof useAnimatedStyle> {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -252,9 +240,7 @@ export function useWeaveStagger(
  *
  * @param duration 한 주기 (ms). 기본 1000
  */
-export function useSparkle(
-  duration = 1000
-): ReturnType<typeof useAnimatedStyle> {
+export function useSparkle(duration = 1000): ReturnType<typeof useAnimatedStyle> {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -325,21 +311,22 @@ export function useConfetti(
       particle.opacity.value = 0;
 
       // 실행
-      particle.opacity.value = withDelay(delay,
+      particle.opacity.value = withDelay(
+        delay,
         withSequence(
           withTiming(1, { duration: 100 }),
-          withDelay(particleDuration - 400,
-            withTiming(0, { duration: 300 })
-          )
+          withDelay(particleDuration - 400, withTiming(0, { duration: 300 }))
         )
       );
-      particle.translateY.value = withDelay(delay,
+      particle.translateY.value = withDelay(
+        delay,
         withTiming(800, {
           duration: particleDuration,
           easing: Easing.in(Easing.quad),
         })
       );
-      particle.rotate.value = withDelay(delay,
+      particle.rotate.value = withDelay(
+        delay,
         withTiming(720, {
           duration: particleDuration,
           easing: Easing.linear,
@@ -387,10 +374,7 @@ export function useSuccessBounce(
  * @param minScale 최소 스케일. 기본 1
  * @param maxScale 최대 스케일. 기본 1.05
  */
-export function useBounceSlow(
-  minScale = 1,
-  maxScale = 1.05
-): ReturnType<typeof useAnimatedStyle> {
+export function useBounceSlow(minScale = 1, maxScale = 1.05): ReturnType<typeof useAnimatedStyle> {
   const scale = useSharedValue(minScale);
 
   useEffect(() => {
@@ -447,10 +431,7 @@ export function useMedalDrop(
 
   return useAnimatedStyle(() => ({
     opacity: opacity.value,
-    transform: [
-      { translateY: translateY.value },
-      { rotate: `${rotate.value}deg` },
-    ],
+    transform: [{ translateY: translateY.value }, { rotate: `${rotate.value}deg` }],
   }));
 }
 
@@ -463,10 +444,7 @@ export function useMedalDrop(
  * @param height 스캔 영역 높이 (px)
  * @param duration 한 주기 (ms). 기본 2000
  */
-export function useScanLine(
-  height: number,
-  duration = 2000
-): ReturnType<typeof useAnimatedStyle> {
+export function useScanLine(height: number, duration = 2000): ReturnType<typeof useAnimatedStyle> {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -479,9 +457,11 @@ export function useScanLine(
   }, [progress, duration]);
 
   return useAnimatedStyle(() => ({
-    transform: [{
-      translateY: interpolate(progress.value, [0, 1], [0, height - 2]),
-    }],
+    transform: [
+      {
+        translateY: interpolate(progress.value, [0, 1], [0, height - 2]),
+      },
+    ],
     opacity: interpolate(progress.value, [0, 0.1, 0.9, 1], [0, 1, 1, 0]),
   }));
 }

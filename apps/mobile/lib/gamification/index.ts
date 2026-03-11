@@ -47,14 +47,7 @@ export interface LevelInfo {
   tierLabel: string;
 }
 
-export type Tier =
-  | 'beginner'
-  | 'bronze'
-  | 'silver'
-  | 'gold'
-  | 'platinum'
-  | 'diamond'
-  | 'master';
+export type Tier = 'beginner' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master';
 
 export interface XpEvent {
   action: XpAction;
@@ -200,26 +193,134 @@ export function getTierForLevel(level: number): Tier {
  */
 export const DEFAULT_BADGES: Badge[] = [
   // 분석 뱃지
-  { id: 'b-first-analysis', key: 'first_analysis', name: '첫 분석', description: '첫 AI 분석을 완료했어요', icon: '🔬', category: 'analysis', requirement: '분석 1회 완료', xpReward: 50 },
-  { id: 'b-analysis-5', key: 'analysis_5', name: '분석 매니아', description: '5번의 분석을 완료했어요', icon: '🧪', category: 'analysis', requirement: '분석 5회 완료', xpReward: 100 },
-  { id: 'b-all-types', key: 'all_analysis_types', name: '올라운더', description: '모든 분석 유형을 경험했어요', icon: '🎯', category: 'analysis', requirement: '퍼스널컬러+피부+체형 분석', xpReward: 200 },
+  {
+    id: 'b-first-analysis',
+    key: 'first_analysis',
+    name: '첫 분석',
+    description: '첫 AI 분석을 완료했어요',
+    icon: '🔬',
+    category: 'analysis',
+    requirement: '분석 1회 완료',
+    xpReward: 50,
+  },
+  {
+    id: 'b-analysis-5',
+    key: 'analysis_5',
+    name: '분석 매니아',
+    description: '5번의 분석을 완료했어요',
+    icon: '🧪',
+    category: 'analysis',
+    requirement: '분석 5회 완료',
+    xpReward: 100,
+  },
+  {
+    id: 'b-all-types',
+    key: 'all_analysis_types',
+    name: '올라운더',
+    description: '모든 분석 유형을 경험했어요',
+    icon: '🎯',
+    category: 'analysis',
+    requirement: '퍼스널컬러+피부+체형 분석',
+    xpReward: 200,
+  },
 
   // 운동 뱃지
-  { id: 'b-first-workout', key: 'first_workout', name: '첫 운동', description: '첫 운동을 기록했어요', icon: '💪', category: 'workout', requirement: '운동 1회 기록', xpReward: 30 },
-  { id: 'b-workout-7', key: 'workout_7days', name: '일주일 전사', description: '7일 연속 운동했어요', icon: '🔥', category: 'workout', requirement: '7일 연속 운동', xpReward: 150 },
+  {
+    id: 'b-first-workout',
+    key: 'first_workout',
+    name: '첫 운동',
+    description: '첫 운동을 기록했어요',
+    icon: '💪',
+    category: 'workout',
+    requirement: '운동 1회 기록',
+    xpReward: 30,
+  },
+  {
+    id: 'b-workout-7',
+    key: 'workout_7days',
+    name: '일주일 전사',
+    description: '7일 연속 운동했어요',
+    icon: '🔥',
+    category: 'workout',
+    requirement: '7일 연속 운동',
+    xpReward: 150,
+  },
 
   // 영양 뱃지
-  { id: 'b-first-meal', key: 'first_meal', name: '첫 식단', description: '첫 식단을 기록했어요', icon: '🍎', category: 'nutrition', requirement: '식단 1회 기록', xpReward: 30 },
-  { id: 'b-balanced-meal', key: 'balanced_meal', name: '균형 잡힌 식단', description: '영양 균형 달성!', icon: '🥗', category: 'nutrition', requirement: '매크로 균형 달성', xpReward: 100 },
+  {
+    id: 'b-first-meal',
+    key: 'first_meal',
+    name: '첫 식단',
+    description: '첫 식단을 기록했어요',
+    icon: '🍎',
+    category: 'nutrition',
+    requirement: '식단 1회 기록',
+    xpReward: 30,
+  },
+  {
+    id: 'b-balanced-meal',
+    key: 'balanced_meal',
+    name: '균형 잡힌 식단',
+    description: '영양 균형 달성!',
+    icon: '🥗',
+    category: 'nutrition',
+    requirement: '매크로 균형 달성',
+    xpReward: 100,
+  },
 
   // 소셜 뱃지
-  { id: 'b-first-friend', key: 'first_friend', name: '첫 친구', description: '첫 친구를 만들었어요', icon: '🤝', category: 'social', requirement: '친구 1명 추가', xpReward: 30 },
-  { id: 'b-popular', key: 'popular', name: '인기인', description: '10명의 친구와 함께해요', icon: '🌟', category: 'social', requirement: '친구 10명', xpReward: 150 },
+  {
+    id: 'b-first-friend',
+    key: 'first_friend',
+    name: '첫 친구',
+    description: '첫 친구를 만들었어요',
+    icon: '🤝',
+    category: 'social',
+    requirement: '친구 1명 추가',
+    xpReward: 30,
+  },
+  {
+    id: 'b-popular',
+    key: 'popular',
+    name: '인기인',
+    description: '10명의 친구와 함께해요',
+    icon: '🌟',
+    category: 'social',
+    requirement: '친구 10명',
+    xpReward: 150,
+  },
 
   // 스트릭 뱃지
-  { id: 'b-streak-3', key: 'streak_3', name: '3일 연속', description: '3일 연속 앱을 사용했어요', icon: '✨', category: 'streak', requirement: '3일 연속 접속', xpReward: 30 },
-  { id: 'b-streak-7', key: 'streak_7', name: '일주일 습관', description: '7일 연속 앱을 사용했어요', icon: '🔥', category: 'streak', requirement: '7일 연속 접속', xpReward: 75 },
-  { id: 'b-streak-30', key: 'streak_30', name: '한 달 루틴', description: '30일 연속 앱을 사용했어요', icon: '💎', category: 'streak', requirement: '30일 연속 접속', xpReward: 300 },
+  {
+    id: 'b-streak-3',
+    key: 'streak_3',
+    name: '3일 연속',
+    description: '3일 연속 앱을 사용했어요',
+    icon: '✨',
+    category: 'streak',
+    requirement: '3일 연속 접속',
+    xpReward: 30,
+  },
+  {
+    id: 'b-streak-7',
+    key: 'streak_7',
+    name: '일주일 습관',
+    description: '7일 연속 앱을 사용했어요',
+    icon: '🔥',
+    category: 'streak',
+    requirement: '7일 연속 접속',
+    xpReward: 75,
+  },
+  {
+    id: 'b-streak-30',
+    key: 'streak_30',
+    name: '한 달 루틴',
+    description: '30일 연속 앱을 사용했어요',
+    icon: '💎',
+    category: 'streak',
+    requirement: '30일 연속 접속',
+    xpReward: 300,
+  },
 ];
 
 // ─── DB 연동 ──────────────────────────────────────────
@@ -355,10 +456,7 @@ export async function getUserLevelInfo(
 // ============================================
 // 웹 호환 re-export
 // ============================================
-export {
-  checkAndAwardStreakBadges,
-  checkWorkoutCountBadges,
-} from './streak-integration';
+export { checkAndAwardStreakBadges, checkWorkoutCountBadges } from './streak-integration';
 
 export { awardBadgeById } from './badges';
 export { RARITY_COLORS } from './constants';

@@ -40,13 +40,13 @@ const SEASON_REFERENCES: Record<Season, LabColor[]> = {
     { L: 75, a: 15, b: 40 }, // 코럴
     { L: 80, a: 10, b: 30 }, // 피치
     { L: 70, a: 25, b: 35 }, // 살몬
-    { L: 85, a: 5, b: 25 },  // 아이보리
+    { L: 85, a: 5, b: 25 }, // 아이보리
   ],
   summer: [
     { L: 70, a: -5, b: -10 }, // 라벤더
-    { L: 75, a: 10, b: -5 },  // 로즈
+    { L: 75, a: 10, b: -5 }, // 로즈
     { L: 80, a: -3, b: -15 }, // 스카이블루
-    { L: 65, a: 5, b: -20 },  // 퍼플
+    { L: 65, a: 5, b: -20 }, // 퍼플
   ],
   autumn: [
     { L: 55, a: 20, b: 35 }, // 테라코타
@@ -55,10 +55,10 @@ const SEASON_REFERENCES: Record<Season, LabColor[]> = {
     { L: 45, a: 25, b: 25 }, // 버건디
   ],
   winter: [
-    { L: 30, a: 5, b: -10 },  // 네이비
-    { L: 50, a: 40, b: 15 },  // 레드
-    { L: 90, a: -2, b: 3 },   // 퓨어화이트
-    { L: 15, a: 0, b: 0 },    // 블랙
+    { L: 30, a: 5, b: -10 }, // 네이비
+    { L: 50, a: 40, b: 15 }, // 레드
+    { L: 90, a: -2, b: 3 }, // 퓨어화이트
+    { L: 15, a: 0, b: 0 }, // 블랙
   ],
 };
 
@@ -117,9 +117,7 @@ export function calculateSeasonMatch(lab: LabColor): SeasonMatch[] {
     // 각 대표색과의 최소 거리
     const minDist = Math.min(
       ...refs.map((ref) =>
-        Math.sqrt(
-          (lab.L - ref.L) ** 2 + (lab.a - ref.a) ** 2 + (lab.b - ref.b) ** 2
-        )
+        Math.sqrt((lab.L - ref.L) ** 2 + (lab.a - ref.a) ** 2 + (lab.b - ref.b) ** 2)
       )
     );
     // 거리를 점수로 변환 (0-100, 가까울수록 높음)
@@ -158,10 +156,7 @@ export function classifyColor(hex: string): ColorClassification {
 /**
  * 사용자 시즌과 색상의 매칭 점수
  */
-export function calculateUserSeasonMatch(
-  hex: string,
-  userSeason: Season
-): number {
+export function calculateUserSeasonMatch(hex: string, userSeason: Season): number {
   const lab = hexToLab(hex);
   const matches = calculateSeasonMatch(lab);
   const match = matches.find((m) => m.season === userSeason);

@@ -29,11 +29,7 @@ interface UseWeatherResult {
 }
 
 export function useWeather(options: UseWeatherOptions = {}): UseWeatherResult {
-  const {
-    region = 'seoul',
-    autoRefresh = true,
-    refreshInterval = 30 * 60 * 1000,
-  } = options;
+  const { region = 'seoul', autoRefresh = true, refreshInterval = 30 * 60 * 1000 } = options;
 
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

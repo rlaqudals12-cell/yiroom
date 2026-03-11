@@ -58,8 +58,14 @@ export function PhysicalInfoCard({
           신체 정보
         </Text>
         {onEdit && (
-          <Pressable onPress={onEdit} accessibilityLabel="신체 정보 수정" accessibilityRole="button">
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>수정</Text>
+          <Pressable
+            onPress={onEdit}
+            accessibilityLabel="신체 정보 수정"
+            accessibilityRole="button"
+          >
+            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              수정
+            </Text>
           </Pressable>
         )}
       </View>
@@ -68,39 +74,81 @@ export function PhysicalInfoCard({
         <View style={[styles.grid, { marginTop: spacing.sm, gap: spacing.sm }]}>
           {height !== undefined && (
             <View style={styles.infoItem}>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>키</Text>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground, marginTop: spacing.xxs }}>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                키
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  color: colors.foreground,
+                  marginTop: spacing.xxs,
+                }}
+              >
                 {height}cm
               </Text>
             </View>
           )}
           {weight !== undefined && (
             <View style={styles.infoItem}>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>몸무게</Text>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground, marginTop: spacing.xxs }}>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                몸무게
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  color: colors.foreground,
+                  marginTop: spacing.xxs,
+                }}
+              >
                 {weight}kg
               </Text>
             </View>
           )}
           {bodyType && (
             <View style={styles.infoItem}>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>체형</Text>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground, marginTop: spacing.xxs }}>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                체형
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  color: colors.foreground,
+                  marginTop: spacing.xxs,
+                }}
+              >
                 {bodyType}
               </Text>
             </View>
           )}
           {gender && (
             <View style={styles.infoItem}>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>성별</Text>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.medium, color: colors.foreground, marginTop: spacing.xxs }}>
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                성별
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  color: colors.foreground,
+                  marginTop: spacing.xxs,
+                }}
+              >
                 {gender}
               </Text>
             </View>
           )}
         </View>
       ) : (
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginTop: spacing.sm }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            marginTop: spacing.sm,
+          }}
+        >
           신체 정보를 등록해주세요
         </Text>
       )}

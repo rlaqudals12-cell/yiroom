@@ -28,12 +28,12 @@ import { ZONE_GROUP_MAPPING, VITALITY_GRADE_THRESHOLDS } from './types';
  */
 const ZONE_WEIGHTS: Record<SkinZoneType, number> = {
   forehead: 0.15,
-  nose: 0.10,
-  leftCheek: 0.20,
-  rightCheek: 0.20,
+  nose: 0.1,
+  leftCheek: 0.2,
+  rightCheek: 0.2,
   chin: 0.15,
-  eyeArea: 0.10,
-  lipArea: 0.10,
+  eyeArea: 0.1,
+  lipArea: 0.1,
 };
 
 /**
@@ -41,11 +41,11 @@ const ZONE_WEIGHTS: Record<SkinZoneType, number> = {
  */
 const METRIC_WEIGHTS = {
   hydration: 0.25,
-  elasticity: 0.20,
-  texture: 0.20,
+  elasticity: 0.2,
+  texture: 0.2,
   pigmentation: 0.15,
-  pores: 0.10,
-  sensitivity: 0.10, // 낮을수록 좋으므로 역산
+  pores: 0.1,
+  sensitivity: 0.1, // 낮을수록 좋으므로 역산
 };
 
 // =============================================================================
@@ -56,14 +56,7 @@ const METRIC_WEIGHTS = {
  * 존별 메트릭에서 종합 점수 계산
  */
 export function calculateZoneScore(metrics: ZoneMetricsV2): number {
-  const {
-    hydration,
-    elasticity,
-    texture,
-    pigmentation,
-    pores,
-    sensitivity,
-  } = metrics;
+  const { hydration, elasticity, texture, pigmentation, pores, sensitivity } = metrics;
 
   // 민감도는 낮을수록 좋으므로 반전
   const sensitivityScore = 100 - sensitivity;
@@ -139,20 +132,20 @@ export function calculateTUZoneDifference(
   zones: Record<SkinZoneType, ZoneAnalysisV2>
 ): SixZoneAnalysisV2['tUzoneDifference'] {
   // T존 평균 (이마, 코)
-  const tZoneOiliness =
-    (zones.forehead.metrics.oiliness + zones.nose.metrics.oiliness) / 2;
-  const tZoneHydration =
-    (zones.forehead.metrics.hydration + zones.nose.metrics.hydration) / 2;
+  const tZoneOiliness = (zones.forehead.metrics.oiliness + zones.nose.metrics.oiliness) / 2;
+  const tZoneHydration = (zones.forehead.metrics.hydration + zones.nose.metrics.hydration) / 2;
 
   // U존 평균 (볼, 턱)
   const uZoneOiliness =
     (zones.leftCheek.metrics.oiliness +
       zones.rightCheek.metrics.oiliness +
-      zones.chin.metrics.oiliness) / 3;
+      zones.chin.metrics.oiliness) /
+    3;
   const uZoneHydration =
     (zones.leftCheek.metrics.hydration +
       zones.rightCheek.metrics.hydration +
-      zones.chin.metrics.hydration) / 3;
+      zones.chin.metrics.hydration) /
+    3;
 
   const oilinessDiff = Math.abs(tZoneOiliness - uZoneOiliness);
   const hydrationDiff = Math.abs(tZoneHydration - uZoneHydration);
@@ -174,9 +167,7 @@ export function calculateTUZoneDifference(
 /**
  * 바이탈리티 종합 점수 계산
  */
-export function calculateVitalityScore(
-  zones: Record<SkinZoneType, ZoneAnalysisV2>
-): number {
+export function calculateVitalityScore(zones: Record<SkinZoneType, ZoneAnalysisV2>): number {
   let weightedSum = 0;
   let totalWeight = 0;
 
@@ -186,17 +177,13 @@ export function calculateVitalityScore(
     totalWeight += weight;
   }
 
-  return totalWeight > 0
-    ? Math.round(weightedSum / totalWeight)
-    : 0;
+  return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 }
 
 /**
  * 바이탈리티 등급 산출
  */
-export function calculateVitalityGrade(
-  score: number
-): 'S' | 'A' | 'B' | 'C' | 'D' {
+export function calculateVitalityGrade(score: number): 'S' | 'A' | 'B' | 'C' | 'D' {
   if (score >= VITALITY_GRADE_THRESHOLDS.S) return 'S';
   if (score >= VITALITY_GRADE_THRESHOLDS.A) return 'A';
   if (score >= VITALITY_GRADE_THRESHOLDS.B) return 'B';
@@ -207,31 +194,25 @@ export function calculateVitalityGrade(
 /**
  * 점수 구성 요소 계산
  */
-export function calculateScoreBreakdown(
-  zones: Record<SkinZoneType, ZoneAnalysisV2>
-): {
+export function calculateScoreBreakdown(zones: Record<SkinZoneType, ZoneAnalysisV2>): {
   hydration: number;
   elasticity: number;
   clarity: number;
   tone: number;
 } {
-  const allMetrics: ZoneMetricsV2[] = Object.values(zones).map(z => z.metrics);
+  const allMetrics: ZoneMetricsV2[] = Object.values(zones).map((z) => z.metrics);
   const count = allMetrics.length;
 
   if (count === 0) {
     return { hydration: 0, elasticity: 0, clarity: 0, tone: 0 };
   }
 
-  const avgHydration =
-    allMetrics.reduce((sum, m) => sum + m.hydration, 0) / count;
-  const avgElasticity =
-    allMetrics.reduce((sum, m) => sum + m.elasticity, 0) / count;
+  const avgHydration = allMetrics.reduce((sum, m) => sum + m.hydration, 0) / count;
+  const avgElasticity = allMetrics.reduce((sum, m) => sum + m.elasticity, 0) / count;
   // clarity = texture + pores 평균
-  const avgClarity =
-    allMetrics.reduce((sum, m) => sum + (m.texture + m.pores) / 2, 0) / count;
+  const avgClarity = allMetrics.reduce((sum, m) => sum + (m.texture + m.pores) / 2, 0) / count;
   // tone = pigmentation (높을수록 균일한 톤)
-  const avgTone =
-    allMetrics.reduce((sum, m) => sum + m.pigmentation, 0) / count;
+  const avgTone = allMetrics.reduce((sum, m) => sum + m.pigmentation, 0) / count;
 
   return {
     hydration: Math.round(avgHydration),
@@ -248,20 +229,15 @@ export function calculateScoreBreakdown(
 /**
  * 메트릭에서 피부 타입 판정
  */
-export function determineSkinType(
-  zones: Record<SkinZoneType, ZoneAnalysisV2>
-): SkinTypeV2 {
-  const allMetrics: ZoneMetricsV2[] = Object.values(zones).map(z => z.metrics);
+export function determineSkinType(zones: Record<SkinZoneType, ZoneAnalysisV2>): SkinTypeV2 {
+  const allMetrics: ZoneMetricsV2[] = Object.values(zones).map((z) => z.metrics);
   const count = allMetrics.length;
 
   if (count === 0) return 'normal';
 
-  const avgOiliness =
-    allMetrics.reduce((sum, m) => sum + m.oiliness, 0) / count;
-  const avgHydration =
-    allMetrics.reduce((sum, m) => sum + m.hydration, 0) / count;
-  const avgSensitivity =
-    allMetrics.reduce((sum, m) => sum + m.sensitivity, 0) / count;
+  const avgOiliness = allMetrics.reduce((sum, m) => sum + m.oiliness, 0) / count;
+  const avgHydration = allMetrics.reduce((sum, m) => sum + m.hydration, 0) / count;
+  const avgSensitivity = allMetrics.reduce((sum, m) => sum + m.sensitivity, 0) / count;
 
   // T존-U존 차이
   const tuDiff = calculateTUZoneDifference(zones);
@@ -295,9 +271,7 @@ export function determineSkinType(
 /**
  * 모든 존의 concern을 분석하여 주요 고민 추출
  */
-export function extractPrimaryConcerns(
-  zones: Record<SkinZoneType, ZoneAnalysisV2>
-): string[] {
+export function extractPrimaryConcerns(zones: Record<SkinZoneType, ZoneAnalysisV2>): string[] {
   const concernCounts: Record<string, number> = {};
 
   for (const analysis of Object.values(zones)) {

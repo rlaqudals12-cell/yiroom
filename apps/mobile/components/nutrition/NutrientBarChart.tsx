@@ -119,7 +119,8 @@ export function NutrientBarChart({
                 textAlign: 'right',
               }}
             >
-              {nutrient.current}/{nutrient.goal}{nutrient.unit}
+              {nutrient.current}/{nutrient.goal}
+              {nutrient.unit}
             </Text>
           </View>
         );

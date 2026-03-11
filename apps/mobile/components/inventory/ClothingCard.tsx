@@ -66,7 +66,9 @@ export const ClothingCard = memo(function ClothingCard({
       testID="clothing-card"
       accessibilityLabel={`${name}, ${CATEGORY_LABEL[category]}${isFavorite ? ', 즐겨찾기' : ''}`}
     >
-      <View style={[styles.emojiBox, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
+      <View
+        style={[styles.emojiBox, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
+      >
         <Text style={{ fontSize: typography.size.xl }}>{CATEGORY_EMOJI[category]}</Text>
       </View>
       <View style={{ marginLeft: spacing.sm, flex: 1 }}>
@@ -84,7 +86,13 @@ export const ClothingCard = memo(function ClothingCard({
           </Text>
           {isFavorite && <Text style={{ fontSize: typography.size.sm }}>❤️</Text>}
         </View>
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+        <Text
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.mutedForeground,
+            marginTop: spacing.xxs,
+          }}
+        >
           {CATEGORY_LABEL[category]}
           {color ? ` · ${color}` : ''}
           {season ? ` · ${season}` : ''}

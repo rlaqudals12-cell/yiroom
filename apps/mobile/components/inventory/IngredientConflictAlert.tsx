@@ -29,9 +29,12 @@ export function IngredientConflictAlert({
 
   const severityColor = (severity: ConflictItem['severity']): string => {
     switch (severity) {
-      case 'high': return status.error;
-      case 'medium': return status.warning;
-      case 'low': return status.info;
+      case 'high':
+        return status.error;
+      case 'medium':
+        return status.warning;
+      case 'low':
+        return status.info;
     }
   };
 
@@ -68,10 +71,7 @@ export function IngredientConflictAlert({
       </View>
 
       {conflicts.map((conflict, i) => (
-        <View
-          key={i}
-          style={[styles.conflictRow, { marginTop: spacing.sm }]}
-        >
+        <View key={i} style={[styles.conflictRow, { marginTop: spacing.sm }]}>
           <View
             style={[
               styles.severityDot,

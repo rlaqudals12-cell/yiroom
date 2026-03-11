@@ -183,86 +183,81 @@ export default function WorkoutHistoryScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>최근 기록</Text>
 
           {logs.map((log, index) => (
-              <Animated.View
-                key={log.id}
-                entering={staggeredEntry(index + 1)}
-              >
-                <GlassCard style={styles.logCard}>
-                  <View style={styles.logHeader}>
-                    <Text style={styles.logIcon}>{getMoodIcon(log.mood)}</Text>
-                    <Text style={[styles.logDate, { color: colors.foreground }]}>
-                      {formatDate(log.workout_date)}
-                    </Text>
-                  </View>
+            <Animated.View key={log.id} entering={staggeredEntry(index + 1)}>
+              <GlassCard style={styles.logCard}>
+                <View style={styles.logHeader}>
+                  <Text style={styles.logIcon}>{getMoodIcon(log.mood)}</Text>
+                  <Text style={[styles.logDate, { color: colors.foreground }]}>
+                    {formatDate(log.workout_date)}
+                  </Text>
+                </View>
 
-                  <View style={styles.logStats}>
-                    {log.actual_duration && (
-                      <View style={styles.logStatItem}>
-                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
-                          {log.actual_duration}분
-                        </Text>
-                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
-                          시간
-                        </Text>
-                      </View>
-                    )}
-                    {log.actual_calories && (
-                      <View style={styles.logStatItem}>
-                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
-                          {log.actual_calories}kcal
-                        </Text>
-                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
-                          칼로리
-                        </Text>
-                      </View>
-                    )}
-                    {log.exercise_logs && log.exercise_logs.length > 0 && (
-                      <View style={styles.logStatItem}>
-                        <Text style={[styles.logStatValue, { color: colors.foreground }]}>
-                          {log.exercise_logs.length}개
-                        </Text>
-                        <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
-                          운동
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  {log.exercise_logs && log.exercise_logs.length > 0 && (
-                    <View style={styles.exerciseList}>
-                      {log.exercise_logs.slice(0, 4).map((ex, exIndex) => (
-                        <View
-                          key={exIndex}
-                          style={[styles.exerciseChip, { backgroundColor: colors.muted }]}
-                        >
-                          <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
-                            {ex.exercise_name}
-                          </Text>
-                        </View>
-                      ))}
-                      {log.exercise_logs.length > 4 && (
-                        <View
-                          style={[styles.exerciseChip, { backgroundColor: colors.muted }]}
-                        >
-                          <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
-                            +{log.exercise_logs.length - 4}
-                          </Text>
-                        </View>
-                      )}
+                <View style={styles.logStats}>
+                  {log.actual_duration && (
+                    <View style={styles.logStatItem}>
+                      <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                        {log.actual_duration}분
+                      </Text>
+                      <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                        시간
+                      </Text>
                     </View>
                   )}
-
-                  {log.notes && (
-                    <Text
-                      style={[styles.logNotes, { color: colors.mutedForeground }]}
-                      numberOfLines={2}
-                    >
-                      {log.notes}
-                    </Text>
+                  {log.actual_calories && (
+                    <View style={styles.logStatItem}>
+                      <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                        {log.actual_calories}kcal
+                      </Text>
+                      <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                        칼로리
+                      </Text>
+                    </View>
                   )}
-                </GlassCard>
-              </Animated.View>
-            ))}
+                  {log.exercise_logs && log.exercise_logs.length > 0 && (
+                    <View style={styles.logStatItem}>
+                      <Text style={[styles.logStatValue, { color: colors.foreground }]}>
+                        {log.exercise_logs.length}개
+                      </Text>
+                      <Text style={[styles.logStatLabel, { color: colors.mutedForeground }]}>
+                        운동
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {log.exercise_logs && log.exercise_logs.length > 0 && (
+                  <View style={styles.exerciseList}>
+                    {log.exercise_logs.slice(0, 4).map((ex, exIndex) => (
+                      <View
+                        key={exIndex}
+                        style={[styles.exerciseChip, { backgroundColor: colors.muted }]}
+                      >
+                        <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
+                          {ex.exercise_name}
+                        </Text>
+                      </View>
+                    ))}
+                    {log.exercise_logs.length > 4 && (
+                      <View style={[styles.exerciseChip, { backgroundColor: colors.muted }]}>
+                        <Text style={[styles.exerciseChipText, { color: colors.mutedForeground }]}>
+                          +{log.exercise_logs.length - 4}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {log.notes && (
+                  <Text
+                    style={[styles.logNotes, { color: colors.mutedForeground }]}
+                    numberOfLines={2}
+                  >
+                    {log.notes}
+                  </Text>
+                )}
+              </GlassCard>
+            </Animated.View>
+          ))}
         </View>
       </DataStateWrapper>
     </ScreenContainer>

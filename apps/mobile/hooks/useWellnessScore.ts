@@ -6,13 +6,17 @@
  */
 import { useMemo } from 'react';
 
-import type { PersonalColorResult, SkinAnalysisResult, BodyAnalysisResult } from './useUserAnalyses';
+import type {
+  PersonalColorResult,
+  SkinAnalysisResult,
+  BodyAnalysisResult,
+} from './useUserAnalyses';
 import type { WorkoutStreak } from './useWorkoutData';
 import type { NutritionStreak } from './useNutritionData';
 
 export interface WellnessBreakdown {
   analysis: number; // 0-100
-  workout: number;  // 0-100
+  workout: number; // 0-100
   nutrition: number; // 0-100
 }
 

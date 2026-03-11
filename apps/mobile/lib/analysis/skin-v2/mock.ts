@@ -54,7 +54,7 @@ function generateMockGLCM(): GLCMResult {
 function generateMockLBP(): LBPResult {
   const histogram = new Array(256).fill(0).map(() => Math.random());
   const sum = histogram.reduce((a, b) => a + b, 0);
-  const normalizedHistogram = histogram.map(v => v / sum);
+  const normalizedHistogram = histogram.map((v) => v / sum);
 
   return {
     histogram: normalizedHistogram,
@@ -112,7 +112,10 @@ export function generateMockZoneMetrics(
     pores: Math.round(50 + Math.random() * 40),
     texture: Math.round(55 + Math.random() * 35),
     pigmentation: Math.round(60 + Math.random() * 30),
-    sensitivity: Math.max(0, Math.min(100, (base.sensitivity || 30) + variance() + sensitivityBonus)),
+    sensitivity: Math.max(
+      0,
+      Math.min(100, (base.sensitivity || 30) + variance() + sensitivityBonus)
+    ),
     elasticity: Math.round(55 + Math.random() * 35),
   };
 }
@@ -165,22 +168,14 @@ function generateMockSixZoneAnalysis(skinType?: SkinTypeV2): SixZoneAnalysisV2 {
 /**
  * Mock 스킨케어 루틴 추천 생성
  */
-function generateMockRoutineRecommendations(
-  skinType: SkinTypeV2
-): SkinCareRoutineRecommendation[] {
+function generateMockRoutineRecommendations(skinType: SkinTypeV2): SkinCareRoutineRecommendation[] {
   const routines: SkinCareRoutineRecommendation[] = [
     {
       step: 1,
       category: 'cleanser',
-      reason: skinType === 'oily'
-        ? '유분 제거를 위한 폼 클렌저 추천'
-        : '순한 저자극 클렌저 추천',
-      ingredients: skinType === 'oily'
-        ? ['살리실산', '티트리']
-        : ['세라마이드', '히알루론산'],
-      avoidIngredients: skinType === 'sensitive'
-        ? ['SLS', '향료', '알코올']
-        : [],
+      reason: skinType === 'oily' ? '유분 제거를 위한 폼 클렌저 추천' : '순한 저자극 클렌저 추천',
+      ingredients: skinType === 'oily' ? ['살리실산', '티트리'] : ['세라마이드', '히알루론산'],
+      avoidIngredients: skinType === 'sensitive' ? ['SLS', '향료', '알코올'] : [],
     },
     {
       step: 2,
@@ -192,12 +187,10 @@ function generateMockRoutineRecommendations(
     {
       step: 3,
       category: 'serum',
-      reason: skinType === 'dry'
-        ? '집중 보습을 위한 히알루론산 세럼'
-        : '피부결 개선을 위한 비타민C 세럼',
-      ingredients: skinType === 'dry'
-        ? ['히알루론산', '스쿠알란']
-        : ['비타민C', '나이아신아마이드'],
+      reason:
+        skinType === 'dry' ? '집중 보습을 위한 히알루론산 세럼' : '피부결 개선을 위한 비타민C 세럼',
+      ingredients:
+        skinType === 'dry' ? ['히알루론산', '스쿠알란'] : ['비타민C', '나이아신아마이드'],
       avoidIngredients: [],
     },
     {
@@ -222,9 +215,7 @@ function generateMockRoutineRecommendations(
 /**
  * Mock SkinAnalysisV2Result 전체 생성
  */
-export function generateMockSkinAnalysisV2Result(
-  skinType?: SkinTypeV2
-): SkinAnalysisV2Result {
+export function generateMockSkinAnalysisV2Result(skinType?: SkinTypeV2): SkinAnalysisV2Result {
   const zoneAnalysis = generateMockSixZoneAnalysis(skinType);
   const determinedSkinType = skinType || determineSkinType(zoneAnalysis.zones);
   const vitalityScore = calculateVitalityScore(zoneAnalysis.zones);

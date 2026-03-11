@@ -6,14 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
@@ -28,7 +21,7 @@ import {
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
 import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 리더보드 메달 색상 (도메인 데이터 — 순위 시각화)
 const MEDAL_COLORS = {
@@ -85,7 +78,7 @@ const DIFFICULTY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { colors, status, spacing, radii, typography} = useTheme();
+  const { colors, status, spacing, radii, typography } = useTheme();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
 
   // API 훅 사용
@@ -227,8 +220,13 @@ export default function ChallengeDetailScreen() {
     return (
       <ScreenContainer scrollable={false} contentPadding={0}>
         <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>챌린지를 찾을 수 없습니다.</Text>
-          <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.foreground }]}>
+          <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
+            챌린지를 찾을 수 없습니다.
+          </Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.backButton, { backgroundColor: colors.foreground }]}
+          >
             <Text style={[styles.backButtonText, { color: colors.background }]}>돌아가기</Text>
           </Pressable>
         </View>
@@ -250,175 +248,212 @@ export default function ChallengeDetailScreen() {
         }}
       />
 
-      <ScreenContainer scrollable={false} contentPadding={0} testID="challenge-detail-screen" edges={['bottom']}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
+      <ScreenContainer
+        scrollable={false}
+        contentPadding={0}
+        testID="challenge-detail-screen"
+        edges={['bottom']}
       >
-        {/* 헤더 섹션 */}
-        <Animated.View entering={FadeIn.duration(400)}>
-          <GlassCard style={{ ...styles.headerSection, borderBottomColor: colors.border }}>
-            <View style={styles.badgeRow}>
-              <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
-                <Text>{domain.icon}</Text>
-                <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+          {/* 헤더 섹션 */}
+          <Animated.View entering={FadeIn.duration(400)}>
+            <GlassCard style={{ ...styles.headerSection, borderBottomColor: colors.border }}>
+              <View style={styles.badgeRow}>
+                <View style={[styles.badge, { backgroundColor: domain.color + '20' }]}>
+                  <Text>{domain.icon}</Text>
+                  <Text style={[styles.badgeText, { color: domain.color }]}>{domain.label}</Text>
+                </View>
+                <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
+                  <Text style={[styles.badgeText, { color: difficulty.color }]}>
+                    {difficulty.label}
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.badge, { backgroundColor: difficulty.color + '20' }]}>
-                <Text style={[styles.badgeText, { color: difficulty.color }]}>
-                  {difficulty.label}
-                </Text>
-              </View>
-            </View>
 
-            <Text style={[styles.title, { color: colors.foreground }]}>{challenge.title}</Text>
-            <Text style={[styles.description, { color: colors.mutedForeground }]}>{challenge.description}</Text>
+              <Text style={[styles.title, { color: colors.foreground }]}>{challenge.title}</Text>
+              <Text style={[styles.description, { color: colors.mutedForeground }]}>
+                {challenge.description}
+              </Text>
 
-            <View style={[styles.statsRow, { borderTopColor: colors.border }]}>
-              <View style={styles.stat}>
-                <Text style={[styles.statValue, { color: colors.foreground }]}>{challenge.participants.toLocaleString()}</Text>
-                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>참가자</Text>
+              <View style={[styles.statsRow, { borderTopColor: colors.border }]}>
+                <View style={styles.stat}>
+                  <Text style={[styles.statValue, { color: colors.foreground }]}>
+                    {challenge.participants.toLocaleString()}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>참가자</Text>
+                </View>
+                <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.stat}>
+                  <Text style={[styles.statValue, { color: colors.foreground }]}>
+                    {daysRemaining}일
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>남음</Text>
+                </View>
+                <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.stat}>
+                  <Text style={[styles.statValue, { color: colors.foreground }]}>
+                    {challenge.rewards.points}P
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보상</Text>
+                </View>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.stat}>
-                <Text style={[styles.statValue, { color: colors.foreground }]}>{daysRemaining}일</Text>
-                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>남음</Text>
-              </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.stat}>
-                <Text style={[styles.statValue, { color: colors.foreground }]}>{challenge.rewards.points}P</Text>
-                <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>보상</Text>
-              </View>
-            </View>
-          </GlassCard>
-        </Animated.View>
-
-        {/* 진행 상황 */}
-        {challenge.isJoined && (
-          <Animated.View entering={staggeredEntry(1)} style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>내 진행 상황</Text>
-            <GlassCard style={styles.progressCard}>
-              <View style={styles.progressHeader}>
-                <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
-                  {challenge.currentValue.toLocaleString()} /{' '}
-                  {challenge.targetValue.toLocaleString()}
-                  {challenge.targetUnit}
-                </Text>
-                <Text style={[styles.progressPercent, { color: colors.foreground }]}>{progressPercent}%</Text>
-              </View>
-              <View style={[styles.progressBarContainer, { backgroundColor: colors.muted }]}>
-                <View
-                  style={[
-                    styles.progressBar,
-                    {
-                      width: `${progressPercent}%`,
-                      backgroundColor: domain.color,
-                    },
-                  ]}
-                />
-              </View>
-              <Pressable
-                onPress={handleLogProgress}
-                style={({ pressed }) => [
-                  styles.logButton,
-                  { backgroundColor: domain.color },
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <Text style={[styles.logButtonText, { color: colors.overlayForeground }]}>오늘 기록하기</Text>
-              </Pressable>
             </GlassCard>
           </Animated.View>
-        )}
 
-        {/* 마일스톤 */}
-        <Animated.View entering={staggeredEntry(2)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>마일스톤</Text>
-          <GlassCard style={styles.milestones}>
-            {challenge.milestones.map((milestone, index) => (
-              <View key={index} style={styles.milestoneItem}>
+          {/* 진행 상황 */}
+          {challenge.isJoined && (
+            <Animated.View entering={staggeredEntry(1)} style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>내 진행 상황</Text>
+              <GlassCard style={styles.progressCard}>
+                <View style={styles.progressHeader}>
+                  <Text style={[styles.progressValue, { color: colors.mutedForeground }]}>
+                    {challenge.currentValue.toLocaleString()} /{' '}
+                    {challenge.targetValue.toLocaleString()}
+                    {challenge.targetUnit}
+                  </Text>
+                  <Text style={[styles.progressPercent, { color: colors.foreground }]}>
+                    {progressPercent}%
+                  </Text>
+                </View>
+                <View style={[styles.progressBarContainer, { backgroundColor: colors.muted }]}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${progressPercent}%`,
+                        backgroundColor: domain.color,
+                      },
+                    ]}
+                  />
+                </View>
+                <Pressable
+                  onPress={handleLogProgress}
+                  style={({ pressed }) => [
+                    styles.logButton,
+                    { backgroundColor: domain.color },
+                    pressed && { opacity: 0.8 },
+                  ]}
+                >
+                  <Text style={[styles.logButtonText, { color: colors.overlayForeground }]}>
+                    오늘 기록하기
+                  </Text>
+                </Pressable>
+              </GlassCard>
+            </Animated.View>
+          )}
+
+          {/* 마일스톤 */}
+          <Animated.View entering={staggeredEntry(2)} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>마일스톤</Text>
+            <GlassCard style={styles.milestones}>
+              {challenge.milestones.map((milestone, index) => (
+                <View key={index} style={styles.milestoneItem}>
+                  <View
+                    style={[
+                      styles.milestoneIcon,
+                      { backgroundColor: colors.muted },
+                      milestone.completed && { backgroundColor: domain.color },
+                    ]}
+                  >
+                    <Text style={[styles.milestoneIconText, { color: colors.overlayForeground }]}>
+                      {milestone.completed ? '✓' : index + 1}
+                    </Text>
+                  </View>
+                  <View style={styles.milestoneContent}>
+                    <Text style={[styles.milestoneDay, { color: colors.foreground }]}>
+                      {milestone.day}일차
+                    </Text>
+                    <Text style={[styles.milestoneTarget, { color: colors.mutedForeground }]}>
+                      {milestone.target.toLocaleString()}
+                      {challenge.targetUnit} 달성
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </GlassCard>
+          </Animated.View>
+
+          {/* 규칙 */}
+          <Animated.View entering={staggeredEntry(3)} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>챌린지 규칙</Text>
+            <GlassCard style={styles.rulesCard}>
+              {challenge.rules.map((rule, index) => (
+                <View key={index} style={styles.ruleItem}>
+                  <Text style={[styles.ruleBullet, { color: colors.mutedForeground }]}>•</Text>
+                  <Text style={[styles.ruleText, { color: colors.mutedForeground }]}>{rule}</Text>
+                </View>
+              ))}
+            </GlassCard>
+          </Animated.View>
+
+          {/* 리더보드 */}
+          <Animated.View entering={staggeredEntry(4)} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>순위</Text>
+            <GlassCard style={styles.leaderboard}>
+              {challenge.leaderboard.map((entry) => (
                 <View
+                  key={entry.userId}
                   style={[
-                    styles.milestoneIcon,
-                    { backgroundColor: colors.muted },
-                    milestone.completed && { backgroundColor: domain.color },
+                    styles.leaderboardItem,
+                    { borderBottomColor: colors.border },
+                    entry.rank <= 3 && { backgroundColor: status.warning + '15' },
                   ]}
                 >
-                  <Text style={[styles.milestoneIconText, { color: colors.overlayForeground }]}>
-                    {milestone.completed ? '✓' : index + 1}
+                  <Text
+                    style={[
+                      styles.leaderboardRank,
+                      { color: colors.foreground },
+                      entry.rank === 1 && { color: MEDAL_COLORS.gold },
+                      entry.rank === 2 && { color: MEDAL_COLORS.silver },
+                      entry.rank === 3 && { color: MEDAL_COLORS.bronze },
+                    ]}
+                  >
+                    {entry.rank}
+                  </Text>
+                  <Text style={[styles.leaderboardName, { color: colors.foreground }]}>
+                    {entry.userName}
+                  </Text>
+                  <Text style={[styles.leaderboardProgress, { color: colors.mutedForeground }]}>
+                    {entry.progress}%
                   </Text>
                 </View>
-                <View style={styles.milestoneContent}>
-                  <Text style={[styles.milestoneDay, { color: colors.foreground }]}>{milestone.day}일차</Text>
-                  <Text style={[styles.milestoneTarget, { color: colors.mutedForeground }]}>
-                    {milestone.target.toLocaleString()}
-                    {challenge.targetUnit} 달성
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </GlassCard>
-        </Animated.View>
+              ))}
+            </GlassCard>
+          </Animated.View>
 
-        {/* 규칙 */}
-        <Animated.View entering={staggeredEntry(3)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>챌린지 규칙</Text>
-          <GlassCard style={styles.rulesCard}>
-            {challenge.rules.map((rule, index) => (
-              <View key={index} style={styles.ruleItem}>
-                <Text style={[styles.ruleBullet, { color: colors.mutedForeground }]}>•</Text>
-                <Text style={[styles.ruleText, { color: colors.mutedForeground }]}>{rule}</Text>
-              </View>
-            ))}
-          </GlassCard>
-        </Animated.View>
+          {/* 하단 여백 */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
 
-        {/* 리더보드 */}
-        <Animated.View entering={staggeredEntry(4)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>순위</Text>
-          <GlassCard style={styles.leaderboard}>
-            {challenge.leaderboard.map((entry) => (
-              <View
-                key={entry.userId}
-                style={[styles.leaderboardItem, { borderBottomColor: colors.border }, entry.rank <= 3 && { backgroundColor: status.warning + '15' }]}
-              >
-                <Text
-                  style={[
-                    styles.leaderboardRank,
-                    { color: colors.foreground },
-                    entry.rank === 1 && { color: MEDAL_COLORS.gold },
-                    entry.rank === 2 && { color: MEDAL_COLORS.silver },
-                    entry.rank === 3 && { color: MEDAL_COLORS.bronze },
-                  ]}
-                >
-                  {entry.rank}
-                </Text>
-                <Text style={[styles.leaderboardName, { color: colors.foreground }]}>{entry.userName}</Text>
-                <Text style={[styles.leaderboardProgress, { color: colors.mutedForeground }]}>{entry.progress}%</Text>
-              </View>
-            ))}
-          </GlassCard>
-        </Animated.View>
-
-        {/* 하단 여백 */}
-        <View style={{ height: 100 }} />
-      </ScrollView>
-
-      {/* 하단 버튼 */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <Pressable
-          onPress={handleJoinToggle}
-          disabled={isJoining}
-          style={({ pressed }) => [
-            styles.joinButton,
-            challenge.isJoined ? { backgroundColor: colors.destructive } : { backgroundColor: domain.color },
-            pressed && { opacity: 0.8 },
+        {/* 하단 버튼 */}
+        <View
+          style={[
+            styles.bottomBar,
+            { backgroundColor: colors.background, borderTopColor: colors.border },
           ]}
         >
-          <Text style={[styles.joinButtonText, { color: colors.overlayForeground }, isJoining && { opacity: 0.7 }]}>
-            {isJoining ? '참가 중...' : challenge.isJoined ? '챌린지 포기' : '참가하기'}
-          </Text>
-        </Pressable>
-      </View>
+          <Pressable
+            onPress={handleJoinToggle}
+            disabled={isJoining}
+            style={({ pressed }) => [
+              styles.joinButton,
+              challenge.isJoined
+                ? { backgroundColor: colors.destructive }
+                : { backgroundColor: domain.color },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            <Text
+              style={[
+                styles.joinButtonText,
+                { color: colors.overlayForeground },
+                isJoining && { opacity: 0.7 },
+              ]}
+            >
+              {isJoining ? '참가 중...' : challenge.isJoined ? '챌린지 포기' : '참가하기'}
+            </Text>
+          </Pressable>
+        </View>
       </ScreenContainer>
     </>
   );

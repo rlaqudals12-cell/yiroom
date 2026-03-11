@@ -40,9 +40,9 @@ interface ProductMatchInput {
 // ─── 매칭 가중치 ────────────────────────────────────
 
 const WEIGHTS = {
-  color: 25,     // 퍼스널컬러 매칭 (25점)
-  skin: 30,      // 피부타입 매칭 (30점)
-  concern: 25,   // 고민 해결 (25점)
+  color: 25, // 퍼스널컬러 매칭 (25점)
+  skin: 30, // 피부타입 매칭 (30점)
+  concern: 25, // 고민 해결 (25점)
   ingredient: 20, // 성분 안전성 (20점)
 } as const;
 
@@ -60,10 +60,7 @@ const SEASON_TONE_MAP: Record<Season, string> = {
 /**
  * 퍼스널컬러 매칭 점수 (0-25)
  */
-function calculateColorScore(
-  product: ProductMatchInput,
-  profile: UserProfile
-): MatchReason | null {
+function calculateColorScore(product: ProductMatchInput, profile: UserProfile): MatchReason | null {
   if (!profile.season || !product.colorTone) return null;
 
   const userTone = SEASON_TONE_MAP[profile.season];
@@ -72,9 +69,7 @@ function calculateColorScore(
 
   return {
     category: 'color',
-    label: match
-      ? `${profile.season} 시즌에 어울리는 톤`
-      : '톤이 다르지만 활용 가능',
+    label: match ? `${profile.season} 시즌에 어울리는 톤` : '톤이 다르지만 활용 가능',
     score,
   };
 }
@@ -82,10 +77,7 @@ function calculateColorScore(
 /**
  * 피부타입 매칭 점수 (0-30)
  */
-function calculateSkinScore(
-  product: ProductMatchInput,
-  profile: UserProfile
-): MatchReason | null {
+function calculateSkinScore(product: ProductMatchInput, profile: UserProfile): MatchReason | null {
   if (!profile.skinType || !product.skinTypes?.length) return null;
 
   const match = product.skinTypes.includes(profile.skinType);
@@ -93,9 +85,7 @@ function calculateSkinScore(
 
   return {
     category: 'skin',
-    label: match
-      ? `${profile.skinType} 피부에 적합`
-      : '다른 피부타입 대상 제품',
+    label: match ? `${profile.skinType} 피부에 적합` : '다른 피부타입 대상 제품',
     score,
   };
 }
@@ -109,18 +99,13 @@ function calculateConcernScore(
 ): MatchReason | null {
   if (!profile.concerns?.length || !product.concerns?.length) return null;
 
-  const matches = profile.concerns.filter((c) =>
-    product.concerns!.includes(c)
-  );
+  const matches = profile.concerns.filter((c) => product.concerns!.includes(c));
   const ratio = matches.length / profile.concerns.length;
   const score = Math.round(WEIGHTS.concern * ratio);
 
   return {
     category: 'concern',
-    label:
-      matches.length > 0
-        ? `${matches.join(', ')} 개선에 도움`
-        : '해당 고민과 무관',
+    label: matches.length > 0 ? `${matches.join(', ')} 개선에 도움` : '해당 고민과 무관',
     score,
   };
 }
@@ -133,7 +118,11 @@ function calculateIngredientScore(
   profile: UserProfile
 ): MatchReason | null {
   if (!profile.allergens?.length || !product.ingredients?.length) {
-    return { category: 'ingredient', label: '성분 정보 확인 불가', score: Math.round(WEIGHTS.ingredient * 0.5) };
+    return {
+      category: 'ingredient',
+      label: '성분 정보 확인 불가',
+      score: Math.round(WEIGHTS.ingredient * 0.5),
+    };
   }
 
   const hasAllergen = product.ingredients.some((ing) =>
@@ -152,10 +141,7 @@ function calculateIngredientScore(
 /**
  * 제품 매칭 점수 계산 (0-100)
  */
-export function calculateMatchScore(
-  product: ProductMatchInput,
-  profile: UserProfile
-): MatchResult {
+export function calculateMatchScore(product: ProductMatchInput, profile: UserProfile): MatchResult {
   const reasons: MatchReason[] = [];
 
   const colorScore = calculateColorScore(product, profile);
@@ -195,7 +181,5 @@ export function sortByMatchScore(
   products: ProductMatchInput[],
   profile: UserProfile
 ): MatchResult[] {
-  return products
-    .map((p) => calculateMatchScore(p, profile))
-    .sort((a, b) => b.score - a.score);
+  return products.map((p) => calculateMatchScore(p, profile)).sort((a, b) => b.score - a.score);
 }

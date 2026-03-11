@@ -40,10 +40,7 @@ interface UseShareReturn {
  * );
  * ```
  */
-export function useShare(
-  title: string,
-  options?: UseShareOptions
-): UseShareReturn {
+export function useShare(title: string, options?: UseShareOptions): UseShareReturn {
   const ref = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -69,11 +66,7 @@ export function useShare(
       }
 
       // 공유 또는 다운로드
-      const success = await shareImage(
-        blob,
-        title,
-        `${title} - 이룸에서 확인하세요!`
-      );
+      const success = await shareImage(blob, title, `${title} - 이룸에서 확인하세요!`);
 
       if (success) {
         // Web Share API가 아닌 다운로드인 경우에만 토스트 표시

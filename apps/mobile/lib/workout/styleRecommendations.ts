@@ -292,12 +292,15 @@ export function getPersonalColorTheme(pc: PersonalColorSeason): {
   text: string;
   border: string;
 } {
-  const themes: Record<PersonalColorSeason, {
-    bg: string;
-    bgLight: string;
-    text: string;
-    border: string;
-  }> = {
+  const themes: Record<
+    PersonalColorSeason,
+    {
+      bg: string;
+      bgLight: string;
+      text: string;
+      border: string;
+    }
+  > = {
     Spring: {
       bg: 'bg-pink-500',
       bgLight: 'bg-pink-50',
@@ -327,11 +330,4 @@ export function getPersonalColorTheme(pc: PersonalColorSeason): {
 }
 
 // 상수 내보내기 (테스트 및 외부 사용)
-export {
-  PC_COLORS,
-  PC_AVOID_COLORS,
-  BODY_TYPE_FITS,
-  PC_ACCESSORIES,
-  PC_AMBIENT,
-  STYLE_TIPS,
-};
+export { PC_COLORS, PC_AVOID_COLORS, BODY_TYPE_FITS, PC_ACCESSORIES, PC_AMBIENT, STYLE_TIPS };

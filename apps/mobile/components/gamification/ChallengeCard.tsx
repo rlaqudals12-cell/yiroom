@@ -48,7 +48,12 @@ export function ChallengeCard({
   const progress = targetProgress > 0 ? Math.min(currentProgress / targetProgress, 1) : 0;
   const percentage = Math.round(progress * 100);
 
-  const statusColor = status === 'completed' ? statusColors.success : status === 'active' ? brand.primary : colors.mutedForeground;
+  const statusColor =
+    status === 'completed'
+      ? statusColors.success
+      : status === 'active'
+        ? brand.primary
+        : colors.mutedForeground;
 
   return (
     <Pressable

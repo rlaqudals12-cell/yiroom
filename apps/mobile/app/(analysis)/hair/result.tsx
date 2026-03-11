@@ -33,7 +33,7 @@ import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography, radii , spacing } from '@/lib/theme';
+import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
@@ -113,9 +113,7 @@ export default function HairResultScreen() {
   };
 
   if (isLoading) {
-    return (
-      <AnalysisLoadingState message="헤어 상태를 분석 중이에요..." testID="hair-loading" />
-    );
+    return <AnalysisLoadingState message="헤어 상태를 분석 중이에요..." testID="hair-loading" />;
   }
 
   if (!result) {
@@ -139,7 +137,11 @@ export default function HairResultScreen() {
 
   // 평균 점수
   const avgScore = Math.round(
-    (result.scores.shine + result.scores.elasticity + result.scores.density + result.scores.scalpHealth) / 4
+    (result.scores.shine +
+      result.scores.elasticity +
+      result.scores.density +
+      result.scores.scalpHealth) /
+      4
   );
 
   // --- 헤더 콘텐츠 ---
@@ -190,10 +192,7 @@ export default function HairResultScreen() {
   // --- 상세 탭 ---
   const detailTab = (
     <View style={localStyles.tabContent}>
-      <Animated.View
-        entering={FadeInUp.duration(TIMING.normal)}
-        style={localStyles.chartContainer}
-      >
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
           모발 밸런스 차트
         </Text>
@@ -257,35 +256,35 @@ export default function HairResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '💇', name: '헤어 전문가', description: '헤어 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="hair"
-      title="헤어 분석 결과"
-      imageUri={imageUri}
-      imageStyle={localStyles.hairImage}
-      headerContent={headerContent}
-      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
-      usedFallback={usedFallback}
-      summaryTab={summaryTab}
-      detailTab={detailTab}
-      recommendTab={recommendTab}
-      primaryActionText="💇 헤어 제품 추천"
-      onPrimaryAction={handleProductRecommendation}
-      retryPath="/(analysis)/hair"
-      testID="hair-analysis-result"
-    />
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '💇', name: '헤어 전문가', description: '헤어 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="hair"
+        title="헤어 분석 결과"
+        imageUri={imageUri}
+        imageStyle={localStyles.hairImage}
+        headerContent={headerContent}
+        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+        usedFallback={usedFallback}
+        summaryTab={summaryTab}
+        detailTab={detailTab}
+        recommendTab={recommendTab}
+        primaryActionText="💇 헤어 제품 추천"
+        onPrimaryAction={handleProductRecommendation}
+        retryPath="/(analysis)/hair"
+        testID="hair-analysis-result"
+      />
     </>
   );
 }

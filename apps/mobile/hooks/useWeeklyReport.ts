@@ -39,12 +39,7 @@ export function useWeeklyReport(): UseWeeklyReportReturn {
   const report = useMemo(() => {
     if (isLoading) return null;
 
-    return aggregateWeeklyReport(
-      weeklyLogs,
-      weeklyHistory,
-      settings,
-      streak?.currentStreak ?? 0
-    );
+    return aggregateWeeklyReport(weeklyLogs, weeklyHistory, settings, streak?.currentStreak ?? 0);
   }, [weeklyLogs, weeklyHistory, settings, streak, isLoading]);
 
   const refetch = async (): Promise<void> => {

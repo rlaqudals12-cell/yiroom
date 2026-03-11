@@ -80,9 +80,7 @@ export function ScoreGauge({
     strokeDashoffset: circumference * (1 - progress.value),
   }));
 
-  const displayText = formatValue
-    ? formatValue(clampedScore)
-    : `${Math.round(clampedScore)}`;
+  const displayText = formatValue ? formatValue(clampedScore) : `${Math.round(clampedScore)}`;
 
   return (
     <View

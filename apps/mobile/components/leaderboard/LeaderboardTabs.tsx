@@ -6,11 +6,7 @@
  */
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
@@ -58,13 +54,17 @@ export function LeaderboardTabs({
       Haptics.selectionAsync();
       onTabChange(key);
     },
-    [activeTab, onTabChange],
+    [activeTab, onTabChange]
   );
 
   return (
     <View
       testID={testID}
-      style={[styles.container, { backgroundColor: colors.secondary, borderRadius: radii.xl }, style]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.secondary, borderRadius: radii.xl },
+        style,
+      ]}
       accessibilityRole="tablist"
     >
       {tabs.map((tab, index) => {

@@ -1803,19 +1803,19 @@ const RECOVERY_STRETCHES: StretchExercise[] = [
  */
 export const STRETCH_DATABASE: StretchExercise[] = [
   // 상체 (20개)
-  ...CHEST_STRETCHES,         // 4개
-  ...TRAPEZIUS_STRETCHES,     // 4개
-  ...CERVICAL_STRETCHES,      // 4개
-  ...SHOULDER_STRETCHES,      // 4개
-  ...SPINE_STRETCHES,         // 4개
+  ...CHEST_STRETCHES, // 4개
+  ...TRAPEZIUS_STRETCHES, // 4개
+  ...CERVICAL_STRETCHES, // 4개
+  ...SHOULDER_STRETCHES, // 4개
+  ...SPINE_STRETCHES, // 4개
 
   // 하체 (20개)
-  ...HIP_FLEXOR_STRETCHES,    // 4개
-  ...HAMSTRING_STRETCHES,     // 4개
-  ...GLUTE_STRETCHES,         // 4개
-  ...QUADRICEPS_STRETCHES,    // 2개
-  ...ADDUCTOR_STRETCHES,      // 3개
-  ...CALF_STRETCHES,          // 3개
+  ...HIP_FLEXOR_STRETCHES, // 4개
+  ...HAMSTRING_STRETCHES, // 4개
+  ...GLUTE_STRETCHES, // 4개
+  ...QUADRICEPS_STRETCHES, // 2개
+  ...ADDUCTOR_STRETCHES, // 3개
+  ...CALF_STRETCHES, // 3개
 
   // 동적 스트레칭 (10개)
   ...DYNAMIC_STRETCHES,
@@ -1831,26 +1831,28 @@ export const STRETCH_DATABASE: StretchExercise[] = [
  * 카테고리별 스트레칭 조회
  */
 export function getStretchesByCategory(category: StretchExercise['category']): StretchExercise[] {
-  return STRETCH_DATABASE.filter(stretch => stretch.category === category);
+  return STRETCH_DATABASE.filter((stretch) => stretch.category === category);
 }
 
 /**
  * 타입별 스트레칭 조회
  */
 export function getStretchesByType(type: StretchExercise['type']): StretchExercise[] {
-  return STRETCH_DATABASE.filter(stretch => stretch.type === type);
+  return STRETCH_DATABASE.filter((stretch) => stretch.type === type);
 }
 
 /**
  * 난이도별 스트레칭 조회
  */
-export function getStretchesByDifficulty(difficulty: StretchExercise['difficulty']): StretchExercise[] {
-  return STRETCH_DATABASE.filter(stretch => stretch.difficulty === difficulty);
+export function getStretchesByDifficulty(
+  difficulty: StretchExercise['difficulty']
+): StretchExercise[] {
+  return STRETCH_DATABASE.filter((stretch) => stretch.difficulty === difficulty);
 }
 
 /**
  * ID로 스트레칭 조회
  */
 export function getStretchById(id: string): StretchExercise | undefined {
-  return STRETCH_DATABASE.find(stretch => stretch.id === id);
+  return STRETCH_DATABASE.find((stretch) => stretch.id === id);
 }

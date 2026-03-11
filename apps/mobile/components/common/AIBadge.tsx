@@ -46,10 +46,7 @@ export function AIBadge({
       accessibilityLabel={description}
       testID="ai-badge"
     >
-      <Text
-        style={[sizeStyle.icon, { color: aiColors.text[mode] }]}
-        accessibilityElementsHidden
-      >
+      <Text style={[sizeStyle.icon, { color: aiColors.text[mode] }]} accessibilityElementsHidden>
         ✨
       </Text>
       <Text

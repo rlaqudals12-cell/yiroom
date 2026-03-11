@@ -8,7 +8,7 @@ import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import { ScoreGauge } from '../ui/ScoreGauge';
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { TIMING, usePulseGlow } from '../../lib/animations';
 import type { WellnessBreakdown } from '../../hooks/useWellnessScore';
 
@@ -80,21 +80,9 @@ export function WellnessScoreRing({
 
       {/* 영역별 점수 바 */}
       <View style={[styles.breakdownRow, { marginTop: spacing.md }]}>
-        <BreakdownItem
-          label="분석"
-          value={breakdown.analysis}
-          color={status.info}
-        />
-        <BreakdownItem
-          label="운동"
-          value={breakdown.workout}
-          color={status.success}
-        />
-        <BreakdownItem
-          label="영양"
-          value={breakdown.nutrition}
-          color={status.warning}
-        />
+        <BreakdownItem label="분석" value={breakdown.analysis} color={status.info} />
+        <BreakdownItem label="운동" value={breakdown.workout} color={status.success} />
+        <BreakdownItem label="영양" value={breakdown.nutrition} color={status.warning} />
       </View>
     </Animated.View>
   );
@@ -114,9 +102,7 @@ function BreakdownItem({
   return (
     <View style={styles.breakdownItem} accessibilityLabel={`${label} ${value}점`}>
       <View style={styles.breakdownHeader}>
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-          {label}
-        </Text>
+        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{label}</Text>
         <Text
           style={{
             fontSize: typography.size.xs,

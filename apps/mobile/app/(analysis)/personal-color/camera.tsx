@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function PersonalColorCameraScreen() {
   const { colors, brand } = useTheme();
@@ -30,10 +30,19 @@ export default function PersonalColorCameraScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.permissionContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.permissionTitle, { color: colors.foreground }]}>카메라 권한이 필요해요</Text>
-        <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>퍼스널 컬러 진단을 위해 얼굴 사진이 필요합니다.</Text>
-        <Pressable style={[styles.permissionButton, { backgroundColor: brand.primary }]} onPress={requestPermission}>
-          <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>권한 허용하기</Text>
+        <Text style={[styles.permissionTitle, { color: colors.foreground }]}>
+          카메라 권한이 필요해요
+        </Text>
+        <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>
+          퍼스널 컬러 진단을 위해 얼굴 사진이 필요합니다.
+        </Text>
+        <Pressable
+          style={[styles.permissionButton, { backgroundColor: brand.primary }]}
+          onPress={requestPermission}
+        >
+          <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>
+            권한 허용하기
+          </Text>
         </Pressable>
         <Pressable style={styles.galleryButton} onPress={pickFromGallery}>
           <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
@@ -101,7 +110,9 @@ export default function PersonalColorCameraScreen() {
         {/* 가이드 오버레이 */}
         <View style={styles.overlay}>
           <View style={styles.guideCircle} />
-          <Text style={[styles.guideText, { color: colors.overlayForeground }]}>얼굴이 원 안에 들어오도록{'\n'}정면을 바라봐 주세요</Text>
+          <Text style={[styles.guideText, { color: colors.overlayForeground }]}>
+            얼굴이 원 안에 들어오도록{'\n'}정면을 바라봐 주세요
+          </Text>
         </View>
 
         {/* 하단 컨트롤 */}
@@ -111,7 +122,11 @@ export default function PersonalColorCameraScreen() {
           </Pressable>
 
           <Pressable
-            style={[styles.captureButton, { borderColor: colors.overlayForeground }, isCapturing && styles.captureButtonDisabled]}
+            style={[
+              styles.captureButton,
+              { borderColor: colors.overlayForeground },
+              isCapturing && styles.captureButtonDisabled,
+            ]}
             onPress={takePicture}
             disabled={isCapturing}
           >
@@ -134,7 +149,7 @@ export default function PersonalColorCameraScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',  // 카메라 배경 — 항상 검정
+    backgroundColor: '#000', // 카메라 배경 — 항상 검정
   },
   camera: {
     flex: 1,

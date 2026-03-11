@@ -162,13 +162,31 @@ export function NutritionDashboardCard({
       {/* 탄단지 칩 */}
       {macros && (
         <View style={[styles.macroRow, { marginTop: spacing.sm }]}>
-          <Text style={{ fontSize: typography.size.xs, color: nutrientColors.carbs, fontWeight: typography.weight.medium }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrientColors.carbs,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             탄 {macros.carbs}g
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: nutrientColors.protein, fontWeight: typography.weight.medium }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrientColors.protein,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             단 {macros.protein}g
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: nutrientColors.fat, fontWeight: typography.weight.medium }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: nutrientColors.fat,
+              fontWeight: typography.weight.medium,
+            }}
+          >
             지 {macros.fat}g
           </Text>
         </View>

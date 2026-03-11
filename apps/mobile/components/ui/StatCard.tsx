@@ -9,7 +9,7 @@ import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 
 import { useCountUp } from '../../lib/animations/hooks';
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 type ModuleColorKey =
   | 'workout'
@@ -71,17 +71,13 @@ export function StatCard({
   useAnimatedReaction(
     () => animatedValue.value,
     (current) => {
-      const formatted = decimals > 0
-        ? current.toFixed(decimals)
-        : Math.round(current).toString();
+      const formatted = decimals > 0 ? current.toFixed(decimals) : Math.round(current).toString();
       runOnJS(setDisplayValue)(formatted);
-    },
+    }
   );
 
   // 모듈 색상 결정
-  const accentColor = moduleColor
-    ? (module[moduleColor]?.base ?? colors.ring)
-    : colors.ring;
+  const accentColor = moduleColor ? (module[moduleColor]?.base ?? colors.ring) : colors.ring;
 
   return (
     <View
@@ -94,13 +90,15 @@ export function StatCard({
           borderRadius: radii.xl,
           padding: spacing.md,
           // 모듈별 accent shadow (웹 gradient-accent 카드 매칭)
-          ...(isDark ? {} : {
-            shadowColor: accentColor,
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.15,
-            shadowRadius: 10,
-            elevation: 3,
-          }),
+          ...(isDark
+            ? {}
+            : {
+                shadowColor: accentColor,
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.15,
+                shadowRadius: 10,
+                elevation: 3,
+              }),
         },
         style,
       ]}
@@ -143,7 +141,9 @@ export function StatCard({
         ]}
         accessibilityLabel={`${label} ${prefix}${value}${suffix}`}
       >
-        {prefix}{displayValue}{suffix}
+        {prefix}
+        {displayValue}
+        {suffix}
       </Text>
 
       {/* 라벨 */}

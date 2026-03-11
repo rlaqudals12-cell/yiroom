@@ -28,7 +28,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -80,7 +80,8 @@ export function BottomSheet({
   );
 
   // 초기 시트 높이
-  const initialHeight = snapHeights[Math.min(initialSnap, snapHeights.length - 1)] ?? snapHeights[0];
+  const initialHeight =
+    snapHeights[Math.min(initialSnap, snapHeights.length - 1)] ?? snapHeights[0];
 
   // 현재 시트의 translateY (0 = 최대 높이 위치, SCREEN_HEIGHT = 완전히 숨김)
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -177,12 +178,7 @@ export function BottomSheet({
 
   // 배경 오파시티 스타일
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      backdropOpacity.value,
-      [0, 1],
-      [0, 0.5],
-      Extrapolation.CLAMP
-    ),
+    opacity: interpolate(backdropOpacity.value, [0, 1], [0, 0.5], Extrapolation.CLAMP),
   }));
 
   if (!isVisible) return null;
@@ -216,11 +212,7 @@ export function BottomSheet({
         accessibilityLabel="시트 닫기"
       >
         <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: '#000000' },
-            backdropAnimatedStyle,
-          ]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }, backdropAnimatedStyle]}
         />
       </Pressable>
 
@@ -243,7 +235,11 @@ export function BottomSheet({
           accessibilityLabel={title ? `${title} 시트` : '하단 시트'}
         >
           {/* 핸들 인디케이터 */}
-          <View style={handleBarStyle} testID={`${testID}-handle`} accessibilityLabel="드래그하여 시트 조절" />
+          <View
+            style={handleBarStyle}
+            testID={`${testID}-handle`}
+            accessibilityLabel="드래그하여 시트 조절"
+          />
 
           {/* 제목 (선택) */}
           {title && (
@@ -273,7 +269,9 @@ export function BottomSheet({
           )}
 
           {/* 콘텐츠 */}
-          <View style={[styles.content, { paddingHorizontal: spacing.md, paddingBottom: spacing.lg }]}>
+          <View
+            style={[styles.content, { paddingHorizontal: spacing.md, paddingBottom: spacing.lg }]}
+          >
             {children}
           </View>
         </Animated.View>

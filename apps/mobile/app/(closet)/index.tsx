@@ -8,13 +8,7 @@ import { useRouter } from 'expo-router';
 import { Plus, Heart, SlidersHorizontal } from 'lucide-react-native';
 import React, { useState, useMemo, useCallback } from 'react';
 import { Image } from 'expo-image';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -22,7 +16,7 @@ import { ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { staggeredEntry } from '@/lib/animations';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
 
@@ -40,7 +34,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors, module: moduleTheme, shadows: themeShadows, typography, spacing} = useTheme();
+  const { colors, module: moduleTheme, shadows: themeShadows, typography, spacing } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
@@ -65,15 +59,18 @@ export default function ClosetScreen() {
 
   // 카테고리별 필터링 + 정렬
   const filteredItems = useMemo(() => {
-    let result = selectedCategory === 'all'
-      ? [...items]
-      : items.filter((item) => item.subCategory === selectedCategory);
+    let result =
+      selectedCategory === 'all'
+        ? [...items]
+        : items.filter((item) => item.subCategory === selectedCategory);
 
     // 정렬 적용
     if (sortOrder === 'name') {
       result = result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === 'oldest') {
-      result = result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      result = result.sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
     }
     // 'newest'는 기본 순서 (최신순)
 
@@ -118,8 +115,12 @@ export default function ClosetScreen() {
           </View>
           <SkeletonText style={{ width: '90%', height: 36, alignSelf: 'center' }} />
           <View style={styles.gridRow}>
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginLeft: spacing.md }} />
-            <SkeletonCard style={{ width: '48%', height: 180, marginTop: spacing.md, marginRight: spacing.md }} />
+            <SkeletonCard
+              style={{ width: '48%', height: 180, marginTop: spacing.md, marginLeft: spacing.md }}
+            />
+            <SkeletonCard
+              style={{ width: '48%', height: 180, marginTop: spacing.md, marginRight: spacing.md }}
+            />
           </View>
         </View>
       </ScreenContainer>
@@ -192,8 +193,13 @@ export default function ClosetScreen() {
               ? '옷장이 비어있어요'
               : `${FILTER_OPTIONS.find((f) => f.key === selectedCategory)?.label} 아이템이 없어요`}
           </Text>
-          <Pressable style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]} onPress={handleAddPress}>
-            <Text style={[styles.emptyButtonText, { color: colors.overlayForeground }]}>아이템 추가하기</Text>
+          <Pressable
+            style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]}
+            onPress={handleAddPress}
+          >
+            <Text style={[styles.emptyButtonText, { color: colors.overlayForeground }]}>
+              아이템 추가하기
+            </Text>
           </Pressable>
         </View>
       ) : (

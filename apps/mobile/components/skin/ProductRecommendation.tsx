@@ -31,9 +31,14 @@ export function ProductRecommendation({
 }: ProductRecommendationProps): React.JSX.Element {
   const { colors, spacing, typography, radii, shadows, module, score } = useTheme();
 
-  const matchColor = matchRate !== undefined
-    ? matchRate >= 80 ? score.excellent : matchRate >= 60 ? score.good : score.caution
-    : colors.mutedForeground;
+  const matchColor =
+    matchRate !== undefined
+      ? matchRate >= 80
+        ? score.excellent
+        : matchRate >= 60
+          ? score.good
+          : score.caution
+      : colors.mutedForeground;
 
   return (
     <Pressable

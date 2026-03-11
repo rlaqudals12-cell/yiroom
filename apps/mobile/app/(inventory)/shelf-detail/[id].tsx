@@ -69,7 +69,12 @@ export default function ShelfDetailScreen(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen" backgroundGradient="beauty">
+      <ScreenContainer
+        edges={['bottom']}
+        contentPadding={20}
+        testID="shelf-detail-screen"
+        backgroundGradient="beauty"
+      >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" />
         </View>
@@ -79,7 +84,12 @@ export default function ShelfDetailScreen(): React.JSX.Element {
 
   if (!detail) {
     return (
-      <ScreenContainer edges={['bottom']} contentPadding={20} testID="shelf-detail-screen" backgroundGradient="beauty">
+      <ScreenContainer
+        edges={['bottom']}
+        contentPadding={20}
+        testID="shelf-detail-screen"
+        backgroundGradient="beauty"
+      >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📦</Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.base }}>

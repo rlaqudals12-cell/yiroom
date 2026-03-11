@@ -80,7 +80,9 @@ export function ItemDetailSheet({
       <View style={[styles.infoRow, { marginTop: spacing.md, gap: spacing.md }]}>
         {purchaseDate && (
           <View>
-            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>구매일</Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+              구매일
+            </Text>
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -94,7 +96,9 @@ export function ItemDetailSheet({
         )}
         {expiryDate && (
           <View>
-            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>유통기한</Text>
+            <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+              유통기한
+            </Text>
             <Text
               style={{
                 fontSize: typography.size.sm,
@@ -121,7 +125,9 @@ export function ItemDetailSheet({
           >
             주요 성분
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, lineHeight: 18 }}>
+          <Text
+            style={{ fontSize: typography.size.xs, color: colors.mutedForeground, lineHeight: 18 }}
+          >
             {ingredients.join(', ')}
           </Text>
         </View>

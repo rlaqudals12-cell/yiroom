@@ -56,43 +56,157 @@ export interface WeeklyPlanInput {
 const WEEKLY_SPLIT_TEMPLATES: Record<string, DayFocus[]> = {
   // 주 1-2회: 전신 2일
   '1-2': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'back', 'shoulder', 'arm'], categories: ['upper'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'shoulder', 'arm'],
+      categories: ['upper'],
+    },
     { day: 'tue', dayLabel: '화요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'wed', dayLabel: '수요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['thigh', 'hip', 'calf', 'abs'], categories: ['lower', 'core'] },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'hip', 'calf', 'abs'],
+      categories: ['lower', 'core'],
+    },
     { day: 'fri', dayLabel: '금요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'sat', dayLabel: '토요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 주 3-4회: 상체/하체/전신 분할
   '3-4': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'shoulder', 'arm'], categories: ['upper'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'shoulder', 'arm'],
+      categories: ['upper'],
+    },
     { day: 'tue', dayLabel: '화요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'hip', 'calf'], categories: ['lower'] },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'hip', 'calf'],
+      categories: ['lower'],
+    },
     { day: 'thu', dayLabel: '목요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['abs', 'waist', 'back'], categories: ['core', 'upper'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'thigh', 'hip', 'abs'], categories: ['cardio'] },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['abs', 'waist', 'back'],
+      categories: ['core', 'upper'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'thigh', 'hip', 'abs'],
+      categories: ['cardio'],
+    },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 주 5-6회: 세분화된 분할
   '5-6': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'arm'], categories: ['upper'] },
-    { day: 'tue', dayLabel: '화요일', isRestDay: false, bodyParts: ['back', 'arm'], categories: ['upper'] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'calf'], categories: ['lower'] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['shoulder', 'abs'], categories: ['upper', 'core'] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['hip', 'thigh'], categories: ['lower'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'abs'], categories: ['cardio', 'core'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'tue',
+      dayLabel: '화요일',
+      isRestDay: false,
+      bodyParts: ['back', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'calf'],
+      categories: ['lower'],
+    },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['shoulder', 'abs'],
+      categories: ['upper', 'core'],
+    },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['hip', 'thigh'],
+      categories: ['lower'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'abs'],
+      categories: ['cardio', 'core'],
+    },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 매일
   daily: [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'arm'], categories: ['upper'] },
-    { day: 'tue', dayLabel: '화요일', isRestDay: false, bodyParts: ['back', 'arm'], categories: ['upper'] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'calf'], categories: ['lower'] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['shoulder', 'abs'], categories: ['upper', 'core'] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['hip', 'thigh'], categories: ['lower'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'thigh'], categories: ['cardio'] },
-    { day: 'sun', dayLabel: '일요일', isRestDay: false, bodyParts: ['abs', 'waist'], categories: ['core'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'tue',
+      dayLabel: '화요일',
+      isRestDay: false,
+      bodyParts: ['back', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'calf'],
+      categories: ['lower'],
+    },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['shoulder', 'abs'],
+      categories: ['upper', 'core'],
+    },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['hip', 'thigh'],
+      categories: ['lower'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'thigh'],
+      categories: ['cardio'],
+    },
+    {
+      day: 'sun',
+      dayLabel: '일요일',
+      isRestDay: false,
+      bodyParts: ['abs', 'waist'],
+      categories: ['core'],
+    },
   ],
 };
 
@@ -120,7 +234,16 @@ const CONCERN_TO_BODY_PARTS: Record<string, BodyPart[]> = {
 /** 장소별 장비 필터 */
 const LOCATION_EQUIPMENT_FILTER: Record<string, string[]> = {
   home: ['bodyweight', 'dumbbell', 'band', 'mat', 'kettlebell'],
-  gym: ['bodyweight', 'dumbbell', 'barbell', 'machine', 'cable', 'cardio_machine', 'pull_up_bar', 'kettlebell'],
+  gym: [
+    'bodyweight',
+    'dumbbell',
+    'barbell',
+    'machine',
+    'cable',
+    'cardio_machine',
+    'pull_up_bar',
+    'kettlebell',
+  ],
   outdoor: ['bodyweight'],
 };
 
@@ -145,15 +268,14 @@ export function filterExercises(
   injuries: string[]
 ): Exercise[] {
   // 사용자 장비가 비어있으면 장소 기반 기본 장비 사용
-  const userEquipment = equipment.length > 0
-    ? equipment
-    : LOCATION_EQUIPMENT_FILTER[location] || ['bodyweight'];
+  const userEquipment =
+    equipment.length > 0 ? equipment : LOCATION_EQUIPMENT_FILTER[location] || ['bodyweight'];
 
   return exercises.filter((ex) => {
     // 장비 필터: 운동에 필요한 장비가 사용자가 가진 장비에 포함되어야 함
     // 장비가 필요 없는 운동(equipment: [])은 항상 포함
-    const hasEquipment = ex.equipment.length === 0 ||
-      ex.equipment.some((eq) => userEquipment.includes(eq));
+    const hasEquipment =
+      ex.equipment.length === 0 || ex.equipment.some((eq) => userEquipment.includes(eq));
 
     if (!hasEquipment) return false;
 
@@ -255,8 +377,15 @@ export function calculateExerciseDetails(
 
   // 무게 추천 (웨이트 운동인 경우)
   let weight: number | undefined;
-  if (exercise.equipment.some((eq) => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))) {
-    const weightRec = calculateRecommendedWeight(userWeight, exercise.category, exercise.difficulty, goal);
+  if (
+    exercise.equipment.some((eq) => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))
+  ) {
+    const weightRec = calculateRecommendedWeight(
+      userWeight,
+      exercise.category,
+      exercise.difficulty,
+      goal
+    );
     weight = weightRec.recommendedWeight;
   }
 

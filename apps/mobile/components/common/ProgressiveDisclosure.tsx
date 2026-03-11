@@ -7,12 +7,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  useSharedValue,
-} from 'react-native-reanimated';
-import { useTheme, spacing} from '../../lib/theme';
+import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface ProgressiveDisclosureProps {
   /** 항상 보이는 콘텐츠 */
@@ -59,9 +55,7 @@ export function ProgressiveDisclosure({
 
       {/* 펼쳤을 때 상세 */}
       {expanded && (
-        <Animated.View style={[styles.detailContainer, animatedStyle]}>
-          {detail}
-        </Animated.View>
+        <Animated.View style={[styles.detailContainer, animatedStyle]}>{detail}</Animated.View>
       )}
 
       {/* 토글 버튼 */}
@@ -76,9 +70,7 @@ export function ProgressiveDisclosure({
         <Text style={[styles.toggleText, { color: brand.primary, fontSize: typography.size.sm }]}>
           {expanded ? collapseLabel : expandLabel}
         </Text>
-        <Text style={[styles.toggleArrow, { color: brand.primary }]}>
-          {expanded ? '▲' : '▼'}
-        </Text>
+        <Text style={[styles.toggleArrow, { color: brand.primary }]}>{expanded ? '▲' : '▼'}</Text>
       </Pressable>
     </View>
   );

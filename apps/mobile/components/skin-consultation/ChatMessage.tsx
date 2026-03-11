@@ -116,11 +116,7 @@ export function ChatMessage({
   if (!isUser && isLoading) {
     return (
       <View
-        style={[
-          styles.container,
-          styles.aiContainer,
-          style,
-        ]}
+        style={[styles.container, styles.aiContainer, style]}
         testID="chat-message-loading"
         accessibilityLabel="AI가 답변을 작성 중이에요"
       >
@@ -146,20 +142,12 @@ export function ChatMessage({
 
   // 사용자 메시지: 브랜드 색상 배경
   // AI 메시지: 카드 배경 + 테두리
-  const bubbleBackgroundColor = isUser
-    ? brand.primary
-    : colors.card;
-  const textColor = isUser
-    ? brand.primaryForeground
-    : colors.foreground;
+  const bubbleBackgroundColor = isUser ? brand.primary : colors.card;
+  const textColor = isUser ? brand.primaryForeground : colors.foreground;
 
   return (
     <View
-      style={[
-        styles.container,
-        isUser ? styles.userContainer : styles.aiContainer,
-        style,
-      ]}
+      style={[styles.container, isUser ? styles.userContainer : styles.aiContainer, style]}
       testID="chat-message"
       accessibilityLabel={`${isUser ? '나' : 'AI'}: ${content}`}
     >

@@ -36,7 +36,9 @@ export async function lookupBarcode(
     // 1. 로컬 DB 조회
     const { data: localFood } = await supabase
       .from('barcode_foods')
-      .select('id, barcode, name, brand, serving_size, calories, protein, carbs, fat, sugar, fiber, sodium, image_url, category, source, verified')
+      .select(
+        'id, barcode, name, brand, serving_size, calories, protein, carbs, fat, sugar, fiber, sodium, image_url, category, source, verified'
+      )
       .eq('barcode', barcode)
       .single();
 
@@ -87,10 +89,7 @@ export async function lookupBarcode(
 /**
  * 바코드 식품을 로컬 DB에 캐시 저장
  */
-async function saveBarcodeToLocal(
-  supabase: SupabaseClient,
-  food: BarcodeFood
-): Promise<void> {
+async function saveBarcodeToLocal(supabase: SupabaseClient, food: BarcodeFood): Promise<void> {
   await supabase.from('barcode_foods').upsert(
     {
       barcode: food.barcode,

@@ -64,7 +64,12 @@ export function QRCodeDisplay({
           <ActivityIndicator size="large" color={brand.primary} />
         ) : error ? (
           <View style={styles.errorBox}>
-            <Text style={[styles.errorText, { color: colors.destructive, fontSize: typography.size.sm }]}>
+            <Text
+              style={[
+                styles.errorText,
+                { color: colors.destructive, fontSize: typography.size.sm },
+              ]}
+            >
               {error}
             </Text>
           </View>
@@ -82,7 +87,12 @@ export function QRCodeDisplay({
             accessibilityLabel="QR 코드 이미지"
           >
             {/* QR 라이브러리 설치 시 실제 QR 렌더링으로 교체 */}
-            <Text style={[styles.qrPlaceholderText, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+            <Text
+              style={[
+                styles.qrPlaceholderText,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
               QR
             </Text>
             <Text
@@ -97,7 +107,12 @@ export function QRCodeDisplay({
 
       {/* 설명 */}
       {description && (
-        <Text style={[styles.description, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+        <Text
+          style={[
+            styles.description,
+            { color: colors.mutedForeground, fontSize: typography.size.sm },
+          ]}
+        >
           {description}
         </Text>
       )}
@@ -111,7 +126,12 @@ export function QRCodeDisplay({
           accessibilityLabel="QR 코드 링크 공유"
           testID="qr-share-button"
         >
-          <Text style={[styles.shareText, { color: colors.overlayForeground, fontSize: typography.size.sm }]}>
+          <Text
+            style={[
+              styles.shareText,
+              { color: colors.overlayForeground, fontSize: typography.size.sm },
+            ]}
+          >
             링크 공유
           </Text>
         </Pressable>

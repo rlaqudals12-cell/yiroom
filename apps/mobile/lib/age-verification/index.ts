@@ -106,19 +106,9 @@ export function parseBirthDate(dateStr: string): Date | null {
 
 // ─── 연령 제한 라우트 ────────────────────────────────
 
-const AGE_RESTRICTED_ROUTES = [
-  '/(analysis)',
-  '/(tabs)',
-  '/settings',
-  '/products',
-];
+const AGE_RESTRICTED_ROUTES = ['/(analysis)', '/(tabs)', '/settings', '/products'];
 
-const EXEMPT_ROUTES = [
-  '/(auth)',
-  '/sign-in',
-  '/sign-up',
-  '/age-restricted',
-];
+const EXEMPT_ROUTES = ['/(auth)', '/sign-in', '/sign-up', '/age-restricted'];
 
 /**
  * 연령 검증이 필요한 라우트인지 확인

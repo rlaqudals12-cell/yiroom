@@ -91,9 +91,8 @@ export function calculateTeamProgress(members: TeamMember[]): number {
  * 팀 완료 멤버 수 계산
  */
 export function countCompletedMembers(members: TeamMember[]): number {
-  return members.filter(
-    (m) => m.status === 'accepted' && (m.progress.percentage || 0) >= 100
-  ).length;
+  return members.filter((m) => m.status === 'accepted' && (m.progress.percentage || 0) >= 100)
+    .length;
 }
 
 // ============================================================
@@ -121,10 +120,7 @@ export function canInvite(invite: ChallengeInvite): boolean {
 /**
  * 팀에 가입 가능한지 확인
  */
-export function canJoinTeam(
-  team: ChallengeTeam,
-  members: TeamMember[]
-): boolean {
+export function canJoinTeam(team: ChallengeTeam, members: TeamMember[]): boolean {
   const acceptedCount = members.filter((m) => m.status === 'accepted').length;
   return acceptedCount < team.maxMembers;
 }
@@ -140,9 +136,7 @@ export function isTeamLeader(team: ChallengeTeam, userId: string): boolean {
  * 팀 멤버인지 확인
  */
 export function isTeamMember(members: TeamMember[], userId: string): boolean {
-  return members.some(
-    (m) => m.clerkUserId === userId && m.status === 'accepted'
-  );
+  return members.some((m) => m.clerkUserId === userId && m.status === 'accepted');
 }
 
 // ============================================================
@@ -200,10 +194,7 @@ export function sortTeamMembers(members: TeamMember[]): TeamMember[] {
 /**
  * 팀 멤버 수 텍스트
  */
-export function getTeamMemberCountText(
-  members: TeamMember[],
-  maxMembers: number
-): string {
+export function getTeamMemberCountText(members: TeamMember[], maxMembers: number): string {
   const acceptedCount = members.filter((m) => m.status === 'accepted').length;
   return `${acceptedCount}/${maxMembers}명`;
 }
@@ -211,10 +202,7 @@ export function getTeamMemberCountText(
 /**
  * 팀 진행 상태 텍스트
  */
-export function getTeamProgressText(
-  members: TeamMember[],
-  teamProgress: number
-): string {
+export function getTeamProgressText(members: TeamMember[], teamProgress: number): string {
   const completedCount = countCompletedMembers(members);
   const acceptedCount = members.filter((m) => m.status === 'accepted').length;
 

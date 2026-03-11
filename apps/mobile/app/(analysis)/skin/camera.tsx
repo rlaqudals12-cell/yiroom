@@ -8,7 +8,7 @@ import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function SkinCameraScreen() {
   const { colors, brand } = useTheme();
@@ -30,10 +30,19 @@ export default function SkinCameraScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.permissionContainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.permissionTitle, { color: colors.foreground }]}>카메라 권한이 필요해요</Text>
-        <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>피부 분석을 위해 얼굴 사진이 필요합니다.</Text>
-        <Pressable style={[styles.permissionButton, { backgroundColor: brand.primary }]} onPress={requestPermission}>
-          <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>권한 허용하기</Text>
+        <Text style={[styles.permissionTitle, { color: colors.foreground }]}>
+          카메라 권한이 필요해요
+        </Text>
+        <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>
+          피부 분석을 위해 얼굴 사진이 필요합니다.
+        </Text>
+        <Pressable
+          style={[styles.permissionButton, { backgroundColor: brand.primary }]}
+          onPress={requestPermission}
+        >
+          <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>
+            권한 허용하기
+          </Text>
         </Pressable>
         <Pressable style={styles.galleryButton} onPress={pickFromGallery}>
           <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
@@ -100,7 +109,9 @@ export default function SkinCameraScreen() {
         {/* 가이드 오버레이 */}
         <Animated.View entering={FadeIn.duration(400)} style={styles.overlay}>
           <View style={styles.guideOval} />
-          <Text style={[styles.guideText, { color: colors.overlayForeground }]}>얼굴 전체가 보이도록{'\n'}정면을 바라봐 주세요</Text>
+          <Text style={[styles.guideText, { color: colors.overlayForeground }]}>
+            얼굴 전체가 보이도록{'\n'}정면을 바라봐 주세요
+          </Text>
         </Animated.View>
 
         {/* 하단 컨트롤 */}
@@ -110,7 +121,11 @@ export default function SkinCameraScreen() {
           </Pressable>
 
           <Pressable
-            style={[styles.captureButton, { borderColor: colors.overlayForeground }, isCapturing && styles.captureButtonDisabled]}
+            style={[
+              styles.captureButton,
+              { borderColor: colors.overlayForeground },
+              isCapturing && styles.captureButtonDisabled,
+            ]}
             onPress={takePicture}
             disabled={isCapturing}
           >

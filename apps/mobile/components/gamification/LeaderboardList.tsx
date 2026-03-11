@@ -32,7 +32,13 @@ export function LeaderboardList({
         testID="leaderboard-list"
         accessibilityLabel={emptyMessage}
       >
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, textAlign: 'center' }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            textAlign: 'center',
+          }}
+        >
           {emptyMessage}
         </Text>
       </View>
@@ -66,9 +72,7 @@ export function LeaderboardList({
       <FlatList
         data={entries}
         keyExtractor={(item) => `rank-${item.rank}`}
-        renderItem={({ item }) => (
-          <LeaderboardCard {...item} onPress={onEntryPress} />
-        )}
+        renderItem={({ item }) => <LeaderboardCard {...item} onPress={onEntryPress} />}
         ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
         scrollEnabled={false}
       />

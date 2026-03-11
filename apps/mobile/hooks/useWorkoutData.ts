@@ -136,7 +136,9 @@ export function useWorkoutData(): UseWorkoutDataReturn {
 
       const { data: logsData } = await supabase
         .from('workout_logs')
-        .select('id, workout_date, completed_at, actual_duration, actual_calories, perceived_effort')
+        .select(
+          'id, workout_date, completed_at, actual_duration, actual_calories, perceived_effort'
+        )
         .gte('workout_date', weekAgoStr)
         .lte('workout_date', todayStr)
         .order('workout_date', { ascending: true });

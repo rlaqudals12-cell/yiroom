@@ -65,26 +65,62 @@ export function WorkoutSummaryCard({
 
       <View style={[styles.statsRow, { marginTop: spacing.md, gap: spacing.md }]}>
         <View style={styles.statItem}>
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: module.workout.base }}>
+          <Text
+            style={{
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.bold,
+              color: module.workout.base,
+            }}
+          >
             {totalSessions}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
             운동 횟수
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: module.workout.base }}>
+          <Text
+            style={{
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.bold,
+              color: module.workout.base,
+            }}
+          >
             {totalMinutes}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
             총 시간(분)
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: module.workout.base }}>
+          <Text
+            style={{
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.bold,
+              color: module.workout.base,
+            }}
+          >
             {totalCalories}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
             소모 칼로리
           </Text>
         </View>

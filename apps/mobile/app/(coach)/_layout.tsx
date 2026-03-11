@@ -28,10 +28,7 @@ export default function CoachLayout() {
           title: 'AI 코치',
           headerLargeTitle: false,
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push('/(coach)/history')}
-              style={styles.headerButton}
-            >
+            <Pressable onPress={() => router.push('/(coach)/history')} style={styles.headerButton}>
               <Text style={[styles.headerButtonText, { color: brand.primary }]}>기록</Text>
             </Pressable>
           ),

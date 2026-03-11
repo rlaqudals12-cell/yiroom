@@ -9,21 +9,13 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://yiroom.vercel.a
 
 // 빠른 질문 카테고리
 export const CHAT_QUICK_QUESTIONS = {
-  general: [
-    '오늘 뭐 하면 좋을까?',
-    '기분 전환 방법 알려줘',
-    '건강한 하루 루틴 추천해줘',
-  ],
+  general: ['오늘 뭐 하면 좋을까?', '기분 전환 방법 알려줘', '건강한 하루 루틴 추천해줘'],
   beauty: [
     '내 피부 타입에 맞는 관리법은?',
     '퍼스널 컬러 활용법 알려줘',
     '계절별 스킨케어 팁 있어?',
   ],
-  wellness: [
-    '스트레스 해소법 알려줘',
-    '수면의 질 높이는 방법은?',
-    '명상 초보자 가이드 알려줘',
-  ],
+  wellness: ['스트레스 해소법 알려줘', '수면의 질 높이는 방법은?', '명상 초보자 가이드 알려줘'],
   lifestyle: [
     '건강한 식습관 만드는 방법은?',
     '일상에서 실천할 수 있는 운동은?',
@@ -76,7 +68,11 @@ export function getChatMockResponse(message: string): ChatResponse {
   if (lowerMsg.includes('피부') || lowerMsg.includes('스킨케어') || lowerMsg.includes('화장품')) {
     responseMessage =
       '피부 관리에 관심이 있으시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 분석 결과를 기반으로 더 맞춤화된 조언을 받으실 수 있어요.';
-  } else if (lowerMsg.includes('운동') || lowerMsg.includes('헬스') || lowerMsg.includes('스트레칭')) {
+  } else if (
+    lowerMsg.includes('운동') ||
+    lowerMsg.includes('헬스') ||
+    lowerMsg.includes('스트레칭')
+  ) {
     responseMessage =
       '운동에 대해 궁금하시군요! 규칙적인 운동은 몸과 마음 건강 모두에 도움이 돼요. 운동 분석을 통해 맞춤 루틴을 받아보세요.';
   } else if (lowerMsg.includes('음식') || lowerMsg.includes('영양') || lowerMsg.includes('식단')) {
@@ -92,10 +88,6 @@ export function getChatMockResponse(message: string): ChatResponse {
 
   return {
     message: responseMessage,
-    suggestedQuestions: [
-      '오늘 뭐 하면 좋을까?',
-      '건강한 간식 추천해줘',
-      '스킨케어 루틴 알려줘',
-    ],
+    suggestedQuestions: ['오늘 뭐 하면 좋을까?', '건강한 간식 추천해줘', '스킨케어 루틴 알려줘'],
   };
 }

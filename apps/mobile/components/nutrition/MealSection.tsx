@@ -72,9 +72,7 @@ export function MealSection({
       {/* 헤더 */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={{ fontSize: typography.size.lg }}>
-            {MEAL_ICONS[type]}
-          </Text>
+          <Text style={{ fontSize: typography.size.lg }}>{MEAL_ICONS[type]}</Text>
           <Text
             style={{
               fontSize: typography.size.base,

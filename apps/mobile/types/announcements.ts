@@ -8,12 +8,7 @@
 // ============================================================
 
 /** 공지사항 카테고리 */
-export type AnnouncementCategory =
-  | 'general'
-  | 'update'
-  | 'event'
-  | 'maintenance'
-  | 'important';
+export type AnnouncementCategory = 'general' | 'update' | 'event' | 'maintenance' | 'important';
 
 /** 공지사항 */
 export interface Announcement {
@@ -76,12 +71,7 @@ export interface AnnouncementReadRow {
 // ============================================================
 
 /** FAQ 카테고리 */
-export type FAQCategory =
-  | 'general'
-  | 'account'
-  | 'workout'
-  | 'nutrition'
-  | 'technical';
+export type FAQCategory = 'general' | 'account' | 'workout' | 'nutrition' | 'technical';
 
 /** FAQ 항목 */
 export interface FAQ {

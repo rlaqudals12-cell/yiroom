@@ -34,10 +34,17 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
           borderRadius: radii.xl + 8,
         },
         // 히어로 배너 그림자 (웹 shadow-lg 매칭)
-        isDark ? {} : Platform.select({
-          ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16 },
-          android: { elevation: 4 },
-        }) ?? {},
+        isDark
+          ? {}
+          : (Platform.select({
+              ios: {
+                shadowColor: brand.primary,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.15,
+                shadowRadius: 16,
+              },
+              android: { elevation: 4 },
+            }) ?? {}),
       ]}
       testID="home-header"
     >
@@ -49,10 +56,24 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
           paddingVertical: spacing.xl,
         }}
       >
-        <Text style={[styles.greeting, { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` }]}>
+        <Text
+          style={[
+            styles.greeting,
+            { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` },
+          ]}
+        >
           {getGreeting()}
         </Text>
-        <Text style={[styles.userName, { fontSize: typography.size['2xl'], color: colors.overlayForeground, letterSpacing: typography.letterSpacing.tighter }]}>
+        <Text
+          style={[
+            styles.userName,
+            {
+              fontSize: typography.size['2xl'],
+              color: colors.overlayForeground,
+              letterSpacing: typography.letterSpacing.tighter,
+            },
+          ]}
+        >
           {isLoaded ? userName : '...'}님
         </Text>
         <GradientText

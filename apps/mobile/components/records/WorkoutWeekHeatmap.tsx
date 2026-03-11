@@ -34,7 +34,11 @@ export function WorkoutWeekHeatmap({
   const completedCount = days.filter((d) => d.completed).length;
 
   return (
-    <View style={style} testID={testID} accessibilityLabel={`이번 주 운동 히트맵, ${completedCount}일 완료`}>
+    <View
+      style={style}
+      testID={testID}
+      accessibilityLabel={`이번 주 운동 히트맵, ${completedCount}일 완료`}
+    >
       <View style={[styles.header, { marginBottom: spacing.sm }]}>
         <Text
           style={{
@@ -93,11 +97,16 @@ export function WorkoutWeekHeatmap({
 // 강도별 색상 — 0: muted, 1~3: primary 투명도 단계
 function getHeatColor(intensity: number, primaryColor: string, mutedColor: string): string {
   switch (intensity) {
-    case 0: return mutedColor;
-    case 1: return primaryColor + '40'; // 25%
-    case 2: return primaryColor + '80'; // 50%
-    case 3: return primaryColor;        // 100%
-    default: return mutedColor;
+    case 0:
+      return mutedColor;
+    case 1:
+      return primaryColor + '40'; // 25%
+    case 2:
+      return primaryColor + '80'; // 50%
+    case 3:
+      return primaryColor; // 100%
+    default:
+      return mutedColor;
   }
 }
 

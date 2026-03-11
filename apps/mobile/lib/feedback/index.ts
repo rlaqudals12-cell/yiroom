@@ -81,11 +81,7 @@ function toFeedback(row: FeedbackRow): Feedback {
 /**
  * 피드백 입력 유효성 검사
  */
-export function validateFeedback(
-  title: string,
-  content: string,
-  type: string
-): FeedbackValidation {
+export function validateFeedback(title: string, content: string, type: string): FeedbackValidation {
   const errors: string[] = [];
 
   if (!title || title.trim().length < 5) {
@@ -148,30 +144,21 @@ export async function getMyFeedbacks(
 /**
  * 상태별 필터링
  */
-export function filterFeedbackByStatus(
-  feedbacks: Feedback[],
-  status: FeedbackStatus
-): Feedback[] {
+export function filterFeedbackByStatus(feedbacks: Feedback[], status: FeedbackStatus): Feedback[] {
   return feedbacks.filter((f) => f.status === status);
 }
 
 /**
  * 유형별 필터링
  */
-export function filterFeedbackByType(
-  feedbacks: Feedback[],
-  type: FeedbackType
-): Feedback[] {
+export function filterFeedbackByType(feedbacks: Feedback[], type: FeedbackType): Feedback[] {
   return feedbacks.filter((f) => f.type === type);
 }
 
 /**
  * 날짜순 정렬
  */
-export function sortFeedbackByDate(
-  feedbacks: Feedback[],
-  ascending = false
-): Feedback[] {
+export function sortFeedbackByDate(feedbacks: Feedback[], ascending = false): Feedback[] {
   return [...feedbacks].sort((a, b) => {
     const diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     return ascending ? diff : -diff;

@@ -17,7 +17,11 @@ export interface ConfidenceSource {
   timestamp?: string;
 }
 
-export type AggregationMethod = 'multiplicative' | 'weighted_average' | 'minimum' | 'geometric_mean';
+export type AggregationMethod =
+  | 'multiplicative'
+  | 'weighted_average'
+  | 'minimum'
+  | 'geometric_mean';
 
 export interface ConfidenceOptions {
   method?: AggregationMethod;
@@ -38,9 +42,19 @@ export interface ConfidenceResult {
 export type ConfidenceGrade = 'high' | 'medium' | 'low' | 'insufficient';
 
 export const MODULE_WEIGHTS: Record<string, number> = {
-  'CIE-1': 1.0, 'CIE-2': 1.0, 'CIE-3': 1.0, 'CIE-4': 1.0,
-  'PC-1': 0.9, 'PC-2': 0.9, 'S-1': 0.85, 'S-2': 0.85,
-  'C-1': 0.8, 'C-2': 0.8, 'N-1': 0.75, 'W-1': 0.75, 'OH-1': 0.8,
+  'CIE-1': 1.0,
+  'CIE-2': 1.0,
+  'CIE-3': 1.0,
+  'CIE-4': 1.0,
+  'PC-1': 0.9,
+  'PC-2': 0.9,
+  'S-1': 0.85,
+  'S-2': 0.85,
+  'C-1': 0.8,
+  'C-2': 0.8,
+  'N-1': 0.75,
+  'W-1': 0.75,
+  'OH-1': 0.8,
 };
 
 export const CONFIDENCE_THRESHOLDS = {
@@ -75,7 +89,13 @@ export function calculatePropagatedConfidence(
   } = options;
 
   if (sources.length === 0) {
-    return { finalConfidence: 0, method, meetsThreshold: false, lowestSource: null, appliedDecay: { depth: 0, time: 0 } };
+    return {
+      finalConfidence: 0,
+      method,
+      meetsThreshold: false,
+      lowestSource: null,
+      appliedDecay: { depth: 0, time: 0 },
+    };
   }
 
   const processedSources = sources.map((source) => {
@@ -105,7 +125,8 @@ export function calculatePropagatedConfidence(
   let finalConfidence: number;
   switch (method) {
     case 'multiplicative':
-      finalConfidence = processedSources.reduce((acc, s) => acc * (s.adjustedConfidence / 100), 1.0) * 100;
+      finalConfidence =
+        processedSources.reduce((acc, s) => acc * (s.adjustedConfidence / 100), 1.0) * 100;
       break;
     case 'minimum':
       finalConfidence = Math.min(...processedSources.map((s) => s.adjustedConfidence));
@@ -117,30 +138,49 @@ export function calculatePropagatedConfidence(
     }
     default: {
       const totalWeight = processedSources.reduce((acc, s) => acc + s.weight, 0);
-      finalConfidence = processedSources.reduce((acc, s) => acc + (s.adjustedConfidence * s.weight) / totalWeight, 0);
+      finalConfidence = processedSources.reduce(
+        (acc, s) => acc + (s.adjustedConfidence * s.weight) / totalWeight,
+        0
+      );
       break;
     }
   }
 
-  const totalDepthDecay = processedSources.reduce((acc, s) => acc + s.depthDecay, 0) / processedSources.length;
-  const totalTimeDecay = processedSources.reduce((acc, s) => acc + s.timeDecay, 0) / processedSources.length;
+  const totalDepthDecay =
+    processedSources.reduce((acc, s) => acc + s.depthDecay, 0) / processedSources.length;
+  const totalTimeDecay =
+    processedSources.reduce((acc, s) => acc + s.timeDecay, 0) / processedSources.length;
   finalConfidence = clamp(finalConfidence, 0, 100);
 
   const lowestSource = processedSources.reduce<ConfidenceSource | null>(
-    (lowest, current) => current.adjustedConfidence < (lowest?.confidence ?? Infinity) ? current : lowest,
+    (lowest, current) =>
+      current.adjustedConfidence < (lowest?.confidence ?? Infinity) ? current : lowest,
     null
   );
 
-  return { finalConfidence, method, meetsThreshold: finalConfidence >= minThreshold, lowestSource, appliedDecay: { depth: totalDepthDecay, time: totalTimeDecay } };
+  return {
+    finalConfidence,
+    method,
+    meetsThreshold: finalConfidence >= minThreshold,
+    lowestSource,
+    appliedDecay: { depth: totalDepthDecay, time: totalTimeDecay },
+  };
 }
 
-export function applyConfidenceWeight(baseConfidence: number, sourceConfidence: number, weight = 1.0): number {
+export function applyConfidenceWeight(
+  baseConfidence: number,
+  sourceConfidence: number,
+  weight = 1.0
+): number {
   const clampedWeight = clamp(weight, 0, 1);
   const sourceRatio = sourceConfidence / 100;
   return clamp(baseConfidence * (sourceRatio * clampedWeight + (1 - clampedWeight)), 0, 100);
 }
 
-export function validateMinConfidenceThreshold(confidence: number, threshold = CONFIDENCE_THRESHOLDS.DISPLAY): boolean {
+export function validateMinConfidenceThreshold(
+  confidence: number,
+  threshold = CONFIDENCE_THRESHOLDS.DISPLAY
+): boolean {
   return confidence >= threshold;
 }
 
@@ -152,7 +192,12 @@ export function getConfidenceGrade(confidence: number): ConfidenceGrade {
 }
 
 export function getConfidenceGradeLabel(grade: ConfidenceGrade): string {
-  const labels: Record<ConfidenceGrade, string> = { high: '높음', medium: '보통', low: '낮음', insufficient: '부족' };
+  const labels: Record<ConfidenceGrade, string> = {
+    high: '높음',
+    medium: '보통',
+    low: '낮음',
+    insufficient: '부족',
+  };
   return labels[grade];
 }
 
@@ -161,7 +206,11 @@ export function calculateCIEConfidenceModifier(
 ): number {
   const sources: ConfidenceSource[] = Object.entries(cieConfidences)
     .filter(([, conf]) => conf !== undefined)
-    .map(([module, conf]) => ({ module, confidence: conf as number, weight: MODULE_WEIGHTS[module] ?? 1.0 }));
+    .map(([module, conf]) => ({
+      module,
+      confidence: conf as number,
+      weight: MODULE_WEIGHTS[module] ?? 1.0,
+    }));
   if (sources.length === 0) return 1.0;
   const result = calculatePropagatedConfidence(sources, { method: 'minimum' });
   return 0.5 + (result.finalConfidence / 100) * 0.5;
@@ -172,8 +221,15 @@ export function calculateWellnessConfidence(
 ): ConfidenceResult {
   const sources: ConfidenceSource[] = Object.entries(moduleConfidences)
     .filter(([, conf]) => conf !== undefined)
-    .map(([module, conf]) => ({ module, confidence: conf as number, weight: MODULE_WEIGHTS[module] ?? 0.8 }));
-  return calculatePropagatedConfidence(sources, { method: 'weighted_average', minThreshold: CONFIDENCE_THRESHOLDS.DISPLAY });
+    .map(([module, conf]) => ({
+      module,
+      confidence: conf as number,
+      weight: MODULE_WEIGHTS[module] ?? 0.8,
+    }));
+  return calculatePropagatedConfidence(sources, {
+    method: 'weighted_average',
+    minThreshold: CONFIDENCE_THRESHOLDS.DISPLAY,
+  });
 }
 
 export function validateProductRecommendationConfidence(sources: ConfidenceSource[]): {
@@ -186,10 +242,18 @@ export function validateProductRecommendationConfidence(sources: ConfidenceSourc
     minThreshold: CONFIDENCE_THRESHOLDS.PRODUCT_RECOMMENDATION,
   });
   if (!result.meetsThreshold) {
-    return { canRecommend: false, confidence: result.finalConfidence, reason: '신뢰도가 제품 추천 기준(' + CONFIDENCE_THRESHOLDS.PRODUCT_RECOMMENDATION + '%) 미달' };
+    return {
+      canRecommend: false,
+      confidence: result.finalConfidence,
+      reason: '신뢰도가 제품 추천 기준(' + CONFIDENCE_THRESHOLDS.PRODUCT_RECOMMENDATION + '%) 미달',
+    };
   }
   if (result.lowestSource && result.lowestSource.confidence < CONFIDENCE_THRESHOLDS.DISPLAY) {
-    return { canRecommend: false, confidence: result.finalConfidence, reason: result.lowestSource.module + ' 분석 신뢰도가 너무 낮음' };
+    return {
+      canRecommend: false,
+      confidence: result.finalConfidence,
+      reason: result.lowestSource.module + ' 분석 신뢰도가 너무 낮음',
+    };
   }
   return { canRecommend: true, confidence: result.finalConfidence };
 }
@@ -222,5 +286,8 @@ export function calculateTargetConfidence(
       });
     }
   }
-  return calculatePropagatedConfidence(relevantSources, { method: 'weighted_average', applyDepthDecay: true });
+  return calculatePropagatedConfidence(relevantSources, {
+    method: 'weighted_average',
+    applyDepthDecay: true,
+  });
 }

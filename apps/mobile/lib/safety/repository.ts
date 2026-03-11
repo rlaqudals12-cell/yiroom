@@ -25,8 +25,10 @@ const CURRENT_CONSENT_VERSION = '1.0';
  * @returns SafetyProfile (동의 미완료 시 빈 프로필)
  * @throws DB 오류 시
  */
-export async function getSafetyProfile(userId: string, supabase: SupabaseClient): Promise<SafetyProfile> {
-
+export async function getSafetyProfile(
+  userId: string,
+  supabase: SupabaseClient
+): Promise<SafetyProfile> {
   const { data, error } = await supabase
     .from('safety_profiles')
     .select('*')

@@ -40,11 +40,7 @@ export function InlineProductCard({
 
   // 매치율에 따른 색상
   const matchColor =
-    matchRate >= 80
-      ? status.success
-      : matchRate >= 60
-        ? status.warning
-        : colors.mutedForeground;
+    matchRate >= 80 ? status.success : matchRate >= 60 ? status.warning : colors.mutedForeground;
 
   return (
     <Pressable

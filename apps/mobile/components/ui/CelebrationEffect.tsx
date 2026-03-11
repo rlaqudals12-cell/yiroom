@@ -233,11 +233,7 @@ export function CelebrationEffect({
       >
         {/* 배경 오버레이 */}
         <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'rgba(0,0,0,0.4)' },
-            overlayStyle,
-          ]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }, overlayStyle]}
         />
 
         {/* 파티클 */}

@@ -117,7 +117,9 @@ export async function getGeminiOralAnalysis(
  * 웹 API가 이미 처리된 결과를 반환하므로,
  * 모바일 내부 로직과 호환되도록 원본 형태를 재구성.
  */
-function reconstructGeminiResponse(assessment: Record<string, unknown>): GeminiOralHealthResponse | null {
+function reconstructGeminiResponse(
+  assessment: Record<string, unknown>
+): GeminiOralHealthResponse | null {
   try {
     const toothColor = assessment.toothColor as ToothColorResult | undefined;
     const gumHealth = assessment.gumHealth as GumHealthResult | undefined;
@@ -135,7 +137,7 @@ function reconstructGeminiResponse(assessment: Record<string, unknown>): GeminiO
         yellowness: toothColor?.interpretation?.yellowness ?? 'mild',
         series: toothColor?.interpretation?.series ?? 'A',
         confidence: toothColor?.confidence ?? 80,
-        alternativeShades: toothColor?.alternativeMatches?.map(m => m.shade) ?? [],
+        alternativeShades: toothColor?.alternativeMatches?.map((m) => m.shade) ?? [],
       },
       gumHealth: {
         overallStatus: gumHealth?.healthStatus ?? 'healthy',
@@ -143,7 +145,9 @@ function reconstructGeminiResponse(assessment: Record<string, unknown>): GeminiO
         rednessLevel: mapInflammationToRedness(gumHealth?.inflammationScore ?? 20),
         swellingLevel: mapInflammationToSwelling(gumHealth?.inflammationScore ?? 20),
         needsDentalVisit: gumHealth?.needsDentalVisit ?? false,
-        affectedAreas: (gumHealth?.affectedAreas?.map(a => a.region) ?? []) as Array<'upper_front' | 'lower_front' | 'upper_back' | 'lower_back'>,
+        affectedAreas: (gumHealth?.affectedAreas?.map((a) => a.region) ?? []) as Array<
+          'upper_front' | 'lower_front' | 'upper_back' | 'lower_back'
+        >,
       },
       overallScore: (assessment.overallScore as number) ?? 75,
       recommendations: (assessment.recommendations as string[]) ?? [],

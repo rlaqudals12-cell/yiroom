@@ -73,7 +73,14 @@ export function FeedbackForm({
       >
         유형
       </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: spacing.sm,
+          marginBottom: spacing.md,
+        }}
+      >
         {CATEGORIES.map((cat) => (
           <Pressable
             key={cat.id}
@@ -94,7 +101,8 @@ export function FeedbackForm({
               style={{
                 fontSize: typography.size.sm,
                 color: category === cat.id ? brand.primaryForeground : colors.foreground,
-                fontWeight: category === cat.id ? typography.weight.semibold : typography.weight.normal,
+                fontWeight:
+                  category === cat.id ? typography.weight.semibold : typography.weight.normal,
               }}
             >
               {cat.label}

@@ -65,9 +65,9 @@ const RM_PERCENTAGES: Record<TrainingGoal, Record<string, number>> = {
     '6_reps': 0.83,
   },
   hypertrophy: {
-    '8_reps': 0.80,
+    '8_reps': 0.8,
     '10_reps': 0.75,
-    '12_reps': 0.70,
+    '12_reps': 0.7,
   },
   endurance: {
     '15_reps': 0.65,
@@ -76,26 +76,29 @@ const RM_PERCENTAGES: Record<TrainingGoal, Record<string, number>> = {
 };
 
 /** 목표별 세트 구성 */
-const SET_SCHEMES: Record<TrainingGoal, Array<{ reps: number; percentage: number; label: string }>> = {
+const SET_SCHEMES: Record<
+  TrainingGoal,
+  Array<{ reps: number; percentage: number; label: string }>
+> = {
   strength: [
     { reps: 5, percentage: 0.75, label: '웜업' },
-    { reps: 5, percentage: 0.80, label: '빌드업' },
+    { reps: 5, percentage: 0.8, label: '빌드업' },
     { reps: 3, percentage: 0.87, label: '탑세트' },
     { reps: 3, percentage: 0.87, label: '탑세트' },
     { reps: 3, percentage: 0.87, label: '탑세트' },
   ],
   hypertrophy: [
-    { reps: 10, percentage: 0.60, label: '웜업' },
-    { reps: 10, percentage: 0.70, label: '워킹세트' },
-    { reps: 10, percentage: 0.70, label: '워킹세트' },
-    { reps: 10, percentage: 0.70, label: '워킹세트' },
+    { reps: 10, percentage: 0.6, label: '웜업' },
+    { reps: 10, percentage: 0.7, label: '워킹세트' },
+    { reps: 10, percentage: 0.7, label: '워킹세트' },
+    { reps: 10, percentage: 0.7, label: '워킹세트' },
     { reps: 12, percentage: 0.65, label: '마무리' },
   ],
   endurance: [
-    { reps: 15, percentage: 0.50, label: '웜업' },
+    { reps: 15, percentage: 0.5, label: '웜업' },
     { reps: 15, percentage: 0.55, label: '워킹세트' },
     { reps: 15, percentage: 0.55, label: '워킹세트' },
-    { reps: 20, percentage: 0.50, label: '마무리' },
+    { reps: 20, percentage: 0.5, label: '마무리' },
   ],
 };
 
@@ -104,7 +107,7 @@ const BASE_RATIOS: Record<'lower_body' | 'upper_body', Record<ExerciseDifficulty
   lower_body: {
     beginner: 0.15,
     intermediate: 0.25,
-    advanced: 0.40,
+    advanced: 0.4,
   },
   upper_body: {
     beginner: 0.08,
@@ -115,11 +118,11 @@ const BASE_RATIOS: Record<'lower_body' | 'upper_body', Record<ExerciseDifficulty
 
 /** 목표별 무게 조정 배율 */
 const GOAL_MULTIPLIERS: Record<string, number> = {
-  muscle: 1.2,    // 근력 증가
+  muscle: 1.2, // 근력 증가
   strength: 1.2,
-  toning: 1.0,    // 토닝
+  toning: 1.0, // 토닝
   shape: 1.0,
-  diet: 0.8,      // 다이어트
+  diet: 0.8, // 다이어트
   endurance: 0.8,
 };
 
@@ -215,7 +218,7 @@ export function calculateTrainingWeightFrom1RM(
     if (repsTarget <= 6) {
       percentage = 0.83;
     } else if (repsTarget <= 12) {
-      percentage = 0.70;
+      percentage = 0.7;
     } else {
       percentage = 0.55;
     }
@@ -282,9 +285,7 @@ export function checkPRAchievement(
 
   if (new1RM > prev1RM) {
     const improvement = Math.round((new1RM - prev1RM) * 10) / 10;
-    const improvementPercent = prev1RM > 0
-      ? Math.round((improvement / prev1RM) * 100)
-      : 100;
+    const improvementPercent = prev1RM > 0 ? Math.round((improvement / prev1RM) * 100) : 100;
 
     return {
       isPR: true,
@@ -363,15 +364,12 @@ export function calculateRecommendedWeight(
  * @param weeksTrained - 훈련 주차
  * @returns 새로운 추천 무게 (kg, 2.5kg 단위)
  */
-export function calculateProgressiveOverload(
-  currentWeight: number,
-  weeksTrained: number
-): number {
+export function calculateProgressiveOverload(currentWeight: number, weeksTrained: number): number {
   if (currentWeight <= 0) return 0;
   if (weeksTrained <= 0) return currentWeight;
 
   const weeklyIncrease = 0.025; // 주당 2.5%
-  const maxIncrease = 0.10; // 최대 10%
+  const maxIncrease = 0.1; // 최대 10%
 
   const increaseRate = Math.min(weeklyIncrease * weeksTrained, maxIncrease);
   const newWeight = currentWeight * (1 + increaseRate);

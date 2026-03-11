@@ -30,11 +30,7 @@ const SCAN_AREA_WIDTH = 280;
 const SCAN_AREA_HEIGHT = 160;
 const SCAN_LINE_HEIGHT = 2;
 
-export function ScanCamera({
-  onScan,
-  onClose,
-  style,
-}: ScanCameraProps): React.JSX.Element {
+export function ScanCamera({ onScan, onClose, style }: ScanCameraProps): React.JSX.Element {
   const { colors } = useTheme();
   const reducedMotion = useReducedMotion();
   const translateY = useSharedValue(0);
@@ -91,17 +87,17 @@ export function ScanCamera({
             {/* 코너 마커 — 우상 */}
             <View style={[styles.corner, styles.cornerTopRight, { borderColor: brand.primary }]} />
             {/* 코너 마커 — 좌하 */}
-            <View style={[styles.corner, styles.cornerBottomLeft, { borderColor: brand.primary }]} />
+            <View
+              style={[styles.corner, styles.cornerBottomLeft, { borderColor: brand.primary }]}
+            />
             {/* 코너 마커 — 우하 */}
-            <View style={[styles.corner, styles.cornerBottomRight, { borderColor: brand.primary }]} />
+            <View
+              style={[styles.corner, styles.cornerBottomRight, { borderColor: brand.primary }]}
+            />
 
             {/* 스캔 라인 */}
             <Animated.View
-              style={[
-                styles.scanLine,
-                { backgroundColor: brand.primary },
-                scanLineStyle,
-              ]}
+              style={[styles.scanLine, { backgroundColor: brand.primary }, scanLineStyle]}
               pointerEvents="none"
             />
           </View>

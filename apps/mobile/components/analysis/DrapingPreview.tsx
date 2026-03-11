@@ -49,11 +49,21 @@ export function DrapingPreview({
       {/* 시즌 정보 */}
       {seasonName && (
         <View style={styles.seasonInfo}>
-          <Text style={[styles.seasonName, { color: colors.foreground, fontSize: typography.size.base }]}>
+          <Text
+            style={[
+              styles.seasonName,
+              { color: colors.foreground, fontSize: typography.size.base },
+            ]}
+          >
             {seasonName}
           </Text>
           {seasonDescription && (
-            <Text style={[styles.seasonDesc, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+            <Text
+              style={[
+                styles.seasonDesc,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
               {seasonDescription}
             </Text>
           )}
@@ -86,7 +96,9 @@ export function DrapingPreview({
         {selectedColor && (
           <View style={[styles.colorLabel, { backgroundColor: `${colors.background}CC` }]}>
             <View style={[styles.colorDot, { backgroundColor: selectedColor }]} />
-            <Text style={[styles.colorLabelText, { color: colors.foreground }]}>{selectedColor}</Text>
+            <Text style={[styles.colorLabelText, { color: colors.foreground }]}>
+              {selectedColor}
+            </Text>
           </View>
         )}
       </View>

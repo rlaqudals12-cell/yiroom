@@ -68,10 +68,7 @@ export async function isInWishlist(
 /**
  * 위시리스트 수 조회
  */
-export async function getWishlistCount(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<number> {
+export async function getWishlistCount(supabase: SupabaseClient, userId: string): Promise<number> {
   const { count } = await supabase
     .from('wishlist')
     .select('id', { count: 'exact', head: true })

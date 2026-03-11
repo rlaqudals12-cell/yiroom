@@ -15,19 +15,19 @@ export interface SupplementRecommendation {
   name: string;
   category: 'vitamin' | 'mineral' | 'protein' | 'omega' | 'probiotic' | 'herbal' | 'other';
   reason: string;
-  timing: string;  // 복용 시기
+  timing: string; // 복용 시기
   priority: 'high' | 'medium' | 'low';
   caution?: string; // 주의사항
 }
 
 // 피부 고민 타입 (S-1 연동)
 export type SkinConcern =
-  | 'hydration'     // 수분 부족
-  | 'oil'           // 유분 과다
-  | 'wrinkles'      // 주름
-  | 'elasticity'    // 탄력 저하
-  | 'pigmentation'  // 색소침착
-  | 'trouble';      // 트러블
+  | 'hydration' // 수분 부족
+  | 'oil' // 유분 과다
+  | 'wrinkles' // 주름
+  | 'elasticity' // 탄력 저하
+  | 'pigmentation' // 색소침착
+  | 'trouble'; // 트러블
 
 // 목표별 영양제 추천
 const GOAL_SUPPLEMENTS: Record<NutritionGoal, SupplementRecommendation[]> = {
@@ -318,11 +318,10 @@ export function getSupplementRecommendations(
     }
   }
 
-  const allSupplements = Array.from(allMap.values())
-    .sort((a, b) => {
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    });
+  const allSupplements = Array.from(allMap.values()).sort((a, b) => {
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
 
   // 4. 요약 메시지 생성
   const goalLabels: Record<NutritionGoal, string> = {

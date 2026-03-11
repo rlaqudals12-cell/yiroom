@@ -69,15 +69,12 @@ export async function lookupOpenFoodFacts(barcode: string): Promise<LookupResult
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    const response = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
-      {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'Yiroom/1.0 (mobile)',
-        },
-      }
-    );
+    const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Yiroom/1.0 (mobile)',
+      },
+    });
 
     clearTimeout(timeoutId);
 
@@ -94,8 +91,7 @@ export async function lookupOpenFoodFacts(barcode: string): Promise<LookupResult
     const product = data.product;
     const productName = product.product_name_ko || product.product_name;
     const calories =
-      product.nutriments?.['energy-kcal_100g'] ||
-      product.nutriments?.['energy-kcal_serving'];
+      product.nutriments?.['energy-kcal_100g'] || product.nutriments?.['energy-kcal_serving'];
 
     if (!productName && !calories) {
       return { found: false, error: '제품 정보가 부족해요' };
@@ -115,9 +111,7 @@ export async function lookupOpenFoodFacts(barcode: string): Promise<LookupResult
       sugar: product.nutriments?.sugars_100g
         ? Math.round(product.nutriments.sugars_100g)
         : undefined,
-      fiber: product.nutriments?.fiber_100g
-        ? Math.round(product.nutriments.fiber_100g)
-        : undefined,
+      fiber: product.nutriments?.fiber_100g ? Math.round(product.nutriments.fiber_100g) : undefined,
       sodium: product.nutriments?.sodium_100g
         ? Math.round(product.nutriments.sodium_100g * 1000)
         : product.nutriments?.salt_100g
@@ -125,9 +119,7 @@ export async function lookupOpenFoodFacts(barcode: string): Promise<LookupResult
           : undefined,
       imageUrl: product.image_front_small_url || product.image_front_url || undefined,
       category: product.categories?.split(',')[0]?.trim() || undefined,
-      allergens: product.allergens_tags?.map((tag) =>
-        tag.replace('en:', '').replace('ko:', '')
-      ),
+      allergens: product.allergens_tags?.map((tag) => tag.replace('en:', '').replace('ko:', '')),
       source: 'api',
       verified: false,
     };

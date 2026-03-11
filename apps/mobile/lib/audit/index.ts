@@ -85,11 +85,7 @@ export function logUserLogout(userId: string): void {
 }
 
 /** 분석 생성 이벤트 */
-export function logAnalysisCreate(
-  userId: string,
-  analysisType: string,
-  recordId?: string
-): void {
+export function logAnalysisCreate(userId: string, analysisType: string, recordId?: string): void {
   logAuditEvent({
     type: 'analysis.create',
     userId,
@@ -100,11 +96,7 @@ export function logAnalysisCreate(
 }
 
 /** 분석 삭제 이벤트 */
-export function logAnalysisDelete(
-  userId: string,
-  analysisType: string,
-  recordId?: string
-): void {
+export function logAnalysisDelete(userId: string, analysisType: string, recordId?: string): void {
   logAuditEvent({
     type: 'analysis.delete',
     userId,

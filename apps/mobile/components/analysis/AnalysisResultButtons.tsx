@@ -51,9 +51,7 @@ export function AnalysisResultButtons({
         </Text>
       </Pressable>
       <Pressable style={styles.retryLink} onPress={onRetry} testID={`${testID}-retry`}>
-        <Text style={[styles.retryLinkText, { color: colors.mutedForeground }]}>
-          다시 분석하기
-        </Text>
+        <Text style={[styles.retryLinkText, { color: colors.mutedForeground }]}>다시 분석하기</Text>
       </Pressable>
     </View>
   );

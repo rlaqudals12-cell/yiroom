@@ -29,22 +29,10 @@ export default function CapsuleLayout(): React.JSX.Element {
         }),
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{ title: '캡슐 대시보드' }}
-      />
-      <Stack.Screen
-        name="daily"
-        options={{ title: '오늘의 캡슐' }}
-      />
-      <Stack.Screen
-        name="[domain]"
-        options={{ title: '캡슐 상세' }}
-      />
-      <Stack.Screen
-        name="gap"
-        options={{ title: '갭 분석' }}
-      />
+      <Stack.Screen name="index" options={{ title: '캡슐 대시보드' }} />
+      <Stack.Screen name="daily" options={{ title: '오늘의 캡슐' }} />
+      <Stack.Screen name="[domain]" options={{ title: '캡슐 상세' }} />
+      <Stack.Screen name="gap" options={{ title: '갭 분석' }} />
     </Stack>
   );
 }

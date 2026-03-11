@@ -19,11 +19,7 @@ import {
   type NativeSyntheticEvent,
   type ViewStyle,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing } from '../../lib/theme';

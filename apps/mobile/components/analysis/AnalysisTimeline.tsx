@@ -8,7 +8,7 @@ import { Palette, Droplets, Ruler, Clock } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
 
@@ -52,9 +52,7 @@ export function AnalysisTimeline({
   const { colors, spacing, radii, typography, module: moduleColors, shadows } = useTheme();
 
   // 시간순 정렬 (최신 먼저)
-  const sorted = [...analyses].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  );
+  const sorted = [...analyses].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   return (
     <Animated.View
@@ -118,9 +116,7 @@ export function AnalysisTimeline({
                       { backgroundColor: moduleColor.base, borderColor: moduleColor.light },
                     ]}
                   />
-                  {!isLast && (
-                    <View style={[styles.line, { backgroundColor: colors.border }]} />
-                  )}
+                  {!isLast && <View style={[styles.line, { backgroundColor: colors.border }]} />}
                 </View>
 
                 {/* 내용 */}

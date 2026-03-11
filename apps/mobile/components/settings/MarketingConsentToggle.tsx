@@ -49,7 +49,13 @@ export function MarketingConsentToggle({
           >
             마케팅 수신 동의
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginTop: spacing.xxs,
+            }}
+          >
             새로운 기능 소식과 뷰티 팁을 받아보세요
           </Text>
         </View>
@@ -64,7 +70,13 @@ export function MarketingConsentToggle({
       </View>
 
       {lastUpdated && (
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.sm }}>
+        <Text
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.mutedForeground,
+            marginTop: spacing.sm,
+          }}
+        >
           마지막 변경: {lastUpdated}
         </Text>
       )}

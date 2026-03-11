@@ -196,9 +196,7 @@ export function calculateITA(lab: LabColor): number {
 // ─── CIE76 색차 ─────────────────────────────────────
 
 export function calculateLabDistance(lab1: LabColor, lab2: LabColor): number {
-  return Math.sqrt(
-    (lab1.L - lab2.L) ** 2 + (lab1.a - lab2.a) ** 2 + (lab1.b - lab2.b) ** 2
-  );
+  return Math.sqrt((lab1.L - lab2.L) ** 2 + (lab1.a - lab2.a) ** 2 + (lab1.b - lab2.b) ** 2);
 }
 
 // ─── CIEDE2000 색차 ─────────────────────────────────

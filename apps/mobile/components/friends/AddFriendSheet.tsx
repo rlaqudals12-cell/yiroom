@@ -58,13 +58,16 @@ export function AddFriendSheet({
     }
   }, [searchText, onSearchQuery]);
 
-  const handleChange = useCallback((text: string): void => {
-    setSearchText(text);
-    // 텍스트 비우면 결과도 초기화
-    if (text.trim().length === 0) {
-      onSearchQuery?.('');
-    }
-  }, [onSearchQuery]);
+  const handleChange = useCallback(
+    (text: string): void => {
+      setSearchText(text);
+      // 텍스트 비우면 결과도 초기화
+      if (text.trim().length === 0) {
+        onSearchQuery?.('');
+      }
+    },
+    [onSearchQuery]
+  );
 
   const renderResult = useCallback(
     ({ item }: { item: SearchResultUser }): React.JSX.Element => {

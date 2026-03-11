@@ -59,21 +59,16 @@ export function LeaderboardList({
   }, [entries]);
 
   const renderItem = useCallback(
-    ({ item }: { item: LeaderboardEntryProps }) => (
-      <LeaderboardEntry {...item} />
-    ),
-    [],
+    ({ item }: { item: LeaderboardEntryProps }) => <LeaderboardEntry {...item} />,
+    []
   );
 
   const keyExtractor = useCallback(
     (item: LeaderboardEntryProps) => `${item.rank}-${item.name}`,
-    [],
+    []
   );
 
-  const renderSeparator = useCallback(
-    () => <View style={styles.separator} />,
-    [],
-  );
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
 
   const renderHeader = useCallback(
     () => (
@@ -97,7 +92,7 @@ export function LeaderboardList({
         </Text>
       </View>
     ),
-    [period, entries.length, colors, typography],
+    [period, entries.length, colors, typography]
   );
 
   if (entries.length === 0) {

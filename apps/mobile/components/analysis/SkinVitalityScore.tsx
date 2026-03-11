@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme, radii, spacing} from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 export interface SkinVitalityScoreProps {
   /** 0-100 */
@@ -23,7 +23,11 @@ interface VitalityLevel {
   color: string;
 }
 
-function getVitalityLevel(score: number, statusColors: { success: string; info: string; warning: string }, destructive: string): VitalityLevel {
+function getVitalityLevel(
+  score: number,
+  statusColors: { success: string; info: string; warning: string },
+  destructive: string
+): VitalityLevel {
   if (score >= 80) return { label: '매우 활력 있음', color: statusColors.success };
   if (score >= 60) return { label: '양호함', color: statusColors.info };
   if (score >= 40) return { label: '관리 필요', color: statusColors.warning };
@@ -47,10 +51,14 @@ export function SkinVitalityScore({
     >
       {/* 그래디언트 헤더 */}
       <View style={[styles.header, { backgroundColor: `${module.skin.base}15` }]}>
-        <Text style={[styles.headerLabel, { color: module.skin.base, fontSize: typography.size.sm }]}>
+        <Text
+          style={[styles.headerLabel, { color: module.skin.base, fontSize: typography.size.sm }]}
+        >
           피부 활력도
         </Text>
-        <Text style={[styles.score, { color: colors.foreground, fontSize: typography.size['4xl'] }]}>
+        <Text
+          style={[styles.score, { color: colors.foreground, fontSize: typography.size['4xl'] }]}
+        >
           {score}
         </Text>
         <View style={[styles.levelBadge, { backgroundColor: `${level.color}15` }]}>
@@ -68,8 +76,22 @@ export function SkinVitalityScore({
           />
         </View>
         <View style={styles.progressLabels}>
-          <Text style={[styles.progressLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>0</Text>
-          <Text style={[styles.progressLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>100</Text>
+          <Text
+            style={[
+              styles.progressLabel,
+              { color: colors.mutedForeground, fontSize: typography.size.xs },
+            ]}
+          >
+            0
+          </Text>
+          <Text
+            style={[
+              styles.progressLabel,
+              { color: colors.mutedForeground, fontSize: typography.size.xs },
+            ]}
+          >
+            100
+          </Text>
         </View>
       </View>
 
@@ -82,7 +104,12 @@ export function SkinVitalityScore({
               {factors.positive.map((factor, i) => (
                 <View key={i} style={styles.factorRow}>
                   <Text style={[styles.factorIcon, { color: status.success }]}>▲</Text>
-                  <Text style={[styles.factorText, { color: colors.foreground, fontSize: typography.size.sm }]}>
+                  <Text
+                    style={[
+                      styles.factorText,
+                      { color: colors.foreground, fontSize: typography.size.sm },
+                    ]}
+                  >
                     {factor}
                   </Text>
                 </View>
@@ -96,7 +123,12 @@ export function SkinVitalityScore({
               {factors.negative.map((factor, i) => (
                 <View key={i} style={styles.factorRow}>
                   <Text style={[styles.factorIcon, { color: status.warning }]}>▼</Text>
-                  <Text style={[styles.factorText, { color: colors.foreground, fontSize: typography.size.sm }]}>
+                  <Text
+                    style={[
+                      styles.factorText,
+                      { color: colors.foreground, fontSize: typography.size.sm },
+                    ]}
+                  >
                     {factor}
                   </Text>
                 </View>

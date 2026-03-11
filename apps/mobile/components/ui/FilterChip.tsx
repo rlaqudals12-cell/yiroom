@@ -6,11 +6,7 @@
  */
 import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';
 

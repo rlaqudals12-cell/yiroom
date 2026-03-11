@@ -60,17 +60,12 @@ export function AITransparencyNotice({
         </Text>
       </View>
       <View style={styles.textContainer}>
-        <Text
-          style={[
-            styles.title,
-            { color: titleColor, fontWeight: typography.weight.semibold },
-          ]}
-        >
+        <Text style={[styles.title, { color: titleColor, fontWeight: typography.weight.semibold }]}>
           AI 기술 사용 안내
         </Text>
         <Text style={[styles.description, { color: textColor }]}>
-          이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를
-          제공해요. AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장해요.
+          이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를 제공해요.
+          AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장해요.
         </Text>
       </View>
     </View>

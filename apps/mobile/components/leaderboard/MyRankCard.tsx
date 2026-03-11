@@ -64,10 +64,7 @@ export function MyRankCard({
     >
       {/* 상단 악센트 바 */}
       <View
-        style={[
-          styles.accentBar,
-          { backgroundColor: accentColor, borderRadius: radii.full },
-        ]}
+        style={[styles.accentBar, { backgroundColor: accentColor, borderRadius: radii.full }]}
       />
 
       <View style={styles.content}>

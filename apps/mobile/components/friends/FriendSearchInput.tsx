@@ -41,11 +41,7 @@ export function FriendSearchInput({
       testID="friend-search-input"
     >
       {/* 돋보기 아이콘 */}
-      <Search
-        size={18}
-        color={colors.mutedForeground}
-        accessibilityElementsHidden
-      />
+      <Search size={18} color={colors.mutedForeground} accessibilityElementsHidden />
 
       {/* 입력 */}
       <TextInput

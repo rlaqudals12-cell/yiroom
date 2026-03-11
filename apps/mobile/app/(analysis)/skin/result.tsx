@@ -38,7 +38,7 @@ import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography , spacing, radii} from '@/lib/theme';
+import { typography, spacing, radii } from '@/lib/theme';
 
 import {
   SKIN_TYPE_DATA,
@@ -50,12 +50,42 @@ import {
 // 메트릭 → 얼굴 존 변환 (피부 생리학 기반 추정)
 function buildFaceZones(m: SkinMetrics): FaceZone[] {
   return [
-    { id: 'forehead', label: '이마', score: Math.round((m.oil + m.pores) / 2), description: '유분과 모공이 집중되는 영역' },
-    { id: 'tzone', label: 'T존', score: Math.round((m.oil * 0.6 + m.pores * 0.4)), description: '피지 분비가 가장 활발한 영역' },
-    { id: 'leftCheek', label: '볼(L)', score: Math.round((m.moisture + m.sensitivity) / 2), description: '수분과 민감도가 중요한 영역' },
-    { id: 'rightCheek', label: '볼(R)', score: Math.round((m.moisture + m.sensitivity) / 2), description: '수분과 민감도가 중요한 영역' },
-    { id: 'nose', label: '코', score: Math.round((m.oil * 0.5 + m.pores * 0.5)), description: '블랙헤드와 모공 관리 영역' },
-    { id: 'chin', label: '턱', score: Math.round((m.moisture + m.elasticity + m.sensitivity) / 3), description: '탄력과 수분 균형이 중요한 영역' },
+    {
+      id: 'forehead',
+      label: '이마',
+      score: Math.round((m.oil + m.pores) / 2),
+      description: '유분과 모공이 집중되는 영역',
+    },
+    {
+      id: 'tzone',
+      label: 'T존',
+      score: Math.round(m.oil * 0.6 + m.pores * 0.4),
+      description: '피지 분비가 가장 활발한 영역',
+    },
+    {
+      id: 'leftCheek',
+      label: '볼(L)',
+      score: Math.round((m.moisture + m.sensitivity) / 2),
+      description: '수분과 민감도가 중요한 영역',
+    },
+    {
+      id: 'rightCheek',
+      label: '볼(R)',
+      score: Math.round((m.moisture + m.sensitivity) / 2),
+      description: '수분과 민감도가 중요한 영역',
+    },
+    {
+      id: 'nose',
+      label: '코',
+      score: Math.round(m.oil * 0.5 + m.pores * 0.5),
+      description: '블랙헤드와 모공 관리 영역',
+    },
+    {
+      id: 'chin',
+      label: '턱',
+      score: Math.round((m.moisture + m.elasticity + m.sensitivity) / 3),
+      description: '탄력과 수분 균형이 중요한 영역',
+    },
   ];
 }
 
@@ -149,7 +179,9 @@ export default function SkinResultScreen() {
         try {
           const { data: prevData } = await supabase
             .from('skin_analyses')
-            .select('overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity')
+            .select(
+              'overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity'
+            )
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
@@ -203,10 +235,7 @@ export default function SkinResultScreen() {
 
   if (isLoading) {
     return (
-      <AnalysisLoadingState
-        message="피부 상태를 분석 중이에요..."
-        testID="skin-analysis-loading"
-      />
+      <AnalysisLoadingState message="피부 상태를 분석 중이에요..." testID="skin-analysis-loading" />
     );
   }
 
@@ -237,14 +266,10 @@ export default function SkinResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
-      <Animated.View style={overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}>
-        <CircularProgress
-          score={overallScore}
-          size="lg"
-          animate
-          showScore
-          showGradeLabel
-        />
+      <Animated.View
+        style={overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}
+      >
+        <CircularProgress score={overallScore} size="lg" animate showScore showGradeLabel />
       </Animated.View>
       {delta && delta.overall !== 0 && (
         <ScoreChangeBadge
@@ -285,10 +310,7 @@ export default function SkinResultScreen() {
   const detailTab = (
     <View style={localStyles.tabContent}>
       {/* RadarChart */}
-      <Animated.View
-        entering={FadeInUp.duration(TIMING.normal)}
-        style={localStyles.chartContainer}
-      >
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
           피부 밸런스 차트
         </Text>
@@ -304,11 +326,7 @@ export default function SkinResultScreen() {
       {/* 피부 존 맵 */}
       <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>피부 존 맵</Text>
-        <FaceZoneMap
-          zones={buildFaceZones(metrics)}
-          size={200}
-          testID="face-zone-map"
-        />
+        <FaceZoneMap zones={buildFaceZones(metrics)} size={200} testID="face-zone-map" />
       </Animated.View>
 
       {/* 전체 MetricBar */}
@@ -347,13 +365,8 @@ export default function SkinResultScreen() {
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>추천 성분</Text>
         <View style={localStyles.tagContainer}>
           {ingredients.good.map((item, index) => (
-            <View
-              key={index}
-              style={[localStyles.tag, { backgroundColor: status.success + '20' }]}
-            >
-              <Text style={[localStyles.tagText, { color: status.success }]}>
-                {item}
-              </Text>
+            <View key={index} style={[localStyles.tag, { backgroundColor: status.success + '20' }]}>
+              <Text style={[localStyles.tagText, { color: status.success }]}>{item}</Text>
             </View>
           ))}
         </View>
@@ -364,13 +377,8 @@ export default function SkinResultScreen() {
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주의 성분</Text>
         <View style={localStyles.tagContainer}>
           {ingredients.avoid.map((item, index) => (
-            <View
-              key={index}
-              style={[localStyles.tag, { backgroundColor: status.error + '20' }]}
-            >
-              <Text style={[localStyles.tagText, { color: status.error }]}>
-                {item}
-              </Text>
+            <View key={index} style={[localStyles.tag, { backgroundColor: status.error + '20' }]}>
+              <Text style={[localStyles.tagText, { color: status.error }]}>{item}</Text>
             </View>
           ))}
         </View>
@@ -380,35 +388,35 @@ export default function SkinResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        if (!previousScore) setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '🔬', name: '피부 관리사', description: '피부 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="skin"
-      title="피부 분석 결과"
-      imageUri={imageUri}
-      imageStyle={localStyles.skinImage}
-      headerContent={headerContent}
-      trustBadgeType={usedFallback ? 'fallback' : 'ai'}
-      usedFallback={usedFallback}
-      summaryTab={summaryTab}
-      detailTab={detailTab}
-      recommendTab={recommendTab}
-      primaryActionText="🧴 피부 맞춤 제품 보기"
-      onPrimaryAction={handleProductRecommendation}
-      retryPath="/(analysis)/skin"
-      testID="skin-analysis-result"
-    />
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          if (!previousScore) setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '🔬', name: '피부 관리사', description: '피부 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="skin"
+        title="피부 분석 결과"
+        imageUri={imageUri}
+        imageStyle={localStyles.skinImage}
+        headerContent={headerContent}
+        trustBadgeType={usedFallback ? 'fallback' : 'ai'}
+        usedFallback={usedFallback}
+        summaryTab={summaryTab}
+        detailTab={detailTab}
+        recommendTab={recommendTab}
+        primaryActionText="🧴 피부 맞춤 제품 보기"
+        onPrimaryAction={handleProductRecommendation}
+        retryPath="/(analysis)/skin"
+        testID="skin-analysis-result"
+      />
     </>
   );
 }

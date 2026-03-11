@@ -48,7 +48,9 @@ export function useMonthlyReport(): UseMonthlyReportReturn {
       // 운동 로그 (이번 달 전체)
       const { data: workoutData } = await supabase
         .from('workout_logs')
-        .select('id, workout_date, completed_at, actual_duration, actual_calories, perceived_effort')
+        .select(
+          'id, workout_date, completed_at, actual_duration, actual_calories, perceived_effort'
+        )
         .gte('workout_date', startStr)
         .lte('workout_date', endStr)
         .order('workout_date', { ascending: true });
@@ -69,7 +71,9 @@ export function useMonthlyReport(): UseMonthlyReportReturn {
       // 영양 로그 (이번 달 전체)
       const { data: nutritionData } = await supabase
         .from('daily_nutrition_summary')
-        .select('date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count')
+        .select(
+          'date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count'
+        )
         .gte('date', startStr)
         .lte('date', endStr)
         .order('date', { ascending: true });

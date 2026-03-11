@@ -64,15 +64,14 @@ export function VisualReportCard({
 }: VisualReportCardProps): React.ReactElement {
   const { colors, brand, module, grade, typography, radii } = useTheme();
 
-  const moduleColor = analysisType === 'skin'
-    ? module.skin.base
-    : analysisType === 'body'
-      ? module.body.base
-      : module.personalColor.base;
+  const moduleColor =
+    analysisType === 'skin'
+      ? module.skin.base
+      : analysisType === 'body'
+        ? module.body.base
+        : module.personalColor.base;
 
-  const displayScore = analysisType === 'personal-color' && confidence
-    ? confidence
-    : overallScore;
+  const displayScore = analysisType === 'personal-color' && confidence ? confidence : overallScore;
 
   const gradeInfo = getGrade(displayScore);
 
@@ -89,7 +88,9 @@ export function VisualReportCard({
           {ANALYSIS_LABELS[analysisType]}
         </Text>
         <View style={[styles.typeBadge, { backgroundColor: `${moduleColor}20` }]}>
-          <Text style={[styles.typeBadgeText, { color: moduleColor, fontSize: typography.size.xs }]}>
+          <Text
+            style={[styles.typeBadgeText, { color: moduleColor, fontSize: typography.size.xs }]}
+          >
             {analysisType === 'skin' ? '피부' : analysisType === 'body' ? '체형' : '컬러'}
           </Text>
         </View>
@@ -105,7 +106,12 @@ export function VisualReportCard({
         <View style={styles.detailSection}>
           {skinMetrics.slice(0, 4).map((metric) => (
             <View key={metric.id} style={styles.metricRow}>
-              <Text style={[styles.metricName, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.metricName,
+                  { color: colors.mutedForeground, fontSize: typography.size.sm },
+                ]}
+              >
                 {metric.name}
               </Text>
               <View style={[styles.metricBarOuter, { backgroundColor: `${colors.secondary}20` }]}>
@@ -119,7 +125,12 @@ export function VisualReportCard({
                   ]}
                 />
               </View>
-              <Text style={[styles.metricValue, { color: colors.foreground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.metricValue,
+                  { color: colors.foreground, fontSize: typography.size.sm },
+                ]}
+              >
                 {metric.value}
               </Text>
             </View>
@@ -132,13 +143,21 @@ export function VisualReportCard({
           <Text style={[styles.bodyType, { color: moduleColor, fontSize: typography.size.xl }]}>
             {bodyType} 타입
           </Text>
-          <Text style={[styles.bodyLabel, { color: colors.foreground, fontSize: typography.size.sm }]}>
+          <Text
+            style={[styles.bodyLabel, { color: colors.foreground, fontSize: typography.size.sm }]}
+          >
             {bodyTypeLabel}
           </Text>
           {bodyStrengths && bodyStrengths.length > 0 && (
             <View style={styles.strengthsList}>
               {bodyStrengths.slice(0, 3).map((s, i) => (
-                <Text key={i} style={[styles.strengthItem, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+                <Text
+                  key={i}
+                  style={[
+                    styles.strengthItem,
+                    { color: colors.mutedForeground, fontSize: typography.size.sm },
+                  ]}
+                >
                   {s}
                 </Text>
               ))}
@@ -168,7 +187,12 @@ export function VisualReportCard({
 
       {/* 분석 시간 */}
       {analyzedAt && (
-        <Text style={[styles.timestamp, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.timestamp,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           {analyzedAt.toLocaleDateString('ko-KR')} 분석
         </Text>
       )}

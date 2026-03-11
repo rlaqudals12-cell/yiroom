@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface MealSuggestionCardProps {
   /** 추천 식사명 */
@@ -63,9 +63,7 @@ export function MealSuggestionCard({
     >
       {/* 상단 */}
       <View style={styles.header}>
-        <Text style={{ fontSize: typography.size.xl }}>
-          {MEAL_EMOJIS[mealType]}
-        </Text>
+        <Text style={{ fontSize: typography.size.xl }}>{MEAL_EMOJIS[mealType]}</Text>
         <View style={{ flex: 1, marginLeft: spacing.sm }}>
           <Text
             style={{

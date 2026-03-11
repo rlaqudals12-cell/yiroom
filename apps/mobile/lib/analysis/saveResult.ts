@@ -22,11 +22,7 @@ async function safeInsert(
   data: Record<string, unknown>
 ): Promise<string | null> {
   try {
-    const { data: row, error } = await supabase
-      .from(table)
-      .insert(data)
-      .select('id')
-      .single();
+    const { data: row, error } = await supabase.from(table).insert(data).select('id').single();
 
     if (error) {
       analysisLogger.error(`DB save failed (${table}):`, error.message);
@@ -116,8 +112,11 @@ export async function saveHairResult(
   imageUri?: string
 ): Promise<string | null> {
   const overallScore = Math.round(
-    (result.scores.shine + result.scores.elasticity +
-     result.scores.density + result.scores.scalpHealth) / 4
+    (result.scores.shine +
+      result.scores.elasticity +
+      result.scores.density +
+      result.scores.scalpHealth) /
+      4
   );
 
   return safeInsert(supabase, 'hair_analyses', {
@@ -149,10 +148,6 @@ export async function saveMakeupResult(
     makeup_style: `${result.faceShape}_${result.undertone}`,
     color_recommendations: { bestColors: result.bestColors },
     product_recommendations: result.recommendations,
-    tips: [
-      `얼굴형: ${result.faceShape}`,
-      `눈매: ${result.eyeShape}`,
-      `입술: ${result.lipShape}`,
-    ],
+    tips: [`얼굴형: ${result.faceShape}`, `눈매: ${result.eyeShape}`, `입술: ${result.lipShape}`],
   });
 }

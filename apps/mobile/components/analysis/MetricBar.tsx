@@ -32,7 +32,11 @@ function getMetricGrade(value: number): {
   bgColor: string;
 } {
   if (value >= 85) {
-    return { color: gradeColors.diamond.base, label: 'A+', bgColor: `${gradeColors.diamond.light}40` };
+    return {
+      color: gradeColors.diamond.base,
+      label: 'A+',
+      bgColor: `${gradeColors.diamond.light}40`,
+    };
   }
   if (value >= 70) {
     return { color: gradeColors.gold.base, label: 'A', bgColor: `${gradeColors.gold.light}40` };
@@ -60,25 +64,35 @@ export function MetricBar({ label, value, delta, testID }: MetricBarProps) {
     >
       <View style={styles.metricHeader}>
         <View style={styles.metricLabelRow}>
-          <Text style={[styles.metricLabel, { color: colors.foreground, fontWeight: typography.weight.medium }]}>
+          <Text
+            style={[
+              styles.metricLabel,
+              { color: colors.foreground, fontWeight: typography.weight.medium },
+            ]}
+          >
             {label}
           </Text>
           {/* 웹 인라인 등급 배지 (text-xs px-1.5 py-0.5 rounded) */}
           <View style={[styles.gradeBadge, { backgroundColor: grade.bgColor }]}>
-            <Text style={[styles.gradeBadgeText, { color: grade.color }]}>
-              {grade.label}
-            </Text>
+            <Text style={[styles.gradeBadgeText, { color: grade.color }]}>{grade.label}</Text>
           </View>
         </View>
         <View style={styles.metricValueContainer}>
-          <Text style={[styles.metricValue, { color: grade.color, fontWeight: typography.weight.semibold }]}>
+          <Text
+            style={[
+              styles.metricValue,
+              { color: grade.color, fontWeight: typography.weight.semibold },
+            ]}
+          >
             {value}
           </Text>
           {delta !== undefined && delta !== 0 && <MetricDelta delta={delta} size="sm" />}
         </View>
       </View>
       <View style={[styles.metricBarBg, { backgroundColor: trackBg }]}>
-        <View style={[styles.metricBarFill, { width: `${value}%`, backgroundColor: grade.color }]} />
+        <View
+          style={[styles.metricBarFill, { width: `${value}%`, backgroundColor: grade.color }]}
+        />
       </View>
     </View>
   );

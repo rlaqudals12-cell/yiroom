@@ -8,7 +8,11 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme, spacing, zoneColors } from '../../lib/theme';
-import type { DetailedZoneId, DetailedStatusLevel, DetailedZoneStatus } from './DetailedFaceZoneMap';
+import type {
+  DetailedZoneId,
+  DetailedStatusLevel,
+  DetailedZoneStatus,
+} from './DetailedFaceZoneMap';
 
 export type ViewMode = 'overview' | 'detailed';
 
@@ -64,14 +68,15 @@ export function ProfessionalSkinMap({
       setInternalSelectedZone((prev) => (prev === zoneId ? null : zoneId));
       onZoneSelect?.(zoneId);
     },
-    [onZoneSelect],
+    [onZoneSelect]
   );
 
   // 평균 점수 계산
   const zoneEntries = Object.entries(zones) as Array<[DetailedZoneId, DetailedZoneStatus]>;
-  const avgScore = zoneEntries.length > 0
-    ? Math.round(zoneEntries.reduce((sum, [, z]) => sum + z.score, 0) / zoneEntries.length)
-    : 0;
+  const avgScore =
+    zoneEntries.length > 0
+      ? Math.round(zoneEntries.reduce((sum, [, z]) => sum + z.score, 0) / zoneEntries.length)
+      : 0;
 
   const selectedData = selectedZone ? zones[selectedZone] : null;
 
@@ -82,8 +87,12 @@ export function ProfessionalSkinMap({
     >
       {/* 평균 점수 */}
       <View style={[styles.avgRow, { marginBottom: spacing.md }]}>
-        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>평균 점수</Text>
-        <Text style={{ color: module.skin.base, fontSize: typography.size['2xl'], fontWeight: '700' }}>
+        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
+          평균 점수
+        </Text>
+        <Text
+          style={{ color: module.skin.base, fontSize: typography.size['2xl'], fontWeight: '700' }}
+        >
           {avgScore}점
         </Text>
       </View>
@@ -110,15 +119,21 @@ export function ProfessionalSkinMap({
               accessibilityLabel={`${ZONE_LABELS[zoneId]}: ${data.score}점, ${STATUS_LABELS[data.status]}`}
             >
               <View style={[styles.zoneDot, { backgroundColor: statusColor }]} />
-              <Text style={{ color: colors.foreground, fontSize: typography.size.xs, fontWeight: '500' }}>
+              <Text
+                style={{
+                  color: colors.foreground,
+                  fontSize: typography.size.xs,
+                  fontWeight: '500',
+                }}
+              >
                 {ZONE_LABELS[zoneId]}
               </Text>
-              <Text style={{ color: statusColor, fontSize: typography.size.base, fontWeight: '700' }}>
+              <Text
+                style={{ color: statusColor, fontSize: typography.size.base, fontWeight: '700' }}
+              >
                 {data.score}
               </Text>
-              <Text style={{ color: statusColor, fontSize: 10 }}>
-                {STATUS_LABELS[data.status]}
-              </Text>
+              <Text style={{ color: statusColor, fontSize: 10 }}>{STATUS_LABELS[data.status]}</Text>
             </Pressable>
           );
         })}
@@ -126,27 +141,72 @@ export function ProfessionalSkinMap({
 
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
-        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700', marginBottom: spacing.sm }}>
+        <View
+          style={[
+            styles.detailPanel,
+            {
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              borderColor: colors.border,
+              marginTop: spacing.md,
+              padding: spacing.md,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.base,
+              fontWeight: '700',
+              marginBottom: spacing.sm,
+            }}
+          >
             {ZONE_LABELS[selectedZone]} 상세
           </Text>
           <View style={styles.detailRow}>
-            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>점수</Text>
-            <Text style={{ color: STATUS_COLORS[selectedData.status], fontSize: typography.size.lg, fontWeight: '700' }}>
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
+              점수
+            </Text>
+            <Text
+              style={{
+                color: STATUS_COLORS[selectedData.status],
+                fontSize: typography.size.lg,
+                fontWeight: '700',
+              }}
+            >
               {selectedData.score}점
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>상태</Text>
-            <Text style={{ color: STATUS_COLORS[selectedData.status], fontSize: typography.size.sm, fontWeight: '600' }}>
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
+              상태
+            </Text>
+            <Text
+              style={{
+                color: STATUS_COLORS[selectedData.status],
+                fontSize: typography.size.sm,
+                fontWeight: '600',
+              }}
+            >
               {STATUS_LABELS[selectedData.status]}
             </Text>
           </View>
           {selectedData.concerns && selectedData.concerns.length > 0 && (
             <View style={{ marginTop: spacing.sm }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>고민</Text>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.xs,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                고민
+              </Text>
               {selectedData.concerns.map((concern, i) => (
-                <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>
+                <Text
+                  key={i}
+                  style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}
+                >
                   • {concern}
                 </Text>
               ))}
@@ -161,8 +221,19 @@ export function ProfessionalSkinMap({
 const styles = StyleSheet.create({
   avgRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  zoneCard: { width: '31%', borderWidth: 1, padding: spacing.smd, alignItems: 'center', gap: spacing.xxs },
+  zoneCard: {
+    width: '31%',
+    borderWidth: 1,
+    padding: spacing.smd,
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
   zoneDot: { width: 8, height: 8, borderRadius: 4, marginBottom: spacing.xxs },
   detailPanel: { borderWidth: 1 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
 });

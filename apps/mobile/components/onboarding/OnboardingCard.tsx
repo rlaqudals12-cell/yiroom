@@ -46,9 +46,7 @@ export function OnboardingCard({
       ]}
     >
       {/* 이모지 */}
-      {emoji ? (
-        <Text style={{ fontSize: 48, marginBottom: spacing.lg }}>{emoji}</Text>
-      ) : null}
+      {emoji ? <Text style={{ fontSize: 48, marginBottom: spacing.lg }}>{emoji}</Text> : null}
 
       {/* 진행 표시 */}
       <View style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg }}>

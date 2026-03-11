@@ -54,12 +54,7 @@ function NutrientRow({
       {/* 라벨 행 */}
       <View style={styles.labelRow}>
         <View style={styles.labelLeft}>
-          <View
-            style={[
-              styles.colorDot,
-              { backgroundColor: config.color },
-            ]}
-          />
+          <View style={[styles.colorDot, { backgroundColor: config.color }]} />
           <Text
             style={{
               fontSize: typography.size.sm,
@@ -77,7 +72,9 @@ function NutrientRow({
             color: colors.mutedForeground,
           }}
         >
-          {value.current}{config.unit} / {value.target}{config.unit} ({pctText}%)
+          {value.current}
+          {config.unit} / {value.target}
+          {config.unit} ({pctText}%)
         </Text>
       </View>
 
@@ -117,10 +114,8 @@ export function NutrientBreakdownCard({
   const { colors, spacing, typography, radii, shadows } = useTheme();
 
   // 전체 칼로리 계산 (탄4 + 단4 + 지9)
-  const totalCalories =
-    carbs.current * 4 + protein.current * 4 + fat.current * 9;
-  const targetCalories =
-    carbs.target * 4 + protein.target * 4 + fat.target * 9;
+  const totalCalories = carbs.current * 4 + protein.current * 4 + fat.current * 9;
+  const targetCalories = carbs.target * 4 + protein.target * 4 + fat.target * 9;
 
   return (
     <Animated.View entering={FadeInDown.duration(400)} testID={testID}>

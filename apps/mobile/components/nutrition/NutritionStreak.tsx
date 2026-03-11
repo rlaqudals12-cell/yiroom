@@ -68,9 +68,7 @@ export function NutritionStreak({
           >
             {currentStreak}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-            현재
-          </Text>
+          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>현재</Text>
         </View>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <View style={styles.streakItem}>
@@ -83,9 +81,7 @@ export function NutritionStreak({
           >
             {longestStreak}
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-            최장
-          </Text>
+          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>최장</Text>
         </View>
       </View>
 
@@ -102,9 +98,7 @@ export function NutritionStreak({
                 },
               ]}
             >
-              {done && (
-                <Text style={{ fontSize: 10, color: colors.overlayForeground }}>✓</Text>
-              )}
+              {done && <Text style={{ fontSize: 10, color: colors.overlayForeground }}>✓</Text>}
             </View>
             <Text
               style={{

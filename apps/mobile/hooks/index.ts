@@ -52,10 +52,7 @@ export {
 } from './useWellnessScore';
 
 // 교차 모듈 인사이트
-export {
-  useCrossModuleInsights,
-  type CrossModuleInsight,
-} from './useCrossModuleInsights';
+export { useCrossModuleInsights, type CrossModuleInsight } from './useCrossModuleInsights';
 
 // 리포트
 export { useWeeklyReport } from './useWeeklyReport';

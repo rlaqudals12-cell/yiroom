@@ -51,7 +51,8 @@ export function useCoach(): UseCoachResult {
   const supabase = useClerkSupabaseClient();
 
   // 분석 결과 기반 사용자 컨텍스트 구성 (RAG 강화)
-  const { personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis } = useUserAnalyses();
+  const { personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis } =
+    useUserAnalyses();
   const { streak: workoutStreak, analysis: workoutAnalysis, todayWorkout } = useWorkoutData();
   const { settings: nutritionSettings, streak: nutritionStreak } = useNutritionData();
 
@@ -107,7 +108,18 @@ export function useCoach(): UseCoachResult {
       };
     }
     return ctx;
-  }, [personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis, workoutStreak, workoutAnalysis, todayWorkout, nutritionSettings, nutritionStreak]);
+  }, [
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    hairAnalysis,
+    makeupAnalysis,
+    workoutStreak,
+    workoutAnalysis,
+    todayWorkout,
+    nutritionSettings,
+    nutritionStreak,
+  ]);
 
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);

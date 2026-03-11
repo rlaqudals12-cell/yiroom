@@ -19,9 +19,7 @@ export function getRelativeLuminance(hex: string): number {
 
   const [rLinear, gLinear, bLinear] = rgb.map((c) => {
     const srgb = c / 255;
-    return srgb <= 0.04045
-      ? srgb / 12.92
-      : Math.pow((srgb + 0.055) / 1.055, 2.4);
+    return srgb <= 0.04045 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
   });
 
   return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
@@ -63,9 +61,7 @@ export function meetsWcagAA(
   const ratio = getContrastRatio(foreground, background);
   // 하위호환: boolean 인자 지원 (기존 a11y 모듈)
   const isLarge =
-    typeof levelOrLargeText === 'boolean'
-      ? levelOrLargeText
-      : levelOrLargeText !== 'normal';
+    typeof levelOrLargeText === 'boolean' ? levelOrLargeText : levelOrLargeText !== 'normal';
   const threshold = isLarge ? 3 : 4.5;
   return ratio >= threshold;
 }
@@ -94,11 +90,7 @@ export function meetsWcagAAA(
 function hexToRgb(hex: string): [number, number, number] | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (result) {
-    return [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16),
-    ];
+    return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
   }
 
   // 3자리 hex (#RGB)

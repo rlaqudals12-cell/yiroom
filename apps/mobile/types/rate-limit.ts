@@ -10,15 +10,15 @@
  * - 엔드포인트 그룹별 분류
  */
 export type RateLimitCategory =
-  | 'analyze'   // AI 분석 API (/api/analyze/*, /api/gemini/*)
-  | 'auth'      // 인증 API (/api/auth/*)
-  | 'upload'    // 업로드 API (/api/upload/*)
-  | 'coach'     // 코치/채팅 API (/api/coach/*, /api/chat/*)
-  | 'feedback'  // 피드백 API (/api/feedback/*)
+  | 'analyze' // AI 분석 API (/api/analyze/*, /api/gemini/*)
+  | 'auth' // 인증 API (/api/auth/*)
+  | 'upload' // 업로드 API (/api/upload/*)
+  | 'coach' // 코치/채팅 API (/api/coach/*, /api/chat/*)
+  | 'feedback' // 피드백 API (/api/feedback/*)
   | 'nutrition' // 영양 API (/api/nutrition/*)
-  | 'workout'   // 운동 API (/api/workout/*)
+  | 'workout' // 운동 API (/api/workout/*)
   | 'affiliate' // 어필리에이트 API (/api/affiliate/*)
-  | 'default';  // 기타 API
+  | 'default'; // 기타 API
 
 /**
  * 식별자 유형

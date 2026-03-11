@@ -24,7 +24,10 @@ export interface WeeklyPlanCardProps {
 }
 
 export function WeeklyPlanCard({
-  weekLabel, days, completedDays = 0, onDayPress,
+  weekLabel,
+  days,
+  completedDays = 0,
+  onDayPress,
 }: WeeklyPlanCardProps): React.ReactElement {
   const { colors, module, status, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -32,11 +35,16 @@ export function WeeklyPlanCard({
   return (
     <View
       testID="weekly-plan-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`${weekLabel} 운동 계획, ${completedDays}일 완료`}
     >
       <View style={styles.header}>
-        <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700' }}>
+        <Text
+          style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700' }}
+        >
           {weekLabel}
         </Text>
         <Text style={{ color: baseColor, fontSize: typography.size.sm, fontWeight: '600' }}>
@@ -59,7 +67,13 @@ export function WeeklyPlanCard({
             accessibilityRole="button"
             accessibilityLabel={`${day.day}, ${day.isRestDay ? '휴식일' : `${day.exerciseCount}개 운동`}`}
           >
-            <Text style={{ color: day.isRestDay ? colors.mutedForeground : baseColor, fontSize: typography.size.xs, fontWeight: '700' }}>
+            <Text
+              style={{
+                color: day.isRestDay ? colors.mutedForeground : baseColor,
+                fontSize: typography.size.xs,
+                fontWeight: '700',
+              }}
+            >
               {day.day}
             </Text>
             {day.isRestDay ? (

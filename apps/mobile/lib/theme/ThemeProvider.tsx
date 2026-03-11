@@ -93,10 +93,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, []);
 
   // themeMode에 따라 isDark 결정
-  const isDark =
-    themeMode === 'system'
-      ? systemColorScheme === 'dark'
-      : themeMode === 'dark';
+  const isDark = themeMode === 'system' ? systemColorScheme === 'dark' : themeMode === 'dark';
 
   const value = useMemo<ThemeContextValue>(
     () => ({

@@ -87,7 +87,9 @@ function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry
             <Text style={[styles.errorTitle, { color: colors.mutedForeground }]}>
               에러 정보 (개발 모드)
             </Text>
-            <Text style={[styles.errorText, { color: colors.mutedForeground }]}>{error.message}</Text>
+            <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
+              {error.message}
+            </Text>
           </View>
         )}
 
@@ -95,7 +97,9 @@ function ErrorFallbackContent({ error, onRetry }: { error: Error | null; onRetry
           style={[styles.retryButton, { backgroundColor: brand.primary }]}
           onPress={onRetry}
         >
-          <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>다시 시도</Text>
+          <Text style={[styles.retryButtonText, { color: brand.primaryForeground }]}>
+            다시 시도
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>

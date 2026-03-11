@@ -205,141 +205,137 @@ export default function WorkoutLogScreen() {
   };
 
   return (
-    <ScreenContainer
-      edges={['bottom']}
-      contentPadding={20}
-      testID="workout-log-screen"
-    >
-        {/* 운동 선택 섹션 */}
-        <Animated.View entering={staggeredEntry(0)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            오늘 어떤 운동을 했나요?
+    <ScreenContainer edges={['bottom']} contentPadding={20} testID="workout-log-screen">
+      {/* 운동 선택 섹션 */}
+      <Animated.View entering={staggeredEntry(0)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          오늘 어떤 운동을 했나요?
+        </Text>
+        <View style={styles.exerciseGrid}>
+          {availableExercises.map((exercise) => {
+            const isSelected = selectedExercises.includes(exercise.id);
+            return (
+              <Pressable
+                key={exercise.id}
+                style={[
+                  styles.exerciseChip,
+                  {
+                    backgroundColor: isSelected ? workoutColor : colors.card,
+                    borderColor: isSelected ? workoutColor : colors.border,
+                  },
+                ]}
+                onPress={() => handleExerciseToggle(exercise.id)}
+              >
+                <Text
+                  style={[
+                    styles.exerciseChipText,
+                    { color: isSelected ? colors.overlayForeground : colors.foreground },
+                  ]}
+                >
+                  {exercise.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      {/* 운동 시간 섹션 */}
+      <Animated.View entering={staggeredEntry(1)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 시간</Text>
+        <View style={styles.durationGrid}>
+          {DURATION_OPTIONS.map((mins) => {
+            const isSelected = duration === mins;
+            return (
+              <Pressable
+                key={mins}
+                style={[
+                  styles.durationChip,
+                  {
+                    backgroundColor: isSelected ? workoutColor : colors.card,
+                    borderColor: isSelected ? workoutColor : colors.border,
+                  },
+                ]}
+                onPress={() => handleDurationSelect(mins)}
+              >
+                <Text
+                  style={[
+                    styles.durationText,
+                    { color: isSelected ? colors.overlayForeground : colors.foreground },
+                  ]}
+                >
+                  {mins}분
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      {/* 운동 강도 섹션 */}
+      <Animated.View entering={staggeredEntry(2)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>강도</Text>
+        <View style={styles.intensityGrid}>
+          {INTENSITY_OPTIONS.map((option) => {
+            const isSelected = intensity === option.id;
+            return (
+              <Pressable
+                key={option.id}
+                style={[
+                  styles.intensityChip,
+                  {
+                    backgroundColor: isSelected ? workoutColor : colors.card,
+                    borderColor: isSelected ? workoutColor : colors.border,
+                  },
+                ]}
+                onPress={() => handleIntensitySelect(option.id)}
+              >
+                <Text
+                  style={[
+                    styles.intensityText,
+                    { color: isSelected ? colors.overlayForeground : colors.foreground },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      {/* 메모 섹션 */}
+      <Animated.View entering={staggeredEntry(3)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>메모 (선택)</Text>
+        <TextInput
+          style={[
+            styles.notesInput,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.foreground,
+            },
+          ]}
+          placeholder="오늘의 운동은 어땠나요?"
+          placeholderTextColor={colors.mutedForeground}
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={3}
+        />
+      </Animated.View>
+
+      {/* 예상 칼로리 */}
+      <Animated.View entering={staggeredEntry(4)}>
+        <GlassCard style={styles.calorieCard}>
+          <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
+            예상 소모 칼로리
           </Text>
-          <View style={styles.exerciseGrid}>
-            {availableExercises.map((exercise) => {
-              const isSelected = selectedExercises.includes(exercise.id);
-              return (
-                <Pressable
-                  key={exercise.id}
-                  style={[
-                    styles.exerciseChip,
-                    {
-                      backgroundColor: isSelected ? workoutColor : colors.card,
-                      borderColor: isSelected ? workoutColor : colors.border,
-                    },
-                  ]}
-                  onPress={() => handleExerciseToggle(exercise.id)}
-                >
-                  <Text
-                    style={[
-                      styles.exerciseChipText,
-                      { color: isSelected ? colors.overlayForeground : colors.foreground },
-                    ]}
-                  >
-                    {exercise.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Animated.View>
-
-        {/* 운동 시간 섹션 */}
-        <Animated.View entering={staggeredEntry(1)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 시간</Text>
-          <View style={styles.durationGrid}>
-            {DURATION_OPTIONS.map((mins) => {
-              const isSelected = duration === mins;
-              return (
-                <Pressable
-                  key={mins}
-                  style={[
-                    styles.durationChip,
-                    {
-                      backgroundColor: isSelected ? workoutColor : colors.card,
-                      borderColor: isSelected ? workoutColor : colors.border,
-                    },
-                  ]}
-                  onPress={() => handleDurationSelect(mins)}
-                >
-                  <Text
-                    style={[
-                      styles.durationText,
-                      { color: isSelected ? colors.overlayForeground : colors.foreground },
-                    ]}
-                  >
-                    {mins}분
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Animated.View>
-
-        {/* 운동 강도 섹션 */}
-        <Animated.View entering={staggeredEntry(2)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>강도</Text>
-          <View style={styles.intensityGrid}>
-            {INTENSITY_OPTIONS.map((option) => {
-              const isSelected = intensity === option.id;
-              return (
-                <Pressable
-                  key={option.id}
-                  style={[
-                    styles.intensityChip,
-                    {
-                      backgroundColor: isSelected ? workoutColor : colors.card,
-                      borderColor: isSelected ? workoutColor : colors.border,
-                    },
-                  ]}
-                  onPress={() => handleIntensitySelect(option.id)}
-                >
-                  <Text
-                    style={[
-                      styles.intensityText,
-                      { color: isSelected ? colors.overlayForeground : colors.foreground },
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Animated.View>
-
-        {/* 메모 섹션 */}
-        <Animated.View entering={staggeredEntry(3)} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>메모 (선택)</Text>
-          <TextInput
-            style={[
-              styles.notesInput,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder="오늘의 운동은 어땠나요?"
-            placeholderTextColor={colors.mutedForeground}
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={3}
-          />
-        </Animated.View>
-
-        {/* 예상 칼로리 */}
-        <Animated.View entering={staggeredEntry(4)}>
-          <GlassCard style={styles.calorieCard}>
-            <Text style={[styles.calorieLabel, { color: colors.mutedForeground }]}>
-              예상 소모 칼로리
-            </Text>
-            <Text style={[styles.calorieValue, { color: workoutColor }]}>
-              {estimatedCalories} kcal
-            </Text>
-          </GlassCard>
-        </Animated.View>
+          <Text style={[styles.calorieValue, { color: workoutColor }]}>
+            {estimatedCalories} kcal
+          </Text>
+        </GlassCard>
+      </Animated.View>
       {/* 저장 버튼 */}
       <View style={styles.footer}>
         <Pressable
@@ -348,16 +344,27 @@ export default function WorkoutLogScreen() {
             { backgroundColor: workoutColor },
             isLoading && styles.saveButtonDisabled,
             !isLoading && !isDark
-              ? Platform.select({
-                  ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+              ? (Platform.select({
+                  ios: {
+                    shadowColor: workoutColor,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                  },
                   android: { elevation: 4 },
-                }) ?? {}
+                }) ?? {})
               : {},
           ]}
           onPress={handleSave}
           disabled={isLoading}
         >
-          <Text style={[styles.saveButtonText, { color: colors.overlayForeground }, isLoading && { opacity: 0.7 }]}>
+          <Text
+            style={[
+              styles.saveButtonText,
+              { color: colors.overlayForeground },
+              isLoading && { opacity: 0.7 },
+            ]}
+          >
             {isLoading ? '저장 중...' : '운동 기록하기'}
           </Text>
         </Pressable>

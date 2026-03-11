@@ -105,18 +105,9 @@ const UPPER_CROSS_PROTOCOL: JandaProtocol = {
     'suboccipitals',
     'sternocleidomastoid',
   ],
-  weakMuscles: [
-    'deep_neck_flexors',
-    'mid_lower_trapezius',
-    'rhomboids',
-    'serratus_anterior',
-  ],
+  weakMuscles: ['deep_neck_flexors', 'mid_lower_trapezius', 'rhomboids', 'serratus_anterior'],
 
-  inhibitionExercises: [
-    'smr_upper_trap',
-    'smr_pec_major',
-    'smr_levator_scapulae',
-  ],
+  inhibitionExercises: ['smr_upper_trap', 'smr_pec_major', 'smr_levator_scapulae'],
   stretchExercises: [
     'str_chest_doorway',
     'str_upper_trap',
@@ -198,19 +189,9 @@ const LOWER_CROSS_PROTOCOL: JandaProtocol = {
     'quadratus_lumborum',
     'tensor_fasciae_latae',
   ],
-  weakMuscles: [
-    'rectus_abdominis',
-    'transverse_abdominis',
-    'gluteus_maximus',
-    'gluteus_medius',
-  ],
+  weakMuscles: ['rectus_abdominis', 'transverse_abdominis', 'gluteus_maximus', 'gluteus_medius'],
 
-  inhibitionExercises: [
-    'smr_hip_flexor',
-    'smr_quad',
-    'smr_tfl_it_band',
-    'smr_lower_back',
-  ],
+  inhibitionExercises: ['smr_hip_flexor', 'smr_quad', 'smr_tfl_it_band', 'smr_lower_back'],
   stretchExercises: [
     'str_hip_flexor_kneeling',
     'str_hip_flexor_standing',
@@ -225,12 +206,7 @@ const LOWER_CROSS_PROTOCOL: JandaProtocol = {
     'act_bird_dog',
     'act_posterior_pelvic_tilt',
   ],
-  integrationExercises: [
-    'int_hip_thrust',
-    'int_plank',
-    'int_side_plank',
-    'int_pallof_press',
-  ],
+  integrationExercises: ['int_hip_thrust', 'int_plank', 'int_side_plank', 'int_pallof_press'],
 
   progression: {
     phase1: {
@@ -281,21 +257,11 @@ const FORWARD_HEAD_PROTOCOL: JandaProtocol = {
   nameKo: '거북목',
   description: '두개척추각(CVA) 50° 미만. 두통, 어깨 통증 원인.',
 
-  tightMuscles: [
-    'suboccipitals',
-    'sternocleidomastoid',
-    'upper_trapezius',
-    'levator_scapulae',
-  ],
+  tightMuscles: ['suboccipitals', 'sternocleidomastoid', 'upper_trapezius', 'levator_scapulae'],
   weakMuscles: ['deep_neck_flexors'],
 
   inhibitionExercises: ['smr_upper_trap', 'smr_suboccipital'],
-  stretchExercises: [
-    'str_upper_trap',
-    'str_levator_scapulae',
-    'str_suboccipital',
-    'str_scm',
-  ],
+  stretchExercises: ['str_upper_trap', 'str_levator_scapulae', 'str_suboccipital', 'str_scm'],
   activationExercises: ['act_chin_tucks', 'act_cervical_retraction'],
   integrationExercises: ['int_neck_flexor_strengthening'],
 
@@ -414,11 +380,7 @@ const PELVIC_TILT_ANT_PROTOCOL: JandaProtocol = {
     'str_quad_standing',
     'str_tfl',
   ],
-  activationExercises: [
-    'act_glute_bridge',
-    'act_dead_bug',
-    'act_posterior_pelvic_tilt',
-  ],
+  activationExercises: ['act_glute_bridge', 'act_dead_bug', 'act_posterior_pelvic_tilt'],
   integrationExercises: ['int_hip_thrust', 'int_plank', 'int_reverse_crunch'],
 
   progression: {
@@ -455,10 +417,7 @@ const PELVIC_TILT_ANT_PROTOCOL: JandaProtocol = {
     strengthening: '주 3회',
   },
 
-  precautions: [
-    '허리 통증 시 골반 후방 기울기 먼저.',
-    '앉아있는 시간 줄이기 권장.',
-  ],
+  precautions: ['허리 통증 시 골반 후방 기울기 먼저.', '앉아있는 시간 줄이기 권장.'],
 };
 
 /**
@@ -473,17 +432,9 @@ const PELVIC_TILT_POST_PROTOCOL: JandaProtocol = {
   weakMuscles: ['iliopsoas', 'erector_spinae'],
 
   inhibitionExercises: ['smr_hamstring', 'smr_glute'],
-  stretchExercises: [
-    'str_hamstring_standing',
-    'str_hamstring_supine',
-    'str_glute_figure_four',
-  ],
+  stretchExercises: ['str_hamstring_standing', 'str_hamstring_supine', 'str_glute_figure_four'],
   activationExercises: ['act_cat_cow', 'act_pelvic_tilt_supine', 'act_hip_flexor_activation'],
-  integrationExercises: [
-    'int_hip_flexor_strengthening',
-    'int_back_extension',
-    'int_superman',
-  ],
+  integrationExercises: ['int_hip_flexor_strengthening', 'int_back_extension', 'int_superman'],
 
   progression: {
     phase1: {
@@ -519,10 +470,7 @@ const PELVIC_TILT_POST_PROTOCOL: JandaProtocol = {
     strengthening: '주 3회',
   },
 
-  precautions: [
-    '요추 전만 회복 시 급격한 신전 금지.',
-    '디스크 환자는 의사 상담 필수.',
-  ],
+  precautions: ['요추 전만 회복 시 급격한 신전 금지.', '디스크 환자는 의사 상담 필수.'],
 };
 
 /**
@@ -537,16 +485,8 @@ const SWAY_BACK_PROTOCOL: JandaProtocol = {
   weakMuscles: ['iliopsoas', 'obliques', 'mid_lower_trapezius'],
 
   inhibitionExercises: ['smr_hamstring', 'smr_upper_trap'],
-  stretchExercises: [
-    'str_hamstring_standing',
-    'str_upper_trap',
-    'str_thoracic_extension',
-  ],
-  activationExercises: [
-    'act_hip_flexor_activation',
-    'act_lower_ab_engagement',
-    'act_prone_y_t_w',
-  ],
+  stretchExercises: ['str_hamstring_standing', 'str_upper_trap', 'str_thoracic_extension'],
+  activationExercises: ['act_hip_flexor_activation', 'act_lower_ab_engagement', 'act_prone_y_t_w'],
   integrationExercises: [
     'int_hip_flexor_strengthening',
     'int_lower_ab_exercises',
@@ -587,10 +527,7 @@ const SWAY_BACK_PROTOCOL: JandaProtocol = {
     strengthening: '주 3회',
   },
 
-  precautions: [
-    '서있는 자세 인지 훈련 병행.',
-    '장시간 서있기 피하기.',
-  ],
+  precautions: ['서있는 자세 인지 훈련 병행.', '장시간 서있기 피하기.'],
 };
 
 /**
@@ -607,11 +544,7 @@ const FLAT_BACK_PROTOCOL: JandaProtocol = {
   inhibitionExercises: ['smr_hamstring'],
   stretchExercises: ['str_hamstring_standing', 'str_hamstring_supine'],
   activationExercises: ['act_cat_cow', 'act_pelvic_tilt_supine'],
-  integrationExercises: [
-    'int_hip_flexor_strengthening',
-    'int_back_extension',
-    'int_superman',
-  ],
+  integrationExercises: ['int_hip_flexor_strengthening', 'int_back_extension', 'int_superman'],
 
   progression: {
     phase1: {
@@ -731,9 +664,7 @@ export function findExerciseById(exerciseId: string): StretchExercise | undefine
  * 복합 증후군 감지
  * 상부+하부 교차증후군이 동시에 있으면 우선순위 조정
  */
-export function detectCompoundSyndrome(
-  imbalances: PostureImbalanceType[]
-): {
+export function detectCompoundSyndrome(imbalances: PostureImbalanceType[]): {
   isCompound: boolean;
   primaryFocus: PostureImbalanceType | null;
   secondaryFocus: PostureImbalanceType | null;
@@ -761,9 +692,7 @@ export function detectCompoundSyndrome(
     'flat_back',
   ];
 
-  const sorted = imbalances.sort(
-    (a, b) => priorityOrder.indexOf(a) - priorityOrder.indexOf(b)
-  );
+  const sorted = imbalances.sort((a, b) => priorityOrder.indexOf(a) - priorityOrder.indexOf(b));
 
   return {
     isCompound: false,
@@ -832,11 +761,7 @@ export function generateJandaPrescription(
   const adjActSets = Math.max(1, Math.round(phase.activationSets * diffAdj.setsMult));
 
   // 운동 매핑
-  const mapToPrescibed = (
-    ids: string[],
-    duration: number,
-    sets: number
-  ): PrescribedStretch[] => {
+  const mapToPrescibed = (ids: string[], duration: number, sets: number): PrescribedStretch[] => {
     return ids
       .map((id, idx) => {
         const exercise = findExerciseById(id);
@@ -856,11 +781,7 @@ export function generateJandaPrescription(
     60, // SMR은 60초
     1
   );
-  const lengthenExercises = mapToPrescibed(
-    exercisesByPhase.lengthen,
-    adjDuration,
-    adjSets
-  );
+  const lengthenExercises = mapToPrescibed(exercisesByPhase.lengthen, adjDuration, adjSets);
   const activateExercises = mapToPrescibed(
     exercisesByPhase.activate,
     adjReps, // reps 기반
@@ -921,9 +842,7 @@ export function generateCompoundPrescription(
   const prescriptions: JandaPrescription[] = [];
 
   if (compound.primaryFocus) {
-    prescriptions.push(
-      generateJandaPrescription(compound.primaryFocus, currentWeek, userProfile)
-    );
+    prescriptions.push(generateJandaPrescription(compound.primaryFocus, currentWeek, userProfile));
   }
 
   // 복합일 경우 보조 프로토콜도 추가 (간소화 버전)
@@ -969,27 +888,21 @@ export function generateJandaPrescriptionSummary(prescription: JandaPrescription
   if (prescription.exercises.lengthen.length > 0) {
     lines.push(`### 2. 스트레칭 (Lengthen)`);
     prescription.exercises.lengthen.forEach((e) => {
-      lines.push(
-        `- ${e.exercise.nameKo}: ${e.adjustedDuration}초 x ${e.adjustedSets}세트`
-      );
+      lines.push(`- ${e.exercise.nameKo}: ${e.adjustedDuration}초 x ${e.adjustedSets}세트`);
     });
   }
 
   if (prescription.exercises.activate.length > 0) {
     lines.push(`### 3. 활성화 (Activate)`);
     prescription.exercises.activate.forEach((e) => {
-      lines.push(
-        `- ${e.exercise.nameKo}: ${e.adjustedDuration}회 x ${e.adjustedSets}세트`
-      );
+      lines.push(`- ${e.exercise.nameKo}: ${e.adjustedDuration}회 x ${e.adjustedSets}세트`);
     });
   }
 
   if (prescription.exercises.integrate.length > 0) {
     lines.push(`### 4. 통합 (Integrate)`);
     prescription.exercises.integrate.forEach((e) => {
-      lines.push(
-        `- ${e.exercise.nameKo}: ${e.adjustedDuration}회 x ${e.adjustedSets}세트`
-      );
+      lines.push(`- ${e.exercise.nameKo}: ${e.adjustedDuration}회 x ${e.adjustedSets}세트`);
     });
   }
 

@@ -9,8 +9,13 @@ import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useTheme, spacing } from '../../lib/theme';
 
 export type FaceShapeType =
-  | 'oval' | 'round' | 'square' | 'heart'
-  | 'oblong' | 'diamond' | 'rectangle';
+  | 'oval'
+  | 'round'
+  | 'square'
+  | 'heart'
+  | 'oblong'
+  | 'diamond'
+  | 'rectangle';
 
 export interface HairStyle {
   id: string;
@@ -78,18 +83,35 @@ export function HairResultCard({
   return (
     <View
       testID="hair-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`헤어 분석 결과: ${shapeInfo.label}, 신뢰도 ${confidence}%`}
     >
       {/* 헤더 */}
-      <View style={[styles.header, { backgroundColor: `${module.hair.base}15`, padding: spacing.md }]}>
+      <View
+        style={[styles.header, { backgroundColor: `${module.hair.base}15`, padding: spacing.md }]}
+      >
         <Text style={{ fontSize: typography.size['2xl'] }}>{shapeInfo.emoji}</Text>
         <View style={styles.headerText}>
-          <Text style={[styles.faceShapeLabel, { color: colors.foreground, fontSize: typography.size.lg }]}>
+          <Text
+            style={[
+              styles.faceShapeLabel,
+              { color: colors.foreground, fontSize: typography.size.lg },
+            ]}
+          >
             {shapeInfo.label}
           </Text>
-          <View style={[styles.badge, { backgroundColor: `${module.hair.base}20`, borderRadius: radii.full }]}>
-            <Text style={[styles.badgeText, { color: module.hair.base, fontSize: typography.size.xs }]}>
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: `${module.hair.base}20`, borderRadius: radii.full },
+            ]}
+          >
+            <Text
+              style={[styles.badgeText, { color: module.hair.base, fontSize: typography.size.xs }]}
+            >
               신뢰도 {confidence}%
             </Text>
           </View>
@@ -100,14 +122,24 @@ export function HairResultCard({
       {currentHairInfo && (
         <View style={[styles.infoRow, { paddingHorizontal: spacing.md, paddingTop: spacing.sm }]}>
           {currentHairInfo.length && (
-            <View style={[styles.infoBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
+            <View
+              style={[
+                styles.infoBadge,
+                { backgroundColor: colors.secondary, borderRadius: radii.sm },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 {currentHairInfo.length}
               </Text>
             </View>
           )}
           {currentHairInfo.texture && (
-            <View style={[styles.infoBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
+            <View
+              style={[
+                styles.infoBadge,
+                { backgroundColor: colors.secondary, borderRadius: radii.sm },
+              ]}
+            >
               <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
                 {currentHairInfo.texture}
               </Text>
@@ -117,7 +149,9 @@ export function HairResultCard({
       )}
 
       {/* 탭 */}
-      <View style={[styles.tabs, { borderBottomColor: colors.border, marginHorizontal: spacing.md }]}>
+      <View
+        style={[styles.tabs, { borderBottomColor: colors.border, marginHorizontal: spacing.md }]}
+      >
         {[
           { key: 'styles' as TabType, label: '추천 스타일' },
           { key: 'colors' as TabType, label: '추천 컬러' },
@@ -128,7 +162,10 @@ export function HairResultCard({
             onPress={() => handleTabChange(tab.key)}
             style={[
               styles.tab,
-              activeTab === tab.key && { borderBottomColor: module.hair.base, borderBottomWidth: 2 },
+              activeTab === tab.key && {
+                borderBottomColor: module.hair.base,
+                borderBottomWidth: 2,
+              },
             ]}
           >
             <Text
@@ -151,15 +188,31 @@ export function HairResultCard({
             {recommendedStyles.slice(0, 5).map((style) => (
               <View key={style.id} style={[styles.styleCard, { borderBottomColor: colors.border }]}>
                 <View style={styles.styleHeader}>
-                  <Text style={[styles.styleName, { color: colors.foreground, fontSize: typography.size.base }]}>
+                  <Text
+                    style={[
+                      styles.styleName,
+                      { color: colors.foreground, fontSize: typography.size.base },
+                    ]}
+                  >
                     {style.name}
                   </Text>
-                  <Text style={{ color: module.hair.base, fontSize: typography.size.sm, fontWeight: '600' }}>
+                  <Text
+                    style={{
+                      color: module.hair.base,
+                      fontSize: typography.size.sm,
+                      fontWeight: '600',
+                    }}
+                  >
                     {style.suitability}%
                   </Text>
                 </View>
                 {/* 적합도 바 */}
-                <View style={[styles.progressBg, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
+                <View
+                  style={[
+                    styles.progressBg,
+                    { backgroundColor: colors.secondary, borderRadius: radii.full },
+                  ]}
+                >
                   <View
                     style={[
                       styles.progressFill,
@@ -172,7 +225,13 @@ export function HairResultCard({
                   />
                 </View>
                 {style.description && (
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xs }}>
+                  <Text
+                    style={{
+                      color: colors.mutedForeground,
+                      fontSize: typography.size.xs,
+                      marginTop: spacing.xs,
+                    }}
+                  >
                     {style.description}
                   </Text>
                 )}
@@ -184,15 +243,35 @@ export function HairResultCard({
         {activeTab === 'colors' && (
           <View>
             {recommendedColors.length === 0 ? (
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.sm,
+                  textAlign: 'center',
+                }}
+              >
                 추천 컬러 정보가 없습니다
               </Text>
             ) : (
               recommendedColors.slice(0, 6).map((color) => (
-                <View key={color.id} style={[styles.colorCard, { borderBottomColor: colors.border }]}>
-                  <View style={[styles.colorSwatch, { backgroundColor: color.hexColor, borderRadius: radii.sm }]} />
+                <View
+                  key={color.id}
+                  style={[styles.colorCard, { borderBottomColor: colors.border }]}
+                >
+                  <View
+                    style={[
+                      styles.colorSwatch,
+                      { backgroundColor: color.hexColor, borderRadius: radii.sm },
+                    ]}
+                  />
                   <View style={styles.colorInfo}>
-                    <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '500' }}>
+                    <Text
+                      style={{
+                        color: colors.foreground,
+                        fontSize: typography.size.sm,
+                        fontWeight: '500',
+                      }}
+                    >
                       {color.name}
                     </Text>
                     <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
@@ -208,20 +287,44 @@ export function HairResultCard({
         {activeTab === 'tips' && (
           <View>
             {careTips.length === 0 ? (
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center' }}>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.sm,
+                  textAlign: 'center',
+                }}
+              >
                 관리 팁 정보가 없습니다
               </Text>
             ) : (
               careTips.slice(0, 5).map((tip, index) => (
                 <View key={tip.id} style={[styles.tipCard, { borderBottomColor: colors.border }]}>
-                  <Text style={{ color: module.hair.base, fontSize: typography.size.sm, fontWeight: '700' }}>
+                  <Text
+                    style={{
+                      color: module.hair.base,
+                      fontSize: typography.size.sm,
+                      fontWeight: '700',
+                    }}
+                  >
                     {index + 1}.
                   </Text>
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                    <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
+                    <Text
+                      style={{
+                        color: colors.foreground,
+                        fontSize: typography.size.sm,
+                        fontWeight: '600',
+                      }}
+                    >
                       {tip.title}
                     </Text>
-                    <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginTop: spacing.xxs }}>
+                    <Text
+                      style={{
+                        color: colors.mutedForeground,
+                        fontSize: typography.size.xs,
+                        marginTop: spacing.xxs,
+                      }}
+                    >
                       {tip.description}
                     </Text>
                   </View>
@@ -240,18 +343,33 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.smx },
   headerText: { flex: 1 },
   faceShapeLabel: { fontWeight: '700' },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs, marginTop: spacing.xs },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    marginTop: spacing.xs,
+  },
   badgeText: { fontWeight: '600' },
   infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   infoBadge: { paddingHorizontal: spacing.sm, paddingVertical: 3 },
   tabs: { flexDirection: 'row', borderBottomWidth: 1, marginTop: spacing.sm },
   tab: { flex: 1, alignItems: 'center', paddingVertical: spacing.smd },
   styleCard: { paddingVertical: spacing.smd, borderBottomWidth: 1 },
-  styleHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  styleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   styleName: { fontWeight: '600' },
   progressBg: { height: 6 },
   progressFill: { height: 6 },
-  colorCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.smd, borderBottomWidth: 1 },
+  colorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.smd,
+    borderBottomWidth: 1,
+  },
   colorSwatch: { width: 36, height: 36, marginRight: spacing.smx },
   colorInfo: { flex: 1 },
   tipCard: { flexDirection: 'row', paddingVertical: spacing.smd, borderBottomWidth: 1 },

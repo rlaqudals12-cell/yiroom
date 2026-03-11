@@ -48,9 +48,7 @@ export async function getProductsByCategory(
       // 스킨케어 전체 조회 (메이크업 제외)
       const products = await getCosmeticProducts(undefined, limit * 3);
       // 스킨케어 카테고리만 필터링 (메이크업 제외)
-      const skincare = products.filter(
-        (p) => p.category !== 'makeup'
-      );
+      const skincare = products.filter((p) => p.category !== 'makeup');
       return applySortAndPaginate(skincare, options, offset, limit);
     }
     case 'makeup': {
@@ -245,10 +243,7 @@ export function getProductType(product: AnyProduct): ProductType {
  * @param type 제품 타입
  * @param id 제품 ID
  */
-export async function getProductById(
-  type: ProductType,
-  id: string
-): Promise<AnyProduct | null> {
+export async function getProductById(type: ProductType, id: string): Promise<AnyProduct | null> {
   // Lazy import to avoid circular dependency
   const { getCosmeticProductById } = await import('../repositories/cosmetic');
   const { getSupplementProductById } = await import('../repositories/supplement');

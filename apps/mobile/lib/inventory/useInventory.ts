@@ -235,7 +235,10 @@ interface UseSavedOutfitsResult {
   saveOutfit: (
     outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
   ) => Promise<SavedOutfit | null>;
-  updateOutfit: (id: string, updates: Partial<Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>>) => Promise<boolean>;
+  updateOutfit: (
+    id: string,
+    updates: Partial<Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>>
+  ) => Promise<boolean>;
   deleteOutfit: (id: string) => Promise<boolean>;
   recordWear: (id: string) => Promise<boolean>;
   getOutfitById: (id: string) => SavedOutfit | undefined;
@@ -335,7 +338,9 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
   const updateOutfit = useCallback(
     async (
       id: string,
-      updates: Partial<Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>>
+      updates: Partial<
+        Pick<SavedOutfit, 'name' | 'description' | 'itemIds' | 'occasion' | 'season'>
+      >
     ): Promise<boolean> => {
       if (!supabase) return false;
 
@@ -354,9 +359,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
         if (updateError) throw updateError;
 
-        setOutfits((prev) =>
-          prev.map((o) => (o.id === id ? { ...o, ...updates } : o))
-        );
+        setOutfits((prev) => prev.map((o) => (o.id === id ? { ...o, ...updates } : o)));
         return true;
       } catch (err) {
         closetLogger.error(' updateOutfit error:', err);

@@ -117,10 +117,7 @@ export function StarRating({
         <View style={styles.infoContainer}>
           {showAverage && (
             <Text
-              style={[
-                styles.averageText,
-                { fontSize: starSize * 0.6, color: colors.foreground },
-              ]}
+              style={[styles.averageText, { fontSize: starSize * 0.6, color: colors.foreground }]}
             >
               {rating.toFixed(1)}
             </Text>

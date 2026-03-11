@@ -6,9 +6,9 @@
  */
 
 // Upstash 동적 import (패키지 미설치 시에도 빌드 가능)
- 
+
 let RatelimitClass: any = null;
- 
+
 let RedisClass: any = null;
 
 // 환경변수 확인
@@ -31,13 +31,13 @@ if (UPSTASH_ENABLED) {
 }
 
 // Redis 클라이언트 싱글톤
- 
+
 let redisInstance: any = null;
 
 /**
  * Redis 클라이언트 가져오기 (싱글톤)
  */
- 
+
 export function getRedisClient(): any | null {
   if (!UPSTASH_ENABLED || !RedisClass) {
     return null;

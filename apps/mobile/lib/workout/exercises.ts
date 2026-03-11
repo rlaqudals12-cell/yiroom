@@ -24,9 +24,7 @@ allExercises.forEach((ex) => {
 });
 
 // ID로 빠른 조회를 위한 인덱스
-const exerciseById = new Map<string, Exercise>(
-  allExercises.map((ex) => [ex.id, ex])
-);
+const exerciseById = new Map<string, Exercise>(allExercises.map((ex) => [ex.id, ex]));
 
 /**
  * ID로 운동 찾기 (O(1) 인덱스 조회)
@@ -135,10 +133,7 @@ export function getRecommendedExercises(
  * @param exercise 현재 운동
  * @param limit 최대 개수
  */
-export function getAlternativeExercises(
-  exercise: Exercise,
-  limit = 3
-): Exercise[] {
+export function getAlternativeExercises(exercise: Exercise, limit = 3): Exercise[] {
   return allExercises
     .filter((ex) => {
       // 자기 자신 제외

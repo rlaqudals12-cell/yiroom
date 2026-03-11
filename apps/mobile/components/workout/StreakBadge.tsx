@@ -35,11 +35,18 @@ export function StreakBadge({ streak, compact = false }: StreakBadgeProps): Reac
     return (
       <View
         testID="streak-badge"
-        style={[styles.compact, { backgroundColor: `${module.workout.base}20`, borderRadius: radii.full }]}
+        style={[
+          styles.compact,
+          { backgroundColor: `${module.workout.base}20`, borderRadius: radii.full },
+        ]}
         accessibilityLabel={`${streak}일 연속, ${level.label}`}
       >
         <Text style={{ fontSize: typography.size.xs }}>{level.emoji}</Text>
-        <Text style={{ color: module.workout.base, fontSize: typography.size.xs, fontWeight: '700' }}>{streak}</Text>
+        <Text
+          style={{ color: module.workout.base, fontSize: typography.size.xs, fontWeight: '700' }}
+        >
+          {streak}
+        </Text>
       </View>
     );
   }
@@ -47,21 +54,40 @@ export function StreakBadge({ streak, compact = false }: StreakBadgeProps): Reac
   return (
     <View
       testID="streak-badge"
-      style={[styles.container, { backgroundColor: `${module.workout.base}15`, borderRadius: radii.xl }]}
+      style={[
+        styles.container,
+        { backgroundColor: `${module.workout.base}15`, borderRadius: radii.xl },
+      ]}
       accessibilityLabel={`${streak}일 연속 운동, ${level.label} 레벨`}
     >
       <Text style={{ fontSize: typography.size['2xl'] }}>{level.emoji}</Text>
       <View>
-        <Text style={{ color: module.workout.base, fontSize: typography.size.lg, fontWeight: '700' }}>
+        <Text
+          style={{ color: module.workout.base, fontSize: typography.size.lg, fontWeight: '700' }}
+        >
           {streak}일
         </Text>
-        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{level.label}</Text>
+        <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+          {level.label}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', gap: spacing.smd, paddingHorizontal: 14, paddingVertical: spacing.smd },
-  compact: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.smd,
+    paddingHorizontal: 14,
+    paddingVertical: spacing.smd,
+  },
+  compact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+  },
 });

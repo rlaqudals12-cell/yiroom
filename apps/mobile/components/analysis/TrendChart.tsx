@@ -61,15 +61,28 @@ export function TrendChart({
   }, [recentData]);
 
   const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
-  const trendColor = trend === 'up' ? status.success : trend === 'down' ? colors.destructive : colors.mutedForeground;
+  const trendColor =
+    trend === 'up'
+      ? status.success
+      : trend === 'down'
+        ? colors.destructive
+        : colors.mutedForeground;
 
   if (recentData.length === 0) {
     return (
       <View
-        style={[styles.emptyContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[
+          styles.emptyContainer,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
         testID="trend-chart"
       >
-        <Text style={[styles.emptyText, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
+        <Text
+          style={[
+            styles.emptyText,
+            { color: colors.mutedForeground, fontSize: typography.size.sm },
+          ]}
+        >
           분석 기록이 없어요
         </Text>
       </View>
@@ -89,7 +102,10 @@ export function TrendChart({
     >
       {/* 헤더 */}
       <View style={styles.header}>
-        <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}>
+        <Text
+          accessibilityRole="header"
+          style={[styles.title, { color: colors.foreground, fontSize: typography.size.base }]}
+        >
           점수 추이
         </Text>
         <View style={styles.trendBadge}>
@@ -176,7 +192,12 @@ export function TrendChart({
 
       {/* 범례 */}
       <View style={styles.legend}>
-        <Text style={[styles.legendText, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[
+            styles.legendText,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
           {recentData[0].score}점 → {recentData[recentData.length - 1].score}점
         </Text>
         {recentData.length >= 2 && (

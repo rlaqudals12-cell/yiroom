@@ -6,7 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 import { widgetLogger } from '../../lib/utils/logger';
 import { WIDGET_DEEP_LINKS, QuickActionType } from '../../lib/widgets/types';
 
@@ -76,7 +76,9 @@ export function QuickActionsWidget({ size = 'medium', onAction }: QuickActionsWi
             onPress={() => handlePress(action.type)}
           >
             <Text style={styles.buttonIcon}>{action.icon}</Text>
-            <Text style={[styles.buttonLabel, { color: colors.mutedForeground }]}>{action.label}</Text>
+            <Text style={[styles.buttonLabel, { color: colors.mutedForeground }]}>
+              {action.label}
+            </Text>
           </Pressable>
         ))}
       </View>

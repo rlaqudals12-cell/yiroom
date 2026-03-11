@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface ActivityItem {
   id: string;
@@ -76,8 +76,8 @@ export function ActivityFeed({
               )}
               <View style={styles.content}>
                 <Text style={{ fontSize: typography.size.sm, color: colors.foreground }}>
-                  <Text style={{ fontWeight: typography.weight.bold }}>{item.userName}</Text>
-                  {' '}{item.action}
+                  <Text style={{ fontWeight: typography.weight.bold }}>{item.userName}</Text>{' '}
+                  {item.action}
                 </Text>
                 {item.detail && (
                   <Text

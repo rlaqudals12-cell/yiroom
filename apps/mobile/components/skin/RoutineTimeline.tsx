@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, radii} from '../../lib/theme';
+import { useTheme, radii } from '../../lib/theme';
 
 export interface TimelineEntry {
   id: string;
@@ -21,10 +21,7 @@ export interface RoutineTimelineProps {
   style?: ViewStyle;
 }
 
-export function RoutineTimeline({
-  entries,
-  style,
-}: RoutineTimelineProps): React.JSX.Element {
+export function RoutineTimeline({ entries, style }: RoutineTimelineProps): React.JSX.Element {
   const { colors, spacing, typography, radii, shadows, module, status } = useTheme();
 
   return (
@@ -71,12 +68,7 @@ export function RoutineTimeline({
               ]}
             />
             {idx < entries.length - 1 && (
-              <View
-                style={[
-                  styles.line,
-                  { backgroundColor: colors.border },
-                ]}
-              />
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
             )}
           </View>
 

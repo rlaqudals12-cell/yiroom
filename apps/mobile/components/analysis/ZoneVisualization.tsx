@@ -64,7 +64,7 @@ export function ZoneVisualization({
       setSelectedZone((prev) => (prev === zoneId ? null : zoneId));
       onZonePress?.(zoneId);
     },
-    [onZonePress],
+    [onZonePress]
   );
 
   const selectedData = selectedZone ? zones[selectedZone] : null;
@@ -78,17 +78,47 @@ export function ZoneVisualization({
       {(vitalityScore !== undefined || tUZoneDiff !== undefined) && (
         <View style={[styles.summaryRow, { marginBottom: spacing.md }]}>
           {vitalityScore !== undefined && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>피부 활력도</Text>
-              <Text style={{ color: module.skin.base, fontSize: typography.size.xl, fontWeight: '700' }}>
+            <View
+              style={[
+                styles.summaryCard,
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+                피부 활력도
+              </Text>
+              <Text
+                style={{ color: module.skin.base, fontSize: typography.size.xl, fontWeight: '700' }}
+              >
                 {vitalityScore}
               </Text>
             </View>
           )}
           {tUZoneDiff !== undefined && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>T-U존 차이</Text>
-              <Text style={{ color: colors.foreground, fontSize: typography.size.xl, fontWeight: '700' }}>
+            <View
+              style={[
+                styles.summaryCard,
+                {
+                  backgroundColor: colors.card,
+                  borderRadius: radii.xl,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+                T-U존 차이
+              </Text>
+              <Text
+                style={{
+                  color: colors.foreground,
+                  fontSize: typography.size.xl,
+                  fontWeight: '700',
+                }}
+              >
                 {tUZoneDiff}
               </Text>
             </View>
@@ -120,15 +150,20 @@ export function ZoneVisualization({
                 accessibilityRole="button"
                 accessibilityLabel={`${data.label}: ${data.score}점, ${data.status}`}
               >
-                <View
-                  style={[styles.zonePressable]}
-                  onTouchEnd={() => handleZoneSelect(zoneId)}
-                >
+                <View style={[styles.zonePressable]} onTouchEnd={() => handleZoneSelect(zoneId)}>
                   <View style={[styles.zoneDot, { backgroundColor: statusColor }]} />
-                  <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600' }}>
+                  <Text
+                    style={{
+                      color: colors.foreground,
+                      fontSize: typography.size.sm,
+                      fontWeight: '600',
+                    }}
+                  >
                     {data.label}
                   </Text>
-                  <Text style={{ color: statusColor, fontSize: typography.size.lg, fontWeight: '700' }}>
+                  <Text
+                    style={{ color: statusColor, fontSize: typography.size.lg, fontWeight: '700' }}
+                  >
                     {data.score}
                   </Text>
                 </View>
@@ -140,13 +175,44 @@ export function ZoneVisualization({
 
       {/* 선택된 존 상세 */}
       {selectedZone && selectedData && (
-        <View style={[styles.detailPanel, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border, marginTop: spacing.md, padding: spacing.md }]}>
+        <View
+          style={[
+            styles.detailPanel,
+            {
+              backgroundColor: colors.card,
+              borderRadius: radii.xl,
+              borderColor: colors.border,
+              marginTop: spacing.md,
+              padding: spacing.md,
+            },
+          ]}
+        >
           <View style={styles.detailHeader}>
-            <Text style={{ color: colors.foreground, fontSize: typography.size.base, fontWeight: '700' }}>
+            <Text
+              style={{
+                color: colors.foreground,
+                fontSize: typography.size.base,
+                fontWeight: '700',
+              }}
+            >
               {selectedData.label} 상세
             </Text>
-            <View style={[styles.statusBadge, { backgroundColor: `${STATUS_COLORS[selectedData.status]}20`, borderRadius: radii.full }]}>
-              <Text style={{ color: STATUS_COLORS[selectedData.status], fontSize: typography.size.xs, fontWeight: '600' }}>
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor: `${STATUS_COLORS[selectedData.status]}20`,
+                  borderRadius: radii.full,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  color: STATUS_COLORS[selectedData.status],
+                  fontSize: typography.size.xs,
+                  fontWeight: '600',
+                }}
+              >
                 {selectedData.score}점
               </Text>
             </View>
@@ -157,15 +223,37 @@ export function ZoneVisualization({
             <View style={[styles.metricsSection, { marginTop: spacing.sm }]}>
               {selectedData.metrics.map((metric, index) => (
                 <View key={index} style={styles.metricRow}>
-                  <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, flex: 1 }}>
+                  <Text
+                    style={{ color: colors.mutedForeground, fontSize: typography.size.xs, flex: 1 }}
+                  >
                     {metric.name}
                   </Text>
-                  <View style={[styles.metricBar, { backgroundColor: colors.secondary, borderRadius: radii.full }]}>
+                  <View
+                    style={[
+                      styles.metricBar,
+                      { backgroundColor: colors.secondary, borderRadius: radii.full },
+                    ]}
+                  >
                     <View
-                      style={[styles.metricFill, { width: `${metric.value}%`, backgroundColor: module.skin.base, borderRadius: radii.full }]}
+                      style={[
+                        styles.metricFill,
+                        {
+                          width: `${metric.value}%`,
+                          backgroundColor: module.skin.base,
+                          borderRadius: radii.full,
+                        },
+                      ]}
                     />
                   </View>
-                  <Text style={{ color: colors.foreground, fontSize: typography.size.xs, fontWeight: '600', width: 30, textAlign: 'right' }}>
+                  <Text
+                    style={{
+                      color: colors.foreground,
+                      fontSize: typography.size.xs,
+                      fontWeight: '600',
+                      width: 30,
+                      textAlign: 'right',
+                    }}
+                  >
                     {metric.value}
                   </Text>
                 </View>
@@ -176,11 +264,27 @@ export function ZoneVisualization({
           {/* 고민 */}
           {selectedData.concerns && selectedData.concerns.length > 0 && (
             <View style={{ marginTop: spacing.sm }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>고민</Text>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.xs,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                고민
+              </Text>
               <View style={styles.tagRow}>
                 {selectedData.concerns.map((concern, i) => (
-                  <View key={i} style={[styles.tag, { backgroundColor: `${status.warning}15`, borderRadius: radii.sm }]}>
-                    <Text style={{ color: status.warning, fontSize: typography.size.xs }}>{concern}</Text>
+                  <View
+                    key={i}
+                    style={[
+                      styles.tag,
+                      { backgroundColor: `${status.warning}15`, borderRadius: radii.sm },
+                    ]}
+                  >
+                    <Text style={{ color: status.warning, fontSize: typography.size.xs }}>
+                      {concern}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -190,9 +294,20 @@ export function ZoneVisualization({
           {/* 추천 */}
           {selectedData.recommendations && selectedData.recommendations.length > 0 && (
             <View style={{ marginTop: spacing.sm }}>
-              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>추천</Text>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: typography.size.xs,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                추천
+              </Text>
               {selectedData.recommendations.slice(0, 3).map((rec, i) => (
-                <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>
+                <Text
+                  key={i}
+                  style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}
+                >
                   • {rec}
                 </Text>
               ))}
@@ -204,13 +319,25 @@ export function ZoneVisualization({
       {/* 주요 고민 */}
       {primaryConcerns.length > 0 && (
         <View style={[styles.concernsSection, { marginTop: spacing.md }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: 6 }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              marginBottom: 6,
+            }}
+          >
             주요 피부 고민
           </Text>
           <View style={styles.tagRow}>
             {primaryConcerns.map((concern, i) => (
-              <View key={i} style={[styles.tag, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
-                <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>{concern}</Text>
+              <View
+                key={i}
+                style={[styles.tag, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}
+              >
+                <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
+                  {concern}
+                </Text>
               </View>
             ))}
           </View>

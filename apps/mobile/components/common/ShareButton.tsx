@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { Share as ShareIcon } from 'lucide-react-native';
 import { Pressable, Share, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface ShareButtonProps {
   /** 공유할 텍스트 */
@@ -52,11 +52,7 @@ export function ShareButton({
         onPress={handleShare}
         accessibilityRole="button"
         accessibilityLabel="공유"
-        style={({ pressed }) => [
-          styles.iconButton,
-          { opacity: pressed ? 0.7 : 1 },
-          style,
-        ]}
+        style={({ pressed }) => [styles.iconButton, { opacity: pressed ? 0.7 : 1 }, style]}
       >
         <ShareIcon size={20} color={colors.mutedForeground} />
       </Pressable>

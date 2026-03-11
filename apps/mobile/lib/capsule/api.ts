@@ -118,18 +118,26 @@ async function apiRequest<T>(
 export async function generateDailyCapsule(
   authToken: string
 ): Promise<{ data: DailyCapsule | null; error: ApiError | null }> {
-  return apiRequest<DailyCapsule>('/api/capsule/daily', {
-    method: 'POST',
-  }, authToken);
+  return apiRequest<DailyCapsule>(
+    '/api/capsule/daily',
+    {
+      method: 'POST',
+    },
+    authToken
+  );
 }
 
 /** 오늘의 Daily Capsule 조회 (캐시) */
 export async function getTodayDailyCapsule(
   authToken: string
 ): Promise<{ data: DailyCapsule | null; error: ApiError | null }> {
-  return apiRequest<DailyCapsule>('/api/capsule/daily', {
-    method: 'GET',
-  }, authToken);
+  return apiRequest<DailyCapsule>(
+    '/api/capsule/daily',
+    {
+      method: 'GET',
+    },
+    authToken
+  );
 }
 
 /** Daily 아이템 완료 체크 */
@@ -139,10 +147,14 @@ export async function checkDailyItem(
   isChecked: boolean,
   authToken: string
 ): Promise<{ data: DailyCapsule | null; error: ApiError | null }> {
-  return apiRequest<DailyCapsule>(`/api/capsule/daily/${capsuleId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ itemId, isChecked }),
-  }, authToken);
+  return apiRequest<DailyCapsule>(
+    `/api/capsule/daily/${capsuleId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ itemId, isChecked }),
+    },
+    authToken
+  );
 }
 
 // =============================================================================
@@ -153,9 +165,13 @@ export async function checkDailyItem(
 export async function getBeautyProfile(
   authToken: string
 ): Promise<{ data: BeautyProfile | null; error: ApiError | null }> {
-  return apiRequest<BeautyProfile>('/api/capsule/profile', {
-    method: 'GET',
-  }, authToken);
+  return apiRequest<BeautyProfile>(
+    '/api/capsule/profile',
+    {
+      method: 'GET',
+    },
+    authToken
+  );
 }
 
 // =============================================================================
@@ -167,9 +183,13 @@ export async function getDomainCapsule(
   domainId: string,
   authToken: string
 ): Promise<{ data: CapsuleOverview | null; error: ApiError | null }> {
-  return apiRequest<CapsuleOverview>(`/api/capsule/${domainId}`, {
-    method: 'GET',
-  }, authToken);
+  return apiRequest<CapsuleOverview>(
+    `/api/capsule/${domainId}`,
+    {
+      method: 'GET',
+    },
+    authToken
+  );
 }
 
 // =============================================================================
@@ -182,8 +202,12 @@ export async function rotateCapsule(
   authToken: string,
   reason: 'time-based' | 'trigger-based' | 'user-requested' = 'user-requested'
 ): Promise<{ data: RotationResult | null; error: ApiError | null }> {
-  return apiRequest<RotationResult>('/api/capsule/rotate', {
-    method: 'POST',
-    body: JSON.stringify({ domainId, reason }),
-  }, authToken);
+  return apiRequest<RotationResult>(
+    '/api/capsule/rotate',
+    {
+      method: 'POST',
+      body: JSON.stringify({ domainId, reason }),
+    },
+    authToken
+  );
 }

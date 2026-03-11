@@ -67,7 +67,12 @@ export function SolutionPanel({
         >
           {/* 단계 번호 */}
           <View style={[styles.stepNumber, { backgroundColor: `${brand.primary}20` }]}>
-            <Text style={[styles.stepNumberText, { color: brand.primary, fontSize: typography.size.sm }]}>
+            <Text
+              style={[
+                styles.stepNumberText,
+                { color: brand.primary, fontSize: typography.size.sm },
+              ]}
+            >
               {step.step}
             </Text>
           </View>
@@ -76,18 +81,42 @@ export function SolutionPanel({
           <View style={styles.stepContent}>
             <View style={styles.stepHeader}>
               {step.icon && <Text style={styles.stepIcon}>{step.icon}</Text>}
-              <Text style={[styles.stepTitle, { color: colors.foreground, fontSize: typography.size.sm }]}>
+              <Text
+                style={[
+                  styles.stepTitle,
+                  { color: colors.foreground, fontSize: typography.size.sm },
+                ]}
+              >
                 {step.title}
               </Text>
               {step.priority && (
-                <View style={[styles.priorityBadge, { backgroundColor: `${priorityColors[step.priority]}15` }]}>
-                  <Text style={[styles.priorityText, { color: priorityColors[step.priority], fontSize: typography.size.xs }]}>
-                    {step.priority === 'high' ? '필수' : step.priority === 'medium' ? '권장' : '참고'}
+                <View
+                  style={[
+                    styles.priorityBadge,
+                    { backgroundColor: `${priorityColors[step.priority]}15` },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.priorityText,
+                      { color: priorityColors[step.priority], fontSize: typography.size.xs },
+                    ]}
+                  >
+                    {step.priority === 'high'
+                      ? '필수'
+                      : step.priority === 'medium'
+                        ? '권장'
+                        : '참고'}
                   </Text>
                 </View>
               )}
             </View>
-            <Text style={[styles.stepDesc, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+            <Text
+              style={[
+                styles.stepDesc,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
               {step.description}
             </Text>
           </View>

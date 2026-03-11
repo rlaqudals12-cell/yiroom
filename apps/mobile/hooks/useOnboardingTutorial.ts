@@ -32,8 +32,7 @@ export const DEFAULT_TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'workout',
     title: '맞춤 운동 추천',
-    description:
-      '체형과 목표에 맞는 운동을 추천받고 기록해보세요. 연예인 루틴도 확인할 수 있어요!',
+    description: '체형과 목표에 맞는 운동을 추천받고 기록해보세요. 연예인 루틴도 확인할 수 있어요!',
     targetSelector: '[data-tutorial="workout"]',
     position: 'top',
   },

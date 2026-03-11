@@ -91,8 +91,16 @@ export function GoalProgressCard({
         />
       </View>
 
-      <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xs }}>
-        {current}{unit} / {target}{unit}
+      <Text
+        style={{
+          fontSize: typography.size.xs,
+          color: colors.mutedForeground,
+          marginTop: spacing.xs,
+        }}
+      >
+        {current}
+        {unit} / {target}
+        {unit}
       </Text>
     </View>
   );

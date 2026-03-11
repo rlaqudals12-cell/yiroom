@@ -42,16 +42,12 @@ const MODULE_RECOMMENDATIONS: Record<string, CrossModuleLink[]> = {
     { label: '운동 시작하기', route: '/(workout)', emoji: '🏃' },
     { label: '맞춤 레시피 보기', route: '/(nutrition)/recipe/index', emoji: '📖' },
   ],
-  hair: [
-    { label: '맞춤 제품 보기', route: '/products/recommendations', emoji: '💇' },
-  ],
+  hair: [{ label: '맞춤 제품 보기', route: '/products/recommendations', emoji: '💇' }],
   makeup: [
     { label: '퍼스널컬러 분석', route: '/(analysis)/personal-color', emoji: '🎨' },
     { label: '맞춤 제품 보기', route: '/products/recommendations', emoji: '💄' },
   ],
-  oralHealth: [
-    { label: '맞춤 제품 보기', route: '/products/recommendations', emoji: '🪥' },
-  ],
+  oralHealth: [{ label: '맞춤 제품 보기', route: '/products/recommendations', emoji: '🪥' }],
   face: [
     { label: '피부 분석 하기', route: '/(analysis)/skin', emoji: '🔬' },
     { label: '메이크업 추천', route: '/(analysis)/makeup', emoji: '💄' },
@@ -132,9 +128,7 @@ export function CrossModuleAlert({
             >
               {link.label}
             </Text>
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-              →
-            </Text>
+            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>→</Text>
           </Pressable>
         ))}
       </View>

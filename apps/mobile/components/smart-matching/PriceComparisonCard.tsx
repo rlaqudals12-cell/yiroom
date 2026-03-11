@@ -126,9 +126,7 @@ export function PriceComparisonCard({
                       },
                     ]}
                   >
-                    <Text style={styles.bestBadgeText}>
-                      최저가
-                    </Text>
+                    <Text style={styles.bestBadgeText}>최저가</Text>
                   </View>
                 )}
               </View>
@@ -140,7 +138,8 @@ export function PriceComparisonCard({
                   color: isBest ? statusColors.success : colors.foreground,
                 }}
               >
-                {item.price.toLocaleString()}{currency}
+                {item.price.toLocaleString()}
+                {currency}
               </Text>
             </View>
           );
@@ -174,7 +173,8 @@ export function PriceComparisonCard({
             color: statusColors.success,
           }}
         >
-          {bestPrice.toLocaleString()}{currency}
+          {bestPrice.toLocaleString()}
+          {currency}
         </Text>
       </View>
     </View>

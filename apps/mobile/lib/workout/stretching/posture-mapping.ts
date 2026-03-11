@@ -37,9 +37,9 @@ export interface PostureProtocol {
   imbalanceType: PostureImbalanceType;
   nameKo: string;
   description: string;
-  tightMuscles: MuscleGroup[];      // 스트레칭 대상
-  weakMuscles: MuscleGroup[];       // 활성화 대상
-  priorityOrder: number;            // 1이 가장 높음
+  tightMuscles: MuscleGroup[]; // 스트레칭 대상
+  weakMuscles: MuscleGroup[]; // 활성화 대상
+  priorityOrder: number; // 1이 가장 높음
 }
 
 export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = {
@@ -55,12 +55,7 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
       'suboccipitals',
       'sternocleidomastoid',
     ],
-    weakMuscles: [
-      'deep_neck_flexors',
-      'mid_lower_trapezius',
-      'rhomboids',
-      'serratus_anterior',
-    ],
+    weakMuscles: ['deep_neck_flexors', 'mid_lower_trapezius', 'rhomboids', 'serratus_anterior'],
     priorityOrder: 1,
   },
 
@@ -68,18 +63,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'lower_cross',
     nameKo: '하부교차증후군',
     description: '골반 전방경사와 요추 과전만이 복합된 상태',
-    tightMuscles: [
-      'iliopsoas',
-      'rectus_femoris',
-      'erector_spinae',
-      'quadratus_lumborum',
-    ],
-    weakMuscles: [
-      'rectus_abdominis',
-      'gluteus_maximus',
-      'gluteus_medius',
-      'transverse_abdominis',
-    ],
+    tightMuscles: ['iliopsoas', 'rectus_femoris', 'erector_spinae', 'quadratus_lumborum'],
+    weakMuscles: ['rectus_abdominis', 'gluteus_maximus', 'gluteus_medius', 'transverse_abdominis'],
     priorityOrder: 2,
   },
 
@@ -87,15 +72,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'forward_head',
     nameKo: '거북목',
     description: '두개척추각(CVA) 50° 미만',
-    tightMuscles: [
-      'suboccipitals',
-      'sternocleidomastoid',
-      'upper_trapezius',
-      'levator_scapulae',
-    ],
-    weakMuscles: [
-      'deep_neck_flexors',
-    ],
+    tightMuscles: ['suboccipitals', 'sternocleidomastoid', 'upper_trapezius', 'levator_scapulae'],
+    weakMuscles: ['deep_neck_flexors'],
     priorityOrder: 3,
   },
 
@@ -103,16 +81,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'rounded_shoulder',
     nameKo: '라운드숄더',
     description: '어깨가 앞으로 말린 상태',
-    tightMuscles: [
-      'pectoralis_major',
-      'pectoralis_minor',
-      'latissimus_dorsi',
-    ],
-    weakMuscles: [
-      'mid_lower_trapezius',
-      'rhomboids',
-      'serratus_anterior',
-    ],
+    tightMuscles: ['pectoralis_major', 'pectoralis_minor', 'latissimus_dorsi'],
+    weakMuscles: ['mid_lower_trapezius', 'rhomboids', 'serratus_anterior'],
     priorityOrder: 4,
   },
 
@@ -120,15 +90,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'pelvic_tilt_ant',
     nameKo: '골반전방경사',
     description: '골반이 앞으로 기울어진 상태',
-    tightMuscles: [
-      'iliopsoas',
-      'rectus_femoris',
-      'tensor_fasciae_latae',
-    ],
-    weakMuscles: [
-      'gluteus_maximus',
-      'rectus_abdominis',
-    ],
+    tightMuscles: ['iliopsoas', 'rectus_femoris', 'tensor_fasciae_latae'],
+    weakMuscles: ['gluteus_maximus', 'rectus_abdominis'],
     priorityOrder: 5,
   },
 
@@ -136,15 +99,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'pelvic_tilt_post',
     nameKo: '골반후방경사',
     description: '골반이 뒤로 기울어진 상태 (편평등과 연관)',
-    tightMuscles: [
-      'hamstrings',
-      'gluteus_maximus',
-      'rectus_abdominis',
-    ],
-    weakMuscles: [
-      'iliopsoas',
-      'erector_spinae',
-    ],
+    tightMuscles: ['hamstrings', 'gluteus_maximus', 'rectus_abdominis'],
+    weakMuscles: ['iliopsoas', 'erector_spinae'],
     priorityOrder: 6,
   },
 
@@ -152,16 +108,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'sway_back',
     nameKo: '스웨이백',
     description: '골반이 앞으로 밀린 상태 (S자 커브 감소)',
-    tightMuscles: [
-      'hamstrings',
-      'upper_trapezius',
-      'rectus_abdominis',
-    ],
-    weakMuscles: [
-      'iliopsoas',
-      'obliques',
-      'mid_lower_trapezius',
-    ],
+    tightMuscles: ['hamstrings', 'upper_trapezius', 'rectus_abdominis'],
+    weakMuscles: ['iliopsoas', 'obliques', 'mid_lower_trapezius'],
     priorityOrder: 7,
   },
 
@@ -169,14 +117,8 @@ export const POSTURE_PROTOCOLS: Record<PostureImbalanceType, PostureProtocol> = 
     imbalanceType: 'flat_back',
     nameKo: '편평등',
     description: '요추 전만이 감소된 상태',
-    tightMuscles: [
-      'hamstrings',
-      'rectus_abdominis',
-    ],
-    weakMuscles: [
-      'iliopsoas',
-      'erector_spinae',
-    ],
+    tightMuscles: ['hamstrings', 'rectus_abdominis'],
+    weakMuscles: ['iliopsoas', 'erector_spinae'],
     priorityOrder: 8,
   },
 };
@@ -206,9 +148,7 @@ export function getStretchesForMuscle(
 /**
  * 자세 불균형에 맞는 스트레칭 프로토콜 생성
  */
-export function getStretchProtocolForImbalance(
-  imbalanceType: PostureImbalanceType
-): {
+export function getStretchProtocolForImbalance(imbalanceType: PostureImbalanceType): {
   protocol: PostureProtocol;
   stretches: StretchExercise[];
   activations: StretchExercise[];
@@ -243,9 +183,7 @@ export function getStretchProtocolForImbalance(
 /**
  * 자세 분석 결과에서 스트레칭 처방 생성
  */
-export function mapPostureToStretches(
-  postureResult: PostureAnalysisResult
-): {
+export function mapPostureToStretches(postureResult: PostureAnalysisResult): {
   imbalances: PostureImbalance[];
   stretches: StretchExercise[];
   activations: StretchExercise[];
@@ -297,7 +235,7 @@ export function mapPostureToStretches(
 export const SPORT_STRETCH_PROTOCOLS: Record<
   SportType,
   {
-    warmup: string[];   // 스트레칭 ID 배열
+    warmup: string[]; // 스트레칭 ID 배열
     cooldown: string[];
     focusMuscles: MuscleGroup[];
   }

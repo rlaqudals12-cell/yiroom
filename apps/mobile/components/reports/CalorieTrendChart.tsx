@@ -99,7 +99,13 @@ export function CalorieTrendChart({
       </View>
 
       {targetCalories !== undefined && (
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.sm }}>
+        <Text
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.mutedForeground,
+            marginTop: spacing.sm,
+          }}
+        >
           목표: {targetCalories}kcal
         </Text>
       )}

@@ -53,7 +53,7 @@ export function MultiAngleCapture({
         }
       }
     },
-    [onCapture],
+    [onCapture]
   );
 
   const handleComplete = useCallback(() => {
@@ -91,16 +91,31 @@ export function MultiAngleCapture({
                 style={[
                   styles.stepDot,
                   {
-                    backgroundColor: isDone ? status.success : isActive ? brand.primary : colors.secondary,
+                    backgroundColor: isDone
+                      ? status.success
+                      : isActive
+                        ? brand.primary
+                        : colors.secondary,
                     borderRadius: radii.full,
                   },
                 ]}
               >
-                <Text style={{ color: isDone || isActive ? colors.card : colors.mutedForeground, fontSize: 10, fontWeight: '700' }}>
+                <Text
+                  style={{
+                    color: isDone || isActive ? colors.card : colors.mutedForeground,
+                    fontSize: 10,
+                    fontWeight: '700',
+                  }}
+                >
                   {isDone ? '✓' : index + 1}
                 </Text>
               </View>
-              <Text style={{ color: isActive ? colors.foreground : colors.mutedForeground, fontSize: typography.size.xs }}>
+              <Text
+                style={{
+                  color: isActive ? colors.foreground : colors.mutedForeground,
+                  fontSize: typography.size.xs,
+                }}
+              >
                 {label}
               </Text>
             </View>
@@ -111,46 +126,93 @@ export function MultiAngleCapture({
       {/* Step 1: 정면 촬영 */}
       {step === 'front' && (
         <View style={styles.captureSection}>
-          <Text style={[styles.angleLabel, { color: colors.foreground, fontSize: typography.size.lg }]}>
+          <Text
+            style={[styles.angleLabel, { color: colors.foreground, fontSize: typography.size.lg }]}
+          >
             {ANGLE_INFO.front.emoji} {ANGLE_INFO.front.label}
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center', marginBottom: spacing.md }}>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+              marginBottom: spacing.md,
+            }}
+          >
             {ANGLE_INFO.front.instruction}
           </Text>
 
           {images.front ? (
             <View style={styles.previewSection}>
-              <Image source={{ uri: images.front }} style={[styles.preview, { borderRadius: radii.xl }]} />
+              <Image
+                source={{ uri: images.front }}
+                style={[styles.preview, { borderRadius: radii.xl }]}
+              />
               <View style={[styles.actionRow, { marginTop: spacing.sm }]}>
                 <Pressable
                   onPress={() => handleRetake('front')}
-                  style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: colors.secondary, borderRadius: radii.xl },
+                  ]}
                 >
-                  <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.sm }}>다시 촬영</Text>
+                  <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.sm }}>
+                    다시 촬영
+                  </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setStep('additional')}
-                  style={[styles.actionBtn, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: brand.primary, borderRadius: radii.xl },
+                  ]}
                 >
-                  <Text style={{ color: brand.primaryForeground, fontSize: typography.size.sm, fontWeight: '600' }}>다음</Text>
+                  <Text
+                    style={{
+                      color: brand.primaryForeground,
+                      fontSize: typography.size.sm,
+                      fontWeight: '600',
+                    }}
+                  >
+                    다음
+                  </Text>
                 </Pressable>
               </View>
             </View>
           ) : (
             <Pressable
               onPress={() => handleCapture('front')}
-              style={[styles.captureBtn, { backgroundColor: brand.primary, borderRadius: radii.xl }]}
+              style={[
+                styles.captureBtn,
+                { backgroundColor: brand.primary, borderRadius: radii.xl },
+              ]}
               accessibilityRole="button"
               accessibilityLabel="정면 사진 촬영"
             >
-              <Text style={{ color: brand.primaryForeground, fontSize: typography.size.base, fontWeight: '600' }}>
+              <Text
+                style={{
+                  color: brand.primaryForeground,
+                  fontSize: typography.size.base,
+                  fontWeight: '600',
+                }}
+              >
                 📸 정면 사진 촬영
               </Text>
             </Pressable>
           )}
 
           {/* 팁 */}
-          <View style={[styles.tipsBox, { backgroundColor: colors.secondary, borderRadius: radii.xl, padding: spacing.sm, marginTop: spacing.md }]}>
+          <View
+            style={[
+              styles.tipsBox,
+              {
+                backgroundColor: colors.secondary,
+                borderRadius: radii.xl,
+                padding: spacing.sm,
+                marginTop: spacing.md,
+              },
+            ]}
+          >
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
               💡 자연광에서, 배경이 깔끔한 곳에서 촬영하면 더 정확해요
             </Text>
@@ -161,10 +223,19 @@ export function MultiAngleCapture({
       {/* Step 2: 추가 촬영 (선택) */}
       {step === 'additional' && (
         <View style={styles.captureSection}>
-          <Text style={[styles.angleLabel, { color: colors.foreground, fontSize: typography.size.lg }]}>
+          <Text
+            style={[styles.angleLabel, { color: colors.foreground, fontSize: typography.size.lg }]}
+          >
             추가 각도 (선택)
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center', marginBottom: spacing.md }}>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+              marginBottom: spacing.md,
+            }}
+          >
             더 정확한 분석을 위해 측면 사진도 추가해보세요
           </Text>
 
@@ -173,12 +244,29 @@ export function MultiAngleCapture({
               const info = ANGLE_INFO[angle];
               const hasImage = !!images[angle];
               return (
-                <View key={angle} style={[styles.angleCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
+                <View
+                  key={angle}
+                  style={[
+                    styles.angleCard,
+                    { backgroundColor: colors.secondary, borderRadius: radii.xl },
+                  ]}
+                >
                   {hasImage ? (
                     <View style={styles.angleCardContent}>
-                      <Image source={{ uri: images[angle] }} style={[styles.anglePreview, { borderRadius: radii.xl }]} />
+                      <Image
+                        source={{ uri: images[angle] }}
+                        style={[styles.anglePreview, { borderRadius: radii.xl }]}
+                      />
                       <Pressable onPress={() => handleRetake(angle)}>
-                        <Text style={{ color: status.info, fontSize: typography.size.xs, marginTop: spacing.xs }}>다시 촬영</Text>
+                        <Text
+                          style={{
+                            color: status.info,
+                            fontSize: typography.size.xs,
+                            marginTop: spacing.xs,
+                          }}
+                        >
+                          다시 촬영
+                        </Text>
                       </Pressable>
                     </View>
                   ) : (
@@ -189,10 +277,18 @@ export function MultiAngleCapture({
                       accessibilityLabel={`${info.label} 사진 촬영`}
                     >
                       <Text style={{ fontSize: typography.size['2xl'] }}>{info.emoji}</Text>
-                      <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '500' }}>
+                      <Text
+                        style={{
+                          color: colors.foreground,
+                          fontSize: typography.size.sm,
+                          fontWeight: '500',
+                        }}
+                      >
                         {info.label}
                       </Text>
-                      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>탭하여 촬영</Text>
+                      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+                        탭하여 촬영
+                      </Text>
                     </Pressable>
                   )}
                 </View>
@@ -202,11 +298,20 @@ export function MultiAngleCapture({
 
           <Pressable
             onPress={handleComplete}
-            style={[styles.completeBtn, { backgroundColor: brand.primary, borderRadius: radii.xl, marginTop: spacing.md }]}
+            style={[
+              styles.completeBtn,
+              { backgroundColor: brand.primary, borderRadius: radii.xl, marginTop: spacing.md },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="촬영 완료"
           >
-            <Text style={{ color: brand.primaryForeground, fontSize: typography.size.base, fontWeight: '600' }}>
+            <Text
+              style={{
+                color: brand.primaryForeground,
+                fontSize: typography.size.base,
+                fontWeight: '600',
+              }}
+            >
               촬영 완료
             </Text>
           </Pressable>
@@ -217,10 +322,25 @@ export function MultiAngleCapture({
       {step === 'complete' && (
         <View style={[styles.completeSection, { padding: spacing.lg }]}>
           <Text style={{ fontSize: typography.size['2xl'], textAlign: 'center' }}>✅</Text>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.lg, fontWeight: '700', textAlign: 'center', marginTop: spacing.sm }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.lg,
+              fontWeight: '700',
+              textAlign: 'center',
+              marginTop: spacing.sm,
+            }}
+          >
             촬영이 완료되었습니다
           </Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, textAlign: 'center', marginTop: spacing.xs }}>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+              marginTop: spacing.xs,
+            }}
+          >
             {Object.keys(images).length}장의 사진이 준비되었어요
           </Text>
         </View>

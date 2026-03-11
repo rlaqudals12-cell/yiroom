@@ -162,7 +162,9 @@ const PERSONALIZED_RESPONSES: Record<string, (ctx: UserContext) => string> = {
   nutrition: (ctx) => {
     const parts = ['영양에 대한 질문이시네요!'];
     if (ctx.nutrition?.targetCalories) {
-      parts.push(`하루 목표 칼로리 ${ctx.nutrition.targetCalories}kcal에 맞춰 식단을 구성해보세요.`);
+      parts.push(
+        `하루 목표 칼로리 ${ctx.nutrition.targetCalories}kcal에 맞춰 식단을 구성해보세요.`
+      );
     }
     if (ctx.nutrition?.streak && ctx.nutrition.streak > 0) {
       parts.push(`${ctx.nutrition.streak}일 연속 식단 기록 중이시네요!`);
@@ -268,7 +270,11 @@ export function getMockResponse(message: string, userContext?: UserContext): Coa
   // 도메인별 맞춤 추천 질문
   const domain = classifyQuestion(message);
   const suggestedByDomain: Record<string, string[]> = {
-    personalColor: ['내 퍼스널 컬러에 어울리는 립 색상은?', '옷 색상 추천해줘', '메이크업 색조 조합 알려줘'],
+    personalColor: [
+      '내 퍼스널 컬러에 어울리는 립 색상은?',
+      '옷 색상 추천해줘',
+      '메이크업 색조 조합 알려줘',
+    ],
     skin: ['스킨케어 루틴 알려줘', '피부에 좋은 음식은?', '여드름 관리법 알려줘'],
     workout: ['오늘 운동 루틴 추천해줘', '스트레칭 방법 알려줘', '근육통 회복법이 궁금해'],
     nutrition: ['건강한 간식 추천해줘', '단백질 많은 음식 알려줘', '다이어트 식단 구성법은?'],

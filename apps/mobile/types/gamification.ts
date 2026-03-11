@@ -112,10 +112,10 @@ export interface UserLevel {
 export interface LevelInfo {
   level: number;
   tier: LevelTier;
-  tierName: string;        // 한국어 티어명
+  tierName: string; // 한국어 티어명
   currentXp: number;
-  xpForNextLevel: number;  // 다음 레벨까지 필요한 총 XP
-  xpProgress: number;      // 진행률 (0-100)
+  xpForNextLevel: number; // 다음 레벨까지 필요한 총 XP
+  xpProgress: number; // 진행률 (0-100)
   totalXp: number;
 }
 
@@ -196,7 +196,7 @@ export type UserLevelRowToUserLevel = (row: UserLevelRow) => UserLevel;
 
 export interface BadgeGroup {
   category: BadgeCategory;
-  categoryName: string;  // 한국어 카테고리명
+  categoryName: string; // 한국어 카테고리명
   badges: Badge[];
   earnedCount: number;
   totalCount: number;
@@ -208,7 +208,7 @@ export interface BadgeGroup {
 
 export interface GamificationSummary {
   level: LevelInfo;
-  recentBadges: UserBadge[];  // 최근 획득 배지 3개
+  recentBadges: UserBadge[]; // 최근 획득 배지 3개
   totalBadges: number;
   earnedBadges: number;
 }

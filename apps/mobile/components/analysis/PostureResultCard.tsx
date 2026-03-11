@@ -9,8 +9,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme, spacing } from '../../lib/theme';
 
 export type PostureType =
-  | 'ideal' | 'forward_head' | 'rounded_shoulders'
-  | 'swayback' | 'kyphosis' | 'lordosis' | 'flat_back';
+  | 'ideal'
+  | 'forward_head'
+  | 'rounded_shoulders'
+  | 'swayback'
+  | 'kyphosis'
+  | 'lordosis'
+  | 'flat_back';
 
 export interface PostureMeasurement {
   name: string;
@@ -50,46 +55,68 @@ export function PostureResultCard({
   const { colors, module, status, typography, radii, spacing } = useTheme();
   const info = POSTURE_INFO[postureType];
 
-  const scoreColor = overallScore >= 80 ? status.success
-    : overallScore >= 60 ? status.warning
-    : status.error;
+  const scoreColor =
+    overallScore >= 80 ? status.success : overallScore >= 60 ? status.warning : status.error;
 
   const getStatusColor = (s: string): string => {
     switch (s) {
-      case 'good': return status.success;
-      case 'warning': return status.warning;
-      case 'alert': return status.error;
-      default: return colors.mutedForeground;
+      case 'good':
+        return status.success;
+      case 'warning':
+        return status.warning;
+      case 'alert':
+        return status.error;
+      default:
+        return colors.mutedForeground;
     }
   };
 
   const getStatusLabel = (s: string): string => {
     switch (s) {
-      case 'good': return '양호';
-      case 'warning': return '주의';
-      case 'alert': return '개선 필요';
-      default: return s;
+      case 'good':
+        return '양호';
+      case 'warning':
+        return '주의';
+      case 'alert':
+        return '개선 필요';
+      default:
+        return s;
     }
   };
 
   return (
     <View
       testID="posture-result-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`자세 분석 결과: ${info.label}, ${overallScore}점`}
     >
       {/* 헤더 */}
-      <View style={[styles.header, { backgroundColor: `${module.posture.base}15`, padding: spacing.md }]}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: `${module.posture.base}15`, padding: spacing.md },
+        ]}
+      >
         <Text style={{ fontSize: typography.size['2xl'] }}>{info.emoji}</Text>
         <View style={styles.headerText}>
-          <Text style={[styles.typeLabel, { color: colors.foreground, fontSize: typography.size.lg }]}>
+          <Text
+            style={[styles.typeLabel, { color: colors.foreground, fontSize: typography.size.lg }]}
+          >
             {info.label}
           </Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
             {info.description}
           </Text>
         </View>
-        <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderRadius: radii.xl }]}>
+        <View
+          style={[
+            styles.scoreBadge,
+            { backgroundColor: `${scoreColor}20`, borderRadius: radii.xl },
+          ]}
+        >
           <Text style={{ color: scoreColor, fontSize: typography.size.xl, fontWeight: '700' }}>
             {overallScore}
           </Text>
@@ -99,7 +126,17 @@ export function PostureResultCard({
 
       {/* 이슈 알림 */}
       {issueCount > 0 && (
-        <View style={[styles.issueAlert, { backgroundColor: `${status.warning}15`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
+        <View
+          style={[
+            styles.issueAlert,
+            {
+              backgroundColor: `${status.warning}15`,
+              margin: spacing.md,
+              borderRadius: radii.xl,
+              padding: spacing.sm,
+            },
+          ]}
+        >
           <Text style={{ color: status.warning, fontSize: typography.size.xs }}>
             ⚠️ {issueCount}개 항목이 개선이 필요합니다
           </Text>
@@ -108,7 +145,17 @@ export function PostureResultCard({
 
       {/* 이상적 자세 확인 배너 */}
       {postureType === 'ideal' && (
-        <View style={[styles.idealBanner, { backgroundColor: `${status.success}15`, margin: spacing.md, borderRadius: radii.xl, padding: spacing.sm }]}>
+        <View
+          style={[
+            styles.idealBanner,
+            {
+              backgroundColor: `${status.success}15`,
+              margin: spacing.md,
+              borderRadius: radii.xl,
+              padding: spacing.sm,
+            },
+          ]}
+        >
           <Text style={{ color: status.success, fontSize: typography.size.sm, fontWeight: '600' }}>
             ✨ 이상적인 자세를 유지하고 있어요!
           </Text>
@@ -118,21 +165,45 @@ export function PostureResultCard({
       {/* 전면 측정 */}
       {frontMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              marginBottom: spacing.sm,
+            }}
+          >
             전면 분석
           </Text>
           <View style={styles.measurementGrid}>
             {frontMeasurements.map((m, index) => (
-              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
-                <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{m.name}</Text>
-                <Text style={{ color: getStatusColor(m.status), fontSize: typography.size.lg, fontWeight: '700' }}>
-                  {m.value}{m.unit}
+              <View
+                key={index}
+                style={[
+                  styles.measurementCard,
+                  { backgroundColor: colors.secondary, borderRadius: radii.xl },
+                ]}
+              >
+                <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+                  {m.name}
+                </Text>
+                <Text
+                  style={{
+                    color: getStatusColor(m.status),
+                    fontSize: typography.size.lg,
+                    fontWeight: '700',
+                  }}
+                >
+                  {m.value}
+                  {m.unit}
                 </Text>
                 <Text style={{ color: getStatusColor(m.status), fontSize: 10, fontWeight: '500' }}>
                   {getStatusLabel(m.status)}
                 </Text>
                 {m.idealRange && (
-                  <Text style={{ color: colors.mutedForeground, fontSize: 10 }}>이상: {m.idealRange}</Text>
+                  <Text style={{ color: colors.mutedForeground, fontSize: 10 }}>
+                    이상: {m.idealRange}
+                  </Text>
                 )}
               </View>
             ))}
@@ -143,15 +214,37 @@ export function PostureResultCard({
       {/* 측면 측정 */}
       {sideMeasurements.length > 0 && (
         <View style={[styles.section, { padding: spacing.md, borderTopColor: colors.border }]}>
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm, fontWeight: '600', marginBottom: spacing.sm }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              marginBottom: spacing.sm,
+            }}
+          >
             측면 분석
           </Text>
           <View style={styles.measurementGrid}>
             {sideMeasurements.map((m, index) => (
-              <View key={index} style={[styles.measurementCard, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
-                <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>{m.name}</Text>
-                <Text style={{ color: getStatusColor(m.status), fontSize: typography.size.lg, fontWeight: '700' }}>
-                  {m.value}{m.unit}
+              <View
+                key={index}
+                style={[
+                  styles.measurementCard,
+                  { backgroundColor: colors.secondary, borderRadius: radii.xl },
+                ]}
+              >
+                <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+                  {m.name}
+                </Text>
+                <Text
+                  style={{
+                    color: getStatusColor(m.status),
+                    fontSize: typography.size.lg,
+                    fontWeight: '700',
+                  }}
+                >
+                  {m.value}
+                  {m.unit}
                 </Text>
                 <Text style={{ color: getStatusColor(m.status), fontSize: 10, fontWeight: '500' }}>
                   {getStatusLabel(m.status)}

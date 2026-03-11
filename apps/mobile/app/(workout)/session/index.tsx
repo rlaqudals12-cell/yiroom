@@ -13,7 +13,7 @@ import { staggeredEntry } from '@/lib/animations';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 플랜이 없을 때 사용하는 기본 운동
 const DEFAULT_EXERCISES: WorkoutExercise[] = [
@@ -26,7 +26,7 @@ const DEFAULT_EXERCISES: WorkoutExercise[] = [
 type SessionState = 'ready' | 'exercising' | 'resting' | 'completed';
 
 export default function WorkoutSessionScreen() {
-  const { colors, isDark, spacing, module: moduleColors, typography, radii} = useTheme();
+  const { colors, isDark, spacing, module: moduleColors, typography, radii } = useTheme();
   const workoutColor = moduleColors.workout.base;
   const { todayWorkout, isLoading: workoutLoading } = useWorkoutData();
 
@@ -174,15 +174,22 @@ export default function WorkoutSessionScreen() {
               styles.startButton,
               { backgroundColor: workoutColor },
               !isDark
-                ? Platform.select({
-                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: workoutColor,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                    },
                     android: { elevation: 4 },
-                  }) ?? {}
+                  }) ?? {})
                 : {},
             ]}
             onPress={handleStartSession}
           >
-            <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>운동 시작</Text>
+            <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
+              운동 시작
+            </Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -217,9 +224,7 @@ export default function WorkoutSessionScreen() {
                 <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>칼로리</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: workoutColor }]}>
-                  {exercises.length}
-                </Text>
+                <Text style={[styles.statValue, { color: workoutColor }]}>{exercises.length}</Text>
                 <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>운동 수</Text>
               </View>
             </GlassCard>
@@ -230,10 +235,15 @@ export default function WorkoutSessionScreen() {
               styles.finishButton,
               { backgroundColor: workoutColor },
               !isDark
-                ? Platform.select({
-                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: workoutColor,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                    },
                     android: { elevation: 4 },
-                  }) ?? {}
+                  }) ?? {})
                 : {},
             ]}
             onPress={() => router.replace('/(tabs)/records')}
@@ -289,9 +299,7 @@ export default function WorkoutSessionScreen() {
             <Text style={[styles.setInfo, { color: colors.mutedForeground }]}>
               {currentSet} / {currentExercise.sets} 세트
             </Text>
-            <Text style={[styles.repsText, { color: workoutColor }]}>
-              {currentExercise.reps}회
-            </Text>
+            <Text style={[styles.repsText, { color: workoutColor }]}>{currentExercise.reps}회</Text>
             <Text style={[styles.timerSmall, { color: colors.mutedForeground }]}>
               {formatTime(timer)}
             </Text>
@@ -307,15 +315,22 @@ export default function WorkoutSessionScreen() {
               styles.completeButton,
               { backgroundColor: workoutColor },
               !isDark
-                ? Platform.select({
-                    ios: { shadowColor: workoutColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: workoutColor,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                    },
                     android: { elevation: 4 },
-                  }) ?? {}
+                  }) ?? {})
                 : {},
             ]}
             onPress={handleCompleteSet}
           >
-            <Text style={[styles.completeButtonText, { color: colors.overlayForeground }]}>세트 완료</Text>
+            <Text style={[styles.completeButtonText, { color: colors.overlayForeground }]}>
+              세트 완료
+            </Text>
           </Pressable>
         </View>
       )}

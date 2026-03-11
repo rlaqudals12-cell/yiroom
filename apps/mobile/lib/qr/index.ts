@@ -8,12 +8,7 @@
 
 // ─── 타입 ────────────────────────────────────────────
 
-export type QRContentType =
-  | 'analysis_result'
-  | 'product'
-  | 'profile'
-  | 'invite'
-  | 'unknown';
+export type QRContentType = 'analysis_result' | 'product' | 'profile' | 'invite' | 'unknown';
 
 export interface QRScanResult {
   raw: string;
@@ -46,10 +41,7 @@ export const QR_DEFAULT_OPTIONS: QRGenerateOptions = {
 /**
  * 분석 결과 공유용 QR 데이터
  */
-export function generateAnalysisQRData(
-  analysisType: string,
-  analysisId: string
-): string {
+export function generateAnalysisQRData(analysisType: string, analysisId: string): string {
   return `${WEB_BASE_URL}/share/analysis/${analysisType}/${analysisId}`;
 }
 
@@ -70,10 +62,7 @@ export function generateProfileQRData(userId: string): string {
 /**
  * 친구 초대용 QR 데이터
  */
-export function generateInviteQRData(
-  userId: string,
-  inviteCode: string
-): string {
+export function generateInviteQRData(userId: string, inviteCode: string): string {
   return `${WEB_BASE_URL}/invite?code=${inviteCode}&from=${userId}`;
 }
 

@@ -26,12 +26,7 @@ interface GapCardProps {
   testID?: string;
 }
 
-export function GapCard({
-  gap,
-  onReuse,
-  onShop,
-  testID,
-}: GapCardProps): React.JSX.Element {
+export function GapCard({ gap, onReuse, onShop, testID }: GapCardProps): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, isDark } = useTheme();
 
   return (

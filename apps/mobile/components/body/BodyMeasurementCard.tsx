@@ -9,7 +9,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ArrowUp, ArrowDown, Ruler } from 'lucide-react-native';
 
-import { useTheme, radii} from '../../lib/theme';
+import { useTheme, radii } from '../../lib/theme';
 
 export interface BodyMeasurementCardProps {
   label: string;
@@ -117,7 +117,8 @@ export function BodyMeasurementCard({
                 marginLeft: spacing.xxs,
               }}
             >
-              {Math.abs(diff).toFixed(1)}{unit}
+              {Math.abs(diff).toFixed(1)}
+              {unit}
             </Text>
           </View>
         )}
@@ -128,7 +129,8 @@ export function BodyMeasurementCard({
         <View style={{ marginTop: spacing.sm }}>
           <View style={styles.rangeLabels}>
             <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-              {idealRange.min}{unit}
+              {idealRange.min}
+              {unit}
             </Text>
             <Text
               style={{
@@ -140,7 +142,8 @@ export function BodyMeasurementCard({
               {isInRange ? '정상 범위' : '범위 밖'}
             </Text>
             <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-              {idealRange.max}{unit}
+              {idealRange.max}
+              {unit}
             </Text>
           </View>
 

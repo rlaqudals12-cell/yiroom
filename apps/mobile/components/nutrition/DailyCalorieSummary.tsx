@@ -127,7 +127,12 @@ export function DailyCalorieSummary({
       {/* 탄단지 */}
       <View style={[styles.macroRow, { marginTop: spacing.sm }]}>
         <MacroChip label="탄" value={carbs} color={nutrientColors.carbs} typography={typography} />
-        <MacroChip label="단" value={protein} color={nutrientColors.protein} typography={typography} />
+        <MacroChip
+          label="단"
+          value={protein}
+          color={nutrientColors.protein}
+          typography={typography}
+        />
         <MacroChip label="지" value={fat} color={nutrientColors.fat} typography={typography} />
       </View>
     </View>
@@ -143,7 +148,14 @@ interface StatItemProps {
   typography: ReturnType<typeof useTheme>['typography'];
 }
 
-function StatItem({ label, value, unit, color, muted, typography }: StatItemProps): React.JSX.Element {
+function StatItem({
+  label,
+  value,
+  unit,
+  color,
+  muted,
+  typography,
+}: StatItemProps): React.JSX.Element {
   return (
     <View style={styles.statItem}>
       <Text style={{ fontSize: typography.size.xs, color: muted }}>{label}</Text>

@@ -27,12 +27,7 @@ export { ScoreGauge } from './ScoreGauge';
 export { CollapsibleSection } from './CollapsibleSection';
 export { ChangeIndicator } from './ChangeIndicator';
 export { InfoTooltip } from './InfoTooltip';
-export {
-  SkeletonLoader,
-  SkeletonText,
-  SkeletonCircle,
-  SkeletonCard,
-} from './SkeletonLoader';
+export { SkeletonLoader, SkeletonText, SkeletonCircle, SkeletonCard } from './SkeletonLoader';
 export { ErrorState } from './ErrorState';
 export { DataStateWrapper } from './DataStateWrapper';
 export { StatCard } from './StatCard';

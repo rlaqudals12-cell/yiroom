@@ -25,7 +25,17 @@ export default function GapAnalysisScreen(): React.JSX.Element {
   const { profile } = useBeautyProfile();
 
   // 미완성 모듈 기반 갭 추론
-  const allModules = ['skin', 'fashion', 'nutrition', 'workout', 'hair', 'makeup', 'personal-color', 'oral', 'body'];
+  const allModules = [
+    'skin',
+    'fashion',
+    'nutrition',
+    'workout',
+    'hair',
+    'makeup',
+    'personal-color',
+    'oral',
+    'body',
+  ];
   const completedModules = profile?.completedModules ?? [];
   const gaps: GapItem[] = allModules
     .filter((m) => !completedModules.includes(m))
@@ -36,10 +46,7 @@ export default function GapAnalysisScreen(): React.JSX.Element {
     }));
 
   return (
-    <ScreenContainer
-      backgroundGradient="beauty"
-      testID="gap-analysis-screen"
-    >
+    <ScreenContainer backgroundGradient="beauty" testID="gap-analysis-screen">
       {/* 헤더 */}
       <Animated.View entering={staggeredEntry(0)} style={{ marginTop: spacing.md }}>
         <GlassCard shadowSize="lg" style={{ padding: spacing.lg }}>
@@ -60,24 +67,44 @@ export default function GapAnalysisScreen(): React.JSX.Element {
               lineHeight: typography.size.sm * 1.5,
             }}
           >
-            캡슐 호환도를 높이기 위해 필요한 항목을 확인하세요.
-            분석을 완료하면 더 정확한 추천을 받을 수 있어요.
+            캡슐 호환도를 높이기 위해 필요한 항목을 확인하세요. 분석을 완료하면 더 정확한 추천을
+            받을 수 있어요.
           </Text>
           <View style={[styles.summaryRow, { marginTop: spacing.md }]}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: colors.foreground, fontWeight: typography.weight.bold }]}>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: colors.foreground, fontWeight: typography.weight.bold },
+                ]}
+              >
                 {completedModules.length}
               </Text>
-              <Text style={[styles.summaryLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: colors.mutedForeground, fontSize: typography.size.xs },
+                ]}
+              >
                 완료
               </Text>
             </View>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryValue, { color: '#F59E0B', fontWeight: typography.weight.bold }]}>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: '#F59E0B', fontWeight: typography.weight.bold },
+                ]}
+              >
                 {gaps.length}
               </Text>
-              <Text style={[styles.summaryLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: colors.mutedForeground, fontSize: typography.size.xs },
+                ]}
+              >
                 미완성
               </Text>
             </View>

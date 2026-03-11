@@ -417,9 +417,7 @@ export function toClothingItems(items: InventoryItem[]): ClothingItem[] {
 /**
  * metadata에서 ClothingMetadata로 안전하게 접근
  */
-export function getClothingMetadata(
-  metadata: Record<string, unknown>
-): ClothingMetadata {
+export function getClothingMetadata(metadata: Record<string, unknown>): ClothingMetadata {
   const m = metadata as Partial<ClothingMetadata>;
   return {
     color: m.color || [],

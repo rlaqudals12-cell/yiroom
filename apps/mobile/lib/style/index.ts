@@ -153,10 +153,7 @@ export const COLOR_PALETTES: Record<string, string[]> = {
 /**
  * 퍼스널컬러에 맞는 코디 색상
  */
-export function getColorPaletteForSeason(
-  season: string,
-  subType?: string
-): string[] {
+export function getColorPaletteForSeason(season: string, subType?: string): string[] {
   const key = subType ? `${season}_${subType}` : `${season}_warm`;
   return COLOR_PALETTES[key] ?? COLOR_PALETTES[`${season}_cool`] ?? [];
 }
@@ -197,16 +194,22 @@ export function getColorCombinations(baseColor: string): ColorCombination[] {
 
 function getAccessoryRecommendation(bodyType: BodyTypeCode): string[] {
   switch (bodyType) {
-    case 'S': return ['체인 벨트', '스카프', '미디엄 토트백'];
-    case 'W': return ['롱 목걸이', '구조적 가방', '와이드 벨트'];
-    case 'N': return ['레이어드 목걸이', '오버사이즈 클러치', '볼드 이어링'];
+    case 'S':
+      return ['체인 벨트', '스카프', '미디엄 토트백'];
+    case 'W':
+      return ['롱 목걸이', '구조적 가방', '와이드 벨트'];
+    case 'N':
+      return ['레이어드 목걸이', '오버사이즈 클러치', '볼드 이어링'];
   }
 }
 
 function getBodyTypeTip(bodyType: BodyTypeCode): string {
   switch (bodyType) {
-    case 'S': return '허리 라인을 강조하면 S라인이 더 돋보여요';
-    case 'W': return '세로 라인과 모노톤으로 슬림한 실루엣을 연출해보세요';
-    case 'N': return '어깨와 힙 라인을 활용한 오버핏이 잘 어울려요';
+    case 'S':
+      return '허리 라인을 강조하면 S라인이 더 돋보여요';
+    case 'W':
+      return '세로 라인과 모노톤으로 슬림한 실루엣을 연출해보세요';
+    case 'N':
+      return '어깨와 힙 라인을 활용한 오버핏이 잘 어울려요';
   }
 }

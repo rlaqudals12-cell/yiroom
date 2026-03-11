@@ -36,10 +36,7 @@ const ADAPTIVE_TERMS: Record<string, Record<GenderPreference, string>> = {
 /**
  * 성별에 맞게 용어 적응
  */
-export function getGenderAdaptiveTerm(
-  term: string,
-  gender: GenderPreference
-): string {
+export function getGenderAdaptiveTerm(term: string, gender: GenderPreference): string {
   return ADAPTIVE_TERMS[term]?.[gender] ?? term;
 }
 
@@ -54,10 +51,7 @@ const EXCLUDED_CATEGORIES: Record<GenderPreference, string[]> = {
 /**
  * 성별에 맞게 카테고리 필터링
  */
-export function filterCategoriesByGender(
-  categories: string[],
-  gender: GenderPreference
-): string[] {
+export function filterCategoriesByGender(categories: string[], gender: GenderPreference): string[] {
   const excluded = EXCLUDED_CATEGORIES[gender] ?? [];
   return categories.filter((cat) => !excluded.includes(cat));
 }
@@ -65,10 +59,7 @@ export function filterCategoriesByGender(
 /**
  * 제품 카테고리 한국어 라벨
  */
-export function getProductCategoryLabel(
-  category: string,
-  gender: GenderPreference
-): string {
+export function getProductCategoryLabel(category: string, gender: GenderPreference): string {
   const labels: Record<string, Record<GenderPreference, string>> = {
     moisturizer: { female: '수분크림', male: '수분크림', neutral: '수분크림' },
     sunscreen: { female: '선크림', male: '선크림', neutral: '선크림' },
@@ -84,10 +75,7 @@ export function getProductCategoryLabel(
 /**
  * 스타일 섹션 제목
  */
-export function getStyleSectionTitle(
-  section: string,
-  gender: GenderPreference
-): string {
+export function getStyleSectionTitle(section: string, gender: GenderPreference): string {
   const titles: Record<string, Record<GenderPreference, string>> = {
     recommended: {
       female: '추천 스타일',
@@ -111,10 +99,7 @@ export function getStyleSectionTitle(
 
 // ─── 액세서리 추천 ───────────────────────────────────
 
-const ACCESSORY_RECOMMENDATIONS: Record<
-  GenderPreference,
-  Record<string, string[]>
-> = {
+const ACCESSORY_RECOMMENDATIONS: Record<GenderPreference, Record<string, string[]>> = {
   female: {
     spring: ['스카프', '가벼운 목걸이', '토트백', '뮬'],
     summer: ['선글라스', '라피아 모자', '미니백', '샌들'],

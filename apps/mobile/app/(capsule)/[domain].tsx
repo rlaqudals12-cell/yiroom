@@ -123,10 +123,7 @@ export default function DomainCapsuleScreen(): React.JSX.Element {
 
           {overview ? (
             <View style={{ marginTop: spacing.md }}>
-              <CapsuleProgressBar
-                current={overview.itemCount}
-                optimal={overview.optimalN}
-              />
+              <CapsuleProgressBar current={overview.itemCount} optimal={overview.optimalN} />
             </View>
           ) : null}
         </GlassCard>
@@ -150,10 +147,7 @@ export default function DomainCapsuleScreen(): React.JSX.Element {
         <>
           {/* CCS 등급 상세 */}
           <Animated.View entering={staggeredEntry(1)} style={{ marginTop: spacing.lg }}>
-            <SectionHeader
-              title="호환도 분석"
-              style={{ marginBottom: spacing.sm }}
-            />
+            <SectionHeader title="호환도 분석" style={{ marginBottom: spacing.sm }} />
             <GlassCard shadowSize="md" style={{ padding: spacing.md }}>
               <View style={styles.ccsDetailRow}>
                 <Text
@@ -190,7 +184,11 @@ export default function DomainCapsuleScreen(): React.JSX.Element {
                     fontWeight: typography.weight.medium,
                   }}
                 >
-                  {overview.status === 'optimal' ? '최적' : overview.status === 'active' ? '활성' : '구성 중'}
+                  {overview.status === 'optimal'
+                    ? '최적'
+                    : overview.status === 'active'
+                      ? '활성'
+                      : '구성 중'}
                 </Text>
               </View>
             </GlassCard>

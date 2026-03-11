@@ -68,14 +68,7 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 export default function FastingTrackerScreen(): React.JSX.Element {
-  const {
-    colors,
-    radii,
-    status,
-    shadows,
-    isDark,
-    module: moduleColors,
-  } = useTheme();
+  const { colors, radii, status, shadows, isDark, module: moduleColors } = useTheme();
   const nutritionColor = moduleColors.nutrition.base;
   const supabase = useClerkSupabaseClient();
 

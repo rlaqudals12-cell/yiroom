@@ -15,7 +15,7 @@ import {
 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 import type { AnalysisModuleType, AnalysisHistoryItem } from '../../hooks/useAnalysisHistory';
 
 interface ModuleConfig {
@@ -60,7 +60,8 @@ export function AnalysisHistoryCard({
 
   const config = MODULE_CONFIG[item.moduleType];
   const { IconComponent, label, moduleKey } = config;
-  const moduleColor = moduleColors[moduleKey as keyof typeof moduleColors] || moduleColors.personalColor;
+  const moduleColor =
+    moduleColors[moduleKey as keyof typeof moduleColors] || moduleColors.personalColor;
 
   return (
     <Pressable

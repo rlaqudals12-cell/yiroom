@@ -29,7 +29,14 @@ const STATUS_CONFIG: Record<ExerciseStatus, { label: string; emoji: string }> = 
 };
 
 export function ExerciseSessionCard({
-  name, sets, reps, weight, currentSet, status: exerciseStatus, onStart, onSkip,
+  name,
+  sets,
+  reps,
+  weight,
+  currentSet,
+  status: exerciseStatus,
+  onStart,
+  onSkip,
 }: ExerciseSessionCardProps): React.ReactElement {
   const { colors, module, status, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -52,12 +59,14 @@ export function ExerciseSessionCard({
       <View style={styles.header}>
         <Text style={{ fontSize: typography.size.base }}>{config.emoji}</Text>
         <View style={{ flex: 1 }}>
-          <Text style={{
-            color: exerciseStatus === 'skipped' ? colors.mutedForeground : colors.foreground,
-            fontSize: typography.size.sm,
-            fontWeight: '600',
-            textDecorationLine: exerciseStatus === 'skipped' ? 'line-through' : 'none',
-          }}>
+          <Text
+            style={{
+              color: exerciseStatus === 'skipped' ? colors.mutedForeground : colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: '600',
+              textDecorationLine: exerciseStatus === 'skipped' ? 'line-through' : 'none',
+            }}
+          >
             {name}
           </Text>
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
@@ -66,7 +75,9 @@ export function ExerciseSessionCard({
         </View>
 
         {isActive && currentSet !== undefined && (
-          <View style={[styles.setIndicator, { backgroundColor: baseColor, borderRadius: radii.full }]}>
+          <View
+            style={[styles.setIndicator, { backgroundColor: baseColor, borderRadius: radii.full }]}
+          >
             <Text style={{ color: colors.card, fontSize: typography.size.xs, fontWeight: '700' }}>
               {currentSet}/{sets}
             </Text>
@@ -76,19 +87,46 @@ export function ExerciseSessionCard({
 
       {/* 진행 바 */}
       {isActive && currentSet !== undefined && (
-        <View style={[styles.progressBar, { backgroundColor: colors.secondary, borderRadius: radii.full, marginTop: spacing.xs }]}>
-          <View style={[styles.progressFill, { width: `${(currentSet / sets) * 100}%`, backgroundColor: baseColor, borderRadius: radii.full }]} />
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: colors.secondary, borderRadius: radii.full, marginTop: spacing.xs },
+          ]}
+        >
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${(currentSet / sets) * 100}%`,
+                backgroundColor: baseColor,
+                borderRadius: radii.full,
+              },
+            ]}
+          />
         </View>
       )}
 
       {/* 액션 버튼 */}
       {exerciseStatus === 'pending' && (
         <View style={[styles.actionRow, { marginTop: spacing.xs }]}>
-          <Pressable onPress={onStart} style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.xl }]}>
-            <Text style={{ color: colors.card, fontSize: typography.size.xs, fontWeight: '600' }}>시작</Text>
+          <Pressable
+            onPress={onStart}
+            style={[styles.actionBtn, { backgroundColor: baseColor, borderRadius: radii.xl }]}
+          >
+            <Text style={{ color: colors.card, fontSize: typography.size.xs, fontWeight: '600' }}>
+              시작
+            </Text>
           </Pressable>
-          <Pressable onPress={onSkip} style={[styles.actionBtn, { backgroundColor: colors.secondary, borderRadius: radii.xl }]}>
-            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>건너뛰기</Text>
+          <Pressable
+            onPress={onSkip}
+            style={[
+              styles.actionBtn,
+              { backgroundColor: colors.secondary, borderRadius: radii.xl },
+            ]}
+          >
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+              건너뛰기
+            </Text>
           </Pressable>
         </View>
       )}

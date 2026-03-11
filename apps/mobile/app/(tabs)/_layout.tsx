@@ -15,7 +15,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      tabBar={props => <BrandTabBar {...props} />}
+      tabBar={(props) => <BrandTabBar {...props} />}
       screenOptions={{
         headerStyle: {
           backgroundColor: colors.card,

@@ -246,7 +246,14 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
 
       // 카드 렌더링을 위한 Promise
       await new Promise<void>((resolve) => {
-        root.render(<AnalysisShareCard analysisType={data.analysisType} emoji={data.typeEmoji} summary={data.title} score={data.score} />);
+        root.render(
+          <AnalysisShareCard
+            analysisType={data.analysisType}
+            emoji={data.typeEmoji}
+            summary={data.title}
+            score={data.score}
+          />
+        );
         // 렌더링 완료를 위한 짧은 딜레이
         setTimeout(resolve, 100);
       });

@@ -37,13 +37,11 @@ export function BlockConfirmDialog({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <View className="flex-1 justify-center items-center bg-black/50" testID="block-confirm-dialog">
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View
+        className="flex-1 justify-center items-center bg-black/50"
+        testID="block-confirm-dialog"
+      >
         <View
           className="mx-6 rounded-2xl px-6 py-5 w-[85%] max-w-sm"
           style={{ backgroundColor: colors.card }}

@@ -99,7 +99,7 @@ export function ColorSwatch({
           ]}
           numberOfLines={1}
         >
-          {copied ? '복사됨!' : name ?? color}
+          {copied ? '복사됨!' : (name ?? color)}
         </Text>
       )}
     </AnimatedPressable>

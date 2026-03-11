@@ -7,7 +7,7 @@
  */
 import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { GradientText, type GradientTextVariant } from './GradientText';
 
 interface SectionHeaderProps {
@@ -42,7 +42,7 @@ export function SectionHeader({
         {gradient ? (
           <GradientText
             variant={gradient}
-            fontSize={titleStyle?.fontSize as number ?? typography.size.lg}
+            fontSize={(titleStyle?.fontSize as number) ?? typography.size.lg}
             fontWeight={titleStyle?.fontWeight ?? typography.weight.bold}
           >
             {title}
@@ -75,7 +75,12 @@ export function SectionHeader({
         ) : null}
       </View>
       {action ? (
-        <Pressable onPress={action.onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={action.label}>
+        <Pressable
+          onPress={action.onPress}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+        >
           <Text
             style={{
               color: brand.primary,

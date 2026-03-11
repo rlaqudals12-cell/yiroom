@@ -28,11 +28,7 @@ export function BarcodeInput({
   const isSubmitDisabled = value.trim().length === 0;
 
   return (
-    <View
-      testID="barcode-input"
-      style={[styles.container, style]}
-      accessibilityLabel="바코드 입력"
-    >
+    <View testID="barcode-input" style={[styles.container, style]} accessibilityLabel="바코드 입력">
       <View
         style={[
           styles.inputRow,

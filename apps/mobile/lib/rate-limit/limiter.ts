@@ -163,11 +163,7 @@ export function isRateLimitedPath(pathname: string): boolean {
   }
 
   // 제외 경로 (웹훅 등)
-  const excludedPaths = [
-    '/api/webhooks',
-    '/api/cron',
-    '/api/health',
-  ];
+  const excludedPaths = ['/api/webhooks', '/api/cron', '/api/health'];
 
   return !excludedPaths.some((excluded) => pathname.startsWith(excluded));
 }
@@ -184,10 +180,5 @@ export function extractIpAddress(request: Request): string {
   const realIp = headers.get('x-real-ip');
   const cfConnectingIp = headers.get('cf-connecting-ip');
 
-  return (
-    cfConnectingIp ||
-    forwardedFor?.split(',')[0]?.trim() ||
-    realIp ||
-    'unknown'
-  );
+  return cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
 }

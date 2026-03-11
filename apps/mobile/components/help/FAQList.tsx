@@ -42,11 +42,7 @@ export function FAQList({ items, style }: FAQListProps): React.ReactElement {
   }
 
   return (
-    <View
-      testID="faq-list"
-      accessibilityLabel={`자주 묻는 질문 ${items.length}개`}
-      style={style}
-    >
+    <View testID="faq-list" accessibilityLabel={`자주 묻는 질문 ${items.length}개`} style={style}>
       <Text
         style={{
           fontSize: typography.size.xl,
@@ -87,7 +83,13 @@ export function FAQList({ items, style }: FAQListProps): React.ReactElement {
               </Text>
             ) : null}
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
               <Text
                 style={{
                   fontSize: typography.size.base,

@@ -52,14 +52,16 @@ export function RegionSelector({
       onChange(code);
       setModalVisible(false);
     },
-    [onChange],
+    [onChange]
   );
 
   return (
     <View testID="region-selector">
       {/* 라벨 */}
       {label && (
-        <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+        <Text
+          style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+        >
           {label}
         </Text>
       )}
@@ -73,7 +75,9 @@ export function RegionSelector({
         testID="region-selector-button"
       >
         <Text style={styles.flag}>{selected.flag}</Text>
-        <Text style={[styles.selectedName, { color: colors.foreground, fontSize: typography.size.sm }]}>
+        <Text
+          style={[styles.selectedName, { color: colors.foreground, fontSize: typography.size.sm }]}
+        >
           {selected.name}
         </Text>
         <Text style={{ color: colors.mutedForeground }}>▼</Text>
@@ -86,15 +90,17 @@ export function RegionSelector({
         animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable
-          style={styles.overlay}
-          onPress={() => setModalVisible(false)}
-        >
+        <Pressable style={styles.overlay} onPress={() => setModalVisible(false)}>
           <View
             style={[styles.modal, { backgroundColor: colors.card }]}
             testID="region-selector-modal"
           >
-            <Text style={[styles.modalTitle, { color: colors.foreground, fontSize: typography.size.lg }]}>
+            <Text
+              style={[
+                styles.modalTitle,
+                { color: colors.foreground, fontSize: typography.size.lg },
+              ]}
+            >
               지역 선택
             </Text>
 
@@ -125,9 +131,7 @@ export function RegionSelector({
                   >
                     {item.name}
                   </Text>
-                  {item.code === value && (
-                    <Text style={{ color: brand.primary }}>✓</Text>
-                  )}
+                  {item.code === value && <Text style={{ color: brand.primary }}>✓</Text>}
                 </Pressable>
               )}
             />

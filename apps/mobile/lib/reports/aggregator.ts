@@ -4,12 +4,7 @@
  */
 import type { WorkoutLog } from '../../hooks/useWorkoutData';
 import type { DailyNutritionSummary, NutritionSettings } from '../../hooks/useNutritionData';
-import type {
-  WeeklyReport,
-  MonthlyReport,
-  DailyReportEntry,
-  WeeklyTrend,
-} from './types';
+import type { WeeklyReport, MonthlyReport, DailyReportEntry, WeeklyTrend } from './types';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -119,9 +114,7 @@ export function aggregateWeeklyReport(
       totalDuration,
       totalCalories,
       averageDuration:
-        completedWorkouts.length > 0
-          ? Math.round(totalDuration / completedWorkouts.length)
-          : 0,
+        completedWorkouts.length > 0 ? Math.round(totalDuration / completedWorkouts.length) : 0,
       completionRate: Math.round((completedWorkouts.length / 7) * 100),
       streak: workoutStreak,
     },
@@ -133,9 +126,7 @@ export function aggregateWeeklyReport(
       averageWater: avgWater,
       daysTracked: trackedDays.length,
       goalAchievementRate:
-        trackedDays.length > 0
-          ? Math.round((daysOnGoal.length / trackedDays.length) * 100)
-          : 0,
+        trackedDays.length > 0 ? Math.round((daysOnGoal.length / trackedDays.length) * 100) : 0,
     },
     dailyData,
     insights,
@@ -199,9 +190,7 @@ export function aggregateMonthlyReport(
             )
           : 0,
       nutritionGoalRate:
-        weekNutrition.length > 0
-          ? Math.round((daysOnGoal.length / weekNutrition.length) * 100)
-          : 0,
+        weekNutrition.length > 0 ? Math.round((daysOnGoal.length / weekNutrition.length) * 100) : 0,
     });
 
     weekStart = new Date(weekEnd);
@@ -216,9 +205,7 @@ export function aggregateMonthlyReport(
   const totalWeeks = weeklyTrends.length || 1;
 
   // 베스트 스트릭 계산 (이번 달 내)
-  const sortedDates = completedWorkouts
-    .map((l) => l.workoutDate)
-    .sort();
+  const sortedDates = completedWorkouts.map((l) => l.workoutDate).sort();
   let bestStreak = 0;
   let currentStreak = 0;
   let prevDate = '';
@@ -289,9 +276,7 @@ export function aggregateMonthlyReport(
           : 0,
       daysTracked: trackedDays.length,
       goalAchievementRate:
-        trackedDays.length > 0
-          ? Math.round((daysOnGoal.length / trackedDays.length) * 100)
-          : 0,
+        trackedDays.length > 0 ? Math.round((daysOnGoal.length / trackedDays.length) * 100) : 0,
     },
     insights,
   };
@@ -340,9 +325,7 @@ function generateWeeklyInsights(
     insights.push(`${streak}일 연속 운동 중이에요. 계속 이어가봐요`);
   }
 
-  return insights.length > 0
-    ? insights
-    : ['이번 주 데이터가 부족해요. 기록을 시작해보세요!'];
+  return insights.length > 0 ? insights : ['이번 주 데이터가 부족해요. 기록을 시작해보세요!'];
 }
 
 // 월간 인사이트 생성

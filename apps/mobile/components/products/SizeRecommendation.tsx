@@ -16,7 +16,7 @@ import {
   useSizeRecommendation,
   getMockSizeRecommendation,
 } from '../../lib/smart-matching/useSizeRecommendation';
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface SizeRecommendationProps {
   brandId: string;

@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 import { useAppPreferencesStore } from '@/lib/stores';
 

@@ -50,8 +50,14 @@ export function AllergyInfoCard({
           알레르기 / 민감 성분
         </Text>
         {onEdit && (
-          <Pressable onPress={onEdit} accessibilityLabel="알레르기 정보 수정" accessibilityRole="button">
-            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>수정</Text>
+          <Pressable
+            onPress={onEdit}
+            accessibilityLabel="알레르기 정보 수정"
+            accessibilityRole="button"
+          >
+            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              수정
+            </Text>
           </Pressable>
         )}
       </View>
@@ -73,7 +79,13 @@ export function AllergyInfoCard({
           ))}
         </View>
       ) : (
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginTop: spacing.sm }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            marginTop: spacing.sm,
+          }}
+        >
           등록된 알레르기 정보가 없습니다
         </Text>
       )}

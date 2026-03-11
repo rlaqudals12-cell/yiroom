@@ -69,10 +69,7 @@ export function BarChart({
   const size = barSize ?? (isHorizontal ? 24 : 32);
 
   // 최대값 기준으로 비율 계산
-  const globalMax = useMemo(
-    () => Math.max(...data.map((d) => d.maxValue ?? 100)),
-    [data]
-  );
+  const globalMax = useMemo(() => Math.max(...data.map((d) => d.maxValue ?? 100)), [data]);
 
   return (
     <View

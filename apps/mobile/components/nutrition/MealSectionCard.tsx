@@ -21,10 +21,7 @@ export interface MealSectionCardProps {
   testID?: string;
 }
 
-const MEAL_CONFIG: Record<
-  string,
-  { label: string; icon: typeof Sun }
-> = {
+const MEAL_CONFIG: Record<string, { label: string; icon: typeof Sun }> = {
   breakfast: { label: '아침', icon: Coffee },
   lunch: { label: '점심', icon: Sun },
   dinner: { label: '저녁', icon: Moon },

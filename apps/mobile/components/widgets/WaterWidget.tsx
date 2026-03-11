@@ -5,7 +5,7 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface WaterWidgetProps {
   current: number; // ml
@@ -38,7 +38,12 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
           {(current / 1000).toFixed(1)}L
         </Text>
         <View style={[styles.miniProgressBar, { backgroundColor: colors.muted }]}>
-          <View style={[styles.miniProgressFill, { width: `${progress}%`, backgroundColor: status.info }]} />
+          <View
+            style={[
+              styles.miniProgressFill,
+              { width: `${progress}%`, backgroundColor: status.info },
+            ]}
+          />
         </View>
       </View>
     );
@@ -54,7 +59,12 @@ export function WaterWidget({ current, goal, onAddWater, size = 'medium' }: Wate
       <View style={styles.content}>
         {/* 물컵 시각화 */}
         <View style={styles.cupContainer}>
-          <View style={[styles.cup, { backgroundColor: status.info + '15', borderColor: status.info + '40' }]}>
+          <View
+            style={[
+              styles.cup,
+              { backgroundColor: status.info + '15', borderColor: status.info + '40' },
+            ]}
+          >
             <View
               style={[
                 styles.water,

@@ -10,11 +10,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ─── 타입 ────────────────────────────────────────────
 
-export type ProductCategory =
-  | 'cosmetic'
-  | 'supplement'
-  | 'equipment'
-  | 'health_food';
+export type ProductCategory = 'cosmetic' | 'supplement' | 'equipment' | 'health_food';
 
 export interface Product {
   id: string;
@@ -67,10 +63,7 @@ export async function getProducts(
   supabase: SupabaseClient,
   filter: ProductFilter = {}
 ): Promise<Product[]> {
-  let query = supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false });
+  let query = supabase.from('products').select('*').order('created_at', { ascending: false });
 
   if (filter.category) query = query.eq('category', filter.category);
   if (filter.minPrice != null) query = query.gte('price', filter.minPrice);
@@ -92,11 +85,7 @@ export async function getProductById(
   supabase: SupabaseClient,
   productId: string
 ): Promise<Product | null> {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .single();
+  const { data, error } = await supabase.from('products').select('*').eq('id', productId).single();
 
   if (error) return null;
   return data as Product;
@@ -150,11 +139,7 @@ export async function createReview(
   supabase: SupabaseClient,
   review: Omit<ProductReview, 'id' | 'created_at'>
 ): Promise<ProductReview> {
-  const { data, error } = await supabase
-    .from('product_reviews')
-    .insert(review)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('product_reviews').insert(review).select().single();
 
   if (error) throw new Error(`리뷰 작성 실패: ${error.message}`);
   return data as ProductReview;

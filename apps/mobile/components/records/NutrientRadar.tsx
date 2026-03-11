@@ -70,8 +70,19 @@ export function NutrientRadar({
   );
 
   return (
-    <View style={style} testID={testID} accessibilityLabel={`영양 균형 레이더 차트, 목표 달성률 ${avgAchievement}%`}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: spacing.sm }}>
+    <View
+      style={style}
+      testID={testID}
+      accessibilityLabel={`영양 균형 레이더 차트, 목표 달성률 ${avgAchievement}%`}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: spacing.sm,
+        }}
+      >
         <Text
           style={{
             fontSize: typography.size.base,

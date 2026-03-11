@@ -16,9 +16,7 @@ interface MockDataNoticeProps {
   compact?: boolean;
 }
 
-export function MockDataNotice({
-  compact = false,
-}: MockDataNoticeProps): React.ReactElement {
+export function MockDataNotice({ compact = false }: MockDataNoticeProps): React.ReactElement {
   const { isDark } = useTheme();
   const mode = isDark ? 'dark' : 'light';
 
@@ -40,10 +38,7 @@ export function MockDataNotice({
           ⚠️
         </Text>
         <Text
-          style={[
-            styles.compactLabel,
-            { color: textColor, fontWeight: typography.weight.medium },
-          ]}
+          style={[styles.compactLabel, { color: textColor, fontWeight: typography.weight.medium }]}
         >
           샘플 결과
         </Text>
@@ -64,12 +59,7 @@ export function MockDataNotice({
         </Text>
       </View>
       <View style={styles.textContainer}>
-        <Text
-          style={[
-            styles.title,
-            { color: titleColor, fontWeight: typography.weight.medium },
-          ]}
-        >
+        <Text style={[styles.title, { color: titleColor, fontWeight: typography.weight.medium }]}>
           임시 데이터 표시 중
         </Text>
         <Text style={[styles.description, { color: textColor }]}>

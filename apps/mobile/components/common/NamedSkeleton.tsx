@@ -24,10 +24,7 @@ export interface NamedSkeletonProps {
   count?: number;
 }
 
-export function NamedSkeleton({
-  variant,
-  count = 1,
-}: NamedSkeletonProps): React.ReactElement {
+export function NamedSkeleton({ variant, count = 1 }: NamedSkeletonProps): React.ReactElement {
   const { colors } = useTheme();
 
   const items = Array.from({ length: count }, (_, i) => i);
@@ -45,7 +42,7 @@ export function NamedSkeleton({
 
 function renderVariant(
   variant: SkeletonVariant,
-  colors: ReturnType<typeof useTheme>['colors'],
+  colors: ReturnType<typeof useTheme>['colors']
 ): React.ReactElement {
   switch (variant) {
     case 'analysis-result':
@@ -123,7 +120,9 @@ function renderVariant(
 
     case 'ranking':
       return (
-        <View style={[styles.rankingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View
+          style={[styles.rankingRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <Skeleton width={32} height={32} borderRadius={16} />
           <Skeleton width={32} height={32} borderRadius={16} />
           <View style={{ flex: 1, marginLeft: spacing.sm }}>

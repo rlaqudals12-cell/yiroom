@@ -94,19 +94,43 @@ export function useHomeData() {
         ]);
 
         // 운동 시간 합계
-        const totalWorkoutMinutes = workoutResult.data?.reduce(
-          (sum, log) => sum + (log.duration_minutes || 0),
-          0
-        ) || 0;
+        const totalWorkoutMinutes =
+          workoutResult.data?.reduce((sum, log) => sum + (log.duration_minutes || 0), 0) || 0;
 
         // 데이터 구성
         const homeData: HomeData = {
           userName: user.firstName || user.username || '사용자',
           missions: [
-            { id: '1', title: '물 8잔 마시기', progress: waterResult.data?.cups || 0, target: 8, completed: (waterResult.data?.cups || 0) >= 8 },
-            { id: '2', title: '30분 운동하기', progress: totalWorkoutMinutes, target: 30, completed: totalWorkoutMinutes >= 30 },
-            { id: '3', title: '식사 기록하기', progress: nutritionResult.data ? 1 : 0, target: 1, completed: !!nutritionResult.data },
-            { id: '4', title: '목표 칼로리 달성', progress: nutritionResult.data?.total_calories || 0, target: nutritionResult.data?.target_calories || 2000, completed: (nutritionResult.data?.total_calories || 0) >= (nutritionResult.data?.target_calories || 2000) },
+            {
+              id: '1',
+              title: '물 8잔 마시기',
+              progress: waterResult.data?.cups || 0,
+              target: 8,
+              completed: (waterResult.data?.cups || 0) >= 8,
+            },
+            {
+              id: '2',
+              title: '30분 운동하기',
+              progress: totalWorkoutMinutes,
+              target: 30,
+              completed: totalWorkoutMinutes >= 30,
+            },
+            {
+              id: '3',
+              title: '식사 기록하기',
+              progress: nutritionResult.data ? 1 : 0,
+              target: 1,
+              completed: !!nutritionResult.data,
+            },
+            {
+              id: '4',
+              title: '목표 칼로리 달성',
+              progress: nutritionResult.data?.total_calories || 0,
+              target: nutritionResult.data?.target_calories || 2000,
+              completed:
+                (nutritionResult.data?.total_calories || 0) >=
+                (nutritionResult.data?.target_calories || 2000),
+            },
             { id: '5', title: '스트레칭 5분', progress: 0, target: 1, completed: false },
           ],
           missionsCompleted: 0,

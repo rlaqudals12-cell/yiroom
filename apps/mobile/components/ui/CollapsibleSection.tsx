@@ -6,14 +6,7 @@
  */
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
-import {
-  LayoutAnimation,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { LayoutAnimation, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../lib/theme';
 
@@ -85,7 +78,13 @@ export function CollapsibleSection({
         </View>
         <View style={styles.headerRight}>
           {trailingIcon}
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginLeft: spacing.xs,
+            }}
+          >
             {isOpen ? '▲' : '▼'}
           </Text>
         </View>

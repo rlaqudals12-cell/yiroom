@@ -42,7 +42,7 @@ export async function imageToBase64(imageUri: string): Promise<string> {
 
 function backoffDelay(retryCount: number): Promise<void> {
   const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
-  return new Promise(resolve => setTimeout(resolve, delay));
+  return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 /**

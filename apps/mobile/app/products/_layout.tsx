@@ -3,7 +3,7 @@
  */
 import { Stack } from 'expo-router';
 
-import { useTheme, typography} from '../../lib/theme';
+import { useTheme, typography } from '../../lib/theme';
 
 export default function ProductsLayout() {
   const { colors, typography } = useTheme();
@@ -40,18 +40,9 @@ export default function ProductsLayout() {
           presentation: 'modal',
         }}
       />
-      <Stack.Screen
-        name="wishlist"
-        options={{ title: '위시리스트' }}
-      />
-      <Stack.Screen
-        name="recommendations"
-        options={{ title: 'AI 맞춤 추천' }}
-      />
-      <Stack.Screen
-        name="qa"
-        options={{ title: '제품 Q&A' }}
-      />
+      <Stack.Screen name="wishlist" options={{ title: '위시리스트' }} />
+      <Stack.Screen name="recommendations" options={{ title: 'AI 맞춤 추천' }} />
+      <Stack.Screen name="qa" options={{ title: '제품 Q&A' }} />
     </Stack>
   );
 }

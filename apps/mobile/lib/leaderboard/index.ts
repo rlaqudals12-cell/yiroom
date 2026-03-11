@@ -17,10 +17,7 @@ export {
   getTierColor,
 } from '../social';
 
-export type {
-  RankingEntry,
-  LeaderboardCategory,
-} from '../social';
+export type { RankingEntry, LeaderboardCategory } from '../social';
 
 // ─── 확장 타입 ────────────────────────────────────────
 
@@ -90,9 +87,7 @@ export async function getWorkoutLeaderboard(
   });
 
   // 정렬 + limit
-  const sorted = [...totals.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit);
+  const sorted = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
 
   const userIds = sorted.map(([id]) => id);
   const { data: users } = await supabase

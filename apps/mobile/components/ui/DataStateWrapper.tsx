@@ -76,9 +76,7 @@ export function DataStateWrapper({
   // 1. 로딩 상태
   if (isLoading) {
     return (
-      <View testID={testID}>
-        {loadingComponent ?? <DefaultLoading count={skeletonCount} />}
-      </View>
+      <View testID={testID}>{loadingComponent ?? <DefaultLoading count={skeletonCount} />}</View>
     );
   }
 

@@ -54,7 +54,7 @@ interface RecognizedFood {
 type ScreenState = 'camera' | 'analyzing' | 'result';
 
 export default function FoodCameraScreen() {
-  const { colors, status, module: moduleColors, spacing, radii} = useTheme();
+  const { colors, status, module: moduleColors, spacing, radii } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const cameraRef = useRef<CameraView>(null);
@@ -480,7 +480,13 @@ export default function FoodCameraScreen() {
 
   // 카메라 화면
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-camera-screen" style={styles.container} edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="nutrition-camera-screen"
+      style={styles.container}
+      edges={['bottom']}
+    >
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           {/* 가이드 프레임 */}
@@ -529,10 +535,7 @@ export default function FoodCameraScreen() {
           <View style={styles.captureButtonInner} />
         </Pressable>
 
-        <Pressable
-          style={styles.searchButton}
-          onPress={() => router.push('/(nutrition)/search')}
-        >
+        <Pressable style={styles.searchButton} onPress={() => router.push('/(nutrition)/search')}>
           <Text style={styles.searchButtonText}>검색</Text>
         </Pressable>
       </View>

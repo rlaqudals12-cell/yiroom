@@ -57,12 +57,13 @@ export const AnnouncementCard = memo(function AnnouncementCard({
       ]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
-        <Text style={{ fontSize: typography.size.base, marginRight: spacing.xs }}>{config.emoji}</Text>
+        <Text style={{ fontSize: typography.size.base, marginRight: spacing.xs }}>
+          {config.emoji}
+        </Text>
 
         <View
           style={{
-            backgroundColor:
-              type === 'maintenance' ? status.warning + '20' : brand.primary + '15',
+            backgroundColor: type === 'maintenance' ? status.warning + '20' : brand.primary + '15',
             paddingHorizontal: spacing.sm,
             paddingVertical: spacing.xxs,
             borderRadius: radii.full,
@@ -80,15 +81,11 @@ export const AnnouncementCard = memo(function AnnouncementCard({
           </Text>
         </View>
 
-        {isPinned && (
-          <Text style={{ fontSize: typography.size.xs, color: brand.primary }}>📌</Text>
-        )}
+        {isPinned && <Text style={{ fontSize: typography.size.xs, color: brand.primary }}>📌</Text>}
 
         <View style={{ flex: 1 }} />
 
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-          {date}
-        </Text>
+        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{date}</Text>
       </View>
 
       <Text

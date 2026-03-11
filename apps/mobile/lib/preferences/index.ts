@@ -233,10 +233,7 @@ export async function clearPreferences(
   userId: string,
   category?: PreferenceCategory
 ): Promise<boolean> {
-  let query = supabase
-    .from('user_preferences')
-    .delete()
-    .eq('clerk_user_id', userId);
+  let query = supabase.from('user_preferences').delete().eq('clerk_user_id', userId);
 
   if (category) {
     query = query.eq('category', category);
@@ -251,9 +248,7 @@ export async function clearPreferences(
 /**
  * 선호도를 카테고리별 요약으로 변환
  */
-export function summarizePreferences(
-  preferences: UserPreference[]
-): PreferenceSummary[] {
+export function summarizePreferences(preferences: UserPreference[]): PreferenceSummary[] {
   const grouped = new Map<PreferenceCategory, string[]>();
 
   preferences.forEach((pref) => {
@@ -272,10 +267,7 @@ export function summarizePreferences(
 /**
  * 선호도 라벨 조회
  */
-export function getPreferenceLabel(
-  category: PreferenceCategory,
-  item: string
-): string {
+export function getPreferenceLabel(category: PreferenceCategory, item: string): string {
   const items = PREFERENCE_ITEMS[category];
   const found = items?.find((i) => i.key === item);
   return found?.label ?? item;

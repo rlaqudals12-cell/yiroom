@@ -253,7 +253,7 @@ export function calculatePoreScore(glcm: GLCMResult, lbp: LBPResult): number {
   const contrastScore = Math.max(0, 100 - glcm.contrast * 0.5);
   const uniformScore = lbp.uniformPatternRatio * 100;
 
-  return Math.round((contrastScore * 0.6 + uniformScore * 0.4));
+  return Math.round(contrastScore * 0.6 + uniformScore * 0.4);
 }
 
 /**
@@ -266,7 +266,7 @@ export function calculateWrinkleScore(glcm: GLCMResult): number {
   const entropyScore = Math.max(0, 100 - glcm.entropy * 10);
   const homogeneityScore = glcm.homogeneity * 100;
 
-  return Math.round((entropyScore * 0.5 + homogeneityScore * 0.5));
+  return Math.round(entropyScore * 0.5 + homogeneityScore * 0.5);
 }
 
 /**
@@ -278,9 +278,7 @@ export function calculateTextureScore(glcm: GLCMResult, lbp: LBPResult): number 
   const uniformityScore = lbp.uniformPatternRatio * 100;
   const lowContrastScore = Math.max(0, 100 - glcm.contrast * 0.3);
 
-  return Math.round(
-    smoothnessScore * 0.4 + uniformityScore * 0.3 + lowContrastScore * 0.3
-  );
+  return Math.round(smoothnessScore * 0.4 + uniformityScore * 0.3 + lowContrastScore * 0.3);
 }
 
 /**
@@ -299,9 +297,11 @@ export function analyzeTexture(
 
   const glcm: GLCMResult = {
     contrast: (glcm0.contrast + glcm45.contrast + glcm90.contrast + glcm135.contrast) / 4,
-    homogeneity: (glcm0.homogeneity + glcm45.homogeneity + glcm90.homogeneity + glcm135.homogeneity) / 4,
+    homogeneity:
+      (glcm0.homogeneity + glcm45.homogeneity + glcm90.homogeneity + glcm135.homogeneity) / 4,
     energy: (glcm0.energy + glcm45.energy + glcm90.energy + glcm135.energy) / 4,
-    correlation: (glcm0.correlation + glcm45.correlation + glcm90.correlation + glcm135.correlation) / 4,
+    correlation:
+      (glcm0.correlation + glcm45.correlation + glcm90.correlation + glcm135.correlation) / 4,
     entropy: (glcm0.entropy + glcm45.entropy + glcm90.entropy + glcm135.entropy) / 4,
   };
 

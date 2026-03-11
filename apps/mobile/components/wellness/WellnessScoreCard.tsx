@@ -21,7 +21,16 @@ export function WellnessScoreCard({
   change,
   style,
 }: WellnessScoreCardProps): React.JSX.Element {
-  const { colors, spacing, typography, radii, shadows, brand, status, score: scoreColors } = useTheme();
+  const {
+    colors,
+    spacing,
+    typography,
+    radii,
+    shadows,
+    brand,
+    status,
+    score: scoreColors,
+  } = useTheme();
 
   const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
@@ -67,7 +76,13 @@ export function WellnessScoreCard({
         >
           {score}
         </Text>
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginLeft: spacing.xxs }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            marginLeft: spacing.xxs,
+          }}
+        >
           / {maxScore}
         </Text>
       </View>
@@ -83,7 +98,13 @@ export function WellnessScoreCard({
           >
             {change >= 0 ? '▲' : '▼'} {Math.abs(change)}점
           </Text>
-          <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginLeft: spacing.xxs }}>
+          <Text
+            style={{
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              marginLeft: spacing.xxs,
+            }}
+          >
             지난주 대비
           </Text>
         </View>

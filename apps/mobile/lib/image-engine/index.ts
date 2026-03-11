@@ -100,9 +100,7 @@ export const ANALYSIS_TIPS = {
  * RN에서는 Canvas API를 사용할 수 없으므로
  * 메타데이터 기반 검증 + 서버 위임 전략
  */
-export function validateImageQuality(
-  metadata: ImageMetadata
-): ImageValidationResult {
+export function validateImageQuality(metadata: ImageMetadata): ImageValidationResult {
   const tips: string[] = [];
   let score = 100;
 
@@ -210,9 +208,8 @@ export function runCIEPipeline(
     });
   }
 
-  const overallScore = stages.length > 0
-    ? Math.round(stages.reduce((sum, s) => sum + s.score, 0) / stages.length)
-    : 0;
+  const overallScore =
+    stages.length > 0 ? Math.round(stages.reduce((sum, s) => sum + s.score, 0) / stages.length) : 0;
 
   const allPassed = stages.every((s) => s.passed);
 
@@ -271,14 +268,13 @@ export const CAPTURE_GUIDES: Record<string, CaptureGuide> = {
  * 분석 타입별 촬영 가이드
  */
 export function getCaptureGuide(analysisType: string): CaptureGuide {
-  return CAPTURE_GUIDES[analysisType] ?? {
-    analysisType,
-    instructions: [
-      '밝은 곳에서 촬영해주세요',
-      '선명한 사진을 사용해주세요',
-    ],
-    idealConditions: ['밝은 환경', '선명한 이미지'],
-  };
+  return (
+    CAPTURE_GUIDES[analysisType] ?? {
+      analysisType,
+      instructions: ['밝은 곳에서 촬영해주세요', '선명한 사진을 사용해주세요'],
+      idealConditions: ['밝은 환경', '선명한 이미지'],
+    }
+  );
 }
 
 // ─── 내부 함수 ────────────────────────────────────────
@@ -304,8 +300,7 @@ function checkResolution(width: number, height: number): ResolutionCheck {
 
 function checkFileSize(bytes: number): FileSizeCheck {
   const isAcceptable =
-    bytes >= IMAGE_CONSTRAINTS.minFileSize &&
-    bytes <= IMAGE_CONSTRAINTS.maxFileSize;
+    bytes >= IMAGE_CONSTRAINTS.minFileSize && bytes <= IMAGE_CONSTRAINTS.maxFileSize;
 
   const sizeMB = (bytes / (1024 * 1024)).toFixed(1);
 

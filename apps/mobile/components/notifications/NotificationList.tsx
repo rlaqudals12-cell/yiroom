@@ -30,7 +30,13 @@ export function NotificationList({
         style={[{ padding: spacing.xl, alignItems: 'center' }, style]}
       >
         <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.sm }}>🔕</Text>
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, textAlign: 'center' }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: colors.mutedForeground,
+            textAlign: 'center',
+          }}
+        >
           {emptyMessage}
         </Text>
       </View>
@@ -48,12 +54,7 @@ export function NotificationList({
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NotificationCard
-            {...item}
-            onPress={onNotificationPress}
-          />
-        )}
+        renderItem={({ item }) => <NotificationCard {...item} onPress={onNotificationPress} />}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         contentContainerStyle={{ padding: spacing.md }}
         scrollEnabled={false}

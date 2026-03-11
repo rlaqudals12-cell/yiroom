@@ -6,16 +6,9 @@
  */
 import { Info } from 'lucide-react-native';
 import { useState } from 'react';
-import {
-  LayoutAnimation,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { LayoutAnimation, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface InfoTooltipProps {
   /** 툴팁 텍스트 */

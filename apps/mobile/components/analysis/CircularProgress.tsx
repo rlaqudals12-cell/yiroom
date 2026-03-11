@@ -27,10 +27,18 @@ import { useTheme } from '@/lib/theme';
 
 // 등급 그라데이션 색상 (gradeColors 토큰 기반 — 등급별 시각 아이덴티티)
 const GRADE_COLORS = {
-  diamond: { start: gradeColors.diamond.base, end: statusColors.info, text: gradeColors.diamond.text },
+  diamond: {
+    start: gradeColors.diamond.base,
+    end: statusColors.info,
+    text: gradeColors.diamond.text,
+  },
   gold: { start: statusColors.warning, end: gradeColors.bronze.base, text: statusColors.warning },
   silver: { start: gradeColors.silver.dark, end: '#64748b', text: gradeColors.silver.dark },
-  bronze: { start: gradeColors.bronze.base, end: statusColors.error, text: gradeColors.bronze.base },
+  bronze: {
+    start: gradeColors.bronze.base,
+    end: statusColors.error,
+    text: gradeColors.bronze.base,
+  },
 } as const;
 
 // ============================================

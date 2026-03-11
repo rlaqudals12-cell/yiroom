@@ -412,10 +412,7 @@ export async function generateWidgetData(
 /**
  * 모든 위젯 데이터 업데이트
  */
-export async function updateAllWidgets(
-  supabase?: SupabaseClient,
-  userId?: string
-): Promise<void> {
+export async function updateAllWidgets(supabase?: SupabaseClient, userId?: string): Promise<void> {
   const types: WidgetType[] = [
     'daily-summary',
     'workout-progress',

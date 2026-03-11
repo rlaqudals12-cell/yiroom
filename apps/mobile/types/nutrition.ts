@@ -13,65 +13,65 @@ export type Gender = 'male' | 'female';
 
 // 활동 수준
 export type ActivityLevel =
-  | 'sedentary'    // 비활동적 (1.2)
-  | 'light'        // 가벼운 활동 (1.375)
-  | 'moderate'     // 보통 활동 (1.55)
-  | 'active'       // 활동적 (1.725)
+  | 'sedentary' // 비활동적 (1.2)
+  | 'light' // 가벼운 활동 (1.375)
+  | 'moderate' // 보통 활동 (1.55)
+  | 'active' // 활동적 (1.725)
   | 'very_active'; // 매우 활동적 (1.9)
 
 // 영양 목표
 export type NutritionGoal =
-  | 'weight_loss'  // 체중 감량
-  | 'maintain'     // 체중 유지
-  | 'muscle'       // 근육 증가
-  | 'skin'         // 피부 개선 (S-1 연동)
-  | 'health';      // 건강 관리
+  | 'weight_loss' // 체중 감량
+  | 'maintain' // 체중 유지
+  | 'muscle' // 근육 증가
+  | 'skin' // 피부 개선 (S-1 연동)
+  | 'health'; // 건강 관리
 
 // 식사 스타일 (Step 3 - 스펙 기준)
 export type MealStyle =
-  | 'korean'       // 한식 위주 (밥, 국, 반찬)
-  | 'salad'        // 샐러드/가벼운 식사 (저탄고단)
-  | 'western'      // 양식/파스타/빵 (서양식)
-  | 'lunchbox'     // 도시락/간편식 (편의점, 도시락)
-  | 'delivery'     // 배달/외식 많이 (외식 위주)
-  | 'any';         // 다양하게 (특정 선호 없음)
+  | 'korean' // 한식 위주 (밥, 국, 반찬)
+  | 'salad' // 샐러드/가벼운 식사 (저탄고단)
+  | 'western' // 양식/파스타/빵 (서양식)
+  | 'lunchbox' // 도시락/간편식 (편의점, 도시락)
+  | 'delivery' // 배달/외식 많이 (외식 위주)
+  | 'any'; // 다양하게 (특정 선호 없음)
 
 // 식이요법 선호 (향후 고급 설정용으로 유지)
 export type DietPreference =
-  | 'balanced'     // 균형 식단
-  | 'low_carb'     // 저탄수화물
+  | 'balanced' // 균형 식단
+  | 'low_carb' // 저탄수화물
   | 'high_protein' // 고단백
-  | 'vegetarian'   // 채식
-  | 'vegan'        // 완전 채식
-  | 'keto'         // 키토
+  | 'vegetarian' // 채식
+  | 'vegan' // 완전 채식
+  | 'keto' // 키토
   | 'mediterranean'; // 지중해식
 
 // 요리 스킬 수준
 export type CookingSkill =
-  | 'beginner'     // 초보 (간단한 요리만)
+  | 'beginner' // 초보 (간단한 요리만)
   | 'intermediate' // 중급 (대부분 요리 가능)
-  | 'advanced'     // 고급 (복잡한 요리도 가능)
-  | 'none';        // 요리 안 함 (완제품/배달만)
+  | 'advanced' // 고급 (복잡한 요리도 가능)
+  | 'none'; // 요리 안 함 (완제품/배달만)
 
 // 예산 수준
 export type BudgetLevel =
-  | 'economy'      // 경제적 (저렴하게)
-  | 'moderate'     // 적당
-  | 'premium'      // 프리미엄 (비용 무관)
-  | 'any';         // 상관없음 (제한 없음)
+  | 'economy' // 경제적 (저렴하게)
+  | 'moderate' // 적당
+  | 'premium' // 프리미엄 (비용 무관)
+  | 'any'; // 상관없음 (제한 없음)
 
 // 알레르기/기피 음식 카테고리
 export type AllergyType =
-  | 'dairy'        // 유제품
-  | 'eggs'         // 달걀
-  | 'nuts'         // 견과류
-  | 'seafood'      // 해산물
-  | 'gluten'       // 글루텐
-  | 'soy'          // 대두
-  | 'pork'         // 돼지고기
-  | 'beef'         // 소고기
-  | 'spicy'        // 매운 음식
-  | 'raw';         // 날 음식
+  | 'dairy' // 유제품
+  | 'eggs' // 달걀
+  | 'nuts' // 견과류
+  | 'seafood' // 해산물
+  | 'gluten' // 글루텐
+  | 'soy' // 대두
+  | 'pork' // 돼지고기
+  | 'beef' // 소고기
+  | 'spicy' // 매운 음식
+  | 'raw'; // 날 음식
 
 // 신호등 색상
 export type TrafficLight = 'green' | 'yellow' | 'red';
@@ -100,20 +100,20 @@ export interface NutritionSettings {
   tdee: number;
   dailyCalorieTarget: number;
   activityLevel: ActivityLevel;
-  mealStyle: MealStyle;           // Step 3: 식사 스타일
+  mealStyle: MealStyle; // Step 3: 식사 스타일
   cookingSkill: CookingSkill;
   budget: BudgetLevel;
   allergies: AllergyType[];
   dislikedFoods: string[];
   mealCount: number; // 하루 식사 횟수 (2-6)
-  proteinTarget?: number;         // 단백질 목표 (g)
-  carbsTarget?: number;           // 탄수화물 목표 (g)
-  fatTarget?: number;             // 지방 목표 (g)
+  proteinTarget?: number; // 단백질 목표 (g)
+  carbsTarget?: number; // 탄수화물 목표 (g)
+  fatTarget?: number; // 지방 목표 (g)
   // 목표 체중 설정 (Diet AI 연동)
-  currentWeight?: number;         // 현재 체중 (kg)
-  targetWeight?: number;          // 목표 체중 (kg)
+  currentWeight?: number; // 현재 체중 (kg)
+  targetWeight?: number; // 목표 체중 (kg)
   // 간헐적 단식 설정 (Task 2.16)
-  fastingEnabled?: boolean;       // 간헐적 단식 활성화 여부
+  fastingEnabled?: boolean; // 간헐적 단식 활성화 여부
   fastingType?: FastingType | null; // 단식 유형 (16:8, 18:6, 20:4, custom)
   fastingStartTime?: string | null; // 단식 시작 시간 (HH:mm)
   eatingWindowHours?: number | null; // 식사 가능 시간 (1~23)
@@ -124,20 +124,20 @@ export interface NutritionSettings {
 // BMR/TDEE 계산 입력
 export interface BMRInput {
   gender: Gender;
-  weight: number;  // kg
-  height: number;  // cm
-  age: number;     // years
+  weight: number; // kg
+  height: number; // cm
+  age: number; // years
   activityLevel: ActivityLevel;
 }
 
 // BMR/TDEE 계산 결과
 export interface BMRResult {
-  bmr: number;           // 기초대사량
-  tdee: number;          // 총 에너지 소비량
+  bmr: number; // 기초대사량
+  tdee: number; // 총 에너지 소비량
   dailyCalorieTarget: number; // 목표별 일일 칼로리
-  proteinTarget: number;      // 단백질 목표 (g)
-  carbsTarget: number;        // 탄수화물 목표 (g)
-  fatTarget: number;          // 지방 목표 (g)
+  proteinTarget: number; // 단백질 목표 (g)
+  carbsTarget: number; // 탄수화물 목표 (g)
+  fatTarget: number; // 지방 목표 (g)
 }
 
 // 온보딩 입력 데이터
@@ -194,12 +194,12 @@ export interface Food {
   carbs: number;
   fat: number;
   fiber?: number;
-  sugar?: number;      // 당류 (g)
-  sodium?: number;     // 나트륨 (mg)
+  sugar?: number; // 당류 (g)
+  sodium?: number; // 나트륨 (mg)
   trafficLight: TrafficLight;
-  isKorean?: boolean;  // 한국 음식 여부
-  tags?: string[];     // 태그 배열 (low_carb, high_protein 등)
-  createdAt?: string;  // 생성일
+  isKorean?: boolean; // 한국 음식 여부
+  tags?: string[]; // 태그 배열 (low_carb, high_protein 등)
+  createdAt?: string; // 생성일
 }
 
 // 기록 방식

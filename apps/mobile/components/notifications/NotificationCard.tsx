@@ -60,7 +60,14 @@ export const NotificationCard = memo(function NotificationCard({
 
       {/* 내용 */}
       <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xxs }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: spacing.xxs,
+          }}
+        >
           <Text
             style={{
               fontSize: typography.size.base,

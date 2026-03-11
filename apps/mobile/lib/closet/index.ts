@@ -10,19 +10,21 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ─── 타입 ────────────────────────────────────────────
 
-export type ClothingCategory =
-  | 'outer'
-  | 'top'
-  | 'bottom'
-  | 'dress'
-  | 'shoes'
-  | 'bag'
-  | 'accessory';
+export type ClothingCategory = 'outer' | 'top' | 'bottom' | 'dress' | 'shoes' | 'bag' | 'accessory';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type Occasion = 'casual' | 'formal' | 'sports' | 'date' | 'travel' | 'office';
 export type Pattern = 'solid' | 'stripe' | 'check' | 'floral' | 'dot' | 'print' | 'other';
-export type Material = 'cotton' | 'polyester' | 'denim' | 'silk' | 'wool' | 'linen' | 'leather' | 'knit' | 'other';
+export type Material =
+  | 'cotton'
+  | 'polyester'
+  | 'denim'
+  | 'silk'
+  | 'wool'
+  | 'linen'
+  | 'leather'
+  | 'knit'
+  | 'other';
 
 export interface ClothingItem {
   id: string;
@@ -121,10 +123,7 @@ export async function getClosetItems(
   sort: ClosetSortOption = 'newest',
   limit = 50
 ): Promise<ClothingItem[]> {
-  let query = supabase
-    .from('closet_items')
-    .select('*')
-    .eq('clerk_user_id', userId);
+  let query = supabase.from('closet_items').select('*').eq('clerk_user_id', userId);
 
   if (filter?.category) {
     query = query.eq('category', filter.category);

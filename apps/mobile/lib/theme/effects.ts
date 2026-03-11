@@ -74,7 +74,10 @@ export type BorderGlowVariant = keyof typeof borderGlow;
 
 type ShadowSize = 'sm' | 'md' | 'lg';
 
-const SHADOW_CONFIGS: Record<ShadowSize, { offset: number; opacity: number; radius: number; elevation: number }> = {
+const SHADOW_CONFIGS: Record<
+  ShadowSize,
+  { offset: number; opacity: number; radius: number; elevation: number }
+> = {
   sm: { offset: 2, opacity: 0.12, radius: 8, elevation: 2 },
   md: { offset: 4, opacity: 0.18, radius: 12, elevation: 4 },
   lg: { offset: 6, opacity: 0.25, radius: 16, elevation: 6 },

@@ -20,10 +20,7 @@ interface MatchListProps {
 }
 
 /** 정렬 로직 */
-function sortMatches(
-  matches: MatchCardData[],
-  sortBy: MatchSortBy
-): MatchCardData[] {
+function sortMatches(matches: MatchCardData[], sortBy: MatchSortBy): MatchCardData[] {
   const sorted = [...matches];
 
   switch (sortBy) {
@@ -46,7 +43,11 @@ function sortMatches(
 }
 
 /** 빈 상태 컴포넌트 */
-function EmptyState({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }): React.JSX.Element {
+function EmptyState({
+  colors,
+}: {
+  colors: ReturnType<typeof useTheme>['colors'];
+}): React.JSX.Element {
   return (
     <View
       testID="match-list-empty"
@@ -89,15 +90,11 @@ export function MatchList({
   const { colors } = useTheme();
 
   // 정렬된 목록
-  const sortedMatches = useMemo(
-    () => sortMatches(matches, sortBy),
-    [matches, sortBy]
-  );
+  const sortedMatches = useMemo(() => sortMatches(matches, sortBy), [matches, sortBy]);
 
   // 아이템 키 추출
   const keyExtractor = useCallback(
-    (item: MatchCardData, index: number) =>
-      `${item.brand}-${item.productName}-${index}`,
+    (item: MatchCardData, index: number) => `${item.brand}-${item.productName}-${index}`,
     []
   );
 
@@ -115,10 +112,7 @@ export function MatchList({
   );
 
   // 아이템 사이 간격
-  const ItemSeparator = useCallback(
-    () => <View style={{ height: spacing.smx }} />,
-    []
-  );
+  const ItemSeparator = useCallback(() => <View style={{ height: spacing.smx }} />, []);
 
   if (sortedMatches.length === 0) {
     return (
@@ -135,10 +129,7 @@ export function MatchList({
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparator}
-      contentContainerStyle={[
-        styles.listContent,
-        { paddingBottom: spacing.xxl },
-      ]}
+      contentContainerStyle={[styles.listContent, { paddingBottom: spacing.xxl }]}
       showsVerticalScrollIndicator={false}
       style={style}
       accessibilityLabel={`매칭 제품 ${sortedMatches.length}개`}

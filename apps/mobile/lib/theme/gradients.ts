@@ -101,9 +101,7 @@ export const gradients = {
 /** 모듈 키로 그라디언트 가져오기 */
 export type GradientKey = keyof typeof gradients;
 
-export function getModuleGradient(
-  moduleKey: keyof typeof moduleColors
-): GradientConfig {
+export function getModuleGradient(moduleKey: keyof typeof moduleColors): GradientConfig {
   const mod = moduleColors[moduleKey];
   return {
     colors: [mod.base, mod.dark],

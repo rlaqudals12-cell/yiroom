@@ -34,7 +34,7 @@ import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography, radii , spacing } from '@/lib/theme';
+import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisResult['faceShape'], string> = {
@@ -133,10 +133,7 @@ export default function MakeupResultScreen() {
 
   if (isLoading) {
     return (
-      <AnalysisLoadingState
-        message="메이크업 스타일을 분석 중이에요..."
-        testID="makeup-loading"
-      />
+      <AnalysisLoadingState message="메이크업 스타일을 분석 중이에요..." testID="makeup-loading" />
     );
   }
 
@@ -207,13 +204,8 @@ export default function MakeupResultScreen() {
   // --- 상세 탭 ---
   const detailTab = (
     <View style={localStyles.tabContent}>
-      <Animated.View
-        entering={FadeInUp.duration(TIMING.normal)}
-        style={localStyles.chartContainer}
-      >
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          밸런스 차트
-        </Text>
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
+        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>밸런스 차트</Text>
         <RadarChart
           data={radarData}
           size={220}
@@ -228,18 +220,18 @@ export default function MakeupResultScreen() {
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
           부위별 맞춤 추천
         </Text>
-        {(Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]).map(
-          (key) => (
-            <GradientCard variant="makeup" key={key} style={localStyles.recCard}>
-              <Text style={[localStyles.recLabel, { color: accent.base }]}>
-                {RECOMMENDATION_LABELS[key]}
-              </Text>
-              <Text style={[localStyles.recText, { color: colors.foreground }]}>
-                {result.recommendations[key]}
-              </Text>
-            </GradientCard>
-          )
-        )}
+        {(
+          Object.keys(result.recommendations) as (keyof MakeupAnalysisResult['recommendations'])[]
+        ).map((key) => (
+          <GradientCard variant="makeup" key={key} style={localStyles.recCard}>
+            <Text style={[localStyles.recLabel, { color: accent.base }]}>
+              {RECOMMENDATION_LABELS[key]}
+            </Text>
+            <Text style={[localStyles.recText, { color: colors.foreground }]}>
+              {result.recommendations[key]}
+            </Text>
+          </GradientCard>
+        ))}
       </Animated.View>
     </View>
   );
@@ -284,35 +276,35 @@ export default function MakeupResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '💄', name: '메이크업 전문가', description: '메이크업 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="makeup"
-      title="메이크업 분석 결과"
-      imageUri={imageUri}
-      imageStyle={localStyles.makeupImage}
-      headerContent={headerContent}
-      trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
-      usedFallback={usedFallback}
-      summaryTab={summaryTab}
-      detailTab={detailTab}
-      recommendTab={recommendTab}
-      primaryActionText="💄 메이크업 제품 추천"
-      onPrimaryAction={handleProductRecommendation}
-      retryPath="/(analysis)/makeup"
-      testID="makeup-analysis-result"
-    />
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '💄', name: '메이크업 전문가', description: '메이크업 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="makeup"
+        title="메이크업 분석 결과"
+        imageUri={imageUri}
+        imageStyle={localStyles.makeupImage}
+        headerContent={headerContent}
+        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+        usedFallback={usedFallback}
+        summaryTab={summaryTab}
+        detailTab={detailTab}
+        recommendTab={recommendTab}
+        primaryActionText="💄 메이크업 제품 추천"
+        onPrimaryAction={handleProductRecommendation}
+        retryPath="/(analysis)/makeup"
+        testID="makeup-analysis-result"
+      />
     </>
   );
 }

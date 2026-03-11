@@ -138,9 +138,7 @@ export function GradientCard({
       />
 
       {/* 콘텐츠 레이어 — 그라디언트 위에 렌더링 */}
-      <View style={[staticStyles.content, { padding: contentPadding }]}>
-        {children}
-      </View>
+      <View style={[staticStyles.content, { padding: contentPadding }]}>{children}</View>
     </View>
   );
 }

@@ -7,11 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import {
-  RateLimitResult,
-  RateLimitErrorResponse,
-  RATE_LIMIT_HEADERS,
-} from '@/types/rate-limit';
+import { RateLimitResult, RateLimitErrorResponse, RATE_LIMIT_HEADERS } from '@/types/rate-limit';
 import {
   checkRateLimitWithFallback,
   getRateLimitCategory,
@@ -42,8 +38,7 @@ function createRateLimitErrorResponse(result: RateLimitResult): NextResponse {
   // 어떤 한도가 초과되었는지 판단
   const limitType = result.minuteRemaining === 0 ? 'minute' : 'daily';
   const retryAfter = Math.ceil(
-    (limitType === 'minute' ? result.resetMinute : result.resetDaily) / 1000 -
-      Date.now() / 1000
+    (limitType === 'minute' ? result.resetMinute : result.resetDaily) / 1000 - Date.now() / 1000
   );
 
   const errorBody: RateLimitErrorResponse = {

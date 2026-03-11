@@ -5,12 +5,7 @@
  * @description 다양한 요소를 기반으로 인사이트 우선순위 점수 계산
  */
 
-import type {
-  InsightCategory,
-  InsightPriority,
-  AnalysisModule,
-  AnalysisDataBundle,
-} from './types';
+import type { InsightCategory, InsightPriority, AnalysisModule, AnalysisDataBundle } from './types';
 
 // ============================================
 // 점수 가중치 상수

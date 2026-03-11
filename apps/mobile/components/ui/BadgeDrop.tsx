@@ -38,11 +38,7 @@ interface BadgeDropProps {
   onDismiss?: () => void;
 }
 
-export function BadgeDrop({
-  badge,
-  visible,
-  onDismiss,
-}: BadgeDropProps): React.JSX.Element | null {
+export function BadgeDrop({ badge, visible, onDismiss }: BadgeDropProps): React.JSX.Element | null {
   const { colors, spacing, typography, radii, shadows } = useTheme();
   const reducedMotion = useReducedMotion();
 
@@ -143,11 +139,7 @@ export function BadgeDrop({
         accessibilityRole="button"
       >
         <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'rgba(0,0,0,0.5)' },
-            overlayStyle,
-          ]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }, overlayStyle]}
         />
         <View style={styles.centerContainer}>
           {/* 메달 */}

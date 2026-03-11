@@ -5,11 +5,7 @@
  * API 키 없으면 자동 mock 데이터 반환 (개발/데모 모드)
  */
 
-import type {
-  KoreaRegion,
-  WeatherData,
-  HourlyForecast,
-} from './types';
+import type { KoreaRegion, WeatherData, HourlyForecast } from './types';
 import { REGION_INFO, WEATHER_CACHE_TTL_MS } from './types';
 
 // OpenWeatherMap API
@@ -89,19 +85,21 @@ export async function getWeatherByRegion(region: KoreaRegion): Promise<WeatherDa
     const currentData = await currentRes.json();
     const forecastData = await forecastRes.json();
 
-    const hourly: HourlyForecast[] = forecastData.list.slice(0, 6).map((item: Record<string, unknown>) => {
-      const main = item.main as Record<string, number>;
-      const weather = (item.weather as Record<string, string>[])[0];
-      const date = new Date((item.dt as number) * 1000);
-      return {
-        time: `${date.getHours().toString().padStart(2, '0')}:00`,
-        temp: Math.round(main.temp),
-        feelsLike: Math.round(main.feels_like),
-        precipitation: Math.round(((item.pop as number) || 0) * 100),
-        description: translateDescription(weather.description),
-        icon: weather.icon,
-      };
-    });
+    const hourly: HourlyForecast[] = forecastData.list
+      .slice(0, 6)
+      .map((item: Record<string, unknown>) => {
+        const main = item.main as Record<string, number>;
+        const weather = (item.weather as Record<string, string>[])[0];
+        const date = new Date((item.dt as number) * 1000);
+        return {
+          time: `${date.getHours().toString().padStart(2, '0')}:00`,
+          temp: Math.round(main.temp),
+          feelsLike: Math.round(main.feels_like),
+          precipitation: Math.round(((item.pop as number) || 0) * 100),
+          description: translateDescription(weather.description),
+          icon: weather.icon,
+        };
+      });
 
     const weatherData: WeatherData & { expiresAt: number } = {
       region,
@@ -138,9 +136,7 @@ export function findNearestRegion(lat: number, lon: number): KoreaRegion {
   let minDist = Infinity;
 
   for (const [region, coords] of Object.entries(REGION_INFO)) {
-    const dist = Math.sqrt(
-      Math.pow(lat - coords.lat, 2) + Math.pow(lon - coords.lon, 2)
-    );
+    const dist = Math.sqrt(Math.pow(lat - coords.lat, 2) + Math.pow(lon - coords.lon, 2));
     if (dist < minDist) {
       minDist = dist;
       nearest = region as KoreaRegion;

@@ -7,7 +7,7 @@
 import { useMemo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-import { useTheme, radii , spacing } from '@/lib/theme';
+import { useTheme, radii, spacing } from '@/lib/theme';
 
 export function useAnalysisStyles() {
   const theme = useTheme();

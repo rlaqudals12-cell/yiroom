@@ -6,7 +6,7 @@
  */
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface ProgressIndicatorProps {
   current: number;
@@ -36,8 +36,7 @@ export function ProgressIndicator({
             style={[
               isCurrent ? styles.dotPill : styles.dot,
               {
-                backgroundColor:
-                  isCurrent || isCompleted ? brand.primary : colors.border,
+                backgroundColor: isCurrent || isCompleted ? brand.primary : colors.border,
               },
             ]}
           />

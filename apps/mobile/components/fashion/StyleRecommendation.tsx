@@ -53,10 +53,7 @@ export const StyleRecommendation = memo(function StyleRecommendation({
       {/* 헤더 */}
       <View style={styles.header}>
         <View
-          style={[
-            styles.iconBadge,
-            { backgroundColor: moduleColors.personalColor.light + '30' },
-          ]}
+          style={[styles.iconBadge, { backgroundColor: moduleColors.personalColor.light + '30' }]}
         >
           <Sparkles size={18} color={moduleColors.personalColor.dark} />
         </View>

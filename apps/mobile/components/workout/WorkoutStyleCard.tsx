@@ -17,7 +17,11 @@ export interface WorkoutStyleCardProps {
 }
 
 export function WorkoutStyleCard({
-  styleName, description, matchRate, characteristics, recommendedExercises = [],
+  styleName,
+  description,
+  matchRate,
+  characteristics,
+  recommendedExercises = [],
 }: WorkoutStyleCardProps): React.ReactElement {
   const { colors, module, typography, radii, spacing } = useTheme();
   const baseColor = module.workout.base;
@@ -25,37 +29,73 @@ export function WorkoutStyleCard({
   return (
     <View
       testID="workout-style-card"
-      style={[styles.container, { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderRadius: radii.xl, borderColor: colors.border },
+      ]}
       accessibilityLabel={`운동 스타일: ${styleName}, 적합도 ${matchRate}%`}
     >
       <View style={styles.header}>
         <Text style={{ color: colors.foreground, fontSize: typography.size.lg, fontWeight: '700' }}>
           {styleName}
         </Text>
-        <View style={[styles.matchBadge, { backgroundColor: `${baseColor}20`, borderRadius: radii.full }]}>
+        <View
+          style={[
+            styles.matchBadge,
+            { backgroundColor: `${baseColor}20`, borderRadius: radii.full },
+          ]}
+        >
           <Text style={{ color: baseColor, fontSize: typography.size.sm, fontWeight: '700' }}>
             {matchRate}%
           </Text>
         </View>
       </View>
 
-      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm, lineHeight: 20, marginTop: 6 }}>
+      <Text
+        style={{
+          color: colors.mutedForeground,
+          fontSize: typography.size.sm,
+          lineHeight: 20,
+          marginTop: 6,
+        }}
+      >
         {description}
       </Text>
 
       <View style={[styles.charRow, { marginTop: spacing.sm }]}>
         {characteristics.slice(0, 4).map((char, i) => (
-          <View key={i} style={[styles.charBadge, { backgroundColor: colors.secondary, borderRadius: radii.sm }]}>
-            <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>{char}</Text>
+          <View
+            key={i}
+            style={[
+              styles.charBadge,
+              { backgroundColor: colors.secondary, borderRadius: radii.sm },
+            ]}
+          >
+            <Text style={{ color: colors.secondaryForeground, fontSize: typography.size.xs }}>
+              {char}
+            </Text>
           </View>
         ))}
       </View>
 
       {recommendedExercises.length > 0 && (
         <View style={{ marginTop: spacing.sm }}>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs, marginBottom: spacing.xs }}>추천 운동</Text>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.xs,
+              marginBottom: spacing.xs,
+            }}
+          >
+            추천 운동
+          </Text>
           {recommendedExercises.slice(0, 3).map((ex, i) => (
-            <Text key={i} style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}>• {ex}</Text>
+            <Text
+              key={i}
+              style={{ color: colors.foreground, fontSize: typography.size.xs, lineHeight: 18 }}
+            >
+              • {ex}
+            </Text>
           ))}
         </View>
       )}

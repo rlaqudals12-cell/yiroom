@@ -19,12 +19,7 @@ export {
   rejectFriendRequest,
 } from '../social';
 
-export type {
-  Friend,
-  FriendRequest,
-  FriendStats,
-  UserSearchResult,
-} from '../social';
+export type { Friend, FriendRequest, FriendStats, UserSearchResult } from '../social';
 
 // ─── 확장 타입 ────────────────────────────────────────
 
@@ -86,9 +81,7 @@ export async function getFriendActivities(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', activityUserIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return activities.map((activity) => {
     const user = userMap.get(activity.clerk_user_id);
@@ -149,9 +142,7 @@ export async function getFriendSuggestions(
     .select('clerk_user_id, display_name, avatar_url')
     .in('clerk_user_id', candidateIds);
 
-  const userMap = new Map(
-    (users ?? []).map((u) => [u.clerk_user_id, u])
-  );
+  const userMap = new Map((users ?? []).map((u) => [u.clerk_user_id, u]));
 
   return candidates.map((c) => {
     const user = userMap.get(c.clerk_user_id);

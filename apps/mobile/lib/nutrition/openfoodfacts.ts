@@ -59,23 +59,18 @@ const API_TIMEOUT_MS = 3000;
  * @param barcode EAN-13/EAN-8/UPC-A 바코드
  * @returns 식품 정보 또는 미발견
  */
-export async function lookupOpenFoodFacts(
-  barcode: string
-): Promise<OpenFoodFactsResult> {
+export async function lookupOpenFoodFacts(barcode: string): Promise<OpenFoodFactsResult> {
   try {
     // 타임아웃 설정
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    const response = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
-      {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'Yiroom/1.0 (https://yiroom.app)',
-        },
-      }
-    );
+    const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Yiroom/1.0 (https://yiroom.app)',
+      },
+    });
 
     clearTimeout(timeoutId);
 
@@ -95,8 +90,7 @@ export async function lookupOpenFoodFacts(
     // 필수 데이터 확인 (이름 또는 칼로리)
     const productName = product.product_name_ko || product.product_name;
     const calories =
-      product.nutriments?.['energy-kcal_100g'] ||
-      product.nutriments?.['energy-kcal_serving'];
+      product.nutriments?.['energy-kcal_100g'] || product.nutriments?.['energy-kcal_serving'];
 
     if (!productName && !calories) {
       return { found: false, error: 'Insufficient product data' };
@@ -117,21 +111,17 @@ export async function lookupOpenFoodFacts(
       sugar: product.nutriments?.sugars_100g
         ? Math.round(product.nutriments.sugars_100g)
         : undefined,
-      fiber: product.nutriments?.fiber_100g
-        ? Math.round(product.nutriments.fiber_100g)
-        : undefined,
+      fiber: product.nutriments?.fiber_100g ? Math.round(product.nutriments.fiber_100g) : undefined,
       // 나트륨 mg 변환 (sodium g → mg 또는 salt g → sodium mg: salt * 400)
       sodium: (() => {
-        if (product.nutriments?.sodium_100g) return Math.round(product.nutriments.sodium_100g * 1000);
+        if (product.nutriments?.sodium_100g)
+          return Math.round(product.nutriments.sodium_100g * 1000);
         if (product.nutriments?.salt_100g) return Math.round(product.nutriments.salt_100g * 400);
         return undefined;
       })(),
-      imageUrl:
-        product.image_front_small_url || product.image_front_url || undefined,
+      imageUrl: product.image_front_small_url || product.image_front_url || undefined,
       category: product.categories?.split(',')[0]?.trim() || undefined,
-      allergens: product.allergens_tags?.map((tag) =>
-        tag.replace('en:', '').replace('ko:', '')
-      ),
+      allergens: product.allergens_tags?.map((tag) => tag.replace('en:', '').replace('ko:', '')),
       source: 'api',
       verified: false, // API 데이터는 검증 안됨
     };
@@ -147,4 +137,3 @@ export async function lookupOpenFoodFacts(
     return { found: false, error: 'Unknown error' };
   }
 }
-

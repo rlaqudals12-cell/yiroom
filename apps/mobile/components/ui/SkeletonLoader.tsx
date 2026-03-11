@@ -48,7 +48,7 @@ function useShimmerOpacity(shouldAnimate: boolean): SharedValue<number> {
         easing: Easing.inOut(Easing.ease),
       }),
       -1,
-      true,
+      true
     );
   }, [shouldAnimate, opacity]);
 
@@ -115,12 +115,7 @@ interface SkeletonTextProps {
 
 export function SkeletonText({ style, testID }: SkeletonTextProps): React.JSX.Element {
   return (
-    <SkeletonLoader
-      height={14}
-      borderRadius={4}
-      style={style}
-      testID={testID ?? 'skeleton-text'}
-    />
+    <SkeletonLoader height={14} borderRadius={4} style={style} testID={testID ?? 'skeleton-text'} />
   );
 }
 

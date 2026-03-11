@@ -78,9 +78,7 @@ export function FriendActivityCard({
       </View>
 
       <View style={[styles.body, { marginTop: spacing.sm }]}>
-        <Text style={{ fontSize: typography.size.xl }}>
-          {ACTIVITY_EMOJI[activityType]}
-        </Text>
+        <Text style={{ fontSize: typography.size.xl }}>{ACTIVITY_EMOJI[activityType]}</Text>
         <View style={{ marginLeft: spacing.sm, flex: 1 }}>
           <Text
             style={{

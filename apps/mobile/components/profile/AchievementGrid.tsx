@@ -6,7 +6,7 @@
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme , spacing, typography} from '../../lib/theme';
+import { useTheme, spacing, typography } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { Achievement } from '../../hooks/useWellnessScore';
 
@@ -85,19 +85,13 @@ export function AchievementGrid({
         scrollEnabled={false}
         keyExtractor={(item) => item.id}
         columnWrapperStyle={styles.gridRow}
-        renderItem={({ item }) => (
-          <AchievementItem achievement={item} />
-        )}
+        renderItem={({ item }) => <AchievementItem achievement={item} />}
       />
     </Animated.View>
   );
 }
 
-function AchievementItem({
-  achievement,
-}: {
-  achievement: Achievement;
-}): React.JSX.Element {
+function AchievementItem({ achievement }: { achievement: Achievement }): React.JSX.Element {
   const { colors, spacing, radii, typography } = useTheme();
 
   return (
@@ -112,14 +106,10 @@ function AchievementItem({
         },
       ]}
       accessibilityLabel={
-        achievement.unlocked
-          ? `${achievement.title} 달성 완료`
-          : `${achievement.title} 미달성`
+        achievement.unlocked ? `${achievement.title} 달성 완료` : `${achievement.title} 미달성`
       }
     >
-      <Text style={styles.emoji}>
-        {achievement.unlocked ? achievement.emoji : '🔒'}
-      </Text>
+      <Text style={styles.emoji}>{achievement.unlocked ? achievement.emoji : '🔒'}</Text>
       <Text
         style={{
           fontSize: typography.size.xs,

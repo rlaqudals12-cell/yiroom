@@ -112,9 +112,7 @@ export const ClosetClothingCard = memo(function ClosetClothingCard({
             accessibilityLabel={`${name} 이미지`}
           />
         ) : (
-          <Text style={{ fontSize: 32 }}>
-            {CATEGORY_EMOJI[category]}
-          </Text>
+          <Text style={{ fontSize: 32 }}>{CATEGORY_EMOJI[category]}</Text>
         )}
 
         {/* 착용 횟수 뱃지 */}

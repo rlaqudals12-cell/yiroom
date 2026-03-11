@@ -34,7 +34,7 @@ import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { TIMING } from '@/lib/animations';
-import { typography, radii , spacing } from '@/lib/theme';
+import { typography, radii, spacing } from '@/lib/theme';
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -65,8 +65,7 @@ const BODY_TYPE_DATA: Record<
   },
   InvertedTriangle: {
     name: '역삼각형 체형',
-    description:
-      '어깨가 엉덩이보다 넓은 체형이에요. 하체에 볼륨을 주면 균형 잡힌 실루엣이 돼요.',
+    description: '어깨가 엉덩이보다 넓은 체형이에요. 하체에 볼륨을 주면 균형 잡힌 실루엣이 돼요.',
     recommendations: ['V넥', '래글런 소매', '플레어 스커트', '와이드 팬츠'],
     avoidItems: ['패드 있는 어깨', '보트넥', '가로 스트라이프 상의'],
     exerciseTips: ['스쿼트로 하체 볼륨 키우기', '런지로 힙업 효과'],
@@ -81,32 +80,28 @@ const BODY_TYPE_DATA: Record<
   },
   Oval: {
     name: '타원형 체형',
-    description:
-      '복부가 가장 넓은 체형이에요. 세로 라인을 강조하면 슬림해 보이는 효과가 있어요.',
+    description: '복부가 가장 넓은 체형이에요. 세로 라인을 강조하면 슬림해 보이는 효과가 있어요.',
     recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
     avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
     exerciseTips: ['유산소 운동으로 체지방 감소', '플랭크로 코어 강화'],
   },
   Diamond: {
     name: '다이아몬드 체형',
-    description:
-      '허리가 넓고 어깨와 엉덩이가 좁은 체형이에요. 상하체 균형을 맞추면 좋아요.',
+    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형이에요. 상하체 균형을 맞추면 좋아요.',
     recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
     avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
     exerciseTips: ['숄더 프레스로 어깨 라인 강조', '스쿼트로 하체 볼륨 키우기'],
   },
   Pear: {
     name: '배 체형',
-    description:
-      '하체가 상체보다 넓은 체형이에요. 상체를 강조하면 밸런스 있는 실루엣이 돼요.',
+    description: '하체가 상체보다 넓은 체형이에요. 상체를 강조하면 밸런스 있는 실루엣이 돼요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
     exerciseTips: ['상체 근력 운동으로 밸런스 맞추기', '힙 스트레칭으로 라인 정리'],
   },
   Athletic: {
     name: '운동선수 체형',
-    description:
-      '탄탄하고 균형 잡힌 체형이에요. 다양한 스타일을 소화할 수 있는 장점이 있어요.',
+    description: '탄탄하고 균형 잡힌 체형이에요. 다양한 스타일을 소화할 수 있는 장점이 있어요.',
     recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
     avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
     exerciseTips: ['현재 운동 루틴 유지', '유연성 운동 추가'],
@@ -253,9 +248,7 @@ export default function BodyResultScreen() {
       <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
       <View style={localStyles.bmiRow}>
         <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>
-        <Text style={[localStyles.bmiNumber, { color: bmiStatus.color }]}>
-          {bmi.toFixed(1)}
-        </Text>
+        <Text style={[localStyles.bmiNumber, { color: bmiStatus.color }]}>{bmi.toFixed(1)}</Text>
         <View style={[localStyles.bmiBadge, { backgroundColor: bmiStatus.color }]}>
           <Text style={[localStyles.bmiBadgeText, { color: colors.card }]}>{bmiStatus.label}</Text>
         </View>
@@ -322,9 +315,7 @@ export default function BodyResultScreen() {
         <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>BMI 상세</Text>
         <GradientCard variant="body" style={localStyles.descCard}>
           <View style={localStyles.bmiDetailRow}>
-            <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>
-              키
-            </Text>
+            <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>키</Text>
             <Text style={[localStyles.bmiDetailValue, { color: colors.foreground }]}>
               {height}cm
             </Text>
@@ -338,9 +329,7 @@ export default function BodyResultScreen() {
             </Text>
           </View>
           <View style={localStyles.bmiDetailRow}>
-            <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>
-              BMI
-            </Text>
+            <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>BMI</Text>
             <Text style={[localStyles.bmiDetailValue, { color: bmiStatus.color }]}>
               {bmi.toFixed(1)} ({bmiStatus.label})
             </Text>
@@ -360,11 +349,12 @@ export default function BodyResultScreen() {
           {typeData.recommendations.map((item, index) => (
             <View
               key={index}
-              style={[localStyles.tag, { backgroundColor: status.success + (isDark ? '20' : '20') }]}
+              style={[
+                localStyles.tag,
+                { backgroundColor: status.success + (isDark ? '20' : '20') },
+              ]}
             >
-              <Text style={[localStyles.tagText, { color: status.success }]}>
-                {item}
-              </Text>
+              <Text style={[localStyles.tagText, { color: status.success }]}>{item}</Text>
             </View>
           ))}
         </View>
@@ -377,13 +367,8 @@ export default function BodyResultScreen() {
         </Text>
         <View style={localStyles.tagContainer}>
           {typeData.avoidItems.map((item, index) => (
-            <View
-              key={index}
-              style={[localStyles.tag, { backgroundColor: status.error + '20' }]}
-            >
-              <Text style={[localStyles.tagText, { color: status.error }]}>
-                {item}
-              </Text>
+            <View key={index} style={[localStyles.tag, { backgroundColor: status.error + '20' }]}>
+              <Text style={[localStyles.tagText, { color: status.error }]}>{item}</Text>
             </View>
           ))}
         </View>
@@ -406,35 +391,35 @@ export default function BodyResultScreen() {
 
   return (
     <>
-    <CelebrationEffect
-      type="analysis_complete"
-      visible={showCelebration}
-      onComplete={() => {
-        setShowCelebration(false);
-        setShowBadge(true);
-      }}
-    />
-    <BadgeDrop
-      badge={{ icon: '💪', name: '체형 분석가', description: '체형 분석 완료!' }}
-      visible={showBadge}
-      onDismiss={() => setShowBadge(false)}
-    />
-    <ResultLayout
-      moduleKey="body"
-      title="체형 분석 결과"
-      imageUri={imageUri}
-      imageStyle={localStyles.bodyImage}
-      headerContent={headerContent}
-      trustBadgeType={usedFallback ? 'fallback' : 'ai'}
-      usedFallback={usedFallback}
-      summaryTab={summaryTab}
-      detailTab={detailTab}
-      recommendTab={recommendTab}
-      primaryActionText="🏃 나에게 맞는 운동 추천"
-      onPrimaryAction={handleWorkoutRecommendation}
-      retryPath="/(analysis)/body"
-      testID="body-analysis-result"
-    />
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => {
+          setShowCelebration(false);
+          setShowBadge(true);
+        }}
+      />
+      <BadgeDrop
+        badge={{ icon: '💪', name: '체형 분석가', description: '체형 분석 완료!' }}
+        visible={showBadge}
+        onDismiss={() => setShowBadge(false)}
+      />
+      <ResultLayout
+        moduleKey="body"
+        title="체형 분석 결과"
+        imageUri={imageUri}
+        imageStyle={localStyles.bodyImage}
+        headerContent={headerContent}
+        trustBadgeType={usedFallback ? 'fallback' : 'ai'}
+        usedFallback={usedFallback}
+        summaryTab={summaryTab}
+        detailTab={detailTab}
+        recommendTab={recommendTab}
+        primaryActionText="🏃 나에게 맞는 운동 추천"
+        onPrimaryAction={handleWorkoutRecommendation}
+        retryPath="/(analysis)/body"
+        testID="body-analysis-result"
+      />
     </>
   );
 }

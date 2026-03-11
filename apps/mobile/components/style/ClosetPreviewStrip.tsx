@@ -9,7 +9,7 @@ import { Package } from 'lucide-react-native';
 import { FlatList, StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { InventoryItem } from '../../lib/inventory';
 

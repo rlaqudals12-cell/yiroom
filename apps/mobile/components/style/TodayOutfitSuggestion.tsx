@@ -9,7 +9,7 @@ import { Wand2 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, spacing} from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { OutfitSuggestion, ClosetRecommendation } from '../../lib/inventory';
 
@@ -72,10 +72,7 @@ export function TodayOutfitSuggestion({
       {/* 헤더 */}
       <View style={styles.header}>
         <View
-          style={[
-            styles.iconBadge,
-            { backgroundColor: moduleColors.personalColor.light + '20' },
-          ]}
+          style={[styles.iconBadge, { backgroundColor: moduleColors.personalColor.light + '20' }]}
         >
           <Wand2 size={18} color={moduleColors.personalColor.dark} />
         </View>

@@ -28,12 +28,15 @@ export interface ShoppingLink {
 }
 
 // 플랫폼 정보
-export const PLATFORM_INFO: Record<ShoppingPlatform, {
-  name: string;
-  icon: string;
-  baseUrl: string;
-  searchPath: string;
-}> = {
+export const PLATFORM_INFO: Record<
+  ShoppingPlatform,
+  {
+    name: string;
+    icon: string;
+    baseUrl: string;
+    searchPath: string;
+  }
+> = {
   musinsa: {
     name: '무신사',
     icon: '🛍️',
@@ -55,10 +58,13 @@ export const PLATFORM_INFO: Record<ShoppingPlatform, {
 };
 
 // 카테고리 정보
-export const CATEGORY_INFO: Record<ShoppingCategory, {
-  name: string;
-  keywords: string[];
-}> = {
+export const CATEGORY_INFO: Record<
+  ShoppingCategory,
+  {
+    name: string;
+    keywords: string[];
+  }
+> = {
   'workout-top': {
     name: '운동 상의',
     keywords: ['운동복 상의', '스포츠 브라', '요가 탑', '트레이닝 티셔츠'],
@@ -96,10 +102,7 @@ const BODY_FIT_KEYWORDS: Record<BodyType, string[]> = {
 /**
  * 플랫폼별 검색 URL 생성
  */
-export function generateSearchUrl(
-  platform: ShoppingPlatform,
-  query: string
-): string {
+export function generateSearchUrl(platform: ShoppingPlatform, query: string): string {
   const info = PLATFORM_INFO[platform];
   const encodedQuery = encodeURIComponent(query);
 
@@ -118,18 +121,14 @@ export function generateSearchUrl(
 /**
  * PC 타입 기반 색상 키워드 반환
  */
-export function getColorKeywordsForPC(
-  personalColor: PersonalColorSeason
-): string[] {
+export function getColorKeywordsForPC(personalColor: PersonalColorSeason): string[] {
   return PC_COLOR_KEYWORDS[personalColor];
 }
 
 /**
  * 체형 기반 핏 키워드 반환
  */
-export function getFitKeywordsForBodyType(
-  bodyType: BodyType
-): string[] {
+export function getFitKeywordsForBodyType(bodyType: BodyType): string[] {
   return BODY_FIT_KEYWORDS[bodyType];
 }
 
@@ -249,7 +248,4 @@ export function getRecommendedSearchTerms(
 }
 
 // 상수 내보내기 (테스트용)
-export {
-  PC_COLOR_KEYWORDS,
-  BODY_FIT_KEYWORDS,
-};
+export { PC_COLOR_KEYWORDS, BODY_FIT_KEYWORDS };

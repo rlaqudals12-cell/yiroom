@@ -173,12 +173,7 @@ export function ScanResult({
                 accessibilityLabel={`${ingredient.name}: ${config.label}`}
               >
                 {/* 안전성 인디케이터 */}
-                <View
-                  style={[
-                    styles.safetyDot,
-                    { backgroundColor: config.color },
-                  ]}
-                />
+                <View style={[styles.safetyDot, { backgroundColor: config.color }]} />
                 <Text
                   style={{
                     flex: 1,

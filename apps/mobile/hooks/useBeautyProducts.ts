@@ -28,15 +28,8 @@ interface UseBeautyProductsResult {
   refresh: () => Promise<void>;
 }
 
-export function useBeautyProducts(
-  options: UseBeautyProductsOptions = {}
-): UseBeautyProductsResult {
-  const {
-    category,
-    minMatchRate = 0,
-    sortBy = 'match',
-    limit = 20,
-  } = options;
+export function useBeautyProducts(options: UseBeautyProductsOptions = {}): UseBeautyProductsResult {
+  const { category, minMatchRate = 0, sortBy = 'match', limit = 20 } = options;
 
   const supabase = useClerkSupabaseClient();
   const { getMatchedProducts, filterByMatchRate, isLoading: profileLoading } = useUserMatching();
@@ -116,7 +109,17 @@ export function useBeautyProducts(
         setIsLoading(false);
       }
     },
-    [supabase, category, sortBy, limit, offset, profileLoading, getMatchedProducts, filterByMatchRate, minMatchRate]
+    [
+      supabase,
+      category,
+      sortBy,
+      limit,
+      offset,
+      profileLoading,
+      getMatchedProducts,
+      filterByMatchRate,
+      minMatchRate,
+    ]
   );
 
   // 초기 로드

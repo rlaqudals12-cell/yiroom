@@ -42,7 +42,9 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
   const mountedRef = useRef(true);
 
   useEffect(() => {
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   const getAuthToken = useCallback(async (): Promise<string> => {
@@ -92,41 +94,43 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
     }
   }, [getAuthToken]);
 
-  const checkItem = useCallback(async (itemId: string, isChecked: boolean) => {
-    if (!capsule) return;
-    setError(null);
+  const checkItem = useCallback(
+    async (itemId: string, isChecked: boolean) => {
+      if (!capsule) return;
+      setError(null);
 
-    // 낙관적 업데이트
-    const prevCapsule = capsule;
-    setCapsule({
-      ...capsule,
-      items: capsule.items.map((item) =>
-        item.id === itemId ? { ...item, isChecked } : item
-      ),
-    });
+      // 낙관적 업데이트
+      const prevCapsule = capsule;
+      setCapsule({
+        ...capsule,
+        items: capsule.items.map((item) => (item.id === itemId ? { ...item, isChecked } : item)),
+      });
 
-    try {
-      const token = await getAuthToken();
-      const result = await apiCheckItem(capsule.id, itemId, isChecked, token);
-      if (!mountedRef.current) return;
-      if (result.error) {
-        // 롤백
-        setCapsule(prevCapsule);
-        setError(result.error);
-      } else if (result.data) {
-        setCapsule(result.data);
+      try {
+        const token = await getAuthToken();
+        const result = await apiCheckItem(capsule.id, itemId, isChecked, token);
+        if (!mountedRef.current) return;
+        if (result.error) {
+          // 롤백
+          setCapsule(prevCapsule);
+          setError(result.error);
+        } else if (result.data) {
+          setCapsule(result.data);
+        }
+      } catch {
+        if (mountedRef.current) {
+          setCapsule(prevCapsule);
+          setError({ code: 'UNKNOWN_ERROR', message: '체크 업데이트에 실패했습니다.' });
+        }
       }
-    } catch {
-      if (mountedRef.current) {
-        setCapsule(prevCapsule);
-        setError({ code: 'UNKNOWN_ERROR', message: '체크 업데이트에 실패했습니다.' });
-      }
-    }
-  }, [capsule, getAuthToken]);
+    },
+    [capsule, getAuthToken]
+  );
 
-  const completionRate = capsule && capsule.items.length > 0
-    ? Math.round((capsule.items.filter((i) => i.isChecked).length / capsule.items.length) * 100)
-    : 0;
+  const completionRate =
+    capsule && capsule.items.length > 0
+      ? Math.round((capsule.items.filter((i) => i.isChecked).length / capsule.items.length) * 100)
+      : 0;
 
   return {
     capsule,
@@ -159,7 +163,9 @@ export function useBeautyProfile(): UseBeautyProfileReturn {
   const mountedRef = useRef(true);
 
   useEffect(() => {
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   const refresh = useCallback(async () => {

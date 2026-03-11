@@ -72,12 +72,7 @@ export const SizeRecommendationCard = memo(function SizeRecommendationCard({
     >
       {/* 헤더: 아이콘 + 브랜드/카테고리 */}
       <View style={styles.header}>
-        <View
-          style={[
-            styles.iconBadge,
-            { backgroundColor: moduleColors.body.light + '30' },
-          ]}
-        >
+        <View style={[styles.iconBadge, { backgroundColor: moduleColors.body.light + '30' }]}>
           <Ruler size={18} color={moduleColors.body.dark} />
         </View>
         <View style={{ flex: 1, marginLeft: spacing.sm }}>

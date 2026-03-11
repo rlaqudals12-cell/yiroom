@@ -54,10 +54,7 @@ async function fetchPersonalColorData(
 /**
  * 최신 피부 분석 결과 조회
  */
-async function fetchSkinData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<SkinData | null> {
+async function fetchSkinData(supabase: SupabaseClient, userId: string): Promise<SkinData | null> {
   const { data, error } = await supabase
     .from('skin_analyses')
     .select('skin_type, concerns, hydration_level, oil_level, sensitivity_level')
@@ -80,10 +77,7 @@ async function fetchSkinData(
 /**
  * 최신 체형 분석 결과 조회
  */
-async function fetchBodyData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<BodyData | null> {
+async function fetchBodyData(supabase: SupabaseClient, userId: string): Promise<BodyData | null> {
   const { data, error } = await supabase
     .from('body_analyses')
     .select('body_type, shoulder_type, proportions')
@@ -104,10 +98,7 @@ async function fetchBodyData(
 /**
  * 최신 얼굴형 분석 결과 조회
  */
-async function fetchFaceData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<FaceData | null> {
+async function fetchFaceData(supabase: SupabaseClient, userId: string): Promise<FaceData | null> {
   const { data, error } = await supabase
     .from('face_analyses')
     .select('face_shape, facial_features')
@@ -127,10 +118,7 @@ async function fetchFaceData(
 /**
  * 최신 모발 분석 결과 조회
  */
-async function fetchHairData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<HairData | null> {
+async function fetchHairData(supabase: SupabaseClient, userId: string): Promise<HairData | null> {
   const { data, error } = await supabase
     .from('hair_analyses')
     .select('hair_type, hair_condition, scalp_condition')

@@ -93,68 +93,73 @@ export function useSkinDiary(): UseSkinDiaryReturn {
   }, []);
 
   // 엔트리 저장 (upsert)
-  const saveEntry = useCallback(async (input: SkinDiaryInput): Promise<boolean> => {
-    if (!clerkUserId) return false;
+  const saveEntry = useCallback(
+    async (input: SkinDiaryInput): Promise<boolean> => {
+      if (!clerkUserId) return false;
 
-    try {
-      const dbData = {
-        clerk_user_id: clerkUserId,
-        entry_date: input.entryDate,
-        skin_condition: input.skinCondition,
-        condition_notes: input.conditionNotes ?? null,
-        sleep_hours: input.sleepHours ?? null,
-        sleep_quality: input.sleepQuality ?? null,
-        water_intake_ml: input.waterIntakeMl ?? null,
-        stress_level: input.stressLevel ?? null,
-        weather: input.weather ?? null,
-        morning_routine_completed: input.morningRoutineCompleted,
-        evening_routine_completed: input.eveningRoutineCompleted,
-      };
+      try {
+        const dbData = {
+          clerk_user_id: clerkUserId,
+          entry_date: input.entryDate,
+          skin_condition: input.skinCondition,
+          condition_notes: input.conditionNotes ?? null,
+          sleep_hours: input.sleepHours ?? null,
+          sleep_quality: input.sleepQuality ?? null,
+          water_intake_ml: input.waterIntakeMl ?? null,
+          stress_level: input.stressLevel ?? null,
+          weather: input.weather ?? null,
+          morning_routine_completed: input.morningRoutineCompleted,
+          evening_routine_completed: input.eveningRoutineCompleted,
+        };
 
-      const { error: upsertError } = await supabase
-        .from('skin_diary_entries')
-        .upsert(dbData, { onConflict: 'clerk_user_id,entry_date' });
+        const { error: upsertError } = await supabase
+          .from('skin_diary_entries')
+          .upsert(dbData, { onConflict: 'clerk_user_id,entry_date' });
 
-      if (upsertError) {
-        console.warn('[SkinDiary] 저장 실패:', upsertError.message);
+        if (upsertError) {
+          console.warn('[SkinDiary] 저장 실패:', upsertError.message);
+          return false;
+        }
+
+        await loadEntries();
+        return true;
+      } catch {
         return false;
       }
-
-      await loadEntries();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [clerkUserId, supabase, loadEntries]);
+    },
+    [clerkUserId, supabase, loadEntries]
+  );
 
   // 삭제
-  const deleteEntry = useCallback(async (entryId: string): Promise<boolean> => {
-    if (!clerkUserId) return false;
+  const deleteEntry = useCallback(
+    async (entryId: string): Promise<boolean> => {
+      if (!clerkUserId) return false;
 
-    try {
-      const { error: delError } = await supabase
-        .from('skin_diary_entries')
-        .delete()
-        .eq('id', entryId)
-        .eq('clerk_user_id', clerkUserId);
+      try {
+        const { error: delError } = await supabase
+          .from('skin_diary_entries')
+          .delete()
+          .eq('id', entryId)
+          .eq('clerk_user_id', clerkUserId);
 
-      if (delError) {
-        console.warn('[SkinDiary] 삭제 실패:', delError.message);
+        if (delError) {
+          console.warn('[SkinDiary] 삭제 실패:', delError.message);
+          return false;
+        }
+
+        await loadEntries();
+        return true;
+      } catch {
         return false;
       }
-
-      await loadEntries();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [clerkUserId, supabase, loadEntries]);
+    },
+    [clerkUserId, supabase, loadEntries]
+  );
 
   // 날짜별 엔트리 조회
   const getEntryForDate = useCallback(
-    (date: string): SkinDiaryEntry | undefined =>
-      entries.find((e) => e.entryDate === date),
-    [entries],
+    (date: string): SkinDiaryEntry | undefined => entries.find((e) => e.entryDate === date),
+    [entries]
   );
 
   // 월간 요약
@@ -162,26 +167,19 @@ export function useSkinDiary(): UseSkinDiaryReturn {
     if (entries.length === 0) return null;
 
     const total = entries.length;
-    const avgCondition =
-      entries.reduce((sum, e) => sum + e.skinCondition, 0) / total;
+    const avgCondition = entries.reduce((sum, e) => sum + e.skinCondition, 0) / total;
 
     const morningCount = entries.filter((e) => e.morningRoutineCompleted).length;
     const eveningCount = entries.filter((e) => e.eveningRoutineCompleted).length;
 
     // 트렌드: 최근 7개 vs 이전 7개 평균 비교
-    const sorted = [...entries].sort(
-      (a, b) => a.entryDate.localeCompare(b.entryDate),
-    );
+    const sorted = [...entries].sort((a, b) => a.entryDate.localeCompare(b.entryDate));
     let trend: TrendDirection = 'stable';
     if (sorted.length >= 4) {
       const mid = Math.floor(sorted.length / 2);
-      const firstHalf =
-        sorted.slice(0, mid).reduce((s, e) => s + e.skinCondition, 0) / mid;
+      const firstHalf = sorted.slice(0, mid).reduce((s, e) => s + e.skinCondition, 0) / mid;
       const secondHalf =
-        sorted
-          .slice(mid)
-          .reduce((s, e) => s + e.skinCondition, 0) /
-        (sorted.length - mid);
+        sorted.slice(mid).reduce((s, e) => s + e.skinCondition, 0) / (sorted.length - mid);
       const diff = secondHalf - firstHalf;
       if (diff > 0.3) trend = 'improving';
       else if (diff < -0.3) trend = 'declining';

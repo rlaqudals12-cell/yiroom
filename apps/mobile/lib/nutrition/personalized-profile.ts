@@ -22,21 +22,21 @@ export type AgeGroup = '19-29' | '30-49' | '50-64' | '65-74' | '75+';
 /** 특수 상태 (임신, 수유 등) */
 export type SpecialCondition =
   | 'none'
-  | 'pregnant-1st'     // 임신 1분기
-  | 'pregnant-2nd'     // 임신 2분기
-  | 'pregnant-3rd'     // 임신 3분기
-  | 'breastfeeding'    // 수유
-  | 'menopause'        // 폐경기
-  | 'athlete';         // 운동선수
+  | 'pregnant-1st' // 임신 1분기
+  | 'pregnant-2nd' // 임신 2분기
+  | 'pregnant-3rd' // 임신 3분기
+  | 'breastfeeding' // 수유
+  | 'menopause' // 폐경기
+  | 'athlete'; // 운동선수
 
 /** 건강 목표 */
 export type HealthGoal =
-  | 'maintain'         // 현재 유지
-  | 'weight-loss'      // 체중 감량
-  | 'muscle-gain'      // 근육 증가
-  | 'bone-health'      // 뼈 건강
-  | 'heart-health'     // 심장 건강
-  | 'skin-health';     // 피부 건강
+  | 'maintain' // 현재 유지
+  | 'weight-loss' // 체중 감량
+  | 'muscle-gain' // 근육 증가
+  | 'bone-health' // 뼈 건강
+  | 'heart-health' // 심장 건강
+  | 'skin-health'; // 피부 건강
 
 /** 사용자 프로필 */
 export interface NutritionProfile {
@@ -97,17 +97,17 @@ const AGE_ADJUSTMENT_FACTORS: Record<AgeGroup, Partial<Record<NutrientId, number
   },
   '50-64': {
     // 50대: 비타민 D, 칼슘 증가 필요
-    vitaminD: 1.5,       // 400 → 600 IU
-    vitaminB12: 1.2,     // 흡수율 감소 보상
+    vitaminD: 1.5, // 400 → 600 IU
+    vitaminB12: 1.2, // 흡수율 감소 보상
     calcium: 1.0,
-    iron: 0.71,          // 여성: 14 → 10 (폐경 후)
+    iron: 0.71, // 여성: 14 → 10 (폐경 후)
   },
   '65-74': {
     // 노년기: 비타민 D, B12, 칼슘 증가
     // 출처: docs/principles/nutrition-science.md 섹션 9.1
-    vitaminD: 2.0,       // 400 → 800 IU
+    vitaminD: 2.0, // 400 → 800 IU
     vitaminB12: 1.5,
-    calcium: 1.5,        // 800 → 1,200 mg (대한골대사학회)
+    calcium: 1.5, // 800 → 1,200 mg (대한골대사학회)
     vitaminB6: 1.2,
     folate: 1.0,
     zinc: 1.1,
@@ -118,7 +118,7 @@ const AGE_ADJUSTMENT_FACTORS: Record<AgeGroup, Partial<Record<NutrientId, number
     // 출처: docs/principles/nutrition-science.md 섹션 9.1
     vitaminD: 2.0,
     vitaminB12: 1.5,
-    calcium: 1.5,        // 800 → 1,200 mg (대한골대사학회)
+    calcium: 1.5, // 800 → 1,200 mg (대한골대사학회)
     vitaminB6: 1.3,
     zinc: 1.2,
     // 단백질 증가는 별도 BMR/TDEE 계산에서 처리 (근감소증 예방 강화)
@@ -134,14 +134,17 @@ const AGE_ADJUSTMENT_FACTORS: Record<AgeGroup, Partial<Record<NutrientId, number
  *
  * 출처: 한국인 영양섭취기준 2020 (임신부/수유부)
  */
-const CONDITION_ADJUSTMENT_FACTORS: Record<SpecialCondition, Partial<Record<NutrientId, number>>> = {
+const CONDITION_ADJUSTMENT_FACTORS: Record<
+  SpecialCondition,
+  Partial<Record<NutrientId, number>>
+> = {
   none: {},
 
   // 임신 1분기: 엽산 강화
   'pregnant-1st': {
-    folate: 1.5,         // 400 → 600 μg DFE
-    iron: 1.0,           // 아직 증가 불필요
-    vitaminA: 1.0,       // 과다 주의
+    folate: 1.5, // 400 → 600 μg DFE
+    iron: 1.0, // 아직 증가 불필요
+    vitaminA: 1.0, // 과다 주의
     vitaminD: 1.5,
     calcium: 1.0,
   },
@@ -149,11 +152,11 @@ const CONDITION_ADJUSTMENT_FACTORS: Record<SpecialCondition, Partial<Record<Nutr
   // 임신 2분기: 철분, 칼슘 증가
   'pregnant-2nd': {
     folate: 1.5,
-    iron: 1.71,          // 14 → 24 mg (여성)
-    calcium: 1.0,        // 800mg 유지 (흡수율 증가)
+    iron: 1.71, // 14 → 24 mg (여성)
+    calcium: 1.0, // 800mg 유지 (흡수율 증가)
     vitaminD: 1.5,
     vitaminB12: 1.1,
-    zinc: 1.25,          // 8 → 10 mg
+    zinc: 1.25, // 8 → 10 mg
   },
 
   // 임신 3분기: 철분 최대
@@ -163,40 +166,40 @@ const CONDITION_ADJUSTMENT_FACTORS: Record<SpecialCondition, Partial<Record<Nutr
     calcium: 1.0,
     vitaminD: 1.5,
     vitaminB12: 1.1,
-    zinc: 1.38,          // 8 → 11 mg
-    omega3: 1.4,         // 태아 뇌발달
+    zinc: 1.38, // 8 → 11 mg
+    omega3: 1.4, // 태아 뇌발달
   },
 
   // 수유: 비타민 A, 오메가-3 증가
   breastfeeding: {
-    vitaminA: 1.62,      // 650 → 1050 μg RAE
-    vitaminC: 1.35,      // 100 → 135 mg
+    vitaminA: 1.62, // 650 → 1050 μg RAE
+    vitaminC: 1.35, // 100 → 135 mg
     vitaminD: 1.5,
     calcium: 1.0,
-    iron: 1.0,           // 14mg 유지
-    zinc: 1.5,           // 8 → 12 mg
+    iron: 1.0, // 14mg 유지
+    zinc: 1.5, // 8 → 12 mg
     omega3: 1.4,
-    folate: 1.25,        // 400 → 500 μg DFE
+    folate: 1.25, // 400 → 500 μg DFE
   },
 
   // 폐경기: 칼슘, 비타민 D 강화
   menopause: {
-    calcium: 1.25,       // 800 → 1000 mg
+    calcium: 1.25, // 800 → 1000 mg
     vitaminD: 1.5,
-    vitaminK: 1.3,       // 뼈 건강
+    vitaminK: 1.3, // 뼈 건강
     magnesium: 1.1,
-    iron: 0.71,          // 철분 필요량 감소
+    iron: 0.71, // 철분 필요량 감소
   },
 
   // 운동선수: 단백질, 철분, B군 증가
   athlete: {
-    iron: 1.5,           // 운동으로 인한 손실 보상
-    vitaminB1: 1.3,      // 에너지 대사
+    iron: 1.5, // 운동으로 인한 손실 보상
+    vitaminB1: 1.3, // 에너지 대사
     vitaminB2: 1.3,
     vitaminB6: 1.3,
-    vitaminC: 1.2,       // 항산화
+    vitaminC: 1.2, // 항산화
     vitaminE: 1.2,
-    zinc: 1.2,           // 면역, 회복
+    zinc: 1.2, // 면역, 회복
     magnesium: 1.2,
   },
 };
@@ -214,38 +217,38 @@ const GOAL_ADJUSTMENT_FACTORS: Record<HealthGoal, Partial<Record<NutrientId, num
   maintain: {},
 
   'weight-loss': {
-    vitaminB1: 1.1,      // 탄수화물 대사
+    vitaminB1: 1.1, // 탄수화물 대사
     vitaminB2: 1.1,
     vitaminB6: 1.1,
   },
 
   'muscle-gain': {
-    vitaminD: 1.2,       // 근육 기능
-    zinc: 1.2,           // 단백질 합성
-    magnesium: 1.2,      // 근육 기능
+    vitaminD: 1.2, // 근육 기능
+    zinc: 1.2, // 단백질 합성
+    magnesium: 1.2, // 근육 기능
   },
 
   'bone-health': {
-    calcium: 1.25,       // 800 → 1000 mg
-    vitaminD: 1.5,       // 400 → 600 IU
-    vitaminK: 1.3,       // 뼈 대사
+    calcium: 1.25, // 800 → 1000 mg
+    vitaminD: 1.5, // 400 → 600 IU
+    vitaminK: 1.3, // 뼈 대사
     magnesium: 1.1,
   },
 
   'heart-health': {
-    omega3: 1.6,         // 500 → 800 mg EPA+DHA
-    vitaminE: 1.2,       // 항산화
+    omega3: 1.6, // 500 → 800 mg EPA+DHA
+    vitaminE: 1.2, // 항산화
     magnesium: 1.1,
-    folate: 1.1,         // 호모시스테인 조절
+    folate: 1.1, // 호모시스테인 조절
   },
 
   'skin-health': {
-    vitaminA: 1.1,       // 피부 재생
-    vitaminC: 1.3,       // 콜라겐 합성
-    vitaminE: 1.2,       // 항산화
-    zinc: 1.2,           // 피부 치유
+    vitaminA: 1.1, // 피부 재생
+    vitaminC: 1.3, // 콜라겐 합성
+    vitaminE: 1.2, // 항산화
+    zinc: 1.2, // 피부 치유
     biotin: 1.2,
-    omega3: 1.2,         // 피부 장벽
+    omega3: 1.2, // 피부 장벽
   },
 };
 
@@ -376,8 +379,8 @@ export function calculatePersonalizedRDA(profile: NutritionProfile): Personalize
       'skin-health': '피부 건강',
     };
     const goalLabels = goals
-      .filter(g => g !== 'maintain')
-      .map(g => goalNames[g])
+      .filter((g) => g !== 'maintain')
+      .map((g) => goalNames[g])
       .join(', ');
     if (goalLabels) {
       appliedAdjustments.push(`목표: ${goalLabels}`);
@@ -490,8 +493,8 @@ export function getIntakeRange(
   const personalizedRDA = getPersonalizedNutrientRDA(profile, nutrientId);
 
   return {
-    min: Math.round(personalizedRDA.adjustedRda * 0.8),  // 권장량의 80%
+    min: Math.round(personalizedRDA.adjustedRda * 0.8), // 권장량의 80%
     optimal: personalizedRDA.adjustedRda,
-    max: personalizedRDA.ul ?? personalizedRDA.adjustedRda * 2,  // UL 또는 권장량의 2배
+    max: personalizedRDA.ul ?? personalizedRDA.adjustedRda * 2, // UL 또는 권장량의 2배
   };
 }

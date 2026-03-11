@@ -131,7 +131,9 @@ export function useNutritionData(): UseNutritionDataReturn {
 
       const { data: weeklyData } = await supabase
         .from('daily_nutrition_summary')
-        .select('date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count')
+        .select(
+          'date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count'
+        )
         .gte('date', weekAgoStr)
         .lte('date', today)
         .order('date', { ascending: true });

@@ -88,7 +88,13 @@ export function StretchingRoutineCard({
         <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
           {exerciseCount}개 동작
         </Text>
-        <Text style={{ fontSize: typography.size.sm, color: brand.primary, fontWeight: typography.weight.semibold }}>
+        <Text
+          style={{
+            fontSize: typography.size.sm,
+            color: brand.primary,
+            fontWeight: typography.weight.semibold,
+          }}
+        >
           {totalMinutes}분
         </Text>
       </View>

@@ -10,4 +10,8 @@ export { LeaderboardCard, type LeaderboardCardProps } from './LeaderboardCard';
 export { LeaderboardList, type LeaderboardListProps } from './LeaderboardList';
 export { MyRankCard, type MyRankCardProps } from './MyRankCard';
 export { ChallengeCard, type ChallengeCardProps, type ChallengeStatus } from './ChallengeCard';
-export { ChallengeProgress, type ChallengeProgressProps, type DayProgress } from './ChallengeProgress';
+export {
+  ChallengeProgress,
+  type ChallengeProgressProps,
+  type DayProgress,
+} from './ChallengeProgress';

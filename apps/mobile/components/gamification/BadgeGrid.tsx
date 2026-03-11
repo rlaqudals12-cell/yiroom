@@ -15,11 +15,7 @@ export interface BadgeGridProps {
   style?: ViewStyle;
 }
 
-export function BadgeGrid({
-  badges,
-  onBadgePress,
-  style,
-}: BadgeGridProps): React.JSX.Element {
+export function BadgeGrid({ badges, onBadgePress, style }: BadgeGridProps): React.JSX.Element {
   const { colors, spacing, typography } = useTheme();
 
   const unlockedCount = badges.filter((b) => b.isUnlocked).length;

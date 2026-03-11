@@ -36,23 +36,14 @@ export function ChallengeList({
 
   const renderItem = useCallback(
     ({ item }: { item: ChallengeCardProps }) => (
-      <ChallengeCard
-        {...item}
-        onPress={onChallengePress}
-      />
+      <ChallengeCard {...item} onPress={onChallengePress} />
     ),
-    [onChallengePress],
+    [onChallengePress]
   );
 
-  const keyExtractor = useCallback(
-    (item: ChallengeCardProps) => item.id,
-    [],
-  );
+  const keyExtractor = useCallback((item: ChallengeCardProps) => item.id, []);
 
-  const renderSeparator = useCallback(
-    () => <View style={styles.separator} />,
-    [],
-  );
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
 
   if (challenges.length === 0) {
     return (

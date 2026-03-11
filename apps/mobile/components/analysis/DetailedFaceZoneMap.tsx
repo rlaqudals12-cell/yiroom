@@ -11,11 +11,18 @@ import Svg, { Ellipse, Rect } from 'react-native-svg';
 import { useTheme, spacing, typography, zoneColors } from '../../lib/theme';
 
 export type DetailedZoneId =
-  | 'forehead_center' | 'forehead_left' | 'forehead_right'
-  | 'eye_left' | 'eye_right'
-  | 'cheek_left' | 'cheek_right'
-  | 'nose_bridge' | 'nose_tip'
-  | 'chin_center' | 'chin_left' | 'chin_right';
+  | 'forehead_center'
+  | 'forehead_left'
+  | 'forehead_right'
+  | 'eye_left'
+  | 'eye_right'
+  | 'cheek_left'
+  | 'cheek_right'
+  | 'nose_bridge'
+  | 'nose_tip'
+  | 'chin_center'
+  | 'chin_left'
+  | 'chin_right';
 
 export type DetailedStatusLevel = 'excellent' | 'good' | 'normal' | 'warning' | 'critical';
 
@@ -83,10 +90,12 @@ export function DetailedFaceZoneMap({
     (zoneId: DetailedZoneId) => {
       onZonePress?.(zoneId);
     },
-    [onZonePress],
+    [onZonePress]
   );
 
-  const zoneEntries = Object.entries(ZONE_POSITIONS) as Array<[DetailedZoneId, typeof ZONE_POSITIONS[DetailedZoneId]]>;
+  const zoneEntries = Object.entries(ZONE_POSITIONS) as Array<
+    [DetailedZoneId, (typeof ZONE_POSITIONS)[DetailedZoneId]]
+  >;
 
   return (
     <View testID="detailed-face-zone-map">
@@ -108,9 +117,7 @@ export function DetailedFaceZoneMap({
         {/* 존 도트 오버레이 */}
         {zoneEntries.map(([zoneId, pos]) => {
           const zoneData = zones[zoneId];
-          const zoneColor = zoneData
-            ? STATUS_COLORS[zoneData.status]
-            : colors.muted;
+          const zoneColor = zoneData ? STATUS_COLORS[zoneData.status] : colors.muted;
           const x = pos.x * dimensions.width - dotSize / 2;
           const y = pos.y * dimensions.height - dotSize / 2;
 
@@ -135,7 +142,9 @@ export function DetailedFaceZoneMap({
               hitSlop={8}
             >
               {showScores && zoneData && (
-                <Text style={[styles.zoneScore, { color: zoneColor, fontSize: size === 'sm' ? 7 : 9 }]}>
+                <Text
+                  style={[styles.zoneScore, { color: zoneColor, fontSize: size === 'sm' ? 7 : 9 }]}
+                >
                   {zoneData.score}
                 </Text>
               )}
@@ -149,7 +158,12 @@ export function DetailedFaceZoneMap({
         {LEGEND_ITEMS.map((item) => (
           <View key={item.status} style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: STATUS_COLORS[item.status] }]} />
-            <Text style={[styles.legendLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+            <Text
+              style={[
+                styles.legendLabel,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
               {item.label}
             </Text>
           </View>

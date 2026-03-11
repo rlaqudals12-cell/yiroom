@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 
 import { useNetworkStatus } from '../../lib/offline';
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface OfflineBannerProps {
   // 동기화 대기 항목 수
@@ -70,7 +70,11 @@ export function OfflineBanner({ pendingCount = 0, onSync, isSyncing = false }: O
 
       {isConnected && pendingCount > 0 && (
         <Pressable
-          style={[styles.syncButton, { backgroundColor: brand.primary }, isSyncing && styles.syncButtonDisabled]}
+          style={[
+            styles.syncButton,
+            { backgroundColor: brand.primary },
+            isSyncing && styles.syncButtonDisabled,
+          ]}
           onPress={handleSync}
           disabled={isSyncing}
         >

@@ -114,7 +114,7 @@ export function FaceZoneMap({
       setSelectedZone(zone);
       onZonePress?.(zone);
     },
-    [zoneMap, onZonePress],
+    [zoneMap, onZonePress]
   );
 
   const scale = size / 200;
@@ -184,7 +184,12 @@ export function FaceZoneMap({
             <Text style={[styles.detailTitle, { color: colors.foreground }]}>
               {ZONE_LABELS[selectedZone.id]}
             </Text>
-            <View style={[styles.scoreBadge, { backgroundColor: scoreToColor(selectedZone.score) + '30' }]}>
+            <View
+              style={[
+                styles.scoreBadge,
+                { backgroundColor: scoreToColor(selectedZone.score) + '30' },
+              ]}
+            >
               <Text style={[styles.scoreText, { color: scoreToColor(selectedZone.score) }]}>
                 {selectedZone.score}점 · {scoreToGrade(selectedZone.score)}
               </Text>

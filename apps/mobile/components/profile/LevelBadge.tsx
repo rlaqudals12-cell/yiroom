@@ -5,7 +5,7 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme, radii, spacing} from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 import type { WellnessLevel } from '../../hooks/useWellnessScore';
 
 interface LevelBadgeProps {
@@ -14,16 +14,11 @@ interface LevelBadgeProps {
   testID?: string;
 }
 
-export function LevelBadge({
-  level,
-  style,
-  testID,
-}: LevelBadgeProps): React.JSX.Element {
+export function LevelBadge({ level, style, testID }: LevelBadgeProps): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
 
-  const progress = level.nextLevelXp > 0
-    ? Math.min((level.xp / level.nextLevelXp) * 100, 100)
-    : 100;
+  const progress =
+    level.nextLevelXp > 0 ? Math.min((level.xp / level.nextLevelXp) * 100, 100) : 100;
 
   return (
     <View
@@ -41,12 +36,7 @@ export function LevelBadge({
     >
       <View style={styles.row}>
         {/* 레벨 뱃지 */}
-        <View
-          style={[
-            styles.levelCircle,
-            { backgroundColor: brand.primary },
-          ]}
-        >
+        <View style={[styles.levelCircle, { backgroundColor: brand.primary }]}>
           <Text
             style={{
               fontSize: typography.size.sm,

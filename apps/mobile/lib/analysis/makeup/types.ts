@@ -18,23 +18,23 @@ export type UndertoneType = 'warm' | 'cool' | 'neutral';
  * 눈 모양 타입
  */
 export type EyeShapeType =
-  | 'monolid'      // 무쌍
-  | 'double'       // 유쌍
-  | 'hooded'       // 속쌍
-  | 'round'        // 둥근 눈
-  | 'almond'       // 아몬드형
-  | 'downturned';  // 처진 눈
+  | 'monolid' // 무쌍
+  | 'double' // 유쌍
+  | 'hooded' // 속쌍
+  | 'round' // 둥근 눈
+  | 'almond' // 아몬드형
+  | 'downturned'; // 처진 눈
 
 /**
  * 입술 모양 타입
  */
 export type LipShapeType =
-  | 'full'         // 도톰한 입술
-  | 'thin'         // 얇은 입술
-  | 'wide'         // 넓은 입술
-  | 'small'        // 작은 입술
-  | 'heart'        // 하트형
-  | 'asymmetric';  // 비대칭
+  | 'full' // 도톰한 입술
+  | 'thin' // 얇은 입술
+  | 'wide' // 넓은 입술
+  | 'small' // 작은 입술
+  | 'heart' // 하트형
+  | 'asymmetric'; // 비대칭
 
 /**
  * 얼굴형 (메이크업 컨투어링용)
@@ -50,14 +50,14 @@ export type MakeupStyleType = 'natural' | 'glam' | 'cute' | 'chic' | 'vintage' |
  * 메이크업 관련 피부 고민
  */
 export type MakeupConcernType =
-  | 'dark-circles'    // 다크서클
-  | 'redness'         // 홍조
-  | 'uneven-tone'     // 피부톤 불균일
-  | 'large-pores'     // 넓은 모공
-  | 'oily-tzone'      // T존 번들거림
-  | 'dry-patches'     // 건조 부위
-  | 'acne-scars'      // 트러블 흔적
-  | 'fine-lines';     // 잔주름
+  | 'dark-circles' // 다크서클
+  | 'redness' // 홍조
+  | 'uneven-tone' // 피부톤 불균일
+  | 'large-pores' // 넓은 모공
+  | 'oily-tzone' // T존 번들거림
+  | 'dry-patches' // 건조 부위
+  | 'acne-scars' // 트러블 흔적
+  | 'fine-lines'; // 잔주름
 
 /**
  * 메이크업 카테고리

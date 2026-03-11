@@ -198,9 +198,7 @@ export function useAnalysisHistory(
         'posture',
       ];
 
-      const results = await Promise.all(
-        types.map((type) => fetchModule(type, 0, dateFilter))
-      );
+      const results = await Promise.all(types.map((type) => fetchModule(type, 0, dateFilter)));
 
       // 전체를 시간순 정렬 후 페이지네이션
       return results

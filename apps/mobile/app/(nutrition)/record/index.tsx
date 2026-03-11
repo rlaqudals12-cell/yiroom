@@ -3,15 +3,7 @@
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  Alert,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, Alert, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
@@ -223,15 +215,22 @@ export default function NutritionRecordScreen() {
             styles.saveButton,
             { backgroundColor: nutritionColor },
             !isDark
-              ? Platform.select({
-                  ios: { shadowColor: nutritionColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+              ? (Platform.select({
+                  ios: {
+                    shadowColor: nutritionColor,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                  },
                   android: { elevation: 4 },
-                }) ?? {}
+                }) ?? {})
               : {},
           ]}
           onPress={handleSave}
         >
-          <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>기록 저장</Text>
+          <Text style={[styles.saveButtonText, { color: colors.overlayForeground }]}>
+            기록 저장
+          </Text>
         </Pressable>
       </View>
     </View>

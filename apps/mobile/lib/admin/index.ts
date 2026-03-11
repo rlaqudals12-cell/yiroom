@@ -95,9 +95,7 @@ export async function getEnabledFeatures(
 /**
  * 전체 피처 플래그 조회 (캐시 경유)
  */
-export async function getCachedFeatureFlags(
-  supabase: SupabaseClient
-): Promise<FeatureFlag[]> {
+export async function getCachedFeatureFlags(supabase: SupabaseClient): Promise<FeatureFlag[]> {
   const { data } = await supabase
     .from('feature_flags')
     .select('key, name, enabled, updated_at')
@@ -145,9 +143,7 @@ export async function getAnalysisModuleFlags(
 
 async function refreshCache(supabase: SupabaseClient): Promise<void> {
   try {
-    const { data } = await supabase
-      .from('feature_flags')
-      .select('key, enabled');
+    const { data } = await supabase.from('feature_flags').select('key, enabled');
 
     flagCache = new Map();
     (data ?? []).forEach((row) => {

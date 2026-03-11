@@ -91,7 +91,7 @@ export const DELETION_TABLES = [
   'daily_checkins',
 ] as const;
 
-export type DeletionTable = typeof DELETION_TABLES[number];
+export type DeletionTable = (typeof DELETION_TABLES)[number];
 
 /**
  * GDPR 삭제 설정

@@ -28,11 +28,12 @@ interface HomeQuickActionsProps {
 }
 
 // 퀵 액션 아이콘 메타 — 그라디언트 + 이모지 (웹 gradient icon square 대응)
-const ACTION_META: Record<string, { emoji: string; moduleKey: 'personalColor' | 'skin' | 'body' }> = {
-  '퍼스널 컬러': { emoji: '🎨', moduleKey: 'personalColor' },
-  '피부 분석': { emoji: '💧', moduleKey: 'skin' },
-  '체형 분석': { emoji: '✨', moduleKey: 'body' },
-};
+const ACTION_META: Record<string, { emoji: string; moduleKey: 'personalColor' | 'skin' | 'body' }> =
+  {
+    '퍼스널 컬러': { emoji: '🎨', moduleKey: 'personalColor' },
+    '피부 분석': { emoji: '💧', moduleKey: 'skin' },
+    '체형 분석': { emoji: '✨', moduleKey: 'body' },
+  };
 
 export function HomeQuickActions({
   actions,
@@ -40,7 +41,17 @@ export function HomeQuickActions({
   onCoachPress,
   onChatPress,
 }: HomeQuickActionsProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, status, module: moduleColors, shadows, isDark, brand } = useTheme();
+  const {
+    colors,
+    spacing,
+    radii,
+    typography,
+    status,
+    module: moduleColors,
+    shadows,
+    isDark,
+    brand,
+  } = useTheme();
 
   const handleActionPress = (route: string): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -69,10 +80,17 @@ export function HomeQuickActions({
               borderRadius: radii.xl + 4,
             },
             // 코치 카드 글로우 그림자
-            isDark ? {} : Platform.select({
-              ios: { shadowColor: moduleColors.workout.base, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 16 },
-              android: { elevation: 5 },
-            }) ?? {},
+            isDark
+              ? {}
+              : (Platform.select({
+                  ios: {
+                    shadowColor: moduleColors.workout.base,
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 16,
+                  },
+                  android: { elevation: 5 },
+                }) ?? {}),
           ]}
           onPress={handleCoachPress}
           accessibilityRole="button"
@@ -92,8 +110,12 @@ export function HomeQuickActions({
               <Text style={{ fontSize: 22 }}>💬</Text>
             </View>
             <View style={styles.coachContent}>
-              <Text style={[styles.coachTitle, { color: colors.overlayForeground }]}>AI 코치에게 물어보세요</Text>
-              <Text style={[styles.coachSubtitle, { color: `${colors.overlayForeground}D9` }]}>운동, 영양, 뷰티 궁금한 것 무엇이든</Text>
+              <Text style={[styles.coachTitle, { color: colors.overlayForeground }]}>
+                AI 코치에게 물어보세요
+              </Text>
+              <Text style={[styles.coachSubtitle, { color: `${colors.overlayForeground}D9` }]}>
+                운동, 영양, 뷰티 궁금한 것 무엇이든
+              </Text>
             </View>
             <Text style={[styles.coachArrow, { color: `${colors.overlayForeground}CC` }]}>›</Text>
           </GradientBackground>
@@ -110,10 +132,17 @@ export function HomeQuickActions({
                 marginBottom: spacing.lg,
                 borderRadius: radii.xl + 4,
               },
-              isDark ? {} : Platform.select({
-                ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
-                android: { elevation: 3 },
-              }) ?? {},
+              isDark
+                ? {}
+                : (Platform.select({
+                    ios: {
+                      shadowColor: brand.primary,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 12,
+                    },
+                    android: { elevation: 3 },
+                  }) ?? {}),
             ]}
             onPress={handleChatPress}
             accessibilityRole="button"
@@ -136,7 +165,9 @@ export function HomeQuickActions({
               </View>
               <View style={styles.coachContent}>
                 <Text style={[styles.coachTitle, { color: colors.foreground }]}>AI 채팅</Text>
-                <Text style={[styles.coachSubtitle, { color: colors.mutedForeground }]}>뷰티, 웰니스, 라이프스타일 자유 대화</Text>
+                <Text style={[styles.coachSubtitle, { color: colors.mutedForeground }]}>
+                  뷰티, 웰니스, 라이프스타일 자유 대화
+                </Text>
               </View>
               <Text style={[styles.coachArrow, { color: colors.mutedForeground }]}>›</Text>
             </View>
@@ -162,13 +193,22 @@ export function HomeQuickActions({
               >
                 <View style={{ padding: spacing.smx, alignItems: 'center' }}>
                   {/* 그라디언트 아이콘 스퀘어 (웹 w-11 h-11 rounded-xl gradient 매칭) */}
-                  <View style={[
-                    { marginBottom: spacing.sm, borderRadius: radii.xl },
-                    !isDark ? Platform.select({
-                      ios: { shadowColor: action.color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10 },
-                      android: { elevation: 4 },
-                    }) ?? {} : {},
-                  ]}>
+                  <View
+                    style={[
+                      { marginBottom: spacing.sm, borderRadius: radii.xl },
+                      !isDark
+                        ? (Platform.select({
+                            ios: {
+                              shadowColor: action.color,
+                              shadowOffset: { width: 0, height: 4 },
+                              shadowOpacity: 0.35,
+                              shadowRadius: 10,
+                            },
+                            android: { elevation: 4 },
+                          }) ?? {})
+                        : {},
+                    ]}
+                  >
                     <LinearGradient
                       colors={[modColors.base, modColors.dark]}
                       start={{ x: 0, y: 0 }}
@@ -185,18 +225,28 @@ export function HomeQuickActions({
                     </LinearGradient>
                   </View>
                   {action.completed && (
-                    <View style={{
-                      position: 'absolute',
-                      top: spacing.xs,
-                      right: spacing.xs,
-                      backgroundColor: status.success,
-                      borderRadius: radii.full,
-                      width: 18,
-                      height: 18,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <Text style={{ fontSize: 10, color: colors.overlayForeground, fontWeight: typography.weight.bold }}>✓</Text>
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: spacing.xs,
+                        right: spacing.xs,
+                        backgroundColor: status.success,
+                        borderRadius: radii.full,
+                        width: 18,
+                        height: 18,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: colors.overlayForeground,
+                          fontWeight: typography.weight.bold,
+                        }}
+                      >
+                        ✓
+                      </Text>
                     </View>
                   )}
                   <Text

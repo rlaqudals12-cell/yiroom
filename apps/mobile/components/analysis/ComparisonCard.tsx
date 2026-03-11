@@ -8,7 +8,7 @@ import { ArrowRight } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, radii , spacing } from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import { MetricDelta } from './ScoreChangeBadge';
 
@@ -47,9 +47,7 @@ export function ComparisonCard({
   const { colors, spacing, radii, typography, status, shadows } = useTheme();
 
   const totalDelta =
-    previousTotal !== undefined && currentTotal !== undefined
-      ? currentTotal - previousTotal
-      : null;
+    previousTotal !== undefined && currentTotal !== undefined ? currentTotal - previousTotal : null;
 
   return (
     <Animated.View

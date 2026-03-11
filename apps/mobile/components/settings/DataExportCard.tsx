@@ -64,7 +64,13 @@ export function DataExportCard({
       </Text>
 
       {lastExportDate && (
-        <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground, marginTop: spacing.xs }}>
+        <Text
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.mutedForeground,
+            marginTop: spacing.xs,
+          }}
+        >
           마지막 내보내기: {lastExportDate}
         </Text>
       )}

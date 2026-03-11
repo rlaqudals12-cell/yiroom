@@ -135,9 +135,30 @@ export function FoodResultCard({
 
       {/* 영양소 바 */}
       <View style={[styles.macroGrid, { marginTop: spacing.sm }]}>
-        <MacroStat label="탄수화물" value={carbs} unit="g" color={nutrientColors.carbs} typography={typography} mutedColor={colors.mutedForeground} />
-        <MacroStat label="단백질" value={protein} unit="g" color={nutrientColors.protein} typography={typography} mutedColor={colors.mutedForeground} />
-        <MacroStat label="지방" value={fat} unit="g" color={nutrientColors.fat} typography={typography} mutedColor={colors.mutedForeground} />
+        <MacroStat
+          label="탄수화물"
+          value={carbs}
+          unit="g"
+          color={nutrientColors.carbs}
+          typography={typography}
+          mutedColor={colors.mutedForeground}
+        />
+        <MacroStat
+          label="단백질"
+          value={protein}
+          unit="g"
+          color={nutrientColors.protein}
+          typography={typography}
+          mutedColor={colors.mutedForeground}
+        />
+        <MacroStat
+          label="지방"
+          value={fat}
+          unit="g"
+          color={nutrientColors.fat}
+          typography={typography}
+          mutedColor={colors.mutedForeground}
+        />
       </View>
 
       {/* 건강 평가 */}
@@ -211,13 +232,21 @@ interface MacroStatProps {
   typography: ReturnType<typeof useTheme>['typography'];
 }
 
-function MacroStat({ label, value, unit, color, mutedColor, typography }: MacroStatProps): React.JSX.Element {
+function MacroStat({
+  label,
+  value,
+  unit,
+  color,
+  mutedColor,
+  typography,
+}: MacroStatProps): React.JSX.Element {
   return (
     <View style={styles.macroItem}>
       <View style={[styles.macroBar, { backgroundColor: color }]} />
       <Text style={{ fontSize: typography.size.xs, color: mutedColor }}>{label}</Text>
       <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.bold, color }}>
-        {value}{unit}
+        {value}
+        {unit}
       </Text>
     </View>
   );

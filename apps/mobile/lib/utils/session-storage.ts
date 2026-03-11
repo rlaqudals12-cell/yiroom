@@ -25,7 +25,7 @@ interface CacheEntry<T> {
 export async function cacheResult<T>(
   key: string,
   data: T,
-  ttlMs: number = DEFAULT_TTL_MS,
+  ttlMs: number = DEFAULT_TTL_MS
 ): Promise<void> {
   const entry: CacheEntry<T> = {
     data,
@@ -33,10 +33,7 @@ export async function cacheResult<T>(
     expiresAt: Date.now() + ttlMs,
   };
 
-  await AsyncStorage.setItem(
-    CACHE_PREFIX + key,
-    JSON.stringify(entry),
-  );
+  await AsyncStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry));
 }
 
 /**
@@ -101,7 +98,7 @@ export async function clearExpiredCache(): Promise<number> {
 export async function fetchWithCacheFallback<T>(
   key: string,
   fetchFn: () => Promise<T>,
-  ttlMs: number = DEFAULT_TTL_MS,
+  ttlMs: number = DEFAULT_TTL_MS
 ): Promise<{ data: T; fromCache: boolean }> {
   try {
     const data = await fetchFn();

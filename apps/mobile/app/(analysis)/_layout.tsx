@@ -52,10 +52,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="personal-color/history"
-        options={{ title: '퍼스널컬러 이력' }}
-      />
+      <Stack.Screen name="personal-color/history" options={{ title: '퍼스널컬러 이력' }} />
       <Stack.Screen
         name="skin/index"
         options={{
@@ -83,14 +80,8 @@ export default function AnalysisLayout(): React.JSX.Element {
           title: '스킨케어 루틴',
         }}
       />
-      <Stack.Screen
-        name="skin/history"
-        options={{ title: '피부 분석 이력' }}
-      />
-      <Stack.Screen
-        name="skin/diary"
-        options={{ title: '피부 다이어리' }}
-      />
+      <Stack.Screen name="skin/history" options={{ title: '피부 분석 이력' }} />
+      <Stack.Screen name="skin/diary" options={{ title: '피부 다이어리' }} />
       <Stack.Screen
         name="skin/diary-entry"
         options={{
@@ -99,14 +90,8 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'slide_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="skin/consultation"
-        options={{ title: '피부 상담' }}
-      />
-      <Stack.Screen
-        name="skin/solution"
-        options={{ title: '피부 솔루션' }}
-      />
+      <Stack.Screen name="skin/consultation" options={{ title: '피부 상담' }} />
+      <Stack.Screen name="skin/solution" options={{ title: '피부 솔루션' }} />
       <Stack.Screen
         name="body/index"
         options={{
@@ -120,10 +105,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="body/history"
-        options={{ title: '체형 분석 이력' }}
-      />
+      <Stack.Screen name="body/history" options={{ title: '체형 분석 이력' }} />
       {/* H-1 헤어 분석 */}
       <Stack.Screen
         name="hair/index"
@@ -146,10 +128,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="hair/history"
-        options={{ title: '헤어 분석 이력' }}
-      />
+      <Stack.Screen name="hair/history" options={{ title: '헤어 분석 이력' }} />
       {/* M-1 메이크업 분석 */}
       <Stack.Screen
         name="makeup/index"
@@ -172,10 +151,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="makeup/history"
-        options={{ title: '메이크업 이력' }}
-      />
+      <Stack.Screen name="makeup/history" options={{ title: '메이크업 이력' }} />
       {/* OH-1 구강건강 분석 */}
       <Stack.Screen
         name="oral-health/index"
@@ -198,10 +174,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="oral-health/history"
-        options={{ title: '구강건강 이력' }}
-      />
+      <Stack.Screen name="oral-health/history" options={{ title: '구강건강 이력' }} />
       {/* 분석 이력 */}
       <Stack.Screen
         name="history/index"
@@ -239,10 +212,7 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
-      <Stack.Screen
-        name="posture/history"
-        options={{ title: '자세 분석 이력' }}
-      />
+      <Stack.Screen name="posture/history" options={{ title: '자세 분석 이력' }} />
     </Stack>
   );
 }

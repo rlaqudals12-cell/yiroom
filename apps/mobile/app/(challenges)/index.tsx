@@ -5,20 +5,13 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList, Alert } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { ScreenContainer } from '../../components/ui';
 
@@ -37,7 +30,7 @@ import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallen
 type TabType = 'explore' | 'my';
 
 export default function ChallengesScreen() {
-  const { colors, brand, spacing, radii} = useTheme();
+  const { colors, brand, spacing, radii } = useTheme();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('explore');
@@ -114,7 +107,10 @@ export default function ChallengesScreen() {
 
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.name}</Text>
         {item.description && (
-          <Text style={[styles.cardDescription, { color: colors.mutedForeground }]} numberOfLines={2}>
+          <Text
+            style={[styles.cardDescription, { color: colors.mutedForeground }]}
+            numberOfLines={2}
+          >
             {item.description}
           </Text>
         )}
@@ -128,9 +124,16 @@ export default function ChallengesScreen() {
         {participating ? (
           <View style={styles.progressContainer}>
             <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
-              <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: brand.primary }]} />
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${progress}%`, backgroundColor: brand.primary },
+                ]}
+              />
             </View>
-            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>{progress}% 완료</Text>
+            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
+              {progress}% 완료
+            </Text>
           </View>
         ) : (
           <Pressable
@@ -138,7 +141,9 @@ export default function ChallengesScreen() {
             onPress={() => handleJoin(item.id)}
             disabled={isJoining}
           >
-            <Text style={[styles.joinButtonText, { color: brand.primaryForeground }]}>{isJoining ? '참여 중...' : '참여하기'}</Text>
+            <Text style={[styles.joinButtonText, { color: brand.primaryForeground }]}>
+              {isJoining ? '참여 중...' : '참여하기'}
+            </Text>
           </Pressable>
         )}
       </Pressable>
@@ -180,7 +185,9 @@ export default function ChallengesScreen() {
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <View style={styles.progressMeta}>
-            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>{progress}% 완료</Text>
+            <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
+              {progress}% 완료
+            </Text>
             <Text style={[styles.daysText, { color: colors.mutedForeground }]}>
               {daysRemaining}일 남음
             </Text>
@@ -199,9 +206,15 @@ export default function ChallengesScreen() {
             <SkeletonCard style={{ flex: 1, height: 80 }} />
             <SkeletonCard style={{ flex: 1, height: 80 }} />
           </View>
-          <SkeletonText style={{ width: 200, height: 40, alignSelf: 'center', marginTop: spacing.md }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.md }} />
-          <SkeletonCard style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.smx }} />
+          <SkeletonText
+            style={{ width: 200, height: 40, alignSelf: 'center', marginTop: spacing.md }}
+          />
+          <SkeletonCard
+            style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.md }}
+          />
+          <SkeletonCard
+            style={{ height: 120, marginHorizontal: spacing.md, marginTop: spacing.smx }}
+          />
         </View>
       </ScreenContainer>
     );
@@ -238,7 +251,10 @@ export default function ChallengesScreen() {
       {/* 탭 */}
       <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
         <Pressable
-          style={[styles.tab, activeTab === 'explore' && [styles.tabActive, { backgroundColor: colors.card }]]}
+          style={[
+            styles.tab,
+            activeTab === 'explore' && [styles.tabActive, { backgroundColor: colors.card }],
+          ]}
           onPress={() => handleTabChange('explore')}
         >
           <Text
@@ -252,7 +268,10 @@ export default function ChallengesScreen() {
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.tab, activeTab === 'my' && [styles.tabActive, { backgroundColor: colors.card }]]}
+          style={[
+            styles.tab,
+            activeTab === 'my' && [styles.tabActive, { backgroundColor: colors.card }],
+          ]}
           onPress={() => handleTabChange('my')}
         >
           <Text
@@ -305,7 +324,9 @@ export default function ChallengesScreen() {
                 style={[styles.emptyButton, { backgroundColor: brand.primary }]}
                 onPress={() => handleTabChange('explore')}
               >
-                <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>챌린지 탐색하기</Text>
+                <Text style={[styles.emptyButtonText, { color: brand.primaryForeground }]}>
+                  챌린지 탐색하기
+                </Text>
               </Pressable>
             </View>
           }

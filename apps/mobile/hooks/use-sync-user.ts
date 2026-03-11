@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useAuth } from "@clerk/nextjs";
-import { useEffect, useRef } from "react";
+import { useAuth } from '@clerk/nextjs';
+import { useEffect, useRef } from 'react';
 
 /**
  * Clerk 사용자를 Supabase DB에 자동으로 동기화하는 훅
@@ -34,18 +34,18 @@ export function useSyncUser() {
     // 동기화 실행
     const syncUser = async () => {
       try {
-        const response = await fetch("/api/sync-user", {
-          method: "POST",
+        const response = await fetch('/api/sync-user', {
+          method: 'POST',
         });
 
         if (!response.ok) {
-          console.error("Failed to sync user:", await response.text());
+          console.error('Failed to sync user:', await response.text());
           return;
         }
 
         syncedRef.current = true;
       } catch (error) {
-        console.error("Error syncing user:", error);
+        console.error('Error syncing user:', error);
       }
     };
 

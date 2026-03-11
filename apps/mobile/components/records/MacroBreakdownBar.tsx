@@ -5,7 +5,7 @@
  */
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, nutrientColors, spacing} from '../../lib/theme';
+import { useTheme, nutrientColors, spacing } from '../../lib/theme';
 
 interface MacroBreakdownBarProps {
   /** 탄수화물 g */
@@ -143,11 +143,25 @@ interface LegendItemProps {
   typography: ReturnType<typeof useTheme>['typography'];
 }
 
-function LegendItem({ color, label, value, pct, textColor, mutedColor, typography }: LegendItemProps): React.JSX.Element {
+function LegendItem({
+  color,
+  label,
+  value,
+  pct,
+  textColor,
+  mutedColor,
+  typography,
+}: LegendItemProps): React.JSX.Element {
   return (
     <View style={styles.legendItem}>
       <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={{ fontSize: typography.size.xs, color: textColor, fontWeight: typography.weight.medium }}>
+      <Text
+        style={{
+          fontSize: typography.size.xs,
+          color: textColor,
+          fontWeight: typography.weight.medium,
+        }}
+      >
         {label} {pct}%
       </Text>
       <Text style={{ fontSize: typography.size.xs, color: mutedColor, marginLeft: spacing.xs }}>

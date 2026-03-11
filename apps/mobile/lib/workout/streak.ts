@@ -111,7 +111,7 @@ export function getDaysToNextMilestone(currentStreak: number): number | null {
  * 달성한 마일스톤 목록 조회
  */
 export function getAchievedMilestones(currentStreak: number): number[] {
-  return STREAK_MILESTONES.filter(m => currentStreak >= m);
+  return STREAK_MILESTONES.filter((m) => currentStreak >= m);
 }
 
 /**
@@ -124,7 +124,7 @@ export function getNewlyAchievedMilestones(
   const previousMilestones = getAchievedMilestones(previousStreak);
   const currentMilestones = getAchievedMilestones(currentStreak);
 
-  return currentMilestones.filter(m => !previousMilestones.includes(m));
+  return currentMilestones.filter((m) => !previousMilestones.includes(m));
 }
 
 // =====================================================
@@ -135,22 +135,17 @@ export function getNewlyAchievedMilestones(
  * 마일스톤에 해당하는 배지 ID 목록 생성
  */
 export function getBadgesForMilestones(milestones: number[]): string[] {
-  return milestones
-    .filter(m => STREAK_BADGES[m])
-    .map(m => STREAK_BADGES[m].id);
+  return milestones.filter((m) => STREAK_BADGES[m]).map((m) => STREAK_BADGES[m].id);
 }
 
 /**
  * 새로 획득해야 할 배지 확인
  */
-export function getNewBadges(
-  currentStreak: number,
-  existingBadges: string[]
-): string[] {
+export function getNewBadges(currentStreak: number, existingBadges: string[]): string[] {
   const achievedMilestones = getAchievedMilestones(currentStreak);
   const allBadges = getBadgesForMilestones(achievedMilestones);
 
-  return allBadges.filter(badge => !existingBadges.includes(badge));
+  return allBadges.filter((badge) => !existingBadges.includes(badge));
 }
 
 // =====================================================
@@ -175,7 +170,7 @@ export function getStreakMessage(streak: WorkoutStreak | null): string {
   }
 
   // 마일스톤 달성
-  if (STREAK_MILESTONES.includes(current_streak as typeof STREAK_MILESTONES[number])) {
+  if (STREAK_MILESTONES.includes(current_streak as (typeof STREAK_MILESTONES)[number])) {
     const badge = STREAK_BADGES[current_streak];
     return `${badge?.emoji || '🎉'} ${current_streak}일 연속 달성! 대단해요!`;
   }

@@ -86,12 +86,28 @@ export function BeforeAfterSlider({
     return (
       <View testID={testID} style={[styles.sideBySide, style]}>
         <View style={styles.sideBySideHalf}>
-          <Image source={{ uri: beforeUri }} style={{ height, borderRadius: radii.xl }} contentFit="cover" />
-          <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>{beforeLabel}</Text>
+          <Image
+            source={{ uri: beforeUri }}
+            style={{ height, borderRadius: radii.xl }}
+            contentFit="cover"
+          />
+          <Text
+            style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+          >
+            {beforeLabel}
+          </Text>
         </View>
         <View style={styles.sideBySideHalf}>
-          <Image source={{ uri: afterUri }} style={{ height, borderRadius: radii.xl }} contentFit="cover" />
-          <Text style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>{afterLabel}</Text>
+          <Image
+            source={{ uri: afterUri }}
+            style={{ height, borderRadius: radii.xl }}
+            contentFit="cover"
+          />
+          <Text
+            style={[styles.label, { color: colors.mutedForeground, fontSize: typography.size.xs }]}
+          >
+            {afterLabel}
+          </Text>
         </View>
       </View>
     );
@@ -137,10 +153,14 @@ export function BeforeAfterSlider({
 
           {/* 라벨 */}
           <View style={[styles.labelContainer, styles.labelLeft]}>
-            <Text style={[styles.overlayLabel, { backgroundColor: `${colors.background}CC` }]}>{beforeLabel}</Text>
+            <Text style={[styles.overlayLabel, { backgroundColor: `${colors.background}CC` }]}>
+              {beforeLabel}
+            </Text>
           </View>
           <View style={[styles.labelContainer, styles.labelRight]}>
-            <Text style={[styles.overlayLabel, { backgroundColor: `${colors.background}CC` }]}>{afterLabel}</Text>
+            <Text style={[styles.overlayLabel, { backgroundColor: `${colors.background}CC` }]}>
+              {afterLabel}
+            </Text>
           </View>
         </View>
       </GestureDetector>

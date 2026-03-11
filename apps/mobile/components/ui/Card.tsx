@@ -6,7 +6,7 @@
  */
 import { StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 // --- Card ---
 
