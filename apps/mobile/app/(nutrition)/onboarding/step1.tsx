@@ -1,16 +1,23 @@
 /**
  * N-1 영양 온보딩 Step 1 — 기본 정보 입력
  * 목표/성별/나이/키/체중/활동수준
- * 운동 온보딩 goals.tsx 패턴 복제
+ * UX v3: GlassCard + GradientText 히어로 + 배경 그라디언트 + coloredShadow + a11y
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import {
+  GlassCard,
+  GradientText,
+  ScalePressable,
+  ScreenContainer,
+  StepProgressBar,
+} from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
+import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme';
 
 const NUTRITION_ACCENT = '#F97316';
 
@@ -34,8 +41,8 @@ const ACTIVITY_LEVELS = [
   { id: 'very_active', label: '매우 활동적', description: '매일 격렬한 운동' },
 ];
 
-export default function NutritionStep1Screen() {
-  const { colors, brand, isDark } = useTheme();
+export default function NutritionStep1Screen(): React.JSX.Element {
+  const { colors, isDark } = useTheme();
   const [goal, setGoal] = useState('');
   const [gender, setGender] = useState('');
   const [age, setAge] = useState('');
@@ -48,14 +55,7 @@ export default function NutritionStep1Screen() {
   const handleNext = (): void => {
     router.push({
       pathname: '/(nutrition)/onboarding/step2',
-      params: {
-        goal,
-        gender,
-        age,
-        heightCm,
-        weightKg,
-        activityLevel,
-      },
+      params: { goal, gender, age, heightCm, weightKg, activityLevel },
     });
   };
 
@@ -64,74 +64,114 @@ export default function NutritionStep1Screen() {
       edges={['bottom']}
       contentPadding={20}
       contentContainerStyle={{ paddingBottom: 100 }}
+      backgroundGradient="nutrition"
       testID="nutrition-onboarding-step1"
     >
-      {/* 목표 선택 */}
+      {/* 글래스모피즘 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="lg" glowColor={NUTRITION_ACCENT} style={styles.hero}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroEmoji}>🍊</Text>
+            <GradientText
+              variant="extended"
+              fontSize={22}
+              fontWeight="700"
+              style={styles.heroTitle}
+            >
+              맞춤 영양 플랜
+            </GradientText>
+            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+              기본 정보를 입력하면 나만의 영양 플랜을 만들어 드려요
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 스텝 프로그레스 바 */}
+      <StepProgressBar
+        current={1}
+        total={3}
+        accentColor={NUTRITION_ACCENT}
+        testID="step-progress"
+      />
+
+      {/* 목표 선택 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>영양 목표</Text>
         <View style={styles.chipRow}>
           {GOALS.map((g) => (
-            <Pressable
+            <ScalePressable
               key={g.id}
+              selected={goal === g.id}
+              onPress={() => setGoal(g.id)}
+              accessibilityLabel={`${g.label} 목표 선택`}
               style={[
                 styles.chip,
                 {
                   backgroundColor: colors.card,
                   borderColor: goal === g.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: goal === g.id ? 2 : 1,
                 },
-                goal === g.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                goal === g.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                goal === g.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setGoal(g.id)}
             >
               <Text style={styles.chipEmoji}>{g.emoji}</Text>
               <Text
                 style={[
                   styles.chipLabel,
                   { color: goal === g.id ? NUTRITION_ACCENT : colors.foreground },
+                  goal === g.id && { fontWeight: typography.weight.bold },
                 ]}
               >
                 {g.label}
               </Text>
-            </Pressable>
+              {goal === g.id && (
+                <Text style={{ fontSize: 12, color: NUTRITION_ACCENT, fontWeight: '700' }}>✓</Text>
+              )}
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
       {/* 성별 선택 */}
-      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>성별</Text>
         <View style={[styles.chipRow, { gap: spacing.smx }]}>
           {GENDERS.map((g) => (
-            <Pressable
+            <ScalePressable
               key={g.id}
+              selected={gender === g.id}
+              onPress={() => setGender(g.id)}
+              accessibilityLabel={`${g.label} 선택`}
               style={[
                 styles.genderChip,
                 {
                   backgroundColor: colors.card,
                   borderColor: gender === g.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: gender === g.id ? 2 : 1,
                 },
-                gender === g.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                gender === g.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                gender === g.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setGender(g.id)}
             >
               <Text style={{ fontSize: 24 }}>{g.emoji}</Text>
               <Text
                 style={[
                   styles.chipLabel,
                   { color: gender === g.id ? NUTRITION_ACCENT : colors.foreground },
+                  gender === g.id && { fontWeight: typography.weight.bold },
                 ]}
               >
                 {g.label}
               </Text>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
       {/* 나이/키/체중 입력 */}
-      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>신체 정보</Text>
         <View style={styles.inputRow}>
           <View style={styles.inputGroup}>
@@ -151,6 +191,8 @@ export default function NutritionStep1Screen() {
               placeholder="25"
               placeholderTextColor={colors.mutedForeground}
               maxLength={3}
+              accessibilityLabel="나이 입력"
+              accessibilityHint="만 나이를 숫자로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>세</Text>
           </View>
@@ -171,6 +213,8 @@ export default function NutritionStep1Screen() {
               placeholder="170"
               placeholderTextColor={colors.mutedForeground}
               maxLength={3}
+              accessibilityLabel="키 입력"
+              accessibilityHint="센티미터 단위로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>cm</Text>
           </View>
@@ -191,6 +235,8 @@ export default function NutritionStep1Screen() {
               placeholder="65"
               placeholderTextColor={colors.mutedForeground}
               maxLength={5}
+              accessibilityLabel="체중 입력"
+              accessibilityHint="킬로그램 단위로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>kg</Text>
           </View>
@@ -198,22 +244,25 @@ export default function NutritionStep1Screen() {
       </Animated.View>
 
       {/* 활동 수준 */}
-      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>활동 수준</Text>
         <View style={{ gap: spacing.sm }}>
           {ACTIVITY_LEVELS.map((level) => (
-            <Pressable
+            <ScalePressable
               key={level.id}
+              selected={activityLevel === level.id}
+              onPress={() => setActivityLevel(level.id)}
+              accessibilityLabel={`${level.label}: ${level.description}`}
               style={[
                 styles.activityCard,
                 {
                   backgroundColor: colors.card,
                   borderColor: activityLevel === level.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: activityLevel === level.id ? 2 : 1,
                 },
-                activityLevel === level.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                activityLevel === level.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                activityLevel === level.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setActivityLevel(level.id)}
             >
               <View style={styles.activityContent}>
                 <Text
@@ -238,12 +287,12 @@ export default function NutritionStep1Screen() {
                   <View style={[styles.radioInner, { backgroundColor: NUTRITION_ACCENT }]} />
                 )}
               </View>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
-      {/* 다음 버튼 */}
+      {/* 그라디언트 CTA 버튼 */}
       <View
         style={[
           styles.footer,
@@ -253,7 +302,7 @@ export default function NutritionStep1Screen() {
         <Pressable
           style={[
             styles.nextButton,
-            { backgroundColor: isValid ? NUTRITION_ACCENT : colors.muted },
+            { overflow: 'hidden' },
             isValid && !isDark
               ? (Platform.select({
                   ios: {
@@ -268,12 +317,25 @@ export default function NutritionStep1Screen() {
           ]}
           onPress={handleNext}
           disabled={!isValid}
+          accessibilityRole="button"
+          accessibilityLabel="다음 단계로 이동"
+          accessibilityState={{ disabled: !isValid }}
         >
-          <Text
-            style={[styles.nextButtonText, { color: isValid ? '#FFFFFF' : colors.mutedForeground }]}
+          <LinearGradient
+            colors={isValid ? [NUTRITION_ACCENT, '#EA580C'] : [colors.muted, colors.muted]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.nextButtonGradient}
           >
-            다음
-          </Text>
+            <Text
+              style={[
+                styles.nextButtonText,
+                { color: isValid ? '#FFFFFF' : colors.mutedForeground },
+              ]}
+            >
+              다음
+            </Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -281,17 +343,29 @@ export default function NutritionStep1Screen() {
 }
 
 const styles = StyleSheet.create({
+  hero: {
+    marginBottom: spacing.md,
+  },
+  heroContent: {
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroTitle: {
+    marginBottom: spacing.xs,
+  },
+  heroSubtitle: {
+    fontSize: typography.size.sm,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.smx,
     marginTop: spacing.lg,
   },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -301,10 +375,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   chipEmoji: { fontSize: 18 },
-  chipLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
+  chipLabel: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
   genderChip: {
     flex: 1,
     alignItems: 'center',
@@ -312,18 +383,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     gap: spacing.xs,
   },
-  inputRow: {
-    flexDirection: 'row',
-    gap: spacing.smx,
-  },
-  inputGroup: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  inputLabel: {
-    fontSize: typography.size.xs,
-    marginBottom: spacing.xs,
-  },
+  inputRow: { flexDirection: 'row', gap: spacing.smx },
+  inputGroup: { flex: 1, alignItems: 'center' },
+  inputLabel: { fontSize: typography.size.xs, marginBottom: spacing.xs },
   input: {
     width: '100%',
     borderRadius: radii.xl,
@@ -333,10 +395,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xl,
     fontWeight: typography.weight.semibold,
   },
-  inputUnit: {
-    fontSize: typography.size.xs,
-    marginTop: spacing.xxs,
-  },
+  inputUnit: { fontSize: typography.size.xs, marginTop: spacing.xxs },
   activityCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -358,11 +417,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
+  radioInner: { width: 12, height: 12, borderRadius: 6 },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -371,13 +426,7 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
     borderTopWidth: 1,
   },
-  nextButton: {
-    borderRadius: radii.full,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
+  nextButton: { borderRadius: radii.full },
+  nextButtonGradient: { paddingVertical: spacing.md, alignItems: 'center' },
+  nextButtonText: { fontSize: typography.size.base, fontWeight: typography.weight.semibold },
 });

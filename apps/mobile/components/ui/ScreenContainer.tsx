@@ -13,7 +13,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, spacing } from '../../lib/theme';
 
 /** 페이지 배경 그라디언트 변형 */
-export type BackgroundGradientVariant = 'home' | 'beauty' | 'style' | 'records' | 'profile';
+export type BackgroundGradientVariant =
+  | 'home'
+  | 'beauty'
+  | 'style'
+  | 'records'
+  | 'profile'
+  | 'nutrition'
+  | 'workout'
+  | 'analysis'
+  | 'social';
 
 // 웹의 bg-gradient-to-br 패턴 매칭 — 반투명 파스텔 색조
 // 다크 모드: 미묘한 색조로 깊이감 부여 (웹 dark:from-slate-950 via-blue-950/20 매칭)
@@ -40,6 +49,22 @@ const PAGE_GRADIENTS: Record<
   profile: {
     light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(237,233,254,0.5)'],
     dark: ['#0F0F0F', '#110F15', '#120E18'],
+  },
+  nutrition: {
+    light: ['#FDFCFB', 'rgba(255,247,237,0.6)', 'rgba(255,237,213,0.5)'],
+    dark: ['#0F0F0F', '#15120F', '#181210'],
+  },
+  workout: {
+    light: ['#FDFCFB', 'rgba(236,253,245,0.6)', 'rgba(220,252,231,0.5)'],
+    dark: ['#0F0F0F', '#0F150F', '#0F180F'],
+  },
+  analysis: {
+    light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(238,240,255,0.5)'],
+    dark: ['#0F0F0F', '#110F15', '#0F0F18'],
+  },
+  social: {
+    light: ['#FDFCFB', 'rgba(240,249,255,0.5)', 'rgba(224,242,254,0.5)'],
+    dark: ['#0F0F0F', '#0F1215', '#0F1118'],
   },
 };
 

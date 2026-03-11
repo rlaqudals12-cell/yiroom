@@ -5,15 +5,10 @@
 import { useUser } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { ScreenContainer, GlassCard, GradientText } from '@/components/ui';
 
 import {
   useUserAnalyses,
@@ -21,7 +16,8 @@ import {
   useNutritionData,
   calculateCalorieProgress,
 } from '../../hooks';
-import { useTheme, typography, spacing } from '../../lib/theme';
+import { TIMING } from '../../lib/animations';
+import { useTheme, spacing } from '../../lib/theme';
 
 // 시즌 라벨 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -61,7 +57,12 @@ export default function ReportsScreen(): React.JSX.Element {
     isLoading: analysisLoading,
     refetch: refetchAnalyses,
   } = useUserAnalyses();
-  const { analysis: workoutAnalysis, streak: workoutStreak, isLoading: workoutLoading, refetch: refetchWorkout } = useWorkoutData();
+  const {
+    analysis: workoutAnalysis,
+    streak: workoutStreak,
+    isLoading: workoutLoading,
+    refetch: refetchWorkout,
+  } = useWorkoutData();
   const {
     todaySummary,
     settings: nutritionSettings,
@@ -114,86 +115,113 @@ export default function ReportsScreen(): React.JSX.Element {
       testID="reports-screen"
       edges={['bottom']}
       contentPadding={spacing.md + 4}
+      backgroundGradient="records"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-        {/* 데이터 없을 때 안내 배너 */}
-        {!isLoading && !hasAnyAnalysis && !hasWorkout && !hasNutrition && (
+      {/* 히어로 헤더 */}
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard
+          shadowSize="md"
+          style={{ padding: spacing.md + 4, marginBottom: spacing.lg, alignItems: 'center' }}
+        >
+          <GradientText
+            variant="brand"
+            fontSize={typography.size['2xl']}
+            fontWeight={typography.weight.bold}
+          >
+            리포트
+          </GradientText>
+          <Text
+            style={{
+              fontSize: typography.size.sm,
+              color: colors.mutedForeground,
+              marginTop: spacing.xs,
+            }}
+          >
+            나의 웰니스 현황을 한눈에
+          </Text>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 데이터 없을 때 안내 배너 */}
+      {!isLoading && !hasAnyAnalysis && !hasWorkout && !hasNutrition && (
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ padding: spacing.md - 2, marginBottom: spacing.md }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <Text style={{ fontSize: typography.size.lg }}>💡</Text>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                  lineHeight: 19,
+                }}
+              >
+                분석을 완료하면 실제 결과가 여기에 표시돼요!
+              </Text>
+            </View>
+          </GlassCard>
+        </Animated.View>
+      )}
+
+      {/* 프로필 헤더 */}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ padding: spacing.md + 4, marginBottom: spacing.lg }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: brand.primary + '15',
-              borderRadius: radii.xl,
-              padding: spacing.md - 2,
-              marginBottom: spacing.md,
-              gap: spacing.sm,
             }}
           >
-            <Text style={{ fontSize: typography.size.lg }}>💡</Text>
-            <Text
+            <View
               style={{
-                flex: 1,
-                fontSize: typography.size.sm,
-                color: colors.mutedForeground,
-                lineHeight: 19,
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: brand.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              분석을 완료하면 실제 결과가 여기에 표시돼요!
-            </Text>
+              <Text
+                style={{
+                  fontSize: typography.size['2xl'],
+                  fontWeight: typography.weight.bold,
+                  color: brand.primaryForeground,
+                }}
+              >
+                {userName.charAt(0)}
+              </Text>
+            </View>
+            <View style={{ marginLeft: spacing.md }}>
+              <Text
+                style={{
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                  marginBottom: spacing.xs,
+                }}
+              >
+                {userName}
+              </Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  color: colors.mutedForeground,
+                }}
+              >
+                {hasAnyAnalysis
+                  ? `${[personalColor && '퍼스널컬러', skinAnalysis && '피부', bodyAnalysis && '체형'].filter(Boolean).join(', ')} 분석 완료`
+                  : '아직 분석 결과가 없어요'}
+              </Text>
+            </View>
           </View>
-        )}
+        </GlassCard>
+      </Animated.View>
 
-        {/* 프로필 헤더 */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md + 4,
-            marginBottom: spacing.lg,
-          }}
-        >
-          <View
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: brand.primary,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: typography.size['2xl'], fontWeight: typography.weight.bold, color: brand.primaryForeground }}>
-              {userName.charAt(0)}
-            </Text>
-          </View>
-          <View style={{ marginLeft: spacing.md }}>
-            <Text
-              style={{
-                fontSize: typography.size.lg,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-                marginBottom: spacing.xs,
-              }}
-            >
-              {userName}
-            </Text>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                color: colors.mutedForeground,
-              }}
-            >
-              {hasAnyAnalysis
-                ? `${[personalColor && '퍼스널컬러', skinAnalysis && '피부', bodyAnalysis && '체형'].filter(Boolean).join(', ')} 분석 완료`
-                : '아직 분석 결과가 없어요'}
-            </Text>
-          </View>
-        </View>
-
-        {/* 분석 결과 */}
+      {/* 분석 결과 */}
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
         <Text
           style={{
             fontSize: typography.size.sm,
@@ -215,8 +243,6 @@ export default function ReportsScreen(): React.JSX.Element {
             <Pressable
               style={{
                 flex: 1,
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
                 padding: spacing.md,
                 alignItems: 'center',
               }}
@@ -274,8 +300,6 @@ export default function ReportsScreen(): React.JSX.Element {
             <Pressable
               style={{
                 flex: 1,
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
                 padding: spacing.md,
                 alignItems: 'center',
               }}
@@ -333,8 +357,6 @@ export default function ReportsScreen(): React.JSX.Element {
             <Pressable
               style={{
                 flex: 1,
-                backgroundColor: colors.card,
-                borderRadius: radii.xl,
                 padding: spacing.md,
                 alignItems: 'center',
               }}
@@ -389,8 +411,10 @@ export default function ReportsScreen(): React.JSX.Element {
             </Pressable>
           </View>
         )}
+      </Animated.View>
 
-        {/* 운동 현황 */}
+      {/* 운동 현황 */}
+      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
         <Text
           style={{
             fontSize: typography.size.sm,
@@ -402,82 +426,77 @@ export default function ReportsScreen(): React.JSX.Element {
           운동 현황
         </Text>
 
-        <Pressable
-          style={{
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md + 4,
-            marginBottom: spacing.lg,
-          }}
-          onPress={() => router.push('/(workout)/onboarding')}
-          testID="report-workout"
-        >
-          {hasWorkout ? (
-            <>
-              <View style={styles.workoutHeader}>
-                <Text style={{ fontSize: 40 }}>🏋️</Text>
-                <View style={{ flex: 1, marginLeft: spacing.md }}>
-                  <Text
-                    style={{
-                      fontSize: typography.size.lg,
-                      fontWeight: typography.weight.semibold,
-                      color: colors.foreground,
-                      marginBottom: spacing.xs,
-                    }}
-                  >
-                    {workoutAnalysis?.workoutType
-                      ? `${workoutAnalysis.workoutType} 타입`
-                      : '운동 진행 중'}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: typography.size.sm,
-                      color: colors.mutedForeground,
-                    }}
-                  >
-                    {workoutStreak!.currentStreak}일 연속 운동 중
-                  </Text>
+        <GlassCard shadowSize="md" style={{ padding: spacing.md + 4, marginBottom: spacing.lg }}>
+          <Pressable onPress={() => router.push('/(workout)/onboarding')} testID="report-workout">
+            {hasWorkout ? (
+              <>
+                <View style={styles.workoutHeader}>
+                  <Text style={{ fontSize: 40 }}>🏋️</Text>
+                  <View style={{ flex: 1, marginLeft: spacing.md }}>
+                    <Text
+                      style={{
+                        fontSize: typography.size.lg,
+                        fontWeight: typography.weight.semibold,
+                        color: colors.foreground,
+                        marginBottom: spacing.xs,
+                      }}
+                    >
+                      {workoutAnalysis?.workoutType
+                        ? `${workoutAnalysis.workoutType} 타입`
+                        : '운동 진행 중'}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: typography.size.sm,
+                        color: colors.mutedForeground,
+                      }}
+                    >
+                      {workoutStreak!.currentStreak}일 연속 운동 중
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: typography.size['2xl'] }}>🔥</Text>
+                    <Text
+                      style={{
+                        fontSize: typography.size.sm,
+                        fontWeight: typography.weight.bold,
+                        color: status.error,
+                      }}
+                    >
+                      {workoutStreak!.currentStreak}
+                    </Text>
+                  </View>
                 </View>
-                <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: typography.size['2xl'] }}>🔥</Text>
-                  <Text
-                    style={{
-                      fontSize: typography.size.sm,
-                      fontWeight: typography.weight.bold,
-                      color: status.error,
-                    }}
-                  >
-                    {workoutStreak!.currentStreak}
-                  </Text>
-                </View>
+              </>
+            ) : (
+              <View style={{ alignItems: 'center', paddingVertical: spacing.sm }}>
+                <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🏋️</Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  운동을 시작해보세요
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                  }}
+                >
+                  맞춤 운동 루틴을 추천받을 수 있어요
+                </Text>
               </View>
-            </>
-          ) : (
-            <View style={{ alignItems: 'center', paddingVertical: spacing.sm }}>
-              <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🏋️</Text>
-              <Text
-                style={{
-                  fontSize: typography.size.base,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                운동을 시작해보세요
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: colors.mutedForeground,
-                }}
-              >
-                맞춤 운동 루틴을 추천받을 수 있어요
-              </Text>
-            </View>
-          )}
-        </Pressable>
+            )}
+          </Pressable>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 영양 현황 */}
+      {/* 영양 현황 */}
+      <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
         <Text
           style={{
             fontSize: typography.size.sm,
@@ -489,158 +508,143 @@ export default function ReportsScreen(): React.JSX.Element {
           영양 현황
         </Text>
 
-        <Pressable
-          style={{
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md + 4,
-            marginBottom: spacing.lg,
-          }}
-          onPress={() => router.push('/(nutrition)/dashboard')}
-          testID="report-nutrition"
-        >
-          {hasNutrition ? (
-            <>
-              <View style={styles.nutritionHeader}>
-                <Text style={{ fontSize: 40 }}>🥗</Text>
-                <View style={{ marginLeft: spacing.md }}>
-                  <Text
-                    style={{
-                      fontSize: typography.size.sm,
-                      color: colors.mutedForeground,
-                      marginBottom: spacing.xs,
-                    }}
-                  >
-                    오늘 섭취량
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: typography.size['2xl'],
-                      fontWeight: typography.weight.bold,
-                      color: colors.foreground,
-                    }}
-                  >
-                    {todaySummary!.totalCalories} kcal
-                  </Text>
+        <GlassCard shadowSize="md" style={{ padding: spacing.md + 4, marginBottom: spacing.lg }}>
+          <Pressable
+            onPress={() => router.push('/(nutrition)/dashboard')}
+            testID="report-nutrition"
+          >
+            {hasNutrition ? (
+              <>
+                <View style={styles.nutritionHeader}>
+                  <Text style={{ fontSize: 40 }}>🥗</Text>
+                  <View style={{ marginLeft: spacing.md }}>
+                    <Text
+                      style={{
+                        fontSize: typography.size.sm,
+                        color: colors.mutedForeground,
+                        marginBottom: spacing.xs,
+                      }}
+                    >
+                      오늘 섭취량
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: typography.size['2xl'],
+                        fontWeight: typography.weight.bold,
+                        color: colors.foreground,
+                      }}
+                    >
+                      {todaySummary!.totalCalories} kcal
+                    </Text>
+                  </View>
                 </View>
-              </View>
 
-              {/* 칼로리 바 */}
-              <View
-                style={{
-                  height: 8,
-                  backgroundColor: colors.muted,
-                  borderRadius: radii.full,
-                  overflow: 'hidden',
-                  marginBottom: spacing.sm,
-                }}
-              >
+                {/* 칼로리 바 */}
                 <View
                   style={{
-                    height: '100%',
-                    backgroundColor: brand.primary,
+                    height: 8,
+                    backgroundColor: colors.muted,
                     borderRadius: radii.full,
-                    width: `${Math.min(calorieProgress, 100)}%`,
+                    overflow: 'hidden',
+                    marginBottom: spacing.sm,
                   }}
-                />
+                >
+                  <View
+                    style={{
+                      height: '100%',
+                      backgroundColor: brand.primary,
+                      borderRadius: radii.full,
+                      width: `${Math.min(calorieProgress, 100)}%`,
+                    }}
+                  />
+                </View>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    color: colors.mutedForeground,
+                    textAlign: 'right',
+                  }}
+                >
+                  목표: {nutritionSettings?.dailyCalorieGoal || 2000} kcal
+                </Text>
+              </>
+            ) : (
+              <View style={{ alignItems: 'center', paddingVertical: spacing.sm }}>
+                <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🥗</Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  식단을 기록해보세요
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    color: colors.mutedForeground,
+                  }}
+                >
+                  영양 균형을 확인하고 맞춤 식단을 추천받아요
+                </Text>
               </View>
-              <Text
-                style={{
-                  fontSize: typography.size.xs,
-                  color: colors.mutedForeground,
-                  textAlign: 'right',
-                }}
-              >
-                목표: {nutritionSettings?.dailyCalorieGoal || 2000} kcal
-              </Text>
-            </>
-          ) : (
-            <View style={{ alignItems: 'center', paddingVertical: spacing.sm }}>
-              <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🥗</Text>
-              <Text
-                style={{
-                  fontSize: typography.size.base,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                식단을 기록해보세요
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  color: colors.mutedForeground,
-                }}
-              >
-                영양 균형을 확인하고 맞춤 식단을 추천받아요
-              </Text>
-            </View>
-          )}
-        </Pressable>
+            )}
+          </Pressable>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 상세 리포트 바로가기 */}
+      {/* 상세 리포트 바로가기 */}
+      <Animated.View entering={FadeInUp.delay(480).duration(TIMING.normal)}>
         <View
           style={{
             flexDirection: 'row',
             gap: spacing.sm,
           }}
         >
-          <Pressable
-            style={{
-              flex: 1,
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              alignItems: 'center',
-            }}
-            onPress={() => router.push('/(reports)/weekly')}
-            testID="weekly-report-link"
-          >
-            <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📊</Text>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-              }}
+          <GlassCard shadowSize="md" style={{ flex: 1, padding: spacing.md, alignItems: 'center' }}>
+            <Pressable
+              style={{ alignItems: 'center' }}
+              onPress={() => router.push('/(reports)/weekly')}
+              testID="weekly-report-link"
             >
-              주간 리포트
-            </Text>
-          </Pressable>
-          <Pressable
-            style={{
-              flex: 1,
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              alignItems: 'center',
-            }}
-            onPress={() => router.push('/(reports)/monthly')}
-            testID="monthly-report-link"
-          >
-            <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📅</Text>
-            <Text
-              style={{
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.semibold,
-                color: colors.foreground,
-              }}
+              <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📊</Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                }}
+              >
+                주간 리포트
+              </Text>
+            </Pressable>
+          </GlassCard>
+          <GlassCard shadowSize="md" style={{ flex: 1, padding: spacing.md, alignItems: 'center' }}>
+            <Pressable
+              style={{ alignItems: 'center' }}
+              onPress={() => router.push('/(reports)/monthly')}
+              testID="monthly-report-link"
             >
-              월간 리포트
-            </Text>
-          </Pressable>
+              <Text style={{ fontSize: typography.size['2xl'], marginBottom: spacing.xs }}>📅</Text>
+              <Text
+                style={{
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                  color: colors.foreground,
+                }}
+              >
+                월간 리포트
+              </Text>
+            </Pressable>
+          </GlassCard>
         </View>
+      </Animated.View>
 
-        {/* 인사이트 */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderRadius: radii.xl,
-            padding: spacing.md + 4,
-            alignItems: 'center',
-          }}
-        >
+      {/* 인사이트 */}
+      <Animated.View entering={FadeInUp.delay(560).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={{ padding: spacing.md + 4, alignItems: 'center' }}>
           <Text style={{ fontSize: 32, marginBottom: spacing.sm + 4 }}>💡</Text>
           <Text
             style={{
@@ -662,7 +666,8 @@ export default function ReportsScreen(): React.JSX.Element {
           >
             {insightMessage}
           </Text>
-        </View>
+        </GlassCard>
+      </Animated.View>
     </ScreenContainer>
   );
 }

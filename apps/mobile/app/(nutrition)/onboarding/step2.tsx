@@ -1,15 +1,23 @@
 /**
  * N-1 영양 온보딩 Step 2 — 식사 스타일 선택
  * 식사 스타일/요리 실력/예산
+ * UX v3: GlassCard + GradientText 히어로 + 배경 그라디언트 + coloredShadow + a11y
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import {
+  GlassCard,
+  GradientText,
+  ScalePressable,
+  ScreenContainer,
+  StepProgressBar,
+} from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
+import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme';
 
 const NUTRITION_ACCENT = '#F97316';
 
@@ -34,7 +42,7 @@ const BUDGETS = [
   { id: 'high', label: '투자형', description: '품질 우선' },
 ];
 
-export default function NutritionStep2Screen() {
+export default function NutritionStep2Screen(): React.JSX.Element {
   const { colors, isDark } = useTheme();
   const params = useLocalSearchParams();
   const [mealStyle, setMealStyle] = useState('');
@@ -46,12 +54,7 @@ export default function NutritionStep2Screen() {
   const handleNext = (): void => {
     router.push({
       pathname: '/(nutrition)/onboarding/step3',
-      params: {
-        ...params,
-        mealStyle,
-        cookingSkill,
-        budget,
-      },
+      params: { ...params, mealStyle, cookingSkill, budget },
     });
   };
 
@@ -60,60 +63,96 @@ export default function NutritionStep2Screen() {
       edges={['bottom']}
       contentPadding={20}
       contentContainerStyle={{ paddingBottom: 100 }}
+      backgroundGradient="nutrition"
       testID="nutrition-onboarding-step2"
     >
-      {/* 식사 스타일 */}
+      {/* 글래스모피즘 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="lg" glowColor={NUTRITION_ACCENT} style={styles.hero}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroEmoji}>🍽️</Text>
+            <GradientText
+              variant="extended"
+              fontSize={22}
+              fontWeight="700"
+              style={styles.heroTitle}
+            >
+              식사 스타일
+            </GradientText>
+            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+              평소 식습관을 알려주시면 맞춤 식단을 추천해 드려요
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 스텝 프로그레스 바 */}
+      <StepProgressBar
+        current={2}
+        total={3}
+        accentColor={NUTRITION_ACCENT}
+        testID="step-progress"
+      />
+
+      {/* 식사 스타일 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>식사 스타일</Text>
         <Text style={[styles.sectionDesc, { color: colors.mutedForeground }]}>
           평소 즐기는 식사 스타일을 선택해주세요
         </Text>
         <View style={styles.chipGrid}>
-          {MEAL_STYLES.map((style) => (
-            <Pressable
-              key={style.id}
+          {MEAL_STYLES.map((s) => (
+            <ScalePressable
+              key={s.id}
+              selected={mealStyle === s.id}
+              onPress={() => setMealStyle(s.id)}
+              accessibilityLabel={`${s.label} 식사 스타일 선택`}
               style={[
                 styles.styleChip,
                 {
                   backgroundColor: colors.card,
-                  borderColor: mealStyle === style.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderColor: mealStyle === s.id ? NUTRITION_ACCENT : colors.border,
+                  borderWidth: mealStyle === s.id ? 2 : 1,
                 },
-                mealStyle === style.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                mealStyle === s.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                mealStyle === s.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setMealStyle(style.id)}
             >
-              <Text style={{ fontSize: 24 }}>{style.emoji}</Text>
+              <Text style={{ fontSize: 24 }}>{s.emoji}</Text>
               <Text
                 style={[
                   styles.styleLabel,
-                  { color: mealStyle === style.id ? NUTRITION_ACCENT : colors.foreground },
+                  { color: mealStyle === s.id ? NUTRITION_ACCENT : colors.foreground },
+                  mealStyle === s.id && { fontWeight: typography.weight.bold },
                 ]}
               >
-                {style.label}
+                {s.label}
               </Text>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
       {/* 요리 실력 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>요리 실력</Text>
         <View style={{ gap: spacing.sm }}>
           {COOKING_SKILLS.map((skill) => (
-            <Pressable
+            <ScalePressable
               key={skill.id}
+              selected={cookingSkill === skill.id}
+              onPress={() => setCookingSkill(skill.id)}
+              accessibilityLabel={`${skill.label}: ${skill.description}`}
               style={[
                 styles.optionCard,
                 {
                   backgroundColor: colors.card,
                   borderColor: cookingSkill === skill.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: cookingSkill === skill.id ? 2 : 1,
                 },
-                cookingSkill === skill.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                cookingSkill === skill.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                cookingSkill === skill.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setCookingSkill(skill.id)}
             >
               <Text style={{ fontSize: 22 }}>{skill.emoji}</Text>
               <View style={styles.optionContent}>
@@ -139,33 +178,37 @@ export default function NutritionStep2Screen() {
                   <View style={[styles.radioInner, { backgroundColor: NUTRITION_ACCENT }]} />
                 )}
               </View>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
       {/* 예산 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>식비 예산</Text>
         <View style={styles.budgetRow}>
           {BUDGETS.map((b) => (
-            <Pressable
+            <ScalePressable
               key={b.id}
+              selected={budget === b.id}
+              onPress={() => setBudget(b.id)}
+              accessibilityLabel={`${b.label}: ${b.description}`}
               style={[
                 styles.budgetChip,
                 {
                   backgroundColor: colors.card,
                   borderColor: budget === b.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: budget === b.id ? 2 : 1,
                 },
-                budget === b.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                budget === b.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                budget === b.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setBudget(b.id)}
             >
               <Text
                 style={[
                   styles.budgetLabel,
                   { color: budget === b.id ? NUTRITION_ACCENT : colors.foreground },
+                  budget === b.id && { fontWeight: typography.weight.bold },
                 ]}
               >
                 {b.label}
@@ -173,12 +216,12 @@ export default function NutritionStep2Screen() {
               <Text style={[styles.budgetDesc, { color: colors.mutedForeground }]}>
                 {b.description}
               </Text>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
-      {/* 다음 버튼 */}
+      {/* 그라디언트 CTA 버튼 */}
       <View
         style={[
           styles.footer,
@@ -188,7 +231,7 @@ export default function NutritionStep2Screen() {
         <Pressable
           style={[
             styles.nextButton,
-            { backgroundColor: isValid ? NUTRITION_ACCENT : colors.muted },
+            { overflow: 'hidden' },
             isValid && !isDark
               ? (Platform.select({
                   ios: {
@@ -203,12 +246,25 @@ export default function NutritionStep2Screen() {
           ]}
           onPress={handleNext}
           disabled={!isValid}
+          accessibilityRole="button"
+          accessibilityLabel="다음 단계로 이동"
+          accessibilityState={{ disabled: !isValid }}
         >
-          <Text
-            style={[styles.nextButtonText, { color: isValid ? '#FFFFFF' : colors.mutedForeground }]}
+          <LinearGradient
+            colors={isValid ? [NUTRITION_ACCENT, '#EA580C'] : [colors.muted, colors.muted]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.nextButtonGradient}
           >
-            다음
-          </Text>
+            <Text
+              style={[
+                styles.nextButtonText,
+                { color: isValid ? '#FFFFFF' : colors.mutedForeground },
+              ]}
+            >
+              다음
+            </Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -216,21 +272,19 @@ export default function NutritionStep2Screen() {
 }
 
 const styles = StyleSheet.create({
+  hero: { marginBottom: spacing.md },
+  heroContent: { alignItems: 'center', padding: spacing.xl },
+  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroTitle: { marginBottom: spacing.xs },
+  heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
     marginTop: spacing.lg,
   },
-  sectionDesc: {
-    fontSize: 13,
-    marginBottom: spacing.smx,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
+  sectionDesc: { fontSize: 13, marginBottom: spacing.smx },
+  chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   styleChip: {
     alignItems: 'center',
     paddingVertical: spacing.smx,
@@ -239,10 +293,7 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
     minWidth: '30%',
   },
-  styleLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
+  styleLabel: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -251,11 +302,7 @@ const styles = StyleSheet.create({
     gap: spacing.smx,
   },
   optionContent: { flex: 1 },
-  optionLabel: {
-    fontSize: 15,
-    fontWeight: typography.weight.semibold,
-    marginBottom: spacing.xxs,
-  },
+  optionLabel: { fontSize: 15, fontWeight: typography.weight.semibold, marginBottom: spacing.xxs },
   optionDesc: { fontSize: 13 },
   radio: {
     width: 22,
@@ -265,15 +312,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  budgetRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
+  radioInner: { width: 12, height: 12, borderRadius: 6 },
+  budgetRow: { flexDirection: 'row', gap: spacing.sm },
   budgetChip: {
     flex: 1,
     alignItems: 'center',
@@ -281,10 +321,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     gap: spacing.xxs,
   },
-  budgetLabel: {
-    fontSize: 15,
-    fontWeight: typography.weight.semibold,
-  },
+  budgetLabel: { fontSize: 15, fontWeight: typography.weight.semibold },
   budgetDesc: { fontSize: 11 },
   footer: {
     position: 'absolute',
@@ -294,13 +331,7 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
     borderTopWidth: 1,
   },
-  nextButton: {
-    borderRadius: radii.full,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
+  nextButton: { borderRadius: radii.full },
+  nextButtonGradient: { paddingVertical: spacing.md, alignItems: 'center' },
+  nextButtonText: { fontSize: typography.size.base, fontWeight: typography.weight.semibold },
 });

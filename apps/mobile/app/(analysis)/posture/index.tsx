@@ -1,15 +1,17 @@
 /**
  * Posture 자세 분석 - 시작 화면
  *
- * V2: 웹 비주얼 싱크 — 모듈 히어로 + 카드 그림자/테두리 + pill CTA
+ * V3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient CTA
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../../components/ui';
-import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { GlassCard, GradientText, ScreenContainer } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
 
 const FEATURES = [
   { icon: '🧍', title: '자세 유형 분석', desc: '거북목, 어깨 말림 등 자세 유형 진단' },
@@ -18,8 +20,10 @@ const FEATURES = [
   { icon: '💡', title: '생활 습관 조언', desc: '올바른 자세를 위한 일상 팁 제공' },
 ];
 
+const GRADIENT_COLORS = ['#60A5FA', '#3B82F6'] as const;
+
 export default function PostureAnalysisScreen() {
-  const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
+  const { colors, module: moduleColors } = useTheme();
   const accent = moduleColors.posture;
 
   const handleStart = () => {
@@ -32,95 +36,91 @@ export default function PostureAnalysisScreen() {
       contentPadding={0}
       testID="analysis-posture-screen"
       edges={['bottom']}
+      backgroundGradient="analysis"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 모듈 히어로 */}
-        <Animated.View entering={staggeredEntry(0)} style={styles.header}>
-          <View style={[
-            styles.iconContainer,
-            { backgroundColor: `${accent.base}18` },
-            !isDark
-              ? Platform.select({
-                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
-                  android: { elevation: 3 },
-                }) ?? {}
-              : {},
-          ]}>
-            <Text style={styles.iconText}>🧍</Text>
-          </View>
-          <Text accessibilityRole="header" style={[styles.title, { color: colors.foreground }]}>
-            AI 자세 분석
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            AI가 자세를 분석하고{'\n'}맞춤 교정 운동을 추천해 드려요
-          </Text>
+        {/* GlassCard 히어로 */}
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+          <GlassCard shadowSize="xl" glowColor={accent.base} style={{ ...styles.hero }}>
+            <View style={styles.heroContent}>
+              <Text style={styles.iconText}>🧍</Text>
+              <GradientText
+                variant="extended"
+                fontSize={24}
+                fontWeight="700"
+                colors={[GRADIENT_COLORS[0], GRADIENT_COLORS[1]]}
+              >
+                AI 자세 분석
+              </GradientText>
+              <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+                AI가 자세를 분석하고{'\n'}맞춤 교정 운동을 추천해 드려요
+              </Text>
+            </View>
+          </GlassCard>
         </Animated.View>
 
         {/* 분석 항목 카드 */}
-        <Animated.View entering={staggeredEntry(1)} style={[
-          styles.card,
-          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark ? coloredShadow(moduleColors.posture.base, 'sm') : {},
-        ]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
-          <View style={styles.features}>
-            {FEATURES.map((feature, index) => (
-              <View key={index} style={styles.featureItem}>
-                <View style={[styles.bullet, { backgroundColor: accent.base }]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.featureTitle, { color: colors.foreground }]}>
-                    {feature.title}
-                  </Text>
-                  <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
-                    {feature.desc}
-                  </Text>
+        <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" glowColor={accent.base} style={{ ...styles.card }}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
+            <View style={styles.features}>
+              {FEATURES.map((feature, index) => (
+                <View key={index} style={styles.featureItem}>
+                  <View style={[styles.bullet, { backgroundColor: accent.base }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.featureTitle, { color: colors.foreground }]}>
+                      {feature.title}
+                    </Text>
+                    <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
+                      {feature.desc}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </GlassCard>
         </Animated.View>
 
         {/* 촬영 가이드 카드 */}
-        <Animated.View entering={staggeredEntry(2)} style={[
-          styles.card,
-          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark ? coloredShadow(moduleColors.posture.base, 'sm') : {},
-        ]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
-          <View style={styles.guideList}>
-            <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-              • 옆모습이 잘 보이도록 전신 사진을 촬영해주세요
-            </Text>
-            <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-              • 평소 자세 그대로 자연스럽게 서주세요
-            </Text>
-            <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-              • 몸에 딱 붙는 옷을 입으면 더 정확해요
-            </Text>
-          </View>
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" glowColor={accent.base} style={{ ...styles.card }}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
+            <View style={styles.guideList}>
+              <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
+                • 옆모습이 잘 보이도록 전신 사진을 촬영해주세요
+              </Text>
+              <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
+                • 평소 자세 그대로 자연스럽게 서주세요
+              </Text>
+              <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
+                • 몸에 딱 붙는 옷을 입으면 더 정확해요
+              </Text>
+            </View>
+          </GlassCard>
         </Animated.View>
       </ScrollView>
 
-      {/* pill CTA */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      {/* LinearGradient CTA */}
+      <View
+        style={[
+          styles.footer,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ]}
+      >
         <Pressable
-          style={[
-            styles.startButton,
-            { backgroundColor: accent.base },
-            !isDark
-              ? Platform.select({
-                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
-                  android: { elevation: 4 },
-                }) ?? {}
-              : {},
-          ]}
           onPress={handleStart}
           accessibilityRole="button"
           accessibilityLabel="자세 분석 시작하기"
+          style={[styles.startButton, { overflow: 'hidden' }]}
         >
-          <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
-            자세 분석 시작하기
-          </Text>
+          <LinearGradient
+            colors={[GRADIENT_COLORS[0], GRADIENT_COLORS[1]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.startButtonGradient}
+          >
+            <Text style={styles.startButtonText}>자세 분석 시작하기</Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -132,34 +132,24 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
     paddingBottom: 100,
   },
-  header: {
-    alignItems: 'center',
+  hero: {
     marginBottom: spacing.xl,
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  heroContent: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.mlg,
+    paddingVertical: spacing.md,
   },
   iconText: {
     fontSize: 32,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
   },
   subtitle: {
     fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
+    marginTop: spacing.smx,
   },
   card: {
-    borderRadius: radii.xl,
-    padding: spacing.mlg,
     marginBottom: spacing.md,
   },
   cardTitle: {
@@ -206,12 +196,18 @@ const styles = StyleSheet.create({
   },
   startButton: {
     borderRadius: radii.full,
+    alignItems: 'center',
+  },
+  startButtonGradient: {
+    width: '100%',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
+    borderRadius: radii.full,
   },
   startButtonText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
+    color: '#FFFFFF',
   },
 });

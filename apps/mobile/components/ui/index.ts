@@ -50,3 +50,5 @@ export { SuccessCheckmark } from './SuccessCheckmark';
 export { GradientText } from './GradientText';
 export type { GradientTextVariant } from './GradientText';
 export { ScanLineOverlay } from './ScanLineOverlay';
+export { StepProgressBar } from './StepProgressBar';
+export { ScalePressable } from './ScalePressable';

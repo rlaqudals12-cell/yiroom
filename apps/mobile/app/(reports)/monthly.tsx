@@ -4,14 +4,16 @@
  */
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, type TextStyle } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 
 import { useMonthlyReport } from '../../hooks/useMonthlyReport';
-import { useTheme, typography , spacing } from '../../lib/theme';
+import { TIMING } from '../../lib/animations';
+import { useTheme, typography, spacing } from '../../lib/theme';
 
 export default function MonthlyReportScreen(): React.JSX.Element {
-  const { colors, brand, spacing, radii, typography } = useTheme();
+  const { colors, brand, radii, typography } = useTheme();
   const { report, isLoading, error, refetch } = useMonthlyReport();
 
   // Pull-to-refresh
@@ -29,6 +31,7 @@ export default function MonthlyReportScreen(): React.JSX.Element {
     <ScreenContainer
       edges={['bottom']}
       testID="monthly-report-screen"
+      backgroundGradient="records"
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
@@ -41,126 +44,326 @@ export default function MonthlyReportScreen(): React.JSX.Element {
           description: '잠시 후 다시 시도해주세요',
         }}
       >
-        {report && (<>
-        {/* 기간 헤더 */}
-        <View style={[styles.periodCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.periodLabel, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-            이번 달
-          </Text>
-          <Text style={[styles.periodMonth, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
-            {report.month.replace('-', '년 ')}월
-          </Text>
-        </View>
-
-        {/* 운동 요약 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            운동 요약
-          </Text>
-          <View style={styles.statsGrid}>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
-              <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
-                {report.workout.totalSessions}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                총 운동 횟수
-              </Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
-              <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
-                {Math.round(report.workout.totalDuration / 60)}h
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                총 운동 시간
-              </Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
-              <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
-                {report.workout.totalCalories}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                소모 칼로리
-              </Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.muted, borderRadius: radii.xl }]}>
-              <Text style={[styles.statValue, { color: colors.foreground, fontSize: typography.size.xl, fontWeight: typography.weight.bold }]}>
-                {report.workout.bestStreak}일
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                최장 연속
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* 주간 트렌드 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            주간 트렌드
-          </Text>
-          {report.weeklyTrends.map((week) => (
-            <View key={week.weekLabel} style={[styles.trendRow, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.trendWeek, { color: colors.foreground, fontSize: typography.size.sm, fontWeight: typography.weight.semibold }]}>
-                {week.weekLabel}
-              </Text>
-              <View style={styles.trendStats}>
-                <Text style={[styles.trendStat, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                  운동 {week.workoutSessions}회
-                </Text>
-                <Text style={[styles.trendStat, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                  {week.workoutCalories}kcal
-                </Text>
-                <Text style={[styles.trendStat, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
-                  영양 목표 {week.nutritionGoalRate}%
-                </Text>
-              </View>
-              {/* 간단한 진행 바 */}
-              <View style={[styles.miniTrack, { backgroundColor: colors.muted }]}>
-                <View
+        {report && (
+          <>
+            {/* 기간 헤더 */}
+            <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.periodCard }}>
+                <Text
                   style={[
-                    styles.miniFill,
+                    styles.periodLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.sm },
+                  ]}
+                >
+                  이번 달
+                </Text>
+                <Text
+                  style={[
+                    styles.periodMonth,
                     {
-                      backgroundColor: brand.primary,
-                      width: `${Math.min(week.nutritionGoalRate, 100)}%`,
-                      borderRadius: radii.full,
+                      color: colors.foreground,
+                      fontSize: typography.size.xl,
+                      fontWeight: typography.weight.bold,
                     },
                   ]}
-                />
-              </View>
-            </View>
-          ))}
-        </View>
+                >
+                  {report.month.replace('-', '년 ')}월
+                </Text>
+              </GlassCard>
+            </Animated.View>
 
-        {/* 영양 요약 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            영양 요약
-          </Text>
-          <View style={styles.nutritionGrid}>
-            <NutritionStat label="평균 칼로리" value={`${report.nutrition.averageCalories}kcal`} colors={colors} typography={typography} />
-            <NutritionStat label="평균 단백질" value={`${report.nutrition.averageProtein}g`} colors={colors} typography={typography} />
-            <NutritionStat label="평균 탄수화물" value={`${report.nutrition.averageCarbs}g`} colors={colors} typography={typography} />
-            <NutritionStat label="평균 지방" value={`${report.nutrition.averageFat}g`} colors={colors} typography={typography} />
-            <NutritionStat label="기록 일수" value={`${report.nutrition.daysTracked}일`} colors={colors} typography={typography} />
-            <NutritionStat label="목표 달성률" value={`${report.nutrition.goalAchievementRate}%`} colors={colors} typography={typography} />
-          </View>
-        </View>
+            {/* 운동 요약 */}
+            <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.card }}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    {
+                      color: colors.foreground,
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.bold,
+                    },
+                  ]}
+                >
+                  운동 요약
+                </Text>
+                <View style={styles.statsGrid}>
+                  <View
+                    style={[
+                      styles.statBox,
+                      { backgroundColor: colors.muted, borderRadius: radii.xl },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statValue,
+                        {
+                          color: colors.foreground,
+                          fontSize: typography.size.xl,
+                          fontWeight: typography.weight.bold,
+                        },
+                      ]}
+                    >
+                      {report.workout.totalSessions}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        { color: colors.mutedForeground, fontSize: typography.size.xs },
+                      ]}
+                    >
+                      총 운동 횟수
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statBox,
+                      { backgroundColor: colors.muted, borderRadius: radii.xl },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statValue,
+                        {
+                          color: colors.foreground,
+                          fontSize: typography.size.xl,
+                          fontWeight: typography.weight.bold,
+                        },
+                      ]}
+                    >
+                      {Math.round(report.workout.totalDuration / 60)}h
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        { color: colors.mutedForeground, fontSize: typography.size.xs },
+                      ]}
+                    >
+                      총 운동 시간
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statBox,
+                      { backgroundColor: colors.muted, borderRadius: radii.xl },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statValue,
+                        {
+                          color: colors.foreground,
+                          fontSize: typography.size.xl,
+                          fontWeight: typography.weight.bold,
+                        },
+                      ]}
+                    >
+                      {report.workout.totalCalories}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        { color: colors.mutedForeground, fontSize: typography.size.xs },
+                      ]}
+                    >
+                      소모 칼로리
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.statBox,
+                      { backgroundColor: colors.muted, borderRadius: radii.xl },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statValue,
+                        {
+                          color: colors.foreground,
+                          fontSize: typography.size.xl,
+                          fontWeight: typography.weight.bold,
+                        },
+                      ]}
+                    >
+                      {report.workout.bestStreak}일
+                    </Text>
+                    <Text
+                      style={[
+                        styles.statLabel,
+                        { color: colors.mutedForeground, fontSize: typography.size.xs },
+                      ]}
+                    >
+                      최장 연속
+                    </Text>
+                  </View>
+                </View>
+              </GlassCard>
+            </Animated.View>
 
-        {/* 인사이트 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            이번 달 인사이트
-          </Text>
-          {report.insights.map((insight, i) => (
-            <View key={i} style={styles.insightRow}>
-              <Text style={[styles.insightDot, { color: brand.primary }]}>*</Text>
-              <Text style={[styles.insightText, { color: colors.foreground, fontSize: typography.size.sm }]}>
-                {insight}
-              </Text>
-            </View>
-          ))}
-        </View>
-        </>)}
+            {/* 주간 트렌드 */}
+            <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.card }}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    {
+                      color: colors.foreground,
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.bold,
+                    },
+                  ]}
+                >
+                  주간 트렌드
+                </Text>
+                {report.weeklyTrends.map((week) => (
+                  <View
+                    key={week.weekLabel}
+                    style={[styles.trendRow, { borderBottomColor: colors.border }]}
+                  >
+                    <Text
+                      style={[
+                        styles.trendWeek,
+                        {
+                          color: colors.foreground,
+                          fontSize: typography.size.sm,
+                          fontWeight: typography.weight.semibold,
+                        },
+                      ]}
+                    >
+                      {week.weekLabel}
+                    </Text>
+                    <View style={styles.trendStats}>
+                      <Text
+                        style={[
+                          styles.trendStat,
+                          { color: colors.mutedForeground, fontSize: typography.size.xs },
+                        ]}
+                      >
+                        운동 {week.workoutSessions}회
+                      </Text>
+                      <Text
+                        style={[
+                          styles.trendStat,
+                          { color: colors.mutedForeground, fontSize: typography.size.xs },
+                        ]}
+                      >
+                        {week.workoutCalories}kcal
+                      </Text>
+                      <Text
+                        style={[
+                          styles.trendStat,
+                          { color: colors.mutedForeground, fontSize: typography.size.xs },
+                        ]}
+                      >
+                        영양 목표 {week.nutritionGoalRate}%
+                      </Text>
+                    </View>
+                    {/* 간단한 진행 바 */}
+                    <View style={[styles.miniTrack, { backgroundColor: colors.muted }]}>
+                      <View
+                        style={[
+                          styles.miniFill,
+                          {
+                            backgroundColor: brand.primary,
+                            width: `${Math.min(week.nutritionGoalRate, 100)}%`,
+                            borderRadius: radii.full,
+                          },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                ))}
+              </GlassCard>
+            </Animated.View>
+
+            {/* 영양 요약 */}
+            <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.card }}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    {
+                      color: colors.foreground,
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.bold,
+                    },
+                  ]}
+                >
+                  영양 요약
+                </Text>
+                <View style={styles.nutritionGrid}>
+                  <NutritionStat
+                    label="평균 칼로리"
+                    value={`${report.nutrition.averageCalories}kcal`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                  <NutritionStat
+                    label="평균 단백질"
+                    value={`${report.nutrition.averageProtein}g`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                  <NutritionStat
+                    label="평균 탄수화물"
+                    value={`${report.nutrition.averageCarbs}g`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                  <NutritionStat
+                    label="평균 지방"
+                    value={`${report.nutrition.averageFat}g`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                  <NutritionStat
+                    label="기록 일수"
+                    value={`${report.nutrition.daysTracked}일`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                  <NutritionStat
+                    label="목표 달성률"
+                    value={`${report.nutrition.goalAchievementRate}%`}
+                    colors={colors}
+                    typography={typography}
+                  />
+                </View>
+              </GlassCard>
+            </Animated.View>
+
+            {/* 인사이트 */}
+            <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+              <GlassCard shadowSize="md" style={{ ...styles.card }}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    {
+                      color: colors.foreground,
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.bold,
+                    },
+                  ]}
+                >
+                  이번 달 인사이트
+                </Text>
+                {report.insights.map((insight, i) => (
+                  <View key={i} style={styles.insightRow}>
+                    <Text style={[styles.insightDot, { color: brand.primary }]}>*</Text>
+                    <Text
+                      style={[
+                        styles.insightText,
+                        { color: colors.foreground, fontSize: typography.size.sm },
+                      ]}
+                    >
+                      {insight}
+                    </Text>
+                  </View>
+                ))}
+              </GlassCard>
+            </Animated.View>
+          </>
+        )}
       </DataStateWrapper>
     </ScreenContainer>
   );
@@ -181,10 +384,20 @@ function NutritionStat({
   const typoWeight = typography.weight as Record<string, TextStyle['fontWeight']>;
   return (
     <View style={styles.nutritionStatItem}>
-      <Text style={[styles.nutritionStatValue, { color: colors.foreground, fontSize: typoSize.base, fontWeight: typoWeight.bold }]}>
+      <Text
+        style={[
+          styles.nutritionStatValue,
+          { color: colors.foreground, fontSize: typoSize.base, fontWeight: typoWeight.bold },
+        ]}
+      >
         {value}
       </Text>
-      <Text style={[styles.nutritionStatLabel, { color: colors.mutedForeground, fontSize: typoSize.xs }]}>
+      <Text
+        style={[
+          styles.nutritionStatLabel,
+          { color: colors.mutedForeground, fontSize: typoSize.xs },
+        ]}
+      >
         {label}
       </Text>
     </View>
@@ -192,7 +405,12 @@ function NutritionStat({
 }
 
 const styles = StyleSheet.create({
-  periodCard: { marginHorizontal: spacing.md, marginTop: spacing.smx, padding: spacing.md, alignItems: 'center' },
+  periodCard: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.smx,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
   periodLabel: { marginBottom: spacing.xs },
   periodMonth: {},
   card: { marginHorizontal: spacing.md, marginTop: spacing.smx, padding: spacing.md },

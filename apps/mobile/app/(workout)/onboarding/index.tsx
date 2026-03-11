@@ -1,27 +1,23 @@
 /**
  * W-1 운동 온보딩 - 시작 화면
- *
- * V2: 웹-모바일 비주얼 싱크 — 파스텔 히어로 + 그라디언트 아이콘 + 카드 그림자
+ * UX v3: GlassCard + GradientText 히어로 + 배경 그라디언트 + coloredShadow + a11y
  */
 import { LinearGradient } from 'expo-linear-gradient';
-import { Dumbbell } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import { Dumbbell } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useTheme, typography, radii , spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing, coloredShadow } from '@/lib/theme';
 
-// 운동 모듈 악센트 (green-500 계열)
-const WORKOUT_ACCENT = '#22C55E';
-const WORKOUT_HERO_BG_LIGHT = '#F0FDF4';
-const WORKOUT_HERO_BG_DARK = `${WORKOUT_ACCENT}15`;
+const WORKOUT_ACCENT = '#10B981';
 
-export default function WorkoutOnboardingScreen() {
-  const { colors, brand, typography, spacing, radii, shadows, isDark } = useTheme();
+export default function WorkoutOnboardingScreen(): React.JSX.Element {
+  const { colors, isDark } = useTheme();
 
-  const handleStart = () => {
+  const handleStart = (): void => {
     router.push('/(workout)/onboarding/goals');
   };
 
@@ -30,130 +26,109 @@ export default function WorkoutOnboardingScreen() {
       edges={['bottom']}
       contentPadding={20}
       contentContainerStyle={{ paddingBottom: 100 }}
+      backgroundGradient="workout"
       testID="workout-onboarding-screen"
     >
-        {/* 히어로 헤더 — 파스텔 그라디언트 배경 + 그라디언트 아이콘 */}
-        <Animated.View entering={FadeIn.duration(TIMING.normal)}>
-          <LinearGradient
-            colors={isDark ? [`${WORKOUT_ACCENT}10`, `${WORKOUT_ACCENT}18`] : [WORKOUT_HERO_BG_LIGHT, '#DCFCE7']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.header,
-              {
-                borderRadius: radii.xl,
-                padding: spacing.lg,
-              },
-            ]}
-          >
-          <View style={[
-            styles.iconContainer,
-            !isDark ? Platform.select({
-              ios: { shadowColor: WORKOUT_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10 },
-              android: { elevation: 4 },
-            }) ?? {} : {},
-          ]}>
-            <LinearGradient
-              colors={['#4ADE80', WORKOUT_ACCENT]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.iconGradient}
+      {/* 글래스모피즘 히어로 헤더 */}
+      <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+        <GlassCard shadowSize="xl" glowColor={WORKOUT_ACCENT} style={styles.hero}>
+          <View style={styles.heroContent}>
+            <View
+              style={[styles.iconContainer, !isDark ? coloredShadow(WORKOUT_ACCENT, 'md') : {}]}
             >
-              <Dumbbell size={32} color="#fff" />
-            </LinearGradient>
+              <LinearGradient
+                colors={['#4ADE80', WORKOUT_ACCENT]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              >
+                <Dumbbell size={32} color="#fff" />
+              </LinearGradient>
+            </View>
+            <GradientText
+              variant="extended"
+              fontSize={24}
+              fontWeight="700"
+              style={styles.heroTitle}
+            >
+              맞춤 운동 플랜
+            </GradientText>
+            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+              체형과 목표에 맞는{'\n'}나만의 운동 루틴을 만들어보세요
+            </Text>
           </View>
-          <Text style={[styles.title, { color: colors.foreground }]}>맞춤 운동 플랜</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            체형과 목표에 맞는{'\n'}나만의 운동 루틴을 만들어보세요
-          </Text>
-          </LinearGradient>
-        </Animated.View>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 특징 카드 — 악센트 그림자 + 테두리 */}
-        <Animated.View
-          entering={FadeInUp.delay(100).duration(TIMING.normal)}
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-            },
-            !isDark ? Platform.select({
-              ios: { shadowColor: WORKOUT_ACCENT, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 10 },
-              android: { elevation: 3 },
-            }) ?? {} : {},
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>이룸 운동의 특징</Text>
-          <View style={styles.featureList}>
-            <FeatureItem
-              emoji="🎯"
-              title="5가지 운동 타입"
-              description="토너, 빌더, 버너, 무버, 플렉서"
-            />
-            <FeatureItem
-              emoji="📊"
-              title="체형 기반 추천"
-              description="C-1 분석 결과 연동"
-            />
-            <FeatureItem
-              emoji="⭐"
-              title="연예인 루틴"
-              description="20명의 셀럽 운동 루틴"
-            />
-            <FeatureItem
-              emoji="🔥"
-              title="칼로리 트래킹"
-              description="MET 기반 정확한 계산"
-            />
+      {/* 특징 카드 — GlassCard */}
+      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={styles.card}>
+          <View style={styles.cardInner}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>이룸 운동의 특징</Text>
+            <View style={styles.featureList}>
+              <FeatureItem
+                emoji="🎯"
+                title="5가지 운동 타입"
+                description="토너, 빌더, 버너, 무버, 플렉서"
+              />
+              <FeatureItem emoji="📊" title="체형 기반 추천" description="C-1 분석 결과 연동" />
+              <FeatureItem emoji="⭐" title="연예인 루틴" description="20명의 셀럽 운동 루틴" />
+              <FeatureItem emoji="🔥" title="칼로리 트래킹" description="MET 기반 정확한 계산" />
+            </View>
           </View>
-        </Animated.View>
+        </GlassCard>
+      </Animated.View>
 
-        {/* 온보딩 단계 — 악센트 그림자 + 테두리 */}
-        <Animated.View
-          entering={FadeInUp.delay(200).duration(TIMING.normal)}
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-            },
-            !isDark ? Platform.select({
-              ios: { shadowColor: WORKOUT_ACCENT, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 10 },
-              android: { elevation: 3 },
-            }) ?? {} : {},
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>온보딩 과정 (3단계)</Text>
-          <View style={styles.stepList}>
-            <StepItem number={1} title="운동 목표 선택" />
-            <StepItem number={2} title="운동 빈도 설정" />
-            <StepItem number={3} title="운동 타입 분석" />
+      {/* 온보딩 단계 — GlassCard */}
+      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+        <GlassCard shadowSize="md" style={styles.card}>
+          <View style={styles.cardInner}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              온보딩 과정 (3단계)
+            </Text>
+            <View style={styles.stepList}>
+              <StepItem number={1} title="운동 목표 선택" accent={WORKOUT_ACCENT} />
+              <StepItem number={2} title="운동 빈도 설정" accent={WORKOUT_ACCENT} />
+              <StepItem number={3} title="운동 타입 분석" accent={WORKOUT_ACCENT} />
+            </View>
           </View>
-        </Animated.View>
+        </GlassCard>
+      </Animated.View>
 
-      {/* 시작 버튼 — 그라디언트 CTA + 브랜드 섀도 */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      {/* 그라디언트 CTA 버튼 */}
+      <View
+        style={[
+          styles.footer,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ]}
+      >
         <Pressable
           style={[
             styles.startButton,
             { overflow: 'hidden' },
-            !isDark ? Platform.select({
-              ios: { shadowColor: brand.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
-              android: { elevation: 4 },
-            }) ?? {} : {},
+            !isDark
+              ? (Platform.select({
+                  ios: {
+                    shadowColor: WORKOUT_ACCENT,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                  },
+                  android: { elevation: 4 },
+                }) ?? {})
+              : {},
           ]}
           onPress={handleStart}
+          accessibilityRole="button"
+          accessibilityLabel="운동 시작하기"
         >
           <LinearGradient
-            colors={[brand.primary, '#7C3AED']}
+            colors={[WORKOUT_ACCENT, '#059669']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={{ paddingVertical: spacing.md, alignItems: 'center' }}
+            style={styles.startButtonGradient}
           >
-            <Text style={[styles.startButtonText, { color: brand.primaryForeground }]}>운동 시작하기</Text>
+            <Text style={[styles.startButtonText, { color: '#FFFFFF' }]}>운동 시작하기</Text>
           </LinearGradient>
         </Pressable>
       </View>
@@ -169,25 +144,35 @@ function FeatureItem({
   emoji: string;
   title: string;
   description: string;
-}) {
-  const { colors, brand } = useTheme();
+}): React.JSX.Element {
+  const { colors } = useTheme();
   return (
-    <View style={styles.featureItem}>
+    <View style={styles.featureItem} accessibilityLabel={`${title}: ${description}`}>
       <Text style={styles.featureEmoji}>{emoji}</Text>
       <View style={styles.featureContent}>
         <Text style={[styles.featureTitle, { color: colors.foreground }]}>{title}</Text>
-        <Text style={[styles.featureDescription, { color: colors.mutedForeground }]}>{description}</Text>
+        <Text style={[styles.featureDescription, { color: colors.mutedForeground }]}>
+          {description}
+        </Text>
       </View>
     </View>
   );
 }
 
-function StepItem({ number, title }: { number: number; title: string }) {
-  const { colors, brand } = useTheme();
+function StepItem({
+  number,
+  title,
+  accent,
+}: {
+  number: number;
+  title: string;
+  accent: string;
+}): React.JSX.Element {
+  const { colors } = useTheme();
   return (
-    <View style={styles.stepItem}>
-      <View style={[styles.stepNumber, { backgroundColor: brand.primary }]}>
-        <Text style={[styles.stepNumberText, { color: brand.primaryForeground }]}>{number}</Text>
+    <View style={styles.stepItem} accessibilityLabel={`${number}단계: ${title}`}>
+      <View style={[styles.stepNumber, { backgroundColor: accent }]}>
+        <Text style={[styles.stepNumberText, { color: '#FFFFFF' }]}>{number}</Text>
       </View>
       <Text style={[styles.stepTitle, { color: colors.foreground }]}>{title}</Text>
     </View>
@@ -195,10 +180,8 @@ function StepItem({ number, title }: { number: number; title: string }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
+  hero: { marginBottom: spacing.lg },
+  heroContent: { alignItems: 'center', padding: spacing.xl },
   iconContainer: {
     width: 80,
     height: 80,
@@ -212,51 +195,34 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.smx,
-  },
-  subtitle: {
+  heroTitle: { marginBottom: spacing.smx },
+  heroSubtitle: {
     fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 24,
   },
-  card: {
-    borderRadius: radii.xl,
-    padding: spacing.mlg,
-    marginBottom: spacing.md,
-  },
+  card: { marginBottom: spacing.md },
+  cardInner: { padding: spacing.mlg },
   cardTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.md,
   },
-  featureList: {
-    gap: spacing.md,
-  },
+  featureList: { gap: spacing.md },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.smx,
   },
-  featureEmoji: {
-    fontSize: typography.size['2xl'],
-  },
-  featureContent: {
-    flex: 1,
-  },
+  featureEmoji: { fontSize: typography.size['2xl'] },
+  featureContent: { flex: 1 },
   featureTitle: {
     fontSize: 15,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xxs,
   },
-  featureDescription: {
-    fontSize: 13,
-  },
-  stepList: {
-    gap: spacing.smx,
-  },
+  featureDescription: { fontSize: 13 },
+  stepList: { gap: spacing.smx },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -265,7 +231,7 @@ const styles = StyleSheet.create({
   stepNumber: {
     width: 28,
     height: 28,
-    borderRadius: radii.xlg,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -273,9 +239,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
-  stepTitle: {
-    fontSize: 15,
-  },
+  stepTitle: { fontSize: 15 },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -284,9 +248,8 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
     borderTopWidth: 1,
   },
-  startButton: {
-    borderRadius: radii.full,
-  },
+  startButton: { borderRadius: radii.full },
+  startButtonGradient: { paddingVertical: spacing.md, alignItems: 'center' },
   startButtonText: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,

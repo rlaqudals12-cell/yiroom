@@ -1,20 +1,25 @@
 /**
  * 리더보드 페이지
+ * UX v3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient 내 순위 + ScalePressable
  */
-
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, ActivityIndicator } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { getTierColor, getTierLabel, type RankingEntry } from '@/lib/social';
 import { useLeaderboard, useFriendsLeaderboard, useMyRanking } from '@/lib/social/useLeaderboard';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
+import { useTheme, typography, radii, spacing, coloredShadow } from '@/lib/theme';
 
 type TabType = 'all' | 'friends';
 type CategoryType = 'xp' | 'level' | 'wellness' | 'workout' | 'nutrition';
+
+const LEADERBOARD_ACCENT = '#6366F1';
 
 const CATEGORIES: { id: CategoryType; label: string; emoji: string }[] = [
   { id: 'xp', label: 'XP', emoji: '⭐' },
@@ -32,9 +37,8 @@ const CATEGORY_SCORE_LABELS: Record<CategoryType, string> = {
   nutrition: '점',
 };
 
-export default function LeaderboardScreen() {
-  // typography, spacing, radii는 모듈 스코프 import 사용 (섀도잉 방지)
-  const { colors, brand, module: moduleColors } = useTheme();
+export default function LeaderboardScreen(): React.JSX.Element {
+  const { colors, isDark, module: moduleColors } = useTheme();
   const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -52,40 +56,40 @@ export default function LeaderboardScreen() {
   const rankings = activeTab === 'all' ? allRankings : friendRankings;
   const refetch = activeTab === 'all' ? refetchAll : refetchFriends;
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = (tab: TabType): void => {
     Haptics.selectionAsync();
     setActiveTab(tab);
   };
 
-  const handleCategoryChange = (category: CategoryType) => {
+  const handleCategoryChange = (category: CategoryType): void => {
     Haptics.selectionAsync();
     setActiveCategory(category);
   };
 
-  const getRankBadge = (rankNum: number) => {
+  const getRankBadge = (rankNum: number): string => {
     if (rankNum === 1) return '🥇';
     if (rankNum === 2) return '🥈';
     if (rankNum === 3) return '🥉';
     return `${rankNum}`;
   };
 
-  const renderRankingItem = ({ item }: { item: RankingEntry }) => {
+  const renderRankingItem = ({ item }: { item: RankingEntry }): React.JSX.Element => {
     const isMe = item.userId === user?.id;
 
     return (
-      <View
-        style={[
-          styles.rankingCard,
-          { backgroundColor: colors.card },
-          isMe && [styles.rankingCardMe, { borderColor: brand.primary }],
-        ]}
+      <GlassCard
+        shadowSize="md"
+        style={{
+          ...styles.rankingCard,
+          ...(isMe ? { borderWidth: 2, borderColor: LEADERBOARD_ACCENT } : {}),
+        }}
       >
         <View style={styles.rankBadge}>
           <Text
             style={[
               styles.rankText,
               { color: colors.mutedForeground },
-              item.rank <= 3 && styles.rankTextMedal,
+              item.rank <= 3 ? styles.rankTextMedal : {},
             ]}
           >
             {getRankBadge(item.rank)}
@@ -115,7 +119,7 @@ export default function LeaderboardScreen() {
             style={[
               styles.userName,
               { color: colors.foreground },
-              isMe && { color: brand.primary },
+              isMe ? { color: LEADERBOARD_ACCENT } : {},
             ]}
           >
             {item.displayName} {isMe && '(나)'}
@@ -138,7 +142,7 @@ export default function LeaderboardScreen() {
             {CATEGORY_SCORE_LABELS[activeCategory]}
           </Text>
         </View>
-      </View>
+      </GlassCard>
     );
   };
 
@@ -148,91 +152,112 @@ export default function LeaderboardScreen() {
       scrollable={false}
       edges={['bottom']}
       contentPadding={0}
+      backgroundGradient="social"
     >
-      {/* 내 순위 카드 */}
+      {/* 내 순위 — 글래스모피즘 그라디언트 카드 */}
       {rank && (
-        <View style={[styles.myRankCard, { backgroundColor: brand.primary }]}>
-          <View style={styles.myRankInfo}>
-            <Text style={[styles.myRankLabel, { color: brand.primaryForeground }]}>내 순위</Text>
-            <Text style={[styles.myRankValue, { color: brand.primaryForeground }]}>
-              {rank.toLocaleString()}위 / {totalUsers.toLocaleString()}명
-            </Text>
-          </View>
-          <View style={styles.percentileContainer}>
-            <Text style={[styles.percentileValue, { color: brand.primaryForeground }]}>
-              상위 {percentile}%
-            </Text>
-          </View>
-        </View>
+        <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+          <Pressable
+            style={[
+              styles.myRankCard,
+              { overflow: 'hidden' },
+              !isDark ? coloredShadow(LEADERBOARD_ACCENT, 'md') : {},
+            ]}
+          >
+            <LinearGradient
+              colors={[LEADERBOARD_ACCENT, '#7C3AED']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.myRankGradient}
+            >
+              <View style={styles.myRankInfo}>
+                <Text style={styles.myRankLabel}>내 순위</Text>
+                <Text style={styles.myRankValue}>
+                  {rank.toLocaleString()}위 / {totalUsers.toLocaleString()}명
+                </Text>
+              </View>
+              <View style={styles.percentileContainer}>
+                <Text style={styles.percentileValue}>상위 {percentile}%</Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </Animated.View>
       )}
 
       {/* 카테고리 세그먼트 */}
-      <View
-        style={[styles.categoryRow, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}
-      >
-        {CATEGORIES.map((cat) => (
-          <Pressable
-            key={cat.id}
-            style={[
-              styles.categoryChip,
-              {
-                backgroundColor: activeCategory === cat.id ? brand.primary : colors.card,
-                borderColor: activeCategory === cat.id ? brand.primary : colors.border,
-                borderWidth: 1,
-              },
-            ]}
-            onPress={() => handleCategoryChange(cat.id)}
-          >
-            <Text style={{ fontSize: 12 }}>{cat.emoji}</Text>
-            <Text
-              style={[
-                styles.categoryLabel,
-                { color: activeCategory === cat.id ? brand.primaryForeground : colors.foreground },
-              ]}
-            >
-              {cat.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <View
+          style={[styles.categoryRow, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}
+        >
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <Pressable
+                key={cat.id}
+                style={[
+                  styles.categoryChip,
+                  {
+                    backgroundColor: isActive ? LEADERBOARD_ACCENT : colors.card,
+                    borderColor: isActive ? LEADERBOARD_ACCENT : colors.border,
+                    borderWidth: 1,
+                  },
+                ]}
+                onPress={() => handleCategoryChange(cat.id)}
+              >
+                <Text style={{ fontSize: 12 }}>{cat.emoji}</Text>
+                <Text
+                  style={[
+                    styles.categoryLabel,
+                    { color: isActive ? '#FFFFFF' : colors.foreground },
+                  ]}
+                >
+                  {cat.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
 
       {/* 탭 */}
-      <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
-        <Pressable
-          style={[
-            styles.tab,
-            activeTab === 'all' && [styles.tabActive, { backgroundColor: colors.card }],
-          ]}
-          onPress={() => handleTabChange('all')}
-        >
-          <Text
+      <Animated.View entering={FadeInUp.delay(120).duration(TIMING.normal)}>
+        <View style={[styles.tabContainer, { backgroundColor: colors.muted }]}>
+          <Pressable
             style={[
-              styles.tabText,
-              { color: colors.mutedForeground },
-              activeTab === 'all' && { color: brand.primary },
+              styles.tab,
+              activeTab === 'all' ? [styles.tabActive, { backgroundColor: colors.card }] : {},
             ]}
+            onPress={() => handleTabChange('all')}
           >
-            전체
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.tab,
-            activeTab === 'friends' && [styles.tabActive, { backgroundColor: colors.card }],
-          ]}
-          onPress={() => handleTabChange('friends')}
-        >
-          <Text
+            <Text
+              style={[
+                styles.tabText,
+                { color: colors.mutedForeground },
+                activeTab === 'all' ? { color: LEADERBOARD_ACCENT } : {},
+              ]}
+            >
+              전체
+            </Text>
+          </Pressable>
+          <Pressable
             style={[
-              styles.tabText,
-              { color: colors.mutedForeground },
-              activeTab === 'friends' && { color: brand.primary },
+              styles.tab,
+              activeTab === 'friends' ? [styles.tabActive, { backgroundColor: colors.card }] : {},
             ]}
+            onPress={() => handleTabChange('friends')}
           >
-            친구
-          </Text>
-        </Pressable>
-      </View>
+            <Text
+              style={[
+                styles.tabText,
+                { color: colors.mutedForeground },
+                activeTab === 'friends' ? { color: LEADERBOARD_ACCENT } : {},
+              ]}
+            >
+              친구
+            </Text>
+          </Pressable>
+        </View>
+      </Animated.View>
 
       {/* 리더보드 목록 */}
       {isLoading ? (
@@ -270,23 +295,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   myRankCard: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: radii.xl,
+  },
+  myRankGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: spacing.md,
-    borderRadius: radii.xl,
     padding: spacing.mlg,
+    borderRadius: radii.xl,
   },
   myRankInfo: {
     flex: 1,
   },
   myRankLabel: {
     fontSize: 13,
-    opacity: 0.8,
+    color: 'rgba(255,255,255,0.8)',
     marginBottom: spacing.xs,
   },
   myRankValue: {
     fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
+    color: '#FFFFFF',
   },
   percentileContainer: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -297,6 +328,7 @@ const styles = StyleSheet.create({
   percentileValue: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
+    color: '#FFFFFF',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -311,9 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radii.xl,
   },
-  tabActive: {
-    // backgroundColor set inline via colors.card
-  },
+  tabActive: {},
   tabText: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
@@ -325,11 +355,7 @@ const styles = StyleSheet.create({
   rankingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.xl,
     padding: 14,
-  },
-  rankingCardMe: {
-    borderWidth: 2,
   },
   rankBadge: {
     width: 36,
@@ -379,7 +405,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: typography.weight.semibold,
   },
-
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',

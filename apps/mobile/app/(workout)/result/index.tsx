@@ -1,21 +1,29 @@
 /**
  * W-1 운동 타입 결과 화면
- * 분석 결과를 DB에 저장하고 주간 플랜을 생성
+ * UX v3: GlassCard + GradientText + CelebrationEffect + backgroundGradient + coloredShadow + a11y
  */
 import { useUser } from '@clerk/clerk-expo';
 import type { WorkoutType } from '@yiroom/shared';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { staggeredEntry } from '@/lib/animations';
+import {
+  CelebrationEffect,
+  GlassCard,
+  GradientText,
+  ScreenContainer,
+  DataStateWrapper,
+} from '@/components/ui';
+import { TIMING } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 import { workoutLogger } from '@/lib/utils/logger';
 import { generateWeeklyPlan, estimatePlanMinutes } from '@/lib/workout/planTemplates';
+
+const WORKOUT_ACCENT = '#10B981';
 
 // 운동 타입 데이터
 const WORKOUT_TYPE_DATA: Record<
@@ -65,9 +73,8 @@ const WORKOUT_TYPE_DATA: Record<
   },
 };
 
-export default function WorkoutResultScreen() {
-  const { colors, spacing, module: moduleColors, typography, radii} = useTheme();
-  const workoutColor = moduleColors.workout.base;
+export default function WorkoutResultScreen(): React.JSX.Element {
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const { goals, frequency, duration } = useLocalSearchParams<{
@@ -79,6 +86,7 @@ export default function WorkoutResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [workoutType, setWorkoutType] = useState<WorkoutType | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // 목표 기반 운동 타입 결정
   const determineWorkoutType = useCallback((parsedGoals: string[]): WorkoutType => {
@@ -98,7 +106,6 @@ export default function WorkoutResultScreen() {
         const parsedGoals = JSON.parse(goals || '[]') as string[];
         const freq = parseInt(frequency || '3', 10);
 
-        // 1. workout_analyses에 저장
         const { data: analysisData, error: analysisError } = await supabase
           .from('workout_analyses')
           .insert({
@@ -115,11 +122,9 @@ export default function WorkoutResultScreen() {
           return;
         }
 
-        // 2. 주간 플랜 생성
         const weeklyPlan = generateWeeklyPlan(type, freq);
         const totalMinutes = estimatePlanMinutes(weeklyPlan);
 
-        // 이번 주 월요일 계산
         const today = new Date();
         const dayOfWeek = today.getDay();
         const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
@@ -127,7 +132,6 @@ export default function WorkoutResultScreen() {
         monday.setDate(today.getDate() - diff);
         const weekStartDate = monday.toISOString().split('T')[0];
 
-        // 3. workout_plans에 저장
         const { error: planError } = await supabase.from('workout_plans').insert({
           analysis_id: analysisData.id,
           week_start_date: weekStartDate,
@@ -154,7 +158,6 @@ export default function WorkoutResultScreen() {
   // 운동 타입 분석
   const analyzeWorkoutType = useCallback(async () => {
     setIsLoading(true);
-    // 분석 진행 애니메이션용 딜레이
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const parsedGoals = JSON.parse(goals || '[]') as string[];
@@ -162,8 +165,8 @@ export default function WorkoutResultScreen() {
 
     setWorkoutType(type);
     setIsLoading(false);
+    setShowCelebration(true);
 
-    // DB에 저장 (비동기, UI 블로킹 안 함)
     saveAnalysisAndPlan(type);
   }, [goals, determineWorkoutType, saveAnalysisAndPlan]);
 
@@ -171,11 +174,11 @@ export default function WorkoutResultScreen() {
     analyzeWorkoutType();
   }, [analyzeWorkoutType]);
 
-  const handleStartSession = () => {
+  const handleStartSession = (): void => {
     router.push('/(workout)/session');
   };
 
-  const handleGoHome = () => {
+  const handleGoHome = (): void => {
     router.replace('/(tabs)');
   };
 
@@ -185,8 +188,17 @@ export default function WorkoutResultScreen() {
     <ScreenContainer
       edges={['bottom']}
       contentPadding={20}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      backgroundGradient="workout"
       testID="workout-result-screen"
     >
+      {/* 분석 완료 축하 이펙트 */}
+      <CelebrationEffect
+        type="analysis_complete"
+        visible={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+      />
+
       <DataStateWrapper
         isLoading={isLoading}
         isEmpty={!workoutType}
@@ -197,45 +209,65 @@ export default function WorkoutResultScreen() {
         }}
         onRetry={() => router.replace('/(workout)/onboarding')}
       >
-        {/* 결과 헤더 */}
-        <Animated.View entering={staggeredEntry(0)}>
-          <GlassCard style={styles.resultHeader}>
+        {/* 글래스모피즘 히어로 결과 헤더 */}
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+          <GlassCard shadowSize="xl" glowColor={WORKOUT_ACCENT} style={styles.resultHeader}>
             <Text style={styles.resultEmoji}>{typeData!.emoji}</Text>
-            <Text style={[styles.resultLabel, { color: colors.mutedForeground }]}>
+            <Text
+              style={[styles.resultLabel, { color: colors.mutedForeground }]}
+              accessibilityLabel="당신의 운동 타입 결과"
+            >
               당신의 운동 타입은
             </Text>
-            <Text style={[styles.resultType, { color: workoutColor }]}>{typeData!.name}</Text>
-            <Text style={[styles.resultDescription, { color: colors.mutedForeground }]}>
+            <GradientText
+              variant="extended"
+              fontSize={32}
+              fontWeight="700"
+              style={styles.resultTypeText}
+            >
+              {typeData!.name}
+            </GradientText>
+            <Text
+              style={[styles.resultDescription, { color: colors.mutedForeground }]}
+              accessibilityLabel={typeData!.description}
+            >
               {typeData!.description}
             </Text>
           </GlassCard>
         </Animated.View>
 
-        {/* 특성 */}
-        <Animated.View entering={staggeredEntry(1)}>
-          <GlassCard style={styles.section}>
+        {/* 특성 카드 */}
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>나의 운동 특성</Text>
             <View style={styles.tagContainer}>
-              {typeData!.characteristics.map((char, index) => (
+              {typeData!.characteristics.map((char) => (
                 <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: `${workoutColor}20` }]}
+                  key={char}
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor: `${WORKOUT_ACCENT}20`,
+                      borderWidth: 1,
+                      borderColor: `${WORKOUT_ACCENT}40`,
+                    },
+                  ]}
                 >
-                  <Text style={[styles.tagText, { color: workoutColor }]}>{char}</Text>
+                  <Text style={[styles.tagText, { color: WORKOUT_ACCENT }]}>{char}</Text>
                 </View>
               ))}
             </View>
           </GlassCard>
         </Animated.View>
 
-        {/* 추천 운동 */}
-        <Animated.View entering={staggeredEntry(2)}>
-          <GlassCard style={styles.section}>
+        {/* 추천 운동 카드 */}
+        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>추천 운동</Text>
             <View style={styles.exerciseList}>
-              {typeData!.recommendedExercises.map((exercise, index) => (
-                <View key={index} style={styles.exerciseItem}>
-                  <View style={[styles.exerciseBullet, { backgroundColor: workoutColor }]} />
+              {typeData!.recommendedExercises.map((exercise) => (
+                <View key={exercise} style={styles.exerciseItem}>
+                  <View style={[styles.exerciseBullet, { backgroundColor: WORKOUT_ACCENT }]} />
                   <Text style={[styles.exerciseName, { color: colors.foreground }]}>
                     {exercise}
                   </Text>
@@ -245,42 +277,76 @@ export default function WorkoutResultScreen() {
           </GlassCard>
         </Animated.View>
 
-        {/* 설정 정보 */}
-        <Animated.View entering={staggeredEntry(3)}>
-          <GlassCard style={styles.section}>
+        {/* 설정 정보 카드 */}
+        <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>운동 설정</Text>
             <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
               <Text style={[styles.settingLabel, { color: colors.mutedForeground }]}>빈도</Text>
-              <Text style={[styles.settingValue, { color: colors.foreground }]}>
+              <Text style={[styles.settingValue, { color: WORKOUT_ACCENT }]}>
                 주 {frequency || '3-4'}회
               </Text>
             </View>
-            <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+            <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.mutedForeground }]}>시간</Text>
-              <Text style={[styles.settingValue, { color: colors.foreground }]}>
+              <Text style={[styles.settingValue, { color: WORKOUT_ACCENT }]}>
                 {duration || '30-45'}분
               </Text>
             </View>
           </GlassCard>
         </Animated.View>
 
-        {/* 버튼 */}
-        <Animated.View entering={staggeredEntry(4)} style={styles.buttons}>
+        {/* 그라디언트 CTA 버튼 */}
+        <View
+          style={[
+            styles.footer,
+            { backgroundColor: colors.background, borderTopColor: colors.border },
+          ]}
+        >
           <Pressable
-            style={[styles.primaryButton, { backgroundColor: workoutColor }]}
+            style={[
+              styles.primaryButton,
+              { overflow: 'hidden' },
+              !isDark
+                ? (Platform.select({
+                    ios: {
+                      shadowColor: WORKOUT_ACCENT,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                    },
+                    android: { elevation: 4 },
+                  }) ?? {})
+                : {},
+            ]}
             onPress={handleStartSession}
+            accessibilityRole="button"
+            accessibilityLabel="운동 시작하기"
           >
-            <Text style={[styles.primaryButtonText, { color: colors.overlayForeground }]}>운동 시작하기</Text>
+            <LinearGradient
+              colors={[WORKOUT_ACCENT, '#059669']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <Text style={[styles.primaryButtonText, { color: '#FFFFFF' }]}>운동 시작하기</Text>
+            </LinearGradient>
           </Pressable>
+
           <Pressable
-            style={[styles.secondaryButton, { borderColor: colors.border }]}
+            style={[
+              styles.secondaryButton,
+              { borderColor: colors.border, backgroundColor: colors.card },
+            ]}
             onPress={handleGoHome}
+            accessibilityRole="button"
+            accessibilityLabel="홈으로 돌아가기"
           >
             <Text style={[styles.secondaryButtonText, { color: colors.mutedForeground }]}>
               홈으로 돌아가기
             </Text>
           </Pressable>
-        </Animated.View>
+        </View>
       </DataStateWrapper>
     </ScreenContainer>
   );
@@ -290,7 +356,7 @@ const styles = StyleSheet.create({
   resultHeader: {
     alignItems: 'center',
     marginBottom: spacing.lg,
-    padding: spacing.lg,
+    padding: spacing.xl,
   },
   resultEmoji: {
     fontSize: 64,
@@ -300,9 +366,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     marginBottom: spacing.sm,
   },
-  resultType: {
-    fontSize: 32,
-    fontWeight: typography.weight.bold,
+  resultTypeText: {
     marginBottom: spacing.smx,
   },
   resultDescription: {
@@ -327,7 +391,7 @@ const styles = StyleSheet.create({
   tag: {
     paddingHorizontal: 14,
     paddingVertical: spacing.sm,
-    borderRadius: radii.circle,
+    borderRadius: radii.full,
   },
   tagText: {
     fontSize: typography.size.sm,
@@ -355,6 +419,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
   },
   settingLabel: {
     fontSize: typography.size.sm,
@@ -363,13 +428,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: typography.weight.semibold,
   },
-  buttons: {
-    marginTop: spacing.sm,
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.mlg,
+    borderTopWidth: 1,
     gap: spacing.smx,
   },
   primaryButton: {
     borderRadius: radii.full,
-    padding: spacing.md,
+  },
+  buttonGradient: {
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   primaryButtonText: {
@@ -379,7 +451,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderRadius: radii.full,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   secondaryButtonText: {

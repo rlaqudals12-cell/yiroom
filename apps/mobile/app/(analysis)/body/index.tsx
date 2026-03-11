@@ -16,12 +16,13 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii , spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 export default function BodyAnalysisScreen() {
-  const { colors, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
+  const { colors, spacing, isDark, module: moduleColors } = useTheme();
   const accent = moduleColors.body;
 
   const [height, setHeight] = useState('');
@@ -87,124 +88,137 @@ export default function BodyAnalysisScreen() {
       contentPadding={0}
       testID="analysis-body-screen"
       edges={['bottom']}
+      backgroundGradient="analysis"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <Animated.View entering={staggeredEntry(0)} style={styles.header}>
-          <View style={[
-            styles.moduleIcon,
-            { backgroundColor: `${accent.base}18` },
-            !isDark
-              ? Platform.select({
-                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
-                  android: { elevation: 3 },
-                }) ?? {}
-              : {},
-          ]}>
-            <Text style={{ fontSize: 28 }}>📐</Text>
-          </View>
-          <Text style={[styles.title, { color: colors.foreground }]}>체형 분석</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
-          </Text>
+          <GlassCard
+            shadowSize="md"
+            glowColor={accent.base}
+            style={{ padding: spacing.mlg, alignItems: 'center' }}
+          >
+            <View style={[styles.moduleIcon, { backgroundColor: `${accent.base}18` }]}>
+              <Text style={{ fontSize: 28 }}>📐</Text>
+            </View>
+            <GradientText variant="body" fontSize={24} fontWeight="700">
+              체형 분석
+            </GradientText>
+            <Text
+              style={[styles.subtitle, { color: colors.mutedForeground, marginTop: spacing.smx }]}
+            >
+              키, 체중과 전신 사진으로{'\n'}나에게 맞는 스타일을 찾아보세요
+            </Text>
+          </GlassCard>
         </Animated.View>
 
         {/* 신체 정보 입력 */}
-        <Animated.View entering={staggeredEntry(1)} style={[
-          styles.card,
-          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark ? coloredShadow(moduleColors.body.base, 'sm') : {},
-        ]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
+        <Animated.View entering={staggeredEntry(1)} style={styles.card}>
+          <GlassCard
+            shadowSize="md"
+            glowColor={moduleColors.body.base}
+            style={{ padding: spacing.mlg }}
+          >
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>신체 정보</Text>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.mutedForeground }]}>키 (cm)</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                },
-              ]}
-              placeholder="예: 165"
-              placeholderTextColor={colors.mutedForeground}
-              value={height}
-              onChangeText={setHeight}
-              keyboardType="numeric"
-              maxLength={5}
-              accessibilityLabel="키 입력, cm"
-            />
-          </View>
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.mutedForeground }]}>키 (cm)</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                    backgroundColor: colors.muted,
+                  },
+                ]}
+                placeholder="예: 165"
+                placeholderTextColor={colors.mutedForeground}
+                value={height}
+                onChangeText={setHeight}
+                keyboardType="numeric"
+                maxLength={5}
+                accessibilityLabel="키 입력, cm"
+              />
+            </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.mutedForeground }]}>체중 (kg)</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  borderColor: colors.border,
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                },
-              ]}
-              placeholder="예: 55"
-              placeholderTextColor={colors.mutedForeground}
-              value={weight}
-              onChangeText={setWeight}
-              keyboardType="numeric"
-              maxLength={5}
-              accessibilityLabel="체중 입력, kg"
-            />
-          </View>
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.mutedForeground }]}>체중 (kg)</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                    backgroundColor: colors.muted,
+                  },
+                ]}
+                placeholder="예: 55"
+                placeholderTextColor={colors.mutedForeground}
+                value={weight}
+                onChangeText={setWeight}
+                keyboardType="numeric"
+                maxLength={5}
+                accessibilityLabel="체중 입력, kg"
+              />
+            </View>
+          </GlassCard>
         </Animated.View>
 
         {/* 이미지 업로드 */}
-        <Animated.View entering={staggeredEntry(2)} style={[
-          styles.card,
-          { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-          !isDark ? coloredShadow(moduleColors.body.base, 'sm') : {},
-        ]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
-          <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>
-            정면에서 촬영한 전신 사진을 선택해주세요
-          </Text>
-
-          <Pressable
-            style={[
-              styles.imagePickerButton,
-              { borderColor: colors.border },
-              imageUri && [styles.imagePickerButtonSelected, { borderColor: accent.base, backgroundColor: colors.muted }],
-            ]}
-            onPress={pickImage}
-            accessibilityRole="button"
-            accessibilityLabel={imageUri ? '사진이 선택됨, 다시 선택하기' : '갤러리에서 전신 사진 선택'}
+        <Animated.View entering={staggeredEntry(2)} style={styles.card}>
+          <GlassCard
+            shadowSize="md"
+            glowColor={moduleColors.body.base}
+            style={{ padding: spacing.mlg }}
           >
-            {imageUri ? (
-              <Text style={[styles.imagePickerTextSelected, { color: accent.base }]}>사진이 선택되었습니다</Text>
-            ) : (
-              <>
-                <Text style={[styles.imagePickerIcon, { color: colors.mutedForeground }]}>+</Text>
-                <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>
-                  갤러리에서 선택
-                </Text>
-              </>
-            )}
-          </Pressable>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>전신 사진</Text>
+            <Text style={[styles.cardDescription, { color: colors.mutedForeground }]}>
+              정면에서 촬영한 전신 사진을 선택해주세요
+            </Text>
 
-          <View style={[styles.guideBox, { backgroundColor: `${accent.base}10` }]}>
-            <Text style={[styles.guideTitle, { color: colors.foreground }]}>촬영 가이드</Text>
-            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
-              • 밝은 배경에서 촬영해주세요
-            </Text>
-            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
-              • 몸에 맞는 옷을 입고 촬영하면 좋아요
-            </Text>
-            <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
-              • 정면을 바라보고 자연스럽게 서주세요
-            </Text>
-          </View>
+            <Pressable
+              style={[
+                styles.imagePickerButton,
+                { borderColor: colors.border },
+                imageUri && [
+                  styles.imagePickerButtonSelected,
+                  { borderColor: accent.base, backgroundColor: colors.muted },
+                ],
+              ]}
+              onPress={pickImage}
+              accessibilityRole="button"
+              accessibilityLabel={
+                imageUri ? '사진이 선택됨, 다시 선택하기' : '갤러리에서 전신 사진 선택'
+              }
+            >
+              {imageUri ? (
+                <Text style={[styles.imagePickerTextSelected, { color: accent.base }]}>
+                  사진이 선택되었습니다
+                </Text>
+              ) : (
+                <>
+                  <Text style={[styles.imagePickerIcon, { color: colors.mutedForeground }]}>+</Text>
+                  <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>
+                    갤러리에서 선택
+                  </Text>
+                </>
+              )}
+            </Pressable>
+
+            <View style={[styles.guideBox, { backgroundColor: `${accent.base}10` }]}>
+              <Text style={[styles.guideTitle, { color: colors.foreground }]}>촬영 가이드</Text>
+              <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
+                • 밝은 배경에서 촬영해주세요
+              </Text>
+              <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
+                • 몸에 맞는 옷을 입고 촬영하면 좋아요
+              </Text>
+              <Text style={[styles.guideText, { color: colors.mutedForeground }]}>
+                • 정면을 바라보고 자연스럽게 서주세요
+              </Text>
+            </View>
+          </GlassCard>
         </Animated.View>
       </ScrollView>
 
@@ -220,10 +234,15 @@ export default function BodyAnalysisScreen() {
             styles.analyzeButton,
             { backgroundColor: accent.base },
             !isDark
-              ? Platform.select({
-                  ios: { shadowColor: accent.base, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+              ? (Platform.select({
+                  ios: {
+                    shadowColor: accent.base,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                  },
                   android: { elevation: 4 },
-                }) ?? {}
+                }) ?? {})
               : {},
             (!height || !weight || !imageUri) && styles.analyzeButtonDisabled,
           ]}
@@ -233,7 +252,9 @@ export default function BodyAnalysisScreen() {
           accessibilityLabel="체형 분석하기"
           accessibilityState={{ disabled: !height || !weight || !imageUri }}
         >
-          <Text style={[styles.analyzeButtonText, { color: colors.overlayForeground }]}>체형 분석하기</Text>
+          <Text style={[styles.analyzeButtonText, { color: colors.overlayForeground }]}>
+            체형 분석하기
+          </Text>
         </Pressable>
       </View>
     </ScreenContainer>

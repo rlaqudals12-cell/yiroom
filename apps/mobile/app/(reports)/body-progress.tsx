@@ -6,8 +6,10 @@
 import { View, Text, ScrollView } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme } from '../../lib/theme';
+import { GlassCard } from '@/components/ui';
+
 import { staggeredEntry, TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
 
 interface BodyMeasurement {
   date: string;
@@ -50,7 +52,14 @@ const MOCK_MEASUREMENTS: BodyMeasurement[] = [
 ];
 
 export default function BodyProgressScreen(): React.ReactElement {
-  const { colors, brand, spacing, radii, typography, status, module: moduleColors, score: scoreColors } = useTheme();
+  const {
+    colors,
+    spacing,
+    typography,
+    status,
+    module: moduleColors,
+    score: scoreColors,
+  } = useTheme();
 
   const latest = MOCK_MEASUREMENTS[0];
   const previous = MOCK_MEASUREMENTS[1];
@@ -98,106 +107,194 @@ export default function BodyProgressScreen(): React.ReactElement {
       </Text>
 
       {/* 현재 상태 카드 */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          marginBottom: spacing.lg,
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground, marginBottom: spacing.xs }}>
-          현재 체형
-        </Text>
-        <Text style={{ fontSize: typography.size['3xl'], fontWeight: typography.weight.bold, color: moduleColors.body.base }}>
-          {latest.bodyType}
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm }}>
-          <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>균형 점수</Text>
-          <Text style={{ fontSize: typography.size.xl, fontWeight: typography.weight.bold, color: getScoreColor(latest.balanceScore) }}>
-            {latest.balanceScore}점
-          </Text>
-        </View>
-      </View>
-
-      {/* 측정 비교 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
-        측정 비교
-      </Text>
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          marginBottom: spacing.lg,
-        }}
-      >
-        {[
-          { label: '어깨 너비', current: latest.shoulders, prev: previous.shoulders, unit: 'cm' },
-          { label: '허리 둘레', current: latest.waist, prev: previous.waist, unit: 'cm' },
-          { label: '엉덩이 둘레', current: latest.hips, prev: previous.hips, unit: 'cm' },
-        ].map((item, index) => {
-          const delta = getDelta(item.current, item.prev);
-          return (
-            <View
-              key={item.label}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingVertical: spacing.sm,
-                borderBottomWidth: index < 2 ? 1 : 0,
-                borderBottomColor: colors.border,
-              }}
-            >
-              <Text style={{ flex: 1, fontSize: typography.size.base, color: colors.foreground }}>{item.label}</Text>
-              <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.bold, color: colors.foreground, marginRight: spacing.sm }}>
-                {item.current}{item.unit}
-              </Text>
-              <Text style={{ fontSize: typography.size.sm, color: delta.color, minWidth: 60, textAlign: 'right' }}>
-                {delta.text}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-
-      {/* 히스토리 타임라인 */}
-      <Text style={{ fontSize: typography.size.lg, fontWeight: typography.weight.semibold, color: colors.foreground, marginBottom: spacing.sm }} accessibilityRole="header">
-        변화 히스토리
-      </Text>
-      <View style={{ gap: spacing.sm }}>
-        {MOCK_MEASUREMENTS.map((measurement, index) => (
-          <Animated.View
-            key={measurement.date}
-            entering={staggeredEntry(index)}
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard
+          shadowSize="md"
+          style={{ padding: spacing.md, marginBottom: spacing.lg, alignItems: 'center' }}
+        >
+          <Text
             style={{
-              backgroundColor: colors.card,
-              borderRadius: radii.xl,
-              padding: spacing.md,
-              borderLeftWidth: 3,
-              borderLeftColor: index === 0 ? moduleColors.body.base : colors.border,
+              fontSize: typography.size.sm,
+              color: colors.mutedForeground,
+              marginBottom: spacing.xs,
             }}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs }}>
-              <Text style={{ fontSize: typography.size.base, fontWeight: typography.weight.semibold, color: colors.foreground }}>
-                {measurement.label}
-              </Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>{measurement.date}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                체형: {measurement.bodyType}
-              </Text>
-              <Text style={{ fontSize: typography.size.sm, fontWeight: typography.weight.bold, color: getScoreColor(measurement.balanceScore) }}>
-                균형 {measurement.balanceScore}점
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs }}>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>어깨 {measurement.shoulders}cm</Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>허리 {measurement.waist}cm</Text>
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>힙 {measurement.hips}cm</Text>
-            </View>
+            현재 체형
+          </Text>
+          <Text
+            style={{
+              fontSize: typography.size['3xl'],
+              fontWeight: typography.weight.bold,
+              color: moduleColors.body.base,
+            }}
+          >
+            {latest.bodyType}
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.xs,
+              marginTop: spacing.sm,
+            }}
+          >
+            <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+              균형 점수
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.size.xl,
+                fontWeight: typography.weight.bold,
+                color: getScoreColor(latest.balanceScore),
+              }}
+            >
+              {latest.balanceScore}점
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 측정 비교 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+          accessibilityRole="header"
+        >
+          측정 비교
+        </Text>
+        <GlassCard shadowSize="md" style={{ padding: spacing.md, marginBottom: spacing.lg }}>
+          <View>
+            {[
+              {
+                label: '어깨 너비',
+                current: latest.shoulders,
+                prev: previous.shoulders,
+                unit: 'cm',
+              },
+              { label: '허리 둘레', current: latest.waist, prev: previous.waist, unit: 'cm' },
+              { label: '엉덩이 둘레', current: latest.hips, prev: previous.hips, unit: 'cm' },
+            ].map((item, index) => {
+              const delta = getDelta(item.current, item.prev);
+              return (
+                <View
+                  key={item.label}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: spacing.sm,
+                    borderBottomWidth: index < 2 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <Text
+                    style={{ flex: 1, fontSize: typography.size.base, color: colors.foreground }}
+                  >
+                    {item.label}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.bold,
+                      color: colors.foreground,
+                      marginRight: spacing.sm,
+                    }}
+                  >
+                    {item.current}
+                    {item.unit}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: delta.color,
+                      minWidth: 60,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {delta.text}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 히스토리 타임라인 */}
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+        <Text
+          style={{
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.semibold,
+            color: colors.foreground,
+            marginBottom: spacing.sm,
+          }}
+          accessibilityRole="header"
+        >
+          변화 히스토리
+        </Text>
+      </Animated.View>
+      <View style={{ gap: spacing.sm }}>
+        {MOCK_MEASUREMENTS.map((measurement, index) => (
+          <Animated.View key={measurement.date} entering={staggeredEntry(index)}>
+            <GlassCard
+              shadowSize="md"
+              style={{
+                padding: spacing.md,
+                borderLeftWidth: 3,
+                borderLeftColor: index === 0 ? moduleColors.body.base : colors.border,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: spacing.xs,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: typography.size.base,
+                    fontWeight: typography.weight.semibold,
+                    color: colors.foreground,
+                  }}
+                >
+                  {measurement.label}
+                </Text>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  {measurement.date}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                  체형: {measurement.bodyType}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.bold,
+                    color: getScoreColor(measurement.balanceScore),
+                  }}
+                >
+                  균형 {measurement.balanceScore}점
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs }}>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  어깨 {measurement.shoulders}cm
+                </Text>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  허리 {measurement.waist}cm
+                </Text>
+                <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
+                  힙 {measurement.hips}cm
+                </Text>
+              </View>
+            </GlassCard>
           </Animated.View>
         ))}
       </View>

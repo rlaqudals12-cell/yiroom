@@ -6,9 +6,10 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { staggeredEntry } from '../../../lib/animations';
-import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 // 퍼스널 컬러 문진 질문
 const QUESTIONS = [
@@ -60,7 +61,7 @@ const QUESTIONS = [
 ];
 
 export default function PersonalColorScreen() {
-  const { colors, brand, spacing, radii, typography, isDark, module: moduleColors } = useTheme();
+  const { colors, spacing, typography, module: moduleColors } = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
@@ -96,12 +97,19 @@ export default function PersonalColorScreen() {
       contentPadding={0}
       testID="analysis-pc-screen"
       edges={['bottom']}
+      backgroundGradient="analysis"
     >
       {/* 진행 바 */}
       <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: colors.muted }]} accessibilityLabel={`진행률 ${currentQuestion + 1}/${QUESTIONS.length}`}>
+        <View
+          style={[styles.progressBar, { backgroundColor: colors.muted }]}
+          accessibilityLabel={`진행률 ${currentQuestion + 1}/${QUESTIONS.length}`}
+        >
           <View
-            style={[styles.progressFill, { width: `${progress}%`, backgroundColor: moduleColors.personalColor.base }]}
+            style={[
+              styles.progressFill,
+              { width: `${progress}%`, backgroundColor: moduleColors.personalColor.base },
+            ]}
           />
         </View>
         <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
@@ -112,15 +120,23 @@ export default function PersonalColorScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* 모듈 아이콘 + 질문 */}
         <Animated.View entering={staggeredEntry(0)} style={styles.questionContainer}>
-          <View style={[
-            styles.moduleIcon,
-            { backgroundColor: `${moduleColors.personalColor.base}18` },
-          ]}>
-            <Text style={{ fontSize: 22 }}>🎨</Text>
-          </View>
-          <Text style={[styles.questionText, { color: colors.foreground }]}>
-            {question.question}
-          </Text>
+          <GlassCard
+            shadowSize="md"
+            glowColor={moduleColors.personalColor.base}
+            style={{ padding: spacing.mlg }}
+          >
+            <View
+              style={[
+                styles.moduleIcon,
+                { backgroundColor: `${moduleColors.personalColor.base}18` },
+              ]}
+            >
+              <Text style={{ fontSize: 22 }}>🎨</Text>
+            </View>
+            <GradientText variant="personalColor" fontSize={22} fontWeight="700">
+              {question.question}
+            </GradientText>
+          </GlassCard>
         </Animated.View>
 
         {/* 선택지 */}
@@ -128,35 +144,34 @@ export default function PersonalColorScreen() {
           {question.options.map((option, index) => (
             <Animated.View key={index} entering={staggeredEntry(index + 1)}>
               <Pressable
-                style={[
-                  styles.optionButton,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.border,
-                  },
-                  !isDark ? coloredShadow(moduleColors.personalColor.base, 'sm') : {},
-                  isSelected(option.value) && {
-                    borderColor: moduleColors.personalColor.base,
-                    backgroundColor: `${moduleColors.personalColor.base}10`,
-                  },
-                ]}
                 onPress={() => handleAnswer(option.value)}
                 accessibilityRole="button"
                 accessibilityLabel={option.label}
                 accessibilityState={{ selected: isSelected(option.value) }}
               >
-                <Text
-                  style={[
-                    styles.optionText,
-                    { color: colors.foreground },
-                    isSelected(option.value) && {
-                      color: moduleColors.personalColor.base,
-                      fontWeight: typography.weight.semibold,
-                    },
-                  ]}
+                <GlassCard
+                  shadowSize="md"
+                  glowColor={isSelected(option.value) ? moduleColors.personalColor.base : undefined}
+                  style={{
+                    padding: 18,
+                    ...(isSelected(option.value)
+                      ? { borderColor: moduleColors.personalColor.base }
+                      : {}),
+                  }}
                 >
-                  {option.label}
-                </Text>
+                  <Text
+                    style={[
+                      styles.optionText,
+                      { color: colors.foreground },
+                      isSelected(option.value) && {
+                        color: moduleColors.personalColor.base,
+                        fontWeight: typography.weight.semibold,
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </GlassCard>
               </Pressable>
             </Animated.View>
           ))}
@@ -165,7 +180,12 @@ export default function PersonalColorScreen() {
 
       {/* 뒤로가기 버튼 */}
       {currentQuestion > 0 && (
-        <Pressable style={styles.backButton} onPress={handleBack} accessibilityRole="button" accessibilityLabel="이전 질문으로 돌아가기">
+        <Pressable
+          style={styles.backButton}
+          onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel="이전 질문으로 돌아가기"
+        >
           <Text style={[styles.backButtonText, { color: colors.mutedForeground }]}>이전 질문</Text>
         </Pressable>
       )}

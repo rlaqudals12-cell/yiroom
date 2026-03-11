@@ -5,19 +5,14 @@
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, DataStateWrapper } from '@/components/ui';
+import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 
+import { TIMING } from '../../lib/animations';
 import { useClerkSupabaseClient } from '../../lib/supabase';
-import { useTheme , spacing } from '../../lib/theme';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface WeightEntry {
   id: string;
@@ -117,14 +112,9 @@ export default function WeightGoalScreen(): React.JSX.Element {
         .maybeSingle();
 
       if (existing) {
-        await supabase
-          .from('weight_logs')
-          .update({ weight })
-          .eq('id', existing.id);
+        await supabase.from('weight_logs').update({ weight }).eq('id', existing.id);
       } else {
-        await supabase
-          .from('weight_logs')
-          .insert({ clerk_user_id: user.id, date: today, weight });
+        await supabase.from('weight_logs').insert({ clerk_user_id: user.id, date: today, weight });
       }
 
       Alert.alert('완료', '체중이 기록되었어요!');
@@ -199,113 +189,142 @@ export default function WeightGoalScreen(): React.JSX.Element {
       edges={['bottom']}
       contentPadding={spacing.md}
       testID="weight-goal-screen"
+      backgroundGradient="records"
       contentContainerStyle={{ gap: spacing.md }}
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <DataStateWrapper
-        isLoading={isLoading}
-        isEmpty={false}
-      >
+      <DataStateWrapper isLoading={isLoading} isEmpty={false}>
         {/* 현재 상태 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            현재 체중
-          </Text>
-          {latestWeight > 0 ? (
-            <View style={styles.currentWeightRow}>
-              <Text style={[styles.bigWeight, { color: brand.primary, fontSize: typography.size['4xl'], fontWeight: typography.weight.bold }]}>
-                {latestWeight}
-              </Text>
-              <Text style={[styles.weightUnit, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
-            </View>
-          ) : (
-            <Text style={[styles.noData, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-              아직 체중 기록이 없어요
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.card }}>
+            <Text
+              style={[
+                styles.cardTitle,
+                {
+                  color: colors.foreground,
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.bold,
+                },
+              ]}
+            >
+              현재 체중
             </Text>
-          )}
-        </View>
+            {latestWeight > 0 ? (
+              <View style={styles.currentWeightRow}>
+                <Text
+                  style={[
+                    styles.bigWeight,
+                    {
+                      color: brand.primary,
+                      fontSize: typography.size['4xl'],
+                      fontWeight: typography.weight.bold,
+                    },
+                  ]}
+                >
+                  {latestWeight}
+                </Text>
+                <Text
+                  style={[
+                    styles.weightUnit,
+                    { color: colors.mutedForeground, fontSize: typography.size.lg },
+                  ]}
+                >
+                  kg
+                </Text>
+              </View>
+            ) : (
+              <Text
+                style={[
+                  styles.noData,
+                  { color: colors.mutedForeground, fontSize: typography.size.sm },
+                ]}
+              >
+                아직 체중 기록이 없어요
+              </Text>
+            )}
+          </GlassCard>
+        </Animated.View>
 
         {/* 목표 진행 */}
         {goal && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-            <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-              목표 진행
-            </Text>
-            <View style={styles.goalRow}>
-              <Text style={[styles.goalLabel, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-                시작: {goal.startWeight}kg
-              </Text>
-              <Text style={[styles.goalLabel, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-                목표: {goal.targetWeight}kg
-              </Text>
-            </View>
-            <View style={[styles.goalTrack, { backgroundColor: colors.muted, marginTop: spacing.sm }]}>
-              <View
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.card }}>
+              <Text
                 style={[
-                  styles.goalFill,
+                  styles.cardTitle,
                   {
-                    backgroundColor: brand.primary,
-                    width: `${progressPercent}%`,
-                    borderRadius: radii.full,
+                    color: colors.foreground,
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.bold,
                   },
                 ]}
-              />
-            </View>
-            <Text style={[styles.goalPercent, { color: brand.primary, fontWeight: typography.weight.bold, fontSize: typography.size.sm, marginTop: spacing.xs }]}>
-              {progressPercent}% 달성
-            </Text>
-          </View>
+              >
+                목표 진행
+              </Text>
+              <View style={styles.goalRow}>
+                <Text
+                  style={[
+                    styles.goalLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.sm },
+                  ]}
+                >
+                  시작: {goal.startWeight}kg
+                </Text>
+                <Text
+                  style={[
+                    styles.goalLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.sm },
+                  ]}
+                >
+                  목표: {goal.targetWeight}kg
+                </Text>
+              </View>
+              <View
+                style={[styles.goalTrack, { backgroundColor: colors.muted, marginTop: spacing.sm }]}
+              >
+                <View
+                  style={[
+                    styles.goalFill,
+                    {
+                      backgroundColor: brand.primary,
+                      width: `${progressPercent}%`,
+                      borderRadius: radii.full,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.goalPercent,
+                  {
+                    color: brand.primary,
+                    fontWeight: typography.weight.bold,
+                    fontSize: typography.size.sm,
+                    marginTop: spacing.xs,
+                  },
+                ]}
+              >
+                {progressPercent}% 달성
+              </Text>
+            </GlassCard>
+          </Animated.View>
         )}
 
         {/* 체중 입력 */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-            오늘 체중 기록
-          </Text>
-          <View style={styles.inputRow}>
-            <TextInput
+        <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ ...styles.card }}>
+            <Text
               style={[
-                styles.weightInput,
+                styles.cardTitle,
                 {
-                  backgroundColor: colors.muted,
                   color: colors.foreground,
-                  borderRadius: radii.xl,
-                  fontSize: typography.size.xl,
+                  fontSize: typography.size.lg,
+                  fontWeight: typography.weight.bold,
                 },
               ]}
-              placeholder="65.0"
-              placeholderTextColor={colors.mutedForeground}
-              value={newWeight}
-              onChangeText={setNewWeight}
-              keyboardType="decimal-pad"
-              testID="weight-input"
-            />
-            <Text style={[styles.kgLabel, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
-            <Pressable
-              style={[
-                styles.logButton,
-                {
-                  backgroundColor: newWeight.trim() ? brand.primary : colors.muted,
-                  borderRadius: radii.xl,
-                },
-              ]}
-              onPress={handleLogWeight}
-              disabled={!newWeight.trim() || isSaving}
-              testID="weight-log-button"
             >
-              <Text style={{ color: newWeight.trim() ? brand.primaryForeground : colors.mutedForeground, fontWeight: typography.weight.bold }}>
-                기록
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* 목표 설정 */}
-        {!goal && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-            <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-              목표 설정
+              오늘 체중 기록
             </Text>
             <View style={styles.inputRow}>
               <TextInput
@@ -318,51 +337,159 @@ export default function WeightGoalScreen(): React.JSX.Element {
                     fontSize: typography.size.xl,
                   },
                 ]}
-                placeholder="60.0"
+                placeholder="65.0"
                 placeholderTextColor={colors.mutedForeground}
-                value={targetWeight}
-                onChangeText={setTargetWeight}
+                value={newWeight}
+                onChangeText={setNewWeight}
                 keyboardType="decimal-pad"
-                testID="target-weight-input"
+                testID="weight-input"
               />
-              <Text style={[styles.kgLabel, { color: colors.mutedForeground, fontSize: typography.size.lg }]}>kg</Text>
+              <Text
+                style={[
+                  styles.kgLabel,
+                  { color: colors.mutedForeground, fontSize: typography.size.lg },
+                ]}
+              >
+                kg
+              </Text>
               <Pressable
                 style={[
                   styles.logButton,
                   {
-                    backgroundColor: targetWeight.trim() ? brand.primary : colors.muted,
+                    backgroundColor: newWeight.trim() ? brand.primary : colors.muted,
                     borderRadius: radii.xl,
                   },
                 ]}
-                onPress={handleSetGoal}
-                disabled={!targetWeight.trim() || isSaving}
-                testID="goal-set-button"
+                onPress={handleLogWeight}
+                disabled={!newWeight.trim() || isSaving}
+                testID="weight-log-button"
               >
-                <Text style={{ color: targetWeight.trim() ? brand.primaryForeground : colors.mutedForeground, fontWeight: typography.weight.bold }}>
-                  설정
+                <Text
+                  style={{
+                    color: newWeight.trim() ? brand.primaryForeground : colors.mutedForeground,
+                    fontWeight: typography.weight.bold,
+                  }}
+                >
+                  기록
                 </Text>
               </Pressable>
             </View>
-          </View>
+          </GlassCard>
+        </Animated.View>
+
+        {/* 목표 설정 */}
+        {!goal && (
+          <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.card }}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  {
+                    color: colors.foreground,
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.bold,
+                  },
+                ]}
+              >
+                목표 설정
+              </Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[
+                    styles.weightInput,
+                    {
+                      backgroundColor: colors.muted,
+                      color: colors.foreground,
+                      borderRadius: radii.xl,
+                      fontSize: typography.size.xl,
+                    },
+                  ]}
+                  placeholder="60.0"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={targetWeight}
+                  onChangeText={setTargetWeight}
+                  keyboardType="decimal-pad"
+                  testID="target-weight-input"
+                />
+                <Text
+                  style={[
+                    styles.kgLabel,
+                    { color: colors.mutedForeground, fontSize: typography.size.lg },
+                  ]}
+                >
+                  kg
+                </Text>
+                <Pressable
+                  style={[
+                    styles.logButton,
+                    {
+                      backgroundColor: targetWeight.trim() ? brand.primary : colors.muted,
+                      borderRadius: radii.xl,
+                    },
+                  ]}
+                  onPress={handleSetGoal}
+                  disabled={!targetWeight.trim() || isSaving}
+                  testID="goal-set-button"
+                >
+                  <Text
+                    style={{
+                      color: targetWeight.trim() ? brand.primaryForeground : colors.mutedForeground,
+                      fontWeight: typography.weight.bold,
+                    }}
+                  >
+                    설정
+                  </Text>
+                </Pressable>
+              </View>
+            </GlassCard>
+          </Animated.View>
         )}
 
         {/* 최근 기록 */}
         {entries.length > 0 && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
-            <Text style={[styles.cardTitle, { color: colors.foreground, fontSize: typography.size.lg, fontWeight: typography.weight.bold }]}>
-              최근 기록
-            </Text>
-            {entries.slice(0, 10).map((entry) => (
-              <View key={entry.id} style={[styles.entryRow, { borderBottomColor: colors.border }]}>
-                <Text style={[styles.entryDate, { color: colors.mutedForeground, fontSize: typography.size.sm }]}>
-                  {formatDateKo(entry.date)}
-                </Text>
-                <Text style={[styles.entryWeight, { color: colors.foreground, fontSize: typography.size.base, fontWeight: typography.weight.semibold }]}>
-                  {entry.weight} kg
-                </Text>
-              </View>
-            ))}
-          </View>
+          <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ ...styles.card }}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  {
+                    color: colors.foreground,
+                    fontSize: typography.size.lg,
+                    fontWeight: typography.weight.bold,
+                  },
+                ]}
+              >
+                최근 기록
+              </Text>
+              {entries.slice(0, 10).map((entry) => (
+                <View
+                  key={entry.id}
+                  style={[styles.entryRow, { borderBottomColor: colors.border }]}
+                >
+                  <Text
+                    style={[
+                      styles.entryDate,
+                      { color: colors.mutedForeground, fontSize: typography.size.sm },
+                    ]}
+                  >
+                    {formatDateKo(entry.date)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.entryWeight,
+                      {
+                        color: colors.foreground,
+                        fontSize: typography.size.base,
+                        fontWeight: typography.weight.semibold,
+                      },
+                    ]}
+                  >
+                    {entry.weight} kg
+                  </Text>
+                </View>
+              ))}
+            </GlassCard>
+          </Animated.View>
         )}
       </DataStateWrapper>
     </ScreenContainer>
@@ -385,7 +512,12 @@ const styles = StyleSheet.create({
   weightInput: { flex: 1, padding: spacing.smx, textAlign: 'center' },
   kgLabel: {},
   logButton: { paddingHorizontal: spacing.mlg, paddingVertical: spacing.smx },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.smd, borderBottomWidth: StyleSheet.hairlineWidth },
+  entryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.smd,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   entryDate: {},
   entryWeight: {},
 });

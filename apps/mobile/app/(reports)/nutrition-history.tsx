@@ -4,17 +4,13 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-} from 'react-native';
-import { DataStateWrapper, ScreenContainer } from '@/components/ui';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 
-import { useClerkSupabaseClient } from '../../lib/supabase';
-import { useTheme , spacing } from '../../lib/theme';
+import { DataStateWrapper, ScreenContainer, GlassCard } from '@/components/ui';
+
 import { getNutrientStatus, getNutrientStatusColor } from '../../hooks/useNutritionData';
+import { useClerkSupabaseClient } from '../../lib/supabase';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface NutritionRecord {
   date: string;
@@ -46,7 +42,9 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
 
       const { data } = await supabase
         .from('daily_nutrition_summary')
-        .select('date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count')
+        .select(
+          'date, total_calories, total_protein, total_carbs, total_fat, water_intake, meal_count'
+        )
         .gte('date', thirtyDaysAgo.toISOString().split('T')[0])
         .lte('date', today.toISOString().split('T')[0])
         .order('date', { ascending: false });
@@ -87,9 +85,18 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
     const calPercent = Math.min(Math.round((item.totalCalories / calorieGoal) * 100), 150);
 
     return (
-      <View style={[styles.recordCard, { backgroundColor: colors.card, borderRadius: radii.xl }]}>
+      <GlassCard shadowSize="md" style={{ ...styles.recordCard }}>
         <View style={styles.recordHeader}>
-          <Text style={[styles.recordDate, { color: colors.foreground, fontSize: typography.size.base, fontWeight: typography.weight.semibold }]}>
+          <Text
+            style={[
+              styles.recordDate,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+              },
+            ]}
+          >
             {formatDateKo(item.date)}
           </Text>
           <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
@@ -97,7 +104,12 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
 
         {/* 칼로리 바 */}
         <View style={styles.calRow}>
-          <Text style={[styles.calLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>
+          <Text
+            style={[
+              styles.calLabel,
+              { color: colors.mutedForeground, fontSize: typography.size.xs },
+            ]}
+          >
             칼로리
           </Text>
           <View style={[styles.calTrack, { backgroundColor: colors.muted }]}>
@@ -112,7 +124,16 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
               ]}
             />
           </View>
-          <Text style={[styles.calValue, { color: colors.foreground, fontSize: typography.size.sm, fontWeight: typography.weight.bold }]}>
+          <Text
+            style={[
+              styles.calValue,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.bold,
+              },
+            ]}
+          >
             {item.totalCalories}
           </Text>
         </View>
@@ -120,28 +141,74 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
         {/* 매크로 */}
         <View style={styles.macroRow}>
           <View style={styles.macroItem}>
-            <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>단백질</Text>
-            <Text style={[styles.macroValue, { color: status.error, fontSize: typography.size.sm }]}>{item.totalProtein}g</Text>
+            <Text
+              style={[
+                styles.macroLabel,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
+              단백질
+            </Text>
+            <Text
+              style={[styles.macroValue, { color: status.error, fontSize: typography.size.sm }]}
+            >
+              {item.totalProtein}g
+            </Text>
           </View>
           <View style={styles.macroItem}>
-            <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>탄수화물</Text>
-            <Text style={[styles.macroValue, { color: status.warning, fontSize: typography.size.sm }]}>{item.totalCarbs}g</Text>
+            <Text
+              style={[
+                styles.macroLabel,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
+              탄수화물
+            </Text>
+            <Text
+              style={[styles.macroValue, { color: status.warning, fontSize: typography.size.sm }]}
+            >
+              {item.totalCarbs}g
+            </Text>
           </View>
           <View style={styles.macroItem}>
-            <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>지방</Text>
-            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>{item.totalFat}g</Text>
+            <Text
+              style={[
+                styles.macroLabel,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
+              지방
+            </Text>
+            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>
+              {item.totalFat}g
+            </Text>
           </View>
           <View style={styles.macroItem}>
-            <Text style={[styles.macroLabel, { color: colors.mutedForeground, fontSize: typography.size.xs }]}>수분</Text>
-            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>{item.waterIntake}ml</Text>
+            <Text
+              style={[
+                styles.macroLabel,
+                { color: colors.mutedForeground, fontSize: typography.size.xs },
+              ]}
+            >
+              수분
+            </Text>
+            <Text style={[styles.macroValue, { color: status.info, fontSize: typography.size.sm }]}>
+              {item.waterIntake}ml
+            </Text>
           </View>
         </View>
-      </View>
+      </GlassCard>
     );
   };
 
   return (
-    <ScreenContainer scrollable={false} contentPadding={0} testID="nutrition-history-screen" edges={['bottom']}>
+    <ScreenContainer
+      scrollable={false}
+      contentPadding={0}
+      testID="nutrition-history-screen"
+      backgroundGradient="records"
+      edges={['bottom']}
+    >
       <DataStateWrapper
         isLoading={isLoading}
         isEmpty={records.length === 0}
@@ -155,7 +222,11 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
           data={records}
           keyExtractor={(item) => item.date}
           renderItem={renderRecord}
-          contentContainerStyle={{ padding: spacing.md, gap: spacing.smx, paddingBottom: spacing.lg }}
+          contentContainerStyle={{
+            padding: spacing.md,
+            gap: spacing.smx,
+            paddingBottom: spacing.lg,
+          }}
           showsVerticalScrollIndicator={false}
         />
       </DataStateWrapper>
@@ -166,10 +237,20 @@ export default function NutritionHistoryScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   recordCard: { padding: spacing.md },
-  recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.smx },
+  recordHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.smx,
+  },
   recordDate: {},
   statusDot: { width: 10, height: 10, borderRadius: 5 },
-  calRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.smx },
+  calRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.smx,
+  },
   calLabel: { width: 40 },
   calTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   calFill: { height: '100%' },

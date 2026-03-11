@@ -1,6 +1,7 @@
 /**
  * N-1 영양 온보딩 Step 3 — 알레르기 & 칼로리 미리보기
  * 알레르기 선택 + 식사횟수 + BMR/TDEE 실시간 계산
+ * UX v3: GlassCard + GradientText 히어로 + GradientCard 미리보기 + coloredShadow + a11y
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -8,11 +9,18 @@ import { useState, useMemo } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '@/components/ui';
+import {
+  GlassCard,
+  GradientCard,
+  GradientText,
+  ScalePressable,
+  ScreenContainer,
+  StepProgressBar,
+} from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { calculateBMR, calculateTDEE } from '@/lib/nutrition';
 import type { Gender, ActivityLevel } from '@/lib/nutrition';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
+import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme';
 
 const NUTRITION_ACCENT = '#F97316';
 
@@ -32,7 +40,7 @@ const MEAL_COUNTS = [
   { id: '4', label: '4끼+', description: '소식 다빈도' },
 ];
 
-export default function NutritionStep3Screen() {
+export default function NutritionStep3Screen(): React.JSX.Element {
   const { colors, isDark } = useTheme();
   const params = useLocalSearchParams<{
     goal: string;
@@ -73,10 +81,8 @@ export default function NutritionStep3Screen() {
     return { bmr: Math.round(bmrVal), tdee: Math.round(tdeeVal) };
   }, [params.gender, params.weightKg, params.heightCm, params.age, params.activityLevel]);
 
-  // 매크로 비율 (목표 기반)
   const macros = useMemo(() => {
     const goalId = params.goal || 'health';
-    // 매크로 비율: 목표별 기본값
     const ratios: Record<string, { carb: number; protein: number; fat: number }> = {
       weight_loss: { carb: 0.4, protein: 0.35, fat: 0.25 },
       muscle_gain: { carb: 0.45, protein: 0.3, fat: 0.25 },
@@ -112,10 +118,39 @@ export default function NutritionStep3Screen() {
       edges={['bottom']}
       contentPadding={20}
       contentContainerStyle={{ paddingBottom: 100 }}
+      backgroundGradient="nutrition"
       testID="nutrition-onboarding-step3"
     >
-      {/* 알레르기 */}
+      {/* 글래스모피즘 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
+        <GlassCard shadowSize="lg" glowColor={NUTRITION_ACCENT} style={styles.hero}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroEmoji}>📊</Text>
+            <GradientText
+              variant="extended"
+              fontSize={22}
+              fontWeight="700"
+              style={styles.heroTitle}
+            >
+              마지막 단계
+            </GradientText>
+            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+              알레르기 정보와 식사 횟수를 선택하면 맞춤 플랜이 완성돼요
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
+
+      {/* 스텝 프로그레스 바 */}
+      <StepProgressBar
+        current={3}
+        total={3}
+        accentColor={NUTRITION_ACCENT}
+        testID="step-progress"
+      />
+
+      {/* 알레르기 */}
+      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
           알레르기 / 식이 제한
         </Text>
@@ -124,50 +159,57 @@ export default function NutritionStep3Screen() {
         </Text>
         <View style={styles.chipGrid}>
           {ALLERGIES.map((a) => (
-            <Pressable
+            <ScalePressable
               key={a.id}
+              selected={allergies.includes(a.id)}
+              onPress={() => toggleAllergy(a.id)}
+              accessibilityLabel={`${a.label} ${allergies.includes(a.id) ? '선택됨' : '선택 안됨'}`}
               style={[
                 styles.allergyChip,
                 {
                   backgroundColor: colors.card,
                   borderColor: allergies.includes(a.id) ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: allergies.includes(a.id) ? 2 : 1,
                 },
-                allergies.includes(a.id) && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                allergies.includes(a.id) ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                allergies.includes(a.id) && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => toggleAllergy(a.id)}
             >
               <Text style={{ fontSize: 18 }}>{a.emoji}</Text>
               <Text
                 style={[
                   styles.allergyLabel,
                   { color: allergies.includes(a.id) ? NUTRITION_ACCENT : colors.foreground },
+                  allergies.includes(a.id) && { fontWeight: typography.weight.bold },
                 ]}
               >
                 {a.label}
               </Text>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
       {/* 식사 횟수 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>하루 식사 횟수</Text>
         <View style={styles.mealCountRow}>
           {MEAL_COUNTS.map((mc) => (
-            <Pressable
+            <ScalePressable
               key={mc.id}
+              selected={mealCount === mc.id}
+              onPress={() => setMealCount(mc.id)}
+              accessibilityLabel={`하루 ${mc.label}: ${mc.description}`}
               style={[
                 styles.mealCountChip,
                 {
                   backgroundColor: colors.card,
                   borderColor: mealCount === mc.id ? NUTRITION_ACCENT : colors.border,
-                  borderWidth: 1,
+                  borderWidth: mealCount === mc.id ? 2 : 1,
                 },
-                mealCount === mc.id && { backgroundColor: `${NUTRITION_ACCENT}15` },
+                mealCount === mc.id ? { backgroundColor: `${NUTRITION_ACCENT}20` } : {},
+                mealCount === mc.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
-              onPress={() => setMealCount(mc.id)}
             >
               <Text
                 style={[
@@ -180,24 +222,17 @@ export default function NutritionStep3Screen() {
               <Text style={[styles.mealCountDesc, { color: colors.mutedForeground }]}>
                 {mc.description}
               </Text>
-            </Pressable>
+            </ScalePressable>
           ))}
         </View>
       </Animated.View>
 
-      {/* 칼로리 미리보기 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+      {/* 칼로리 미리보기 — GradientCard 사용 */}
+      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>칼로리 미리보기</Text>
-        <LinearGradient
-          colors={
-            isDark ? [`${NUTRITION_ACCENT}10`, `${NUTRITION_ACCENT}18`] : ['#FFF7ED', '#FFEDD5']
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.previewCard, { borderRadius: radii.xl }]}
-        >
+        <GradientCard variant="nutrition" style={styles.previewCard}>
           <View style={styles.previewRow}>
-            <View style={styles.previewItem}>
+            <View style={styles.previewItem} accessibilityLabel={`기초대사량 ${bmr} 킬로칼로리`}>
               <Text style={[styles.previewLabel, { color: colors.mutedForeground }]}>
                 기초대사량 (BMR)
               </Text>
@@ -205,7 +240,10 @@ export default function NutritionStep3Screen() {
               <Text style={[styles.previewUnit, { color: colors.mutedForeground }]}>kcal</Text>
             </View>
             <View style={[styles.previewDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.previewItem}>
+            <View
+              style={styles.previewItem}
+              accessibilityLabel={`일일 권장 칼로리 ${tdee} 킬로칼로리`}
+            >
               <Text style={[styles.previewLabel, { color: colors.mutedForeground }]}>
                 일일 권장 (TDEE)
               </Text>
@@ -230,10 +268,10 @@ export default function NutritionStep3Screen() {
               <Text style={[styles.macroValue, { color: colors.foreground }]}>{macros.fat}g</Text>
             </View>
           </View>
-        </LinearGradient>
+        </GradientCard>
       </Animated.View>
 
-      {/* 완료 버튼 */}
+      {/* 그라디언트 CTA 버튼 */}
       <View
         style={[
           styles.footer,
@@ -243,7 +281,7 @@ export default function NutritionStep3Screen() {
         <Pressable
           style={[
             styles.completeButton,
-            { backgroundColor: NUTRITION_ACCENT, overflow: 'hidden' },
+            { overflow: 'hidden' },
             !isDark
               ? (Platform.select({
                   ios: {
@@ -257,8 +295,17 @@ export default function NutritionStep3Screen() {
               : {},
           ]}
           onPress={handleComplete}
+          accessibilityRole="button"
+          accessibilityLabel="결과 보기"
         >
-          <Text style={[styles.completeButtonText, { color: '#FFFFFF' }]}>결과 보기</Text>
+          <LinearGradient
+            colors={[NUTRITION_ACCENT, '#EA580C']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.completeButtonGradient}
+          >
+            <Text style={[styles.completeButtonText, { color: '#FFFFFF' }]}>결과 보기</Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -266,21 +313,19 @@ export default function NutritionStep3Screen() {
 }
 
 const styles = StyleSheet.create({
+  hero: { marginBottom: spacing.md },
+  heroContent: { alignItems: 'center', padding: spacing.xl },
+  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroTitle: { marginBottom: spacing.xs },
+  heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   sectionTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
     marginTop: spacing.lg,
   },
-  sectionDesc: {
-    fontSize: 13,
-    marginBottom: spacing.smx,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
+  sectionDesc: { fontSize: 13, marginBottom: spacing.smx },
+  chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   allergyChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -289,14 +334,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     gap: spacing.xs,
   },
-  allergyLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  mealCountRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
+  allergyLabel: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
+  mealCountRow: { flexDirection: 'row', gap: spacing.sm },
   mealCountChip: {
     flex: 1,
     alignItems: 'center',
@@ -304,55 +343,19 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     gap: spacing.xxs,
   },
-  mealCountLabel: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-  },
+  mealCountLabel: { fontSize: typography.size.lg, fontWeight: typography.weight.bold },
   mealCountDesc: { fontSize: 11 },
-  previewCard: {
-    padding: spacing.mlg,
-  },
-  previewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  previewItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  previewLabel: {
-    fontSize: typography.size.xs,
-    marginBottom: spacing.xs,
-  },
-  previewValue: {
-    fontSize: 32,
-    fontWeight: typography.weight.bold,
-  },
-  previewUnit: {
-    fontSize: typography.size.xs,
-  },
-  previewDivider: {
-    width: 1,
-    height: 50,
-  },
-  macroRow: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingTop: spacing.md,
-  },
-  macroItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  macroLabel: {
-    fontSize: typography.size.xs,
-    marginBottom: spacing.xxs,
-  },
-  macroValue: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.semibold,
-  },
+  previewCard: { padding: spacing.mlg },
+  previewRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
+  previewItem: { flex: 1, alignItems: 'center' },
+  previewLabel: { fontSize: typography.size.xs, marginBottom: spacing.xs },
+  previewValue: { fontSize: 32, fontWeight: typography.weight.bold },
+  previewUnit: { fontSize: typography.size.xs },
+  previewDivider: { width: 1, height: 50 },
+  macroRow: { flexDirection: 'row', borderTopWidth: 1, paddingTop: spacing.md },
+  macroItem: { flex: 1, alignItems: 'center' },
+  macroLabel: { fontSize: typography.size.xs, marginBottom: spacing.xxs },
+  macroValue: { fontSize: typography.size.lg, fontWeight: typography.weight.semibold },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -361,13 +364,7 @@ const styles = StyleSheet.create({
     padding: spacing.mlg,
     borderTopWidth: 1,
   },
-  completeButton: {
-    borderRadius: radii.full,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  completeButtonText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
+  completeButton: { borderRadius: radii.full },
+  completeButtonGradient: { paddingVertical: spacing.md, alignItems: 'center' },
+  completeButtonText: { fontSize: typography.size.base, fontWeight: typography.weight.semibold },
 });
