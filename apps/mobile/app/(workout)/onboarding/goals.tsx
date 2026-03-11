@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { DisclaimerCard } from '@/components/onboarding';
 import {
   GlassCard,
   GradientText,
@@ -78,6 +79,11 @@ export default function WorkoutGoalsScreen(): React.JSX.Element {
 
       {/* 스텝 프로그레스 바 */}
       <StepProgressBar current={1} total={4} accentColor={WORKOUT_ACCENT} testID="step-progress" />
+
+      <DisclaimerCard
+        message="본 서비스는 전문 의료 조언을 대체하지 않아요. 부상이나 통증이 있는 경우 전문가와 상담 후 운동하면 좋아요."
+        testID="workout-disclaimer"
+      />
 
       {/* 목표 선택 */}
       <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>

@@ -7,11 +7,12 @@
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Target, TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Check } from 'lucide-react-native';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
+import { TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Check } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ProgressIndicator, ScreenContainer } from '../../components/ui';
+import { OnboardingHero } from '../../components/onboarding';
+import { GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
 import { TIMING, staggeredEntry } from '../../lib/animations';
 import {
   useOnboarding,
@@ -20,11 +21,10 @@ import {
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
 } from '../../lib/onboarding';
-import { useTheme, typography, radii, spacing } from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 // 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
 const STEP1_ACCENT = '#F43F5E';
-const STEP1_HERO_BG_LIGHT = '#FFF1F2';
 
 // Lucide 아이콘 매핑
 const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
@@ -44,7 +44,7 @@ const GOALS: OnboardingGoal[] = [
 ];
 
 export default function OnboardingStep1() {
-  const { colors, brand, spacing, radii, shadows, typography, isDark } = useTheme();
+  const { colors, brand, spacing, radii, shadows, typography } = useTheme();
   const { data, toggleGoal, nextStep } = useOnboarding();
 
   const canProceed = data.goals.length > 0;
@@ -62,62 +62,14 @@ export default function OnboardingStep1() {
       backgroundGradient="home"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
-        <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <LinearGradient
-            colors={
-              isDark ? [`${STEP1_ACCENT}10`, `${STEP1_ACCENT}18`] : [STEP1_HERO_BG_LIGHT, '#FFE4E6']
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.heroHeader,
-              {
-                borderRadius: radii.xl + 8,
-                borderWidth: 1,
-                borderColor: isDark ? `${STEP1_ACCENT}20` : `${STEP1_ACCENT}15`,
-                ...(isDark
-                  ? {}
-                  : (Platform.select({
-                      ios: {
-                        shadowColor: STEP1_ACCENT,
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 12,
-                      },
-                      android: { elevation: 2 },
-                    }) ?? {})),
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.heroIconWrap,
-                {
-                  backgroundColor: STEP1_ACCENT,
-                  ...(Platform.select({
-                    ios: {
-                      shadowColor: STEP1_ACCENT,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 8,
-                    },
-                    android: { elevation: 6 },
-                  }) ?? {}),
-                },
-              ]}
-            >
-              <Target size={36} color={colors.overlayForeground} strokeWidth={2} />
-            </View>
-            <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-              목표를 선택해주세요
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-              이룸이 맞춤 추천을 제공해드릴게요{'\n'}
-              (복수 선택 가능)
-            </Text>
-          </LinearGradient>
-        </Animated.View>
+        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        <OnboardingHero
+          emoji="🎯"
+          title="목표를 선택해주세요"
+          subtitle={'이룸이 맞춤 추천을 제공해드릴게요\n(복수 선택 가능)'}
+          glowColor={STEP1_ACCENT}
+          testID="onboarding-hero"
+        />
 
         {/* 목표 선택 카드 */}
         <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
@@ -232,7 +184,14 @@ export default function OnboardingStep1() {
 
         {/* 진행 표시 */}
         <Animated.View entering={FadeInUp.delay(600).duration(TIMING.normal)}>
-          <ProgressIndicator current={1} total={3} style={{ marginTop: spacing.xl }} />
+          <View style={{ marginTop: spacing.xl }}>
+            <StepProgressBar
+              current={1}
+              total={3}
+              accentColor={STEP1_ACCENT}
+              testID="step-progress"
+            />
+          </View>
         </Animated.View>
       </ScrollView>
 
@@ -304,29 +263,6 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
-  },
-  // 히어로 (웹 파스텔 패턴)
-  heroHeader: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  heroIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  heroTitle: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
-  },
-  heroSubtitle: {
-    fontSize: typography.size.sm,
-    textAlign: 'center',
-    lineHeight: 22,
   },
   // 목표 카드
   goalCard: {

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { DisclaimerCard } from '@/components/onboarding';
 import {
   GlassCard,
   GradientText,
@@ -50,7 +51,51 @@ export default function NutritionStep1Screen(): React.JSX.Element {
   const [weightKg, setWeightKg] = useState('');
   const [activityLevel, setActivityLevel] = useState('');
 
-  const isValid = goal && gender && age && heightCm && weightKg && activityLevel;
+  const [ageError, setAgeError] = useState('');
+  const [heightError, setHeightError] = useState('');
+  const [weightError, setWeightError] = useState('');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const handleAgeChange = (value: string): void => {
+    setAge(value);
+    const num = parseInt(value, 10);
+    if (value && (isNaN(num) || num < 1 || num > 120)) {
+      setAgeError('1~120 사이의 나이를 입력해주세요');
+    } else {
+      setAgeError('');
+    }
+  };
+
+  const handleHeightChange = (value: string): void => {
+    setHeightCm(value);
+    const num = parseInt(value, 10);
+    if (value && (isNaN(num) || num < 100 || num > 250)) {
+      setHeightError('100~250 사이의 키를 입력해주세요');
+    } else {
+      setHeightError('');
+    }
+  };
+
+  const handleWeightChange = (value: string): void => {
+    setWeightKg(value);
+    const num = parseFloat(value);
+    if (value && (isNaN(num) || num < 20 || num > 300)) {
+      setWeightError('20~300 사이의 체중을 입력해주세요');
+    } else {
+      setWeightError('');
+    }
+  };
+
+  const isValid =
+    goal &&
+    gender &&
+    age &&
+    heightCm &&
+    weightKg &&
+    activityLevel &&
+    !ageError &&
+    !heightError &&
+    !weightError;
 
   const handleNext = (): void => {
     router.push({
@@ -93,6 +138,11 @@ export default function NutritionStep1Screen(): React.JSX.Element {
         total={3}
         accentColor={NUTRITION_ACCENT}
         testID="step-progress"
+      />
+
+      <DisclaimerCard
+        message="본 서비스는 전문 의료 조언을 대체하지 않아요. 특정 질환이 있거나 임신 중인 경우 전문가와 상담 후 이용해 주세요."
+        testID="nutrition-disclaimer"
       />
 
       {/* 목표 선택 */}
@@ -181,12 +231,19 @@ export default function NutritionStep1Screen(): React.JSX.Element {
                 styles.input,
                 {
                   backgroundColor: colors.card,
-                  borderColor: colors.border,
+                  borderColor:
+                    focusedField === 'age'
+                      ? NUTRITION_ACCENT
+                      : ageError
+                        ? '#EF4444'
+                        : colors.border,
                   color: colors.foreground,
                 },
               ]}
               value={age}
-              onChangeText={setAge}
+              onChangeText={handleAgeChange}
+              onFocus={() => setFocusedField('age')}
+              onBlur={() => setFocusedField(null)}
               keyboardType="number-pad"
               placeholder="25"
               placeholderTextColor={colors.mutedForeground}
@@ -195,6 +252,9 @@ export default function NutritionStep1Screen(): React.JSX.Element {
               accessibilityHint="만 나이를 숫자로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>세</Text>
+            {ageError ? (
+              <Text style={{ color: '#EF4444', fontSize: 11, marginTop: 2 }}>{ageError}</Text>
+            ) : null}
           </View>
           <View style={styles.inputGroup}>
             <Text style={[styles.inputLabel, { color: colors.mutedForeground }]}>키</Text>
@@ -203,12 +263,19 @@ export default function NutritionStep1Screen(): React.JSX.Element {
                 styles.input,
                 {
                   backgroundColor: colors.card,
-                  borderColor: colors.border,
+                  borderColor:
+                    focusedField === 'height'
+                      ? NUTRITION_ACCENT
+                      : heightError
+                        ? '#EF4444'
+                        : colors.border,
                   color: colors.foreground,
                 },
               ]}
               value={heightCm}
-              onChangeText={setHeightCm}
+              onChangeText={handleHeightChange}
+              onFocus={() => setFocusedField('height')}
+              onBlur={() => setFocusedField(null)}
               keyboardType="number-pad"
               placeholder="170"
               placeholderTextColor={colors.mutedForeground}
@@ -217,6 +284,9 @@ export default function NutritionStep1Screen(): React.JSX.Element {
               accessibilityHint="센티미터 단위로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>cm</Text>
+            {heightError ? (
+              <Text style={{ color: '#EF4444', fontSize: 11, marginTop: 2 }}>{heightError}</Text>
+            ) : null}
           </View>
           <View style={styles.inputGroup}>
             <Text style={[styles.inputLabel, { color: colors.mutedForeground }]}>체중</Text>
@@ -225,12 +295,19 @@ export default function NutritionStep1Screen(): React.JSX.Element {
                 styles.input,
                 {
                   backgroundColor: colors.card,
-                  borderColor: colors.border,
+                  borderColor:
+                    focusedField === 'weight'
+                      ? NUTRITION_ACCENT
+                      : weightError
+                        ? '#EF4444'
+                        : colors.border,
                   color: colors.foreground,
                 },
               ]}
               value={weightKg}
-              onChangeText={setWeightKg}
+              onChangeText={handleWeightChange}
+              onFocus={() => setFocusedField('weight')}
+              onBlur={() => setFocusedField(null)}
               keyboardType="decimal-pad"
               placeholder="65"
               placeholderTextColor={colors.mutedForeground}
@@ -239,6 +316,9 @@ export default function NutritionStep1Screen(): React.JSX.Element {
               accessibilityHint="킬로그램 단위로 입력해주세요"
             />
             <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>kg</Text>
+            {weightError ? (
+              <Text style={{ color: '#EF4444', fontSize: 11, marginTop: 2 }}>{weightError}</Text>
+            ) : null}
           </View>
         </View>
       </Animated.View>

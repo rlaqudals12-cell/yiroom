@@ -5,11 +5,9 @@
  *     border-2 카드 + 도트 ProgressIndicator
  */
 
-import { useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
-  ClipboardList,
   User,
   Ruler,
   Activity,
@@ -20,9 +18,12 @@ import {
   Flame,
   Zap,
 } from 'lucide-react-native';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
-import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
-import { GlassCard, ProgressIndicator, Button, ScreenContainer } from '../../components/ui';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+
+import { OnboardingHero } from '../../components/onboarding';
+import { GlassCard, StepProgressBar, Button, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
@@ -31,12 +32,10 @@ import {
   GENDER_LABELS,
   ACTIVITY_LEVEL_LABELS,
 } from '../../lib/onboarding';
-import { useTheme, typography, radii , spacing } from '../../lib/theme';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 // 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
 const STEP2_ACCENT = '#3B82F6';
-const STEP2_HERO_BG_LIGHT = '#EFF6FF';
-const STEP2_HERO_BG_DARK = `${STEP2_ACCENT}15`;
 
 const GENDERS: Gender[] = ['male', 'female', 'other'];
 const ACTIVITY_LEVELS: ActivityLevel[] = [
@@ -59,7 +58,7 @@ const ACTIVITY_ICON_MAP: Record<ActivityLevel, typeof Sofa> = {
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function OnboardingStep2() {
-  const { colors, brand, spacing, radii, shadows, isDark } = useTheme();
+  const { colors, brand, spacing, radii, shadows } = useTheme();
   const { data, setBasicInfo, nextStep, prevStep } = useOnboarding();
 
   const [birthYear, setBirthYear] = useState(data.basicInfo.birthYear?.toString() || '');
@@ -109,10 +108,7 @@ export default function OnboardingStep2() {
         {/* 미니 백 버튼 */}
         <Pressable
           onPress={prevStep}
-          style={({ pressed }) => [
-            styles.backButton,
-            { opacity: pressed ? 0.6 : 1 },
-          ]}
+          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
           testID="mini-back-button"
           accessibilityRole="button"
           accessibilityLabel="이전 단계로 돌아가기"
@@ -121,47 +117,14 @@ export default function OnboardingStep2() {
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
         </Pressable>
 
-        {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
-        <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <LinearGradient
-            colors={isDark
-              ? [`${STEP2_ACCENT}10`, `${STEP2_ACCENT}18`]
-              : [STEP2_HERO_BG_LIGHT, '#DBEAFE']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.heroHeader,
-              {
-                borderRadius: radii.xl + 8,
-                borderWidth: 1,
-                borderColor: isDark ? `${STEP2_ACCENT}20` : `${STEP2_ACCENT}15`,
-                ...(isDark ? {} : Platform.select({
-                  ios: { shadowColor: STEP2_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
-                  android: { elevation: 2 },
-                }) ?? {}),
-              },
-            ]}
-          >
-            <View style={[
-              styles.heroIconWrap,
-              {
-                backgroundColor: STEP2_ACCENT,
-                ...(Platform.select({
-                  ios: { shadowColor: STEP2_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-                  android: { elevation: 6 },
-                }) ?? {}),
-              },
-            ]}>
-              <ClipboardList size={36} color={colors.overlayForeground} strokeWidth={2} />
-            </View>
-            <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-              기본 정보를 알려주세요
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-              더 정확한 맞춤 추천을 위해 필요해요
-            </Text>
-          </LinearGradient>
-        </Animated.View>
+        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        <OnboardingHero
+          emoji="📋"
+          title="기본 정보를 알려주세요"
+          subtitle="더 정확한 맞춤 추천을 위해 필요해요"
+          glowColor={STEP2_ACCENT}
+          testID="onboarding-hero"
+        />
 
         {/* 성별 선택 */}
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
@@ -194,7 +157,9 @@ export default function OnboardingStep2() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
+                        ...(isSelected
+                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
+                          : shadows.card),
                       },
                     ]}
                     onPress={() => handleGenderSelect(gender)}
@@ -206,9 +171,7 @@ export default function OnboardingStep2() {
                     <Text
                       style={{
                         fontSize: typography.size.sm,
-                        fontWeight: isSelected
-                          ? typography.weight.bold
-                          : typography.weight.medium,
+                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
                         color: isSelected ? brand.primary : colors.foreground,
                       }}
                     >
@@ -343,7 +306,9 @@ export default function OnboardingStep2() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
+                        ...(isSelected
+                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
+                          : shadows.card),
                       },
                     ]}
                     onPress={() => handleActivitySelect(level)}
@@ -356,9 +321,7 @@ export default function OnboardingStep2() {
                       style={[
                         styles.activityIconBox,
                         {
-                          backgroundColor: isSelected
-                            ? `${brand.primary}20`
-                            : colors.secondary,
+                          backgroundColor: isSelected ? `${brand.primary}20` : colors.secondary,
                         },
                       ]}
                     >
@@ -372,9 +335,7 @@ export default function OnboardingStep2() {
                       style={{
                         flex: 1,
                         fontSize: typography.size.sm,
-                        fontWeight: isSelected
-                          ? typography.weight.bold
-                          : typography.weight.medium,
+                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
                         color: isSelected ? brand.primary : colors.foreground,
                       }}
                     >
@@ -392,7 +353,7 @@ export default function OnboardingStep2() {
           <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
             <View
               style={{
-                backgroundColor: `${STEP2_ACCENT}10`,
+                backgroundColor: `${STEP2_ACCENT}25`,
                 borderRadius: radii.xl,
                 padding: spacing.md,
                 marginBottom: spacing.md,
@@ -433,7 +394,14 @@ export default function OnboardingStep2() {
         )}
 
         {/* 진행 표시 */}
-        <ProgressIndicator current={2} total={3} style={{ marginTop: spacing.xl }} />
+        <View style={{ marginTop: spacing.xl }}>
+          <StepProgressBar
+            current={2}
+            total={3}
+            accentColor={STEP2_ACCENT}
+            testID="step-progress"
+          />
+        </View>
       </ScrollView>
 
       {/* 푸터 페이드 + 그라디언트 CTA */}
@@ -483,7 +451,9 @@ export default function OnboardingStep2() {
             accessibilityState={{ disabled: !canProceed }}
           >
             <LinearGradient
-              colors={canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              colors={
+                canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
@@ -574,28 +544,6 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
     marginBottom: spacing.smx,
     alignSelf: 'flex-start',
-  },
-  // 히어로 (웹 파스텔 패턴)
-  heroHeader: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  heroIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  heroTitle: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
-  },
-  heroSubtitle: {
-    fontSize: typography.size.sm,
-    textAlign: 'center',
   },
   sectionTitleRow: {
     flexDirection: 'row',

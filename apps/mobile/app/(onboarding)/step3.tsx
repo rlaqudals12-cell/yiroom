@@ -5,20 +5,14 @@
  *     border-2 카드 + 도트 ProgressIndicator + 요약 카드
  */
 
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import {
-  Flag,
-  Dumbbell,
-  Utensils,
-  Bell,
-  ClipboardCheck,
-  Check,
-  ChevronLeft,
-} from 'lucide-react-native';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable, Switch } from 'react-native';
-import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
-import { Button, GlassCard, ProgressIndicator, ScreenContainer } from '../../components/ui';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Dumbbell, Utensils, Bell, ClipboardCheck, Check, ChevronLeft } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+
+import { OnboardingHero } from '../../components/onboarding';
+import { Button, GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
@@ -33,14 +27,12 @@ import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 // 온보딩 Step 3 히어로 색상 (violet-500 계열 — 선호도 아이덴티티)
 const STEP3_ACCENT = '#8B5CF6';
-const STEP3_HERO_BG_LIGHT = '#F5F3FF';
-const STEP3_HERO_BG_DARK = `${STEP3_ACCENT}15`;
 
 const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
 const MEAL_PREFERENCES: MealPreference[] = ['regular', 'intermittent', 'low_carb', 'high_protein'];
 
 export default function OnboardingStep3() {
-  const { colors, brand, spacing, radii, shadows, isDark } = useTheme();
+  const { colors, brand, spacing, radii, shadows } = useTheme();
   const { data, setPreferences, prevStep, completeOnboarding } = useOnboarding();
 
   const handleFrequencySelect = (freq: WorkoutFrequency): void => {
@@ -70,10 +62,7 @@ export default function OnboardingStep3() {
         {/* 미니 백 버튼 */}
         <Pressable
           onPress={prevStep}
-          style={({ pressed }) => [
-            styles.backButton,
-            { opacity: pressed ? 0.6 : 1 },
-          ]}
+          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
           testID="mini-back-button"
           accessibilityRole="button"
           accessibilityLabel="이전 단계로 돌아가기"
@@ -82,47 +71,14 @@ export default function OnboardingStep3() {
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
         </Pressable>
 
-        {/* 파스텔 히어로 헤더 (웹 온보딩 슬라이드와 동일 패턴) */}
-        <Animated.View entering={FadeIn.duration(TIMING.slow)}>
-          <LinearGradient
-            colors={isDark
-              ? [`${STEP3_ACCENT}10`, `${STEP3_ACCENT}18`]
-              : [STEP3_HERO_BG_LIGHT, '#EDE9FE']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.heroHeader,
-              {
-                borderRadius: radii.xl + 8,
-                borderWidth: 1,
-                borderColor: isDark ? `${STEP3_ACCENT}20` : `${STEP3_ACCENT}15`,
-                ...(isDark ? {} : Platform.select({
-                  ios: { shadowColor: STEP3_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
-                  android: { elevation: 2 },
-                }) ?? {}),
-              },
-            ]}
-          >
-            <View style={[
-              styles.heroIconWrap,
-              {
-                backgroundColor: STEP3_ACCENT,
-                ...(Platform.select({
-                  ios: { shadowColor: STEP3_ACCENT, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-                  android: { elevation: 6 },
-                }) ?? {}),
-              },
-            ]}>
-              <Flag size={36} color={colors.overlayForeground} strokeWidth={2} />
-            </View>
-            <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-              거의 다 왔어요!
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-              마지막으로 선호도를 알려주세요
-            </Text>
-          </LinearGradient>
-        </Animated.View>
+        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        <OnboardingHero
+          emoji="🏁"
+          title="거의 다 왔어요!"
+          subtitle="마지막으로 선호도를 알려주세요"
+          glowColor={STEP3_ACCENT}
+          testID="onboarding-hero"
+        />
 
         {/* 운동 빈도 */}
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
@@ -155,7 +111,9 @@ export default function OnboardingStep3() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
+                        ...(isSelected
+                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
+                          : shadows.card),
                       },
                     ]}
                     onPress={() => handleFrequencySelect(freq)}
@@ -167,9 +125,7 @@ export default function OnboardingStep3() {
                     <Text
                       style={{
                         fontSize: typography.size.sm,
-                        fontWeight: isSelected
-                          ? typography.weight.bold
-                          : typography.weight.medium,
+                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
                         color: isSelected ? brand.primary : colors.foreground,
                       }}
                     >
@@ -213,7 +169,9 @@ export default function OnboardingStep3() {
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 } : shadows.card),
+                        ...(isSelected
+                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
+                          : shadows.card),
                       },
                     ]}
                     onPress={() => handleMealSelect(pref)}
@@ -225,9 +183,7 @@ export default function OnboardingStep3() {
                     <Text
                       style={{
                         fontSize: typography.size.sm,
-                        fontWeight: isSelected
-                          ? typography.weight.bold
-                          : typography.weight.medium,
+                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
                         color: isSelected ? brand.primary : colors.foreground,
                       }}
                     >
@@ -247,10 +203,7 @@ export default function OnboardingStep3() {
               <View style={styles.switchRow}>
                 <View style={styles.switchIconRow}>
                   <View
-                    style={[
-                      styles.switchIconCircle,
-                      { backgroundColor: `${brand.primary}20` },
-                    ]}
+                    style={[styles.switchIconCircle, { backgroundColor: `${brand.primary}20` }]}
                   >
                     <Bell size={16} color={brand.primary} strokeWidth={2} />
                   </View>
@@ -410,7 +363,14 @@ export default function OnboardingStep3() {
         </Animated.View>
 
         {/* 진행 표시 */}
-        <ProgressIndicator current={3} total={3} style={{ marginTop: spacing.xl }} />
+        <View style={{ marginTop: spacing.xl }}>
+          <StepProgressBar
+            current={3}
+            total={3}
+            accentColor={STEP3_ACCENT}
+            testID="step-progress"
+          />
+        </View>
       </ScrollView>
 
       {/* 푸터 페이드 + 그라디언트 CTA */}
@@ -460,7 +420,9 @@ export default function OnboardingStep3() {
             accessibilityState={{ disabled: !canComplete }}
           >
             <LinearGradient
-              colors={canComplete ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]}
+              colors={
+                canComplete ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
@@ -497,28 +459,6 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
     marginBottom: spacing.smx,
     alignSelf: 'flex-start',
-  },
-  // 히어로 (웹 파스텔 패턴)
-  heroHeader: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  heroIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  heroTitle: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
-  },
-  heroSubtitle: {
-    fontSize: typography.size.sm,
-    textAlign: 'center',
   },
   sectionTitleRow: {
     flexDirection: 'row',
