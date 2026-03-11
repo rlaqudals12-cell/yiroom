@@ -45,6 +45,15 @@ export {
   extractSquareFaceRegion,
 } from './region-extractor';
 
+// 얼굴 기하학 측정
+export {
+  extractFaceGeometry,
+  classifyFaceShape,
+  calculateSymmetryScore,
+  analyzeFaceGeometry,
+} from './face-geometry';
+export type { FaceGeometryMeasurements, FaceShape, FaceGeometryResult } from './face-geometry';
+
 // Fallback
 export {
   generateCIE2Fallback,
