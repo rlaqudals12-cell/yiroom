@@ -198,6 +198,7 @@ export interface SizeMeasurements {
   waist?: { min: number; max: number };
   shoulder?: { min: number; max: number };
   length?: { min: number; max: number };
+  hip?: { min: number; max: number };
 }
 
 export interface SizeMapping {

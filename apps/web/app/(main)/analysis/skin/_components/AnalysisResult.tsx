@@ -59,6 +59,8 @@ import type { DetailedZoneId, DetailedZoneStatus, DetailedStatusLevel } from '@/
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { TwelveZoneSummary } from '@/components/analysis/skin/TwelveZoneSummary';
+import type { ZoneMetricsV2 } from '@/lib/analysis/skin-v2/types';
 
 // 분석 근거 타입
 interface SkinAnalysisEvidence {
@@ -265,6 +267,48 @@ export default function AnalysisResult({
     return zones;
   }, [metrics, overallScore]);
 
+  // 12존 점수/메트릭 변환 (TwelveZoneSummary용)
+  const twelveZoneScores = useMemo(() => {
+    const scores: Record<string, number> = {};
+    for (const [zoneId, status] of Object.entries(zoneData)) {
+      if (status) scores[zoneId] = status.score;
+    }
+    return scores as Record<DetailedZoneId, number>;
+  }, [zoneData]);
+
+  // 기존 메트릭에서 ZoneMetricsV2 시뮬레이션
+  const twelveZoneMetrics = useMemo(() => {
+    const result: Record<string, ZoneMetricsV2> = {};
+    const getVal = (id: string): number => metrics.find((m) => m.id === id)?.value ?? 50;
+
+    for (const zoneId of Object.keys(zoneData)) {
+      const zone = zoneData[zoneId as DetailedZoneId];
+      if (!zone) continue;
+
+      // 존 위치에 따라 관련 메트릭 가중치 적용
+      const isT = zoneId.startsWith('forehead') || zoneId.startsWith('nose');
+      const isEye = zoneId.startsWith('eye');
+      const variation = getDeterministicVariation(zoneId, overallScore) * 0.5;
+
+      result[zoneId] = {
+        hydration: Math.max(0, Math.min(100, getVal('hydration') + variation)),
+        oiliness: Math.max(
+          0,
+          Math.min(100, isT ? getVal('oil') + 10 : getVal('oil') - 5 + variation)
+        ),
+        pores: Math.max(0, Math.min(100, getVal('pores') + variation)),
+        texture: Math.max(0, Math.min(100, getVal('elasticity') + variation)),
+        pigmentation: Math.max(0, Math.min(100, getVal('pigmentation') + variation)),
+        sensitivity: Math.max(
+          0,
+          Math.min(100, isEye ? getVal('sensitivity') + 10 : getVal('sensitivity') + variation)
+        ),
+        elasticity: Math.max(0, Math.min(100, getVal('elasticity') + variation)),
+      };
+    }
+    return result as Record<DetailedZoneId, ZoneMetricsV2>;
+  }, [zoneData, metrics, overallScore]);
+
   // 마스크팩 추천 계산
   const maskRecommendation = useMemo(() => {
     if (!skinType) return null;
@@ -412,6 +456,13 @@ export default function AnalysisResult({
           <p className="text-foreground/80 leading-relaxed">{insight}</p>
         </section>
       </FadeInUp>
+
+      {/* 12존 피부 분석 요약 (T4.5.8) */}
+      {Object.keys(twelveZoneScores).length > 0 && (
+        <FadeInUp delay={4}>
+          <TwelveZoneSummary zoneScores={twelveZoneScores} zoneMetrics={twelveZoneMetrics} />
+        </FadeInUp>
+      )}
 
       {/* 초보자 친화 팁 (EASY_SKIN_TIPS) */}
       {easySkinTip && (

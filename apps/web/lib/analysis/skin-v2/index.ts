@@ -144,3 +144,45 @@ export type {
   DeteriorationAlert,
   DiaryStreak,
 } from './skin-diary-zone';
+
+// =============================================================================
+// Gemini 12-Zone Prompt (T4.5.4)
+// =============================================================================
+
+export {
+  TWELVE_ZONE_SYSTEM_PROMPT,
+  buildTwelveZoneUserPrompt,
+  parseTwelveZoneResponse,
+} from './gemini-twelve-zone';
+
+export type { TwelveZonePromptResult, ParsedTwelveZoneResult } from './gemini-twelve-zone';
+
+// =============================================================================
+// Zone Product Targeting (T4.5.6)
+// =============================================================================
+
+export {
+  generateZoneProductRecommendations,
+  getZoneApplicationTip,
+} from './zone-product-targeting';
+
+export type { RecommendedProduct, ZoneProductRecommendation } from './zone-product-targeting';
+
+// =============================================================================
+// Zone Heatmap Data (T4.5.7)
+// =============================================================================
+
+export {
+  scoreToColor,
+  scoreToOpacity,
+  getScoreStatus,
+  getZonePosition,
+  prepareHeatmapData,
+} from './zone-heatmap-data';
+
+export type {
+  HeatmapStatus,
+  HeatmapZoneData,
+  HeatmapData,
+  ZoneEllipsePosition,
+} from './zone-heatmap-data';

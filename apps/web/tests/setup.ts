@@ -322,6 +322,9 @@ vi.mock('lucide-react', () => ({
   // Scan
   Scan: createIconMock('Scan'),
 
+  // Map & Location
+  MapPin: createIconMock('MapPin'),
+
   // UI Components (Icon 접미사 버전)
   XIcon: createIconMock('XIcon'),
   CheckIcon: createIconMock('CheckIcon'),

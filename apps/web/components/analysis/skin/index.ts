@@ -22,3 +22,4 @@ export {
   type ZoneScore,
 } from './FaceLandmarkHeatMap';
 export { PhotoMetricOverlayV2, type PhotoMetricOverlayV2Props } from './PhotoMetricOverlayV2';
+export { TwelveZoneSummary, type TwelveZoneSummaryProps } from './TwelveZoneSummary';
