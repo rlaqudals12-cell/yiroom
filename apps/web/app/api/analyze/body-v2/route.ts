@@ -16,7 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
+import { runFullPipeline, type PipelineMetadata } from '@/lib/api/image-pipeline';
 import {
   generateMockBodyAnalysisResult,
   classifyBodyType,
@@ -86,23 +86,19 @@ export async function POST(req: NextRequest) {
       return validationError('이미지 또는 랜드마크 데이터가 필요합니다.');
     }
 
-    // CIE-1 이미지 품질 검증 (이미지 기반 분석 시에만, Mock 모드 또는 명시적 스킵 시 생략)
+    // CIE 풀 파이프라인 (CIE-1 품질 + CIE-3 AWB + CIE-4 조명)
+    let pipelineMeta: PipelineMetadata | undefined;
     if (imageBase64 && !FORCE_MOCK && !useMock && !skipQualityCheck) {
-      const qualityResult = await validateImageForAnalysis(imageBase64, {
+      const pipelineResult = await runFullPipeline(imageBase64, {
         minScore: 35, // 체형 분석은 약간 낮은 기준 허용
-        skipResolution: false,
         allowWarnings: true,
       });
 
-      if (!qualityResult.success) {
-        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
+      if (!pipelineResult.success) {
+        return imageQualityError(pipelineResult.error.userMessage, pipelineResult.error.message);
       }
 
-      // 품질 검증 결과 로깅
-      logQualityResult('C-2', qualityResult.qualityResult, {
-        width: qualityResult.imageData.width,
-        height: qualityResult.imageData.height,
-      });
+      pipelineMeta = pipelineResult.pipeline;
     }
 
     // 분석 실행 (Real AI 또는 Mock)
@@ -257,6 +253,7 @@ export async function POST(req: NextRequest) {
           usedFallback,
           dbSaveFailed: true,
           gamification: { badgeResults: [], xpAwarded: 0 },
+          pipeline: pipelineMeta,
         });
       }
 
@@ -320,6 +317,7 @@ export async function POST(req: NextRequest) {
         result,
         usedFallback,
         gamification: gamificationResult,
+        pipeline: pipelineMeta,
       });
     } catch (dbOperationError) {
       // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
@@ -340,6 +338,7 @@ export async function POST(req: NextRequest) {
         usedFallback,
         dbSaveFailed: true,
         gamification: { badgeResults: [], xpAwarded: 0 },
+        pipeline: pipelineMeta,
       });
     }
   } catch (error) {

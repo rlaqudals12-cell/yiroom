@@ -16,7 +16,7 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import { validateImageForAnalysis, logQualityResult } from '@/lib/api/image-quality';
+import { runFullPipeline, type PipelineMetadata } from '@/lib/api/image-pipeline';
 import {
   analyzeFaceShape,
   estimateFaceShapeFromPose,
@@ -96,22 +96,19 @@ export async function POST(req: NextRequest) {
       return validationError('이미지 또는 랜드마크 데이터가 필요합니다.');
     }
 
-    // CIE-1 이미지 품질 검증 (이미지 기반 분석 시에만, Mock 모드 또는 명시적 스킵 시 생략)
+    // CIE 풀 파이프라인 (CIE-1 품질 + CIE-3 AWB + CIE-4 조명)
+    let pipelineMeta: PipelineMetadata | undefined;
     if (imageBase64 && !FORCE_MOCK && !useMock && !skipQualityCheck) {
-      const qualityResult = await validateImageForAnalysis(imageBase64, {
+      const pipelineResult = await runFullPipeline(imageBase64, {
         minScore: 40,
         allowWarnings: true,
       });
 
-      if (!qualityResult.success) {
-        return imageQualityError(qualityResult.error.userMessage, qualityResult.error.message);
+      if (!pipelineResult.success) {
+        return imageQualityError(pipelineResult.error.userMessage, pipelineResult.error.message);
       }
 
-      // 품질 검증 결과 로깅
-      logQualityResult('H-1', qualityResult.qualityResult, {
-        width: qualityResult.imageData.width,
-        height: qualityResult.imageData.height,
-      });
+      pipelineMeta = pipelineResult.pipeline;
     }
 
     // 분석 실행 (Real AI 또는 Mock)
@@ -164,7 +161,7 @@ export async function POST(req: NextRequest) {
             usedFallback = true;
 
             const supabase = createServiceRoleClient();
-            return await saveAndRespond(supabase, userId, result, usedFallback);
+            return await saveAndRespond(supabase, userId, result, usedFallback, pipelineMeta);
           }
         }
         // 이미지도 없으면 Mock 폴백
@@ -173,7 +170,7 @@ export async function POST(req: NextRequest) {
           usedFallback = true;
 
           const supabase = createServiceRoleClient();
-          return await saveAndRespond(supabase, userId, result, usedFallback);
+          return await saveAndRespond(supabase, userId, result, usedFallback, pipelineMeta);
         }
 
         // 헤어스타일 추천 생성
@@ -216,7 +213,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServiceRoleClient();
-    return await saveAndRespond(supabase, userId, result, usedFallback);
+    return await saveAndRespond(supabase, userId, result, usedFallback, pipelineMeta);
   } catch (error) {
     console.error('[H-1] Hair analysis v2 error:', error);
     return internalError(
@@ -233,7 +230,8 @@ async function saveAndRespond(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string,
   result: HairAnalysisResult,
-  usedFallback: boolean
+  usedFallback: boolean,
+  pipelineMeta?: PipelineMetadata
 ) {
   try {
     // DB에 저장 - hair_assessments 테이블 사용
@@ -268,6 +266,7 @@ async function saveAndRespond(
         usedFallback,
         dbSaveFailed: true,
         gamification: { badgeResults: [], xpAwarded: 0 },
+        pipeline: pipelineMeta,
       });
     }
 
@@ -332,6 +331,7 @@ async function saveAndRespond(
       result,
       usedFallback,
       gamification: gamificationResult,
+      pipeline: pipelineMeta,
     });
   } catch (dbOperationError) {
     // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
@@ -352,6 +352,7 @@ async function saveAndRespond(
       usedFallback,
       dbSaveFailed: true,
       gamification: { badgeResults: [], xpAwarded: 0 },
+      pipeline: pipelineMeta,
     });
   }
 }
