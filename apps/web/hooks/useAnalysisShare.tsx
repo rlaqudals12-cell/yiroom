@@ -7,7 +7,14 @@ import { AnalysisShareCard } from '@/components/share';
 import { captureElementAsImage, shareImage } from '@/lib/share';
 
 // 분석 타입
-type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
+type AnalysisType =
+  | 'personal-color'
+  | 'skin'
+  | 'body'
+  | 'hair'
+  | 'makeup'
+  | 'oral-health'
+  | 'badge';
 
 // 공유 카드 데이터
 interface ShareCardData {
@@ -186,6 +193,27 @@ export function createOralHealthShareData(result: OralHealthShareInput): ShareCa
     typeLabel: result.identityLabel,
     typeEmoji: '🦷',
     highlights,
+  };
+}
+
+// 배지 공유 데이터 생성
+interface BadgeShareInput {
+  badgeName: string;
+  badgeIcon: string;
+  rarityLabel?: string;
+  earnedAt?: Date;
+}
+
+export function createBadgeShareData(input: BadgeShareInput): ShareCardData {
+  return {
+    analysisType: 'badge',
+    title: `🏆 ${input.badgeName} 획득!`,
+    subtitle: '이룸 배지',
+    typeLabel: input.rarityLabel,
+    typeEmoji: input.badgeIcon,
+    highlights: input.earnedAt
+      ? [{ label: '획득일', value: input.earnedAt.toLocaleDateString('ko-KR') }]
+      : undefined,
   };
 }
 

@@ -4,7 +4,14 @@ import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 // 분석 타입별 설정
-type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
+type AnalysisType =
+  | 'personal-color'
+  | 'skin'
+  | 'body'
+  | 'hair'
+  | 'makeup'
+  | 'oral-health'
+  | 'badge';
 
 interface ShareCardData {
   // 공통
@@ -42,6 +49,7 @@ const GRADIENTS: Record<AnalysisType, string> = {
   hair: 'from-amber-400 via-orange-500 to-yellow-500',
   makeup: 'from-rose-400 via-pink-500 to-fuchsia-500',
   'oral-health': 'from-cyan-400 via-blue-500 to-indigo-500',
+  badge: 'from-yellow-400 via-amber-500 to-orange-500',
 };
 
 // 분석 타입별 배경
@@ -52,6 +60,7 @@ const BACKGROUNDS: Record<AnalysisType, string> = {
   hair: 'bg-gradient-to-br from-amber-50 via-white to-orange-50',
   makeup: 'bg-gradient-to-br from-rose-50 via-white to-pink-50',
   'oral-health': 'bg-gradient-to-br from-cyan-50 via-white to-blue-50',
+  badge: 'bg-gradient-to-br from-yellow-50 via-white to-amber-50',
 };
 
 /**

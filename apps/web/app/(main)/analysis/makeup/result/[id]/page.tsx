@@ -11,13 +11,12 @@ import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShar
 import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/analysis/makeup';
 import type { PersonalColorSeason } from '@/types/product';
 import {
@@ -25,6 +24,7 @@ import {
   type MakeupResultView,
   transformDbToResult,
 } from './_lib/transform';
+import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
 
 // 시즌 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -38,18 +38,6 @@ const SEASON_LABELS: Record<string, string> = {
   Winter: '겨울 쿨톤',
 };
 
-// 상태별 색상
-function getStatusColor(status: string): string {
-  switch (status) {
-    case 'good':
-      return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
-    case 'warning':
-      return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
-    default:
-      return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
-  }
-}
-
 export default function MakeupAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
@@ -59,6 +47,7 @@ export default function MakeupAnalysisResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usedMock, setUsedMock] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
@@ -113,6 +102,9 @@ export default function MakeupAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url);
+      if (dbData.recommendations?.usedMock) {
+        setUsedMock(true);
+      }
       fetchedRef.current = true;
     } catch (err) {
       console.error('[M-1] Fetch error:', err);
@@ -237,6 +229,13 @@ export default function MakeupAnalysisResultPage() {
           <div className="w-16" />
         </header>
 
+        {/* AI 분석 실패 시 Mock 데이터 알림 */}
+        {usedMock && (
+          <div className="mb-6">
+            <MockDataNotice />
+          </div>
+        )}
+
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -259,20 +258,14 @@ export default function MakeupAnalysisResultPage() {
 
             {/* 기본 분석 탭 */}
             <TabsContent value="basic" className="mt-0 space-y-6">
-              {/* 언더톤/얼굴형 요약 */}
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-xl p-6 text-center">
-                <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-rose-900/40 shadow-lg flex items-center justify-center mb-4">
-                  <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
-                    {result.overallScore}
-                  </span>
-                </div>
-                <h2 className="text-xl font-bold text-foreground">
-                  {result.undertoneLabel} · {result.faceShapeLabel}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {result.eyeShapeLabel} · {result.lipShapeLabel}
-                </p>
-              </div>
+              {/* 통합 비주얼 리포트 카드 (메이크업) */}
+              <VisualReportCard
+                analysisType="makeup"
+                overallScore={result.overallScore}
+                makeupMetrics={result.metrics}
+                undertoneLabel={result.undertoneLabel}
+                analyzedAt={result.analyzedAt}
+              />
 
               {/* 인사이트 */}
               <div className="bg-card rounded-xl p-6 shadow-sm">
@@ -296,41 +289,6 @@ export default function MakeupAnalysisResultPage() {
                   </div>
                 </div>
               )}
-
-              {/* 상세 지표 */}
-              <div className="bg-card rounded-xl p-6 shadow-sm">
-                <h3 className="font-semibold mb-4">피부 상태</h3>
-                <div className="space-y-4">
-                  {result.metrics.map((metric) => (
-                    <div key={metric.id}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{metric.name}</span>
-                        <span
-                          className={cn(
-                            'text-xs px-2 py-0.5 rounded-full',
-                            getStatusColor(metric.status)
-                          )}
-                        >
-                          {metric.value}점
-                        </span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            'h-full rounded-full transition-all',
-                            mapToClass(
-                              metric.status,
-                              { good: 'bg-green-500', warning: 'bg-red-500' },
-                              'bg-amber-500'
-                            )
-                          )}
-                          style={{ width: `${metric.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* 고민 태그 */}
               {result.concerns.length > 0 && (

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, User, Palette, Clock } from 'lucide-react';
+import { Sparkles, User, Palette, Scissors, Heart, Clock } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { GradeDisplay } from './GradeDisplay';
 import { StrengthsFirst } from './StrengthsFirst';
@@ -17,6 +17,8 @@ const ANALYSIS_ICONS = {
   skin: Sparkles,
   body: User,
   'personal-color': Palette,
+  hair: Scissors,
+  makeup: Heart,
 } as const;
 
 /**
@@ -62,6 +64,10 @@ export function VisualReportCard({
   seasonLabel,
   confidence,
   bestColors,
+  hairMetrics,
+  hairTypeLabel,
+  makeupMetrics,
+  undertoneLabel,
   analyzedAt,
   className,
 }: VisualReportCardProps) {
@@ -103,12 +109,33 @@ export function VisualReportCard({
                 <span className="font-medium text-foreground">{seasonLabel || seasonType}</span>
               </p>
             )}
+            {analysisType === 'hair' && hairTypeLabel && (
+              <p className="text-sm text-muted-foreground mt-1">
+                모발 타입: <span className="font-medium text-foreground">{hairTypeLabel}</span>
+              </p>
+            )}
+            {analysisType === 'makeup' && undertoneLabel && (
+              <p className="text-sm text-muted-foreground mt-1">
+                언더톤: <span className="font-medium text-foreground">{undertoneLabel}</span>
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             {/* 등급 표시 - 분석 타입별 맞춤 메시지 */}
             <GradeDisplay
               score={displayScore}
-              label={selectByKey(analysisType, { skin: '피부 건강 점수', body: '체형 균형 점수' }, '진단 신뢰도')!}
+              label={
+                selectByKey(
+                  analysisType,
+                  {
+                    skin: '피부 건강 점수',
+                    body: '체형 균형 점수',
+                    hair: '헤어 건강 점수',
+                    makeup: '메이크업 분석 점수',
+                  },
+                  '진단 신뢰도'
+                )!
+              }
               analysisType={analysisType}
               showProgress
               showScore
@@ -122,7 +149,7 @@ export function VisualReportCard({
       {/* 강점 우선 섹션 */}
       <StrengthsFirst
         analysisType={analysisType}
-        metrics={skinMetrics}
+        metrics={skinMetrics || hairMetrics || makeupMetrics}
         strengths={bodyStrengths}
         measurements={bodyMeasurements}
         bestColors={bestColors}

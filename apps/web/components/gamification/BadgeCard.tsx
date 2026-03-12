@@ -6,6 +6,7 @@
  * - 획득/미획득 상태 구분
  */
 
+import { Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Badge } from '@/types/gamification';
 import { RARITY_COLORS, RARITY_NAMES } from '@/lib/gamification/constants';
@@ -17,6 +18,7 @@ interface BadgeCardProps {
   size?: 'sm' | 'md' | 'lg';
   showDetails?: boolean;
   onClick?: () => void;
+  onShare?: () => void;
 }
 
 export function BadgeCard({
@@ -26,6 +28,7 @@ export function BadgeCard({
   size = 'md',
   showDetails = true,
   onClick,
+  onShare,
 }: BadgeCardProps) {
   const rarityColor = RARITY_COLORS[badge.rarity];
 
@@ -110,6 +113,22 @@ export function BadgeCard({
                 day: 'numeric',
               })}
             </p>
+          )}
+
+          {/* 공유 버튼 */}
+          {isEarned && onShare && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+              className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label={`${badge.name} 배지 공유하기`}
+            >
+              <Share2 className="w-3 h-3" />
+              공유
+            </button>
           )}
         </div>
       )}

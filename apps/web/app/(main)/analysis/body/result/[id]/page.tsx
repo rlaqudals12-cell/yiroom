@@ -292,7 +292,13 @@ export default function BodyAnalysisResultPage() {
             </Button>
             <div className="flex flex-col items-center gap-1">
               <h1 className="text-lg font-bold text-foreground">체형 분석 결과</h1>
-              <AIBadge variant="small" />
+              <div className="flex items-center gap-2">
+                <AIBadge variant="small" />
+                <span className="text-xs text-muted-foreground">
+                  신뢰도{' '}
+                  {usedMock ? '낮음' : confidence ? (confidence >= 70 ? '높음' : '보통') : '보통'}
+                </span>
+              </div>
             </div>
             <div className="w-16" />
           </header>

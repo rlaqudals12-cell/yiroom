@@ -45,6 +45,7 @@ export interface DbMakeupAnalysis {
       note: string;
     };
     analysisReliability?: ReliabilityLevel;
+    usedMock?: boolean;
   } | null;
   analysis_reliability: ReliabilityLevel | null;
   created_at: string;

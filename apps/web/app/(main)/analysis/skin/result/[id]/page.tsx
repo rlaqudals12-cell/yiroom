@@ -818,7 +818,12 @@ export default function SkinAnalysisResultPage() {
             </Button>
             <div className="flex flex-col items-center gap-1">
               <h1 className="text-lg font-bold text-foreground">피부 분석 결과</h1>
-              <AIBadge variant="small" />
+              <div className="flex items-center gap-2">
+                <AIBadge variant="small" />
+                <span className="text-xs text-muted-foreground">
+                  신뢰도 {usedMock ? '낮음' : '높음'}
+                </span>
+              </div>
             </div>
             <div className="w-16" /> {/* 균형용 */}
           </header>

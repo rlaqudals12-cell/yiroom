@@ -3,7 +3,7 @@
 import type { AnalysisGrade, GradeConfig } from './constants';
 
 // 분석 타입
-export type AnalysisType = 'skin' | 'body' | 'personal-color';
+export type AnalysisType = 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
 
 // 피부 분석 영역별 점수 (Phase 3 확장용)
 export interface SkinZoneScores {
@@ -102,6 +102,14 @@ export interface VisualReportCardProps {
   tone?: 'warm' | 'cool';
   confidence?: number;
   bestColors?: Array<{ hex: string; name: string }>;
+
+  // 헤어 분석 (H-1) — metrics 기반
+  hairMetrics?: MetricItem[];
+  hairTypeLabel?: string;
+
+  // 메이크업 분석 (M-1) — metrics 기반
+  makeupMetrics?: MetricItem[];
+  undertoneLabel?: string;
 
   // 분석 시간
   analyzedAt?: Date;

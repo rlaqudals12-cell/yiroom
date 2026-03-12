@@ -100,135 +100,140 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // 이미지 업로드
-    let imageUrl: string | null = null;
-    try {
-      const fileName = `${userId}/${Date.now()}_hair.jpg`;
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
+      // 이미지 업로드
+      let imageUrl: string | null = null;
+      try {
+        const fileName = `${userId}/${Date.now()}_hair.jpg`;
+        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
 
-      const { data, error } = await supabase.storage.from('hair-images').upload(fileName, buffer, {
-        contentType: 'image/jpeg',
-        upsert: false,
-      });
+        const { data, error } = await supabase.storage
+          .from('hair-images')
+          .upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: false,
+          });
+
+        if (error) {
+          console.error('[H-1] Image upload error:', error);
+        } else {
+          imageUrl = data.path;
+        }
+      } catch (uploadError) {
+        console.error('[H-1] Image upload exception:', uploadError);
+      }
+
+      // metrics에서 각 지표 추출
+      const getMetricValue = (id: string) => {
+        const metric = result.metrics.find((m) => m.id === id);
+        return metric?.value ?? null;
+      };
+
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('hair_analyses')
+        .insert({
+          clerk_user_id: userId,
+          image_url: imageUrl || '',
+          hair_type: result.hairType,
+          hair_thickness: result.hairThickness,
+          scalp_type: result.scalpType,
+          hydration: getMetricValue('hydration'),
+          scalp_health: getMetricValue('scalp'),
+          damage_level: getMetricValue('damage'),
+          density: getMetricValue('density'),
+          elasticity: getMetricValue('elasticity'),
+          shine: getMetricValue('shine'),
+          overall_score: result.overallScore,
+          concerns: result.concerns,
+          recommendations: {
+            insight: result.insight,
+            ingredients: result.recommendedIngredients,
+            products: result.recommendedProducts,
+            careTips: result.careTips,
+            analysisReliability: result.analysisReliability,
+            usedMock,
+          },
+        })
+        .select()
+        .single();
 
       if (error) {
-        console.error('[H-1] Image upload error:', error);
-      } else {
-        imageUrl = data.path;
+        console.error('[H-1] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
       }
-    } catch (uploadError) {
-      console.error('[H-1] Image upload exception:', uploadError);
-    }
 
-    // metrics에서 각 지표 추출
-    const getMetricValue = (id: string) => {
-      const metric = result.metrics.find((m) => m.id === id);
-      return metric?.value ?? null;
-    };
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
 
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('hair_analyses')
-      .insert({
-        clerk_user_id: userId,
-        image_url: imageUrl || '',
-        hair_type: result.hairType,
-        hair_thickness: result.hairThickness,
-        scalp_type: result.scalpType,
-        hydration: getMetricValue('hydration'),
-        scalp_health: getMetricValue('scalp'),
-        damage_level: getMetricValue('damage'),
-        density: getMetricValue('density'),
-        elasticity: getMetricValue('elasticity'),
-        shine: getMetricValue('shine'),
-        overall_score: result.overallScore,
-        concerns: result.concerns,
-        recommendations: {
-          insight: result.insight,
-          ingredients: result.recommendedIngredients,
-          products: result.recommendedProducts,
-          careTips: result.careTips,
-          analysisReliability: result.analysisReliability,
+      try {
+        // XP 추가
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+        // P3: 헤어 분석 배지 (게이미피케이션 확장 시 활성화)
+        // const hairBadge = await awardAnalysisBadge(supabase, userId, 'hair');
+      } catch (gamificationError) {
+        console.error('[H-1] Gamification error:', gamificationError);
+      }
+
+      // 크로스 모듈 알림 생성 (H-1 → N-1)
+      const alerts: CrossModuleAlertData[] = [];
+
+      // 두피 건강 점수 기반 알림
+      const scalpHealthScore = getMetricValue('scalp') ?? 70;
+      if (scalpHealthScore < 70) {
+        alerts.push(
+          createScalpHealthNutritionAlert(scalpHealthScore, result.recommendedIngredients || [])
+        );
+      }
+
+      // 모발 밀도 기반 탈모 예방 알림
+      const densityScore = getMetricValue('density') ?? 70;
+      const riskLevel: 'low' | 'medium' | 'high' = classifyByRange(
+        densityScore,
+        [
+          { max: 40, result: 'high' as const },
+          { max: 60, result: 'medium' as const },
+          { min: 60, result: 'low' as const },
+        ],
+        'low' as const
+      )!;
+      if (densityScore < 70) {
+        alerts.push(createHairLossPreventionAlert(densityScore, riskLevel));
+      }
+
+      // 모발 손상도 기반 윤기 알림
+      const damageLevel = getMetricValue('damage') ?? 30;
+      if (damageLevel > 40) {
+        alerts.push(createHairShineBoostAlert(damageLevel));
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: data,
+        result: {
+          ...result,
+          analyzedAt: new Date().toISOString(),
         },
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[H-1] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-    }
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      // XP 추가
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      // P3: 헤어 분석 배지 (게이미피케이션 확장 시 활성화)
-      // const hairBadge = await awardAnalysisBadge(supabase, userId, 'hair');
-    } catch (gamificationError) {
-      console.error('[H-1] Gamification error:', gamificationError);
-    }
-
-    // 크로스 모듈 알림 생성 (H-1 → N-1)
-    const alerts: CrossModuleAlertData[] = [];
-
-    // 두피 건강 점수 기반 알림
-    const scalpHealthScore = getMetricValue('scalp') ?? 70;
-    if (scalpHealthScore < 70) {
-      alerts.push(
-        createScalpHealthNutritionAlert(scalpHealthScore, result.recommendedIngredients || [])
-      );
-    }
-
-    // 모발 밀도 기반 탈모 예방 알림
-    const densityScore = getMetricValue('density') ?? 70;
-    const riskLevel: 'low' | 'medium' | 'high' = classifyByRange(densityScore, [
-      { max: 40, result: 'high' as const },
-      { max: 60, result: 'medium' as const },
-      { min: 60, result: 'low' as const },
-    ], 'low' as const)!;
-    if (densityScore < 70) {
-      alerts.push(createHairLossPreventionAlert(densityScore, riskLevel));
-    }
-
-    // 모발 손상도 기반 윤기 알림
-    const damageLevel = getMetricValue('damage') ?? 30;
-    if (damageLevel > 40) {
-      alerts.push(createHairShineBoostAlert(damageLevel));
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: data,
-      result: {
-        ...result,
-        analyzedAt: new Date().toISOString(),
-      },
-      usedMock,
-      gamification: gamificationResult,
-      alerts, // 크로스 모듈 알림
-    });
+        usedMock,
+        gamification: gamificationResult,
+        alerts, // 크로스 모듈 알림
+      });
     } catch (dbOperationError) {
       // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
       console.warn('[H-1] DB operations failed, using synthetic response');
       console.error('[H-1] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({

@@ -203,6 +203,7 @@ export async function POST(req: NextRequest) {
             tips: result.makeupTips,
             personalColorConnection: result.personalColorConnection,
             analysisReliability: result.analysisReliability,
+            usedMock,
           },
           analysis_reliability: result.analysisReliability,
         })

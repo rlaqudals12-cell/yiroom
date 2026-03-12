@@ -108,6 +108,8 @@ export const ANALYSIS_TYPE_LABELS = {
   skin: '피부 건강',
   body: '체형 분석',
   'personal-color': '퍼스널 컬러',
+  hair: '헤어 분석',
+  makeup: '메이크업 분석',
 } as const;
 
 // 분석 타입별 아이콘
@@ -115,6 +117,8 @@ export const ANALYSIS_TYPE_ICONS = {
   skin: 'Sparkles',
   body: 'User',
   'personal-color': 'Palette',
+  hair: 'Scissors',
+  makeup: 'Heart',
 } as const;
 
 // 분석 타입별 색상 테마
@@ -136,6 +140,18 @@ export const ANALYSIS_TYPE_COLORS = {
     text: 'text-pink-600',
     bg: 'bg-pink-50 dark:bg-pink-950/30',
     border: 'border-pink-200 dark:border-pink-800',
+  },
+  hair: {
+    primary: 'violet',
+    text: 'text-violet-600',
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    border: 'border-violet-200 dark:border-violet-800',
+  },
+  makeup: {
+    primary: 'rose',
+    text: 'text-rose-600',
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    border: 'border-rose-200 dark:border-rose-800',
   },
 } as const;
 
@@ -187,7 +203,7 @@ export const PERSONAL_COLOR_GRADE_MESSAGES: Record<
  */
 export function getGradeForAnalysis(
   score: number,
-  analysisType?: 'skin' | 'body' | 'personal-color'
+  analysisType?: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup'
 ): GradeConfig {
   const baseConfig = getGradeFromScore(score);
 

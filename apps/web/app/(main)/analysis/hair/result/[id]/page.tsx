@@ -12,8 +12,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
-import { mapToClass } from '@/lib/utils/conditional-helpers';
+import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const ContextLinkingCard = dynamic(
@@ -32,7 +33,6 @@ const RecommendedProducts = dynamic(
 );
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import {
   type HairTypeId,
   type HairThicknessId,
@@ -80,6 +80,7 @@ interface DbHairAnalysis {
     products?: Array<{ category: string; name: string; description: string }>;
     careTips?: string[];
     analysisReliability?: 'high' | 'medium' | 'low';
+    usedMock?: boolean;
   } | null;
   created_at: string;
 }
@@ -159,6 +160,7 @@ export default function HairAnalysisResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usedMock, setUsedMock] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
@@ -209,6 +211,9 @@ export default function HairAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(dbData.image_url);
+      if (dbData.recommendations?.usedMock) {
+        setUsedMock(true);
+      }
       fetchedRef.current = true;
     } catch (err) {
       console.error('[H-1] Fetch error:', err);
@@ -247,18 +252,6 @@ export default function HairAnalysisResultPage() {
   const handleNewAnalysis = useCallback(() => {
     router.push('/analysis/hair?forceNew=true');
   }, [router]);
-
-  // 상태별 색상
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
-      case 'warning':
-        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
-      default:
-        return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
-    }
-  };
 
   // 로딩 상태
   if (!isLoaded || isLoading) {
@@ -346,6 +339,13 @@ export default function HairAnalysisResultPage() {
             <div className="w-16" />
           </header>
 
+          {/* AI 분석 실패 시 Mock 데이터 알림 */}
+          {usedMock && (
+            <div className="mb-6">
+              <MockDataNotice />
+            </div>
+          )}
+
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -362,59 +362,19 @@ export default function HairAnalysisResultPage() {
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0 space-y-6">
-                {/* 헤어 타입 요약 */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-white dark:bg-amber-900/40 shadow-lg flex items-center justify-center mb-4">
-                    <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-                      {result.overallScore}
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-bold text-foreground">
-                    {result.hairTypeLabel} · {result.hairThicknessLabel}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">{result.scalpTypeLabel}</p>
-                </div>
+                {/* 통합 비주얼 리포트 카드 (헤어) */}
+                <VisualReportCard
+                  analysisType="hair"
+                  overallScore={result.overallScore}
+                  hairMetrics={result.metrics}
+                  hairTypeLabel={result.hairTypeLabel}
+                  analyzedAt={result.analyzedAt}
+                />
 
                 {/* 인사이트 */}
                 <div className="bg-card rounded-xl p-6 shadow-sm">
                   <h3 className="font-semibold mb-3">분석 요약</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
-                </div>
-
-                {/* 항목별 점수 */}
-                <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-4">항목별 점수</h3>
-                  <div className="space-y-4">
-                    {result.metrics.map((metric) => (
-                      <div key={metric.id}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium">{metric.name}</span>
-                          <span
-                            className={cn(
-                              'text-xs px-2 py-0.5 rounded-full',
-                              getStatusColor(metric.status)
-                            )}
-                          >
-                            {metric.value}점
-                          </span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              'h-full rounded-full transition-all',
-                              mapToClass(
-                                metric.status,
-                                { good: 'bg-green-500', warning: 'bg-red-500' },
-                                'bg-amber-500'
-                              )
-                            )}
-                            style={{ width: `${metric.value}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 {/* 고민 태그 */}
