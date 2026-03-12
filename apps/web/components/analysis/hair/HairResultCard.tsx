@@ -3,9 +3,9 @@
 /**
  * H-1 헤어분석 결과 카드
  *
- * 얼굴형 기반 헤어스타일 추천 결과 표시
+ * 얼굴형 기반 헤어스타일 추천 + 텍스처 분류 + 계절별 케어 + 스타일 매칭
  *
- * @description 얼굴형 분석, 헤어스타일 추천, 헤어컬러 추천
+ * @description 얼굴형 분석, 헤어스타일 추천, 헤어컬러 추천, 텍스처 카드, 계절 팁, 스타일 갤러리
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
@@ -21,6 +21,16 @@ import type {
   HairstyleRecommendation,
   HairColorRecommendation,
 } from '@/lib/analysis/hair';
+import type { TextureClassification } from '@/lib/analysis/hair';
+import type { SeasonalRecommendation, StyleMatchResult } from '@/lib/analysis/hair';
+import {
+  getTextureInfo,
+  classifyTexture,
+  getTextureGroupLabel,
+  getRecommendedProductCategories,
+} from '@/lib/analysis/hair';
+import { getSeasonalRecommendation } from '@/lib/analysis/hair';
+import { matchStyles } from '@/lib/analysis/hair';
 
 interface HairResultCardProps {
   result: HairAnalysisResult;
@@ -91,6 +101,35 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
     return [...styleRecommendations].sort((a, b) => b.suitability - a.suitability);
   }, [styleRecommendations]);
 
+  // 텍스처 분류 (현재 헤어 정보가 있으면 활용)
+  const textureInfo = useMemo((): TextureClassification | null => {
+    const hairInfo = result.currentHairInfo;
+    if (!hairInfo?.texture) return null;
+    const code = classifyTexture(hairInfo.texture as 'straight' | 'wavy' | 'curly' | 'coily', {
+      thickness: hairInfo.thickness as 'fine' | 'medium' | 'thick' | undefined,
+    });
+    return getTextureInfo(code);
+  }, [result.currentHairInfo]);
+
+  // 계절별 추천 (텍스처 정보가 있으면 맞춤형)
+  const seasonalRec = useMemo((): SeasonalRecommendation | null => {
+    if (!textureInfo) return null;
+    return getSeasonalRecommendation(textureInfo.code);
+  }, [textureInfo]);
+
+  // 3-Factor 스타일 매칭 (얼굴형 + 텍스처 + 퍼스널컬러)
+  const styleMatches = useMemo((): StyleMatchResult[] => {
+    if (!textureInfo) return [];
+    return matchStyles(
+      {
+        faceShape: faceShapeAnalysis.faceShape,
+        textureCode: textureInfo.code,
+        preferredLength: result.currentHairInfo?.length as 'short' | 'medium' | 'long' | undefined,
+      },
+      5
+    );
+  }, [faceShapeAnalysis.faceShape, textureInfo, result.currentHairInfo?.length]);
+
   return (
     <Card className="w-full" data-testid="hair-result-card">
       {/* 헤더: 얼굴형 결과 */}
@@ -115,17 +154,26 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
       </CardHeader>
 
       <CardContent className="pt-6">
+        {/* 텍스처 카드 (텍스처 정보가 있으면 탭 위에 표시) */}
+        {textureInfo && <TextureCard textureInfo={textureInfo} data-testid="texture-card" />}
+
         {/* 탭 컨텐츠 */}
         <Tabs defaultValue="styles" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="styles" aria-label="추천 헤어스타일 보기">
-              추천 스타일
+              스타일
+            </TabsTrigger>
+            <TabsTrigger value="matching" aria-label="3-Factor 스타일 매칭 보기">
+              매칭
             </TabsTrigger>
             <TabsTrigger value="colors" aria-label="추천 헤어 컬러 보기">
-              헤어 컬러
+              컬러
+            </TabsTrigger>
+            <TabsTrigger value="seasonal" aria-label="계절별 케어 팁 보기">
+              계절 케어
             </TabsTrigger>
             <TabsTrigger value="care" aria-label="헤어 케어 팁 보기">
-              케어 팁
+              관리
             </TabsTrigger>
           </TabsList>
 
@@ -170,6 +218,41 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          {/* 3-Factor 스타일 매칭 탭 */}
+          <TabsContent value="matching" className="mt-4">
+            {styleMatches.length > 0 ? (
+              <div className="space-y-3" data-testid="style-gallery">
+                <p className="text-sm text-muted-foreground mb-2">
+                  얼굴형 + 텍스처 + 퍼스널컬러를 종합한 맞춤 스타일 추천
+                </p>
+                {styleMatches.map((match, idx) => (
+                  <StyleMatchCard key={match.name} match={match} rank={idx + 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-muted-foreground">
+                <p>텍스처 정보가 필요해요.</p>
+                <p className="text-xs mt-1">
+                  헤어 상세 분석을 진행하면 맞춤 스타일을 추천받을 수 있어요.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* 계절별 케어 팁 탭 */}
+          <TabsContent value="seasonal" className="mt-4">
+            {seasonalRec ? (
+              <SeasonalTipsSection recommendation={seasonalRec} />
+            ) : (
+              <div className="py-8 text-center text-muted-foreground">
+                <p>텍스처 정보가 필요해요.</p>
+                <p className="text-xs mt-1">
+                  헤어 상세 분석을 진행하면 계절별 맞춤 케어를 받을 수 있어요.
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           {/* 케어 팁 탭 */}
@@ -357,6 +440,273 @@ function RatioBar({ label, value, maxValue }: { label: string; value: number; ma
         />
       </div>
       <span className="text-xs font-medium w-12 text-right">{(value * 100).toFixed(0)}%</span>
+    </div>
+  );
+}
+
+/**
+ * 텍스처 분류 카드 — Andre Walker 12-Type 표시
+ */
+function TextureCard({
+  textureInfo,
+}: {
+  textureInfo: TextureClassification;
+  'data-testid'?: string;
+}) {
+  // 수분 필요도에 따른 색상
+  // 수분 필요도 3단계 색상 매핑
+  const getMoistureColor = (need: number): string => {
+    if (need >= 4) return 'text-blue-600 dark:text-blue-400';
+    if (need >= 3) return 'text-cyan-600 dark:text-cyan-400';
+    return 'text-emerald-600 dark:text-emerald-400';
+  };
+  const moistureColor = getMoistureColor(textureInfo.moistureNeed);
+
+  const recommendedProducts = getRecommendedProductCategories(textureInfo.code);
+
+  return (
+    <div
+      className="mb-4 p-4 border rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20"
+      data-testid="texture-card"
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-purple-600 text-white text-sm">
+              Type {textureInfo.code.toUpperCase()}
+            </Badge>
+            <span className="font-semibold">{textureInfo.label}</span>
+            <span className="text-xs text-muted-foreground">({textureInfo.labelEn})</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">{textureInfo.description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">컬 패턴: {textureInfo.curlPattern}</p>
+        </div>
+        <div className="text-right shrink-0 ml-3">
+          <p className="text-xs text-muted-foreground">그룹</p>
+          <p className="text-sm font-medium">{getTextureGroupLabel(textureInfo.group)}</p>
+        </div>
+      </div>
+
+      {/* 특성 지표 */}
+      <div className="grid grid-cols-3 gap-3 mt-3">
+        <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-md">
+          <p className="text-xs text-muted-foreground">관리 난이도</p>
+          <p className="text-lg font-bold">{textureInfo.maintenanceLevel}/5</p>
+        </div>
+        <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-md">
+          <p className="text-xs text-muted-foreground">수분 필요도</p>
+          <p className={`text-lg font-bold ${moistureColor}`}>{textureInfo.moistureNeed}/5</p>
+        </div>
+        <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-md">
+          <p className="text-xs text-muted-foreground">볼륨</p>
+          <p className="text-sm font-medium capitalize">{textureInfo.volumeCharacteristic}</p>
+        </div>
+      </div>
+
+      {/* 취약 요인 & 케어 키워드 */}
+      <div className="mt-3 flex flex-wrap gap-1">
+        {textureInfo.vulnerabilities.map((v, i) => (
+          <Badge key={i} variant="destructive" className="text-xs">
+            {v}
+          </Badge>
+        ))}
+        {textureInfo.careKeywords.map((k, i) => (
+          <Badge key={`care-${i}`} variant="secondary" className="text-xs">
+            {k}
+          </Badge>
+        ))}
+      </div>
+
+      {/* 추천 제품 카테고리 */}
+      {recommendedProducts.length > 0 && (
+        <div className="mt-2">
+          <p className="text-xs text-muted-foreground mb-1">추천 제품 카테고리</p>
+          <div className="flex flex-wrap gap-1">
+            {recommendedProducts.map((p, i) => (
+              <Badge key={i} variant="outline" className="text-xs">
+                {p}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 3-Factor 스타일 매칭 카드
+ */
+function StyleMatchCard({ match, rank }: { match: StyleMatchResult; rank: number }) {
+  const { breakdown } = match;
+
+  return (
+    <div
+      className="p-4 border rounded-lg hover:border-primary transition-colors"
+      data-testid="style-match-card"
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold text-muted-foreground">#{rank}</span>
+            <h5 className="font-medium">{match.name}</h5>
+            <Badge variant="secondary" className="text-xs">
+              {HAIR_LENGTH_LABELS[match.length] || match.length}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">{match.description}</p>
+        </div>
+        <div className="ml-4 text-right">
+          <div className="text-2xl font-bold text-primary">{match.matchScore}</div>
+          <p className="text-xs text-muted-foreground">종합점수</p>
+        </div>
+      </div>
+
+      {/* 점수 분해 바 */}
+      <div className="mt-3 space-y-1">
+        <ScoreBar label="얼굴형" value={breakdown.faceShapeScore} max={40} color="bg-emerald-500" />
+        <ScoreBar label="텍스처" value={breakdown.textureScore} max={30} color="bg-purple-500" />
+        <ScoreBar label="컬러" value={breakdown.colorSeasonScore} max={20} color="bg-amber-500" />
+        <ScoreBar label="길이" value={breakdown.lengthBonus} max={10} color="bg-blue-500" />
+      </div>
+
+      {/* 매칭 이유 */}
+      {match.matchReasons.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {match.matchReasons.map((reason, i) => (
+            <Badge key={i} variant="outline" className="text-xs">
+              {reason}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      <Progress value={match.matchScore} className="mt-3 h-2" />
+    </div>
+  );
+}
+
+/**
+ * 점수 분해 바
+ */
+function ScoreBar({
+  label,
+  value,
+  max,
+  color,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+}) {
+  const percentage = Math.min(100, (value / max) * 100);
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground w-10">{label}</span>
+      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${color} rounded-full transition-all`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <span className="text-xs font-medium w-10 text-right">
+        {value}/{max}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * 계절별 케어 팁 섹션
+ */
+function SeasonalTipsSection({ recommendation }: { recommendation: SeasonalRecommendation }) {
+  return (
+    <div className="space-y-4" data-testid="seasonal-tips">
+      {/* 현재 계절 헤더 */}
+      <div className="flex items-center gap-2">
+        <Badge className="bg-gradient-to-r from-sky-500 to-orange-500 text-white">
+          {recommendation.seasonLabel} 케어 가이드
+        </Badge>
+      </div>
+
+      {/* 환경 위험 요인 */}
+      <div>
+        <h5 className="text-sm font-medium mb-2">주의해야 할 환경 요인</h5>
+        <div className="flex flex-wrap gap-2">
+          {recommendation.hazardLabels.map((label, i) => (
+            <Badge key={i} variant="destructive" className="text-xs">
+              {label}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      {/* 일반 케어 팁 */}
+      <div>
+        <h5 className="text-sm font-medium mb-2">기본 관리</h5>
+        <div className="space-y-2">
+          {recommendation.generalTips.map((tip, i) => (
+            <div
+              key={i}
+              className="p-2 bg-sky-50 dark:bg-sky-950/20 rounded-md flex items-start gap-2"
+            >
+              <span className="text-xs shrink-0 mt-0.5">&#x2714;</span>
+              <p className="text-sm">{tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 텍스처별 특화 팁 */}
+      {recommendation.textureTips.length > 0 && (
+        <div>
+          <h5 className="text-sm font-medium mb-2">내 텍스처 맞춤 팁</h5>
+          <div className="space-y-2">
+            {recommendation.textureTips.map((tip, i) => (
+              <div
+                key={i}
+                className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-md flex items-start gap-2"
+              >
+                <span className="text-xs shrink-0 mt-0.5">&#x2728;</span>
+                <p className="text-sm">{tip}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 추천 제품 */}
+      {recommendation.productCategories.length > 0 && (
+        <div>
+          <h5 className="text-sm font-medium mb-2">추천 제품</h5>
+          <div className="flex flex-wrap gap-1">
+            {recommendation.productCategories.map((product, i) => (
+              <Badge key={i} variant="secondary" className="text-xs">
+                {product}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 주의사항 */}
+      {recommendation.warnings.length > 0 && (
+        <div>
+          <h5 className="text-sm font-medium mb-2 text-amber-600">주의사항</h5>
+          <div className="space-y-2">
+            {recommendation.warnings.map((warning, i) => (
+              <div
+                key={i}
+                className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-800"
+              >
+                <p className="text-sm text-amber-800 dark:text-amber-300">{warning}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
