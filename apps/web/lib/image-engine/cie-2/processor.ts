@@ -39,12 +39,7 @@
  * ```
  */
 
-import type {
-  RGBImageData,
-  CIE2Output,
-  DetectedFace,
-  FrontalityResult,
-} from '../types';
+import type { RGBImageData, CIE2Output, DetectedFace, FrontalityResult } from '../types';
 import { DEFAULT_CIE_CONFIG, FEEDBACK_MESSAGES } from '../constants';
 import {
   MediaPipeFaceResult,
@@ -195,13 +190,19 @@ export function processMediaPipeResults(
 }
 
 /**
- * 브라우저 환경에서 MediaPipe 초기화 여부 확인
+ * 브라우저 환경에서 MediaPipe 사용 가능 여부 확인
+ *
+ * 두 가지 경로:
+ * 1. 레거시: window.FaceMesh 전역 객체 (CDN script 태그)
+ * 2. 신규: @mediapipe/tasks-vision WASM 번들 → mediapipe-loader.ts
+ *    (canUseMediaPipe() + loadFaceLandmarker() 비동기 로드)
+ *
+ * 이 함수는 레거시 경로만 동기적으로 체크합니다.
+ * 신규 경로는 useFaceLandmarker 훅 또는 detectFaceLandmarks()를 사용하세요.
  */
 export function isMediaPipeAvailable(): boolean {
-  // 브라우저 환경 체크
   if (typeof window === 'undefined') return false;
 
-  // MediaPipe 전역 객체 체크 (런타임에 로드됨)
   return typeof (window as unknown as { FaceMesh?: unknown }).FaceMesh !== 'undefined';
 }
 

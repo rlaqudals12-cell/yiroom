@@ -54,6 +54,16 @@ export {
 } from './face-geometry';
 export type { FaceGeometryMeasurements, FaceShape, FaceGeometryResult } from './face-geometry';
 
+// MediaPipe 로더 (브라우저 전용)
+export {
+  isBrowserEnvironment,
+  hasWebGL2Support,
+  canUseMediaPipe,
+  loadFaceLandmarker,
+  detectFaceLandmarks,
+  disposeFaceLandmarker,
+} from './mediapipe-loader';
+
 // Fallback
 export {
   generateCIE2Fallback,
