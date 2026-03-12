@@ -575,19 +575,19 @@ function calibrateWithProductMeasurements(
  */
 const BODY_TYPE_SIZE_ADJUSTMENTS: Record<BodyType, Partial<Record<ClothingCategory, number>>> = {
   // S/W/N 체형 (새 체형 시스템)
-  S: { top: 0, bottom: 0 }, // 스트레이트: 표준
-  W: { top: 0, bottom: 1 }, // 웨이브: 하의 한 사이즈 업 (하체 볼륨)
-  N: { top: 1, bottom: 0 }, // 내추럴: 상의 한 사이즈 업 (어깨 넓음)
+  S: { top: 0, bottom: 0, outer: 0 }, // 스트레이트: 표준
+  W: { top: 0, bottom: 1, outer: 0 }, // 웨이브: 하의 한 사이즈 업 (하체 볼륨)
+  N: { top: 1, bottom: 0, outer: 1 }, // 내추럴: 상의/아우터 업 (넓은 어깨 프레임)
 
   // 레거시 체형 (8타입)
-  X: { top: 0, bottom: 0 }, // 모래시계: 표준
-  A: { top: -1, bottom: 1 }, // 배형(하체발달): 상의 다운, 하의 업
-  V: { top: 1, bottom: -1 }, // 역삼각(상체발달): 상의 업, 하의 다운
-  H: { top: 0, bottom: 0 }, // 직사각: 표준
-  O: { top: 1, bottom: 1 }, // 원형: 전체 업
-  I: { top: 0, bottom: 0 }, // I자형: 표준
-  Y: { top: 1, bottom: 0 }, // Y자형(어깨 넓음): 상의 업
-  '8': { top: 0, bottom: 0 }, // 8자형: 표준
+  X: { top: 0, bottom: 0, outer: 0 }, // 모래시계: 표준
+  A: { top: -1, bottom: 1, outer: -1 }, // 배형(하체발달): 상의/아우터 다운, 하의 업
+  V: { top: 1, bottom: -1, outer: 1 }, // 역삼각(상체발달): 상의/아우터 업, 하의 다운
+  H: { top: 0, bottom: 0, outer: 0 }, // 직사각: 표준
+  O: { top: 1, bottom: 1, outer: 1 }, // 원형: 전체 업
+  I: { top: 0, bottom: 0, outer: 0 }, // I자형: 표준
+  Y: { top: 1, bottom: 0, outer: 1 }, // Y자형(어깨 넓음): 상의/아우터 업
+  '8': { top: 0, bottom: 0, outer: 0 }, // 8자형: 표준
 };
 
 /**
