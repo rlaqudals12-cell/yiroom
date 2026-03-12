@@ -107,6 +107,7 @@ export default function HomeAnalysisPrompt() {
     <section
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none"
       data-testid="home-analysis-prompt"
+      aria-label="AI 분석 시작"
     >
       {/* 헤더 */}
       <div className="text-center mb-5">

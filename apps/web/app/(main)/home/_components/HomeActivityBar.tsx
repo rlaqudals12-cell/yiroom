@@ -144,6 +144,8 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
     <section
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
       data-testid="home-activity-bar"
+      role="region"
+      aria-label="오늘의 활동 요약"
     >
       {/* 내재화 진행도 — 4단계 세그먼트 바 (InternalizationWidget 통합) */}
       {stats && stats.totalConnections > 0 && (

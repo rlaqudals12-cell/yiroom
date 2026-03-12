@@ -360,7 +360,11 @@ export default function PersonalColorResultPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-muted">
+    <div
+      className="min-h-[calc(100vh-80px)] bg-muted"
+      role="region"
+      aria-label="퍼스널 컬러 분석 결과"
+    >
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">

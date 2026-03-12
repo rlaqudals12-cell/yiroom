@@ -806,7 +806,12 @@ export default function SkinAnalysisResultPage() {
         onComplete={() => setShowCelebration(false)}
       />
 
-      <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-result-page">
+      <div
+        className="min-h-[calc(100vh-80px)] bg-muted"
+        data-testid="skin-result-page"
+        role="region"
+        aria-label="피부 분석 결과"
+      >
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="flex items-center justify-between mb-6">

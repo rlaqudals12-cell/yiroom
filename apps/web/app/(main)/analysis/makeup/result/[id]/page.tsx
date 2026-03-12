@@ -200,7 +200,12 @@ export default function MakeupAnalysisResultPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="makeup-result-page">
+    <div
+      className="min-h-[calc(100vh-80px)] bg-muted"
+      data-testid="makeup-result-page"
+      role="region"
+      aria-label="메이크업 분석 결과"
+    >
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">

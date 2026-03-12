@@ -39,23 +39,20 @@ export function BadgeNotification({
   return (
     <div
       data-testid="badge-notification"
-      className={cn(
-        'fixed bottom-4 right-4 z-50 max-w-sm',
-        'animate-slide-up',
-      )}
+      className={cn('fixed bottom-4 right-4 z-50 max-w-sm', 'animate-slide-up')}
     >
       <div
         className={cn(
-          'flex items-start gap-4 p-4 rounded-2xl shadow-lg border-2 bg-white',
+          'flex items-start gap-4 p-4 rounded-2xl shadow-lg border-2 bg-white dark:bg-slate-800',
           rarityColor.border,
-          rarityColor.glow,
+          rarityColor.glow
         )}
       >
         {/* 배지 아이콘 */}
         <div
           className={cn(
             'w-14 h-14 flex items-center justify-center rounded-full text-2xl shrink-0',
-            rarityColor.bg,
+            rarityColor.bg
           )}
         >
           {badge.icon}
@@ -63,8 +60,8 @@ export function BadgeNotification({
 
         {/* 내용 */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-500">배지 획득!</p>
-          <p className="font-bold text-gray-900 truncate">{badge.name}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">배지 획득!</p>
+          <p className="font-bold text-gray-900 dark:text-gray-100 truncate">{badge.name}</p>
 
           {/* 희귀도 & XP */}
           <div className="flex items-center gap-2 mt-1">
@@ -73,16 +70,14 @@ export function BadgeNotification({
                 className={cn(
                   'px-2 py-0.5 text-xs font-medium rounded-full',
                   rarityColor.bg,
-                  rarityColor.text,
+                  rarityColor.text
                 )}
               >
                 {RARITY_NAMES[badge.rarity]}
               </span>
             )}
             {xpAwarded > 0 && (
-              <span className="text-xs text-green-600 font-medium">
-                +{xpAwarded} XP
-              </span>
+              <span className="text-xs text-green-600 font-medium">+{xpAwarded} XP</span>
             )}
           </div>
 
@@ -97,7 +92,7 @@ export function BadgeNotification({
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition-colors"
           aria-label="알림 닫기"
         >
           <svg
@@ -140,10 +135,7 @@ interface MultiBadgeNotificationProps {
   onDismiss: (index: number) => void;
 }
 
-export function MultiBadgeNotification({
-  results,
-  onDismiss,
-}: MultiBadgeNotificationProps) {
+export function MultiBadgeNotification({ results, onDismiss }: MultiBadgeNotificationProps) {
   const successResults = results.filter((r) => r.success);
 
   if (successResults.length === 0) return null;
@@ -184,27 +176,27 @@ function SingleBadgeToast({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 p-3 rounded-xl shadow-lg border bg-white animate-slide-up',
-        rarityColor.border,
+        'flex items-center gap-3 p-3 rounded-xl shadow-lg border bg-white dark:bg-slate-800 animate-slide-up',
+        rarityColor.border
       )}
     >
       <div
         className={cn(
           'w-10 h-10 flex items-center justify-center rounded-full text-lg',
-          rarityColor.bg,
+          rarityColor.bg
         )}
       >
         {badge.icon}
       </div>
       <div className="min-w-0">
-        <p className="font-medium text-sm truncate">{badge.name}</p>
-        {xpAwarded > 0 && (
-          <p className="text-xs text-green-600">+{xpAwarded} XP</p>
-        )}
+        <p className="font-medium text-sm truncate text-gray-900 dark:text-gray-100">
+          {badge.name}
+        </p>
+        {xpAwarded > 0 && <p className="text-xs text-green-600">+{xpAwarded} XP</p>}
       </div>
       <button
         onClick={onClose}
-        className="shrink-0 p-1 text-gray-400 hover:text-gray-600"
+        className="shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
         aria-label="닫기"
       >
         ×

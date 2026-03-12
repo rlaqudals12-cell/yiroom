@@ -122,6 +122,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
     <section
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none"
       data-testid="home-analysis-summary"
+      aria-label="내 분석 결과"
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">

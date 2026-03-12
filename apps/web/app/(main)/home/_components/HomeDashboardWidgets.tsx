@@ -63,7 +63,12 @@ export default function HomeDashboardWidgets({ compact = false }: HomeDashboardW
   }
 
   return (
-    <div className="space-y-5" data-testid="home-dashboard-widgets">
+    <div
+      className="space-y-5"
+      data-testid="home-dashboard-widgets"
+      role="region"
+      aria-label="대시보드 위젯"
+    >
       {/* 오늘 기록 (칼로리/운동/수분) */}
       <section className="animate-fade-in-up animation-delay-300">
         <CompactActivityWidget userId={user.id} />

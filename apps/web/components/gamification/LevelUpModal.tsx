@@ -49,7 +49,7 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
         className={cn(
           'max-w-sm text-center',
           result.tierChanged && 'border-2',
-          result.tierChanged && tierColor.border,
+          result.tierChanged && tierColor.border
         )}
       >
         <DialogHeader className="space-y-4">
@@ -61,7 +61,7 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
             <div
               className={cn(
                 'w-24 h-24 flex items-center justify-center rounded-full font-bold text-4xl text-white bg-gradient-to-br shadow-xl animate-bounce',
-                tierGradient,
+                tierGradient
               )}
             >
               {result.newLevel}
@@ -71,7 +71,7 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
           <DialogTitle className="text-2xl">레벨 업!</DialogTitle>
 
           <DialogDescription className="space-y-2">
-            <p className="text-lg text-gray-700">
+            <p className="text-lg text-gray-700 dark:text-gray-300">
               레벨 <span className="font-bold">{result.previousLevel}</span>
               {' → '}
               <span className={cn('font-bold', tierColor.text)}>{result.newLevel}</span>
@@ -79,17 +79,15 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
 
             {/* 티어 변경 시 */}
             {result.tierChanged && (
-              <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
-                <p className="text-amber-800 font-medium">
-                  새로운 티어 달성!
-                </p>
+              <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800">
+                <p className="text-amber-800 dark:text-amber-300 font-medium">새로운 티어 달성!</p>
                 <p className={cn('text-xl font-bold mt-1', tierColor.text)}>
                   {TIER_NAMES[result.newTier]}
                 </p>
               </div>
             )}
 
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
               +{result.xpGained} XP 획득
             </p>
           </DialogDescription>
@@ -169,16 +167,14 @@ export function TierChangeNotice({
         'p-4 rounded-xl text-center space-y-2',
         newTierColor.bg,
         'border',
-        newTierColor.border,
+        newTierColor.border
       )}
     >
-      <p className="text-sm text-gray-600">티어 변경</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">티어 변경</p>
       <div className="flex items-center justify-center gap-3">
-        <span className="text-gray-400">{TIER_NAMES[previousTier]}</span>
-        <span className="text-gray-400">→</span>
-        <span className={cn('font-bold text-lg', newTierColor.text)}>
-          {TIER_NAMES[newTier]}
-        </span>
+        <span className="text-gray-400 dark:text-gray-500">{TIER_NAMES[previousTier]}</span>
+        <span className="text-gray-400 dark:text-gray-500">→</span>
+        <span className={cn('font-bold text-lg', newTierColor.text)}>{TIER_NAMES[newTier]}</span>
       </div>
     </div>
   );

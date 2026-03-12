@@ -88,6 +88,10 @@
     {
       "path": "/api/cron/connection-stats",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/weekly-insights",
+      "schedule": "0 0 * * 1"
     }
   ]
 }

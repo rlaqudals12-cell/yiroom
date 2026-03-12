@@ -30,7 +30,7 @@ export default function NewUserHero() {
   const todayCount = useSocialProofCount();
 
   return (
-    <div data-testid="home-new-hero">
+    <div data-testid="home-new-hero" role="region" aria-label="신규 사용자 안내">
       {/* 히어로 카드 */}
       <div className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-2xl p-6 mb-4">
         <h2 className="text-lg font-bold text-foreground mb-2">

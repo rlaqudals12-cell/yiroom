@@ -214,6 +214,8 @@ export default function HomeDailyCapsuleWidget() {
     <div
       className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5"
       data-testid="home-daily-capsule"
+      role="region"
+      aria-label="오늘의 데일리 캡슐"
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">

@@ -22,9 +22,7 @@ export function BadgeGrid({ groups, userBadges, onBadgeClick }: BadgeGridProps) 
   const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
 
   // 획득일 Map
-  const earnedAtMap = new Map(
-    userBadges.map((ub) => [ub.badgeId, ub.earnedAt]),
-  );
+  const earnedAtMap = new Map(userBadges.map((ub) => [ub.badgeId, ub.earnedAt]));
 
   return (
     <div data-testid="badge-grid" className="space-y-8">
@@ -34,21 +32,21 @@ export function BadgeGrid({ groups, userBadges, onBadgeClick }: BadgeGridProps) 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl">{CATEGORY_ICONS[group.category]}</span>
-              <h3 className="font-semibold text-gray-900">{group.categoryName}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                {group.categoryName}
+              </h3>
             </div>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {group.earnedCount}/{group.totalCount}
             </span>
           </div>
 
           {/* 진행률 바 */}
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full rounded-full transition-all duration-500',
-                group.earnedCount === group.totalCount
-                  ? 'bg-green-500'
-                  : 'bg-blue-500',
+                group.earnedCount === group.totalCount ? 'bg-green-500' : 'bg-blue-500'
               )}
               style={{
                 width: `${group.totalCount > 0 ? (group.earnedCount / group.totalCount) * 100 : 0}%`,
@@ -101,7 +99,10 @@ export function BadgeList({
 
   if (badges.length === 0 && showEmpty) {
     return (
-      <p data-testid="badge-list-empty" className="text-sm text-gray-500 text-center py-4">
+      <p
+        data-testid="badge-list-empty"
+        className="text-sm text-gray-500 dark:text-gray-400 text-center py-4"
+      >
         {emptyMessage}
       </p>
     );
@@ -119,10 +120,10 @@ export function BadgeList({
             size="sm"
             showDetails={false}
           />
-        ) : null,
+        ) : null
       )}
       {badges.length > maxDisplay && (
-        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 text-sm">
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 text-sm">
           +{badges.length - maxDisplay}
         </div>
       )}

@@ -112,6 +112,7 @@ export function ConsultantCTA({
               key={index}
               onClick={() => handleQuickQuestion(question)}
               className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs text-primary hover:bg-primary/10 transition-colors"
+              aria-label={`AI에게 질문: ${question}`}
             >
               {question}
             </button>
@@ -137,7 +138,7 @@ export function ConsultantCTA({
       onClick={handleClick}
       data-testid={`${category}-consultant-cta`}
     >
-      <MessageCircle className="mr-2 h-4 w-4" />
+      <MessageCircle className="mr-2 h-4 w-4" aria-hidden="true" />
       {title}
     </Button>
   );

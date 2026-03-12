@@ -152,6 +152,8 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
     <div
       className="bg-gradient-to-br from-violet-50 via-indigo-50/50 to-blue-50/30 dark:from-violet-950/20 dark:via-indigo-950/15 dark:to-blue-950/10 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 overflow-hidden"
       data-testid="home-active-insight-card"
+      role="region"
+      aria-label="나를 위한 인사이트"
     >
       {/* 헤더 */}
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">

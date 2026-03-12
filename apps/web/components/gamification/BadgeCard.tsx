@@ -50,7 +50,7 @@ export function BadgeCard({
       className={cn(
         'flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200',
         onClick && 'cursor-pointer hover:scale-105',
-        isEarned ? 'bg-white' : 'bg-gray-50'
+        isEarned ? 'bg-white dark:bg-slate-800' : 'bg-gray-50 dark:bg-slate-800/50'
       )}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
@@ -74,7 +74,7 @@ export function BadgeCard({
           'flex items-center justify-center rounded-full border-2 transition-all',
           isEarned
             ? cn(rarityColor.bg, rarityColor.border, rarityColor.glow)
-            : 'bg-gray-100 border-gray-200 grayscale opacity-50'
+            : 'bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 grayscale opacity-50'
         )}
       >
         <span className={cn(iconSizes[size], isEarned ? '' : 'opacity-30')}>{badge.icon}</span>
@@ -86,7 +86,7 @@ export function BadgeCard({
           <p
             className={cn(
               'font-medium text-sm line-clamp-1',
-              isEarned ? 'text-gray-900' : 'text-gray-400'
+              isEarned ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'
             )}
           >
             {badge.name}
@@ -107,7 +107,7 @@ export function BadgeCard({
 
           {/* 획득일 */}
           {isEarned && earnedAt && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {earnedAt.toLocaleDateString('ko-KR', {
                 month: 'short',
                 day: 'numeric',
@@ -149,7 +149,7 @@ export function BadgeMini({ badge, isEarned }: { badge: Badge; isEarned: boolean
         'w-10 h-10 flex items-center justify-center rounded-full border',
         isEarned
           ? cn(rarityColor.bg, rarityColor.border)
-          : 'bg-gray-100 border-gray-200 grayscale opacity-50'
+          : 'bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 grayscale opacity-50'
       )}
       aria-label={`${badge.name}${isEarned ? '' : ' (미획득)'}`}
     >

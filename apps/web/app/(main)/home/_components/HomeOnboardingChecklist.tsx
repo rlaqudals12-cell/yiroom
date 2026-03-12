@@ -56,6 +56,8 @@ export default function HomeOnboardingChecklist() {
     <section
       className="animate-fade-in-up animation-delay-50"
       data-testid="home-onboarding-checklist"
+      role="region"
+      aria-label="시작 가이드 체크리스트"
     >
       {/* 환영 카드 */}
       <div className="bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-pink-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-pink-500/20 rounded-2xl border border-violet-200/50 dark:border-violet-800/50 p-5">

@@ -64,7 +64,7 @@ export function LevelProgress({ levelInfo, showDetails = true, size = 'md' }: Le
             <span className={cn(sizeClass.text, tierColor.text, 'font-medium')}>
               {levelInfo.tierName}
             </span>
-            <span className={cn(sizeClass.text, 'text-gray-500')}>
+            <span className={cn(sizeClass.text, 'text-gray-500 dark:text-gray-400')}>
               {levelInfo.currentXp} / {levelInfo.xpForNextLevel} XP
             </span>
           </div>
@@ -72,7 +72,10 @@ export function LevelProgress({ levelInfo, showDetails = true, size = 'md' }: Le
 
         {/* 프로그레스 바 */}
         <div
-          className={cn(sizeClass.bar, 'bg-gray-100 rounded-full overflow-hidden')}
+          className={cn(
+            sizeClass.bar,
+            'bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden'
+          )}
           role="progressbar"
           aria-valuenow={Math.round(levelInfo.xpProgress)}
           aria-valuemin={0}
@@ -108,7 +111,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
     <div
       data-testid="level-card"
       className={cn(
-        'p-4 rounded-2xl bg-white border shadow-sm space-y-4',
+        'p-4 rounded-2xl bg-white dark:bg-slate-800 border shadow-sm space-y-4',
         tierColor.border,
         className
       )}
@@ -127,7 +130,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
 
         {/* 티어 정보 */}
         <div>
-          <p className="text-sm text-gray-500">현재 레벨</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">현재 레벨</p>
           <p className={cn('text-xl font-bold', tierColor.text)}>{levelInfo.tierName}</p>
         </div>
       </div>
@@ -135,13 +138,13 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
       {/* 프로그레스 */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">다음 레벨까지</span>
+          <span className="text-gray-600 dark:text-gray-400">다음 레벨까지</span>
           <span className="font-medium">
             {levelInfo.currentXp} / {levelInfo.xpForNextLevel} XP
           </span>
         </div>
 
-        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-3 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500 bg-gradient-to-r',
@@ -151,7 +154,7 @@ export function LevelCard({ levelInfo, className }: LevelCardProps) {
           />
         </div>
 
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
           총 {levelInfo.totalXp.toLocaleString()} XP 획득
         </p>
       </div>
