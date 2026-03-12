@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Camera } from 'lucide-react';
+import { AlertCircle, BookOpen, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendSummary } from './_components/TrendSummary';
@@ -17,11 +17,13 @@ export default function SkinDiaryPage() {
   const [period, setPeriod] = useState<TrendPeriod>('30d');
   const [data, setData] = useState<SkinDiaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth() + 1);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams({
         period,
@@ -32,9 +34,12 @@ export default function SkinDiaryPage() {
       const json = await res.json();
       if (json.success) {
         setData(json.data);
+      } else {
+        setError('데이터를 불러오지 못했어요');
       }
-    } catch (error) {
-      console.error('[SkinDiary] Fetch error:', error);
+    } catch (err) {
+      console.error('[SkinDiary] Fetch error:', err);
+      setError('네트워크 오류가 발생했어요');
     } finally {
       setLoading(false);
     }
@@ -73,6 +78,8 @@ export default function SkinDiaryPage() {
 
         {loading ? (
           <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error} onRetry={fetchData} />
         ) : !data || data.trend.entryCount === 0 ? (
           <EmptyState onAnalyze={() => router.push('/analysis/skin')} />
         ) : (
@@ -103,6 +110,25 @@ export default function SkinDiaryPage() {
           </>
         )}
       </Tabs>
+    </div>
+  );
+}
+
+// ============================================
+// 에러 상태
+// ============================================
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="text-center py-12 space-y-4" data-testid="diary-error-state" role="alert">
+      <AlertCircle className="h-12 w-12 mx-auto text-destructive/50" />
+      <div>
+        <p className="font-medium">{message}</p>
+        <p className="text-sm text-muted-foreground mt-1">잠시 후 다시 시도해주세요</p>
+      </div>
+      <Button variant="outline" onClick={onRetry}>
+        다시 시도
+      </Button>
     </div>
   );
 }
