@@ -149,6 +149,8 @@ export const ROUTES = {
   // 제품 스캔
   SCAN: '/scan',
   SCAN_SHELF: '/scan/shelf',
+  // 피부 일기
+  DIARY: '/diary',
   // 기타
   COACH: '/coach',
   CHAT: '/chat',
