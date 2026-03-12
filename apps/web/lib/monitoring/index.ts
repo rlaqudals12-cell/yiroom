@@ -2,10 +2,10 @@
  * 모니터링 모듈
  * @module lib/monitoring
  *
- * API 타이밍, 헬스체크 집계, Sentry 트레이싱, 시스템 모니터링 기능 제공.
+ * API 타이밍, 헬스체크 집계, Sentry 트레이싱, 캐시 메트릭, 통합 리포트 제공.
  *
  * @example
- * import { withApiTiming, getTimingStats, traceAiAnalysis } from '@/lib/monitoring';
+ * import { withApiTiming, getTimingStats, traceAiAnalysis, getPerformanceReport } from '@/lib/monitoring';
  */
 
 export {
@@ -27,6 +27,13 @@ export {
   checkThresholds,
   PERFORMANCE_THRESHOLDS,
 } from './sentry-tracing';
+export {
+  recordCacheHit,
+  recordCacheMiss,
+  getCacheStats,
+  clearCacheStats,
+  getPerformanceReport,
+} from './metrics';
 export type {
   ServiceStatus,
   ServiceHealth,
@@ -43,3 +50,4 @@ export type {
   DbPerformanceStats,
   PerformanceAlert,
 } from './sentry-tracing';
+export type { CacheLayer, CacheMetrics, PerformanceReport, PerformanceSummary } from './metrics';
