@@ -16,7 +16,12 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import { runFullPipeline, type PipelineMetadata } from '@/lib/api/image-pipeline';
+import {
+  runFullPipeline,
+  computeHybridTrust,
+  type PipelineMetadata,
+  type HybridTrustResult,
+} from '@/lib/api/image-pipeline';
 import {
   analyzeFaceShape,
   estimateFaceShapeFromPose,
@@ -233,6 +238,14 @@ async function saveAndRespond(
   usedFallback: boolean,
   pipelineMeta?: PipelineMetadata
 ) {
+  // 하이브리드 신뢰도 통합 (CIE + AI)
+  const aiConfidence = Math.round(result.faceShapeAnalysis.confidence * 100);
+  const hybridTrust: HybridTrustResult = computeHybridTrust(
+    pipelineMeta,
+    aiConfidence,
+    usedFallback
+  );
+
   try {
     // DB에 저장 - hair_assessments 테이블 사용
     const { data, error } = await supabase
@@ -267,6 +280,7 @@ async function saveAndRespond(
         dbSaveFailed: true,
         gamification: { badgeResults: [], xpAwarded: 0 },
         pipeline: pipelineMeta,
+        trust: hybridTrust,
       });
     }
 

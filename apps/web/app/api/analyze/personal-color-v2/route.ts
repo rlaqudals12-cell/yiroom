@@ -16,7 +16,12 @@ import {
   dbError,
   imageQualityError,
 } from '@/lib/api/error-response';
-import { runFullPipeline, type PipelineMetadata } from '@/lib/api/image-pipeline';
+import {
+  runFullPipeline,
+  computeHybridTrust,
+  type PipelineMetadata,
+  type HybridTrustResult,
+} from '@/lib/api/image-pipeline';
 import {
   classifyTone,
   rgbToLab,
@@ -198,6 +203,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 하이브리드 신뢰도 통합 (CIE + AI)
+    const aiConfidence = result.classification?.confidence ?? 50;
+    const hybridTrust: HybridTrustResult = computeHybridTrust(
+      pipelineMeta,
+      aiConfidence,
+      usedFallback
+    );
+
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
       const supabase = createServiceRoleClient();
@@ -252,6 +265,7 @@ export async function POST(req: NextRequest) {
           dbSaveFailed: true,
           gamification: { badgeResults: [], xpAwarded: 0 },
           pipeline: pipelineMeta,
+          trust: hybridTrust,
         });
       }
 
@@ -319,6 +333,7 @@ export async function POST(req: NextRequest) {
         usedFallback,
         gamification: gamificationResult,
         pipeline: pipelineMeta,
+        trust: hybridTrust,
       });
     } catch (dbOperationError) {
       // DB 실패 시에도 분석 결과 반환 (사용자 경험 우선)
@@ -340,6 +355,7 @@ export async function POST(req: NextRequest) {
         dbSaveFailed: true,
         gamification: { badgeResults: [], xpAwarded: 0 },
         pipeline: pipelineMeta,
+        trust: hybridTrust,
       });
     }
   } catch (error) {

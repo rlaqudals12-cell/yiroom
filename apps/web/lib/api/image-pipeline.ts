@@ -63,6 +63,16 @@ export interface FullPipelineFailure {
 
 export type FullPipelineResult = FullPipelineSuccess | FullPipelineFailure;
 
+/** 하이브리드 신뢰도 결과 (CIE + AI 통합) */
+export interface HybridTrustResult {
+  /** 통합 신뢰도 점수 (0-100) */
+  trustScore: number;
+  /** 품질 경고 메시지 (사용자 표시용) */
+  qualityWarnings: string[];
+  /** 이미지 개선 제안 (품질 낮을 때) */
+  improvementSuggestion?: string;
+}
+
 // ============================================
 // 옵션
 // ============================================
@@ -159,6 +169,89 @@ export async function runFullPipeline(
       pipeline: basePipeline,
     };
   }
+}
+
+// ============================================
+// 하이브리드 신뢰도 통합
+// ============================================
+
+/**
+ * CIE 파이프라인 메타 + AI 신뢰도를 결합한 통합 trust score 계산
+ *
+ * 공식: baseScore = (aiConfidence × 0.6) + (cieQuality × 0.4) + adjustments
+ * 조정 요소: 조명 품질, AWB 보정, fallback 패널티
+ *
+ * @param pipelineMeta - CIE 파이프라인 메타데이터 (없으면 AI만 사용)
+ * @param aiConfidence - AI 분석 신뢰도 (0-100)
+ * @param usedFallback - Mock fallback 사용 여부
+ */
+export function computeHybridTrust(
+  pipelineMeta: PipelineMetadata | undefined,
+  aiConfidence: number,
+  usedFallback: boolean
+): HybridTrustResult {
+  // 기본 점수: CIE 있으면 가중 결합, 없으면 AI만
+  let baseScore: number;
+  if (pipelineMeta) {
+    baseScore = aiConfidence * 0.6 + pipelineMeta.qualityScore * 0.4;
+  } else {
+    baseScore = aiConfidence;
+  }
+
+  // 조정 점수 누적
+  let adjustment = 0;
+  const warnings: string[] = [];
+  let improvementSuggestion: string | undefined;
+
+  // Mock fallback 패널티 (-20)
+  if (usedFallback) {
+    adjustment -= 20;
+    warnings.push('AI 분석에 실패하여 예시 결과를 제공합니다.');
+  }
+
+  // CIE 파이프라인 기반 조정
+  if (pipelineMeta) {
+    // CIE-1 품질 조정
+    if (pipelineMeta.qualityScore >= 80) {
+      adjustment += 5;
+    } else if (pipelineMeta.qualityScore < 50) {
+      adjustment -= 15;
+      warnings.push('이미지 품질이 낮아 결과의 정확도가 떨어질 수 있습니다.');
+      improvementSuggestion =
+        '이미지 품질을 높이면 더 정확한 분석이 가능합니다. 밝은 곳에서 정면으로 촬영해주세요.';
+    } else if (pipelineMeta.qualityScore < 65) {
+      adjustment -= 5;
+    }
+
+    // CIE-4 조명 조정
+    if (pipelineMeta.lightingScore !== null) {
+      if (pipelineMeta.lightingScore >= 70) {
+        adjustment += 3;
+      } else if (pipelineMeta.lightingScore < 40) {
+        adjustment -= 10;
+        warnings.push(
+          '조명이 불균일합니다. 자연광에서 촬영하면 더 정확한 결과를 얻을 수 있습니다.'
+        );
+        if (!improvementSuggestion) {
+          improvementSuggestion =
+            '조명이 균일하지 않습니다. 자연광이 들어오는 곳에서 촬영해주세요.';
+        }
+      }
+    }
+
+    // AWB 보정 적용 시 약간의 보너스
+    if (pipelineMeta.awbApplied) {
+      adjustment += 2;
+    }
+  }
+
+  const trustScore = Math.round(Math.max(0, Math.min(100, baseScore + adjustment)));
+
+  const result: HybridTrustResult = { trustScore, qualityWarnings: warnings };
+  if (improvementSuggestion) {
+    result.improvementSuggestion = improvementSuggestion;
+  }
+  return result;
 }
 
 // ============================================
