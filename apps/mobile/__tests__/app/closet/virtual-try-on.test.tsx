@@ -26,7 +26,13 @@ import {
   shadows,
   typography,
 } from '../../../lib/theme/tokens';
-import { LIP_PRESETS, BLUSH_PRESETS, HAIR_PRESETS } from '../../../lib/virtual-try-on/types';
+import {
+  LIP_PRESETS,
+  BLUSH_PRESETS,
+  HAIR_PRESETS,
+  EYESHADOW_PRESETS,
+  FOUNDATION_PRESETS,
+} from '../../../lib/virtual-try-on/types';
 
 // react-native-safe-area-context mock
 jest.mock('react-native-safe-area-context', () => {
@@ -42,6 +48,28 @@ jest.mock('react-native-safe-area-context', () => {
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
+
+// expo-file-system mock
+jest.mock('expo-file-system', () => ({
+  readAsStringAsync: jest.fn().mockResolvedValue('bW9ja2Jhc2U2NA=='),
+}));
+
+// expo-image-picker mock
+jest.mock('expo-image-picker', () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+  requestCameraPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  launchCameraAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}));
+
+// global fetch mock
+global.fetch = jest.fn().mockResolvedValue({
+  ok: true,
+  json: jest.fn().mockResolvedValue({
+    success: true,
+    data: { resultBase64: 'data:image/jpeg;base64,mockresult', processingTimeMs: 100 },
+  }),
+}) as jest.Mock;
 
 import VirtualTryOnScreen from '../../../app/(closet)/style/virtual-try-on';
 import * as ImagePicker from 'expo-image-picker';
@@ -122,15 +150,17 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
     });
   });
 
-  describe('카테고리 탭 (립/블러셔/헤어)', () => {
-    it('3개의 카테고리 탭이 모두 표시되어야 한다', () => {
+  describe('카테고리 탭 (5카테고리)', () => {
+    it('5개의 카테고리 탭이 모두 표시되어야 한다', () => {
       // Arrange & Act
       const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
 
       // Assert
       expect(getByText('립')).toBeTruthy();
       expect(getByText('블러셔')).toBeTruthy();
-      expect(getByText('헤어 컬러')).toBeTruthy();
+      expect(getByText('아이섀도')).toBeTruthy();
+      expect(getByText('파운데이션')).toBeTruthy();
+      expect(getByText('헤어')).toBeTruthy();
     });
 
     it('기본 활성 탭은 "립"이어야 한다', () => {
@@ -156,15 +186,15 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       });
     });
 
-    it('"헤어 컬러" 탭 클릭 시 헤어 프리셋이 표시되어야 한다', () => {
+    it('"헤어" 탭 클릭 시 헤어 프리셋이 표시되어야 한다', () => {
       // Arrange
-      const { getAllByText, getByText } = renderWithTheme(<VirtualTryOnScreen />);
+      const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
 
       // Act
-      fireEvent.press(getByText('헤어 컬러'));
+      fireEvent.press(getByText('헤어'));
 
-      // Assert: "헤어 컬러"가 탭 + 섹션 라벨 2곳에 표시됨
-      expect(getAllByText('헤어 컬러')).toHaveLength(2);
+      // Assert: 섹션 라벨 "헤어 컬러" 표시
+      expect(getByText('헤어 컬러')).toBeTruthy();
       // 헤어 프리셋 이름 확인
       HAIR_PRESETS.forEach((preset) => {
         expect(getByText(preset.name)).toBeTruthy();
@@ -213,7 +243,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
 
       // Act
-      fireEvent.press(getByText('헤어 컬러'));
+      fireEvent.press(getByText('헤어'));
 
       // Assert
       HAIR_PRESETS.forEach((preset) => {
@@ -389,7 +419,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       expect(getByTestId('virtual-try-on-screen')).toBeTruthy();
       expect(getByText('립')).toBeTruthy();
       expect(getByText('블러셔')).toBeTruthy();
-      expect(getByText('헤어 컬러')).toBeTruthy();
+      expect(getByText('헤어')).toBeTruthy();
     });
   });
 
@@ -423,7 +453,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       // Act & Assert: 빠른 탭 전환
       expect(() => {
         fireEvent.press(getByText('블러셔'));
-        fireEvent.press(getByText('헤어 컬러'));
+        fireEvent.press(getByText('헤어'));
         fireEvent.press(getByText('립'));
         fireEvent.press(getByText('블러셔'));
       }).not.toThrow();
