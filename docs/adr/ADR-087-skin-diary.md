@@ -1,6 +1,6 @@
 # ADR-087: 피부 일기 — 자동 기록 기반 시계열 트렌드 시스템
 
-> **Status**: proposed
+> **Status**: accepted
 > **Date**: 2026-03-12
 > **Deciders**: Claude Code
 > **원리 문서**: [skin-diary.md](../principles/skin-diary.md), [skin-physiology.md](../principles/skin-physiology.md)

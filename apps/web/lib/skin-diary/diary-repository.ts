@@ -125,13 +125,17 @@ export async function getCalendarMonth(
   const endDate = new Date(year, month, 0); // 월의 마지막 날
 
   // 해당 월의 분석 결과 조회
-  const { data: assessments } = await supabase
+  const { data: assessments, error: assessmentError } = await supabase
     .from('skin_assessments')
     .select('created_at, scores')
     .eq('clerk_user_id', userId)
     .gte('created_at', startDate.toISOString())
     .lte('created_at', new Date(year, month, 0, 23, 59, 59).toISOString())
     .order('created_at', { ascending: true });
+
+  if (assessmentError) {
+    console.error('[SkinDiary] Failed to fetch calendar assessments:', assessmentError);
+  }
 
   // 해당 월의 메모 조회
   const notes = await getNotesByDateRange(supabase, userId, startDate, endDate);

@@ -38,7 +38,10 @@ function createMockSupabase(overrides?: {
 
   // 테이블별로 다른 결과를 반환하도록 구성
   const createChain = (tableName: string) => {
-    let resolvedResult = { data: [] as unknown[], error: null as unknown };
+    let resolvedResult: { data: unknown[] | null; error: unknown } = {
+      data: [] as unknown[],
+      error: null as unknown,
+    };
     if (tableName === 'skin_assessments') {
       resolvedResult = config.assessmentsResult;
     } else if (tableName === 'skin_diary_notes') {
