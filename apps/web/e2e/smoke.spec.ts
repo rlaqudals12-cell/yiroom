@@ -1,12 +1,14 @@
 /**
  * E2E Smoke Test
  * 기본적인 페이지 접근 및 렌더링 확인
+ *
+ * @tag smoke - CI에서 항상 실행, 인증 불필요
  */
 
 import { test, expect } from '@playwright/test';
 import { ROUTES, waitForLoadingToFinish } from './fixtures';
 
-test.describe('Smoke Test - 페이지 접근', () => {
+test.describe('Smoke Test - 페이지 접근 @smoke', () => {
   test('홈페이지가 정상적으로 로드된다', async ({ page }) => {
     await page.goto(ROUTES.HOME);
     await waitForLoadingToFinish(page);
@@ -85,7 +87,7 @@ test.describe('Smoke Test - 페이지 접근', () => {
   });
 });
 
-test.describe('Smoke Test - 네비게이션', () => {
+test.describe('Smoke Test - 네비게이션 @smoke', () => {
   test('모바일 하단 네비게이션이 표시된다', async ({ page }) => {
     // 모바일 뷰포트 설정
     await page.setViewportSize({ width: 375, height: 667 });
@@ -113,7 +115,7 @@ test.describe('Smoke Test - 네비게이션', () => {
   });
 });
 
-test.describe('Smoke Test - 에러 처리', () => {
+test.describe('Smoke Test - 에러 처리 @smoke', () => {
   test('존재하지 않는 페이지는 404를 반환한다', async ({ page }) => {
     const response = await page.goto('/non-existent-page-12345');
 

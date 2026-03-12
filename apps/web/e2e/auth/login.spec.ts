@@ -13,7 +13,7 @@ const TEST_USER = {
   password: process.env.E2E_CLERK_USER_PASSWORD,
 };
 
-test.describe('로그인 플로우', () => {
+test.describe('로그인 플로우 @auth', () => {
   test.beforeEach(async ({ page }) => {
     // Clerk 테스팅 토큰 설정
     await setupClerkTestingToken({ page });
@@ -33,7 +33,11 @@ test.describe('로그인 플로우', () => {
 
     // Clerk 로그인 폼 또는 로그인 관련 요소가 존재하는지 확인
     // Clerk 버전에 따라 클래스명이 다를 수 있으므로 유연하게 체크
-    const hasSignInContent = await page.locator('[data-testid="sign-in"], [class*="signIn"], [class*="SignIn"], form, input').first().isVisible({ timeout: 10000 }).catch(() => false);
+    const hasSignInContent = await page
+      .locator('[data-testid="sign-in"], [class*="signIn"], [class*="SignIn"], form, input')
+      .first()
+      .isVisible({ timeout: 10000 })
+      .catch(() => false);
     expect(hasSignInContent || url.includes('sign-in')).toBeTruthy();
   });
 
@@ -98,7 +102,7 @@ test.describe('로그인 플로우', () => {
   });
 });
 
-test.describe('회원가입 플로우', () => {
+test.describe('회원가입 플로우 @auth', () => {
   test.beforeEach(async ({ page }) => {
     await setupClerkTestingToken({ page });
   });
@@ -116,7 +120,11 @@ test.describe('회원가입 플로우', () => {
     await expect(body).toBeVisible();
 
     // Clerk 회원가입 폼 또는 관련 요소가 존재하는지 확인
-    const hasSignUpContent = await page.locator('[data-testid="sign-up"], [class*="signUp"], [class*="SignUp"], form, input').first().isVisible({ timeout: 10000 }).catch(() => false);
+    const hasSignUpContent = await page
+      .locator('[data-testid="sign-up"], [class*="signUp"], [class*="SignUp"], form, input')
+      .first()
+      .isVisible({ timeout: 10000 })
+      .catch(() => false);
     expect(hasSignUpContent || url.includes('sign-up')).toBeTruthy();
   });
 });

@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 import { ROUTES, waitForLoadingToFinish } from '../fixtures';
 
-test.describe('분석 - 페이지 접근', () => {
+test.describe('분석 - 페이지 접근 @smoke @analysis', () => {
   test('퍼스널컬러 분석 페이지가 로드된다', async ({ page }) => {
     await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
     await waitForLoadingToFinish(page);
@@ -341,7 +341,7 @@ test.describe('분석 - 메이크업 (M-1)', () => {
   });
 });
 
-test.describe('분석 - JavaScript 에러 없음', () => {
+test.describe('분석 - JavaScript 에러 없음 @smoke @analysis', () => {
   const analysisPages = [
     { name: '퍼스널컬러', route: ROUTES.ANALYSIS_PERSONAL_COLOR },
     { name: '피부', route: ROUTES.ANALYSIS_SKIN },
