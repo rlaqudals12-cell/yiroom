@@ -196,6 +196,41 @@ CREATE TABLE makeup_analyses (
 
 ---
 
+## 5.5 에러 처리 매트릭스
+
+| 에러 상황          | HTTP | 에러 코드        | 사용자 메시지           | 처리                         |
+| ------------------ | ---- | ---------------- | ----------------------- | ---------------------------- |
+| 미인증             | 401  | AUTH_ERROR       | "로그인이 필요합니다"   | Clerk auth 실패              |
+| Rate Limit 초과    | 429  | RATE_LIMIT_ERROR | "요청이 너무 많습니다"  | 50 req/24h                   |
+| 이미지 없음/불량   | 400  | VALIDATION_ERROR | "이미지를 확인해주세요" | Zod 검증 실패                |
+| Gemini 타임아웃    | 200  | -                | 정상 반환 (Mock)        | 3초 타임아웃 → Mock Fallback |
+| Gemini 파싱 실패   | 200  | -                | 정상 반환 (Mock)        | Zod 검증 → 유효값만 필터     |
+| DB 저장 실패       | 200  | -                | 정상 반환               | `dbSaveFailed: true` 플래그  |
+| 이미지 업로드 실패 | 200  | -                | 정상 반환               | 비차단, 로그만 기록          |
+
+### 5.6 입력 검증 규칙
+
+```typescript
+// Zod 검증 (API route)
+imageBase64: z.string().min(1)  // 필수
+useMock: z.boolean().optional() // 개발용
+
+// Gemini 응답 후처리 (유효값만 필터)
+concerns → MakeupConcernType[] (8종) 외 제거
+recommendedStyles → MakeupStyleType[] (6종) 외 제거
+colorRecommendations.category → MakeupCategoryType (5종) 외 제거
+```
+
+### 5.7 Gemini 프롬프트 전략
+
+- **Temperature**: 0.1 (결정적 분석)
+- **구조화 출력**: JSON 형식 지정 → `jsonRepair()` → Zod 검증
+- **입력**: Base64 JPEG 이미지 1장
+- **출력 필드**: 얼굴 형태 4종 + 피부 메트릭 5종 + 고민/스타일/색상/팁
+- **신뢰도**: Gemini가 자체 평가 ('high'|'medium'|'low')
+
+---
+
 ## 6. 파일 구조
 
 ```
