@@ -160,6 +160,48 @@ describe('detectAlerts', () => {
     const milestone = alerts.find((a) => a.type === 'milestone');
     expect(milestone).toBeUndefined();
   });
+
+  it('카테고리별 연속 하락 → category deterioration 알림', () => {
+    // 수분 점수만 연속 하락: 최신순 40, 55, 70 (총 30점 하락)
+    const entries = [
+      createEntry({
+        vitalityScore: 70,
+        scoreBreakdown: { hydration: 40, elasticity: 70, clarity: 70, tone: 70 },
+        date: '2026-03-12',
+      }),
+      createEntry({
+        vitalityScore: 70,
+        scoreBreakdown: { hydration: 55, elasticity: 70, clarity: 70, tone: 70 },
+        date: '2026-03-09',
+      }),
+      createEntry({
+        vitalityScore: 70,
+        scoreBreakdown: { hydration: 70, elasticity: 70, clarity: 70, tone: 70 },
+        date: '2026-03-06',
+      }),
+    ];
+    const alerts = detectAlerts(entries);
+    const catAlert = alerts.find((a) => a.category === 'hydration' && a.type === 'deterioration');
+    expect(catAlert).toBeDefined();
+    expect(catAlert!.message).toContain('수분');
+  });
+
+  it('모든 점수 동일 → 알림 없음', () => {
+    const entries = createEntries([70, 70, 70]);
+    const alerts = detectAlerts(entries);
+    expect(alerts).toHaveLength(0);
+  });
+
+  it('등급 하락 → 마일스톤 없음 (상승만 트리거)', () => {
+    const entries = [
+      createEntry({ vitalityScore: 55, vitalityGrade: 'B', date: '2026-03-12' }),
+      createEntry({ vitalityScore: 80, vitalityGrade: 'A', date: '2026-03-09' }),
+      createEntry({ vitalityScore: 78, vitalityGrade: 'A', date: '2026-03-06' }),
+    ];
+    const alerts = detectAlerts(entries);
+    const milestone = alerts.find((a) => a.type === 'milestone');
+    expect(milestone).toBeUndefined();
+  });
 });
 
 // ============================================
@@ -183,6 +225,25 @@ describe('analyzeCategoryTrends', () => {
     );
     const result = analyzeCategoryTrends(entries);
     expect(result.hydration.trend).toBe('stable');
+  });
+
+  it('빈 배열 → 기본 stable 트렌드', () => {
+    const result = analyzeCategoryTrends([]);
+    expect(result.hydration.trend).toBe('stable');
+    expect(result.hydration.change).toBe(0);
+  });
+
+  it('1개 엔트리 → stable + 변화 0', () => {
+    const entries = [
+      createEntry({
+        vitalityScore: 80,
+        scoreBreakdown: { hydration: 85, elasticity: 75, clarity: 90, tone: 70 },
+        date: '2026-03-12',
+      }),
+    ];
+    const result = analyzeCategoryTrends(entries);
+    expect(result.hydration.trend).toBe('stable');
+    expect(result.hydration.change).toBe(0);
   });
 });
 
@@ -254,5 +315,23 @@ describe('analyzeTrend', () => {
 
     expect(result.shortTermAvg).toBeLessThan(result.longTermAvg);
     expect(result.trend).toBe('declining');
+  });
+
+  it('1개 데이터 → stable + 해당 점수', () => {
+    const entries = [createEntry({ vitalityScore: 75, date: '2026-03-12' })];
+    const result = analyzeTrend(entries, '7d');
+
+    expect(result.entryCount).toBe(1);
+    expect(result.shortTermAvg).toBe(75);
+    expect(result.trend).toBe('stable');
+  });
+
+  it('3개 데이터 → 부분 분석 가능', () => {
+    const entries = createEntries([80, 75, 70]);
+    const result = analyzeTrend(entries, '7d');
+
+    expect(result.entryCount).toBe(3);
+    expect(result.shortTermAvg).toBeGreaterThan(0);
+    expect(result.categoryTrends).toBeDefined();
   });
 });
