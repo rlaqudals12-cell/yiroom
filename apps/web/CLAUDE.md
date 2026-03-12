@@ -81,7 +81,7 @@ try {
 ```typescript
 export const ChartDynamic = dynamic(() => import('./Chart'), {
   ssr: false,
-  loading: () => null
+  loading: () => null,
 });
 ```
 
@@ -116,4 +116,4 @@ app/(main)/
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15
+**Version**: 1.1 | **Updated**: 2026-03-12 | Gemini 3 Flash 코드 동기화 (gemini-2.5-pro → gemini-3-flash-preview)
