@@ -5,16 +5,20 @@
  * Level 1: 생성 후 → 요약 (완료율 + 총 CCS)
  * Level 2: 확장 → 아이템 리스트 (체크박스)
  *
+ * CA 통합: 캡슐 로드 시 도메인별 연결 노출, 체크 시 확인
+ *
  * @see docs/adr/ADR-073-one-button-daily.md
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-
-import { useTheme } from '../../lib/theme';
-import { GlassCard } from '../ui/GlassCard';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CapsuleProgressBar } from './CapsuleProgressBar';
+import { useConnectionExposure } from '../../hooks/useConnectionExposure';
+import { capsuleItemToExposeRequest } from '../../lib/connection-awareness';
+import { useTheme } from '../../lib/theme';
+import type { ModuleCode } from '../../types/capsule';
+import { GlassCard } from '../ui/GlassCard';
 
 interface DailyItem {
   id: string;
@@ -155,6 +159,15 @@ export function DailyCapsuleCard({
               optimal={capsule.items.length}
               accentColor={brand.primary}
             />
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.xs,
+                marginTop: 2,
+              }}
+            >
+              {completionRate}% 완료
+            </Text>
           </View>
           <View
             style={[
@@ -182,74 +195,115 @@ export function DailyCapsuleCard({
       {expanded ? (
         <View style={[styles.itemList, { marginTop: spacing.md }]}>
           {capsule.items.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => onCheckItem(item.id, !item.isChecked)}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: item.isChecked }}
-              accessibilityLabel={`${item.name} ${item.isChecked ? '완료' : '미완료'}`}
-              style={[
-                styles.itemRow,
-                {
-                  backgroundColor: item.isChecked
-                    ? isDark
-                      ? 'rgba(34,197,94,0.08)'
-                      : 'rgba(34,197,94,0.06)'
-                    : 'transparent',
-                  borderRadius: radii.md,
-                  padding: spacing.sm,
-                },
-              ]}
-            >
-              {/* 체크 아이콘 */}
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    borderColor: item.isChecked ? '#22C55E' : colors.border,
-                    backgroundColor: item.isChecked ? '#22C55E' : 'transparent',
-                    borderRadius: radii.sm,
-                  },
-                ]}
-              >
-                {item.isChecked ? <Text style={styles.checkmark}>✓</Text> : null}
-              </View>
-
-              {/* 모듈 이모지 + 이름 + 이유 */}
-              <View style={styles.itemContent}>
-                <View style={styles.itemTitleRow}>
-                  <Text style={styles.moduleEmoji}>{MODULE_EMOJI[item.moduleCode] ?? '✨'}</Text>
-                  <Text
-                    style={[
-                      styles.itemName,
-                      {
-                        color: colors.foreground,
-                        fontSize: typography.size.sm,
-                        fontWeight: typography.weight.medium,
-                        textDecorationLine: item.isChecked ? 'line-through' : 'none',
-                        opacity: item.isChecked ? 0.6 : 1,
-                      },
-                    ]}
-                  >
-                    {item.name}
-                  </Text>
-                </View>
-                <Text
-                  style={{
-                    color: colors.mutedForeground,
-                    fontSize: typography.size.xs,
-                    marginTop: 2,
-                  }}
-                  numberOfLines={1}
-                >
-                  {item.reason}
-                </Text>
-              </View>
-            </Pressable>
+            <CapsuleItemWithCA key={item.id} item={item} onCheckItem={onCheckItem} />
           ))}
         </View>
       ) : null}
     </GlassCard>
+  );
+}
+
+/**
+ * 캡슐 아이템 개별 렌더링 — CA expose/confirm 통합
+ *
+ * depth에 따라 reason 표시 방식 분기:
+ *   full   → 전체 reason 텍스트
+ *   brief  → numberOfLines={1} 제한
+ *   minimal/none → reason 숨김
+ */
+function CapsuleItemWithCA({
+  item,
+  onCheckItem,
+}: {
+  item: DailyItem;
+  onCheckItem: (itemId: string, isChecked: boolean) => void;
+}): React.JSX.Element {
+  const { colors, spacing, radii, typography, isDark } = useTheme();
+
+  // ModuleCode로 캐스팅 — DailyItem.moduleCode가 string이므로 안전하게 처리
+  const moduleCode = item.moduleCode as ModuleCode;
+  const exposeRequest = capsuleItemToExposeRequest(moduleCode);
+  const { depth, confirm } = useConnectionExposure(exposeRequest);
+
+  // depth에 따른 reason 표시 분기
+  const showReason = depth === 'full' || depth === 'brief';
+  const reasonLines = depth === 'brief' ? 1 : undefined;
+
+  async function handlePress(): Promise<void> {
+    const nextChecked = !item.isChecked;
+    onCheckItem(item.id, nextChecked);
+    // 체크(완료) 시에만 confirm — 해제 시에는 호출하지 않음
+    if (nextChecked) {
+      await confirm();
+    }
+  }
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: item.isChecked }}
+      accessibilityLabel={`${item.name} ${item.isChecked ? '완료' : '미완료'}`}
+      style={[
+        styles.itemRow,
+        {
+          backgroundColor: item.isChecked
+            ? isDark
+              ? 'rgba(34,197,94,0.08)'
+              : 'rgba(34,197,94,0.06)'
+            : 'transparent',
+          borderRadius: radii.md,
+          padding: spacing.sm,
+        },
+      ]}
+    >
+      {/* 체크 아이콘 */}
+      <View
+        style={[
+          styles.checkbox,
+          {
+            borderColor: item.isChecked ? '#22C55E' : colors.border,
+            backgroundColor: item.isChecked ? '#22C55E' : 'transparent',
+            borderRadius: radii.sm,
+          },
+        ]}
+      >
+        {item.isChecked ? <Text style={styles.checkmark}>✓</Text> : null}
+      </View>
+
+      {/* 모듈 이모지 + 이름 + 이유 */}
+      <View style={styles.itemContent}>
+        <View style={styles.itemTitleRow}>
+          <Text style={styles.moduleEmoji}>{MODULE_EMOJI[item.moduleCode] ?? '✨'}</Text>
+          <Text
+            style={[
+              styles.itemName,
+              {
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.medium,
+                textDecorationLine: item.isChecked ? 'line-through' : 'none',
+                opacity: item.isChecked ? 0.6 : 1,
+              },
+            ]}
+          >
+            {item.name}
+          </Text>
+        </View>
+        {showReason ? (
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.xs,
+              marginTop: 2,
+            }}
+            numberOfLines={reasonLines}
+          >
+            {item.reason}
+          </Text>
+        ) : null}
+      </View>
+    </Pressable>
   );
 }
 

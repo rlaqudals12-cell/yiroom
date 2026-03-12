@@ -101,7 +101,9 @@ async function apiRequest<T>(
       };
     }
 
-    return { data: json.data ?? json, error: null };
+    // json.data가 명시적으로 undefined일 때만 json 전체를 fallback으로 사용한다.
+    // null은 "데이터 없음"을 의미하므로 그대로 반환한다.
+    return { data: json.data !== undefined ? json.data : json, error: null };
   } catch {
     return {
       data: null,
