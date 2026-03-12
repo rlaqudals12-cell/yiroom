@@ -10,6 +10,7 @@ import type { ToothColorInput, ToothColorResult, LabColor, VitaSeries } from '@/
 // lab-converter functions can be used for local pixel analysis in future
 import {
   findBestShadeMatch,
+  findBest3DShadeMatch,
   interpretBrightness,
   interpretYellowness,
 } from './internal/vita-database';
@@ -59,6 +60,9 @@ export async function analyzeToothColor(
   // 신뢰도 계산 (색차가 작을수록 높음)
   const confidence = calculateConfidence(matchResult.deltaE, colorDiffInterpretation.isAcceptable);
 
+  // 3D-Master 29색 매칭 (Classical과 함께 제공)
+  const match3D = findBest3DShadeMatch(measuredLab, true);
+
   return {
     measuredLab,
     matchedShade: matchResult.shade,
@@ -72,6 +76,13 @@ export async function analyzeToothColor(
       brightness: brightnessInterpretation.level,
       yellowness: yellownessInterpretation.level,
       series: matchResult.reference.series,
+    },
+    matched3DShade: {
+      shade: match3D.shade,
+      deltaE: Math.round(match3D.deltaE * 100) / 100,
+      valueGroup: match3D.reference.valueGroup,
+      chroma: match3D.reference.chroma,
+      classicalEquivalent: match3D.classicalEquivalent,
     },
     usedFallback: true,
   };

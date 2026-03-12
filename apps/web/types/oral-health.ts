@@ -56,8 +56,9 @@ export type VitaClassicalShade =
   | 'C4';
 
 /**
- * VITA 3D-Master 26색 셰이드
+ * VITA 3D-Master 26색 자연 셰이드
  * 명도 그룹(1-5) × 채도(L/M/R) 조합
+ * + Bleached 3색(0M1~0M3) = 총 29색
  */
 export type Vita3DMasterShade =
   | '1M1'
@@ -175,6 +176,19 @@ export interface ToothColorResult {
     yellowness: 'minimal' | 'mild' | 'moderate' | 'significant';
     series: VitaSeries;
   };
+  /** 3D-Master 29색 매칭 결과 (Classical 분석 시 함께 제공) */
+  matched3DShade?: Vita3DMatchInfo;
+}
+
+/**
+ * VITA 3D-Master 매칭 정보
+ */
+export interface Vita3DMatchInfo {
+  shade: Vita3DMasterShade | VitaBleachedShade;
+  deltaE: number;
+  valueGroup: Vita3DValueGroup;
+  chroma: Vita3DChroma;
+  classicalEquivalent?: VitaClassicalShade;
 }
 
 // =============================================================================

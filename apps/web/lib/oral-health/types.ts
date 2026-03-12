@@ -27,6 +27,7 @@ export type {
   // 치아 색상 분석
   ToothColorInput,
   ToothColorResult,
+  Vita3DMatchInfo,
 
   // 잇몸 건강 분석
   GumHealthStatus,

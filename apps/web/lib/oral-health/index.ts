@@ -70,6 +70,7 @@ export type {
   DiscolorationCause,
   ToothColorInput,
   ToothColorResult,
+  Vita3DMatchInfo,
   GumHealthStatus,
   GumHealthMetrics,
   GumHealthInput,

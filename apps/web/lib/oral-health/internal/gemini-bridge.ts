@@ -15,7 +15,7 @@ import type {
   GumHealthMetrics,
 } from '@/types/oral-health';
 import { analyzeOralWithGemini, type GeminiOralHealthResponse } from '@/lib/gemini/v2-analysis';
-import { getShadeReference } from './vita-database';
+import { getShadeReference, findBest3DShadeMatch } from './vita-database';
 import { calculateCIEDE2000 } from './ciede2000';
 
 /**
@@ -98,6 +98,9 @@ export function convertGeminiToothColorResult(
     };
   });
 
+  // 3D-Master 29색 매칭 (Gemini 결과 Lab에서 계산)
+  const match3D = findBest3DShadeMatch(measuredLab, true);
+
   return {
     measuredLab,
     matchedShade: shade,
@@ -108,6 +111,13 @@ export function convertGeminiToothColorResult(
       brightness: toothColor.brightness,
       yellowness: toothColor.yellowness,
       series: toothColor.series,
+    },
+    matched3DShade: {
+      shade: match3D.shade,
+      deltaE: Math.round(match3D.deltaE * 100) / 100,
+      valueGroup: match3D.reference.valueGroup,
+      chroma: match3D.reference.chroma,
+      classicalEquivalent: match3D.classicalEquivalent,
     },
   };
 }

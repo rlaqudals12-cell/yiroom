@@ -207,6 +207,13 @@ function createMockToothColorResult(overrides: Partial<ToothColorResult> = {}): 
       yellowness: 'mild',
       series: 'A',
     },
+    matched3DShade: {
+      shade: '2M2',
+      deltaE: 1.1,
+      valueGroup: 2,
+      chroma: 'M',
+      classicalEquivalent: 'A2',
+    },
     ...overrides,
   };
 }
@@ -674,6 +681,104 @@ describe('VitaShadeDisplay', () => {
         />
       );
       expect(screen.getByText('상당')).toBeInTheDocument();
+    });
+  });
+
+  describe('3D-Master 29색 매칭', () => {
+    it('result에 matched3DShade가 있으면 3D-Master 셰이드 라벨이 표시된다', () => {
+      render(
+        <VitaShadeDisplay
+          currentShade="A2"
+          result={createMockToothColorResult({
+            matched3DShade: {
+              shade: '2M2',
+              deltaE: 1.1,
+              valueGroup: 2,
+              chroma: 'M',
+              classicalEquivalent: 'A2',
+            },
+          })}
+        />
+      );
+      expect(screen.getByText('3D-Master: 2M2')).toBeInTheDocument();
+    });
+
+    it('result에 matched3DShade가 없으면 3D-Master 라벨이 숨겨진다', () => {
+      render(
+        <VitaShadeDisplay
+          currentShade="A2"
+          result={createMockToothColorResult({ matched3DShade: undefined })}
+        />
+      );
+      expect(screen.queryByText(/3D-Master:/)).not.toBeInTheDocument();
+    });
+
+    it('matched3DShade prop이 result보다 우선한다', () => {
+      render(
+        <VitaShadeDisplay
+          currentShade="A2"
+          matched3DShade="3L1.5"
+          result={createMockToothColorResult({
+            matched3DShade: {
+              shade: '2M2',
+              deltaE: 1.1,
+              valueGroup: 2,
+              chroma: 'M',
+              classicalEquivalent: 'A2',
+            },
+          })}
+        />
+      );
+      // prop 우선 → 3L1.5 표시
+      expect(screen.getByText('3D-Master: 3L1.5')).toBeInTheDocument();
+    });
+
+    it('3D-Master 뷰 탭을 클릭하면 명도 그룹별 그리드가 표시된다', () => {
+      render(<VitaShadeDisplay currentShade="A2" compact={false} />);
+      // 3D-Master 탭 클릭
+      fireEvent.click(screen.getByText('3D-Master (29색)'));
+      // 명도 그룹 라벨 표시 확인
+      expect(screen.getByText('0 (미백)')).toBeInTheDocument();
+      expect(screen.getByText('1 (매우 밝음)')).toBeInTheDocument();
+      expect(screen.getByText('2 (밝음)')).toBeInTheDocument();
+      expect(screen.getByText('3 (중간)')).toBeInTheDocument();
+      expect(screen.getByText('4 (어두움)')).toBeInTheDocument();
+      expect(screen.getByText('5 (매우 어두움)')).toBeInTheDocument();
+    });
+
+    it('3D-Master 뷰에서 채도 범례가 표시된다', () => {
+      render(<VitaShadeDisplay currentShade="A2" compact={false} />);
+      fireEvent.click(screen.getByText('3D-Master (29색)'));
+      expect(screen.getByText('L (낮은 채도)')).toBeInTheDocument();
+      expect(screen.getByText('M (중간)')).toBeInTheDocument();
+      expect(screen.getByText('R (높은 채도)')).toBeInTheDocument();
+    });
+
+    it('3D-Master 뷰에서 매칭 정보 요약이 표시된다', () => {
+      render(
+        <VitaShadeDisplay
+          currentShade="A2"
+          compact={false}
+          result={createMockToothColorResult({
+            matched3DShade: {
+              shade: '2M2',
+              deltaE: 1.1,
+              valueGroup: 2,
+              chroma: 'M',
+              classicalEquivalent: 'A2',
+            },
+          })}
+        />
+      );
+      fireEvent.click(screen.getByText('3D-Master (29색)'));
+      // 매칭 요약 박스: 셰이드 이름 + 명도/채도 정보
+      expect(screen.getByText('(명도 2, 중간 채도)')).toBeInTheDocument();
+    });
+
+    it('3D-Master 셰이드 설명: 숫자로 시작하는 셰이드에 명도·채도 표시', () => {
+      // VitaShade 타입은 Classical만 허용하므로 cast 사용 (테스트 목적)
+      render(<VitaShadeDisplay currentShade={'2M2' as VitaShade} />);
+      expect(screen.getByText('명도 2 · 중간 채도')).toBeInTheDocument();
     });
   });
 

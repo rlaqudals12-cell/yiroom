@@ -13,6 +13,7 @@ import type {
   OralProductRecommendation,
   OralHealthAssessment,
   VitaShade,
+  Vita3DMatchInfo,
   PersonalColorSeason,
   GumHealthStatus,
 } from '@/types/oral-health';
@@ -42,6 +43,16 @@ export function generateMockToothColorResult(options?: {
 
   const lab = shadeLabMap[shade] ?? { L: 67, a: 3, b: 19 };
 
+  // Classical → 3D-Master 대응 테이블 (Mock용)
+  const shade3DMap: Record<string, Vita3DMatchInfo> = {
+    B1: { shade: '1M1', deltaE: 0.8, valueGroup: 1, chroma: 'M', classicalEquivalent: 'B1' },
+    A1: { shade: '1M2', deltaE: 0.9, valueGroup: 1, chroma: 'M', classicalEquivalent: 'A1' },
+    B2: { shade: '2M1', deltaE: 1.0, valueGroup: 2, chroma: 'M', classicalEquivalent: 'B2' },
+    A2: { shade: '2M2', deltaE: 1.1, valueGroup: 2, chroma: 'M', classicalEquivalent: 'A2' },
+    A3: { shade: '3M2', deltaE: 1.2, valueGroup: 3, chroma: 'M', classicalEquivalent: 'A3' },
+    A4: { shade: '4M3', deltaE: 1.3, valueGroup: 4, chroma: 'M', classicalEquivalent: 'A4' },
+  };
+
   return {
     measuredLab: lab,
     matchedShade: shade,
@@ -56,6 +67,7 @@ export function generateMockToothColorResult(options?: {
       yellowness: brightness === 'dark' ? 'significant' : 'mild',
       series: (shade.charAt(0) as 'A' | 'B' | 'C' | 'D') || 'A',
     },
+    matched3DShade: shade3DMap[shade] ?? shade3DMap['A2'],
   };
 }
 

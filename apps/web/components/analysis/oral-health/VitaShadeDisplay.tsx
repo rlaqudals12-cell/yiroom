@@ -116,7 +116,7 @@ interface VitaShadeDisplayProps {
   currentShade: VitaShade;
   /** 목표 셰이드 (선택) */
   targetShade?: VitaShade;
-  /** 3D-Master 매칭 셰이드 (선택) */
+  /** 3D-Master 매칭 셰이드 (선택, result.matched3DShade로 자동 추출 가능) */
   matched3DShade?: Shade3D;
   /** 전체 분석 결과 (선택) */
   result?: ToothColorResult;
@@ -130,15 +130,19 @@ interface VitaShadeDisplayProps {
 export function VitaShadeDisplay({
   currentShade,
   targetShade,
-  matched3DShade,
+  matched3DShade: matched3DShadeProp,
   result,
   compact = false,
   className,
-}: VitaShadeDisplayProps) {
+}: VitaShadeDisplayProps): React.ReactElement {
   const [view, setView] = useState<ShadeView>('classical');
   const currentIndex = BRIGHTNESS_ORDER.indexOf(currentShade);
   const targetIndex = targetShade ? BRIGHTNESS_ORDER.indexOf(targetShade) : -1;
   const stepsNeeded = targetIndex >= 0 ? currentIndex - targetIndex : 0;
+
+  // result에서 3D-Master 매칭 정보를 자동 추출 (명시적 prop이 우선)
+  const matched3DShade =
+    matched3DShadeProp ?? (result?.matched3DShade?.shade as Shade3D | undefined);
 
   return (
     <div
@@ -244,6 +248,16 @@ export function VitaShadeDisplay({
           {/* 3D-Master 뷰 — 명도 그룹별 그리드 */}
           {view === '3d-master' && (
             <div className="space-y-2">
+              {/* 매칭된 3D-Master 셰이드 요약 */}
+              {matched3DShade && result?.matched3DShade && (
+                <div className="mb-2 rounded bg-primary/5 p-2 text-sm">
+                  <span className="font-medium">{matched3DShade}</span>
+                  <span className="ml-1 text-muted-foreground">
+                    (명도 {result.matched3DShade.valueGroup},{' '}
+                    {get3DChromaLabel(result.matched3DShade.chroma)})
+                  </span>
+                </div>
+              )}
               {VALUE_GROUPS.map((group) => (
                 <div key={group.label}>
                   <p className="mb-1 text-xs font-medium text-muted-foreground">{group.label}</p>
@@ -318,11 +332,34 @@ function ShadeCell({
 }
 
 /**
+ * 3D-Master 채도 레이블 반환
+ */
+function get3DChromaLabel(chroma: string): string {
+  const labels: Record<string, string> = {
+    L: '낮은 채도',
+    M: '중간 채도',
+    R: '높은 채도',
+  };
+  return labels[chroma] || chroma;
+}
+
+/**
  * 셰이드 설명 반환
  */
 function getShadeDescription(shade: VitaShade): string {
   if (shade.startsWith('0M')) {
     return '미백 처리';
+  }
+  // 3D-Master 셰이드 (숫자로 시작: 1M1, 2L1.5, 3R2.5 등)
+  if (/^\d/.test(shade)) {
+    const valueGroup = shade.charAt(0);
+    const chromaChar = shade.charAt(1);
+    const chromaLabels: Record<string, string> = {
+      L: '낮은 채도',
+      M: '중간 채도',
+      R: '높은 채도',
+    };
+    return `명도 ${valueGroup} · ${chromaLabels[chromaChar] || ''}`;
   }
   const series = shade.charAt(0);
   const seriesDescriptions: Record<string, string> = {
