@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.1 (모더레이션 + ConnectionAwareness)
+# 🗄️ Database 스키마 v7.2 (위젯 순서 동기화)
 
-**버전**: v7.1 (모더레이션 + ConnectionAwareness 추가)
-**업데이트**: 2026년 3월 10일
+**버전**: v7.2 (위젯 순서 Supabase 동기화 추가)
+**업데이트**: 2026년 3월 13일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -147,6 +147,7 @@ CREATE TABLE users (
   profile_image_url TEXT,
   gender_preference TEXT DEFAULT 'neutral'  -- K-1: male, female, neutral (콘텐츠 개인화)
     CHECK (gender_preference IN ('male', 'female', 'neutral')),
+  widget_order JSONB,  -- 홈 위젯 순서 배열 (Phase 5, 마이그레이션: 20260313)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -197,6 +198,12 @@ name: TEXT
 
 profile_image_url: TEXT
   - 프로필 이미지 URL
+
+widget_order: JSONB
+  - 홈 위젯 순서 배열
+  - 예: ["insight","capsule","analysis-summary","activity-bar","recently-viewed"]
+  - NULL이면 기본 순서 사용
+  - 마이그레이션: 20260313_user_widget_order.sql (GFSA 후 적용)
 
 created_at: TIMESTAMPTZ
   - 계정 생성 시간
