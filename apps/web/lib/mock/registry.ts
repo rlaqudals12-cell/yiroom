@@ -45,3 +45,16 @@ registerMock('posture', generateMockPostureAnalysis);
 // 음식 분석
 import { generateMockFoodAnalysis } from './food-analysis';
 registerMock('food', generateMockFoodAnalysis);
+
+// V2 분석 모듈 (최신 엔진)
+// body-v2
+import { generateMockBodyAnalysisResult } from '@/lib/analysis/body-v2/mock';
+registerMock('body-v2', generateMockBodyAnalysisResult);
+
+// personal-color-v2
+import { generateMockResult as generateMockPCv2Result } from '@/lib/analysis/personal-color-v2/mock';
+registerMock('personal-color-v2', generateMockPCv2Result);
+
+// hair v2 (lib/analysis/hair/)
+import { generateMockHairAnalysisResult as generateMockHairV2Result } from '@/lib/analysis/hair/mock';
+registerMock('hair-v2', generateMockHairV2Result);

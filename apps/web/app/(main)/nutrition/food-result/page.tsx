@@ -52,7 +52,7 @@ export default function FoodResultPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editNotice, setEditNotice] = useState<string | null>(null);
+  // editNotice 제거됨 — 수정 기능 미구현
 
   // sessionStorage에서 데이터 로드
   useEffect(() => {
@@ -177,12 +177,7 @@ export default function FoodResultPage() {
     router.push('/nutrition/food-capture');
   }, [router]);
 
-  // 음식 수정 핸들러 (Task 2.11/2.12에서 실제 기능 구현 예정)
-  const handleFoodEdit = useCallback((foodName: string) => {
-    setEditNotice(`"${foodName}" 수정 기능은 준비 중이에요.`);
-    // 3초 후 알림 숨김
-    setTimeout(() => setEditNotice(null), 3000);
-  }, []);
+  // 음식 수정 핸들러 — 향후 구현 예정
 
   // 로딩 상태
   if (isLoading) {
@@ -287,18 +282,10 @@ export default function FoodResultPage() {
             food={food}
             portionMultiplier={portionMultipliers[index] || 1}
             onPortionChange={(multiplier) => handlePortionChange(index, multiplier)}
-            onEdit={() => handleFoodEdit(food.name)}
             showDetails={index === 0} // 첫 번째 음식만 펼침
           />
         ))}
       </div>
-
-      {/* 수정 기능 알림 */}
-      {editNotice && (
-        <div className="bg-purple-50 rounded-xl p-4 border border-purple-200 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <p className="text-sm text-purple-700 text-center">{editNotice}</p>
-        </div>
-      )}
 
       {/* 저장 에러 메시지 */}
       {saveError && (

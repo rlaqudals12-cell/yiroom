@@ -485,7 +485,7 @@ export default function DetailedEvidenceReport({
             <AnalysisFactorsVisual evidence={evidence} />
           ) : (
             <p className="text-sm text-muted-foreground">
-              혈관 색상, 피부 언더톤, 입술 자연색 등의 세부 분석 데이터를 준비 중이에요.
+              다시 분석하면 혈관 색상, 피부 언더톤, 입술 자연색 등 세부 데이터를 확인할 수 있어요.
             </p>
           )}
         </CardContent>
