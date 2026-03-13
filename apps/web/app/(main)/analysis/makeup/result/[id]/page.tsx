@@ -6,7 +6,8 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShareButton, PrintButton } from '@/components/share';
+import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -55,17 +56,21 @@ export default function MakeupAnalysisResultPage() {
   const analysisId = Array.isArray(rawId) ? rawId[0] : rawId;
 
   // 공유 카드 데이터
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = useMemo(() => {
     if (!result) return null;
-    return createMakeupShareData({
-      overallScore: result.overallScore,
-      undertoneLabel: result.undertoneLabel,
-      styleLabel: result.recommendedStyles[0]
-        ? MAKEUP_STYLES.find((s) => s.id === result.recommendedStyles[0])?.label
-        : undefined,
-      metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-    });
-  }, [result]);
+    return {
+      ...createMakeupShareData({
+        overallScore: result.overallScore,
+        undertoneLabel: result.undertoneLabel,
+        styleLabel: result.recommendedStyles[0]
+          ? MAKEUP_STYLES.find((s) => s.id === result.recommendedStyles[0])?.label
+          : undefined,
+        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+      }),
+      format: shareFormat,
+    };
+  }, [result, shareFormat]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -432,6 +437,13 @@ export default function MakeupAnalysisResultPage() {
             </Button>
             <div className="flex gap-2">
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <ShareThemePicker
+                value={shareData?.theme ?? 'default'}
+                onChange={() => {}}
+                format={shareFormat}
+                onFormatChange={setShareFormat}
+                className="mt-2"
+              />
               <PrintButton title="이룸 메이크업 분석 결과" variant="outline" />
             </div>
           </div>

@@ -560,7 +560,11 @@ export default function PersonalColorPage() {
 
         {/* 에러 메시지 */}
         {error && (step === 'upload' || step === 'guide') && (
-          <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+          <div
+            className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm"
+            role="alert"
+            aria-live="polite"
+          >
             <p className="font-medium">분석 중 오류가 발생했어요</p>
             <p className="mt-1 text-red-500">{error}</p>
             <p className="mt-2 text-xs text-red-400">

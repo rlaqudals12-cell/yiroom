@@ -313,6 +313,10 @@ vi.mock('lucide-react', () => ({
   // Print
   Printer: createIconMock('Printer'),
 
+  // Shapes (Share Format Picker)
+  Square: createIconMock('Square'),
+  RectangleVertical: createIconMock('RectangleVertical'),
+
   // Posture (PST-1)
   ArrowUpRight: createIconMock('ArrowUpRight'),
 

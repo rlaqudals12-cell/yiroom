@@ -16,6 +16,9 @@ type AnalysisType =
 // 공유 카드 테마 (5종)
 export type ShareCardTheme = 'default' | 'midnight' | 'sunset' | 'forest' | 'minimal';
 
+// 공유 카드 포맷 (1:1 정사각형 / 9:16 스토리)
+export type ShareCardFormat = '1:1' | '9:16';
+
 export interface ShareCardData {
   // 공통
   analysisType: AnalysisType;
@@ -40,6 +43,9 @@ export interface ShareCardData {
 
   // 테마 선택
   theme?: ShareCardTheme;
+
+  // 공유 포맷 (1:1 정사각형 / 9:16 스토리)
+  format?: ShareCardFormat;
 
   // 사용자 이름 오버레이
   userName?: string;
@@ -134,6 +140,12 @@ export const SHARE_THEME_OPTIONS: Array<{
   { id: 'minimal', name: '미니멀', preview: 'bg-gray-100 border border-gray-300' },
 ];
 
+// 포맷별 치수 상수
+const FORMAT_DIMS = {
+  '1:1': { w: 400, h: 400, pad: 'p-6' },
+  '9:16': { w: 360, h: 640, pad: 'p-8' },
+} as const;
+
 // 분석 타입별 그라데이션 (default 테마용)
 const GRADIENTS: Record<AnalysisType, string> = {
   'personal-color': 'from-pink-500 via-purple-500 to-indigo-500',
@@ -158,7 +170,7 @@ const BACKGROUNDS: Record<AnalysisType, string> = {
 
 /**
  * SNS 공유용 분석 결과 카드
- * - 1:1 비율 (인스타그램 최적화)
+ * - 1:1 (400×400) 인스타그램 / 9:16 (360×640) 스토리 포맷
  * - 핵심 정보만 표시
  * - 시각적으로 매력적인 디자인
  */
@@ -174,19 +186,23 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
       highlights,
       colors,
       theme = 'default',
+      format = '1:1',
       userName,
     } = data;
 
     const ts = THEME_STYLES[theme];
-    // default 테마는 분석 타입별 색상, 그 외는 테마 고유 색상
     const gradient = theme === 'default' ? GRADIENTS[analysisType] : ts.accent;
     const background = theme === 'default' ? BACKGROUNDS[analysisType] : ts.background;
     const scoreRing = theme === 'default' ? GRADIENTS[analysisType] : ts.scoreRingBg;
 
+    const dim = FORMAT_DIMS[format];
+    const isStory = format === '9:16';
+
     return (
       <div
         ref={ref}
-        className={cn('w-[400px] h-[400px] p-6 rounded-3xl shadow-xl', background, className)}
+        className={cn('rounded-3xl shadow-xl flex flex-col', dim.pad, background, className)}
+        style={{ width: dim.w, height: dim.h }}
         data-testid="analysis-share-card"
       >
         {/* 상단 로고 */}
@@ -206,23 +222,34 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
         </div>
 
         {/* 메인 콘텐츠 */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+        <div
+          className={cn(
+            'flex-1 flex flex-col items-center justify-center text-center',
+            isStory ? 'py-6' : 'py-4'
+          )}
+        >
           {/* 점수형 (피부 분석) */}
           {score !== undefined && (
             <div className="relative mb-4">
               <div
                 className={cn(
-                  'w-32 h-32 rounded-full flex items-center justify-center',
+                  'rounded-full flex items-center justify-center',
+                  isStory ? 'w-40 h-40' : 'w-32 h-32',
                   `bg-gradient-to-br ${scoreRing}`
                 )}
               >
                 <div
                   className={cn(
-                    'w-28 h-28 rounded-full flex flex-col items-center justify-center shadow-inner',
+                    'rounded-full flex flex-col items-center justify-center shadow-inner',
+                    isStory ? 'w-36 h-36' : 'w-28 h-28',
                     ts.scoreInnerBg
                   )}
                 >
-                  <span className={cn('text-4xl font-bold', ts.textPrimary)}>{score}</span>
+                  <span
+                    className={cn('font-bold', isStory ? 'text-5xl' : 'text-4xl', ts.textPrimary)}
+                  >
+                    {score}
+                  </span>
                   <span className={cn('text-sm', ts.textSecondary)}>점</span>
                 </div>
               </div>
@@ -232,10 +259,15 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
           {/* 타입형 (퍼스널컬러, 체형) */}
           {typeLabel && (
             <div className="mb-4">
-              {typeEmoji && <span className="text-5xl mb-2 block">{typeEmoji}</span>}
+              {typeEmoji && (
+                <span className={cn('mb-2 block', isStory ? 'text-6xl' : 'text-5xl')}>
+                  {typeEmoji}
+                </span>
+              )}
               <div
                 className={cn(
-                  'inline-block px-6 py-2 rounded-full text-white font-bold text-xl',
+                  'inline-block px-6 py-2 rounded-full text-white font-bold',
+                  isStory ? 'text-2xl' : 'text-xl',
                   `bg-gradient-to-r ${gradient}`
                 )}
               >
@@ -245,7 +277,9 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
           )}
 
           {/* 제목 */}
-          <h2 className={cn('text-xl font-bold mb-1', ts.textPrimary)}>{title}</h2>
+          <h2 className={cn('font-bold mb-1', isStory ? 'text-2xl' : 'text-xl', ts.textPrimary)}>
+            {title}
+          </h2>
           <p className={cn('text-sm mb-4', ts.textSecondary)}>{subtitle}</p>
 
           {/* 사용자 이름 오버레이 */}
@@ -257,7 +291,10 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
               {colors.slice(0, 5).map((color, idx) => (
                 <div
                   key={idx}
-                  className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                  className={cn(
+                    'rounded-full border-2 border-white shadow-md',
+                    isStory ? 'w-10 h-10' : 'w-8 h-8'
+                  )}
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -266,7 +303,7 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
 
           {/* 하이라이트 정보 */}
           {highlights && highlights.length > 0 && (
-            <div className="flex gap-4 justify-center">
+            <div className={cn('justify-center', isStory ? 'flex flex-col gap-3' : 'flex gap-4')}>
               {highlights.slice(0, 3).map((item, idx) => (
                 <div key={idx} className="text-center">
                   <p className={cn('text-lg font-bold', ts.textPrimary)}>{item.value}</p>

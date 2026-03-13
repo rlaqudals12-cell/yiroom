@@ -25,7 +25,8 @@ import type {
   BodyImageQuality,
 } from '@/components/analysis/BodyAnalysisEvidenceReport';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { ShareButton, PrintButton } from '@/components/share';
+import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { VisualReportCard } from '@/components/analysis/visual-report';
@@ -86,14 +87,18 @@ export default function BodyAnalysisResultPage() {
   const analysisId = params.id as string;
 
   // 공유 카드 데이터
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = useMemo(() => {
     if (!result) return null;
-    return createBodyShareData({
-      bodyType: result.bodyType,
-      bodyTypeLabel: result.bodyTypeLabel,
-      strengths: result.strengths,
-    });
-  }, [result]);
+    return {
+      ...createBodyShareData({
+        bodyType: result.bodyType,
+        bodyTypeLabel: result.bodyTypeLabel,
+        strengths: result.strengths,
+      }),
+      format: shareFormat,
+    };
+  }, [result, shareFormat]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -515,6 +520,13 @@ export default function BodyAnalysisResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <ShareThemePicker
+                value={shareData?.theme ?? 'default'}
+                onChange={() => {}}
+                format={shareFormat}
+                onFormatChange={setShareFormat}
+                className="mt-2"
+              />
               <PrintButton title="이룸 체형 분석 결과" variant="outline" />
             </div>
             <div className="flex justify-center">

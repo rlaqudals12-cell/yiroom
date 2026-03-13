@@ -31,7 +31,8 @@ import {
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
-import { ShareButton, PrintButton } from '@/components/share';
+import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
@@ -174,14 +175,18 @@ export default function PersonalColorResultPage() {
   const analysisId = params.id as string;
 
   // 공유 카드 데이터
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = useMemo(() => {
     if (!result) return null;
-    return createPersonalColorShareData({
-      seasonType: result.seasonType,
-      seasonLabel: result.seasonLabel,
-      bestColors: result.bestColors,
-    });
-  }, [result]);
+    return {
+      ...createPersonalColorShareData({
+        seasonType: result.seasonType,
+        seasonLabel: result.seasonLabel,
+        bestColors: result.bestColors,
+      }),
+      format: shareFormat,
+    };
+  }, [result, shareFormat]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -688,6 +693,13 @@ export default function PersonalColorResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <ShareThemePicker
+                value={shareData?.theme ?? 'default'}
+                onChange={() => {}}
+                format={shareFormat}
+                onFormatChange={setShareFormat}
+                className="mt-2"
+              />
               <PrintButton title="이룸 퍼스널 컬러 분석 결과" variant="outline" />
             </div>
             {/* 소셜 공유 버튼 */}

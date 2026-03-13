@@ -16,6 +16,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -28,6 +29,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Settings2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { announce } from '@/lib/a11y';
 import type { WidgetId } from '@/hooks/useWidgetOrder';
 
 interface SortableItemProps {
@@ -96,6 +98,15 @@ export default function SortableWidgetList({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  // 드래그 시작 시 스크린 리더 알림
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const idx = order.indexOf(event.active.id as WidgetId);
+      announce(`위젯 이동 시작, 현재 ${idx + 1}번째`, 'assertive');
+    },
+    [order]
+  );
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -103,6 +114,7 @@ export default function SortableWidgetList({
         const oldIndex = order.indexOf(active.id as WidgetId);
         const newIndex = order.indexOf(over.id as WidgetId);
         onOrderChange(arrayMove(order, oldIndex, newIndex));
+        announce(`위젯을 ${newIndex + 1}번째로 이동했어요`, 'assertive');
       }
     },
     [order, onOrderChange]
@@ -142,7 +154,12 @@ export default function SortableWidgetList({
       </div>
 
       {/* 드래그 영역 */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         <SortableContext items={order} strategy={verticalListSortingStrategy}>
           <div className={cn('space-y-5', isEditing && 'pl-4')}>
             {order.map((widgetId) => {

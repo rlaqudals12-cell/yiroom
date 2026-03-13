@@ -389,7 +389,11 @@ function CompareContent() {
   // 에러 상태
   if (error || !compareData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div
+        className="min-h-screen flex flex-col items-center justify-center p-4"
+        role="alert"
+        aria-live="polite"
+      >
         <p className="text-muted-foreground mb-4">{error}</p>
         <Button variant="outline" onClick={() => router.back()}>
           돌아가기

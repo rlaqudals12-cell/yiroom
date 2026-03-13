@@ -32,6 +32,8 @@ import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
+import { ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import dynamic from 'next/dynamic';
 
 // FAB 메뉴 내 컴포넌트 - 조건부 렌더링이므로 dynamic import
@@ -385,14 +387,18 @@ export default function SkinAnalysisResultPage() {
   }, [result, skinType]);
 
   // 공유 카드 데이터
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = useMemo(() => {
     if (!result) return null;
-    return createSkinShareData({
-      overallScore: result.overallScore,
-      identityLabel: skinIdentityLabel ?? undefined,
-      metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-    });
-  }, [result, skinIdentityLabel]);
+    return {
+      ...createSkinShareData({
+        overallScore: result.overallScore,
+        identityLabel: skinIdentityLabel ?? undefined,
+        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+      }),
+      format: shareFormat,
+    };
+  }, [result, skinIdentityLabel, shareFormat]);
 
   // 얼굴 존 상태 계산 (메트릭 기반) - FaceZoneMapProps.zones 형식
   const zoneStatuses = useMemo((): FaceZoneMapProps['zones'] => {
@@ -1422,6 +1428,12 @@ export default function SkinAnalysisResultPage() {
                 <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
                 공유하기
               </Button>
+              <ShareThemePicker
+                value={shareData?.theme ?? 'default'}
+                onChange={() => {}}
+                format={shareFormat}
+                onFormatChange={setShareFormat}
+              />
 
               {/* PDF 저장 */}
               <Button

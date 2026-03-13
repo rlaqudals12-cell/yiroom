@@ -6,7 +6,8 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShareButton, PrintButton } from '@/components/share';
+import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -167,15 +168,19 @@ export default function HairAnalysisResultPage() {
   const analysisId = params.id as string;
 
   // 공유 카드 데이터
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = useMemo(() => {
     if (!result) return null;
-    return createHairShareData({
-      overallScore: result.overallScore,
-      hairTypeLabel: result.hairTypeLabel,
-      hairThicknessLabel: result.hairThicknessLabel,
-      metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-    });
-  }, [result]);
+    return {
+      ...createHairShareData({
+        overallScore: result.overallScore,
+        hairTypeLabel: result.hairTypeLabel,
+        hairThicknessLabel: result.hairThicknessLabel,
+        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+      }),
+      format: shareFormat,
+    };
+  }, [result, shareFormat]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -516,6 +521,13 @@ export default function HairAnalysisResultPage() {
                 다시 분석하기
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
+              <ShareThemePicker
+                value={shareData?.theme ?? 'default'}
+                onChange={() => {}}
+                format={shareFormat}
+                onFormatChange={setShareFormat}
+                className="mt-2"
+              />
               <PrintButton title="이룸 헤어 분석 결과" variant="outline" />
             </div>
           </div>

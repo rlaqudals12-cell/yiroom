@@ -10,7 +10,8 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
-import { ShareButton, PrintButton } from '@/components/share';
+import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
+import type { ShareCardFormat } from '@/components/share';
 import { createOralHealthShareData, useAnalysisShare } from '@/hooks/useAnalysisShare';
 import type { OralHealthAssessment } from '@/types/oral-health';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
@@ -135,15 +136,19 @@ export default function OralHealthResultPage(): React.JSX.Element {
   };
 
   // 공유 데이터 생성
+  const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = assessment
-    ? createOralHealthShareData({
-        overallScore: assessment.overallScore,
-        identityLabel: oralHealthIdentityLabel ?? undefined,
-        brightnessLabel: assessment.toothColor?.interpretation?.brightness
-          ? brightnessLabels[assessment.toothColor.interpretation.brightness]
-          : undefined,
-        inflammationScore: assessment.gumHealth?.inflammationScore,
-      })
+    ? {
+        ...createOralHealthShareData({
+          overallScore: assessment.overallScore,
+          identityLabel: oralHealthIdentityLabel ?? undefined,
+          brightnessLabel: assessment.toothColor?.interpretation?.brightness
+            ? brightnessLabels[assessment.toothColor.interpretation.brightness]
+            : undefined,
+          inflammationScore: assessment.gumHealth?.inflammationScore,
+        }),
+        format: shareFormat,
+      }
     : createOralHealthShareData({ overallScore: 0 });
   const { share: handleShare, loading: shareLoading } = useAnalysisShare(
     shareData,
@@ -232,6 +237,12 @@ export default function OralHealthResultPage(): React.JSX.Element {
           {/* K1: 신뢰도는 AI 분석 결과 페이지이므로 공통 고지로 커버 */}
           <div className="flex gap-2">
             <ShareButton onShare={handleShare} loading={shareLoading} variant="ghost" size="sm" />
+            <ShareThemePicker
+              value={shareData?.theme ?? 'default'}
+              onChange={() => {}}
+              format={shareFormat}
+              onFormatChange={setShareFormat}
+            />
             <PrintButton title="이룸 구강건강 분석 결과" variant="ghost" size="sm" />
           </div>
         </header>
