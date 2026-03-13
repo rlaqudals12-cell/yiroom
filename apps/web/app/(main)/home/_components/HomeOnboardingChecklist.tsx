@@ -67,7 +67,7 @@ export default function HomeOnboardingChecklist() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-violet-500" />
-            <h3 className="font-bold text-slate-900 dark:text-white">{t('onboardingGuide')}</h3>
+            <h2 className="font-bold text-slate-900 dark:text-white">{t('onboardingGuide')}</h2>
           </div>
           <span className="text-sm text-violet-600 dark:text-violet-400 font-medium">
             {t('completedCount', { completed: completedCount })}

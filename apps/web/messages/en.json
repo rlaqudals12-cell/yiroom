@@ -133,6 +133,13 @@
     "capsuleAllComplete": "You've completed today's routine!",
     "capsuleDetail": "View details",
 
+    "editOrder": "Edit order",
+    "done": "Done",
+    "resetOrder": "Reset",
+    "editWidgetOrder": "Edit widget order",
+    "doneEditing": "Done editing",
+    "resetWidgetOrder": "Reset widget order",
+
     "discoveredCount": "You've discovered {count} things about yourself",
     "connectionRule": "{label} results — a piece of self-understanding",
 

@@ -28,6 +28,33 @@ vi.mock('@/app/(main)/home/_components/HomeRecentlyViewed', () => ({
   default: () => <div data-testid="home-recently-viewed" />,
 }));
 
+// WS-11: SortableWidgetList + useWidgetOrder mock
+vi.mock('@/app/(main)/home/_components/SortableWidgetList', () => ({
+  default: ({ order, widgets }: { order: string[]; widgets: Record<string, React.ReactNode> }) => (
+    <div data-testid="sortable-widget-list">
+      {order.map((id: string) => (
+        <div key={id}>{widgets[id]}</div>
+      ))}
+    </div>
+  ),
+}));
+vi.mock('@/hooks/useWidgetOrder', () => ({
+  useWidgetOrder: () => ({
+    order: ['insight', 'capsule', 'analysis-summary', 'activity-bar', 'recently-viewed'],
+    setOrder: vi.fn(),
+    resetOrder: vi.fn(),
+    isCustomized: false,
+  }),
+  DEFAULT_WIDGET_ORDER: [
+    'insight',
+    'capsule',
+    'analysis-summary',
+    'activity-bar',
+    'recently-viewed',
+  ],
+}));
+
+import React from 'react';
 import HomeStateActive from '@/app/(main)/home/_components/HomeStateActive';
 
 const mockAnalyses = [

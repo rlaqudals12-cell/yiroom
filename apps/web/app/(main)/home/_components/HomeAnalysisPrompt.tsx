@@ -117,9 +117,9 @@ export default function HomeAnalysisPrompt() {
     >
       {/* 헤더 */}
       <div className="text-center mb-5">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
           {t('analysisPromptTitle')}
-        </h3>
+        </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">{t('analysisPromptDesc')}</p>
       </div>
 

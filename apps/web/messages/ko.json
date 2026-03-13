@@ -133,6 +133,13 @@
     "capsuleAllComplete": "오늘 루틴을 모두 완료했어요!",
     "capsuleDetail": "상세 보기",
 
+    "editOrder": "순서 편집",
+    "done": "완료",
+    "resetOrder": "초기화",
+    "editWidgetOrder": "위젯 순서 편집",
+    "doneEditing": "편집 완료",
+    "resetWidgetOrder": "위젯 순서 초기화",
+
     "discoveredCount": "나에 대해 {count}가지를 발견했어요",
     "connectionRule": "{label} 결과 — 자기 이해의 한 조각",
 

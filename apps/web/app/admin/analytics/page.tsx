@@ -29,6 +29,7 @@ import {
   FeatureUsageCard,
   ActiveUserTrendChart,
   FeatureUsageTrendChart,
+  CohortRetentionCard,
 } from '@/components/admin/analytics';
 import type {
   AnalyticsSummary,
@@ -42,6 +43,7 @@ import type {
   FeatureUsageStats,
   DailyActiveUserTrend,
   DailyFeatureUsageTrend,
+  CohortRetentionData,
 } from '@/lib/admin/user-activity-stats';
 
 interface DashboardData {
@@ -57,6 +59,7 @@ interface ActivityData {
   featureUsageStats: FeatureUsageStats;
   activeUserTrend: DailyActiveUserTrend[];
   featureUsageTrend: DailyFeatureUsageTrend[];
+  cohortRetention: CohortRetentionData[];
 }
 
 export default function AnalyticsPage() {
@@ -194,6 +197,9 @@ export default function AnalyticsPage() {
             data={activityData?.featureUsageTrend ?? null}
             isLoading={isLoading}
           />
+
+          {/* 코호트 리텐션 매트릭스 */}
+          <CohortRetentionCard data={activityData?.cohortRetention ?? null} isLoading={isLoading} />
         </TabsContent>
 
         {/* 행동 분석 탭 */}

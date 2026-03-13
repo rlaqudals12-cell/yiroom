@@ -11,11 +11,18 @@ import {
   getFeatureUsageStats,
   getDailyActiveUserTrend,
   getDailyFeatureUsageTrend,
+  getCohortRetentionStats,
 } from '@/lib/admin/user-activity-stats';
 
 export const dynamic = 'force-dynamic';
 
-type StatsType = 'all' | 'activeUsers' | 'featureUsage' | 'activeUserTrend' | 'featureUsageTrend';
+type StatsType =
+  | 'all'
+  | 'activeUsers'
+  | 'featureUsage'
+  | 'activeUserTrend'
+  | 'featureUsageTrend'
+  | 'cohortRetention';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,16 +66,31 @@ export async function GET(request: NextRequest) {
         });
       }
 
+      case 'cohortRetention': {
+        const weeks = parseInt(searchParams.get('weeks') || '8', 10);
+        const cohortRetention = await getCohortRetentionStats(weeks);
+        return NextResponse.json({
+          success: true,
+          data: cohortRetention,
+        });
+      }
+
       case 'all':
       default: {
         // 병렬로 모든 데이터 조회
-        const [activeUserStats, featureUsageStats, activeUserTrend, featureUsageTrend] =
-          await Promise.all([
-            getActiveUserStats(),
-            getFeatureUsageStats(),
-            getDailyActiveUserTrend(days),
-            getDailyFeatureUsageTrend(days),
-          ]);
+        const [
+          activeUserStats,
+          featureUsageStats,
+          activeUserTrend,
+          featureUsageTrend,
+          cohortRetention,
+        ] = await Promise.all([
+          getActiveUserStats(),
+          getFeatureUsageStats(),
+          getDailyActiveUserTrend(days),
+          getDailyFeatureUsageTrend(days),
+          getCohortRetentionStats(8),
+        ]);
 
         return NextResponse.json({
           success: true,
@@ -77,6 +99,7 @@ export async function GET(request: NextRequest) {
             featureUsageStats,
             activeUserTrend,
             featureUsageTrend,
+            cohortRetention,
           },
         });
       }

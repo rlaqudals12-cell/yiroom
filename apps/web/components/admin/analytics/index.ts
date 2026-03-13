@@ -4,6 +4,7 @@
 
 export { ActiveUserStatsCard } from './ActiveUserStatsCard';
 export { FeatureUsageCard } from './FeatureUsageCard';
+export { CohortRetentionCard } from './CohortRetentionCard';
 
 // 차트 컴포넌트 (정적 import - 직접 사용 시)
 export { ActiveUserTrendChart } from './ActiveUserTrendChart';

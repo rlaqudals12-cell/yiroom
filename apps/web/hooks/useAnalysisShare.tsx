@@ -4,29 +4,11 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { toast } from 'sonner';
 import { AnalysisShareCard } from '@/components/share';
+import type { ShareCardData, ShareCardTheme } from '@/components/share/AnalysisShareCard';
 import { captureElementAsImage, shareImage } from '@/lib/share';
+import { THEME_STYLES } from '@/components/share/AnalysisShareCard';
 
-// 분석 타입
-type AnalysisType =
-  | 'personal-color'
-  | 'skin'
-  | 'body'
-  | 'hair'
-  | 'makeup'
-  | 'oral-health'
-  | 'badge';
-
-// 공유 카드 데이터
-interface ShareCardData {
-  analysisType: AnalysisType;
-  title: string;
-  subtitle: string;
-  score?: number;
-  typeLabel?: string;
-  typeEmoji?: string;
-  highlights?: Array<{ label: string; value: string }>;
-  colors?: string[];
-}
+export type { ShareCardData, ShareCardTheme };
 
 // 퍼스널 컬러 결과에서 공유 데이터 생성
 interface PersonalColorData {
@@ -288,11 +270,14 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
         throw new Error('공유 카드를 생성할 수 없습니다');
       }
 
+      // 테마에 따른 캡처 배경색
+      const captureBackground = THEME_STYLES[data.theme ?? 'default'].captureBackground;
+
       // 이미지로 캡처
       const blob = await captureElementAsImage(shareCard, {
         quality: 0.95,
         scale: 2,
-        backgroundColor: '#ffffff',
+        backgroundColor: captureBackground,
       });
 
       // 정리

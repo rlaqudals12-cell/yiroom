@@ -6,6 +6,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const messages: Record<string, string> = {
+      activityLoadError: '활동 데이터를 불러올 수 없습니다',
+      activitySummary: '오늘의 활동 요약',
+      selfUnderstanding: '자기 이해',
+      startFirstRecord: '오늘의 첫 기록을 남겨보세요',
+      caloriesLabel: '칼로리',
+      caloriesUnit: 'kcal',
+      workoutLabel: '운동',
+      minuteUnit: '분',
+      waterLabel: '수분',
+      glassUnit: '잔',
+      statusDiscovered: '발견',
+      statusRecognized: '인식',
+      statusInternalized: '내재화',
+      statusIndependent: '자립',
+    };
+    return messages[key] ?? key;
+  },
+}));
+
 // Mock Supabase client
 const mockSelect = vi.fn().mockReturnThis();
 const mockEq = vi.fn().mockReturnThis();

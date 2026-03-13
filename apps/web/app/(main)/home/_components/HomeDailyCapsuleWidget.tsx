@@ -224,7 +224,7 @@ export default function HomeDailyCapsuleWidget() {
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-violet-500" />
           <h3 className="font-semibold text-foreground">{t('todayRoutine')}</h3>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground" aria-live="polite">
             {checkedCount}/{totalCount}
           </span>
         </div>

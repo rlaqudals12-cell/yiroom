@@ -198,13 +198,15 @@ export default function FeedPage() {
 
         {/* 탭 + 정렬 */}
         <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="tablist" aria-label="피드 탭">
             {[
               { id: 'my', label: '내 피드' },
               { id: 'all', label: '전체' },
             ].map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id as FeedTab)}
                 className={cn(
                   'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
@@ -246,9 +248,13 @@ export default function FeedPage() {
       </header>
 
       {/* 본문 */}
-      <div className="px-4 py-4 pb-24">
+      <div className="px-4 py-4 pb-24" role="tabpanel" aria-live="polite">
         {isLoading && (
-          <div className="flex items-center justify-center py-20">
+          <div
+            className="flex items-center justify-center py-20"
+            role="status"
+            aria-label="피드 로딩 중"
+          >
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
           </div>
         )}

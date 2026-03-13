@@ -55,6 +55,22 @@ export interface DailyFeatureUsageTrend {
   meal: number;
 }
 
+/**
+ * 코호트 리텐션 분석 결과 타입
+ */
+export interface CohortRetentionData {
+  /** 코호트 시작 주 (ISO string, 월요일) */
+  cohortWeek: string;
+  /** 해당 주 가입자 수 */
+  cohortSize: number;
+  /** Day 7 리텐션율 (%) */
+  day7: number;
+  /** Day 14 리텐션율 (%) */
+  day14: number;
+  /** Day 30 리텐션율 (%) */
+  day30: number;
+}
+
 function getDateRange(days: number): { start: Date; end: Date } {
   const end = new Date();
   end.setHours(23, 59, 59, 999);
@@ -353,6 +369,101 @@ export async function getDailyFeatureUsageTrend(
     return result;
   } catch (error) {
     console.error('[Admin] getDailyFeatureUsageTrend error:', error);
+    return [];
+  }
+}
+
+/**
+ * 코호트 리텐션 분석
+ * 최근 weeks주 동안 가입한 사용자들의 7일/14일/30일 리텐션율 계산
+ */
+export async function getCohortRetentionStats(weeks: number = 8): Promise<CohortRetentionData[]> {
+  try {
+    const supabase = createServiceRoleClient();
+    const result: CohortRetentionData[] = [];
+
+    for (let i = weeks - 1; i >= 0; i--) {
+      // 코호트 주의 월요일~일요일 계산
+      const now = new Date();
+      const cohortStart = new Date(now);
+      cohortStart.setDate(now.getDate() - now.getDay() + 1 - i * 7); // 월요일
+      cohortStart.setHours(0, 0, 0, 0);
+      const cohortEnd = new Date(cohortStart);
+      cohortEnd.setDate(cohortStart.getDate() + 6);
+      cohortEnd.setHours(23, 59, 59, 999);
+
+      // 해당 주 가입자 조회
+      const { data: cohortUsers } = await supabase
+        .from('users')
+        .select('clerk_user_id, created_at')
+        .gte('created_at', cohortStart.toISOString())
+        .lte('created_at', cohortEnd.toISOString());
+
+      const cohortSize = cohortUsers?.length ?? 0;
+      if (cohortSize === 0) {
+        result.push({
+          cohortWeek: cohortStart.toISOString().split('T')[0],
+          cohortSize: 0,
+          day7: 0,
+          day14: 0,
+          day30: 0,
+        });
+        continue;
+      }
+
+      const userIds = cohortUsers!.map((u) => u.clerk_user_id);
+
+      // 각 기간별 활성 사용자 수 계산
+      const retentionRates = await Promise.all(
+        [7, 14, 30].map(async (dayOffset) => {
+          const checkStart = new Date(cohortStart);
+          checkStart.setDate(checkStart.getDate() + dayOffset);
+          const checkEnd = new Date(checkStart);
+          checkEnd.setDate(checkStart.getDate() + 6); // 해당 주 전체
+          checkEnd.setHours(23, 59, 59, 999);
+
+          // 아직 기간이 도래하지 않은 경우
+          if (checkStart > now) return -1;
+
+          const [workoutResult, mealResult] = await Promise.all([
+            supabase
+              .from('workout_logs')
+              .select('clerk_user_id')
+              .in('clerk_user_id', userIds)
+              .gte('created_at', checkStart.toISOString())
+              .lte('created_at', checkEnd.toISOString()),
+            supabase
+              .from('meal_records')
+              .select('clerk_user_id')
+              .in('clerk_user_id', userIds)
+              .gte('created_at', checkStart.toISOString())
+              .lte('created_at', checkEnd.toISOString()),
+          ]);
+
+          const activeUsers = new Set<string>();
+          workoutResult.data?.forEach((r) => {
+            if (r.clerk_user_id) activeUsers.add(r.clerk_user_id);
+          });
+          mealResult.data?.forEach((r) => {
+            if (r.clerk_user_id) activeUsers.add(r.clerk_user_id);
+          });
+
+          return Math.round((activeUsers.size / cohortSize) * 100);
+        })
+      );
+
+      result.push({
+        cohortWeek: cohortStart.toISOString().split('T')[0],
+        cohortSize,
+        day7: retentionRates[0],
+        day14: retentionRates[1],
+        day30: retentionRates[2],
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error('[Admin] getCohortRetentionStats error:', error);
     return [];
   }
 }

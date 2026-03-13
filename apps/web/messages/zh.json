@@ -133,6 +133,13 @@
     "capsuleAllComplete": "今日日程已全部完成！",
     "capsuleDetail": "查看详情",
 
+    "editOrder": "编辑顺序",
+    "done": "完成",
+    "resetOrder": "重置",
+    "editWidgetOrder": "编辑小组件顺序",
+    "doneEditing": "编辑完成",
+    "resetWidgetOrder": "重置小组件顺序",
+
     "discoveredCount": "发现了关于自己的{count}件事",
     "connectionRule": "{label}结果 — 自我认知的一部分",
 

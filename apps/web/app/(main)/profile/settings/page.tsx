@@ -307,7 +307,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
               {/* 내 정보 섹션 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">내 정보</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">내 정보</h2>
                 <div className="space-y-3">
                   {/* 성별 선택 */}
                   <div className="p-4 bg-card rounded-xl border">
@@ -364,7 +364,7 @@ export default function SettingsPage() {
 
               {/* 계정 관리 섹션 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">계정 관리</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">계정 관리</h2>
                 <div className="space-y-3">
                   <SettingItem
                     icon={User}
@@ -397,7 +397,7 @@ export default function SettingsPage() {
             <div className="space-y-6" data-testid="notification-settings">
               {/* 마스터 토글 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">전체</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">전체</h2>
                 <div className="space-y-3">
                   <SettingItem
                     icon={Bell}
@@ -415,7 +415,7 @@ export default function SettingsPage() {
 
               {/* 운동 알림 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">운동</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">운동</h2>
                 <div className="space-y-3">
                   <SettingItem
                     icon={Dumbbell}
@@ -453,7 +453,7 @@ export default function SettingsPage() {
 
               {/* 식사 알림 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">식사</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">식사</h2>
                 <div className="space-y-3">
                   <SettingItem
                     icon={UtensilsCrossed}
@@ -535,7 +535,7 @@ export default function SettingsPage() {
 
               {/* 소셜 & 성취 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">소셜</h3>
+                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">소셜</h2>
                 <div className="space-y-3">
                   <SettingItem
                     icon={Users}
@@ -742,10 +742,16 @@ export default function SettingsPage() {
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="flex gap-1 px-4 py-2 overflow-x-auto">
+        <div
+          className="flex gap-1 px-4 py-2 overflow-x-auto"
+          role="tablist"
+          aria-label="설정 카테고리"
+        >
           {settingsSections.map((section) => (
             <button
               key={section.id}
+              role="tab"
+              aria-selected={activeTab === section.id}
               onClick={() => setActiveTab(section.id)}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
@@ -762,7 +768,9 @@ export default function SettingsPage() {
       </header>
 
       {/* 본문 */}
-      <div className="px-4 py-4">{renderContent()}</div>
+      <div className="px-4 py-4" role="tabpanel" aria-live="polite">
+        {renderContent()}
+      </div>
     </div>
   );
 }

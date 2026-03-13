@@ -133,6 +133,13 @@
     "capsuleAllComplete": "今日のルーティンを全て完了しました！",
     "capsuleDetail": "詳細を見る",
 
+    "editOrder": "順序を編集",
+    "done": "完了",
+    "resetOrder": "リセット",
+    "editWidgetOrder": "ウィジェットの順序を編集",
+    "doneEditing": "編集完了",
+    "resetWidgetOrder": "ウィジェットの順序をリセット",
+
     "discoveredCount": "自分について{count}つ発見しました",
     "connectionRule": "{label}の結果 — 自己理解のひとかけら",
 
