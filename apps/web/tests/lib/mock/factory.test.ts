@@ -99,13 +99,14 @@ describe('Mock Factory', () => {
 });
 
 describe('Mock Registry 통합', () => {
-  it('registry import 시 10개 mock 생성기가 자동 등록된다', async () => {
+  it('registry import 시 13개 mock 생성기가 자동 등록된다', async () => {
     // registry를 import하면 자동으로 factory에 등록됨
     // 기존 clearRegistry 영향을 피하기 위해 fresh import
     const { getRegisteredTypes } = await import('@/lib/mock');
 
     const types = getRegisteredTypes();
-    expect(types.length).toBeGreaterThanOrEqual(10);
+    expect(types.length).toBeGreaterThanOrEqual(13);
+    // v1 타입
     expect(types).toContain('skin');
     expect(types).toContain('skin-v2');
     expect(types).toContain('personal-color');
@@ -116,6 +117,10 @@ describe('Mock Registry 통합', () => {
     expect(types).toContain('workout');
     expect(types).toContain('posture');
     expect(types).toContain('food');
+    // v2 타입
+    expect(types).toContain('body-v2');
+    expect(types).toContain('personal-color-v2');
+    expect(types).toContain('hair-v2');
   });
 
   it('hasMock으로 모든 등록된 타입을 확인할 수 있다', async () => {
@@ -132,6 +137,9 @@ describe('Mock Registry 통합', () => {
       'workout',
       'posture',
       'food',
+      'body-v2',
+      'personal-color-v2',
+      'hair-v2',
     ];
 
     for (const type of expectedTypes) {

@@ -465,11 +465,8 @@
     border: 1px solid ButtonText;
   }
 
-  /* 카드/패널: 경계 표시 */
-  [data-testid],
-  .rounded-xl,
-  .rounded-2xl,
-  .rounded-lg {
+  /* 카드/패널: 최상위 컨테이너만 경계 표시 */
+  [data-testid] {
     border: 1px solid CanvasText;
   }
 

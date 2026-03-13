@@ -32,6 +32,10 @@ export function SolutionTabs({ userSkinType, className }: SolutionTabsProps) {
             <h3 className="text-sm font-semibold">클렌징 가이드</h3>
           </div>
           <CleansingGuide userSkinType={userSkinType} />
+
+          <p className="text-xs text-muted-foreground text-center mt-6">
+            스킨케어 순서, 성분 사전, 나만의 루틴은 곧 추가될 예정이에요.
+          </p>
         </CardContent>
       </Card>
     </div>
