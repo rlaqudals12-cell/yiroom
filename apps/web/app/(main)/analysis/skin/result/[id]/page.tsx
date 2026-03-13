@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
   ArrowLeft,
@@ -336,6 +336,7 @@ export default function SkinAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<SkinAnalysisResult | null>(null);
   const [skinType, setSkinType] = useState<string | null>(null);
@@ -397,11 +398,14 @@ export default function SkinAnalysisResultPage() {
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
-      ...createSkinShareData({
-        overallScore: result.overallScore,
-        identityLabel: skinIdentityLabel ?? undefined,
-        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-      }),
+      ...createSkinShareData(
+        {
+          overallScore: result.overallScore,
+          identityLabel: skinIdentityLabel ?? undefined,
+          metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+        },
+        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+      ),
       format: shareFormat,
     };
   }, [result, skinIdentityLabel, shareFormat]);
@@ -776,7 +780,7 @@ export default function SkinAnalysisResultPage() {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -1042,14 +1046,14 @@ export default function SkinAnalysisResultPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-sm text-foreground">알아두세요</p>
+                        <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
                         <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                           <li className="flex items-start gap-1.5">
                             <Sun
                               className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
                               aria-hidden="true"
                             />
-                            <span>조명/메이크업에 따라 결과가 달라질 수 있어요</span>
+                            <span>{t('lightingNote')}</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <Droplets
@@ -1226,7 +1230,7 @@ export default function SkinAnalysisResultPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
                       >
                         <RefreshCw className="w-4 h-4" />
-                        다시 분석하기
+                        {t('reanalyze')}
                       </button>
                     </div>
                   )}

@@ -12,17 +12,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import {
-  X,
-  Utensils,
-  Sun,
-  Moon,
-  Apple,
-  Check,
-} from 'lucide-react';
+import { X, Utensils, Sun, Moon, Apple, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type TrafficLightColor } from './TrafficLight';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useFocusTrap } from '@/hooks/useKeyboardNavigation';
 
 // 식사 타입 정보
 const MEAL_TYPES = [
@@ -147,6 +141,14 @@ export default function ManualFoodInputSheet({
     setSaveAsFavorite(false);
   };
 
+  // 포커스 트랩: 모달 내 Tab 순환 + Escape 닫기 + 포커스 복귀
+  const focusTrapRef = useFocusTrap({
+    active: isOpen,
+    escapeDeactivates: true,
+    onDeactivate: onClose,
+    initialFocus: '#food-name',
+  });
+
   // 바텀 시트가 닫혀있으면 렌더링하지 않음
   if (!isOpen) return null;
 
@@ -162,6 +164,7 @@ export default function ManualFoodInputSheet({
 
       {/* 바텀 시트 */}
       <div
+        ref={focusTrapRef as React.RefObject<HTMLDivElement>}
         className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-xl transform transition-transform max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
@@ -176,10 +179,7 @@ export default function ManualFoodInputSheet({
 
           {/* 헤더 */}
           <div className="flex items-center justify-between px-4 pb-3 border-b border-border/50 sticky top-6 bg-card">
-            <h2
-              id="manual-food-input-title"
-              className="text-lg font-bold text-foreground"
-            >
+            <h2 id="manual-food-input-title" className="text-lg font-bold text-foreground">
               음식 직접 입력
             </h2>
             <button
@@ -195,10 +195,7 @@ export default function ManualFoodInputSheet({
           <div className="p-4 space-y-5">
             {/* 음식명 입력 (필수) */}
             <div>
-              <label
-                htmlFor="food-name"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
+              <label htmlFor="food-name" className="block text-sm font-medium text-foreground mb-2">
                 음식명 <span className="text-red-500">*</span>
               </label>
               <input
@@ -215,9 +212,7 @@ export default function ManualFoodInputSheet({
 
             {/* 식사 타입 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                식사 타입
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">식사 타입</label>
               <div className="grid grid-cols-4 gap-2">
                 {MEAL_TYPES.map((meal) => (
                   <button
@@ -241,10 +236,7 @@ export default function ManualFoodInputSheet({
 
             {/* 칼로리 입력 */}
             <div>
-              <label
-                htmlFor="calories"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
+              <label htmlFor="calories" className="block text-sm font-medium text-foreground mb-2">
                 칼로리 (선택)
               </label>
               <div className="relative">
@@ -329,10 +321,7 @@ export default function ManualFoodInputSheet({
 
             {/* 섭취량 입력 */}
             <div>
-              <label
-                htmlFor="portion"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
+              <label htmlFor="portion" className="block text-sm font-medium text-foreground mb-2">
                 섭취량
               </label>
               <input
@@ -348,9 +337,7 @@ export default function ManualFoodInputSheet({
 
             {/* 신호등 색상 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                음식 신호등
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">음식 신호등</label>
               <div className="grid grid-cols-3 gap-2">
                 {TRAFFIC_LIGHTS.map((light) => (
                   <button
@@ -370,19 +357,21 @@ export default function ManualFoodInputSheet({
                         'w-4 h-4 rounded-full',
                         trafficLight === light.color
                           ? 'bg-white/80'
-                          : selectByKey(light.color, {
-                              green: 'bg-green-500',
-                              yellow: 'bg-yellow-500',
-                            }, 'bg-red-500')
+                          : selectByKey(
+                              light.color,
+                              {
+                                green: 'bg-green-500',
+                                yellow: 'bg-yellow-500',
+                              },
+                              'bg-red-500'
+                            )
                       )}
                     />
                     <span className="text-xs font-medium">{light.label}</span>
                     <span
                       className={cn(
                         'text-[10px]',
-                        trafficLight === light.color
-                          ? 'text-white/80'
-                          : 'text-muted-foreground'
+                        trafficLight === light.color ? 'text-white/80' : 'text-muted-foreground'
                       )}
                     >
                       {light.description}
@@ -402,10 +391,7 @@ export default function ManualFoodInputSheet({
                 className="w-5 h-5 rounded border-border text-orange-500 focus:ring-orange-500"
                 data-testid="save-as-favorite-checkbox"
               />
-              <label
-                htmlFor="save-as-favorite"
-                className="text-sm text-foreground cursor-pointer"
-              >
+              <label htmlFor="save-as-favorite" className="text-sm text-foreground cursor-pointer">
                 자주 먹는 음식으로 저장
               </label>
             </div>

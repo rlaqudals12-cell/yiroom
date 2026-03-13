@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import {
   AlertCircle,
   ArrowLeft,
@@ -13,11 +15,17 @@ import {
   Heart,
   Palette,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { selectByKey, getTrendColorClass } from '@/lib/utils/conditional-helpers';
+
+const AnalysisTimelineChart = dynamic(
+  () => import('@/components/analysis/visual/AnalysisTimelineChart'),
+  { ssr: false }
+);
 import type { TrendDirection } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
 import type {
@@ -46,6 +54,7 @@ const FACE_SHAPE_LABELS: Record<string, string> = {
 
 export default function MakeupHistoryPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [period, setPeriod] = useState<PeriodFilter>('3m');
   const [analyses, setAnalyses] = useState<MakeupAnalysisHistoryItem[]>([]);
   const [trend, setTrend] = useState<'improving' | 'declining' | 'stable'>('stable');
@@ -98,29 +107,41 @@ export default function MakeupHistoryPage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
   };
 
-  const TrendIcon = selectByKey(trend, {
-    improving: TrendingUp,
-    declining: TrendingDown,
-    stable: Minus,
-  }, Minus)!;
-  const trendDirection: TrendDirection = selectByKey(trend, {
-    improving: 'up' as const,
-    declining: 'down' as const,
-    stable: 'neutral' as const,
-  }, 'neutral' as const)!;
+  const TrendIcon = selectByKey(
+    trend,
+    {
+      improving: TrendingUp,
+      declining: TrendingDown,
+      stable: Minus,
+    },
+    Minus
+  )!;
+  const trendDirection: TrendDirection = selectByKey(
+    trend,
+    {
+      improving: 'up' as const,
+      declining: 'down' as const,
+      stable: 'neutral' as const,
+    },
+    'neutral' as const
+  )!;
   const trendColor = getTrendColorClass(trendDirection);
-  const trendLabel = selectByKey(trend, {
-    improving: '개선 중',
-    declining: '변화 감지',
-    stable: '유지 중',
-  }, '유지 중')!;
+  const trendLabel = selectByKey(
+    trend,
+    {
+      improving: '개선 중',
+      declining: '변화 감지',
+      stable: '유지 중',
+    },
+    '유지 중'
+  )!;
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="makeup-history-page">
@@ -163,6 +184,18 @@ export default function MakeupHistoryPage() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* 타임라인 차트 */}
+        {!loading && analyses.length >= 2 && (
+          <AnalysisTimelineChart
+            data={[...analyses].reverse().map((a) => ({
+              date: a.date,
+              value: a.overallScore,
+            }))}
+            color="#f43f5e"
+            label="메이크업 점수"
+          />
+        )}
 
         {/* 비교 버튼 */}
         {selectedIds.length === 2 && (

@@ -9,6 +9,8 @@
 
 import { useState, useEffect, use } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Trophy, Gift, AlertTriangle } from 'lucide-react';
@@ -46,6 +48,7 @@ interface PageProps {
 
 export default function ChallengeDetailPage({ params }: PageProps) {
   const { id: challengeId } = use(params);
+  const locale = useLocale();
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
@@ -260,14 +263,12 @@ export default function ChallengeDetailPage({ params }: PageProps) {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">진행 상황</h3>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  selectByCondition(
-                    statusCondition,
-                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                    'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
-                  )
-                }`}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${selectByCondition(
+                  statusCondition,
+                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                  'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                )}`}
               >
                 {STATUS_NAMES[userChallenge.status]}
               </span>
@@ -281,8 +282,13 @@ export default function ChallengeDetailPage({ params }: PageProps) {
 
             {/* 시작일/종료일 */}
             <div className="flex justify-between text-sm text-muted-foreground pt-2 border-t">
-              <span>시작: {new Date(userChallenge.startedAt).toLocaleDateString('ko-KR')}</span>
-              <span>목표: {new Date(userChallenge.targetEndAt).toLocaleDateString('ko-KR')}</span>
+              <span>
+                시작: {new Date(userChallenge.startedAt).toLocaleDateString(getDateLocale(locale))}
+              </span>
+              <span>
+                목표:{' '}
+                {new Date(userChallenge.targetEndAt).toLocaleDateString(getDateLocale(locale))}
+              </span>
             </div>
           </section>
         )}

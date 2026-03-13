@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,7 +23,7 @@ import { mapToClass } from '@/lib/utils/conditional-helpers';
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
+function formatDate(date: Date, locale: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -30,7 +32,7 @@ function formatDate(date: Date): string {
   if (days === 1) return '어제';
   if (days < 7) return `${days}일 전`;
   if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(getDateLocale(locale), { month: 'short', day: 'numeric' });
 }
 
 // 기존 분석 결과 타입
@@ -44,6 +46,7 @@ interface ExistingAnalysis {
 export default function HairAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
+  const locale = useLocale();
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
@@ -217,7 +220,7 @@ export default function HairAnalysisPage() {
                   <p className="font-medium text-foreground">기존 분석 결과 보기</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at))}
+                    {formatDate(new Date(existingAnalysis.created_at), locale)}
                   </div>
                 </div>
               </div>

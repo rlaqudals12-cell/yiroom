@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import dynamic from 'next/dynamic';
 import {
@@ -73,6 +73,7 @@ export default function BodyAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<BodyAnalysisEvidence | null>(null);
@@ -98,11 +99,14 @@ export default function BodyAnalysisResultPage() {
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
-      ...createBodyShareData({
-        bodyType: result.bodyType,
-        bodyTypeLabel: result.bodyTypeLabel,
-        strengths: result.strengths,
-      }),
+      ...createBodyShareData(
+        {
+          bodyType: result.bodyType,
+          bodyTypeLabel: result.bodyTypeLabel,
+          strengths: result.strengths,
+        },
+        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+      ),
       format: shareFormat,
     };
   }, [result, shareFormat]);
@@ -251,7 +255,7 @@ export default function BodyAnalysisResultPage() {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -433,7 +437,7 @@ export default function BodyAnalysisResultPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-foreground">알아두세요</p>
+                      <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
                       <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                         <li className="flex items-start gap-1.5">
                           <Sun
@@ -562,7 +566,7 @@ export default function BodyAnalysisResultPage() {
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                다시 분석하기
+                {t('reanalyze')}
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker

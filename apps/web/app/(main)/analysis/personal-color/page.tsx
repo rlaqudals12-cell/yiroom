@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
@@ -46,7 +48,7 @@ type AnalysisStep =
   | 'known-input';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
+function formatDate(date: Date, locale: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -55,7 +57,7 @@ function formatDate(date: Date): string {
   if (days === 1) return '어제';
   if (days < 7) return `${days}일 전`;
   if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(getDateLocale(locale), { month: 'short', day: 'numeric' });
 }
 
 // 시즌 라벨 헬퍼
@@ -85,6 +87,7 @@ interface ExistingAnalysis {
 const HIGH_CONFIDENCE_THRESHOLD = 70;
 
 export default function PersonalColorPage() {
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const forceNew = searchParams.get('forceNew') === 'true';
@@ -590,7 +593,7 @@ export default function PersonalColorPage() {
                   <span className="text-amber-500">신뢰도 낮음</span>
                   <span>•</span>
                   <Clock className="w-3 h-3" />
-                  {formatDate(new Date(existingAnalysis.created_at))}
+                  {formatDate(new Date(existingAnalysis.created_at), locale)}
                 </div>
               </div>
             </div>

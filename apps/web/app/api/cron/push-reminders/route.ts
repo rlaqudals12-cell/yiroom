@@ -11,7 +11,7 @@
  * }
  *
  * 동작 방식:
- * 1. 현재 KST 시간 (HH:00) 계산
+ * 1. 현재 시간 (HH:00) 계산 (기본 KST, 향후 사용자별 타임존 지원)
  * 2. user_notification_settings에서 해당 시간에 알림을 받을 사용자 조회
  * 3. 해당 사용자의 push_subscriptions 조회 후 푸시 발송
  */
@@ -54,12 +54,16 @@ function validateCronAuth(request: NextRequest): boolean {
   return false;
 }
 
-// 현재 KST 시간을 HH:00 형식으로 반환
-function getCurrentKSTHour(): string {
+// 현재 시간을 HH:00 형식으로 반환 (기본 KST, 향후 사용자별 타임존 지원 예정)
+function getCurrentHourForTimezone(timezone = 'Asia/Seoul'): string {
   const now = new Date();
-  // KST = UTC + 9
-  const kstHour = (now.getUTCHours() + 9) % 24;
-  return `${kstHour.toString().padStart(2, '0')}:00`;
+  const formatted = now.toLocaleString('en-US', {
+    timeZone: timezone,
+    hour: 'numeric',
+    hour12: false,
+  });
+  const hour = parseInt(formatted, 10) % 24;
+  return `${hour.toString().padStart(2, '0')}:00`;
 }
 
 export async function GET(request: NextRequest) {
@@ -77,8 +81,8 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const currentHour = getCurrentKSTHour();
-  console.info(`[Cron Push] Starting personalized push reminders for KST ${currentHour}...`);
+  const currentHour = getCurrentHourForTimezone();
+  console.info(`[Cron Push] Starting personalized push reminders for ${currentHour}...`);
 
   try {
     const supabase = createServiceRoleClient();
@@ -116,7 +120,7 @@ export async function GET(request: NextRequest) {
     totalFailed += dinnerResult.failed;
     allExpiredEndpoints.push(...dinnerResult.expired);
 
-    // 3. 일일 체크인 (오전 9시 KST 고정 - 가장 많이 사용되는 시간)
+    // 3. 일일 체크인 (오전 9시 고정 - 가장 많이 사용되는 시간)
     if (currentHour === '09:00') {
       const checkinResult = await sendGlobalReminder(supabase, 'daily_checkin');
       results.push(checkinResult);

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
@@ -50,7 +52,11 @@ function ChangeItem({
   const isPositive = change > 0;
   const isGood = positiveIsGood ? isPositive : !isPositive;
   // 변화 방향에 따른 아이콘 선택
-  const TrendIcon = selectByKey(getTrendDirection(change), { up: TrendingUp, down: TrendingDown }, Minus)!;
+  const TrendIcon = selectByKey(
+    getTrendDirection(change),
+    { up: TrendingUp, down: TrendingDown },
+    Minus
+  )!;
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -83,6 +89,7 @@ function ChangeItem({
 function HairCompareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const fromId = searchParams.get('from');
   const toId = searchParams.get('to');
 
@@ -132,7 +139,7 @@ function HairCompareContent() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       month: 'short',
       day: 'numeric',
     });
@@ -223,10 +230,14 @@ function HairCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    selectByKey(getTrendDirection(overallChange), {
-                      up: 'text-green-600',
-                      down: 'text-red-600',
-                    }, 'text-muted-foreground')
+                    selectByKey(
+                      getTrendDirection(overallChange),
+                      {
+                        up: 'text-green-600',
+                        down: 'text-red-600',
+                      },
+                      'text-muted-foreground'
+                    )
                   )}
                 >
                   {overallChange > 0 ? '+' : ''}

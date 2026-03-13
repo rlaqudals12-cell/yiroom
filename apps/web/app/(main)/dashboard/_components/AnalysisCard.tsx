@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { Palette, Sparkles, User, ChevronRight, Scissors, Heart, SmilePlus } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 
 // 상대 시간 포맷팅 헬퍼 함수
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date, locale: string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
@@ -16,7 +18,7 @@ function formatRelativeTime(date: Date): string {
   if (diffHours < 24) return `${diffHours}시간 전`;
   if (diffDays < 7) return `${diffDays}일 전`;
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR');
+  return date.toLocaleDateString(getDateLocale(locale));
 }
 
 interface AnalysisSummary {
@@ -94,13 +96,14 @@ function getAnalysisHref(type: AnalysisSummary['type'], id: string): string {
 }
 
 export default function AnalysisCard({ analysis }: AnalysisCardProps) {
+  const locale = useLocale();
   const config = ANALYSIS_CONFIG[analysis.type];
   const Icon = config.icon;
   // 분석 결과가 있으므로 결과 페이지로 바로 이동
   const href = getAnalysisHref(analysis.type, analysis.id);
 
   // 시간 포맷팅 (한국어 상대 시간)
-  const timeAgo = formatRelativeTime(analysis.createdAt);
+  const timeAgo = formatRelativeTime(analysis.createdAt, locale);
 
   return (
     <Link href={href}>

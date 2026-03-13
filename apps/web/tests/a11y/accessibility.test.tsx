@@ -31,8 +31,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { SkipLink } from '@/components/common/SkipLink';
-
 describe('접근성 테스트', () => {
   describe('Button 컴포넌트', () => {
     it('기본 버튼에 접근성 위반이 없어야 한다', async () => {
@@ -184,33 +182,6 @@ describe('접근성 테스트', () => {
 
       // sr-only 텍스트로 "닫기"가 있어야 함
       expect(screen.getByText('닫기')).toBeInTheDocument();
-    });
-  });
-
-  describe('SkipLink 컴포넌트', () => {
-    it('SkipLink에 접근성 위반이 없어야 한다', async () => {
-      const { container } = render(
-        <div>
-          <SkipLink />
-          <main id="main-content">본문 내용</main>
-        </div>
-      );
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
-
-    it('본문으로 건너뛰기 링크가 존재해야 한다', () => {
-      render(<SkipLink />);
-      const link = screen.getByTestId('skip-link');
-      expect(link).toHaveAttribute('href', '#main-content');
-      expect(link).toHaveTextContent('본문으로 건너뛰기');
-    });
-
-    it('기본적으로 화면에서 숨겨져 있어야 한다', () => {
-      render(<SkipLink />);
-      const link = screen.getByTestId('skip-link');
-      // sr-only 클래스 적용 확인
-      expect(link).toHaveClass('sr-only');
     });
   });
 

@@ -7,6 +7,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +53,7 @@ function SavedOutfitCard({
   onDelete: (id: string) => void;
 }) {
   const { outfit, seasonType, occasion, savedAt } = savedOutfit;
+  const locale = useLocale();
 
   return (
     <Card className="overflow-hidden" data-testid="saved-outfit-card">
@@ -134,7 +137,7 @@ function SavedOutfitCard({
         {/* 저장 날짜 */}
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <Calendar className="w-3 h-3" />
-          {savedAt.toLocaleDateString('ko-KR', {
+          {savedAt.toLocaleDateString(getDateLocale(locale), {
             year: 'numeric',
             month: 'short',
             day: 'numeric',

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import {
   ArrowLeft,
   Calendar,
@@ -12,12 +14,18 @@ import {
   Scissors,
   Droplet,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
+
+const AnalysisTimelineChart = dynamic(
+  () => import('@/components/analysis/visual/AnalysisTimelineChart'),
+  { ssr: false }
+);
 import type {
   HairAnalysisHistoryItem,
   PeriodFilter,
@@ -35,6 +43,7 @@ const HAIR_TYPE_LABELS: Record<string, string> = {
 
 export default function HairHistoryPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [period, setPeriod] = useState<PeriodFilter>('3m');
   const [analyses, setAnalyses] = useState<HairAnalysisHistoryItem[]>([]);
   const [trend, setTrend] = useState<'improving' | 'declining' | 'stable'>('stable');
@@ -81,7 +90,7 @@ export default function HairHistoryPage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -133,6 +142,18 @@ export default function HairHistoryPage() {
             <TabsTrigger value="all">{PERIOD_LABELS['all']}</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* 타임라인 차트 */}
+        {!loading && analyses.length >= 2 && (
+          <AnalysisTimelineChart
+            data={[...analyses].reverse().map((a) => ({
+              date: a.date,
+              value: a.overallScore,
+            }))}
+            color="#f59e0b"
+            label="모발 점수"
+          />
+        )}
 
         {/* 비교 버튼 */}
         {selectedIds.length === 2 && (

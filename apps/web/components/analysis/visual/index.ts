@@ -25,3 +25,7 @@ export { default as BodyStylingTab } from './BodyStylingTab';
 
 // Phase L-2: 자세 교정 시스템
 export { default as PostureSimulator } from './PostureSimulator';
+
+// 타임라인 차트 (B/A 이력 페이지용)
+export { default as AnalysisTimelineChart } from './AnalysisTimelineChart';
+export type { TimelineDataPoint } from './AnalysisTimelineChart';

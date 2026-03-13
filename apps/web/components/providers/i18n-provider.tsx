@@ -3,10 +3,12 @@
 /**
  * i18n Provider
  * @description 클라이언트 컴포넌트용 다국어 Provider
+ * 브라우저 타임존을 쿠키에 저장하여 서버 컴포넌트에서 사용
  */
 
 import { NextIntlClientProvider, AbstractIntlMessages } from 'next-intl';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { TIMEZONE_COOKIE } from '@/lib/utils/timezone';
 
 interface I18nProviderProps {
   children: ReactNode;
@@ -15,6 +17,14 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, locale, messages }: I18nProviderProps) {
+  // 브라우저 타임존을 쿠키에 저장 (서버 컴포넌트에서 읽어 사용)
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && document.cookie.indexOf(`${TIMEZONE_COOKIE}=${tz}`) === -1) {
+      document.cookie = `${TIMEZONE_COOKIE}=${tz};path=/;max-age=31536000;SameSite=Lax`;
+    }
+  }, []);
+
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       {children}

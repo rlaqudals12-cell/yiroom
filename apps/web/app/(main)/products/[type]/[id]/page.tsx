@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
+import { getDateLocale } from '@/lib/utils/date-format';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Star, Package } from 'lucide-react';
@@ -45,9 +47,9 @@ function toReviewProductType(type: ProductType): ReviewProductType {
   return mapping[type];
 }
 
-function formatPrice(price: number | undefined): string {
+function formatPrice(price: number | undefined, locale: string): string {
   if (!price) return '가격 정보 없음';
-  return `${price.toLocaleString('ko-KR')}원`;
+  return `${price.toLocaleString(getDateLocale(locale))}원`;
 }
 
 // 피부타입 한글 변환
@@ -99,6 +101,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const resolvedParams = await params;
+  const locale = await getLocale();
   const productType = pathToProductType(resolvedParams.type);
 
   if (!productType) {
@@ -205,7 +208,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           )}
 
           {/* 가격 */}
-          <p className="text-2xl font-bold text-primary">{formatPrice(product.priceKrw)}</p>
+          <p className="text-2xl font-bold text-primary">{formatPrice(product.priceKrw, locale)}</p>
         </div>
 
         {/* 화장품: 피부타입 & 고민 */}

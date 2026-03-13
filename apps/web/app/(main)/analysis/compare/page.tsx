@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
@@ -287,6 +289,7 @@ function DetailChanges({
 function CompareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
 
   // URL 파라미터
   const typeParam = (searchParams.get('type') as AnalysisType) || 'skin';
@@ -362,7 +365,7 @@ function CompareContent() {
   // 날짜 포맷
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       month: 'short',
       day: 'numeric',
     });

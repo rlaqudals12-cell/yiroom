@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { useMemo } from 'react';
 import {
   ArrowLeft,
@@ -30,6 +32,7 @@ import Link from 'next/link';
  * - 메모 및 컨디션 정보
  */
 export default function WorkoutHistoryDetailPage() {
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const { user, isLoaded } = useUser();
@@ -103,7 +106,7 @@ export default function WorkoutHistoryDetailPage() {
 
   // 날짜 포맷팅
   const workoutDate = new Date(log.workout_date);
-  const formattedDate = workoutDate.toLocaleDateString('ko-KR', {
+  const formattedDate = workoutDate.toLocaleDateString(getDateLocale(locale), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

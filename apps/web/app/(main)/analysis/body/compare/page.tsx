@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
 import { ArrowLeft, Share2, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,11 +37,16 @@ function ChangeItem({
   const isPositive = change > 0;
   const isGood = positiveIsGood ? isPositive : !isPositive;
   // 변화 방향에 따른 아이콘 선택
-  const Icon = selectByKey(getTrendDirection(change), { up: TrendingUp, down: TrendingDown }, Minus)!;
+  const Icon = selectByKey(
+    getTrendDirection(change),
+    { up: TrendingUp, down: TrendingDown },
+    Minus
+  )!;
   // 변화 방향에 따른 색상
-  const changeColor = change === 0
-    ? 'text-muted-foreground'
-    : selectByCondition(isGood, 'text-green-600', 'text-red-600');
+  const changeColor =
+    change === 0
+      ? 'text-muted-foreground'
+      : selectByCondition(isGood, 'text-green-600', 'text-red-600');
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -48,12 +55,7 @@ function ChangeItem({
         <span className="text-sm">
           {before} → {after}
         </span>
-        <span
-          className={cn(
-            'flex items-center gap-1 text-sm font-medium',
-            changeColor
-          )}
-        >
+        <span className={cn('flex items-center gap-1 text-sm font-medium', changeColor)}>
           <Icon className="h-3 w-3" aria-hidden="true" />
           {change > 0 ? '+' : ''}
           {change}
@@ -67,6 +69,7 @@ function ChangeItem({
 function BodyCompareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const fromId = searchParams.get('from');
   const toId = searchParams.get('to');
 
@@ -116,7 +119,7 @@ function BodyCompareContent() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       month: 'short',
       day: 'numeric',
     });
@@ -204,10 +207,14 @@ function BodyCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    selectByKey(getTrendDirection(overallChange), {
-                      up: 'text-green-600',
-                      down: 'text-red-600',
-                    }, 'text-muted-foreground')
+                    selectByKey(
+                      getTrendDirection(overallChange),
+                      {
+                        up: 'text-green-600',
+                        down: 'text-red-600',
+                      },
+                      'text-muted-foreground'
+                    )
                   )}
                 >
                   {overallChange > 0 ? '+' : ''}

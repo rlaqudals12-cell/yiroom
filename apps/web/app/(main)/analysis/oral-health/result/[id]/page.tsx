@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [assessment, setAssessment] = useState<OralHealthAssessment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,14 +146,17 @@ export default function OralHealthResultPage(): React.JSX.Element {
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const shareData = assessment
     ? {
-        ...createOralHealthShareData({
-          overallScore: assessment.overallScore,
-          identityLabel: oralHealthIdentityLabel ?? undefined,
-          brightnessLabel: assessment.toothColor?.interpretation?.brightness
-            ? brightnessLabels[assessment.toothColor.interpretation.brightness]
-            : undefined,
-          inflammationScore: assessment.gumHealth?.inflammationScore,
-        }),
+        ...createOralHealthShareData(
+          {
+            overallScore: assessment.overallScore,
+            identityLabel: oralHealthIdentityLabel ?? undefined,
+            brightnessLabel: assessment.toothColor?.interpretation?.brightness
+              ? brightnessLabels[assessment.toothColor.interpretation.brightness]
+              : undefined,
+            inflammationScore: assessment.gumHealth?.inflammationScore,
+          },
+          { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+        ),
         format: shareFormat,
       }
     : createOralHealthShareData({ overallScore: 0 });
@@ -188,7 +192,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -328,10 +332,10 @@ export default function OralHealthResultPage(): React.JSX.Element {
               variant="outline"
               className="w-full"
               onClick={handleNewAnalysis}
-              aria-label="구강건강 다시 분석하기"
+              aria-label={t('reanalyze')}
             >
               <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-              다시 분석하기
+              {t('reanalyze')}
             </Button>
           </div>
         </div>
@@ -340,10 +344,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       <div className="max-w-lg mx-auto px-4 pb-8">
         <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-3 mt-6">
-          <p className="text-xs text-amber-700 dark:text-amber-400">
-            이 결과는 AI 참고 정보이며 의료 진단이 아니에요. 정확한 진단과 치료는 치과 전문의와
-            상담해주세요.
-          </p>
+          <p className="text-xs text-amber-700 dark:text-amber-400">{t('oralDisclaimer')}</p>
         </div>
         <AITransparencyNotice compact className="mt-6" />
         <ContextLinkingCard currentModule="oral-health" />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ export default function MakeupAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<MakeupResultView | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -66,14 +67,17 @@ export default function MakeupAnalysisResultPage() {
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
-      ...createMakeupShareData({
-        overallScore: result.overallScore,
-        undertoneLabel: result.undertoneLabel,
-        styleLabel: result.recommendedStyles[0]
-          ? MAKEUP_STYLES.find((s) => s.id === result.recommendedStyles[0])?.label
-          : undefined,
-        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-      }),
+      ...createMakeupShareData(
+        {
+          overallScore: result.overallScore,
+          undertoneLabel: result.undertoneLabel,
+          styleLabel: result.recommendedStyles[0]
+            ? MAKEUP_STYLES.find((s) => s.id === result.recommendedStyles[0])?.label
+            : undefined,
+          metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+        },
+        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+      ),
       format: shareFormat,
     };
   }, [result, shareFormat]);
@@ -178,7 +182,7 @@ export default function MakeupAnalysisResultPage() {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -279,7 +283,7 @@ export default function MakeupAnalysisResultPage() {
             >
               <TabsTrigger value="basic" className="gap-1 text-xs sm:text-sm">
                 <Sparkles className="w-4 h-4" />
-                분석
+                {t('analysisComplete')}
               </TabsTrigger>
               <TabsTrigger value="colors" className="gap-1 text-xs sm:text-sm">
                 <Palette className="w-4 h-4" />
@@ -303,7 +307,7 @@ export default function MakeupAnalysisResultPage() {
 
               {/* 인사이트 */}
               <div className="bg-card rounded-xl p-6 shadow-sm">
-                <h3 className="font-semibold mb-3">분석 요약</h3>
+                <h3 className="font-semibold mb-3">{t('analysisSummary')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
               </div>
 
@@ -327,7 +331,7 @@ export default function MakeupAnalysisResultPage() {
               {/* 고민 태그 */}
               {result.concerns.length > 0 && (
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-3">관리 포인트</h3>
+                  <h3 className="font-semibold mb-3">{t('carePoints')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {result.concerns.map((concern) => {
                       const concernData = MAKEUP_CONCERNS.find((c) => c.id === concern);
@@ -416,7 +420,7 @@ export default function MakeupAnalysisResultPage() {
               {/* 분석 이미지 */}
               {imageUrl && (
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-3">분석 이미지</h3>
+                  <h3 className="font-semibold mb-3">{t('analysisImage')}</h3>
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
                     <Image
                       src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/makeup-images/${imageUrl}`}

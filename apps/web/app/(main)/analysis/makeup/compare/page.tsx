@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
 import { ArrowLeft, Share2, Loader2, Palette, Eye, Heart, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,6 +60,7 @@ function StyleCompareItem({
 function MakeupCompareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const fromId = searchParams.get('from');
   const toId = searchParams.get('to');
 
@@ -107,7 +110,7 @@ function MakeupCompareContent() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       month: 'short',
       day: 'numeric',
     });

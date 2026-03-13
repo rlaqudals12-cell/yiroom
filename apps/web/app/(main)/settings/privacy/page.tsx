@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
   ArrowLeft,
@@ -36,6 +38,7 @@ import { MarketingConsentToggle, AgreementHistory } from '@/components/settings'
  * SDD-VISUAL-SKIN-REPORT.md §4.6 - 설정 > 개인정보 페이지
  */
 export default function PrivacySettingsPage() {
+  const locale = useLocale();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
 
@@ -205,7 +208,7 @@ export default function PrivacySettingsPage() {
                   <span>
                     동의일:{' '}
                     {imageConsent.consent_at
-                      ? new Date(imageConsent.consent_at).toLocaleDateString('ko-KR')
+                      ? new Date(imageConsent.consent_at).toLocaleDateString(getDateLocale(locale))
                       : '-'}
                   </span>
                 </div>

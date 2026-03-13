@@ -15,12 +15,18 @@ import {
   Sun,
   Sparkles,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { BottomNav } from '@/components/BottomNav';
+
+const AnalysisTimelineChart = dynamic(
+  () => import('@/components/analysis/visual/AnalysisTimelineChart'),
+  { ssr: false }
+);
 import type {
   SkinAnalysisHistoryItem,
   PeriodFilter,
@@ -137,6 +143,18 @@ export default function SkinHistoryPage() {
             <TabsTrigger value="all">{PERIOD_LABELS['all']}</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* 타임라인 차트 */}
+        {!loading && analyses.length >= 2 && (
+          <AnalysisTimelineChart
+            data={[...analyses].reverse().map((a) => ({
+              date: a.date,
+              value: a.overallScore,
+            }))}
+            color="#ec4899"
+            label="피부 점수"
+          />
+        )}
 
         {/* 비교 버튼 */}
         {selectedIds.length === 2 && (

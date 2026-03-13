@@ -49,6 +49,9 @@ export interface ShareCardData {
 
   // 사용자 이름 오버레이
   userName?: string;
+
+  // 프로필 사진 URL (Clerk user.imageUrl)
+  profileImage?: string;
 }
 
 interface AnalysisShareCardProps {
@@ -188,6 +191,7 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
       theme = 'default',
       format = '1:1',
       userName,
+      profileImage,
     } = data;
 
     const ts = THEME_STYLES[theme];
@@ -282,8 +286,21 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
           </h2>
           <p className={cn('text-sm mb-4', ts.textSecondary)}>{subtitle}</p>
 
-          {/* 사용자 이름 오버레이 */}
-          {userName && <p className={cn('text-xs mb-2', ts.textMuted)}>@{userName}</p>}
+          {/* 사용자 프로필 */}
+          {(userName || profileImage) && (
+            <div className="flex items-center gap-2 mb-2">
+              {profileImage && (
+                // eslint-disable-next-line @next/next/no-img-element -- html-to-image 캡처용, next/image 사용 불가
+                <img
+                  src={profileImage}
+                  alt=""
+                  className="w-6 h-6 rounded-full object-cover border border-white/50"
+                  crossOrigin="anonymous"
+                />
+              )}
+              {userName && <span className={cn('text-xs', ts.textMuted)}>@{userName}</span>}
+            </div>
+          )}
 
           {/* 컬러 팔레트 (퍼스널컬러용) */}
           {colors && colors.length > 0 && (

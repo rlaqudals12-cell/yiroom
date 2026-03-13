@@ -9,6 +9,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -54,6 +56,7 @@ const STATUS_COLORS: Record<ShelfStatus, string> = {
 };
 
 export default function ShelfDetailPage() {
+  const locale = useLocale();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -300,7 +303,7 @@ export default function ShelfDetailPage() {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">스캔 날짜</dt>
-                <dd>{new Date(item.scannedAt).toLocaleDateString('ko-KR')}</dd>
+                <dd>{new Date(item.scannedAt).toLocaleDateString(getDateLocale(locale))}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">스캔 방법</dt>

@@ -13,6 +13,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -73,6 +75,7 @@ interface ProfileData {
 }
 
 export default function ProfilePage() {
+  const locale = useLocale();
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -352,7 +355,9 @@ export default function ProfilePage() {
                 )}
                 <p className="text-muted-foreground mt-1 text-xs">
                   가입일:{' '}
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ko-KR') : '-'}
+                  {user.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString(getDateLocale(locale))
+                    : '-'}
                 </p>
               </div>
 

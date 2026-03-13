@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   RefreshCw,
@@ -161,6 +161,7 @@ export default function PersonalColorResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const [result, setResult] = useState<PersonalColorResult | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<AnalysisEvidence | null>(null);
   const [imageQuality, setImageQuality] = useState<ImageQuality | null>(null);
@@ -185,11 +186,14 @@ export default function PersonalColorResultPage() {
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
-      ...createPersonalColorShareData({
-        seasonType: result.seasonType,
-        seasonLabel: result.seasonLabel,
-        bestColors: result.bestColors,
-      }),
+      ...createPersonalColorShareData(
+        {
+          seasonType: result.seasonType,
+          seasonLabel: result.seasonLabel,
+          bestColors: result.bestColors,
+        },
+        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+      ),
       format: shareFormat,
     };
   }, [result, shareFormat]);
@@ -331,7 +335,7 @@ export default function PersonalColorResultPage() {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -406,7 +410,7 @@ export default function PersonalColorResultPage() {
           >
             <GitCompareArrows className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-muted-foreground">{t('comparePrevious')}</span>
-            <span className="ml-auto text-primary text-xs">비교하기 →</span>
+            <span className="ml-auto text-primary text-xs">{t('compare')} →</span>
           </Link>
         </div>
 
@@ -463,7 +467,7 @@ export default function PersonalColorResultPage() {
                   className="mt-3 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  다시 분석하기
+                  {t('reanalyze')}
                 </Button>
               </div>
             </div>
@@ -513,11 +517,11 @@ export default function PersonalColorResultPage() {
                     <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-sm text-foreground">알아두세요</p>
+                    <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
                     <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                       <li className="flex items-start gap-1.5">
                         <Sun className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
-                        <span>조명/메이크업에 따라 결과가 달라질 수 있어요</span>
+                        <span>{t('lightingNote')}</span>
                       </li>
                       <li className="flex items-start gap-1.5">
                         <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500" />
@@ -624,15 +628,11 @@ export default function PersonalColorResultPage() {
                 <div className="p-6 bg-card rounded-xl border text-center">
                   <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="font-semibold text-foreground mb-2">{t('colorDraping')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    분석 이미지가 없어 색상을 입혀볼 수 없어요.
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    다시 분석하면 내 얼굴에 색상을 입혀볼 수 있어요.
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">{t('noDrapingImage')}</p>
+                  <p className="text-xs text-muted-foreground mb-4">{t('reanalyzeForDraping')}</p>
                   <Button onClick={handleNewAnalysis} variant="outline" size="sm">
                     <Camera className="w-4 h-4 mr-1.5" />
-                    다시 분석하기
+                    {t('reanalyze')}
                   </Button>
                 </div>
               )}
@@ -724,7 +724,7 @@ export default function PersonalColorResultPage() {
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                다시 분석하기
+                {t('reanalyze')}
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker

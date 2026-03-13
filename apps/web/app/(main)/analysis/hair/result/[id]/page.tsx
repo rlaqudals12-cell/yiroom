@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -161,6 +161,7 @@ export default function HairAnalysisResultPage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<HairAnalysisResultView | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -178,12 +179,15 @@ export default function HairAnalysisResultPage() {
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
-      ...createHairShareData({
-        overallScore: result.overallScore,
-        hairTypeLabel: result.hairTypeLabel,
-        hairThicknessLabel: result.hairThicknessLabel,
-        metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
-      }),
+      ...createHairShareData(
+        {
+          overallScore: result.overallScore,
+          hairTypeLabel: result.hairTypeLabel,
+          hairThicknessLabel: result.hairThicknessLabel,
+          metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
+        },
+        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+      ),
       format: shareFormat,
     };
   }, [result, shareFormat]);
@@ -287,7 +291,7 @@ export default function HairAnalysisResultPage() {
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
-            로그인하기
+            {t('signInAction')}
           </Link>
         </div>
       </div>
@@ -388,9 +392,9 @@ export default function HairAnalysisResultPage() {
                   <Sparkles className="w-4 h-4" aria-hidden="true" />
                   {t('basicAnalysis')}
                 </TabsTrigger>
-                <TabsTrigger value="details" className="gap-1" aria-label="케어 가이드 보기">
+                <TabsTrigger value="details" className="gap-1" aria-label={t('careGuideLabel')}>
                   <ClipboardList className="w-4 h-4" aria-hidden="true" />
-                  케어 가이드
+                  {t('careGuide')}
                 </TabsTrigger>
               </TabsList>
 
@@ -407,14 +411,14 @@ export default function HairAnalysisResultPage() {
 
                 {/* 인사이트 */}
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-3">분석 요약</h3>
+                  <h3 className="font-semibold mb-3">{t('analysisSummary')}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
                 </div>
 
                 {/* 고민 태그 */}
                 {result.concerns.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">주요 고민</h3>
+                    <h3 className="font-semibold mb-3">{t('mainConcerns')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {result.concerns.map((concern) => {
                         const concernData = HAIR_CONCERNS.find((c) => c.id === concern);
@@ -442,12 +446,8 @@ export default function HairAnalysisResultPage() {
                           aria-hidden="true"
                         />
                       </div>
-                      <p className="text-muted-foreground text-sm">
-                        케어 가이드 정보가 아직 준비되지 않았어요
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        다시 분석하면 더 상세한 케어 팁을 받을 수 있어요
-                      </p>
+                      <p className="text-muted-foreground text-sm">{t('noCareGuide')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('reanalyzeForCare')}</p>
                     </div>
                   )}
 
@@ -471,7 +471,7 @@ export default function HairAnalysisResultPage() {
                 {/* 관리 방법 */}
                 {result.careTips.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">관리 방법</h3>
+                    <h3 className="font-semibold mb-3">{t('careMethod')}</h3>
                     <ul className="space-y-2">
                       {result.careTips.map((tip, i) => (
                         <li
@@ -489,7 +489,7 @@ export default function HairAnalysisResultPage() {
                 {/* 분석 이미지 */}
                 {imageUrl && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">분석 이미지</h3>
+                    <h3 className="font-semibold mb-3">{t('analysisImage')}</h3>
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
                       <Image
                         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/hair-images/${imageUrl}`}
@@ -539,10 +539,10 @@ export default function HairAnalysisResultPage() {
                 variant="outline"
                 className="flex-1"
                 onClick={handleNewAnalysis}
-                aria-label="헤어 분석 다시 하기"
+                aria-label={t('reanalyze')}
               >
                 <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-                다시 분석하기
+                {t('reanalyze')}
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker

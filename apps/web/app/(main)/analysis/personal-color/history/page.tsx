@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { ArrowLeft, Calendar, ChevronRight, Palette, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,6 +43,7 @@ const SEASON_GRADIENT: Record<string, string> = {
 
 export default function PersonalColorHistoryPage(): React.JSX.Element {
   const router = useRouter();
+  const locale = useLocale();
   const [period, setPeriod] = useState<PeriodFilter>('3m');
   const [analyses, setAnalyses] = useState<PersonalColorHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +77,7 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
 
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+    return date.toLocaleDateString(getDateLocale(locale), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

@@ -17,6 +17,8 @@ import {
   Bookmark,
   Camera,
 } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { Button } from '@/components/ui/button';
 import {
   type BodyAnalysisResult,
@@ -58,6 +60,7 @@ export default function AnalysisResult({
   shareRef,
   evidence,
 }: AnalysisResultProps) {
+  const locale = useLocale();
   const {
     bodyType,
     bodyTypeLabel,
@@ -632,7 +635,7 @@ export default function AnalysisResult({
       {/* 분석 시간 */}
       <FadeInUp delay={12}>
         <p className="text-center text-sm text-muted-foreground">
-          분석 시간: {analyzedAt.toLocaleString('ko-KR')}
+          분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}
         </p>
       </FadeInUp>
 

@@ -11,6 +11,12 @@ import { THEME_STYLES } from '@/components/share/AnalysisShareCard';
 
 export type { ShareCardData, ShareCardTheme };
 
+// 공유 카드에 포함할 사용자 프로필 정보
+interface ShareProfileOptions {
+  profileImage?: string;
+  userName?: string;
+}
+
 // 퍼스널 컬러 결과에서 공유 데이터 생성
 interface PersonalColorData {
   seasonType: string;
@@ -18,7 +24,10 @@ interface PersonalColorData {
   bestColors?: Array<{ hex: string }>;
 }
 
-export function createPersonalColorShareData(result: PersonalColorData): ShareCardData {
+export function createPersonalColorShareData(
+  result: PersonalColorData,
+  profile?: ShareProfileOptions
+): ShareCardData {
   const seasonEmoji: Record<string, string> = {
     spring: '🌸',
     summer: '🌊',
@@ -33,6 +42,8 @@ export function createPersonalColorShareData(result: PersonalColorData): ShareCa
     typeLabel: result.seasonLabel,
     typeEmoji: seasonEmoji[result.seasonType] || '🎨',
     colors: result.bestColors?.slice(0, 5).map((c) => c.hex),
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 
@@ -43,7 +54,10 @@ interface SkinData {
   metrics?: Array<{ name: string; value: number }>;
 }
 
-export function createSkinShareData(result: SkinData): ShareCardData {
+export function createSkinShareData(
+  result: SkinData,
+  profile?: ShareProfileOptions
+): ShareCardData {
   // 가장 좋은/나쁜 지표
   const sorted = result.metrics ? [...result.metrics].sort((a, b) => b.value - a.value) : [];
   const best = sorted[0];
@@ -60,6 +74,8 @@ export function createSkinShareData(result: SkinData): ShareCardData {
     score: result.overallScore,
     typeLabel: result.identityLabel,
     highlights,
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 
@@ -70,7 +86,10 @@ interface BodyData {
   strengths?: string[];
 }
 
-export function createBodyShareData(result: BodyData): ShareCardData {
+export function createBodyShareData(
+  result: BodyData,
+  profile?: ShareProfileOptions
+): ShareCardData {
   const bodyEmoji: Record<string, string> = {
     S: '⏳',
     W: '📐',
@@ -97,6 +116,8 @@ export function createBodyShareData(result: BodyData): ShareCardData {
     typeLabel: result.bodyTypeLabel,
     typeEmoji: bodyEmoji[result.bodyType] || '👤',
     highlights,
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 
@@ -108,7 +129,10 @@ interface HairData {
   metrics?: Array<{ name: string; value: number }>;
 }
 
-export function createHairShareData(result: HairData): ShareCardData {
+export function createHairShareData(
+  result: HairData,
+  profile?: ShareProfileOptions
+): ShareCardData {
   const sorted = result.metrics ? [...result.metrics].sort((a, b) => b.value - a.value) : [];
   const best = sorted[0];
   const worst = sorted[sorted.length - 1];
@@ -125,6 +149,8 @@ export function createHairShareData(result: HairData): ShareCardData {
     typeLabel: `${result.hairTypeLabel} · ${result.hairThicknessLabel}`,
     typeEmoji: '💇',
     highlights,
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 
@@ -136,7 +162,10 @@ interface MakeupData {
   metrics?: Array<{ name: string; value: number }>;
 }
 
-export function createMakeupShareData(result: MakeupData): ShareCardData {
+export function createMakeupShareData(
+  result: MakeupData,
+  profile?: ShareProfileOptions
+): ShareCardData {
   const highlights: ShareCardData['highlights'] = [];
   if (result.undertoneLabel) highlights.push({ label: '언더톤', value: result.undertoneLabel });
   if (result.styleLabel) highlights.push({ label: '스타일', value: result.styleLabel });
@@ -148,6 +177,8 @@ export function createMakeupShareData(result: MakeupData): ShareCardData {
     score: result.overallScore,
     typeEmoji: '💄',
     highlights,
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 
@@ -159,7 +190,10 @@ interface OralHealthShareInput {
   inflammationScore?: number;
 }
 
-export function createOralHealthShareData(result: OralHealthShareInput): ShareCardData {
+export function createOralHealthShareData(
+  result: OralHealthShareInput,
+  profile?: ShareProfileOptions
+): ShareCardData {
   const highlights: ShareCardData['highlights'] = [];
   if (result.brightnessLabel) {
     highlights.push({ label: '밝기', value: result.brightnessLabel });
@@ -176,6 +210,8 @@ export function createOralHealthShareData(result: OralHealthShareInput): ShareCa
     typeLabel: result.identityLabel,
     typeEmoji: '🦷',
     highlights,
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
   };
 }
 

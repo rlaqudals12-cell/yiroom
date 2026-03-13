@@ -28,6 +28,8 @@ import {
 import { FadeInUp, ScaleIn } from '@/components/animations';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getKoreanColorName } from '@/lib/utils/color-names';
+import { useLocale } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import {
   PersonalColorEvidenceSummary,
   type PersonalColorEvidenceSummaryProps,
@@ -205,6 +207,8 @@ export default function AnalysisResult({
   } = result;
 
   const info = SEASON_INFO[seasonType];
+
+  const locale = useLocale();
 
   // 사용자 프로필에서 성별 가져오기 (스타일 키워드 적응에 사용)
   const { profile } = useUserProfile();
@@ -790,7 +794,7 @@ export default function AnalysisResult({
 
       {/* 분석 시간 */}
       <p className="text-center text-sm text-muted-foreground">
-        분석 시간: {analyzedAt.toLocaleString('ko-KR')}
+        분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}
       </p>
     </div>
   );

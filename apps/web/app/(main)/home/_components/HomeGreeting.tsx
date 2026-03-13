@@ -4,27 +4,25 @@
  */
 
 import { getTranslations } from 'next-intl/server';
+import { getUserTimezone, getCurrentHourInTimezone } from '@/lib/utils/timezone';
 
 interface HomeGreetingProps {
   userName: string;
 }
 
-// 시간 기반 인사말 키 (Server에서 계산)
-function getTimeGreetingKey(): string {
-  // 서버 타임존을 고려한 현재 시간 (KST)
-  const now = new Date();
-  // UTC+9 (한국 시간)
-  const kstHour = (now.getUTCHours() + 9) % 24;
-
-  if (kstHour >= 5 && kstHour < 12) return 'morningGreeting';
-  if (kstHour >= 12 && kstHour < 18) return 'afternoonGreeting';
-  if (kstHour >= 18 && kstHour < 22) return 'eveningGreeting';
+// 시간 기반 인사말 키 (사용자 타임존 기반)
+function getTimeGreetingKey(hour: number): string {
+  if (hour >= 5 && hour < 12) return 'morningGreeting';
+  if (hour >= 12 && hour < 18) return 'afternoonGreeting';
+  if (hour >= 18 && hour < 22) return 'eveningGreeting';
   return 'nightGreeting';
 }
 
 export async function HomeGreeting({ userName }: HomeGreetingProps) {
   const t = await getTranslations('home');
-  const greetingKey = getTimeGreetingKey();
+  const timezone = await getUserTimezone();
+  const currentHour = getCurrentHourInTimezone(timezone);
+  const greetingKey = getTimeGreetingKey(currentHour);
 
   return (
     <section className="animate-fade-in-up">
