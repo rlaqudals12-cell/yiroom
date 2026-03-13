@@ -72,6 +72,8 @@ export default function InternalizationWidget() {
   if (!stats || stats.totalConnections === 0) return null;
 
   const rate = Math.round(stats.internalizationRate * 100);
+  const growthMessage =
+    rate >= 50 ? '이해가 깊어지고 있어요, 꾸준히 성장하고 있어요' : '새로운 발견이 쌓이고 있어요';
 
   return (
     <section
@@ -134,10 +136,8 @@ export default function InternalizationWidget() {
               <span className="text-emerald-500 font-semibold">{stats.byStatus.independent}개</span>
               의 인사이트를 스스로 판단할 수 있게 됐어요
             </>
-          ) : rate >= 50 ? (
-            '이해가 깊어지고 있어요, 꾸준히 성장하고 있어요'
           ) : (
-            '새로운 발견이 쌓이고 있어요'
+            growthMessage
           )}
         </p>
       </div>

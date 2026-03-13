@@ -88,6 +88,85 @@ interface AnalysisResultProps {
   onTabChange?: (tab: string) => void;
 }
 
+// 메이크업/그루밍 가이드 섹션 — 성별 분기 추출 (cognitive complexity 절감)
+function StyleGuideSection({
+  styleDescription,
+  isMale,
+}: {
+  styleDescription: StyleDescription;
+  isMale: boolean;
+}) {
+  if (isMale) {
+    return (
+      <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-lg space-y-3">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">✨ 그루밍</p>
+        {styleDescription.easyGrooming ? (
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                피부
+              </span>
+              <p className="text-sm text-foreground/80">{styleDescription.easyGrooming.skin}</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                헤어
+              </span>
+              <p className="text-sm text-foreground/80">{styleDescription.easyGrooming.hair}</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
+                향수
+              </span>
+              <p className="text-sm text-foreground/80">{styleDescription.easyGrooming.scent}</p>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 p-2 bg-slate-100 dark:bg-slate-900/30 rounded">
+              💡 {styleDescription.easyGrooming.tip}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            {styleDescription.makeupStyle}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg space-y-3">
+      <p className="text-sm font-medium text-pink-700 dark:text-pink-300">💄 메이크업</p>
+      {styleDescription.easyMakeup ? (
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+              립
+            </span>
+            <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.lip}</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+              눈
+            </span>
+            <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.eye}</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
+              볼
+            </span>
+            <p className="text-sm text-foreground/80">{styleDescription.easyMakeup.cheek}</p>
+          </div>
+          <p className="text-xs text-pink-600 dark:text-pink-400 mt-2 p-2 bg-pink-100 dark:bg-pink-900/30 rounded">
+            💡 {styleDescription.easyMakeup.tip}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-foreground/80 leading-relaxed">{styleDescription.makeupStyle}</p>
+      )}
+    </div>
+  );
+}
+
 // 얼굴 실루엣 아바타 (색상 비교용)
 function FaceAvatar({ className }: { className?: string }) {
   return (
@@ -140,6 +219,15 @@ export default function AnalysisResult({
     ? MALE_CLOTHING_RECOMMENDATIONS[seasonType]
     : clothingRecommendations;
   const groomingRecommendations: GroomingRecommendation[] = GROOMING_RECOMMENDATIONS[seasonType];
+
+  // 파운데이션 베이스 설명 — 성별/톤 분기 JSX 밖으로 추출 (cognitive complexity 절감)
+  const foundationBaseLabel =
+    result.tone === 'warm'
+      ? '옐로 베이스 (웜톤용) 파운데이션이 잘 어울려요'
+      : '핑크 베이스 (쿨톤용) 파운데이션이 잘 어울려요';
+
+  // 스타일 가이드 섹션 헤더 (남성/여성 분기)
+  const styleGuideTitle = isMale ? '추천 그루밍 아이템' : '추천 립스틱';
 
   return (
     <div className="space-y-6" data-testid="analysis-result">
@@ -400,87 +488,7 @@ export default function AnalysisResult({
           </summary>
           <div className="mt-4 space-y-4">
             {/* 남성: 그루밍 가이드 / 여성: 메이크업 가이드 */}
-            {isMale ? (
-              // 남성용 그루밍 가이드
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-lg space-y-3">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">✨ 그루밍</p>
-                {genderStyleDescription.easyGrooming ? (
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
-                        피부
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyGrooming.skin}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
-                        헤어
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyGrooming.hair}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">
-                        향수
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyGrooming.scent}
-                      </p>
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 p-2 bg-slate-100 dark:bg-slate-900/30 rounded">
-                      💡 {genderStyleDescription.easyGrooming.tip}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-foreground/80 leading-relaxed">
-                    {genderStyleDescription.makeupStyle}
-                  </p>
-                )}
-              </div>
-            ) : (
-              // 여성용 메이크업 가이드
-              <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg space-y-3">
-                <p className="text-sm font-medium text-pink-700 dark:text-pink-300">💄 메이크업</p>
-                {genderStyleDescription.easyMakeup ? (
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                        립
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyMakeup.lip}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                        눈
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyMakeup.eye}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded">
-                        볼
-                      </span>
-                      <p className="text-sm text-foreground/80">
-                        {genderStyleDescription.easyMakeup.cheek}
-                      </p>
-                    </div>
-                    <p className="text-xs text-pink-600 dark:text-pink-400 mt-2 p-2 bg-pink-100 dark:bg-pink-900/30 rounded">
-                      💡 {genderStyleDescription.easyMakeup.tip}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-foreground/80 leading-relaxed">
-                    {genderStyleDescription.makeupStyle}
-                  </p>
-                )}
-              </div>
-            )}
+            <StyleGuideSection styleDescription={genderStyleDescription} isMale={isMale} />
 
             {/* 패션 - 초보자 친화 (성별 공통, 데이터만 다름) */}
             <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg space-y-3">
@@ -566,16 +574,11 @@ export default function AnalysisResult({
         <details className="bg-card rounded-xl border p-6 group">
           <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
             {isMale ? (
-              <>
-                <Sparkles className="w-5 h-5 text-slate-500" />
-                <h2 className="text-lg font-semibold text-foreground">추천 그루밍 아이템</h2>
-              </>
+              <Sparkles className="w-5 h-5 text-slate-500" />
             ) : (
-              <>
-                <Heart className="w-5 h-5 text-red-400" />
-                <h2 className="text-lg font-semibold text-foreground">추천 립스틱</h2>
-              </>
+              <Heart className="w-5 h-5 text-red-400" />
             )}
+            <h2 className="text-lg font-semibold text-foreground">{styleGuideTitle}</h2>
             <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
             <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
               접기
@@ -679,11 +682,7 @@ export default function AnalysisResult({
               </span>
             </summary>
             <div className="mt-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                {result.tone === 'warm'
-                  ? '옐로 베이스 (웜톤용) 파운데이션이 잘 어울려요'
-                  : '핑크 베이스 (쿨톤용) 파운데이션이 잘 어울려요'}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{foundationBaseLabel}</p>
               <div className="space-y-3">
                 {foundationRecommendations.map((foundation, index) => (
                   <div key={index} className="p-3 bg-muted rounded-lg">

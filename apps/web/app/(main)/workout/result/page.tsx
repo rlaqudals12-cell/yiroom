@@ -72,7 +72,8 @@ export default function ResultPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [concerns, setConcerns] = useState<string[]>([]);
   const [goals, setGoals] = useState<string[]>([]);
-  const [location, setLocation] = useState<'home' | 'gym' | 'outdoor'>('home');
+  type WorkoutLocation = 'home' | 'gym' | 'outdoor';
+  const [location, setLocation] = useState<WorkoutLocation>('home');
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [bodyType, setBodyType] = useState<BodyType | null>(null);
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);

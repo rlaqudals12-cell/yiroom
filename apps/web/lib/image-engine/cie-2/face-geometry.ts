@@ -297,35 +297,9 @@ export function classifyFaceShape(m: FaceGeometryMeasurements): {
   const cheekToJawRatio = m.jawWidth > 0 ? m.cheekboneWidth / m.jawWidth : 1;
   const foreheadToJawRatio = m.jawWidth > 0 ? m.faceWidth / m.jawWidth : 1;
 
-  // 얼굴 비율 기반 점수
-  if (m.faceRatio >= 0.65 && m.faceRatio <= 0.75) {
-    scores.oval += 30;
-  } else if (m.faceRatio > 0.75) {
-    scores.round += 25;
-    scores.square += 15;
-  } else if (m.faceRatio < 0.6) {
-    scores.oblong += 30;
-  }
-
-  // 광대 대 턱 비율
-  if (cheekToJawRatio > 1.2) {
-    scores.heart += 20;
-    scores.diamond += 20;
-  } else if (cheekToJawRatio < 1.05) {
-    scores.square += 15;
-    scores.round += 10;
-  } else {
-    scores.oval += 15;
-  }
-
-  // 턱선 각도
-  if (m.jawAngleDegrees < 110) {
-    scores.square += 25;
-  } else if (m.jawAngleDegrees > 130) {
-    scores.oval += 10;
-    scores.round += 10;
-    scores.heart += 10;
-  }
+  scoreFaceRatio(scores, m.faceRatio);
+  scoreCheekToJaw(scores, cheekToJawRatio);
+  scoreJawAngle(scores, m.jawAngleDegrees);
 
   // 이마 대 턱 비율
   if (foreheadToJawRatio > 1.15) {
@@ -354,6 +328,42 @@ export function classifyFaceShape(m: FaceGeometryMeasurements): {
     totalScore > 0 ? Math.min(100, Math.round((bestScore / totalScore) * 100)) : 50;
 
   return { shape: bestShape, confidence };
+}
+
+/** 얼굴 비율(faceRatio) 기반 점수 부여 */
+function scoreFaceRatio(scores: Record<FaceShape, number>, faceRatio: number): void {
+  if (faceRatio >= 0.65 && faceRatio <= 0.75) {
+    scores.oval += 30;
+  } else if (faceRatio > 0.75) {
+    scores.round += 25;
+    scores.square += 15;
+  } else if (faceRatio < 0.6) {
+    scores.oblong += 30;
+  }
+}
+
+/** 광대 대 턱 비율 기반 점수 부여 */
+function scoreCheekToJaw(scores: Record<FaceShape, number>, cheekToJawRatio: number): void {
+  if (cheekToJawRatio > 1.2) {
+    scores.heart += 20;
+    scores.diamond += 20;
+  } else if (cheekToJawRatio < 1.05) {
+    scores.square += 15;
+    scores.round += 10;
+  } else {
+    scores.oval += 15;
+  }
+}
+
+/** 턱선 각도 기반 점수 부여 */
+function scoreJawAngle(scores: Record<FaceShape, number>, jawAngleDegrees: number): void {
+  if (jawAngleDegrees < 110) {
+    scores.square += 25;
+  } else if (jawAngleDegrees > 130) {
+    scores.oval += 10;
+    scores.round += 10;
+    scores.heart += 10;
+  }
 }
 
 // ============================================

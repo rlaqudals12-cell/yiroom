@@ -35,6 +35,21 @@ function validateCronAuth(request: NextRequest): boolean {
   return false;
 }
 
+// 구독 목록을 사용자별로 그룹핑
+function groupSubscriptionsByUser(
+  subscriptions: PushSubscriptionRow[]
+): Map<string, PushSubscriptionRow[]> {
+  const map = new Map<string, PushSubscriptionRow[]>();
+  for (const sub of subscriptions) {
+    const userId = sub.clerk_user_id;
+    if (!map.has(userId)) {
+      map.set(userId, []);
+    }
+    map.get(userId)!.push(sub);
+  }
+  return map;
+}
+
 // 인사이트를 요약 메시지로 변환
 function formatInsightDigest(insights: Array<{ title: string; description: string }>): string {
   if (insights.length === 0) {
@@ -89,14 +104,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // 사용자별 구독 그룹핑
-    const userSubscriptions = new Map<string, PushSubscriptionRow[]>();
-    for (const sub of subscriptions as PushSubscriptionRow[]) {
-      const userId = sub.clerk_user_id;
-      if (!userSubscriptions.has(userId)) {
-        userSubscriptions.set(userId, []);
-      }
-      userSubscriptions.get(userId)!.push(sub);
-    }
+    const userSubscriptions = groupSubscriptionsByUser(subscriptions as PushSubscriptionRow[]);
 
     console.info(
       `[Cron Weekly] Processing ${userSubscriptions.size} users with ${subscriptions.length} subscriptions`

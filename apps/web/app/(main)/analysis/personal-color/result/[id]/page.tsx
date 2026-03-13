@@ -51,6 +51,9 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -170,6 +173,7 @@ export default function PersonalColorResultPage() {
   const [showEducation, setShowEducation] = useState(false);
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
+  const { isExpert, toggleExpert } = useExpertMode();
   const fetchedRef = useRef(false);
   // 현재 URL (hydration 불일치 방지를 위해 클라이언트에서만 설정)
   const [currentUrl, setCurrentUrl] = useState('');
@@ -384,6 +388,7 @@ export default function PersonalColorResultPage() {
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-lg font-bold text-foreground">{t('pageTitle.personalColor')}</h1>
             <AIBadge variant="small" />
+            <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/analysis/personal-color/history">
@@ -409,6 +414,33 @@ export default function PersonalColorResultPage() {
         {usedMock && (
           <div className="mb-6">
             <MockDataNotice />
+          </div>
+        )}
+
+        {/* 전문가 모드 데이터 패널 */}
+        {isExpert && result && (
+          <div className="mb-6">
+            <ExpertDataPanel
+              data={{
+                confidence: result.confidence,
+                usedMock: usedMock,
+                analyzedAt: result.analyzedAt,
+                imageQuality: imageQuality,
+                evidenceSummary: analysisEvidence
+                  ? {
+                      ...(analysisEvidence.veinColor
+                        ? { 'Vein Color': analysisEvidence.veinColor }
+                        : {}),
+                      ...(analysisEvidence.skinUndertone
+                        ? { 'Skin Undertone': analysisEvidence.skinUndertone }
+                        : {}),
+                      ...(analysisEvidence.lipNaturalColor
+                        ? { 'Lip Color': analysisEvidence.lipNaturalColor }
+                        : {}),
+                    }
+                  : null,
+              }}
+            />
           </div>
         )}
 

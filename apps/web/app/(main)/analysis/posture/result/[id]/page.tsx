@@ -20,6 +20,9 @@ import { ShareButton, PrintButton } from '@/components/share';
 import { useShare } from '@/hooks/useShare';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { useTranslations } from 'next-intl';
@@ -91,7 +94,9 @@ export default function PostureAnalysisResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [analyzedAt, setAnalyzedAt] = useState<string | null>(null);
   const fetchedRef = useRef(false);
+  const { isExpert, toggleExpert } = useExpertMode();
 
   const analysisId = params.id as string;
 
@@ -125,6 +130,7 @@ export default function PostureAnalysisResultPage() {
       const dbData = data as DbPostureAnalysis;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
+      setAnalyzedAt(dbData.created_at);
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
       const celebrationKey = `celebration-posture-${analysisId}`;
@@ -258,9 +264,26 @@ export default function PostureAnalysisResultPage() {
             <div className="flex flex-col items-center gap-1">
               <h1 className="text-lg font-bold text-foreground">{t('pageTitle.posture')}</h1>
               <AIBadge variant="small" />
+              <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
             </div>
             <div className="w-16" />
           </header>
+
+          {/* 전문가 모드 상세 패널 */}
+          {isExpert && result && (
+            <div className="mb-6">
+              <ExpertDataPanel
+                data={{
+                  confidence: result.confidence,
+                  usedMock: false,
+                  analyzedAt: analyzedAt ?? undefined,
+                  imageQuality: null,
+                  evidenceSummary: null,
+                  moduleName: 'posture',
+                }}
+              />
+            </div>
+          )}
 
           {/* 결과 표시 */}
           {result && (

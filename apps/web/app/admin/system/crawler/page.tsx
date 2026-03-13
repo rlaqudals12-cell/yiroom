@@ -79,8 +79,7 @@ export default function CrawlerPage() {
         return;
       }
 
-      // 404 등 실패 시 시뮬레이션 폴백
-      // TODO: /api/admin/crawler/[name] 엔드포인트 구현 필요
+      // 404 등 실패 시 시뮬레이션 폴백 (크롤러 엔드포인트 미구현 시)
       await simulateCrawler(name);
     } catch {
       // 네트워크 오류 등 — 시뮬레이션 폴백

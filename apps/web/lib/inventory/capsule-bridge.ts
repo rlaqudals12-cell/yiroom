@@ -40,13 +40,16 @@ const BEAUTY_TYPE_TO_DOMAIN: Record<string, CapsuleDomain> = {
   바디: 'skin',
 };
 
+/** 신뢰도 레벨 */
+type ConfidenceLevel = 'high' | 'medium' | 'low';
+
 /** 소진 예측 결과 */
 export interface DepletionEstimate {
   itemId: string;
   itemName: string;
   estimatedDate: Date | null;
   daysRemaining: number | null;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: ConfidenceLevel;
 }
 
 /** 갭 아이템 (캡슐에서 필요하지만 인벤토리에 없는 것) */
@@ -54,7 +57,7 @@ export interface GapItem {
   domain: CapsuleDomain;
   category: string;
   description: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: ConfidenceLevel;
 }
 
 /** 갭 교차 확인 결과 */
@@ -113,64 +116,94 @@ export function estimateDepletion(item: InventoryItem): DepletionEstimate {
 
   // 유통기한이 있으면 유통기한 우선
   if (item.expiryDate) {
-    const expiry = new Date(item.expiryDate);
-    const now = new Date();
-    const daysRemaining = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return {
-      ...result,
-      estimatedDate: expiry,
-      daysRemaining: Math.max(0, daysRemaining),
-      confidence: 'high',
-    };
+    return estimateByExpiry(result, item.expiryDate);
   }
 
-  // 소모품 (영양제 등): remainingServings 기반 예측
   const metadata = item.metadata as Record<string, unknown>;
+
+  // 소모품 (영양제 등): remainingServings 기반 예측
   if (metadata.remainingServings !== undefined && metadata.remainingServings !== null) {
-    const remaining = metadata.remainingServings as number;
-    if (remaining <= 0) {
-      return { ...result, estimatedDate: new Date(), daysRemaining: 0, confidence: 'high' };
-    }
-
-    // 일일 사용률 계산
-    const createdAt = new Date(item.createdAt);
-    const now = new Date();
-    const daysSinceCreated = Math.max(
-      1,
-      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const dailyUsageRate = item.useCount / daysSinceCreated;
-
-    if (dailyUsageRate > 0) {
-      const daysRemaining = Math.ceil(remaining / dailyUsageRate);
-      const estimatedDate = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000);
-      return {
-        ...result,
-        estimatedDate,
-        daysRemaining,
-        confidence: daysSinceCreated > 30 ? 'high' : daysSinceCreated > 7 ? 'medium' : 'low',
-      };
-    }
+    const servingsEstimate = estimateByServings(result, metadata, item);
+    if (servingsEstimate) return servingsEstimate;
   }
 
   // 뷰티 제품: 개봉일 + 사용기한 기반
   if (metadata.openedAt && metadata.expiresInMonths) {
-    const opened = new Date(metadata.openedAt as string);
-    const expiresInMs = (metadata.expiresInMonths as number) * 30 * 24 * 60 * 60 * 1000;
-    const estimatedDate = new Date(opened.getTime() + expiresInMs);
-    const now = new Date();
-    const daysRemaining = Math.ceil(
-      (estimatedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return {
-      ...result,
-      estimatedDate,
-      daysRemaining: Math.max(0, daysRemaining),
-      confidence: 'medium',
-    };
+    return estimateByOpenedDate(result, metadata);
   }
 
   return result;
+}
+
+/** 유통기한 기반 소진 예측 */
+function estimateByExpiry(result: DepletionEstimate, expiryDate: string): DepletionEstimate {
+  const expiry = new Date(expiryDate);
+  const now = new Date();
+  const daysRemaining = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return {
+    ...result,
+    estimatedDate: expiry,
+    daysRemaining: Math.max(0, daysRemaining),
+    confidence: 'high',
+  };
+}
+
+/** remainingServings 기반 소진 예측 (예측 불가 시 null 반환) */
+function estimateByServings(
+  result: DepletionEstimate,
+  metadata: Record<string, unknown>,
+  item: InventoryItem
+): DepletionEstimate | null {
+  const remaining = metadata.remainingServings as number;
+  if (remaining <= 0) {
+    return { ...result, estimatedDate: new Date(), daysRemaining: 0, confidence: 'high' };
+  }
+
+  const createdAt = new Date(item.createdAt);
+  const now = new Date();
+  const daysSinceCreated = Math.max(
+    1,
+    (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const dailyUsageRate = item.useCount / daysSinceCreated;
+
+  if (dailyUsageRate <= 0) return null;
+
+  const daysRemaining = Math.ceil(remaining / dailyUsageRate);
+  const estimatedDate = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000);
+  return {
+    ...result,
+    estimatedDate,
+    daysRemaining,
+    confidence: getConfidenceLevel(daysSinceCreated),
+  };
+}
+
+/** 개봉일 + 사용기한 기반 소진 예측 */
+function estimateByOpenedDate(
+  result: DepletionEstimate,
+  metadata: Record<string, unknown>
+): DepletionEstimate {
+  const opened = new Date(metadata.openedAt as string);
+  const expiresInMs = (metadata.expiresInMonths as number) * 30 * 24 * 60 * 60 * 1000;
+  const estimatedDate = new Date(opened.getTime() + expiresInMs);
+  const now = new Date();
+  const daysRemaining = Math.ceil(
+    (estimatedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return {
+    ...result,
+    estimatedDate,
+    daysRemaining: Math.max(0, daysRemaining),
+    confidence: 'medium',
+  };
+}
+
+/** 경과 일수로 신뢰도 수준 결정 */
+function getConfidenceLevel(daysSinceCreated: number): 'high' | 'medium' | 'low' {
+  if (daysSinceCreated > 30) return 'high';
+  if (daysSinceCreated > 7) return 'medium';
+  return 'low';
 }
 
 /**

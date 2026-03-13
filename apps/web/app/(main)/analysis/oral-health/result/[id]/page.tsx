@@ -10,6 +10,9 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import { createOralHealthShareData, useAnalysisShare } from '@/hooks/useAnalysisShare';
@@ -71,6 +74,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
   const [assessment, setAssessment] = useState<OralHealthAssessment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isExpert, toggleExpert } = useExpertMode();
   const fetchedRef = useRef(false);
 
   const rawId = params.id;
@@ -234,7 +238,10 @@ export default function OralHealthResultPage(): React.JSX.Element {
           </Button>
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-lg font-bold text-foreground">{t('pageTitle.oralHealth')}</h1>
-            <AIBadge variant="small" />
+            <div className="flex items-center gap-2">
+              <AIBadge variant="small" />
+              <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
+            </div>
           </div>
           {/* K1: 신뢰도는 AI 분석 결과 페이지이므로 공통 고지로 커버 */}
           <div className="flex gap-2">
@@ -253,6 +260,24 @@ export default function OralHealthResultPage(): React.JSX.Element {
         {assessment?.usedFallback && (
           <div className="mb-6">
             <MockDataNotice />
+          </div>
+        )}
+
+        {/* 전문가 모드 데이터 패널 */}
+        {isExpert && assessment && (
+          <div className="mb-6">
+            <ExpertDataPanel
+              data={{
+                confidence: assessment.toothColor?.confidence ?? null,
+                usedMock: assessment.usedFallback,
+                analyzedAt: assessment.createdAt,
+                imageQuality: null,
+                evidenceSummary:
+                  assessment.toothColor?.confidence != null
+                    ? { toothColorConfidence: assessment.toothColor.confidence }
+                    : null,
+              }}
+            />
           </div>
         )}
 

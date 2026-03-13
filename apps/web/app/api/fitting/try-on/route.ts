@@ -31,7 +31,7 @@ const tryOnRequestSchema = z.object({
   opacity: z.number().min(0).max(1).optional(),
 });
 
-type TryOnRequest = z.infer<typeof tryOnRequestSchema>;
+type _TryOnRequest = z.infer<typeof tryOnRequestSchema>;
 
 /** 응답 타입 */
 interface TryOnResponse {

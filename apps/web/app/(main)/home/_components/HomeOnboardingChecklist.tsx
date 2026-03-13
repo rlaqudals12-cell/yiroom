@@ -86,19 +86,22 @@ export default function HomeOnboardingChecklist() {
         <div className="space-y-3">
           {steps.map((step, i) => {
             const isActive = !step.done && steps.slice(0, i).every((s) => s.done);
+            let stepStateClass: string;
+            if (isActive) {
+              stepStateClass =
+                'bg-white/80 dark:bg-slate-800/80 shadow-sm hover:shadow-md hover:scale-[1.01]';
+            } else if (step.done) {
+              stepStateClass = 'opacity-70';
+            } else {
+              stepStateClass = 'opacity-50';
+            }
 
             return (
               <button
                 key={i}
                 onClick={() => step.href && router.push(step.href)}
                 disabled={!step.href || step.done}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
-                  isActive
-                    ? 'bg-white/80 dark:bg-slate-800/80 shadow-sm hover:shadow-md hover:scale-[1.01]'
-                    : step.done
-                      ? 'opacity-70'
-                      : 'opacity-50'
-                }`}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${stepStateClass}`}
               >
                 {/* 체크 아이콘 */}
                 {step.done ? (

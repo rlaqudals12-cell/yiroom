@@ -156,7 +156,7 @@ export default function HomeDailyCapsuleWidget() {
         // 체크 실패 시 무시
       }
     },
-    [capsule, user?.id, supabase]
+    [capsule, userId, supabase]
   );
 
   // 로딩/데이터 없음

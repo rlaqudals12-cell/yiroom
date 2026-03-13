@@ -96,6 +96,43 @@ export default function StylePage() {
     checkMeasurements();
   }, [isLoaded, user?.id, router]);
 
+  // 체형 분석 결과 적용
+  const applyBodyData = (
+    bodyData: { body_type: string; height: number | null; concerns: unknown } | null
+  ) => {
+    if (!bodyData) return;
+    const bodyTypeMap: Record<string, string> = {
+      S: '스트레이트',
+      W: '웨이브',
+      N: '내추럴',
+    };
+    setBodyType(bodyTypeMap[bodyData.body_type] || bodyData.body_type);
+    setHeight(bodyData.height ? `${bodyData.height}cm` : null);
+    const concerns = bodyData.concerns as string[] | null;
+    setFeature(concerns?.[0] || null);
+  };
+
+  // 퍼스널컬러 분석 결과 적용
+  const applyPcData = (
+    pcData: { result_season: string; result_tone: string; best_colors: unknown } | null
+  ) => {
+    if (!pcData) return;
+    setPersonalColor(`${pcData.result_season} ${pcData.result_tone}`);
+    const bestColors = pcData.best_colors as Array<{
+      name?: string;
+      hex?: string;
+      color?: string;
+    }> | null;
+    if (bestColors && bestColors.length > 0) {
+      setColorPalette(
+        bestColors.slice(0, 6).map((c) => ({
+          name: c.name ?? '',
+          color: c.hex ?? c.color ?? '#ccc',
+        }))
+      );
+    }
+  };
+
   // 분석 결과 + 제품 데이터 가져오기 (키/몸무게 체크 후)
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -132,38 +169,8 @@ export default function StylePage() {
 
         if (bodyData || pcData) {
           setHasAnalysis(true);
-
-          if (bodyData) {
-            const bodyTypeMap: Record<string, string> = {
-              S: '스트레이트',
-              W: '웨이브',
-              N: '내추럴',
-            };
-            setBodyType(bodyTypeMap[bodyData.body_type] || bodyData.body_type);
-            setHeight(bodyData.height ? `${bodyData.height}cm` : null);
-            // concerns 배열에서 첫 번째 항목을 특징으로 표시
-            const concerns = bodyData.concerns as string[] | null;
-            setFeature(concerns?.[0] || null);
-          }
-
-          if (pcData) {
-            setPersonalColor(`${pcData.result_season} ${pcData.result_tone}`);
-
-            // best_colors에서 컬러 팔레트 추출
-            const bestColors = pcData.best_colors as Array<{
-              name?: string;
-              hex?: string;
-              color?: string;
-            }> | null;
-            if (bestColors && bestColors.length > 0) {
-              setColorPalette(
-                bestColors.slice(0, 6).map((c) => ({
-                  name: c.name ?? '',
-                  color: c.hex ?? c.color ?? '#ccc',
-                }))
-              );
-            }
-          }
+          applyBodyData(bodyData);
+          applyPcData(pcData);
         }
 
         // 제품 데이터 매핑

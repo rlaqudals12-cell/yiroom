@@ -92,6 +92,9 @@ import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
 import { ResultPageInsights } from '@/components/insights';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 
 // 존 ID 타입 (FaceZoneMapProps에서 추출)
 type FaceZoneId = keyof NonNullable<FaceZoneMapProps['zones']>;
@@ -356,6 +359,7 @@ export default function SkinAnalysisResultPage() {
   const [trendData, setTrendData] = useState<Array<{ date: Date; score: number }>>([]);
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
+  const { isExpert, toggleExpert } = useExpertMode();
   // 하단 FAB 접이식 상태
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   // 이전 분석 비교용
@@ -837,6 +841,7 @@ export default function SkinAnalysisResultPage() {
                   {t('confidence')} {usedMock ? t('confidenceLow') : t('confidenceHigh')}
                 </span>
               </div>
+              <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
             </div>
             <div className="w-16" /> {/* 균형용 */}
           </header>
@@ -845,6 +850,20 @@ export default function SkinAnalysisResultPage() {
           {usedMock && (
             <div className="mb-6">
               <MockDataNotice />
+            </div>
+          )}
+          {/* 전문가 모드 데이터 패널 */}
+          {isExpert && result && (
+            <div className="mb-6">
+              <ExpertDataPanel
+                data={{
+                  confidence: usedMock ? 40 : 85,
+                  usedMock: usedMock,
+                  analyzedAt: result.analyzedAt,
+                  imageQuality: null,
+                  evidenceSummary: null,
+                }}
+              />
             </div>
           )}
 

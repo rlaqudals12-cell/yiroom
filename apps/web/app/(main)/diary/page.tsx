@@ -76,39 +76,39 @@ export default function SkinDiaryPage() {
           <TabsTrigger value="90d">3개월</TabsTrigger>
         </TabsList>
 
-        {loading ? (
-          <LoadingSkeleton />
-        ) : error ? (
-          <ErrorState message={error} onRetry={fetchData} />
-        ) : !data || data.trend.entryCount === 0 ? (
-          <EmptyState onAnalyze={() => router.push('/analysis/skin')} />
-        ) : (
-          <>
-            <TabsContent value={period} className="space-y-4 mt-4">
-              {/* 알림 배너 */}
-              <AlertBanner alerts={data.trend.alerts} />
+        {(() => {
+          if (loading) return <LoadingSkeleton />;
+          if (error) return <ErrorState message={error} onRetry={fetchData} />;
+          if (!data || data.trend.entryCount === 0)
+            return <EmptyState onAnalyze={() => router.push('/analysis/skin')} />;
+          return (
+            <>
+              <TabsContent value={period} className="space-y-4 mt-4">
+                {/* 알림 배너 */}
+                <AlertBanner alerts={data.trend.alerts} />
 
-              {/* 트렌드 요약 */}
-              <TrendSummary trend={data.trend} />
+                {/* 트렌드 요약 */}
+                <TrendSummary trend={data.trend} />
 
-              {/* 트렌드 차트 */}
-              <TrendChart trend={data.trend} />
+                {/* 트렌드 차트 */}
+                <TrendChart trend={data.trend} />
 
-              {/* 캘린더 */}
-              <SkinCalendar calendar={data.calendar} onMonthChange={handleMonthChange} />
+                {/* 캘린더 */}
+                <SkinCalendar calendar={data.calendar} onMonthChange={handleMonthChange} />
 
-              {/* 최근 기록 */}
-              {data.recentEntries.length > 0 && (
-                <div className="space-y-2">
-                  <h2 className="text-sm font-medium text-muted-foreground">최근 기록</h2>
-                  {data.recentEntries.map((entry) => (
-                    <DiaryEntryCard key={entry.id} entry={entry} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </>
-        )}
+                {/* 최근 기록 */}
+                {data.recentEntries.length > 0 && (
+                  <div className="space-y-2">
+                    <h2 className="text-sm font-medium text-muted-foreground">최근 기록</h2>
+                    {data.recentEntries.map((entry) => (
+                      <DiaryEntryCard key={entry.id} entry={entry} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </>
+          );
+        })()}
       </Tabs>
     </div>
   );

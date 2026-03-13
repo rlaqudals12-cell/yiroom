@@ -34,6 +34,9 @@ import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { useTranslations } from 'next-intl';
@@ -82,6 +85,8 @@ export default function BodyAnalysisResultPage() {
   const [activeTab, setActiveTab] = useState<string>('basic');
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
+  const [analyzedAt, setAnalyzedAt] = useState<string | null>(null);
+  const { isExpert, toggleExpert } = useExpertMode();
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   const fetchedRef = useRef(false);
@@ -137,6 +142,7 @@ export default function BodyAnalysisResultPage() {
       const dbData = data as DbBodyAnalysis;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
+      setAnalyzedAt(dbData.created_at ?? null);
 
       // 분석 근거 데이터 추출 (새 구조에서)
       const styleRecs = dbData.style_recommendations;
@@ -277,6 +283,12 @@ export default function BodyAnalysisResultPage() {
     );
   }
 
+  const confidenceLabel = (() => {
+    if (usedMock) return t('confidenceLow');
+    if (confidence && confidence >= 70) return t('confidenceHigh');
+    return t('confidenceNormal');
+  })();
+
   return (
     <>
       {/* 분석 완료 축하 효과 */}
@@ -307,16 +319,10 @@ export default function BodyAnalysisResultPage() {
               <div className="flex items-center gap-2">
                 <AIBadge variant="small" />
                 <span className="text-xs text-muted-foreground">
-                  {t('confidence')}{' '}
-                  {usedMock
-                    ? t('confidenceLow')
-                    : confidence
-                      ? confidence >= 70
-                        ? t('confidenceHigh')
-                        : t('confidenceNormal')
-                      : t('confidenceNormal')}
+                  {t('confidence')} {confidenceLabel}
                 </span>
               </div>
+              <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
             </div>
             <div className="w-16" />
           </header>
@@ -325,6 +331,37 @@ export default function BodyAnalysisResultPage() {
           {usedMock && (
             <div className="mb-6">
               <MockDataNotice />
+            </div>
+          )}
+
+          {/* 전문가 모드 상세 패널 */}
+          {isExpert && (
+            <div className="mb-6">
+              <ExpertDataPanel
+                data={{
+                  confidence: confidence ?? undefined,
+                  usedMock,
+                  analyzedAt: analyzedAt ?? undefined,
+                  imageQuality: imageQuality
+                    ? {
+                        angle: imageQuality.angle,
+                        poseNatural: imageQuality.poseNatural,
+                        clothingFit: imageQuality.clothingFit,
+                        analysisReliability: imageQuality.analysisReliability,
+                      }
+                    : undefined,
+                  evidenceSummary: analysisEvidence
+                    ? {
+                        shoulderLine: analysisEvidence.shoulderLine,
+                        waistDefinition: analysisEvidence.waistDefinition,
+                        hipLine: analysisEvidence.hipLine,
+                        boneStructure: analysisEvidence.boneStructure,
+                        silhouette: analysisEvidence.silhouette,
+                      }
+                    : undefined,
+                  moduleName: 'body',
+                }}
+              />
             </div>
           )}
 

@@ -211,37 +211,11 @@ export function computeHybridTrust(
 
   // CIE 파이프라인 기반 조정
   if (pipelineMeta) {
-    // CIE-1 품질 조정
-    if (pipelineMeta.qualityScore >= 80) {
-      adjustment += 5;
-    } else if (pipelineMeta.qualityScore < 50) {
-      adjustment -= 15;
-      warnings.push('이미지 품질이 낮아 결과의 정확도가 떨어질 수 있습니다.');
-      improvementSuggestion =
-        '이미지 품질을 높이면 더 정확한 분석이 가능합니다. 밝은 곳에서 정면으로 촬영해주세요.';
-    } else if (pipelineMeta.qualityScore < 65) {
-      adjustment -= 5;
-    }
-
-    // CIE-4 조명 조정
-    if (pipelineMeta.lightingScore !== null) {
-      if (pipelineMeta.lightingScore >= 70) {
-        adjustment += 3;
-      } else if (pipelineMeta.lightingScore < 40) {
-        adjustment -= 10;
-        warnings.push(
-          '조명이 불균일합니다. 자연광에서 촬영하면 더 정확한 결과를 얻을 수 있습니다.'
-        );
-        if (!improvementSuggestion) {
-          improvementSuggestion =
-            '조명이 균일하지 않습니다. 자연광이 들어오는 곳에서 촬영해주세요.';
-        }
-      }
-    }
-
-    // AWB 보정 적용 시 약간의 보너스
-    if (pipelineMeta.awbApplied) {
-      adjustment += 2;
+    const cie = computeCieAdjustment(pipelineMeta);
+    adjustment += cie.adjustment;
+    warnings.push(...cie.warnings);
+    if (!improvementSuggestion && cie.improvementSuggestion) {
+      improvementSuggestion = cie.improvementSuggestion;
     }
   }
 
@@ -257,6 +231,49 @@ export function computeHybridTrust(
 // ============================================
 // 헬퍼
 // ============================================
+
+/** CIE 파이프라인 메타에서 신뢰도 조정값·경고·개선 제안 계산 */
+function computeCieAdjustment(pipelineMeta: PipelineMetadata): {
+  adjustment: number;
+  warnings: string[];
+  improvementSuggestion?: string;
+} {
+  let adjustment = 0;
+  const warnings: string[] = [];
+  let improvementSuggestion: string | undefined;
+
+  // CIE-1 품질 조정
+  if (pipelineMeta.qualityScore >= 80) {
+    adjustment += 5;
+  } else if (pipelineMeta.qualityScore < 50) {
+    adjustment -= 15;
+    warnings.push('이미지 품질이 낮아 결과의 정확도가 떨어질 수 있습니다.');
+    improvementSuggestion =
+      '이미지 품질을 높이면 더 정확한 분석이 가능합니다. 밝은 곳에서 정면으로 촬영해주세요.';
+  } else if (pipelineMeta.qualityScore < 65) {
+    adjustment -= 5;
+  }
+
+  // CIE-4 조명 조정
+  if (pipelineMeta.lightingScore !== null) {
+    if (pipelineMeta.lightingScore >= 70) {
+      adjustment += 3;
+    } else if (pipelineMeta.lightingScore < 40) {
+      adjustment -= 10;
+      warnings.push('조명이 불균일합니다. 자연광에서 촬영하면 더 정확한 결과를 얻을 수 있습니다.');
+      if (!improvementSuggestion) {
+        improvementSuggestion = '조명이 균일하지 않습니다. 자연광이 들어오는 곳에서 촬영해주세요.';
+      }
+    }
+  }
+
+  // AWB 보정 적용 시 약간의 보너스
+  if (pipelineMeta.awbApplied) {
+    adjustment += 2;
+  }
+
+  return { adjustment, warnings, improvementSuggestion };
+}
 
 /** PipelineResult에서 API 응답용 메타데이터 추출 */
 function buildSuccessResult(

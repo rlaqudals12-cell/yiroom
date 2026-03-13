@@ -112,26 +112,17 @@ function applyFoundationBlending(
   const rh = maxY - minY + 1;
   if (rw <= 0 || rh <= 0) return;
 
-  // 얼굴 마스크 (scanline fill)
-  const faceMask = createPolygonMask(facePoints, minX, minY, rw, rh);
-
-  // 눈/입 제외 마스크
-  const leftEyePoints = LEFT_EYE_INDICES.map((idx) => ({
-    x: Math.round(landmarks.landmarks[idx].x * width),
-    y: Math.round(landmarks.landmarks[idx].y * height),
-  }));
-  const rightEyePoints = RIGHT_EYE_INDICES.map((idx) => ({
-    x: Math.round(landmarks.landmarks[idx].x * width),
-    y: Math.round(landmarks.landmarks[idx].y * height),
-  }));
-  const lipPoints = LIPS_INDICES.map((idx) => ({
-    x: Math.round(landmarks.landmarks[idx].x * width),
-    y: Math.round(landmarks.landmarks[idx].y * height),
-  }));
-
-  const leftEyeMask = createPolygonMask(leftEyePoints, minX, minY, rw, rh);
-  const rightEyeMask = createPolygonMask(rightEyePoints, minX, minY, rw, rh);
-  const lipMask = createPolygonMask(lipPoints, minX, minY, rw, rh);
+  // 얼굴 마스크 + 눈/입 제외 마스크 준비
+  const { faceMask, leftEyeMask, rightEyeMask, lipMask } = prepareFaceMasks(
+    landmarks,
+    width,
+    height,
+    minX,
+    minY,
+    rw,
+    rh,
+    facePoints
+  );
 
   // 얼굴 중심 좌표 (페이드아웃 기준)
   const faceCenterX = (minX + maxX) / 2;
@@ -142,32 +133,62 @@ function applyFoundationBlending(
   const imageData = ctx.getImageData(minX, minY, rw, rh);
   const pixels = imageData.data;
 
+  blendFoundationPixels(
+    pixels,
+    rw,
+    rh,
+    minX,
+    minY,
+    faceMask,
+    leftEyeMask,
+    rightEyeMask,
+    lipMask,
+    faceCenterX,
+    faceCenterY,
+    faceRadiusX,
+    faceRadiusY,
+    opacity,
+    color
+  );
+
+  ctx.putImageData(imageData, minX, minY);
+}
+
+/** 파운데이션 픽셀 블렌딩 루프 — applyFoundationBlending에서 분리 */
+function blendFoundationPixels(
+  pixels: Uint8ClampedArray,
+  rw: number,
+  rh: number,
+  minX: number,
+  minY: number,
+  faceMask: Uint8Array,
+  leftEyeMask: Uint8Array,
+  rightEyeMask: Uint8Array,
+  lipMask: Uint8Array,
+  faceCenterX: number,
+  faceCenterY: number,
+  faceRadiusX: number,
+  faceRadiusY: number,
+  opacity: number,
+  color: RgbaColor
+): void {
   for (let y = 0; y < rh; y++) {
     for (let x = 0; x < rw; x++) {
       const maskIdx = y * rw + x;
 
-      // 얼굴 영역 밖: 건너뜀
+      // 얼굴 영역 밖 또는 눈/입 영역: 건너뜀
       if (faceMask[maskIdx] === 0) continue;
-
-      // 눈/입 영역: 건너뜀
       if (leftEyeMask[maskIdx] > 0 || rightEyeMask[maskIdx] > 0 || lipMask[maskIdx] > 0) continue;
 
-      // 가장자리 페이드아웃: 얼굴 윤곽에 가까울수록 투명
-      const worldX = minX + x;
-      const worldY = minY + y;
-      const normalizedDist = Math.sqrt(
-        Math.pow((worldX - faceCenterX) / faceRadiusX, 2) +
-          Math.pow((worldY - faceCenterY) / faceRadiusY, 2)
+      const alpha = computeFoundationAlpha(
+        minX + x,
+        minY + y,
+        faceCenterX,
+        faceCenterY,
+        faceRadiusX,
+        faceRadiusY,
+        opacity
       );
-
-      // 0.7 이내 = 풀 커버, 0.7~1.0 = 페이드아웃
-      let edgeFalloff = 1.0;
-      if (normalizedDist > 0.7) {
-        edgeFalloff = Math.max(0, 1.0 - (normalizedDist - 0.7) / 0.3);
-        edgeFalloff = edgeFalloff * edgeFalloff; // 부드러운 커브
-      }
-
-      const alpha = opacity * edgeFalloff;
       if (alpha < 0.005) continue;
 
       const pixelIdx = (y * rw + x) * 4;
@@ -176,8 +197,57 @@ function applyFoundationBlending(
       pixels[pixelIdx + 2] = Math.round(pixels[pixelIdx + 2] * (1 - alpha) + color.b * alpha);
     }
   }
+}
 
-  ctx.putImageData(imageData, minX, minY);
+/** 가장자리 페이드아웃 포함 파운데이션 알파 계산 */
+function computeFoundationAlpha(
+  worldX: number,
+  worldY: number,
+  faceCenterX: number,
+  faceCenterY: number,
+  faceRadiusX: number,
+  faceRadiusY: number,
+  opacity: number
+): number {
+  const normalizedDist = Math.sqrt(
+    Math.pow((worldX - faceCenterX) / faceRadiusX, 2) +
+      Math.pow((worldY - faceCenterY) / faceRadiusY, 2)
+  );
+
+  // 0.7 이내 = 풀 커버, 0.7~1.0 = 페이드아웃
+  if (normalizedDist <= 0.7) return opacity;
+  const edgeFalloff = Math.max(0, 1.0 - (normalizedDist - 0.7) / 0.3);
+  return opacity * edgeFalloff * edgeFalloff;
+}
+
+/** 얼굴/눈/입 폴리곤 마스크 일괄 생성 */
+function prepareFaceMasks(
+  landmarks: FaceLandmarkResult,
+  width: number,
+  height: number,
+  minX: number,
+  minY: number,
+  rw: number,
+  rh: number,
+  facePoints: Array<{ x: number; y: number }>
+): {
+  faceMask: Uint8Array;
+  leftEyeMask: Uint8Array;
+  rightEyeMask: Uint8Array;
+  lipMask: Uint8Array;
+} {
+  const toPoints = (indices: number[]) =>
+    indices.map((idx) => ({
+      x: Math.round(landmarks.landmarks[idx].x * width),
+      y: Math.round(landmarks.landmarks[idx].y * height),
+    }));
+
+  return {
+    faceMask: createPolygonMask(facePoints, minX, minY, rw, rh),
+    leftEyeMask: createPolygonMask(toPoints(LEFT_EYE_INDICES), minX, minY, rw, rh),
+    rightEyeMask: createPolygonMask(toPoints(RIGHT_EYE_INDICES), minX, minY, rw, rh),
+    lipMask: createPolygonMask(toPoints(LIPS_INDICES), minX, minY, rw, rh),
+  };
 }
 
 /**

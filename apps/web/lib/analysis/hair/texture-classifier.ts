@@ -279,28 +279,43 @@ export function classifyTexture(
 
   switch (baseTexture) {
     case 'straight':
-      if (thickness === 'fine') return '1a';
-      if (thickness === 'thick') return '1c';
-      return '1b';
-
+      return classifyStraight(thickness);
     case 'wavy':
-      if (curlIntensity < 35) return '2a';
-      if (curlIntensity > 65) return '2c';
-      return '2b';
-
+      return classifyWavy(curlIntensity);
     case 'curly':
-      if (curlIntensity < 35) return '3a';
-      if (curlIntensity > 65) return '3c';
-      return '3b';
-
-    case 'coily': {
-      // 코일리는 수축률로 세분화
-      const shrink = shrinkageRatio ?? 0.7;
-      if (shrink < 0.7) return '4a';
-      if (shrink > 0.8) return '4c';
-      return '4b';
-    }
+      return classifyCurly(curlIntensity);
+    case 'coily':
+      return classifyCoily(shrinkageRatio);
   }
+}
+
+/** 직모(Type 1) 세분화: 굵기 기반 */
+function classifyStraight(thickness: 'fine' | 'medium' | 'thick'): TextureCode {
+  if (thickness === 'fine') return '1a';
+  if (thickness === 'thick') return '1c';
+  return '1b';
+}
+
+/** 웨이브(Type 2) 세분화: 컬 강도 기반 */
+function classifyWavy(curlIntensity: number): TextureCode {
+  if (curlIntensity < 35) return '2a';
+  if (curlIntensity > 65) return '2c';
+  return '2b';
+}
+
+/** 곱슬(Type 3) 세분화: 컬 강도 기반 */
+function classifyCurly(curlIntensity: number): TextureCode {
+  if (curlIntensity < 35) return '3a';
+  if (curlIntensity > 65) return '3c';
+  return '3b';
+}
+
+/** 코일리(Type 4) 세분화: 수축률 기반 */
+function classifyCoily(shrinkageRatio: number | undefined): TextureCode {
+  const shrink = shrinkageRatio ?? 0.7;
+  if (shrink < 0.7) return '4a';
+  if (shrink > 0.8) return '4c';
+  return '4b';
 }
 
 /**

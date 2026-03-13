@@ -15,6 +15,9 @@ import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
+import { useExpertMode } from '@/hooks/useExpertMode';
+import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
+import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
 import { useTranslations } from 'next-intl';
 
@@ -164,6 +167,7 @@ export default function HairAnalysisResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usedMock, setUsedMock] = useState(false);
+  const { isExpert, toggleExpert } = useExpertMode();
   const [activeTab, setActiveTab] = useState<string>('basic');
   const fetchedRef = useRef(false);
 
@@ -315,6 +319,13 @@ export default function HairAnalysisResultPage() {
     );
   }
 
+  const reliabilityLabel = (() => {
+    if (!result) return t('confidenceNormal');
+    if (result.analysisReliability === 'high') return t('confidenceHigh');
+    if (result.analysisReliability === 'medium') return t('confidenceNormal');
+    return t('confidenceLow');
+  })();
+
   return (
     <>
       <div
@@ -338,14 +349,10 @@ export default function HairAnalysisResultPage() {
                 <AIBadge variant="small" />
                 {result && (
                   <span className="text-xs text-muted-foreground">
-                    {t('confidence')}{' '}
-                    {result.analysisReliability === 'high'
-                      ? t('confidenceHigh')
-                      : result.analysisReliability === 'medium'
-                        ? t('confidenceNormal')
-                        : t('confidenceLow')}
+                    {t('confidence')} {reliabilityLabel}
                   </span>
                 )}
+                <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
               </div>
             </div>
             <div className="w-16" />
@@ -355,6 +362,21 @@ export default function HairAnalysisResultPage() {
           {usedMock && (
             <div className="mb-6">
               <MockDataNotice />
+            </div>
+          )}
+
+          {/* 전문가 모드 데이터 패널 */}
+          {isExpert && result && (
+            <div className="mb-6">
+              <ExpertDataPanel
+                data={{
+                  confidence: { high: 90, medium: 70, low: 40 }[result.analysisReliability] ?? 40,
+                  usedMock,
+                  analyzedAt: result.analyzedAt.toISOString(),
+                  imageQuality: null,
+                  evidenceSummary: { reliability: result.analysisReliability },
+                }}
+              />
             </div>
           )}
 

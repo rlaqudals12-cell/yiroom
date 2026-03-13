@@ -33,6 +33,13 @@ import type { ProductLookupResult } from '@/types/scan';
 type ScanMode = 'camera' | 'manual' | 'ingredient';
 type ScanState = 'scanning' | 'loading' | 'result' | 'not_found' | 'ocr_result';
 
+// EWG 등급별 배지 색상 클래스
+function getEwgGradeClass(grade: number): string {
+  if (grade <= 2) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+  if (grade <= 6) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+}
+
 export default function ScanPage() {
   const [mode, setMode] = useState<ScanMode>('camera');
   const [state, setState] = useState<ScanState>('scanning');
@@ -234,88 +241,98 @@ export default function ScanPage() {
               </div>
             )}
 
-            {compatibilityResult && (
-              <div className="p-4 bg-card rounded-xl border space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">피부 호환성</h3>
-                  <span
-                    className={cn(
-                      'text-2xl font-bold',
-                      compatibilityResult.overallScore >= 80
-                        ? 'text-green-600 dark:text-green-400'
-                        : compatibilityResult.overallScore >= 60
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-red-600 dark:text-red-400'
+            {compatibilityResult &&
+              (() => {
+                let scoreColorClass: string;
+                if (compatibilityResult.overallScore >= 80) {
+                  scoreColorClass = 'text-green-600 dark:text-green-400';
+                } else if (compatibilityResult.overallScore >= 60) {
+                  scoreColorClass = 'text-amber-600 dark:text-amber-400';
+                } else {
+                  scoreColorClass = 'text-red-600 dark:text-red-400';
+                }
+                return (
+                  <div className="p-4 bg-card rounded-xl border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">피부 호환성</h3>
+                      <span className={cn('text-2xl font-bold', scoreColorClass)}>
+                        {compatibilityResult.overallScore}점
+                      </span>
+                    </div>
+
+                    {/* 좋은 점 */}
+                    {compatibilityResult.skinCompatibility.goodPoints.length > 0 && (
+                      <div className="space-y-1">
+                        {compatibilityResult.skinCompatibility.goodPoints.map((point, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <ShieldCheck className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                            <span>{point.description}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                  >
-                    {compatibilityResult.overallScore}점
-                  </span>
-                </div>
 
-                {/* 좋은 점 */}
-                {compatibilityResult.skinCompatibility.goodPoints.length > 0 && (
-                  <div className="space-y-1">
-                    {compatibilityResult.skinCompatibility.goodPoints.map((point, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm">
-                        <ShieldCheck className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>{point.description}</span>
+                    {/* 주의 */}
+                    {compatibilityResult.skinCompatibility.warnings.length > 0 && (
+                      <div className="space-y-1">
+                        {compatibilityResult.skinCompatibility.warnings.map((warning, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                            <span>{warning.description}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
 
-                {/* 주의 */}
-                {compatibilityResult.skinCompatibility.warnings.length > 0 && (
-                  <div className="space-y-1">
-                    {compatibilityResult.skinCompatibility.warnings.map((warning, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                        <span>{warning.description}</span>
+                    {/* 위험 성분 */}
+                    {compatibilityResult.ingredientAnalysis.avoid.length > 0 && (
+                      <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg space-y-1">
+                        <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                          주의 성분
+                        </p>
+                        {compatibilityResult.ingredientAnalysis.avoid.map((item, i) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400"
+                          >
+                            <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                            <span>
+                              {item.ingredient}: {item.reason}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-
-                {/* 위험 성분 */}
-                {compatibilityResult.ingredientAnalysis.avoid.length > 0 && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg space-y-1">
-                    <p className="text-sm font-medium text-red-700 dark:text-red-300">주의 성분</p>
-                    {compatibilityResult.ingredientAnalysis.avoid.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400"
-                      >
-                        <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                        <span>
-                          {item.ingredient}: {item.reason}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                );
+              })()}
 
             {/* 추출된 성분 목록 */}
             <div className="p-4 bg-card rounded-xl border">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold">추출된 성분 ({ocrResult.ingredients.length}개)</h3>
-                <span
-                  className={cn(
-                    'text-xs px-2 py-0.5 rounded-full',
-                    ocrResult.confidence === 'high'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : ocrResult.confidence === 'medium'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  )}
-                >
-                  {ocrResult.confidence === 'high'
-                    ? '높은 정확도'
-                    : ocrResult.confidence === 'medium'
-                      ? '보통 정확도'
-                      : '낮은 정확도'}
-                </span>
+                {(() => {
+                  let confidenceBadgeClass: string;
+                  let confidenceText: string;
+                  if (ocrResult.confidence === 'high') {
+                    confidenceBadgeClass =
+                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+                    confidenceText = '높은 정확도';
+                  } else if (ocrResult.confidence === 'medium') {
+                    confidenceBadgeClass =
+                      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+                    confidenceText = '보통 정확도';
+                  } else {
+                    confidenceBadgeClass =
+                      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+                    confidenceText = '낮은 정확도';
+                  }
+                  return (
+                    <span className={cn('text-xs px-2 py-0.5 rounded-full', confidenceBadgeClass)}>
+                      {confidenceText}
+                    </span>
+                  );
+                })()}
               </div>
 
               <div className="space-y-2">
@@ -338,11 +355,7 @@ export default function ScanPage() {
                       <span
                         className={cn(
                           'text-xs font-medium px-1.5 py-0.5 rounded',
-                          ing.ewgGrade <= 2
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : ing.ewgGrade <= 6
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          getEwgGradeClass(ing.ewgGrade)
                         )}
                       >
                         EWG {ing.ewgGrade}

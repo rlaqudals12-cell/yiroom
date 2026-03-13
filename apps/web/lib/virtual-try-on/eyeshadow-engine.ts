@@ -129,7 +129,52 @@ function applyEyeshadowToEye(
     y: landmarks.landmarks[idx].y * height,
   }));
 
-  // 눈 바운딩 박스
+  const bounds = computeEyeBounds(eyePoints, browPoints, width, height, featherRadius);
+  if (!bounds) return;
+
+  const { eyeMinX, eyeMaxX, eyeMinY, eyeMaxY, shadowTopY, regionMinX, regionMinY, rw, rh } = bounds;
+
+  const imageData = ctx.getImageData(regionMinX, regionMinY, rw, rh);
+  const pixels = imageData.data;
+
+  blendEyeshadowPixels(
+    pixels,
+    rw,
+    rh,
+    regionMinX,
+    regionMinY,
+    eyeMinX,
+    eyeMaxX,
+    eyeMinY,
+    eyeMaxY,
+    shadowTopY,
+    opacity,
+    featherRadius,
+    primaryColor,
+    secondaryColor
+  );
+
+  ctx.putImageData(imageData, regionMinX, regionMinY);
+}
+
+/** 눈 영역 바운딩 박스 및 아이섀도 영역 계산 */
+function computeEyeBounds(
+  eyePoints: Array<{ x: number; y: number }>,
+  browPoints: Array<{ x: number; y: number }>,
+  width: number,
+  height: number,
+  featherRadius: number
+): {
+  eyeMinX: number;
+  eyeMaxX: number;
+  eyeMinY: number;
+  eyeMaxY: number;
+  shadowTopY: number;
+  regionMinX: number;
+  regionMinY: number;
+  rw: number;
+  rh: number;
+} | null {
   let eyeMinX = width,
     eyeMaxX = 0;
   let eyeMinY = height,
@@ -141,7 +186,7 @@ function applyEyeshadowToEye(
     eyeMaxY = Math.max(eyeMaxY, p.y);
   }
 
-  // 눈썹 높이 (아이섀도 상단 경계)
+  // 눈썹 최소 Y (아이섀도 상단 경계)
   let browMinY = height;
   for (const p of browPoints) {
     browMinY = Math.min(browMinY, p.y);
@@ -159,69 +204,119 @@ function applyEyeshadowToEye(
 
   const rw = regionMaxX - regionMinX + 1;
   const rh = regionMaxY - regionMinY + 1;
-  if (rw <= 0 || rh <= 0) return;
+  if (rw <= 0 || rh <= 0) return null;
 
-  const imageData = ctx.getImageData(regionMinX, regionMinY, rw, rh);
-  const pixels = imageData.data;
+  return { eyeMinX, eyeMaxX, eyeMinY, eyeMaxY, shadowTopY, regionMinX, regionMinY, rw, rh };
+}
 
-  // 눈꺼풀 영역 상하 범위
+/** 수평 페이드: 양 끝에서 페이드아웃 계산 */
+function computeHorizontalFalloff(
+  worldX: number,
+  eyeMinX: number,
+  eyeMaxX: number,
+  featherRadius: number
+): number {
+  const distFromLeft = worldX - eyeMinX;
+  if (distFromLeft < featherRadius) return Math.max(0, distFromLeft / featherRadius);
+  const distFromRight = eyeMaxX - worldX;
+  if (distFromRight < featherRadius) return Math.max(0, distFromRight / featherRadius);
+  return 1.0;
+}
+
+/** 듀얼 컬러 보간: 내측 primaryColor, 외측 secondaryColor */
+function interpolateDualColor(
+  worldX: number,
+  eyeMinX: number,
+  eyeMaxX: number,
+  primaryColor: RgbaColor,
+  secondaryColor: RgbaColor
+): RgbaColor {
+  const horizontalT = (worldX - eyeMinX) / (eyeMaxX - eyeMinX);
+  if (horizontalT <= 0.5) return primaryColor;
+  const blendT = (horizontalT - 0.5) * 2;
+  return {
+    r: Math.round(primaryColor.r * (1 - blendT) + secondaryColor.r * blendT),
+    g: Math.round(primaryColor.g * (1 - blendT) + secondaryColor.g * blendT),
+    b: Math.round(primaryColor.b * (1 - blendT) + secondaryColor.b * blendT),
+    a: 1,
+  };
+}
+
+/** 단일 행 아이섀도 블렌딩 */
+function blendEyeshadowRow(
+  pixels: Uint8ClampedArray,
+  y: number,
+  rw: number,
+  regionMinX: number,
+  eyeMinX: number,
+  eyeMaxX: number,
+  opacity: number,
+  verticalFalloff: number,
+  featherRadius: number,
+  primaryColor: RgbaColor,
+  secondaryColor: RgbaColor | null
+): void {
+  for (let x = 0; x < rw; x++) {
+    const worldX = regionMinX + x;
+    if (worldX < eyeMinX - featherRadius || worldX > eyeMaxX + featherRadius) continue;
+
+    const horizontalFalloff = computeHorizontalFalloff(worldX, eyeMinX, eyeMaxX, featherRadius);
+    const alpha = opacity * verticalFalloff * horizontalFalloff;
+    if (alpha < 0.01) continue;
+
+    const color = secondaryColor
+      ? interpolateDualColor(worldX, eyeMinX, eyeMaxX, primaryColor, secondaryColor)
+      : primaryColor;
+
+    const pixelIdx = (y * rw + x) * 4;
+    pixels[pixelIdx] = Math.round(pixels[pixelIdx] * (1 - alpha) + color.r * alpha);
+    pixels[pixelIdx + 1] = Math.round(pixels[pixelIdx + 1] * (1 - alpha) + color.g * alpha);
+    pixels[pixelIdx + 2] = Math.round(pixels[pixelIdx + 2] * (1 - alpha) + color.b * alpha);
+  }
+}
+
+/** 아이섀도 픽셀 블렌딩 루프 */
+function blendEyeshadowPixels(
+  pixels: Uint8ClampedArray,
+  rw: number,
+  rh: number,
+  regionMinX: number,
+  regionMinY: number,
+  eyeMinX: number,
+  eyeMaxX: number,
+  eyeMinY: number,
+  _eyeMaxY: number,
+  shadowTopY: number,
+  opacity: number,
+  featherRadius: number,
+  primaryColor: RgbaColor,
+  secondaryColor: RgbaColor | null
+): void {
   const lidTop = shadowTopY;
-  const lidBottom = eyeTopY;
+  const lidBottom = eyeMinY;
   const lidHeight = lidBottom - lidTop;
-
   if (lidHeight <= 0) return;
 
   for (let y = 0; y < rh; y++) {
     const worldY = regionMinY + y;
-
-    // 아이섀도 영역 외부: 건너뜀
     if (worldY < lidTop || worldY > lidBottom) continue;
 
     // 수직 그래디언트: 아래(눈 경계)가 진하고 위(눈썹)로 갈수록 연해짐
-    const verticalT = (worldY - lidTop) / lidHeight; // 0=상단(연), 1=하단(진)
-    const verticalFalloff = verticalT * verticalT; // 제곱 커브: 자연스러운 농도 변화
+    const verticalT = (worldY - lidTop) / lidHeight;
+    const verticalFalloff = verticalT * verticalT;
 
-    for (let x = 0; x < rw; x++) {
-      const worldX = regionMinX + x;
-
-      // 눈 너비 범위 내인지 확인
-      if (worldX < eyeMinX - featherRadius || worldX > eyeMaxX + featherRadius) continue;
-
-      // 수평 페이드: 양 끝에서 페이드아웃
-      let horizontalFalloff = 1.0;
-      const distFromLeft = worldX - eyeMinX;
-      const distFromRight = eyeMaxX - worldX;
-      if (distFromLeft < featherRadius) {
-        horizontalFalloff = Math.max(0, distFromLeft / featherRadius);
-      } else if (distFromRight < featherRadius) {
-        horizontalFalloff = Math.max(0, distFromRight / featherRadius);
-      }
-
-      const alpha = opacity * verticalFalloff * horizontalFalloff;
-      if (alpha < 0.01) continue;
-
-      // 듀얼 컬러: 내측은 primaryColor, 외측은 secondaryColor
-      let color = primaryColor;
-      if (secondaryColor) {
-        const horizontalT = (worldX - eyeMinX) / (eyeMaxX - eyeMinX);
-        if (horizontalT > 0.5) {
-          // 외측 - 두 색 사이 보간
-          const blendT = (horizontalT - 0.5) * 2;
-          color = {
-            r: Math.round(primaryColor.r * (1 - blendT) + secondaryColor.r * blendT),
-            g: Math.round(primaryColor.g * (1 - blendT) + secondaryColor.g * blendT),
-            b: Math.round(primaryColor.b * (1 - blendT) + secondaryColor.b * blendT),
-            a: 1,
-          };
-        }
-      }
-
-      const pixelIdx = (y * rw + x) * 4;
-      pixels[pixelIdx] = Math.round(pixels[pixelIdx] * (1 - alpha) + color.r * alpha);
-      pixels[pixelIdx + 1] = Math.round(pixels[pixelIdx + 1] * (1 - alpha) + color.g * alpha);
-      pixels[pixelIdx + 2] = Math.round(pixels[pixelIdx + 2] * (1 - alpha) + color.b * alpha);
-    }
+    blendEyeshadowRow(
+      pixels,
+      y,
+      rw,
+      regionMinX,
+      eyeMinX,
+      eyeMaxX,
+      opacity,
+      verticalFalloff,
+      featherRadius,
+      primaryColor,
+      secondaryColor
+    );
   }
-
-  ctx.putImageData(imageData, regionMinX, regionMinY);
 }
