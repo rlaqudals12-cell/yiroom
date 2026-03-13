@@ -12,6 +12,7 @@
  */
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 import { CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -24,6 +25,7 @@ interface Step {
 
 export default function HomeOnboardingChecklist() {
   const router = useRouter();
+  const t = useTranslations('home');
   const { isLoading, isNewUser } = useAnalysisStatus();
 
   // 로딩 중이거나 기존 사용자면 숨김
@@ -33,19 +35,19 @@ export default function HomeOnboardingChecklist() {
 
   const steps: Step[] = [
     {
-      label: '회원가입 완료',
-      description: '이룸에 오신 걸 환영해요!',
+      label: t('signupComplete'),
+      description: t('signupCompleteDesc'),
       done: true,
     },
     {
-      label: '첫 AI 분석 해보기',
-      description: '사진 한 장으로 나를 알아가요',
+      label: t('firstAnalysis'),
+      description: t('firstAnalysisDesc'),
       done: false,
       href: '/analysis/personal-color',
     },
     {
-      label: '맞춤 추천 받기',
-      description: '분석 결과로 나만의 루틴 완성',
+      label: t('getRecommendation'),
+      description: t('getRecommendationDesc'),
       done: false,
     },
   ];
@@ -57,7 +59,7 @@ export default function HomeOnboardingChecklist() {
       className="animate-fade-in-up animation-delay-50"
       data-testid="home-onboarding-checklist"
       role="region"
-      aria-label="시작 가이드 체크리스트"
+      aria-label={t('onboardingChecklist')}
     >
       {/* 환영 카드 */}
       <div className="bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-pink-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-pink-500/20 rounded-2xl border border-violet-200/50 dark:border-violet-800/50 p-5">
@@ -65,10 +67,10 @@ export default function HomeOnboardingChecklist() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-violet-500" />
-            <h3 className="font-bold text-slate-900 dark:text-white">시작 가이드</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white">{t('onboardingGuide')}</h3>
           </div>
           <span className="text-sm text-violet-600 dark:text-violet-400 font-medium">
-            {completedCount}/3 완료
+            {t('completedCount', { completed: completedCount })}
           </span>
         </div>
 

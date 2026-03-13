@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 
 /**
@@ -9,6 +10,7 @@ import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
  */
 export default function HomeTodayRecommendation() {
   const router = useRouter();
+  const t = useTranslations('home');
   const { isLoading, isNewUser } = useAnalysisStatus();
 
   // 로딩 중이거나 신규 사용자면 렌더링 안 함
@@ -18,7 +20,7 @@ export default function HomeTodayRecommendation() {
 
   return (
     <section
-      aria-label="오늘의 맞춤 추천"
+      aria-label={t('todayRecommendationLabel')}
       className="animate-fade-in-up animation-delay-200"
     >
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
@@ -37,14 +39,14 @@ export default function HomeTodayRecommendation() {
             d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
           />
         </svg>
-        오늘의 추천
+        {t('todayRecommendation')}
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {/* 피부 맞춤 추천 */}
         <button
           onClick={() => router.push('/beauty')}
           className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-pink-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
-          aria-label="피부 맞춤 제품 추천 보기"
+          aria-label={t('skinRecommendLabel')}
         >
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-400/20 rounded-full blur-2xl" />
           <div className="relative">
@@ -65,8 +67,8 @@ export default function HomeTodayRecommendation() {
                 />
               </svg>
             </div>
-            <p className="font-semibold text-slate-900 dark:text-white">피부 맞춤</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">스킨케어 추천</p>
+            <p className="font-semibold text-slate-900 dark:text-white">{t('skinCustom')}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('skincareRecommend')}</p>
             {/* ChevronRight 아이콘 */}
             <svg
               className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"
@@ -84,7 +86,7 @@ export default function HomeTodayRecommendation() {
         <button
           onClick={() => router.push('/style')}
           className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 text-left hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
-          aria-label="체형 맞춤 코디 추천 보기"
+          aria-label={t('bodyRecommendLabel')}
         >
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-2xl" />
           <div className="relative">
@@ -105,8 +107,8 @@ export default function HomeTodayRecommendation() {
                 />
               </svg>
             </div>
-            <p className="font-semibold text-slate-900 dark:text-white">체형 맞춤</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">코디 추천</p>
+            <p className="font-semibold text-slate-900 dark:text-white">{t('bodyCustom')}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('outfitRecommend')}</p>
             {/* ChevronRight 아이콘 */}
             <svg
               className="w-4 h-4 text-slate-400 mt-2 group-hover:translate-x-1 transition-transform"

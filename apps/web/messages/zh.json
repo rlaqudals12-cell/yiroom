@@ -19,37 +19,170 @@
   },
   "nav": {
     "home": "首页",
-    "beauty": "美容",
-    "style": "穿搭",
+    "beauty": "美妆",
+    "style": "风格",
     "record": "记录",
-    "profile": "我的"
+    "profile": "个人"
   },
   "auth": {
     "signIn": "登录",
     "signOut": "退出",
     "signUp": "注册",
-    "myPage": "个人中心"
+    "myPage": "我的"
   },
   "home": {
     "greeting": "你好！",
     "todayRecord": "今日记录",
     "quickActions": "快捷菜单",
-    "recentActivity": "最近动态"
+    "recentActivity": "最近活动",
+    "morningGreeting": "早上好",
+    "afternoonGreeting": "下午好",
+    "eveningGreeting": "晚上好",
+    "nightGreeting": "晚安",
+    "greetingSuffix": "{name}",
+    "dailyMotivation": "开始属于自己的一天吧",
+    "heroTitle": "一次了解适合自己的\n颜色、肤质和风格",
+    "socialProof": "今天有{count}人进行了分析",
+    "personalColor": "个人色彩",
+    "skinAnalysis": "皮肤分析",
+    "bodyAnalysis": "体型",
+    "hairAnalysis": "发型",
+    "makeupAnalysis": "化妆",
+    "surveyAltLabel": "不想用照片？",
+    "surveyAltAction": "快速问卷开始",
+    "newUserGuide": "新用户指南",
+    "notificationLabel": "查看通知",
+    "searchLabel": "前往搜索",
+    "brandName": "Yiroom",
+    "memberFallback": "用户",
+    "greetingFallback": "你好",
+
+    "analysisPromptTitle": "发现属于你的风格？",
+    "analysisPromptDesc": "AI为你定制分析",
+    "analysisPromptCta": "从个人色彩开始",
+    "analysisPromptLabel": "开始AI分析",
+    "recommended": "推荐",
+    "findMatchingColors": "找到适合的颜色",
+    "aiSkinDiagnosis": "AI皮肤诊断",
+    "customStyle": "定制风格",
+    "scalpHairCheck": "头皮/头发检查",
+    "beautyStyle": "美妆风格",
+
+    "myAnalysisResults": "我的分析结果",
+    "viewAll": "查看全部",
+    "startAnalysis": "开始分析",
+    "skinLabel": "皮肤",
+    "bodyLabel": "体型",
+    "hairLabel": "发型",
+    "makeupLabel": "化妆",
+    "oralLabel": "口腔健康",
+    "pcValueHint": "了解适合的颜色让选择更轻松",
+    "pcNarrative": "这是适合你的色调",
+    "skinValueHint": "了解皮肤状态才能找到护理方向",
+    "skinNarrative": "目前的皮肤状况",
+    "bodyValueHint": "了解体型让穿搭更出众",
+    "bodyNarrative": "你的体型特征",
+    "hairValueHint": "找到适合脸型的发型",
+    "hairNarrative": "了解了你的发质特性",
+    "makeupValueHint": "发现你的专属妆容要点",
+    "makeupNarrative": "你的妆容亮点",
+    "oralValueHint": "健康的笑容是自信的开始",
+    "oralNarrative": "已确认口腔健康状态",
+
+    "activitySummary": "今日活动摘要",
+    "selfUnderstanding": "自我认知",
+    "startFirstRecord": "开始今天的第一条记录？",
+    "activityLoadError": "无法加载活动数据",
+    "statusDiscovered": "发现",
+    "statusRecognized": "认识",
+    "statusInternalized": "内化",
+    "statusIndependent": "自立",
+    "caloriesLabel": "热量",
+    "caloriesUnit": "kcal",
+    "workoutLabel": "运动",
+    "minuteUnit": "分钟",
+    "waterLabel": "水分",
+    "glassUnit": "杯",
+
+    "onboardingGuide": "入门指南",
+    "onboardingChecklist": "入门指南清单",
+    "completedCount": "{completed}/3 完成",
+    "signupComplete": "注册完成",
+    "signupCompleteDesc": "欢迎来到Yiroom！",
+    "firstAnalysis": "首次AI分析",
+    "firstAnalysisDesc": "一张照片了解自己",
+    "getRecommendation": "获取推荐",
+    "getRecommendationDesc": "用分析结果完善你的日程",
+
+    "todayRecommendation": "今日推荐",
+    "todayRecommendationLabel": "今日个性化推荐",
+    "skinRecommendLabel": "查看皮肤匹配产品推荐",
+    "skinCustom": "皮肤匹配",
+    "skincareRecommend": "护肤推荐",
+    "bodyRecommendLabel": "查看体型匹配穿搭推荐",
+    "bodyCustom": "体型匹配",
+    "outfitRecommend": "穿搭推荐",
+
+    "capsuleLabel": "今日每日胶囊",
+    "todayRoutine": "今日日程",
+    "capsuleLoadError": "无法加载胶囊",
+    "capsuleRetry": "要再试一次吗？",
+    "capsuleEmptyState": "完成更多分析后将生成定制日程",
+    "capsuleMinutes": "约{minutes}分钟",
+    "capsuleMoreItems": "+{count}项",
+    "capsuleAllComplete": "今日日程已全部完成！",
+    "capsuleDetail": "查看详情",
+
+    "discoveredCount": "发现了关于自己的{count}件事",
+    "connectionRule": "{label}结果 — 自我认知的一部分",
+
+    "nextStepDefault": "准备开始下一个分析？",
+    "nextStepPcBody": "为{season}推荐穿搭需要体型信息",
+    "nextStepPcBodyFallback": "为个人色彩推荐穿搭需要体型信息",
+    "nextStepSkinMakeup": "找到适合皮肤类型的化妆风格？",
+    "nextStepBodyHair": "想知道适合体型的发型吗？",
+    "nextStepHairMakeup": "发现与发型协调的化妆色调？",
+    "nextStepMakeupOral": "让笑容也完美！检查口腔健康吧",
+
+    "insightTitle": "为你定制的洞察",
+    "insightEmpty": "完成更多分析后将生成定制洞察",
+    "statusNewDiscovery": "新发现",
+    "statusLearning": "了解中",
+    "statusBecomingMine": "正在内化",
+    "statusCanJudge": "可独立判断",
+    "basedOn": "基于",
+    "confirmed": "已确认",
+    "pcLabel": "个人色彩",
+    "faceLabel": "化妆",
+    "bodyAnalysisLabel": "体型分析",
+    "hairAnalysisLabel": "发型分析",
+    "oralHealthLabel": "口腔健康",
+
+    "insightMorningSkin": "早上洁面后请仔细涂抹保湿精华",
+    "insightMorningColor": "查看适合{season}的今日妆容",
+    "insightMorningDefault": "早上好！来看看今天的日程吧",
+    "insightAfternoonSkin": "下午用喷雾补充水分吧",
+    "insightAfternoonDefault": "别忘了下午的日程",
+    "insightEveningSkin": "开始晚间护肤日程吧",
+    "insightNight": "充足的睡眠是最好的护肤",
+    "insightBasis": "基于{count}项分析的定制建议",
+
+    "dashboardWidgets": "仪表盘小组件"
   },
   "beauty": {
-    "title": "美容",
+    "title": "美妆",
     "personalColor": "个人色彩",
-    "skinAnalysis": "肤质分析",
+    "skinAnalysis": "皮肤分析",
     "recommendations": "推荐产品",
     "cosmetics": "化妆品",
-    "supplements": "营养品"
+    "supplements": "保健品"
   },
   "style": {
-    "title": "穿搭",
+    "title": "风格",
     "bodyAnalysis": "体型分析",
     "closet": "衣橱",
     "outfitSuggestion": "穿搭推荐",
-    "lookbook": "穿搭手册"
+    "lookbook": "造型集"
   },
   "record": {
     "title": "记录",
@@ -61,13 +194,13 @@
   "workout": {
     "title": "运动",
     "todayWorkout": "今日运动",
-    "workoutPlan": "训练计划",
-    "exercises": "运动列表",
-    "sets": "组数",
-    "reps": "次数",
-    "duration": "时长",
-    "calories": "卡路里",
-    "complete": "完成训练"
+    "workoutPlan": "运动计划",
+    "exercises": "运动项目",
+    "sets": "组",
+    "reps": "次",
+    "duration": "时间",
+    "calories": "热量",
+    "complete": "完成运动"
   },
   "nutrition": {
     "title": "营养",
@@ -76,20 +209,74 @@
     "lunch": "午餐",
     "dinner": "晚餐",
     "snack": "零食",
-    "water": "饮水",
-    "calories": "卡路里",
+    "water": "水",
+    "calories": "热量",
     "protein": "蛋白质",
     "carbs": "碳水化合物",
     "fat": "脂肪"
   },
   "profile": {
-    "title": "我的",
+    "title": "个人",
     "settings": "设置",
     "notifications": "通知",
     "language": "语言",
     "theme": "主题",
     "friends": "好友",
     "achievements": "成就"
+  },
+  "settings": {
+    "title": "设置",
+    "account": "账户",
+    "notifications": "通知",
+    "app": "应用设置",
+    "privacy": "隐私",
+    "dataManagement": "数据管理",
+    "appInfo": "应用信息",
+    "notif": {
+      "master": "全部通知",
+      "masterDesc": "一键开关所有通知",
+      "workout": "运动通知",
+      "workoutReminder": "运动提醒",
+      "workoutReminderDesc": "在设定时间发送运动提醒",
+      "reminderTime": "提醒时间",
+      "streakWarning": "连续记录警告",
+      "streakWarningDesc": "连续记录即将中断时提醒",
+      "meal": "餐食通知",
+      "nutritionReminder": "营养记录提醒",
+      "nutritionReminderDesc": "在用餐时间提醒记录",
+      "breakfastTime": "早餐提醒",
+      "lunchTime": "午餐提醒",
+      "dinnerTime": "晚餐提醒",
+      "waterReminder": "饮水提醒",
+      "waterReminderDesc": "定期提醒补充水分",
+      "waterInterval": "提醒间隔",
+      "waterIntervalHours": "每{hours}小时",
+      "social": "社交",
+      "socialNotifications": "社交通知",
+      "socialNotificationsDesc": "好友请求、挑战邀请等",
+      "achievementNotifications": "成就通知",
+      "achievementNotificationsDesc": "获得徽章、升级等"
+    },
+    "theme": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "privacy": {
+      "profilePublic": "公开个人资料",
+      "activityPublic": "公开活动",
+      "leaderboardPublic": "公开排行榜"
+    },
+    "data": {
+      "export": "导出数据",
+      "deleteAccount": "删除账户"
+    },
+    "info": {
+      "version": "版本",
+      "terms": "服务条款",
+      "privacyPolicy": "隐私政策",
+      "openSourceLicenses": "开源许可"
+    }
   },
   "social": {
     "friends": "好友",
@@ -101,15 +288,39 @@
   "analysis": {
     "analyzing": "分析中...",
     "result": "分析结果",
-    "retake": "重新拍摄",
+    "retake": "重新拍照",
     "share": "分享"
+  },
+  "emptyState": {
+    "feed": {
+      "myTitle": "还没有发布内容",
+      "myDesc": "写下第一篇帖子，与他人分享吧。",
+      "allTitle": "动态为空",
+      "allDesc": "来写第一篇帖子吧！",
+      "action": "发布帖子"
+    },
+    "friends": {
+      "title": "还没有好友",
+      "desc": "找到好友，一起养成健康习惯吧。",
+      "action": "寻找好友"
+    },
+    "report": {
+      "title": "还没有报告",
+      "desc": "完成分析后将生成报告。",
+      "action": "开始分析"
+    },
+    "analysis": {
+      "title": "还没有分析结果",
+      "desc": "通过AI分析创建你的美妆档案。",
+      "action": "开始分析"
+    }
   },
   "errors": {
     "networkError": "网络错误",
     "serverError": "服务器错误",
-    "notFound": "页面不存在",
-    "unauthorized": "请先登录",
-    "forbidden": "无访问权限"
+    "notFound": "页面未找到",
+    "unauthorized": "需要登录",
+    "forbidden": "没有访问权限"
   },
   "time": {
     "today": "今天",

@@ -1,17 +1,20 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 /**
  * 홈 헤더 - Server Component
  * LCP 최적화: 정적 렌더링으로 즉시 표시
  */
-export function HomeHeader() {
+export async function HomeHeader() {
+  const t = await getTranslations('home');
+
   return (
     <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/30">
       <div className="flex items-center justify-between px-4 h-14">
         <Link
           href="/notifications"
           className="p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          aria-label="알림 확인"
+          aria-label={t('notificationLabel')}
         >
           {/* Bell 아이콘 - 인라인 SVG로 번들 최적화 */}
           <svg
@@ -30,12 +33,12 @@ export function HomeHeader() {
           </svg>
         </Link>
         <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          이룸
+          {t('brandName')}
         </h1>
         <Link
           href="/search"
           className="p-2 -mr-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          aria-label="검색 페이지로 이동"
+          aria-label={t('searchLabel')}
         >
           {/* Search 아이콘 - 인라인 SVG로 번들 최적화 */}
           <svg

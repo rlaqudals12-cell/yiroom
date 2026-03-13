@@ -1,14 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Palette, Sparkles, User, Scissors, Heart, ArrowRight } from 'lucide-react';
 
-// 분석 카드 정의
+// 분석 카드 정의 (titleKey/descKey로 i18n)
 const ANALYSIS_CARDS = [
   {
     id: 'personal-color',
-    title: '퍼스널 컬러',
-    description: '어울리는 색상 찾기',
+    titleKey: 'personalColor' as const,
+    descKey: 'findMatchingColors' as const,
     icon: Palette,
     href: '/analysis/personal-color',
     gradient: 'from-violet-400 to-purple-500',
@@ -17,8 +18,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'skin',
-    title: '피부 분석',
-    description: 'AI 피부 진단',
+    titleKey: 'skinAnalysis' as const,
+    descKey: 'aiSkinDiagnosis' as const,
     icon: Sparkles,
     href: '/analysis/skin',
     gradient: 'from-rose-400 to-pink-500',
@@ -27,8 +28,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'body',
-    title: '체형 분석',
-    description: '맞춤 스타일',
+    titleKey: 'bodyAnalysis' as const,
+    descKey: 'customStyle' as const,
     icon: User,
     href: '/analysis/body',
     gradient: 'from-blue-400 to-indigo-500',
@@ -37,8 +38,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'hair',
-    title: '헤어 분석',
-    description: '두피/모발 체크',
+    titleKey: 'hairAnalysis' as const,
+    descKey: 'scalpHairCheck' as const,
     icon: Scissors,
     href: '/analysis/hair',
     gradient: 'from-amber-400 to-orange-500',
@@ -47,8 +48,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'makeup',
-    title: '메이크업',
-    description: '뷰티 스타일',
+    titleKey: 'makeupAnalysis' as const,
+    descKey: 'beautyStyle' as const,
     icon: Heart,
     href: '/analysis/makeup',
     gradient: 'from-pink-400 to-rose-500',
@@ -61,9 +62,11 @@ const ANALYSIS_CARDS = [
 function AnalysisCard({
   card,
   onClick,
+  t,
 }: {
   card: (typeof ANALYSIS_CARDS)[0];
   onClick: () => void;
+  t: (key: string) => string;
 }) {
   const Icon = card.icon;
 
@@ -76,7 +79,7 @@ function AnalysisCard({
       {/* 추천 배지 */}
       {card.recommended && (
         <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-400 text-amber-900 text-[10px] font-bold rounded-full z-10">
-          추천
+          {t('recommended')}
         </span>
       )}
 
@@ -88,9 +91,11 @@ function AnalysisCard({
       </div>
 
       {/* 텍스트 */}
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{card.title}</span>
+      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        {t(card.titleKey)}
+      </span>
       <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-        {card.description}
+        {t(card.descKey)}
       </span>
     </button>
   );
@@ -102,25 +107,26 @@ function AnalysisCard({
  */
 export default function HomeAnalysisPrompt() {
   const router = useRouter();
+  const t = useTranslations('home');
 
   return (
     <section
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none"
       data-testid="home-analysis-prompt"
-      aria-label="AI 분석 시작"
+      aria-label={t('analysisPromptLabel')}
     >
       {/* 헤더 */}
       <div className="text-center mb-5">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-          나만의 스타일을 찾아볼까요?
+          {t('analysisPromptTitle')}
         </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">AI가 맞춤 분석을 해드려요</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('analysisPromptDesc')}</p>
       </div>
 
       {/* 분석 카드 그리드 - 5개 균등 배치 */}
       <div className="grid grid-cols-5 gap-1 mb-5">
         {ANALYSIS_CARDS.map((card) => (
-          <AnalysisCard key={card.id} card={card} onClick={() => router.push(card.href)} />
+          <AnalysisCard key={card.id} card={card} onClick={() => router.push(card.href)} t={t} />
         ))}
       </div>
 
@@ -129,7 +135,7 @@ export default function HomeAnalysisPrompt() {
         onClick={() => router.push('/analysis/personal-color')}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all"
       >
-        퍼스널 컬러부터 시작하기
+        {t('analysisPromptCta')}
         <ArrowRight className="w-4 h-4" />
       </button>
     </section>

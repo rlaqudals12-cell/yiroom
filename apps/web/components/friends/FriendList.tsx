@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FriendCard } from './FriendCard';
 import type { Friend } from '@/types/friends';
 import { Users } from 'lucide-react';
+import { EmptyStateCard } from '@/components/common/EmptyStateCard';
 
 interface FriendListProps {
   friends: Friend[];
@@ -45,23 +46,7 @@ export function FriendList({
   }
 
   if (friends.length === 0) {
-    return (
-      <Card data-testid="friend-list-empty">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            <span>친구 목록</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>아직 친구가 없습니다.</p>
-            <p className="text-sm mt-1">친구를 추가해보세요!</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <EmptyStateCard preset="friends" data-testid="friend-list-empty" />;
   }
 
   return (
@@ -70,9 +55,7 @@ export function FriendList({
         <CardTitle className="text-lg flex items-center gap-2">
           <Users className="h-5 w-5" />
           <span>친구 목록</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            ({friends.length}명)
-          </span>
+          <span className="text-sm font-normal text-muted-foreground">({friends.length}명)</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -10,34 +10,35 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Flame, Dumbbell, Droplets, Brain, ChevronRight } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { ConnectionStats } from '@/lib/connection-awareness';
 import { getConnectionStats } from '@/lib/connection-awareness';
 
-// 4단계 내재화 상태별 세그먼트 설정
+// 4단계 내재화 상태별 세그먼트 설정 (label은 i18n 키)
 const STATUS_SEGMENTS = [
   {
     key: 'exposed' as const,
-    label: '발견',
+    labelKey: 'statusDiscovered' as const,
     color: 'bg-slate-300 dark:bg-slate-600',
     dot: 'bg-slate-400',
   },
   {
     key: 'recognized' as const,
-    label: '인식',
+    labelKey: 'statusRecognized' as const,
     color: 'bg-violet-300 dark:bg-violet-700',
     dot: 'bg-violet-400',
   },
   {
     key: 'internalized' as const,
-    label: '내재화',
+    labelKey: 'statusInternalized' as const,
     color: 'bg-indigo-400 dark:bg-indigo-600',
     dot: 'bg-indigo-400',
   },
   {
     key: 'independent' as const,
-    label: '자립',
+    labelKey: 'statusIndependent' as const,
     color: 'bg-emerald-400 dark:bg-emerald-600',
     dot: 'bg-emerald-400',
   },
@@ -57,6 +58,7 @@ interface HomeActivityBarProps {
 
 export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
   const supabase = useClerkSupabaseClient();
+  const t = useTranslations('home');
   const [stats, setStats] = useState<ConnectionStats | null>(null);
   const [activity, setActivity] = useState<DailyActivity>({
     calories: 0,
@@ -133,7 +135,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
         className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
         data-testid="home-activity-bar-error"
       >
-        <p className="text-sm text-muted-foreground">활동 데이터를 불러오지 못했어요.</p>
+        <p className="text-sm text-muted-foreground">{t('activityLoadError')}</p>
       </section>
     );
   }
@@ -145,7 +147,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
       className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
       data-testid="home-activity-bar"
       role="region"
-      aria-label="오늘의 활동 요약"
+      aria-label={t('activitySummary')}
     >
       {/* 내재화 진행도 — 4단계 세그먼트 바 (InternalizationWidget 통합) */}
       {stats && stats.totalConnections > 0 && (
@@ -153,7 +155,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
           <div className="flex items-center gap-2 mb-1.5">
             <Brain className="w-4 h-4 text-violet-500" />
             <span className="text-xs font-semibold text-foreground">
-              자기 이해 {Math.round(stats.internalizationRate * 100)}%
+              {t('selfUnderstanding')} {Math.round(stats.internalizationRate * 100)}%
             </span>
             <span className="text-xs text-muted-foreground ml-auto">
               {stats.byStatus.independent + stats.byStatus.internalized}/{stats.totalConnections}
@@ -176,13 +178,13 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
           </div>
           {/* 컴팩트 범례 */}
           <div className="flex gap-3 mt-1.5">
-            {STATUS_SEGMENTS.map(({ key, label, dot }) => (
+            {STATUS_SEGMENTS.map(({ key, labelKey, dot }) => (
               <span
                 key={key}
                 className="text-[10px] text-muted-foreground flex items-center gap-0.5"
               >
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot}`} />
-                {label} {stats.byStatus[key]}
+                {t(labelKey)} {stats.byStatus[key]}
               </span>
             ))}
           </div>
@@ -195,7 +197,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
           href="/dashboard"
           className="flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
         >
-          <span>오늘의 첫 기록을 시작해볼까요?</span>
+          <span>{t('startFirstRecord')}</span>
           <ChevronRight className="w-4 h-4" />
         </Link>
       ) : (
@@ -206,8 +208,8 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
             bgColor="bg-orange-500/10"
             value={activity.calories}
             target={activity.caloriesTarget}
-            label="칼로리"
-            unit="kcal"
+            label={t('caloriesLabel')}
+            unit={t('caloriesUnit')}
           />
           <ActivityCell
             icon={Dumbbell}
@@ -215,8 +217,8 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
             bgColor="bg-green-500/10"
             value={activity.exercise}
             target={60}
-            label="운동"
-            unit="분"
+            label={t('workoutLabel')}
+            unit={t('minuteUnit')}
           />
           <ActivityCell
             icon={Droplets}
@@ -224,8 +226,8 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
             bgColor="bg-blue-500/10"
             value={activity.water}
             target={activity.waterTarget}
-            label="수분"
-            unit="잔"
+            label={t('waterLabel')}
+            unit={t('glassUnit')}
           />
         </div>
       )}

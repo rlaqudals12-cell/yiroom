@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useTranslations } from 'next-intl';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import {
@@ -54,6 +55,7 @@ export default function HomeDailyCapsuleWidget() {
   const { user } = useUser();
   const userId = user?.id;
   const supabase = useClerkSupabaseClient();
+  const t = useTranslations('home');
   const [capsule, setCapsule] = useState<DailyCapsule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -176,7 +178,7 @@ export default function HomeDailyCapsuleWidget() {
         className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm"
         data-testid="home-daily-capsule-error"
       >
-        <p className="text-sm text-muted-foreground mb-2">캡슐을 불러오지 못했어요.</p>
+        <p className="text-sm text-muted-foreground mb-2">{t('capsuleLoadError')}</p>
         <button
           onClick={() => {
             setHasError(false);
@@ -191,7 +193,7 @@ export default function HomeDailyCapsuleWidget() {
           }}
           className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
         >
-          다시 시도해볼까요?
+          {t('capsuleRetry')}
         </button>
       </div>
     );
@@ -201,7 +203,7 @@ export default function HomeDailyCapsuleWidget() {
     return (
       <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5 text-center">
         <Sparkles className="w-5 h-5 text-violet-400 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">분석을 더 완료하면 맞춤 루틴이 생겨요</p>
+        <p className="text-sm text-muted-foreground">{t('capsuleEmptyState')}</p>
       </div>
     );
   }
@@ -215,20 +217,20 @@ export default function HomeDailyCapsuleWidget() {
       className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5"
       data-testid="home-daily-capsule"
       role="region"
-      aria-label="오늘의 데일리 캡슐"
+      aria-label={t('capsuleLabel')}
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-violet-500" />
-          <h3 className="font-semibold text-foreground">오늘의 루틴</h3>
+          <h3 className="font-semibold text-foreground">{t('todayRoutine')}</h3>
           <span className="text-xs text-muted-foreground">
             {checkedCount}/{totalCount}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock className="w-3.5 h-3.5" />
-          <span>약 {capsule.estimatedMinutes}분</span>
+          <span>{t('capsuleMinutes', { minutes: capsule.estimatedMinutes })}</span>
         </div>
       </div>
 
@@ -286,14 +288,16 @@ export default function HomeDailyCapsuleWidget() {
 
       {/* 더 보기 */}
       {capsule.items.length > 5 && (
-        <p className="text-xs text-muted-foreground mt-2 pl-2">+{capsule.items.length - 5}개 더</p>
+        <p className="text-xs text-muted-foreground mt-2 pl-2">
+          {t('capsuleMoreItems', { count: capsule.items.length - 5 })}
+        </p>
       )}
 
       {/* 완료 상태 또는 상세 보기 */}
       {capsule.status === 'completed' ? (
         <div className="mt-3 pt-3 border-t border-violet-200/50 dark:border-violet-800/30 text-center">
           <p className="text-sm font-medium text-violet-600 dark:text-violet-400">
-            오늘 루틴을 모두 완료했어요!
+            {t('capsuleAllComplete')}
           </p>
         </div>
       ) : (
@@ -301,7 +305,7 @@ export default function HomeDailyCapsuleWidget() {
           href="/capsule/daily"
           className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-violet-200/50 dark:border-violet-800/30 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
         >
-          상세 보기
+          {t('capsuleDetail')}
           <ChevronRight className="w-4 h-4" />
         </Link>
       )}

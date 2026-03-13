@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { useClerk, useUser, useAuth } from '@clerk/nextjs';
 import { useTheme } from '@/components/providers/theme-provider';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 import {
@@ -24,7 +24,12 @@ import {
   Lock,
   LogOut,
   Users,
+  Dumbbell,
+  UtensilsCrossed,
+  Droplets,
 } from 'lucide-react';
+import type { NotificationSettings } from '@/types/notifications';
+import { DEFAULT_NOTIFICATION_SETTINGS as DB_DEFAULT_SETTINGS } from '@/types/notifications';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import {
@@ -64,26 +69,52 @@ const settingsSections: SettingSection[] = [
 
 // LocalStorage 키
 const STORAGE_KEYS = {
-  notifications: 'yiroom_notification_settings',
   privacy: 'yiroom_privacy_settings',
   language: 'yiroom_language',
 } as const;
-
-// 기본 설정값
-const DEFAULT_NOTIFICATION_SETTINGS = {
-  push: true,
-  email: true,
-  marketing: false,
-  friendRequest: true,
-  challenge: true,
-  reminder: true,
-};
 
 const DEFAULT_PRIVACY_SETTINGS = {
   profilePublic: true,
   activityPublic: false,
   leaderboardPublic: true,
 };
+
+// 시간 선택 옵션 (HH:00 ~ HH:30)
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, '0');
+  const m = i % 2 === 0 ? '00' : '30';
+  return `${h}:${m}`;
+});
+
+// 시간 선택 컴포넌트
+function TimePicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (time: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className={cn(
+        'px-3 py-1.5 text-sm rounded-lg border bg-card text-foreground',
+        disabled && 'opacity-50 cursor-not-allowed'
+      )}
+      aria-label="시간 선택"
+    >
+      {TIME_OPTIONS.map((time) => (
+        <option key={time} value={time}>
+          {time}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 // Toggle 컴포넌트
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (enabled: boolean) => void }) {
@@ -182,8 +213,10 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const userEmail = user?.emailAddresses[0]?.emailAddress || '';
 
-  // 알림 설정 상태
-  const [notificationSettings, setNotificationSettings] = useState(DEFAULT_NOTIFICATION_SETTINGS);
+  // 알림 설정 상태 (DB-backed)
+  const [notificationSettings, setNotificationSettings] =
+    useState<NotificationSettings>(DB_DEFAULT_SETTINGS);
+  const { userId } = useAuth();
 
   // 개인정보 설정 상태
   const [privacySettings, setPrivacySettings] = useState(DEFAULT_PRIVACY_SETTINGS);
@@ -191,19 +224,20 @@ export default function SettingsPage() {
   // 언어 설정 상태
   const [language, setLanguage] = useState<'ko' | 'en'>('ko');
 
-  // 마운트 시 LocalStorage에서 설정 불러오기
+  // 마운트 시 설정 불러오기
   useEffect(() => {
-    // 알림 설정 불러오기
-    const savedNotifications = localStorage.getItem(STORAGE_KEYS.notifications);
-    if (savedNotifications) {
-      try {
-        setNotificationSettings({
-          ...DEFAULT_NOTIFICATION_SETTINGS,
-          ...JSON.parse(savedNotifications),
+    // 알림 설정: Supabase에서 불러오기
+    if (userId) {
+      fetch('/api/user/notification-settings')
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success && result.data) {
+            setNotificationSettings({ ...DB_DEFAULT_SETTINGS, ...result.data });
+          }
+        })
+        .catch(() => {
+          /* 네트워크 오류 시 기본값 사용 */
         });
-      } catch {
-        /* 무시 */
-      }
     }
 
     // 개인정보 설정 불러오기
@@ -221,16 +255,21 @@ export default function SettingsPage() {
     if (savedLanguage === 'ko' || savedLanguage === 'en') {
       setLanguage(savedLanguage);
     }
-  }, []);
+  }, [userId]);
 
-  // 알림 설정 변경 시 저장
-  const updateNotificationSettings = (update: Partial<typeof notificationSettings>) => {
+  // 알림 설정 변경 시 Supabase에 저장
+  const updateNotificationSettings = useCallback((update: Partial<NotificationSettings>) => {
     setNotificationSettings((prev) => {
       const newSettings = { ...prev, ...update };
-      localStorage.setItem(STORAGE_KEYS.notifications, JSON.stringify(newSettings));
+      // Supabase에 비동기 저장
+      fetch('/api/user/notification-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      }).catch((err) => console.error('[Settings] Failed to save notification settings:', err));
       return newSettings;
     });
-  };
+  }, []);
 
   // 개인정보 설정 변경 시 저장
   const updatePrivacySettings = (update: Partial<typeof privacySettings>) => {
@@ -355,78 +394,170 @@ export default function SettingsPage() {
       case 'notifications':
         return (
           <FadeInUp>
-            <div className="space-y-6">
-              {/* 일반 알림 */}
+            <div className="space-y-6" data-testid="notification-settings">
+              {/* 마스터 토글 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">일반</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">전체</h3>
                 <div className="space-y-3">
                   <SettingItem
                     icon={Bell}
-                    label="푸시 알림"
-                    description="앱 알림 받기"
+                    label="알림 받기"
+                    description="모든 알림을 한번에 켜거나 끌 수 있어요"
                     action={
                       <Toggle
-                        enabled={notificationSettings.push}
-                        onChange={(v) => updateNotificationSettings({ push: v })}
-                      />
-                    }
-                  />
-                  <SettingItem
-                    icon={Bell}
-                    label="이메일 알림"
-                    description="중요한 알림을 이메일로 받기"
-                    action={
-                      <Toggle
-                        enabled={notificationSettings.email}
-                        onChange={(v) => updateNotificationSettings({ email: v })}
-                      />
-                    }
-                  />
-                  <SettingItem
-                    icon={Bell}
-                    label="마케팅 알림"
-                    description="이벤트, 프로모션 소식 받기"
-                    action={
-                      <Toggle
-                        enabled={notificationSettings.marketing}
-                        onChange={(v) => updateNotificationSettings({ marketing: v })}
+                        enabled={notificationSettings.enabled}
+                        onChange={(v) => updateNotificationSettings({ enabled: v })}
                       />
                     }
                   />
                 </div>
               </div>
 
-              {/* 활동 알림 */}
+              {/* 운동 알림 */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">활동</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">운동</h3>
                 <div className="space-y-3">
                   <SettingItem
-                    icon={User}
-                    label="친구 요청"
+                    icon={Dumbbell}
+                    label="운동 리마인더"
+                    description="설정한 시간에 운동 알림을 받아요"
+                    action={
+                      <div className="flex items-center gap-3">
+                        <TimePicker
+                          value={notificationSettings.workoutReminderTime}
+                          onChange={(v) => updateNotificationSettings({ workoutReminderTime: v })}
+                          disabled={
+                            !notificationSettings.enabled || !notificationSettings.workoutReminder
+                          }
+                        />
+                        <Toggle
+                          enabled={notificationSettings.workoutReminder}
+                          onChange={(v) => updateNotificationSettings({ workoutReminder: v })}
+                        />
+                      </div>
+                    }
+                  />
+                  <SettingItem
+                    icon={Bell}
+                    label="연속 기록 경고"
+                    description="연속 기록이 끊기기 전에 알려드려요"
                     action={
                       <Toggle
-                        enabled={notificationSettings.friendRequest}
-                        onChange={(v) => updateNotificationSettings({ friendRequest: v })}
+                        enabled={notificationSettings.streakWarning}
+                        onChange={(v) => updateNotificationSettings({ streakWarning: v })}
+                      />
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* 식사 알림 */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">식사</h3>
+                <div className="space-y-3">
+                  <SettingItem
+                    icon={UtensilsCrossed}
+                    label="식사 리마인더"
+                    description="식사 시간에 기록 알림을 받아요"
+                    action={
+                      <Toggle
+                        enabled={notificationSettings.nutritionReminder}
+                        onChange={(v) => updateNotificationSettings({ nutritionReminder: v })}
+                      />
+                    }
+                  />
+                  {notificationSettings.nutritionReminder && (
+                    <>
+                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                        <span className="text-sm text-muted-foreground">아침</span>
+                        <TimePicker
+                          value={notificationSettings.mealReminderBreakfast}
+                          onChange={(v) => updateNotificationSettings({ mealReminderBreakfast: v })}
+                          disabled={!notificationSettings.enabled}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                        <span className="text-sm text-muted-foreground">점심</span>
+                        <TimePicker
+                          value={notificationSettings.mealReminderLunch}
+                          onChange={(v) => updateNotificationSettings({ mealReminderLunch: v })}
+                          disabled={!notificationSettings.enabled}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                        <span className="text-sm text-muted-foreground">저녁</span>
+                        <TimePicker
+                          value={notificationSettings.mealReminderDinner}
+                          onChange={(v) => updateNotificationSettings({ mealReminderDinner: v })}
+                          disabled={!notificationSettings.enabled}
+                        />
+                      </div>
+                    </>
+                  )}
+                  <SettingItem
+                    icon={Droplets}
+                    label="수분 섭취 알림"
+                    description={`${notificationSettings.waterReminderInterval}시간마다 알려드려요`}
+                    action={
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={notificationSettings.waterReminderInterval}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              waterReminderInterval: Number(e.target.value),
+                            })
+                          }
+                          disabled={
+                            !notificationSettings.enabled || !notificationSettings.waterReminder
+                          }
+                          className={cn(
+                            'px-2 py-1 text-sm rounded-lg border bg-card text-foreground',
+                            (!notificationSettings.enabled ||
+                              !notificationSettings.waterReminder) &&
+                              'opacity-50 cursor-not-allowed'
+                          )}
+                          aria-label="수분 알림 간격"
+                        >
+                          <option value={1}>1시간</option>
+                          <option value={2}>2시간</option>
+                          <option value={3}>3시간</option>
+                          <option value={4}>4시간</option>
+                        </select>
+                        <Toggle
+                          enabled={notificationSettings.waterReminder}
+                          onChange={(v) => updateNotificationSettings({ waterReminder: v })}
+                        />
+                      </div>
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* 소셜 & 성취 */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">소셜</h3>
+                <div className="space-y-3">
+                  <SettingItem
+                    icon={Users}
+                    label="소셜 알림"
+                    description="친구 요청, 좋아요, 댓글 알림"
+                    action={
+                      <Toggle
+                        enabled={notificationSettings.socialNotifications}
+                        onChange={(v) => updateNotificationSettings({ socialNotifications: v })}
                       />
                     }
                   />
                   <SettingItem
                     icon={Bell}
-                    label="챌린지 알림"
+                    label="성취 알림"
+                    description="배지 획득, 레벨업 알림"
                     action={
                       <Toggle
-                        enabled={notificationSettings.challenge}
-                        onChange={(v) => updateNotificationSettings({ challenge: v })}
-                      />
-                    }
-                  />
-                  <SettingItem
-                    icon={Bell}
-                    label="리마인더"
-                    action={
-                      <Toggle
-                        enabled={notificationSettings.reminder}
-                        onChange={(v) => updateNotificationSettings({ reminder: v })}
+                        enabled={notificationSettings.achievementNotifications}
+                        onChange={(v) =>
+                          updateNotificationSettings({ achievementNotifications: v })
+                        }
                       />
                     }
                   />
@@ -459,9 +590,7 @@ export default function SettingsPage() {
                   ].map((themeOption) => (
                     <button
                       key={themeOption.id}
-                      onClick={() =>
-                        handleThemeChange(themeOption.id as ThemeOption)
-                      }
+                      onClick={() => handleThemeChange(themeOption.id as ThemeOption)}
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors',
                         currentTheme === themeOption.id

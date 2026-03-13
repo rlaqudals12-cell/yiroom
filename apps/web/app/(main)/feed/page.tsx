@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { Users, Plus, ArrowLeft, Clock, TrendingUp, Heart } from 'lucide-react';
+import { Users, Plus, ArrowLeft, Clock, TrendingUp, Heart, PenLine } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { FeedCard, ReportModal, BlockConfirmDialog } from '@/components/feed';
+import { EmptyStateCard } from '@/components/common/EmptyStateCard';
 import { cn } from '@/lib/utils';
 import type { FeedPostWithAuthor, FeedSortType, ReportReason } from '@/lib/feed/types';
 
@@ -252,13 +253,24 @@ export default function FeedPage() {
           </div>
         )}
         {!isLoading && feedPosts.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Users className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-foreground">
-              {activeTab === 'my' ? '아직 작성한 글이 없어요' : '피드가 비어있어요'}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">첫 글을 작성해 보세요!</p>
-          </div>
+          <EmptyStateCard
+            icon={activeTab === 'my' ? PenLine : Users}
+            iconColor={activeTab === 'my' ? 'text-primary' : 'text-blue-600 dark:text-blue-400'}
+            iconBgColor={
+              activeTab === 'my'
+                ? 'bg-primary/10 dark:bg-primary/20'
+                : 'bg-blue-100 dark:bg-blue-900/30'
+            }
+            title={activeTab === 'my' ? '아직 작성한 글이 없어요' : '피드가 비어있어요'}
+            description={
+              activeTab === 'my'
+                ? '첫 글을 작성하고 다른 사용자와 공유해 보세요.'
+                : '첫 글을 작성해 보세요!'
+            }
+            actionLabel="글 작성하기"
+            actionHref="/feed/create"
+            data-testid="feed-empty"
+          />
         )}
         {!isLoading && feedPosts.length > 0 && (
           <div className="space-y-4">
