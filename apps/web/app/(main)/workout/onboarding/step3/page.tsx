@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/lib/utils/date-format';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -19,6 +21,7 @@ const INJURIES = [
 
 export default function Step3Page() {
   const router = useRouter();
+  const locale = useLocale();
   const {
     injuries,
     targetWeight,
@@ -252,7 +255,7 @@ export default function Step3Page() {
                 )}
                 {targetDate && (
                   <p className="text-sm text-indigo-600 dark:text-indigo-400">
-                    날짜: {new Date(targetDate).toLocaleDateString('ko-KR')}
+                    날짜: {formatDate(new Date(targetDate), locale)}
                   </p>
                 )}
               </div>

@@ -36,6 +36,7 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
+import { useTranslations } from 'next-intl';
 import { transformDbToResult, type DbBodyAnalysis } from './_lib/transform';
 
 // 탭 전용 컴포넌트 — dynamic import (번들 분할)
@@ -65,6 +66,7 @@ const ConsultantCTA = dynamic(
 );
 
 export default function BodyAnalysisResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -226,7 +228,7 @@ export default function BodyAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -237,8 +239,8 @@ export default function BodyAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -261,12 +263,12 @@ export default function BodyAnalysisResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -289,7 +291,7 @@ export default function BodyAnalysisResultPage() {
         className="min-h-[calc(100vh-80px)] bg-muted"
         data-testid="body-result-page"
         role="region"
-        aria-label="체형 분석 결과"
+        aria-label={t('pageAriaLabel.body')}
       >
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -297,16 +299,22 @@ export default function BodyAnalysisResultPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard">
                 <ArrowLeft className="w-4 h-4 mr-1" />
-                뒤로
+                {t('back')}
               </Link>
             </Button>
             <div className="flex flex-col items-center gap-1">
-              <h1 className="text-lg font-bold text-foreground">체형 분석 결과</h1>
+              <h1 className="text-lg font-bold text-foreground">{t('pageTitle.body')}</h1>
               <div className="flex items-center gap-2">
                 <AIBadge variant="small" />
                 <span className="text-xs text-muted-foreground">
-                  신뢰도{' '}
-                  {usedMock ? '낮음' : confidence ? (confidence >= 70 ? '높음' : '보통') : '보통'}
+                  {t('confidence')}{' '}
+                  {usedMock
+                    ? t('confidenceLow')
+                    : confidence
+                      ? confidence >= 70
+                        ? t('confidenceHigh')
+                        : t('confidenceNormal')
+                      : t('confidenceNormal')}
                 </span>
               </div>
             </div>
@@ -325,28 +333,28 @@ export default function BodyAnalysisResultPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList
                 className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted"
-                aria-label="체형 분석 결과 탭"
+                aria-label={t('tabAriaLabel.body')}
               >
                 <TabsTrigger
                   value="basic"
                   className="gap-1 text-xs"
-                  aria-label="기본 분석 결과 보기"
+                  aria-label={t('basicAnalysisLabel')}
                 >
                   <BarChart3 className="w-4 h-4" aria-hidden="true" />
-                  기본 분석
+                  {t('basicAnalysis')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="evidence"
                   className="gap-1 text-xs"
-                  aria-label="AI 분석 근거 보기"
+                  aria-label={t('analysisEvidenceLabel')}
                 >
                   <ClipboardList className="w-4 h-4" aria-hidden="true" />
-                  분석 근거
+                  {t('analysisEvidence')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="styling"
                   className="gap-1 text-xs"
-                  aria-label="체형별 스타일 추천 보기"
+                  aria-label={t('styleRecommendationLabel')}
                 >
                   <Shirt className="w-4 h-4" aria-hidden="true" />
                   스타일
@@ -457,8 +465,8 @@ export default function BodyAnalysisResultPage() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>분석 근거 데이터가 없어요</p>
-                    <p className="text-sm mt-1">새로 분석하면 상세 근거가 제공됩니다</p>
+                    <p>{t('noEvidenceData')}</p>
+                    <p className="text-sm mt-1">{t('reanalyzeForEvidence')}</p>
                   </div>
                 )}
               </TabsContent>
@@ -512,7 +520,7 @@ export default function BodyAnalysisResultPage() {
               }
             >
               <Dumbbell className="w-4 h-4 mr-2" />
-              나에게 맞는 운동 추천
+              {t('recommendedExercise')}
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
@@ -527,7 +535,7 @@ export default function BodyAnalysisResultPage() {
                 onFormatChange={setShareFormat}
                 className="mt-2"
               />
-              <PrintButton title="이룸 체형 분석 결과" variant="outline" />
+              <PrintButton title={t('printTitle.body')} variant="outline" />
             </div>
             <div className="flex justify-center">
               <ShareButtons

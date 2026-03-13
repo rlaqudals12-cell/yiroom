@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formatDateTime } from '@/lib/utils/date-format';
 import {
   RefreshCw,
   Sparkles,
@@ -132,6 +134,8 @@ function MeasurementLegend() {
 }
 
 export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisResultProps) {
+  const locale = useLocale();
+
   const {
     postureType,
     postureTypeLabel,
@@ -332,7 +336,7 @@ export default function AnalysisResult({ result, onRetry, shareRef }: AnalysisRe
       {/* 분석 시간 */}
       <FadeInUp delay={8}>
         <p className="text-center text-sm text-muted-foreground">
-          분석 시간: {analyzedAt.toLocaleString('ko-KR')}
+          분석 시간: {formatDateTime(analyzedAt, locale)}
         </p>
       </FadeInUp>
 

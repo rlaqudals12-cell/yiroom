@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/lib/utils/date-format';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
@@ -70,6 +72,7 @@ function getWeekStart(date: Date): Date {
 
 export default function SkinDiaryReportPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
 
@@ -249,9 +252,21 @@ export default function SkinDiaryReportPage() {
 
   // 트렌드 아이콘/색상
   const trendDir = monthlyReport?.trendDirection;
-  const TrendIcon = selectByKey(trendDir, { improving: TrendingUp, declining: TrendingDown }, Minus)!;
-  const trendColor = selectByKey(trendDir, { improving: 'text-green-500', declining: 'text-red-500' }, 'text-muted-foreground')!;
-  const trendLabel = selectByKey(trendDir, { improving: '개선 중', declining: '주의 필요' }, '안정적')!;
+  const TrendIcon = selectByKey(
+    trendDir,
+    { improving: TrendingUp, declining: TrendingDown },
+    Minus
+  )!;
+  const trendColor = selectByKey(
+    trendDir,
+    { improving: 'text-green-500', declining: 'text-red-500' },
+    'text-muted-foreground'
+  )!;
+  const trendLabel = selectByKey(
+    trendDir,
+    { improving: '개선 중', declining: '주의 필요' },
+    '안정적'
+  )!;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="skin-diary-report-page">
@@ -476,7 +491,7 @@ export default function SkinDiaryReportPage() {
                             <div className="flex items-center gap-3">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm">
-                                {week.weekStart.toLocaleDateString('ko-KR', {
+                                {formatDate(week.weekStart, locale, {
                                   month: 'short',
                                   day: 'numeric',
                                 })}{' '}

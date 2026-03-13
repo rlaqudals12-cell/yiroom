@@ -35,6 +35,7 @@ import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare'
 import { ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 // FAB 메뉴 내 컴포넌트 - 조건부 렌더링이므로 dynamic import
 const SkinConsultantCTA = dynamic(
@@ -328,6 +329,7 @@ interface DbSkinAnalysis {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
 export default function SkinAnalysisResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -753,7 +755,7 @@ export default function SkinAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -764,8 +766,8 @@ export default function SkinAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -788,12 +790,12 @@ export default function SkinAnalysisResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -816,7 +818,7 @@ export default function SkinAnalysisResultPage() {
         className="min-h-[calc(100vh-80px)] bg-muted"
         data-testid="skin-result-page"
         role="region"
-        aria-label="피부 분석 결과"
+        aria-label={t('pageAriaLabel.skin')}
       >
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -824,15 +826,15 @@ export default function SkinAnalysisResultPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard">
                 <ArrowLeft className="w-4 h-4 mr-1" />
-                뒤로
+                {t('back')}
               </Link>
             </Button>
             <div className="flex flex-col items-center gap-1">
-              <h1 className="text-lg font-bold text-foreground">피부 분석 결과</h1>
+              <h1 className="text-lg font-bold text-foreground">{t('pageTitle.skin')}</h1>
               <div className="flex items-center gap-2">
                 <AIBadge variant="small" />
                 <span className="text-xs text-muted-foreground">
-                  신뢰도 {usedMock ? '낮음' : '높음'}
+                  {t('confidence')} {usedMock ? t('confidenceLow') : t('confidenceHigh')}
                 </span>
               </div>
             </div>
@@ -883,7 +885,7 @@ export default function SkinAnalysisResultPage() {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList
                   className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted"
-                  aria-label="피부 분석 결과 탭"
+                  aria-label={t('tabAriaLabel.skin')}
                 >
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
                     <Sparkles className="w-3 h-3" />
@@ -1172,16 +1174,14 @@ export default function SkinAnalysisResultPage() {
 
                           {/* 상세 근거 안내 */}
                           <div className="text-center py-4 text-muted-foreground">
-                            <p className="text-sm">
-                              새로 분석하면 더 상세한 이미지 기반 근거를 볼 수 있어요
-                            </p>
+                            <p className="text-sm">{t('reanalyzeForDetailedEvidence')}</p>
                           </div>
                         </>
                       ) : (
                         <div className="text-center py-8 text-muted-foreground">
                           <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                          <p>분석 근거 데이터가 없어요</p>
-                          <p className="text-sm mt-1">새로 분석하면 상세 근거를 볼 수 있어요</p>
+                          <p>{t('noEvidenceData')}</p>
+                          <p className="text-sm mt-1">{t('reanalyzeForDetail')}</p>
                         </div>
                       )}
                     </div>
@@ -1384,7 +1384,7 @@ export default function SkinAnalysisResultPage() {
                   router.push(`/products?skinType=${skinType || ''}&category=skincare`);
                   setIsActionMenuOpen(false);
                 }}
-                aria-label="피부 맞춤 제품 추천 보기"
+                aria-label={t('productRecommendLabel.skin')}
               >
                 <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
                 맞춤 제품
@@ -1423,10 +1423,10 @@ export default function SkinAnalysisResultPage() {
                   setIsActionMenuOpen(false);
                 }}
                 disabled={shareLoading}
-                aria-label="분석 결과 공유하기"
+                aria-label={t('shareLabel')}
               >
                 <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
-                공유하기
+                {t('share')}
               </Button>
               <ShareThemePicker
                 value={shareData?.theme ?? 'default'}

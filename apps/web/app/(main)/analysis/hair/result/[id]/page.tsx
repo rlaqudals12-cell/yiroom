@@ -16,6 +16,7 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
+import { useTranslations } from 'next-intl';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const ContextLinkingCard = dynamic(
@@ -153,6 +154,7 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
 }
 
 export default function HairAnalysisResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -264,7 +266,7 @@ export default function HairAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -275,8 +277,8 @@ export default function HairAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -299,12 +301,12 @@ export default function HairAnalysisResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -319,7 +321,7 @@ export default function HairAnalysisResultPage() {
         className="min-h-[calc(100vh-80px)] bg-muted"
         data-testid="hair-result-page"
         role="region"
-        aria-label="헤어 분석 결과"
+        aria-label={t('pageAriaLabel.hair')}
       >
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -327,21 +329,21 @@ export default function HairAnalysisResultPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard">
                 <ArrowLeft className="w-4 h-4 mr-1" />
-                뒤로
+                {t('back')}
               </Link>
             </Button>
             <div className="flex flex-col items-center gap-1">
-              <h1 className="text-lg font-bold text-foreground">헤어 분석 결과</h1>
+              <h1 className="text-lg font-bold text-foreground">{t('pageTitle.hair')}</h1>
               <div className="flex items-center gap-2">
                 <AIBadge variant="small" />
                 {result && (
                   <span className="text-xs text-muted-foreground">
-                    신뢰도{' '}
+                    {t('confidence')}{' '}
                     {result.analysisReliability === 'high'
-                      ? '높음'
+                      ? t('confidenceHigh')
                       : result.analysisReliability === 'medium'
-                        ? '보통'
-                        : '낮음'}
+                        ? t('confidenceNormal')
+                        : t('confidenceLow')}
                   </span>
                 )}
               </div>
@@ -360,9 +362,9 @@ export default function HairAnalysisResultPage() {
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
-                <TabsTrigger value="basic" className="gap-1" aria-label="기본 분석 결과 보기">
+                <TabsTrigger value="basic" className="gap-1" aria-label={t('basicAnalysisLabel')}>
                   <Sparkles className="w-4 h-4" aria-hidden="true" />
-                  기본 분석
+                  {t('basicAnalysis')}
                 </TabsTrigger>
                 <TabsTrigger value="details" className="gap-1" aria-label="케어 가이드 보기">
                   <ClipboardList className="w-4 h-4" aria-hidden="true" />
@@ -430,7 +432,7 @@ export default function HairAnalysisResultPage() {
                 {/* 추천 케어 성분 */}
                 {result.recommendedIngredients.length > 0 && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
-                    <h3 className="font-semibold mb-3">추천 케어 성분</h3>
+                    <h3 className="font-semibold mb-3">{t('careIngredients')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {result.recommendedIngredients.map((ingredient, i) => (
                         <span
@@ -505,7 +507,7 @@ export default function HairAnalysisResultPage() {
               onClick={() =>
                 router.push(`/products?scalpType=${result.scalpType || ''}&category=haircare`)
               }
-              aria-label="헤어 맞춤 제품 추천 보기"
+              aria-label={t('productRecommendLabel.hair')}
             >
               <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
               헤어 맞춤 제품 보기
@@ -528,7 +530,7 @@ export default function HairAnalysisResultPage() {
                 onFormatChange={setShareFormat}
                 className="mt-2"
               />
-              <PrintButton title="이룸 헤어 분석 결과" variant="outline" />
+              <PrintButton title={t('printTitle.hair')} variant="outline" />
             </div>
           </div>
         </div>

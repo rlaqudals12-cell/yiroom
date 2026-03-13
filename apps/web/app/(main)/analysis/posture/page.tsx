@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
+import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import { Clock, ArrowRight, Activity } from 'lucide-react';
@@ -24,7 +26,7 @@ import { Confetti } from '@/components/animations';
 type AnalysisStep = 'guide' | 'front-upload' | 'side-upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
+function formatDate(date: Date, locale: string = 'ko'): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -33,7 +35,7 @@ function formatDate(date: Date): string {
   if (days === 1) return '어제';
   if (days < 7) return `${days}일 전`;
   if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return formatDateLocale(date, locale, { month: 'short', day: 'numeric' });
 }
 
 // 자세 타입 라벨 헬퍼
@@ -52,6 +54,7 @@ interface ExistingAnalysis {
 
 export default function PostureAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
+  const locale = useLocale();
   const supabase = useClerkSupabaseClient();
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
@@ -262,7 +265,7 @@ export default function PostureAnalysisPage() {
                       <span>{existingAnalysis.overall_score}점</span>
                       <span>-</span>
                       <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at))}
+                      {formatDate(new Date(existingAnalysis.created_at), locale)}
                     </div>
                   </div>
                 </div>

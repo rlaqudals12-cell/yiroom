@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
+import { useTranslations } from 'next-intl';
 
 // DB 데이터 타입
 interface DbPostureAnalysis {
@@ -81,6 +82,7 @@ function transformDbToResult(dbData: DbPostureAnalysis): PostureAnalysisResult {
 }
 
 export default function PostureAnalysisResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -179,7 +181,7 @@ export default function PostureAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -190,8 +192,8 @@ export default function PostureAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -214,12 +216,12 @@ export default function PostureAnalysisResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -242,7 +244,7 @@ export default function PostureAnalysisResultPage() {
         className="min-h-[calc(100vh-80px)] bg-muted"
         data-testid="posture-analysis-result-page"
         role="region"
-        aria-label="자세 분석 결과"
+        aria-label={t('pageAriaLabel.posture')}
       >
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
@@ -250,11 +252,11 @@ export default function PostureAnalysisResultPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard">
                 <ArrowLeft className="w-4 h-4 mr-1" />
-                뒤로
+                {t('back')}
               </Link>
             </Button>
             <div className="flex flex-col items-center gap-1">
-              <h1 className="text-lg font-bold text-foreground">자세 분석 결과</h1>
+              <h1 className="text-lg font-bold text-foreground">{t('pageTitle.posture')}</h1>
               <AIBadge variant="small" />
             </div>
             <div className="w-16" />
@@ -283,12 +285,12 @@ export default function PostureAnalysisResultPage() {
                 }
               >
                 <Dumbbell className="w-4 h-4 mr-2" />
-                나에게 맞는 운동 추천
+                {t('recommendedExercise')}
               </Button>
             )}
             <div className="flex gap-2">
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-              <PrintButton title="이룸 자세 분석 결과" variant="outline" />
+              <PrintButton title={t('printTitle.posture')} variant="outline" />
             </div>
           </div>
         </div>

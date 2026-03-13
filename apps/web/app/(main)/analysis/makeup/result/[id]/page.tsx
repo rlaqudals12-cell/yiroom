@@ -26,6 +26,7 @@ import {
   transformDbToResult,
 } from './_lib/transform';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
+import { useTranslations } from 'next-intl';
 
 // 시즌 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ const SEASON_LABELS: Record<string, string> = {
 };
 
 export default function MakeupAnalysisResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -155,7 +157,7 @@ export default function MakeupAnalysisResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -166,8 +168,8 @@ export default function MakeupAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -190,12 +192,12 @@ export default function MakeupAnalysisResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -209,7 +211,7 @@ export default function MakeupAnalysisResultPage() {
       className="min-h-[calc(100vh-80px)] bg-muted"
       data-testid="makeup-result-page"
       role="region"
-      aria-label="메이크업 분석 결과"
+      aria-label={t('pageAriaLabel.makeup')}
     >
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
@@ -217,21 +219,21 @@ export default function MakeupAnalysisResultPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-1" />
-              뒤로
+              {t('back')}
             </Link>
           </Button>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="text-lg font-bold text-foreground">메이크업 분석 결과</h1>
+            <h1 className="text-lg font-bold text-foreground">{t('pageTitle.makeup')}</h1>
             <div className="flex items-center gap-2">
               <AIBadge variant="small" />
               {result && (
                 <span className="text-xs text-muted-foreground">
-                  신뢰도{' '}
+                  {t('confidence')}{' '}
                   {result.analysisReliability === 'high'
-                    ? '높음'
+                    ? t('confidenceHigh')
                     : result.analysisReliability === 'medium'
-                      ? '보통'
-                      : '낮음'}
+                      ? t('confidenceNormal')
+                      : t('confidenceLow')}
                 </span>
               )}
             </div>
@@ -251,7 +253,7 @@ export default function MakeupAnalysisResultPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList
               className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted"
-              aria-label="메이크업 분석 결과 탭"
+              aria-label={t('tabAriaLabel.makeup')}
             >
               <TabsTrigger value="basic" className="gap-1 text-xs sm:text-sm">
                 <Sparkles className="w-4 h-4" />
@@ -286,7 +288,7 @@ export default function MakeupAnalysisResultPage() {
               {/* 추천 스타일 */}
               {result.recommendedStyles.length > 0 && (
                 <div className="bg-card rounded-xl p-6 shadow-sm">
-                  <h3 className="font-semibold mb-3">추천 스타일</h3>
+                  <h3 className="font-semibold mb-3">{t('recommendedStyle')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {result.recommendedStyles.map((styleId) => {
                       const style = MAKEUP_STYLES.find((s) => s.id === styleId);
@@ -342,7 +344,7 @@ export default function MakeupAnalysisResultPage() {
                 ))
               ) : (
                 <div className="bg-card rounded-xl p-6 shadow-sm text-center">
-                  <p className="text-muted-foreground">추천 색상 정보가 아직 없어요</p>
+                  <p className="text-muted-foreground">{t('noColorRecommendation')}</p>
                 </div>
               )}
 
@@ -444,7 +446,7 @@ export default function MakeupAnalysisResultPage() {
                 onFormatChange={setShareFormat}
                 className="mt-2"
               />
-              <PrintButton title="이룸 메이크업 분석 결과" variant="outline" />
+              <PrintButton title={t('printTitle.makeup')} variant="outline" />
             </div>
           </div>
         </div>

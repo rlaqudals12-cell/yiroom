@@ -49,6 +49,7 @@ import { ResultPageInsights } from '@/components/insights';
 import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
+import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
 
 // DB 데이터 타입
@@ -153,6 +154,7 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
 }
 
 export default function PersonalColorResultPage() {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -308,7 +310,7 @@ export default function PersonalColorResultPage() {
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -319,8 +321,8 @@ export default function PersonalColorResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -343,18 +345,18 @@ export default function PersonalColorResultPage() {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               {isRetryable ? (
                 <Button onClick={handleRetry}>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  다시 시도
+                  {t('retry')}
                 </Button>
               ) : (
                 <Button onClick={handleNewAnalysis}>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  새로 분석하기
+                  {t('newAnalysis')}
                 </Button>
               )}
             </div>
@@ -368,7 +370,7 @@ export default function PersonalColorResultPage() {
     <div
       className="min-h-[calc(100vh-80px)] bg-muted"
       role="region"
-      aria-label="퍼스널 컬러 분석 결과"
+      aria-label={t('pageAriaLabel.personalColor')}
     >
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
@@ -376,17 +378,17 @@ export default function PersonalColorResultPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-1" />
-              뒤로
+              {t('back')}
             </Link>
           </Button>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="text-lg font-bold text-foreground">퍼스널 컬러 결과</h1>
+            <h1 className="text-lg font-bold text-foreground">{t('pageTitle.personalColor')}</h1>
             <AIBadge variant="small" />
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/analysis/personal-color/history">
               <History className="w-4 h-4 mr-1" />
-              이전 결과
+              {t('previousResults')}
             </Link>
           </Button>
         </header>
@@ -398,7 +400,7 @@ export default function PersonalColorResultPage() {
             className="flex items-center gap-2 p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-sm"
           >
             <GitCompareArrows className="w-4 h-4 text-primary flex-shrink-0" />
-            <span className="text-muted-foreground">이전 결과와 비교해보세요</span>
+            <span className="text-muted-foreground">{t('comparePrevious')}</span>
             <span className="ml-auto text-primary text-xs">비교하기 →</span>
           </Link>
         </div>
@@ -418,7 +420,7 @@ export default function PersonalColorResultPage() {
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-foreground">분석 신뢰도가 낮아요</p>
+                <p className="font-medium text-foreground">{t('lowConfidence')}</p>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                   더 정확한 결과를 위해 밝은 자연광 아래에서 다시 촬영해보세요.
                 </p>
@@ -442,15 +444,15 @@ export default function PersonalColorResultPage() {
             <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
-                기본 분석
+                {t('basicAnalysis')}
               </TabsTrigger>
               <TabsTrigger value="draping" className="gap-1">
                 <Shirt className="w-4 h-4" />
-                색상 입혀보기
+                {t('colorDraping')}
               </TabsTrigger>
               <TabsTrigger value="detailed" className="gap-1">
                 <ClipboardList className="w-4 h-4" />
-                상세 리포트
+                {t('detailedReport')}
               </TabsTrigger>
             </TabsList>
 
@@ -561,7 +563,7 @@ export default function PersonalColorResultPage() {
                 >
                   <Shirt className="w-8 h-8 text-primary flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm">내 사진에 색상 입혀보기</p>
+                    <p className="font-medium text-foreground text-sm">{t('tryColorOnPhoto')}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {imageUrl
                         ? '드레이핑 탭에서 내 얼굴에 시즌 컬러를 입혀볼 수 있어요'
@@ -589,7 +591,7 @@ export default function PersonalColorResultPage() {
               {activeTab === 'draping' && !imageUrl && (
                 <div className="p-6 bg-card rounded-xl border text-center">
                   <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold text-foreground mb-2">색상 입혀보기</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t('colorDraping')}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     분석 이미지가 없어 색상을 입혀볼 수 없어요.
                   </p>
@@ -660,7 +662,7 @@ export default function PersonalColorResultPage() {
                   className="text-muted-foreground hover:text-foreground cursor-pointer"
                   onClick={() => setActiveTab('basic')}
                 >
-                  ← 기본 분석 보기
+                  {t('viewBasicAnalysis')}
                 </button>
               </div>
             </TabsContent>

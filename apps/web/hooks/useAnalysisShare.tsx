@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils/date-format';
 import { AnalysisShareCard } from '@/components/share';
 import type { ShareCardData, ShareCardTheme } from '@/components/share/AnalysisShareCard';
 import { captureElementAsImage, shareImage } from '@/lib/share';
@@ -186,7 +187,7 @@ interface BadgeShareInput {
   earnedAt?: Date;
 }
 
-export function createBadgeShareData(input: BadgeShareInput): ShareCardData {
+export function createBadgeShareData(input: BadgeShareInput, locale: string = 'ko'): ShareCardData {
   return {
     analysisType: 'badge',
     title: `🏆 ${input.badgeName} 획득!`,
@@ -194,7 +195,7 @@ export function createBadgeShareData(input: BadgeShareInput): ShareCardData {
     typeLabel: input.rarityLabel,
     typeEmoji: input.badgeIcon,
     highlights: input.earnedAt
-      ? [{ label: '획득일', value: input.earnedAt.toLocaleDateString('ko-KR') }]
+      ? [{ label: '획득일', value: formatDate(input.earnedAt, locale) }]
       : undefined,
   };
 }

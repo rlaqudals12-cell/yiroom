@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
@@ -15,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/utils/date-format';
 import type { FeedPostWithAuthor, FeedCommentWithAuthor, PostType } from '@/lib/feed/types';
 
 /**
@@ -40,7 +42,7 @@ const postTypeLabels: Record<PostType, string> = {
 };
 
 // 상대 시간 포맷
-function formatRelativeTime(dateString: string): string {
+function formatRelativeTime(dateString: string, locale: string = 'ko'): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -52,7 +54,7 @@ function formatRelativeTime(dateString: string): string {
   if (diffMins < 60) return `${diffMins}분 전`;
   if (diffHours < 24) return `${diffHours}시간 전`;
   if (diffDays < 7) return `${diffDays}일 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return formatDate(date, locale, { month: 'short', day: 'numeric' });
 }
 
 export default function PostDetailPage() {
@@ -60,6 +62,7 @@ export default function PostDetailPage() {
   const params = useParams();
   const postId = params.id as string;
   const { userId, isSignedIn } = useAuth();
+  const locale = useLocale();
 
   const [post, setPost] = useState<FeedPostWithAuthor | null>(null);
   const [comments, setComments] = useState<FeedCommentWithAuthor[]>([]);
@@ -316,7 +319,9 @@ export default function PostDetailPage() {
             )}
             <div className="flex-1">
               <p className="font-medium text-foreground">{post.author.name}</p>
-              <p className="text-sm text-muted-foreground">{formatRelativeTime(post.created_at)}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatRelativeTime(post.created_at, locale)}
+              </p>
             </div>
             <span
               className={cn(
@@ -423,7 +428,7 @@ export default function PostDetailPage() {
                         <p className="text-sm text-foreground mt-0.5">{comment.content}</p>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                        <span>{formatRelativeTime(comment.created_at)}</span>
+                        <span>{formatRelativeTime(comment.created_at, locale)}</span>
                         <button
                           onClick={() => setReplyTo(comment.id)}
                           className="hover:text-foreground"
@@ -469,7 +474,7 @@ export default function PostDetailPage() {
                               <p className="text-sm text-foreground mt-0.5">{reply.content}</p>
                             </div>
                             <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                              <span>{formatRelativeTime(reply.created_at)}</span>
+                              <span>{formatRelativeTime(reply.created_at, locale)}</span>
                               {reply.clerk_user_id === userId && (
                                 <button
                                   onClick={() => handleDeleteComment(reply.id)}

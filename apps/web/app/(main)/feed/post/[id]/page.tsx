@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@clerk/nextjs';
@@ -8,6 +9,7 @@ import { ArrowLeft, Heart, MessageCircle, Share2, Bookmark, Loader2 } from 'luci
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CommentSection } from '@/components/feed';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/utils/date-format';
 import type { FeedPostWithAuthor, FeedCommentWithAuthor, PostType } from '@/lib/feed/types';
 
 /**
@@ -36,7 +38,7 @@ const postTypeLabels: Record<PostType, string> = {
 /**
  * 상대 시간 포맷
  */
-function formatRelativeTime(dateString: string): string {
+function formatRelativeTime(dateString: string, locale: string = 'ko'): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -48,7 +50,7 @@ function formatRelativeTime(dateString: string): string {
   if (diffMins < 60) return `${diffMins}분 전`;
   if (diffHours < 24) return `${diffHours}시간 전`;
   if (diffDays < 7) return `${diffDays}일 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return formatDate(date, locale, { month: 'short', day: 'numeric' });
 }
 
 export default function PostDetailPage() {
@@ -56,6 +58,7 @@ export default function PostDetailPage() {
   const params = useParams();
   const postId = params.id as string;
   useAuth();
+  const locale = useLocale();
 
   const [post, setPost] = useState<FeedPostWithAuthor | null>(null);
   const [comments, setComments] = useState<FeedCommentWithAuthor[]>([]);
@@ -310,7 +313,9 @@ export default function PostDetailPage() {
 
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground">{post.author.name}</p>
-              <p className="text-sm text-muted-foreground">{formatRelativeTime(post.created_at)}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatRelativeTime(post.created_at, locale)}
+              </p>
             </div>
 
             <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', typeColor)}>

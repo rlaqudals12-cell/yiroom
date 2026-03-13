@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
+import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,7 +16,7 @@ import type { OralHealthAssessment } from '@/types/oral-health';
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date): string {
+function formatDate(date: Date, locale: string = 'ko'): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -23,7 +25,7 @@ function formatDate(date: Date): string {
   if (days === 1) return '어제';
   if (days < 7) return `${days}일 전`;
   if (days < 30) return `${Math.floor(days / 7)}주 전`;
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return formatDateLocale(date, locale, { month: 'short', day: 'numeric' });
 }
 
 // 기존 분석 결과 타입
@@ -35,6 +37,7 @@ interface ExistingAnalysis {
 
 export default function OralHealthAnalysisPage(): React.JSX.Element {
   const { isSignedIn, isLoaded } = useAuth();
+  const locale = useLocale();
   const supabase = useClerkSupabaseClient();
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
@@ -195,7 +198,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                   <p className="font-medium text-foreground">기존 분석 결과 보기</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at))}
+                    {formatDate(new Date(existingAnalysis.created_at), locale)}
                   </div>
                 </div>
               </div>

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
@@ -50,7 +52,11 @@ function ChangeItem({
   const isPositive = change > 0;
   const isGood = positiveIsGood ? isPositive : !isPositive;
   // 변화 방향에 따른 아이콘 선택
-  const TrendIcon = selectByKey(getTrendDirection(change), { up: TrendingUp, down: TrendingDown }, Minus)!;
+  const TrendIcon = selectByKey(
+    getTrendDirection(change),
+    { up: TrendingUp, down: TrendingDown },
+    Minus
+  )!;
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -82,6 +88,7 @@ function ChangeItem({
 
 function SkinCompareContent() {
   const router = useRouter();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const fromId = searchParams.get('from');
   const toId = searchParams.get('to');
@@ -130,9 +137,8 @@ function SkinCompareContent() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+  const formatDateStr = (dateStr: string) => {
+    return formatDateLocale(new Date(dateStr), locale, {
       month: 'short',
       day: 'numeric',
     });
@@ -187,7 +193,7 @@ function SkinCompareContent() {
         {/* 기간 요약 */}
         <div className="text-center py-2">
           <p className="text-sm text-muted-foreground">
-            {formatDate(before.date)} → {formatDate(after.date)}
+            {formatDateStr(before.date)} → {formatDateStr(after.date)}
           </p>
           <p className="text-lg font-semibold">{data.changes.period} 간의 변화</p>
         </div>
@@ -197,8 +203,8 @@ function SkinCompareContent() {
           <BeforeAfterViewer
             beforeImage={before.imageUrl}
             afterImage={after.imageUrl}
-            beforeLabel={formatDate(before.date)}
-            afterLabel={formatDate(after.date)}
+            beforeLabel={formatDateStr(before.date)}
+            afterLabel={formatDateStr(after.date)}
             mode="slider"
             height={300}
             altPrefix="피부"
@@ -223,10 +229,14 @@ function SkinCompareContent() {
                 <p
                   className={cn(
                     'text-2xl font-bold',
-                    selectByKey(getTrendDirection(overallChange), {
-                      up: 'text-green-600',
-                      down: 'text-red-600',
-                    }, 'text-muted-foreground')
+                    selectByKey(
+                      getTrendDirection(overallChange),
+                      {
+                        up: 'text-green-600',
+                        down: 'text-red-600',
+                      },
+                      'text-muted-foreground'
+                    )
                   )}
                 >
                   {overallChange > 0 ? '+' : ''}

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import {
   ArrowLeft,
   Calendar,
@@ -37,6 +39,7 @@ const SKIN_TYPE_LABELS: Record<string, string> = {
 
 export default function SkinHistoryPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [period, setPeriod] = useState<PeriodFilter>('3m');
   const [analyses, setAnalyses] = useState<SkinAnalysisHistoryItem[]>([]);
   const [trend, setTrend] = useState<'improving' | 'declining' | 'stable'>('stable');
@@ -81,9 +84,8 @@ export default function SkinHistoryPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
+  const formatDateStr = (dateStr: string) => {
+    return formatDateLocale(new Date(dateStr), locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -91,8 +93,16 @@ export default function SkinHistoryPage() {
   };
 
   const TrendIcon = selectByKey(trend, { improving: TrendingUp, declining: TrendingDown }, Minus)!;
-  const trendColor = selectByKey(trend, { improving: 'text-green-600', declining: 'text-red-600' }, 'text-muted-foreground')!;
-  const trendLabel = selectByKey(trend, { improving: '개선 중', declining: '주의 필요' }, '유지 중')!;
+  const trendColor = selectByKey(
+    trend,
+    { improving: 'text-green-600', declining: 'text-red-600' },
+    'text-muted-foreground'
+  )!;
+  const trendLabel = selectByKey(
+    trend,
+    { improving: '개선 중', declining: '주의 필요' },
+    '유지 중'
+  )!;
 
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="skin-history-page">
@@ -206,7 +216,7 @@ export default function SkinHistoryPage() {
                       {/* 정보 */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium">{formatDate(item.date)}</p>
+                          <p className="font-medium">{formatDateStr(item.date)}</p>
                           <div className="flex items-center gap-2">
                             {scoreChange !== 0 && (
                               <span

@@ -5,8 +5,10 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useLocale } from 'next-intl';
 import { Bot, User, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatTime } from '@/lib/utils/date-format';
 import type { ChatMessage, ProductRecommendation } from '@/types/chat';
 import { ProductCard } from './ProductCard';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
@@ -73,6 +75,7 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message }: MessageBubbleProps) {
+  const locale = useLocale();
   const isUser = message.role === 'user';
   const products = message.metadata?.productRecommendations;
   const { speak, stop, isSpeaking, isSupported: ttsSupported } = useSpeechSynthesis();
@@ -123,7 +126,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
         {/* 시간 + TTS 버튼 */}
         <div className={cn('flex items-center gap-2', isUser && 'justify-end')}>
           <p className="text-xs text-muted-foreground">
-            {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
+            {formatTime(new Date(message.timestamp), locale, {
               hour: '2-digit',
               minute: '2-digit',
             })}

@@ -17,6 +17,7 @@ import type { OralHealthAssessment } from '@/types/oral-health';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { generateOralHealthIdentityLabel } from '@/lib/analysis/oral-health';
 import { ResultPageInsights } from '@/components/insights';
+import { useTranslations } from 'next-intl';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
 const OralHealthResultCard = dynamic(
@@ -62,6 +63,7 @@ function transformDbToAssessment(row: DbOralHealthRow): OralHealthAssessment {
 }
 
 export default function OralHealthResultPage(): React.JSX.Element {
+  const t = useTranslations('analysis');
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -163,9 +165,9 @@ export default function OralHealthResultPage(): React.JSX.Element {
           <div
             className="animate-spin w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"
             role="status"
-            aria-label="결과를 불러오는 중"
+            aria-label={t('loadingLabel')}
           />
-          <p className="text-muted-foreground">결과를 불러오는 중...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -176,8 +178,8 @@ export default function OralHealthResultPage(): React.JSX.Element {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">로그인이 필요해요</h2>
-          <p className="text-muted-foreground mb-4">분석 결과를 확인하려면 먼저 로그인해주세요</p>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t('loginRequired')}</h2>
+          <p className="text-muted-foreground mb-4">{t('loginRequiredDesc')}</p>
           <Link
             href="/sign-in"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -200,12 +202,12 @@ export default function OralHealthResultPage(): React.JSX.Element {
               <Button variant="outline" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  대시보드로
+                  {t('goToDashboard')}
                 </Link>
               </Button>
               <Button onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                새로 분석하기
+                {t('newAnalysis')}
               </Button>
             </div>
           </div>
@@ -219,7 +221,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
       className="min-h-[calc(100vh-80px)] bg-muted"
       data-testid="oral-health-result-page"
       role="region"
-      aria-label="구강건강 분석 결과"
+      aria-label={t('pageAriaLabel.oralHealth')}
     >
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
@@ -227,11 +229,11 @@ export default function OralHealthResultPage(): React.JSX.Element {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-1" />
-              뒤로
+              {t('back')}
             </Link>
           </Button>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="text-lg font-bold text-foreground">구강건강 분석 결과</h1>
+            <h1 className="text-lg font-bold text-foreground">{t('pageTitle.oralHealth')}</h1>
             <AIBadge variant="small" />
           </div>
           {/* K1: 신뢰도는 AI 분석 결과 페이지이므로 공통 고지로 커버 */}

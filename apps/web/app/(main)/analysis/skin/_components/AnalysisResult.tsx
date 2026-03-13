@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
+import { formatDateTime } from '@/lib/utils/date-format';
 import { classifyByRange, mapToClass, selectByKey } from '@/lib/utils/conditional-helpers';
 import {
   RefreshCw,
@@ -164,6 +166,8 @@ export default function AnalysisResult({
   skinType,
   imageUrl,
 }: AnalysisResultProps) {
+  const locale = useLocale();
+
   // Progressive Disclosure 상태
   const [selectedMetric, setSelectedMetric] = useState<SkinMetricId | null>(null);
   const [selectedZone, setSelectedZone] = useState<DetailedZoneId | null>(null);
@@ -897,7 +901,7 @@ export default function AnalysisResult({
       {/* 분석 시간 */}
       <FadeInUp delay={8}>
         <p className="text-center text-sm text-muted-foreground">
-          분석 시간: {analyzedAt.toLocaleString('ko-KR')}
+          분석 시간: {formatDateTime(analyzedAt, locale)}
         </p>
       </FadeInUp>
 
