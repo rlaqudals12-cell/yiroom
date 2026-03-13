@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
@@ -40,18 +41,13 @@ function formatShortDate(dateStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-// 변화 속도 계산 (주당 변화량)
+// 변화 속도 계산 (주당 변화량) — 데이터만 반환, 메시지는 컴포넌트에서 i18n 처리
 function calculateVelocity(data: TimelineDataPoint[]): {
   weeklyChange: number;
   trend: 'improving' | 'declining' | 'stable';
-  message: string;
 } {
   if (data.length < 2) {
-    return {
-      weeklyChange: 0,
-      trend: 'stable',
-      message: '데이터가 더 쌓이면 변화 추이를 보여드릴게요',
-    };
+    return { weeklyChange: 0, trend: 'stable' };
   }
 
   const first = data[0];
@@ -67,21 +63,9 @@ function calculateVelocity(data: TimelineDataPoint[]): {
 
   const weeklyChange = totalChange / diffWeeks;
 
-  let trend: 'improving' | 'declining' | 'stable';
-  let message: string;
-
-  if (weeklyChange > 0.3) {
-    trend = 'improving';
-    message = `주당 +${weeklyChange.toFixed(1)}점 개선 중이에요`;
-  } else if (weeklyChange < -0.3) {
-    trend = 'declining';
-    message = `주당 ${weeklyChange.toFixed(1)}점 변화. 케어에 신경써보세요`;
-  } else {
-    trend = 'stable';
-    message = '안정적인 상태를 유지하고 있어요';
-  }
-
-  return { weeklyChange, trend, message };
+  if (weeklyChange > 0.3) return { weeklyChange, trend: 'improving' };
+  if (weeklyChange < -0.3) return { weeklyChange, trend: 'declining' };
+  return { weeklyChange, trend: 'stable' };
 }
 
 /**
@@ -96,6 +80,8 @@ export default function AnalysisTimelineChart({
   label = '점수',
   className,
 }: AnalysisTimelineChartProps): React.JSX.Element | null {
+  const t = useTranslations('analysis');
+
   const chartData = useMemo(
     () => data.map((d) => ({ ...d, shortDate: formatShortDate(d.date) })),
     [data]
@@ -108,14 +94,26 @@ export default function AnalysisTimelineChart({
     return Math.round(data.reduce((s, d) => s + d.value, 0) / data.length);
   }, [data]);
 
+  // i18n 기반 속도 인사이트 메시지
+  const velocityMessage = useMemo(() => {
+    if (data.length < 2) return t('timeline.velocityNoData');
+    const rate = Math.abs(velocity.weeklyChange).toFixed(1);
+    return selectByKey(
+      velocity.trend,
+      {
+        improving: t('timeline.velocityImproving', { rate }),
+        declining: t('timeline.velocityDeclining', { rate }),
+      },
+      t('timeline.velocityStable')
+    )!;
+  }, [data.length, velocity, t]);
+
   if (data.length < 2) {
     return (
       <Card className={className}>
         <CardContent className="p-4 text-center">
           <p className="text-sm text-muted-foreground">
-            {data.length === 0
-              ? '아직 기록이 없어요'
-              : '2회 이상 분석하면 변화 추이를 볼 수 있어요'}
+            {data.length === 0 ? t('timeline.noData') : t('timeline.needMore')}
           </p>
         </CardContent>
       </Card>
@@ -136,8 +134,8 @@ export default function AnalysisTimelineChart({
 
   const trendLabel = selectByKey(
     velocity.trend,
-    { improving: '개선 중', declining: '주의' },
-    '유지 중'
+    { improving: t('timeline.improving'), declining: t('timeline.declining') },
+    t('timeline.stable')
   )!;
 
   return (
@@ -145,7 +143,7 @@ export default function AnalysisTimelineChart({
       <CardContent className="p-4 space-y-3">
         {/* 헤더: 라벨 + 변화 속도 */}
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">{label} 변화 추이</h3>
+          <h3 className="text-sm font-medium">{t('timeline.title', { label })}</h3>
           <div className={cn('flex items-center gap-1 text-sm', trendColor)}>
             <TrendIcon className="h-4 w-4" aria-hidden="true" />
             <span>{trendLabel}</span>
@@ -180,7 +178,11 @@ export default function AnalysisTimelineChart({
                 y={average}
                 stroke="#9ca3af"
                 strokeDasharray="4 4"
-                label={{ value: `평균 ${average}`, position: 'right', fontSize: 10 }}
+                label={{
+                  value: t('timeline.average', { value: average }),
+                  position: 'right',
+                  fontSize: 10,
+                }}
               />
               <Line
                 type="monotone"
@@ -195,7 +197,7 @@ export default function AnalysisTimelineChart({
         </div>
 
         {/* 속도 인사이트 */}
-        <p className="text-xs text-muted-foreground text-center">{velocity.message}</p>
+        <p className="text-xs text-muted-foreground text-center">{velocityMessage}</p>
       </CardContent>
     </Card>
   );
