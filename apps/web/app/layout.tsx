@@ -156,9 +156,14 @@ export default async function RootLayout({
               <OfflineBanner />
               <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-white px-4 py-2 rounded-lg z-50"
+                className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:shadow-lg focus:outline-2 focus:outline-offset-2 focus:outline-primary focus:ring-2 focus:ring-primary/50"
               >
-                {locale === 'ko' ? '본문으로 건너뛰기' : 'Skip to main content'}
+                {{
+                  ko: '본문으로 건너뛰기',
+                  ja: 'メインコンテンツへスキップ',
+                  zh: '跳至主要内容',
+                  en: 'Skip to main content',
+                }[locale] ?? 'Skip to main content'}
               </a>
               <SyncUserProvider>
                 <GenderProvider>
