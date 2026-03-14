@@ -141,6 +141,57 @@ export function toWellnessScore(row: WellnessScoreRow): WellnessScore {
   };
 }
 
+// ============================================================
+// 바이오리듬 타입 (ADR-089)
+// ============================================================
+
+// 바이오리듬 입력
+export interface BiorhythmInput {
+  sleepHours: number; // 수면 시간 (0-12+)
+  sleepQuality: number; // 수면 질 (1-5)
+  sleepConsistency?: number; // 취침 시간 편차 (시간, 0=일정)
+  stressLevel: number; // 스트레스 (1-10)
+  energyLevel: number; // 에너지 (1-5)
+  moodScore: number; // 기분 (1-5)
+  cycleDay?: number | null; // 생리주기 일차 (여성, 1-35)
+}
+
+// 바이오리듬 점수 상세
+export interface BiorhythmScoreBreakdown {
+  sleep: number; // 0-30
+  stress: number; // 0-25
+  energy: number; // 0-20
+  mood: number; // 0-25
+}
+
+// 바이오리듬 결과
+export interface BiorhythmResult {
+  totalScore: number; // 0-100
+  breakdown: BiorhythmScoreBreakdown;
+  modifier: number; // 0.85-1.15 (웰니스 점수 보정 계수)
+  insights: BiorhythmInsight[];
+  cyclePhase?: CyclePhase; // 생리주기 단계 (여성)
+}
+
+// 바이오리듬 인사이트
+export interface BiorhythmInsight {
+  type: 'skin' | 'workout' | 'nutrition' | 'general';
+  message: string;
+  priority: number; // 1-5
+}
+
+// 생리주기 단계
+export type CyclePhase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
+
+// 생리주기 단계 정보
+export interface CyclePhaseInfo {
+  phase: CyclePhase;
+  label: string;
+  skinTip: string;
+  workoutTip: string;
+  nutritionTip: string;
+}
+
 // 웰니스 등급
 export type WellnessGrade = 'S' | 'A' | 'B' | 'C' | 'D' | 'F';
 

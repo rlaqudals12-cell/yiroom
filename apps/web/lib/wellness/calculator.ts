@@ -10,7 +10,9 @@ import type {
   SkinScoreInput,
   BodyScoreInput,
   WellnessInsight,
+  BiorhythmInput,
 } from '@/types/wellness';
+import { calculateBiorhythm, applyBiorhythmModifier } from './biorhythm';
 import {
   SCORE_WEIGHTS,
   STREAK_BONUS_TABLE,
@@ -33,8 +35,7 @@ export function calculateWorkoutScore(input: WorkoutScoreInput): {
   const frequencyScore = getScoreFromTable(input.weeklyWorkouts, FREQUENCY_SCORE_TABLE);
 
   // 목표 달성률 점수 (0-5)
-  const goalPercent =
-    input.totalGoals > 0 ? (input.completedGoals / input.totalGoals) * 100 : 0;
+  const goalPercent = input.totalGoals > 0 ? (input.completedGoals / input.totalGoals) * 100 : 0;
   const goalScore = percentToScore(goalPercent, SCORE_WEIGHTS.workout.goal);
 
   const total = streakScore + frequencyScore + goalScore;
@@ -211,9 +212,7 @@ export function generateInsights(
 
   // 스트릭 마일스톤 축하
   if (inputs.currentStreak) {
-    const milestone = INSIGHT_THRESHOLDS.streakMilestones.find(
-      (m) => inputs.currentStreak === m
-    );
+    const milestone = INSIGHT_THRESHOLDS.streakMilestones.find((m) => inputs.currentStreak === m);
     if (milestone) {
       insights.push({
         type: 'achievement',
@@ -225,7 +224,8 @@ export function generateInsights(
   }
 
   // 높은 점수 칭찬
-  const totalScore = scores.workoutScore + scores.nutritionScore + scores.skinScore + scores.bodyScore;
+  const totalScore =
+    scores.workoutScore + scores.nutritionScore + scores.skinScore + scores.bodyScore;
   if (totalScore >= INSIGHT_THRESHOLDS.highScore) {
     insights.push({
       type: 'achievement',
@@ -237,4 +237,41 @@ export function generateInsights(
 
   // 우선순위별 정렬
   return insights.sort((a, b) => (a.priority ?? 5) - (b.priority ?? 5));
+}
+
+// 바이오리듬 보정이 적용된 웰니스 스코어 계산 (ADR-089)
+export function calculateWellnessScoreWithBiorhythm(
+  workoutInput: WorkoutScoreInput,
+  nutritionInput: NutritionScoreInput,
+  skinInput: SkinScoreInput,
+  bodyInput: BodyScoreInput,
+  biorhythmInput?: BiorhythmInput | null
+): {
+  totalScore: number;
+  adjustedScore: number;
+  workoutScore: number;
+  nutritionScore: number;
+  skinScore: number;
+  bodyScore: number;
+  breakdown: ScoreBreakdown;
+  biorhythm?: ReturnType<typeof calculateBiorhythm>;
+} {
+  const base = calculateWellnessScore(workoutInput, nutritionInput, skinInput, bodyInput);
+
+  // 바이오리듬 데이터 없으면 modifier=1.0 (기존 동작 유지)
+  if (!biorhythmInput) {
+    return {
+      ...base,
+      adjustedScore: base.totalScore,
+    };
+  }
+
+  const biorhythm = calculateBiorhythm(biorhythmInput);
+  const adjustedScore = applyBiorhythmModifier(base.totalScore, biorhythm.modifier);
+
+  return {
+    ...base,
+    adjustedScore,
+    biorhythm,
+  };
 }

@@ -82,6 +82,17 @@ export interface UserContext {
     avgCarbs?: number;
     avgFat?: number;
   };
+  // 바이오리듬 (ADR-089)
+  biorhythm?: {
+    totalScore: number;
+    modifier: number;
+    sleepScore: number;
+    stressScore: number;
+    energyScore: number;
+    moodScore: number;
+    cyclePhase?: string;
+    topInsight?: string;
+  };
 }
 
 /**

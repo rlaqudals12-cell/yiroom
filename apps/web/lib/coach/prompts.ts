@@ -136,6 +136,24 @@ function buildUserContextSection(context: UserContext): string {
     }
   }
 
+  // 바이오리듬 (ADR-089)
+  if (context.biorhythm) {
+    sections.push('');
+    sections.push('## 바이오리듬');
+    sections.push(
+      `- 바이오리듬 점수: ${context.biorhythm.totalScore}/100 (보정 계수 ${context.biorhythm.modifier.toFixed(2)})`
+    );
+    sections.push(
+      `- 수면: ${context.biorhythm.sleepScore}/30, 스트레스: ${context.biorhythm.stressScore}/25, 에너지: ${context.biorhythm.energyScore}/20, 기분: ${context.biorhythm.moodScore}/25`
+    );
+    if (context.biorhythm.cyclePhase) {
+      sections.push(`- 생리주기 단계: ${context.biorhythm.cyclePhase}`);
+    }
+    if (context.biorhythm.topInsight) {
+      sections.push(`- 주요 인사이트: ${context.biorhythm.topInsight}`);
+    }
+  }
+
   // 최근 활동
   if (context.recentActivity) {
     sections.push('');

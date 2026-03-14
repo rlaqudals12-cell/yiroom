@@ -6,12 +6,16 @@ import {
   getLatestWellnessScore,
   getWellnessHistory,
   getAverageWellnessScore,
+  calculateBiorhythm,
+  getCyclePhaseInfo,
 } from '@/lib/wellness';
+import type { BiorhythmResult } from '@/types/wellness';
 import { WellnessScoreCard } from '@/components/wellness';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, TrendingUp, Moon, Zap, SmilePlus, Brain } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Moon, Zap, SmilePlus, Brain, Activity } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: '웰니스 스코어 | 이룸',
@@ -125,6 +129,18 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
 
   const conditionInsights = todayCondition ? getConditionInsights(todayCondition) : [];
 
+  // 바이오리듬 계산 (컨디션 데이터가 있을 때만, ADR-089)
+  let biorhythm: BiorhythmResult | null = null;
+  if (todayCondition) {
+    biorhythm = calculateBiorhythm({
+      sleepHours: todayCondition.sleepHours,
+      sleepQuality: todayCondition.sleepQuality,
+      stressLevel: todayCondition.stressLevel,
+      energyLevel: todayCondition.energyLevel,
+      moodScore: todayCondition.moodScore,
+    });
+  }
+
   return (
     <div className="container max-w-2xl py-6 space-y-6" data-testid="wellness-page">
       {/* 헤더 */}
@@ -216,6 +232,83 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
         </CardContent>
       </Card>
 
+      {/* 바이오리듬 (ADR-089) */}
+      {biorhythm && (
+        <Card data-testid="biorhythm-card">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              바이오리듬
+              <Badge variant="secondary" className="text-xs">
+                보정 계수 {biorhythm.modifier.toFixed(2)}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 바이오리듬 점수 바 */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>바이오리듬 점수</span>
+                <span className="font-semibold">{biorhythm.totalScore}/100</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${biorhythm.totalScore}%` }}
+                />
+              </div>
+            </div>
+
+            {/* 영역별 점수 */}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="flex items-center gap-1.5 p-2 rounded bg-muted/50">
+                <Moon className="h-3.5 w-3.5 text-indigo-400" />
+                <span className="text-muted-foreground">수면</span>
+                <span className="ml-auto font-medium">{biorhythm.breakdown.sleep}/30</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded bg-muted/50">
+                <Brain className="h-3.5 w-3.5 text-red-400" />
+                <span className="text-muted-foreground">스트레스</span>
+                <span className="ml-auto font-medium">{biorhythm.breakdown.stress}/25</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded bg-muted/50">
+                <Zap className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-muted-foreground">에너지</span>
+                <span className="ml-auto font-medium">{biorhythm.breakdown.energy}/20</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded bg-muted/50">
+                <SmilePlus className="h-3.5 w-3.5 text-yellow-500" />
+                <span className="text-muted-foreground">기분</span>
+                <span className="ml-auto font-medium">{biorhythm.breakdown.mood}/25</span>
+              </div>
+            </div>
+
+            {/* 생리주기 단계 (있을 때만) */}
+            {biorhythm.cyclePhase && (
+              <div className="p-3 rounded-lg bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800">
+                <div className="text-sm font-medium text-pink-700 dark:text-pink-300 mb-1">
+                  {getCyclePhaseInfo(biorhythm.cyclePhase).label}
+                </div>
+                <p className="text-xs text-pink-600 dark:text-pink-400">
+                  {getCyclePhaseInfo(biorhythm.cyclePhase).skinTip}
+                </p>
+              </div>
+            )}
+
+            {/* 바이오리듬 인사이트 (상위 3개) */}
+            {biorhythm.insights.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t">
+                {biorhythm.insights.slice(0, 3).map((insight, i) => (
+                  <p key={i} className="text-sm text-muted-foreground">
+                    {insight.message}
+                  </p>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* 주간 평균 */}
       <Card data-testid="weekly-average-card">
         <CardHeader>
@@ -276,7 +369,9 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
           <div className="text-center text-sm text-muted-foreground">
             <p>웰니스 스코어는 운동, 영양, 피부, 체형 영역의</p>
             <p>활동을 종합하여 매일 자동으로 계산됩니다.</p>
-            <p className="mt-1">컨디션 체크인을 하면 맞춤 조언을 받을 수 있어요.</p>
+            <p className="mt-1">
+              컨디션 체크인을 하면 바이오리듬 보정과 맞춤 조언을 받을 수 있어요.
+            </p>
           </div>
         </CardContent>
       </Card>

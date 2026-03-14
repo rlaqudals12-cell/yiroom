@@ -5,6 +5,7 @@
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
+import { calculateBiorhythm } from '@/lib/wellness/biorhythm';
 import type { UserContext, SkinScores } from './types';
 
 // 타입은 types.ts에서 re-export
@@ -44,6 +45,7 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       weeklyWorkoutResult,
       weeklyNutritionResult,
       skinDiaryResult, // Phase D
+      mentalHealthResult, // ADR-089: 바이오리듬
     ] = await Promise.all([
       // 퍼스널 컬러
       supabase
@@ -163,6 +165,14 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .eq('clerk_user_id', clerkUserId)
         .gte('entry_date', weekAgoStr)
         .lte('entry_date', todayStr),
+
+      // ADR-089: 바이오리듬 (오늘 컨디션)
+      supabase
+        .from('mental_health_logs')
+        .select('mood_score, stress_level, sleep_hours, sleep_quality, energy_level')
+        .eq('clerk_user_id', clerkUserId)
+        .eq('date', todayStr)
+        .maybeSingle(),
     ]);
 
     // 퍼스널 컬러
@@ -334,6 +344,36 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         context.weeklySummary.avgCarbs = Math.round(totals.carbs / count);
         context.weeklySummary.avgFat = Math.round(totals.fat / count);
       }
+    }
+
+    // ADR-089: 바이오리듬
+    const mentalData = mentalHealthResult.data as {
+      mood_score?: number;
+      stress_level?: number;
+      sleep_hours?: number;
+      sleep_quality?: number;
+      energy_level?: number;
+    } | null;
+
+    if (mentalData) {
+      const biorhythm = calculateBiorhythm({
+        sleepHours: mentalData.sleep_hours ?? 7,
+        sleepQuality: mentalData.sleep_quality ?? 3,
+        stressLevel: mentalData.stress_level ?? 5,
+        energyLevel: mentalData.energy_level ?? 3,
+        moodScore: mentalData.mood_score ?? 3,
+      });
+
+      context.biorhythm = {
+        totalScore: biorhythm.totalScore,
+        modifier: biorhythm.modifier,
+        sleepScore: biorhythm.breakdown.sleep,
+        stressScore: biorhythm.breakdown.stress,
+        energyScore: biorhythm.breakdown.energy,
+        moodScore: biorhythm.breakdown.mood,
+        cyclePhase: biorhythm.cyclePhase,
+        topInsight: biorhythm.insights[0]?.message,
+      };
     }
 
     // 컨텍스트가 비어있으면 null 반환
