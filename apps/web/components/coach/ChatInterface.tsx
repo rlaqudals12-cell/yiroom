@@ -353,7 +353,8 @@ export function ChatInterface({
           </Button>
         </form>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          AI 답변은 참고용이에요. 전문적인 조언은 전문가와 상담하세요.
+          AI 답변은 참고용이며, 의료·영양·운동 전문가의 진료를 대체하지 않아요. 증상이 있으면 병원을
+          방문하세요.
         </p>
       </div>
     </div>

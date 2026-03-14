@@ -14,6 +14,7 @@ import {
   detectRelatedAnalysis,
 } from '@/lib/chat';
 import { applyRateLimit } from '@/lib/security/rate-limit';
+import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
 
 // 세션 메모리 저장소 (실제 구현에서는 Redis 또는 DB 사용)
 const sessionStore = new Map<string, ChatMessage[]>();
@@ -70,6 +71,22 @@ export async function POST(request: NextRequest) {
 
     // 히스토리에 추가
     history.push(userMessage);
+
+    // 위기 상황 감지 — 즉시 전문 상담 안내 (공유 모듈 사용)
+    if (detectCrisis(message)) {
+      const crisisMessage: ChatMessage = {
+        id: `msg_${Date.now()}_assistant`,
+        role: 'assistant',
+        content: CRISIS_RESPONSE_MESSAGE,
+        timestamp: new Date(),
+      };
+      history.push(crisisMessage);
+      sessionStore.set(currentSessionId, history.slice(-20));
+      return NextResponse.json({
+        success: true,
+        data: { message: crisisMessage, sessionId: currentSessionId },
+      });
+    }
 
     // 사용자 컨텍스트 조회
     const context = await fetchUserContext(userId);

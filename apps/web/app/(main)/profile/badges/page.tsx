@@ -31,6 +31,7 @@ export default function BadgesPage() {
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
   const [stats, setStats] = useState({ total: 0, earned: 0, progress: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBadgeData() {
@@ -40,6 +41,7 @@ export default function BadgesPage() {
       }
 
       try {
+        setError(null);
         // 병렬로 데이터 조회
         const [allBadges, earnedBadges, level] = await Promise.all([
           getAllBadges(supabase),
@@ -56,8 +58,9 @@ export default function BadgesPage() {
         // 통계
         const badgeStats = getBadgeStats(allBadges, earnedBadges);
         setStats(badgeStats);
-      } catch (error) {
-        console.error('[BadgesPage] 데이터 조회 실패:', error);
+      } catch (err) {
+        console.error('[BadgesPage] 데이터 조회 실패:', err);
+        setError('배지 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
       } finally {
         setIsLoading(false);
       }
@@ -71,8 +74,27 @@ export default function BadgesPage() {
   // 로딩
   if (!isLoaded || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" data-testid="badges-loading">
         <div className="animate-pulse text-muted-foreground">배지 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  // 에러
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" data-testid="badges-error">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground" role="alert">
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+          >
+            다시 시도
+          </button>
+        </div>
       </div>
     );
   }
@@ -90,7 +112,7 @@ export default function BadgesPage() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-8" data-testid="badges-page">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* 헤더 */}
         <header className="flex items-center gap-4">

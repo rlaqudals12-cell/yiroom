@@ -7,7 +7,6 @@ import {
   Activity,
   Scissors,
   ChevronRight,
-  ScanFace,
   Wand2,
   PersonStanding,
   SmilePlus,
@@ -80,14 +79,6 @@ const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
     id: 'body',
     title: '바디',
     modules: [
-      {
-        id: 'face',
-        title: '얼굴형 분석',
-        description: '얼굴형과 이목구비를 정밀 분석해요',
-        href: '/analysis/face',
-        icon: <ScanFace className="w-6 h-6" />,
-        moduleVar: 'face',
-      },
       {
         id: 'body',
         title: '체형 분석',

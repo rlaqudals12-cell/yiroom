@@ -18,13 +18,11 @@ export const metadata: Metadata = {
  */
 export default function ProductsPage() {
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6" data-testid="products-page">
       {/* 페이지 헤더 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">제품</h1>
-        <p className="mt-1 text-muted-foreground">
-          이룸이 추천하는 제품을 만나보세요
-        </p>
+        <p className="mt-1 text-muted-foreground">이룸이 추천하는 제품을 만나보세요</p>
       </div>
 
       {/* 최근 본 제품 */}

@@ -13,6 +13,8 @@ import { searchByPersonalColor, formatPersonalColorForPrompt } from './personal-
 import { searchFashionItems, formatFashionForPrompt } from './fashion-rag';
 import { searchNutritionItems, formatNutritionForPrompt } from './nutrition-rag';
 import { searchWorkoutItems, formatWorkoutForPrompt } from './workout-rag';
+import { searchHairProducts, formatHairProductsForPrompt } from './hair-rag';
+import { searchMakeupProducts, formatMakeupProductsForPrompt } from './makeup-rag';
 
 /**
  * 채팅 메시지 타입
@@ -41,6 +43,14 @@ export interface CoachChatResponse {
   suggestedQuestions?: string[];
 }
 
+// 위기 감지는 공유 모듈 사용 (Coach, Chat 공통)
+import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
+
+const CRISIS_RESPONSE: CoachChatResponse = {
+  message: CRISIS_RESPONSE_MESSAGE,
+  suggestedQuestions: [],
+};
+
 /**
  * Fallback 응답 (AI 실패 시)
  */
@@ -56,6 +66,11 @@ const FALLBACK_RESPONSES: Record<string, string> = {
   // Phase K: 패션 상담
   fashion:
     '패션에 대한 질문이시네요! 체형과 퍼스널 컬러를 고려한 스타일링 조언을 드릴 수 있어요. 분석 결과를 바탕으로 맞춤 코디를 추천받아보세요.',
+  // 헤어/두피 상담
+  hair: '헤어에 관한 질문이시군요! 두피 타입과 모발 상태에 맞는 케어 방법을 안내해드릴 수 있어요. 헤어 분석을 진행해보시는 건 어떨까요?',
+  // 메이크업 상담
+  makeup:
+    '메이크업에 대한 질문이시네요! 퍼스널 컬러와 얼굴형을 고려한 메이크업 팁을 드릴 수 있어요. 먼저 분석을 진행해보세요.',
   default:
     '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
 };
@@ -63,7 +78,15 @@ const FALLBACK_RESPONSES: Record<string, string> = {
 /**
  * 질문 카테고리 타입
  */
-type QuestionCategory = 'workout' | 'nutrition' | 'skin' | 'personalColor' | 'fashion' | 'default';
+type QuestionCategory =
+  | 'workout'
+  | 'nutrition'
+  | 'skin'
+  | 'personalColor'
+  | 'fashion'
+  | 'hair'
+  | 'makeup'
+  | 'default';
 
 /**
  * 질문 카테고리 감지
@@ -118,6 +141,28 @@ function detectQuestionCategory(question: string): QuestionCategory {
     lowerQ.includes('보습')
   ) {
     return 'skin';
+  }
+
+  // 헤어/두피 관련
+  if (
+    lowerQ.includes('머리') ||
+    lowerQ.includes('헤어') ||
+    lowerQ.includes('두피') ||
+    lowerQ.includes('탈모') ||
+    lowerQ.includes('샴푸')
+  ) {
+    return 'hair';
+  }
+
+  // 메이크업 관련
+  if (
+    lowerQ.includes('메이크업') ||
+    lowerQ.includes('화장') ||
+    lowerQ.includes('립') ||
+    lowerQ.includes('파운데이션') ||
+    lowerQ.includes('아이섀도')
+  ) {
+    return 'makeup';
   }
 
   return 'default';
@@ -275,6 +320,72 @@ function isWorkoutQuestion(question: string): boolean {
 }
 
 /**
+ * 헤어/두피 상담 질문인지 확인
+ */
+function isHairQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const hairKeywords = [
+    '헤어',
+    '머리',
+    '두피',
+    '탈모',
+    '비듬',
+    '모발',
+    '머릿결',
+    '샴푸',
+    '컨디셔너',
+    '트리트먼트',
+    '헤어팩',
+    '두피케어',
+    '염색',
+    '펌',
+    '볼륨',
+    '손상모',
+    '건조모',
+    '지성두피',
+    '비오틴',
+    '케라틴',
+  ];
+
+  return hairKeywords.some((kw) => lowerQ.includes(kw));
+}
+
+/**
+ * 메이크업 상담 질문인지 확인
+ */
+function isMakeupQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+
+  const makeupKeywords = [
+    '메이크업',
+    '화장',
+    '립스틱',
+    '립',
+    '틴트',
+    '립글로스',
+    '파운데이션',
+    '쿠션',
+    'bb크림',
+    'cc크림',
+    '아이섀도',
+    '아이라이너',
+    '마스카라',
+    '블러셔',
+    '하이라이터',
+    '컨투어링',
+    '셰이딩',
+    '컨실러',
+    '프라이머',
+    '세팅파우더',
+    '브로우',
+    '눈썹',
+  ];
+
+  return makeupKeywords.some((kw) => lowerQ.includes(kw));
+}
+
+/**
  * 제품 추천이 필요한 질문인지 확인
  */
 function needsProductRecommendation(
@@ -427,6 +538,12 @@ function formatChatHistory(history: CoachMessage[]): string {
 export async function generateCoachResponse(request: CoachChatRequest): Promise<CoachChatResponse> {
   const { message, userContext, chatHistory } = request;
 
+  // 위기 상황 감지 — 즉시 전문 상담 안내
+  if (detectCrisis(message)) {
+    coachLogger.warn('Crisis detected in user message');
+    return CRISIS_RESPONSE;
+  }
+
   // AI 서비스 사용 불가 시 Fallback
   if (!isGeminiAvailable()) {
     coachLogger.warn('Gemini not available, using fallback');
@@ -475,6 +592,16 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
     else if (isSkinConsultationQuestion(message)) {
       const skinProducts = await searchSkinProducts(userContext, message);
       ragContext = formatSkinProductsForPrompt(skinProducts);
+    }
+    // 헤어/두피 상담 질문이면 hair-rag 사용
+    else if (isHairQuestion(message)) {
+      const hairProducts = await searchHairProducts(userContext, message);
+      ragContext = formatHairProductsForPrompt(hairProducts);
+    }
+    // 메이크업 상담 질문이면 makeup-rag 사용
+    else if (isMakeupQuestion(message)) {
+      const makeupProducts = await searchMakeupProducts(userContext, message);
+      ragContext = formatMakeupProductsForPrompt(makeupProducts);
     } else if (productType) {
       ragContext = await searchRelatedProducts(productType, userContext);
     }
@@ -621,6 +748,13 @@ export async function* generateCoachResponseStream(
 ): AsyncGenerator<string, void, unknown> {
   const { message, userContext, chatHistory } = request;
 
+  // 위기 상황 감지 — 즉시 전문 상담 안내
+  if (detectCrisis(message)) {
+    coachLogger.warn('Crisis detected in user message (stream)');
+    yield CRISIS_RESPONSE.message;
+    return;
+  }
+
   if (!isGeminiAvailable()) {
     yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
     return;
@@ -660,6 +794,16 @@ export async function* generateCoachResponseStream(
     else if (isSkinConsultationQuestion(message)) {
       const skinProducts = await searchSkinProducts(userContext, message);
       ragContext = formatSkinProductsForPrompt(skinProducts);
+    }
+    // 헤어/두피 상담 질문이면 hair-rag 사용
+    else if (isHairQuestion(message)) {
+      const hairProducts = await searchHairProducts(userContext, message);
+      ragContext = formatHairProductsForPrompt(hairProducts);
+    }
+    // 메이크업 상담 질문이면 makeup-rag 사용
+    else if (isMakeupQuestion(message)) {
+      const makeupProducts = await searchMakeupProducts(userContext, message);
+      ragContext = formatMakeupProductsForPrompt(makeupProducts);
     } else if (productType) {
       ragContext = await searchRelatedProducts(productType, userContext);
     }

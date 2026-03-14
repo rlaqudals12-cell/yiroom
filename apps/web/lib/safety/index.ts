@@ -20,6 +20,9 @@ export { getDisclaimer, DISCLAIMER_GLOBAL } from './disclaimer';
 // 암호화 유틸리티
 export { isEncryptionAvailable } from './crypto';
 
+// 위기 감지
+export { detectCrisis, CRISIS_RESPONSE_MESSAGE } from './crisis';
+
 // 타입
 export type {
   SafetyProfile,

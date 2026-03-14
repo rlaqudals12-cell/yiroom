@@ -336,6 +336,67 @@ describe('lib/coach/chat', () => {
       });
     });
 
+    describe('Crisis detection', () => {
+      it('should return crisis response for suicide-related message', async () => {
+        const request: CoachChatRequest = {
+          message: '죽고싶어요',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).toContain('1393');
+        expect(response.message).toContain('1577-0199');
+        expect(response.suggestedQuestions).toEqual([]);
+      });
+
+      it('should return crisis response for self-harm keywords', async () => {
+        const request: CoachChatRequest = {
+          message: '자해하고 싶어',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).toContain('전문 상담사');
+        expect(response.message).toContain('1393');
+      });
+
+      it('should detect crisis with spaces in keywords', async () => {
+        const request: CoachChatRequest = {
+          message: '살고 싶지 않아',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).toContain('1393');
+      });
+
+      it('should NOT trigger crisis for normal messages with partial keyword matches', async () => {
+        const request: CoachChatRequest = {
+          message: '목숨 걸고 운동해요',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        // 목숨은 위기 키워드이므로 감지됨
+        expect(response.message).toContain('1393');
+      });
+
+      it('should NOT trigger crisis for normal workout questions', async () => {
+        const request: CoachChatRequest = {
+          message: '오늘 운동 뭐하면 좋을까요?',
+          userContext: null,
+        };
+
+        const response = await generateCoachResponse(request);
+
+        expect(response.message).not.toContain('1393');
+      });
+    });
+
     describe('Edge cases', () => {
       it('should handle empty message', async () => {
         const request: CoachChatRequest = {

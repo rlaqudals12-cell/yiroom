@@ -23,17 +23,27 @@ export default async function FriendsPage() {
 
   const supabase = createClerkSupabaseClient();
 
-  // 친구 목록 조회
-  const friends = await getFriends(supabase, userId);
+  // 데이터 조회 (에러 시 빈 값 폴백)
+  let friends: Awaited<ReturnType<typeof getFriends>> = [];
+  let stats: Awaited<ReturnType<typeof getFriendStats>> = {
+    totalFriends: 0,
+    pendingRequests: 0,
+    sentRequests: 0,
+  };
+  let requests: Awaited<ReturnType<typeof getReceivedRequests>> = [];
 
-  // 친구 통계
-  const stats = await getFriendStats(supabase, userId);
-
-  // 받은 요청
-  const requests = await getReceivedRequests(supabase, userId);
+  try {
+    [friends, stats, requests] = await Promise.all([
+      getFriends(supabase, userId),
+      getFriendStats(supabase, userId),
+      getReceivedRequests(supabase, userId),
+    ]);
+  } catch (error) {
+    console.error('[FriendsPage] 데이터 조회 실패:', error);
+  }
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container max-w-2xl py-6 space-y-6" data-testid="friends-page">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

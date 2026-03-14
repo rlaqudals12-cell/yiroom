@@ -18,9 +18,7 @@ export default function ReportsPage() {
   const router = useRouter();
 
   // 현재 주 시작일 계산 (월요일 기준)
-  const currentWeekStart = getThisWeekStart(new Date())
-    .toISOString()
-    .split('T')[0];
+  const currentWeekStart = getThisWeekStart(new Date()).toISOString().split('T')[0];
 
   // 현재 월 계산
   const now = new Date();
@@ -56,7 +54,10 @@ export default function ReportsPage() {
           role="button"
           tabIndex={0}
           aria-label="이번 주 리포트 보기"
-          onKeyDown={(e) => e.key === 'Enter' && router.push(`/reports/weekly/${currentWeekStart}`)}
+          onKeyDown={(e) =>
+            (e.key === 'Enter' || e.key === ' ') &&
+            (e.preventDefault(), router.push(`/reports/weekly/${currentWeekStart}`))
+          }
         >
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
@@ -81,7 +82,10 @@ export default function ReportsPage() {
           role="button"
           tabIndex={0}
           aria-label="이번 달 리포트 보기"
-          onKeyDown={(e) => e.key === 'Enter' && router.push(`/reports/monthly/${currentMonth}`)}
+          onKeyDown={(e) =>
+            (e.key === 'Enter' || e.key === ' ') &&
+            (e.preventDefault(), router.push(`/reports/monthly/${currentMonth}`))
+          }
         >
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
@@ -122,9 +126,7 @@ export default function ReportsPage() {
             <ReportListItem
               title={formatWeekRange(getPreviousWeekStart(lastWeekStart))}
               subtitle="2주 전"
-              onClick={() =>
-                router.push(`/reports/weekly/${getPreviousWeekStart(lastWeekStart)}`)
-              }
+              onClick={() => router.push(`/reports/weekly/${getPreviousWeekStart(lastWeekStart)}`)}
             />
           </CardContent>
         </Card>
@@ -152,9 +154,7 @@ export default function ReportsPage() {
             <ReportListItem
               title={formatMonthTitle(getPreviousMonth(lastMonth))}
               subtitle="2달 전"
-              onClick={() =>
-                router.push(`/reports/monthly/${getPreviousMonth(lastMonth)}`)
-              }
+              onClick={() => router.push(`/reports/monthly/${getPreviousMonth(lastMonth)}`)}
             />
           </CardContent>
         </Card>
@@ -181,11 +181,7 @@ function ReportListItem({
   onClick: () => void;
 }) {
   return (
-    <Button
-      variant="ghost"
-      className="w-full justify-between h-auto py-3"
-      onClick={onClick}
-    >
+    <Button variant="ghost" className="w-full justify-between h-auto py-3" onClick={onClick}>
       <div className="text-left">
         <div className="font-medium">{title}</div>
         <div className="text-xs text-muted-foreground">{subtitle}</div>

@@ -30,22 +30,32 @@ export default async function LeaderboardPage() {
 
   const supabase = createClerkSupabaseClient();
 
-  // 모든 리더보드 데이터 병렬 조회
-  const [xpRankings, levelRankings, wellnessRankings, workoutRankings, nutritionRankings] =
-    await Promise.all([
-      calculateXpLeaderboard(supabase, 50),
-      calculateLevelLeaderboard(supabase, 50),
-      calculateWellnessLeaderboard(supabase, 50),
-      calculateWorkoutLeaderboard(supabase, 50),
-      calculateNutritionLeaderboard(supabase, 50),
-    ]);
+  // 모든 리더보드 데이터 병렬 조회 (에러 시 빈 배열 폴백)
+  let xpRankings: Awaited<ReturnType<typeof calculateXpLeaderboard>> = [];
+  let levelRankings: Awaited<ReturnType<typeof calculateLevelLeaderboard>> = [];
+  let wellnessRankings: Awaited<ReturnType<typeof calculateWellnessLeaderboard>> = [];
+  let workoutRankings: Awaited<ReturnType<typeof calculateWorkoutLeaderboard>> = [];
+  let nutritionRankings: Awaited<ReturnType<typeof calculateNutritionLeaderboard>> = [];
+
+  try {
+    [xpRankings, levelRankings, wellnessRankings, workoutRankings, nutritionRankings] =
+      await Promise.all([
+        calculateXpLeaderboard(supabase, 50),
+        calculateLevelLeaderboard(supabase, 50),
+        calculateWellnessLeaderboard(supabase, 50),
+        calculateWorkoutLeaderboard(supabase, 50),
+        calculateNutritionLeaderboard(supabase, 50),
+      ]);
+  } catch (error) {
+    console.error('[LeaderboardPage] 데이터 조회 실패:', error);
+  }
 
   // 내 순위 (XP 기준)
   const myRank = xpRankings.findIndex((r) => r.userId === userId) + 1;
   const myScore = xpRankings.find((r) => r.userId === userId)?.score ?? 0;
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container max-w-2xl py-6 space-y-6" data-testid="leaderboard-page">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -60,22 +70,17 @@ export default async function LeaderboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            내 순위
+            <TrendingUp className="h-5 w-5" />내 순위
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-around">
             <div className="text-center">
-              <div className="text-3xl font-bold">
-                {myRank > 0 ? `${myRank}위` : '-'}
-              </div>
+              <div className="text-3xl font-bold">{myRank > 0 ? `${myRank}위` : '-'}</div>
               <div className="text-sm text-muted-foreground">현재 순위</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">
-                {myScore.toLocaleString()}
-              </div>
+              <div className="text-3xl font-bold">{myScore.toLocaleString()}</div>
               <div className="text-sm text-muted-foreground">XP</div>
             </div>
             <div className="text-center">

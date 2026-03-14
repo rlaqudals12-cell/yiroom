@@ -210,33 +210,178 @@ describe('웰니스 스코어 계산기', () => {
   describe('calculateWellnessScore', () => {
     it('모든 영역 최대 점수면 전체 100점', () => {
       const result = calculateWellnessScore(
-        { currentStreak: 30, weeklyWorkouts: 7, targetWorkouts: 5, completedGoals: 5, totalGoals: 5 },
-        { calorieAchievement: 100, proteinAchievement: 100, carbsAchievement: 100, fatAchievement: 100, waterCups: 10, targetWaterCups: 8 },
+        {
+          currentStreak: 30,
+          weeklyWorkouts: 7,
+          targetWorkouts: 5,
+          completedGoals: 5,
+          totalGoals: 5,
+        },
+        {
+          calorieAchievement: 100,
+          proteinAchievement: 100,
+          carbsAchievement: 100,
+          fatAchievement: 100,
+          waterCups: 10,
+          targetWaterCups: 8,
+        },
         { hasAnalysis: true, analysisAge: 1, routineCompleted: true, productMatchScore: 100 },
-        { hasAnalysis: true, analysisAge: 1, targetWeight: 70, currentWeight: 70, initialWeight: 80, hasWorkoutPlan: true }
+        {
+          hasAnalysis: true,
+          analysisAge: 1,
+          targetWeight: 70,
+          currentWeight: 70,
+          initialWeight: 80,
+          hasWorkoutPlan: true,
+        }
       );
       expect(result.totalScore).toBe(100);
     });
 
     it('모든 영역 0점이면 전체 0점이 아님 (기본 점수 있음)', () => {
       const result = calculateWellnessScore(
-        { currentStreak: 0, weeklyWorkouts: 0, targetWorkouts: 5, completedGoals: 0, totalGoals: 5 },
-        { calorieAchievement: 0, proteinAchievement: 0, carbsAchievement: 0, fatAchievement: 0, waterCups: 0, targetWaterCups: 8 },
+        {
+          currentStreak: 0,
+          weeklyWorkouts: 0,
+          targetWorkouts: 5,
+          completedGoals: 0,
+          totalGoals: 5,
+        },
+        {
+          calorieAchievement: 0,
+          proteinAchievement: 0,
+          carbsAchievement: 0,
+          fatAchievement: 0,
+          waterCups: 0,
+          targetWaterCups: 8,
+        },
         { hasAnalysis: false, analysisAge: 0, routineCompleted: false, productMatchScore: 0 },
-        { hasAnalysis: false, analysisAge: 0, targetWeight: 70, currentWeight: 80, initialWeight: 80, hasWorkoutPlan: false }
+        {
+          hasAnalysis: false,
+          analysisAge: 0,
+          targetWeight: 70,
+          currentWeight: 80,
+          initialWeight: 80,
+          hasWorkoutPlan: false,
+        }
       );
       expect(result.totalScore).toBeGreaterThanOrEqual(0);
     });
 
     it('영역별 점수 합이 전체 점수와 같음', () => {
       const result = calculateWellnessScore(
-        { currentStreak: 7, weeklyWorkouts: 3, targetWorkouts: 5, completedGoals: 2, totalGoals: 5 },
-        { calorieAchievement: 80, proteinAchievement: 70, carbsAchievement: 60, fatAchievement: 90, waterCups: 6, targetWaterCups: 8 },
+        {
+          currentStreak: 7,
+          weeklyWorkouts: 3,
+          targetWorkouts: 5,
+          completedGoals: 2,
+          totalGoals: 5,
+        },
+        {
+          calorieAchievement: 80,
+          proteinAchievement: 70,
+          carbsAchievement: 60,
+          fatAchievement: 90,
+          waterCups: 6,
+          targetWaterCups: 8,
+        },
         { hasAnalysis: true, analysisAge: 10, routineCompleted: true, productMatchScore: 80 },
-        { hasAnalysis: true, analysisAge: 5, targetWeight: 70, currentWeight: 75, initialWeight: 80, hasWorkoutPlan: true }
+        {
+          hasAnalysis: true,
+          analysisAge: 5,
+          targetWeight: 70,
+          currentWeight: 75,
+          initialWeight: 80,
+          hasWorkoutPlan: true,
+        }
       );
       const sum = result.workoutScore + result.nutritionScore + result.skinScore + result.bodyScore;
       expect(result.totalScore).toBe(sum);
+    });
+  });
+
+  // 엣지케이스 테스트
+  describe('엣지케이스', () => {
+    it('목표가 0개일 때 목표 점수 0 (division by zero 방지)', () => {
+      const result = calculateWorkoutScore({
+        currentStreak: 0,
+        weeklyWorkouts: 0,
+        targetWorkouts: 5,
+        completedGoals: 0,
+        totalGoals: 0,
+      });
+      expect(result.breakdown.goal).toBe(0);
+    });
+
+    it('수분 목표가 0일 때 8잔 이상이면 만점', () => {
+      const result = calculateNutritionScore({
+        calorieAchievement: 0,
+        proteinAchievement: 0,
+        carbsAchievement: 0,
+        fatAchievement: 0,
+        waterCups: 8,
+        targetWaterCups: 0,
+      });
+      expect(result.breakdown.water).toBe(5);
+    });
+
+    it('수분 목표 없고 8잔 미만이면 비례 점수', () => {
+      const result = calculateNutritionScore({
+        calorieAchievement: 0,
+        proteinAchievement: 0,
+        carbsAchievement: 0,
+        fatAchievement: 0,
+        waterCups: 4,
+        targetWaterCups: 0,
+      });
+      expect(result.breakdown.water).toBeGreaterThan(0);
+      expect(result.breakdown.water).toBeLessThan(5);
+    });
+
+    it('목표 체중과 초기 체중이 같으면 진행률 점수 0 (division by zero 방지)', () => {
+      const result = calculateBodyScore({
+        hasAnalysis: false,
+        analysisAge: 0,
+        targetWeight: 70,
+        currentWeight: 70,
+        initialWeight: 70,
+        hasWorkoutPlan: false,
+      });
+      expect(result.breakdown.progress).toBe(0);
+    });
+
+    it('분석이 3개월 초과면 분석 점수 0', () => {
+      const result = calculateSkinScore({
+        hasAnalysis: true,
+        analysisAge: 100,
+        routineCompleted: false,
+        productMatchScore: 0,
+      });
+      expect(result.breakdown.analysis).toBe(0);
+    });
+
+    it('칼로리 달성률이 100% 초과해도 최대 10점', () => {
+      const result = calculateNutritionScore({
+        calorieAchievement: 200,
+        proteinAchievement: 0,
+        carbsAchievement: 0,
+        fatAchievement: 0,
+        waterCups: 0,
+        targetWaterCups: 8,
+      });
+      expect(result.breakdown.calorie).toBe(10);
+    });
+
+    it('체중 감량 목표 초과 진행해도 진행률 최대 10', () => {
+      const result = calculateBodyScore({
+        hasAnalysis: false,
+        analysisAge: 0,
+        targetWeight: 70,
+        currentWeight: 60,
+        initialWeight: 80,
+        hasWorkoutPlan: false,
+      });
+      expect(result.breakdown.progress).toBeLessThanOrEqual(10);
     });
   });
 
@@ -257,7 +402,9 @@ describe('웰니스 스코어 계산기', () => {
         { workoutScore: 20, nutritionScore: 20, skinScore: 20, bodyScore: 20 },
         { currentStreak: 7 }
       );
-      const streakInsight = insights.find((i) => i.type === 'achievement' && i.message.includes('7일'));
+      const streakInsight = insights.find(
+        (i) => i.type === 'achievement' && i.message.includes('7일')
+      );
       expect(streakInsight).toBeDefined();
     });
 
@@ -268,7 +415,9 @@ describe('웰니스 스코어 계산기', () => {
         skinScore: 20,
         bodyScore: 20,
       });
-      const achievementInsight = insights.find((i) => i.type === 'achievement' && i.area === 'overall');
+      const achievementInsight = insights.find(
+        (i) => i.type === 'achievement' && i.area === 'overall'
+      );
       expect(achievementInsight).toBeDefined();
     });
   });
