@@ -83,3 +83,15 @@ export function isExperimentActive(experiment: Experiment): boolean {
 }
 
 export * from './types';
+
+// Runner: 실험 실행, 검증, 시뮬레이션
+export {
+  runExperiment,
+  runAllExperiments,
+  createExposureEvent,
+  validateVariantWeights,
+  validateControlVariant,
+  validateExperiment,
+  simulateDistribution,
+} from './runner';
+export type { ExperimentRunResult, ExperimentMetrics } from './runner';
