@@ -100,6 +100,30 @@ export {
   checkFirstNutritionBadge,
 } from './streak-integration';
 
+// 챌린지 시스템
+export {
+  calculateChallengeXp,
+  calculateProgress,
+  calculateRemainingDays,
+  isChallengeExpired,
+  determineChallengeStatus,
+  getAvailableChallenges,
+  getChallengesByDomain,
+  buildChallengeView,
+  getChallengeRewardXp,
+  getChallengeDifficultyStats,
+  CHALLENGE_DEFINITIONS,
+} from './challenges';
+
+export type {
+  ChallengeDomain,
+  ChallengeDifficulty,
+  ChallengeStatus,
+  ChallengeDefinition,
+  ChallengeProgress,
+  ChallengeWithProgress,
+} from './challenges';
+
 // 타입 re-export
 export type {
   Badge,

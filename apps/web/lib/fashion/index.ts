@@ -62,11 +62,24 @@ export {
 
 export type { StyleCategoryDetail } from './style-categories';
 
-// 옷장 연동
+// Cost-per-Wear 분석
 export {
-  generateOutfitCombinations,
-  SAMPLE_WARDROBE,
-} from './wardrobe';
+  calculateCostPerWear,
+  getDeclutterSuggestions,
+  getWardrobeInsight,
+  getCpwByCategory,
+} from './cost-per-wear';
+
+export type {
+  WardrobeItemUsage,
+  CostPerWearResult,
+  CostPerWearGrade,
+  WardrobeInsight,
+  DeclutterSuggestion,
+} from './cost-per-wear';
+
+// 옷장 연동
+export { generateOutfitCombinations, SAMPLE_WARDROBE } from './wardrobe';
 
 export type {
   ClothingCategory,
