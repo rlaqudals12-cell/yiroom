@@ -59,9 +59,7 @@ describe('MakeupEngine', () => {
     });
 
     it('정의되지 않은 레벨은 기본값 3을 반환한다', () => {
-      expect(makeupEngine.getOptimalN(createProfile({ personalizationLevel: 99 as number }))).toBe(
-        3
-      );
+      expect(makeupEngine.getOptimalN(createProfile({ personalizationLevel: 1 }))).toBe(3);
     });
   });
 

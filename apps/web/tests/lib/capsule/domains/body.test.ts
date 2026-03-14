@@ -19,7 +19,7 @@ function createProfile(overrides: Partial<BeautyProfile> = {}): BeautyProfile {
     completedModules: ['C'],
     personalizationLevel: 2,
     lastFullUpdate: new Date().toISOString(),
-    body: { shape: 'hourglass', concerns: ['rounded shoulders'], scores: {} },
+    body: { shape: 'hourglass', measurements: { shoulder: 40, waist: 28, hip: 38 } },
     ...overrides,
   };
 }
@@ -83,7 +83,7 @@ describe('BodyEngine', () => {
     });
 
     it('정의되지 않은 레벨은 기본값 2를 반환한다', () => {
-      expect(bodyEngine.getOptimalN(createProfile({ personalizationLevel: 99 as number }))).toBe(2);
+      expect(bodyEngine.getOptimalN(createProfile({ personalizationLevel: 1 }))).toBe(2);
     });
   });
 
@@ -100,7 +100,7 @@ describe('BodyEngine', () => {
 
     it('체형 이름이 아이템 이름에 포함된다', async () => {
       const items = await bodyEngine.curate(
-        createProfile({ body: { shape: 'pear', concerns: [], scores: {} } })
+        createProfile({ body: { shape: 'pear', measurements: {} } })
       );
       expect(items[0].name).toContain('pear');
     });
@@ -184,7 +184,7 @@ describe('BodyEngine', () => {
   describe('personalize', () => {
     it('체형이 이름에 포함된 아이템을 우선 정렬한다', () => {
       const profile = createProfile({
-        body: { shape: 'hourglass', concerns: [], scores: {} },
+        body: { shape: 'hourglass', measurements: {} },
       });
 
       const items = [

@@ -19,7 +19,7 @@ function createProfile(overrides: Partial<BeautyProfile> = {}): BeautyProfile {
     completedModules: ['OH'],
     personalizationLevel: 2,
     lastFullUpdate: new Date().toISOString(),
-    oral: { conditions: ['잇몸염증'], goals: ['미백'], scores: {} },
+    oral: { conditions: ['잇몸염증'], goals: ['미백'] },
     ...overrides,
   };
 }
@@ -76,7 +76,7 @@ describe('OralEngine', () => {
 
     it('구강 상태가 targetConditions에 반영된다', async () => {
       const items = await oralEngine.curate(
-        createProfile({ oral: { conditions: ['cavity'], goals: [], scores: {} } })
+        createProfile({ oral: { conditions: ['cavity'], goals: [] } })
       );
       expect(items[0].targetConditions).toContain('cavity');
     });
@@ -149,7 +149,7 @@ describe('OralEngine', () => {
   describe('personalize', () => {
     it('구강 상태 매칭 아이템을 우선 정렬한다', () => {
       const profile = createProfile({
-        oral: { conditions: ['잇몸염증'], goals: ['미백'], scores: {} },
+        oral: { conditions: ['잇몸염증'], goals: ['미백'] },
       });
 
       const items = [
@@ -163,7 +163,7 @@ describe('OralEngine', () => {
 
     it('목표 매칭도 고려한다', () => {
       const profile = createProfile({
-        oral: { conditions: [], goals: ['미백'], scores: {} },
+        oral: { conditions: [], goals: ['미백'] },
       });
 
       const items = [

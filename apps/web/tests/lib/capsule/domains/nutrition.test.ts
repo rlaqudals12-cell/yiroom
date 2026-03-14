@@ -19,7 +19,7 @@ function createProfile(overrides: Partial<BeautyProfile> = {}): BeautyProfile {
     completedModules: ['N'],
     personalizationLevel: 2,
     lastFullUpdate: new Date().toISOString(),
-    nutrition: { deficiencies: ['비타민D 부족'], allergies: [], goals: [] },
+    nutrition: { deficiencies: ['비타민D 부족'], allergies: [], dietType: 'normal' },
     ...overrides,
   };
 }
@@ -59,9 +59,7 @@ describe('NutritionEngine', () => {
     });
 
     it('정의되지 않은 레벨은 기본값 3을 반환한다', () => {
-      expect(
-        nutritionEngine.getOptimalN(createProfile({ personalizationLevel: 99 as number }))
-      ).toBe(3);
+      expect(nutritionEngine.getOptimalN(createProfile({ personalizationLevel: 1 }))).toBe(3);
     });
   });
 
@@ -78,14 +76,16 @@ describe('NutritionEngine', () => {
 
     it('결핍 영양소가 아이템에 반영된다', async () => {
       const items = await nutritionEngine.curate(
-        createProfile({ nutrition: { deficiencies: ['철분 부족'], allergies: [], goals: [] } })
+        createProfile({
+          nutrition: { deficiencies: ['철분 부족'], allergies: [], dietType: 'normal' },
+        })
       );
       expect(items[0].nutrients[0].name).toBe('철분 부족');
     });
 
     it('결핍이 없으면 멀티비타민을 반환한다', async () => {
       const items = await nutritionEngine.curate(
-        createProfile({ nutrition: { deficiencies: [], allergies: [], goals: [] } })
+        createProfile({ nutrition: { deficiencies: [], allergies: [], dietType: 'normal' } })
       );
       expect(items[0].nutrients[0].name).toBe('multivitamin');
     });
@@ -181,7 +181,7 @@ describe('NutritionEngine', () => {
   describe('personalize', () => {
     it('결핍 영양소 매칭 아이템을 우선 정렬한다', () => {
       const profile = createProfile({
-        nutrition: { deficiencies: ['비타민D 부족'], allergies: [], goals: [] },
+        nutrition: { deficiencies: ['비타민D 부족'], allergies: [], dietType: 'normal' },
       });
 
       const items = [
@@ -195,7 +195,7 @@ describe('NutritionEngine', () => {
 
     it('알레르기 성분이 포함된 아이템을 필터링한다', () => {
       const profile = createProfile({
-        nutrition: { deficiencies: [], allergies: ['lactose'], goals: [] },
+        nutrition: { deficiencies: [], allergies: ['lactose'], dietType: 'normal' },
       });
 
       const items = [

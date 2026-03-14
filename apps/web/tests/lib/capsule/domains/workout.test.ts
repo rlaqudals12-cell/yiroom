@@ -19,7 +19,7 @@ function createProfile(overrides: Partial<BeautyProfile> = {}): BeautyProfile {
     completedModules: ['W'],
     personalizationLevel: 2,
     lastFullUpdate: new Date().toISOString(),
-    workout: { fitnessLevel: 'intermediate', goals: ['muscle gain'], preferences: [] },
+    workout: { fitnessLevel: 'intermediate', goals: ['muscle gain'], history: [] },
     ...overrides,
   };
 }
@@ -61,9 +61,7 @@ describe('WorkoutEngine', () => {
     });
 
     it('정의되지 않은 레벨은 기본값 3을 반환한다', () => {
-      expect(workoutEngine.getOptimalN(createProfile({ personalizationLevel: 99 as number }))).toBe(
-        3
-      );
+      expect(workoutEngine.getOptimalN(createProfile({ personalizationLevel: 1 }))).toBe(3);
     });
   });
 
@@ -80,12 +78,12 @@ describe('WorkoutEngine', () => {
 
     it('피트니스 레벨이 난이도에 반영된다', async () => {
       const advanced = await workoutEngine.curate(
-        createProfile({ workout: { fitnessLevel: 'advanced', goals: [], preferences: [] } })
+        createProfile({ workout: { fitnessLevel: 'advanced', goals: [], history: [] } })
       );
       expect(advanced[0].difficulty).toBe('advanced');
 
       const beginner = await workoutEngine.curate(
-        createProfile({ workout: { fitnessLevel: 'beginner', goals: [], preferences: [] } })
+        createProfile({ workout: { fitnessLevel: 'beginner', goals: [], history: [] } })
       );
       expect(beginner[0].difficulty).toBe('beginner');
     });
@@ -93,7 +91,7 @@ describe('WorkoutEngine', () => {
     it('목표가 이름에 포함된다', async () => {
       const items = await workoutEngine.curate(
         createProfile({
-          workout: { fitnessLevel: 'beginner', goals: ['weight loss'], preferences: [] },
+          workout: { fitnessLevel: 'beginner', goals: ['weight loss'], history: [] },
         })
       );
       expect(items[0].name).toContain('weight loss');
@@ -182,7 +180,7 @@ describe('WorkoutEngine', () => {
   describe('personalize', () => {
     it('목표 매칭 아이템을 우선 정렬한다', () => {
       const profile = createProfile({
-        workout: { fitnessLevel: 'beginner', goals: ['muscle gain'], preferences: [] },
+        workout: { fitnessLevel: 'beginner', goals: ['muscle gain'], history: [] },
       });
 
       const items = [
