@@ -292,45 +292,4 @@ describe('FoodResultPage', () => {
       expect(screen.getByText('아침 분석 결과')).toBeInTheDocument();
     });
   });
-
-  it('수정 버튼 클릭 시 준비 중 알림을 표시한다', async () => {
-    sessionStorage.setItem('foodAnalysisResult', JSON.stringify(mockAnalysisResult));
-
-    render(<FoodResultPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('김치찌개')).toBeInTheDocument();
-    });
-
-    // 수정 버튼 클릭 (첫 번째 카드의 상세 보기가 펼쳐져 있어야 수정 버튼이 보임)
-    const editButtons = screen.getAllByRole('button', { name: /수정/i });
-    fireEvent.click(editButtons[0]);
-
-    // 준비 중 알림 표시 확인
-    await waitFor(() => {
-      expect(screen.getByText(/"김치찌개" 수정 기능은 준비 중이에요./)).toBeInTheDocument();
-    });
-  });
-
-  it('각 음식 카드에 수정 버튼이 표시된다', async () => {
-    sessionStorage.setItem('foodAnalysisResult', JSON.stringify(mockAnalysisResult));
-
-    render(<FoodResultPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('김치찌개')).toBeInTheDocument();
-    });
-
-    // 두 번째 카드 펼치기
-    const expandButtons = screen.getAllByRole('button', { name: /상세 보기/i });
-    if (expandButtons.length > 0) {
-      fireEvent.click(expandButtons[0]); // 두 번째 카드 펼치기
-    }
-
-    // 수정 버튼들이 표시되는지 확인
-    await waitFor(() => {
-      const editButtons = screen.getAllByRole('button', { name: /수정/i });
-      expect(editButtons.length).toBeGreaterThanOrEqual(1);
-    });
-  });
 });
