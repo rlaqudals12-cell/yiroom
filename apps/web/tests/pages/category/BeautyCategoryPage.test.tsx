@@ -89,7 +89,7 @@ describe('BeautyCategoryPage', () => {
       const filterButton = screen.getByLabelText('필터');
       await user.click(filterButton);
 
-      expect(mockRouter.push).toHaveBeenCalledWith('/beauty/filter');
+      expect(mockRouter.push).toHaveBeenCalledWith('/beauty/category/skincare?filter=open');
     });
 
     it('제품 클릭 시 상세 페이지로 이동', async () => {

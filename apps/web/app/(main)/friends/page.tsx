@@ -3,8 +3,8 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { getFriends, getFriendStats, getReceivedRequests } from '@/lib/friends';
-import { FriendList } from '@/components/friends';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FriendList, ReceivedRequestsSection } from '@/components/friends';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, UserPlus, Users, Inbox } from 'lucide-react';
@@ -87,41 +87,8 @@ export default async function FriendsPage() {
         </Card>
       </div>
 
-      {/* 받은 요청 */}
-      {requests.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Inbox className="h-5 w-5" />
-              받은 친구 요청
-              <span className="text-sm font-normal text-muted-foreground">
-                ({requests.length}건)
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {requests.map((request) => (
-                <div
-                  key={request.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
-                  <div>
-                    <div className="font-medium">{request.requesterName}</div>
-                    <div className="text-sm text-muted-foreground">Lv.{request.requesterLevel}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      거절
-                    </Button>
-                    <Button size="sm">수락</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* 받은 요청 — 수락/거절 기능 포함 Client Component */}
+      <ReceivedRequestsSection initialRequests={requests} />
 
       {/* 친구 목록 */}
       <FriendList friends={friends} />

@@ -303,6 +303,7 @@ export default function FeedPage() {
         onClick={() => router.push('/feed/create')}
         className="fixed bottom-24 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
         aria-label="새 글 작성"
+        data-testid="feed-create-fab"
       >
         <Plus className="w-6 h-6" />
       </button>

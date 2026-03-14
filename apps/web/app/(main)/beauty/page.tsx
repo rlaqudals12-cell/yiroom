@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FlaskConical, Palette, Sparkles } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useUserMatching } from '@/hooks/useUserMatching';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
@@ -251,26 +252,32 @@ export default function BeautyPage() {
         </TabsList>
 
         <TabsContent value="recommend">
-          <BeautyRecommendTab
-            hasAnalysis={hasAnalysis}
-            userSkinType={userSkinType}
-            userSkinConcerns={userSkinConcerns}
-            personalColor={personalColor}
-            getMatchedProducts={getMatchedProducts}
-          />
+          <ErrorBoundary>
+            <BeautyRecommendTab
+              hasAnalysis={hasAnalysis}
+              userSkinType={userSkinType}
+              userSkinConcerns={userSkinConcerns}
+              personalColor={personalColor}
+              getMatchedProducts={getMatchedProducts}
+            />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="care">
-          <BeautyCareTab
-            hasAnalysis={hasAnalysis}
-            router={router}
-            morningRoutine={morningRoutine}
-            eveningRoutine={eveningRoutine}
-          />
+          <ErrorBoundary>
+            <BeautyCareTab
+              hasAnalysis={hasAnalysis}
+              router={router}
+              morningRoutine={morningRoutine}
+              eveningRoutine={eveningRoutine}
+            />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="trends">
-          <BeautyTrendsTab />
+          <ErrorBoundary>
+            <BeautyTrendsTab />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
 

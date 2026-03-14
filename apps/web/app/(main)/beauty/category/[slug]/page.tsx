@@ -181,7 +181,7 @@ export default function BeautyCategoryPage() {
             </div>
           </div>
           <button
-            onClick={() => router.push('/beauty/filter')}
+            onClick={() => router.push(`/beauty/category/${slug}?filter=open`)}
             className="p-2 text-muted-foreground hover:text-foreground"
             aria-label="필터"
           >

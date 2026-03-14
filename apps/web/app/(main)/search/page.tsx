@@ -372,6 +372,7 @@ export default function SearchPage() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
               placeholder="제품, 성분, 코디 검색..."
+              data-testid="search-input"
               className="w-full pl-10 pr-10 py-2.5 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               autoFocus
               aria-label="검색어 입력"

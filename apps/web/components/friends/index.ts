@@ -4,3 +4,4 @@ export { FriendList } from './FriendList';
 export { FriendRequestCard } from './FriendRequestCard';
 export { FriendSearchInput } from './FriendSearchInput';
 export { AddFriendSheet } from './AddFriendSheet';
+export { ReceivedRequestsSection } from './ReceivedRequestsSection';

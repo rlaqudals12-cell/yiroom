@@ -35,7 +35,7 @@ export default function CoachPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-4rem)]">
+    <div className="h-[calc(100vh-4rem)]" data-testid="coach-page">
       <ChatInterface userContext={null} onSendMessage={handleSendMessage} useStreaming={true} />
     </div>
   );
