@@ -56,15 +56,42 @@ vi.mock('@/hooks/useAnalysisShare', () => ({
   })),
 }));
 
-// Mock Celebration
+// Mock Celebration + FadeInUp
 vi.mock('@/components/animations', () => ({
   CelebrationEffect: ({ trigger }: { trigger: boolean }) =>
     trigger ? <div data-testid="celebration">축하!</div> : null,
+  FadeInUp: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Confetti: () => null,
 }));
 
 // Mock ResultPageInsights (복잡한 의존성 체인 우회)
 vi.mock('@/components/insights', () => ({
   ResultPageInsights: () => <div data-testid="result-page-insights" />,
+}));
+
+// Mock VisualReportCard (깊은 의존성 체인 우회: GradeDisplay → CountUp 등)
+vi.mock('@/components/analysis/visual-report/VisualReportCard', () => ({
+  VisualReportCard: ({
+    overallScore,
+    hairMetrics,
+    hairTypeLabel,
+  }: {
+    title?: string;
+    overallScore?: number;
+    hairMetrics?: Array<{ id: string; name: string; value: number }>;
+    hairTypeLabel?: string;
+  }) => (
+    <div data-testid="visual-report-card">
+      {overallScore !== undefined && <span>{overallScore}</span>}
+      {hairTypeLabel && <span>{hairTypeLabel}</span>}
+      {hairMetrics?.map((m) => (
+        <div key={m.id}>
+          <span>{m.name}</span>
+          <span>{m.value}</span>
+        </div>
+      ))}
+    </div>
+  ),
 }));
 
 // Mock AIBadge
@@ -79,6 +106,14 @@ vi.mock('@/lib/utils/conditional-helpers', () => ({
     const key = String(value);
     return map[key] || fallback || '';
   },
+  selectByKey: (
+    key: string | null | undefined,
+    map: Record<string, unknown>,
+    defaultValue?: unknown
+  ) => {
+    if (key == null) return defaultValue;
+    return map[key] ?? defaultValue;
+  },
 }));
 
 // Mock share 컴포넌트 (cascading 의존성 우회)
@@ -89,6 +124,15 @@ vi.mock('@/components/share', () => ({
     </button>
   ),
   PrintButton: () => <button data-testid="print-button">PDF 저장</button>,
+  ShareThemePicker: ({ value, onChange }: { value?: string; onChange?: (v: string) => void }) => (
+    <select
+      data-testid="share-theme-picker"
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
+    >
+      <option value="default">default</option>
+    </select>
+  ),
 }));
 
 // Mock share utils
@@ -156,7 +200,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('헤어 분석 결과')).toBeInTheDocument();
+        expect(screen.getByText('pageTitle.hair')).toBeInTheDocument();
       });
     });
 
@@ -182,7 +226,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        const basicTab = screen.getByRole('tab', { name: /기본 분석/i });
+        const basicTab = screen.getByRole('tab', { name: /basicAnalysisLabel/i });
         expect(basicTab).toHaveAttribute('data-state', 'active');
       });
     });
@@ -192,10 +236,10 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('항목별 점수')).toBeInTheDocument();
+        expect(screen.getByText('analysisSummary')).toBeInTheDocument();
       });
 
-      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
+      const detailTab = screen.getByRole('tab', { name: /careGuideLabel/i });
       await user.click(detailTab);
 
       await waitFor(() => {
@@ -248,7 +292,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('분석 요약')).toBeInTheDocument();
+        expect(screen.getByText('analysisSummary')).toBeInTheDocument();
         expect(screen.getByText(/전반적으로 건강한 모발 상태입니다/)).toBeInTheDocument();
       });
     });
@@ -258,15 +302,15 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('항목별 점수')).toBeInTheDocument();
+        expect(screen.getByText('analysisSummary')).toBeInTheDocument();
       });
 
       // 케어 가이드 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
+      const detailTab = screen.getByRole('tab', { name: /careGuideLabel/i });
       await user.click(detailTab);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 케어 성분')).toBeInTheDocument();
+        expect(screen.getByText('careIngredients')).toBeInTheDocument();
         expect(screen.getByText('아르간 오일')).toBeInTheDocument();
         expect(screen.getByText('히알루론산')).toBeInTheDocument();
       });
@@ -281,11 +325,11 @@ describe('HairAnalysisResultPage', () => {
       });
 
       // 케어 가이드 탭으로 전환
-      const detailTab = screen.getByRole('tab', { name: /케어 가이드/i });
+      const detailTab = screen.getByRole('tab', { name: /careGuideLabel/i });
       await user.click(detailTab);
 
       await waitFor(() => {
-        expect(screen.getByText('관리 방법')).toBeInTheDocument();
+        expect(screen.getByText('careMethod')).toBeInTheDocument();
         expect(screen.getByText(/주 2회 딥 컨디셔닝/)).toBeInTheDocument();
       });
     });
@@ -357,14 +401,14 @@ describe('HairAnalysisResultPage', () => {
 
       render(<HairAnalysisResultPage />);
 
-      expect(screen.getByText(/결과를 불러오는 중/)).toBeInTheDocument();
+      expect(screen.getByText('loading')).toBeInTheDocument();
     });
 
     it('로딩 완료 후 결과가 표시된다', async () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText(/결과를 불러오는 중/)).not.toBeInTheDocument();
+        expect(screen.queryByText('loading')).not.toBeInTheDocument();
         expect(screen.getByText('85')).toBeInTheDocument();
       });
     });
@@ -418,7 +462,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/대시보드로/)).toBeInTheDocument();
+        expect(screen.getByText('goToDashboard')).toBeInTheDocument();
       });
     });
 
@@ -435,7 +479,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/새로 분석하기/)).toBeInTheDocument();
+        expect(screen.getByText('newAnalysis')).toBeInTheDocument();
       });
     });
   });
@@ -458,7 +502,7 @@ describe('HairAnalysisResultPage', () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('주요 고민')).toBeInTheDocument();
+        expect(screen.getByText('mainConcerns')).toBeInTheDocument();
       });
     });
   });

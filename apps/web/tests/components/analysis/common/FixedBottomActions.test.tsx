@@ -39,6 +39,7 @@ vi.mock('@/components/share', () => ({
       공유
     </button>
   ),
+  ShareThemePicker: () => null,
 }));
 
 import { FixedBottomActions } from '@/components/analysis/common/FixedBottomActions';

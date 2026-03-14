@@ -336,6 +336,89 @@ vi.mock('lucide-react', () => ({
   ChevronUpIcon: createIconMock('ChevronUpIcon'),
 }));
 
+// Mock @/components/animations (전체 export 매칭)
+vi.mock('@/components/animations', () => ({
+  FadeInUp: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'fade-in-up' }, children),
+  ScaleIn: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'scale-in' }, children),
+  CelebrationEffect: ({ trigger }: { trigger: boolean }) =>
+    trigger ? React.createElement('div', { 'data-testid': 'celebration' }, '축하!') : null,
+  Confetti: ({ trigger }: { trigger: boolean }) =>
+    trigger ? React.createElement('div', { 'data-testid': 'confetti' }, '🎉') : null,
+  CountUp: ({ end }: { end: number }) =>
+    React.createElement('span', { 'data-testid': 'count-up' }, String(end)),
+  Sparkle: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('span', { 'data-testid': 'sparkle' }, children),
+  PulseEmoji: ({ emoji }: { emoji: string }) =>
+    React.createElement('span', { 'data-testid': 'pulse-emoji' }, emoji),
+  BadgeDrop: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'badge-drop' }, children),
+}));
+
+// Mock next-intl/server (서버 컴포넌트용 i18n)
+vi.mock('next-intl/server', () => ({
+  getTranslations: () => Promise.resolve((key: string) => key),
+  getLocale: () => Promise.resolve('ko'),
+  getMessages: () => Promise.resolve({}),
+  getTimeZone: () => Promise.resolve('Asia/Seoul'),
+  getNow: () => Promise.resolve(new Date()),
+  getFormatter: () =>
+    Promise.resolve({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+}));
+
+// Mock @/components/share (ShareThemePicker 포함)
+vi.mock('@/components/share', () => ({
+  ShareButton: ({ onShare }: { onShare?: () => void }) =>
+    React.createElement('button', { 'data-testid': 'share-button', onClick: onShare }, '공유'),
+  PrintButton: () => React.createElement('button', { 'data-testid': 'print-button' }, 'PDF 저장'),
+  ShareThemePicker: ({ value, onChange }: { value?: string; onChange?: (v: string) => void }) =>
+    React.createElement(
+      'select',
+      {
+        'data-testid': 'share-theme-picker',
+        value,
+        onChange: (e: React.ChangeEvent<HTMLSelectElement>) => onChange?.(e.target.value),
+      },
+      React.createElement('option', { value: 'default' }, 'default')
+    ),
+}));
+
+// Mock next-intl (i18n)
+// Phase 5에서 추가된 다국어 지원 - 테스트에서는 키를 그대로 반환
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'ko',
+  useMessages: () => ({}),
+  useNow: () => new Date(),
+  useTimeZone: () => 'Asia/Seoul',
+  useFormatter: () => ({
+    number: (n: number) => String(n),
+    dateTime: (d: Date) => d.toISOString(),
+    relativeTime: (d: Date) => d.toISOString(),
+  }),
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock use-intl (next-intl 내부 의존성)
+vi.mock('use-intl', () => ({
+  useLocale: () => 'ko',
+  useTranslations: () => (key: string) => key,
+  useMessages: () => ({}),
+  useNow: () => new Date(),
+  useTimeZone: () => 'Asia/Seoul',
+  useFormatter: () => ({
+    number: (n: number) => String(n),
+    dateTime: (d: Date) => d.toISOString(),
+    relativeTime: (d: Date) => d.toISOString(),
+  }),
+  IntlProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

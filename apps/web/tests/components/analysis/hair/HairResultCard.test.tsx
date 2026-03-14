@@ -254,22 +254,36 @@ describe('HairResultCard', () => {
   });
 
   describe('탭 구조', () => {
-    it('추천 스타일 탭을 표시한다', () => {
+    it('스타일 탭을 표시한다', () => {
       const result = createMockResult();
       render(<HairResultCard result={result} />);
-      expect(screen.getByText('추천 스타일')).toBeInTheDocument();
+      expect(screen.getByText('스타일')).toBeInTheDocument();
     });
 
-    it('헤어 컬러 탭을 표시한다', () => {
+    it('컬러 탭을 표시한다', () => {
       const result = createMockResult();
       render(<HairResultCard result={result} />);
-      expect(screen.getByText('헤어 컬러')).toBeInTheDocument();
+      // 탭 트리거에서 '컬러' 텍스트를 가진 버튼 확인
+      const colorTabs = screen.getAllByRole('tab').filter((el) => el.textContent === '컬러');
+      expect(colorTabs.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('케어 팁 탭을 표시한다', () => {
+    it('관리 탭을 표시한다', () => {
       const result = createMockResult();
       render(<HairResultCard result={result} />);
-      expect(screen.getByText('케어 팁')).toBeInTheDocument();
+      expect(screen.getByText('관리')).toBeInTheDocument();
+    });
+
+    it('매칭 탭을 표시한다', () => {
+      const result = createMockResult();
+      render(<HairResultCard result={result} />);
+      expect(screen.getByText('매칭')).toBeInTheDocument();
+    });
+
+    it('계절 케어 탭을 표시한다', () => {
+      const result = createMockResult();
+      render(<HairResultCard result={result} />);
+      expect(screen.getByText('계절 케어')).toBeInTheDocument();
     });
   });
 
@@ -311,7 +325,8 @@ describe('HairResultCard', () => {
     });
 
     it('스타일 태그를 표시한다', () => {
-      const result = createMockResult();
+      // 텍스처 정보가 없는 결과로 테스트하여 TextureCard 등의 간섭 방지
+      const result = createMockResult({ currentHairInfo: undefined });
       render(<HairResultCard result={result} />);
       // '자연스러운'은 스타일 태그와 컬러 태그에 모두 존재할 수 있다
       const naturalTags = screen.getAllByText('자연스러운');
@@ -342,7 +357,8 @@ describe('HairResultCard', () => {
     });
 
     it('빈 스타일 추천 배열 시 빈 영역', () => {
-      const result = createMockResult({ styleRecommendations: [] });
+      // currentHairInfo를 제거하여 매칭 탭의 StyleMatchCard도 렌더링되지 않도록 한다
+      const result = createMockResult({ styleRecommendations: [], currentHairInfo: undefined });
       render(<HairResultCard result={result} />);
       // 스타일 카드가 없어야 한다
       expect(screen.queryByText('#1')).not.toBeInTheDocument();
@@ -433,8 +449,8 @@ describe('HairResultCard', () => {
     it('빈 케어 팁 배열 시 팁 영역이 비어 있다', () => {
       const result = createMockResult({ careTips: [] });
       render(<HairResultCard result={result} />);
-      // 케어 팁 탭은 있지만 내용이 없어야 한다
-      expect(screen.getByText('케어 팁')).toBeInTheDocument();
+      // 관리 탭은 있지만 내용이 없어야 한다
+      expect(screen.getByText('관리')).toBeInTheDocument();
     });
   });
 

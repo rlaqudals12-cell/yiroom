@@ -11,6 +11,7 @@ vi.mock('@/lib/admin/user-activity-stats', () => ({
   getFeatureUsageStats: vi.fn(),
   getDailyActiveUserTrend: vi.fn(),
   getDailyFeatureUsageTrend: vi.fn(),
+  getCohortRetentionStats: vi.fn(),
 }));
 
 import { requireAdminOrThrow } from '@/lib/admin/auth';
@@ -19,6 +20,7 @@ import {
   getFeatureUsageStats,
   getDailyActiveUserTrend,
   getDailyFeatureUsageTrend,
+  getCohortRetentionStats,
 } from '@/lib/admin/user-activity-stats';
 
 // Dynamic import after mocking
@@ -60,6 +62,10 @@ describe('Admin Analytics API', () => {
     { date: '2025-12-20', personalColor: 10, skin: 8, body: 5, workout: 50, meal: 80 },
   ];
 
+  const mockCohortRetention = [
+    { cohortWeek: '2025-W50', cohortSize: 100, day7: 60, day14: 45, day30: 30 },
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(requireAdminOrThrow).mockResolvedValue(undefined);
@@ -67,6 +73,7 @@ describe('Admin Analytics API', () => {
     vi.mocked(getFeatureUsageStats).mockResolvedValue(mockFeatureUsageStats);
     vi.mocked(getDailyActiveUserTrend).mockResolvedValue(mockActiveUserTrend);
     vi.mocked(getDailyFeatureUsageTrend).mockResolvedValue(mockFeatureUsageTrend);
+    vi.mocked(getCohortRetentionStats).mockResolvedValue(mockCohortRetention);
   });
 
   describe('GET /api/admin/analytics', () => {
@@ -82,6 +89,7 @@ describe('Admin Analytics API', () => {
       expect(data.data).toHaveProperty('featureUsageStats');
       expect(data.data).toHaveProperty('activeUserTrend');
       expect(data.data).toHaveProperty('featureUsageTrend');
+      expect(data.data).toHaveProperty('cohortRetention');
     });
 
     it('활성 사용자 통계만 반환한다 (type=activeUsers)', async () => {

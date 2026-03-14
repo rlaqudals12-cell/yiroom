@@ -213,6 +213,7 @@ vi.mock('@/hooks/useShare', () => ({
 
 vi.mock('@/components/share', () => ({
   ShareButton: () => null,
+  ShareThemePicker: () => null,
 }));
 
 vi.mock('@/components/animations', () => ({

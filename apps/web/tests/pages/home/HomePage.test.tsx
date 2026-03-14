@@ -8,6 +8,9 @@
  * - HomeHeader: 이룸 로고, 알림/검색 링크
  * - HomeGreeting: 시간 기반 인사말
  * - HomeTodayRecommendation: 오늘의 추천 (뷰티/스타일)
+ *
+ * Phase 5 i18n 적용 후: 컴포넌트가 useTranslations/getTranslations를 사용하므로
+ * 테스트에서는 i18n 키 이름으로 검증한다.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -38,35 +41,41 @@ vi.mock('@/hooks/useAnalysisStatus', () => ({
   }),
 }));
 
+// Mock timezone utils (HomeGreeting에서 사용)
+vi.mock('@/lib/utils/timezone', () => ({
+  getUserTimezone: () => Promise.resolve('Asia/Seoul'),
+  getCurrentHourInTimezone: () => 10, // 오전 10시 → morningGreeting
+}));
+
 import { HomeHeader } from '@/app/(main)/home/_components/HomeHeader';
 import { HomeGreeting } from '@/app/(main)/home/_components/HomeGreeting';
 import HomeTodayRecommendation from '@/app/(main)/home/_components/HomeTodayRecommendation';
 
 describe('HomeHeader', () => {
-  it('이룸 로고가 표시된다', () => {
-    render(<HomeHeader />);
+  it('브랜드명이 표시된다', async () => {
+    render(await HomeHeader());
 
-    expect(screen.getByText('이룸')).toBeInTheDocument();
+    expect(screen.getByText('brandName')).toBeInTheDocument();
   });
 
-  it('알림 링크에 aria-label이 있다', () => {
-    render(<HomeHeader />);
+  it('알림 링크에 aria-label이 있다', async () => {
+    render(await HomeHeader());
 
-    const notificationLink = screen.getByRole('link', { name: /알림 확인/ });
+    const notificationLink = screen.getByRole('link', { name: /notificationLabel/ });
     expect(notificationLink).toBeInTheDocument();
     expect(notificationLink).toHaveAttribute('href', '/notifications');
   });
 
-  it('검색 링크에 aria-label이 있다', () => {
-    render(<HomeHeader />);
+  it('검색 링크에 aria-label이 있다', async () => {
+    render(await HomeHeader());
 
-    const searchLink = screen.getByRole('link', { name: /검색 페이지로 이동/ });
+    const searchLink = screen.getByRole('link', { name: /searchLabel/ });
     expect(searchLink).toBeInTheDocument();
     expect(searchLink).toHaveAttribute('href', '/search');
   });
 
-  it('아이콘에 aria-hidden이 적용되어 있다', () => {
-    const { container } = render(<HomeHeader />);
+  it('아이콘에 aria-hidden이 적용되어 있다', async () => {
+    const { container } = render(await HomeHeader());
 
     const icons = container.querySelectorAll('[aria-hidden="true"]');
     expect(icons.length).toBeGreaterThan(0);
@@ -74,25 +83,23 @@ describe('HomeHeader', () => {
 });
 
 describe('HomeGreeting', () => {
-  it('사용자 이름이 인사말에 표시된다', () => {
-    render(<HomeGreeting userName="테스터" />);
+  it('인사말 키가 렌더링된다', async () => {
+    render(await HomeGreeting({ userName: '테스터' }));
 
-    expect(screen.getByText(/테스터님/)).toBeInTheDocument();
+    // getTranslations mock → t(key) returns key
+    expect(screen.getByText(/morningGreeting/)).toBeInTheDocument();
   });
 
-  it('시간 기반 인사말이 표시된다', () => {
-    render(<HomeGreeting userName="회원" />);
+  it('인사말 suffix가 렌더링된다', async () => {
+    render(await HomeGreeting({ userName: '테스터' }));
 
-    const greetings = ['좋은 아침이에요', '좋은 오후예요', '좋은 저녁이에요', '좋은 밤이에요'];
-    const hasGreeting = greetings.some((greeting) => screen.queryByText(new RegExp(greeting)));
-
-    expect(hasGreeting).toBe(true);
+    expect(screen.getByText(/greetingSuffix/)).toBeInTheDocument();
   });
 
-  it('서브 메시지가 표시된다', () => {
-    render(<HomeGreeting userName="회원" />);
+  it('서브 메시지가 표시된다', async () => {
+    render(await HomeGreeting({ userName: '회원' }));
 
-    expect(screen.getByText(/오늘도 나다운 하루/)).toBeInTheDocument();
+    expect(screen.getByText('dailyMotivation')).toBeInTheDocument();
   });
 });
 
@@ -104,28 +111,28 @@ describe('HomeTodayRecommendation', () => {
   it('오늘의 추천 섹션이 표시된다', () => {
     render(<HomeTodayRecommendation />);
 
-    expect(screen.getByText('오늘의 추천')).toBeInTheDocument();
+    expect(screen.getByText('todayRecommendation')).toBeInTheDocument();
   });
 
   it('피부 맞춤 추천 버튼이 표시된다', () => {
     render(<HomeTodayRecommendation />);
 
-    expect(screen.getByText('피부 맞춤')).toBeInTheDocument();
-    expect(screen.getByText('스킨케어 추천')).toBeInTheDocument();
+    expect(screen.getByText('skinCustom')).toBeInTheDocument();
+    expect(screen.getByText('skincareRecommend')).toBeInTheDocument();
   });
 
   it('체형 맞춤 추천 버튼이 표시된다', () => {
     render(<HomeTodayRecommendation />);
 
-    expect(screen.getByText('체형 맞춤')).toBeInTheDocument();
-    expect(screen.getByText('코디 추천')).toBeInTheDocument();
+    expect(screen.getByText('bodyCustom')).toBeInTheDocument();
+    expect(screen.getByText('outfitRecommend')).toBeInTheDocument();
   });
 
   it('피부 맞춤 버튼 클릭 시 /beauty로 이동한다', async () => {
     const user = userEvent.setup();
     render(<HomeTodayRecommendation />);
 
-    const beautyButton = screen.getByRole('button', { name: /피부 맞춤 제품 추천 보기/ });
+    const beautyButton = screen.getByRole('button', { name: /skinRecommendLabel/ });
     await user.click(beautyButton);
 
     expect(mockPush).toHaveBeenCalledWith('/beauty');
@@ -135,7 +142,7 @@ describe('HomeTodayRecommendation', () => {
     const user = userEvent.setup();
     render(<HomeTodayRecommendation />);
 
-    const styleButton = screen.getByRole('button', { name: /체형 맞춤 코디 추천 보기/ });
+    const styleButton = screen.getByRole('button', { name: /bodyRecommendLabel/ });
     await user.click(styleButton);
 
     expect(mockPush).toHaveBeenCalledWith('/style');
@@ -144,7 +151,7 @@ describe('HomeTodayRecommendation', () => {
   it('추천 섹션에 aria-label이 있다', () => {
     render(<HomeTodayRecommendation />);
 
-    expect(screen.getByRole('region', { name: /오늘의 맞춤 추천/ })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /todayRecommendationLabel/ })).toBeInTheDocument();
   });
 
   it('아이콘에 aria-hidden이 적용되어 있다', () => {

@@ -264,6 +264,7 @@ vi.mock('@/hooks/useShare', () => ({
 
 vi.mock('@/components/share', () => ({
   ShareButton: () => <button data-testid="share-button">공유</button>,
+  ShareThemePicker: () => null,
 }));
 
 vi.mock('@/components/animations', () => ({

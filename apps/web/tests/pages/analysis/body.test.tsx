@@ -205,6 +205,7 @@ vi.mock('@/components/share', () => ({
       공유하기
     </button>
   ),
+  ShareThemePicker: () => null,
 }));
 
 vi.mock('@/components/animations', () => ({

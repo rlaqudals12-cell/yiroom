@@ -45,11 +45,11 @@ const LOW_CONFIDENCE_THRESHOLD = 70;
 /** 페이지에서 사용하는 탭 값 목록 */
 const TAB_VALUES = ['basic', 'draping', 'detailed'] as const;
 
-/** 페이지에서 사용하는 탭 이름 목록 (ADR-063 용어 변경 반영) */
+/** 페이지에서 사용하는 탭 i18n 키 (useTranslations mock은 키 자체를 반환) */
 const TAB_LABELS = {
-  basic: '기본 분석',
-  draping: '색상 입혀보기',
-  detailed: '상세 리포트',
+  basic: 'basicAnalysis',
+  draping: 'colorDraping',
+  detailed: 'detailedReport',
 } as const;
 
 /** 기본 활성 탭 */
@@ -148,30 +148,23 @@ describe('PC-1 결과 페이지 탭 구조', () => {
   });
 
   describe('탭 이름이 ADR-063 용어 변경과 일치한다', () => {
-    it('기본 분석 탭 이름이 "기본 분석"이다 (전문용어 미사용)', () => {
-      expect(TAB_LABELS.basic).toBe('기본 분석');
+    it('기본 분석 탭의 i18n 키가 "basicAnalysis"이다', () => {
+      expect(TAB_LABELS.basic).toBe('basicAnalysis');
     });
 
-    it('드레이핑 탭 이름이 "색상 입혀보기"이다 ("드레이핑" 전문용어 미사용)', () => {
-      expect(TAB_LABELS.draping).toBe('색상 입혀보기');
-      // "드레이핑", "시뮬레이터" 등 전문용어가 탭 이름에 없어야 함
-      expect(TAB_LABELS.draping).not.toContain('드레이핑');
-      expect(TAB_LABELS.draping).not.toContain('시뮬레이터');
+    it('드레이핑 탭의 i18n 키가 "colorDraping"이다', () => {
+      expect(TAB_LABELS.draping).toBe('colorDraping');
     });
 
-    it('상세 리포트 탭 이름이 "상세 리포트"이다 ("균일도" 등 전문용어 미사용)', () => {
-      expect(TAB_LABELS.detailed).toBe('상세 리포트');
-      expect(TAB_LABELS.detailed).not.toContain('균일도');
-      expect(TAB_LABELS.detailed).not.toContain('반사율');
+    it('상세 리포트 탭의 i18n 키가 "detailedReport"이다', () => {
+      expect(TAB_LABELS.detailed).toBe('detailedReport');
     });
   });
 
-  describe('탭 이름에 전문 용어가 포함되지 않는다', () => {
-    const forbiddenTerms = ['드레이핑', '시뮬레이터', '균일도', '반사율', 'CIE', 'Lab', 'sRGB'];
-
-    it.each(forbiddenTerms)('탭 이름에 "%s" 전문용어가 없다', (term) => {
-      Object.values(TAB_LABELS).forEach((label) => {
-        expect(label).not.toContain(term);
+  describe('탭 i18n 키가 올바른 형식이다', () => {
+    it('모든 탭 i18n 키가 camelCase 형식이다', () => {
+      Object.values(TAB_LABELS).forEach((key) => {
+        expect(key).toMatch(/^[a-z][a-zA-Z]*$/);
       });
     });
   });
@@ -329,6 +322,7 @@ vi.mock('@/components/analysis/RecommendedProducts', () => ({
 vi.mock('@/components/share', () => ({
   ShareButton: () => <button data-testid="mock-share-button">Share</button>,
   PrintButton: () => <button data-testid="mock-print-button">Print</button>,
+  ShareThemePicker: () => null,
 }));
 
 vi.mock('@/components/common/ShareButtons', () => ({
@@ -523,15 +517,15 @@ describe('PC-1 결과 페이지 렌더링', () => {
 
       render(<PersonalColorResultPage />);
 
-      // 데이터 로드 대기
+      // 데이터 로드 대기 (i18n mock은 키를 그대로 반환)
       await waitFor(() => {
-        expect(screen.getByText('기본 분석')).toBeInTheDocument();
+        expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       });
 
       // 3개 탭 트리거 확인
-      expect(screen.getByText('기본 분석')).toBeInTheDocument();
-      expect(screen.getByText('색상 입혀보기')).toBeInTheDocument();
-      expect(screen.getByText('상세 리포트')).toBeInTheDocument();
+      expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
+      expect(screen.getByText('colorDraping')).toBeInTheDocument();
+      expect(screen.getByText('detailedReport')).toBeInTheDocument();
     });
 
     it('기본 탭(basic)이 초기 활성 상태이다', async () => {
@@ -600,9 +594,9 @@ describe('PC-1 결과 페이지 렌더링', () => {
         expect(screen.getByText('결과를 불러올 수 없어요. 다시 시도해주세요.')).toBeInTheDocument();
       });
 
-      // "다시 시도" 버튼이 있고 "새로 분석하기"는 없음
-      expect(screen.getByText('다시 시도')).toBeInTheDocument();
-      expect(screen.queryByText('새로 분석하기')).not.toBeInTheDocument();
+      // "retry" 버튼이 있고 "newAnalysis"는 없음 (i18n 키)
+      expect(screen.getByText('retry')).toBeInTheDocument();
+      expect(screen.queryByText('newAnalysis')).not.toBeInTheDocument();
     });
 
     it('4xx 에러 시 "새로 분석하기" 버튼이 표시된다', async () => {
@@ -620,9 +614,9 @@ describe('PC-1 결과 페이지 렌더링', () => {
         expect(screen.getByText('결과를 불러올 수 없어요. 다시 시도해주세요.')).toBeInTheDocument();
       });
 
-      // "새로 분석하기" 버튼이 있고 "다시 시도"는 없음
-      expect(screen.getByText('새로 분석하기')).toBeInTheDocument();
-      expect(screen.queryByText('다시 시도')).not.toBeInTheDocument();
+      // "newAnalysis" 버튼이 있고 "retry"는 없음 (i18n 키)
+      expect(screen.getByText('newAnalysis')).toBeInTheDocument();
+      expect(screen.queryByText('retry')).not.toBeInTheDocument();
     });
 
     it('에러 상태에서 "대시보드로" 링크가 항상 표시된다', async () => {
@@ -636,7 +630,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('대시보드로')).toBeInTheDocument();
+        expect(screen.getByText('goToDashboard')).toBeInTheDocument();
       });
     });
   });
@@ -653,7 +647,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
 
       render(<PersonalColorResultPage />);
 
-      expect(screen.getByText('결과를 불러오는 중...')).toBeInTheDocument();
+      expect(screen.getByText('loading')).toBeInTheDocument();
     });
   });
 
@@ -670,7 +664,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       // fetch가 호출되지 않아 isLoading이 true 상태 유지
-      expect(screen.getByText('결과를 불러오는 중...')).toBeInTheDocument();
+      expect(screen.getByText('loading')).toBeInTheDocument();
       expect(mockFetch).not.toHaveBeenCalled();
     });
   });
@@ -711,7 +705,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('기본 분석')).toBeInTheDocument();
+        expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       });
 
       expect(screen.queryByTestId('mock-data-notice')).not.toBeInTheDocument();
@@ -730,11 +724,11 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('색상 입혀보기')).toBeInTheDocument();
+        expect(screen.getByText('colorDraping')).toBeInTheDocument();
       });
 
       // draping 탭 트리거가 올바른 role과 aria 속성을 가짐
-      const drapingTrigger = screen.getByRole('tab', { name: /색상 입혀보기/ });
+      const drapingTrigger = screen.getByRole('tab', { name: /colorDraping/ });
       expect(drapingTrigger).toBeInTheDocument();
       expect(drapingTrigger).toHaveAttribute('data-state', 'inactive');
       expect(drapingTrigger).toHaveAttribute('aria-selected', 'false');
@@ -751,10 +745,10 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('기본 분석')).toBeInTheDocument();
+        expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       });
 
-      const basicTrigger = screen.getByRole('tab', { name: /기본 분석/ });
+      const basicTrigger = screen.getByRole('tab', { name: /basicAnalysis/ });
       expect(basicTrigger).toHaveAttribute('data-state', 'active');
       expect(basicTrigger).toHaveAttribute('aria-selected', 'true');
     });
@@ -770,7 +764,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('기본 분석')).toBeInTheDocument();
+        expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       });
 
       const tabs = screen.getAllByRole('tab');
