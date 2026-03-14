@@ -1,12 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
 import { getUserContext, generateCoachResponseStream, type CoachMessage } from '@/lib/coach';
+import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
 
 /**
  * AI 웰니스 코치 스트리밍 API (SSE)
  *
  * POST /api/coach/stream
  * Body: {
- *   message: string,       // 사용자 메시지
+ *   message: string,       // 사용자 메시지 (최대 2000자)
  *   chatHistory?: CoachMessage[] // 이전 대화 기록 (선택)
  * }
  *
@@ -33,6 +34,35 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Message is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 메시지 길이 제한
+    if (message.length > 2000) {
+      return new Response(JSON.stringify({ error: '메시지가 너무 깁니다 (최대 2000자)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 위기 상황 감지 — SSE 형식으로 즉시 전문 상담 안내
+    if (detectCrisis(message)) {
+      const encoder = new TextEncoder();
+      const crisisStream = new ReadableStream({
+        start(controller) {
+          const chunkData = JSON.stringify({ type: 'chunk', content: CRISIS_RESPONSE_MESSAGE });
+          controller.enqueue(encoder.encode(`data: ${chunkData}\n\n`));
+          const doneData = JSON.stringify({ type: 'done', suggestedQuestions: [] });
+          controller.enqueue(encoder.encode(`data: ${doneData}\n\n`));
+          controller.close();
+        },
+      });
+      return new Response(crisisStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
       });
     }
 

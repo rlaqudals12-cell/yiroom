@@ -23,16 +23,32 @@ vi.mock('@/lib/coach/skin-rag', () => ({
   searchSkinProducts: vi.fn(),
 }));
 
+// Rate limit mock
+vi.mock('@/lib/security/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockReturnValue({ success: true, headers: {} }),
+}));
+
+// Safety mock
+vi.mock('@/lib/safety', () => ({
+  detectCrisis: vi.fn().mockReturnValue(false),
+  CRISIS_RESPONSE_MESSAGE: '지금 많이 힘드시군요. 자살예방상담전화 1393',
+}));
+
 import { POST } from '@/app/api/coach/chat/route';
 import { auth } from '@clerk/nextjs/server';
 import { getUserContext, generateCoachResponse } from '@/lib/coach';
 import { searchSkinProducts } from '@/lib/coach/skin-rag';
+import { detectCrisis } from '@/lib/safety';
+import { applyRateLimit } from '@/lib/security/rate-limit';
+import { NextRequest } from 'next/server';
 
-// 헬퍼: Request 생성
-function createMockRequest(body: unknown): Request {
-  return {
-    json: () => Promise.resolve(body),
-  } as Request;
+// 헬퍼: NextRequest 생성
+function createMockRequest(body: unknown): NextRequest {
+  return new NextRequest('http://localhost:3000/api/coach/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 // Mock 데이터
@@ -69,7 +85,9 @@ describe('POST /api/coach/chat', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 기본 인증 설정
+    // 기본 mock 설정
+    vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
+    vi.mocked(detectCrisis).mockReturnValue(false);
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as AuthReturnType);
     vi.mocked(getUserContext).mockResolvedValue(mockUserContext);
     vi.mocked(generateCoachResponse).mockResolvedValue(mockCoachResponse);
@@ -111,6 +129,48 @@ describe('POST /api/coach/chat', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(400);
+    });
+
+    it('message가 2000자를 초과하면 400을 반환한다', async () => {
+      const longMessage = 'a'.repeat(2001);
+      const request = createMockRequest({ message: longMessage });
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.error).toContain('2000');
+    });
+
+    it('message가 2000자 이하면 정상 처리한다', async () => {
+      const validMessage = '운동 '.repeat(400);
+      const request = createMockRequest({ message: validMessage });
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe('위기 감지', () => {
+    it('위기 키워드 감지 시 전문 상담 안내를 반환한다', async () => {
+      vi.mocked(detectCrisis).mockReturnValue(true);
+
+      const request = createMockRequest({ message: '죽고싶어요' });
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.message).toContain('1393');
+      expect(json.suggestedQuestions).toEqual([]);
+    });
+
+    it('위기 감지 시 AI 호출을 하지 않는다', async () => {
+      vi.mocked(detectCrisis).mockReturnValue(true);
+
+      const request = createMockRequest({ message: '죽고싶어요' });
+      await POST(request);
+
+      expect(vi.mocked(generateCoachResponse)).not.toHaveBeenCalled();
     });
   });
 
@@ -250,9 +310,11 @@ describe('POST /api/coach/chat', () => {
     });
 
     it('JSON 파싱 실패 시 500을 반환한다', async () => {
-      const badRequest = {
-        json: () => Promise.reject(new Error('Invalid JSON')),
-      } as Request;
+      const badRequest = new NextRequest('http://localhost:3000/api/coach/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: 'invalid json {{{',
+      });
 
       const response = await POST(badRequest);
       expect(response.status).toBe(500);

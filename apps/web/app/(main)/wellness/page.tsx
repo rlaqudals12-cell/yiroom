@@ -98,18 +98,35 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
 
   const supabase = createClerkSupabaseClient();
 
-  // 병렬 조회
-  const [latestScore, weeklyHistory, averageScore, todayCondition] = await Promise.all([
-    getLatestWellnessScore(supabase, userId),
-    getWellnessHistory(supabase, userId, 7),
-    getAverageWellnessScore(supabase, userId, 7),
-    getTodayCondition(supabase, userId),
-  ]);
+  // 병렬 조회 (에러 시 기본값 폴백)
+  let latestScore: Awaited<ReturnType<typeof getLatestWellnessScore>> = null;
+  let weeklyHistory: Awaited<ReturnType<typeof getWellnessHistory>> = [];
+  let averageScore: Awaited<ReturnType<typeof getAverageWellnessScore>> = {
+    totalScore: 0,
+    workoutScore: 0,
+    nutritionScore: 0,
+    skinScore: 0,
+    bodyScore: 0,
+    grade: '-',
+    count: 0,
+  };
+  let todayCondition: TodayCondition | null = null;
+
+  try {
+    [latestScore, weeklyHistory, averageScore, todayCondition] = await Promise.all([
+      getLatestWellnessScore(supabase, userId),
+      getWellnessHistory(supabase, userId, 7),
+      getAverageWellnessScore(supabase, userId, 7),
+      getTodayCondition(supabase, userId),
+    ]);
+  } catch (error) {
+    console.error('[WellnessPage] 데이터 조회 실패:', error);
+  }
 
   const conditionInsights = todayCondition ? getConditionInsights(todayCondition) : [];
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container max-w-2xl py-6 space-y-6" data-testid="wellness-page">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -200,7 +217,7 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
       </Card>
 
       {/* 주간 평균 */}
-      <Card>
+      <Card data-testid="weekly-average-card">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
@@ -228,7 +245,7 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
       </Card>
 
       {/* 히스토리 */}
-      <Card>
+      <Card data-testid="wellness-history-card">
         <CardHeader>
           <CardTitle className="text-lg">최근 기록</CardTitle>
         </CardHeader>

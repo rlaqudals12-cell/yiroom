@@ -77,6 +77,16 @@ vi.mock('@/lib/coach/workout-rag', () => ({
   formatWorkoutForPrompt: vi.fn().mockReturnValue(''),
 }));
 
+vi.mock('@/lib/coach/hair-rag', () => ({
+  searchHairProducts: vi.fn().mockResolvedValue([]),
+  formatHairProductsForPrompt: vi.fn().mockReturnValue(''),
+}));
+
+vi.mock('@/lib/coach/makeup-rag', () => ({
+  searchMakeupProducts: vi.fn().mockResolvedValue([]),
+  formatMakeupProductsForPrompt: vi.fn().mockReturnValue(''),
+}));
+
 // =============================================================================
 // 테스트
 // =============================================================================
@@ -327,6 +337,30 @@ describe('lib/coach/chat', () => {
         const fashionQuestions = ['코디 추천', '패션 스타일', '오늘 뭐 입지'];
 
         for (const q of fashionQuestions) {
+          const response = await generateCoachResponse({
+            message: q,
+            userContext: null,
+          });
+          expect(response.message).toBeDefined();
+        }
+      });
+
+      it('should detect hair category', async () => {
+        const hairQuestions = ['탈모 예방법', '두피가 가려워요', '헤어 트리트먼트 추천'];
+
+        for (const q of hairQuestions) {
+          const response = await generateCoachResponse({
+            message: q,
+            userContext: null,
+          });
+          expect(response.message).toBeDefined();
+        }
+      });
+
+      it('should detect makeup category', async () => {
+        const makeupQuestions = ['립스틱 추천해줘', '아이섀도 색상', '파운데이션 고르는 법'];
+
+        for (const q of makeupQuestions) {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,

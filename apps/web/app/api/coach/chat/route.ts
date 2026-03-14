@@ -1,14 +1,16 @@
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { generateCoachResponse, getUserContext, type CoachMessage } from '@/lib/coach';
 import { searchSkinProducts } from '@/lib/coach/skin-rag';
+import { applyRateLimit } from '@/lib/security/rate-limit';
+import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
 
 /**
  * AI 웰니스 코치 채팅 API
  *
  * POST /api/coach/chat
  * Body: {
- *   message: string,       // 사용자 메시지
+ *   message: string,       // 사용자 메시지 (최대 2000자)
  *   chatHistory?: CoachMessage[] // 이전 대화 기록 (선택)
  * }
  *
@@ -19,7 +21,7 @@ import { searchSkinProducts } from '@/lib/coach/skin-rag';
  *   products?: SkinProductMatch[] // 피부 관련 질문 시 제품 추천
  * }
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
@@ -28,11 +30,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Rate Limit 체크
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return (
+        rateLimitResult.response ??
+        NextResponse.json({ error: '요청이 너무 많습니다.' }, { status: 429 })
+      );
+    }
+
     const body = await req.json();
     const { message, chatHistory } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+
+    // 메시지 길이 제한
+    if (message.length > 2000) {
+      return NextResponse.json({ error: '메시지가 너무 깁니다 (최대 2000자)' }, { status: 400 });
+    }
+
+    // 위기 상황 감지 — 즉시 전문 상담 안내
+    if (detectCrisis(message)) {
+      return NextResponse.json({
+        success: true,
+        message: CRISIS_RESPONSE_MESSAGE,
+        suggestedQuestions: [],
+      });
     }
 
     // 사용자 컨텍스트 조회
