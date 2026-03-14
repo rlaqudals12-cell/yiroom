@@ -49,6 +49,32 @@ export {
   type GapCheckResult,
 } from './capsule-bridge';
 
+// Expiry Alerts (유통기한 알림)
+export {
+  getExpiryStatus,
+  getDaysRemaining,
+  getExpiryMessage,
+  generateExpiryAlerts,
+  getExpiringItems,
+  getExpirySummary,
+  type ExpiryStatus,
+  type ExpiryAlert,
+  type ExpirySummary,
+} from './expiry-alerts';
+
+// Product Synergy (성분 시너지/충돌)
+export {
+  extractIngredientKeywords,
+  analyzeInteraction,
+  analyzeInventoryInteractions,
+  inferRoutineStep,
+  suggestRoutineOrder,
+  type InteractionType,
+  type ProductInteraction,
+  type RoutineStep,
+  type RoutineOrderSuggestion,
+} from './product-synergy';
+
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {
   calculateMatchScore,
