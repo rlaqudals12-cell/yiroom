@@ -124,6 +124,24 @@ export type {
   ChallengeWithProgress,
 } from './challenges';
 
+// 크로스도메인 챌린지
+export {
+  CROSS_DOMAIN_CHALLENGES,
+  calculateCrossDomainProgress,
+  calculateOverallProgress,
+  buildCrossDomainView,
+  getCrossDomainChallengeById,
+  getAvailableCrossDomainChallenges,
+  getIncompleteDomainMessages,
+} from './cross-domain-challenges';
+
+export type {
+  DomainRequirement,
+  CrossDomainChallengeDefinition,
+  DomainProgress,
+  CrossDomainProgressView,
+} from './cross-domain-challenges';
+
 // 타입 re-export
 export type {
   Badge,

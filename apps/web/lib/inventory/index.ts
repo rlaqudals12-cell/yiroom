@@ -75,6 +75,17 @@ export {
   type RoutineOrderSuggestion,
 } from './product-synergy';
 
+// Routine Bridge (인벤토리↔스킨케어 루틴 연동)
+export {
+  matchProductsToRoutine,
+  getMissingStepMessages,
+  getLowStockMessages,
+  getRoutineCoverageSummary,
+  type InventoryProduct,
+  type RoutineStepMatch,
+  type RoutineInventoryResult,
+} from './routine-bridge';
+
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {
   calculateMatchScore,
