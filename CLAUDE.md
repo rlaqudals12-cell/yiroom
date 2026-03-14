@@ -77,6 +77,7 @@ yiroom/
 | 철학   | Identity-First Framing, ConnectionAwareness                              | ✅   |
 | 모바일 | 웹-모바일 격차 해소 WS-A~D, 온보딩 UX 통일 (4089+ tests)                 | ✅   |
 | 만족도 | Phase 1-5 (20WS): 접근성, 다크모드, i18n, 리텐션, 위젯동기화, 전문가모드 | ✅   |
+| 고도화 | #16 헬스 디바이스 연동 (수면-피부 상관분석, GDPR 동의, 46 tests)         | ✅   |
 
 ## 슬래시 명령어
 
@@ -116,4 +117,4 @@ yiroom/
 
 ---
 
-**Version**: 20.0 | **Updated**: 2026-03-13 | 만족도 Phase 1-5 (20WS) 완료, 87.9→95 목표
+**Version**: 21.0 | **Updated**: 2026-03-14 | 16카테고리 고도화 Batch 1-6 완료, #16 헬스 디바이스 연동 추가
