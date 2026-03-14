@@ -129,6 +129,34 @@ export type {
   ConversionEvent,
 } from './adapters';
 
+// Webhook Verification
+export {
+  createHmacSignature,
+  verifyWebhookSignature,
+  getSignatureFromHeaders,
+  isTimestampValid,
+} from './webhook-verify';
+
+// Click Guard (Fraud Prevention)
+export {
+  isDuplicateClick,
+  isRateLimited,
+  isSuspiciousUserAgent,
+  validateClick,
+  _resetClickGuardCache,
+} from './click-guard';
+
+// Commission
+export {
+  COMMISSION_RATES,
+  MIN_COMMISSION_KRW,
+  MAX_COMMISSION_KRW,
+  calculateCommission,
+  inferCategory,
+  getCommissionRateTable,
+} from './commission';
+export type { CommissionResult } from './commission';
+
 // Types re-export (convenience)
 export type {
   AffiliatePartner,
