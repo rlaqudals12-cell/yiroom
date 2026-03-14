@@ -14,49 +14,50 @@
 
 ## 문서 목록
 
-| 문서                                                   | 도메인               | 소스 리서치                                  | 버전           |
-| ------------------------------------------------------ | -------------------- | -------------------------------------------- | -------------- |
-| [color-science.md](color-science.md)                   | 색채학 (퍼스널컬러)  | PC-1, PC-2, CIE-3                            | 1.0            |
-| [skin-physiology.md](skin-physiology.md)               | 피부 생리학          | S-1, S-2                                     | 1.0            |
-| [body-mechanics.md](body-mechanics.md)                 | 체형 역학            | C-1, C-2, W-2                                | 1.0            |
-| [image-processing.md](image-processing.md)             | 이미지 처리          | CIE-1~4                                      | 1.0            |
-| [design-system.md](design-system.md)                   | 디자인 시스템        | INF-1~4                                      | 1.0            |
-| [security-patterns.md](security-patterns.md)           | 보안 아키텍처        | P0-3~7, SEC-1~8                              | **2.0**        |
-| [legal-compliance.md](legal-compliance.md)             | 법적 준수            | N-1~4, C-2~4                                 | **2.0**        |
-| [ai-inference.md](ai-inference.md)                     | AI 추론              | AI-1~8                                       | **2.0**        |
-| [rag-retrieval.md](rag-retrieval.md)                   | RAG 검색             | RAG-OPT-1~4, EMB-1~4, VDB-1~4                | **1.0 (신규)** |
-| [nutrition-science.md](nutrition-science.md)           | 영양학               | N-1, COMBO-SKIN-NUTRITION                    | 1.0            |
-| [exercise-physiology.md](exercise-physiology.md)       | 운동생리학           | W-1, COMBO-BODY-EXERCISE                     | 1.0            |
-| [cross-domain-synergy.md](cross-domain-synergy.md)     | 크로스 도메인 시너지 | COMBO-1~10                                   | 1.0            |
-| [oral-health.md](oral-health.md)                       | 구강 건강            | OH-1-BUNDLE                                  | 1.0            |
-| [skin-procedures.md](skin-procedures.md)               | 피부 시술            | SK-1~6                                       | 1.0            |
-| [db-migration.md](db-migration.md)                     | DB 마이그레이션      | DB-1~4, DFA, ACID                            | **2.0**        |
-| [hybrid-data.md](hybrid-data.md)                       | Hybrid 데이터 패턴   | ADR-002, ADR-007                             | **1.0 (신규)** |
-| [api-design.md](api-design.md)                         | API 설계             | ADR-020, API-1~4                             | **1.0 (신규)** |
-| [performance.md](performance.md)                       | 성능 최적화          | ADR-014, ADR-019                             | **1.0 (신규)** |
-| [coaching-psychology.md](coaching-psychology.md)       | AI 코칭 심리학       | TTM, SDT, MI, GROW                           | **1.0 (신규)** |
-| [personalization-engine.md](personalization-engine.md) | 개인화 추천 엔진     | ADR-036, COMBO-1~10, 3-3-3 Rule              | **2.1**        |
-| [extensibility.md](extensibility.md)                   | 확장성 원리 (OCP)    | SOLID, DIP, Strategy/Adapter                 | **1.0 (신규)** |
-| [fashion-matching.md](fashion-matching.md)             | 패션 매칭            | J-1, P-2, P-3 스타일링 AI                    | **1.0 (신규)** |
-| [hair-makeup-analysis.md](hair-makeup-analysis.md)     | 헤어/메이크업 분석   | H-1, M-1 분석 원리                           | **1.0 (신규)** |
-| [accessibility.md](accessibility.md)                   | 접근성               | WCAG 2.1 AA, WAI-ARIA, POUR                  | **1.0 (신규)** |
-| [lesion-analysis.md](lesion-analysis.md)               | 피부 병변 분석       | S-2, 트러블/병변 감지                        | **1.0 (신규)** |
-| [stretching-physiology.md](stretching-physiology.md)   | 스트레칭 생리학      | W-2, ROM, 유연성                             | **1.0 (신규)** |
-| [risk-exercise-criteria.md](risk-exercise-criteria.md) | 위험 운동 기준       | W-2, 금기사항, PAR-Q+                        | **1.0 (신규)** |
-| [color-matching-theory.md](color-matching-theory.md)   | 색상 매칭 이론       | PC-1, PC-2, 색상 조화                        | **1.0 (신규)** |
-| [3d-face-shape.md](3d-face-shape.md)                   | 3D 얼굴 형태 분석    | C-1, C-2, MediaPipe                          | **1.0 (신규)** |
-| [data-platform.md](data-platform.md)                   | 데이터 플랫폼        | ADR-061, Phase L                             | **1.0 (신규)** |
-| [offline-support.md](offline-support.md)               | 오프라인 지원        | lib/offline, AsyncStorage, SWR               | **1.0 (신규)** |
-| [social-feed.md](social-feed.md)                       | 소셜 피드            | ADR-028, RLS, 피드 알고리즘                  | **1.0 (신규)** |
-| [barcode-qrcode.md](barcode-qrcode.md)                 | 바코드/QR 스캔       | EAN-13, Open Food Facts, 식품안전나라        | **1.0 (신규)** |
-| [weather-styling.md](weather-styling.md)               | 날씨 기반 스타일링   | 체감온도 레이어링, 17개 지역, OpenWeatherMap | **1.0 (신규)** |
-| [product-matching.md](product-matching.md)             | 제품 매칭            | ADR-032, Smart Matching                      | **1.0 (신규)** |
-| [draping-simulation.md](draping-simulation.md)         | 드레이핑 시뮬레이션  | PC-2, Virtual Try-On                         | **1.0 (신규)** |
-| [capsule-principle.md](capsule-principle.md)           | 캡슐 에코시스템      | ADR-069~075, BeautyProfile, CCS              | **1.0 (신규)** |
-| [safety-science.md](safety-science.md)                 | 안전성 과학          | ADR-070, Safety Profile, 법적 면책           | **1.0 (신규)** |
-| [decision-science.md](decision-science.md)             | 의사결정 과학        | Daily Capsule, Rotation Engine               | **1.0 (신규)** |
-| [habit-formation.md](habit-formation.md)               | 습관 형성            | Fogg, Nir Eyal, Streaks                      | **1.0 (신규)** |
-| [ux-design.md](ux-design.md)                           | UX 디자인 원칙       | Jobs, Rams, Norman, Laws of UX, Apple HIG    | **1.0 (신규)** |
+| 문서                                                     | 도메인                  | 소스 리서치                                  | 버전           |
+| -------------------------------------------------------- | ----------------------- | -------------------------------------------- | -------------- |
+| [color-science.md](color-science.md)                     | 색채학 (퍼스널컬러)     | PC-1, PC-2, CIE-3                            | 1.0            |
+| [skin-physiology.md](skin-physiology.md)                 | 피부 생리학             | S-1, S-2                                     | 1.0            |
+| [body-mechanics.md](body-mechanics.md)                   | 체형 역학               | C-1, C-2, W-2                                | 1.0            |
+| [image-processing.md](image-processing.md)               | 이미지 처리             | CIE-1~4                                      | 1.0            |
+| [design-system.md](design-system.md)                     | 디자인 시스템           | INF-1~4                                      | 1.0            |
+| [security-patterns.md](security-patterns.md)             | 보안 아키텍처           | P0-3~7, SEC-1~8                              | **2.0**        |
+| [legal-compliance.md](legal-compliance.md)               | 법적 준수               | N-1~4, C-2~4                                 | **2.0**        |
+| [ai-inference.md](ai-inference.md)                       | AI 추론                 | AI-1~8                                       | **2.0**        |
+| [rag-retrieval.md](rag-retrieval.md)                     | RAG 검색                | RAG-OPT-1~4, EMB-1~4, VDB-1~4                | **1.0 (신규)** |
+| [nutrition-science.md](nutrition-science.md)             | 영양학                  | N-1, COMBO-SKIN-NUTRITION                    | 1.0            |
+| [exercise-physiology.md](exercise-physiology.md)         | 운동생리학              | W-1, COMBO-BODY-EXERCISE                     | 1.0            |
+| [cross-domain-synergy.md](cross-domain-synergy.md)       | 크로스 도메인 시너지    | COMBO-1~10                                   | 1.0            |
+| [oral-health.md](oral-health.md)                         | 구강 건강               | OH-1-BUNDLE                                  | 1.0            |
+| [skin-procedures.md](skin-procedures.md)                 | 피부 시술               | SK-1~6                                       | 1.0            |
+| [db-migration.md](db-migration.md)                       | DB 마이그레이션         | DB-1~4, DFA, ACID                            | **2.0**        |
+| [hybrid-data.md](hybrid-data.md)                         | Hybrid 데이터 패턴      | ADR-002, ADR-007                             | **1.0 (신규)** |
+| [api-design.md](api-design.md)                           | API 설계                | ADR-020, API-1~4                             | **1.0 (신규)** |
+| [performance.md](performance.md)                         | 성능 최적화             | ADR-014, ADR-019                             | **1.0 (신규)** |
+| [coaching-psychology.md](coaching-psychology.md)         | AI 코칭 심리학          | TTM, SDT, MI, GROW                           | **1.0 (신규)** |
+| [personalization-engine.md](personalization-engine.md)   | 개인화 추천 엔진        | ADR-036, COMBO-1~10, 3-3-3 Rule              | **2.1**        |
+| [extensibility.md](extensibility.md)                     | 확장성 원리 (OCP)       | SOLID, DIP, Strategy/Adapter                 | **1.0 (신규)** |
+| [fashion-matching.md](fashion-matching.md)               | 패션 매칭               | J-1, P-2, P-3 스타일링 AI                    | **1.0 (신규)** |
+| [hair-makeup-analysis.md](hair-makeup-analysis.md)       | 헤어/메이크업 분석      | H-1, M-1 분석 원리                           | **1.0 (신규)** |
+| [accessibility.md](accessibility.md)                     | 접근성                  | WCAG 2.1 AA, WAI-ARIA, POUR                  | **1.0 (신규)** |
+| [lesion-analysis.md](lesion-analysis.md)                 | 피부 병변 분석          | S-2, 트러블/병변 감지                        | **1.0 (신규)** |
+| [stretching-physiology.md](stretching-physiology.md)     | 스트레칭 생리학         | W-2, ROM, 유연성                             | **1.0 (신규)** |
+| [risk-exercise-criteria.md](risk-exercise-criteria.md)   | 위험 운동 기준          | W-2, 금기사항, PAR-Q+                        | **1.0 (신규)** |
+| [color-matching-theory.md](color-matching-theory.md)     | 색상 매칭 이론          | PC-1, PC-2, 색상 조화                        | **1.0 (신규)** |
+| [3d-face-shape.md](3d-face-shape.md)                     | 3D 얼굴 형태 분석       | C-1, C-2, MediaPipe                          | **1.0 (신규)** |
+| [data-platform.md](data-platform.md)                     | 데이터 플랫폼           | ADR-061, Phase L                             | **1.0 (신규)** |
+| [offline-support.md](offline-support.md)                 | 오프라인 지원           | lib/offline, AsyncStorage, SWR               | **1.0 (신규)** |
+| [social-feed.md](social-feed.md)                         | 소셜 피드               | ADR-028, RLS, 피드 알고리즘                  | **1.0 (신규)** |
+| [barcode-qrcode.md](barcode-qrcode.md)                   | 바코드/QR 스캔          | EAN-13, Open Food Facts, 식품안전나라        | **1.0 (신규)** |
+| [weather-styling.md](weather-styling.md)                 | 날씨 기반 스타일링      | 체감온도 레이어링, 17개 지역, OpenWeatherMap | **1.0 (신규)** |
+| [product-matching.md](product-matching.md)               | 제품 매칭               | ADR-032, Smart Matching                      | **1.0 (신규)** |
+| [draping-simulation.md](draping-simulation.md)           | 드레이핑 시뮬레이션     | PC-2, Virtual Try-On                         | **1.0 (신규)** |
+| [capsule-principle.md](capsule-principle.md)             | 캡슐 에코시스템         | ADR-069~075, BeautyProfile, CCS              | **1.0 (신규)** |
+| [safety-science.md](safety-science.md)                   | 안전성 과학             | ADR-070, Safety Profile, 법적 면책           | **1.0 (신규)** |
+| [decision-science.md](decision-science.md)               | 의사결정 과학           | Daily Capsule, Rotation Engine               | **1.0 (신규)** |
+| [habit-formation.md](habit-formation.md)                 | 습관 형성               | Fogg, Nir Eyal, Streaks                      | **1.0 (신규)** |
+| [ux-design.md](ux-design.md)                             | UX 디자인 원칙          | Jobs, Rams, Norman, Laws of UX, Apple HIG    | **1.0 (신규)** |
+| [gamification-motivation.md](gamification-motivation.md) | 게이미피케이션 동기부여 | Goal-Setting, SDT, 크로스도메인 XP           | **1.0 (신규)** |
 
 ## 신규 추가 (2026-03)
 
