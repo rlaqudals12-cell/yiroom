@@ -135,3 +135,30 @@ export {
   generateMockIngredientSummary,
 } from './services/ingredient-analysis';
 export type { AIIngredientKeyword, AIIngredientSummary } from './services/ingredient-analysis';
+
+// ================================================
+// 계절 보정 (Seasonal Boost)
+// ================================================
+export {
+  getKoreaSeason,
+  calculateSeasonalBoost,
+  isSeasonalCategory,
+  getSeasonalTip,
+} from './services/seasonal-boost';
+export type { KoreaSeason, SeasonalBoostResult } from './services/seasonal-boost';
+
+// ================================================
+// 번들 추천 (Bundle Recommendation)
+// ================================================
+export {
+  findSynergyGaps,
+  findRoutineGaps,
+  findConflicts,
+  analyzeBundleOpportunities,
+} from './services/bundle-recommend';
+export type {
+  BundleProduct,
+  BundleRecommendation,
+  ConflictWarning,
+  BundleAnalysis,
+} from './services/bundle-recommend';
