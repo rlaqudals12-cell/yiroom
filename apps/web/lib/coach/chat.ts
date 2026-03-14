@@ -15,6 +15,7 @@ import { searchNutritionItems, formatNutritionForPrompt } from './nutrition-rag'
 import { searchWorkoutItems, formatWorkoutForPrompt } from './workout-rag';
 import { searchHairProducts, formatHairProductsForPrompt } from './hair-rag';
 import { searchMakeupProducts, formatMakeupProductsForPrompt } from './makeup-rag';
+import { filterCoachResponse, needsDisclaimer, COACH_DISCLAIMER } from './hallucination-filter';
 
 /**
  * 채팅 메시지 타입
@@ -623,14 +624,25 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}
     const result = await Promise.race([resultPromise, timeoutPromise]);
     const text = result.text;
 
+    // 환각/안전성 필터링
+    const filterResult = filterCoachResponse(text);
+    if (!filterResult.isClean) {
+      coachLogger.warn('Hallucination filter triggered:', filterResult.violations);
+    }
+
     // 응답 정제 (이모지 개수 제한, 길이 제한)
-    const cleanedResponse = cleanResponse(text);
+    const cleanedResponse = cleanResponse(filterResult.sanitizedText);
+
+    // 면책 조항 필요 시 추가
+    const finalMessage = needsDisclaimer(cleanedResponse)
+      ? `${cleanedResponse}\n\n${COACH_DISCLAIMER}`
+      : cleanedResponse;
 
     // 추천 질문 생성
     const suggestedQuestions = generateSuggestedQuestions(message, userContext);
 
     return {
-      message: cleanedResponse,
+      message: finalMessage,
       suggestedQuestions,
     };
   } catch (error) {

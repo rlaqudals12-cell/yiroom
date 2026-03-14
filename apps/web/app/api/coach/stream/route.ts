@@ -1,6 +1,11 @@
 import { auth } from '@clerk/nextjs/server';
 import { getUserContext, generateCoachResponseStream, type CoachMessage } from '@/lib/coach';
 import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
+import {
+  filterCoachResponse,
+  needsDisclaimer,
+  COACH_DISCLAIMER,
+} from '@/lib/coach/hallucination-filter';
 
 /**
  * AI 웰니스 코치 스트리밍 API (SSE)
@@ -81,10 +86,32 @@ export async function POST(req: Request) {
             chatHistory: chatHistory as CoachMessage[] | undefined,
           });
 
-          // 청크별 전송
+          // 청크별 전송 + 전체 텍스트 축적 (환각 필터용)
+          let fullText = '';
           for await (const chunk of generator) {
+            fullText += chunk;
             const data = JSON.stringify({ type: 'chunk', content: chunk });
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+          }
+
+          // 환각/안전성 필터링 (전체 텍스트 기반)
+          const filterResult = filterCoachResponse(fullText);
+          if (!filterResult.isClean) {
+            // 위반 발견 시 정화된 텍스트로 교체 이벤트 전송
+            const replaceData = JSON.stringify({
+              type: 'replace',
+              content: filterResult.sanitizedText,
+            });
+            controller.enqueue(encoder.encode(`data: ${replaceData}\n\n`));
+          }
+
+          // 면책 조항 필요 시 추가 청크 전송
+          if (needsDisclaimer(fullText)) {
+            const disclaimerData = JSON.stringify({
+              type: 'chunk',
+              content: `\n\n${COACH_DISCLAIMER}`,
+            });
+            controller.enqueue(encoder.encode(`data: ${disclaimerData}\n\n`));
           }
 
           // 추천 질문 생성 (전체 응답 기반)

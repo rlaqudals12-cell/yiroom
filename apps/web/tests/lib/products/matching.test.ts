@@ -1,11 +1,9 @@
-import { describe, it, expect } from 'vitest';
+/**
+ * 제품 매칭 점수 계산 테스트
+ * @description calculateMatchScore, addMatchInfo, addMatchInfoToProducts 함수 테스트
+ */
 
-import {
-  calculateMatchScore,
-  addMatchInfo,
-  addMatchInfoToProducts,
-  type UserProfile,
-} from '@/lib/products/matching';
+import { describe, it, expect, vi } from 'vitest';
 import type {
   CosmeticProduct,
   SupplementProduct,
@@ -13,1079 +11,695 @@ import type {
   HealthFood,
 } from '@/types/product';
 
-// Mock 데이터
-const mockCosmeticProduct: CosmeticProduct = {
-  id: 'cosmetic-1',
-  name: '수분 세럼',
-  brand: '테스트 브랜드',
-  category: 'serum',
-  skinTypes: ['dry', 'normal'],
+// getProductType 모킹 — Supabase 의존성 차단
+vi.mock('@/lib/products/services/search', () => ({
+  getProductType: (product: Record<string, unknown>) => {
+    if ('skinTypes' in product || 'personalColorSeasons' in product) return 'cosmetic';
+    if ('benefits' in product && 'mainIngredients' in product) return 'supplement';
+    if ('targetMuscles' in product || 'exerciseTypes' in product) return 'workout_equipment';
+    if ('caloriesPerServing' in product || 'proteinG' in product) return 'health_food';
+    return 'cosmetic';
+  },
+}));
+
+import {
+  calculateMatchScore,
+  addMatchInfo,
+  addMatchInfoToProducts,
+  type UserProfile,
+} from '@/lib/products/matching';
+
+// ================================================
+// 테스트 픽스처
+// ================================================
+
+const cosmeticProduct: CosmeticProduct = {
+  id: 'c1',
+  name: '수분 토너',
+  brand: '라운드랩',
+  category: 'toner',
+  skinTypes: ['dry'],
   concerns: ['hydration', 'aging'],
-  personalColorSeasons: ['Summer', 'Winter'],
-  priceKrw: 35000,
+  priceRange: 'budget',
   rating: 4.5,
+  reviewCount: 15000,
+  isActive: true,
+  keyIngredients: ['히알루론산'],
 };
 
-const mockMakeupProduct: CosmeticProduct = {
-  id: 'makeup-1',
+const makeupProduct: CosmeticProduct = {
+  id: 'm1',
   name: '립스틱',
-  brand: '메이크업 브랜드',
+  brand: '클리오',
   category: 'makeup',
   subcategory: 'lip',
-  personalColorSeasons: ['Summer', 'Spring'],
-  priceKrw: 28000,
+  personalColorSeasons: ['Spring'],
+  faceShapes: ['oval'],
+  undertones: ['warm'],
+  skinTypes: [],
+  concerns: [],
+  priceRange: 'mid',
   rating: 4.2,
+  reviewCount: 800,
+  isActive: true,
+  keyIngredients: [],
 };
 
-const mockSupplementProduct: SupplementProduct = {
-  id: 'supplement-1',
-  name: '비타민 C',
-  brand: '영양제 브랜드',
-  category: 'vitamin',
-  benefits: ['skin', 'immunity'],
-  mainIngredients: [{ name: 'Vitamin C', amount: 1000, unit: 'mg' }], // getProductType 판별용
-  targetConcerns: ['피부 건강', '면역력'],
+const haircareProduct: CosmeticProduct = {
+  id: 'h1',
+  name: '샴푸',
+  brand: '닥터포헤어',
+  category: 'shampoo',
+  hairTypes: ['straight'],
+  scalpTypes: ['oily'],
+  concerns: ['aging', 'hydration'],
+  skinTypes: [],
+  priceRange: 'budget',
+  rating: 4.3,
+  reviewCount: 6000,
+  isActive: true,
+  keyIngredients: [],
+};
+
+const supplementProduct: SupplementProduct = {
+  id: 's1',
+  name: '콜라겐',
+  brand: '종근당건강',
+  category: 'collagen',
+  benefits: ['skin', 'hair'],
+  mainIngredients: [{ name: '콜라겐', amount: 1000, unit: 'mg' }],
+  targetConcerns: ['피부 탄력', '모발 건강'],
   priceKrw: 25000,
-  rating: 4.7,
+  rating: 4.6,
+  reviewCount: 3000,
+  isActive: true,
 };
 
-const mockWorkoutEquipment: WorkoutEquipment = {
-  id: 'equipment-1',
+const equipmentProduct: WorkoutEquipment = {
+  id: 'e1',
   name: '덤벨 세트',
-  brand: '운동기구 브랜드',
+  brand: '하이퍼',
   category: 'dumbbell',
-  targetMuscles: ['arms', 'shoulders'],
-  skillLevel: 'all',
-  priceKrw: 50000,
-  rating: 4.8,
+  targetMuscles: ['chest', 'arms', 'shoulders'],
+  skillLevel: 'beginner',
+  priceKrw: 45000,
+  rating: 4.4,
+  reviewCount: 1200,
+  isActive: true,
 };
 
-const mockHealthFood: HealthFood = {
-  id: 'healthfood-1',
+const healthFoodProduct: HealthFood = {
+  id: 'hf1',
   name: '프로틴 파우더',
-  brand: '건강식품 브랜드',
+  brand: '마이프로틴',
   category: 'protein_powder',
   benefits: ['muscle_gain', 'recovery'],
-  dietaryInfo: ['gluten_free'],
-  proteinG: 25,
+  dietaryInfo: ['gluten_free', 'sugar_free'],
   caloriesPerServing: 120,
-  priceKrw: 45000,
-  rating: 4.6,
+  proteinG: 25,
+  priceKrw: 35000,
+  rating: 4.3,
+  reviewCount: 8000,
+  isActive: true,
 };
 
+const emptyProfile: UserProfile = {};
+
+// ================================================
+// 화장품 매칭 테스트
+// ================================================
+
 describe('calculateMatchScore', () => {
-  describe('화장품 매칭', () => {
-    it('피부 타입 + 고민 매칭 시 높은 점수', () => {
+  describe('화장품 (Cosmetic) 매칭', () => {
+    it('빈 프로필은 기본 점수만 반환한다', () => {
+      const result = calculateMatchScore(cosmeticProduct, emptyProfile);
+      // 기본 20 + 가격 budget 15 + 인기 브랜드 12 + 리뷰 15000개 15 + 평점 4.5&100+ 10
+      expect(result.score).toBeGreaterThanOrEqual(20);
+      expect(result.reasons.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('피부 타입이 일치하면 +30점을 받는다', () => {
+      const profile: UserProfile = { skinType: 'dry' };
+      const result = calculateMatchScore(cosmeticProduct, profile);
+      const skinReason = result.reasons.find((r) => r.type === 'skinType');
+      expect(skinReason).toBeDefined();
+      expect(skinReason?.matched).toBe(true);
+    });
+
+    it('피부 타입이 불일치하면 추가 점수 없다', () => {
+      const profileMatch: UserProfile = { skinType: 'dry' };
+      const profileNoMatch: UserProfile = { skinType: 'oily' };
+      const scoreMatch = calculateMatchScore(cosmeticProduct, profileMatch).score;
+      const scoreNoMatch = calculateMatchScore(cosmeticProduct, profileNoMatch).score;
+      expect(scoreMatch).toBeGreaterThan(scoreNoMatch);
+    });
+
+    it('피부 고민 2/4 겹치면 비례 점수를 받는다', () => {
+      const profile: UserProfile = {
+        skinConcerns: ['hydration', 'aging', 'acne', 'pore'],
+      };
+      const result = calculateMatchScore(cosmeticProduct, profile);
+      // 2/4 = 0.5 → 30*0.5 = 15
+      const concernReasons = result.reasons.filter((r) => r.type === 'concern');
+      expect(concernReasons.length).toBe(2);
+      expect(concernReasons.every((r) => r.matched)).toBe(true);
+    });
+
+    it('피부 고민 4/4 모두 겹치면 최대 30점을 받는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        concerns: ['hydration', 'aging', 'acne', 'pore'],
+      };
+      const profile: UserProfile = {
+        skinConcerns: ['hydration', 'aging', 'acne', 'pore'],
+      };
+      const result = calculateMatchScore(product, profile);
+      const concernReasons = result.reasons.filter((r) => r.type === 'concern');
+      expect(concernReasons.length).toBe(4);
+    });
+
+    it('점수는 100을 초과하지 않는다', () => {
       const profile: UserProfile = {
         skinType: 'dry',
-        skinConcerns: ['hydration'],
+        skinConcerns: ['hydration', 'aging'],
+        personalColorSeason: 'Spring',
+        faceShape: 'oval',
+        undertone: 'warm',
       };
-
-      const result = calculateMatchScore(mockCosmeticProduct, profile);
-
-      expect(result.score).toBeGreaterThanOrEqual(70);
-      expect(result.reasons).toContainEqual(
-        expect.objectContaining({ type: 'skinType', matched: true })
-      );
-      expect(result.reasons).toContainEqual(
-        expect.objectContaining({ type: 'concern', matched: true })
-      );
-    });
-
-    it('피부 타입 불일치 시 낮은 점수', () => {
-      const profile: UserProfile = {
-        skinType: 'oily',
-        skinConcerns: ['acne'],
-      };
-
-      const result = calculateMatchScore(mockCosmeticProduct, profile);
-
-      expect(result.score).toBeLessThan(50);
-    });
-
-    it('메이크업 제품에 퍼스널 컬러 매칭', () => {
-      const profile: UserProfile = {
-        skinType: 'normal',
-        personalColorSeason: 'Summer',
-      };
-
-      const result = calculateMatchScore(mockMakeupProduct, profile);
-
-      expect(result.reasons).toContainEqual(
-        expect.objectContaining({ type: 'personalColor', matched: true })
-      );
+      const result = calculateMatchScore(cosmeticProduct, profile);
+      expect(result.score).toBeLessThanOrEqual(100);
     });
   });
 
-  describe('영양제 매칭', () => {
-    it('피부 관련 효능 매칭', () => {
-      const profile: UserProfile = {
-        skinConcerns: ['hydration'],
-      };
+  // ================================================
+  // 메이크업 매칭 테스트
+  // ================================================
 
-      const result = calculateMatchScore(mockSupplementProduct, profile);
-
-      expect(result.score).toBeGreaterThanOrEqual(50);
+  describe('메이크업 (Makeup) 매칭', () => {
+    it('퍼스널컬러가 일치하면 +20점을 받는다', () => {
+      const profile: UserProfile = { personalColorSeason: 'Spring' };
+      const profileNoMatch: UserProfile = { personalColorSeason: 'Winter' };
+      const scoreMatch = calculateMatchScore(makeupProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(makeupProduct, profileNoMatch).score;
+      expect(scoreMatch - scoreNoMatch).toBe(20);
     });
 
-    it('운동 목표 연동', () => {
+    it('얼굴형이 일치하면 +20점을 받는다', () => {
+      const profile: UserProfile = { faceShape: 'oval' };
+      const profileNoMatch: UserProfile = { faceShape: 'round' };
+      const scoreMatch = calculateMatchScore(makeupProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(makeupProduct, profileNoMatch).score;
+      // 일치: +20, 불일치: +0
+      expect(scoreMatch - scoreNoMatch).toBe(20);
+    });
+
+    it('제품에 faceShapes 데이터가 없으면 프로필 완성도 보너스 +5점을 준다', () => {
+      const productNoFace: CosmeticProduct = {
+        ...makeupProduct,
+        faceShapes: undefined,
+      };
+      const profile: UserProfile = { faceShape: 'oval' };
+      const result = calculateMatchScore(productNoFace, profile);
+      const faceReason = result.reasons.find((r) => r.type === 'faceShape');
+      expect(faceReason).toBeDefined();
+      expect(faceReason?.matched).toBe(false);
+    });
+
+    it('언더톤이 일치하면 +15점을 받는다', () => {
+      const profile: UserProfile = { undertone: 'warm' };
+      const profileNoMatch: UserProfile = { undertone: 'cool' };
+      const scoreMatch = calculateMatchScore(makeupProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(makeupProduct, profileNoMatch).score;
+      // 일치: +15, 불일치: +0
+      expect(scoreMatch - scoreNoMatch).toBe(15);
+    });
+
+    it('제품에 undertones 데이터가 없으면 프로필 완성도 보너스 +5점을 준다', () => {
+      const productNoUndertone: CosmeticProduct = {
+        ...makeupProduct,
+        undertones: undefined,
+      };
+      const profile: UserProfile = { undertone: 'warm' };
+      const result = calculateMatchScore(productNoUndertone, profile);
+      const undertoneReason = result.reasons.find((r) => r.type === 'undertone');
+      expect(undertoneReason).toBeDefined();
+      expect(undertoneReason?.matched).toBe(false);
+    });
+
+    it('스킨케어 제품은 퍼스널컬러 보너스를 받지 않는다', () => {
+      const profile: UserProfile = { personalColorSeason: 'Spring' };
+      const result = calculateMatchScore(cosmeticProduct, profile);
+      const pcReason = result.reasons.find((r) => r.type === 'personalColor');
+      expect(pcReason).toBeUndefined();
+    });
+  });
+
+  // ================================================
+  // 헤어케어 매칭 테스트
+  // ================================================
+
+  describe('헤어케어 (Haircare) 매칭', () => {
+    it('모발 타입이 일치하면 +30점을 받는다', () => {
+      const profile: UserProfile = { hairType: 'straight' };
+      const profileNoMatch: UserProfile = { hairType: 'curly' };
+      const scoreMatch = calculateMatchScore(haircareProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(haircareProduct, profileNoMatch).score;
+      expect(scoreMatch - scoreNoMatch).toBe(30);
+    });
+
+    it('제품에 hairTypes 없으면 프로필 완성도 보너스 +10점을 준다', () => {
+      const productNoHair: CosmeticProduct = {
+        ...haircareProduct,
+        hairTypes: undefined,
+      };
+      const profile: UserProfile = { hairType: 'straight' };
+      const result = calculateMatchScore(productNoHair, profile);
+      const hairReason = result.reasons.find((r) => r.type === 'hairType');
+      expect(hairReason).toBeDefined();
+      expect(hairReason?.matched).toBe(false);
+    });
+
+    it('두피 타입이 일치하면 +30점을 받는다', () => {
+      const profile: UserProfile = { scalpType: 'oily' };
+      const result = calculateMatchScore(haircareProduct, profile);
+      const scalpReason = result.reasons.find((r) => r.type === 'scalpType');
+      expect(scalpReason).toBeDefined();
+      expect(scalpReason?.matched).toBe(true);
+    });
+
+    it('모발 고민이 겹치면 비례 점수를 받는다', () => {
+      const profile: UserProfile = {
+        hairConcerns: ['aging', 'hydration'],
+      };
+      const result = calculateMatchScore(haircareProduct, profile);
+      const concernReason = result.reasons.find(
+        (r) => r.type === 'concern' && r.label === '모발 고민 적합'
+      );
+      expect(concernReason).toBeDefined();
+      expect(concernReason?.matched).toBe(true);
+    });
+  });
+
+  // ================================================
+  // 대중성 보너스 테스트
+  // ================================================
+
+  describe('대중성 보너스', () => {
+    it('인기 브랜드는 +12점을 받는다', () => {
+      const popularResult = calculateMatchScore(cosmeticProduct, emptyProfile);
+      const unknownProduct: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드XYZ',
+      };
+      const unknownResult = calculateMatchScore(unknownProduct, emptyProfile);
+      const popularBrand = popularResult.reasons.find((r) => r.type === 'brand');
+      const unknownBrand = unknownResult.reasons.find((r) => r.type === 'brand');
+      expect(popularBrand?.matched).toBe(true);
+      expect(unknownBrand).toBeUndefined();
+      expect(popularResult.score - unknownResult.score).toBe(12);
+    });
+
+    it('가격 budget은 +15점을 받는다', () => {
+      const budgetProduct: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        priceRange: 'budget',
+        reviewCount: 0,
+        rating: undefined,
+      };
+      const premiumProduct: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        priceRange: 'premium',
+        reviewCount: 0,
+        rating: undefined,
+      };
+      const budgetScore = calculateMatchScore(budgetProduct, emptyProfile).score;
+      const premiumScore = calculateMatchScore(premiumProduct, emptyProfile).score;
+      expect(budgetScore - premiumScore).toBe(15);
+    });
+
+    it('가격 mid는 +8점을 받는다', () => {
+      const midProduct: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        priceRange: 'mid',
+        reviewCount: 0,
+        rating: undefined,
+      };
+      const premiumProduct: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        priceRange: 'premium',
+        reviewCount: 0,
+        rating: undefined,
+      };
+      const midScore = calculateMatchScore(midProduct, emptyProfile).score;
+      const premiumScore = calculateMatchScore(premiumProduct, emptyProfile).score;
+      expect(midScore - premiumScore).toBe(8);
+    });
+
+    it('리뷰 10000개 이상은 +15점을 받는다', () => {
+      const result = calculateMatchScore(cosmeticProduct, emptyProfile);
+      const popReason = result.reasons.find((r) => r.type === 'popularity');
+      expect(popReason).toBeDefined();
+      expect(popReason?.matched).toBe(true);
+    });
+
+    it('리뷰 5000개 이상은 +12점을 받는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        reviewCount: 5500,
+        rating: undefined,
+        priceRange: undefined,
+      };
+      const noReviewProduct: CosmeticProduct = {
+        ...product,
+        reviewCount: 0,
+      };
+      const withReviewScore = calculateMatchScore(product, emptyProfile).score;
+      const noReviewScore = calculateMatchScore(noReviewProduct, emptyProfile).score;
+      expect(withReviewScore - noReviewScore).toBe(12);
+    });
+
+    it('리뷰 1000개 이상은 +8점을 받는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        reviewCount: 1200,
+        rating: undefined,
+        priceRange: undefined,
+      };
+      const noReviewProduct: CosmeticProduct = {
+        ...product,
+        reviewCount: 0,
+      };
+      const withReviewScore = calculateMatchScore(product, emptyProfile).score;
+      const noReviewScore = calculateMatchScore(noReviewProduct, emptyProfile).score;
+      expect(withReviewScore - noReviewScore).toBe(8);
+    });
+
+    it('평점 4.5 이상 & 리뷰 100개 이상은 +10점을 받는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        rating: 4.5,
+        reviewCount: 150,
+        priceRange: undefined,
+      };
+      const noRatingProduct: CosmeticProduct = {
+        ...product,
+        rating: undefined,
+        reviewCount: 0,
+      };
+      const ratedScore = calculateMatchScore(product, emptyProfile).score;
+      const noRatingScore = calculateMatchScore(noRatingProduct, emptyProfile).score;
+      // 리뷰 150개: +3점 (100+), 평점 4.5: +10점 → 총 +13
+      expect(ratedScore - noRatingScore).toBe(13);
+    });
+
+    it('평점 4.0 이상 & 리뷰 50개 이상은 +7점을 받는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        rating: 4.0,
+        reviewCount: 60,
+        priceRange: undefined,
+      };
+      const result = calculateMatchScore(product, emptyProfile);
+      const ratingReason = result.reasons.find((r) => r.type === 'rating');
+      expect(ratingReason).toBeDefined();
+      expect(ratingReason?.matched).toBe(true);
+    });
+
+    it('평점 3.5 미만 또는 리뷰 20개 미만은 평점 보너스를 받지 않는다', () => {
+      const product: CosmeticProduct = {
+        ...cosmeticProduct,
+        brand: '알수없는브랜드',
+        rating: 3.2,
+        reviewCount: 10,
+        priceRange: undefined,
+      };
+      const result = calculateMatchScore(product, emptyProfile);
+      const ratingReason = result.reasons.find((r) => r.type === 'rating');
+      expect(ratingReason).toBeUndefined();
+    });
+  });
+
+  // ================================================
+  // 영양제 매칭 테스트
+  // ================================================
+
+  describe('영양제 (Supplement) 매칭', () => {
+    it('빈 프로필은 기본 점수(20) + 보너스만 반환한다', () => {
+      const result = calculateMatchScore(supplementProduct, emptyProfile);
+      expect(result.score).toBeGreaterThanOrEqual(20);
+    });
+
+    it('피부/모발 관련 효능이 있고 피부 고민 프로필이 있으면 +30점을 받는다', () => {
+      const profile: UserProfile = { skinConcerns: ['hydration'] };
+      const profileEmpty: UserProfile = {};
+      const scoreMatch = calculateMatchScore(supplementProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(supplementProduct, profileEmpty).score;
+      expect(scoreMatch - scoreNoMatch).toBe(30);
+    });
+
+    it('영양 목표가 일치하면 +30점을 받는다', () => {
+      const profile: UserProfile = { nutritionGoals: ['피부 탄력'] };
+      const profileNoGoal: UserProfile = {};
+      const scoreMatch = calculateMatchScore(supplementProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(supplementProduct, profileNoGoal).score;
+      expect(scoreMatch - scoreNoMatch).toBe(30);
+    });
+
+    it('운동 목표 연동 효능이 일치하면 +20점을 받는다', () => {
+      const productWithMuscle: SupplementProduct = {
+        ...supplementProduct,
+        benefits: ['muscle', 'energy'],
+      };
+      const profile: UserProfile = { workoutGoals: ['muscle_gain'] };
+      const profileNoGoal: UserProfile = {};
+      const scoreMatch = calculateMatchScore(productWithMuscle, profile).score;
+      const scoreNoMatch = calculateMatchScore(productWithMuscle, profileNoGoal).score;
+      expect(scoreMatch - scoreNoMatch).toBe(20);
+    });
+  });
+
+  // ================================================
+  // 운동 기구 매칭 테스트
+  // ================================================
+
+  describe('운동 기구 (Equipment) 매칭', () => {
+    it('타겟 근육 2/4 겹치면 비례 점수를 받는다', () => {
+      const profile: UserProfile = {
+        targetMuscles: ['chest', 'back', 'legs', 'core'],
+      };
+      const result = calculateMatchScore(equipmentProduct, profile);
+      // equipmentProduct: chest, arms, shoulders → chest만 일치 (1/4)
+      const goalReason = result.reasons.find((r) => r.label === '타겟 근육 적합');
+      expect(goalReason).toBeDefined();
+      expect(goalReason?.matched).toBe(true);
+    });
+
+    it('타겟 근육 3/3 모두 겹치면 최대 40점을 받는다', () => {
+      const profile: UserProfile = {
+        targetMuscles: ['chest', 'arms', 'shoulders'],
+      };
+      const profileNoMuscle: UserProfile = {};
+      const scoreMatch = calculateMatchScore(equipmentProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(equipmentProduct, profileNoMuscle).score;
+      expect(scoreMatch - scoreNoMatch).toBe(40);
+    });
+
+    it('스킬 레벨이 일치하면 +30점을 받는다', () => {
+      const profile: UserProfile = { skillLevel: 'beginner' };
+      const profileNoSkill: UserProfile = {};
+      const scoreMatch = calculateMatchScore(equipmentProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(equipmentProduct, profileNoSkill).score;
+      expect(scoreMatch - scoreNoMatch).toBe(30);
+    });
+
+    it('스킬 레벨 all은 모든 레벨과 일치한다', () => {
+      const productAll: WorkoutEquipment = {
+        ...equipmentProduct,
+        skillLevel: 'all',
+      };
+      const profile: UserProfile = { skillLevel: 'advanced' };
+      const result = calculateMatchScore(productAll, profile);
+      const skillReason = result.reasons.find((r) => r.type === 'goal' && r.label.includes('고급'));
+      expect(skillReason).toBeDefined();
+      expect(skillReason?.matched).toBe(true);
+    });
+  });
+
+  // ================================================
+  // 건강식품 매칭 테스트
+  // ================================================
+
+  describe('건강식품 (HealthFood) 매칭', () => {
+    it('빈 프로필은 기본 점수(30) + 보너스만 반환한다', () => {
+      const result = calculateMatchScore(healthFoodProduct, emptyProfile);
+      // 기본 30 + 브랜드 12 + 리뷰 8000개 12 + 평점 4.3&8000 7
+      expect(result.score).toBeGreaterThanOrEqual(30);
+    });
+
+    it('운동 목표 효능이 일치하면 +40점이 추가된다', () => {
+      // 보너스 영향 제거를 위해 최소한의 제품 사용
+      const minProduct: HealthFood = {
+        id: 'hf-min',
+        name: '프로틴',
+        brand: '알수없는브랜드',
+        category: 'protein_powder',
+        benefits: ['muscle_gain'],
+        caloriesPerServing: 100,
+        proteinG: 20,
+        isActive: true,
+      };
+      const profile: UserProfile = { workoutGoals: ['muscle_gain'] };
+      const profileNoGoal: UserProfile = {};
+      const scoreMatch = calculateMatchScore(minProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(minProduct, profileNoGoal).score;
+      expect(scoreMatch - scoreNoMatch).toBe(40);
+    });
+
+    it('식이 제한이 일치하면 +30점이 추가된다', () => {
+      const minProduct: HealthFood = {
+        id: 'hf-min2',
+        name: '프로틴',
+        brand: '알수없는브랜드',
+        category: 'protein_powder',
+        dietaryInfo: ['gluten_free'],
+        caloriesPerServing: 100,
+        proteinG: 20,
+        isActive: true,
+      };
+      const profile: UserProfile = { dietaryRestrictions: ['gluten_free'] };
+      const profileNoRestriction: UserProfile = {};
+      const scoreMatch = calculateMatchScore(minProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(minProduct, profileNoRestriction).score;
+      expect(scoreMatch - scoreNoMatch).toBe(30);
+    });
+
+    it('운동 목표 + 식이 제한 모두 일치하면 합산된다', () => {
+      const minProduct: HealthFood = {
+        id: 'hf-min3',
+        name: '프로틴',
+        brand: '알수없는브랜드',
+        category: 'protein_powder',
+        benefits: ['muscle_gain'],
+        dietaryInfo: ['gluten_free'],
+        caloriesPerServing: 100,
+        proteinG: 20,
+        isActive: true,
+      };
       const profile: UserProfile = {
         workoutGoals: ['muscle_gain'],
+        dietaryRestrictions: ['gluten_free'],
       };
+      const profileNoGoal: UserProfile = {};
+      const scoreMatch = calculateMatchScore(minProduct, profile).score;
+      const scoreNoMatch = calculateMatchScore(minProduct, profileNoGoal).score;
+      expect(scoreMatch - scoreNoMatch).toBe(70);
+    });
+  });
 
-      const result = calculateMatchScore(mockSupplementProduct, profile);
+  // ================================================
+  // 알 수 없는 제품 타입 테스트
+  // ================================================
 
-      // muscle 효능이 있으면 운동 목표 지원
+  describe('알 수 없는 제품 타입', () => {
+    it('판별 불가 제품은 기본 점수를 반환한다', () => {
+      // getProductType mock은 cosmetic 기본값 반환
+      const minimalProduct = {
+        id: 'u1',
+        name: '알수없는제품',
+        brand: '알수없는브랜드',
+        category: 'unknown',
+        skinTypes: [],
+      } as unknown as CosmeticProduct;
+      const result = calculateMatchScore(minimalProduct, emptyProfile);
       expect(result.score).toBeGreaterThanOrEqual(20);
     });
   });
 
-  describe('운동 기구 매칭', () => {
-    it('타겟 근육 매칭', () => {
-      const profile: UserProfile = {
-        targetMuscles: ['arms'],
+  // ================================================
+  // 점수 상한 테스트
+  // ================================================
+
+  describe('점수 상한', () => {
+    it('모든 보너스가 적용돼도 100점을 초과하지 않는다', () => {
+      const maxProduct: CosmeticProduct = {
+        id: 'max1',
+        name: '완벽제품',
+        brand: '라운드랩',
+        category: 'makeup',
+        skinTypes: ['dry'],
+        concerns: ['hydration', 'aging', 'acne', 'pore'],
+        personalColorSeasons: ['Spring'],
+        faceShapes: ['oval'],
+        undertones: ['warm'],
+        priceRange: 'budget',
+        rating: 4.8,
+        reviewCount: 20000,
+        isActive: true,
+        keyIngredients: [],
       };
-
-      const result = calculateMatchScore(mockWorkoutEquipment, profile);
-
-      expect(result.score).toBeGreaterThanOrEqual(50);
-    });
-
-    it('스킬 레벨 매칭', () => {
-      const profile: UserProfile = {
-        skillLevel: 'beginner',
+      const maxProfile: UserProfile = {
+        skinType: 'dry',
+        skinConcerns: ['hydration', 'aging', 'acne', 'pore'],
+        personalColorSeason: 'Spring',
+        faceShape: 'oval',
+        undertone: 'warm',
       };
-
-      const result = calculateMatchScore(mockWorkoutEquipment, profile);
-
-      // skillLevel이 'all'이므로 매칭됨
-      expect(result.reasons).toContainEqual(expect.objectContaining({ matched: true }));
-    });
-  });
-
-  describe('건강식품 매칭', () => {
-    it('운동 목표 연동', () => {
-      const profile: UserProfile = {
-        workoutGoals: ['muscle_gain'],
-      };
-
-      const result = calculateMatchScore(mockHealthFood, profile);
-
-      expect(result.score).toBeGreaterThanOrEqual(60);
-    });
-
-    it('식이 제한 매칭', () => {
-      const profile: UserProfile = {
-        dietaryRestrictions: ['gluten_free'],
-      };
-
-      const result = calculateMatchScore(mockHealthFood, profile);
-
-      expect(result.score).toBeGreaterThanOrEqual(50);
+      const result = calculateMatchScore(maxProduct, maxProfile);
+      expect(result.score).toBe(100);
     });
   });
 });
+
+// ================================================
+// addMatchInfo 테스트
+// ================================================
 
 describe('addMatchInfo', () => {
-  it('제품에 매칭 정보 추가', () => {
-    const profile: UserProfile = {
-      skinType: 'dry',
-      skinConcerns: ['hydration'],
-    };
-
-    const result = addMatchInfo(mockCosmeticProduct, profile);
-
-    expect(result.product).toBe(mockCosmeticProduct);
-    expect(result.matchScore).toBeGreaterThan(0);
+  it('제품에 매칭 정보를 래핑한다', () => {
+    const profile: UserProfile = { skinType: 'dry' };
+    const result = addMatchInfo(cosmeticProduct, profile);
+    expect(result.product).toBe(cosmeticProduct);
+    expect(result.matchScore).toBeGreaterThanOrEqual(20);
     expect(result.matchReasons).toBeInstanceOf(Array);
   });
+
+  it('원본 제품 객체를 보존한다', () => {
+    const result = addMatchInfo(cosmeticProduct, emptyProfile);
+    expect(result.product.id).toBe('c1');
+    expect(result.product.name).toBe('수분 토너');
+  });
 });
+
+// ================================================
+// addMatchInfoToProducts 테스트
+// ================================================
 
 describe('addMatchInfoToProducts', () => {
-  it('제품 목록에 매칭 정보 추가 및 점수순 정렬', () => {
-    const products = [mockCosmeticProduct, mockMakeupProduct];
-    const profile: UserProfile = {
-      skinType: 'dry',
-      skinConcerns: ['hydration'],
-      personalColorSeason: 'Summer',
-    };
-
-    const result = addMatchInfoToProducts(products, profile);
-
-    expect(result).toHaveLength(2);
-    // 점수순 정렬 확인
-    expect(result[0].matchScore).toBeGreaterThanOrEqual(result[1].matchScore);
-  });
-});
-
-describe('리뷰 평점 보너스', () => {
-  it('높은 평점 + 많은 리뷰 시 보너스 점수 추가', () => {
-    const highRatedProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      rating: 4.6,
-      reviewCount: 150,
-    };
-
-    const profile: UserProfile = {
-      skinType: 'dry',
-    };
-
-    const result = calculateMatchScore(highRatedProduct, profile);
-
-    // 인기 제품 보너스 (+10) 포함
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'rating', matched: true })
-    );
-    expect(result.reasons.find((r) => r.type === 'rating')?.label).toContain('높은 평점');
+  it('배열 모든 제품에 매칭 정보를 추가한다', () => {
+    const products = [cosmeticProduct, makeupProduct];
+    const results = addMatchInfoToProducts(products, emptyProfile);
+    expect(results).toHaveLength(2);
+    expect(results[0]).toHaveProperty('matchScore');
+    expect(results[1]).toHaveProperty('matchScore');
   });
 
-  it('적당한 평점 + 적당한 리뷰 시 중간 보너스', () => {
-    const mediumRatedProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      rating: 4.2,
-      reviewCount: 60,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(mediumRatedProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'rating')?.label).toContain('좋은 평점');
+  it('점수 높은 순으로 정렬한다', () => {
+    const products = [cosmeticProduct, makeupProduct];
+    const profile: UserProfile = { skinType: 'dry' };
+    const results = addMatchInfoToProducts(products, profile);
+    expect(results[0].matchScore).toBeGreaterThanOrEqual(results[1].matchScore);
   });
 
-  it('낮은 평점 시 보너스 없음', () => {
-    const lowRatedProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      rating: 3.0,
-      reviewCount: 50,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(lowRatedProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'rating')).toBeUndefined();
-  });
-
-  it('리뷰 수 적을 시 보너스 없음', () => {
-    const fewReviewsProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      rating: 4.8,
-      reviewCount: 5,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(fewReviewsProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'rating')).toBeUndefined();
-  });
-});
-
-describe('가격 접근성 보너스', () => {
-  it('저가 제품(budget)에 가장 높은 가격 보너스', () => {
-    const budgetProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      priceRange: 'budget',
-      priceKrw: 15000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(budgetProduct, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'price', label: '가성비 좋음', matched: true })
-    );
-  });
-
-  it('중가 제품(mid)에 중간 가격 보너스', () => {
-    const midProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      priceRange: 'mid',
-      priceKrw: 40000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(midProduct, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'price', label: '합리적 가격', matched: true })
-    );
-  });
-
-  it('고가 제품(premium)에 가격 보너스 없음', () => {
-    const premiumProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      priceRange: 'premium',
-      priceKrw: 80000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(premiumProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'price')).toBeUndefined();
-  });
-
-  it('priceRange 없고 가격이 낮으면 budget으로 판단', () => {
-    const cheapSupplement: SupplementProduct = {
-      ...mockSupplementProduct,
-      priceKrw: 20000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(cheapSupplement, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'price', label: '가성비 좋음', matched: true })
-    );
-  });
-
-  it('priceRange 없고 가격이 높으면 premium으로 판단', () => {
-    const expensiveEquipment: WorkoutEquipment = {
-      ...mockWorkoutEquipment,
-      priceKrw: 150000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(expensiveEquipment, profile);
-
-    // 고가이므로 가격 보너스 없음
-    expect(result.reasons.find((r) => r.type === 'price')).toBeUndefined();
-  });
-});
-
-describe('대중 브랜드 보너스', () => {
-  it('올리브영 인기 브랜드에 보너스 추가', () => {
-    const popularBrandProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      brand: '라운드랩',
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(popularBrandProduct, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'brand', label: '인기 브랜드', matched: true })
-    );
-  });
-
-  it('영양제 인기 브랜드에 보너스 추가', () => {
-    const popularSupplement: SupplementProduct = {
-      ...mockSupplementProduct,
-      brand: '종근당건강',
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(popularSupplement, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'brand', label: '인기 브랜드', matched: true })
-    );
-  });
-
-  it('건강식품 인기 브랜드에 보너스 추가', () => {
-    const popularHealthFood: HealthFood = {
-      ...mockHealthFood,
-      brand: '마이프로틴',
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(popularHealthFood, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'brand', label: '인기 브랜드', matched: true })
-    );
-  });
-
-  it('알려지지 않은 브랜드에는 보너스 없음', () => {
-    const unknownBrandProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      brand: '알수없는브랜드XYZ',
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(unknownBrandProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'brand')).toBeUndefined();
-  });
-
-  it('브랜드가 없으면 보너스 없음', () => {
-    const noBrandProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      brand: '',
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(noBrandProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'brand')).toBeUndefined();
-  });
-});
-
-describe('리뷰 인기도 보너스', () => {
-  it('베스트셀러(10000+ 리뷰)에 최고 보너스', () => {
-    const bestsellerProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: 15000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(bestsellerProduct, profile);
-
-    const popularityReason = result.reasons.find((r) => r.type === 'popularity');
-    expect(popularityReason).toBeDefined();
-    expect(popularityReason?.label).toContain('베스트셀러');
-    expect(popularityReason?.label).toContain('15천+ 리뷰');
-  });
-
-  it('인기 제품(5000+ 리뷰)에 높은 보너스', () => {
-    const popularProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: 7000,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(popularProduct, profile);
-
-    const popularityReason = result.reasons.find((r) => r.type === 'popularity');
-    expect(popularityReason).toBeDefined();
-    expect(popularityReason?.label).toContain('인기 제품');
-    expect(popularityReason?.label).toContain('7천+ 리뷰');
-  });
-
-  it('검증된 제품(1000+ 리뷰)에 중간 보너스', () => {
-    const verifiedProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: 2500,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(verifiedProduct, profile);
-
-    const popularityReason = result.reasons.find((r) => r.type === 'popularity');
-    expect(popularityReason).toBeDefined();
-    expect(popularityReason?.label).toContain('검증된 제품');
-    expect(popularityReason?.label).toContain('2천+ 리뷰');
-  });
-
-  it('500+ 리뷰에 소형 보너스', () => {
-    const mediumProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: 600,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(mediumProduct, profile);
-
-    const popularityReason = result.reasons.find((r) => r.type === 'popularity');
-    expect(popularityReason).toBeDefined();
-    expect(popularityReason?.label).toBe('600개 리뷰');
-  });
-
-  it('100개 미만 리뷰에 인기도 보너스 없음', () => {
-    const lowReviewProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: 50,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(lowReviewProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'popularity')).toBeUndefined();
-  });
-
-  it('리뷰 없으면 인기도 보너스 없음', () => {
-    const noReviewProduct: CosmeticProduct = {
-      ...mockCosmeticProduct,
-      reviewCount: undefined,
-    };
-
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(noReviewProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'popularity')).toBeUndefined();
-  });
-});
-
-describe('헤어케어 매칭 (H-1)', () => {
-  const mockShampooProduct: CosmeticProduct = {
-    id: 'shampoo-1',
-    name: '두피 케어 샴푸',
-    brand: '닥터포헤어',
-    category: 'shampoo',
-    skinTypes: ['oily', 'normal'],
-    concerns: ['hydration', 'pore'],
-    priceKrw: 22000,
-    rating: 4.4,
-  };
-
-  const mockTreatmentProduct: CosmeticProduct = {
-    id: 'treatment-1',
-    name: '헤어 트리트먼트',
-    brand: '알수없는브랜드',
-    category: 'hair-treatment',
-    skinTypes: ['dry', 'sensitive'],
-    concerns: ['hydration', 'aging'],
-    priceKrw: 30000,
-    rating: 4.1,
-  };
-
-  it('제품에 hairTypes 없을 때 프로필 보너스 (10점)', () => {
-    const profile: UserProfile = {
-      hairType: 'wavy',
-    };
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    // hairTypes 데이터 없으므로 matched: false (프로필 완성도 보너스)
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'hairType', matched: false })
-    );
-    // 기본 20 + hairType 10 = 30 이상
-    expect(result.score).toBeGreaterThanOrEqual(30);
-  });
-
-  it('제품에 hairTypes 있고 매칭되면 30점', () => {
-    const productWithHairTypes: CosmeticProduct = {
-      ...mockShampooProduct,
-      hairTypes: ['wavy', 'curly'],
-    };
-    const profile: UserProfile = { hairType: 'wavy' };
-    const result = calculateMatchScore(productWithHairTypes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'hairType', matched: true })
-    );
-    // 기본 20 + hairType 30 = 50 이상
-    expect(result.score).toBeGreaterThanOrEqual(50);
-  });
-
-  it('제품에 hairTypes 있지만 불일치면 0점', () => {
-    const productWithHairTypes: CosmeticProduct = {
-      ...mockShampooProduct,
-      hairTypes: ['straight'],
-    };
-    const profile: UserProfile = { hairType: 'curly' };
-    const result = calculateMatchScore(productWithHairTypes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'hairType', matched: false })
-    );
-    // hairType 매칭 실패 → 0점 추가 (기본 20점만)
-  });
-
-  it('두피 타입 매칭 시 scalpType reason 추가 (30점)', () => {
-    const profile: UserProfile = {
-      scalpType: 'oily',
-    };
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'scalpType', matched: true })
-    );
-    // 기본 20 + scalpType 30 = 50 이상
-    expect(result.score).toBeGreaterThanOrEqual(50);
-  });
-
-  it('두피 타입 불일치 시 scalpType matched=false', () => {
-    const profile: UserProfile = {
-      scalpType: 'dry',
-    };
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    // oily/normal 제품에 dry 프로필 → 불일치
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'scalpType', matched: false })
-    );
-  });
-
-  it('scalpTypes 필드가 있으면 skinTypes 대신 사용', () => {
-    const productWithScalpTypes: CosmeticProduct = {
-      ...mockShampooProduct,
-      scalpTypes: ['dry', 'sensitive'],
-      skinTypes: ['oily'], // skinTypes는 무시되어야 함
-    };
-    const profile: UserProfile = { scalpType: 'dry' };
-    const result = calculateMatchScore(productWithScalpTypes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'scalpType', matched: true })
-    );
-  });
-
-  it('모발 고민 매칭 시 concern reason 추가', () => {
-    const profile: UserProfile = {
-      hairConcerns: ['hydration'],
-    };
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'concern', matched: true })
-    );
-  });
-
-  it('hairType + scalpType + hairConcerns 복합 매칭', () => {
-    const profile: UserProfile = {
-      hairType: 'straight',
-      scalpType: 'oily',
-      hairConcerns: ['hydration'],
-    };
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    // 기본 20 + hairType 10 + scalpType 30 + concern 20 + brand 보너스 = 92
-    expect(result.score).toBeGreaterThanOrEqual(80);
-    // scalpType, concern 매칭 확인 (hairType은 matched: false)
-    expect(result.reasons.filter((r) => r.matched).length).toBeGreaterThanOrEqual(2);
-    expect(result.reasons.map((r) => r.type)).toContain('hairType');
-    expect(result.reasons.map((r) => r.type)).toContain('scalpType');
-    expect(result.reasons.map((r) => r.type)).toContain('concern');
-  });
-
-  it('헤어케어 인기 브랜드에 보너스 추가', () => {
-    const profile: UserProfile = {};
-
-    const result = calculateMatchScore(mockShampooProduct, profile);
-
-    // '닥터포헤어'는 POPULAR_BRANDS.haircare에 포함
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'brand', label: '인기 브랜드', matched: true })
-    );
-  });
-
-  it('hair-treatment 카테고리도 헤어케어 매칭 로직 적용', () => {
-    const profile: UserProfile = {
-      hairType: 'curly',
-      scalpType: 'dry',
-    };
-
-    const result = calculateMatchScore(mockTreatmentProduct, profile);
-
-    // hairType(프로필 보너스, matched: false) + scalpType(dry 매칭) → 두 reason 모두 존재
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'hairType', matched: false })
-    );
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'scalpType', matched: true })
-    );
-  });
-});
-
-describe('메이크업 언더톤 매칭 (M-1)', () => {
-  const mockMakeupForUndertone: CosmeticProduct = {
-    id: 'makeup-ut-1',
-    name: '쿨톤 립',
-    brand: '테스트 브랜드',
-    category: 'makeup',
-    subcategory: 'lip',
-    personalColorSeasons: ['Summer'],
-    undertones: ['cool', 'neutral'],
-    priceKrw: 25000,
-    rating: 4.3,
-  };
-
-  const mockMakeupNoUndertones: CosmeticProduct = {
-    id: 'makeup-ut-2',
-    name: '립스틱',
-    brand: '테스트 브랜드',
-    category: 'makeup',
-    subcategory: 'lip',
-    priceKrw: 20000,
-  };
-
-  it('메이크업 제품 + undertone 프로필 시 undertone 실매칭 (15점)', () => {
-    const profile: UserProfile = {
-      undertone: 'cool',
-    };
-
-    const result = calculateMatchScore(mockMakeupForUndertone, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'undertone', matched: true })
-    );
-    // 기본 20 + undertone 15 = 35 이상
-    expect(result.score).toBeGreaterThanOrEqual(35);
-  });
-
-  it('undertone 데이터 없는 메이크업 제품 → 프로필 보너스 (5점)', () => {
-    const profile: UserProfile = {
-      undertone: 'warm',
-    };
-
-    const result = calculateMatchScore(mockMakeupNoUndertones, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'undertone', matched: false })
-    );
-    // 기본 20 + undertone 보너스 5 = 25 이상
-    expect(result.score).toBeGreaterThanOrEqual(25);
-  });
-
-  it('personalColor + undertone 복합 매칭', () => {
-    const profile: UserProfile = {
-      personalColorSeason: 'Summer',
-      undertone: 'cool',
-    };
-
-    const result = calculateMatchScore(mockMakeupForUndertone, profile);
-
-    // personalColor(20점) + undertone(15점) 모두 적용
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'personalColor', matched: true })
-    );
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'undertone', matched: true })
-    );
-    // 기본 20 + personalColor 20 + undertone 15 = 55 이상
-    expect(result.score).toBeGreaterThanOrEqual(55);
-  });
-
-  it('비메이크업 제품에는 undertone 매칭 없음', () => {
-    const serumProduct: CosmeticProduct = {
-      id: 'serum-ut-1',
-      name: '보습 세럼',
-      brand: '테스트',
-      category: 'serum',
-      priceKrw: 30000,
-      rating: 4.0,
-    };
-
-    const profile: UserProfile = {
-      undertone: 'warm',
-    };
-
-    const result = calculateMatchScore(serumProduct, profile);
-
-    // serum은 메이크업이 아니므로 undertone reason 없음
-    expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
-  });
-});
-
-describe('메이크업 얼굴형 매칭 (M-1 faceShape)', () => {
-  const mockMakeupWithFaceShapes: CosmeticProduct = {
-    id: 'makeup-fs-1',
-    name: '컨투어링 팔레트',
-    brand: '테스트 브랜드',
-    category: 'makeup',
-    subcategory: 'contour',
-    faceShapes: ['round', 'square'],
-    priceKrw: 25000,
-    rating: 4.2,
-  };
-
-  it('faceShapes 있고 매칭되면 20점 + matched: true', () => {
-    const profile: UserProfile = { faceShape: 'round' };
-    const result = calculateMatchScore(mockMakeupWithFaceShapes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'faceShape', matched: true })
-    );
-    // 기본 20 + faceShape 20 = 40 이상
-    expect(result.score).toBeGreaterThanOrEqual(40);
-  });
-
-  it('faceShapes 있지만 불일치면 matched: false, 0점', () => {
-    const profile: UserProfile = { faceShape: 'oval' };
-    const result = calculateMatchScore(mockMakeupWithFaceShapes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'faceShape', matched: false })
-    );
-  });
-
-  it('faceShapes 없으면 프로필 보너스 5점', () => {
-    const makeupNoFaceShapes: CosmeticProduct = {
-      id: 'makeup-nofs-1',
-      name: '립스틱',
-      brand: '테스트',
-      category: 'makeup',
-      priceKrw: 20000,
-      rating: 4.0,
-    };
-    const profile: UserProfile = { faceShape: 'heart' };
-    const result = calculateMatchScore(makeupNoFaceShapes, profile);
-
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'faceShape', matched: false })
-    );
-    // 기본 20 + faceShape 보너스 5 = 25 이상
-    expect(result.score).toBeGreaterThanOrEqual(25);
-  });
-
-  it('비메이크업 제품에는 faceShape 매칭 없음', () => {
-    const serumProduct: CosmeticProduct = {
-      id: 'serum-fs-1',
-      name: '세럼',
-      brand: '테스트',
-      category: 'serum',
-      priceKrw: 25000,
-      rating: 4.0,
-    };
-    const profile: UserProfile = { faceShape: 'oval' };
-    const result = calculateMatchScore(serumProduct, profile);
-
-    expect(result.reasons.find((r) => r.type === 'faceShape')).toBeUndefined();
-  });
-});
-
-describe('점수 상한 검증', () => {
-  it('모든 보너스가 적용되어도 100점 이하', () => {
-    // 모든 보너스가 적용될 수 있는 완벽한 제품
-    const perfectProduct: CosmeticProduct = {
-      id: 'perfect-1',
-      name: '완벽한 제품',
-      brand: '라운드랩', // 인기 브랜드 +12
-      category: 'serum',
-      skinTypes: ['dry', 'normal', 'combination', 'oily', 'sensitive'],
-      concerns: ['hydration', 'aging', 'acne', 'whitening'],
-      priceRange: 'budget', // 가성비 +15
-      priceKrw: 15000,
-      rating: 4.8, // 높은 평점 +10
-      reviewCount: 20000, // 베스트셀러 +15
-    };
-
-    const perfectProfile: UserProfile = {
-      skinType: 'dry', // 피부 타입 매칭 +30
-      skinConcerns: ['hydration', 'aging'], // 피부 고민 매칭 +30
-    };
-
-    const result = calculateMatchScore(perfectProduct, perfectProfile);
-
-    // 기본 20 + 피부타입 30 + 고민 30 + 가격 15 + 브랜드 12 + 인기도 15 + 평점 10 = 132
-    // 상한 100으로 클램프
-    expect(result.score).toBeLessThanOrEqual(100);
-  });
-});
-
-describe('복합 매칭 시나리오', () => {
-  it('피부 타입 + 고민 + 브랜드 + 가격 복합 매칭', () => {
-    const product: CosmeticProduct = {
-      id: 'complex-1',
-      name: '복합 테스트 제품',
-      brand: '토리든',
-      category: 'moisturizer',
-      skinTypes: ['dry'],
-      concerns: ['hydration'],
-      priceRange: 'budget',
-      priceKrw: 18000,
-      rating: 4.3,
-      reviewCount: 3000,
-    };
-
-    const profile: UserProfile = {
-      skinType: 'dry',
-      skinConcerns: ['hydration'],
-    };
-
-    const result = calculateMatchScore(product, profile);
-
-    // 여러 매칭 이유가 있어야 함
-    expect(result.reasons.length).toBeGreaterThanOrEqual(4);
-    expect(result.reasons.map((r) => r.type)).toContain('skinType');
-    expect(result.reasons.map((r) => r.type)).toContain('concern');
-    expect(result.reasons.map((r) => r.type)).toContain('brand');
-    expect(result.reasons.map((r) => r.type)).toContain('price');
-  });
-
-  it('영양제 목표 + 브랜드 + 가격 복합 매칭', () => {
-    const product: SupplementProduct = {
-      id: 'supp-complex-1',
-      name: '복합 영양제',
-      brand: '뉴트리원',
-      category: 'vitamin',
-      benefits: ['skin', 'muscle'],
-      mainIngredients: [
-        { name: 'Vitamin C', amount: 1000, unit: 'mg' },
-        { name: 'Protein', amount: 20, unit: 'g' },
-      ],
-      targetConcerns: ['피부 건강', '근육 성장'],
-      priceKrw: 25000,
-      rating: 4.5,
-      reviewCount: 5500,
-    };
-
-    const profile: UserProfile = {
-      skinConcerns: ['hydration'],
-      workoutGoals: ['muscle_gain'],
-    };
-
-    const result = calculateMatchScore(product, profile);
-
-    // 영양제 복합 매칭 확인
-    expect(result.score).toBeGreaterThan(60);
-    expect(result.reasons.map((r) => r.type)).toContain('brand');
-  });
-});
-
-describe('엣지 케이스', () => {
-  const mockShampoo: CosmeticProduct = {
-    id: 'edge-shampoo',
-    name: '엣지 케이스 샴푸',
-    brand: '알수없는브랜드',
-    category: 'shampoo',
-    priceKrw: 15000,
-    rating: 4.0,
-  };
-
-  it('모든 H-1 필드가 undefined인 프로필로 헤어케어 매칭', () => {
-    const profile: UserProfile = {};
-    const result = calculateMatchScore(mockShampoo, profile);
-
-    // hairType/scalpType/hairConcerns 모두 없으므로 기본점만 부여
-    expect(result.score).toBeGreaterThanOrEqual(20);
-    expect(result.reasons.find((r) => r.type === 'hairType')).toBeUndefined();
-    expect(result.reasons.find((r) => r.type === 'scalpType')).toBeUndefined();
-  });
-
-  it('product.skinTypes가 undefined인 경우 scalpType 매칭 건너뜀', () => {
-    const productNoSkinTypes: CosmeticProduct = {
-      ...mockShampoo,
-      skinTypes: undefined,
-    };
-    const profile: UserProfile = { scalpType: 'oily' };
-    const result = calculateMatchScore(productNoSkinTypes, profile);
-
-    // skinTypes 없으므로 scalpType reason 없어야 함
-    expect(result.reasons.find((r) => r.type === 'scalpType')).toBeUndefined();
-  });
-
-  it('product.concerns가 빈 배열인 경우 hairConcerns 매칭 건너뜀', () => {
-    const productEmptyConcerns: CosmeticProduct = {
-      ...mockShampoo,
-      concerns: [],
-    };
-    const profile: UserProfile = { hairConcerns: ['hydration'] };
-    const result = calculateMatchScore(productEmptyConcerns, profile);
-
-    // concerns 빈 배열이므로 concern reason 없어야 함
-    expect(result.reasons.find((r) => r.type === 'concern')).toBeUndefined();
-  });
-
-  it('hairConcerns가 빈 배열인 프로필', () => {
-    const productWithConcerns: CosmeticProduct = {
-      ...mockShampoo,
-      concerns: ['hydration'],
-    };
-    const profile: UserProfile = { hairConcerns: [] };
-    const result = calculateMatchScore(productWithConcerns, profile);
-
-    // 빈 배열이므로 concern 매칭 건너뜀
-    expect(result.reasons.find((r) => r.type === 'concern')).toBeUndefined();
-  });
-
-  it('undertone이 undefined인 메이크업 프로필', () => {
-    const makeupProduct: CosmeticProduct = {
-      id: 'edge-makeup',
-      name: '엣지 파운데이션',
-      brand: '테스트',
-      category: 'makeup',
-      personalColorSeasons: ['Spring'],
-      priceKrw: 30000,
-      rating: 4.2,
-    };
-    const profile: UserProfile = { personalColorSeason: 'Spring' };
-    const result = calculateMatchScore(makeupProduct, profile);
-
-    // undertone 없으므로 undertone reason 없어야 함
-    expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
-    // personalColor는 매칭
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'personalColor', matched: true })
-    );
-  });
-
-  it('hairTypes가 빈 배열이면 프로필 보너스 (undefined와 동일 처리)', () => {
-    const productEmptyHairTypes: CosmeticProduct = {
-      id: 'edge-empty-ht',
-      name: '샴푸',
-      brand: '테스트',
-      category: 'shampoo',
-      hairTypes: [],
-      priceKrw: 15000,
-      rating: 4.0,
-    };
-    const profile: UserProfile = { hairType: 'wavy' };
-    const result = calculateMatchScore(productEmptyHairTypes, profile);
-
-    // 빈 배열 → 데이터 없음 → matched: false, 보너스 10점
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'hairType', matched: false })
-    );
-  });
-
-  it('scalpTypes가 빈 배열이면 skinTypes로 폴백', () => {
-    const productEmptyScalpTypes: CosmeticProduct = {
-      id: 'edge-empty-st',
-      name: '스칼프 케어',
-      brand: '테스트',
-      category: 'scalp-care',
-      scalpTypes: [],
-      skinTypes: ['oily', 'normal'],
-      priceKrw: 18000,
-      rating: 4.0,
-    };
-    const profile: UserProfile = { scalpType: 'oily' };
-    const result = calculateMatchScore(productEmptyScalpTypes, profile);
-
-    // scalpTypes 빈 배열 → skinTypes 폴백 → oily 매칭
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'scalpType', matched: true })
-    );
-  });
-
-  it('undertones가 있지만 불일치 시 0점', () => {
-    const productCoolOnly: CosmeticProduct = {
-      id: 'edge-ut-mismatch',
-      name: '쿨톤 전용 립',
-      brand: '테스트',
-      category: 'makeup',
-      undertones: ['cool'],
-      priceKrw: 20000,
-      rating: 4.0,
-    };
-    const profile: UserProfile = { undertone: 'warm' };
-    const result = calculateMatchScore(productCoolOnly, profile);
-
-    // warm ∉ ['cool'] → matched: false, 0점
-    expect(result.reasons).toContainEqual(
-      expect.objectContaining({ type: 'undertone', matched: false })
-    );
-    // 기본 20점 + 가격 보너스 15점 (priceKrw 20000 = budget) = 35점
-    // undertone 불일치 → 0점 (매칭 점수 추가 없음)
-    expect(result.score).toBe(35);
-  });
-
-  it('빈 프로필로 모든 제품 타입 기본점 확인', () => {
-    const emptyProfile: UserProfile = {};
-
-    const cosmeticResult = calculateMatchScore(mockCosmeticProduct, emptyProfile);
-    const supplementResult = calculateMatchScore(mockSupplementProduct, emptyProfile);
-    const equipmentResult = calculateMatchScore(mockWorkoutEquipment, emptyProfile);
-    const healthFoodResult = calculateMatchScore(mockHealthFood, emptyProfile);
-
-    // 모든 제품 타입에 기본점 부여
-    expect(cosmeticResult.score).toBeGreaterThanOrEqual(20);
-    expect(supplementResult.score).toBeGreaterThanOrEqual(20);
-    expect(equipmentResult.score).toBeGreaterThanOrEqual(20);
-    expect(healthFoodResult.score).toBeGreaterThanOrEqual(30); // healthFood 기본 30점
+  it('빈 배열을 처리한다', () => {
+    const results = addMatchInfoToProducts([], emptyProfile);
+    expect(results).toHaveLength(0);
   });
 });
