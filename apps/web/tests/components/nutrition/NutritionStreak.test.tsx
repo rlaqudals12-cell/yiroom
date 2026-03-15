@@ -105,13 +105,13 @@ describe('NutritionStreakBadge', () => {
     it('배지 이름을 표시한다', () => {
       render(<NutritionStreakBadge badgeId="3day" showName />);
 
-      expect(screen.getByText('3일 연속')).toBeInTheDocument();
+      expect(screen.getByText('3일 기록')).toBeInTheDocument();
     });
 
     it('showName이 false면 이름을 숨긴다', () => {
       render(<NutritionStreakBadge badgeId="3day" showName={false} />);
 
-      expect(screen.queryByText('3일 연속')).not.toBeInTheDocument();
+      expect(screen.queryByText('3일 기록')).not.toBeInTheDocument();
     });
 
     it('유효하지 않은 badgeId면 null을 반환한다', () => {
@@ -146,12 +146,12 @@ describe('NutritionStreakBadge', () => {
 
   describe('각 마일스톤 배지', () => {
     const badges = [
-      { id: '3day', emoji: '🌱', name: '3일 연속' },
-      { id: '7day', emoji: '🔥', name: '7일 연속' },
-      { id: '14day', emoji: '💪', name: '2주 연속' },
-      { id: '30day', emoji: '🏆', name: '30일 연속' },
-      { id: '60day', emoji: '⭐', name: '60일 연속' },
-      { id: '100day', emoji: '👑', name: '100일 연속' },
+      { id: '3day', emoji: '🌱', name: '3일 기록' },
+      { id: '7day', emoji: '🌿', name: '7일 기록' },
+      { id: '14day', emoji: '🌳', name: '14일 기록' },
+      { id: '30day', emoji: '🏆', name: '30일 기록' },
+      { id: '60day', emoji: '⭐', name: '60일 기록' },
+      { id: '100day', emoji: '👑', name: '100일 기록' },
     ];
 
     badges.forEach(({ id, emoji, name }) => {
@@ -176,8 +176,8 @@ describe('NutritionStreakBadgeList', () => {
     render(<NutritionStreakBadgeList badges={['3day', '7day', '14day']} />);
 
     expect(screen.getByText('🌱')).toBeInTheDocument();
-    expect(screen.getByText('🔥')).toBeInTheDocument();
-    expect(screen.getByText('💪')).toBeInTheDocument();
+    expect(screen.getByText('🌿')).toBeInTheDocument();
+    expect(screen.getByText('🌳')).toBeInTheDocument();
   });
 
   it('빈 배열이면 null을 반환한다', () => {
