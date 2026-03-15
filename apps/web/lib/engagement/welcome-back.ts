@@ -89,10 +89,14 @@ export function generateWelcomeBackMessage(
 
 /** localStorage 키 */
 const DISMISS_KEY = 'yiroom-welcome-back-dismissed';
+const PERMANENT_DISMISS_KEY = 'yiroom-welcome-back-permanent';
 
-/** 24시간 내 닫기 여부 확인 */
+/** 닫기 여부 확인 (영구 또는 24시간) */
 export function isDismissed(): boolean {
   try {
+    // 영구 닫기 확인
+    if (localStorage.getItem(PERMANENT_DISMISS_KEY) === 'true') return true;
+
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (!dismissed) return false;
     const dismissedAt = new Date(dismissed).getTime();
@@ -104,10 +108,19 @@ export function isDismissed(): boolean {
   }
 }
 
-/** 닫기 기록 */
+/** 닫기 기록 (24시간) */
 export function dismissWelcomeBack(): void {
   try {
     localStorage.setItem(DISMISS_KEY, new Date().toISOString());
+  } catch {
+    /* 저장 실패 무시 */
+  }
+}
+
+/** 영구 닫기 */
+export function dismissWelcomeBackPermanently(): void {
+  try {
+    localStorage.setItem(PERMANENT_DISMISS_KEY, 'true');
   } catch {
     /* 저장 실패 무시 */
   }

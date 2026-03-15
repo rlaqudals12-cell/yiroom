@@ -17,6 +17,7 @@ import {
   generateWelcomeBackMessage,
   isDismissed,
   dismissWelcomeBack,
+  dismissWelcomeBackPermanently,
   type WelcomeBackMessage,
 } from '@/lib/engagement';
 
@@ -54,6 +55,11 @@ export default function WelcomeBackBanner() {
     dismissWelcomeBack();
   };
 
+  const handleDismissPermanently = (): void => {
+    setVisible(false);
+    dismissWelcomeBackPermanently();
+  };
+
   if (!visible || !message) return null;
 
   return (
@@ -80,15 +86,23 @@ export default function WelcomeBackBanner() {
           <p className="text-sm font-semibold text-foreground">{message.title}</p>
           <p className="text-xs text-muted-foreground mt-1">{message.description}</p>
 
-          {message.ctaText && message.ctaHref && (
-            <Link
-              href={message.ctaHref}
-              className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300"
+          <div className="flex items-center gap-3 mt-2">
+            {message.ctaText && message.ctaHref && (
+              <Link
+                href={message.ctaHref}
+                className="inline-flex items-center gap-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300"
+              >
+                {message.ctaText}
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+            <button
+              onClick={handleDismissPermanently}
+              className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
             >
-              {message.ctaText}
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          )}
+              다시 보지 않기
+            </button>
+          </div>
         </div>
       </div>
     </div>

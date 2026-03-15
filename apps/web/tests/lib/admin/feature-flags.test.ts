@@ -240,7 +240,7 @@ describe('Feature Flags Module', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true (default) when flag not found', async () => {
+    it('should return false (default) when flag not found', async () => {
       mockSingle.mockResolvedValue({
         data: null,
         error: { message: 'Not found' },
@@ -248,7 +248,8 @@ describe('Feature Flags Module', () => {
 
       const result = await isFeatureEnabled('analysis_skin');
 
-      expect(result).toBe(true);
+      // 미등록 플래그는 비활성화 (보안: 의도치 않은 기능 노출 방지)
+      expect(result).toBe(false);
     });
   });
 
@@ -387,7 +388,7 @@ describe('Feature Flags Module', () => {
       });
     });
 
-    it('should return true for non-existent features (default)', async () => {
+    it('should return false for non-existent features (default)', async () => {
       mockOrder.mockResolvedValue({
         data: [],
         error: null,
@@ -395,7 +396,8 @@ describe('Feature Flags Module', () => {
 
       const result = await getEnabledFeatures(['analysis_skin']);
 
-      expect(result.analysis_skin).toBe(true);
+      // 미등록 플래그는 비활성화 (보안: 의도치 않은 기능 노출 방지)
+      expect(result.analysis_skin).toBe(false);
     });
   });
 

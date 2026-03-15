@@ -93,11 +93,11 @@ export async function getFeatureFlag(key: FeatureFlagKey): Promise<FeatureFlag |
 
 /**
  * Feature Flag 활성화 여부 확인
- * 기본값: true (없으면 활성화)
+ * 기본값: false (없으면 비활성화 — 미등록 기능 노출 방지)
  */
 export async function isFeatureEnabled(key: FeatureFlagKey): Promise<boolean> {
   const flag = await getFeatureFlag(key);
-  return flag?.enabled ?? true;
+  return flag?.enabled ?? false;
 }
 
 /**
@@ -178,7 +178,7 @@ export async function getEnabledFeatures(
 
   for (const key of keys) {
     const flag = flags.find((f) => f.key === key);
-    result[key] = flag?.enabled ?? true;
+    result[key] = flag?.enabled ?? false;
   }
 
   return result as Record<FeatureFlagKey, boolean>;
