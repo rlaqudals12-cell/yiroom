@@ -33,7 +33,10 @@ const ANALYSIS_STORAGE_BUCKETS = [
 
 // 관련 분석 테이블 (이미지 URL 컬럼 보유)
 const ANALYSIS_TABLES_WITH_IMAGES = [
-  { table: 'personal_color_assessments', columns: ['face_image_url', 'left_image_url', 'right_image_url', 'wrist_image_url'] },
+  {
+    table: 'personal_color_assessments',
+    columns: ['face_image_url', 'left_image_url', 'right_image_url', 'wrist_image_url'],
+  },
   { table: 'skin_analyses', columns: ['face_image_url'] },
   { table: 'body_analyses', columns: ['body_image_url', 'front_image_url', 'side_image_url'] },
   { table: 'meal_records', columns: ['image_url'] },
@@ -120,9 +123,7 @@ async function deleteUserImages(
 
       if (files && files.length > 0) {
         const filePaths = files.map((file) => `${userId}/${file.name}`);
-        const { error: deleteError } = await supabase.storage
-          .from(bucketName)
-          .remove(filePaths);
+        const { error: deleteError } = await supabase.storage.from(bucketName).remove(filePaths);
 
         if (deleteError) {
           logger.error(`Storage delete error for bucket ${bucketName}:`, deleteError.message);
@@ -158,10 +159,7 @@ async function anonymizeImageUrls(
         updateData[col] = null;
       }
 
-      const { error } = await supabase
-        .from(table)
-        .update(updateData)
-        .eq('clerk_user_id', userId);
+      const { error } = await supabase.from(table).update(updateData).eq('clerk_user_id', userId);
 
       if (error) {
         logger.warn(`Failed to anonymize ${table} for user:`, error.message);
@@ -295,10 +293,7 @@ async function processDeletedUsers(
 
       // 2. 분석 데이터 완전 삭제 (RLS 우회하여 삭제)
       for (const { table } of ANALYSIS_TABLES_WITH_IMAGES) {
-        await supabase
-          .from(table)
-          .delete()
-          .eq('clerk_user_id', user.clerk_user_id);
+        await supabase.from(table).delete().eq('clerk_user_id', user.clerk_user_id);
       }
 
       // 3. 기타 개인 데이터 삭제
@@ -319,10 +314,7 @@ async function processDeletedUsers(
       ];
 
       for (const tableName of personalDataTables) {
-        await supabase
-          .from(tableName)
-          .delete()
-          .eq('clerk_user_id', user.clerk_user_id);
+        await supabase.from(tableName).delete().eq('clerk_user_id', user.clerk_user_id);
       }
 
       // 4. 사용자 레코드 완전 삭제 플래그
@@ -403,7 +395,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Cron job failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: '서버 오류가 발생했습니다.',
       },
       { status: 500 }
     );

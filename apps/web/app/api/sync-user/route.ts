@@ -47,10 +47,7 @@ export async function POST() {
 
     if (error) {
       console.error('Supabase sync error:', error);
-      return NextResponse.json(
-        { error: 'Failed to sync user', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '사용자 동기화에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({

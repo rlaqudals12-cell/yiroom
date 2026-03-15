@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error),
+        message: '서버 오류가 발생했습니다.',
       },
       { status: 500 }
     );

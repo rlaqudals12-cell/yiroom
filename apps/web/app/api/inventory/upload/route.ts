@@ -25,32 +25,20 @@ export async function POST(request: NextRequest) {
 
     // 필수 파라미터 검증
     if (!file) {
-      return NextResponse.json(
-        { error: 'File is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
 
     if (!category) {
-      return NextResponse.json(
-        { error: 'Category is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Category is required' }, { status: 400 });
     }
 
     if (!itemId) {
-      return NextResponse.json(
-        { error: 'ItemId is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ItemId is required' }, { status: 400 });
     }
 
     // 파일 크기 검증
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: 'File size exceeds 10MB limit' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'File size exceeds 10MB limit' }, { status: 400 });
     }
 
     // MIME 타입 검증
@@ -69,25 +57,18 @@ export async function POST(request: NextRequest) {
     const supabase = createClerkSupabaseClient();
 
     // Supabase Storage에 업로드
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(path, buffer, {
-        contentType: 'image/png',
-        upsert: true,
-      });
+    const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(path, buffer, {
+      contentType: 'image/png',
+      upsert: true,
+    });
 
     if (error) {
       console.error('[Upload] Storage error:', error);
-      return NextResponse.json(
-        { error: `Upload failed: ${error.message}` },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '파일 업로드에 실패했습니다.' }, { status: 500 });
     }
 
     // Public URL 생성
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(data.path);
+    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(data.path);
 
     return NextResponse.json({
       url: urlData.publicUrl,
@@ -95,10 +76,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[API] POST /api/inventory/upload error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -118,25 +96,17 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'processed';
 
     if (!category || !itemId) {
-      return NextResponse.json(
-        { error: 'category and itemId are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'category and itemId are required' }, { status: 400 });
     }
 
     const path = `${userId}/${category}/${itemId}_${type}.png`;
     const supabase = createClerkSupabaseClient();
 
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .createSignedUploadUrl(path);
+    const { data, error } = await supabase.storage.from(BUCKET_NAME).createSignedUploadUrl(path);
 
     if (error) {
       console.error('[Upload] Signed URL error:', error);
-      return NextResponse.json(
-        { error: `Failed to create signed URL: ${error.message}` },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '서명된 URL 생성에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -145,9 +115,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[API] GET /api/inventory/upload error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

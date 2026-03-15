@@ -97,10 +97,7 @@ export async function GET(request: Request) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('[Fasting API] GET error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -125,18 +122,12 @@ export async function POST(request: Request) {
 
     // targetHours 필수 검증
     if (!body.targetHours) {
-      return NextResponse.json(
-        { error: 'targetHours is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'targetHours is required' }, { status: 400 });
     }
 
     // targetHours 유효 범위 검증 (1-24시간)
     if (body.targetHours < 1 || body.targetHours > 24) {
-      return NextResponse.json(
-        { error: 'targetHours must be between 1 and 24' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'targetHours must be between 1 and 24' }, { status: 400 });
     }
 
     const supabase = createServiceRoleClient();
@@ -181,10 +172,7 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('[Fasting API] Create session error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create fasting session', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '단식 세션 생성에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -196,10 +184,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('[Fasting API] POST error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -225,10 +210,7 @@ export async function PATCH(request: Request) {
 
     // id 필수 검증
     if (!body.id) {
-      return NextResponse.json(
-        { error: 'id is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'id is required' }, { status: 400 });
     }
 
     const supabase = createServiceRoleClient();
@@ -250,10 +232,7 @@ export async function PATCH(request: Request) {
 
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {
-          return NextResponse.json(
-            { error: 'Fasting session not found' },
-            { status: 404 }
-          );
+          return NextResponse.json({ error: 'Fasting session not found' }, { status: 404 });
         }
         console.error('[Fasting API] Fetch session for completion error:', fetchError);
         return NextResponse.json(
@@ -264,7 +243,8 @@ export async function PATCH(request: Request) {
 
       const endTime = new Date();
       const startTime = new Date(existingSession.start_time);
-      const actualHours = Math.round(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * 10) / 10;
+      const actualHours =
+        Math.round(((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)) * 10) / 10;
 
       updateData.end_time = endTime.toISOString();
       updateData.actual_hours = actualHours;
@@ -287,23 +267,14 @@ export async function PATCH(request: Request) {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Fasting session not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Fasting session not found' }, { status: 404 });
       }
       console.error('[Fasting API] Update session error:', error);
-      return NextResponse.json(
-        { error: 'Failed to update fasting session', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '단식 세션 업데이트에 실패했습니다.' }, { status: 500 });
     }
 
     if (!data) {
-      return NextResponse.json(
-        { error: 'Fasting session not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Fasting session not found' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -312,9 +283,6 @@ export async function PATCH(request: Request) {
     });
   } catch (error) {
     console.error('[Fasting API] PATCH error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

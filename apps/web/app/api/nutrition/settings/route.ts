@@ -86,10 +86,7 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Nutrition settings save error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save nutrition settings', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '영양 설정 저장에 실패했습니다.' }, { status: 500 });
     }
 
     // Dual Write: user_preferences에도 저장 (allergies + dislikedFoods)
@@ -170,10 +167,7 @@ export async function PATCH(request: Request) {
 
     if (error) {
       console.error('[N-1] Nutrition settings update error:', error);
-      return NextResponse.json(
-        { error: 'Failed to update nutrition settings', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '영양 설정 업데이트에 실패했습니다.' }, { status: 500 });
     }
 
     if (!data) {
@@ -215,10 +209,7 @@ export async function GET() {
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = no rows returned (사용자 설정이 없는 경우)
       console.error('Nutrition settings fetch error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch nutrition settings', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '영양 설정 조회에 실패했습니다.' }, { status: 500 });
     }
 
     return NextResponse.json({

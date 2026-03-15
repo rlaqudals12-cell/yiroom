@@ -178,7 +178,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         error: 'Cron job failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: '서버 오류가 발생했습니다.',
       },
       { status: 500 }
     );

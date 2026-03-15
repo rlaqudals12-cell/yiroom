@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Cron job failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: '서버 오류가 발생했습니다.',
       },
       { status: 500 }
     );
@@ -288,10 +288,14 @@ function createExpiryMessage(items: ExpiringItem[]): string {
 
   // 가장 먼저 만료되는 재료
   const firstItem = items[0];
-  const daysText = selectByKey(firstItem.days_until_expiry, {
-    0: '오늘',
-    1: '내일',
-  }, `${firstItem.days_until_expiry}일 후`)!;
+  const daysText = selectByKey(
+    firstItem.days_until_expiry,
+    {
+      0: '오늘',
+      1: '내일',
+    },
+    `${firstItem.days_until_expiry}일 후`
+  )!;
 
   if (items.length === 1) {
     return `${firstItem.name}이(가) ${daysText} 만료됩니다.`;

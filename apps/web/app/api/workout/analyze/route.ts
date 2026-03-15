@@ -167,10 +167,7 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[W-1] Database insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save analysis', details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '분석 결과 저장에 실패했습니다.' }, { status: 500 });
     }
 
     // 등급 시스템: 활동 트래킹 (분석 완료)

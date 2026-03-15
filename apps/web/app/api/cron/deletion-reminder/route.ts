@@ -157,10 +157,14 @@ async function processRemindersForDays(
 
     if (sent) {
       // 감사 로그 기록
-      const action: DeletionAuditAction = selectByKey(daysRemaining, {
-        7: 'REMINDER_7D_SENT' as const,
-        3: 'REMINDER_3D_SENT' as const,
-      }, 'REMINDER_1D_SENT' as const)!;
+      const action: DeletionAuditAction = selectByKey(
+        daysRemaining,
+        {
+          7: 'REMINDER_7D_SENT' as const,
+          3: 'REMINDER_3D_SENT' as const,
+        },
+        'REMINDER_1D_SENT' as const
+      )!;
 
       await logDeletionAudit(supabase, user.id, action, {
         clerk_user_id: user.clerk_user_id,
@@ -221,7 +225,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Cron job failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: '서버 오류가 발생했습니다.',
       },
       { status: 500 }
     );
