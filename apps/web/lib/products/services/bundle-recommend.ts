@@ -105,8 +105,6 @@ const SYNERGY_SUGGESTIONS: Record<
  * 보유 제품에서 시너지 파트너가 빠진 성분 찾기
  */
 export function findSynergyGaps(products: BundleProduct[]): BundleRecommendation[] {
-  const recommendations: BundleRecommendation[] = [];
-
   // 전체 보유 성분 수집
   const allIngredients = new Set<string>();
   const productIngredientMap = new Map<string, string[]>();
@@ -120,30 +118,41 @@ export function findSynergyGaps(products: BundleProduct[]): BundleRecommendation
   }
 
   // 각 성분의 시너지 파트너 확인
+  const recommendations: BundleRecommendation[] = [];
   for (const [productName, ingredients] of productIngredientMap) {
-    for (const ingredient of ingredients) {
-      const suggestion = SYNERGY_SUGGESTIONS[ingredient];
-      if (!suggestion) continue;
-
-      // 파트너 성분이 이미 보유 중인지 확인
-      if (!allIngredients.has(suggestion.partner)) {
-        // 중복 추천 방지
-        const alreadyRecommended = recommendations.some(
-          (r) => r.suggestedProductName === suggestion.productType
-        );
-        if (!alreadyRecommended) {
-          recommendations.push({
-            type: 'synergy',
-            reason: suggestion.reason,
-            suggestedProductName: suggestion.productType,
-            relatedProductName: productName,
-          });
-        }
-      }
-    }
+    checkIngredientSynergies(ingredients, productName, allIngredients, recommendations);
   }
 
   return recommendations;
+}
+
+// 성분별 시너지 파트너 누락 확인
+function checkIngredientSynergies(
+  ingredients: string[],
+  productName: string,
+  allIngredients: Set<string>,
+  recommendations: BundleRecommendation[]
+): void {
+  for (const ingredient of ingredients) {
+    const suggestion = SYNERGY_SUGGESTIONS[ingredient];
+    if (!suggestion) continue;
+
+    // 파트너 성분이 이미 보유 중이면 건너뛰기
+    if (allIngredients.has(suggestion.partner)) continue;
+
+    // 중복 추천 방지
+    const alreadyRecommended = recommendations.some(
+      (r) => r.suggestedProductName === suggestion.productType
+    );
+    if (!alreadyRecommended) {
+      recommendations.push({
+        type: 'synergy',
+        reason: suggestion.reason,
+        suggestedProductName: suggestion.productType,
+        relatedProductName: productName,
+      });
+    }
+  }
 }
 
 // ============================================

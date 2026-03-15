@@ -196,7 +196,7 @@ export default function PersonalColorResultPage() {
       ),
       format: shareFormat,
     };
-  }, [result, shareFormat]);
+  }, [result, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(

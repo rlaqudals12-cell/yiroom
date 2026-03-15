@@ -46,19 +46,15 @@ let mockDbResponse: { data: typeof mockMakeupProducts | null; error: unknown } =
 };
 
 // Supabase 모킹 — makeup-rag는 .eq()를 2번 호출: .eq('is_active', true).eq('category', 'makeup')
+const createMockChain = (): unknown => ({
+  limit: vi.fn(() => Promise.resolve(mockDbResponse)),
+});
+const createMockSelect = (): unknown => ({
+  eq: vi.fn(() => ({ eq: vi.fn(createMockChain) })),
+});
 vi.mock('@/lib/supabase/server', () => ({
   createClerkSupabaseClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        // 첫 번째 .eq('is_active', true)
-        eq: vi.fn(() => ({
-          // 두 번째 .eq('category', 'makeup')
-          eq: vi.fn(() => ({
-            limit: vi.fn(() => Promise.resolve(mockDbResponse)),
-          })),
-        })),
-      })),
-    })),
+    from: vi.fn(() => ({ select: vi.fn(createMockSelect) })),
   })),
 }));
 

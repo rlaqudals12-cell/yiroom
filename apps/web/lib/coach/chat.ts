@@ -533,6 +533,46 @@ function formatChatHistory(history: CoachMessage[]): string {
   return `\n\n## 대화 기록\n${formatted}\n`;
 }
 
+// 도메인별 RAG 컨텍스트 라우팅
+async function resolveRagContext(
+  message: string,
+  userContext: UserContext | null
+): Promise<string> {
+  if (isPersonalColorQuestion(message)) {
+    const colorMatch = await searchByPersonalColor(userContext, message);
+    return formatPersonalColorForPrompt(colorMatch);
+  }
+  if (isFashionQuestion(message)) {
+    const fashionResult = await searchFashionItems(userContext, message);
+    return formatFashionForPrompt(fashionResult);
+  }
+  if (isNutritionQuestion(message)) {
+    const nutritionResult = await searchNutritionItems(userContext, message);
+    return formatNutritionForPrompt(nutritionResult);
+  }
+  if (isWorkoutQuestion(message)) {
+    const workoutResult = await searchWorkoutItems(userContext, message);
+    return formatWorkoutForPrompt(workoutResult);
+  }
+  if (isSkinConsultationQuestion(message)) {
+    const skinProducts = await searchSkinProducts(userContext, message);
+    return formatSkinProductsForPrompt(skinProducts);
+  }
+  if (isHairQuestion(message)) {
+    const hairProducts = await searchHairProducts(userContext, message);
+    return formatHairProductsForPrompt(hairProducts);
+  }
+  if (isMakeupQuestion(message)) {
+    const makeupProducts = await searchMakeupProducts(userContext, message);
+    return formatMakeupProductsForPrompt(makeupProducts);
+  }
+  const productType = needsProductRecommendation(message);
+  if (productType) {
+    return searchRelatedProducts(productType, userContext);
+  }
+  return '';
+}
+
 /**
  * AI 코치 응답 생성
  */
@@ -566,46 +606,7 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
     const historySection = formatChatHistory(chatHistory || []);
 
     // RAG: 도메인별 RAG 검색
-    let ragContext = '';
-    const productType = needsProductRecommendation(message);
-
-    // Phase K: 퍼스널 컬러 상담 질문이면 personal-color-rag 사용
-    if (isPersonalColorQuestion(message)) {
-      const colorMatch = await searchByPersonalColor(userContext, message);
-      ragContext = formatPersonalColorForPrompt(colorMatch);
-    }
-    // Phase K: 패션 상담 질문이면 fashion-rag 사용
-    else if (isFashionQuestion(message)) {
-      const fashionResult = await searchFashionItems(userContext, message);
-      ragContext = formatFashionForPrompt(fashionResult);
-    }
-    // Phase K: 영양/레시피 상담 질문이면 nutrition-rag 사용
-    else if (isNutritionQuestion(message)) {
-      const nutritionResult = await searchNutritionItems(userContext, message);
-      ragContext = formatNutritionForPrompt(nutritionResult);
-    }
-    // Phase K: 운동 상담 질문이면 workout-rag 사용
-    else if (isWorkoutQuestion(message)) {
-      const workoutResult = await searchWorkoutItems(userContext, message);
-      ragContext = formatWorkoutForPrompt(workoutResult);
-    }
-    // Phase D: 피부 상담 질문이면 skin-rag 사용
-    else if (isSkinConsultationQuestion(message)) {
-      const skinProducts = await searchSkinProducts(userContext, message);
-      ragContext = formatSkinProductsForPrompt(skinProducts);
-    }
-    // 헤어/두피 상담 질문이면 hair-rag 사용
-    else if (isHairQuestion(message)) {
-      const hairProducts = await searchHairProducts(userContext, message);
-      ragContext = formatHairProductsForPrompt(hairProducts);
-    }
-    // 메이크업 상담 질문이면 makeup-rag 사용
-    else if (isMakeupQuestion(message)) {
-      const makeupProducts = await searchMakeupProducts(userContext, message);
-      ragContext = formatMakeupProductsForPrompt(makeupProducts);
-    } else if (productType) {
-      ragContext = await searchRelatedProducts(productType, userContext);
-    }
+    const ragContext = await resolveRagContext(message, userContext);
 
     const fullPrompt = `${systemPrompt}${historySection}${ragContext}
 
@@ -779,46 +780,7 @@ export async function* generateCoachResponseStream(
     const historySection = formatChatHistory(chatHistory || []);
 
     // RAG: 도메인별 RAG 검색
-    let ragContext = '';
-    const productType = needsProductRecommendation(message);
-
-    // 퍼스널 컬러 상담 질문이면 personal-color-rag 사용
-    if (isPersonalColorQuestion(message)) {
-      const colorMatch = await searchByPersonalColor(userContext, message);
-      ragContext = formatPersonalColorForPrompt(colorMatch);
-    }
-    // 패션 상담 질문이면 fashion-rag 사용
-    else if (isFashionQuestion(message)) {
-      const fashionResult = await searchFashionItems(userContext, message);
-      ragContext = formatFashionForPrompt(fashionResult);
-    }
-    // 영양/레시피 상담 질문이면 nutrition-rag 사용
-    else if (isNutritionQuestion(message)) {
-      const nutritionResult = await searchNutritionItems(userContext, message);
-      ragContext = formatNutritionForPrompt(nutritionResult);
-    }
-    // 운동 상담 질문이면 workout-rag 사용
-    else if (isWorkoutQuestion(message)) {
-      const workoutResult = await searchWorkoutItems(userContext, message);
-      ragContext = formatWorkoutForPrompt(workoutResult);
-    }
-    // 피부 상담 질문이면 skin-rag 사용
-    else if (isSkinConsultationQuestion(message)) {
-      const skinProducts = await searchSkinProducts(userContext, message);
-      ragContext = formatSkinProductsForPrompt(skinProducts);
-    }
-    // 헤어/두피 상담 질문이면 hair-rag 사용
-    else if (isHairQuestion(message)) {
-      const hairProducts = await searchHairProducts(userContext, message);
-      ragContext = formatHairProductsForPrompt(hairProducts);
-    }
-    // 메이크업 상담 질문이면 makeup-rag 사용
-    else if (isMakeupQuestion(message)) {
-      const makeupProducts = await searchMakeupProducts(userContext, message);
-      ragContext = formatMakeupProductsForPrompt(makeupProducts);
-    } else if (productType) {
-      ragContext = await searchRelatedProducts(productType, userContext);
-    }
+    const ragContext = await resolveRagContext(message, userContext);
 
     const fullPrompt = `${systemPrompt}${historySection}${ragContext}
 

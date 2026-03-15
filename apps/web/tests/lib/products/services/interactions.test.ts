@@ -57,26 +57,20 @@ mockSupabase.select.mockImplementation(() => {
   return chainable;
 });
 
+// Supabase 체이닝 mock 객체 생성
+const createMockQueryResult = (): Record<string, unknown> => {
+  const result = { data: mockData, error: mockError };
+  return {
+    ...result,
+    or: vi.fn(() => ({ data: mockData, error: mockError })),
+    eq: vi.fn(() => ({ ...result, limit: vi.fn(() => ({ data: mockData, error: mockError })) })),
+    in: vi.fn(() => ({ data: mockData, error: mockError })),
+    limit: vi.fn(() => ({ data: mockData, error: mockError })),
+  };
+};
 vi.mock('@/lib/supabase/client', () => ({
   supabase: {
-    from: vi.fn(() => {
-      return {
-        select: vi.fn(() => {
-          // 마지막 호출 결과를 위한 프록시 객체
-          const result = { data: mockData, error: mockError };
-          return {
-            ...result,
-            or: vi.fn(() => ({ data: mockData, error: mockError })),
-            eq: vi.fn(() => ({
-              ...result,
-              limit: vi.fn(() => ({ data: mockData, error: mockError })),
-            })),
-            in: vi.fn(() => ({ data: mockData, error: mockError })),
-            limit: vi.fn(() => ({ data: mockData, error: mockError })),
-          };
-        }),
-      };
-    }),
+    from: vi.fn(() => ({ select: vi.fn(createMockQueryResult) })),
   },
 }));
 

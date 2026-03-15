@@ -408,7 +408,7 @@ export default function SkinAnalysisResultPage() {
       ),
       format: shareFormat,
     };
-  }, [result, skinIdentityLabel, shareFormat]);
+  }, [result, skinIdentityLabel, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
 
   // 얼굴 존 상태 계산 (메트릭 기반) - FaceZoneMapProps.zones 형식
   const zoneStatuses = useMemo((): FaceZoneMapProps['zones'] => {
