@@ -44,6 +44,28 @@ export default function AnalysisLoadingBase({
     'preparing'
   );
   const [tipIndex, setTipIndex] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // 경과 시간 추적
+  useEffect(() => {
+    if (phase === 'complete') return;
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [phase]);
+
+  // 예상 남은 시간 계산 (단계별 기대 소요 시간 기반)
+  const estimatedRemaining = (() => {
+    if (phase === 'complete') return 0;
+    // 단계별 예상 총 시간: preparing 1s, analyzing ~15s, generating 1s
+    const phaseEstimates = { preparing: 1, analyzing: 15, generating: 1, complete: 0 };
+    const phaseStart = { preparing: 0, analyzing: 1, generating: 16, complete: 17 };
+    const currentPhaseElapsed = Math.max(0, elapsedSeconds - phaseStart[phase]);
+    const remainInPhase = Math.max(0, phaseEstimates[phase] - currentPhaseElapsed);
+    const remainAfterPhase = phase === 'preparing' ? 16 : phase === 'analyzing' ? 1 : 0;
+    return Math.max(0, Math.ceil(remainInPhase + remainAfterPhase));
+  })();
 
   // 색상 클래스 매핑
   const colorClasses = {
@@ -161,7 +183,7 @@ export default function AnalysisLoadingBase({
         className="flex flex-col items-center justify-center py-12"
         role="status"
         aria-live="polite"
-        aria-label={`분석 중 ${Math.round(progress)}% 완료`}
+        aria-label={`분석 중 ${Math.round(progress)}% 완료${phase !== 'complete' && estimatedRemaining > 0 ? `, 약 ${estimatedRemaining}초 남음` : ''}`}
       >
         <div className="relative">
           {isComplete ? (
@@ -177,7 +199,15 @@ export default function AnalysisLoadingBase({
           )}
         </div>
         <p className="mt-6 text-lg font-medium text-foreground">{displayMessage}</p>
-        <p className="text-muted-foreground">{Math.round(progress)}%</p>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <span>{Math.round(progress)}%</span>
+          {phase !== 'complete' && estimatedRemaining > 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>약 {estimatedRemaining}초 남음</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 프로그레스 바 */}

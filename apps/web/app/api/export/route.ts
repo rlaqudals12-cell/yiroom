@@ -16,6 +16,9 @@ interface ExportData {
   personalColor?: unknown;
   skinAnalyses?: unknown[];
   bodyAnalyses?: unknown[];
+  hairAnalyses?: unknown[];
+  makeupAnalyses?: unknown[];
+  oralHealthAssessments?: unknown[];
   workoutPlans?: unknown[];
   workoutLogs?: unknown[];
   mealRecords?: unknown[];
@@ -23,6 +26,8 @@ interface ExportData {
   nutritionSummaries?: unknown[];
   wellnessScores?: unknown[];
   badges?: unknown[];
+  wishlists?: unknown[];
+  inventory?: unknown[];
 }
 
 export async function GET() {
@@ -40,6 +45,9 @@ export async function GET() {
       personalColorResult,
       skinResult,
       bodyResult,
+      hairResult,
+      makeupResult,
+      oralHealthResult,
       workoutPlansResult,
       workoutLogsResult,
       mealRecordsResult,
@@ -47,6 +55,8 @@ export async function GET() {
       nutritionSummaryResult,
       wellnessResult,
       badgesResult,
+      wishlistResult,
+      inventoryResult,
     ] = await Promise.all([
       supabase
         .from('personal_color_assessments')
@@ -62,6 +72,21 @@ export async function GET() {
         .order('created_at', { ascending: false }),
       supabase
         .from('body_analyses')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('hair_analyses')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('makeup_analyses')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('oral_health_assessments')
         .select('*')
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false }),
@@ -100,6 +125,16 @@ export async function GET() {
         .select('*')
         .eq('clerk_user_id', userId)
         .order('earned_at', { ascending: false }),
+      supabase
+        .from('user_wishlists')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('user_inventory')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false }),
     ]);
 
     const exportData: ExportData = {
@@ -110,6 +145,9 @@ export async function GET() {
       personalColor: personalColorResult.data,
       skinAnalyses: skinResult.data || [],
       bodyAnalyses: bodyResult.data || [],
+      hairAnalyses: hairResult.data || [],
+      makeupAnalyses: makeupResult.data || [],
+      oralHealthAssessments: oralHealthResult.data || [],
       workoutPlans: workoutPlansResult.data || [],
       workoutLogs: workoutLogsResult.data || [],
       mealRecords: mealRecordsResult.data || [],
@@ -117,6 +155,8 @@ export async function GET() {
       nutritionSummaries: nutritionSummaryResult.data || [],
       wellnessScores: wellnessResult.data || [],
       badges: badgesResult.data || [],
+      wishlists: wishlistResult.data || [],
+      inventory: inventoryResult.data || [],
     };
 
     // JSON 파일로 다운로드
@@ -131,6 +171,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[Export] Error exporting data:', error);
-    return NextResponse.json({ error: 'Failed to export data' }, { status: 500 });
+    return NextResponse.json({ error: '데이터 내보내기에 실패했습니다.' }, { status: 500 });
   }
 }
