@@ -4,6 +4,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { HomeHeader } from './_components/HomeHeader';
 import { HomeGreeting } from './_components/HomeGreeting';
 import HomeStateRouter from './_components/HomeStateRouter';
+import WelcomeBackBanner from './_components/WelcomeBackBanner';
 
 // 스켈레톤 컴포넌트 — State 로딩 중 표시
 function HomeStateSkeleton() {
@@ -49,6 +50,9 @@ export default async function HomePage() {
       <div className="px-4 py-5 space-y-5">
         {/* 인사말 - Server Component (LCP 요소) */}
         <HomeGreeting userName={userName} />
+
+        {/* 복귀자 환영 배너 (3일+ 미접속 시 표시) */}
+        <WelcomeBackBanner />
 
         {/* 3-State 홈 라우터 */}
         <Suspense fallback={<HomeStateSkeleton />}>

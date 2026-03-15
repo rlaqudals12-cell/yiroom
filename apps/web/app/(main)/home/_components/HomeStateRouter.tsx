@@ -47,12 +47,14 @@ export default function HomeStateRouter() {
 
   const state = getHomeState(analysisCount);
 
-  switch (state) {
-    case 'new':
-      return <HomeStateNew />;
-    case 'growing':
-      return <HomeStateGrowing analysisCount={analysisCount} analyses={analyses} />;
-    case 'active':
-      return <HomeStateActive analyses={analyses} />;
-  }
+  // aria-live: 로딩→콘텐츠 전환 시 스크린리더에 알림
+  return (
+    <div aria-live="polite" aria-atomic={false}>
+      {state === 'new' && <HomeStateNew />}
+      {state === 'growing' && (
+        <HomeStateGrowing analysisCount={analysisCount} analyses={analyses} />
+      )}
+      {state === 'active' && <HomeStateActive analyses={analyses} />}
+    </div>
+  );
 }

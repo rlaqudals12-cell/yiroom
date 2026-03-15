@@ -18,6 +18,7 @@ import type {
   ProductRecommendationInsight,
   SynergyInsight,
   HealthAlertInsight,
+  RoutineSuggestionInsight,
 } from './types';
 import {
   calculatePriorityScore,
@@ -384,6 +385,347 @@ function generateOralHealthInsight(
 }
 
 /**
+ * 루틴 제안 인사이트 생성 (시간대 기반)
+ */
+function generateRoutineSuggestionInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): RoutineSuggestionInsight | null {
+  const { skin } = data;
+  if (!skin) return null;
+
+  const hour = new Date().getHours();
+  let routineType: 'morning' | 'evening' | 'weekly';
+  if (hour >= 6 && hour < 14) {
+    routineType = 'morning';
+  } else if (hour >= 14 && hour < 22) {
+    routineType = 'evening';
+  } else {
+    routineType = 'weekly';
+  }
+
+  const relatedModules: AnalysisModule[] = ['skin'];
+  const priorityScore = calculatePriorityScore({
+    category: 'routine_suggestion',
+    relatedModules,
+    confidence: 70,
+    dataBundle: data,
+  });
+
+  const routineTexts: Record<
+    string,
+    { title: { ko: string; en: string }; desc: { ko: string; en: string }; steps: string[] }
+  > = {
+    morning: {
+      title: { ko: '오늘의 모닝 루틴', en: "Today's Morning Routine" },
+      desc: {
+        ko: `${skinTypeLabel(skin.skinType)} 피부를 위한 아침 케어 루틴이에요`,
+        en: `Morning care routine for ${skin.skinType} skin`,
+      },
+      steps: ['세안', '토너', '세럼', '수분크림', '자외선 차단'],
+    },
+    evening: {
+      title: { ko: '저녁 스킨케어 루틴', en: 'Evening Skincare Routine' },
+      desc: {
+        ko: '하루의 피로를 풀어주는 나이트 케어를 시작해요',
+        en: 'Start your night care to relax after the day',
+      },
+      steps: ['클렌징', '토너', '에센스', '아이크림', '나이트크림'],
+    },
+    weekly: {
+      title: { ko: '주간 스페셜 케어', en: 'Weekly Special Care' },
+      desc: {
+        ko: '이번 주 특별 케어로 피부에 활력을 더해요',
+        en: 'Add vitality to your skin with special care this week',
+      },
+      steps: ['각질 제거', '딥클렌징', '시트 마스크'],
+    },
+  };
+
+  const texts = routineTexts[routineType];
+
+  return {
+    id: generateInsightId(),
+    category: 'routine_suggestion',
+    title: language === 'ko' ? texts.title.ko : texts.title.en,
+    description: language === 'ko' ? texts.desc.ko : texts.desc.en,
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    routineType,
+    steps: texts.steps,
+  };
+}
+
+/**
+ * 스트레스-피부 연관 인사이트 생성
+ */
+function generateStressSkinInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): SkinCareInsight | null {
+  const { skin } = data;
+  if (!skin || !skin.sensitivityLevel || skin.sensitivityLevel < 40) return null;
+
+  const relatedModules: AnalysisModule[] = ['skin'];
+  const priorityScore = calculatePriorityScore({
+    category: 'skin_care',
+    relatedModules,
+    confidence: 70,
+    dataBundle: data,
+  });
+
+  return {
+    id: generateInsightId(),
+    category: 'skin_care',
+    title: language === 'ko' ? '스트레스와 피부 상태' : 'Stress and Skin Condition',
+    description:
+      language === 'ko'
+        ? '민감도가 높아졌어요. 저자극 제품과 충분한 수면으로 피부 장벽을 회복해보세요'
+        : 'Sensitivity is elevated. Try gentle products and sufficient sleep to restore skin barrier',
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    skinConcerns: ['sensitivity', 'stress'],
+  };
+}
+
+/**
+ * 운동-피부 연관 인사이트 생성
+ */
+function generateExerciseSkinInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): SynergyInsight | null {
+  const { skin, body } = data;
+  if (!skin || !body) return null;
+
+  const relatedModules: AnalysisModule[] = ['skin', 'body'];
+  const priorityScore = calculatePriorityScore({
+    category: 'synergy',
+    relatedModules,
+    confidence: 75,
+    dataBundle: data,
+  });
+
+  return {
+    id: generateInsightId(),
+    category: 'synergy',
+    title: language === 'ko' ? '운동과 피부 건강의 연결' : 'Connection Between Exercise and Skin',
+    description:
+      language === 'ko'
+        ? '규칙적인 운동은 혈액 순환을 촉진해 피부 톤을 밝게 해요'
+        : 'Regular exercise promotes blood circulation and brightens skin tone',
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    synergyEffect:
+      language === 'ko'
+        ? '운동 → 혈액순환 → 피부 톤 개선'
+        : 'Exercise → Circulation → Skin tone improvement',
+    synergyScore: 65,
+  };
+}
+
+// 환절기 메시지 헬퍼
+function getSeasonalDescription(language: 'ko' | 'en', isSpringSeason: boolean): string {
+  if (language === 'ko') {
+    return isSpringSeason
+      ? '봄 환절기에는 수분 공급과 자외선 차단에 더 신경 써주세요'
+      : '가을 환절기에는 보습 강화와 피부 장벽 케어가 중요해요';
+  }
+  return isSpringSeason
+    ? 'In spring transition, focus more on hydration and sun protection'
+    : 'In fall transition, strengthening moisture and skin barrier care is important';
+}
+
+/**
+ * 계절 변화 피부 알림 인사이트
+ */
+function generateSeasonalSkinInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): SkinCareInsight | null {
+  const { skin } = data;
+  if (!skin) return null;
+
+  const month = new Date().getMonth();
+  // 환절기 (3-4월, 9-10월)만 생성
+  const isTransition = [2, 3, 8, 9].includes(month);
+  if (!isTransition) return null;
+
+  const relatedModules: AnalysisModule[] = ['skin'];
+  const priorityScore = calculatePriorityScore({
+    category: 'skin_care',
+    relatedModules,
+    confidence: 80,
+    dataBundle: data,
+  });
+
+  const isSpringSeason = month <= 4;
+
+  return {
+    id: generateInsightId(),
+    category: 'skin_care',
+    title: language === 'ko' ? '환절기 피부 관리' : 'Seasonal Skin Care',
+    description: getSeasonalDescription(language, isSpringSeason),
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    skinConcerns: isSpringSeason ? ['dryness', 'uv'] : ['dryness', 'barrier'],
+  };
+}
+
+/**
+ * 헤어-피부 통합 인사이트
+ */
+function generateHairSkinInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): SynergyInsight | null {
+  const { hair, skin } = data;
+  if (!hair || !skin) return null;
+
+  const relatedModules: AnalysisModule[] = ['hair', 'skin'];
+  const priorityScore = calculatePriorityScore({
+    category: 'synergy',
+    relatedModules,
+    confidence: 70,
+    dataBundle: data,
+  });
+
+  return {
+    id: generateInsightId(),
+    category: 'synergy',
+    title: language === 'ko' ? '두피와 피부 건강의 연관성' : 'Scalp and Skin Health Connection',
+    description:
+      language === 'ko'
+        ? `${hairTypeLabel(hair.hairType)} 모발과 ${skinTypeLabel(skin.skinType)} 피부에 맞는 통합 케어를 확인해보세요`
+        : `Check integrated care for ${hair.hairType} hair and ${skin.skinType} skin`,
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    synergyEffect:
+      language === 'ko' ? '두피 건강이 피부 상태에 영향' : 'Scalp health affects skin condition',
+    synergyScore: 55,
+  };
+}
+
+/**
+ * 미완료 분석 유도 인사이트
+ */
+function generateIncompleteAnalysisInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): ProductRecommendationInsight | null {
+  // 모듈 상태를 데이터 기반으로 분류
+  const moduleChecks: Array<{
+    key: keyof AnalysisDataBundle;
+    module: AnalysisModule;
+    ko: string;
+    en: string;
+  }> = [
+    { key: 'personalColor', module: 'personal_color', ko: '퍼스널컬러', en: 'Personal Color' },
+    { key: 'skin', module: 'skin', ko: '피부', en: 'Skin' },
+    { key: 'body', module: 'body', ko: '체형', en: 'Body' },
+    { key: 'hair', module: 'hair', ko: '헤어', en: 'Hair' },
+  ];
+
+  const completedModules: AnalysisModule[] = [];
+  const missingModules: string[] = [];
+
+  for (const check of moduleChecks) {
+    if (data[check.key]) {
+      completedModules.push(check.module);
+    } else {
+      missingModules.push(language === 'ko' ? check.ko : check.en);
+    }
+  }
+
+  // 1~4개 완료된 상태에서만 (전부 완료 또는 0개면 미표시)
+  if (completedModules.length === 0 || missingModules.length === 0) return null;
+
+  const priorityScore = calculatePriorityScore({
+    category: 'product_recommendation',
+    relatedModules: completedModules,
+    confidence: 60,
+    dataBundle: data,
+  });
+
+  const nextModule = missingModules[0];
+
+  return {
+    id: generateInsightId(),
+    category: 'product_recommendation',
+    title: language === 'ko' ? '더 정확한 추천을 위해' : 'For More Accurate Recommendations',
+    description:
+      language === 'ko'
+        ? `${nextModule} 분석을 추가하면 맞춤 추천이 더 정확해져요`
+        : `Adding ${nextModule} analysis will make personalized recommendations more accurate`,
+    relatedModules: completedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    productCategory: 'cross_module',
+    reason:
+      language === 'ko'
+        ? `${missingModules.length}개 모듈 미완료`
+        : `${missingModules.length} modules incomplete`,
+  };
+}
+
+/**
+ * 체형-컬러 조합 스타일 인사이트
+ */
+function generateBodyColorStyleInsight(
+  data: AnalysisDataBundle,
+  language: 'ko' | 'en'
+): StyleTipInsight | null {
+  const { personalColor, body } = data;
+  if (!personalColor || !body) return null;
+
+  // generateStyleBodyInsight와 차별화: 실루엣 추천 포함
+  const relatedModules: AnalysisModule[] = ['personal_color', 'body'];
+  const priorityScore = calculatePriorityScore({
+    category: 'style_tip',
+    relatedModules,
+    confidence: personalColor.confidence,
+    dataBundle: data,
+  });
+
+  const silhouettes: Record<string, string[]> = {
+    hourglass: ['핏앤플레어', 'A라인'],
+    pear: ['오프숄더', '와이드팬츠'],
+    apple: ['엠파이어 라인', 'V넥'],
+    rectangle: ['벨트 코디', '레이어드'],
+    inverted_triangle: ['부츠컷', '풀스커트'],
+  };
+
+  const recommended = silhouettes[body.bodyType] ?? ['베이직 핏'];
+
+  return {
+    id: generateInsightId(),
+    category: 'style_tip',
+    title: language === 'ko' ? '오늘의 스타일링 팁' : "Today's Styling Tip",
+    description:
+      language === 'ko'
+        ? `${bodyTypeLabel(body.bodyType)} 체형에 ${seasonLabel(personalColor.season)} 컬러를 조합한 스타일링을 추천해요`
+        : `We recommend styling that combines ${body.bodyType} body type with ${personalColor.season} colors`,
+    relatedModules,
+    priority: scoreToPriority(priorityScore),
+    priorityScore,
+    createdAt: nowISO(),
+    bodyType: body.bodyType,
+    recommendedSilhouettes: recommended,
+  };
+}
+
+/**
  * 종합 통합 분석 인사이트 생성
  */
 function generateSynergyInsight(
@@ -471,7 +813,7 @@ export function generateInsights(
     language = 'ko',
   } = options;
 
-  // 모든 인사이트 생성
+  // 모든 인사이트 생성 (6종 기존 + 7종 신규 = 13종)
   const allInsights: (Insight | null)[] = [
     generateColorSkinInsight(dataBundle, language),
     generateStyleBodyInsight(dataBundle, language),
@@ -479,6 +821,14 @@ export function generateInsights(
     generateHairColorInsight(dataBundle, language),
     generateOralHealthInsight(dataBundle, language),
     generateSynergyInsight(dataBundle, language),
+    // 신규 인사이트 패턴
+    generateRoutineSuggestionInsight(dataBundle, language),
+    generateStressSkinInsight(dataBundle, language),
+    generateExerciseSkinInsight(dataBundle, language),
+    generateSeasonalSkinInsight(dataBundle, language),
+    generateHairSkinInsight(dataBundle, language),
+    generateIncompleteAnalysisInsight(dataBundle, language),
+    generateBodyColorStyleInsight(dataBundle, language),
   ];
 
   // null 제거

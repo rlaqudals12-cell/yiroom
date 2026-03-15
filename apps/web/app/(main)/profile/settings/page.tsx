@@ -38,6 +38,7 @@ import {
   PhysicalInfoCard,
   AllergyInfoCard,
 } from '@/components/settings';
+import { useColorBlindMode } from '@/hooks/useColorBlindMode';
 
 /**
  * 설정 페이지 - UX 리스트럭처링
@@ -211,6 +212,7 @@ export default function SettingsPage() {
 
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { isColorBlind, toggleColorBlind } = useColorBlindMode();
   const userEmail = user?.emailAddresses[0]?.emailAddress || '';
 
   // 알림 설정 상태 (DB-backed)
@@ -634,6 +636,38 @@ export default function SettingsPage() {
                       <span className="text-sm">{lang.label}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* 색맹 모드 */}
+              <div className="p-4 bg-card rounded-xl border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">색맹 모드</p>
+                      <p className="text-sm text-muted-foreground">적녹색맹 친화적 색상 팔레트</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleColorBlind}
+                    className={cn(
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                      isColorBlind ? 'bg-primary' : 'bg-muted'
+                    )}
+                    role="switch"
+                    aria-checked={isColorBlind}
+                    aria-label="색맹 모드 토글"
+                  >
+                    <span
+                      className={cn(
+                        'inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm',
+                        isColorBlind ? 'translate-x-6' : 'translate-x-1'
+                      )}
+                    />
+                  </button>
                 </div>
               </div>
             </div>

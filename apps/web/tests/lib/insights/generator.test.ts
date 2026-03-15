@@ -112,8 +112,7 @@ describe('Insights Generator', () => {
 
       // 한국어 타이틀 확인
       const hasKorean = result.insights.some(
-        (insight) =>
-          /[가-힣]/.test(insight.title) || /[가-힣]/.test(insight.description)
+        (insight) => /[가-힣]/.test(insight.title) || /[가-힣]/.test(insight.description)
       );
       expect(hasKorean).toBe(true);
     });
@@ -201,7 +200,7 @@ describe('Insights Generator', () => {
         includeCategories: ['skin_care'],
       });
 
-      expect(result.insights.length).toBe(1);
+      expect(result.insights.length).toBeGreaterThanOrEqual(1);
       expect(result.insights[0].category).toBe('skin_care');
     });
 
@@ -214,9 +213,16 @@ describe('Insights Generator', () => {
         includeCategories: ['skin_care'],
       });
 
-      const insight = result.insights[0];
-      if ('skinConcerns' in insight) {
-        expect(insight.skinConcerns).toEqual(['dehydration', 'fine_lines']);
+      // 번들 concerns가 반영된 insight 존재 확인
+      const skinInsight = result.insights.find(
+        (i) =>
+          'skinConcerns' in i &&
+          (i as { skinConcerns: string[] }).skinConcerns.includes('dehydration')
+      );
+      expect(skinInsight).toBeDefined();
+      if (skinInsight && 'skinConcerns' in skinInsight) {
+        expect(skinInsight.skinConcerns).toContain('dehydration');
+        expect(skinInsight.skinConcerns).toContain('fine_lines');
       }
     });
 
@@ -233,7 +239,8 @@ describe('Insights Generator', () => {
           language: 'ko',
         });
 
-        expect(result.insights.length).toBe(1);
+        // 다양화된 generator로 1개 이상 생성 가능
+        expect(result.insights.length).toBeGreaterThanOrEqual(1);
         expect(result.insights[0].description).toBeTruthy();
       });
     });
@@ -250,7 +257,8 @@ describe('Insights Generator', () => {
         includeCategories: ['style_tip'],
       });
 
-      expect(result.insights.length).toBe(1);
+      // 다양화된 generator로 1개 이상 생성 가능 (body_color_style 등)
+      expect(result.insights.length).toBeGreaterThanOrEqual(1);
       expect(result.insights[0].category).toBe('style_tip');
     });
 
@@ -355,7 +363,7 @@ describe('Insights Generator', () => {
         includeCategories: ['synergy'],
       });
 
-      expect(result.insights.length).toBe(1);
+      expect(result.insights.length).toBeGreaterThanOrEqual(1);
       expect(result.insights[0].category).toBe('synergy');
     });
 
