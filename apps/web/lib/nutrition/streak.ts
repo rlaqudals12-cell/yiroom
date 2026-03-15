@@ -41,14 +41,15 @@ export const NUTRITION_STREAK_MILESTONES = [3, 7, 14, 30, 60, 100] as const;
 /**
  * 마일스톤별 배지 정의
  */
-export const NUTRITION_STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> = {
-  3: { id: '3day', name: '3일 연속', emoji: '🌱' },
-  7: { id: '7day', name: '7일 연속', emoji: '🔥' },
-  14: { id: '14day', name: '2주 연속', emoji: '💪' },
-  30: { id: '30day', name: '30일 연속', emoji: '🏆' },
-  60: { id: '60day', name: '60일 연속', emoji: '⭐' },
-  100: { id: '100day', name: '100일 연속', emoji: '👑' },
-};
+export const NUTRITION_STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> =
+  {
+    3: { id: '3day', name: '3일 기록', emoji: '🌱' },
+    7: { id: '7day', name: '7일 기록', emoji: '🌿' },
+    14: { id: '14day', name: '14일 기록', emoji: '🌳' },
+    30: { id: '30day', name: '30일 기록', emoji: '🏆' },
+    60: { id: '60day', name: '60일 기록', emoji: '⭐' },
+    100: { id: '100day', name: '100일 기록', emoji: '👑' },
+  };
 
 /**
  * 마일스톤별 보상 정의
@@ -77,8 +78,9 @@ export function getDaysDifference(date1: Date, date2: Date): number {
 }
 
 /**
- * Streak이 끊겼는지 확인
- * - 마지막 기록일로부터 2일 이상 지나면 끊김
+ * 최근 기록 여부 확인
+ * - 마지막 기록일로부터 2일 이상 지나면 비활성
+ * - 연속 끊김이 아닌, 활성 상태 판단용
  */
 export function isStreakBroken(lastRecordDate: string | null | undefined): boolean {
   if (!lastRecordDate) return true;
@@ -87,24 +89,20 @@ export function isStreakBroken(lastRecordDate: string | null | undefined): boole
   const lastDate = new Date(lastRecordDate);
   const daysDiff = getDaysDifference(lastDate, today);
 
-  // 1일까지는 연속으로 인정 (오늘 또는 어제 기록)
+  // 1일까지는 활성 상태 (오늘 또는 어제 기록)
   return daysDiff > 1;
 }
 
 /**
- * 연속 기록 일수 계산
- * - 마지막 기록일 기준으로 현재 streak 계산
+ * 누적 기록 일수 반환
+ * - 연속 여부와 무관하게 현재 기록 횟수 유지
+ * - 끊김으로 리셋하지 않음 (자율성 존중)
  */
 export function calculateCurrentStreak(
   lastRecordDate: string | null | undefined,
   currentStreak: number
 ): number {
-  if (!lastRecordDate) return 0;
-
-  if (isStreakBroken(lastRecordDate)) {
-    return 0;
-  }
-
+  // 누적 방식: 기록 횟수를 그대로 반환 (리셋 없음)
   return currentStreak;
 }
 
@@ -133,7 +131,7 @@ export function getDaysToNextMilestone(currentStreak: number): number | null {
  * 달성한 마일스톤 목록 조회
  */
 export function getAchievedMilestones(currentStreak: number): number[] {
-  return NUTRITION_STREAK_MILESTONES.filter(m => currentStreak >= m);
+  return NUTRITION_STREAK_MILESTONES.filter((m) => currentStreak >= m);
 }
 
 /**
@@ -146,7 +144,7 @@ export function getNewlyAchievedMilestones(
   const previousMilestones = getAchievedMilestones(previousStreak);
   const currentMilestones = getAchievedMilestones(currentStreak);
 
-  return currentMilestones.filter(m => !previousMilestones.includes(m));
+  return currentMilestones.filter((m) => !previousMilestones.includes(m));
 }
 
 // =====================================================
@@ -158,21 +156,18 @@ export function getNewlyAchievedMilestones(
  */
 export function getBadgesForMilestones(milestones: number[]): string[] {
   return milestones
-    .filter(m => NUTRITION_STREAK_BADGES[m])
-    .map(m => NUTRITION_STREAK_BADGES[m].id);
+    .filter((m) => NUTRITION_STREAK_BADGES[m])
+    .map((m) => NUTRITION_STREAK_BADGES[m].id);
 }
 
 /**
  * 새로 획득해야 할 배지 확인
  */
-export function getNewBadges(
-  currentStreak: number,
-  existingBadges: string[]
-): string[] {
+export function getNewBadges(currentStreak: number, existingBadges: string[]): string[] {
   const achievedMilestones = getAchievedMilestones(currentStreak);
   const allBadges = getBadgesForMilestones(achievedMilestones);
 
-  return allBadges.filter(badge => !existingBadges.includes(badge));
+  return allBadges.filter((badge) => !existingBadges.includes(badge));
 }
 
 // =====================================================
@@ -180,7 +175,8 @@ export function getNewBadges(
 // =====================================================
 
 /**
- * Streak 상태에 따른 메시지 생성
+ * 기록 상태에 따른 메시지 생성
+ * - 연속/압박 표현 대신 누적 기록 축하
  */
 export function getStreakMessage(streak: NutritionStreak | null): string {
   if (!streak || streak.currentStreak === 0) {
@@ -188,36 +184,36 @@ export function getStreakMessage(streak: NutritionStreak | null): string {
   }
 
   const { currentStreak } = streak;
-  const nextMilestone = getNextMilestone(currentStreak);
-  const daysToNext = getDaysToNextMilestone(currentStreak);
-
-  // 마일스톤 달성 직전
-  if (daysToNext === 1 && nextMilestone) {
-    const reward = NUTRITION_STREAK_REWARDS[nextMilestone];
-    const rewardText = reward ? ` ${reward.description} 획득!` : '';
-    return `내일이면 ${nextMilestone}일 연속!${rewardText} ${NUTRITION_STREAK_BADGES[nextMilestone]?.emoji || '🎉'}`;
-  }
 
   // 마일스톤 달성
-  if (NUTRITION_STREAK_MILESTONES.includes(currentStreak as typeof NUTRITION_STREAK_MILESTONES[number])) {
+  if (
+    NUTRITION_STREAK_MILESTONES.includes(
+      currentStreak as (typeof NUTRITION_STREAK_MILESTONES)[number]
+    )
+  ) {
     const badge = NUTRITION_STREAK_BADGES[currentStreak];
-    return `${badge?.emoji || '🎉'} ${currentStreak}일 연속 달성! 대단해요!`;
+    return `${badge?.emoji || '🎉'} ${currentStreak}일 기록 달성!`;
   }
 
-  // 일반 연속
+  // 누적 기록 메시지 (연속 압박 없이)
+  if (currentStreak >= 30) {
+    return `🌳 지금까지 ${currentStreak}일 기록했어요`;
+  }
+
   if (currentStreak >= 7) {
-    return `🔥 ${currentStreak}일 연속 기록 중! 멋져요!`;
+    return `🌿 ${currentStreak}일째 기록 중이에요`;
   }
 
   if (currentStreak >= 3) {
-    return `💪 ${currentStreak}일 연속! 좋은 습관이 만들어지고 있어요!`;
+    return `🌱 ${currentStreak}일 기록했어요`;
   }
 
-  return `${currentStreak}일 연속 식단 기록 중!`;
+  return `${currentStreak}일째 식단을 기록하고 있어요`;
 }
 
 /**
- * Streak 끊김 위험 메시지
+ * 기록 안내 메시지
+ * - 압박/시간제한 없이 부드러운 안내
  */
 export function getStreakWarningMessage(streak: NutritionStreak | null): string | null {
   if (!streak || streak.currentStreak === 0) return null;
@@ -229,38 +225,35 @@ export function getStreakWarningMessage(streak: NutritionStreak | null): string 
   const lastRecord = new Date(lastDate);
   const daysDiff = getDaysDifference(lastRecord, today);
 
-  // 오늘 기록했으면 경고 없음
+  // 오늘 기록했으면 안내 없음
   if (daysDiff === 0) return null;
 
-  // 어제 기록했으면 오늘 해야 연속 유지
+  // 어제 기록한 경우 — 부드러운 안내 (압박 없이)
   if (daysDiff === 1) {
-    const nextMilestone = getNextMilestone(streak.currentStreak);
-    if (nextMilestone && streak.currentStreak >= nextMilestone - 3) {
-      return `오늘 기록하면 ${nextMilestone}일 연속까지 ${nextMilestone - streak.currentStreak}일!`;
-    }
-    return `오늘 기록해야 ${streak.currentStreak + 1}일 연속 달성!`;
+    return '오늘도 기록하면 흐름이 이어져요';
   }
 
   return null;
 }
 
 /**
- * 재참여 유도 메시지 (Streak 끊긴 경우)
+ * 복귀 안내 메시지
+ * - 손실 회피/도전 프레이밍 대신 자연스러운 안내
  */
 export function getReEngagementMessage(streak: NutritionStreak | null): string {
   if (!streak) {
-    return '첫 식단 기록을 시작해보세요! 🍽️';
+    return '첫 식단 기록을 시작해보세요 🍽️';
   }
 
-  if (streak.longestStreak >= 7) {
-    return `이전에 ${streak.longestStreak}일 연속 기록이 있어요! 다시 도전해볼까요?`;
+  if (streak.currentStreak >= 7) {
+    return `지금까지 ${streak.currentStreak}일 기록했어요. 편할 때 이어가보세요`;
   }
 
-  if (streak.longestStreak >= 3) {
-    return '식단 기록이 그리워요! 오늘 한 끼만 기록해볼까요?';
+  if (streak.currentStreak >= 3) {
+    return '기록이 쌓이고 있어요. 편할 때 다시 시작해보세요';
   }
 
-  return '새로운 연속 기록을 시작해보세요!';
+  return '식단 기록은 언제든 시작할 수 있어요';
 }
 
 /**
@@ -270,7 +263,7 @@ export function getMilestoneAchievementMessage(milestone: number): string {
   const badge = NUTRITION_STREAK_BADGES[milestone];
   const reward = NUTRITION_STREAK_REWARDS[milestone];
 
-  if (!badge) return `${milestone}일 연속 달성!`;
+  if (!badge) return `${milestone}일 기록 달성!`;
 
   let message = `${badge.emoji} ${badge.name} 달성!`;
 
@@ -316,7 +309,8 @@ export function getStreakSummary(streak: NutritionStreak | null): StreakSummary 
   }
 
   const isActive = !isStreakBroken(streak.lastRecordDate);
-  const currentStreak = isActive ? streak.currentStreak : 0;
+  // 누적 방식: 비활성이어도 기록 횟수 유지 (리셋 없음)
+  const currentStreak = streak.currentStreak;
 
   return {
     currentStreak,

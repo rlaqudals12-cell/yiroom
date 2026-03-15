@@ -5,8 +5,9 @@
  * - 이미지 업로드 → 립스틱/블러셔 적용 → Before/After 비교
  */
 
-import { useState, useRef, useCallback } from 'react';
-import { Camera, Upload, Loader2, RotateCcw } from 'lucide-react';
+import { useState, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Camera, Upload, Loader2, RotateCcw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -23,24 +24,77 @@ import {
   HAIR_PRESETS,
   EYESHADOW_PRESETS,
   FOUNDATION_PRESETS,
+  getLipPresetsForSeason,
+  getBlushPresetsForSeason,
+  getEyeshadowPresetsForSeason,
+  getHairPresetsForSeason,
+  getFoundationPresetsForSeason,
+  getDefaultColorForSeason,
+  SEASON_LABELS,
 } from '@/lib/virtual-try-on';
-import type { MakeupType, RgbaColor, MakeupResult } from '@/lib/virtual-try-on';
+import type {
+  MakeupType,
+  RgbaColor,
+  MakeupResult,
+  PersonalColorSeason,
+} from '@/lib/virtual-try-on';
 
 type Tab = 'lip' | 'blush' | 'hair-color' | 'eyeshadow' | 'foundation';
 
+const VALID_SEASONS: PersonalColorSeason[] = ['spring', 'summer', 'autumn', 'winter'];
+
 export default function VirtualTryOnPage(): React.JSX.Element {
+  const searchParams = useSearchParams();
+  const seasonParam = searchParams.get('season') as PersonalColorSeason | null;
+  const season = seasonParam && VALID_SEASONS.includes(seasonParam) ? seasonParam : null;
+
   const [tab, setTab] = useState<Tab>('lip');
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [result, setResult] = useState<MakeupResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<RgbaColor>(LIP_PRESETS[0].color);
+  // 시즌이 있으면 시즌 기본 색상으로 시작
+  const [selectedColor, setSelectedColor] = useState<RgbaColor>(
+    season ? getDefaultColorForSeason(season, 'lip') : LIP_PRESETS[0].color
+  );
   const [opacity, setOpacity] = useState(0.55);
   // 헤어 컬러용 HSL 타겟
   const [selectedHairHsl, setSelectedHairHsl] = useState(HAIR_PRESETS[0].targetHsl);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+
+  // 시즌 기반 프리셋 추천 세트 (추천 우선 정렬)
+  const seasonPresets = useMemo(() => {
+    if (!season) return null;
+    return {
+      lip: new Set(
+        getLipPresetsForSeason(season)
+          .filter((p) => p.isRecommended)
+          .map((p) => p.preset.name)
+      ),
+      blush: new Set(
+        getBlushPresetsForSeason(season)
+          .filter((p) => p.isRecommended)
+          .map((p) => p.preset.name)
+      ),
+      eyeshadow: new Set(
+        getEyeshadowPresetsForSeason(season)
+          .filter((p) => p.isRecommended)
+          .map((p) => p.preset.name)
+      ),
+      'hair-color': new Set(
+        getHairPresetsForSeason(season)
+          .filter((p) => p.isRecommended)
+          .map((p) => p.preset.name)
+      ),
+      foundation: new Set(
+        getFoundationPresetsForSeason(season)
+          .filter((p) => p.isRecommended)
+          .map((p) => p.preset.name)
+      ),
+    };
+  }, [season]);
 
   const getTabLabel = (): string => {
     if (tab === 'lip') return '립스틱 적용';
@@ -51,30 +105,62 @@ export default function VirtualTryOnPage(): React.JSX.Element {
   };
 
   const getPresets = (): Array<{ name: string; color: RgbaColor }> => {
-    if (tab === 'lip') return LIP_PRESETS;
-    if (tab === 'blush') return BLUSH_PRESETS;
-    if (tab === 'eyeshadow') return EYESHADOW_PRESETS;
-    if (tab === 'foundation') return FOUNDATION_PRESETS;
+    if (tab === 'lip') return sortPresetsBySeason([...LIP_PRESETS], 'lip');
+    if (tab === 'blush') return sortPresetsBySeason([...BLUSH_PRESETS], 'blush');
+    if (tab === 'eyeshadow') return sortPresetsBySeason([...EYESHADOW_PRESETS], 'eyeshadow');
+    if (tab === 'foundation') return sortPresetsBySeason([...FOUNDATION_PRESETS], 'foundation');
     return []; // hair-color는 별도 프리셋 사용
   };
 
-  // 탭 전환 시 색상 리셋
+  // 시즌 추천 프리셋 우선 정렬
+  const sortPresetsBySeason = <T extends { name: string }>(presets: T[], tabName: Tab): T[] => {
+    if (!seasonPresets) return presets;
+    const recommended = seasonPresets[tabName];
+    return presets.sort((a, b) => {
+      const aRec = recommended.has(a.name) ? 1 : 0;
+      const bRec = recommended.has(b.name) ? 1 : 0;
+      return bRec - aRec;
+    });
+  };
+
+  // 프리셋이 시즌 추천인지 확인
+  const isRecommendedPreset = (name: string, tabName: Tab): boolean => {
+    if (!seasonPresets) return false;
+    return seasonPresets[tabName].has(name);
+  };
+
+  // 탭별 기본 색상/투명도 설정
+  const TAB_DEFAULTS: Record<
+    Exclude<Tab, 'hair-color'>,
+    { fallbackColor: RgbaColor; opacity: number }
+  > = {
+    lip: { fallbackColor: LIP_PRESETS[0].color, opacity: 0.55 },
+    blush: { fallbackColor: BLUSH_PRESETS[0].color, opacity: 0.3 },
+    eyeshadow: { fallbackColor: EYESHADOW_PRESETS[0].color, opacity: 0.4 },
+    foundation: { fallbackColor: FOUNDATION_PRESETS[0].color, opacity: 0.25 },
+  };
+
+  // 탭 전환 시 색상 리셋 (시즌 있으면 추천 색상으로)
   const handleTabChange = (newTab: Tab): void => {
     setTab(newTab);
+
     if (newTab === 'hair-color') {
-      setSelectedColor(HAIR_PRESETS[0].displayColor);
-      setSelectedHairHsl(HAIR_PRESETS[0].targetHsl);
+      // 헤어는 HSL 별도 관리
+      const color = season
+        ? getDefaultColorForSeason(season, 'hair-color')
+        : HAIR_PRESETS[0].displayColor;
+      setSelectedColor(color);
+      const seasonHair = season ? getHairPresetsForSeason(season) : null;
+      const hsl =
+        seasonHair?.find((p) => p.isRecommended)?.preset.targetHsl ?? HAIR_PRESETS[0].targetHsl;
+      setSelectedHairHsl(hsl);
       setOpacity(0.6);
-    } else if (newTab === 'eyeshadow') {
-      setSelectedColor(EYESHADOW_PRESETS[0].color);
-      setOpacity(0.4);
-    } else if (newTab === 'foundation') {
-      setSelectedColor(FOUNDATION_PRESETS[0].color);
-      setOpacity(0.25);
     } else {
-      setSelectedColor(newTab === 'lip' ? LIP_PRESETS[0].color : BLUSH_PRESETS[0].color);
-      setOpacity(newTab === 'lip' ? 0.55 : 0.3);
+      const defaults = TAB_DEFAULTS[newTab];
+      setSelectedColor(season ? getDefaultColorForSeason(season, newTab) : defaults.fallbackColor);
+      setOpacity(defaults.opacity);
     }
+
     setResult(null);
     setError(null);
   };
@@ -186,6 +272,12 @@ export default function VirtualTryOnPage(): React.JSX.Element {
         <p className="text-sm text-muted-foreground mt-1">
           사진에 메이크업과 헤어 컬러를 가상으로 적용해 보세요
         </p>
+        {season && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+            <Sparkles className="h-3 w-3" />
+            {SEASON_LABELS[season]} 추천 컬러 적용 중
+          </div>
+        )}
       </div>
 
       {/* 탭 */}
@@ -271,42 +363,54 @@ export default function VirtualTryOnPage(): React.JSX.Element {
               {/* 색상 프리셋 */}
               <div className="flex flex-wrap gap-2">
                 {tab === 'hair-color'
-                  ? HAIR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.name}
-                        onClick={() => {
-                          setSelectedColor(preset.displayColor);
-                          setSelectedHairHsl(preset.targetHsl);
-                        }}
-                        className={cn(
-                          'w-8 h-8 rounded-full border-2 transition-transform',
-                          selectedColor === preset.displayColor
-                            ? 'border-foreground scale-110'
-                            : 'border-transparent'
+                  ? sortPresetsBySeason([...HAIR_PRESETS], 'hair-color').map((preset) => (
+                      <div key={preset.name} className="relative">
+                        <button
+                          onClick={() => {
+                            setSelectedColor(preset.displayColor);
+                            setSelectedHairHsl(preset.targetHsl);
+                          }}
+                          className={cn(
+                            'w-8 h-8 rounded-full border-2 transition-transform',
+                            selectedColor === preset.displayColor
+                              ? 'border-foreground scale-110'
+                              : 'border-transparent'
+                          )}
+                          style={{
+                            backgroundColor: `rgb(${preset.displayColor.r}, ${preset.displayColor.g}, ${preset.displayColor.b})`,
+                          }}
+                          title={preset.name}
+                          aria-label={preset.name}
+                        />
+                        {isRecommendedPreset(preset.name, 'hair-color') && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full flex items-center justify-center">
+                            <Sparkles className="h-2 w-2 text-primary-foreground" />
+                          </span>
                         )}
-                        style={{
-                          backgroundColor: `rgb(${preset.displayColor.r}, ${preset.displayColor.g}, ${preset.displayColor.b})`,
-                        }}
-                        title={preset.name}
-                        aria-label={preset.name}
-                      />
+                      </div>
                     ))
                   : getPresets().map((preset) => (
-                      <button
-                        key={preset.name}
-                        onClick={() => setSelectedColor(preset.color)}
-                        className={cn(
-                          'w-8 h-8 rounded-full border-2 transition-transform',
-                          selectedColor === preset.color
-                            ? 'border-foreground scale-110'
-                            : 'border-transparent'
+                      <div key={preset.name} className="relative">
+                        <button
+                          onClick={() => setSelectedColor(preset.color)}
+                          className={cn(
+                            'w-8 h-8 rounded-full border-2 transition-transform',
+                            selectedColor === preset.color
+                              ? 'border-foreground scale-110'
+                              : 'border-transparent'
+                          )}
+                          style={{
+                            backgroundColor: `rgb(${preset.color.r}, ${preset.color.g}, ${preset.color.b})`,
+                          }}
+                          title={preset.name}
+                          aria-label={preset.name}
+                        />
+                        {isRecommendedPreset(preset.name, tab) && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full flex items-center justify-center">
+                            <Sparkles className="h-2 w-2 text-primary-foreground" />
+                          </span>
                         )}
-                        style={{
-                          backgroundColor: `rgb(${preset.color.r}, ${preset.color.g}, ${preset.color.b})`,
-                        }}
-                        title={preset.name}
-                        aria-label={preset.name}
-                      />
+                      </div>
                     ))}
               </div>
 

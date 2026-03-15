@@ -27,7 +27,7 @@ describe('MyRankCard', () => {
   it('빈 상태 표시', () => {
     render(<MyRankCard ranking={null} />);
     expect(screen.getByTestId('my-rank-card-empty')).toBeInTheDocument();
-    expect(screen.getByText(/활동을 기록하면 순위가 표시됩니다/)).toBeInTheDocument();
+    expect(screen.getByText(/활동을 기록하면 나의 기록이 표시돼요/)).toBeInTheDocument();
   });
 
   it('순위 표시', () => {
@@ -46,9 +46,9 @@ describe('MyRankCard', () => {
     expect(screen.getAllByText('15.5%').length).toBeGreaterThan(0);
   });
 
-  it('상위 % 라벨 표시', () => {
+  it('위치 라벨 표시', () => {
     render(<MyRankCard ranking={mockRanking} />);
-    expect(screen.getByText('상위')).toBeInTheDocument();
+    expect(screen.getByText('위치')).toBeInTheDocument();
   });
 
   it('카테고리 라벨 표시', () => {

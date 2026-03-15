@@ -103,6 +103,31 @@ export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, { label: string; descr
   } as const;
 
 // ============================================
+// 체형별 BMR 보정 계수
+// ============================================
+
+/**
+ * 체형별 BMR 보정 계수
+ *
+ * 체형에 따라 근육량 분포가 달라지며, 이는 기초대사량에 영향을 미침
+ * - 상체 근육이 발달한 체형(V, Y)은 근육량이 많아 BMR이 높음
+ * - 체지방 비율이 높은 체형(O)은 BMR이 낮음
+ * - 균형 잡힌 체형(X)은 소폭 상승
+ *
+ * 8-Type 체형 분류 기반 (lib/body 참조, 의존성 없이 문자열로 처리)
+ */
+export const BODY_TYPE_BMR_CORRECTION: Record<string, number> = {
+  V: 1.03, // 역삼각형 - 상체 근육 발달로 BMR 증가
+  Y: 1.02, // 넓은어깨 - 어깨 근육 발달
+  X: 1.01, // 모래시계 - 균형 잡힌 근육 분포
+  H: 1.0, // 직사각형 - 기준선
+  A: 1.0, // 삼각형 - 하체 중심, 평균 수준
+  '8': 1.0, // 곡선형 - 평균 수준
+  I: 0.99, // 직선형 - 근육량 적음
+  O: 0.98, // 원형 - 체지방 비율 높음
+} as const;
+
+// ============================================
 // BMR 계산 함수 (Mifflin-St Jeor)
 // ============================================
 
@@ -135,6 +160,34 @@ export function calculateBMR(profile: UserProfile): number {
 
   // 음수 방지 및 반올림
   return Math.max(0, Math.round(bmr));
+}
+
+/** 8-Type 체형 리터럴 (타입 힌트용, lib/body 의존 없이 문자열 호환) */
+export type BMRBodyType = 'X' | 'A' | 'V' | 'H' | 'O' | 'I' | 'Y' | '8';
+
+/**
+ * 체형 보정 BMR 계산 - Mifflin-St Jeor + 체형별 근육량 보정
+ *
+ * 체형에 따른 근육량 분포 차이를 반영하여 BMR을 보정함
+ * 체형이 없으면 표준 BMR을 그대로 반환
+ *
+ * @param profile - 사용자 프로필
+ * @param bodyType - 체형 (X/A/V/H/O/I/Y/8), 선택
+ * @returns 보정된 BMR (kcal/day), 유효하지 않은 입력 시 0
+ */
+export function calculateBMRWithBodyType(
+  profile: UserProfile,
+  bodyType?: BMRBodyType | string
+): number {
+  const baseBmr = calculateBMR(profile);
+
+  // 체형이 없거나 알 수 없는 체형이면 표준 BMR 반환
+  if (!bodyType || !(bodyType in BODY_TYPE_BMR_CORRECTION)) {
+    return baseBmr;
+  }
+
+  const correctionFactor = BODY_TYPE_BMR_CORRECTION[bodyType];
+  return Math.round(baseBmr * correctionFactor);
 }
 
 /**

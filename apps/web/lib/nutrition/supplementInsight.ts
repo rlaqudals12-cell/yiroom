@@ -15,19 +15,19 @@ export interface SupplementRecommendation {
   name: string;
   category: 'vitamin' | 'mineral' | 'protein' | 'omega' | 'probiotic' | 'herbal' | 'other';
   reason: string;
-  timing: string;  // 복용 시기
+  timing: string; // 복용 시기
   priority: 'high' | 'medium' | 'low';
   caution?: string; // 주의사항
 }
 
 // 피부 고민 타입 (S-1 연동)
 export type SkinConcern =
-  | 'hydration'     // 수분 부족
-  | 'oil'           // 유분 과다
-  | 'wrinkles'      // 주름
-  | 'elasticity'    // 탄력 저하
-  | 'pigmentation'  // 색소침착
-  | 'trouble';      // 트러블
+  | 'hydration' // 수분 부족
+  | 'oil' // 유분 과다
+  | 'wrinkles' // 주름
+  | 'elasticity' // 탄력 저하
+  | 'pigmentation' // 색소침착
+  | 'trouble'; // 트러블
 
 // 목표별 영양제 추천
 const GOAL_SUPPLEMENTS: Record<NutritionGoal, SupplementRecommendation[]> = {
@@ -273,21 +273,97 @@ const SKIN_CONCERN_SUPPLEMENTS: Record<SkinConcern, SupplementRecommendation[]> 
   ],
 };
 
+// 체형별 영양제 추천 (C-1 연동)
+export type BodyTypeCategory =
+  | 'upper_dominant' // V, Y — 상체 우세 (하체 보강 필요)
+  | 'lower_dominant' // A — 하체 우세 (상체 보강 필요)
+  | 'fat_dominant' // O — 체지방 높음 (대사 촉진)
+  | 'lean' // I — 근육량 적음 (근육 합성)
+  | 'balanced'; // X, H, 8 — 균형 (유지)
+
+const BODY_TYPE_TO_CATEGORY: Record<string, BodyTypeCategory> = {
+  V: 'upper_dominant',
+  Y: 'upper_dominant',
+  A: 'lower_dominant',
+  O: 'fat_dominant',
+  I: 'lean',
+  X: 'balanced',
+  H: 'balanced',
+  '8': 'balanced',
+};
+
+const BODY_TYPE_SUPPLEMENTS: Record<BodyTypeCategory, SupplementRecommendation[]> = {
+  upper_dominant: [
+    {
+      name: '단백질 보충제',
+      category: 'protein',
+      reason: '하체 근육 합성 지원 (상체 우세 체형 보완)',
+      timing: '운동 후 30분 이내',
+      priority: 'medium',
+    },
+  ],
+  lower_dominant: [
+    {
+      name: 'BCAA',
+      category: 'protein',
+      reason: '상체 근육 회복 촉진 (하체 우세 체형 보완)',
+      timing: '운동 중 또는 운동 후',
+      priority: 'medium',
+    },
+  ],
+  fat_dominant: [
+    {
+      name: 'L-카르니틴',
+      category: 'other',
+      reason: '지방 대사 촉진 및 에너지 전환',
+      timing: '운동 30분 전',
+      priority: 'medium',
+    },
+    {
+      name: '녹차 추출물 (EGCG)',
+      category: 'herbal',
+      reason: '대사율 향상 및 지방 산화 촉진',
+      timing: '아침 식후',
+      priority: 'medium',
+    },
+  ],
+  lean: [
+    {
+      name: '크레아틴',
+      category: 'other',
+      reason: '근력 향상 및 근육량 증가 지원',
+      timing: '매일 3-5g',
+      priority: 'medium',
+      caution: '충분한 수분 섭취 필요',
+    },
+    {
+      name: '웨이트 게이너',
+      category: 'protein',
+      reason: '건강한 체중 증가를 위한 고칼로리 단백질',
+      timing: '식간 또는 운동 후',
+      priority: 'low',
+    },
+  ],
+  balanced: [],
+};
+
 // 영양제 추천 결과
 export interface SupplementInsightResult {
   goalSupplements: SupplementRecommendation[];
   skinSupplements: SupplementRecommendation[];
+  bodyTypeSupplements: SupplementRecommendation[];
   allSupplements: SupplementRecommendation[];
   summary: string;
 }
 
 /**
- * 목표 + 피부 상태 기반 영양제 추천
+ * 목표 + 피부 상태 + 체형 기반 영양제 추천
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getSupplementRecommendations(
   goal: NutritionGoal,
-  skinConcerns?: SkinConcern[]
+  skinConcerns?: SkinConcern[],
+  bodyType?: string
 ): SupplementInsightResult {
   // 1. 목표별 영양제
   const goalSupplements = GOAL_SUPPLEMENTS[goal] || [];
@@ -307,7 +383,16 @@ export function getSupplementRecommendations(
     }
   }
 
-  // 3. 통합 및 중복 제거
+  // 3. 체형별 영양제 (C-1 연동)
+  const bodyTypeSupplements: SupplementRecommendation[] = [];
+  if (bodyType) {
+    const category = BODY_TYPE_TO_CATEGORY[bodyType];
+    if (category) {
+      bodyTypeSupplements.push(...(BODY_TYPE_SUPPLEMENTS[category] || []));
+    }
+  }
+
+  // 4. 통합 및 중복 제거
   const allMap = new Map<string, SupplementRecommendation>();
   for (const s of goalSupplements) {
     allMap.set(s.name, s);
@@ -317,14 +402,18 @@ export function getSupplementRecommendations(
       allMap.set(s.name, s);
     }
   }
+  for (const s of bodyTypeSupplements) {
+    if (!allMap.has(s.name)) {
+      allMap.set(s.name, s);
+    }
+  }
 
-  const allSupplements = Array.from(allMap.values())
-    .sort((a, b) => {
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    });
+  const allSupplements = Array.from(allMap.values()).sort((a, b) => {
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
 
-  // 4. 요약 메시지 생성
+  // 5. 요약 메시지 생성
   const goalLabels: Record<NutritionGoal, string> = {
     weight_loss: '체중 감량',
     maintain: '체중 유지',
@@ -337,10 +426,14 @@ export function getSupplementRecommendations(
   if (skinConcerns && skinConcerns.length > 0) {
     summary += ` 피부 고민 해결을 위한 ${skinSupplements.length}개도 함께 확인해보세요.`;
   }
+  if (bodyTypeSupplements.length > 0) {
+    summary += ` 체형에 맞는 ${bodyTypeSupplements.length}개 영양제도 추천해요.`;
+  }
 
   return {
     goalSupplements,
     skinSupplements,
+    bodyTypeSupplements,
     allSupplements,
     summary,
   };
@@ -357,4 +450,4 @@ export function getTopSupplements(
 }
 
 // 상수 내보내기 (테스트용)
-export { GOAL_SUPPLEMENTS, SKIN_CONCERN_SUPPLEMENTS };
+export { GOAL_SUPPLEMENTS, SKIN_CONCERN_SUPPLEMENTS, BODY_TYPE_SUPPLEMENTS, BODY_TYPE_TO_CATEGORY };

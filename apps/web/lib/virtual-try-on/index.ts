@@ -31,3 +31,15 @@ export {
   EYESHADOW_PRESETS,
   FOUNDATION_PRESETS,
 } from './types';
+
+// 시즌 프리셋 (퍼스널컬러 연동)
+export type { PersonalColorSeason, SeasonPreset } from './season-presets';
+export {
+  getLipPresetsForSeason,
+  getBlushPresetsForSeason,
+  getEyeshadowPresetsForSeason,
+  getHairPresetsForSeason,
+  getFoundationPresetsForSeason,
+  getDefaultColorForSeason,
+  SEASON_LABELS,
+} from './season-presets';

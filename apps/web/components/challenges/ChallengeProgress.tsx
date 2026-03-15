@@ -102,9 +102,12 @@ export function ChallengeProgress({
                   data-testid={`day-indicator-${status}`}
                   className={cn(
                     'w-7 h-7 rounded-md flex items-center justify-center text-xs font-medium transition-colors',
-                    status === 'completed' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                    status === 'missed' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                    status === 'pending' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                    status === 'completed' &&
+                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    status === 'missed' &&
+                      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                    status === 'pending' &&
+                      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
                     status === 'future' && 'bg-muted text-muted-foreground'
                   )}
                   title={`${day}일차: ${getStatusLabel(status)}`}
@@ -128,7 +131,7 @@ export function ChallengeProgress({
         {missedDays.length > 0 && (
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-red-100 dark:bg-red-900/30" />
-            <span>실패 {missedDays.length}일</span>
+            <span>건너뜀 {missedDays.length}일</span>
           </div>
         )}
         <div className="flex items-center gap-1">
@@ -145,7 +148,7 @@ function getStatusLabel(status: 'completed' | 'missed' | 'pending' | 'future'): 
     case 'completed':
       return '완료';
     case 'missed':
-      return '실패';
+      return '건너뜀';
     case 'pending':
       return '대기중';
     case 'future':

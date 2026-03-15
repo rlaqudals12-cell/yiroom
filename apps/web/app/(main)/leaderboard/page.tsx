@@ -17,8 +17,8 @@ import Link from 'next/link';
 import { ArrowLeft, Trophy, Star, TrendingUp, Sparkles, Dumbbell, Utensils } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: '리더보드 | 이룸',
-  description: '다른 사용자들과 순위를 비교해보세요',
+  title: '나의 성장 | 이룸',
+  description: '나의 웰니스 여정과 성장 기록을 확인해보세요',
 };
 
 export default async function LeaderboardPage() {
@@ -63,33 +63,28 @@ export default async function LeaderboardPage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">리더보드</h1>
+        <h1 className="text-2xl font-bold">나의 성장</h1>
       </div>
 
-      {/* 내 순위 */}
+      {/* 나의 기록 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />내 순위
+            <TrendingUp className="h-5 w-5" />
+            나의 기록
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-around">
             <div className="text-center">
-              <div className="text-3xl font-bold">{myRank > 0 ? `${myRank}위` : '-'}</div>
-              <div className="text-sm text-muted-foreground">현재 순위</div>
-            </div>
-            <div className="text-center">
               <div className="text-3xl font-bold">{myScore.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">XP</div>
+              <div className="text-sm text-muted-foreground">누적 XP</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold">
-                {xpRankings.length > 0
-                  ? `상위 ${Math.round((myRank / xpRankings.length) * 100)}%`
-                  : '-'}
+                {xpRankings.length > 0 && myRank > 0 ? `${myRank}위` : '-'}
               </div>
-              <div className="text-sm text-muted-foreground">퍼센타일</div>
+              <div className="text-sm text-muted-foreground">현재 위치</div>
             </div>
           </div>
         </CardContent>
@@ -130,7 +125,7 @@ export default async function LeaderboardPage() {
             rankings={xpRankings}
             category="xp"
             currentUserId={userId}
-            title="경험치 랭킹"
+            title="경험치 기록"
           />
         </TabsContent>
 
@@ -139,7 +134,7 @@ export default async function LeaderboardPage() {
             rankings={levelRankings}
             category="level"
             currentUserId={userId}
-            title="레벨 랭킹"
+            title="레벨 현황"
           />
         </TabsContent>
 
@@ -148,7 +143,7 @@ export default async function LeaderboardPage() {
             rankings={wellnessRankings}
             category="wellness"
             currentUserId={userId}
-            title="웰니스 스코어 랭킹"
+            title="웰니스 스코어"
           />
         </TabsContent>
 
@@ -157,7 +152,7 @@ export default async function LeaderboardPage() {
             rankings={workoutRankings}
             category="workout"
             currentUserId={userId}
-            title="주간 운동 시간 랭킹"
+            title="주간 운동 시간"
           />
         </TabsContent>
 
@@ -166,7 +161,7 @@ export default async function LeaderboardPage() {
             rankings={nutritionRankings}
             category="nutrition"
             currentUserId={userId}
-            title="주간 목표 달성 랭킹"
+            title="주간 영양 기록"
           />
         </TabsContent>
       </Tabs>

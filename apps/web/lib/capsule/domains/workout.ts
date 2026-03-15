@@ -9,6 +9,11 @@ import type { CapsuleEngine } from '../engine';
 import type { BeautyProfile, Capsule, CompatibilityScore, CurateOptions } from '../types';
 import type { WorkoutPlan } from '../domain-types';
 import { MUSCLE_GROUP_SYNERGIES, MUSCLE_GROUP_CONFLICTS } from '../domain-types';
+import {
+  normalizeToBodyShape7,
+  mapBodyShape7ToBodyType,
+  BODY_TYPE_EXERCISE_PRIORITIES,
+} from '@/lib/body';
 
 const OPTIMAL_N: Record<number, number> = {
   1: 3, // 주 3회 기본 루틴
@@ -108,15 +113,28 @@ export const workoutEngine: CapsuleEngine<WorkoutPlan> = {
     return Math.max(0, Math.min(100, score));
   },
 
-  // C3: Personalization — 목표 기반 정렬
+  // C3: Personalization — 목표 + 체형 기반 정렬
   personalize(items: WorkoutPlan[], profile: BeautyProfile): WorkoutPlan[] {
-    if (!profile.workout) return items;
-    const { goals } = profile.workout;
+    if (!profile.workout && !profile.body?.shape) return items;
+    const goals = profile.workout?.goals ?? [];
+
+    // 체형 기반 집중 근육 그룹 추출
+    const bodyFocusGroups = getWorkoutBodyFocusGroups(profile.body?.shape);
 
     return [...items].sort((a, b) => {
-      const aFit = goals.some((g) => a.name.toLowerCase().includes(g.toLowerCase())) ? 1 : 0;
-      const bFit = goals.some((g) => b.name.toLowerCase().includes(g.toLowerCase())) ? 1 : 0;
-      return bFit - aFit;
+      // 목표 매칭 점수
+      const aGoalFit = goals.some((g) => a.name.toLowerCase().includes(g.toLowerCase())) ? 2 : 0;
+      const bGoalFit = goals.some((g) => b.name.toLowerCase().includes(g.toLowerCase())) ? 2 : 0;
+
+      // 체형 기반 근육 그룹 매칭 점수
+      const aBodyFit = a.muscleGroups.some((mg) => bodyFocusGroups.includes(mg.toLowerCase()))
+        ? 1
+        : 0;
+      const bBodyFit = b.muscleGroups.some((mg) => bodyFocusGroups.includes(mg.toLowerCase()))
+        ? 1
+        : 0;
+
+      return bGoalFit + bBodyFit - (aGoalFit + aBodyFit);
     });
   },
 
@@ -143,3 +161,13 @@ export const workoutEngine: CapsuleEngine<WorkoutPlan> = {
     });
   },
 };
+
+// 체형 문자열 → 운동 집중 근육 그룹 추출
+function getWorkoutBodyFocusGroups(shape?: string): string[] {
+  if (!shape) return [];
+  const shape7 = normalizeToBodyShape7(shape);
+  if (!shape7) return [];
+  const bodyType = mapBodyShape7ToBodyType(shape7);
+  const priorities = BODY_TYPE_EXERCISE_PRIORITIES[bodyType];
+  return priorities?.focusAreas ?? [];
+}

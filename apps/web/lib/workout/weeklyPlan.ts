@@ -20,6 +20,12 @@ import type {
 import { getAllExercises } from './exercises';
 import { getRecommendedRepsAndSets, calculateRecommendedWeight } from './calculations';
 import { calculateCaloriesWithMET } from './calorieCalculations';
+import {
+  BODY_TYPE_EXERCISE_PRIORITIES,
+  normalizeToBodyShape7,
+  mapBodyShape7ToBodyType,
+} from '@/lib/body';
+import type { BodyType } from '@/lib/body';
 
 // ============================================
 // 타입 정의
@@ -46,6 +52,8 @@ export interface WeeklyPlanInput {
   equipment: string[];
   injuries: string[];
   userWeight?: number;
+  /** C-1 체형 타입 (8-Type 레터형: X/A/V/H/O/I/Y/8) — 체형 기반 운동 우선순위 반영 */
+  bodyType?: string;
 }
 
 // ============================================
@@ -56,43 +64,157 @@ export interface WeeklyPlanInput {
 const WEEKLY_SPLIT_TEMPLATES: Record<string, DayFocus[]> = {
   // 주 1-2회: 전신 2일
   '1-2': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'back', 'shoulder', 'arm'], categories: ['upper'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'shoulder', 'arm'],
+      categories: ['upper'],
+    },
     { day: 'tue', dayLabel: '화요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'wed', dayLabel: '수요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['thigh', 'hip', 'calf', 'abs'], categories: ['lower', 'core'] },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'hip', 'calf', 'abs'],
+      categories: ['lower', 'core'],
+    },
     { day: 'fri', dayLabel: '금요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'sat', dayLabel: '토요일', isRestDay: true, bodyParts: [], categories: [] },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 주 3-4회: 상체/하체/전신 분할
   '3-4': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'shoulder', 'arm'], categories: ['upper'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'shoulder', 'arm'],
+      categories: ['upper'],
+    },
     { day: 'tue', dayLabel: '화요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'hip', 'calf'], categories: ['lower'] },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'hip', 'calf'],
+      categories: ['lower'],
+    },
     { day: 'thu', dayLabel: '목요일', isRestDay: true, bodyParts: [], categories: [] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['abs', 'waist', 'back'], categories: ['core', 'upper'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'thigh', 'hip', 'abs'], categories: ['cardio'] },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['abs', 'waist', 'back'],
+      categories: ['core', 'upper'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'thigh', 'hip', 'abs'],
+      categories: ['cardio'],
+    },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 주 5-6회: 세분화된 분할
   '5-6': [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'arm'], categories: ['upper'] },
-    { day: 'tue', dayLabel: '화요일', isRestDay: false, bodyParts: ['back', 'arm'], categories: ['upper'] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'calf'], categories: ['lower'] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['shoulder', 'abs'], categories: ['upper', 'core'] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['hip', 'thigh'], categories: ['lower'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'abs'], categories: ['cardio', 'core'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'tue',
+      dayLabel: '화요일',
+      isRestDay: false,
+      bodyParts: ['back', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'calf'],
+      categories: ['lower'],
+    },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['shoulder', 'abs'],
+      categories: ['upper', 'core'],
+    },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['hip', 'thigh'],
+      categories: ['lower'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'abs'],
+      categories: ['cardio', 'core'],
+    },
     { day: 'sun', dayLabel: '일요일', isRestDay: true, bodyParts: [], categories: [] },
   ],
   // 매일
   daily: [
-    { day: 'mon', dayLabel: '월요일', isRestDay: false, bodyParts: ['chest', 'arm'], categories: ['upper'] },
-    { day: 'tue', dayLabel: '화요일', isRestDay: false, bodyParts: ['back', 'arm'], categories: ['upper'] },
-    { day: 'wed', dayLabel: '수요일', isRestDay: false, bodyParts: ['thigh', 'calf'], categories: ['lower'] },
-    { day: 'thu', dayLabel: '목요일', isRestDay: false, bodyParts: ['shoulder', 'abs'], categories: ['upper', 'core'] },
-    { day: 'fri', dayLabel: '금요일', isRestDay: false, bodyParts: ['hip', 'thigh'], categories: ['lower'] },
-    { day: 'sat', dayLabel: '토요일', isRestDay: false, bodyParts: ['chest', 'back', 'thigh'], categories: ['cardio'] },
-    { day: 'sun', dayLabel: '일요일', isRestDay: false, bodyParts: ['abs', 'waist'], categories: ['core'] },
+    {
+      day: 'mon',
+      dayLabel: '월요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'tue',
+      dayLabel: '화요일',
+      isRestDay: false,
+      bodyParts: ['back', 'arm'],
+      categories: ['upper'],
+    },
+    {
+      day: 'wed',
+      dayLabel: '수요일',
+      isRestDay: false,
+      bodyParts: ['thigh', 'calf'],
+      categories: ['lower'],
+    },
+    {
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: false,
+      bodyParts: ['shoulder', 'abs'],
+      categories: ['upper', 'core'],
+    },
+    {
+      day: 'fri',
+      dayLabel: '금요일',
+      isRestDay: false,
+      bodyParts: ['hip', 'thigh'],
+      categories: ['lower'],
+    },
+    {
+      day: 'sat',
+      dayLabel: '토요일',
+      isRestDay: false,
+      bodyParts: ['chest', 'back', 'thigh'],
+      categories: ['cardio'],
+    },
+    {
+      day: 'sun',
+      dayLabel: '일요일',
+      isRestDay: false,
+      bodyParts: ['abs', 'waist'],
+      categories: ['core'],
+    },
   ],
 };
 
@@ -120,7 +242,16 @@ const CONCERN_TO_BODY_PARTS: Record<string, BodyPart[]> = {
 /** 장소별 장비 필터 */
 const LOCATION_EQUIPMENT_FILTER: Record<string, string[]> = {
   home: ['bodyweight', 'dumbbell', 'band', 'mat', 'kettlebell'],
-  gym: ['bodyweight', 'dumbbell', 'barbell', 'machine', 'cable', 'cardio_machine', 'pull_up_bar', 'kettlebell'],
+  gym: [
+    'bodyweight',
+    'dumbbell',
+    'barbell',
+    'machine',
+    'cable',
+    'cardio_machine',
+    'pull_up_bar',
+    'kettlebell',
+  ],
   outdoor: ['bodyweight'],
 };
 
@@ -145,15 +276,14 @@ export function filterExercises(
   injuries: string[]
 ): Exercise[] {
   // 사용자 장비가 비어있으면 장소 기반 기본 장비 사용
-  const userEquipment = equipment.length > 0
-    ? equipment
-    : LOCATION_EQUIPMENT_FILTER[location] || ['bodyweight'];
+  const userEquipment =
+    equipment.length > 0 ? equipment : LOCATION_EQUIPMENT_FILTER[location] || ['bodyweight'];
 
   return exercises.filter((ex) => {
     // 장비 필터: 운동에 필요한 장비가 사용자가 가진 장비에 포함되어야 함
     // 장비가 필요 없는 운동(equipment: [])은 항상 포함
-    const hasEquipment = ex.equipment.length === 0 ||
-      ex.equipment.some((eq) => userEquipment.includes(eq));
+    const hasEquipment =
+      ex.equipment.length === 0 || ex.equipment.some((eq) => userEquipment.includes(eq));
 
     if (!hasEquipment) return false;
 
@@ -255,8 +385,15 @@ export function calculateExerciseDetails(
 
   // 무게 추천 (웨이트 운동인 경우)
   let weight: number | undefined;
-  if (exercise.equipment.some((eq) => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))) {
-    const weightRec = calculateRecommendedWeight(userWeight, exercise.category, exercise.difficulty, goal);
+  if (
+    exercise.equipment.some((eq) => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))
+  ) {
+    const weightRec = calculateRecommendedWeight(
+      userWeight,
+      exercise.category,
+      exercise.difficulty,
+      goal
+    );
     weight = weightRec.recommendedWeight;
   }
 
@@ -267,6 +404,33 @@ export function calculateExerciseDetails(
     estimatedCalories: Math.round(estimatedCalories),
     estimatedMinutes: Math.round(totalMinutes),
     weight,
+  };
+}
+
+// 체형 문자열(8-Type 또는 7-Type)에서 운동 우선순위 추출
+function resolveBodyTypePriorities(bodyTypeInput?: string): {
+  focusAreas: string[];
+  cardioBoost: boolean;
+} {
+  if (!bodyTypeInput) return { focusAreas: [], cardioBoost: false };
+
+  // 8-Type 직접 접근 → 실패 시 7-Type 정규화 체인
+  let resolvedType: BodyType | null = null;
+  if (bodyTypeInput in BODY_TYPE_EXERCISE_PRIORITIES) {
+    resolvedType = bodyTypeInput as BodyType;
+  } else {
+    const shape7 = normalizeToBodyShape7(bodyTypeInput);
+    if (shape7) resolvedType = mapBodyShape7ToBodyType(shape7);
+  }
+
+  if (!resolvedType) return { focusAreas: [], cardioBoost: false };
+
+  const priorities = BODY_TYPE_EXERCISE_PRIORITIES[resolvedType];
+  if (!priorities) return { focusAreas: [], cardioBoost: false };
+
+  return {
+    focusAreas: [...priorities.focusAreas],
+    cardioBoost: priorities.cardioEmphasis === 'high',
   };
 }
 
@@ -302,7 +466,18 @@ export function generateDayPlan(
 
   // 고민 부위 추가
   const concernBodyParts = input.concerns.flatMap((c) => CONCERN_TO_BODY_PARTS[c] || []);
-  const allBodyParts = [...new Set([...dayFocus.bodyParts, ...concernBodyParts])];
+
+  // C-1 체형 기반 집중 부위 + 유산소 비중 반영
+  const { focusAreas: bodyTypeFocusAreas, cardioBoost } = resolveBodyTypePriorities(input.bodyType);
+
+  // 유산소 강조 체형이면 cardio 카테고리 운동 부위 보강
+  if (cardioBoost && !dayFocus.categories.includes('cardio')) {
+    bodyTypeFocusAreas.push('cardio');
+  }
+
+  const allBodyParts = [
+    ...new Set([...dayFocus.bodyParts, ...concernBodyParts, ...bodyTypeFocusAreas]),
+  ];
 
   // 운동 선택
   const selectedExercises = selectExercisesForBodyParts(
@@ -364,6 +539,8 @@ export function createWeeklyPlanFromInput(
     equipment: inputData.equipment,
     injuries: inputData.injuries,
     userWeight,
+    // C-1 체형 타입 자동 전달 (체형별 운동 부위 우선순위 반영)
+    bodyType: inputData.bodyTypeData?.type,
   };
 
   const days = generateWeeklyPlan(input);

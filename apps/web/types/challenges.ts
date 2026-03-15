@@ -14,7 +14,7 @@ export type ChallengeDomain = 'workout' | 'nutrition' | 'skin' | 'combined';
 export type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
 
 /** 챌린지 상태 */
-export type ChallengeStatus = 'in_progress' | 'completed' | 'failed' | 'abandoned';
+export type ChallengeStatus = 'in_progress' | 'completed' | 'failed' | 'expired' | 'abandoned';
 
 // ============================================================
 // 챌린지 목표 타입 (JSONB target 필드)
@@ -208,28 +208,29 @@ export const DOMAIN_NAMES: Record<ChallengeDomain, string> = {
 };
 
 /** 도메인별 색상 */
-export const DOMAIN_COLORS: Record<ChallengeDomain, { bg: string; text: string; border: string }> = {
-  workout: {
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    border: 'border-orange-300',
-  },
-  nutrition: {
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    border: 'border-green-300',
-  },
-  skin: {
-    bg: 'bg-pink-100',
-    text: 'text-pink-700',
-    border: 'border-pink-300',
-  },
-  combined: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    border: 'border-purple-300',
-  },
-};
+export const DOMAIN_COLORS: Record<ChallengeDomain, { bg: string; text: string; border: string }> =
+  {
+    workout: {
+      bg: 'bg-orange-100',
+      text: 'text-orange-700',
+      border: 'border-orange-300',
+    },
+    nutrition: {
+      bg: 'bg-green-100',
+      text: 'text-green-700',
+      border: 'border-green-300',
+    },
+    skin: {
+      bg: 'bg-pink-100',
+      text: 'text-pink-700',
+      border: 'border-pink-300',
+    },
+    combined: {
+      bg: 'bg-purple-100',
+      text: 'text-purple-700',
+      border: 'border-purple-300',
+    },
+  };
 
 /** 난이도별 이름 */
 export const DIFFICULTY_NAMES: Record<ChallengeDifficulty, string> = {
@@ -259,6 +260,7 @@ export const STATUS_NAMES: Record<ChallengeStatus, string> = {
   in_progress: '진행 중',
   completed: '완료',
   failed: '실패',
+  expired: '기간 만료',
   abandoned: '포기',
 };
 

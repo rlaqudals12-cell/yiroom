@@ -231,6 +231,7 @@ describe('ProfilePage', () => {
         inProgress: 1,
         completed: 2,
         failed: 0,
+        expired: 0,
         abandoned: 0,
       });
 
@@ -370,6 +371,7 @@ describe('ProfilePage', () => {
         inProgress: 2,
         completed: 3,
         failed: 0,
+        expired: 0,
         abandoned: 0,
       });
 
@@ -415,6 +417,7 @@ describe('ProfilePage', () => {
         inProgress: 0,
         completed: 0,
         failed: 0,
+        expired: 0,
         abandoned: 0,
       });
     });
@@ -483,6 +486,7 @@ describe('ProfilePage', () => {
         inProgress: 0,
         completed: 0,
         failed: 0,
+        expired: 0,
         abandoned: 0,
       });
     });

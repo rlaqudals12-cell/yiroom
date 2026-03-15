@@ -252,6 +252,7 @@ export interface ChallengeStats {
   inProgress: number;
   completed: number;
   failed: number;
+  expired: number;
   abandoned: number;
 }
 
@@ -271,6 +272,7 @@ export async function getUserChallengeStats(
       inProgress: 0,
       completed: 0,
       failed: 0,
+      expired: 0,
       abandoned: 0,
     };
   }
@@ -280,6 +282,7 @@ export async function getUserChallengeStats(
     inProgress: 0,
     completed: 0,
     failed: 0,
+    expired: 0,
     abandoned: 0,
   };
 
@@ -293,6 +296,9 @@ export async function getUserChallengeStats(
         break;
       case 'failed':
         stats.failed++;
+        break;
+      case 'expired':
+        stats.expired++;
         break;
       case 'abandoned':
         stats.abandoned++;

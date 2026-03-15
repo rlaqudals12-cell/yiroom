@@ -35,15 +35,23 @@ export type { RDAGender, NutrientId, NutrientRDA, GenderRDA, RDADatabase } from 
 
 export {
   calculateBMR,
+  calculateBMRWithBodyType,
   calculateTDEE,
   calculateEnergyExpenditure,
   ACTIVITY_MULTIPLIERS,
   ACTIVITY_LEVEL_LABELS,
+  BODY_TYPE_BMR_CORRECTION,
   verifyMifflinStJeorFormula,
   validateProfile,
 } from './bmr-calculator';
 
-export type { Gender, ActivityLevel, UserProfile, EnergyExpenditureResult } from './bmr-calculator';
+export type {
+  Gender,
+  ActivityLevel,
+  UserProfile,
+  EnergyExpenditureResult,
+  BMRBodyType,
+} from './bmr-calculator';
 
 // ============================================
 // 영양소 시너지/길항 매트릭스
@@ -288,5 +296,6 @@ export { getSupplementRecommendations, getTopSupplements } from './supplementIns
 export type {
   SupplementRecommendation,
   SkinConcern,
+  BodyTypeCategory,
   SupplementInsightResult,
 } from './supplementInsight';

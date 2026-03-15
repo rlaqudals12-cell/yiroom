@@ -8,6 +8,7 @@
 
 import { Exercise, BodyType } from '@/types/workout';
 import { PostureType } from '@/lib/mock/posture-analysis';
+import { BODY_TYPE_EXERCISE_PRIORITIES } from '@/lib/body';
 import { getExerciseById, getAllExercises } from './exercises';
 
 // 체력 수준
@@ -255,6 +256,16 @@ export function generateBest5(
 /**
  * 추천 이유 생성
  */
+// 목표-카테고리별 추천 이유 매핑
+const GOAL_REASONS: Array<{ goal: ExerciseGoal; check: (e: Exercise) => boolean; reason: string }> =
+  [
+    { goal: 'weight_loss', check: (e) => e.caloriesPerMinute > 8, reason: '높은 칼로리 소모' },
+    { goal: 'muscle_gain', check: (e) => e.category === 'upper', reason: '상체 근력 강화' },
+    { goal: 'muscle_gain', check: (e) => e.category === 'lower', reason: '하체 근력 강화' },
+    { goal: 'flexibility', check: (e) => e.style === 'stretching', reason: '유연성 향상' },
+    { goal: 'endurance', check: (e) => e.category === 'cardio', reason: '심폐지구력 향상' },
+  ];
+
 function getRecommendationReason(
   exercise: Exercise,
   goal: ExerciseGoal,
@@ -266,26 +277,24 @@ function getRecommendationReason(
 ): string {
   const reasons: string[] = [];
 
-  // 목표별 이유
-  if (goal === 'weight_loss' && exercise.caloriesPerMinute > 8) {
-    reasons.push('높은 칼로리 소모');
-  }
-  if (goal === 'muscle_gain' && exercise.category === 'upper') {
-    reasons.push('상체 근력 강화');
-  }
-  if (goal === 'muscle_gain' && exercise.category === 'lower') {
-    reasons.push('하체 근력 강화');
-  }
-  if (goal === 'flexibility' && exercise.style === 'stretching') {
-    reasons.push('유연성 향상');
-  }
-  if (goal === 'endurance' && exercise.category === 'cardio') {
-    reasons.push('심폐지구력 향상');
+  // 목표별 이유 (데이터 기반)
+  for (const entry of GOAL_REASONS) {
+    if (entry.goal === goal && entry.check(exercise)) {
+      reasons.push(entry.reason);
+    }
   }
 
   // 난이도 적합성
   if (userProfile?.fitnessLevel === 'beginner' && exercise.difficulty === 'beginner') {
     reasons.push('초보자에게 적합');
+  }
+
+  // 체형 기반 추천 이유
+  if (userProfile?.bodyType) {
+    const priorities = BODY_TYPE_EXERCISE_PRIORITIES[userProfile.bodyType];
+    if (priorities?.focusAreas.includes(exercise.category)) {
+      reasons.push('체형에 맞는 부위 강화');
+    }
   }
 
   // 기본 이유
@@ -388,6 +397,25 @@ function calculateExerciseScore(
   }
   if (userProfile?.fitnessLevel === 'advanced' && exercise.difficulty === 'advanced') {
     score += 5;
+  }
+
+  // 체형 기반 운동 적합성 점수
+  if (userProfile?.bodyType) {
+    const priorities = BODY_TYPE_EXERCISE_PRIORITIES[userProfile.bodyType];
+    if (priorities) {
+      // 집중 부위 매칭 시 +8점
+      if (priorities.focusAreas.includes(exercise.category)) {
+        score += 8;
+      }
+      // 과부하 회피 부위는 -3점
+      if (priorities.avoidOverloading.includes(exercise.category)) {
+        score -= 3;
+      }
+      // 유산소 강조 체형에서 유산소 운동 보너스
+      if (priorities.cardioEmphasis === 'high' && exercise.category === 'cardio') {
+        score += 5;
+      }
+    }
   }
 
   return score;

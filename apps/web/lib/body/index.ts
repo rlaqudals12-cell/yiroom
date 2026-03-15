@@ -64,11 +64,7 @@ export {
 
 // 체형 분류 함수 export
 export type { ClassifyInput } from './classify';
-export {
-  classifyBodyType,
-  classifyBodyTypeFromRatios,
-  calculateAllRatios,
-} from './classify';
+export { classifyBodyType, classifyBodyTypeFromRatios, calculateAllRatios } from './classify';
 
 // 한국인 표준 데이터 및 정규화 함수 export
 export {
@@ -132,6 +128,23 @@ export {
   cobbAngleToSymmetry,
   symmetryToCobbAngle,
 } from './posture-score';
+
+// ============================================
+// 체형 타입 통합 매퍼 (7-Type ↔ 8-Type ↔ 3-Type)
+// ============================================
+
+export type { BodyType, BodyType3 } from './mapper';
+
+export {
+  mapBodyShape7ToBodyType,
+  mapBodyShape7ToBodyType3,
+  mapBodyTypeTo3Type,
+  normalizeToBodyShape7,
+  BODY_SHAPE7_LABELS,
+  BODY_TYPE_LABELS,
+  BODY_TYPE3_LABELS,
+  BODY_TYPE_EXERCISE_PRIORITIES,
+} from './mapper';
 
 // ============================================
 // K-3: BMI 계산기 (아시아 기준) export

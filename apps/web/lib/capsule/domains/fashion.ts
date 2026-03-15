@@ -9,6 +9,49 @@ import type { CapsuleEngine } from '../engine';
 import type { BeautyProfile, Capsule, CompatibilityScore, CurateOptions } from '../types';
 import type { FashionItem } from '../domain-types';
 import { COLOR_HARMONY_GROUPS, SILHOUETTE_HARMONY } from '../domain-types';
+import { mapBodyShape7ToBodyType3, normalizeToBodyShape7 } from '@/lib/body';
+import type { BodyType3 } from '@/lib/body';
+
+/**
+ * BodyType3별 선호 실루엣/카테고리 매핑
+ *
+ * 근거: docs/principles/fashion-matching.md
+ * - S(스트레이트): 직선적 실루엣, 구조적 상의, 핏한 하의
+ * - W(웨이브): 핏+플레어 실루엣, 부드러운 상의, 하이웨스트 하의
+ * - N(내추럴): 오버사이즈/릴렉스 실루엣, 루즈한 상의, 와이드 하의
+ */
+const BODY_TYPE3_SILHOUETTE_PREFERENCE: Record<
+  BodyType3,
+  {
+    silhouettes: string[];
+    categoryPreference: Partial<Record<FashionItem['category'], string[]>>;
+  }
+> = {
+  S: {
+    silhouettes: ['straight', 'tailored', 'structured', 'fitted', 'slim'],
+    categoryPreference: {
+      top: ['structured', 'tailored', 'crisp'],
+      bottom: ['fitted', 'straight', 'slim'],
+      outer: ['structured', 'tailored'],
+    },
+  },
+  W: {
+    silhouettes: ['fitted', 'flared', 'peplum', 'a-line', 'wrap'],
+    categoryPreference: {
+      top: ['soft', 'fitted', 'peplum', 'wrap'],
+      bottom: ['high-waist', 'flared', 'a-line'],
+      outer: ['cropped', 'fitted'],
+    },
+  },
+  N: {
+    silhouettes: ['oversized', 'relaxed', 'loose', 'boxy', 'dropped'],
+    categoryPreference: {
+      top: ['loose', 'oversized', 'boxy', 'dropped-shoulder'],
+      bottom: ['wide', 'relaxed', 'straight'],
+      outer: ['oversized', 'long', 'relaxed'],
+    },
+  },
+};
 
 // 개인화 레벨별 최적 N (캡슐 워드로브)
 const OPTIMAL_N: Record<number, number> = {
@@ -94,14 +137,24 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
   // ==========================================================================
 
   personalize(items: FashionItem[], profile: BeautyProfile): FashionItem[] {
-    if (!profile.personalColor) return items;
+    if (!profile.personalColor && !profile.body?.shape) return items;
 
-    const { season, palette } = profile.personalColor;
+    const season = profile.personalColor?.season;
+    const palette = profile.personalColor?.palette ?? [];
+
+    // 체형 → BodyType3 변환 (유효한 경우만)
+    const bodyType3 = resolveBodyType3(profile.body?.shape);
 
     return [...items].sort((a, b) => {
-      const aFit = calculateFashionFit(a, season, palette);
-      const bFit = calculateFashionFit(b, season, palette);
-      return bFit - aFit;
+      // 퍼스널컬러 적합도 (0-100)
+      const aColorFit = season ? calculateFashionFit(a, season, palette) : 50;
+      const bColorFit = season ? calculateFashionFit(b, season, palette) : 50;
+
+      // 체형 적합도 (0-30)
+      const aBodyFit = bodyType3 ? calculateBodyTypeFit(a, bodyType3) : 0;
+      const bBodyFit = bodyType3 ? calculateBodyTypeFit(b, bodyType3) : 0;
+
+      return bColorFit + bBodyFit - (aColorFit + aBodyFit);
     });
   },
 
@@ -198,6 +251,46 @@ function getSilhouetteScore(s1: string, s2: string): number {
   }
 
   return 0;
+}
+
+/**
+ * 체형 문자열 → BodyType3 변환
+ * profile.body.shape가 유효한 BodyShape7이 아니면 null 반환
+ */
+function resolveBodyType3(shape?: string): BodyType3 | null {
+  if (!shape) return null;
+  const shape7 = normalizeToBodyShape7(shape);
+  if (!shape7) return null;
+  return mapBodyShape7ToBodyType3(shape7);
+}
+
+/**
+ * 체형 적합도 계산 (0-30)
+ *
+ * 실루엣 매칭 (0-20) + 카테고리별 선호도 매칭 (0-10)
+ */
+function calculateBodyTypeFit(item: FashionItem, bodyType3: BodyType3): number {
+  const pref = BODY_TYPE3_SILHOUETTE_PREFERENCE[bodyType3];
+  let score = 0;
+
+  // 1) 실루엣 매칭 (+0~20)
+  if (item.silhouette) {
+    const itemSil = item.silhouette.toLowerCase();
+    if (pref.silhouettes.some((s) => itemSil.includes(s) || s.includes(itemSil))) {
+      score += 20;
+    }
+  }
+
+  // 2) 카테고리별 선호 키워드 매칭 (+0~10)
+  const catPref = pref.categoryPreference[item.category];
+  if (catPref && item.silhouette) {
+    const itemSil = item.silhouette.toLowerCase();
+    if (catPref.some((kw) => itemSil.includes(kw) || kw.includes(itemSil))) {
+      score += 10;
+    }
+  }
+
+  return score;
 }
 
 /**

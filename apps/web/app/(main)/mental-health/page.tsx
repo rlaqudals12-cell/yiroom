@@ -115,8 +115,8 @@ export default function MentalHealthPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground">마음 체크인</h1>
-          <p className="text-muted-foreground mt-1">오늘의 컨디션을 기록해보세요</p>
+          <h1 className="text-2xl font-bold text-foreground">컨디션 체크인</h1>
+          <p className="text-muted-foreground mt-1">컨디션과 피부 변화의 연결을 발견해보세요</p>
         </header>
 
         {/* 연속 체크인 배지 */}
@@ -126,8 +126,8 @@ export default function MentalHealthPage() {
               <Flame className="w-5 h-5 text-orange-500" />
             </div>
             <div>
-              <p className="font-medium text-foreground">{todayData.streak}일 연속 체크인!</p>
-              <p className="text-xs text-muted-foreground">꾸준함이 건강의 시작이에요</p>
+              <p className="font-medium text-foreground">{todayData.streak}일째 체크인 중</p>
+              <p className="text-xs text-muted-foreground">기록이 쌓이면 패턴이 보여요</p>
             </div>
           </div>
         )}
@@ -155,7 +155,7 @@ export default function MentalHealthPage() {
                 <CardDescription>
                   {todayData?.hasCheckin
                     ? '수정하고 싶다면 다시 입력해주세요'
-                    : '하루 한 번, 나의 상태를 기록해보세요'}
+                    : '스트레스와 수면이 피부에 어떤 영향을 주는지 알아보세요'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -237,9 +237,9 @@ export default function MentalHealthPage() {
 
         {/* 면책 조항 */}
         <p className="text-xs text-muted-foreground text-center mt-6 px-4">
-          ⚠️ 이 기능은 자가 기록 용도이며, 의료 진단이나 치료를 대체하지 않습니다.
+          이 기능은 컨디션-피부 상관관계 파악을 위한 자가 기록 도구예요.
           <br />
-          심각한 정신건강 문제가 있다면 전문가와 상담하세요.
+          의료 진단이나 치료를 대체하지 않습니다.
         </p>
       </div>
     </div>

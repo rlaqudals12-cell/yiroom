@@ -109,12 +109,12 @@ describe('N-1 Streak 계산 유틸리티', () => {
   });
 
   describe('calculateCurrentStreak', () => {
-    it('마지막 기록일이 없으면 0을 반환한다', () => {
-      expect(calculateCurrentStreak(null, 5)).toBe(0);
+    it('마지막 기록일이 없어도 누적 기록을 유지한다', () => {
+      expect(calculateCurrentStreak(null, 5)).toBe(5);
     });
 
-    it('streak이 끊겼으면 0을 반환한다', () => {
-      expect(calculateCurrentStreak('2025-12-01', 10)).toBe(0);
+    it('streak이 끊겨도 누적 기록을 유지한다', () => {
+      expect(calculateCurrentStreak('2025-12-01', 10)).toBe(10);
     });
 
     it('streak이 유지되면 현재 streak을 반환한다', () => {
@@ -255,7 +255,7 @@ describe('N-1 Streak 계산 유틸리티', () => {
       expect(getStreakMessage(streak)).toBe('오늘 식단 기록을 시작해보세요!');
     });
 
-    it('마일스톤 달성 직전 메시지를 반환한다', () => {
+    it('6일 기록 시 누적 메시지를 반환한다', () => {
       const streak: NutritionStreak = {
         id: '1',
         userId: 'user1',
@@ -267,22 +267,7 @@ describe('N-1 Streak 계산 유틸리티', () => {
       };
 
       const message = getStreakMessage(streak);
-      expect(message).toContain('7일 연속');
-    });
-
-    it('마일스톤 달성 직전 메시지에 보상 정보가 포함된다', () => {
-      const streak: NutritionStreak = {
-        id: '1',
-        userId: 'user1',
-        currentStreak: 6,
-        longestStreak: 6,
-        badgesEarned: ['3day'],
-        premiumRewardsClaimed: [],
-        updatedAt: '',
-      };
-
-      const message = getStreakMessage(streak);
-      expect(message).toContain('프리미엄 인사이트 리포트 획득');
+      expect(message).toContain('6일');
     });
 
     it('마일스톤 달성 메시지를 반환한다', () => {
@@ -297,7 +282,7 @@ describe('N-1 Streak 계산 유틸리티', () => {
       };
 
       const message = getStreakMessage(streak);
-      expect(message).toContain('7일 연속 달성');
+      expect(message).toContain('7일 기록 달성');
     });
 
     it('일반 연속 메시지를 반환한다', () => {
@@ -373,7 +358,7 @@ describe('N-1 Streak 계산 유틸리티', () => {
       expect(getReEngagementMessage(null)).toContain('첫 식단');
     });
 
-    it('이전 최장 기록이 있으면 언급한다', () => {
+    it('누적 기록이 없으면 시작 안내를 반환한다', () => {
       const streak: NutritionStreak = {
         id: '1',
         userId: 'user1',
@@ -385,14 +370,14 @@ describe('N-1 Streak 계산 유틸리티', () => {
       };
 
       const message = getReEngagementMessage(streak);
-      expect(message).toContain('10일');
+      expect(message).toContain('언제든');
     });
 
-    it('최장 기록이 3일 미만이면 일반 시작 메시지를 반환한다', () => {
+    it('누적 기록이 적으면 시작 안내를 반환한다', () => {
       const streak: NutritionStreak = {
         id: '1',
         userId: 'user1',
-        currentStreak: 0,
+        currentStreak: 2,
         longestStreak: 2,
         badgesEarned: [],
         premiumRewardsClaimed: [],
@@ -400,32 +385,32 @@ describe('N-1 Streak 계산 유틸리티', () => {
       };
 
       const message = getReEngagementMessage(streak);
-      expect(message).toContain('새로운');
+      expect(message).toContain('언제든');
     });
   });
 
   describe('getMilestoneAchievementMessage', () => {
     it('3일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(3);
-      expect(message).toContain('3일 연속');
+      expect(message).toContain('3일 기록');
       expect(message).toContain('🌱');
     });
 
     it('7일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(7);
-      expect(message).toContain('7일 연속');
-      expect(message).toContain('🔥');
+      expect(message).toContain('7일 기록');
+      expect(message).toContain('🌿');
     });
 
     it('30일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(30);
-      expect(message).toContain('30일 연속');
+      expect(message).toContain('30일 기록');
       expect(message).toContain('🏆');
     });
 
     it('정의되지 않은 마일스톤도 기본 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(50);
-      expect(message).toContain('50일 연속');
+      expect(message).toContain('50일 기록');
     });
   });
 
@@ -465,7 +450,7 @@ describe('N-1 Streak 계산 유틸리티', () => {
       expect(summary.badges).toEqual(['3day']);
     });
 
-    it('끊긴 streak 요약을 올바르게 반환한다', () => {
+    it('끊긴 streak도 누적 기록을 유지한다', () => {
       const streak: NutritionStreak = {
         id: '1',
         userId: 'user1',
@@ -479,10 +464,10 @@ describe('N-1 Streak 계산 유틸리티', () => {
 
       const summary = getStreakSummary(streak);
 
-      expect(summary.currentStreak).toBe(0);
+      expect(summary.currentStreak).toBe(5);
       expect(summary.longestStreak).toBe(10);
       expect(summary.isActive).toBe(false);
-      expect(summary.message).toContain('10일');
+      expect(summary.message).toContain('기록');
     });
 
     it('오늘 기록한 streak은 활성 상태다', () => {

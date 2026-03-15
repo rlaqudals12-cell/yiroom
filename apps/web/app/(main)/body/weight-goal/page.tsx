@@ -248,10 +248,10 @@ export default function WeightGoalTrackingPage() {
             <div className="mb-6 pt-8">
               <BMIGauge bmi={bmiResult.value} category={bmiResult.category} />
               <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                <span>저체중</span>
-                <span>정상</span>
-                <span>과체중</span>
-                <span>비만</span>
+                <span>가벼운 편</span>
+                <span>균형 구간</span>
+                <span>여유 있는 편</span>
+                <span>높은 편</span>
               </div>
             </div>
 
@@ -259,17 +259,21 @@ export default function WeightGoalTrackingPage() {
             <div
               className={cn(
                 'text-center p-4 rounded-xl mb-4',
-                selectByKey(bmiResult.category, {
-                  normal: 'bg-green-50 dark:bg-green-900/20',
-                  underweight: 'bg-blue-50 dark:bg-blue-900/20',
-                }, 'bg-orange-50 dark:bg-orange-900/20')
+                selectByKey(
+                  bmiResult.category,
+                  {
+                    normal: 'bg-green-50 dark:bg-green-900/20',
+                    underweight: 'bg-blue-50 dark:bg-blue-900/20',
+                  },
+                  'bg-orange-50 dark:bg-orange-900/20'
+                )
               )}
             >
               <p className="text-2xl font-bold" style={{ color: getBMIColor(bmiResult.category) }}>
                 {bmiResult.categoryLabel}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                BMI {bmiResult.value} (정상 범위: 18.5-22.9)
+                BMI {bmiResult.value} (참고 균형 구간: 18.5-22.9)
               </p>
             </div>
 
@@ -291,22 +295,22 @@ export default function WeightGoalTrackingPage() {
                   <>
                     <TrendingDown className="w-4 h-4 text-orange-500" />
                     <span className="text-sm">
-                      이상 체중까지{' '}
+                      균형 구간까지{' '}
                       <span className="font-bold text-orange-600">
-                        {Math.abs(bmiResult.weightDifference)}kg 감량
+                        약 {Math.abs(bmiResult.weightDifference)}kg
                       </span>{' '}
-                      필요
+                      줄여볼 수 있어요
                     </span>
                   </>
                 ) : (
                   <>
                     <TrendingUp className="w-4 h-4 text-blue-500" />
                     <span className="text-sm">
-                      이상 체중까지{' '}
+                      균형 구간까지{' '}
                       <span className="font-bold text-blue-600">
-                        {Math.abs(bmiResult.weightDifference)}kg 증량
+                        약 {Math.abs(bmiResult.weightDifference)}kg
                       </span>{' '}
-                      필요
+                      늘려볼 수 있어요
                     </span>
                   </>
                 )}
@@ -356,10 +360,14 @@ export default function WeightGoalTrackingPage() {
                   {(() => {
                     const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
                     const direction = getTrendDirection(diff);
-                    return selectByKey(direction, {
-                      up: `${diff.toFixed(1)}kg 더 감량하면 목표 달성!`,
-                      down: `${(-diff).toFixed(1)}kg 더 증량하면 목표 달성!`,
-                    }, '목표를 달성했어요!');
+                    return selectByKey(
+                      direction,
+                      {
+                        up: `목표까지 약 ${diff.toFixed(1)}kg 남았어요`,
+                        down: `목표까지 약 ${(-diff).toFixed(1)}kg 남았어요`,
+                      },
+                      '목표에 도달했어요!'
+                    );
                   })()}
                 </p>
               </div>
@@ -386,23 +394,23 @@ export default function WeightGoalTrackingPage() {
               {bmiResult.category === 'underweight' && (
                 <>
                   <li className="text-sm text-foreground">
-                    • 균형 잡힌 식단으로 건강한 체중 증가를 권장합니다.
+                    • 균형 잡힌 식단이 에너지와 활력에 도움이 될 수 있어요.
                   </li>
                   <li className="text-sm text-foreground">
-                    • 근력 운동을 통해 근육량을 늘려보세요.
+                    • 근력 운동으로 근육량을 키워보는 것도 좋은 방법이에요.
                   </li>
                 </>
               )}
               {['overweight', 'obese1', 'obese2', 'obese3'].includes(bmiResult.category) && (
                 <>
                   <li className="text-sm text-foreground">
-                    • 가벼운 식단 조절과 규칙적인 운동을 권장합니다.
+                    • 가벼운 식단 조절과 규칙적인 움직임이 도움이 될 수 있어요.
                   </li>
                   <li className="text-sm text-foreground">
-                    • 하루 30분 이상 걷기부터 시작해보세요.
+                    • 하루 30분 정도 걷기부터 시작해보는 건 어떨까요?
                   </li>
                   <li className="text-sm text-foreground">
-                    • 급격한 다이어트보다 점진적인 생활습관 개선이 효과적입니다.
+                    • 급격한 변화보다 점진적인 생활습관 개선이 더 효과적이에요.
                   </li>
                 </>
               )}

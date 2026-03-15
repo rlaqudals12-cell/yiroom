@@ -12,10 +12,15 @@
  * - adjustPlanForTime(): 시간 제약에 맞춘 플랜 조정
  */
 
-import type { Exercise, WorkoutType, ExerciseCategory, BodyPart } from '@/types/workout';
+import type { Exercise, WorkoutType, ExerciseCategory, BodyPart, BodyType } from '@/types/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { BODY_TYPE_EXERCISE_PRIORITIES } from '@/lib/body';
 import { getAllExercises } from './exercises';
-import { getRecommendedRepsAndSets, calculateRecommendedWeight, roundToNearest } from './calculations';
+import {
+  getRecommendedRepsAndSets,
+  calculateRecommendedWeight,
+  roundToNearest,
+} from './calculations';
 import { calculateCaloriesWithMET } from './calorieCalculations';
 
 // ============================================
@@ -92,6 +97,7 @@ export interface WeeklyPlanParams {
   weeklyFrequency: number; // 주간 운동 횟수
   maxMinutesPerDay?: number; // 일일 최대 운동 시간
   userWeight?: number; // kg
+  bodyType?: import('@/types/workout').BodyType; // 체형 기반 운동 부위 조정
   equipment?: string[];
   injuries?: string[];
   weekNumber?: number; // 현재 훈련 주차 (디로드 판단용)
@@ -192,18 +198,33 @@ const WEEKLY_SCHEDULE_TEMPLATES: Record<FitnessGoal, Record<number, number[]>> =
 /**
  * 분할 타입별 일별 집중 부위
  */
-const SPLIT_FOCUS: Record<string, Record<number, { bodyParts: BodyPart[]; categories: ExerciseCategory[]; label: string }>> = {
+const SPLIT_FOCUS: Record<
+  string,
+  Record<number, { bodyParts: BodyPart[]; categories: ExerciseCategory[]; label: string }>
+> = {
   push_pull_legs: {
-    0: { bodyParts: ['chest', 'shoulder', 'arm'], categories: ['upper'], label: 'Push (가슴/어깨/삼두)' },
+    0: {
+      bodyParts: ['chest', 'shoulder', 'arm'],
+      categories: ['upper'],
+      label: 'Push (가슴/어깨/삼두)',
+    },
     1: { bodyParts: ['back', 'arm'], categories: ['upper'], label: 'Pull (등/이두)' },
     2: { bodyParts: ['thigh', 'hip', 'calf'], categories: ['lower'], label: 'Legs (하체)' },
   },
   upper_lower: {
     0: { bodyParts: ['chest', 'back', 'shoulder', 'arm'], categories: ['upper'], label: '상체' },
-    1: { bodyParts: ['thigh', 'hip', 'calf', 'abs'], categories: ['lower', 'core'], label: '하체/코어' },
+    1: {
+      bodyParts: ['thigh', 'hip', 'calf', 'abs'],
+      categories: ['lower', 'core'],
+      label: '하체/코어',
+    },
   },
   full_body: {
-    0: { bodyParts: ['chest', 'back', 'shoulder', 'thigh', 'hip', 'abs'], categories: ['upper', 'lower', 'core'], label: '전신' },
+    0: {
+      bodyParts: ['chest', 'back', 'shoulder', 'thigh', 'hip', 'abs'],
+      categories: ['upper', 'lower', 'core'],
+      label: '전신',
+    },
   },
   body_part: {
     0: { bodyParts: ['chest'], categories: ['upper'], label: '가슴' },
@@ -262,6 +283,7 @@ export function generateWeeklyPlan(params: WeeklyPlanParams): WeeklyPlan {
     weeklyFrequency,
     maxMinutesPerDay,
     userWeight = 60,
+    bodyType,
     equipment = ['bodyweight'],
     injuries = [],
     weekNumber = 1,
@@ -281,16 +303,21 @@ export function generateWeeklyPlan(params: WeeklyPlanParams): WeeklyPlan {
   );
 
   // 운동일 결정
-  const workoutDays = preferredDays && preferredDays.length >= actualFrequency
-    ? preferredDays.slice(0, actualFrequency)
-    : WEEKLY_SCHEDULE_TEMPLATES[goal][actualFrequency] || [1, 3, 5];
+  const workoutDays =
+    preferredDays && preferredDays.length >= actualFrequency
+      ? preferredDays.slice(0, actualFrequency)
+      : WEEKLY_SCHEDULE_TEMPLATES[goal][actualFrequency] || [1, 3, 5];
 
   // 휴식일 계산 (0-6)
-  const restDays = [0, 1, 2, 3, 4, 5, 6].filter(d => !workoutDays.includes(d));
+  const restDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !workoutDays.includes(d));
 
   // 운동 목록 가져오기 및 필터링
   const allExercises = getAllExercises();
-  const filteredExercises = filterExercisesByEquipmentAndInjuries(allExercises, equipment, injuries);
+  const filteredExercises = filterExercisesByEquipmentAndInjuries(
+    allExercises,
+    equipment,
+    injuries
+  );
 
   // 7일 플랜 생성
   const days: DayPlan[] = [];
@@ -323,7 +350,8 @@ export function generateWeeklyPlan(params: WeeklyPlanParams): WeeklyPlan {
         fitnessLevel,
         userWeight,
         isDeloadWeek,
-        maxMinutesPerDay
+        maxMinutesPerDay,
+        bodyType
       );
 
       // 볼륨 계산 (디로드 시 50%)
@@ -353,7 +381,7 @@ export function generateWeeklyPlan(params: WeeklyPlanParams): WeeklyPlan {
  * @returns 조정된 주간 플랜
  */
 export function adjustPlanForTime(plan: WeeklyPlan, maxMinutesPerDay: number): WeeklyPlan {
-  const adjustedDays = plan.days.map(day => {
+  const adjustedDays = plan.days.map((day) => {
     if (day.isRestDay || day.estimatedDuration <= maxMinutesPerDay) {
       return day;
     }
@@ -368,7 +396,7 @@ export function adjustPlanForTime(plan: WeeklyPlan, maxMinutesPerDay: number): W
       adjustedExercises = day.exercises.slice(0, keepCount);
     } else {
       // 50% 이상이면 세트 수 줄이기
-      adjustedExercises = day.exercises.map(ex => ({
+      adjustedExercises = day.exercises.map((ex) => ({
         ...ex,
         sets: Math.max(2, Math.floor(ex.sets * ratio)),
       }));
@@ -410,16 +438,17 @@ function filterExercisesByEquipmentAndInjuries(
   equipment: string[],
   injuries: string[]
 ): Exercise[] {
-  return exercises.filter(ex => {
+  return exercises.filter((ex) => {
     // 장비 필터: 맨몸 또는 보유 장비로 가능한 운동
-    const hasEquipment = ex.equipment.length === 0 ||
-      ex.equipment.some(eq => equipment.includes(eq) || eq === 'bodyweight');
+    const hasEquipment =
+      ex.equipment.length === 0 ||
+      ex.equipment.some((eq) => equipment.includes(eq) || eq === 'bodyweight');
 
     if (!hasEquipment) return false;
 
     // 부상 필터: 부상 부위 운동 제외
     if (injuries.length > 0 && ex.suitableFor?.injuries) {
-      const hasConflict = injuries.some(injury => ex.suitableFor.injuries?.includes(injury));
+      const hasConflict = injuries.some((injury) => ex.suitableFor.injuries?.includes(injury));
       if (hasConflict) return false;
     }
 
@@ -439,7 +468,8 @@ function generateDayPlan(
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced',
   userWeight: number,
   isDeloadWeek: boolean,
-  maxMinutesPerDay?: number
+  maxMinutesPerDay?: number,
+  bodyType?: BodyType
 ): DayPlan {
   // 분할 타입에 따른 오늘의 집중 부위 결정
   const splitFocus = SPLIT_FOCUS[template.splitType];
@@ -447,7 +477,7 @@ function generateDayPlan(
   const todayFocus = splitFocus[focusIndex];
 
   // 해당 부위 운동 선택
-  const selectedExercises = selectExercisesForFocus(
+  let selectedExercises = selectExercisesForFocus(
     allExercises,
     todayFocus.bodyParts,
     todayFocus.categories,
@@ -455,13 +485,31 @@ function generateDayPlan(
     5 // 기본 5개 운동
   );
 
+  // 체형 기반 운동 우선순위 조정
+  if (bodyType) {
+    const priorities = BODY_TYPE_EXERCISE_PRIORITIES[bodyType];
+    if (priorities) {
+      selectedExercises = selectedExercises.sort((a, b) => {
+        const aBonus = priorities.focusAreas.includes(a.category) ? 1 : 0;
+        const bBonus = priorities.focusAreas.includes(b.category) ? 1 : 0;
+        const aPenalty = priorities.avoidOverloading.includes(a.category) ? 1 : 0;
+        const bPenalty = priorities.avoidOverloading.includes(b.category) ? 1 : 0;
+        return bBonus - bPenalty - (aBonus - aPenalty);
+      });
+    }
+  }
+
   // 운동별 세부 정보 계산
-  const plannedExercises: PlannedExercise[] = selectedExercises.map(ex => {
+  const plannedExercises: PlannedExercise[] = selectedExercises.map((ex) => {
     const recommendation = getRecommendedRepsAndSets(
-      selectByKey(template.goal, {
-        hypertrophy: 'hypertrophy' as const,
-        strength: 'strength' as const,
-      }, 'endurance' as const)!,
+      selectByKey(
+        template.goal,
+        {
+          hypertrophy: 'hypertrophy' as const,
+          strength: 'strength' as const,
+        },
+        'endurance' as const
+      )!,
       fitnessLevel
     );
 
@@ -475,9 +523,16 @@ function generateDayPlan(
 
     // 무게 추천 (웨이트 운동인 경우)
     let weight: number | undefined;
-    if (ex.equipment.some(eq => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))) {
-      const weightRec = calculateRecommendedWeight(userWeight, ex.category, fitnessLevel, template.goal);
-      weight = isDeloadWeek ? roundToNearest(weightRec.recommendedWeight * 0.6, 2.5) : weightRec.recommendedWeight;
+    if (ex.equipment.some((eq) => ['dumbbell', 'barbell', 'kettlebell', 'machine'].includes(eq))) {
+      const weightRec = calculateRecommendedWeight(
+        userWeight,
+        ex.category,
+        fitnessLevel,
+        template.goal
+      );
+      weight = isDeloadWeek
+        ? roundToNearest(weightRec.recommendedWeight * 0.6, 2.5)
+        : weightRec.recommendedWeight;
     }
 
     return {
@@ -497,13 +552,17 @@ function generateDayPlan(
   // 최대 시간 제한 적용
   if (maxMinutesPerDay && estimatedDuration > maxMinutesPerDay) {
     // 운동 수 줄이기
-    const keepCount = Math.max(3, Math.floor(plannedExercises.length * (maxMinutesPerDay / estimatedDuration)));
+    const keepCount = Math.max(
+      3,
+      Math.floor(plannedExercises.length * (maxMinutesPerDay / estimatedDuration))
+    );
     plannedExercises.splice(keepCount);
     estimatedDuration = estimateExercisesDuration(plannedExercises);
   }
 
   // 목표 칼로리 계산
-  const avgMET = selectedExercises.reduce((sum, ex) => sum + ex.met, 0) / selectedExercises.length || 5;
+  const avgMET =
+    selectedExercises.reduce((sum, ex) => sum + ex.met, 0) / selectedExercises.length || 5;
   const targetCalories = calculateCaloriesWithMET(userWeight, estimatedDuration, avgMET);
 
   return {
@@ -529,11 +588,11 @@ function selectExercisesForFocus(
   count: number
 ): Exercise[] {
   // 점수 기반 정렬
-  const scored = allExercises.map(ex => {
+  const scored = allExercises.map((ex) => {
     let score = 0;
 
     // 부위 매칭 점수
-    const matchingParts = ex.bodyParts.filter(p => bodyParts.includes(p));
+    const matchingParts = ex.bodyParts.filter((p) => bodyParts.includes(p));
     score += matchingParts.length * 10;
 
     // 카테고리 매칭 점수
@@ -549,7 +608,7 @@ function selectExercisesForFocus(
   });
 
   return scored
-    .filter(s => s.score > 0)
+    .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, count)
     .map(({ exercise }) => exercise);
@@ -574,12 +633,10 @@ function calculateDayVolume(exercises: PlannedExercise[], defaultWeight: number)
   return exercises.reduce((total, ex) => {
     const sets = ex.sets;
     // 반복 횟수가 범위인 경우 평균 사용
-    const reps = typeof ex.reps === 'string'
-      ? parseInt(ex.reps.split('-')[0]) || 10
-      : ex.reps;
+    const reps = typeof ex.reps === 'string' ? parseInt(ex.reps.split('-')[0]) || 10 : ex.reps;
     const weight = ex.weight || defaultWeight * 0.3; // 무게 없으면 체중의 30% 가정
 
-    return total + (sets * reps * weight);
+    return total + sets * reps * weight;
   }, 0);
 }
 

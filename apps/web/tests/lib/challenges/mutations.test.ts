@@ -564,14 +564,14 @@ describe('processExpiredChallenges', () => {
     terminalResult.error = null;
   });
 
-  it('만료된 챌린지를 일괄 실패 처리하고 개수를 반환한다', async () => {
+  it('만료된 챌린지를 일괄 만료 처리하고 개수를 반환한다', async () => {
     terminalResult.data = [{ id: 'uc-1' }, { id: 'uc-2' }, { id: 'uc-3' }];
     terminalResult.error = null;
 
     const result = await processExpiredChallenges(supabase);
 
     expect(result).toBe(3);
-    expect(mockChain.update).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }));
+    expect(mockChain.update).toHaveBeenCalledWith(expect.objectContaining({ status: 'expired' }));
     expect(mockChain.eq).toHaveBeenCalledWith('status', 'in_progress');
     expect(mockChain.select).toHaveBeenCalledWith('id');
   });

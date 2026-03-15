@@ -501,6 +501,7 @@ describe('getUserChallengeStats', () => {
       inProgress: 0,
       completed: 0,
       failed: 0,
+      expired: 0,
       abandoned: 0,
     });
     expect(challengeLogger.error).toHaveBeenCalled();

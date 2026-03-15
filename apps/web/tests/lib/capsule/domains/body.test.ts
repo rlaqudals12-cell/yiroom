@@ -203,6 +203,26 @@ describe('BodyEngine', () => {
       const result = bodyEngine.personalize(items, profile);
       expect(result.length).toBe(2);
     });
+
+    it('V형(invertedTriangle) → avoidOverloading upper 부위가 후순위로 밀린다', () => {
+      // V형(상체 우세)은 upper 회피, lower/core 집중
+      const profile = createProfile({
+        body: { shape: 'invertedTriangle', measurements: {} },
+      });
+
+      const items = [
+        createPlan({ id: 'upper', name: 'Upper focus', targetAreas: ['upper'] }),
+        createPlan({ id: 'lower', name: 'Lower focus', targetAreas: ['lower'] }),
+        createPlan({ id: 'core', name: 'Core focus', targetAreas: ['core'] }),
+      ];
+
+      const result = bodyEngine.personalize(items, profile);
+
+      // lower/core 집중 아이템이 upper보다 앞에 와야 함
+      const upperIdx = result.findIndex((i) => i.id === 'upper');
+      const lowerIdx = result.findIndex((i) => i.id === 'lower');
+      expect(lowerIdx).toBeLessThan(upperIdx);
+    });
   });
 
   // =========================================================================

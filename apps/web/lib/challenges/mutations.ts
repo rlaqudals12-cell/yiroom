@@ -309,7 +309,9 @@ export async function failChallenge(
 // ============================================================
 
 /**
- * 만료된 진행 중 챌린지를 실패 처리
+ * 만료된 진행 중 챌린지를 만료 상태로 전환
+ * - '실패'가 아닌 '만료'로 표시 (부정적 프레이밍 방지)
+ * - 만료된 챌린지는 재참여 가능
  */
 export async function processExpiredChallenges(supabase: SupabaseClient): Promise<number> {
   const now = new Date().toISOString();
@@ -317,7 +319,7 @@ export async function processExpiredChallenges(supabase: SupabaseClient): Promis
   const { data, error } = await supabase
     .from('user_challenges')
     .update({
-      status: 'failed',
+      status: 'expired',
       updated_at: now,
     })
     .eq('status', 'in_progress')

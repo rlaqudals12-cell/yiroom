@@ -8,6 +8,12 @@
 import type { CapsuleEngine } from '../engine';
 import type { BeautyProfile, Capsule, CompatibilityScore, CurateOptions } from '../types';
 import type { BodyPlan } from '../domain-types';
+import {
+  mapBodyShape7ToBodyType,
+  normalizeToBodyShape7,
+  BODY_TYPE_EXERCISE_PRIORITIES,
+} from '@/lib/body';
+import type { BodyType } from '@/lib/body';
 
 const OPTIMAL_N: Record<number, number> = {
   1: 2, // 자세교정 + 스트레칭
@@ -32,6 +38,9 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
     const bodyShape = profile.body?.shape ?? 'standard';
 
+    // 체형 타입 매핑으로 운동 우선순위 결정
+    const focusAreas = getBodyTypeFocusAreas(bodyShape);
+
     const categories: Array<BodyPlan['category']> = [
       'posture-correction',
       'stretching-routine',
@@ -52,7 +61,7 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
         id: `body-placeholder-${i}`,
         name: `${bodyShape} 체형 ${categories[i % categories.length]} ${i + 1}`,
         category: categories[i % categories.length],
-        targetAreas: ['core'],
+        targetAreas: focusAreas.length > 0 ? [focusAreas[i % focusAreas.length]] : ['core'],
         approach: approaches[i % approaches.length],
         durationWeeks: 4,
       }));
@@ -108,11 +117,21 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
     if (!profile.body) return items;
     const { shape } = profile.body;
 
-    // 체형에 맞는 프로그램 우선
+    // 체형 타입에서 집중 부위/회피 부위 추출
+    const focusAreas = getBodyTypeFocusAreas(shape);
+    const avoidAreas = getBodyTypeAvoidAreas(shape);
+
     return [...items].sort((a, b) => {
-      const aMatch = a.name.toLowerCase().includes(shape.toLowerCase()) ? 1 : 0;
-      const bMatch = b.name.toLowerCase().includes(shape.toLowerCase()) ? 1 : 0;
-      return bMatch - aMatch;
+      // 집중 부위 포함 시 우선
+      const aFocus = a.targetAreas.some((area) => focusAreas.includes(area)) ? 2 : 0;
+      const bFocus = b.targetAreas.some((area) => focusAreas.includes(area)) ? 2 : 0;
+      // 회피 부위 포함 시 후순위
+      const aAvoid = a.targetAreas.some((area) => avoidAreas.includes(area)) ? -1 : 0;
+      const bAvoid = b.targetAreas.some((area) => avoidAreas.includes(area)) ? -1 : 0;
+      // 이름 매칭 가점
+      const aName = a.name.toLowerCase().includes(shape.toLowerCase()) ? 1 : 0;
+      const bName = b.name.toLowerCase().includes(shape.toLowerCase()) ? 1 : 0;
+      return bFocus + bAvoid + bName - (aFocus + aAvoid + aName);
     });
   },
 
@@ -143,3 +162,23 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
     });
   },
 };
+
+function resolveBodyType(shape: string): BodyType | null {
+  const shape7 = normalizeToBodyShape7(shape);
+  if (!shape7) return null;
+  return mapBodyShape7ToBodyType(shape7);
+}
+
+function getBodyTypeFocusAreas(shape: string): string[] {
+  const bodyType = resolveBodyType(shape);
+  if (!bodyType) return ['core']; // fallback
+  const priorities = BODY_TYPE_EXERCISE_PRIORITIES[bodyType];
+  return priorities?.focusAreas ?? ['core'];
+}
+
+function getBodyTypeAvoidAreas(shape: string): string[] {
+  const bodyType = resolveBodyType(shape);
+  if (!bodyType) return [];
+  const priorities = BODY_TYPE_EXERCISE_PRIORITIES[bodyType];
+  return priorities?.avoidOverloading ?? [];
+}
