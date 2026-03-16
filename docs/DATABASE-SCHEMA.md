@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.2 (위젯 순서 동기화)
+# 🗄️ Database 스키마 v7.3 (쿠폰/리뷰 AI 캐시 추가)
 
-**버전**: v7.2 (위젯 순서 Supabase 동기화 추가)
-**업데이트**: 2026년 3월 13일
+**버전**: v7.3 (쿠폰/프로모션 + 리뷰 AI 캐시 테이블 추가)
+**업데이트**: 2026년 3월 16일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -114,6 +114,11 @@
   ConnectionAwareness (신규):
     57. connection_awareness        # 교차 인사이트 연결 내재화 (2026-03-07)
 
+  쇼핑 고도화 (신규):
+    58. promotions                  # 프로모션 정의 (2026-03-16)
+    59. user_coupons                # 사용자 쿠폰 (2026-03-16)
+    60. product_review_ai_cache     # AI 리뷰 분석 캐시 (2026-03-16)
+
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
   users (1) ━━━━━ (N) skin_analyses
@@ -123,6 +128,8 @@
   users (1) ━━━━━ (N) mental_health_logs
   users (1) ━━━━━ (N) skin_diary_entries
   users (1) ━━━━━ (N) connection_awareness
+  users (1) ━━━━━ (N) user_coupons
+  promotions (1) ━━━━ (N) user_coupons
 
 논리적 연동:
   personal_color_assessments.season → skin_analyses
@@ -2425,6 +2432,129 @@ CREATE INDEX idx_connection_awareness_module ON connection_awareness(clerk_user_
 
 ---
 
-**버전**: v7.1 (ConnectionAwareness 추가)
-**최종 업데이트**: 2026년 3월 10일
-**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness 동기화 완료 ✅
+## 58. promotions 테이블
+
+프로모션/할인 정의 테이블.
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS promotions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  promotion_type TEXT NOT NULL CHECK (promotion_type IN ('percentage_off', 'fixed_off', 'free_shipping')),
+  discount_value NUMERIC NOT NULL CHECK (discount_value > 0),
+  min_purchase_amount NUMERIC DEFAULT 0,
+  max_discount_amount NUMERIC,
+  partner_name TEXT,
+  category TEXT,
+  starts_at TIMESTAMPTZ NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  max_uses INTEGER,
+  current_uses INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS: 활성 항목만 공개 읽기
+CREATE POLICY "public_read_active_promotions" ON promotions
+  FOR SELECT USING (is_active = true AND starts_at <= now() AND expires_at > now());
+
+CREATE INDEX idx_promotions_active ON promotions(is_active, starts_at, expires_at);
+```
+
+### 필드 설명
+
+| 필드                | 타입    | 설명                                     |
+| ------------------- | ------- | ---------------------------------------- |
+| promotion_type      | TEXT    | percentage_off, fixed_off, free_shipping |
+| discount_value      | NUMERIC | 할인 값 (%, 원, 배송비)                  |
+| min_purchase_amount | NUMERIC | 최소 구매 금액 (0이면 제한 없음)         |
+| max_discount_amount | NUMERIC | 최대 할인 금액 (percentage_off 시 상한)  |
+| partner_name        | TEXT    | 특정 파트너 제한 (null이면 전체)         |
+| category            | TEXT    | 특정 카테고리 제한 (null이면 전체)       |
+
+---
+
+## 59. user_coupons 테이블
+
+사용자별 발급된 쿠폰 관리.
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS user_coupons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  promotion_id UUID NOT NULL REFERENCES promotions(id),
+  coupon_code TEXT NOT NULL UNIQUE,
+  is_used BOOLEAN DEFAULT false,
+  used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS: 본인 쿠폰만 조회/수정
+CREATE POLICY "user_own_coupons_select" ON user_coupons
+  FOR SELECT USING (clerk_user_id = auth.get_user_id());
+CREATE POLICY "user_own_coupons_update" ON user_coupons
+  FOR UPDATE USING (clerk_user_id = auth.get_user_id());
+
+CREATE INDEX idx_user_coupons_user ON user_coupons(clerk_user_id);
+CREATE INDEX idx_user_coupons_code ON user_coupons(coupon_code);
+```
+
+### 필드 설명
+
+| 필드          | 타입        | 설명                 |
+| ------------- | ----------- | -------------------- |
+| clerk_user_id | TEXT        | 쿠폰 소유자          |
+| promotion_id  | UUID        | 프로모션 FK          |
+| coupon_code   | TEXT        | 8자리 고유 쿠폰 코드 |
+| is_used       | BOOLEAN     | 사용 여부            |
+| used_at       | TIMESTAMPTZ | 사용 시점            |
+
+---
+
+## 60. product_review_ai_cache 테이블
+
+AI 리뷰 분석 결과 캐시 (24시간 TTL).
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS product_review_ai_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id TEXT NOT NULL,
+  product_type TEXT NOT NULL,
+  summary JSONB NOT NULL,
+  analyzed_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  UNIQUE(product_id, product_type)
+);
+
+-- RLS: 공개 읽기
+CREATE POLICY "public_read_review_cache" ON product_review_ai_cache
+  FOR SELECT USING (true);
+
+CREATE INDEX idx_review_ai_cache_product ON product_review_ai_cache(product_id, product_type);
+CREATE INDEX idx_review_ai_cache_expires ON product_review_ai_cache(expires_at);
+```
+
+### 필드 설명
+
+| 필드           | 타입        | 설명                                        |
+| -------------- | ----------- | ------------------------------------------- |
+| product_id     | TEXT        | 제품 ID                                     |
+| product_type   | TEXT        | cosmetic, supplement, equipment, healthfood |
+| summary        | JSONB       | AI 분석 결과 (ReviewAISummary)              |
+| analyzed_count | INTEGER     | 분석에 사용된 리뷰 수                       |
+| expires_at     | TIMESTAMPTZ | 캐시 만료 시간                              |
+
+---
+
+**버전**: v7.3 (쿠폰/프로모션 + 리뷰 AI 캐시 추가)
+**최종 업데이트**: 2026년 3월 16일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 동기화 완료 ✅
