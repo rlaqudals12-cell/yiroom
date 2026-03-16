@@ -7,10 +7,10 @@
 
 // 브랜드 프라이머리
 export const brand = {
-  primary: '#F8C8DC',
-  primaryForeground: '#0A0A0A',
-  gradientStart: '#F8C8DC',
-  gradientEnd: '#FFB6C1',
+  primary: '#EC4899',
+  primaryForeground: '#FFFFFF',
+  gradientStart: '#EC4899',
+  gradientEnd: '#A855F7',
 } as const;
 
 // 라이트 모드 시맨틱 색상 (웹 :root와 동일)
@@ -32,7 +32,7 @@ export const lightColors = {
   overlayForeground: '#FFFFFF',
   border: '#E8E7E5',
   input: '#E8E7E5',
-  ring: '#F8C8DC',
+  ring: '#EC4899',
 } as const;
 
 // 다크 모드 시맨틱 색상 (웹 .dark와 동일)
@@ -57,7 +57,7 @@ export const darkColors = {
   // 시각적 구분 강화 (순수 장식 border, AA 3:1 비적용 대상)
   border: '#383838',
   input: '#383838',
-  ring: '#F8C8DC',
+  ring: '#EC4899',
 } as const;
 
 // 모듈별 악센트 색상

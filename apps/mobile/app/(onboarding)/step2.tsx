@@ -452,7 +452,7 @@ export default function OnboardingStep2() {
           >
             <LinearGradient
               colors={
-                canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]
+                canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}

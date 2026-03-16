@@ -23,8 +23,8 @@ import {
 } from '../../lib/onboarding';
 import { useTheme, radii, spacing } from '../../lib/theme';
 
-// 온보딩 Step 1 히어로 색상 (rose-500 계열 — 목표 설정 아이덴티티)
-const STEP1_ACCENT = '#F43F5E';
+// 온보딩 Step 1 히어로 색상 (pink-500 계열 — 목표 설정 아이덴티티)
+const STEP1_ACCENT = '#EC4899';
 
 // Lucide 아이콘 매핑
 const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
@@ -233,7 +233,7 @@ export default function OnboardingStep1() {
           >
             <LinearGradient
               colors={
-                canProceed ? [brand.primary, '#7C3AED'] : [colors.secondary, colors.secondary]
+                canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}

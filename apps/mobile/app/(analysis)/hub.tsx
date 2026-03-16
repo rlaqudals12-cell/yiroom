@@ -59,7 +59,7 @@ const MODULES: AnalysisModule[] = [
     emoji: '💄',
     description: 'AI 맞춤 메이크업 추천',
     route: '/(analysis)/makeup',
-    gradient: ['#FB7185', '#F43F5E'],
+    gradient: ['#F9A8D4', '#EC4899'],
   },
   {
     id: 'oral-health',

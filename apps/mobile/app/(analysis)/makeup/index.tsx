@@ -20,7 +20,7 @@ const FEATURES = [
   { icon: '✨', title: '맞춤 메이크업', desc: 'AI 기반 베이스·아이·립 추천' },
 ];
 
-const GRADIENT_COLORS = ['#FB7185', '#F43F5E'] as const;
+const GRADIENT_COLORS = ['#F9A8D4', '#EC4899'] as const;
 
 export default function MakeupAnalysisScreen() {
   const { colors, module: moduleColors } = useTheme();

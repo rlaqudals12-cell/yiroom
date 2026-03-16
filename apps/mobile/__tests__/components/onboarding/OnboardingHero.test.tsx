@@ -104,7 +104,7 @@ describe('OnboardingHero', () => {
         emoji="🎯"
         title="제목"
         subtitle="설명"
-        glowColor="#F43F5E"
+        glowColor="#EC4899"
       />
     );
     expect(getByTestId('onboarding-hero')).toBeTruthy();
