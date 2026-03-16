@@ -7,9 +7,9 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, typography, radii, spacing } from '../../../lib/theme';
-
 import { useAppPreferencesStore } from '@/lib/stores';
+
+import { useTheme, typography, radii, spacing } from '../../../lib/theme';
 
 // EWG 등급 타입
 export type EWGGrade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

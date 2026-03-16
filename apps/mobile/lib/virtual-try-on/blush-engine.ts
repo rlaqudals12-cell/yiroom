@@ -8,9 +8,10 @@
  * 3. 알파 블렌딩: pixel = original × (1 - α) + color × α
  */
 
-import type { FaceLandmarkResult } from '@/types/visual-analysis';
-import { extractFaceLandmarks } from '@/lib/analysis/face-landmark';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
+import { extractFaceLandmarks } from '@/lib/analysis/face-landmark';
+import type { FaceLandmarkResult } from '@/types/visual-analysis';
+
 import type { MakeupConfig, MakeupResult, RgbaColor } from './types';
 
 /** 기본 블러셔 강도 */

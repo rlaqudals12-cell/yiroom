@@ -18,6 +18,28 @@
 export { applyLipColor } from './lip-engine';
 export { applyBlush } from './blush-engine';
 export { applyHairColor } from './hair-engine';
+export { calculateEyeshadowPreview, interpolateDualColor } from './eyeshadow-engine';
+export { calculateFoundationPreview, computeFoundationAlpha } from './foundation-engine';
+export {
+  rgbToLab,
+  calculateDeltaE,
+  calculateMatchScore,
+  colorSimilarityScore,
+  extractProductColor,
+} from './product-matcher';
+export {
+  getLipPresetsForSeason,
+  getBlushPresetsForSeason,
+  getEyeshadowPresetsForSeason,
+  getHairPresetsForSeason,
+  getFoundationPresetsForSeason,
+  getDefaultColorForSeason,
+  SEASON_LABELS,
+} from './season-presets';
 export type { MakeupType, MakeupConfig, MakeupResult, RgbaColor } from './types';
-export type { HairColorConfig, HairColorResult } from './types';
-export { LIP_PRESETS, BLUSH_PRESETS, HAIR_PRESETS } from './types';
+export type { HairColorConfig, HairColorResult, EyeshadowConfig, FoundationConfig } from './types';
+export { LIP_PRESETS, BLUSH_PRESETS, HAIR_PRESETS, EYESHADOW_PRESETS, FOUNDATION_PRESETS } from './types';
+export type { EyeshadowResult } from './eyeshadow-engine';
+export type { FoundationResult } from './foundation-engine';
+export type { VTOMakeupType, LabColor, VTOMatchedProduct } from './product-matcher';
+export type { PersonalColorSeason, SeasonPreset } from './season-presets';

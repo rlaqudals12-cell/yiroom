@@ -6,9 +6,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { useTheme, typography, spacing, radii } from '../../../lib/theme';
-
 import { StarRating, getRatingColor } from './StarRating';
+import { useTheme, typography, spacing, radii } from '../../../lib/theme';
 
 export interface ReviewSummaryData {
   averageRating: number;

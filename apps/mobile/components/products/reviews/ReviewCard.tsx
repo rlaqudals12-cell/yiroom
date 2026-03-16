@@ -7,11 +7,10 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 
-import { useTheme, typography, radii, spacing } from '../../../lib/theme';
-
 import { useAppPreferencesStore } from '@/lib/stores';
 
 import { StarRating, getRatingColor } from './StarRating';
+import { useTheme, typography, radii, spacing } from '../../../lib/theme';
 
 export interface ReviewData {
   id: string;

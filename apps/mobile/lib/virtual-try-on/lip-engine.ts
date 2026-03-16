@@ -9,9 +9,10 @@
  * 4. 가우시안 블러로 경계 페더링
  */
 
-import type { FaceLandmarkResult } from '@/types/visual-analysis';
-import { extractFaceLandmarks, LIPS_INDICES } from '@/lib/analysis/face-landmark';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
+import { extractFaceLandmarks, LIPS_INDICES } from '@/lib/analysis/face-landmark';
+import type { FaceLandmarkResult } from '@/types/visual-analysis';
+
 import type { MakeupConfig, MakeupResult, RgbaColor } from './types';
 
 /** 기본 립스틱 강도 */
@@ -146,7 +147,7 @@ function applyLipBlending(
  * face-landmark.ts의 fillPolygon 패턴 재사용
  */
 function createLipMask(
-  points: Array<{ x: number; y: number }>,
+  points: { x: number; y: number }[],
   offsetX: number,
   offsetY: number,
   width: number,

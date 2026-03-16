@@ -7,10 +7,10 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, AccessibilityProps } from 'react-native';
 
+import { useAppPreferencesStore } from '@/lib/stores';
+
 import { useTheme, typography, spacing, scoreColors } from '../../../lib/theme';
 import { statusColors } from '../../../lib/theme/tokens';
-
-import { useAppPreferencesStore } from '@/lib/stores';
 
 interface StarRatingProps extends AccessibilityProps {
   /** 현재 별점 (1-5) */

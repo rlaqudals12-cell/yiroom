@@ -7,13 +7,11 @@ import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 
-import { useTheme, typography, radii, spacing } from '../../../lib/theme';
-
-import { EmptyState } from '../../common';
-
 import { useAppPreferencesStore } from '@/lib/stores';
 
 import { ReviewCard, ReviewData } from './ReviewCard';
+import { useTheme, typography, radii, spacing } from '../../../lib/theme';
+import { EmptyState } from '../../common';
 
 export type ReviewSortBy = 'recent' | 'helpful' | 'rating_high' | 'rating_low';
 

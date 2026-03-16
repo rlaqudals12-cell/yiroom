@@ -11,14 +11,15 @@
  * 6. 경계 페더링 (box blur)
  */
 
-import { extractFaceLandmarks } from '@/lib/analysis/face-landmark';
-import { FACE_OVAL_INDICES } from '@/lib/mock/visual-analysis';
 import {
   getConstrainedCanvasSize,
   createOptimizedContext,
   rgbaToHsl,
   hslToRgba,
 } from '@/lib/analysis/canvas-utils';
+import { extractFaceLandmarks } from '@/lib/analysis/face-landmark';
+import { FACE_OVAL_INDICES } from '@/lib/mock/visual-analysis';
+
 import type { HairColorConfig, HairColorResult } from './types';
 
 /** 기본 헤어 컬러 강도 */
@@ -105,7 +106,7 @@ export async function applyHairColor(
  * 얼굴 윤곽 위쪽 확장 영역에서 얼굴 내부를 제외한 영역
  */
 function createHairMask(
-  faceOvalPoints: Array<{ x: number; y: number }>,
+  faceOvalPoints: { x: number; y: number }[],
   width: number,
   height: number
 ): { mask: Uint8Array; bounds: HairBounds } {
@@ -176,7 +177,7 @@ function createHairMask(
  * lip-engine.ts의 createLipMask와 동일 패턴
  */
 function createFaceInteriorMask(
-  points: Array<{ x: number; y: number }>,
+  points: { x: number; y: number }[],
   width: number,
   height: number
 ): Uint8Array {
