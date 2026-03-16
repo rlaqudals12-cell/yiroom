@@ -5,8 +5,8 @@
  * 사용자의 내재화 수준에 따라 reason 표시 깊이를 조절
  */
 
-import type { ModuleCode } from '@/types/capsule';
 import type { ExposeRequest, ConnectionModule } from '@/lib/connection-awareness';
+import type { ModuleCode } from '@/types/capsule';
 
 // ModuleCode → ConnectionModule 매핑
 const MODULE_CODE_TO_CONNECTION: Record<ModuleCode, ConnectionModule> = {

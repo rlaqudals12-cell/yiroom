@@ -4,6 +4,7 @@
  */
 
 import { analyticsLogger } from '@/lib/utils/logger';
+
 import { trackEvent } from './tracker';
 
 // 퍼널 정의
@@ -131,7 +132,7 @@ export const socialFunnel = {
 export function calculateFunnelConversion(
   funnel: FunnelType,
   stepCounts: Record<string, number>
-): Array<{ step: string; count: number; conversionRate: number }> {
+): { step: string; count: number; conversionRate: number }[] {
   const steps = FUNNEL_STEPS[funnel];
   const firstStepCount = stepCounts[steps[0]] || 0;
 

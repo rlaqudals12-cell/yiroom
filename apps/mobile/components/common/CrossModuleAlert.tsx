@@ -3,13 +3,13 @@
  *
  * 예: 피부 분석 후 "맞춤 제품도 확인해보세요" 안내
  */
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 
-import { useTheme } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
 
 export interface CrossModuleLink {
   /** 표시 라벨 */

@@ -5,8 +5,8 @@
  */
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme, radii, spacing } from '../../lib/theme';
 import type { WellnessLevel } from '../../hooks/useWellnessScore';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 interface LevelBadgeProps {
   level: WellnessLevel;

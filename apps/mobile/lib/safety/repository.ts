@@ -9,6 +9,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { encrypt, decrypt, isEncryptionAvailable } from './crypto';
 import type { SafetyProfile, SafetyProfileRow } from './types';
 

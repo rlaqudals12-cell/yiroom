@@ -11,6 +11,7 @@
  *   onDismiss={() => setShowBadge(false)}
  * />
  */
+import * as Haptics from 'expo-haptics';
 import { useEffect } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -23,7 +24,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+
 import { useTheme } from '@/lib/theme';
 
 export interface BadgeInfo {

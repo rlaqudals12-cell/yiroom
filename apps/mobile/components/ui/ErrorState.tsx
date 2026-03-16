@@ -8,9 +8,9 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
-
 import { useAppPreferencesStore } from '@/lib/stores';
+
+import { useTheme, spacing } from '../../lib/theme';
 
 interface ErrorStateProps {
   /** 사용자에게 표시할 메시지 */

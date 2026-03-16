@@ -6,6 +6,24 @@
  * @module lib/wellness
  */
 
+// ─── 스트레스 시각화 re-export ───────────────────────
+
+export type {
+  StressGrade,
+  SkinImpactItem,
+  StressVisualizationData,
+  StressTrendPoint,
+  StressTrendAnalysis,
+} from './stress-visualization';
+
+export {
+  getStressGrade,
+  getSkinImpacts,
+  getStressRecommendations,
+  buildStressVisualization,
+  analyzeStressTrend,
+} from './stress-visualization';
+
 // ─── 확장 모듈 re-export ─────────────────────────────
 
 export type {

@@ -4,8 +4,8 @@
  * 의류 아이템의 이미지, 카테고리, 색상, 마지막 착용일, 착용 횟수를 표시.
  * inventory/ClothingCard와 달리 착용 추적(lastWorn, wearCount) 기능 포함.
  */
-import React, { memo } from 'react';
 import { Image } from 'expo-image';
+import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

@@ -7,6 +7,9 @@
 // 타입 정의
 // ============================================
 
+// RAG 모듈
+import { getRAGContext, classifyQuestion } from './rag';
+
 export interface CoachMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -244,9 +247,6 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
  */
 // 히스토리 관련 re-export
 export { getCoachSessions, deleteCoachSession, type CoachSession } from './history';
-
-// RAG 모듈
-import { getRAGContext, classifyQuestion } from './rag';
 
 export function getMockResponse(message: string, userContext?: UserContext): CoachChatResponse {
   const category = detectQuestionCategory(message);

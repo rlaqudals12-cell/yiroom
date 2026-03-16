@@ -6,8 +6,8 @@
  */
 import { View, Text, type ViewStyle } from 'react-native';
 
-import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 import { useTheme } from '../../lib/theme';
+import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 
 const INGREDIENTS: FilterChipItem[] = [
   { key: 'niacinamide', label: '나이아신아마이드' },

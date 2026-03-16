@@ -76,10 +76,7 @@ const RM_PERCENTAGES: Record<TrainingGoal, Record<string, number>> = {
 };
 
 /** 목표별 세트 구성 */
-const SET_SCHEMES: Record<
-  TrainingGoal,
-  Array<{ reps: number; percentage: number; label: string }>
-> = {
+const SET_SCHEMES: Record<TrainingGoal, { reps: number; percentage: number; label: string }[]> = {
   strength: [
     { reps: 5, percentage: 0.75, label: '웜업' },
     { reps: 5, percentage: 0.8, label: '빌드업' },

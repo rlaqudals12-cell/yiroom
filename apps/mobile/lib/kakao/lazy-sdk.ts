@@ -37,13 +37,13 @@ export interface KakaoShareOptions {
       webUrl: string;
     };
   };
-  buttons?: Array<{
+  buttons?: {
     title: string;
     link: {
       mobileWebUrl: string;
       webUrl: string;
     };
-  }>;
+  }[];
 }
 
 export interface KakaoButtonOptions {

@@ -6,6 +6,8 @@
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 
+import { selectByKey } from '@/lib/utils/conditional-helpers';
+
 import type {
   LabColor,
   TwelveTone,
@@ -14,7 +16,6 @@ import type {
   TwelveToneClassificationResult,
 } from './types';
 import { TWELVE_TONE_REFERENCE_LAB, TWELVE_TONE_LABELS } from './types';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 톤별 추천 팔레트
@@ -156,7 +157,7 @@ export const TONE_PALETTES: Record<TwelveTone, TonePalette> = {
  * @returns 랜덤 12톤
  */
 function selectRandomTone(): TwelveTone {
-  const weightedTones: Array<{ tone: TwelveTone; weight: number }> = [
+  const weightedTones: { tone: TwelveTone; weight: number }[] = [
     { tone: 'light-spring', weight: 8 },
     { tone: 'true-spring', weight: 12 },
     { tone: 'bright-spring', weight: 6 },

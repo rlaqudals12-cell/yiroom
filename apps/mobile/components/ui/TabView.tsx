@@ -7,6 +7,7 @@
  * - 탭 클릭 전환
  * - 햅틱 피드백
  */
+import * as Haptics from 'expo-haptics';
 import { useCallback, useRef, useState } from 'react';
 import {
   Pressable,
@@ -20,7 +21,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';

@@ -2,9 +2,9 @@
  * 리포트 집계 로직
  * 기존 useWorkoutData, useNutritionData 데이터로 주간/월간 리포트 생성
  */
-import type { WorkoutLog } from '../../hooks/useWorkoutData';
-import type { DailyNutritionSummary, NutritionSettings } from '../../hooks/useNutritionData';
 import type { WeeklyReport, MonthlyReport, DailyReportEntry, WeeklyTrend } from './types';
+import type { DailyNutritionSummary, NutritionSettings } from '../../hooks/useNutritionData';
+import type { WorkoutLog } from '../../hooks/useWorkoutData';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 

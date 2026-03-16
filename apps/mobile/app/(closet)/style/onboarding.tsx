@@ -15,10 +15,10 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '../../../components/ui';
-
 import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
+
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 
 const STYLE_OPTIONS = [
   { id: 'casual', label: '캐주얼' },

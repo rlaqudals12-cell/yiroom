@@ -4,8 +4,8 @@
  * 현재 날씨(기온, 상태)에 기반한 코디 제안과 스타일 팁을 표시.
  * 날씨 아이콘 + 기온 + 코디 설명 + 팁 목록 구성.
  */
-import React, { memo } from 'react';
 import { CloudSun, Cloud, CloudRain, Snowflake, Sun, Thermometer } from 'lucide-react-native';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

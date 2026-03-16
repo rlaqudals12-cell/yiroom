@@ -4,6 +4,7 @@
  */
 
 import { coachLogger } from '@/lib/utils/logger';
+
 import type { UserContext } from './types';
 
 /** 시즌 타입 */

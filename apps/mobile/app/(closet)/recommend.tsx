@@ -11,6 +11,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '../../components/ui';
 import type { Season as ClothingSeason } from '../../lib/inventory/types';
 import {
@@ -21,10 +25,6 @@ import {
 } from '../../lib/inventory/useClosetMatcher';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useWeather } from '../../lib/weather';
-
-import { useUserAnalyses } from '@/hooks/useUserAnalyses';
-import { TIMING } from '@/lib/animations';
-import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 // DB 체형 → 3타입 매핑
 function mapBodyType(dbBodyType: string | undefined): BodyType3 {

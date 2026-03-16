@@ -4,18 +4,18 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Plus, Heart, SlidersHorizontal } from 'lucide-react-native';
 import React, { useState, useMemo, useCallback } from 'react';
-import { Image } from 'expo-image';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { GlassCard } from '@/components/ui/GlassCard';
 import { ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
-import { staggeredEntry } from '@/lib/animations';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';

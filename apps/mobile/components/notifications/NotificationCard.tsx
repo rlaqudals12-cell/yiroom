@@ -4,6 +4,7 @@
  */
 import React, { memo } from 'react';
 import { View, Text, Pressable, type ViewStyle } from 'react-native';
+
 import { useTheme } from '../../lib/theme';
 
 export type NotificationType = 'analysis' | 'workout' | 'nutrition' | 'social' | 'system';

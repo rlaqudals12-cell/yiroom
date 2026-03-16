@@ -6,8 +6,9 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
+
 import { GradeDisplay, getGrade } from './GradeDisplay';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export type AnalysisType = 'skin' | 'body' | 'personal-color';
 
@@ -32,7 +33,7 @@ export interface VisualReportCardProps {
   seasonType?: string;
   seasonLabel?: string;
   confidence?: number;
-  bestColors?: Array<{ hex: string; name: string }>;
+  bestColors?: { hex: string; name: string }[];
   /** 분석 시간 */
   analyzedAt?: Date;
 }

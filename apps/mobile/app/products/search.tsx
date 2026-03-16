@@ -15,9 +15,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { ScreenContainer, GlassCard } from '../../components/ui';
-
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { ScreenContainer, GlassCard } from '../../components/ui';
 
 interface Product {
   id: string;

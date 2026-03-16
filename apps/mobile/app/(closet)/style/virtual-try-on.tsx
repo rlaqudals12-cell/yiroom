@@ -5,11 +5,11 @@
  * - Thin Client: 서버 Sharp 렌더링 (ADR-088)
  */
 
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
+import { Camera, Palette, Sparkles, Droplets, Eye } from 'lucide-react-native';
 import { useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import { Camera, Palette, Sparkles, Droplets, Eye } from 'lucide-react-native';
 
 import { useTheme, brand } from '../../../lib/theme';
 import {

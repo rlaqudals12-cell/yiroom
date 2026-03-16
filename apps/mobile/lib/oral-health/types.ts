@@ -101,10 +101,10 @@ export interface ToothColorResult {
   matchedShade: VitaShade;
   deltaE: number; // CIEDE2000 색차
   confidence: number; // 0-100
-  alternativeMatches: Array<{
+  alternativeMatches: {
     shade: VitaShade;
     deltaE: number;
-  }>;
+  }[];
   interpretation: {
     brightness: 'very_bright' | 'bright' | 'medium' | 'dark' | 'very_dark';
     yellowness: 'minimal' | 'mild' | 'moderate' | 'significant';
@@ -152,10 +152,10 @@ export interface GumHealthResult {
   needsDentalVisit: boolean;
   metrics: GumHealthMetrics;
   recommendations: string[];
-  affectedAreas?: Array<{
+  affectedAreas?: {
     region: 'upper_front' | 'upper_back' | 'lower_front' | 'lower_back';
     severity: 'mild' | 'moderate' | 'severe';
-  }>;
+  }[];
 }
 
 // =============================================================================
@@ -189,12 +189,12 @@ export interface WhiteningGoalResult {
   isOverWhitening: boolean;
   overWhiteningReason?: string;
   harmonySuggestion: string;
-  recommendedMethods: Array<{
+  recommendedMethods: {
     method: 'whitening_toothpaste' | 'strips' | 'professional_bleaching' | 'in_office';
     effectiveness: 'low' | 'medium' | 'high';
     duration: string;
     notes: string;
-  }>;
+  }[];
 }
 
 // =============================================================================
@@ -210,7 +210,7 @@ export interface UserOralProfile {
   cavityRisk: 'low' | 'medium' | 'high';
   calculus: 'none' | 'mild' | 'heavy';
   halitosis: boolean;
-  dentalWork: Array<'braces' | 'implant' | 'bridge' | 'crown' | 'veneer'>;
+  dentalWork: ('braces' | 'implant' | 'bridge' | 'crown' | 'veneer')[];
 }
 
 /**
@@ -226,7 +226,7 @@ export interface ProductPreferences {
  * 치간 청소 추천
  */
 export interface InterdentalRecommendation {
-  primary: Array<{
+  primary: {
     type:
       | 'floss_waxed'
       | 'floss_unwaxed'
@@ -235,47 +235,47 @@ export interface InterdentalRecommendation {
       | 'water_flosser'
       | 'superfloss';
     reason: string;
-  }>;
-  alternative: Array<{
+  }[];
+  alternative: {
     type: string;
     reason: string;
-  }>;
+  }[];
 }
 
 /**
  * 구강 제품 추천
  */
 export interface OralProductRecommendation {
-  toothpaste: Array<{
+  toothpaste: {
     name: string;
     brand: string;
     keyIngredients: string[];
     matchScore: number;
     reason: string;
     affiliateLink?: string;
-  }>;
-  mouthwash: Array<{
+  }[];
+  mouthwash: {
     name: string;
     brand: string;
     keyIngredients: string[];
     matchScore: number;
     reason: string;
     affiliateLink?: string;
-  }>;
+  }[];
   interdental: InterdentalRecommendation;
-  accessories: Array<{
+  accessories: {
     type: string;
     reason: string;
-  }>;
+  }[];
   avoidIngredients: string[];
   keyIngredients: string[];
-  careRoutine: Array<{
+  careRoutine: {
     step: number;
     action: string;
     timing: string;
     product?: string;
     duration?: string;
-  }>;
+  }[];
 }
 
 // =============================================================================
@@ -314,17 +314,17 @@ export interface OralHealthAssessment {
  * 구강 상태에 따른 영양 권장 사항
  */
 export interface OH1ToN1IntegrationData {
-  oralHealthAlerts: Array<{
+  oralHealthAlerts: {
     condition: string;
     nutrientRecommendations: string[];
     foodRecommendations: string[];
     avoidFoods: string[];
-  }>;
-  supplementSuggestions: Array<{
+  }[];
+  supplementSuggestions: {
     name: string;
     reason: string;
     dosage: string;
-  }>;
+  }[];
 }
 
 // =============================================================================
@@ -383,7 +383,7 @@ export interface GeminiOralHealthResponse {
     rednessLevel: 'normal' | 'slightly_red' | 'red' | 'very_red';
     swellingLevel: 'none' | 'mild' | 'moderate' | 'severe';
     needsDentalVisit: boolean;
-    affectedAreas: Array<'upper_front' | 'lower_front' | 'upper_back' | 'lower_back'>;
+    affectedAreas: ('upper_front' | 'lower_front' | 'upper_back' | 'lower_back')[];
   };
   overallScore: number;
   recommendations: string[];

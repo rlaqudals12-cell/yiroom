@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export type UndertoneType = 'warm' | 'cool' | 'neutral';
@@ -13,7 +14,7 @@ export type UndertoneType = 'warm' | 'cool' | 'neutral';
 export interface MakeupColorCategory {
   id: string;
   category: string;
-  colors: Array<{ name: string; hex: string }>;
+  colors: { name: string; hex: string }[];
 }
 
 export interface MakeupStyle {

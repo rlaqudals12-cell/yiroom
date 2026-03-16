@@ -4,9 +4,9 @@
  * 개인/팀 챌린지 정보를 진행률 바, 참가자 수, 남은 일수와 함께 표시.
  * module.workout 색상 계열로 운동/웰니스 맥락 강조.
  */
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

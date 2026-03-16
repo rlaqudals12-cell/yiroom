@@ -14,7 +14,7 @@
  */
 
 import type { PostureAnalysis, PostureIssue, BodyAnalysisV2Result } from '@/lib/analysis/body-v2';
-
+import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 import type {
   PostureImbalanceType,
   PostureImbalance,
@@ -29,7 +29,6 @@ import type {
 } from '@/types/stretching';
 
 import { generatePostureCorrectionPrescription } from './routine-generator';
-import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 매핑 상수

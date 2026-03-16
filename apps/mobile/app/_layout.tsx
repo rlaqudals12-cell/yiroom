@@ -9,17 +9,17 @@ import { useEffect } from 'react';
 import { LogBox, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
-LogBox.ignoreLogs([
-  'expo-notifications: Android Push notifications',
-  '`expo-notifications` functionality is not fully supported',
-]);
-
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
 import { appLogger } from '../lib/utils/logger';
+
+// Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
+LogBox.ignoreLogs([
+  'expo-notifications: Android Push notifications',
+  '`expo-notifications` functionality is not fully supported',
+]);
 
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
 function ThemedStack() {

@@ -18,9 +18,8 @@ import {
   suggestOutfitFromCloset,
   getRecommendationSummary,
 } from './closetMatcher';
-import { useCloset } from './useInventory';
-
 import type { ClothingCategory, InventoryItem } from './types';
+import { useCloset } from './useInventory';
 
 interface UseClosetMatcherProps {
   personalColor?: PersonalColorSeason | null;

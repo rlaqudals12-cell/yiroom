@@ -1,10 +1,10 @@
-import { Exercise } from '@/types/workout';
-import { workoutCache, createCacheKey } from '@/lib/cache';
-import upperBodyExercises from '@/data/exercises/upper-body.json';
 import lowerCoreCadioExercises from '@/data/exercises/lower-core-cardio.json';
 import pilatesExercises from '@/data/exercises/pilates.json';
-import yogaExercises from '@/data/exercises/yoga.json';
 import stretchingExercises from '@/data/exercises/stretching.json';
+import upperBodyExercises from '@/data/exercises/upper-body.json';
+import yogaExercises from '@/data/exercises/yoga.json';
+import { workoutCache, createCacheKey } from '@/lib/cache';
+import { Exercise } from '@/types/workout';
 
 // 모든 운동 데이터 합치기
 const allExercises: Exercise[] = [

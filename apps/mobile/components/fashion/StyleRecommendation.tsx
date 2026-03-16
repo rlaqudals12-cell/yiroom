@@ -4,9 +4,9 @@
  * AI가 생성한 스타일 추천을 아이템 목록과 매칭률로 표시.
  * 각 아이템에 매칭률 뱃지를 포함하여 추천 근거를 시각화.
  */
-import React, { memo } from 'react';
 import { Image } from 'expo-image';
 import { Sparkles } from 'lucide-react-native';
+import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

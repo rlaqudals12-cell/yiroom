@@ -6,13 +6,12 @@ import { router } from 'expo-router';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+
 import { ScreenContainer } from '@/components/ui';
-
-import { staggeredEntry } from '@/lib/animations';
-
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { useWorkoutData, type WorkoutExercise } from '@/hooks/useWorkoutData';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 플랜이 없을 때 사용하는 기본 운동

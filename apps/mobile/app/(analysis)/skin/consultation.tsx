@@ -16,9 +16,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
-
 import { ScreenContainer, GlassCard } from '@/components/ui';
+
+import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
 // 빠른 질문
 const QUICK_QUESTIONS = [

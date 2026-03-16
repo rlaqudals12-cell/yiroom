@@ -7,6 +7,8 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+
+import { generateInsights } from './generator';
 import type {
   AnalysisDataBundle,
   PersonalColorData,
@@ -19,7 +21,6 @@ import type {
   InsightGenerationResult,
   AnalysisModule,
 } from './types';
-import { generateInsights } from './generator';
 
 // ============================================
 // 데이터 조회 함수

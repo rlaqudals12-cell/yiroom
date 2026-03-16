@@ -4,8 +4,8 @@
  * 브랜드/카테고리별 추천 사이즈와 신뢰도를 표시.
  * 선택적으로 측정값(가슴/허리/엉덩이)을 포함.
  */
-import React, { memo } from 'react';
 import { Ruler } from 'lucide-react-native';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

@@ -4,6 +4,7 @@
  */
 import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, Pressable, type ViewStyle } from 'react-native';
+
 import { useTheme } from '../../lib/theme';
 
 export type FeedbackCategory = 'bug' | 'feature' | 'improvement' | 'other';

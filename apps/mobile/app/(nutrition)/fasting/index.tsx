@@ -12,12 +12,12 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { nutritionLogger } from '../../../lib/utils/logger';
-
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, spacing } from '@/lib/theme';
+
+import { nutritionLogger } from '../../../lib/utils/logger';
 
 interface FastingPattern {
   id: string;

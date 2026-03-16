@@ -4,9 +4,9 @@
  * 돋보기 아이콘 + 텍스트 입력 + 클리어 버튼.
  * onSearch 콜백으로 검색 실행.
  */
+import { Search, X } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, StyleSheet, TextInput, View, type ViewStyle } from 'react-native';
-import { Search, X } from 'lucide-react-native';
 
 import { useTheme, spacing } from '../../lib/theme';
 

@@ -8,10 +8,10 @@ import { Ruler } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
 import { Badge } from '../ui/Badge';
 import { ScoreGauge } from '../ui/ScoreGauge';
-import { useTheme } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
 
 const BODY_TYPE_LABELS: Record<string, string> = {
   hourglass: '모래시계형',

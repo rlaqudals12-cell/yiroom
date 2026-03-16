@@ -2,8 +2,6 @@
  * Gemini AI 분석 함수
  * 각 도메인별 분석 로직 + Rate Limit + Fallback 처리
  */
-import { checkRateLimit, incrementRateLimit } from '../api/rate-limit';
-import { geminiLogger } from '../utils/logger';
 
 import { callGeminiAPI } from './client';
 import {
@@ -29,6 +27,8 @@ import type {
   TrafficLight,
 } from './types';
 import { getSeasonColors, validateTrafficLight } from './utils';
+import { checkRateLimit, incrementRateLimit } from '../api/rate-limit';
+import { geminiLogger } from '../utils/logger';
 
 /**
  * 퍼스널 컬러 분석

@@ -6,6 +6,8 @@
  * @see docs/principles/color-science.md
  */
 
+import { calculateCIEDE2000, calculateChroma, calculateHue } from '@/lib/color';
+
 import type {
   LabColor,
   Season,
@@ -16,7 +18,6 @@ import type {
   TonePalette,
 } from './types';
 import { TWELVE_TONE_REFERENCE_LAB, KOREAN_ADJUSTMENTS, TWELVE_TONE_LABELS } from './types';
-import { calculateCIEDE2000, calculateChroma, calculateHue } from '@/lib/color';
 
 /**
  * 12톤에서 시즌 추출

@@ -9,8 +9,8 @@
  */
 import { useState } from 'react';
 import { View, Text, type TextStyle, type ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient as SvgGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
+import Svg, { Defs, LinearGradient as SvgGradient, Stop, Text as SvgText } from 'react-native-svg';
 
 import { useTheme } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';

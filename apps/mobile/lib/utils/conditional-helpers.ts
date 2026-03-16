@@ -24,7 +24,7 @@
  */
 export function classifyByRange<T>(
   value: number,
-  ranges: ReadonlyArray<{ readonly min?: number; readonly max?: number; readonly result: T }>,
+  ranges: readonly { readonly min?: number; readonly max?: number; readonly result: T }[],
   defaultResult?: T
 ): T | undefined {
   for (const range of ranges) {

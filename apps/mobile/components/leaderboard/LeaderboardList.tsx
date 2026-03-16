@@ -7,10 +7,9 @@
 import React, { useCallback, useRef, useEffect } from 'react';
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { LeaderboardEntry, type LeaderboardEntryProps } from './LeaderboardEntry';
 import { useTheme, spacing } from '../../lib/theme';
 import { EmptyState } from '../common/EmptyState';
-
-import { LeaderboardEntry, type LeaderboardEntryProps } from './LeaderboardEntry';
 
 export type LeaderboardPeriod = 'weekly' | 'monthly' | 'allTime';
 

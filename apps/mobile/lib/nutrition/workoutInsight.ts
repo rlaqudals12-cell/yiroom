@@ -234,11 +234,11 @@ export function getWorkoutNutritionInsight(
  * 운동 기록에서 요약 생성
  */
 export function createWorkoutSummary(
-  workoutLogs: Array<{
+  workoutLogs: {
     completed_at: string | null;
     actual_duration: number | null;
     actual_calories: number | null;
-  }>
+  }[]
 ): WorkoutSummary {
   if (!workoutLogs || workoutLogs.length === 0) {
     return {

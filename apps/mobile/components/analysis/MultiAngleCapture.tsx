@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export type FaceAngle = 'front' | 'left' | 'right';

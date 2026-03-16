@@ -11,6 +11,7 @@
  *   onComplete={() => setShowCelebration(false)}
  * />
  */
+import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo } from 'react';
 import {
   Dimensions,
@@ -32,7 +33,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+
 import { useTheme } from '@/lib/theme';
 
 // 축하 타입별 설정 (웹 CelebrationEffect와 동일한 5종)

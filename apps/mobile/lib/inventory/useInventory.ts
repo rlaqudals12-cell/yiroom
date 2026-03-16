@@ -7,8 +7,6 @@ import { useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
-import { closetLogger } from '../utils/logger';
-
 import type {
   InventoryItem,
   InventoryCategory,
@@ -18,6 +16,7 @@ import type {
   SavedOutfitRow,
 } from './types';
 import { rowToInventoryItem, rowToSavedOutfit, toClothingItems } from './types';
+import { closetLogger } from '../utils/logger';
 
 // ============================================================
 // 인벤토리 아이템 훅

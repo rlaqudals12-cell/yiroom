@@ -6,18 +6,18 @@
  * @see docs/specs/SDD-OH-1-ORAL-HEALTH.md
  */
 
-import type { ToothColorInput, ToothColorResult, LabColor, VitaSeries } from './types';
-import {
-  findBestShadeMatch,
-  interpretBrightness,
-  interpretYellowness,
-} from './internal/vita-database';
-import { interpretColorDifference } from './internal/ciede2000';
 import {
   getGeminiOralAnalysis,
   convertGeminiToothColorResult,
   extractToothLabWithApi,
 } from './internal/api-bridge';
+import { interpretColorDifference } from './internal/ciede2000';
+import {
+  findBestShadeMatch,
+  interpretBrightness,
+  interpretYellowness,
+} from './internal/vita-database';
+import type { ToothColorInput, ToothColorResult, LabColor, VitaSeries } from './types';
 
 /**
  * 치아 색상 분석

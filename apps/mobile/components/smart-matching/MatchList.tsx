@@ -7,8 +7,8 @@
 import { useCallback, useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
 import { MatchCard, type MatchCardData } from './MatchCard';
+import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export type MatchSortBy = 'matchRate' | 'price' | 'popularity';
 

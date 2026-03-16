@@ -8,9 +8,9 @@ import { ArrowRight } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, radii, spacing } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
 import { MetricDelta } from './ScoreChangeBadge';
+import { TIMING } from '../../lib/animations';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 interface MetricComparison {
   label: string;

@@ -8,6 +8,7 @@
  */
 
 import type { Insight, AnalysisModule } from '@/lib/insights';
+
 import type { ConnectionModule, ExposeRequest } from './types';
 
 // AnalysisModule → ConnectionModule 매핑

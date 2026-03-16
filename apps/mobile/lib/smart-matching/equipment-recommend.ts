@@ -3,8 +3,8 @@
  * @description W-1 연동 기반 운동기구/장비 추천
  */
 
-import type { WorkoutType, ExerciseDifficulty } from '@/types/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import type { WorkoutType, ExerciseDifficulty } from '@/types/workout';
 
 // ============================================
 // 타입 정의

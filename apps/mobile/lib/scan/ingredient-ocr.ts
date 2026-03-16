@@ -5,9 +5,9 @@
  */
 
 import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
-import type { ProductIngredient } from '@/types/scan';
-import { extractJsonObject } from '@/lib/utils/json-extract';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { extractJsonObject } from '@/lib/utils/json-extract';
+import type { ProductIngredient } from '@/types/scan';
 
 // OCR 결과 타입
 export interface OcrResult {
@@ -140,13 +140,13 @@ function parseOcrResponse(text: string): OcrParsedResult | null {
 interface OcrParsedResult {
   productName: string | null;
   brandName: string | null;
-  ingredients: Array<{
+  ingredients: {
     order?: number;
     nameKo?: string;
     inciName?: string;
     concentration?: string;
     note?: string | null;
-  }>;
+  }[];
   confidence?: 'high' | 'medium' | 'low';
   language?: 'ko' | 'en' | 'ja' | 'zh' | 'other';
 }

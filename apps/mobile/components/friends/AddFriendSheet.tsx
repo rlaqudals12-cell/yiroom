@@ -15,9 +15,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { FriendSearchInput } from './FriendSearchInput';
 import { useTheme, spacing, radii } from '../../lib/theme';
 import { BottomSheet } from '../ui/BottomSheet';
-import { FriendSearchInput } from './FriendSearchInput';
 
 export interface SearchResultUser {
   id: string;

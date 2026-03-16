@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export interface ScientificTermTooltipProps {

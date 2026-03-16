@@ -17,9 +17,10 @@ import type {
   ExerciseCategory,
   WorkoutInputData,
 } from '@/types/workout';
-import { getAllExercises } from './exercises';
+
 import { getRecommendedRepsAndSets, calculateRecommendedWeight } from './calculations';
 import { calculateCaloriesWithMET } from './calorieCalculations';
+import { getAllExercises } from './exercises';
 
 // ============================================
 // 타입 정의

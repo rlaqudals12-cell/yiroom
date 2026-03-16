@@ -198,7 +198,7 @@ export function convertFromInteractionWarning(warning: InteractionWarning): Ingr
  * 제품 목록에서 모든 성분 추출 후 충돌 검사
  */
 export function detectProductConflicts(
-  products: Array<{ ingredients?: string[] }>
+  products: { ingredients?: string[] }[]
 ): IngredientConflict[] {
   const allIngredients = products.flatMap((p) => p.ingredients || []);
   return detectConflicts(allIngredients);

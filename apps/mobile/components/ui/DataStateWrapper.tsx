@@ -7,11 +7,10 @@
 import React, { type ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 
-import { spacing } from '../../lib/theme';
-import { EmptyState } from '../common/EmptyState';
-
 import { ErrorState } from './ErrorState';
 import { SkeletonCard, SkeletonLoader, SkeletonText } from './SkeletonLoader';
+import { spacing } from '../../lib/theme';
+import { EmptyState } from '../common/EmptyState';
 
 interface EmptyConfig {
   /** 아이콘 (React 노드 또는 이모지) */

@@ -6,6 +6,16 @@
  * @see docs/specs/SDD-SKIN-ANALYSIS-v2.md
  */
 
+import {
+  calculateZoneScore,
+  calculateGroupAverages,
+  calculateTUZoneDifference,
+  calculateVitalityScore,
+  calculateVitalityGrade,
+  calculateScoreBreakdown,
+  determineSkinType,
+  extractPrimaryConcerns,
+} from './scorer';
 import type {
   SkinZoneType,
   ZoneMetricsV2,
@@ -19,16 +29,6 @@ import type {
   LBPResult,
 } from './types';
 import { ZONE_GROUP_MAPPING } from './types';
-import {
-  calculateZoneScore,
-  calculateGroupAverages,
-  calculateTUZoneDifference,
-  calculateVitalityScore,
-  calculateVitalityGrade,
-  calculateScoreBreakdown,
-  determineSkinType,
-  extractPrimaryConcerns,
-} from './scorer';
 import { analyzeZoneConcerns, generateZoneRecommendations } from './zone-extractor';
 
 // =============================================================================

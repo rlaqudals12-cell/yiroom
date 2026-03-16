@@ -4,11 +4,11 @@
  * 소셜 챌린지/목표 카드: 진행률 바, 남은 일수, 참여자 수, 참여 버튼.
  * Pressable + 햅틱 피드백.
  */
+import * as Haptics from 'expo-haptics';
+import { Target, Users, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Target, Users, ChevronRight } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../lib/theme';
 

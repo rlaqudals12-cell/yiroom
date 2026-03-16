@@ -5,11 +5,11 @@
  * 날짜, 운동 유형 뱃지, 시간, 칼로리, 운동 수 포함.
  */
 
+import * as Haptics from 'expo-haptics';
+import { Dumbbell, Flame, Clock, Hash } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Dumbbell, Flame, Clock, Hash } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../lib/theme';
 

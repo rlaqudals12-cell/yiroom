@@ -6,13 +6,13 @@
  * @see {@link docs/principles/body-mechanics.md} 체형 역학 원리
  */
 
-import type { Landmark33, BodyRatios, PoseDetectionResult } from './types';
-import { POSE_LANDMARK_INDEX } from './types';
 import {
   calculateLandmarkDistance,
   calculateMidpoint,
   validatePoseLandmarks,
 } from './pose-detector';
+import type { Landmark33, BodyRatios, PoseDetectionResult } from './types';
+import { POSE_LANDMARK_INDEX } from './types';
 
 // =============================================================================
 // 상수

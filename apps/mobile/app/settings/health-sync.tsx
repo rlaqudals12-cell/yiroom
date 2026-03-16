@@ -16,10 +16,10 @@ import {
   Platform,
 } from 'react-native';
 
-import { ScreenContainer, GlassCard } from '../../components/ui';
-
 import { useHealthData } from '@/hooks/useHealthData';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { ScreenContainer, GlassCard } from '../../components/ui';
 
 export default function HealthSyncScreen() {
   const { colors, brand, status } = useTheme();

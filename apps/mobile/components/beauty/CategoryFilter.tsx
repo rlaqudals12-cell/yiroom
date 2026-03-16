@@ -5,8 +5,8 @@
  */
 import { View, Text, type ViewStyle } from 'react-native';
 
-import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 import { useTheme } from '../../lib/theme';
+import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 
 const BEAUTY_CATEGORIES: FilterChipItem[] = [
   { key: 'all', label: '전체' },

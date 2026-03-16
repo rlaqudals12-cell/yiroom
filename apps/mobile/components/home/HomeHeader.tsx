@@ -1,12 +1,12 @@
 /**
  * HomeHeader — 그라디언트 히어로 배너 + 인사말
  */
-import Animated, { FadeIn } from 'react-native-reanimated';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { GradientBackground, GradientText } from '../ui';
-import { useTheme, typography, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
+import { useTheme, typography, spacing } from '../../lib/theme';
+import { GradientBackground, GradientText } from '../ui';
 
 interface HomeHeaderProps {
   userName: string;

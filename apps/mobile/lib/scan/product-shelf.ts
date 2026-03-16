@@ -5,7 +5,9 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import type { ProductIngredient } from '@/types/scan';
+
 import type { CompatibilityResult } from './compatibility';
 
 // 제품함 상태

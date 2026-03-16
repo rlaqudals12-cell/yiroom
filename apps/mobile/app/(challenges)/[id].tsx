@@ -12,6 +12,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { staggeredEntry } from '@/lib/animations';
 import {
   calculateProgress,
   DOMAIN_COLORS,
@@ -19,7 +20,6 @@ import {
   DIFFICULTY_COLORS,
 } from '@/lib/challenges';
 import { useChallenges, useJoinChallenge } from '@/lib/challenges/useChallenges';
-import { staggeredEntry } from '@/lib/animations';
 import { useAppPreferencesStore } from '@/lib/stores';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 

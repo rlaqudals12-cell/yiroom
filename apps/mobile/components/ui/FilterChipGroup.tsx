@@ -5,9 +5,8 @@
  */
 import { ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
-
 import { FilterChip } from './FilterChip';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface FilterChipItem {
   key: string;

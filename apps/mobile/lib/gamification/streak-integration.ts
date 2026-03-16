@@ -5,10 +5,12 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { gamificationLogger } from '@/lib/utils/logger';
 import type { BadgeAwardResult, LevelUpResult } from '@/types/gamification';
-import { STREAK_MILESTONES, getNewMilestones, type StreakMilestone } from './constants';
+
 import { awardBadge, getBadgeByCode } from './badges';
+import { STREAK_MILESTONES, getNewMilestones, type StreakMilestone } from './constants';
 import { addXp } from './levels';
 
 // ============================================================

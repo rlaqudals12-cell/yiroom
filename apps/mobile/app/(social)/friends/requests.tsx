@@ -16,12 +16,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING } from '../../../lib/animations';
 import { type FriendRequest } from '../../../lib/social';
 import { useFriendRequests } from '../../../lib/social/useFriends';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function FriendRequestsScreen() {
   const { colors, brand, status, module: moduleColors } = useTheme();

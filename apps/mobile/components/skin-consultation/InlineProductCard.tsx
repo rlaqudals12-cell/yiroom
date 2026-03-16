@@ -4,9 +4,9 @@
  * 채팅 내에서 표시되는 컴팩트한 제품 추천 카드.
  * 매치율 뱃지, 브랜드, 가격, 추천 이유를 표시.
  */
+import { ShoppingBag } from 'lucide-react-native';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { ShoppingBag } from 'lucide-react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

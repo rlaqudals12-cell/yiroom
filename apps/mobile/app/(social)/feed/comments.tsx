@@ -18,11 +18,11 @@ import {
   Platform,
 } from 'react-native';
 
-import { formatRelativeTime } from '../../../lib/feed';
-import { useClerkSupabaseClient } from '../../../lib/supabase';
-
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
+
+import { formatRelativeTime } from '../../../lib/feed';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
 
 interface Comment {
   id: string;

@@ -11,6 +11,9 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { ScreenContainer } from '@/components/ui';
+import { staggeredEntry, TIMING } from '@/lib/animations';
+
 import { AnalysisHistoryCard } from '../../../components/analysis/AnalysisHistoryCard';
 import {
   useAnalysisHistory,
@@ -19,9 +22,6 @@ import {
   type AnalysisHistoryItem,
 } from '../../../hooks/useAnalysisHistory';
 import { useTheme, spacing, radii, typography } from '../../../lib/theme';
-
-import { ScreenContainer } from '@/components/ui';
-import { staggeredEntry, TIMING } from '@/lib/animations';
 
 // 모듈 필터 탭
 const MODULE_TABS: { key: AnalysisModuleType | 'all'; label: string }[] = [

@@ -18,6 +18,9 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { ScreenContainer, GlassCard } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
+
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   type SkinConditionScore,
@@ -31,9 +34,6 @@ import {
   WEATHER_ICONS,
 } from '../../../lib/skincare/diary-types';
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
-
-import { ScreenContainer, GlassCard } from '@/components/ui';
-import { TIMING } from '@/lib/animations';
 
 const WEATHER_OPTIONS: WeatherType[] = ['sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid', 'dry'];
 

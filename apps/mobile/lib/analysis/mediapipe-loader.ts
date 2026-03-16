@@ -25,7 +25,7 @@ interface MediaPipeFaceMeshOptions {
 }
 
 interface MediaPipeFaceMeshResults {
-  multiFaceLandmarks: Array<Array<{ x: number; y: number; z: number }>>;
+  multiFaceLandmarks: { x: number; y: number; z: number }[][];
   image: HTMLCanvasElement;
 }
 

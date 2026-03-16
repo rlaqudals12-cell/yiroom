@@ -243,7 +243,7 @@ export function getHeatmapColor(
   const v = Math.max(0, Math.min(1, value));
 
   // 색상 스키마별 그라데이션
-  const schemes: Record<string, Array<[number, number, number]>> = {
+  const schemes: Record<string, [number, number, number][]> = {
     // 멜라닌 (갈색 계열)
     brown: [
       [255, 248, 220], // 밝은 베이지

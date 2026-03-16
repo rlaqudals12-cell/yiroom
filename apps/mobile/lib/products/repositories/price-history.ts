@@ -121,7 +121,7 @@ export async function getPriceDropProducts(
   productType: ProductType,
   percentDrop = 10
 ): Promise<
-  Array<{ productId: string; previousPrice: number; currentPrice: number; dropPercent: number }>
+  { productId: string; previousPrice: number; currentPrice: number; dropPercent: number }[]
 > {
   // 최근 2개 가격 기록을 비교하여 하락한 제품 찾기
   const { data, error } = await supabase
@@ -145,12 +145,12 @@ export async function getPriceDropProducts(
   }
 
   // 가격 하락 제품 필터링
-  const drops: Array<{
+  const drops: {
     productId: string;
     previousPrice: number;
     currentPrice: number;
     dropPercent: number;
-  }> = [];
+  }[] = [];
 
   for (const [productId, records] of Object.entries(byProduct)) {
     if (records.length < 2) continue;

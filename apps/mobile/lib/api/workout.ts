@@ -1,7 +1,4 @@
-import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { workoutLogger, gamificationLogger } from '@/lib/utils/logger';
-import { WorkoutInputData, WorkoutType } from '@/types/workout';
-import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout';
+import { updateChallengesOnWorkout, type ChallengeUpdateResult } from '@/lib/challenges';
 import {
   checkAndAwardStreakBadges,
   checkWorkoutCountBadges,
@@ -9,7 +6,10 @@ import {
   type BadgeAwardResult,
   type LevelUpResult,
 } from '@/lib/gamification';
-import { updateChallengesOnWorkout, type ChallengeUpdateResult } from '@/lib/challenges';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { workoutLogger, gamificationLogger } from '@/lib/utils/logger';
+import { getNewBadges, STREAK_MILESTONES, getDaysDifference } from '@/lib/workout';
+import { WorkoutInputData, WorkoutType } from '@/types/workout';
 
 // XP 보상 상수
 const XP_WORKOUT_COMPLETE = 5;
@@ -427,7 +427,6 @@ export async function getWorkoutStreak(userId: string): Promise<WorkoutStreak | 
  * - 기존 JSONB badges_earned 유지 (하위 호환)
  * - 새로운 user_badges 테이블에도 동기화
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function updateWorkoutStreak(
   userId: string,
   workoutDate: string

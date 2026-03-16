@@ -4,11 +4,11 @@
  * 온보딩용 투어: 반투명 오버레이 위에 단계별 툴팁 카드.
  * 스텝 인디케이터, 다음/건너뛰기 버튼 제공.
  */
+import * as Haptics from 'expo-haptics';
+import { X } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { X } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

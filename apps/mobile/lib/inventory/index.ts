@@ -57,3 +57,32 @@ export type {
   OutfitSuggestion,
   RecommendationSummary,
 } from './useClosetMatcher';
+
+// ============================================================
+// 루틴 브릿지 Re-export
+// ============================================================
+
+export {
+  matchProductsToRoutine,
+  getMissingStepMessages,
+  getLowStockMessages,
+  getRoutineCoverageSummary,
+} from './routine-bridge';
+export type { InventoryProduct, RoutineStepMatch, RoutineInventoryResult } from './routine-bridge';
+
+// ============================================================
+// 제품 시너지 Re-export
+// ============================================================
+
+export {
+  inferRoutineStep,
+  suggestRoutineOrder,
+  extractIngredientKeywords,
+  analyzeInteraction,
+} from './product-synergy';
+export type {
+  RoutineStep,
+  RoutineOrderSuggestion,
+  InteractionType,
+  ProductInteraction,
+} from './product-synergy';

@@ -4,8 +4,8 @@
  * BottomSheet 내부 콘텐츠로 사용. 의류 정보(이름, 카테고리, 색상, 사진)를 입력받아
  * onAdd 콜백으로 전달. visible/onClose로 시트 노출을 제어.
  */
-import React, { useState, useCallback } from 'react';
 import { Camera } from 'lucide-react-native';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import type { ClosetCategory } from './ClothingCard';
 import { useTheme, spacing, radii } from '../../lib/theme';
 import { BottomSheet } from '../ui/BottomSheet';
-import type { ClosetCategory } from './ClothingCard';
 
 export interface NewClothingItem {
   name: string;

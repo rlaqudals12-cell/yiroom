@@ -17,12 +17,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING } from '../../../lib/animations';
 import { getTierColor, type UserSearchResult } from '../../../lib/social';
 import { useUserSearch } from '../../../lib/social/useFriends';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function FriendSearchScreen() {
   const { colors, brand, status, module: moduleColors } = useTheme();

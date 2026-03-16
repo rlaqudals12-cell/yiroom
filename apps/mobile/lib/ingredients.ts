@@ -275,7 +275,6 @@ Guidelines:
  * @param skinType - 사용자 피부 타입
  * @returns 경고 성분 목록 (위험도 높은 순 정렬)
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function analyzeIngredients(
   ingredients: string[],
   skinType: SkinType = 'normal'

@@ -215,7 +215,6 @@ export async function upsertProductMeasurements(input: {
 /**
  * 신체 치수로 사이즈 추천
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- size chart matching logic
 export function recommendSizeFromMeasurements(
   sizeChart: BrandSizeChart,
   userMeasurements: {
@@ -311,12 +310,12 @@ export function recommendSizeFromMeasurements(
 export async function recommendSizeFromHistory(
   targetBrandId: string,
   targetCategory: ClothingCategory,
-  userSizeHistory: Array<{
+  userSizeHistory: {
     brandId: string;
     category: string;
     size: string;
     fit?: 'small' | 'perfect' | 'large';
-  }>
+  }[]
 ): Promise<{ size: string; confidence: number; basis: string } | null> {
   // 동일 브랜드 기록이 있으면 우선 사용
   const sameBrandHistory = userSizeHistory.find(

@@ -6,8 +6,8 @@
  */
 import { View, Text, type ViewStyle } from 'react-native';
 
-import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 import { useTheme } from '../../lib/theme';
+import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 
 const SKIN_CONCERNS: FilterChipItem[] = [
   { key: 'dryness', label: '건조' },

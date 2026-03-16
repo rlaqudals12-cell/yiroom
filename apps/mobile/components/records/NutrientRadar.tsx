@@ -6,8 +6,8 @@
  */
 import { View, Text, type ViewStyle } from 'react-native';
 
-import { RadarChart, type RadarDataItem } from '../charts/RadarChart';
 import { useTheme } from '../../lib/theme';
+import { RadarChart, type RadarDataItem } from '../charts/RadarChart';
 
 interface NutrientRadarProps {
   /** 현재 섭취 데이터 */

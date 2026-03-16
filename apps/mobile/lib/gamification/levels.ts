@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { gamificationLogger } from '@/lib/utils/logger';
 import type {
   UserLevel,
@@ -13,6 +14,7 @@ import type {
   LevelUpResult,
   LevelTier,
 } from '@/types/gamification';
+
 import { calculateLevelInfo, getLevelFromTotalXp, getTierForLevel } from './constants';
 
 // ============================================================

@@ -10,6 +10,8 @@
  *
  * D2-2: GradeDisplay 통합, 그라디언트 깊이 강화, 전문가 CTA 추가
  */
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useCallback, type ReactNode } from 'react';
 import {
   View,
@@ -20,22 +22,21 @@ import {
   Pressable,
   type ImageStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
+import { TIMING } from '@/lib/animations';
 import { useTheme, typography, radii, borderGlow, spacing, trustColors } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
-import { TIMING } from '@/lib/animations';
-import { TabView, type TabItem } from '../ui/TabView';
-import { GradientCard } from '../ui/GradientCard';
-import { GradientText, type GradientTextVariant } from '../ui/GradientText';
-import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
+
 import { AnalysisResultButtons } from './AnalysisResultButtons';
+import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
 import { GradeDisplay } from './GradeDisplay';
 import { AITransparencyNotice } from '../common/AITransparencyNotice';
 import { MockDataNotice } from '../common/MockDataNotice';
+import { GradientCard } from '../ui/GradientCard';
+import { GradientText, type GradientTextVariant } from '../ui/GradientText';
+import { TabView, type TabItem } from '../ui/TabView';
 
 /** 모듈 키에 따른 악센트 색상 가져오기 */
 type ModuleKey = keyof typeof moduleColors;

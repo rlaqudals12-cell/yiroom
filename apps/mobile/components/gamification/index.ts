@@ -15,3 +15,11 @@ export {
   type ChallengeProgressProps,
   type DayProgress,
 } from './ChallengeProgress';
+export {
+  CrossDomainChallengeCard,
+  type CrossDomainChallengeCardProps,
+} from './CrossDomainChallengeCard';
+export {
+  CrossDomainChallengeList,
+  type CrossDomainChallengeListProps,
+} from './CrossDomainChallengeList';

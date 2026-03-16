@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+
 import { useTheme, statusColors, radii, spacing } from '../../lib/theme';
 
 export type OverlayZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
@@ -66,49 +67,49 @@ export function PhotoOverlayMap({
       />
 
       {/* 존 오버레이 */}
-      {(
-        Object.entries(ZONE_LAYOUT) as Array<[OverlayZoneId, (typeof ZONE_LAYOUT)[OverlayZoneId]]>
-      ).map(([zoneId, layout]) => {
-        const zoneData = zones[zoneId];
-        if (!zoneData) return null;
+      {(Object.entries(ZONE_LAYOUT) as [OverlayZoneId, (typeof ZONE_LAYOUT)[OverlayZoneId]][]).map(
+        ([zoneId, layout]) => {
+          const zoneData = zones[zoneId];
+          if (!zoneData) return null;
 
-        const zoneColor = ZONE_COLORS[zoneData.status];
+          const zoneColor = ZONE_COLORS[zoneData.status];
 
-        return (
-          <Pressable
-            key={zoneId}
-            style={[
-              styles.zoneOverlay,
-              {
-                left: `${layout.x * 100}%`,
-                top: `${layout.y * 100}%`,
-                width: `${layout.w * 100}%`,
-                height: `${layout.h * 100}%`,
-                backgroundColor: `${zoneColor}${Math.round(opacity * 255)
-                  .toString(16)
-                  .padStart(2, '0')}`,
-                borderColor: zoneColor,
-              },
-            ]}
-            onPress={() => onZonePress?.(zoneId)}
-            accessibilityRole="button"
-            accessibilityLabel={`${zoneData.label}: ${zoneData.score}점`}
-          >
-            {showLabels && (
-              <View style={[styles.labelBadge, { backgroundColor: `${zoneColor}CC` }]}>
-                <Text
-                  style={[
-                    styles.labelText,
-                    { fontSize: typography.size.xs, color: colors.overlayForeground },
-                  ]}
-                >
-                  {zoneData.label} {zoneData.score}
-                </Text>
-              </View>
-            )}
-          </Pressable>
-        );
-      })}
+          return (
+            <Pressable
+              key={zoneId}
+              style={[
+                styles.zoneOverlay,
+                {
+                  left: `${layout.x * 100}%`,
+                  top: `${layout.y * 100}%`,
+                  width: `${layout.w * 100}%`,
+                  height: `${layout.h * 100}%`,
+                  backgroundColor: `${zoneColor}${Math.round(opacity * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`,
+                  borderColor: zoneColor,
+                },
+              ]}
+              onPress={() => onZonePress?.(zoneId)}
+              accessibilityRole="button"
+              accessibilityLabel={`${zoneData.label}: ${zoneData.score}점`}
+            >
+              {showLabels && (
+                <View style={[styles.labelBadge, { backgroundColor: `${zoneColor}CC` }]}>
+                  <Text
+                    style={[
+                      styles.labelText,
+                      { fontSize: typography.size.xs, color: colors.overlayForeground },
+                    ]}
+                  >
+                    {zoneData.label} {zoneData.score}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        }
+      )}
     </View>
   );
 }

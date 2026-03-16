@@ -7,9 +7,9 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
-
 import { useAppPreferencesStore } from '@/lib/stores';
+
+import { useTheme, spacing } from '../../lib/theme';
 
 interface EmptyStateProps {
   /** 아이콘 (React 노드 또는 이모지 텍스트) */

@@ -6,9 +6,9 @@
  * - 탭 전환 시 햅틱 피드백 (Light impact)
  * - 프레스 스케일 애니메이션
  */
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,

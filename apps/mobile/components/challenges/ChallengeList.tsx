@@ -7,10 +7,9 @@
 import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { ChallengeCard, type ChallengeCardProps } from './ChallengeCard';
 import { useTheme, spacing } from '../../lib/theme';
 import { EmptyState } from '../common/EmptyState';
-
-import { ChallengeCard, type ChallengeCardProps } from './ChallengeCard';
 
 export interface ChallengeListProps {
   /** 챌린지 데이터 배열 */

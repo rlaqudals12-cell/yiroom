@@ -4,17 +4,17 @@
  * 사용자의 자기 이해 내재화 진행도를 시각화.
  * 웹 InternalizationWidget의 간소화된 RN 버전.
  */
+import { useUser } from '@clerk/clerk-expo';
+import { Brain } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { Brain } from 'lucide-react-native';
-import { useUser } from '@clerk/clerk-expo';
 
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import { TIMING } from '@/lib/animations';
 import type { ConnectionStats, ConnectionStatus } from '@/lib/connection-awareness';
 import { getConnectionStats } from '@/lib/connection-awareness';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
 
 // 상태별 색상 + 라벨
 const STATUS_CONFIG: Record<ConnectionStatus, { label: string; color: string; darkColor: string }> =

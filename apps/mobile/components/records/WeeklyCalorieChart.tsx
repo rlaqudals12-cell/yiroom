@@ -7,9 +7,9 @@
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { BarChart, type BarDataItem } from '../charts/BarChart';
-import { useTheme } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
+import { useTheme } from '../../lib/theme';
+import { BarChart, type BarDataItem } from '../charts/BarChart';
 
 export interface DayCalorie {
   /** 요일 라벨 (예: "월") */

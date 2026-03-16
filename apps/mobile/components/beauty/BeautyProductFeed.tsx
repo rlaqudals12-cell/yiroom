@@ -8,9 +8,9 @@ import { Search } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { FlatList, Text, View, type ViewStyle } from 'react-native';
 
-import { EmptyState } from '../common/EmptyState';
 import { ProductMiniCard, type BeautyProduct } from './ProductMiniCard';
 import { useTheme } from '../../lib/theme';
+import { EmptyState } from '../common/EmptyState';
 
 interface BeautyProductFeedProps {
   products: BeautyProduct[];

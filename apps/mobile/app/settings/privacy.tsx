@@ -8,9 +8,9 @@ import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
 
-import { ScreenContainer, GlassCard } from '../../components/ui';
-
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { ScreenContainer, GlassCard } from '../../components/ui';
 
 interface PrivacySettings {
   analyticsConsent: boolean;

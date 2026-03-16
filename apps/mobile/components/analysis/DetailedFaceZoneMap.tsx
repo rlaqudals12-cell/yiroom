@@ -8,6 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Ellipse, Rect } from 'react-native-svg';
+
 import { useTheme, spacing, typography, zoneColors } from '../../lib/theme';
 
 export type DetailedZoneId =
@@ -50,7 +51,7 @@ const SIZE_MAP = {
 
 const STATUS_COLORS: Record<DetailedStatusLevel, string> = zoneColors;
 
-const LEGEND_ITEMS: Array<{ status: DetailedStatusLevel; label: string }> = [
+const LEGEND_ITEMS: { status: DetailedStatusLevel; label: string }[] = [
   { status: 'excellent', label: '매우 좋음' },
   { status: 'good', label: '좋음' },
   { status: 'normal', label: '보통' },
@@ -93,9 +94,10 @@ export function DetailedFaceZoneMap({
     [onZonePress]
   );
 
-  const zoneEntries = Object.entries(ZONE_POSITIONS) as Array<
-    [DetailedZoneId, (typeof ZONE_POSITIONS)[DetailedZoneId]]
-  >;
+  const zoneEntries = Object.entries(ZONE_POSITIONS) as [
+    DetailedZoneId,
+    (typeof ZONE_POSITIONS)[DetailedZoneId],
+  ][];
 
   return (
     <View testID="detailed-face-zone-map">

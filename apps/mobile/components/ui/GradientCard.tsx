@@ -18,9 +18,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 
+import { useTheme } from '../../lib/theme';
 import { gradients, type GradientKey } from '../../lib/theme/gradients';
 import { brand, moduleColors } from '../../lib/theme/tokens';
-import { useTheme } from '../../lib/theme';
 
 /** GradientCard가 지원하는 모듈 variant */
 export type GradientCardVariant =

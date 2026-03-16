@@ -4,6 +4,7 @@
  */
 
 import type { PriceComparison, PurchaseOption, DeliveryType } from '@/types/smart-matching';
+
 import { getPriceHistory, getLowestPrice, getPriceChangePercent } from './price-watches';
 
 // ============================================

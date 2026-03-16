@@ -13,8 +13,9 @@
  * 설치: npm install @anthropic-ai/sdk
  */
 
-import type { AIProvider, ImageAnalysisInput } from '../types';
 import { extractJsonObject } from '@/lib/utils/json-extract';
+
+import type { AIProvider, ImageAnalysisInput } from '../types';
 
 // =============================================================================
 // 설정
@@ -26,7 +27,7 @@ const MODEL_NAME = process.env.CLAUDE_MODEL ?? 'claude-3-5-haiku-latest';
 // Anthropic 클라이언트 타입 (SDK 없이도 타입 정의 가능)
 interface AnthropicMessage {
   role: 'user' | 'assistant';
-  content: Array<{
+  content: {
     type: 'text' | 'image';
     text?: string;
     source?: {
@@ -34,11 +35,11 @@ interface AnthropicMessage {
       media_type: string;
       data: string;
     };
-  }>;
+  }[];
 }
 
 interface AnthropicResponse {
-  content: Array<{ type: string; text?: string }>;
+  content: { type: string; text?: string }[];
 }
 
 interface AnthropicClient {
@@ -68,6 +69,7 @@ async function getAnthropicClient(): Promise<AnthropicClient | null> {
     try {
       // Dynamic import to handle missing SDK gracefully
       // @ts-expect-error - SDK가 설치되지 않은 경우 런타임에 처리
+      // eslint-disable-next-line import/no-unresolved -- 선택적 의존성, 런타임 폴백 처리
       const AnthropicModule = await import('@anthropic-ai/sdk');
       const Anthropic = AnthropicModule.default;
       anthropicClient = new Anthropic({ apiKey: API_KEY }) as unknown as AnthropicClient;

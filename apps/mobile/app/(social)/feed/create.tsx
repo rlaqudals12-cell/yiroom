@@ -20,13 +20,13 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import type { FeedItemType } from '../../../lib/feed';
-import { useClerkSupabaseClient } from '../../../lib/supabase';
-
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing } from '@/lib/theme';
+
+import type { FeedItemType } from '../../../lib/feed';
+import { useClerkSupabaseClient } from '../../../lib/supabase';
 
 const FEED_CATEGORIES: { type: FeedItemType; emoji: string; label: string }[] = [
   { type: 'workout', emoji: '💪', label: '운동' },

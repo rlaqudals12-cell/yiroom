@@ -6,9 +6,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { nutritionLogger } from '../utils/logger';
-
 import { lookupOpenFoodFacts, type BarcodeFood, type LookupResult } from './openFoodFactsClient';
+import { nutritionLogger } from '../utils/logger';
 
 export type { BarcodeFood };
 

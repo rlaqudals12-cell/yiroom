@@ -6,9 +6,9 @@
 import { FlatList, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, spacing, typography } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
 import type { Achievement } from '../../hooks/useWellnessScore';
+import { TIMING } from '../../lib/animations';
+import { useTheme, spacing, typography } from '../../lib/theme';
 
 interface AchievementGridProps {
   achievements: Achievement[];

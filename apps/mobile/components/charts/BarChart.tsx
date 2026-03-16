@@ -6,6 +6,7 @@
  * - 테마 토큰 자동 적용
  */
 import { useMemo } from 'react';
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -14,7 +15,6 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import { useEffect } from 'react';
 
 import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';

@@ -23,13 +23,13 @@ import { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '../../../components/ui';
-import { getTierColor, getTierLabel, sendFriendRequest } from '../../../lib/social';
-import { socialLogger } from '../../../lib/utils/logger';
-
 import { TIMING, staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing } from '@/lib/theme';
+
+import { GlassCard, ScreenContainer } from '../../../components/ui';
+import { getTierColor, getTierLabel, sendFriendRequest } from '../../../lib/social';
+import { socialLogger } from '../../../lib/utils/logger';
 
 interface UserProfile {
   userId: string;

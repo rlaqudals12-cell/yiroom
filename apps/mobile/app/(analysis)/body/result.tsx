@@ -6,6 +6,7 @@
  *  상세: 비율 BarChart + BMI 해석
  *  추천: 추천 스타일 + 피하면 좋은 스타일
  */
+import { useUser } from '@clerk/clerk-expo';
 import type { BodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -21,19 +22,17 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { BarChart, type BarDataItem } from '@/components/charts';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { saveBodyResult } from '@/lib/analysis';
+import { TIMING } from '@/lib/animations';
 import {
   analyzeBody as analyzeWithGemini,
   imageToBase64,
   type BodyAnalysisResult,
 } from '@/lib/gemini';
-import { useUser } from '@clerk/clerk-expo';
-
-import { AIBadge } from '@/components/common/AIBadge';
-import { saveBodyResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { TIMING } from '@/lib/animations';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // 체형 타입 데이터

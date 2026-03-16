@@ -5,8 +5,8 @@
  */
 import { View, Text, type ViewStyle } from 'react-native';
 
-import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 import { useTheme, statusColors } from '../../lib/theme';
+import { FilterChipGroup, type FilterChipItem } from '../ui/FilterChipGroup';
 
 const RATING_OPTIONS: FilterChipItem[] = [
   { key: 'all', label: '전체' },

@@ -36,13 +36,13 @@ export type MuscleGroup =
 /** 운동 이력 (점진적 과부하용) */
 export interface WorkoutHistory {
   exerciseId: string;
-  records: Array<{
+  records: {
     date: string;
     sets: number;
     reps: number;
     weight: number;
     rpe?: number;
-  }>;
+  }[];
 }
 
 /** 점진적 과부하 제안 결과 */
@@ -204,13 +204,13 @@ export const WORKOUT_TYPE_PARAMS: Record<string, WorkoutTypeParams> = {
 /**
  * RPE-심박수 존 매핑
  */
-const RPE_ZONE_MAP: Array<{
+const RPE_ZONE_MAP: {
   zone: number;
   rpeRange: [number, number];
   hrPercentRange: [number, number];
   description: string;
   intensity: RPEEstimate['intensity'];
-}> = [
+}[] = [
   {
     zone: 1,
     rpeRange: [1, 2],
@@ -315,7 +315,7 @@ export function calculateWorkVolume(sets: number, reps: number, weight: number):
  * 주간 볼륨 계산
  */
 export function calculateWeeklyVolume(
-  weeklyRecords: Array<{ sets: number; reps: number; weight: number }>
+  weeklyRecords: { sets: number; reps: number; weight: number }[]
 ): number {
   return weeklyRecords.reduce(
     (total, record) => total + calculateWorkVolume(record.sets, record.reps, record.weight),
@@ -419,7 +419,6 @@ export function calculateRecoveryTime(
  * 점진적 과부하 제안
  * 원리 문서: exercise-physiology.md 3.2
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function suggestProgressiveOverload(
   history: WorkoutHistory,
   options: {

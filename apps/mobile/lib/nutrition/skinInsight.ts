@@ -196,7 +196,6 @@ const SKIN_GOAL_MESSAGES: Record<string, string> = {
 /**
  * 피부 분석 결과를 기반으로 영양 인사이트 생성
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getSkinNutritionInsight(
   skinAnalysis: SkinAnalysisSummary | null,
   currentWaterMl?: number,
@@ -335,7 +334,7 @@ export function getSkinHydrationMessage(
  * S-1 피부 분석 결과를 SkinAnalysisSummary로 변환
  */
 export function convertSkinMetricsToSummary(
-  metrics: Array<{ id: string; status: MetricStatus }>
+  metrics: { id: string; status: MetricStatus }[]
 ): SkinAnalysisSummary {
   const metricsById = metrics.reduce(
     (acc, metric) => {

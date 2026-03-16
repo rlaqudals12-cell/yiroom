@@ -8,6 +8,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export interface ProgressiveDisclosureProps {

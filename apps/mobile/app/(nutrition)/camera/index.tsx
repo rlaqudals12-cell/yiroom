@@ -18,6 +18,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+
 import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
 

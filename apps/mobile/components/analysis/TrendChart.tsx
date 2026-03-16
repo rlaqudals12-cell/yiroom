@@ -7,6 +7,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
+
 import { useTheme, spacing, radii, typography } from '../../lib/theme';
 
 export interface TrendDataPoint {

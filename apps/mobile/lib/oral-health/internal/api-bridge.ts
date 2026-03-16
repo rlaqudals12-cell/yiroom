@@ -17,8 +17,8 @@ import type {
   GumHealthMetrics,
   GeminiOralHealthResponse,
 } from '../types';
-import { getShadeReference } from './vita-database';
 import { calculateCIEDE2000 } from './ciede2000';
+import { getShadeReference } from './vita-database';
 
 // 웹 API 기본 URL (환경변수에서 설정)
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://yiroom.vercel.app';
@@ -145,9 +145,12 @@ function reconstructGeminiResponse(
         rednessLevel: mapInflammationToRedness(gumHealth?.inflammationScore ?? 20),
         swellingLevel: mapInflammationToSwelling(gumHealth?.inflammationScore ?? 20),
         needsDentalVisit: gumHealth?.needsDentalVisit ?? false,
-        affectedAreas: (gumHealth?.affectedAreas?.map((a) => a.region) ?? []) as Array<
-          'upper_front' | 'lower_front' | 'upper_back' | 'lower_back'
-        >,
+        affectedAreas: (gumHealth?.affectedAreas?.map((a) => a.region) ?? []) as (
+          | 'upper_front'
+          | 'lower_front'
+          | 'upper_back'
+          | 'lower_back'
+        )[],
       },
       overallScore: (assessment.overallScore as number) ?? 75,
       recommendations: (assessment.recommendations as string[]) ?? [],

@@ -1,6 +1,7 @@
 /**
  * 피드백 화면 — 사용자 피드백 폼
  */
+import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Bug, Lightbulb, MessageSquare, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
@@ -17,8 +18,6 @@ import {
   Alert,
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, BounceIn } from 'react-native-reanimated';
-
-import { useUser } from '@clerk/clerk-expo';
 
 import { ScreenContainer } from '@/components/ui';
 import { useClerkSupabaseClient } from '@/lib/supabase';

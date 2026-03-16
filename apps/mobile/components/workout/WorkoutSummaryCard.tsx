@@ -5,10 +5,10 @@
  * 총 운동 횟수, 총 시간, 총 칼로리, 연속 일수.
  */
 
+import { Dumbbell, Clock, Flame, Trophy } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Dumbbell, Clock, Flame, Trophy } from 'lucide-react-native';
 
 import { useTheme } from '../../lib/theme';
 

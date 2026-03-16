@@ -7,6 +7,7 @@
  * @example
  * <SuccessCheckmark visible={saved} size={60} />
  */
+import * as Haptics from 'expo-haptics';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
@@ -20,7 +21,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
+
 import { useTheme } from '@/lib/theme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);

@@ -5,10 +5,10 @@ import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard } from '../ui';
-import { useTheme, typography, spacing } from '../../lib/theme';
-import { SectionHeader } from '../ui';
 import { TIMING } from '../../lib/animations';
+import { useTheme, typography, spacing } from '../../lib/theme';
+import { GlassCard } from '../ui';
+import { SectionHeader } from '../ui';
 
 interface TodoTask {
   id: string;

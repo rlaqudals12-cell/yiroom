@@ -4,9 +4,9 @@
  * 패션 트렌드 정보를 이미지, 태그, 인기도 지표와 함께 표시.
  * 인기도(0~100)를 프로그레스 바로 시각화.
  */
-import React, { memo } from 'react';
 import { Image } from 'expo-image';
 import { TrendingUp } from 'lucide-react-native';
+import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

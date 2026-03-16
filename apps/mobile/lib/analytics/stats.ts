@@ -3,6 +3,7 @@
  * @description 대시보드용 통계 데이터 조회/집계
  */
 
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import type {
   AnalyticsSummary,
   TopPage,
@@ -13,7 +14,7 @@ import type {
   RealtimeStats,
   AnalyticsPeriod,
 } from '@/types/analytics';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+
 import {
   generateMockSummary,
   generateMockTopPages,
@@ -509,7 +510,7 @@ export async function getDailyTrend(
   startDate: string,
   endDate: string,
   useMock = USE_MOCK
-): Promise<Array<{ date: string; pageViews: number; uniqueUsers: number; sessions: number }>> {
+): Promise<{ date: string; pageViews: number; uniqueUsers: number; sessions: number }[]> {
   if (useMock) {
     return generateMockDailyTrend(startDate, endDate);
   }
@@ -574,7 +575,7 @@ export async function getAnalyticsDashboardData(
   topPages: TopPage[];
   topFeatures: TopFeature[];
   deviceBreakdown: DeviceBreakdown[];
-  dailyTrend: Array<{ date: string; pageViews: number; uniqueUsers: number; sessions: number }>;
+  dailyTrend: { date: string; pageViews: number; uniqueUsers: number; sessions: number }[];
 }> {
   const [summary, topPages, topFeatures, deviceBreakdown, dailyTrend] = await Promise.all([
     getAnalyticsSummary(startDate, endDate, useMock),

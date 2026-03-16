@@ -23,12 +23,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { TIMING } from '../../lib/animations';
 import type { FeedItem } from '../../lib/feed/types';
 import { useClerkSupabaseClient } from '../../lib/supabase';
-
-import { GlassCard, ScreenContainer } from '@/components/ui';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {

@@ -4,14 +4,14 @@
  * 선택한 도메인의 캡슐 아이템, CCS, 로테이션 상태 표시.
  * @see docs/adr/ADR-069-capsule-ecosystem-architecture.md
  */
+import { useAuth } from '@clerk/clerk-expo';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { useAuth } from '@clerk/clerk-expo';
 
-import { DomainCapsuleList } from '../../components/capsule/DomainCapsuleList';
 import { CapsuleProgressBar } from '../../components/capsule/CapsuleProgressBar';
+import { DomainCapsuleList } from '../../components/capsule/DomainCapsuleList';
 import { ScreenContainer, GlassCard, SectionHeader, ErrorState } from '../../components/ui';
 import { staggeredEntry } from '../../lib/animations';
 import { getDomainCapsule, rotateCapsule } from '../../lib/capsule/api';

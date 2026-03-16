@@ -9,6 +9,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer } from '@/components/ui';
+import { SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
+
 import {
   useCloset,
   CLOTHING_CATEGORY_LABELS,
@@ -18,11 +23,6 @@ import {
   type Season,
   type Occasion,
 } from '../../lib/inventory';
-
-import { GlassCard, ScreenContainer } from '@/components/ui';
-import { SkeletonCard } from '@/components/ui/SkeletonLoader';
-import { TIMING } from '@/lib/animations';
-import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function ItemDetailScreen() {
   const { colors, status, module: moduleTheme, spacing, radii } = useTheme();

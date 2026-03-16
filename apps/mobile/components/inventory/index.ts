@@ -16,3 +16,4 @@ export {
 export { ClothingCard, type ClothingCategory, type ClothingCardProps } from './ClothingCard';
 export { ClothingGrid, type ClothingGridProps } from './ClothingGrid';
 export { AddClothingSheet, type AddClothingSheetProps } from './AddClothingSheet';
+export { RoutineBridgeCard, type RoutineBridgeCardProps } from './RoutineBridgeCard';

@@ -9,6 +9,7 @@
  * 지원 스포츠: 등산, 러닝, 골프, 자전거, 수영, 테니스
  */
 
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type {
   SportType,
   MuscleGroup,
@@ -19,7 +20,6 @@ import type {
 } from '@/types/stretching';
 
 import { STRETCH_DATABASE } from './database';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 타입 정의

@@ -15,9 +15,9 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';
-import { TIMING } from '../../lib/animations';
 
 interface AnimatedListProps<T> extends Omit<FlatListProps<T>, 'renderItem'> {
   data: T[];

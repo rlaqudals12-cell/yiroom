@@ -4,9 +4,9 @@
  * 팀 이름, 멤버별 진행률 바, 전체 진행률을 표시.
  * 각 멤버의 개별 기여도를 시각적으로 확인 가능.
  */
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

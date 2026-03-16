@@ -6,8 +6,9 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useTheme, spacing, radii } from '../../lib/theme';
+
 import { Skeleton } from './Skeleton';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type SkeletonVariant =
   | 'analysis-result'

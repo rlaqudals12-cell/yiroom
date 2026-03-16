@@ -4,9 +4,9 @@
  * 아바타, 이름, 레벨 뱃지, 웰니스 점수, 가입일, 공통 챌린지 수 표시.
  * 메시지 보내기, 친구 삭제 액션 버튼 제공.
  */
+import { MessageCircle, UserMinus } from 'lucide-react-native';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { MessageCircle, UserMinus } from 'lucide-react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

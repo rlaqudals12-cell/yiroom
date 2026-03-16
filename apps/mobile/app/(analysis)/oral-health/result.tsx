@@ -21,15 +21,15 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { TIMING, usePulseGlow } from '@/lib/animations';
 import {
   analyzeOralHealth as analyzeWithGemini,
   imageToBase64,
   type OralHealthAnalysisResult,
 } from '@/lib/gemini';
-import { AIBadge } from '@/components/common/AIBadge';
 import { captureError } from '@/lib/monitoring/sentry';
-import { TIMING, usePulseGlow } from '@/lib/animations';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑

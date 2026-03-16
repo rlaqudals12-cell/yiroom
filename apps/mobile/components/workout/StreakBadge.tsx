@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export type StreakLevel = 'sprout' | 'runner' | 'challenger' | 'master' | 'legend';
@@ -15,7 +16,7 @@ export interface StreakBadgeProps {
   compact?: boolean;
 }
 
-const STREAK_LEVELS: Array<{ min: number; level: StreakLevel; label: string; emoji: string }> = [
+const STREAK_LEVELS: { min: number; level: StreakLevel; label: string; emoji: string }[] = [
   { min: 100, level: 'legend', label: '레전드', emoji: '👑' },
   { min: 60, level: 'master', label: '마스터', emoji: '⭐' },
   { min: 30, level: 'challenger', label: '챌린저', emoji: '🔥' },

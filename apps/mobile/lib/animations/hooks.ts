@@ -277,11 +277,11 @@ export function useConfetti(
   count = 20,
   duration = 2500
 ): {
-  particles: Array<{
+  particles: {
     translateY: SharedValue<number>;
     rotate: SharedValue<number>;
     opacity: SharedValue<number>;
-  }>;
+  }[];
   triggerConfetti: () => void;
 } {
   // Reanimated useSharedValue in useMemo — 초기화 한 번만 실행, 알려진 패턴

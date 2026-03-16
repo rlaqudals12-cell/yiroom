@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
 import { BadgeCard, type BadgeCardProps } from './BadgeCard';
+import { useTheme } from '../../lib/theme';
 
 export interface BadgeGridProps {
   badges: Omit<BadgeCardProps, 'onPress' | 'style'>[];

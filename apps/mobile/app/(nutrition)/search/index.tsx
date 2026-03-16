@@ -17,11 +17,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { useClerkSupabaseClient } from '../../../lib/supabase';
-import { nutritionLogger } from '../../../lib/utils/logger';
-
 import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { moduleColors, useTheme, spacing, radii, typography } from '@/lib/theme';
+
+import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { nutritionLogger } from '../../../lib/utils/logger';
 
 // 스톱라이트 타입
 type TrafficLight = 'green' | 'yellow' | 'red';

@@ -3,9 +3,6 @@
  * @description MediaPipe Face Mesh 기반 468개 3D 랜드마크 추출
  */
 
-import type { FaceLandmark, FaceLandmarkResult } from '@/types/visual-analysis';
-import { initFaceMesh, closeFaceMesh, checkMediaPipeCDN } from './mediapipe-loader';
-import type { MediaPipeFaceMesh, MediaPipeFaceMeshResults } from './mediapipe-loader';
 import {
   generateMockLandmarks,
   FACE_OVAL_INDICES,
@@ -13,6 +10,10 @@ import {
   RIGHT_EYE_INDICES,
   LIPS_INDICES,
 } from '@/lib/mock/visual-analysis';
+import type { FaceLandmark, FaceLandmarkResult } from '@/types/visual-analysis';
+
+import { initFaceMesh, closeFaceMesh, checkMediaPipeCDN } from './mediapipe-loader';
+import type { MediaPipeFaceMesh, MediaPipeFaceMeshResults } from './mediapipe-loader';
 
 // ============================================
 // 상수 정의
@@ -200,7 +201,7 @@ function fillPolygon(
   mask: Uint8Array,
   width: number,
   height: number,
-  points: Array<{ x: number; y: number }>
+  points: { x: number; y: number }[]
 ): void {
   if (points.length < 3) return;
 
@@ -252,7 +253,7 @@ function clearPolygon(
   mask: Uint8Array,
   width: number,
   height: number,
-  points: Array<{ x: number; y: number }>
+  points: { x: number; y: number }[]
 ): void {
   if (points.length < 3) return;
 

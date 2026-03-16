@@ -411,7 +411,7 @@ export function getQuickPostWorkoutMessage(
  * S-1의 SkinMetric[] 형태를 SkinAnalysisSummary로 변환
  */
 export function convertToSkinSummary(
-  skinMetrics: Array<{ id: string; status: MetricStatus }>
+  skinMetrics: { id: string; status: MetricStatus }[]
 ): SkinAnalysisSummary {
   // metrics 배열을 id로 인덱싱
   const metricsById = skinMetrics.reduce(

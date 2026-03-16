@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { useTheme, radii, spacing } from '../../lib/theme';
 
 export interface SkinVitalityScoreProps {

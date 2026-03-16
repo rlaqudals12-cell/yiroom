@@ -22,8 +22,6 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '../../components/ui';
-
 import { TIMING, staggeredEntry } from '@/lib/animations';
 import {
   useInventory,
@@ -32,6 +30,8 @@ import {
   type SupplementMetadata,
 } from '@/lib/inventory';
 import { useTheme, typography, spacing } from '@/lib/theme';
+
+import { GlassCard, ScreenContainer } from '../../components/ui';
 
 // 탭
 type PantryTab = 'pantry' | 'supplement';

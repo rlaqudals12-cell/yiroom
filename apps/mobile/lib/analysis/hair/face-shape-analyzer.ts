@@ -8,6 +8,7 @@
  */
 
 import type { Landmark33 } from '@/lib/analysis/body-v2';
+
 import type { FaceShapeType, FaceShapeAnalysis } from './types';
 import { FACE_SHAPE_LABELS, FACE_SHAPE_DESCRIPTIONS } from './types';
 
@@ -61,7 +62,7 @@ const FACE_LANDMARKS = {
  * @returns 얼굴형 분석 결과
  */
 export function analyzeFaceShape(
-  landmarks: Array<{ x: number; y: number; z?: number }>
+  landmarks: { x: number; y: number; z?: number }[]
 ): FaceShapeAnalysis {
   // 얼굴 비율 계산
   const ratios = calculateFaceRatios(landmarks);
@@ -81,7 +82,7 @@ export function analyzeFaceShape(
  * 얼굴 비율 계산
  */
 function calculateFaceRatios(
-  landmarks: Array<{ x: number; y: number; z?: number }>
+  landmarks: { x: number; y: number; z?: number }[]
 ): FaceShapeAnalysis['ratios'] {
   // 안전한 인덱스 접근
   const get = (idx: number) => landmarks[idx] || { x: 0.5, y: 0.5 };
@@ -131,7 +132,6 @@ function calculateFaceRatios(
 /**
  * 비율 기반 얼굴형 분류
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function classifyFaceShape(ratios: FaceShapeAnalysis['ratios']): {
   faceShape: FaceShapeType;
   confidence: number;

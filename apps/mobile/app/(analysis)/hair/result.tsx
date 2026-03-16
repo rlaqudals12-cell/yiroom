@@ -6,6 +6,7 @@
  *  상세: RadarChart 4축 + 주요 고민
  *  추천: 케어 루틴 + 추천 헤어스타일
  */
+import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -20,19 +21,17 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { saveHairResult } from '@/lib/analysis';
+import { TIMING } from '@/lib/animations';
 import {
   analyzeHair as analyzeWithGemini,
   imageToBase64,
   type HairAnalysisResult,
 } from '@/lib/gemini';
-import { useUser } from '@clerk/clerk-expo';
-
-import { AIBadge } from '@/components/common/AIBadge';
-import { saveHairResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { TIMING } from '@/lib/animations';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑

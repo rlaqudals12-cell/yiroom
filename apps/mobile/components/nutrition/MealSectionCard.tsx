@@ -5,11 +5,11 @@
  * 아침/점심/저녁/간식 아이콘, 음식 리스트, 합계, 추가 버튼.
  */
 
+import * as Haptics from 'expo-haptics';
+import { Sun, Coffee, UtensilsCrossed, Moon, Plus } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Sun, Coffee, UtensilsCrossed, Moon, Plus } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../lib/theme';
 

@@ -7,8 +7,8 @@
  */
 import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
 import { GradientText, type GradientTextVariant } from './GradientText';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface SectionHeaderProps {
   title: string;

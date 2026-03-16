@@ -3,9 +3,11 @@
  * @description user_inventory (category='pantry')와 레시피 매칭 시스템 연동
  */
 
-import { recommendRecipes, type NutritionGoal, type RecipeMatchResult } from './recipe-matcher';
-import type { InventoryItem, PantryMetadata } from '@/types/inventory';
 import { differenceInDays } from 'date-fns';
+
+import type { InventoryItem, PantryMetadata } from '@/types/inventory';
+
+import { recommendRecipes, type NutritionGoal, type RecipeMatchResult } from './recipe-matcher';
 
 /**
  * 냉장고 재료로부터 레시피 매칭

@@ -7,6 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Share, Pressable, ActivityIndicator } from 'react-native';
+
 import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface QRCodeDisplayProps {

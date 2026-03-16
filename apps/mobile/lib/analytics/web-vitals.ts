@@ -11,8 +11,8 @@
  */
 'use client';
 
-import { onCLS, onLCP, onTTFB, onINP, type Metric } from 'web-vitals';
 import * as Sentry from '@sentry/nextjs';
+import { onCLS, onLCP, onTTFB, onINP, type Metric } from 'web-vitals';
 
 /**
  * Core Web Vitals 임계값 정의

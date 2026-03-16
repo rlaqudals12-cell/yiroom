@@ -16,12 +16,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import type { FeedItem, FeedTab } from '../../lib/feed/types';
 import { useFeed } from '../../lib/feed/useFeed';
-
-import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {

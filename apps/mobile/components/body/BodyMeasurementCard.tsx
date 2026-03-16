@@ -4,10 +4,10 @@
  * 신체 측정값(현재/이전/이상 범위)을 시각적으로 표시.
  * 이전 값 대비 변화 방향(증가/감소)과 이상 범위 바를 렌더링.
  */
+import { ArrowUp, ArrowDown, Ruler } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { ArrowUp, ArrowDown, Ruler } from 'lucide-react-native';
 
 import { useTheme, radii } from '../../lib/theme';
 

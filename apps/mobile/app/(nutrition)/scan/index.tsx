@@ -18,6 +18,9 @@ import {
   Image,
 } from 'react-native';
 
+import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { useTheme, spacing, radii, typography } from '@/lib/theme';
+
 import {
   lookupBarcode,
   recordBarcodeFood,
@@ -27,9 +30,6 @@ import {
 } from '../../../lib/nutrition/barcodeService';
 import { useClerkSupabaseClient } from '../../../lib/supabase';
 import { nutritionLogger } from '../../../lib/utils/logger';
-
-import { ScreenContainer, SuccessCheckmark } from '@/components/ui';
-import { useTheme, spacing, radii, typography } from '@/lib/theme';
 
 // 식사 타입
 const MEAL_TYPES = [

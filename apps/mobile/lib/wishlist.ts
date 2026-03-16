@@ -3,9 +3,10 @@
  * @description 사용자 위시리스트 CRUD 함수
  */
 
-import type { ProductType } from '@/types/product';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { wishlistLogger } from '@/lib/utils/logger';
+import type { ProductType } from '@/types/product';
 
 export interface WishlistItem {
   id: string;
@@ -160,7 +161,7 @@ export async function getUserWishlist(
 export async function checkWishlistStatusBulk(
   supabase: SupabaseClient,
   clerkUserId: string,
-  products: Array<{ productType: ProductType; productId: string }>
+  products: { productType: ProductType; productId: string }[]
 ): Promise<Map<string, boolean>> {
   const result = new Map<string, boolean>();
 

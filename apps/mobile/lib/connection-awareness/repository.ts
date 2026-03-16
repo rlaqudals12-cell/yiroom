@@ -5,6 +5,8 @@
  * @description DB 접근 및 상태 전이 로직
  */
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import type {
   ConnectionStatus,
   ConnectionAwareness,
@@ -14,7 +16,6 @@ import type {
   ConnectionStats,
   ExplanationDepth,
 } from './types';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 // 상태 전이 조건
 const STATUS_TRANSITIONS: Record<ConnectionStatus, { minExposure: number; minConfirmed: number }> =

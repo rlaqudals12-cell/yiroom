@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface WorkoutMetrics {
@@ -14,7 +15,7 @@ export interface WorkoutMetrics {
   totalCalories: number;
   avgIntensity: number;
   streak: number;
-  personalBests?: Array<{ exercise: string; record: string }>;
+  personalBests?: { exercise: string; record: string }[];
 }
 
 export interface WorkoutMetricsDashboardProps {

@@ -3,8 +3,9 @@
  * @description 리뷰 CRUD + 도움됨 기능 + 요약 통계
  */
 
-import { supabase } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+import { supabase } from '@/lib/supabase/client';
 import { productLogger } from '@/lib/utils/logger';
 import type {
   ProductReview,

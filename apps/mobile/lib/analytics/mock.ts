@@ -143,11 +143,10 @@ export function generateMockRealtimeStats(): RealtimeStats {
 export function generateMockDailyTrend(
   startDate: string,
   endDate: string
-): Array<{ date: string; pageViews: number; uniqueUsers: number; sessions: number }> {
+): { date: string; pageViews: number; uniqueUsers: number; sessions: number }[] {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  const days: Array<{ date: string; pageViews: number; uniqueUsers: number; sessions: number }> =
-    [];
+  const days: { date: string; pageViews: number; uniqueUsers: number; sessions: number }[] = [];
 
   const current = new Date(start);
   while (current <= end) {

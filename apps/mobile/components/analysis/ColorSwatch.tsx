@@ -4,10 +4,10 @@
  * 원형 색상 칩 + 컬러명 + press 시 hex 복사 + 햅틱.
  * ColorPalette의 단위 컴포넌트.
  */
-import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
+import { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTheme } from '../../lib/theme';

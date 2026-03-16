@@ -29,7 +29,7 @@ interface MediaPipePoseOptions {
 }
 
 interface MediaPipePoseResults {
-  poseLandmarks?: Array<{ x: number; y: number; z: number; visibility: number }>;
+  poseLandmarks?: { x: number; y: number; z: number; visibility: number }[];
   image: HTMLCanvasElement;
 }
 
@@ -106,7 +106,7 @@ function calculateOverallVisibility(landmarks: Landmark33[]): number {
  * 랜드마크 변환 (MediaPipe -> 내부 타입)
  */
 function transformLandmarks(
-  poseLandmarks: Array<{ x: number; y: number; z: number; visibility: number }>
+  poseLandmarks: { x: number; y: number; z: number; visibility: number }[]
 ): Landmark33[] {
   return poseLandmarks.map((lm) => ({
     x: lm.x,

@@ -7,10 +7,10 @@
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
-import { ScoreGauge } from '../ui/ScoreGauge';
-import { useTheme, spacing } from '../../lib/theme';
-import { TIMING, usePulseGlow } from '../../lib/animations';
 import type { WellnessBreakdown } from '../../hooks/useWellnessScore';
+import { TIMING, usePulseGlow } from '../../lib/animations';
+import { useTheme, spacing } from '../../lib/theme';
+import { ScoreGauge } from '../ui/ScoreGauge';
 
 interface WellnessScoreRingProps {
   score: number;

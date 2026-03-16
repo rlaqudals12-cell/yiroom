@@ -4,8 +4,10 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { challengeLogger } from '@/lib/utils/logger';
 import type { ChallengeProgress, UserChallenge, UserChallengeRow } from '@/types/challenges';
+
 import {
   userChallengeRowToUserChallenge,
   isChallengeCompleted,
@@ -68,7 +70,6 @@ async function saveChallengeProgress(
  * - 운동 완료 시 'workout' 도메인 전달
  * - 식단 기록 시 'nutrition' 도메인 전달
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function updateChallengesByDomain(
   supabase: SupabaseClient,
   clerkUserId: string,

@@ -10,10 +10,9 @@
  *   <ScanLineOverlay active={isAnalyzing} />
  * </View>
  */
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { brand } from '../../lib/theme/tokens';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -23,6 +22,8 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+
+import { brand } from '../../lib/theme/tokens';
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 

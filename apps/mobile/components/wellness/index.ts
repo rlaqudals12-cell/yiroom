@@ -7,3 +7,4 @@ export {
   type WellnessCategory,
   type WellnessBreakdownProps,
 } from './WellnessBreakdown';
+export { StressVisualization, type StressVisualizationProps } from './StressVisualization';

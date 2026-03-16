@@ -6,6 +6,7 @@
  */
 
 import * as Sentry from '@sentry/nextjs';
+
 import { RateLimitCategory, RateLimitResult } from '@/types/rate-limit';
 
 /**

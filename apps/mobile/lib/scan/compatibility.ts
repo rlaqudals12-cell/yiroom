@@ -6,18 +6,19 @@
  */
 
 import type { ProductIngredient } from '@/types/scan';
-import {
-  type SkinType,
-  calculateSkinTypeScore,
-  checkIngredientForSkinType,
-  SKIN_CONCERN_INGREDIENTS,
-} from './skin-ingredient-match';
+
 import {
   detectInteractions,
   categorizeInteractions,
   calculateInteractionPenalty,
   type InteractionWarning,
 } from './ingredient-interactions';
+import {
+  type SkinType,
+  calculateSkinTypeScore,
+  checkIngredientForSkinType,
+  SKIN_CONCERN_INGREDIENTS,
+} from './skin-ingredient-match';
 
 // 사용자 분석 데이터 타입
 export interface UserAnalysisData {
@@ -79,7 +80,6 @@ export interface CompatibilityResult {
 /**
  * 피부 호환성 계산
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- skin compatibility scoring
 function calculateSkinCompatibility(
   ingredients: ProductIngredient[],
   skinAnalysis: UserAnalysisData['skinAnalysis']
@@ -223,7 +223,6 @@ function calculateSkinCompatibility(
 /**
  * 색조 제품 컬러 매칭 (메이크업 제품용)
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateColorMatch(
   productCategory: string,
   productColor: string | undefined,

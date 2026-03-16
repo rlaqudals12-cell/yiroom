@@ -4,8 +4,8 @@
  * 사용자 사진 위에 반투명 컬러 오버레이.
  * 하단 색상 팔레트 터치로 색상 선택.
  */
-import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';

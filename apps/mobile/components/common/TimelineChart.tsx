@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export interface TimelineDataPoint {

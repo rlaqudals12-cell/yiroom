@@ -8,10 +8,10 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '../../../components/ui';
-
 import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
+
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 
 interface OutfitSuggestion {
   id: string;

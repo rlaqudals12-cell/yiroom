@@ -6,6 +6,7 @@
  *  상세: RadarChart 4축 + 부위별 추천
  *  추천: 추천 컬러 팔레트 + 메이크업 팁
  */
+import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -21,19 +22,17 @@ import {
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { saveMakeupResult } from '@/lib/analysis';
+import { TIMING } from '@/lib/animations';
 import {
   analyzeMakeup as analyzeWithGemini,
   imageToBase64,
   type MakeupAnalysisResult,
 } from '@/lib/gemini';
-import { useUser } from '@clerk/clerk-expo';
-
-import { AIBadge } from '@/components/common/AIBadge';
-import { saveMakeupResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { TIMING } from '@/lib/animations';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑

@@ -21,8 +21,8 @@ import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { staggeredEntry } from '@/lib/animations';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
+import { staggeredEntry } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { useClerkSupabaseClient } from '../../../lib/supabase';

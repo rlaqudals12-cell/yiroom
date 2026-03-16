@@ -206,13 +206,13 @@ export function recommendTargetShade(
 export function getWhiteningMethodsForSeason(
   season: PersonalColorSeason,
   shadeSteps: number
-): Array<{
+): {
   method: string;
   effectiveness: 'low' | 'medium' | 'high';
   duration: string;
   notes: string;
   suitability: number; // 0-100
-}> {
+}[] {
   const methods = [];
 
   // 미백 치약 (1-2단계)

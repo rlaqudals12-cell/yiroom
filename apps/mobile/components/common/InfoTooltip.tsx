@@ -4,11 +4,11 @@
  * children 옆에 (i) 아이콘을 표시하고 누르면 말풍선 툴팁을 토글.
  * FadeIn 애니메이션으로 부드럽게 표시/숨김.
  */
+import * as Haptics from 'expo-haptics';
+import { Info } from 'lucide-react-native';
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { Info } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing } from '../../lib/theme';
 

@@ -6,8 +6,9 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme, spacing } from '../../lib/theme';
+
 import { GumHealthIndicator, type GumHealthResult } from './GumHealthIndicator';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface ToothColorInfo {
   currentShade: string;
@@ -18,7 +19,7 @@ export interface ToothColorInfo {
 export interface WhiteningGoal {
   targetShade: string;
   expectedDuration: string;
-  methods: Array<{ name: string; effectiveness: 'high' | 'medium' | 'low' }>;
+  methods: { name: string; effectiveness: 'high' | 'medium' | 'low' }[];
   overWhiteningWarning?: boolean;
 }
 

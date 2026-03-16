@@ -7,7 +7,9 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
 import { RateLimitResult, RateLimitErrorResponse, RATE_LIMIT_HEADERS } from '@/types/rate-limit';
+
 import {
   checkRateLimitWithFallback,
   getRateLimitCategory,

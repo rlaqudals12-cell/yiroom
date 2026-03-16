@@ -4,8 +4,9 @@
  */
 import React from 'react';
 import { View, Text, FlatList, type ViewStyle } from 'react-native';
-import { useTheme } from '../../lib/theme';
+
 import { NotificationCard, type NotificationCardProps } from './NotificationCard';
+import { useTheme } from '../../lib/theme';
 
 export interface NotificationListProps {
   notifications: Omit<NotificationCardProps, 'onPress' | 'style'>[];

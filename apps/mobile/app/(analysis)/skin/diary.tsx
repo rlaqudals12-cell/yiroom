@@ -17,6 +17,9 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { ScreenContainer, GlassCard } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
+
 import { useSkinDiary } from '../../../hooks/useSkinDiary';
 import {
   CONDITION_LABELS,
@@ -34,9 +37,6 @@ import {
   spacing,
   radii,
 } from '../../../lib/theme';
-
-import { ScreenContainer, GlassCard } from '@/components/ui';
-import { TIMING } from '@/lib/animations';
 
 export default function SkinDiaryScreen(): React.JSX.Element {
   const { colors, isDark } = useTheme();

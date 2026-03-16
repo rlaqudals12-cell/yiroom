@@ -5,11 +5,11 @@
  * 햅틱 피드백 포함.
  */
 
+import * as Haptics from 'expo-haptics';
+import { Droplets, Plus } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Droplets, Plus } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../lib/theme';
 

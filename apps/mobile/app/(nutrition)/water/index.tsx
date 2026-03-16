@@ -7,11 +7,11 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 
-import { useClerkSupabaseClient } from '../../../lib/supabase';
-import { waterLogger } from '../../../lib/utils/logger';
-
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
+
+import { useClerkSupabaseClient } from '../../../lib/supabase';
+import { waterLogger } from '../../../lib/utils/logger';
 
 // 빠른 추가 옵션 (ml)
 const QUICK_ADD_OPTIONS = [

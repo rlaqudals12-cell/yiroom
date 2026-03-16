@@ -7,6 +7,7 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
+import { recommendHairstyles, recommendHairColors, generateCareTips } from './style-recommender';
 import type {
   HairAnalysisResult,
   FaceShapeType,
@@ -19,7 +20,6 @@ import type {
   ScalpCondition,
 } from './types';
 import { FACE_SHAPE_LABELS } from './types';
-import { recommendHairstyles, recommendHairColors, generateCareTips } from './style-recommender';
 
 // =============================================================================
 // Mock 데이터 생성

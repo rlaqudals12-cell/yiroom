@@ -6,8 +6,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
 import type { ClothingCategory } from './ClothingCard';
+import { useTheme } from '../../lib/theme';
 
 export interface AddClothingSheetProps {
   onSave?: (data: { name: string; category: ClothingCategory; color: string }) => void;

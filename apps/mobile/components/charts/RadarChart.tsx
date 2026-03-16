@@ -8,8 +8,8 @@
  */
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
-import Svg, { Polygon, Circle, Line, Text as SvgText } from 'react-native-svg';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import Svg, { Polygon, Circle, Line, Text as SvgText } from 'react-native-svg';
 
 import { useTheme } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';

@@ -7,13 +7,13 @@ import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Platform, Linking, Pressable } from 'react-native';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { ScreenContainer, GlassCard } from '../../components/ui';
 import { QuickActionsWidget } from '../../components/widgets/QuickActionsWidget';
 import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget';
 import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function WidgetSettingsScreen() {
   const { colors, brand } = useTheme();

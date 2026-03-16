@@ -5,6 +5,14 @@
  * @description 분석 데이터를 기반으로 인사이트 생성
  */
 
+import { selectText, selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
+
+import {
+  calculatePriorityScore,
+  scoreToPriority,
+  sortByPriorityScore,
+  filterByMinScore,
+} from './scoring';
 import type {
   Insight,
   InsightCategory,
@@ -19,13 +27,6 @@ import type {
   SynergyInsight,
   HealthAlertInsight,
 } from './types';
-import {
-  calculatePriorityScore,
-  scoreToPriority,
-  sortByPriorityScore,
-  filterByMinScore,
-} from './scoring';
-import { selectText, selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 한글 라벨 매핑

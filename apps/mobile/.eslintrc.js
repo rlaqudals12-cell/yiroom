@@ -11,6 +11,7 @@ module.exports = {
     // Prettier 통합
     'prettier/prettier': 'error',
 
+
     // React 규칙
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',

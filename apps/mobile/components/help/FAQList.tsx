@@ -4,6 +4,7 @@
  */
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, type ViewStyle } from 'react-native';
+
 import { useTheme } from '../../lib/theme';
 
 export interface FAQItem {

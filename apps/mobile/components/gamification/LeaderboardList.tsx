@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
 import { LeaderboardCard, type LeaderboardCardProps } from './LeaderboardCard';
+import { useTheme } from '../../lib/theme';
 
 export interface LeaderboardListProps {
   entries: Omit<LeaderboardCardProps, 'onPress' | 'style'>[];

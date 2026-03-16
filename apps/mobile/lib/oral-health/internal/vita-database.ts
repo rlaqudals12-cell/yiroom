@@ -251,7 +251,7 @@ export function findBestShadeMatch(
   shade: VitaShade;
   deltaE: number;
   reference: VitaShadeReference;
-  alternativeMatches: Array<{ shade: VitaShade; deltaE: number }>;
+  alternativeMatches: { shade: VitaShade; deltaE: number }[];
 } {
   const candidates = excludeBleached
     ? VITA_SHADE_DATABASE.filter((s) => !s.shade.startsWith('0M'))

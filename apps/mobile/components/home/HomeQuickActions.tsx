@@ -6,11 +6,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '../../lib/animations';
+import { useTheme, typography, spacing } from '../../lib/theme';
 import { GlassCard, AnimatedCard } from '../ui';
 import { GradientBackground } from '../ui';
 import { SectionHeader } from '../ui';
-import { useTheme, typography, spacing } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
 
 interface QuickAction {
   title: string;

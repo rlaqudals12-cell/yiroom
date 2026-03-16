@@ -15,8 +15,8 @@ import {
 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 
-import { useTheme, typography, radii, spacing } from '../../lib/theme';
 import type { AnalysisModuleType, AnalysisHistoryItem } from '../../hooks/useAnalysisHistory';
+import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface ModuleConfig {
   label: string;

@@ -13,8 +13,8 @@ import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
+import { CrossDomainChallengeCard } from '../../components/gamification/CrossDomainChallengeCard';
 import { ScreenContainer } from '../../components/ui';
-
 import {
   DOMAIN_NAMES,
   DOMAIN_COLORS,
@@ -26,8 +26,13 @@ import {
   type UserChallenge,
 } from '../../lib/challenges';
 import { useChallenges, useJoinChallenge } from '../../lib/challenges/useChallenges';
+import {
+  CROSS_DOMAIN_CHALLENGES,
+  buildCrossDomainView,
+  type CrossDomainProgressView,
+} from '../../lib/gamification/cross-domain-challenges';
 
-type TabType = 'explore' | 'my';
+type TabType = 'explore' | 'my' | 'cross';
 
 export default function ChallengesScreen() {
   const { colors, brand, spacing, radii } = useTheme();
@@ -69,6 +74,11 @@ export default function ChallengesScreen() {
 
   // 완료된 챌린지 (향후 통계 표시용)
   const _completedChallenges = userChallenges.filter((uc) => uc.status === 'completed');
+
+  // 크로스도메인 챌린지 뷰 생성 (실제 활동 데이터는 향후 연동, 현재 0으로 표시)
+  const crossDomainViews: CrossDomainProgressView[] = CROSS_DOMAIN_CHALLENGES.map((challenge) =>
+    buildCrossDomainView(challenge, {})
+  );
 
   const renderChallenge = ({ item }: { item: Challenge }) => {
     const participating = isParticipating(item.id);
@@ -284,10 +294,27 @@ export default function ChallengesScreen() {
             내 챌린지 {activeChallenges.length > 0 && `(${activeChallenges.length})`}
           </Text>
         </Pressable>
+        <Pressable
+          style={[
+            styles.tab,
+            activeTab === 'cross' && [styles.tabActive, { backgroundColor: colors.card }],
+          ]}
+          onPress={() => handleTabChange('cross')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.mutedForeground },
+              activeTab === 'cross' && { color: brand.primary },
+            ]}
+          >
+            크로스
+          </Text>
+        </Pressable>
       </View>
 
       {/* 목록 */}
-      {activeTab === 'explore' ? (
+      {activeTab === 'explore' && (
         <FlatList
           data={challenges}
           keyExtractor={(item) => item.id}
@@ -305,7 +332,8 @@ export default function ChallengesScreen() {
             </View>
           }
         />
-      ) : (
+      )}
+      {activeTab === 'my' && (
         <FlatList
           data={activeChallenges}
           keyExtractor={(item) => item.id}
@@ -328,6 +356,30 @@ export default function ChallengesScreen() {
                   챌린지 탐색하기
                 </Text>
               </Pressable>
+            </View>
+          }
+        />
+      )}
+      {activeTab === 'cross' && (
+        <FlatList
+          data={crossDomainViews}
+          keyExtractor={(item) => item.challengeId}
+          renderItem={({ item }) => (
+            <CrossDomainChallengeCard
+              view={item}
+              definition={CROSS_DOMAIN_CHALLENGES.find((c) => c.id === item.challengeId)}
+              onJoin={handleJoin}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          testID="cross-domain-challenge-list"
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>🌟</Text>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                크로스도메인 챌린지가 없어요
+              </Text>
             </View>
           }
         />

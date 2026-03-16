@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
 import { FriendCard, type FriendCardProps } from './FriendCard';
+import { useTheme, spacing } from '../../lib/theme';
 
 export interface FriendListProps {
   friends: Omit<FriendCardProps, 'onPress' | 'style'>[];

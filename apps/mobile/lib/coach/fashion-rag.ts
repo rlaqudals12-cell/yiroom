@@ -5,6 +5,7 @@
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
+
 import type { UserContext } from './types';
 
 /** TPO (상황) */

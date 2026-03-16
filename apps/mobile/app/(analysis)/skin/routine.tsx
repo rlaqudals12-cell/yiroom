@@ -11,9 +11,6 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer, GlassCard, DataStateWrapper } from '../../../components/ui';
-import { TIMING } from '../../../lib/animations';
-
 import {
   useSkincareRoutine,
   getCategoryInfo,
@@ -21,6 +18,9 @@ import {
   type RoutineStep,
 } from '@/lib/skincare';
 import { moduleColors, useTheme, typography, radii, spacing } from '@/lib/theme';
+
+import { ScreenContainer, GlassCard, DataStateWrapper } from '../../../components/ui';
+import { TIMING } from '../../../lib/animations';
 
 export default function SkincareRoutineScreen() {
   const { colors } = useTheme();

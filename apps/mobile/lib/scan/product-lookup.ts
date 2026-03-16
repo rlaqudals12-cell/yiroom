@@ -4,13 +4,19 @@
  * - Open Beauty Facts API 폴백
  */
 
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import type {
   GlobalProduct,
   ProductLookupResult,
   ProductIngredient,
   ProductCategory,
 } from '@/types/scan';
-import { classifyByRange } from '@/lib/utils/conditional-helpers';
+
+// ============================================
+// 내부 DB 조회 (시드 데이터 + Supabase)
+// ============================================
+
+import { findProductByBarcode } from './korean-products-seed';
 
 // ============================================
 // Open Beauty Facts API
@@ -166,12 +172,6 @@ async function lookupFromOpenBeautyFacts(barcode: string): Promise<ProductLookup
     };
   }
 }
-
-// ============================================
-// 내부 DB 조회 (시드 데이터 + Supabase)
-// ============================================
-
-import { findProductByBarcode } from './korean-products-seed';
 
 /**
  * 내부 DB에서 제품 조회

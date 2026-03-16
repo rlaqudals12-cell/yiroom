@@ -6,12 +6,6 @@
  * @see docs/specs/SDD-OH-1-ORAL-HEALTH.md
  */
 
-import type {
-  WhiteningGoalInput,
-  WhiteningGoalResult,
-  VitaShade,
-  PersonalColorSeason,
-} from './types';
 import {
   SEASON_SHADE_RECOMMENDATIONS,
   isOverWhitening,
@@ -19,6 +13,12 @@ import {
   getWhiteningMethodsForSeason,
 } from './internal/season-shade-map';
 import { calculateShadeSteps } from './internal/vita-database';
+import type {
+  WhiteningGoalInput,
+  WhiteningGoalResult,
+  VitaShade,
+  PersonalColorSeason,
+} from './types';
 
 /**
  * 미백 목표 계산

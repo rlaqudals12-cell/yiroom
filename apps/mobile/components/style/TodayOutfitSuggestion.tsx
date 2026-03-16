@@ -9,9 +9,9 @@ import { Wand2 } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, spacing } from '../../lib/theme';
 import { TIMING } from '../../lib/animations';
 import type { OutfitSuggestion, ClosetRecommendation } from '../../lib/inventory';
+import { useTheme, spacing } from '../../lib/theme';
 
 // 슬롯명 → 한국어 라벨
 const SLOT_LABELS: Record<string, string> = {

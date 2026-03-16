@@ -6,6 +6,7 @@
  */
 
 import type { AnalysisSummary } from '@/hooks/useUserAnalyses';
+
 import type {
   AnalysisDataBundle,
   PersonalColorData,

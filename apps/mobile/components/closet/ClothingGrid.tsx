@@ -7,12 +7,12 @@
 import React, { useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet, Dimensions, type ViewStyle } from 'react-native';
 
-import { useTheme, spacing } from '../../lib/theme';
 import {
   ClosetClothingCard,
   type ClosetClothingCardProps,
   type ClosetCategory,
 } from './ClothingCard';
+import { useTheme, spacing } from '../../lib/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

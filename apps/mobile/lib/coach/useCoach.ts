@@ -6,9 +6,9 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 
+import { useNutritionData } from '../../hooks/useNutritionData';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useWorkoutData } from '../../hooks/useWorkoutData';
-import { useNutritionData } from '../../hooks/useNutritionData';
 import { useNetworkStatus } from '../offline';
 import { useClerkSupabaseClient } from '../supabase';
 import {

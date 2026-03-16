@@ -18,6 +18,9 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { ScreenContainer } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
+
 import type { SavedOutfit, InventoryItem, Season, Occasion } from '../../lib/inventory/types';
 import { SEASON_LABELS, OCCASION_LABELS } from '../../lib/inventory/types';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -31,9 +34,6 @@ import {
   coloredShadow,
   moduleColors,
 } from '../../lib/theme';
-
-import { ScreenContainer } from '@/components/ui';
-import { TIMING } from '@/lib/animations';
 
 export default function OutfitsScreen(): React.JSX.Element {
   const { colors, isDark } = useTheme();

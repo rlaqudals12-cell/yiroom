@@ -4,10 +4,10 @@
  * 랭킹 순위 행: 순위(1~3위 메달), 아바타, 사용자명, 점수.
  * 현재 사용자 행은 brand.primary 배경으로 강조.
  */
+import { Trophy } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Trophy } from 'lucide-react-native';
 
 import { useTheme } from '../../lib/theme';
 

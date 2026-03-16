@@ -9,6 +9,12 @@
  * 조회 우선순위: 캐시 → DB → 기본값 (Fallback)
  */
 
+import {
+  IntegrationDataNotFoundError,
+  IntegrationTimeoutError,
+  handleIntegrationError,
+  type IntegrationResult,
+} from './integration-error';
 import type {
   SourceModule,
   TargetModule,
@@ -22,15 +28,7 @@ import type {
   CIE3ToAnalysisData,
   CIE4ToAnalysisData,
 } from './integration-types';
-
 import { DEFAULT_INTEGRATION_DATA } from './integration-types';
-
-import {
-  IntegrationDataNotFoundError,
-  IntegrationTimeoutError,
-  handleIntegrationError,
-  type IntegrationResult,
-} from './integration-error';
 
 // ============================================
 // 타입 정의

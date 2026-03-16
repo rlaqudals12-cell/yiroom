@@ -6,6 +6,7 @@
  *  상세: 웜/쿨 분석 + 피해야 할 색상
  *  추천: 스타일링 팁 + 메이크업 포인트
  */
+import { useUser } from '@clerk/clerk-expo';
 import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -22,20 +23,18 @@ import {
   DrapingPreview,
   useAnalysisStyles,
 } from '@/components/analysis';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { savePersonalColorResult } from '@/lib/analysis';
+import { TIMING } from '@/lib/animations';
 import {
   analyzePersonalColor as analyzeWithGemini,
   imageToBase64,
   type PersonalColorAnalysisResult,
 } from '@/lib/gemini';
-import { useUser } from '@clerk/clerk-expo';
-
-import { AIBadge } from '@/components/common/AIBadge';
-import { savePersonalColorResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
-import { TIMING } from '@/lib/animations';
 
 // --- 정적 데이터 ---
 

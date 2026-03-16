@@ -11,6 +11,7 @@
  * - 선호 핏 반영
  */
 
+import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   SizeRecommendation,
   SizeRecommendationBasis,
@@ -20,10 +21,10 @@ import type {
   SizeFit,
   ProductMeasurements,
 } from '@/types/smart-matching';
-import { smartMatchingLogger } from '@/lib/utils/logger';
+
 import { getMeasurements } from './measurements';
-import { getSizeHistoryByBrand, getPerfectFitHistory } from './size-history';
 import { getSizeChart, recommendSizeFromMeasurements, getProductMeasurements } from './size-charts';
+import { getSizeHistoryByBrand, getPerfectFitHistory } from './size-history';
 
 // Phase L-3-2: 체형 타입 정의
 type BodyType = 'S' | 'W' | 'N' | 'X' | 'A' | 'V' | 'H' | 'O' | 'I' | 'Y' | '8';
@@ -246,7 +247,6 @@ async function recommendGeneral(
 /**
  * 기본 신체 정보로 일반 사이즈 추론
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- size inference heuristics
 function inferSizeFromBasicMeasurements(
   measurements: UserBodyMeasurements,
   category: ClothingCategory
@@ -451,7 +451,6 @@ export function getBasisDescription(basis: SizeRecommendationBasis): string {
  * 실측 데이터로 추천 사이즈 보정
  * @description 사용자 신체 치수와 제품 실측 데이터 비교하여 사이즈 조정
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- measurement calibration logic
 function calibrateWithProductMeasurements(
   recommendation: SizeRecommendation,
   productMeasurements: ProductMeasurements,
@@ -611,7 +610,6 @@ const BODY_TYPE_LABELS: Record<BodyType, string> = {
  * 강화된 사이즈 추천 (Phase L-3-2)
  * @description 체형 + 상세 치수 + 선호 핏을 모두 고려한 정밀 추천
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function recommendSizeEnhanced(
   product: {
     category: ClothingCategory;

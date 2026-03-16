@@ -8,9 +8,9 @@ import { Palette, Droplets, Ruler, Clock } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { useTheme, spacing } from '../../lib/theme';
-import { TIMING } from '../../lib/animations';
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
+import { TIMING } from '../../lib/animations';
+import { useTheme, spacing } from '../../lib/theme';
 
 interface TypeConfigEntry {
   label: string;

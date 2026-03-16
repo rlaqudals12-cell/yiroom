@@ -22,12 +22,12 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../components/ui';
-import { closetLogger } from '../../lib/utils/logger';
-
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing } from '@/lib/theme';
+
+import { ScreenContainer } from '../../components/ui';
+import { closetLogger } from '../../lib/utils/logger';
 
 interface ClosetItem {
   id: string;

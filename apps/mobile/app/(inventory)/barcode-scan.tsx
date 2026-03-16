@@ -35,14 +35,14 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { productLogger } from '../../lib/utils/logger';
-
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { useInventory } from '@/lib/inventory';
 import { isValidBarcode } from '@/lib/nutrition/barcodeService';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing } from '@/lib/theme';
+
+import { productLogger } from '../../lib/utils/logger';
 
 interface BeautyProduct {
   id: string;

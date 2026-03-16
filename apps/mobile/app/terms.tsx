@@ -7,9 +7,9 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
-import { useTheme, typography, spacing, radii } from '../lib/theme';
-
 import { ScreenContainer } from '@/components/ui';
+
+import { useTheme, typography, spacing, radii } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 

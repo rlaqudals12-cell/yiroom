@@ -12,12 +12,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { workoutLogger } from '../../../lib/utils/logger';
-
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, spacing } from '@/lib/theme';
+
+import { workoutLogger } from '../../../lib/utils/logger';
 
 interface ExerciseLog {
   exercise_name: string;

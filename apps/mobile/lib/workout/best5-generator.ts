@@ -6,8 +6,9 @@
  * @see docs/SPEC-PHASE-L-M.md §3.2
  */
 
-import { Exercise, BodyType } from '@/types/workout';
 import { PostureType } from '@/lib/mock/posture-analysis';
+import { Exercise, BodyType } from '@/types/workout';
+
 import { getExerciseById, getAllExercises } from './exercises';
 
 // 체력 수준
@@ -347,7 +348,6 @@ function findSimilarExercises(
 /**
  * 운동 점수 계산
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateExerciseScore(
   exercise: Exercise,
   goal: ExerciseGoal,

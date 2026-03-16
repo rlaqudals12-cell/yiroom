@@ -164,7 +164,6 @@ function normalizeIngredientName(name: string): string {
 /**
  * 레시피 변형 생성
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function generateRecipeVariations(recipe: Recipe, goal?: VariationGoal): RecipeVariation[] {
   const goals: VariationGoal[] = goal ? [goal] : ['diet', 'lean', 'bulk'];
   const variations: RecipeVariation[] = [];

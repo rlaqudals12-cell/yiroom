@@ -19,6 +19,9 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
+import { TIMING } from '@/lib/animations';
+
 import type { ClothingCategory, Season, Occasion, InventoryItem } from '../../lib/inventory/types';
 import {
   CLOTHING_CATEGORY_LABELS,
@@ -27,9 +30,6 @@ import {
 } from '../../lib/inventory/types';
 import { useCloset, useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
-
-import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
-import { TIMING } from '@/lib/animations';
 
 const CATEGORY_ORDER: ClothingCategory[] = [
   'outer',

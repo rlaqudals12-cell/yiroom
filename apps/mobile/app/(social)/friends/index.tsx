@@ -9,12 +9,12 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING, staggeredEntry } from '../../../lib/animations';
 import { getTierColor, type Friend } from '../../../lib/social';
 import { useFriends, useFriendStats } from '../../../lib/social/useFriends';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function FriendsScreen() {
   const { colors, brand, module: moduleColors } = useTheme();

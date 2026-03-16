@@ -4,8 +4,9 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { FullOutfit, OutfitOccasion } from '@/types/styling';
+
 import type { SeasonType } from '@/lib/mock/personal-color';
+import type { FullOutfit, OutfitOccasion } from '@/types/styling';
 
 /** 저장된 코디 DB 레코드 */
 export interface SavedOutfitRecord {

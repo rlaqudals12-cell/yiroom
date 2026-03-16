@@ -10,7 +10,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Plus, Scan, Heart, Clock, Package } from 'lucide-react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,11 +24,20 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { BottomSheet, GlassCard, ScreenContainer } from '../../components/ui';
-
 import { TIMING, staggeredEntry } from '@/lib/animations';
-import { useInventory, type InventoryItem, type BeautyMetadata } from '@/lib/inventory';
+import {
+  useInventory,
+  type InventoryItem,
+  type BeautyMetadata,
+  matchProductsToRoutine,
+  getMissingStepMessages,
+  getRoutineCoverageSummary,
+  type InventoryProduct,
+} from '@/lib/inventory';
 import { useTheme, typography, spacing } from '@/lib/theme';
+
+import { RoutineBridgeCard } from '../../components/inventory/RoutineBridgeCard';
+import { BottomSheet, GlassCard, ScreenContainer } from '../../components/ui';
 
 // 뷰티 서브 카테고리 필터
 const BEAUTY_FILTERS = [
@@ -71,6 +80,36 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
   const [newProductName, setNewProductName] = useState('');
   const [newProductBrand, setNewProductBrand] = useState('');
   const [newProductCategory, setNewProductCategory] = useState('skincare');
+  const [routineTimeOfDay, setRoutineTimeOfDay] = useState<'morning' | 'evening'>('morning');
+
+  // 루틴 브릿지: 스킨케어 제품만 매칭
+  const skincareProducts: InventoryProduct[] = useMemo(
+    () =>
+      items
+        .filter((i) => i.subCategory === 'skincare' || i.subCategory === 'suncare')
+        .map((i) => ({
+          id: i.id,
+          name: i.name,
+          tags: i.tags,
+          remainingPercent: undefined, // 인벤토리에 잔여량 필드가 없으면 undefined
+        })),
+    [items]
+  );
+
+  const routineResult = useMemo(
+    () => matchProductsToRoutine(skincareProducts, routineTimeOfDay),
+    [skincareProducts, routineTimeOfDay]
+  );
+
+  const routineSummary = useMemo(
+    () => getRoutineCoverageSummary(routineResult.coveragePercent, routineTimeOfDay),
+    [routineResult.coveragePercent, routineTimeOfDay]
+  );
+
+  const routineMissingMessages = useMemo(
+    () => getMissingStepMessages(routineResult.missingSteps),
+    [routineResult.missingSteps]
+  );
 
   // 필터링
   const filteredItems =
@@ -389,6 +428,21 @@ export default function BeautyInventoryScreen(): React.JSX.Element {
             flexGrow: filteredItems.length === 0 ? 1 : undefined,
           }}
           refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} />}
+          ListHeaderComponent={
+            // 스킨케어 제품이 1개 이상일 때만 루틴 브릿지 표시
+            skincareProducts.length > 0 ? (
+              <View style={{ marginBottom: spacing.md }}>
+                <RoutineBridgeCard
+                  result={routineResult}
+                  timeOfDay={routineTimeOfDay}
+                  summaryMessage={routineSummary}
+                  missingMessages={routineMissingMessages}
+                  onTimeChange={setRoutineTimeOfDay}
+                  onAddProduct={() => setShowAddModal(true)}
+                />
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={{ fontSize: 48, marginBottom: spacing.md }}>💄</Text>

@@ -4,8 +4,9 @@
  * @see docs/adr/ADR-073-one-button-daily.md
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
+import { useState, useCallback, useEffect, useRef } from 'react';
+
 import type { DailyCapsule, BeautyProfile, ApiError } from './api';
 import {
   generateDailyCapsule as apiGenerateDaily,

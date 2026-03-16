@@ -12,7 +12,7 @@
  * 출력: SafetyReport { grade, score, alerts[], blockedIngredients[], disclaimer }
  */
 
-import type { SafetyCheckInput, SafetyReport, SafetyGrade, PipelineContext } from './types';
+import { getDisclaimer } from './disclaimer';
 import {
   CROSS_REACTIVITY_GROUPS,
   CONTRAINDICATION_RULES,
@@ -20,7 +20,7 @@ import {
   INTERACTION_RULES,
   ACTION_PENALTIES,
 } from './rules';
-import { getDisclaimer } from './disclaimer';
+import type { SafetyCheckInput, SafetyReport, SafetyGrade, PipelineContext } from './types';
 
 // =============================================================================
 // 메인 파이프라인

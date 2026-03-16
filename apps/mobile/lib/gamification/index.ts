@@ -7,6 +7,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import type { LevelUpResult } from '@/types/gamification';
 
 // ─── 타입 ────────────────────────────────────────────
@@ -463,3 +464,29 @@ export { RARITY_COLORS } from './constants';
 
 export type { BadgeAwardResult } from '@/types/gamification';
 export type { LevelUpResult } from '@/types/gamification';
+
+// ============================================
+// 크로스도메인 챌린지
+// ============================================
+export {
+  CROSS_DOMAIN_CHALLENGES,
+  DOMAIN_LABELS,
+  DOMAIN_COLORS,
+  DOMAIN_BG_COLORS,
+  DIFFICULTY_CONFIG,
+  calculateCrossDomainProgress,
+  calculateOverallProgress,
+  buildCrossDomainView,
+  getCrossDomainChallengeById,
+  getAvailableCrossDomainChallenges,
+  getIncompleteDomainMessages,
+} from './cross-domain-challenges';
+
+export type {
+  CrossChallengeDomain,
+  CrossChallengeDifficulty,
+  DomainRequirement,
+  CrossDomainChallengeDefinition,
+  DomainProgress,
+  CrossDomainProgressView,
+} from './cross-domain-challenges';

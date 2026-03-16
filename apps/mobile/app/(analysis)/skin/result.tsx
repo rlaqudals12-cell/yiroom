@@ -6,6 +6,7 @@
  *  상세: RadarChart 6축 + 전체 MetricBar + 변화량
  *  추천: 스킨케어 팁 + 추천/주의 성분
  */
+import { useUser } from '@clerk/clerk-expo';
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -25,27 +26,24 @@ import {
 } from '@/components/analysis';
 import type { FaceZone } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
+import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { saveSkinResult } from '@/lib/analysis';
+import { TIMING, usePulseGlow } from '@/lib/animations';
 import {
   analyzeSkin as analyzeWithGemini,
   imageToBase64,
   type SkinAnalysisResult,
 } from '@/lib/gemini';
-import { useUser } from '@clerk/clerk-expo';
-
-import { AIBadge } from '@/components/common/AIBadge';
-import { saveSkinResult } from '@/lib/analysis';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useClerkSupabaseClient } from '@/lib/supabase';
-import { TIMING, usePulseGlow } from '@/lib/animations';
-import { typography, spacing, radii } from '@/lib/theme';
-
 import {
   SKIN_TYPE_DATA,
   SCORE_WEIGHTS,
   type SkinMetrics,
   type SkinMetricsDelta,
 } from '@/lib/skincare';
+import { useClerkSupabaseClient } from '@/lib/supabase';
+import { typography, spacing, radii } from '@/lib/theme';
 
 // 메트릭 → 얼굴 존 변환 (피부 생리학 기반 추정)
 function buildFaceZones(m: SkinMetrics): FaceZone[] {

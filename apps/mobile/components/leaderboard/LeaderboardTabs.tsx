@@ -4,10 +4,10 @@
  * 주간/월간/전체 등 리더보드 기간 전환용 탭 바.
  * Reanimated 인디케이터 슬라이드 애니메이션 + 햅틱 피드백.
  */
+import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

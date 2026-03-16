@@ -213,17 +213,17 @@ export interface IngredientWarning {
  * 제품 추천 정보 (Week 6)
  */
 export interface ProductRecommendations {
-  routine: Array<{
+  routine: {
     step: number;
     category: string;
     categoryLabel?: string;
     products: string[];
     tip: string;
-  }>;
-  specialCare: Array<{
+  }[];
+  specialCare: {
     concern: string;
     products: string[];
-  }>;
+  }[];
   makeup?: {
     foundation?: string;
     lipColors?: string[];
@@ -615,7 +615,7 @@ export function generateMockDetailedZoneAnalysis(): DetailedZoneMap {
 
     // 20% 확률로 이전 분석 대비 변화 정보 추가
     if (Math.random() < 0.2) {
-      const changeTypes: Array<'improved' | 'same' | 'declined'> = ['improved', 'same', 'declined'];
+      const changeTypes: ('improved' | 'same' | 'declined')[] = ['improved', 'same', 'declined'];
       const change = changeTypes[Math.floor(Math.random() * 3)];
       let scoreDiff = 0;
       if (change === 'improved') scoreDiff = randomValue(3, 10);
@@ -634,7 +634,6 @@ export function generateMockDetailedZoneAnalysis(): DetailedZoneMap {
  * 특정 피부 타입에 맞는 12존 Mock 분석 데이터 생성
  * @param skinTypeId 피부 타입
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- mock data generator
 export function generateMockDetailedZoneAnalysisBySkinType(
   skinTypeId: SkinTypeId
 ): DetailedZoneMap {

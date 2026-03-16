@@ -230,12 +230,12 @@ export function calculateExerciseCalories(
  * @returns 세션 칼로리 계산 결과
  */
 export function calculateSessionCalories(
-  exercises: Array<{
+  exercises: {
     id: string;
     name: string;
     durationMinutes: number;
     met: number;
-  }>,
+  }[],
   weightKg: number
 ): SessionCalorieResult {
   if (weightKg <= 0 || exercises.length === 0) {

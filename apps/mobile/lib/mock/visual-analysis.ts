@@ -3,6 +3,7 @@
  * @description MediaPipe CDN 실패 시 Fallback용 Mock
  */
 
+import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type {
   FaceLandmark,
   FaceLandmarkResult,
@@ -11,7 +12,6 @@ import type {
   SynergyInsight,
   DrapeResult,
 } from '@/types/visual-analysis';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // ============================================
 // 랜드마크 Mock 인덱스 (MediaPipe Face Mesh 기준)

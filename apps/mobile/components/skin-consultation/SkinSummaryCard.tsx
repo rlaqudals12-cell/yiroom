@@ -4,9 +4,9 @@
  * 피부 타입, 수분/유분/민감도 지표를 미니 프로그레스 바로 표시.
  * 채팅 상단이나 사이드바에 컴팩트하게 배치.
  */
+import { Droplets } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { Droplets } from 'lucide-react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

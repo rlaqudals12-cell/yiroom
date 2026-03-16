@@ -8,8 +8,8 @@ import { useEffect } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import { CapsuleProgressBar } from '../../components/capsule/CapsuleProgressBar';
+import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import { ScreenContainer, GlassCard, SectionHeader, ErrorState } from '../../components/ui';
 import { staggeredEntry } from '../../lib/animations';
 import { useDailyCapsule } from '../../lib/capsule/hooks';

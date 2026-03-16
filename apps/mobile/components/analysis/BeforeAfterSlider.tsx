@@ -4,8 +4,8 @@
  * 수평 드래그로 두 이미지 비교. Gesture Handler + Reanimated.
  * useReducedMotion 시 나란히 표시.
  */
-import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';

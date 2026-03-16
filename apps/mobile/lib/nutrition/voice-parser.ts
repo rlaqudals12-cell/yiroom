@@ -78,11 +78,11 @@ function inferMealType(text: string): MealType {
 }
 
 // 수량 패턴
-const QUANTITY_PATTERNS: Array<{
+const QUANTITY_PATTERNS: {
   pattern: RegExp;
   getValue: (m: RegExpMatchArray) => number;
   unit: string;
-}> = [
+}[] = [
   { pattern: /(\d{1,4})\s{0,3}인분/, getValue: (m) => parseInt(m[1], 10), unit: '인분' },
   { pattern: /(\d{1,4})\s{0,3}공기/, getValue: (m) => parseInt(m[1], 10), unit: '공기' },
   { pattern: /(\d{1,4})\s{0,3}그릇/, getValue: (m) => parseInt(m[1], 10), unit: '그릇' },

@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { gamificationLogger } from '@/lib/utils/logger';
 import type {
   Badge,
@@ -15,6 +16,7 @@ import type {
   BadgeGroup,
   BadgeRequirement,
 } from '@/types/gamification';
+
 import { CATEGORY_NAMES } from './constants';
 
 // ============================================================

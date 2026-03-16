@@ -5,8 +5,8 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { LabColor } from '@/lib/color';
 import type { Landmark33 } from '@/lib/analysis/body-v2';
+import type { LabColor } from '@/lib/color';
 
 // =============================================================================
 // 얼굴형 타입

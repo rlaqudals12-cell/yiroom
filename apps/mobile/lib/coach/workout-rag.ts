@@ -8,9 +8,10 @@
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
-import type { UserContext } from './types';
 import { getAllExercises } from '@/lib/workout';
 import type { Exercise } from '@/types/workout';
+
+import type { UserContext } from './types';
 
 /** 운동 목표 */
 type WorkoutGoal = 'strength' | 'cardio' | 'flexibility' | 'weight_loss' | 'muscle_gain';
@@ -336,12 +337,12 @@ export async function searchWorkoutItems(
         result.hasWorkoutPlan = true;
 
         // 운동 계획에서 오늘의 운동 추출
-        const exercises = workoutPlan.exercises as Array<{
+        const exercises = workoutPlan.exercises as {
           name: string;
           category?: string;
           sets?: number;
           reps?: number;
-        }>;
+        }[];
         if (exercises && exercises.length > 0) {
           // 요일별 운동 선택 (간단한 로직)
           const dayOfWeek = new Date().getDay();

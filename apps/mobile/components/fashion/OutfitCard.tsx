@@ -4,8 +4,8 @@
  * 아이템 목록과 상황/계절 정보를 포함한 코디 조합을 표시.
  * 퍼스널컬러 모듈 색상을 활용하여 패션 도메인을 시각적으로 연결.
  */
-import React, { memo } from 'react';
 import { Image } from 'expo-image';
+import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';

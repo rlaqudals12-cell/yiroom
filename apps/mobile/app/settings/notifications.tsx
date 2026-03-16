@@ -16,14 +16,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { ScreenContainer, GlassCard } from '../../components/ui';
 import {
   useNotificationPermission,
   useNotificationSettings,
   useNotificationScheduler,
 } from '../../lib/notifications/useNotifications';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function NotificationsSettingsScreen() {
   const { colors, status, module: mod } = useTheme();

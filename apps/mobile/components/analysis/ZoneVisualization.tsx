@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { useTheme, spacing, statusColors } from '../../lib/theme';
 
 export type ZoneId = 'forehead' | 'tZone' | 'eyes' | 'cheeks' | 'uZone' | 'chin';
@@ -19,7 +20,7 @@ export interface ZoneData {
   label: string;
   concerns?: string[];
   recommendations?: string[];
-  metrics?: Array<{ name: string; value: number }>;
+  metrics?: { name: string; value: number }[];
 }
 
 export interface ZoneVisualizationProps {
@@ -128,7 +129,7 @@ export function ZoneVisualization({
 
       {/* 존 그리드 */}
       <View style={styles.zoneGrid}>
-        {(Object.entries(zones) as Array<[ZoneId, ZoneData]>).map(([zoneId, data]) => {
+        {(Object.entries(zones) as [ZoneId, ZoneData][]).map(([zoneId, data]) => {
           const isSelected = selectedZone === zoneId;
           const statusColor = STATUS_COLORS[data.status];
 

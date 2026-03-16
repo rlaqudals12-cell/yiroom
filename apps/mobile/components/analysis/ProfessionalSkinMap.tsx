@@ -7,12 +7,13 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useTheme, spacing, zoneColors } from '../../lib/theme';
+
 import type {
   DetailedZoneId,
   DetailedStatusLevel,
   DetailedZoneStatus,
 } from './DetailedFaceZoneMap';
+import { useTheme, spacing, zoneColors } from '../../lib/theme';
 
 export type ViewMode = 'overview' | 'detailed';
 
@@ -72,7 +73,7 @@ export function ProfessionalSkinMap({
   );
 
   // 평균 점수 계산
-  const zoneEntries = Object.entries(zones) as Array<[DetailedZoneId, DetailedZoneStatus]>;
+  const zoneEntries = Object.entries(zones) as [DetailedZoneId, DetailedZoneStatus][];
   const avgScore =
     zoneEntries.length > 0
       ? Math.round(zoneEntries.reduce((sum, [, z]) => sum + z.score, 0) / zoneEntries.length)

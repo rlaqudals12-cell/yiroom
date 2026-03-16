@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+
 import { useTheme, spacing } from '../../lib/theme';
 
 export type FaceShapeType =

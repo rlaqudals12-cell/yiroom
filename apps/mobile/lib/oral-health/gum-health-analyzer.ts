@@ -6,17 +6,17 @@
  * @see docs/specs/SDD-OH-1-ORAL-HEALTH.md
  */
 
-import type { GumHealthInput, GumHealthResult, LabColor } from './types';
-import {
-  detectGumInflammation,
-  classifyGumHealth,
-  generateGumHealthRecommendations,
-} from './internal/inflammation-detector';
 import {
   getGeminiOralAnalysis,
   convertGeminiGumHealthResult,
   extractGumPixelsWithApi,
 } from './internal/api-bridge';
+import {
+  detectGumInflammation,
+  classifyGumHealth,
+  generateGumHealthRecommendations,
+} from './internal/inflammation-detector';
+import type { GumHealthInput, GumHealthResult, LabColor } from './types';
 
 /**
  * 잇몸 건강 분석
@@ -109,10 +109,10 @@ async function extractGumPixelsFromImage(imageBase64: string): Promise<LabColor[
  * @param gumPixels - 잇몸 Lab 픽셀 배열
  * @returns 영향 받는 영역 배열
  */
-function analyzeAffectedAreas(gumPixels: LabColor[]): Array<{
+function analyzeAffectedAreas(gumPixels: LabColor[]): {
   region: 'upper_front' | 'upper_back' | 'lower_front' | 'lower_back';
   severity: 'mild' | 'moderate' | 'severe';
-}> {
+}[] {
   // 폴백 로직: 전체 분석 결과 기반으로 추정
 
   const avgA = gumPixels.reduce((sum, p) => sum + p.a, 0) / gumPixels.length;
@@ -122,10 +122,10 @@ function analyzeAffectedAreas(gumPixels: LabColor[]): Array<{
   }
 
   // 경미한 염증 시 일부 영역 반환
-  const areas: Array<{
+  const areas: {
     region: 'upper_front' | 'upper_back' | 'lower_front' | 'lower_back';
     severity: 'mild' | 'moderate' | 'severe';
-  }> = [];
+  }[] = [];
 
   if (avgA >= 12) {
     areas.push({ region: 'lower_front', severity: 'mild' });

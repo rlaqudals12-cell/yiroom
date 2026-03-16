@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+
 import { useTheme, spacing, radii } from '../../lib/theme';
 
 export type ExerciseStatus = 'pending' | 'in_progress' | 'completed' | 'skipped';

@@ -6,8 +6,9 @@
 
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme, spacing, radii } from '../../lib/theme';
+
 import type { AnalysisType, MetricItem } from './VisualReportCard';
+import { useTheme, spacing, radii } from '../../lib/theme';
 
 export interface StrengthsFirstProps {
   analysisType: AnalysisType;
@@ -16,7 +17,7 @@ export interface StrengthsFirstProps {
   /** 체형 강점 */
   strengths?: string[];
   /** 퍼스널 컬러 베스트 색상 */
-  bestColors?: Array<{ hex: string; name: string }>;
+  bestColors?: { hex: string; name: string }[];
   /** 강점 최대 표시 수 (기본 3) */
   maxStrengths?: number;
   /** 성장 영역 최대 표시 수 (기본 2) */

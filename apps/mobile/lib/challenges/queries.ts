@@ -3,6 +3,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { challengeLogger } from '@/lib/utils/logger';
 import type {
   Challenge,
@@ -12,6 +13,7 @@ import type {
   ChallengeDomain,
   ChallengeDifficulty,
 } from '@/types/challenges';
+
 import { challengeRowToChallenge, userChallengeRowToUserChallenge } from './constants';
 
 // ============================================================

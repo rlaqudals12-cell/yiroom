@@ -4,8 +4,8 @@
  */
 
 import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
-import type { CosmeticIngredient } from '@/types/ingredient';
 import { extractJsonObject } from '@/lib/utils/json-extract';
+import type { CosmeticIngredient } from '@/types/ingredient';
 
 // =============================================================================
 // 상수 정의
@@ -59,7 +59,6 @@ export interface AIIngredientSummary {
 /**
  * Mock AI 성분 요약 생성
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function generateMockIngredientSummary(
   ingredients: CosmeticIngredient[]
 ): AIIngredientSummary {

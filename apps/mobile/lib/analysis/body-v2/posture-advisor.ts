@@ -6,9 +6,9 @@
  * @see {@link docs/principles/body-mechanics.md} 체형 역학 원리
  */
 
+import { calculateMidpoint } from './pose-detector';
 import type { Landmark33, PoseDetectionResult, PostureAnalysis, PostureIssue } from './types';
 import { POSE_LANDMARK_INDEX, POSTURE_EXERCISES, POSTURE_ISSUE_LABELS } from './types';
-import { calculateMidpoint } from './pose-detector';
 
 // =============================================================================
 // 상수
@@ -328,7 +328,6 @@ function detectKyphosis(landmarks: Landmark33[]): PostureIssue | null {
  * if (posture.issues.length > 0) {
  * }
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function analyzePosture(poseResult: PoseDetectionResult): PostureAnalysis {
   const { landmarks } = poseResult;
 

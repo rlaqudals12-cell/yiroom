@@ -1,8 +1,8 @@
 'use client';
 
-import { Badge as BadgeType } from '@/types/gamification';
 import { RARITY_COLORS } from '@/lib/gamification';
 import { cn } from '@/lib/utils';
+import { Badge as BadgeType } from '@/types/gamification';
 
 interface BadgeToastProps {
   badge: BadgeType;

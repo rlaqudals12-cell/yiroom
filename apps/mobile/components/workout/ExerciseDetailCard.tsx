@@ -5,10 +5,10 @@
  * 이름, 세트x반복, 중량, MET, 시간, 칼로리 포함.
  */
 
+import { Dumbbell, Timer, Flame } from 'lucide-react-native';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Dumbbell, Timer, Flame } from 'lucide-react-native';
 
 import { useTheme, spacing } from '../../lib/theme';
 

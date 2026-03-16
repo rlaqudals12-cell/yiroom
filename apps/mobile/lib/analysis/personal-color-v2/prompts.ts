@@ -6,9 +6,10 @@
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 
+import { extractJsonFromCodeBlock } from '@/lib/utils/json-extract';
+
 import type { TwelveTone } from './types';
 import { TWELVE_TONE_LABELS } from './types';
-import { extractJsonFromCodeBlock } from '@/lib/utils/json-extract';
 
 // ============================================
 // 프롬프트 템플릿

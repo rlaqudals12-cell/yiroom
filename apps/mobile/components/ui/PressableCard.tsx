@@ -10,10 +10,10 @@ import React from 'react';
 import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { useAppPreferencesStore } from '@/lib/stores';
+
 import { usePressScale } from '../../lib/animations/hooks';
 import { useTheme } from '../../lib/theme';
-
-import { useAppPreferencesStore } from '@/lib/stores';
 
 type HapticType = 'light' | 'medium' | 'heavy' | 'none';
 

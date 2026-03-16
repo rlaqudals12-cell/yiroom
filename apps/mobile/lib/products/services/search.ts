@@ -16,12 +16,12 @@ import type {
 } from '@/types/product';
 
 import { getCosmeticProducts, mapCosmeticRow } from '../repositories/cosmetic';
-import { getSupplementProducts, mapSupplementRow } from '../repositories/supplement';
 import { getWorkoutEquipment, mapWorkoutEquipmentRow } from '../repositories/equipment';
 import { getHealthFoods, mapHealthFoodRow } from '../repositories/healthfood';
+import { getSupplementProducts, mapSupplementRow } from '../repositories/supplement';
 
 /** 제품 카테고리 정보 상수 */
-export const PRODUCT_CATEGORIES: Array<{ id: ProductCategory; label: string }> = [
+export const PRODUCT_CATEGORIES: { id: ProductCategory; label: string }[] = [
   { id: 'all', label: '전체' },
   { id: 'skincare', label: '스킨케어' },
   { id: 'makeup', label: '메이크업' },

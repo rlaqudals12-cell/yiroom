@@ -8,6 +8,9 @@
  * @see docs/adr/ADR-055-multi-ai-backup-strategy.md
  */
 
+import { getCircuitBreaker, CircuitOpenError } from './circuit-breaker';
+import { createClaudeProvider } from './providers/claude';
+import { createGeminiProvider } from './providers/gemini';
 import type {
   AIProvider,
   AIProviderName,
@@ -15,9 +18,6 @@ import type {
   ImageAnalysisInput,
   RetryOptions,
 } from './types';
-import { getCircuitBreaker, CircuitOpenError } from './circuit-breaker';
-import { createGeminiProvider } from './providers/gemini';
-import { createClaudeProvider } from './providers/claude';
 
 // =============================================================================
 // 유틸리티 함수

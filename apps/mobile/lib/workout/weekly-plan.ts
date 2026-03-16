@@ -12,15 +12,16 @@
  * - adjustPlanForTime(): 시간 제약에 맞춘 플랜 조정
  */
 
-import type { Exercise, WorkoutType, ExerciseCategory, BodyPart } from '@/types/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
-import { getAllExercises } from './exercises';
+import type { Exercise, WorkoutType, ExerciseCategory, BodyPart } from '@/types/workout';
+
 import {
   getRecommendedRepsAndSets,
   calculateRecommendedWeight,
   roundToNearest,
 } from './calculations';
 import { calculateCaloriesWithMET } from './calorieCalculations';
+import { getAllExercises } from './exercises';
 
 // ============================================
 // 타입 정의

@@ -18,13 +18,13 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { TIMING } from '@/lib/animations';
+import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { feedTypeConfig, formatRelativeTime, type FeedItem, type FeedTab } from '../../../lib/feed';
 import { useFeed } from '../../../lib/feed/useFeed';
 import { shareLogger } from '../../../lib/utils/logger';
-
-import { TIMING } from '@/lib/animations';
-import { useTheme, typography, radii, spacing, coloredShadow, brand } from '@/lib/theme';
 
 const TABS: { id: FeedTab; label: string }[] = [
   { id: 'my', label: '내 피드' },

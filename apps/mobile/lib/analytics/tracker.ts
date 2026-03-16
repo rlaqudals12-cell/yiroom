@@ -5,6 +5,7 @@
 
 import { analyticsLogger } from '@/lib/utils/logger';
 import type { AnalyticsEventType, AnalyticsEventInput } from '@/types/analytics';
+
 import {
   getOrCreateSession,
   refreshSession,

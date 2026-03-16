@@ -4,13 +4,15 @@
  */
 import { router } from 'expo-router';
 import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { WellnessScoreRing, AchievementGrid } from '../components/profile';
 import { ScreenContainer, GlassCard } from '../components/ui';
+import { StressVisualization } from '../components/wellness';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../hooks';
 import { useTheme, brand, typography, spacing, radii } from '../lib/theme';
+import { buildStressVisualization } from '../lib/wellness';
 
 // 영역별 개선 가이드
 function getImprovementTips(
@@ -97,6 +99,16 @@ export default function WellnessScorePage(): React.JSX.Element {
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
+  // 스트레스 시각화 데이터 (컨디션 체크인에서 스트레스 레벨이 있을 때만 표시)
+  // TODO: 실제 바이오리듬/컨디션 체크인 데이터 연동 시 stressLevel을 동적으로 가져올 것
+  const stressData = useMemo(() => {
+    // 현재는 score가 80 미만이면 스트레스가 있는 것으로 간주 (시연용)
+    if (score >= 80) return null;
+    // 웰니스 점수가 낮을수록 스트레스 레벨 높게 매핑 (1-10)
+    const stressLevel = Math.max(1, Math.min(10, Math.round(10 - (score / 100) * 9)));
+    return buildStressVisualization(stressLevel, Math.max(0, 25 - stressLevel * 2.5));
+  }, [score]);
+
   return (
     <ScreenContainer
       testID="wellness-score-screen"
@@ -167,6 +179,13 @@ export default function WellnessScorePage(): React.JSX.Element {
         </View>
         <AchievementGrid achievements={achievements} />
       </GlassCard>
+
+      {/* 스트레스 시각화 */}
+      {stressData != null && (
+        <View style={{ marginTop: spacing.md }}>
+          <StressVisualization data={stressData} compact />
+        </View>
+      )}
 
       {/* 개선 가이드 */}
       {improvementTips.length > 0 && (

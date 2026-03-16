@@ -4,9 +4,9 @@
  * 수평 스크롤 가능한 빠른 질문 칩.
  * "모공 관리법이 궁금해요", "건조한 피부 해결법" 등.
  */
+import { HelpCircle } from 'lucide-react-native';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { HelpCircle } from 'lucide-react-native';
 
 import { useTheme, spacing, radii } from '../../lib/theme';
 

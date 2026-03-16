@@ -18,12 +18,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTheme, typography, radii, spacing } from '@/lib/theme';
+
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
-
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function CoachHistoryScreen() {
   const { colors, brand } = useTheme();

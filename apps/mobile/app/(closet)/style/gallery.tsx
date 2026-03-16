@@ -8,10 +8,10 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { ScreenContainer } from '../../../components/ui';
-
 import { TIMING } from '@/lib/animations';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
+
+import { ScreenContainer } from '../../../components/ui';
 
 interface InspirationItem {
   id: string;

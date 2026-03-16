@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 
-import { useTheme } from '../../lib/theme';
 import { ItemCard, type ItemCardProps } from './ItemCard';
+import { useTheme } from '../../lib/theme';
 
 export interface InventoryGridProps {
   items: Omit<ItemCardProps, 'onPress' | 'style'>[];

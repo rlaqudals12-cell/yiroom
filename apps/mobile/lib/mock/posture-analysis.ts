@@ -15,6 +15,8 @@
  */
 
 // 자세 타입 정의
+import { selectByCondition } from '@/lib/utils/conditional-helpers';
+
 export type PostureType =
   | 'ideal'
   | 'forward_head'
@@ -375,8 +377,6 @@ const INSIGHTS: Record<PostureType, string[]> = {
     '골반 정렬을 잡아주면 허리가 더 편해져요. 플랭크와 런지 스트레칭을 추천해요.',
   ],
 };
-
-import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
 // 헬퍼 함수
 function getRandomItem<T>(array: T[]): T {

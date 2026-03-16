@@ -3,6 +3,8 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+import { addXp, awardBadgeById } from '@/lib/gamification';
 import { challengeLogger } from '@/lib/utils/logger';
 import type {
   UserChallenge,
@@ -12,13 +14,13 @@ import type {
   CompleteChallengeResult,
   UpdateProgressResult,
 } from '@/types/challenges';
+
 import {
   userChallengeRowToUserChallenge,
   calculateTargetEndAt,
   isChallengeCompleted,
 } from './constants';
 import { getChallengeById, isUserParticipating } from './queries';
-import { addXp, awardBadgeById } from '@/lib/gamification';
 
 // ============================================================
 // 챌린지 참여
