@@ -8,9 +8,16 @@ import {
   getAverageWellnessScore,
   calculateBiorhythm,
   getCyclePhaseInfo,
+  buildStressVisualization,
+  analyzeStressTrend,
 } from '@/lib/wellness';
 import type { BiorhythmResult } from '@/types/wellness';
-import { WellnessScoreCard } from '@/components/wellness';
+import type {
+  StressVisualizationData,
+  StressTrendAnalysis,
+  StressTrendPoint,
+} from '@/lib/wellness/stress-visualization';
+import { WellnessScoreCard, StressVisualizationDynamic } from '@/components/wellness';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -139,6 +146,43 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
       energyLevel: todayCondition.energyLevel,
       moodScore: todayCondition.moodScore,
     });
+  }
+
+  // 스트레스 시각화 데이터 (컨디션 데이터가 있을 때만)
+  let stressViz: StressVisualizationData | null = null;
+  let stressTrend: StressTrendAnalysis | null = null;
+  if (todayCondition) {
+    // stressScore는 바이오리듬의 stress breakdown을 사용 (0-25)
+    const stressScore = biorhythm?.breakdown.stress ?? 0;
+    stressViz = buildStressVisualization(todayCondition.stressLevel, stressScore);
+
+    // 주간 트렌드: 최근 7일 스트레스 기록 조회
+    try {
+      const { data: stressLogs } = await supabase
+        .from('mental_health_logs')
+        .select('date, stress_level')
+        .eq('clerk_user_id', userId)
+        .order('date', { ascending: false })
+        .limit(7);
+
+      if (stressLogs && stressLogs.length > 0) {
+        const trendPoints: StressTrendPoint[] = stressLogs.map((log) => ({
+          date: log.date,
+          stressLevel: log.stress_level ?? 5,
+          grade:
+            log.stress_level >= 9
+              ? 'critical'
+              : log.stress_level >= 7
+                ? 'high'
+                : log.stress_level >= 4
+                  ? 'moderate'
+                  : 'low',
+        }));
+        stressTrend = analyzeStressTrend(trendPoints);
+      }
+    } catch (error) {
+      console.error('[WellnessPage] 스트레스 트렌드 조회 실패:', error);
+    }
   }
 
   return (
@@ -307,6 +351,11 @@ export default async function WellnessPage(): Promise<React.ReactElement> {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* 스트레스 시각화 */}
+      {stressViz && (
+        <StressVisualizationDynamic data={stressViz} trend={stressTrend ?? undefined} />
       )}
 
       {/* 주간 평균 */}

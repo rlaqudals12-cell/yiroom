@@ -10,3 +10,6 @@ export * from './outfit';
 
 // 추천 컴포넌트
 export * from './recommendation';
+
+// 루틴 브릿지
+export { RoutineBridgeCard } from './RoutineBridgeCard';

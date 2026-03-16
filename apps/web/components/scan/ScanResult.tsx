@@ -9,10 +9,20 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Package, Star, CheckCircle2, Plus, Share2, ChevronRight } from 'lucide-react';
+import {
+  Package,
+  Star,
+  CheckCircle2,
+  Plus,
+  Share2,
+  ChevronRight,
+  ExternalLink,
+  ShoppingCart,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { GlobalProduct, ProductLookupSource } from '@/types/scan';
+import type { AffiliateLink } from '@/lib/scan/barcode-product-bridge';
 
 interface ScanResultProps {
   /** 제품 정보 */
@@ -21,6 +31,10 @@ interface ScanResultProps {
   source: ProductLookupSource;
   /** 신뢰도 */
   confidence: number;
+  /** 내부 제품 상세 URL (/beauty/[id]) */
+  detailUrl?: string;
+  /** 어필리에이트 구매 링크 목록 */
+  affiliateLinks?: AffiliateLink[];
   /** 제품함 추가 콜백 */
   onAddToShelf?: () => void;
   /** 공유 콜백 */
@@ -53,6 +67,8 @@ export function ScanResult({
   product,
   source,
   confidence: _confidence,
+  detailUrl,
+  affiliateLinks,
   onAddToShelf,
   onShare,
   onRescan,
@@ -194,6 +210,50 @@ export function ScanResult({
             ))}
           </div>
         </details>
+      )}
+
+      {/* 제품 상세 / 구매 버튼 */}
+      {(detailUrl || (affiliateLinks && affiliateLinks.length > 0)) && (
+        <div data-testid="scan-result-actions" className="p-4 bg-card rounded-xl border space-y-3">
+          {/* 내부 제품 상세 보기 */}
+          {detailUrl && (
+            <Button asChild className="w-full gap-2" data-testid="scan-detail-button">
+              <Link href={detailUrl}>
+                <Package className="w-4 h-4" />
+                제품 상세 보기
+              </Link>
+            </Button>
+          )}
+
+          {/* 어필리에이트 구매 링크 */}
+          {affiliateLinks && affiliateLinks.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">구매하기</p>
+              {affiliateLinks.map((link) => (
+                <Button
+                  key={`${link.partner}-${link.url}`}
+                  asChild
+                  variant="outline"
+                  className="w-full justify-between gap-2"
+                  data-testid="scan-affiliate-link"
+                >
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    <span className="flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4" />
+                      {link.partner}
+                      {link.price != null && (
+                        <span className="text-xs text-muted-foreground">
+                          {link.price.toLocaleString('ko-KR')}원
+                        </span>
+                      )}
+                    </span>
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                  </a>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* 액션 버튼 */}

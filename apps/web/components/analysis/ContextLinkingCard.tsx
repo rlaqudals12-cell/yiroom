@@ -201,6 +201,7 @@ export function ContextLinkingCard({
             href={module.href}
             className="flex items-center gap-4 p-4 bg-white dark:bg-card rounded-lg hover:shadow-md transition-shadow"
             data-testid={`context-link-${module.id}`}
+            aria-label={`${module.title} — ${module.reason}`}
           >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -215,7 +216,7 @@ export function ContextLinkingCard({
               <p className="font-medium text-foreground">{module.title}</p>
               <p className="text-sm text-muted-foreground truncate">{module.reason}</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" aria-hidden="true" />
           </Link>
         ))}
       </div>

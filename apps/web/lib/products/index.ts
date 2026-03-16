@@ -137,6 +137,12 @@ export {
 export type { AIIngredientKeyword, AIIngredientSummary } from './services/ingredient-analysis';
 
 // ================================================
+// 리뷰 AI 분석 (Review AI Analysis)
+// ================================================
+export { analyzeProductReviews, generateMockReviewSummary } from './services/review-analysis';
+export type { ReviewAISummary, ReviewAIKeyword } from './services/review-analysis';
+
+// ================================================
 // 계절 보정 (Seasonal Boost)
 // ================================================
 export {
@@ -162,3 +168,19 @@ export type {
   ConflictWarning,
   BundleAnalysis,
 } from './services/bundle-recommend';
+
+// ================================================
+// 쿠폰/프로모션 서비스 (Coupons)
+// ================================================
+export {
+  getActivePromotions,
+  getUserCoupons,
+  getApplicablePromotions,
+  issueCoupon,
+  applyCoupon,
+  useCoupon,
+  generateCouponCode,
+  calculateDiscount,
+  getDiscountText,
+} from './services/coupons';
+export type { PromotionType, Promotion, UserCoupon, CouponApplyResult } from './services/coupons';

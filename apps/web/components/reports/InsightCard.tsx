@@ -5,9 +5,28 @@
 
 'use client';
 
-import { Lightbulb, CheckCircle2, AlertCircle, Sparkles, Award } from 'lucide-react';
+import { Lightbulb, CheckCircle2, AlertCircle, Sparkles, Award, ArrowRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { ReportInsights } from '@/types/report';
+
+// 도메인별 아이콘/색상 매핑
+const DOMAIN_STYLES: Record<string, { emoji: string; bg: string; text: string }> = {
+  nutrition: {
+    emoji: '🥗',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+    text: 'text-emerald-700 dark:text-emerald-300',
+  },
+  workout: {
+    emoji: '💪',
+    bg: 'bg-blue-50 dark:bg-blue-950/20',
+    text: 'text-blue-700 dark:text-blue-300',
+  },
+  beauty: {
+    emoji: '✨',
+    bg: 'bg-pink-50 dark:bg-pink-950/20',
+    text: 'text-pink-700 dark:text-pink-300',
+  },
+};
 
 interface InsightCardProps {
   insights: ReportInsights;
@@ -18,7 +37,8 @@ export function InsightCard({ insights }: InsightCardProps) {
     insights.highlights.length > 0 ||
     insights.improvements.length > 0 ||
     insights.tips.length > 0 ||
-    (insights.achievements && insights.achievements.length > 0);
+    (insights.achievements && insights.achievements.length > 0) ||
+    (insights.nextActions && insights.nextActions.length > 0);
 
   if (!hasAnyInsight) {
     return (
@@ -92,6 +112,32 @@ export function InsightCard({ insights }: InsightCardProps) {
             bgColor="bg-blue-50 dark:bg-blue-950/20"
             textColor="text-blue-700 dark:text-blue-300"
           />
+        )}
+
+        {/* 다음 주 추천 행동 */}
+        {insights.nextActions && insights.nextActions.length > 0 && (
+          <div data-testid="next-actions-section" className="space-y-2">
+            <div className="flex items-center gap-2 font-medium text-sm text-foreground">
+              <ArrowRight className="h-4 w-4 text-indigo-500" />
+              다음 주 실천 목표
+            </div>
+            {insights.nextActions.map((action, idx) => {
+              const style = DOMAIN_STYLES[action.domain] ?? DOMAIN_STYLES.nutrition;
+              return (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg ${style.bg}`}
+                  data-testid="next-action-card"
+                >
+                  <div className={`flex items-center gap-2 font-medium text-sm ${style.text}`}>
+                    <span>{style.emoji}</span>
+                    {action.label}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 ml-6">{action.description}</p>
+                </div>
+              );
+            })}
+          </div>
         )}
       </CardContent>
     </Card>

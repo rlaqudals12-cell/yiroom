@@ -12,6 +12,7 @@ import { getDaysDifference } from '@/lib/nutrition';
 import { updateChallengesOnNutrition, type ChallengeUpdateResult } from '@/lib/challenges';
 import { trackActivity } from '@/lib/levels';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { syncRoutineToCapsule } from '@/lib/capsule';
 
 // XP 보상 상수
 const XP_MEAL_RECORD = 2;
@@ -223,11 +224,15 @@ export async function POST(req: Request) {
         : 0.8;
 
     // 신뢰도 레벨 결정
-    const confidenceLevel = classifyByRange(avgConfidence, [
-      { max: 0.7, result: 'low' },
-      { max: 0.85, result: 'medium' },
-      { min: 0.85, result: 'high' },
-    ], 'low')!;
+    const confidenceLevel = classifyByRange(
+      avgConfidence,
+      [
+        { max: 0.7, result: 'low' },
+        { max: 0.85, result: 'medium' },
+        { min: 0.85, result: 'high' },
+      ],
+      'low'
+    )!;
 
     // foods 배열을 DB 형식으로 변환
     const foodsForDb = foods.map(
@@ -324,6 +329,8 @@ export async function POST(req: Request) {
       if (streakResult.badgeResults.length > 0) {
         gamificationResult.badgeResults.push(...streakResult.badgeResults);
       }
+      // 캡슐 동기화: 영양 기록 → 캡슐 아이템 자동 완료
+      await syncRoutineToCapsule(userId, 'N');
     } catch (gamificationError) {
       console.error('[N-1] Gamification error:', gamificationError);
       // 게이미피케이션 오류는 식단 기록 성공에 영향을 주지 않음

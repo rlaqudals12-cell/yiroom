@@ -453,7 +453,13 @@ export default function SkinAnalysisPage() {
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">이전 분석 결과 확인 중...</p>
+          <p className="text-muted-foreground mb-4">이전 분석 결과 확인 중...</p>
+          <button
+            onClick={() => window.history.back()}
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            돌아가기
+          </button>
         </div>
       </div>
     );

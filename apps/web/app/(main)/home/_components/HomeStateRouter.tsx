@@ -11,7 +11,10 @@
  * @see docs/specs/SDD-HOME-3STATE.md
  */
 
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import { useOnboardingSync } from '@/hooks/useOnboardingSync';
 import HomeStateNew from './HomeStateNew';
 import HomeStateGrowing from './HomeStateGrowing';
 import HomeStateActive from './HomeStateActive';
@@ -39,10 +42,29 @@ function HomeStateSkeleton() {
 }
 
 export default function HomeStateRouter() {
-  const { isLoading, analysisCount, analyses } = useAnalysisStatus();
+  // 온보딩 데이터 Supabase 동기화 (로그인 후 1회)
+  useOnboardingSync();
+
+  const { isLoading, hasError, analysisCount, analyses, refetch } = useAnalysisStatus();
 
   if (isLoading) {
     return <HomeStateSkeleton />;
+  }
+
+  // 분석 상태 조회 실패 시 에러 UI (신규 사용자로 잘못 표시하는 대신)
+  if (hasError) {
+    return (
+      <div
+        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-6 text-center"
+        data-testid="home-state-error"
+      >
+        <p className="text-muted-foreground mb-3">분석 정보를 불러오지 못했어요</p>
+        <Button variant="outline" size="sm" onClick={refetch}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          다시 시도
+        </Button>
+      </div>
+    );
   }
 
   const state = getHomeState(analysisCount);

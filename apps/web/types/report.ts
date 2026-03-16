@@ -150,6 +150,21 @@ export interface ReportInsights {
   improvements: string[]; // 개선 필요 사항
   tips: string[]; // 다음 기간 추천
   achievements?: string[]; // 달성 사항
+  nextActions?: NextActionSuggestion[]; // 다음 주 추천 행동
+}
+
+/**
+ * 다음 주 추천 행동
+ */
+export interface NextActionSuggestion {
+  /** 행동 라벨 (예: "단백질 섭취 늘리기") */
+  label: string;
+  /** 구체적 설명 */
+  description: string;
+  /** 관련 도메인 */
+  domain: 'nutrition' | 'workout' | 'beauty';
+  /** 우선순위 (1이 가장 높음) */
+  priority: number;
 }
 
 // =====================================================

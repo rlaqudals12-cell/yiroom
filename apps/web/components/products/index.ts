@@ -31,3 +31,6 @@ export { ProductQASection } from './ProductQASection';
 
 // 페이지 클라이언트
 export { ProductsPageClient } from './ProductsPageClient';
+
+// 쿠폰
+export { ProductCouponSection } from './ProductCouponSection';

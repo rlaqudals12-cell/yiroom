@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { useClerk, useUser, useAuth } from '@clerk/nextjs';
 import { useTheme } from '@/components/providers/theme-provider';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
@@ -268,7 +269,17 @@ export default function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSettings),
-      }).catch((err) => console.error('[Settings] Failed to save notification settings:', err));
+      })
+        .then((res) => {
+          if (res.ok) {
+            toast.success('알림 설정이 저장되었어요');
+          } else {
+            toast.error('알림 설정 저장에 실패했어요');
+          }
+        })
+        .catch(() => {
+          toast.error('알림 설정 저장에 실패했어요');
+        });
       return newSettings;
     });
   }, []);

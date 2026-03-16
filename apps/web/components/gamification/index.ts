@@ -12,5 +12,9 @@ export { BadgeToast } from './BadgeToast';
 export { LevelProgress, LevelCard, TierBadge } from './LevelProgress';
 export { LevelUpModal, TierChangeNotice } from './LevelUpModal';
 
+// 크로스도메인 챌린지
+export { CrossDomainChallengeCard } from './CrossDomainChallengeCard';
+export { CrossDomainChallengeList } from './CrossDomainChallengeList';
+
 // Provider
 export { GamificationProvider, useGamification } from './GamificationProvider';

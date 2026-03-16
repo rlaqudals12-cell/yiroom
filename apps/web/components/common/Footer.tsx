@@ -9,10 +9,18 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-zinc-800 bg-zinc-950" data-testid="footer">
+    <footer
+      className="border-t border-zinc-800 bg-zinc-950"
+      data-testid="footer"
+      role="contentinfo"
+      aria-label="사이트 푸터"
+    >
       <div className="mx-auto max-w-[960px] px-4 py-8">
         {/* 링크 섹션 */}
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400">
+        <nav
+          className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400"
+          aria-label="법적 안내 및 도움말"
+        >
           <Link href="/terms" className="hover:text-pink-400 transition-colors">
             이용약관
           </Link>
@@ -25,7 +33,7 @@ export function Footer() {
           <Link href="/help/faq" className="hover:text-pink-400 transition-colors">
             도움말
           </Link>
-        </div>
+        </nav>
 
         {/* 저작권 */}
         <div className="mt-6 text-center text-xs text-zinc-500">

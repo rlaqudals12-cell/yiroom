@@ -98,17 +98,53 @@ const analysisModules: AnalysisModule[] = [
   },
 ];
 
+// 알레르기/기피 옵션 (간소화 버전)
+const QUICK_ALLERGY_OPTIONS = [
+  { id: 'dairy', icon: '🥛', label: '유제품' },
+  { id: 'eggs', icon: '🥚', label: '달걀' },
+  { id: 'nuts', icon: '🥜', label: '견과류' },
+  { id: 'seafood', icon: '🦐', label: '해산물' },
+  { id: 'gluten', icon: '🌾', label: '글루텐' },
+  { id: 'soy', icon: '🫘', label: '대두' },
+] as const;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showAllergyStep, setShowAllergyStep] = useState(false);
   const [showAnalysisSelection, setShowAnalysisSelection] = useState(false);
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const [dislikedFoodInput, setDislikedFoodInput] = useState('');
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
-      setShowAnalysisSelection(true);
+      // 캐러셀 끝 → 알레르기 단계
+      setShowAllergyStep(true);
     }
+  };
+
+  // 알레르기 단계 완료 → 분석 선택으로
+  const handleAllergyNext = async () => {
+    // localStorage에 임시 저장 (로그인 후 Supabase 동기화는 #7에서 처리)
+    const allergyData = {
+      allergies: selectedAllergies,
+      dislikedFoods: dislikedFoodInput
+        .split(',')
+        .map((f) => f.trim())
+        .filter(Boolean),
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('yiroom_onboarding_allergies', JSON.stringify(allergyData));
+    setShowAllergyStep(false);
+    setShowAnalysisSelection(true);
+  };
+
+  const toggleAllergy = (id: string) => {
+    setSelectedAllergies((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
   };
 
   const handlePrev = () => {
@@ -127,6 +163,74 @@ export default function OnboardingPage() {
   };
 
   const slide = slides[currentSlide];
+
+  // 알레르기/기피음식 수집 단계
+  if (showAllergyStep) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col" data-testid="onboarding-allergy">
+        <header className="px-4 py-4">
+          <button
+            onClick={() => setShowAllergyStep(false)}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span className="text-sm">이전</span>
+          </button>
+        </header>
+
+        <div className="flex-1 px-4 py-4">
+          <h1 className="text-2xl font-bold text-foreground mb-2">혹시 알레르기가 있으세요?</h1>
+          <p className="text-muted-foreground mb-6">
+            선택하시면 추천에 반영돼요. 없으면 건너뛰어도 괜찮아요.
+          </p>
+
+          {/* 알레르기 선택 그리드 */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            {QUICK_ALLERGY_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => toggleAllergy(option.id)}
+                className={cn(
+                  'flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all',
+                  selectedAllergies.includes(option.id)
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                )}
+                data-testid={`allergy-option-${option.id}`}
+              >
+                <span className="text-2xl">{option.icon}</span>
+                <span className="text-xs font-medium">{option.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* 기피 음식 입력 */}
+          <div className="mb-6">
+            <label className="text-sm font-medium text-foreground mb-2 block">
+              기피 음식 (선택)
+            </label>
+            <input
+              type="text"
+              value={dislikedFoodInput}
+              onChange={(e) => setDislikedFoodInput(e.target.value)}
+              placeholder="예: 고수, 낫또 (쉼표로 구분)"
+              className="w-full px-4 py-3 border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              data-testid="disliked-food-input"
+            />
+          </div>
+        </div>
+
+        <footer className="px-4 py-6 space-y-3">
+          <button
+            onClick={handleAllergyNext}
+            className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium hover:bg-primary/90 transition-opacity"
+          >
+            {selectedAllergies.length > 0 || dislikedFoodInput.trim() ? '다음' : '건너뛰기'}
+          </button>
+        </footer>
+      </div>
+    );
+  }
 
   // 분석 선택 화면
   if (showAnalysisSelection) {

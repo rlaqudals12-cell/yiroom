@@ -72,6 +72,8 @@ export function EmptyState({
         className
       )}
       data-testid="empty-state"
+      role="status"
+      aria-label={displayTitle}
     >
       {/* 아이콘/이모지 영역 */}
       <div
@@ -88,12 +90,7 @@ export function EmptyState({
       </div>
 
       {/* 제목 */}
-      <h3
-        className={cn(
-          'font-semibold text-foreground mb-2',
-          compact ? 'text-base' : 'text-lg'
-        )}
-      >
+      <h3 className={cn('font-semibold text-foreground mb-2', compact ? 'text-base' : 'text-lg')}>
         {displayTitle}
       </h3>
 
@@ -133,9 +130,7 @@ export function EmptyState({
 
       {/* 격려 메시지 */}
       {!compact && (
-        <p className="mt-4 text-xs text-muted-foreground/70">
-          작은 시작이 큰 변화를 만들어요 ✨
-        </p>
+        <p className="mt-4 text-xs text-muted-foreground/70">작은 시작이 큰 변화를 만들어요 ✨</p>
       )}
     </div>
   );

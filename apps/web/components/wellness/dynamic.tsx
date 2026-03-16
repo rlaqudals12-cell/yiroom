@@ -50,3 +50,12 @@ export const WellnessBreakdownDynamic = dynamic(
     loading: () => null,
   }
 );
+
+// 스트레스 시각화 (SVG 게이지 포함)
+export const StressVisualizationDynamic = dynamic(
+  () => import('./StressVisualization').then((mod) => ({ default: mod.StressVisualization })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);

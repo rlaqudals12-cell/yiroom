@@ -26,6 +26,7 @@ import type {
   RawWorkoutLog,
   BeautyNutritionCorrelation,
   NutrientBeautyImpact,
+  NextActionSuggestion,
 } from '@/types/report';
 import { assessImpact } from '@/lib/utils/conditional-helpers';
 
@@ -548,6 +549,90 @@ export function generateWeeklyInsights(
 }
 
 /**
+ * 다음 주 추천 행동 생성
+ * 리포트 결과 기반으로 구체적인 행동을 제안
+ */
+export function generateNextActions(
+  nutritionAchievement: NutritionAchievement,
+  nutritionTrend: NutritionTrend,
+  workoutSummary: WorkoutSummaryStats,
+  settings: RawNutritionSettings | null
+): NextActionSuggestion[] {
+  const actions: NextActionSuggestion[] = [];
+
+  // 영양: 단백질 부족
+  if (nutritionAchievement.proteinPercent < 80) {
+    const deficit = 100 - nutritionAchievement.proteinPercent;
+    actions.push({
+      label: '단백질 섭취 늘리기',
+      description: `단백질이 목표의 ${nutritionAchievement.proteinPercent}%예요. 닭가슴살, 계란, 두부를 한 끼에 추가해보세요.`,
+      domain: 'nutrition',
+      priority: deficit > 30 ? 1 : 2,
+    });
+  }
+
+  // 영양: 수분 부족
+  if (nutritionAchievement.waterPercent < 70) {
+    actions.push({
+      label: '수분 섭취 늘리기',
+      description: `수분 섭취가 목표의 ${nutritionAchievement.waterPercent}%예요. 매 시간 물 한 잔을 목표로 해보세요.`,
+      domain: 'nutrition',
+      priority: 2,
+    });
+  }
+
+  // 영양: 칼로리 초과 (감량 목표 시)
+  if (settings?.goal === 'weight_loss' && nutritionAchievement.caloriesPercent > 115) {
+    actions.push({
+      label: '간식 줄이기',
+      description: '칼로리가 목표를 초과했어요. 다음 주는 간식을 과일이나 견과류로 바꿔보세요.',
+      domain: 'nutrition',
+      priority: 1,
+    });
+  }
+
+  // 영양: 기록 일관성 낮음
+  if (nutritionTrend.consistencyScore < 60) {
+    actions.push({
+      label: '식단 기록 습관 만들기',
+      description: '식사 후 바로 기록하는 습관을 들여보세요. 알림을 설정하면 도움이 돼요.',
+      domain: 'nutrition',
+      priority: 3,
+    });
+  }
+
+  // 운동: 미실시 또는 부족
+  if (workoutSummary.daysWithWorkout === 0) {
+    actions.push({
+      label: '가벼운 운동 시작하기',
+      description: '이번 주 운동 기록이 없어요. 15분 산책이나 스트레칭부터 시작해보세요.',
+      domain: 'workout',
+      priority: 1,
+    });
+  } else if (workoutSummary.daysWithWorkout < 3) {
+    actions.push({
+      label: '운동 횟수 늘리기',
+      description: `이번 주 ${workoutSummary.daysWithWorkout}일 운동했어요. 다음 주는 ${workoutSummary.daysWithWorkout + 1}일을 목표로 해보세요.`,
+      domain: 'workout',
+      priority: 2,
+    });
+  }
+
+  // 영양: 음식 품질 낮음
+  if (nutritionTrend.foodQualityScore < 40) {
+    actions.push({
+      label: '채소/과일 섭취 늘리기',
+      description: '고칼로리 음식 비율이 높았어요. 한 끼에 채소 반찬을 하나 더 추가해보세요.',
+      domain: 'nutrition',
+      priority: 2,
+    });
+  }
+
+  // 우선순위 순 정렬, 최대 3개
+  return actions.sort((a, b) => a.priority - b.priority).slice(0, 3);
+}
+
+/**
  * 하이라이트 계산 (가장 좋은/나쁜 날)
  */
 export function calculateHighlights(dailyData: DailyNutrition[]): {
@@ -891,6 +976,14 @@ export function generateWeeklyReport(input: WeeklyAggregatorInput): WeeklyReport
   // 인사이트 생성
   const insights = generateWeeklyInsights(
     nutritionSummary,
+    nutritionAchievement,
+    nutritionTrend,
+    workoutSummary,
+    settings
+  );
+
+  // 다음 주 추천 행동 생성
+  insights.nextActions = generateNextActions(
     nutritionAchievement,
     nutritionTrend,
     workoutSummary,

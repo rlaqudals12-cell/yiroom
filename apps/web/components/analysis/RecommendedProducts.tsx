@@ -276,9 +276,13 @@ export function RecommendedProducts({
   // 로딩 상태
   if (isLoading) {
     return (
-      <section className={className} data-testid="recommended-products-loading">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <section
+        className={className}
+        data-testid="recommended-products-loading"
+        aria-label="추천 제품 로딩 중"
+      >
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
           <span className="ml-2 text-muted-foreground">추천 제품 로딩 중...</span>
         </div>
       </section>
@@ -288,8 +292,12 @@ export function RecommendedProducts({
   // 에러 상태
   if (error) {
     return (
-      <section className={className} data-testid="recommended-products-error">
-        <div className="text-center py-8 text-muted-foreground">
+      <section
+        className={className}
+        data-testid="recommended-products-error"
+        aria-label="추천 제품 오류"
+      >
+        <div className="text-center py-8 text-muted-foreground" role="alert">
           <p>{error}</p>
         </div>
       </section>
@@ -305,7 +313,7 @@ export function RecommendedProducts({
           <h3 className="text-lg font-semibold text-foreground">{config.title}</h3>
         </div>
         <div className="text-center py-8 bg-muted/30 rounded-xl border border-border/50">
-          <Sparkles className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+          <Sparkles className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">맞춤 제품을 준비하고 있어요</p>
         </div>
       </section>
@@ -313,7 +321,7 @@ export function RecommendedProducts({
   }
 
   return (
-    <section className={className} data-testid="recommended-products">
+    <section className={className} data-testid="recommended-products" aria-label={config.title}>
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -321,7 +329,7 @@ export function RecommendedProducts({
           <div>
             <h2 className="text-lg font-semibold">{config.title}</h2>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <Sparkles className="h-3 w-3" />
+              <Sparkles className="h-3 w-3" aria-hidden="true" />
               {config.subtitle}
             </p>
           </div>

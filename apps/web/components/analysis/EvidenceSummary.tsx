@@ -50,7 +50,7 @@ export function PersonalColorEvidenceSummary({
           className
         )}
       >
-        <Info className="w-4 h-4 text-muted-foreground" />
+        <Info className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         <span className="text-muted-foreground">{isCool ? '쿨톤' : '웜톤'} 특성이 분석됐어요</span>
       </div>
     );
@@ -60,9 +60,13 @@ export function PersonalColorEvidenceSummary({
   const undertoneInfo = skinUndertone ? UNDERTONE_LABELS[skinUndertone] : null;
 
   return (
-    <div className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}>
+    <div
+      className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}
+      role="region"
+      aria-label="퍼스널 컬러 판정 근거"
+    >
       <div className="flex items-center gap-1.5 mb-2">
-        <Info className="w-3.5 h-3.5 text-muted-foreground" />
+        <Info className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         <span className="text-xs font-medium text-muted-foreground">판정 근거</span>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -75,7 +79,7 @@ export function PersonalColorEvidenceSummary({
                 : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
             )}
           >
-            <Droplet className="w-3 h-3" />
+            <Droplet className="w-3 h-3" aria-hidden="true" />
             손목 혈관: {veinInfo.label} → {veinInfo.isCool ? '쿨톤' : '웜톤'}
           </div>
         )}
@@ -88,7 +92,7 @@ export function PersonalColorEvidenceSummary({
                 : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
             )}
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="w-3 h-3" aria-hidden="true" />
             피부 언더톤: {undertoneInfo.label}
           </div>
         )}
@@ -143,16 +147,20 @@ export function SkinEvidenceSummary({
           className
         )}
       >
-        <Info className="w-4 h-4 text-muted-foreground" />
+        <Info className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         <span className="text-muted-foreground">{skinTypeLabel} 피부로 분석됐어요</span>
       </div>
     );
   }
 
   return (
-    <div className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}>
+    <div
+      className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}
+      role="region"
+      aria-label="피부 분석 판정 근거"
+    >
       <div className="flex items-center gap-1.5 mb-2">
-        <Info className="w-3.5 h-3.5 text-muted-foreground" />
+        <Info className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         <span className="text-xs font-medium text-muted-foreground">판정 근거</span>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -160,14 +168,18 @@ export function SkinEvidenceSummary({
           <div
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium',
-              (tZoneOiliness === 'oily' || tZoneOiliness === 'very_oily')
+              tZoneOiliness === 'oily' || tZoneOiliness === 'very_oily'
                 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
-                : selectByKey(tZoneOiliness, {
-                    dry: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-                  }, 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300')
+                : selectByKey(
+                    tZoneOiliness,
+                    {
+                      dry: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+                    },
+                    'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                  )
             )}
           >
-            <Droplet className="w-3 h-3" />
+            <Droplet className="w-3 h-3" aria-hidden="true" />
             T존 유분: {T_ZONE_LABELS[tZoneOiliness]}
           </div>
         )}
@@ -180,7 +192,7 @@ export function SkinEvidenceSummary({
                 : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
             )}
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="w-3 h-3" aria-hidden="true" />
             모공: {PORE_LABELS[poreVisibility]}
           </div>
         )}
@@ -233,22 +245,30 @@ export function BodyEvidenceSummary({
           className
         )}
       >
-        <Info className="w-4 h-4 text-muted-foreground" />
+        <Info className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         <span className="text-muted-foreground">{bodyTypeLabel} 체형으로 분석됐어요</span>
       </div>
     );
   }
 
   // 체형별 테마 색상
-  const themeColor = mapToClass(bodyType, {
-    S: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-    W: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
-  }, 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300');
+  const themeColor = mapToClass(
+    bodyType,
+    {
+      S: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+      W: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+    },
+    'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+  );
 
   return (
-    <div className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}>
+    <div
+      className={cn('p-3 rounded-lg bg-muted/50 border border-border/50', className)}
+      role="region"
+      aria-label="체형 분석 판정 근거"
+    >
       <div className="flex items-center gap-1.5 mb-2">
-        <Info className="w-3.5 h-3.5 text-muted-foreground" />
+        <Info className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         <span className="text-xs font-medium text-muted-foreground">판정 근거</span>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -259,7 +279,7 @@ export function BodyEvidenceSummary({
               themeColor
             )}
           >
-            <Activity className="w-3 h-3" />
+            <Activity className="w-3 h-3" aria-hidden="true" />
             실루엣: {SILHOUETTE_LABELS[silhouette]}
           </div>
         )}
@@ -270,7 +290,7 @@ export function BodyEvidenceSummary({
               themeColor
             )}
           >
-            <Activity className="w-3 h-3" />
+            <Activity className="w-3 h-3" aria-hidden="true" />
             밸런스: {BALANCE_LABELS[upperLowerBalance]}
           </div>
         )}

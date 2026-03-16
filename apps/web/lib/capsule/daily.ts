@@ -196,6 +196,37 @@ export async function getTodayDailyCapsule(userId: string): Promise<DailyCapsule
   return getCachedDailyCapsule(userId, today);
 }
 
+/**
+ * 운동/영양 기록 시 해당 도메인 캡슐 아이템 자동 완료
+ *
+ * @param userId - Clerk user ID
+ * @param domainModuleCode - 도메인 모듈 코드 ('W' | 'N')
+ * @description 루틴 기록 API에서 호출하여 캡슐 상태를 동기화
+ */
+export async function syncRoutineToCapsule(
+  userId: string,
+  domainModuleCode: 'W' | 'N'
+): Promise<void> {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const capsule = await getCachedDailyCapsule(userId, today);
+    if (!capsule || capsule.id === 'empty') return;
+
+    // 해당 도메인의 미완료 아이템 찾기
+    const uncheckedItems = capsule.items.filter(
+      (item) => item.moduleCode === domainModuleCode && !item.isChecked
+    );
+
+    if (uncheckedItems.length === 0) return;
+
+    // 첫 번째 미완료 아이템을 완료 처리
+    await checkDailyItem(capsule.id, uncheckedItems[0].id, true);
+  } catch (error) {
+    // 캡슐 동기화 실패는 기록 저장에 영향을 주지 않음
+    console.error('[Daily] 루틴-캡슐 동기화 실패:', error);
+  }
+}
+
 // =============================================================================
 // 내부 유틸
 // =============================================================================

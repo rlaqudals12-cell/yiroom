@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ReviewSummary, ReviewSummarySkeleton } from './ReviewSummary';
 import { ReviewList } from './ReviewList';
 import { ReviewForm, ReviewPromptCard } from './ReviewForm';
-import { ReviewAIKeywords, generateMockAISummary } from './ReviewAIKeywords';
+import { ReviewAIKeywords } from './ReviewAIKeywords';
+import type { ReviewAISummary } from './ReviewAIKeywords';
 import { ReviewSentimentFilter, type SentimentFilterType } from './ReviewSentimentFilter';
 import { ReviewPointsBadge } from './ReviewPointsBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,11 +76,10 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // AI 요약 (Mock 데이터 - 추후 API 연동)
-  const aiSummary = useMemo(() => {
-    if (!summary || summary.totalCount < 5) return null;
-    return generateMockAISummary(summary.totalCount);
-  }, [summary]);
+  // AI 리뷰 분석 상태
+  const [aiSummary, setAiSummary] = useState<ReviewAISummary | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryError, setAiSummaryError] = useState(false);
 
   // 감성별 리뷰 수 계산
   const sentimentCounts = useMemo(() => {
@@ -137,6 +138,37 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       loadInitialData();
     }
   }, [loadInitialData, isUserLoaded]);
+
+  // AI 리뷰 분석 조회 (리뷰 5개 이상일 때)
+  useEffect(() => {
+    if (!summary || summary.totalCount < 5) return;
+
+    setAiSummaryLoading(true);
+    setAiSummaryError(false);
+
+    fetch(`/api/products/${productId}/review-analysis?type=${productType}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          // API 응답을 ReviewAIKeywords 컴포넌트 형식으로 변환
+          setAiSummary({
+            positiveKeywords: data.data.positiveKeywords ?? [],
+            negativeKeywords: data.data.negativeKeywords ?? [],
+            summary: data.data.summary ?? '',
+            recommendPoints: data.data.pros ?? [],
+            cautionPoints: data.data.cons ?? [],
+            analyzedCount: data.data.analyzedCount ?? 0,
+            lastAnalyzedAt: new Date().toISOString(),
+          });
+        }
+      })
+      .catch(() => {
+        setAiSummaryError(true);
+      })
+      .finally(() => {
+        setAiSummaryLoading(false);
+      });
+  }, [summary, productId, productType]);
 
   // 정렬 변경
   const handleSortChange = async (newSort: ReviewSortBy) => {
@@ -292,16 +324,30 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       <CardContent className="space-y-6">
         {/* 리뷰 요약 */}
         {isLoading && <ReviewSummarySkeleton />}
-        {!isLoading && summary && summary.totalCount > 0 && (
-          <ReviewSummary summary={summary} />
-        )}
+        {!isLoading && summary && summary.totalCount > 0 && <ReviewSummary summary={summary} />}
 
         {/* AI 리뷰 분석 (리뷰 5개 이상일 때) */}
-        {!isLoading && aiSummary && (
+        {!isLoading && aiSummaryLoading && (
+          <div
+            className="flex items-center gap-2 p-4 rounded-xl bg-muted/50"
+            data-testid="review-ai-loading"
+          >
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">AI 리뷰를 분석하고 있어요...</span>
+          </div>
+        )}
+        {!isLoading && aiSummaryError && (
+          <div
+            className="text-sm text-muted-foreground text-center p-3"
+            data-testid="review-ai-error"
+          >
+            AI 리뷰 분석을 불러올 수 없어요
+          </div>
+        )}
+        {!isLoading && !aiSummaryLoading && aiSummary && (
           <ReviewAIKeywords
             aiSummary={aiSummary}
             onKeywordClick={(keyword, sentiment) => {
-              // 키워드 클릭 시 해당 감성으로 필터 + 검색 (추후 구현)
               setSentimentFilter(sentiment);
             }}
           />

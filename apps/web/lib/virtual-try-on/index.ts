@@ -43,3 +43,7 @@ export {
   getDefaultColorForSeason,
   SEASON_LABELS,
 } from './season-presets';
+
+// VTO 제품 매처 (색상 기반 제품 매칭)
+export type { VTOMakeupType, LabColor, VTOMatchedProduct } from './product-matcher';
+export { rgbToLab, calculateDeltaE, matchProductsByColor } from './product-matcher';

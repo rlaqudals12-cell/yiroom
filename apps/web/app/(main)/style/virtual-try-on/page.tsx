@@ -5,9 +5,9 @@
  * - 이미지 업로드 → 립스틱/블러셔 적용 → Before/After 비교
  */
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Camera, Upload, Loader2, RotateCcw, Sparkles } from 'lucide-react';
+import { Camera, Upload, Loader2, RotateCcw, Sparkles, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -38,6 +38,11 @@ import type {
   MakeupResult,
   PersonalColorSeason,
 } from '@/lib/virtual-try-on';
+import {
+  matchProductsByColor,
+  type VTOMakeupType,
+  type VTOMatchedProduct,
+} from '@/lib/virtual-try-on/product-matcher';
 
 type Tab = 'lip' | 'blush' | 'hair-color' | 'eyeshadow' | 'foundation';
 
@@ -60,6 +65,10 @@ export default function VirtualTryOnPage(): React.JSX.Element {
   const [opacity, setOpacity] = useState(0.55);
   // 헤어 컬러용 HSL 타겟
   const [selectedHairHsl, setSelectedHairHsl] = useState(HAIR_PRESETS[0].targetHsl);
+
+  // VTO 결과 기반 추천 제품
+  const [matchedProducts, setMatchedProducts] = useState<VTOMatchedProduct[]>([]);
+  const [isMatchingProducts, setIsMatchingProducts] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -95,6 +104,21 @@ export default function VirtualTryOnPage(): React.JSX.Element {
       ),
     };
   }, [season]);
+
+  // VTO 결과 나오면 유사 제품 매칭
+  useEffect(() => {
+    if (!result) {
+      setMatchedProducts([]);
+      return;
+    }
+
+    const vtoType: VTOMakeupType = tab === 'hair-color' ? 'hair' : tab;
+    setIsMatchingProducts(true);
+    matchProductsByColor(vtoType, selectedColor, season ?? undefined, 5)
+      .then(setMatchedProducts)
+      .catch(() => setMatchedProducts([]))
+      .finally(() => setIsMatchingProducts(false));
+  }, [result, tab, selectedColor, season]);
 
   const getTabLabel = (): string => {
     if (tab === 'lip') return '립스틱 적용';
@@ -451,6 +475,78 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                 <p className="text-xs text-muted-foreground text-center">
                   처리 시간: {result.processingTimeMs}ms
                 </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* VTO 결과 기반 추천 제품 */}
+        {result && (
+          <Card data-testid="vto-matched-products">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />이 색상과 비슷한 제품
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isMatchingProducts && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">제품을 찾고 있어요...</span>
+                </div>
+              )}
+              {!isMatchingProducts && matchedProducts.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  매칭되는 제품이 없어요
+                </p>
+              )}
+              {!isMatchingProducts && matchedProducts.length > 0 && (
+                <div className="space-y-3">
+                  {matchedProducts.map((product) => (
+                    <div
+                      key={product.productId}
+                      className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                      data-testid="vto-product-item"
+                    >
+                      {product.imageUrl && (
+                        <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground">{product.brand}</p>
+                        <p className="text-sm font-medium truncate">{product.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-primary font-medium">
+                            {product.matchScore}% 매칭
+                          </span>
+                          {product.price && (
+                            <span className="text-xs text-muted-foreground">
+                              {product.price.toLocaleString('ko-KR')}원
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {product.affiliateUrl && (
+                        <a
+                          href={product.affiliateUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                          aria-label={`${product.name} 구매 페이지 열기`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>

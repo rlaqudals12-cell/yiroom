@@ -49,4 +49,10 @@ export * from './historyService';
 export * from './skin';
 
 // PC-2: 12-Tone 퍼스널컬러 분류 시스템
-export * from "./personal-color";
+export * from './personal-color';
+
+// M-1 + S-1: 피부타입 고려 메이크업 인사이트
+export * from './makeupSkinInsight';
+
+// CIE-1: 이미지 품질 검증 (Laplacian variance)
+export * from './image-quality';

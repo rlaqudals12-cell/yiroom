@@ -299,3 +299,32 @@ export type {
   BodyTypeCategory,
   SupplementInsightResult,
 } from './supplementInsight';
+
+// ============================================
+// OH-1 구강건강 연동 인사이트
+// ============================================
+
+export { getOralNutritionInsight, convertOralMetricsToSummary } from './oralInsight';
+
+export type {
+  OralMetricKey,
+  OralAnalysisSummary,
+  OralFoodRecommendation,
+  OralSupplementRecommendation,
+  OralNutritionInsight,
+} from './oralInsight';
+
+// ============================================
+// H-1 헤어 연동 인사이트 (H-1 ↔ S-1 상관관계 포함)
+// ============================================
+
+export { getHairNutritionInsight, convertHairMetricsToSummary } from './hairInsight';
+
+export type {
+  HairMetricKey,
+  HairAnalysisSummary,
+  SkinSummaryForHair,
+  HairFoodRecommendation,
+  ScalpSkinCorrelation,
+  HairNutritionInsight,
+} from './hairInsight';

@@ -18,6 +18,7 @@ import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
 import HomeRecentlyViewed from './HomeRecentlyViewed';
+import HomeStreakWidget from './HomeStreakWidget';
 import { exposeConnection } from '@/lib/connection-awareness';
 import type { ConnectionModule } from '@/lib/connection-awareness';
 
@@ -111,6 +112,9 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
           <AnalysisProgressBar completed={analysisCount} total={6} />
         </div>
       </div>
+
+      {/* 스트릭/뱃지 위젯 — 운동/영양 기록 시 표시 */}
+      <HomeStreakWidget />
 
       {/* 인과 연결 다음 추천 (정보 블록 3) */}
       <GrowingNextStep analyses={analyses} />

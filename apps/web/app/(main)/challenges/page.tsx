@@ -6,14 +6,15 @@
  * - 참여 가능한 챌린지 목록
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Target, Trophy, Flame } from 'lucide-react';
+import { ArrowLeft, Target, Trophy, Flame, Layers } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ChallengeList } from '@/components/challenges';
 import { ChallengesListSkeleton } from '@/components/challenges/ChallengesSkeleton';
+import { CrossDomainChallengeList } from '@/components/gamification';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getActiveChallenges,
@@ -22,6 +23,11 @@ import {
   getUserChallengeStats,
   type ChallengeStats,
 } from '@/lib/challenges';
+import {
+  CROSS_DOMAIN_CHALLENGES,
+  buildCrossDomainView,
+  type CrossDomainProgressView,
+} from '@/lib/gamification/cross-domain-challenges';
 import type { Challenge, UserChallenge } from '@/types/challenges';
 import { toast } from 'sonner';
 
@@ -33,7 +39,7 @@ export default function ChallengesPage() {
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [stats, setStats] = useState<ChallengeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'explore' | 'my'>('explore');
+  const [activeTab, setActiveTab] = useState<'explore' | 'my' | 'cross'>('explore');
 
   // 데이터 로드
   useEffect(() => {
@@ -101,6 +107,12 @@ export default function ChallengesPage() {
   const handleView = (challengeId: string) => {
     router.push(`/challenges/${challengeId}`);
   };
+
+  // 크로스도메인 챌린지 뷰 빌드 (활동 횟수는 아직 없으므로 빈 상태)
+  const crossDomainViews: CrossDomainProgressView[] = useMemo(
+    () => CROSS_DOMAIN_CHALLENGES.map((c) => buildCrossDomainView(c, {})),
+    []
+  );
 
   // 진행 중인 챌린지만 필터링
   const activeChallenges = userChallenges.filter((uc) => uc.status === 'in_progress');
@@ -180,11 +192,18 @@ export default function ChallengesPage() {
         )}
 
         {/* 탭 */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'my')}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'explore' | 'my' | 'cross')}
+        >
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="explore">탐색</TabsTrigger>
             <TabsTrigger value="my">
               내 챌린지 {activeChallenges.length > 0 && `(${activeChallenges.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="cross" className="gap-1">
+              <Layers className="w-3.5 h-3.5" />
+              크로스
             </TabsTrigger>
           </TabsList>
 
@@ -196,6 +215,25 @@ export default function ChallengesPage() {
               onJoin={handleJoin}
               onView={handleView}
               showFilters
+            />
+          </TabsContent>
+
+          {/* 크로스도메인 탭 */}
+          <TabsContent value="cross" className="mt-4">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Layers className="w-5 h-5 text-indigo-500" />
+                크로스도메인 챌린지
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                뷰티, 운동, 영양을 함께 챌린지해보세요
+              </p>
+            </div>
+            <CrossDomainChallengeList
+              views={crossDomainViews}
+              onJoin={(id) => {
+                toast.success('크로스도메인 챌린지에 참여했어요!');
+              }}
             />
           </TabsContent>
 

@@ -14,6 +14,7 @@ import { CompareButton } from '@/components/products/CompareButton';
 import { ProductViewTracker } from '@/components/products/ProductViewTracker';
 import { ReviewSection } from '@/components/products/reviews';
 import { ProductQASection } from '@/components/products/ProductQASection';
+import { ProductCouponSection } from '@/components/products/ProductCouponSection';
 import { IngredientAnalysisSectionDynamic } from '@/components/products/ingredients';
 import { getProductById, pathToProductType } from '@/lib/products';
 import type { ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
@@ -311,6 +312,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </CardContent>
           </Card>
         )}
+
+        {/* 쿠폰 배너 */}
+        <ProductCouponSection />
 
         {/* 구매 버튼 */}
         <div className="space-y-3 pt-4">

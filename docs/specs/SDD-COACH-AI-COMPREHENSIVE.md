@@ -1,13 +1,49 @@
 # SDD: AI 웰니스 코치 종합 스펙 (보강판)
 
-> **Status**: 보강 완료
-> **Version**: 2.0
+> **Status**: 대부분 구현
+> **Version**: 3.0
 > **Created**: 2026-01-19
-> **Updated**: 2026-01-21
+> **Updated**: 2026-03-15
 > **Phase**: M (AI 상담)
 
 > 기존 SDD-COACH-AI-CHAT.md를 보강한 종합 스펙 문서
 > RAG 시스템, 가드레일, 대화 패턴, 웰니스 코칭 심리학 추가
+
+---
+
+## 현재 구현 상태 (2026-03-15 기준)
+
+### 구현 완료
+
+| 기능                                     | 파일                                | 상태                                                                   |
+| ---------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| 사용자 컨텍스트 수집 (15개 DB 병렬 쿼리) | `lib/coach/context.ts`              | **구현됨** - PC/S/C/H/M/W/N + 피부일기 + 바이오리듬                    |
+| Gemini 스트리밍 응답                     | `lib/coach/chat.ts`                 | **구현됨** - `generateCoachResponseStream()`                           |
+| RAG 7개 도메인                           | `lib/coach/*-rag.ts`                | **구현됨** - skin/personal-color/fashion/nutrition/workout/hair/makeup |
+| 가드레일 (환각 필터)                     | `lib/coach/hallucination-filter.ts` | **구현됨** - 의료 주장, 절대 보장, 위험 성분 조합 감지                 |
+| 위기 감지                                | `lib/safety/`                       | **구현됨** - 자살/자해 키워드 감지 → 전문 상담 안내                    |
+| 대화 이력 관리                           | `lib/coach/history.ts`              | **구현됨** - 세션 CRUD, 카테고리별 관리                                |
+| Fallback 응답                            | `lib/coach/chat.ts`                 | **구현됨** - 7개 카테고리별 정적 응답                                  |
+| Barrel Export                            | `lib/coach/index.ts`                | **구현됨** - P8 모듈 경계 준수                                         |
+
+### 미구현 / 개선 필요
+
+| 기능                  | 상태   | 비고                            |
+| --------------------- | ------ | ------------------------------- |
+| 8개 모듈 전체 연동    | 75%    | OH-1(구강) 미연동               |
+| 10턴 이상 맥락 유지   | 50%    | 현재 최근 5턴                   |
+| 캡슐 연결 (추천→구매) | 계획됨 | P3+ 캡슐 에코시스템과 통합 필요 |
+| 음성 대화             | 미구현 | 텍스트 우선                     |
+
+### UserContext 타입 (15개 쿼리 대상)
+
+```
+personalColor / skinAnalysis / bodyAnalysis / hairAnalysis / makeupAnalysis
+workout (타입/목표/빈도/스트릭) / nutrition (목표/칼로리/스트릭)
+recentActivity (오늘 운동/칼로리/수분) / weeklySummary
+skinDiary (최근 컨디션/루틴 완료율/생활 요인)
+mentalHealth (바이오리듬)
+```
 
 ---
 
@@ -25,22 +61,22 @@
 
 ### 물리적 한계
 
-| 한계 | 설명 |
-|------|------|
-| 의료 면책 | 의료 진단/처방 불가 (법적 제한) |
-| 모델 컨텍스트 | LLM 컨텍스트 윈도우 제한 |
-| 응답 지연 | 스트리밍에도 초기 지연 존재 |
-| 정확도 한계 | AI 환각(hallucination) 가능성 |
+| 한계          | 설명                            |
+| ------------- | ------------------------------- |
+| 의료 면책     | 의료 진단/처방 불가 (법적 제한) |
+| 모델 컨텍스트 | LLM 컨텍스트 윈도우 제한        |
+| 응답 지연     | 스트리밍에도 초기 지연 존재     |
+| 정확도 한계   | AI 환각(hallucination) 가능성   |
 
 ### 100점 기준
 
-| 항목 | 100점 기준 | 현재 | 달성률 |
-|------|-----------|------|--------|
-| 분석 연동 | 8개 모듈 | 4개 (PC, S, C, N) | 50% |
-| 전문가 일치율 | 85% | 70% | 82% |
-| 맥락 유지 | 10턴 | 5턴 | 50% |
-| RAG 정확도 | 95% | 80% | 84% |
-| 가드레일 | 100% | 90% | 90% |
+| 항목          | 100점 기준 | 현재              | 달성률 |
+| ------------- | ---------- | ----------------- | ------ |
+| 분석 연동     | 8개 모듈   | 4개 (PC, S, C, N) | 50%    |
+| 전문가 일치율 | 85%        | 70%               | 82%    |
+| 맥락 유지     | 10턴       | 5턴               | 50%    |
+| RAG 정확도    | 95%        | 80%               | 84%    |
+| 가드레일      | 100%       | 90%               | 90%    |
 
 ### 현재 목표
 
@@ -59,29 +95,29 @@
 
 ### 원리 문서 (과학적 기초)
 
-| 문서 | 관련 내용 |
-|------|----------|
-| [ai-inference.md](../principles/ai-inference.md) | 프롬프트 엔지니어링, 신뢰도 계산 |
-| [cross-domain-synergy.md](../principles/cross-domain-synergy.md) | 모듈 간 데이터 연계, 충돌 해결 |
-| [skin-physiology.md](../principles/skin-physiology.md) | 피부 상담 기초 |
-| [nutrition-science.md](../principles/nutrition-science.md) | 영양 상담 기초 |
-| [exercise-physiology.md](../principles/exercise-physiology.md) | 운동 상담 기초 |
-| [color-science.md](../principles/color-science.md) | 퍼스널컬러 상담 기초 |
+| 문서                                                             | 관련 내용                        |
+| ---------------------------------------------------------------- | -------------------------------- |
+| [ai-inference.md](../principles/ai-inference.md)                 | 프롬프트 엔지니어링, 신뢰도 계산 |
+| [cross-domain-synergy.md](../principles/cross-domain-synergy.md) | 모듈 간 데이터 연계, 충돌 해결   |
+| [skin-physiology.md](../principles/skin-physiology.md)           | 피부 상담 기초                   |
+| [nutrition-science.md](../principles/nutrition-science.md)       | 영양 상담 기초                   |
+| [exercise-physiology.md](../principles/exercise-physiology.md)   | 운동 상담 기초                   |
+| [color-science.md](../principles/color-science.md)               | 퍼스널컬러 상담 기초             |
 
 ### ADR
 
-| ADR | 제목 |
-|-----|------|
-| [ADR-027](../adr/ADR-027-coach-ai-streaming.md) | SSE 스트리밍 아키텍처 |
-| [ADR-003](../adr/ADR-003-ai-model-selection.md) | Gemini 3 Flash 선택 |
+| ADR                                                 | 제목                      |
+| --------------------------------------------------- | ------------------------- |
+| [ADR-027](../adr/ADR-027-coach-ai-streaming.md)     | SSE 스트리밍 아키텍처     |
+| [ADR-003](../adr/ADR-003-ai-model-selection.md)     | Gemini 3 Flash 선택       |
 | [ADR-011](../adr/ADR-011-cross-module-data-flow.md) | 크로스 모듈 데이터 플로우 |
 
 ### 기존 스펙
 
-| 문서 | 내용 |
-|------|------|
-| [SDD-COACH-AI-CHAT.md](./SDD-COACH-AI-CHAT.md) | 기본 채팅 시스템 (v1.0) |
-| [SDD-AI-COACH-CONTEXT.md](../SDD-AI-COACH-CONTEXT.md) | 주간 활동 컨텍스트 |
+| 문서                                                  | 내용                    |
+| ----------------------------------------------------- | ----------------------- |
+| [SDD-COACH-AI-CHAT.md](./SDD-COACH-AI-CHAT.md)        | 기본 채팅 시스템 (v1.0) |
+| [SDD-AI-COACH-CONTEXT.md](../SDD-AI-COACH-CONTEXT.md) | 주간 활동 컨텍스트      |
 
 ---
 
@@ -111,12 +147,12 @@
 
 ### 1.2 핵심 가치
 
-| 가치 | 설명 | 측정 지표 |
-|------|------|----------|
-| **개인화** | 분석 결과 기반 맞춤 조언 | 컨텍스트 적용률 100% |
-| **안전성** | 의료 조언 가드레일 | 위반율 0% |
-| **자연스러움** | 실시간 스트리밍 대화 | 첫 청크 < 500ms |
-| **유용성** | 실행 가능한 조언 | 사용자 실행율 > 30% |
+| 가치           | 설명                     | 측정 지표            |
+| -------------- | ------------------------ | -------------------- |
+| **개인화**     | 분석 결과 기반 맞춤 조언 | 컨텍스트 적용률 100% |
+| **안전성**     | 의료 조언 가드레일       | 위반율 0%            |
+| **자연스러움** | 실시간 스트리밍 대화     | 첫 청크 < 500ms      |
+| **유용성**     | 실행 가능한 조언         | 사용자 실행율 > 30%  |
 
 ---
 
@@ -165,13 +201,13 @@ const MI_GUIDELINES = {
 
 > **소스**: Prochaska & DiClemente, "Stages of Change" (1983)
 
-| 단계 | 사용자 특성 | 코치 전략 |
-|------|------------|----------|
-| **무관심기** | 변화 의지 없음 | 정보 제공, 인식 유도 |
-| **관심기** | 관심 있지만 망설임 | 장단점 탐색, 동기 부여 |
-| **준비기** | 변화 계획 중 | 구체적 계획 수립 지원 |
-| **행동기** | 실천 중 | 지속 격려, 장애물 해결 |
-| **유지기** | 습관화 | 재발 방지, 심화 목표 |
+| 단계         | 사용자 특성        | 코치 전략              |
+| ------------ | ------------------ | ---------------------- |
+| **무관심기** | 변화 의지 없음     | 정보 제공, 인식 유도   |
+| **관심기**   | 관심 있지만 망설임 | 장단점 탐색, 동기 부여 |
+| **준비기**   | 변화 계획 중       | 구체적 계획 수립 지원  |
+| **행동기**   | 실천 중            | 지속 격려, 장애물 해결 |
+| **유지기**   | 습관화             | 재발 방지, 심화 목표   |
 
 **자동 단계 감지**:
 
@@ -215,13 +251,13 @@ function detectChangeStage(context: UserContext): ChangeStage {
 
 ### 3.1 도메인별 RAG 모듈
 
-| 모듈 | 파일 | 검색 대상 | 용도 |
-|------|------|----------|------|
-| **피부 RAG** | `skin-rag.ts` | cosmetic_products | 스킨케어 제품 추천 |
-| **영양 RAG** | `nutrition-rag.ts` | foods, supplements | 음식/영양제 추천 |
-| **운동 RAG** | `workout-rag.ts` | exercises | 운동 동작 추천 |
-| **패션 RAG** | `fashion-rag.ts` | fashion_items | 옷/코디 추천 |
-| **퍼컬 RAG** | `personal-color-rag.ts` | color_palettes | 색상 추천 |
+| 모듈         | 파일                    | 검색 대상          | 용도               |
+| ------------ | ----------------------- | ------------------ | ------------------ |
+| **피부 RAG** | `skin-rag.ts`           | cosmetic_products  | 스킨케어 제품 추천 |
+| **영양 RAG** | `nutrition-rag.ts`      | foods, supplements | 음식/영양제 추천   |
+| **운동 RAG** | `workout-rag.ts`        | exercises          | 운동 동작 추천     |
+| **패션 RAG** | `fashion-rag.ts`        | fashion_items      | 옷/코디 추천       |
+| **퍼컬 RAG** | `personal-color-rag.ts` | color_palettes     | 색상 추천          |
 
 ### 3.2 RAG 아키텍처
 
@@ -262,7 +298,7 @@ interface MatchScoreParams {
 }
 
 function calculateMatchScore(params: MatchScoreParams): {
-  score: number;    // 0-100
+  score: number; // 0-100
   reasons: string[];
 } {
   let score = 50; // 기본 점수
@@ -299,8 +335,30 @@ function calculateMatchScore(params: MatchScoreParams): {
 ```typescript
 // 피부 키워드
 const SKIN_KEYWORDS = {
-  concerns: ['건조', '지성', '트러블', '여드름', '주름', '미백', '탄력', '모공', '민감', '홍조', '잡티', '각질'],
-  ingredients: ['레티놀', '비타민c', '나이아신아마이드', '히알루론산', '세라마이드', 'aha', 'bha', '펩타이드'],
+  concerns: [
+    '건조',
+    '지성',
+    '트러블',
+    '여드름',
+    '주름',
+    '미백',
+    '탄력',
+    '모공',
+    '민감',
+    '홍조',
+    '잡티',
+    '각질',
+  ],
+  ingredients: [
+    '레티놀',
+    '비타민c',
+    '나이아신아마이드',
+    '히알루론산',
+    '세라마이드',
+    'aha',
+    'bha',
+    '펩타이드',
+  ],
 };
 
 // 영양 키워드
@@ -331,7 +389,7 @@ const HARD_GUARDRAILS = {
       /복용량|투약|약물|알레르기 약/,
       /증상이.*있으면|~병|~증/,
     ],
-    response: "의료적인 내용은 전문의와 상담하시는 게 좋아요. 가까운 병원을 방문해보세요.",
+    response: '의료적인 내용은 전문의와 상담하시는 게 좋아요. 가까운 병원을 방문해보세요.',
   },
 
   // 위험 행동 금지
@@ -341,13 +399,14 @@ const HARD_GUARDRAILS = {
       /하루 500kcal 이하|일주일에 5kg/,
       /구토|하제|이뇨제/,
     ],
-    response: "건강을 해칠 수 있는 방법은 권하지 않아요. 안전하고 지속 가능한 방법을 찾아볼까요?",
+    response: '건강을 해칠 수 있는 방법은 권하지 않아요. 안전하고 지속 가능한 방법을 찾아볼까요?',
   },
 
   // 자해/자살 관련
   selfHarm: {
     patterns: [/자해|자살|죽고.*싶/],
-    response: "힘든 마음이 느껴져요. 전문 상담이 도움이 될 수 있어요. 자살예방상담전화 1393, 정신건강위기상담전화 1577-0199로 연락해주세요.",
+    response:
+      '힘든 마음이 느껴져요. 전문 상담이 도움이 될 수 있어요. 자살예방상담전화 1393, 정신건강위기상담전화 1577-0199로 연락해주세요.',
     escalate: true,
   },
 };
@@ -362,22 +421,25 @@ const SOFT_GUARDRAILS = {
     triggers: [
       { condition: 'bmi < 18.5', message: '저체중 범위예요. 영양사와 상담하면 좋겠어요.' },
       { condition: 'bmi > 30', message: '건강 관리가 필요할 수 있어요. 전문가 상담을 권해요.' },
-      { condition: 'skinConcerns.includes("심한 여드름")', message: '피부과 전문의 상담을 권해요.' },
+      {
+        condition: 'skinConcerns.includes("심한 여드름")',
+        message: '피부과 전문의 상담을 권해요.',
+      },
     ],
   },
 
   // 개인정보 수집 금지
   privacyProtection: {
     avoid: ['주민등록번호', '카드번호', '비밀번호', '주소'],
-    response: "개인 정보는 저장하지 않아요. 민감한 정보는 공유하지 않으셔도 돼요.",
+    response: '개인 정보는 저장하지 않아요. 민감한 정보는 공유하지 않으셔도 돼요.',
   },
 
   // 불확실성 인정
   uncertaintyAcknowledge: {
     triggers: ['모르겠어요', '확실하지 않아요'],
     templates: [
-      "확실하지 않은 부분이에요. 전문가에게 확인하면 좋겠어요.",
-      "개인차가 있어서 단정짓기 어려워요.",
+      '확실하지 않은 부분이에요. 전문가에게 확인하면 좋겠어요.',
+      '개인차가 있어서 단정짓기 어려워요.',
     ],
   },
 };
@@ -387,11 +449,11 @@ const SOFT_GUARDRAILS = {
 
 ```typescript
 const DOMAIN_DISCLAIMERS = {
-  skin: "피부 관련 조언은 일반적인 정보예요. 피부과 전문의 상담을 권해요.",
-  nutrition: "영양 정보는 참고용이에요. 개인 건강 상태에 따라 다를 수 있어요.",
-  workout: "운동 전 준비운동을 꼭 하시고, 통증이 있으면 중단하세요.",
-  procedure: "시술 정보는 참고용이에요. 시술 전 반드시 전문의와 상담하세요.",
-  medication: "약물/영양제는 전문 약사나 의사와 상담 후 복용하세요.",
+  skin: '피부 관련 조언은 일반적인 정보예요. 피부과 전문의 상담을 권해요.',
+  nutrition: '영양 정보는 참고용이에요. 개인 건강 상태에 따라 다를 수 있어요.',
+  workout: '운동 전 준비운동을 꼭 하시고, 통증이 있으면 중단하세요.',
+  procedure: '시술 정보는 참고용이에요. 시술 전 반드시 전문의와 상담하세요.',
+  medication: '약물/영양제는 전문 약사나 의사와 상담 후 복용하세요.',
 };
 ```
 
@@ -405,13 +467,14 @@ const DOMAIN_DISCLAIMERS = {
 interface ConversationContext {
   sessionId: string;
   messages: CoachMessage[];
-  currentTopic: string | null;      // 현재 대화 주제
-  mentionedEntities: string[];      // 언급된 제품/운동 등
-  askedQuestions: string[];         // 물어본 질문들
-  userPreferences: {                // 대화 중 파악한 선호
-    preferredTime?: string;         // "아침", "저녁"
+  currentTopic: string | null; // 현재 대화 주제
+  mentionedEntities: string[]; // 언급된 제품/운동 등
+  askedQuestions: string[]; // 물어본 질문들
+  userPreferences: {
+    // 대화 중 파악한 선호
+    preferredTime?: string; // "아침", "저녁"
     budget?: 'low' | 'medium' | 'high';
-    restrictions?: string[];        // 알레르기, 기피 식품 등
+    restrictions?: string[]; // 알레르기, 기피 식품 등
   };
 }
 ```
@@ -432,7 +495,7 @@ function detectTopicChange(
   };
 
   for (const [topic, keywords] of Object.entries(topics)) {
-    if (keywords.some(kw => newMessage.includes(kw))) {
+    if (keywords.some((kw) => newMessage.includes(kw))) {
       return { changed: topic !== currentTopic, newTopic: topic };
     }
   }
@@ -450,18 +513,9 @@ function generateFollowUpQuestions(
   userContext: UserContext
 ): string[] {
   const templates = {
-    skin: [
-      '더 궁금한 스킨케어 루틴이 있으신가요?',
-      '사용하시는 제품 중 궁금한 게 있으세요?',
-    ],
-    nutrition: [
-      '식단 계획을 세워볼까요?',
-      '특정 영양소에 대해 더 알고 싶으신가요?',
-    ],
-    workout: [
-      '운동 루틴을 짜드릴까요?',
-      '다른 부위 운동도 알려드릴까요?',
-    ],
+    skin: ['더 궁금한 스킨케어 루틴이 있으신가요?', '사용하시는 제품 중 궁금한 게 있으세요?'],
+    nutrition: ['식단 계획을 세워볼까요?', '특정 영양소에 대해 더 알고 싶으신가요?'],
+    workout: ['운동 루틴을 짜드릴까요?', '다른 부위 운동도 알려드릴까요?'],
   };
 
   return templates[topic] || ['더 궁금한 게 있으신가요?'];
@@ -516,19 +570,19 @@ function buildCrossDomainPrompt(context: UserContext): string {
 ```typescript
 const CONFLICT_RESOLUTION = {
   // 건강 > 미용
-  'health_over_beauty': {
+  health_over_beauty: {
     example: '레티놀 + 임신 가능성',
     resolution: '건강 관련 주의사항 우선 안내',
   },
 
   // 안전 > 효과
-  'safety_over_efficacy': {
+  safety_over_efficacy: {
     example: '고강도 운동 + 부상 이력',
     resolution: '안전한 대안 제시',
   },
 
   // 의료 > 일반 조언
-  'medical_over_general': {
+  medical_over_general: {
     example: '특정 성분 + 약물 복용',
     resolution: '전문의 상담 권고',
   },
@@ -597,13 +651,13 @@ apps/web/
 
 ```typescript
 interface CoachStreamRequest {
-  message: string;                    // 사용자 메시지 (필수)
-  chatHistory?: CoachMessage[];       // 이전 대화 (선택, 최대 10턴)
-  sessionId?: string;                 // 세션 ID (선택)
+  message: string; // 사용자 메시지 (필수)
+  chatHistory?: CoachMessage[]; // 이전 대화 (선택, 최대 10턴)
+  sessionId?: string; // 세션 ID (선택)
   options?: {
-    enableRAG?: boolean;              // RAG 활성화 (기본: true)
-    ragDomains?: string[];            // RAG 검색 도메인 제한
-    maxTokens?: number;               // 최대 응답 토큰 (기본: 500)
+    enableRAG?: boolean; // RAG 활성화 (기본: true)
+    ragDomains?: string[]; // RAG 검색 도메인 제한
+    maxTokens?: number; // 최대 응답 토큰 (기본: 500)
   };
 }
 ```
@@ -645,26 +699,26 @@ interface CoachStreamRequest {
 
 ### 8.2 에러 코드
 
-| 코드 | HTTP | 설명 | 사용자 메시지 |
-|------|------|------|--------------|
-| AUTH_ERROR | 401 | 미인증 | 로그인이 필요해요 |
-| VALIDATION_ERROR | 400 | 입력 오류 | 메시지를 입력해주세요 |
-| GUARDRAIL_TRIGGERED | 200 | 가드레일 발동 | (가드레일 메시지) |
-| RAG_FAILED | 200 | RAG 검색 실패 | (무시, 일반 응답) |
-| AI_TIMEOUT | 504 | Gemini 타임아웃 | 응답이 지연되고 있어요 |
-| AI_ERROR | 503 | Gemini 오류 | 잠시 후 다시 시도해주세요 |
+| 코드                | HTTP | 설명            | 사용자 메시지             |
+| ------------------- | ---- | --------------- | ------------------------- |
+| AUTH_ERROR          | 401  | 미인증          | 로그인이 필요해요         |
+| VALIDATION_ERROR    | 400  | 입력 오류       | 메시지를 입력해주세요     |
+| GUARDRAIL_TRIGGERED | 200  | 가드레일 발동   | (가드레일 메시지)         |
+| RAG_FAILED          | 200  | RAG 검색 실패   | (무시, 일반 응답)         |
+| AI_TIMEOUT          | 504  | Gemini 타임아웃 | 응답이 지연되고 있어요    |
+| AI_ERROR            | 503  | Gemini 오류     | 잠시 후 다시 시도해주세요 |
 
 ---
 
 ## 9. 성능 목표
 
-| 지표 | 목표 | 현재 | 개선 방안 |
-|------|------|------|----------|
-| 첫 청크 응답 | < 500ms | ~400ms | ✅ 달성 |
-| 전체 응답 | < 5s | ~3s | ✅ 달성 |
-| RAG 검색 | < 200ms | ~150ms | ✅ 달성 |
-| 컨텍스트 로드 | < 300ms | ~200ms | ✅ 달성 |
-| 동시 사용자 | 100명 | 미측정 | 로드 테스트 필요 |
+| 지표          | 목표    | 현재   | 개선 방안        |
+| ------------- | ------- | ------ | ---------------- |
+| 첫 청크 응답  | < 500ms | ~400ms | ✅ 달성          |
+| 전체 응답     | < 5s    | ~3s    | ✅ 달성          |
+| RAG 검색      | < 200ms | ~150ms | ✅ 달성          |
+| 컨텍스트 로드 | < 300ms | ~200ms | ✅ 달성          |
+| 동시 사용자   | 100명   | 미측정 | 로드 테스트 필요 |
 
 ---
 
@@ -728,16 +782,18 @@ graph TD
 
 #### ATOM-C1a: 하드 가드레일 구현
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | B1, B2 |
-| **병렬 가능** | Yes |
+| 항목          | 값     |
+| ------------- | ------ |
+| **소요시간**  | 1시간  |
+| **의존성**    | B1, B2 |
+| **병렬 가능** | Yes    |
 
 **입력**:
+
 - 사용자 메시지
 
 **출력**:
+
 - `lib/coach/guardrails.ts`
   - `checkHardGuardrails(message): GuardrailResult`
   - `HARD_GUARDRAILS` 정규식 패턴 (의료, 위험 행동)
@@ -773,6 +829,7 @@ export function checkHardGuardrails(message: string): GuardrailResult {
 ```
 
 **성공 기준** (정량화):
+
 - [ ] 100개 의료 조언 정규식 테스트 케이스 100% 매칭
 - [ ] 50개 위험 행동 정규식 테스트 케이스 100% 매칭
 - [ ] 자해 관련 에스컬레이션 응답시간 < 100ms
@@ -781,22 +838,25 @@ export function checkHardGuardrails(message: string): GuardrailResult {
 
 #### ATOM-C1b: 소프트 가드레일 및 면책조항
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C1a |
-| **병렬 가능** | No |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C1a   |
+| **병렬 가능** | No    |
 
 **입력**:
+
 - 사용자 메시지
 - 대화 컨텍스트
 
 **출력**:
+
 - `lib/coach/guardrails.ts`
   - `checkSoftGuardrails(message, context): GuardrailResult`
   - `addDomainDisclaimer(response, domain): string`
 
 **성공 기준** (정량화):
+
 - [ ] 오탐(false positive)율 < 5% (1000개 일반 메시지 테스트)
 - [ ] 도메인별 면책조항 5종 (피부, 영양, 운동, 체형, 종합)
 - [ ] 테스트 커버리지 90%+
@@ -805,16 +865,18 @@ export function checkHardGuardrails(message: string): GuardrailResult {
 
 #### ATOM-C2-1: 시너지 탐지
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | A3, B1 |
-| **병렬 가능** | Yes |
+| 항목          | 값     |
+| ------------- | ------ |
+| **소요시간**  | 1시간  |
+| **의존성**    | A3, B1 |
+| **병렬 가능** | Yes    |
 
 **입력**:
+
 - UserContext (전체)
 
 **출력**:
+
 - `lib/coach/cross-domain.ts`
   - `findSynergies(context): Synergy[]`
 
@@ -854,6 +916,7 @@ export function findSynergies(context: UserContext): Synergy[] {
 ```
 
 **성공 기준**:
+
 - [ ] 피부×영양 시너지 탐지 정확도 > 95%
 - [ ] 체형×운동 시너지 탐지 정확도 > 95%
 - [ ] 테스트 커버리지 90%+
@@ -889,17 +952,19 @@ describe('findSynergies', () => {
 
 #### ATOM-C2-2: 크로스 도메인 프롬프트 구성
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C2-1 |
-| **병렬 가능** | No |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C2-1  |
+| **병렬 가능** | No    |
 
 **입력**:
+
 - Synergy[]
 - UserContext
 
 **출력**:
+
 - `lib/coach/cross-domain.ts`
   - `buildCrossDomainPrompt(synergies, context): string`
 
@@ -907,13 +972,8 @@ describe('findSynergies', () => {
 
 ```typescript
 // lib/coach/cross-domain.ts
-export function buildCrossDomainPrompt(
-  synergies: Synergy[],
-  context: UserContext
-): string {
-  const synergySection = synergies
-    .map(s => `[${s.domains.join('↔')}] ${s.insight}`)
-    .join('\n');
+export function buildCrossDomainPrompt(synergies: Synergy[], context: UserContext): string {
+  const synergySection = synergies.map((s) => `[${s.domains.join('↔')}] ${s.insight}`).join('\n');
 
   return `
 ## 분석 결과 통합 인사이트
@@ -926,6 +986,7 @@ ${JSON.stringify(context, null, 2)}
 ```
 
 **성공 기준**:
+
 - [ ] 프롬프트 길이 < 2000 토큰
 - [ ] 모든 시너지 포함 확인
 - [ ] 테스트 커버리지 90%+
@@ -958,16 +1019,18 @@ describe('buildCrossDomainPrompt', () => {
 
 #### ATOM-C2-3: 충돌 해결기
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C2-2 |
-| **병렬 가능** | Yes |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C2-2  |
+| **병렬 가능** | Yes   |
 
 **입력**:
+
 - Recommendation[]
 
 **출력**:
+
 - `lib/coach/cross-domain.ts`
   - `resolveConflicts(recommendations): Recommendation[]`
 
@@ -976,16 +1039,14 @@ describe('buildCrossDomainPrompt', () => {
 ```typescript
 // lib/coach/cross-domain.ts
 const PRIORITY = {
-  health: 100,    // 건강 > 미용
-  safety: 90,     // 안전 > 효과
-  medical: 80,    // 의료 경고 에스컬레이션
+  health: 100, // 건강 > 미용
+  safety: 90, // 안전 > 효과
+  medical: 80, // 의료 경고 에스컬레이션
 };
 
-export function resolveConflicts(
-  recommendations: Recommendation[]
-): Recommendation[] {
+export function resolveConflicts(recommendations: Recommendation[]): Recommendation[] {
   return recommendations
-    .map(r => ({
+    .map((r) => ({
       ...r,
       priority: calculatePriority(r),
     }))
@@ -1001,6 +1062,7 @@ function calculatePriority(r: Recommendation): number {
 ```
 
 **성공 기준**:
+
 - [ ] 건강 > 미용 우선순위 100% 적용
 - [ ] 안전 > 효과 우선순위 100% 적용
 - [ ] 의료 경고 에스컬레이션 100% 트리거
@@ -1039,16 +1101,18 @@ describe('resolveConflicts', () => {
 
 #### ATOM-C3a: TTM 변화 단계 감지
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C2-3 |
-| **병렬 가능** | No |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C2-3  |
+| **병렬 가능** | No    |
 
 **입력**:
+
 - UserContext
 
 **출력**:
+
 - `lib/coach/coaching-psychology.ts`
   - `detectChangeStage(context): ChangeStage`
   - `buildMIPrompt(stage): string`
@@ -1084,6 +1148,7 @@ export function buildMIPrompt(stage: ChangeStage): string {
 ```
 
 **성공 기준** (정량화):
+
 - [ ] 20개 테스트 시나리오 중 16개 이상 정확 (단계 감지 정확도 > 80%)
 - [ ] 단계 감지 처리시간 < 50ms
 
@@ -1091,23 +1156,26 @@ export function buildMIPrompt(stage: ChangeStage): string {
 
 #### ATOM-C3b: MI/OARS 기법 및 긍정적 강화
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C3a |
-| **병렬 가능** | No |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C3a   |
+| **병렬 가능** | No    |
 
 **입력**:
+
 - ChangeStage
 - 대화 히스토리
 
 **출력**:
+
 - `lib/coach/coaching-psychology.ts`
   - `selectAffirmation(context): string`
   - `applyOARSTechnique(stage, topic): string`
   - `AFFIRMATION_TEMPLATES`: 긍정적 강화 템플릿
 
 **성공 기준** (정량화):
+
 - [ ] 5개 MI OARS 기법별 프롬프트 템플릿 적용 (Open/Affirmation/Reflection/Summary/Change Talk)
 - [ ] 10개 긍정적 강화 템플릿 중 맥락 적합 선택률 > 90%
 - [ ] 테스트 커버리지 85%+
@@ -1116,23 +1184,26 @@ export function buildMIPrompt(stage: ChangeStage): string {
 
 #### ATOM-C4: 후속 질문 개선
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1.5시간 |
-| **의존성** | C3 |
-| **병렬 가능** | Yes |
+| 항목          | 값      |
+| ------------- | ------- |
+| **소요시간**  | 1.5시간 |
+| **의존성**    | C3      |
+| **병렬 가능** | Yes     |
 
 **입력**:
+
 - AI 응답
 - 현재 토픽
 - UserContext
 
 **출력**:
+
 - `lib/coach/follow-up.ts`
   - `generateContextualFollowUp(response, topic, context): string[]`
   - `detectTopicChange(history, newMessage): TopicChange`
 
 **성공 기준** (정량화):
+
 - [ ] 10개 대화 시나리오에서 후속 질문 관련도 점수 > 0.8
 - [ ] 30개 토픽 전환 테스트 케이스에서 감지 정확도 > 90%
 - [ ] 후속 질문 3개 생성, 질문 간 중복률 < 10%
@@ -1142,16 +1213,18 @@ export function buildMIPrompt(stage: ChangeStage): string {
 
 #### ATOM-D1: 가드레일 경고 UI
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | C1 |
-| **병렬 가능** | Yes |
+| 항목          | 값    |
+| ------------- | ----- |
+| **소요시간**  | 1시간 |
+| **의존성**    | C1    |
+| **병렬 가능** | Yes   |
 
 **입력**:
+
 - GuardrailResult
 
 **출력**:
+
 - `components/coach/GuardrailWarning.tsx`
 
 **UI 스펙**:
@@ -1180,6 +1253,7 @@ export function GuardrailWarning({ type, message, showHelpline }: GuardrailWarni
 ```
 
 **성공 기준**:
+
 - [ ] Hard/Soft 구분 표시
 - [ ] 헬프라인 정보 표시
 - [ ] 접근성 지원
@@ -1188,11 +1262,11 @@ export function GuardrailWarning({ type, message, showHelpline }: GuardrailWarni
 
 ### 10.3 총 소요시간 (보강분)
 
-| Phase | ATOMs | 시간 |
-|-------|-------|------|
-| Phase 3 (신규) | C1, C2, C3, C4 | 8.5시간 |
-| Phase 4 (신규) | D1, D2, D3 | 3시간 |
-| **보강 총합** | 7개 | **11.5시간** |
+| Phase          | ATOMs          | 시간         |
+| -------------- | -------------- | ------------ |
+| Phase 3 (신규) | C1, C2, C3, C4 | 8.5시간      |
+| Phase 4 (신규) | D1, D2, D3     | 3시간        |
+| **보강 총합**  | 7개            | **11.5시간** |
 
 ---
 
@@ -1226,9 +1300,11 @@ describe('Guardrails', () => {
 // tests/api/coach/stream.integration.test.ts
 describe('Coach Stream API', () => {
   it('should stream response with RAG results', async () => {
-    const response = await POST(createMockRequest({
-      message: '내 피부에 맞는 크림 추천해줘',
-    }));
+    const response = await POST(
+      createMockRequest({
+        message: '내 피부에 맞는 크림 추천해줘',
+      })
+    );
 
     const events = await collectSSEEvents(response);
 
@@ -1281,7 +1357,7 @@ interface CoachAnalytics {
 
   // 품질 메트릭
   guardrailsTriggered: string[];
-  userSatisfaction?: number;  // 피드백 수집 시
+  userSatisfaction?: number; // 피드백 수집 시
 
   // 컨텍스트 활용
   contextFieldsUsed: string[];
@@ -1291,13 +1367,13 @@ interface CoachAnalytics {
 
 ### 12.2 대시보드 지표
 
-| 지표 | 목표 | 알림 임계값 |
-|------|------|-----------|
-| 일일 활성 대화 | 증가 추세 | 전주 대비 -20% |
-| 평균 대화 턴 | > 3턴 | < 2턴 |
-| 가드레일 발동률 | < 5% | > 10% |
-| RAG 활용률 | > 50% | < 30% |
-| 첫 청크 지연 p95 | < 500ms | > 1000ms |
+| 지표             | 목표      | 알림 임계값    |
+| ---------------- | --------- | -------------- |
+| 일일 활성 대화   | 증가 추세 | 전주 대비 -20% |
+| 평균 대화 턴     | > 3턴     | < 2턴          |
+| 가드레일 발동률  | < 5%      | > 10%          |
+| RAG 활용률       | > 50%     | < 30%          |
+| 첫 청크 지연 p95 | < 500ms   | > 1000ms       |
 
 ---
 
@@ -1305,13 +1381,13 @@ interface CoachAnalytics {
 
 ### Phase 3 예정
 
-| 기능 | 설명 | 우선순위 |
-|------|------|---------|
-| 음성 대화 | STT + TTS 연동 | P1 |
-| 이미지 분석 상담 | 사진 기반 실시간 조언 | P1 |
-| 프로액티브 알림 | 푸시 알림으로 먼저 대화 시작 | P2 |
-| 다국어 지원 | 영어, 일본어 | P2 |
-| 전문가 핸드오프 | 복잡한 케이스 전문가 연결 | P3 |
+| 기능             | 설명                         | 우선순위 |
+| ---------------- | ---------------------------- | -------- |
+| 음성 대화        | STT + TTS 연동               | P1       |
+| 이미지 분석 상담 | 사진 기반 실시간 조언        | P1       |
+| 프로액티브 알림  | 푸시 알림으로 먼저 대화 시작 | P2       |
+| 다국어 지원      | 영어, 일본어                 | P2       |
+| 전문가 핸드오프  | 복잡한 케이스 전문가 연결    | P3       |
 
 ---
 

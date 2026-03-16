@@ -100,7 +100,8 @@ export default function GenderOnboardingPage() {
         stylePreference,
       });
 
-      router.push('/home');
+      // 온보딩 완료 → 분석 선택 페이지로 유도 (첫 분석 플로우 연결)
+      router.push('/onboarding');
     } catch (error) {
       console.error('[Onboarding] Failed to save preferences:', error);
     } finally {

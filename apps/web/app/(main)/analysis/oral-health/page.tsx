@@ -7,7 +7,7 @@ import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
+import { Clock, ArrowRight, ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { Button } from '@/components/ui/button';
 import { OralHealthResultCard } from '@/components/analysis/oral-health';
@@ -165,7 +165,14 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="oral-health-analysis-page">
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
-        <header className="text-center mb-8">
+        <header className="relative text-center mb-8">
+          <Link
+            href="/analysis"
+            className="absolute left-0 top-1 p-1 text-muted-foreground hover:text-foreground"
+            aria-label="분석 목록으로 돌아가기"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
           <h1 className="text-2xl font-bold text-foreground">구강건강 분석</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>

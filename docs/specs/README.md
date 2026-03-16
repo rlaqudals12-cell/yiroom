@@ -51,7 +51,7 @@
 | 카테고리                                  | 문서 수 | 상태          |
 | ----------------------------------------- | ------- | ------------- |
 | [분석 모듈](#1-분석-모듈-pc-1-s-1-c-1)    | 18개    | 대부분 구현됨 |
-| [이미지 엔진](#2-이미지-엔진-cie)         | 4개     | 계획됨        |
+| [이미지 엔진](#2-이미지-엔진-cie)         | 5개     | 부분 구현     |
 | [웰니스 모듈](#3-웰니스-모듈-n-1-w-1)     | 6개     | 구현됨/계획됨 |
 | [법률/규정 준수](#4-법률규정-준수)        | 6개     | 구현됨        |
 | [AI 기능](#5-ai-기능)                     | 5개     | 부분 구현     |
@@ -59,11 +59,12 @@
 | [소셜/수익화](#7-소셜수익화)              | 3개     | 계획됨        |
 | [메타/계획](#8-메타계획)                  | 6개     | 참조 문서     |
 | [스마트 매칭/조합](#9-스마트-매칭조합)    | 1개     | 계획됨        |
+| [쇼핑 고도화](#13-쇼핑-고도화)            | 1개     | 구현 중       |
 | [인프라/DevOps](#10-인프라devops)         | 2개     | 계획됨        |
 | [크로스 모듈](#11-크로스-모듈)            | 2개     | 부분 구현     |
 | [웰니스/바이오리듬](#12-웰니스바이오리듬) | 1개     | 구현됨        |
 
-**총 문서 수**: 65개
+**총 문서 수**: 66개
 
 ---
 
@@ -89,7 +90,7 @@
 | [SDD-PHASE-J-AI-STYLING](SDD-PHASE-J-AI-STYLING.md)                   | 구현됨 | AI 스타일링 Phase J  | ADR-003, ADR-010 |
 | [SDD-PHASE-J-P2-ACCESSORY-MAKEUP](SDD-PHASE-J-P2-ACCESSORY-MAKEUP.md) | 구현됨 | 액세서리/메이크업    | ADR-010          |
 | [SDD-PHASE-J-P3-FULL-OUTFIT](SDD-PHASE-J-P3-FULL-OUTFIT.md)           | 계획됨 | 전체 코디네이션      | ADR-010          |
-| [SDD-AUTO-COLOR-CLASSIFICATION](SDD-AUTO-COLOR-CLASSIFICATION.md)     | 계획됨 | 자동 컬러 분류       | ADR-003          |
+| [SDD-AUTO-COLOR-CLASSIFICATION](SDD-AUTO-COLOR-CLASSIFICATION.md)     | 구현됨 | 자동 컬러 분류       | ADR-034          |
 | [SDD-CAPSULE-WARDROBE](SDD-CAPSULE-WARDROBE.md)                       | 계획됨 | 캡슐 워드로브        | ADR-010          |
 | [SDD-PERSONAL-COLOR-v2](SDD-PERSONAL-COLOR-v2.md)                     | 계획됨 | 퍼스널컬러 v2 (PC-2) | ADR-001, ADR-003 |
 
@@ -118,12 +119,13 @@
 
 ## 2. 이미지 엔진 (CIE)
 
-| 문서                                                          | 상태   | 설명               | 관련 ADR                                                                                              |
-| ------------------------------------------------------------- | ------ | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| [SDD-CIE-1-IMAGE-QUALITY](SDD-CIE-1-IMAGE-QUALITY.md)         | 계획됨 | 이미지 품질 검증   | [ADR-001](../adr/ADR-001-core-image-engine.md)                                                        |
-| [SDD-CIE-2-FACE-DETECTION](SDD-CIE-2-FACE-DETECTION.md)       | 계획됨 | 얼굴 감지          | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-033](../adr/ADR-033-face-detection-library.md)   |
-| [SDD-CIE-3-AWB-CORRECTION](SDD-CIE-3-AWB-CORRECTION.md)       | 계획됨 | 화이트 밸런스 보정 | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-040](../adr/ADR-040-cie3-lighting-correction.md) |
-| [SDD-CIE-4-LIGHTING-ANALYSIS](SDD-CIE-4-LIGHTING-ANALYSIS.md) | 계획됨 | 조명 분석          | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-041](../adr/ADR-041-cie4-lighting-analysis.md)   |
+| 문서                                                          | 상태      | 설명                     | 관련 ADR                                                                                              |
+| ------------------------------------------------------------- | --------- | ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| [SDD-CIE-IMAGE-PIPELINE](SDD-CIE-IMAGE-PIPELINE.md)           | 부분 구현 | **통합 파이프라인 스펙** | [ADR-001](../adr/ADR-001-core-image-engine.md)                                                        |
+| [SDD-CIE-1-IMAGE-QUALITY](SDD-CIE-1-IMAGE-QUALITY.md)         | 부분 구현 | 이미지 품질 검증         | [ADR-001](../adr/ADR-001-core-image-engine.md)                                                        |
+| [SDD-CIE-2-FACE-DETECTION](SDD-CIE-2-FACE-DETECTION.md)       | 구현됨    | 얼굴 감지 (80%)          | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-033](../adr/ADR-033-face-detection-library.md)   |
+| [SDD-CIE-3-AWB-CORRECTION](SDD-CIE-3-AWB-CORRECTION.md)       | 계획됨    | 화이트 밸런스 보정       | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-040](../adr/ADR-040-cie3-lighting-correction.md) |
+| [SDD-CIE-4-LIGHTING-ANALYSIS](SDD-CIE-4-LIGHTING-ANALYSIS.md) | 계획됨    | 조명 분석                | [ADR-001](../adr/ADR-001-core-image-engine.md), [ADR-041](../adr/ADR-041-cie4-lighting-analysis.md)   |
 
 ---
 
@@ -165,29 +167,30 @@
 
 ## 5. AI 기능
 
-| 문서                                                                                  | 상태      | 설명                                 | 관련 ADR         |
-| ------------------------------------------------------------------------------------- | --------- | ------------------------------------ | ---------------- |
-| [SDD-COACH-AI-CHAT](SDD-COACH-AI-CHAT.md)                                             | 계획됨    | AI 코치 채팅                         | ADR-021          |
-| [SDD-COACH-AI-COMPREHENSIVE](SDD-COACH-AI-COMPREHENSIVE.md)                           | 계획됨    | AI 코치 종합 (RAG, 가드레일, 심리학) | ADR-021, ADR-027 |
-| [SDD-HYBRID-DATA-EXTENSION](SDD-HYBRID-DATA-EXTENSION.md)                             | 구현됨    | 하이브리드 데이터 패턴               | ADR-014          |
-| [SDD-PROFESSIONAL-ENHANCEMENT](SDD-PROFESSIONAL-ENHANCEMENT.md)                       | 부분 구현 | 전문가 기능 강화                     | ADR-010          |
-| [SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT](SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT.md) | 계획됨    | 전문가 기능 보충                     | ADR-010          |
+| 문서                                                                                  | 상태        | 설명                                 | 관련 ADR         |
+| ------------------------------------------------------------------------------------- | ----------- | ------------------------------------ | ---------------- |
+| [SDD-COACH-AI-CHAT](SDD-COACH-AI-CHAT.md)                                             | 구현됨      | AI 코치 채팅                         | ADR-021          |
+| [SDD-COACH-AI-COMPREHENSIVE](SDD-COACH-AI-COMPREHENSIVE.md)                           | 대부분 구현 | AI 코치 종합 (RAG, 가드레일, 심리학) | ADR-021, ADR-027 |
+| [SDD-HYBRID-DATA-EXTENSION](SDD-HYBRID-DATA-EXTENSION.md)                             | 구현됨      | 하이브리드 데이터 패턴               | ADR-014          |
+| [SDD-PROFESSIONAL-ENHANCEMENT](SDD-PROFESSIONAL-ENHANCEMENT.md)                       | 부분 구현   | 전문가 기능 강화                     | ADR-010          |
+| [SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT](SDD-PROFESSIONAL-ENHANCEMENT-SUPPLEMENT.md) | 계획됨      | 전문가 기능 보충                     | ADR-010          |
 
 ---
 
 ## 6. UX/디자인
 
-| 문서                                                                      | 상태   | 설명                    | 관련 ADR                                                  |
-| ------------------------------------------------------------------------- | ------ | ----------------------- | --------------------------------------------------------- |
-| [SDD-GLOBAL-DESIGN-SPECIFICATION](SDD-GLOBAL-DESIGN-SPECIFICATION.md)     | 구현됨 | 글로벌 디자인 시스템    | -                                                         |
-| [SDD-2026-UX-TRENDS](SDD-2026-UX-TRENDS.md)                               | 계획됨 | 2026 UX 트렌드 적용     | [ADR-051](../adr/ADR-051-2026-ux-trends.md)               |
-| [SDD-ACCESSIBILITY](SDD-ACCESSIBILITY.md)                                 | 계획됨 | 접근성 (WCAG 2.1 AA)    | [ADR-048](../adr/ADR-048-accessibility-strategy.md)       |
-| [SDD-MARKETING-TOGGLE-UI](SDD-MARKETING-TOGGLE-UI.md)                     | 구현됨 | 마케팅 토글 UI          | ADR-029                                                   |
-| [SDD-MY-INFO-SECTION](SDD-MY-INFO-SECTION.md)                             | 구현됨 | 내 정보 섹션            | -                                                         |
-| [SDD-GAP-FIXES](SDD-GAP-FIXES.md)                                         | 구현됨 | 갭 수정 사항            | -                                                         |
-| [SDD-PHASE-K-COMPREHENSIVE-UPGRADE](SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md) | 계획됨 | Phase K 종합 업그레이드 | -                                                         |
-| [SDD-GLOBAL-PARTNERS-EXPANSION](SDD-GLOBAL-PARTNERS-EXPANSION.md)         | 계획됨 | 글로벌 파트너 확장      | -                                                         |
-| [SDD-PC1-ONBOARDING](SDD-PC1-ONBOARDING.md)                               | 구현됨 | PC-1 온보딩 플로우      | [ADR-039](../adr/ADR-039-pc1-onboarding-stabilization.md) |
+| 문서                                                                      | 상태      | 설명                        | 관련 ADR                                                  |
+| ------------------------------------------------------------------------- | --------- | --------------------------- | --------------------------------------------------------- |
+| [SDD-GLOBAL-DESIGN-SPECIFICATION](SDD-GLOBAL-DESIGN-SPECIFICATION.md)     | 구현됨    | 글로벌 디자인 시스템        | -                                                         |
+| [SDD-2026-UX-TRENDS](SDD-2026-UX-TRENDS.md)                               | 계획됨    | 2026 UX 트렌드 적용         | [ADR-051](../adr/ADR-051-2026-ux-trends.md)               |
+| [SDD-UX-SIMULATION-V1](SDD-UX-SIMULATION-V1.md)                           | 구현됨    | 페르소나 UX 시뮬레이션 개선 | [ADR-095](../adr/ADR-095-ux-simulation-improvements.md)   |
+| [SDD-ACCESSIBILITY](SDD-ACCESSIBILITY.md)                                 | 부분 구현 | 접근성 (WCAG 2.1 AA)        | [ADR-048](../adr/ADR-048-accessibility-strategy.md)       |
+| [SDD-MARKETING-TOGGLE-UI](SDD-MARKETING-TOGGLE-UI.md)                     | 구현됨    | 마케팅 토글 UI              | ADR-029                                                   |
+| [SDD-MY-INFO-SECTION](SDD-MY-INFO-SECTION.md)                             | 구현됨    | 내 정보 섹션                | -                                                         |
+| [SDD-GAP-FIXES](SDD-GAP-FIXES.md)                                         | 구현됨    | 갭 수정 사항                | -                                                         |
+| [SDD-PHASE-K-COMPREHENSIVE-UPGRADE](SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md) | 계획됨    | Phase K 종합 업그레이드     | -                                                         |
+| [SDD-GLOBAL-PARTNERS-EXPANSION](SDD-GLOBAL-PARTNERS-EXPANSION.md)         | 계획됨    | 글로벌 파트너 확장          | -                                                         |
+| [SDD-PC1-ONBOARDING](SDD-PC1-ONBOARDING.md)                               | 구현됨    | PC-1 온보딩 플로우          | [ADR-039](../adr/ADR-039-pc1-onboarding-stabilization.md) |
 
 ---
 
@@ -244,6 +247,12 @@
 | 문서                                                    | 상태   | 설명                      | 관련 ADR                                               |
 | ------------------------------------------------------- | ------ | ------------------------- | ------------------------------------------------------ |
 | [SDD-STRESS-VISUALIZATION](SDD-STRESS-VISUALIZATION.md) | 구현됨 | 스트레스→피부 영향 시각화 | [ADR-090](../adr/ADR-090-stress-skin-visualization.md) |
+
+## 13. 쇼핑 고도화
+
+| 문서                                                    | 상태    | 설명                                                    | 관련 ADR                                                                                                                                               |
+| ------------------------------------------------------- | ------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [SDD-SHOPPING-ENHANCEMENT](SDD-SHOPPING-ENHANCEMENT.md) | 구현 중 | 바코드→구매, 가격알림, VTO→구매, 리뷰AI, 올리브영, 쿠폰 | [ADR-092](../adr/ADR-092-review-ai-analysis.md), [ADR-093](../adr/ADR-093-vto-product-bridge.md), [ADR-094](../adr/ADR-094-coupon-promotion-system.md) |
 
 ---
 

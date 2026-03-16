@@ -129,7 +129,12 @@ export { findDomainsNeedingRotation, rotateCapsule } from './rotation';
 export type { RotationResult } from './rotation';
 
 // Daily Capsule (Phase 4: 6단계 파이프라인)
-export { generateDailyCapsule, checkDailyItem, getTodayDailyCapsule } from './daily';
+export {
+  generateDailyCapsule,
+  checkDailyItem,
+  getTodayDailyCapsule,
+  syncRoutineToCapsule,
+} from './daily';
 
 // Shopping Companion (Phase 5: 갭 분석)
 export { analyzeGap } from './shopping';

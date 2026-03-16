@@ -49,6 +49,9 @@ export interface UserProfile {
   // M-1 메이크업 분석
   undertone?: Undertone;
   faceShape?: FaceShape;
+
+  // 알레르기/기피 성분 (선호/기피 시스템 연동)
+  avoidIngredients?: string[];
 }
 
 /**
@@ -181,6 +184,23 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
         matched: false,
       });
       score += 5;
+    }
+  }
+
+  // 기피 성분 페널티 — 사용자 알레르기/기피 성분이 제품에 포함된 경우
+  if (profile.avoidIngredients && profile.avoidIngredients.length > 0 && product.avoidIngredients) {
+    const conflicting = profile.avoidIngredients.filter((ingredient) =>
+      product.avoidIngredients?.some((pi) => pi.toLowerCase().includes(ingredient.toLowerCase()))
+    );
+
+    if (conflicting.length > 0) {
+      // 기피 성분이 포함된 제품은 점수 큰 폭 차감
+      score = Math.max(0, score - 40);
+      reasons.push({
+        type: 'concern',
+        label: `기피 성분 포함 (${conflicting.join(', ')})`,
+        matched: false,
+      });
     }
   }
 

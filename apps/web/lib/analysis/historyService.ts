@@ -466,6 +466,70 @@ export async function compareAnalyses(
 }
 
 /**
+ * 첫 분석과 최근 분석을 조회하여 Before/After 비교 데이터 반환
+ * @description 분석 이력에서 가장 오래된 것(first)과 가장 최근 것(latest)을 조회
+ */
+export async function getFirstAndLatestAnalysis(
+  supabase: SupabaseClient,
+  options: { type: AnalysisType; userId: string }
+): Promise<{ first: AnalysisHistoryItem; latest: AnalysisHistoryItem } | null> {
+  const { type, userId } = options;
+  const tableName = TABLE_MAP[type];
+
+  // 가장 최근 분석 조회
+  const { data: latestRow } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('clerk_user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!latestRow) return null;
+
+  // 가장 오래된 분석 조회
+  const { data: firstRow } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('clerk_user_id', userId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single();
+
+  if (!firstRow) return null;
+
+  // 같은 분석이면 비교 불가
+  if (firstRow.id === latestRow.id) return null;
+
+  // 타입별 변환
+  const transform = getTransformFn(type);
+  return {
+    first: transform(firstRow),
+    latest: transform(latestRow),
+  };
+}
+
+/**
+ * 타입별 변환 함수 조회
+ */
+function getTransformFn(
+  type: AnalysisType
+): (item: Record<string, unknown>) => AnalysisHistoryItem {
+  switch (type) {
+    case 'skin':
+      return transformSkinAnalysis;
+    case 'body':
+      return transformBodyAnalysis;
+    case 'personal-color':
+      return transformPersonalColorAnalysis;
+    case 'hair':
+      return transformHairAnalysis;
+    case 'makeup':
+      return transformMakeupAnalysis;
+  }
+}
+
+/**
  * 타임라인 차트용 데이터 조회
  * @description 시계열 데이터를 차트에 표시하기 좋은 형태로 변환
  */

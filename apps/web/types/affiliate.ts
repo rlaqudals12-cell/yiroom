@@ -12,7 +12,7 @@ import type { ProductType } from './product';
 // ================================================
 
 /** 파트너 식별자 */
-export type AffiliatePartnerName = 'iherb' | 'coupang' | 'musinsa';
+export type AffiliatePartnerName = 'iherb' | 'coupang' | 'musinsa' | 'oliveyoung';
 
 /** API 타입 */
 export type AffiliateApiType = 'csv_feed' | 'rest_api' | 'manual';

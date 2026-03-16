@@ -50,6 +50,7 @@ import {
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
 import { WellnessScoreRing, MyInfoSummaryCard } from '@/components/profile';
+import { BeforeAfterSection } from '@/components/profile/BeforeAfterSection';
 import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
 
 // 프로필 데이터 타입
@@ -452,9 +453,14 @@ export default function ProfilePage() {
               </section>
             </FadeInUp>
 
+            {/* Before/After 비교 */}
+            <FadeInUp delay={3}>
+              <BeforeAfterSection />
+            </FadeInUp>
+
             {/* 등급 진행률 */}
             {profileData?.userLevelState && (
-              <FadeInUp delay={3}>
+              <FadeInUp delay={4}>
                 <section className="bg-card rounded-2xl border p-6">
                   <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                     <TrendingUp className="h-5 w-5 text-purple-500" />

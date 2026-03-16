@@ -21,6 +21,8 @@ import { ItemUploader, type UploadResult } from '@/components/inventory/common/I
 import { ItemDetailSheet } from '@/components/inventory/common/ItemDetailSheet';
 import { CategoryFilter } from '@/components/inventory/common/CategoryFilter';
 import { useDebounce } from '@/hooks/useDebounce';
+import { RoutineBridgeCard } from '@/components/inventory/RoutineBridgeCard';
+import { matchProductsToRoutine } from '@/lib/inventory/routine-bridge';
 import type { InventoryCategory, InventoryItem, PantryMetadata } from '@/types/inventory';
 
 // 업로드 후 아이템 생성을 위한 폼 상태
@@ -371,6 +373,27 @@ export function InventoryCategoryClient({
         </Alert>
       )}
 
+      {/* 뷰티 전용: 루틴 브릿지 카드 */}
+      {category === 'beauty' && items.length > 0 && (
+        <div className="mb-4">
+          <RoutineBridgeCard
+            result={matchProductsToRoutine(
+              items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                tags: item.subCategory ? [item.subCategory] : [],
+                remainingPercent:
+                  typeof (item.metadata as Record<string, unknown>)?.remainingPercent === 'number'
+                    ? ((item.metadata as Record<string, unknown>).remainingPercent as number)
+                    : undefined,
+              })),
+              'morning'
+            )}
+            timeOfDay="morning"
+          />
+        </div>
+      )}
+
       {/* 검색 및 필터 */}
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
@@ -444,12 +467,7 @@ export function InventoryCategoryClient({
           {selectedSub.map((sub) => {
             const option = categorySubOptions[category].find((o) => o.value === sub);
             return (
-              <Button
-                key={sub}
-                variant="secondary"
-                size="sm"
-                onClick={() => handleRemoveSub(sub)}
-              >
+              <Button key={sub} variant="secondary" size="sm" onClick={() => handleRemoveSub(sub)}>
                 {option?.label}
                 <X className="w-3 h-3 ml-1" />
               </Button>

@@ -24,16 +24,19 @@ interface ProductCardProps {
  * - 매칭도 배지 (선택)
  * - 클릭 시 상세 페이지로 이동
  */
-export function ProductCard({ product, matchScore, className, priority = false }: ProductCardProps) {
+export function ProductCard({
+  product,
+  matchScore,
+  className,
+  priority = false,
+}: ProductCardProps) {
   const productType = getProductType(product);
   const typePath = productTypeToPath(productType);
   const href = `/products/${typePath}/${product.id}`;
 
   // 가격 포맷
   const price = 'priceKrw' in product ? product.priceKrw : undefined;
-  const formattedPrice = price
-    ? `₩${price.toLocaleString('ko-KR')}`
-    : '가격 미정';
+  const formattedPrice = price ? `₩${price.toLocaleString('ko-KR')}` : '가격 미정';
 
   // 평점/리뷰
   const rating = 'rating' in product ? product.rating : undefined;
@@ -51,6 +54,14 @@ export function ProductCard({ product, matchScore, className, priority = false }
   const placeholderUrl = `https://placehold.co/400x400/${placeholderColor}/888?text=${encodeURIComponent(product.brand.slice(0, 3))}`;
   const imageUrl = rawImageUrl || placeholderUrl;
 
+  // 평점 접근성 라벨
+  const reviewSuffix =
+    reviewCount !== undefined && reviewCount > 0
+      ? `, 리뷰 ${reviewCount.toLocaleString('ko-KR')}개`
+      : '';
+  const ratingAriaLabel =
+    rating !== undefined ? `평점 ${rating.toFixed(1)}점${reviewSuffix}` : undefined;
+
   // 비교 버튼용 데이터
   const compareItem = {
     productId: product.id,
@@ -66,6 +77,8 @@ export function ProductCard({ product, matchScore, className, priority = false }
       <Card
         className="group h-full overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-primary/20"
         data-testid="product-card"
+        role="article"
+        aria-label={`${product.name} 상세`}
       >
         {/* 이미지 영역 */}
         <div className="relative aspect-square overflow-hidden bg-muted">
@@ -108,9 +121,7 @@ export function ProductCard({ product, matchScore, className, priority = false }
         {/* 정보 영역 */}
         <CardContent className="p-3 transition-colors duration-300 group-hover:bg-muted/30">
           {/* 브랜드 */}
-          <p className="text-xs text-muted-foreground truncate">
-            {product.brand}
-          </p>
+          <p className="text-xs text-muted-foreground truncate">{product.brand}</p>
 
           {/* 제품명 */}
           <h3 className="mt-1 text-sm font-medium line-clamp-2 min-h-[2.5rem] transition-colors duration-300 group-hover:text-primary">
@@ -119,8 +130,11 @@ export function ProductCard({ product, matchScore, className, priority = false }
 
           {/* 평점 */}
           {rating !== undefined && (
-            <div className="mt-2 flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 transition-transform duration-300 group-hover:scale-110" />
+            <div className="mt-2 flex items-center gap-1" aria-label={ratingAriaLabel}>
+              <Star
+                className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 transition-transform duration-300 group-hover:scale-110"
+                aria-hidden="true"
+              />
               <span className="text-xs font-medium">{rating.toFixed(1)}</span>
               {reviewCount !== undefined && reviewCount > 0 && (
                 <span className="text-xs text-muted-foreground">
@@ -131,7 +145,12 @@ export function ProductCard({ product, matchScore, className, priority = false }
           )}
 
           {/* 가격 */}
-          <p className="mt-2 text-sm font-semibold transition-colors duration-300 group-hover:text-primary">{formattedPrice}</p>
+          <p
+            className="mt-2 text-sm font-semibold transition-colors duration-300 group-hover:text-primary"
+            aria-label={`가격 ${formattedPrice}`}
+          >
+            {formattedPrice}
+          </p>
         </CardContent>
       </Card>
     </Link>

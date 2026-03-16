@@ -703,3 +703,56 @@ describe('addMatchInfoToProducts', () => {
     expect(results).toHaveLength(0);
   });
 });
+
+// ================================================
+// 기피 성분 필터링 (#6)
+// ================================================
+
+describe('avoidIngredients 필터링', () => {
+  it('기피 성분 포함 화장품은 점수가 크게 차감된다', () => {
+    const productWithAvoid: CosmeticProduct = {
+      ...cosmeticProduct,
+      avoidIngredients: ['파라벤', '알코올'],
+    };
+
+    const profile: UserProfile = {
+      skinType: 'dry',
+      avoidIngredients: ['파라벤'],
+    };
+
+    const result = calculateMatchScore(productWithAvoid, profile);
+
+    // 기피 성분 포함 → 40점 차감되므로 상대적으로 낮아야 함
+    const normalResult = calculateMatchScore(cosmeticProduct, { skinType: 'dry' });
+    expect(result.score).toBeLessThan(normalResult.score);
+  });
+
+  it('기피 성분이 없는 화장품은 영향받지 않는다', () => {
+    const profile: UserProfile = {
+      skinType: 'dry',
+      avoidIngredients: ['파라벤'],
+    };
+
+    const result = calculateMatchScore(cosmeticProduct, profile);
+    const normalResult = calculateMatchScore(cosmeticProduct, { skinType: 'dry' });
+
+    // avoidIngredients가 제품에 없으면 동일 점수
+    expect(result.score).toBe(normalResult.score);
+  });
+
+  it('기피 성분 매칭 이유를 반환한다', () => {
+    const productWithAvoid: CosmeticProduct = {
+      ...cosmeticProduct,
+      avoidIngredients: ['레티놀', '알코올'],
+    };
+
+    const profile: UserProfile = {
+      avoidIngredients: ['레티놀'],
+    };
+
+    const result = calculateMatchScore(productWithAvoid, profile);
+    const avoidReason = result.reasons.find((r) => r.label.includes('기피 성분'));
+    expect(avoidReason).toBeDefined();
+    expect(avoidReason?.matched).toBe(false);
+  });
+});

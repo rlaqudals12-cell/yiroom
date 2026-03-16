@@ -168,7 +168,9 @@ export async function getDashboardSummary(
   // 이전 기간 통계 (비교용)
   const startDateObj = new Date(startDate);
   const endDateObj = new Date(endDate);
-  const periodDays = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+  const periodDays = Math.ceil(
+    (endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   const prevEndDate = new Date(startDateObj);
   prevEndDate.setDate(prevEndDate.getDate() - 1);
@@ -180,13 +182,16 @@ export async function getDashboardSummary(
     prevEndDate.toISOString().split('T')[0]
   );
 
-  const clicksChange = prevStats.totalClicks > 0
-    ? ((stats.totalClicks - prevStats.totalClicks) / prevStats.totalClicks) * 100
-    : 0;
+  const clicksChange =
+    prevStats.totalClicks > 0
+      ? ((stats.totalClicks - prevStats.totalClicks) / prevStats.totalClicks) * 100
+      : 0;
 
-  const commissionsChange = prevStats.totalCommissionKrw > 0
-    ? ((stats.totalCommissionKrw - prevStats.totalCommissionKrw) / prevStats.totalCommissionKrw) * 100
-    : 0;
+  const commissionsChange =
+    prevStats.totalCommissionKrw > 0
+      ? ((stats.totalCommissionKrw - prevStats.totalCommissionKrw) / prevStats.totalCommissionKrw) *
+        100
+      : 0;
 
   return {
     period: { start: startDate, end: endDate },
@@ -214,11 +219,12 @@ export async function getPartnerRevenues(
     return generateMockPartnerRevenue();
   }
 
-  const partners: AffiliatePartnerName[] = ['coupang', 'iherb', 'musinsa'];
+  const partners: AffiliatePartnerName[] = ['coupang', 'iherb', 'musinsa', 'oliveyoung'];
   const partnerNames: Record<AffiliatePartnerName, string> = {
     coupang: '쿠팡',
     iherb: 'iHerb',
     musinsa: '무신사',
+    oliveyoung: '올리브영',
   };
 
   const results: PartnerRevenue[] = [];
@@ -261,7 +267,8 @@ export async function getDailyRevenueTrend(
   if (useMock) {
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
-    const days = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const days =
+      Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     return generateMockDailyTrend(days);
   }
 
@@ -295,10 +302,7 @@ export async function getDailyRevenueTrend(
 /**
  * 인기 제품 목록
  */
-export async function getTopProducts(
-  limit = 10,
-  useMock = true
-): Promise<TopProduct[]> {
+export async function getTopProducts(limit = 10, useMock = true): Promise<TopProduct[]> {
   if (useMock) {
     return generateMockTopProducts().slice(0, limit);
   }

@@ -113,6 +113,8 @@ const isPublicRoute = createRouteMatcher([
   // 연령 검증 관련 페이지 (로그인 후 접근 가능하지만 인증 보호 제외)
   '/age-restricted',
   '/complete-profile',
+  // 초대 링크 (비로그인 사용자도 접근)
+  '/invite(.*)',
   // API 웹훅 (외부 서비스 콜백)
   '/api/webhooks(.*)',
   '/api/affiliate/(.*)',

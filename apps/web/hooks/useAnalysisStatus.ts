@@ -46,6 +46,7 @@ export interface AnalysisSummary {
 // 분석 상태 반환 타입
 export interface AnalysisStatus {
   isLoading: boolean;
+  hasError: boolean; // 분석 상태 조회 실패 여부
   analyses: AnalysisSummary[];
   analysisCount: number;
   hasPersonalColor: boolean;
@@ -58,6 +59,8 @@ export interface AnalysisStatus {
   isNewUser: boolean; // 분석 0개
   isGrowingUser: boolean; // 분석 1-3개
   isActiveUser: boolean; // 분석 4개 이상
+  // 재시도
+  refetch: () => void;
 }
 
 // 헬퍼 함수들
@@ -117,6 +120,7 @@ export function useAnalysisStatus(): AnalysisStatus {
   const supabase = useClerkSupabaseClient();
   const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const fetchingRef = useRef(false);
 
   // 캐시 유효성 검사
@@ -150,6 +154,7 @@ export function useAnalysisStatus(): AnalysisStatus {
       }
 
       fetchingRef.current = true;
+      setHasError(false);
 
       try {
         // 병렬로 모든 분석 결과 조회
@@ -262,6 +267,7 @@ export function useAnalysisStatus(): AnalysisStatus {
         setAnalyses(results);
       } catch (error) {
         console.error('[useAnalysisStatus] Failed to fetch analyses:', error);
+        setHasError(true);
       } finally {
         setIsLoading(false);
         fetchingRef.current = false;
@@ -289,6 +295,16 @@ export function useAnalysisStatus(): AnalysisStatus {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id]);
 
+  // 재시도 함수
+  const refetch = useCallback(() => {
+    if (user?.id) {
+      analysisCache.delete(user.id);
+      fetchingRef.current = false;
+      setIsLoading(true);
+      setHasError(false);
+    }
+  }, [user?.id]);
+
   // 각 분석 타입 존재 여부
   const hasPersonalColor = analyses.some((a) => a.type === 'personal-color');
   const hasSkin = analyses.some((a) => a.type === 'skin');
@@ -305,6 +321,7 @@ export function useAnalysisStatus(): AnalysisStatus {
 
   return {
     isLoading: !isUserLoaded || isLoading,
+    hasError,
     analyses,
     analysisCount,
     hasPersonalColor,
@@ -316,5 +333,6 @@ export function useAnalysisStatus(): AnalysisStatus {
     isNewUser,
     isGrowingUser,
     isActiveUser,
+    refetch,
   };
 }

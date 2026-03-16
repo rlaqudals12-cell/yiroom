@@ -10,6 +10,7 @@ import { generateMockWorkoutAnalysis } from '@/lib/mock/workout-analysis';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 import type { WorkoutType } from '@/types/workout';
 import { trackActivity } from '@/lib/levels';
+import { syncRoutineToCapsule } from '@/lib/capsule';
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
@@ -172,6 +173,13 @@ export async function POST(req: Request) {
 
     // 등급 시스템: 활동 트래킹 (분석 완료)
     await trackActivity(supabase, userId, 'analysis', data?.id);
+
+    // 캡슐 동기화: 운동 분석 완료 → 캡슐 아이템 자동 완료
+    try {
+      await syncRoutineToCapsule(userId, 'W');
+    } catch (capsuleError) {
+      console.error('[W-1] Capsule sync error:', capsuleError);
+    }
 
     // 운동 타입 상세 정보 추가
     const workoutTypeInfo = WORKOUT_TYPE_INFO[result.workoutType as WorkoutType];

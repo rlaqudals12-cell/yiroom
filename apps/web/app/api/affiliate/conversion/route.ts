@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateClickConversion } from '@/lib/affiliate/clicks';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { awardBadge } from '@/lib/gamification/badges';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import crypto from 'crypto';
 
@@ -148,6 +149,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // 구매 전환 시 사용자 보상 뱃지 지급 (비동기)
+    awardConversionBadge(clickId).catch((err) => {
+      console.error('[Conversion] 뱃지 지급 실패:', err);
+    });
+
     // 일별 통계 업데이트 (비동기)
     updateDailyStats(partner, conversionValue, commission).catch((err) => {
       console.error('[Conversion] 일별 통계 업데이트 실패:', err);
@@ -236,6 +242,40 @@ async function updateDailyStats(
       unique_clicks: 0,
       conversion_rate: 0,
     });
+  }
+}
+
+/**
+ * 구매 전환 시 사용자에게 보상 뱃지 지급
+ * - 클릭 레코드에서 사용자 ID 조회
+ * - "첫 구매!" 뱃지 및 "추천 제품 구매" 뱃지 지급
+ */
+async function awardConversionBadge(clickId: string): Promise<void> {
+  const supabase = createServiceRoleClient();
+
+  // 클릭 레코드에서 사용자 ID 조회
+  const { data: click } = await supabase
+    .from('affiliate_clicks')
+    .select('clerk_user_id')
+    .eq('id', clickId)
+    .single();
+
+  if (!click?.clerk_user_id) return;
+
+  const userId = click.clerk_user_id;
+
+  // "첫 구매!" 뱃지 지급 (이미 보유 시 자동 스킵)
+  await awardBadge(supabase, userId, 'first_purchase');
+
+  // 전환 횟수 확인 → 반복 구매 뱃지
+  const { count } = await supabase
+    .from('affiliate_clicks')
+    .select('id', { count: 'exact', head: true })
+    .eq('clerk_user_id', userId)
+    .not('converted_at', 'is', null);
+
+  if (count && count >= 5) {
+    await awardBadge(supabase, userId, 'loyal_shopper');
   }
 }
 

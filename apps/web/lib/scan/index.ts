@@ -80,6 +80,15 @@ export type {
   UpdateShelfItemRequest,
 } from './product-shelf';
 
+// 바코드 → 제품/구매 브릿지
+export { resolveBarcode } from './barcode-product-bridge';
+export type {
+  BarcodeProductResult,
+  InternalProduct,
+  InternalProductType,
+  AffiliateLink,
+} from './barcode-product-bridge';
+
 // 한국 제품 시드 데이터
 export {
   KOREAN_PRODUCTS_SEED,

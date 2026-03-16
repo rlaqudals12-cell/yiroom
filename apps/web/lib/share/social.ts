@@ -58,6 +58,17 @@ export interface ShareContent {
   url: string;
   imageUrl?: string;
   hashtags?: string[];
+  /** referral 코드 (공유 URL에 ?ref= 파라미터 추가) */
+  referralCode?: string;
+}
+
+/**
+ * 공유 URL에 referral 코드 추가
+ */
+function appendReferral(url: string, referralCode?: string): string {
+  if (!referralCode) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}ref=${encodeURIComponent(referralCode)}`;
 }
 
 /**
@@ -65,12 +76,13 @@ export interface ShareContent {
  * 새 창에서 트윗 작성 화면 열기
  */
 export function shareToX(content: ShareContent): void {
-  const { title, url, hashtags = [] } = content;
+  const { title, url, hashtags = [], referralCode } = content;
   const hashtagString = hashtags.map((h) => h.replace('#', '')).join(',');
+  const shareTargetUrl = appendReferral(url, referralCode);
 
   const shareUrl = new URL('https://twitter.com/intent/tweet');
   shareUrl.searchParams.set('text', title);
-  shareUrl.searchParams.set('url', url);
+  shareUrl.searchParams.set('url', shareTargetUrl);
   if (hashtagString) {
     shareUrl.searchParams.set('hashtags', hashtagString);
   }
@@ -103,6 +115,8 @@ export async function shareToKakao(content: ShareContent): Promise<boolean> {
   }
 
   try {
+    const shareTargetUrl = appendReferral(content.url, content.referralCode);
+
     Kakao.Share.sendDefault({
       objectType: 'feed',
       content: {
@@ -110,16 +124,16 @@ export async function shareToKakao(content: ShareContent): Promise<boolean> {
         description: content.description,
         imageUrl: content.imageUrl || `${process.env.NEXT_PUBLIC_APP_URL || ''}/og-image.png`,
         link: {
-          mobileWebUrl: content.url,
-          webUrl: content.url,
+          mobileWebUrl: shareTargetUrl,
+          webUrl: shareTargetUrl,
         },
       },
       buttons: [
         {
           title: '자세히 보기',
           link: {
-            mobileWebUrl: content.url,
-            webUrl: content.url,
+            mobileWebUrl: shareTargetUrl,
+            webUrl: shareTargetUrl,
           },
         },
       ],

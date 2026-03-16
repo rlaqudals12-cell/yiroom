@@ -20,6 +20,7 @@ import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 import HomeAnalysisSummary from './HomeAnalysisSummary';
 import HomeRecentlyViewed from './HomeRecentlyViewed';
 import HomeActivityBar from './HomeActivityBar';
+import HomeStreakWidget from './HomeStreakWidget';
 import SortableWidgetList from './SortableWidgetList';
 
 interface HomeStateActiveProps {
@@ -43,7 +44,10 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
   );
 
   return (
-    <div data-testid="home-state-active">
+    <div className="space-y-5" data-testid="home-state-active">
+      {/* 스트릭/뱃지 위젯 — 고정 위치 (정렬 대상 아님) */}
+      <HomeStreakWidget />
+
       <SortableWidgetList
         order={order}
         onOrderChange={setOrder}

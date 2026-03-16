@@ -49,7 +49,7 @@ vi.mock('@/lib/safety', () => ({
   }),
 }));
 
-import { generateDailyCapsule, checkDailyItem } from '@/lib/capsule/daily';
+import { generateDailyCapsule, checkDailyItem, syncRoutineToCapsule } from '@/lib/capsule/daily';
 import { getBeautyProfile } from '@/lib/capsule/profile';
 
 // =============================================================================
@@ -336,6 +336,125 @@ describe('Daily Capsule', () => {
 
       const result = await checkDailyItem('nonexistent', 'item-1', true);
       expect(result).toBeNull();
+    });
+  });
+
+  // =========================================================================
+  // syncRoutineToCapsule (루틴-캡슐 동기화)
+  // =========================================================================
+
+  describe('syncRoutineToCapsule', () => {
+    it('should auto-check first unchecked N item when nutrition recorded', async () => {
+      const items: DailyItem[] = [
+        {
+          id: 'skin-1',
+          moduleCode: 'S',
+          name: 'Skin',
+          reason: '',
+          compatibilityScore: 80,
+          isChecked: false,
+        },
+        {
+          id: 'nut-1',
+          moduleCode: 'N',
+          name: 'Nutrition',
+          reason: '',
+          compatibilityScore: 80,
+          isChecked: false,
+        },
+      ];
+
+      // getCachedDailyCapsule 호출 시
+      const selectChain = {
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: {
+                id: 'daily-1',
+                clerk_user_id: 'user_test',
+                date: new Date().toISOString().split('T')[0],
+                items,
+                total_ccs: 80,
+                estimated_minutes: 15,
+                status: 'pending',
+                completed_at: null,
+                created_at: new Date().toISOString(),
+              },
+              error: null,
+            }),
+          }),
+        }),
+      };
+
+      // checkDailyItem 호출 시
+      const singleSelectChain = {
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'daily-1',
+              clerk_user_id: 'user_test',
+              date: new Date().toISOString().split('T')[0],
+              items,
+              total_ccs: 80,
+              estimated_minutes: 15,
+              status: 'pending',
+              completed_at: null,
+              created_at: new Date().toISOString(),
+            },
+            error: null,
+          }),
+        }),
+      };
+
+      let callCount = 0;
+      mockSupabaseFrom.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          // getCachedDailyCapsule → daily_capsules select
+          return { select: vi.fn().mockReturnValue(selectChain) };
+        }
+        // checkDailyItem → select + update
+        return {
+          select: vi.fn().mockReturnValue(singleSelectChain),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'daily-1',
+                    clerk_user_id: 'user_test',
+                    date: new Date().toISOString().split('T')[0],
+                    items: [items[0], { ...items[1], isChecked: true }],
+                    total_ccs: 80,
+                    estimated_minutes: 15,
+                    status: 'in_progress',
+                    completed_at: null,
+                    created_at: new Date().toISOString(),
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      // 에러 없이 실행되어야 함
+      await expect(syncRoutineToCapsule('user_test', 'N')).resolves.not.toThrow();
+    });
+
+    it('should not throw if no cached capsule exists', async () => {
+      mockSupabaseFrom.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          }),
+        }),
+      });
+
+      await expect(syncRoutineToCapsule('user_test', 'W')).resolves.not.toThrow();
     });
   });
 });
