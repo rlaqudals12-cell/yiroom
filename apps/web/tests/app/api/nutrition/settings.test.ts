@@ -42,7 +42,11 @@ describe('Nutrition Settings API', () => {
     };
 
     it('returns 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'POST',
@@ -57,7 +61,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('returns 400 when required fields are missing', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'POST',
@@ -72,7 +80,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('saves settings successfully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockData = { id: '1', ...validRequestBody };
       const mockSupabase = {
@@ -81,7 +93,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: mockData, error: null }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'POST',
@@ -97,7 +111,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('handles database error', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
@@ -105,7 +123,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'POST',
@@ -116,13 +136,18 @@ describe('Nutrition Settings API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to save nutrition settings');
+      // error.message 제거됨 — 클라이언트에 고정 한국어 메시지만 노출
+      expect(data.error).toBe('영양 설정 저장에 실패했습니다.');
     });
   });
 
   describe('GET /api/nutrition/settings', () => {
     it('returns 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const response = await GET();
       const data = await response.json();
@@ -132,7 +157,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('returns settings when user has settings', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSettings = {
         id: '1',
@@ -146,7 +175,9 @@ describe('Nutrition Settings API', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: mockSettings, error: null }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const response = await GET();
       const data = await response.json();
@@ -158,7 +189,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('returns null when user has no settings', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
@@ -166,7 +201,9 @@ describe('Nutrition Settings API', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const response = await GET();
       const data = await response.json();
@@ -187,7 +224,11 @@ describe('Nutrition Settings API', () => {
     };
 
     it('returns 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: null } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',
@@ -202,7 +243,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('returns 400 when no fields to update', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',
@@ -217,7 +262,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('updates fasting settings successfully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockUpdatedData = {
         id: '1',
@@ -231,7 +280,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: mockUpdatedData, error: null }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',
@@ -248,7 +299,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('returns 404 when user has no settings to update', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
@@ -257,7 +312,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',
@@ -272,7 +329,11 @@ describe('Nutrition Settings API', () => {
     });
 
     it('handles database error', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
@@ -281,7 +342,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',
@@ -292,11 +355,16 @@ describe('Nutrition Settings API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to update nutrition settings');
+      // error.message 제거됨 — 클라이언트에 고정 한국어 메시지만 노출
+      expect(data.error).toBe('영양 설정 업데이트에 실패했습니다.');
     });
 
     it('updates only provided fields', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never);
+      vi.mocked(auth).mockResolvedValueOnce({ userId: 'user_123' } as ReturnType<
+        typeof auth
+      > extends Promise<infer T>
+        ? T
+        : never);
 
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
@@ -305,7 +373,9 @@ describe('Nutrition Settings API', () => {
         select: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: { fasting_enabled: false }, error: null }),
       };
-      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>);
+      vi.mocked(createServiceRoleClient).mockReturnValue(
+        mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+      );
 
       const request = new Request('http://localhost/api/nutrition/settings', {
         method: 'PATCH',

@@ -136,7 +136,8 @@ describe('GET /api/cron/update-prices', () => {
 
       expect(response.status).toBe(500);
       expect(json.error).toBe('Cron job failed');
-      expect(json.message).toBe('Crawler failed');
+      // error.message 제거됨 — 클라이언트에 고정 한국어 메시지만 노출
+      expect(json.message).toBe('서버 오류가 발생했습니다.');
     });
 
     it('알 수 없는 에러도 500을 반환한다', async () => {
@@ -147,7 +148,8 @@ describe('GET /api/cron/update-prices', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.message).toBe('Unknown error');
+      // error.message 제거됨 — 클라이언트에 고정 한국어 메시지만 노출
+      expect(json.message).toBe('서버 오류가 발생했습니다.');
     });
   });
 });

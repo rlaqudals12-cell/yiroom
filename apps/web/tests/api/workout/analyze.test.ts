@@ -477,8 +477,8 @@ describe('POST /api/workout/analyze', () => {
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to save analysis');
-      expect(json.details).toBeDefined();
+      // error.message 제거됨 — 클라이언트에 고정 한국어 메시지만 노출
+      expect(json.error).toBe('분석 결과 저장에 실패했습니다.');
     });
   });
 

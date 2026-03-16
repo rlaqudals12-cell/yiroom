@@ -261,10 +261,9 @@ describe('사용자 동기화 API (POST /api/sync-user)', () => {
       const response = await POST();
       const data = await response.json();
 
-      // Then: 500 에러
+      // Then: 500 에러 — error.message 제거됨, 고정 한국어 메시지만 노출
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to sync user');
-      expect(data.details).toBe('Database error');
+      expect(data.error).toBe('사용자 동기화에 실패했습니다.');
     });
 
     it('기존 사용자는 업데이트된다 (onConflict: clerk_user_id)', async () => {
