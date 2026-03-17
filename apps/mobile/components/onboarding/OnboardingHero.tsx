@@ -35,7 +35,7 @@ export function OnboardingHero({
       <GlassCard shadowSize="lg" glowColor={glowColor} testID={testID}>
         <View style={styles.content}>
           <Text style={styles.emoji}>{emoji}</Text>
-          <GradientText variant="extended" fontSize={22} fontWeight="700" style={styles.title}>
+          <GradientText variant="extended" fontSize={28} fontWeight="700" style={styles.title}>
             {title}
           </GradientText>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{subtitle}</Text>
