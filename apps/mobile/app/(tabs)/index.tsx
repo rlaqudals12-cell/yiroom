@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
 import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
@@ -45,7 +45,7 @@ import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
 export default function HomeScreen(): React.JSX.Element {
-  const { colors, brand, spacing, typography, module: moduleColors } = useTheme();
+  const { colors, brand, spacing, radii, typography, module: moduleColors } = useTheme();
   const router = useRouter();
   const { user, isLoaded } = useUser();
 
@@ -290,6 +290,105 @@ export default function HomeScreen(): React.JSX.Element {
       onRefresh={handleRefresh}
     >
       <HomeHeader userName={userName} isLoaded={isLoaded} />
+
+      {/* 3-State 히어로 — 분석 개수에 따라 분기 */}
+      {analysisCount === 0 && (
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <LinearGradient
+            colors={['#EC4899', '#A855F7']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ borderRadius: radii.xl, padding: spacing.lg, marginBottom: spacing.md }}
+          >
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontSize: typography.size.lg,
+                fontWeight: typography.weight.bold,
+                marginBottom: spacing.xs,
+              }}
+            >
+              사진 한 장으로 나를 알아보세요
+            </Text>
+            <Text
+              style={{
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: typography.size.sm,
+                marginBottom: spacing.md,
+              }}
+            >
+              6종 AI 뷰티 분석으로 온전한 나를 발견해요
+            </Text>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <Pressable
+                onPress={() => router.push('/(analysis)/personal-color' as never)}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: radii.full,
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.md,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
+                  🎨 퍼스널컬러
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/(analysis)/skin' as never)}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: radii.full,
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.md,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
+                  ✨ 피부 분석
+                </Text>
+              </Pressable>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      )}
+
+      {analysisCount > 0 && analysisCount < 4 && (
+        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
+            <Text
+              style={{
+                color: colors.foreground,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.bold,
+                marginBottom: spacing.xs,
+              }}
+            >
+              나에 대해 {analysisCount}가지를 발견했어요 ✨
+            </Text>
+            <View
+              style={{
+                height: 6,
+                backgroundColor: `${brand.primary}20`,
+                borderRadius: 3,
+                marginBottom: spacing.sm,
+              }}
+            >
+              <LinearGradient
+                colors={['#EC4899', '#A855F7']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  height: 6,
+                  borderRadius: 3,
+                  width: `${(analysisCount / 6) * 100}%`,
+                }}
+              />
+            </View>
+            <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+              {analysisCount}/6 분석 완료 — 더 많이 알수록 정확한 추천을 받을 수 있어요
+            </Text>
+          </GlassCard>
+        </Animated.View>
+      )}
 
       <HomeTodaySection
         tasks={todayTasks}
