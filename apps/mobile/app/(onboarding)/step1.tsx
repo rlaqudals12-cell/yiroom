@@ -84,16 +84,16 @@ export default function OnboardingStep1() {
                   style={({ pressed }) => [
                     styles.goalCard,
                     {
-                      backgroundColor: isSelected ? `${goalColor.gradient[0]}18` : colors.card,
+                      backgroundColor: isSelected ? `${goalColor.gradient[0]}30` : `${colors.card}CC`,
                       borderRadius: radii.xl,
-                      borderColor: isSelected ? goalColor.gradient[0] : colors.border,
+                      borderColor: isSelected ? goalColor.gradient[1] : `${colors.border}80`,
                       borderWidth: isSelected ? 2 : 1,
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
                       ...(isSelected
-                        ? { ...shadows.md, shadowColor: goalColor.gradient[0], shadowOpacity: 0.18 }
-                        : shadows.card),
+                        ? { ...shadows.md, shadowColor: goalColor.gradient[1], shadowOpacity: 0.25 }
+                        : {}),
                     },
                   ]}
                   onPress={() => handleToggle(goal)}
