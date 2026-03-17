@@ -8,6 +8,8 @@
 
 export {
   // 타입
+  type AnalysisInterest,
+  type StylePreference,
   type OnboardingGoal,
   type ActivityLevel,
   type Gender,
@@ -16,7 +18,15 @@ export {
   type OnboardingBasicInfo,
   type OnboardingPreferences,
   type OnboardingData,
-  // 상수
+  // 분석 관심 상수 (Step 1)
+  ANALYSIS_LABELS,
+  ANALYSIS_ICONS,
+  ANALYSIS_DESCRIPTIONS,
+  ANALYSIS_COLORS,
+  // 스타일 상수 (Step 2)
+  STYLE_PREFERENCE_LABELS,
+  STYLE_PREFERENCE_DESCRIPTIONS,
+  // 웰니스 목표 상수 (Step 3)
   GOAL_LABELS,
   GOAL_ICONS,
   GOAL_DESCRIPTIONS,

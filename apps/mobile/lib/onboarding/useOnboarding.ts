@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   OnboardingData,
   OnboardingGoal,
+  AnalysisInterest,
+  StylePreference,
   OnboardingBasicInfo,
   OnboardingPreferences,
 } from './types';
@@ -34,6 +36,8 @@ interface UseOnboardingResult {
   prevStep: () => void;
 
   // 데이터 업데이트
+  toggleAnalysisInterest: (interest: AnalysisInterest) => void;
+  setStylePreference: (style: StylePreference) => void;
   setGoals: (goals: OnboardingGoal[]) => void;
   toggleGoal: (goal: OnboardingGoal) => void;
   setBasicInfo: (info: Partial<OnboardingBasicInfo>) => void;
@@ -110,6 +114,28 @@ export function useOnboarding(): UseOnboardingResult {
       goToStep(currentStep - 1);
     }
   }, [currentStep, goToStep]);
+
+  // 관심 분석 토글 (Step 1)
+  const toggleAnalysisInterest = useCallback((interest: AnalysisInterest) => {
+    setData((prev) => {
+      const interests = prev.analysisInterests ?? [];
+      const updated = interests.includes(interest)
+        ? interests.filter((i) => i !== interest)
+        : [...interests, interest];
+      const newData = { ...prev, analysisInterests: updated };
+      saveData(newData);
+      return newData;
+    });
+  }, []);
+
+  // 스타일 선호 설정 (Step 2)
+  const setStylePreference = useCallback((style: StylePreference) => {
+    setData((prev) => {
+      const newData = { ...prev, stylePreference: style };
+      saveData(newData);
+      return newData;
+    });
+  }, []);
 
   // 목표 설정
   const setGoals = useCallback((goals: OnboardingGoal[]) => {
@@ -201,6 +227,8 @@ export function useOnboarding(): UseOnboardingResult {
     goToStep,
     nextStep,
     prevStep,
+    toggleAnalysisInterest,
+    setStylePreference,
     setGoals,
     toggleGoal,
     setBasicInfo,

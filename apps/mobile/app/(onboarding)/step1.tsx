@@ -1,13 +1,13 @@
 /**
- * 온보딩 Step 1: 목표 선택
+ * 온보딩 Step 1: 관심 분석 선택
  *
- * V4: 웹-모바일 시각 통일 — 파스텔 히어로 + 단색 CTA +
- *     border-2 카드 + 도트 ProgressIndicator
+ * V5: 뷰티 AI 분석 중심 전환 — 6종 분석 모듈 선택
+ *     "어떤 분석이 궁금하세요?" (복수 선택 가능)
  */
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Check } from 'lucide-react-native';
+import { Palette, Sparkles, Ruler, Scissors, Brush, FlaskConical, Check } from 'lucide-react-native';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -16,42 +16,45 @@ import { GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui
 import { TIMING, staggeredEntry } from '../../lib/animations';
 import {
   useOnboarding,
-  type OnboardingGoal,
-  GOAL_LABELS,
-  GOAL_DESCRIPTIONS,
-  GOAL_COLORS,
+  type AnalysisInterest,
+  ANALYSIS_LABELS,
+  ANALYSIS_DESCRIPTIONS,
+  ANALYSIS_COLORS,
 } from '../../lib/onboarding';
 import { useTheme, radii, spacing } from '../../lib/theme';
 
-// 온보딩 Step 1 히어로 색상 (pink-500 계열 — 목표 설정 아이덴티티)
+// 온보딩 Step 1 히어로 색상 (pink-500 — 뷰티 아이덴티티)
 const STEP1_ACCENT = '#EC4899';
 
 // Lucide 아이콘 매핑
-const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
-  weight_loss: TrendingDown,
-  muscle_gain: Dumbbell,
-  health_maintenance: HeartPulse,
-  stress_relief: Wind,
-  better_sleep: Moon,
+const ANALYSIS_ICON_MAP: Record<AnalysisInterest, typeof Palette> = {
+  personal_color: Palette,
+  skin: Sparkles,
+  body: Ruler,
+  hair: Scissors,
+  makeup: Brush,
+  ingredients: FlaskConical,
 };
 
-const GOALS: OnboardingGoal[] = [
-  'weight_loss',
-  'muscle_gain',
-  'health_maintenance',
-  'stress_relief',
-  'better_sleep',
+const ANALYSES: AnalysisInterest[] = [
+  'personal_color',
+  'skin',
+  'body',
+  'hair',
+  'makeup',
+  'ingredients',
 ];
 
 export default function OnboardingStep1() {
   const { colors, brand, spacing, radii, shadows, typography } = useTheme();
-  const { data, toggleGoal, nextStep } = useOnboarding();
+  const { data, toggleAnalysisInterest, nextStep } = useOnboarding();
 
-  const canProceed = data.goals.length > 0;
+  const interests = data.analysisInterests ?? [];
+  const canProceed = interests.length > 0;
 
-  const handleToggle = (goal: OnboardingGoal): void => {
+  const handleToggle = (analysis: AnalysisInterest): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    toggleGoal(goal);
+    toggleAnalysisInterest(analysis);
   };
 
   return (
@@ -62,74 +65,92 @@ export default function OnboardingStep1() {
       backgroundGradient="home"
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        {/* 파스텔 히어로 헤더 */}
         <OnboardingHero
-          emoji="🎯"
-          title="목표를 선택해주세요"
-          subtitle={'이룸이 맞춤 추천을 제공해드릴게요\n(복수 선택 가능)'}
+          emoji="✨"
+          title="어떤 분석이 궁금하세요?"
+          subtitle={'온전한 나를 찾는 여정을 시작해요\n(복수 선택 가능)'}
           glowColor={STEP1_ACCENT}
           testID="onboarding-hero"
         />
 
-        {/* 목표 선택 카드 */}
+        {/* 분석 선택 카드 */}
         <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
-          {GOALS.map((goal, index) => {
-            const isSelected = data.goals.includes(goal);
-            const IconComponent = GOAL_ICON_MAP[goal];
-            const goalColor = GOAL_COLORS[goal];
+          {ANALYSES.map((analysis, index) => {
+            const isSelected = interests.includes(analysis);
+            const IconComponent = ANALYSIS_ICON_MAP[analysis];
+            const analysisColor = ANALYSIS_COLORS[analysis];
 
             return (
-              <Animated.View key={goal} entering={staggeredEntry(index, 100)}>
+              <Animated.View key={analysis} entering={staggeredEntry(index, 80)}>
                 <Pressable
                   style={({ pressed }) => [
                     styles.goalCard,
                     {
-                      backgroundColor: isSelected ? `${goalColor.gradient[0]}30` : `${colors.card}CC`,
+                      backgroundColor: isSelected
+                        ? `${analysisColor.gradient[0]}30`
+                        : `${colors.card}CC`,
                       borderRadius: radii.xl,
-                      borderColor: isSelected ? goalColor.gradient[1] : `${colors.border}80`,
+                      borderColor: isSelected
+                        ? analysisColor.gradient[1]
+                        : `${colors.border}80`,
                       borderWidth: isSelected ? 2 : 1,
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
                       transform: [{ scale: pressed ? 0.98 : 1 }],
                       ...(isSelected
-                        ? { ...shadows.md, shadowColor: goalColor.gradient[1], shadowOpacity: 0.25 }
+                        ? {
+                            ...shadows.md,
+                            shadowColor: analysisColor.gradient[1],
+                            shadowOpacity: 0.25,
+                          }
                         : {}),
                     },
                   ]}
-                  onPress={() => handleToggle(goal)}
-                  testID={`goal-${goal}`}
+                  onPress={() => handleToggle(analysis)}
+                  testID={`analysis-${analysis}`}
                   accessibilityRole="button"
-                  accessibilityLabel={`${GOAL_LABELS[goal]}, ${GOAL_DESCRIPTIONS[goal]}`}
+                  accessibilityLabel={`${ANALYSIS_LABELS[analysis]}, ${ANALYSIS_DESCRIPTIONS[analysis]}`}
                   accessibilityState={{ selected: isSelected }}
                 >
                   {/* 그라디언트 아이콘 박스 */}
                   {isSelected ? (
                     <LinearGradient
-                      colors={goalColor.gradient}
+                      colors={analysisColor.gradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={styles.iconBox}
                     >
-                      <IconComponent size={24} color={colors.overlayForeground} strokeWidth={2} />
+                      <IconComponent
+                        size={24}
+                        color={colors.overlayForeground}
+                        strokeWidth={2}
+                      />
                     </LinearGradient>
                   ) : (
-                    <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
-                      <IconComponent size={24} color={goalColor.gradient[0]} strokeWidth={2} />
+                    <View style={[styles.iconBox, { backgroundColor: analysisColor.bg }]}>
+                      <IconComponent
+                        size={24}
+                        color={analysisColor.gradient[0]}
+                        strokeWidth={2}
+                      />
                     </View>
                   )}
 
-                  {/* 텍스트 영역 (제목 + 설명) */}
+                  {/* 텍스트 영역 */}
                   <View style={styles.goalTextWrap}>
                     <Text
                       style={{
-                        color: isSelected ? goalColor.gradient[0] : colors.foreground,
+                        color: isSelected
+                          ? analysisColor.gradient[0]
+                          : colors.foreground,
                         fontSize: typography.size.base,
                         fontWeight: isSelected
                           ? typography.weight.bold
                           : typography.weight.semibold,
                       }}
                     >
-                      {GOAL_LABELS[goal]}
+                      {ANALYSIS_LABELS[analysis]}
                     </Text>
                     <Text
                       style={{
@@ -139,13 +160,13 @@ export default function OnboardingStep1() {
                       }}
                       numberOfLines={1}
                     >
-                      {GOAL_DESCRIPTIONS[goal]}
+                      {ANALYSIS_DESCRIPTIONS[analysis]}
                     </Text>
                   </View>
 
                   {/* 체크마크 */}
                   {isSelected && (
-                    <LinearGradient colors={goalColor.gradient} style={styles.checkmark}>
+                    <LinearGradient colors={analysisColor.gradient} style={styles.checkmark}>
                       <Check size={14} color={colors.overlayForeground} strokeWidth={3} />
                     </LinearGradient>
                   )}
@@ -155,8 +176,8 @@ export default function OnboardingStep1() {
           })}
         </View>
 
-        {/* 선택 현황 요약 (웹 동일 패턴 — indigo-50 selection status) */}
-        {data.goals.length > 0 && (
+        {/* 선택 현황 요약 */}
+        {interests.length > 0 && (
           <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
               <Text
@@ -167,7 +188,7 @@ export default function OnboardingStep1() {
                   marginBottom: spacing.xs,
                 }}
               >
-                선택한 목표 ({data.goals.length}개)
+                관심 분석 ({interests.length}개)
               </Text>
               <Text
                 style={{
@@ -176,11 +197,29 @@ export default function OnboardingStep1() {
                   lineHeight: 20,
                 }}
               >
-                {data.goals.map((g) => GOAL_LABELS[g]).join(' · ')}
+                {interests.map((a) => ANALYSIS_LABELS[a]).join(' · ')}
               </Text>
             </GlassCard>
           </Animated.View>
         )}
+
+        {/* 운동/영양 관심 링크 */}
+        <Animated.View entering={FadeInUp.delay(550).duration(TIMING.normal)}>
+          <Pressable
+            style={{ marginTop: spacing.md, alignItems: 'center' }}
+            onPress={nextStep}
+            testID="wellness-skip-link"
+          >
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.xs + 1,
+              }}
+            >
+              운동/영양도 관심 있어요 →
+            </Text>
+          </Pressable>
+        </Animated.View>
 
         {/* 진행 표시 */}
         <Animated.View entering={FadeInUp.delay(600).duration(TIMING.normal)}>
@@ -197,7 +236,6 @@ export default function OnboardingStep1() {
 
       {/* 푸터 페이드 + 그라디언트 CTA */}
       <View style={styles.footerWrap}>
-        {/* 상단 페이드 */}
         <LinearGradient
           colors={['transparent', colors.background]}
           style={styles.footerFade}
@@ -257,22 +295,18 @@ export default function OnboardingStep1() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
   },
-  // 목표 카드
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconBox: {
-    width: 66,
-    height: 66,
-    borderRadius: radii.xl + 4,
+    width: 56,
+    height: 56,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -287,7 +321,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // 푸터
   footerWrap: {
     position: 'absolute',
     bottom: 0,
