@@ -8,6 +8,9 @@ const monorepoRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
+// 모노레포에서 projectRoot 명시 (호이스팅된 expo가 올바른 앱 루트 참조)
+config.projectRoot = projectRoot;
+
 // 모노레포 워크스페이스 패키지 처리 (Expo 기본값 유지 + monorepo root 추가)
 config.watchFolders = [...(config.watchFolders || []), monorepoRoot];
 config.resolver.nodeModulesPaths = [
