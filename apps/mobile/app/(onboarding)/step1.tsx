@@ -75,7 +75,7 @@ export default function OnboardingStep1() {
         />
 
         {/* 분석 선택 카드 */}
-        <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
+        <View style={{ gap: spacing.smx, marginTop: spacing.lg }}>
           {ANALYSES.map((analysis, index) => {
             const isSelected = interests.includes(analysis);
             const IconComponent = ANALYSIS_ICON_MAP[analysis];
@@ -304,9 +304,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.xl,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
