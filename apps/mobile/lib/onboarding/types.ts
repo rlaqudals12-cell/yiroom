@@ -6,6 +6,16 @@
 // 온보딩 목표 타입
 // ============================================================
 
+// 관심 분석 타입 (Step 1 — 뷰티 중심)
+export type AnalysisInterest =
+  | 'personal_color'
+  | 'skin'
+  | 'body'
+  | 'hair'
+  | 'makeup'
+  | 'ingredients';
+
+// 웰니스 목표 타입 (Step 3 — 선택)
 export type OnboardingGoal =
   | 'weight_loss'
   | 'muscle_gain'
@@ -15,7 +25,9 @@ export type OnboardingGoal =
 
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 
-export type Gender = 'male' | 'female' | 'other';
+export type Gender = 'male' | 'female' | 'neutral';
+
+export type StylePreference = 'masculine' | 'feminine' | 'unisex';
 
 export type WorkoutFrequency = 'none' | '1-2' | '3-4' | '5+';
 
@@ -40,7 +52,13 @@ export interface OnboardingPreferences {
 }
 
 export interface OnboardingData {
+  // Step 1: 관심 분석 (뷰티 중심)
+  analysisInterests: AnalysisInterest[];
+  // Step 2: 성별/스타일/생년월일
+  stylePreference?: StylePreference;
+  // Step 3: 웰니스 목표 (선택)
   goals: OnboardingGoal[];
+  // 기존 호환
   basicInfo: OnboardingBasicInfo;
   preferences: OnboardingPreferences;
   completedAt?: string;
@@ -48,6 +66,66 @@ export interface OnboardingData {
 
 // ============================================================
 // 상수
+// ============================================================
+
+// ============================================================
+// 관심 분석 상수 (Step 1)
+// ============================================================
+
+export const ANALYSIS_LABELS: Record<AnalysisInterest, string> = {
+  personal_color: '퍼스널컬러',
+  skin: '피부 분석',
+  body: '체형 분석',
+  hair: '헤어 분석',
+  makeup: '메이크업',
+  ingredients: '성분 분석',
+};
+
+export const ANALYSIS_ICONS: Record<AnalysisInterest, string> = {
+  personal_color: '🎨',
+  skin: '✨',
+  body: '📐',
+  hair: '💇',
+  makeup: '💄',
+  ingredients: '🧴',
+};
+
+export const ANALYSIS_DESCRIPTIONS: Record<AnalysisInterest, string> = {
+  personal_color: '내게 어울리는 색상을 찾아요',
+  skin: '피부 타입과 맞춤 케어를 알아봐요',
+  body: '체형에 맞는 스타일링을 추천해요',
+  hair: '어울리는 헤어스타일을 찾아요',
+  makeup: '퍼스널컬러 기반 메이크업을 추천해요',
+  ingredients: '안전한 제품을 선택할 수 있어요',
+};
+
+export const ANALYSIS_COLORS: Record<AnalysisInterest, { gradient: [string, string]; bg: string }> = {
+  personal_color: { gradient: ['#C084FC', '#A855F7'], bg: '#FAF5FF' },
+  skin: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
+  body: { gradient: ['#818CF8', '#6366F1'], bg: '#EEF2FF' },
+  hair: { gradient: ['#FBBF24', '#F59E0B'], bg: '#FFFBEB' },
+  makeup: { gradient: ['#F9A8D4', '#EC4899'], bg: '#FDF2F8' },
+  ingredients: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },
+};
+
+// ============================================================
+// 성별/스타일 상수 (Step 2)
+// ============================================================
+
+export const STYLE_PREFERENCE_LABELS: Record<StylePreference, string> = {
+  masculine: '남성적 스타일',
+  feminine: '여성적 스타일',
+  unisex: '유니섹스 스타일',
+};
+
+export const STYLE_PREFERENCE_DESCRIPTIONS: Record<StylePreference, string> = {
+  masculine: '깔끔하고 심플한 스타일을 추천해요',
+  feminine: '화사하고 부드러운 스타일을 추천해요',
+  unisex: '성별 구분 없는 다양한 스타일을 추천해요',
+};
+
+// ============================================================
+// 웰니스 목표 상수 (Step 3)
 // ============================================================
 
 export const GOAL_LABELS: Record<OnboardingGoal, string> = {
@@ -93,7 +171,7 @@ export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, string> = {
 export const GENDER_LABELS: Record<Gender, string> = {
   male: '남성',
   female: '여성',
-  other: '기타',
+  neutral: '선택 안 함',
 };
 
 export const WORKOUT_FREQUENCY_LABELS: Record<WorkoutFrequency, string> = {
@@ -115,6 +193,7 @@ export const MEAL_PREFERENCE_LABELS: Record<MealPreference, string> = {
 // ============================================================
 
 export const DEFAULT_ONBOARDING_DATA: OnboardingData = {
+  analysisInterests: [],
   goals: [],
   basicInfo: {},
   preferences: {},
@@ -125,19 +204,15 @@ export const DEFAULT_ONBOARDING_DATA: OnboardingData = {
 // ============================================================
 
 export function isOnboardingComplete(data: OnboardingData): boolean {
-  const { goals, basicInfo, preferences } = data;
+  const { analysisInterests, basicInfo } = data;
 
-  // 최소 1개 목표 선택
-  if (goals.length === 0) return false;
+  // Step 1: 최소 1개 관심 분석 선택
+  if (!analysisInterests || analysisInterests.length === 0) return false;
 
-  // 기본 정보 필수 항목
+  // Step 2: 성별 + 생년월일 필수
   if (!basicInfo.gender || !basicInfo.birthYear) return false;
 
-  // 선호도 최소 1개
-  if (preferences.workoutFrequency === undefined && preferences.mealPreference === undefined) {
-    return false;
-  }
-
+  // Step 3: 선택 사항 → 건너뛰기 가능
   return true;
 }
 

@@ -37,7 +37,7 @@ import { useTheme, typography, radii, spacing } from '../../lib/theme';
 // 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
 const STEP2_ACCENT = '#3B82F6';
 
-const GENDERS: Gender[] = ['male', 'female', 'other'];
+const GENDERS: Gender[] = ['male', 'female', 'neutral'];
 const ACTIVITY_LEVELS: ActivityLevel[] = [
   'sedentary',
   'light',
