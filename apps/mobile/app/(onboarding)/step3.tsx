@@ -1,14 +1,25 @@
 /**
- * 온보딩 Step 3: 선호도 설정 및 완료
+ * 온보딩 Step 3: 웰니스 목표 + 신체정보 (선택)
  *
- * V4: 웹-모바일 시각 통일 — 파스텔 히어로 + 단색 CTA +
- *     border-2 카드 + 도트 ProgressIndicator + 요약 카드
+ * V5: 뷰티 중심 전환 — 건강 목표는 선택 사항
+ *     "건너뛰기" 가능 — 뷰티 분석만 원하는 사용자 배려
  */
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Dumbbell, Utensils, Bell, ClipboardCheck, Check, ChevronLeft } from 'lucide-react-native';
-import { View, Text, StyleSheet, ScrollView, Pressable, Switch } from 'react-native';
+import {
+  TrendingDown,
+  Dumbbell,
+  HeartPulse,
+  Wind,
+  Moon,
+  Ruler,
+  Check,
+  ChevronLeft,
+  ClipboardCheck,
+} from 'lucide-react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { OnboardingHero } from '../../components/onboarding';
@@ -16,45 +27,66 @@ import { Button, GlassCard, StepProgressBar, ScreenContainer } from '../../compo
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
-  type WorkoutFrequency,
-  type MealPreference,
-  WORKOUT_FREQUENCY_LABELS,
-  MEAL_PREFERENCE_LABELS,
+  type OnboardingGoal,
   GOAL_LABELS,
+  GOAL_DESCRIPTIONS,
+  GOAL_COLORS,
+  ANALYSIS_LABELS,
+  GENDER_LABELS,
+  STYLE_PREFERENCE_LABELS,
   calculateAge,
 } from '../../lib/onboarding';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
-// 온보딩 Step 3 히어로 색상 (violet-500 계열 — 선호도 아이덴티티)
-const STEP3_ACCENT = '#8B5CF6';
+const STEP3_ACCENT = '#10B981'; // green — 웰니스 아이덴티티
 
-const WORKOUT_FREQUENCIES: WorkoutFrequency[] = ['none', '1-2', '3-4', '5+'];
-const MEAL_PREFERENCES: MealPreference[] = ['regular', 'intermittent', 'low_carb', 'high_protein'];
+const GOALS: OnboardingGoal[] = [
+  'weight_loss',
+  'muscle_gain',
+  'health_maintenance',
+  'stress_relief',
+  'better_sleep',
+];
+
+const GOAL_ICON_MAP: Record<OnboardingGoal, typeof TrendingDown> = {
+  weight_loss: TrendingDown,
+  muscle_gain: Dumbbell,
+  health_maintenance: HeartPulse,
+  stress_relief: Wind,
+  better_sleep: Moon,
+};
 
 export default function OnboardingStep3() {
   const { colors, brand, spacing, radii, shadows } = useTheme();
-  const { data, setPreferences, prevStep, completeOnboarding } = useOnboarding();
+  const { data, toggleGoal, setBasicInfo, prevStep, completeOnboarding } = useOnboarding();
 
-  const handleFrequencySelect = (freq: WorkoutFrequency): void => {
+  const [height, setHeight] = useState(data.basicInfo.height?.toString() || '');
+  const [weight, setWeight] = useState(data.basicInfo.weight?.toString() || '');
+
+  const handleToggle = (goal: OnboardingGoal): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPreferences({ workoutFrequency: freq });
+    toggleGoal(goal);
   };
 
-  const handleMealSelect = (pref: MealPreference): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPreferences({ mealPreference: pref });
+  const handleHeightChange = (value: string): void => {
+    setHeight(value);
+    const h = parseInt(value, 10);
+    if (h > 0 && h < 300) setBasicInfo({ height: h });
   };
 
-  const handleNotificationsToggle = (value: boolean): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPreferences({ notificationsEnabled: value });
+  const handleWeightChange = (value: string): void => {
+    setWeight(value);
+    const w = parseFloat(value);
+    if (w > 0 && w < 500) setBasicInfo({ weight: w });
   };
 
-  const canComplete =
-    data.preferences.workoutFrequency !== undefined ||
-    data.preferences.mealPreference !== undefined;
+  const handleComplete = (): void => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    completeOnboarding();
+  };
 
-  const age = data.basicInfo.birthYear ? calculateAge(data.basicInfo.birthYear) : null;
+  // Step 3은 선택 사항이므로 항상 완료 가능
+  const canComplete = true;
 
   return (
     <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step3">
@@ -71,20 +103,110 @@ export default function OnboardingStep3() {
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
         </Pressable>
 
-        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        {/* 파스텔 히어로 */}
         <OnboardingHero
-          emoji="🏁"
-          title="거의 다 왔어요!"
-          subtitle="마지막으로 선호도를 알려주세요"
+          emoji="💪"
+          title="건강 목표도 설정해볼까요?"
+          subtitle={'선택 사항이에요 — 건너뛰어도 괜찮아요'}
           glowColor={STEP3_ACCENT}
           testID="onboarding-hero"
         />
 
-        {/* 운동 빈도 */}
+        {/* 웰니스 목표 선택 */}
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+          <View style={{ gap: spacing.sm, marginTop: spacing.lg }}>
+            {GOALS.map((goal, index) => {
+              const isSelected = data.goals.includes(goal);
+              const IconComponent = GOAL_ICON_MAP[goal];
+              const goalColor = GOAL_COLORS[goal];
+
+              return (
+                <Pressable
+                  key={goal}
+                  style={({ pressed }) => [
+                    styles.goalCard,
+                    {
+                      backgroundColor: isSelected
+                        ? `${goalColor.gradient[0]}30`
+                        : `${colors.card}CC`,
+                      borderRadius: radii.xl,
+                      borderColor: isSelected ? goalColor.gradient[1] : `${colors.border}80`,
+                      borderWidth: isSelected ? 2 : 1,
+                      padding: spacing.md,
+                      opacity: pressed ? 0.85 : 1,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      ...(isSelected
+                        ? {
+                            ...shadows.md,
+                            shadowColor: goalColor.gradient[1],
+                            shadowOpacity: 0.25,
+                          }
+                        : {}),
+                    },
+                  ]}
+                  onPress={() => handleToggle(goal)}
+                  testID={`goal-${goal}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${GOAL_LABELS[goal]}, ${GOAL_DESCRIPTIONS[goal]}`}
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  {isSelected ? (
+                    <LinearGradient
+                      colors={goalColor.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.iconBox}
+                    >
+                      <IconComponent
+                        size={20}
+                        color={colors.overlayForeground}
+                        strokeWidth={2}
+                      />
+                    </LinearGradient>
+                  ) : (
+                    <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
+                      <IconComponent size={20} color={goalColor.gradient[0]} strokeWidth={2} />
+                    </View>
+                  )}
+                  <View style={styles.goalTextWrap}>
+                    <Text
+                      style={{
+                        color: isSelected ? goalColor.gradient[0] : colors.foreground,
+                        fontSize: typography.size.sm,
+                        fontWeight: isSelected
+                          ? typography.weight.bold
+                          : typography.weight.semibold,
+                      }}
+                    >
+                      {GOAL_LABELS[goal]}
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.mutedForeground,
+                        fontSize: typography.size.xs,
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {GOAL_DESCRIPTIONS[goal]}
+                    </Text>
+                  </View>
+                  {isSelected && (
+                    <LinearGradient colors={goalColor.gradient} style={styles.checkmark}>
+                      <Check size={12} color={colors.overlayForeground} strokeWidth={3} />
+                    </LinearGradient>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        </Animated.View>
+
+        {/* 신장/체중 (선택) */}
+        <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
           <View style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
             <View style={styles.sectionTitleRow}>
-              <Dumbbell size={16} color={brand.primary} strokeWidth={2} />
+              <Ruler size={16} color={STEP3_ACCENT} strokeWidth={2} />
               <Text
                 style={{
                   color: colors.foreground,
@@ -93,150 +215,63 @@ export default function OnboardingStep3() {
                   marginLeft: 6,
                 }}
               >
-                현재 운동 빈도
+                신장 / 체중 (선택)
               </Text>
             </View>
-            <View style={styles.optionGrid}>
-              {WORKOUT_FREQUENCIES.map((freq) => {
-                const isSelected = data.preferences.workoutFrequency === freq;
-                return (
-                  <Pressable
-                    key={freq}
-                    style={({ pressed }) => [
-                      styles.optionButton,
-                      {
-                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
-                        borderRadius: radii.xl,
-                        borderColor: isSelected ? brand.primary : colors.border,
-                        borderWidth: isSelected ? 2 : 1,
-                        opacity: pressed ? 0.85 : 1,
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected
-                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
-                          : shadows.card),
-                      },
-                    ]}
-                    onPress={() => handleFrequencySelect(freq)}
-                    testID={`frequency-${freq}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={WORKOUT_FREQUENCY_LABELS[freq]}
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: typography.size.sm,
-                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
-                        color: isSelected ? brand.primary : colors.foreground,
-                      }}
-                    >
-                      {WORKOUT_FREQUENCY_LABELS[freq]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* 식습관 */}
-        <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
-          <View style={{ marginBottom: spacing.lg }}>
-            <View style={styles.sectionTitleRow}>
-              <Utensils size={16} color={brand.primary} strokeWidth={2} />
-              <Text
-                style={{
-                  color: colors.foreground,
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  marginLeft: 6,
-                }}
-              >
-                선호하는 식습관
-              </Text>
-            </View>
-            <View style={styles.optionGrid}>
-              {MEAL_PREFERENCES.map((pref) => {
-                const isSelected = data.preferences.mealPreference === pref;
-                return (
-                  <Pressable
-                    key={pref}
-                    style={({ pressed }) => [
-                      styles.optionButton,
-                      {
-                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
-                        borderRadius: radii.xl,
-                        borderColor: isSelected ? brand.primary : colors.border,
-                        borderWidth: isSelected ? 2 : 1,
-                        opacity: pressed ? 0.85 : 1,
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected
-                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
-                          : shadows.card),
-                      },
-                    ]}
-                    onPress={() => handleMealSelect(pref)}
-                    testID={`meal-${pref}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={MEAL_PREFERENCE_LABELS[pref]}
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: typography.size.sm,
-                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
-                        color: isSelected ? brand.primary : colors.foreground,
-                      }}
-                    >
-                      {MEAL_PREFERENCE_LABELS[pref]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* 알림 설정 */}
-        <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
-          <View style={{ marginBottom: spacing.lg }}>
             <GlassCard intensity={25} style={{ padding: spacing.md }}>
-              <View style={styles.switchRow}>
-                <View style={styles.switchIconRow}>
-                  <View
-                    style={[styles.switchIconCircle, { backgroundColor: `${brand.primary}20` }]}
-                  >
-                    <Bell size={16} color={brand.primary} strokeWidth={2} />
-                  </View>
-                  <View style={styles.switchLabel}>
-                    <Text
-                      style={{
-                        fontSize: typography.size.sm,
-                        fontWeight: typography.weight.semibold,
+              <View style={styles.inputRow}>
+                <View style={styles.inputGroup}>
+                  <TextInput
+                    style={[
+                      styles.customInput,
+                      {
+                        backgroundColor: colors.secondary,
+                        borderRadius: radii.xl,
                         color: colors.foreground,
-                        marginBottom: spacing.xxs,
-                      }}
-                    >
-                      알림 받기
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: typography.size.xs + 1,
-                        color: colors.mutedForeground,
-                      }}
-                    >
-                      운동/식단 리마인더를 받을게요
-                    </Text>
-                  </View>
+                        fontSize: typography.size.base,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    value={height}
+                    onChangeText={handleHeightChange}
+                    placeholder="170"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="number-pad"
+                    maxLength={3}
+                    testID="height-input"
+                    accessibilityLabel="키 입력, cm"
+                  />
+                  <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                    cm
+                  </Text>
                 </View>
-                <Switch
-                  value={data.preferences.notificationsEnabled ?? false}
-                  onValueChange={handleNotificationsToggle}
-                  trackColor={{ false: colors.border, true: brand.primary }}
-                  thumbColor={colors.card}
-                  testID="notifications-switch"
-                  accessibilityLabel="알림 받기"
-                  accessibilityRole="switch"
-                />
+                <View style={styles.inputGroup}>
+                  <TextInput
+                    style={[
+                      styles.customInput,
+                      {
+                        backgroundColor: colors.secondary,
+                        borderRadius: radii.xl,
+                        color: colors.foreground,
+                        fontSize: typography.size.base,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    value={weight}
+                    onChangeText={handleWeightChange}
+                    placeholder="65"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                    maxLength={5}
+                    testID="weight-input"
+                    accessibilityLabel="체중 입력, kg"
+                  />
+                  <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
+                    kg
+                  </Text>
+                </View>
               </View>
             </GlassCard>
           </View>
@@ -244,118 +279,59 @@ export default function OnboardingStep3() {
 
         {/* 요약 카드 */}
         <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
-          <GlassCard intensity={20} style={{ padding: spacing.md }}>
+          <GlassCard shadowSize="lg" style={{ marginBottom: spacing.md }}>
             <View style={styles.summaryHeader}>
-              <ClipboardCheck size={16} color={brand.primary} strokeWidth={2} />
+              <ClipboardCheck size={18} color={STEP3_ACCENT} strokeWidth={2} />
               <Text
                 style={{
                   fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
+                  fontWeight: typography.weight.bold,
                   color: colors.foreground,
-                  marginLeft: 6,
+                  marginLeft: spacing.xs,
                 }}
               >
-                입력하신 정보
+                입력 요약
               </Text>
             </View>
-
-            <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
-              <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                목표
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.medium,
-                  color: colors.foreground,
-                  maxWidth: '60%',
-                  textAlign: 'right',
-                }}
-              >
-                {data.goals.map((g) => GOAL_LABELS[g]).join(', ') || '-'}
-              </Text>
+            <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
+              {data.analysisInterests && data.analysisInterests.length > 0 && (
+                <SummaryRow
+                  label="관심 분석"
+                  value={data.analysisInterests.map((a) => ANALYSIS_LABELS[a]).join(', ')}
+                />
+              )}
+              {data.basicInfo.gender && (
+                <SummaryRow label="성별" value={GENDER_LABELS[data.basicInfo.gender]} />
+              )}
+              {data.stylePreference && (
+                <SummaryRow
+                  label="스타일"
+                  value={STYLE_PREFERENCE_LABELS[data.stylePreference]}
+                />
+              )}
+              {data.basicInfo.birthYear && (
+                <SummaryRow
+                  label="나이"
+                  value={`만 ${calculateAge(data.basicInfo.birthYear)}세`}
+                />
+              )}
+              {data.goals.length > 0 && (
+                <SummaryRow
+                  label="건강 목표"
+                  value={data.goals.map((g) => GOAL_LABELS[g]).join(', ')}
+                />
+              )}
             </View>
-
-            {age && (
-              <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                  나이
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    fontWeight: typography.weight.medium,
-                    color: colors.foreground,
-                  }}
-                >
-                  {age}세
-                </Text>
-              </View>
-            )}
-
-            {data.basicInfo.height && data.basicInfo.weight && (
-              <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                  신체
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    fontWeight: typography.weight.medium,
-                    color: colors.foreground,
-                  }}
-                >
-                  {data.basicInfo.height}cm / {data.basicInfo.weight}kg
-                </Text>
-              </View>
-            )}
-
-            {data.preferences.workoutFrequency && (
-              <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                  운동
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    fontWeight: typography.weight.medium,
-                    color: colors.foreground,
-                  }}
-                >
-                  {WORKOUT_FREQUENCY_LABELS[data.preferences.workoutFrequency]}
-                </Text>
-              </View>
-            )}
-
-            {data.preferences.mealPreference && (
-              <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
-                <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                  식습관
-                </Text>
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    fontWeight: typography.weight.medium,
-                    color: colors.foreground,
-                  }}
-                >
-                  {MEAL_PREFERENCE_LABELS[data.preferences.mealPreference]}
-                </Text>
-              </View>
-            )}
-
-            {/* 완료 아이콘 */}
-            <View style={styles.summaryFooter}>
-              <View style={[styles.checkCircle, { backgroundColor: `${brand.primary}20` }]}>
-                <Check size={16} color={brand.primary} strokeWidth={2.5} />
-              </View>
-              <Text
-                style={{
-                  fontSize: typography.size.xs + 1,
-                  color: colors.mutedForeground,
-                  marginLeft: spacing.sm,
-                }}
-              >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: spacing.xs,
+                marginTop: spacing.md,
+              }}
+            >
+              <Check size={14} color={STEP3_ACCENT} strokeWidth={2} />
+              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
                 모든 정보는 안전하게 보관돼요
               </Text>
             </View>
@@ -373,7 +349,7 @@ export default function OnboardingStep3() {
         </View>
       </ScrollView>
 
-      {/* 푸터 페이드 + 그라디언트 CTA */}
+      {/* 푸터 */}
       <View style={styles.footerWrap}>
         <LinearGradient
           colors={['transparent', colors.background]}
@@ -395,41 +371,37 @@ export default function OnboardingStep3() {
           <Button
             variant="secondary"
             size="lg"
-            onPress={prevStep}
-            testID="back-button"
+            onPress={handleComplete}
+            testID="skip-button"
             style={{ flex: 1 }}
           >
-            이전
+            건너뛰기
           </Button>
           <Pressable
-            onPress={completeOnboarding}
-            disabled={!canComplete}
+            onPress={handleComplete}
             style={({ pressed }) => [
               shadows.md,
               {
                 flex: 2,
                 borderRadius: radii.full,
                 overflow: 'hidden',
-                opacity: !canComplete ? 0.5 : pressed ? 0.9 : 1,
+                opacity: pressed ? 0.9 : 1,
                 transform: [{ scale: pressed ? 0.98 : 1 }],
               },
             ]}
             testID="complete-button"
             accessibilityRole="button"
             accessibilityLabel="시작하기"
-            accessibilityState={{ disabled: !canComplete }}
           >
             <LinearGradient
-              colors={
-                canComplete ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]
-              }
+              colors={['#EC4899', '#A855F7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
             >
               <Text
                 style={{
-                  color: canComplete ? brand.primaryForeground : colors.mutedForeground,
+                  color: brand.primaryForeground,
                   fontSize: typography.size.base,
                   fontWeight: typography.weight.bold,
                 }}
@@ -444,15 +416,34 @@ export default function OnboardingStep3() {
   );
 }
 
+// 요약 행 컴포넌트
+function SummaryRow({ label, value }: { label: string; value: string }): React.JSX.Element {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.summaryRow}>
+      <Text style={{ fontSize: typography.size.xs + 1, color: colors.mutedForeground, width: 80 }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontSize: typography.size.xs + 1,
+          color: colors.foreground,
+          fontWeight: '500' as const,
+          flex: 1,
+        }}
+        numberOfLines={2}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
   },
-  // 미니 백 버튼
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,61 +456,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.smx,
   },
-  optionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.smd,
-  },
-  optionButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    alignItems: 'center',
-  },
-  switchRow: {
+  goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  switchIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  switchIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.smx,
+    marginRight: spacing.sm,
   },
-  switchLabel: {
+  goalTextWrap: {
     flex: 1,
+  },
+  checkmark: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  inputGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  customInput: {
+    flex: 1,
+    padding: spacing.md,
   },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
   },
   summaryRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.smd,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    alignItems: 'flex-start',
   },
-  summaryFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.md,
-  },
-  checkCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: radii.xlg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // 푸터
   footerWrap: {
     position: 'absolute',
     bottom: 0,

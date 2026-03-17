@@ -1,23 +1,13 @@
 /**
- * 온보딩 Step 2: 기본 정보 입력
+ * 온보딩 Step 2: 성별 / 스타일 선호 / 생년월일
  *
- * V4: 웹-모바일 시각 통일 — 파스텔 히어로 + 단색 CTA +
- *     border-2 카드 + 도트 ProgressIndicator
+ * V5: 웹 구조 기반 — 성별 3지선다 + 스타일 3지선다 + 생년월일
+ *     신장/체중/활동수준은 Step 3으로 이동
  */
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  User,
-  Ruler,
-  Activity,
-  ChevronLeft,
-  Sofa,
-  Footprints,
-  Bike,
-  Flame,
-  Zap,
-} from 'lucide-react-native';
+import { User, Shirt, Calendar, ChevronLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -28,51 +18,50 @@ import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
   type Gender,
-  type ActivityLevel,
+  type StylePreference,
   GENDER_LABELS,
-  ACTIVITY_LEVEL_LABELS,
+  STYLE_PREFERENCE_LABELS,
+  STYLE_PREFERENCE_DESCRIPTIONS,
 } from '../../lib/onboarding';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
-// 온보딩 Step 2 히어로 색상 (blue-500 계열 — 기본 정보 아이덴티티)
-const STEP2_ACCENT = '#3B82F6';
+// 온보딩 Step 2 히어로 색상 (violet-500 — 스타일 아이덴티티)
+const STEP2_ACCENT = '#8B5CF6';
 
 const GENDERS: Gender[] = ['male', 'female', 'neutral'];
-const ACTIVITY_LEVELS: ActivityLevel[] = [
-  'sedentary',
-  'light',
-  'moderate',
-  'active',
-  'very_active',
-];
+const GENDER_ICONS: Record<Gender, string> = {
+  male: '👨',
+  female: '👩',
+  neutral: '👤',
+};
 
-// 활동 수준 아이콘 매핑
-const ACTIVITY_ICON_MAP: Record<ActivityLevel, typeof Sofa> = {
-  sedentary: Sofa,
-  light: Footprints,
-  moderate: Bike,
-  active: Flame,
-  very_active: Zap,
+const STYLES: StylePreference[] = ['masculine', 'feminine', 'unisex'];
+const STYLE_ICONS: Record<StylePreference, string> = {
+  masculine: '🔷',
+  feminine: '🔶',
+  unisex: '⚡',
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function OnboardingStep2() {
   const { colors, brand, spacing, radii, shadows } = useTheme();
-  const { data, setBasicInfo, nextStep, prevStep } = useOnboarding();
+  const { data, setBasicInfo, setStylePreference, nextStep, prevStep } = useOnboarding();
 
   const [birthYear, setBirthYear] = useState(data.basicInfo.birthYear?.toString() || '');
-  const [height, setHeight] = useState(data.basicInfo.height?.toString() || '');
-  const [weight, setWeight] = useState(data.basicInfo.weight?.toString() || '');
 
   const handleGenderSelect = (gender: Gender): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setBasicInfo({ gender });
+    // neutral 선택 시 자동으로 unisex 스타일 설정 (웹과 동일)
+    if (gender === 'neutral') {
+      setStylePreference('unisex');
+    }
   };
 
-  const handleActivitySelect = (level: ActivityLevel): void => {
+  const handleStyleSelect = (style: StylePreference): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setBasicInfo({ activityLevel: level });
+    setStylePreference(style);
   };
 
   const handleBirthYearChange = (value: string): void => {
@@ -83,24 +72,8 @@ export default function OnboardingStep2() {
     }
   };
 
-  const handleHeightChange = (value: string): void => {
-    setHeight(value);
-    const h = parseInt(value, 10);
-    if (h > 0 && h < 300) {
-      setBasicInfo({ height: h });
-    }
-  };
-
-  const handleWeightChange = (value: string): void => {
-    setWeight(value);
-    const w = parseFloat(value);
-    if (w > 0 && w < 500) {
-      setBasicInfo({ weight: w });
-    }
-  };
-
-  const canProceed =
-    data.basicInfo.gender && data.basicInfo.birthYear && data.basicInfo.activityLevel;
+  const canProceed = data.basicInfo.gender && data.basicInfo.birthYear;
+  const showStyleSelection = data.basicInfo.gender && data.basicInfo.gender !== 'neutral';
 
   return (
     <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step2">
@@ -117,11 +90,11 @@ export default function OnboardingStep2() {
           <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
         </Pressable>
 
-        {/* 파스텔 히어로 헤더 (OnboardingHero 컴포넌트) */}
+        {/* 파스텔 히어로 헤더 */}
         <OnboardingHero
-          emoji="📋"
-          title="기본 정보를 알려주세요"
-          subtitle="더 정확한 맞춤 추천을 위해 필요해요"
+          emoji="✨"
+          title="나에게 맞는 추천 받기"
+          subtitle="성별과 스타일에 맞는 맞춤 분석을 제공해요"
           glowColor={STEP2_ACCENT}
           testID="onboarding-hero"
         />
@@ -130,7 +103,7 @@ export default function OnboardingStep2() {
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
           <View style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
             <View style={styles.sectionTitleRow}>
-              <User size={16} color={brand.primary} strokeWidth={2} />
+              <User size={16} color={STEP2_ACCENT} strokeWidth={2} />
               <Text
                 style={{
                   color: colors.foreground,
@@ -151,15 +124,15 @@ export default function OnboardingStep2() {
                     style={({ pressed }) => [
                       styles.optionButton,
                       {
-                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
+                        backgroundColor: isSelected ? `${STEP2_ACCENT}18` : colors.card,
                         borderRadius: radii.xl,
-                        borderColor: isSelected ? brand.primary : colors.border,
+                        borderColor: isSelected ? STEP2_ACCENT : colors.border,
                         borderWidth: isSelected ? 2 : 1,
                         opacity: pressed ? 0.85 : 1,
                         transform: [{ scale: pressed ? 0.98 : 1 }],
                         ...(isSelected
-                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
-                          : shadows.card),
+                          ? { ...shadows.md, shadowColor: STEP2_ACCENT, shadowOpacity: 0.18 }
+                          : {}),
                       },
                     ]}
                     onPress={() => handleGenderSelect(gender)}
@@ -168,11 +141,14 @@ export default function OnboardingStep2() {
                     accessibilityLabel={GENDER_LABELS[gender]}
                     accessibilityState={{ selected: isSelected }}
                   >
+                    <Text style={{ fontSize: 24, marginBottom: spacing.xs }}>
+                      {GENDER_ICONS[gender]}
+                    </Text>
                     <Text
                       style={{
                         fontSize: typography.size.sm,
                         fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
-                        color: isSelected ? brand.primary : colors.foreground,
+                        color: isSelected ? STEP2_ACCENT : colors.foreground,
                       }}
                     >
                       {GENDER_LABELS[gender]}
@@ -184,26 +160,87 @@ export default function OnboardingStep2() {
           </View>
         </Animated.View>
 
-        {/* 출생년도 */}
-        <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
-          <View style={{ marginBottom: spacing.lg }}>
-            <Input
-              label="출생년도"
-              value={birthYear}
-              onChangeText={handleBirthYearChange}
-              placeholder="1990"
-              keyboardType="number-pad"
-              maxLength={4}
-              testID="birthYear-input"
-            />
-          </View>
-        </Animated.View>
+        {/* 스타일 선호 (neutral이 아닌 경우만 표시) */}
+        {showStyleSelection && (
+          <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
+            <View style={{ marginBottom: spacing.lg }}>
+              <View style={styles.sectionTitleRow}>
+                <Shirt size={16} color={STEP2_ACCENT} strokeWidth={2} />
+                <Text
+                  style={{
+                    color: colors.foreground,
+                    fontSize: typography.size.sm,
+                    fontWeight: typography.weight.semibold,
+                    marginLeft: 6,
+                  }}
+                >
+                  스타일 선호
+                </Text>
+              </View>
+              <View style={{ gap: spacing.sm }}>
+                {STYLES.map((style) => {
+                  const isSelected = data.stylePreference === style;
+                  return (
+                    <Pressable
+                      key={style}
+                      style={({ pressed }) => [
+                        styles.styleButton,
+                        {
+                          backgroundColor: isSelected ? `${STEP2_ACCENT}18` : colors.card,
+                          borderRadius: radii.xl,
+                          borderColor: isSelected ? STEP2_ACCENT : colors.border,
+                          borderWidth: isSelected ? 2 : 1,
+                          opacity: pressed ? 0.85 : 1,
+                          transform: [{ scale: pressed ? 0.98 : 1 }],
+                          ...(isSelected
+                            ? { ...shadows.md, shadowColor: STEP2_ACCENT, shadowOpacity: 0.18 }
+                            : {}),
+                        },
+                      ]}
+                      onPress={() => handleStyleSelect(style)}
+                      testID={`style-${style}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={STYLE_PREFERENCE_LABELS[style]}
+                      accessibilityState={{ selected: isSelected }}
+                    >
+                      <Text style={{ fontSize: 20, marginRight: spacing.sm }}>
+                        {STYLE_ICONS[style]}
+                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            fontSize: typography.size.sm,
+                            fontWeight: isSelected
+                              ? typography.weight.bold
+                              : typography.weight.medium,
+                            color: isSelected ? STEP2_ACCENT : colors.foreground,
+                          }}
+                        >
+                          {STYLE_PREFERENCE_LABELS[style]}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: typography.size.xs,
+                            color: colors.mutedForeground,
+                            marginTop: 2,
+                          }}
+                        >
+                          {STYLE_PREFERENCE_DESCRIPTIONS[style]}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </Animated.View>
+        )}
 
-        {/* 신장/체중 (선택) */}
+        {/* 생년월일 */}
         <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
           <View style={{ marginBottom: spacing.lg }}>
             <View style={styles.sectionTitleRow}>
-              <Ruler size={16} color={brand.primary} strokeWidth={2} />
+              <Calendar size={16} color={STEP2_ACCENT} strokeWidth={2} />
               <Text
                 style={{
                   color: colors.foreground,
@@ -212,156 +249,46 @@ export default function OnboardingStep2() {
                   marginLeft: 6,
                 }}
               >
-                신장 / 체중 (선택)
+                출생년도
               </Text>
             </View>
-            <GlassCard intensity={25} style={{ padding: spacing.md }}>
-              <View style={styles.inputRow}>
-                <View style={styles.inputGroup}>
-                  <TextInput
-                    style={[
-                      styles.customInput,
-                      {
-                        backgroundColor: colors.secondary,
-                        borderRadius: radii.xl,
-                        color: colors.foreground,
-                        fontSize: typography.size.base,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    value={height}
-                    onChangeText={handleHeightChange}
-                    placeholder="170"
-                    placeholderTextColor={colors.mutedForeground}
-                    keyboardType="number-pad"
-                    maxLength={3}
-                    testID="height-input"
-                    accessibilityLabel="키 입력, cm"
-                  />
-                  <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                    cm
-                  </Text>
-                </View>
-                <View style={styles.inputGroup}>
-                  <TextInput
-                    style={[
-                      styles.customInput,
-                      {
-                        backgroundColor: colors.secondary,
-                        borderRadius: radii.xl,
-                        color: colors.foreground,
-                        fontSize: typography.size.base,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    value={weight}
-                    onChangeText={handleWeightChange}
-                    placeholder="65"
-                    placeholderTextColor={colors.mutedForeground}
-                    keyboardType="decimal-pad"
-                    maxLength={5}
-                    testID="weight-input"
-                    accessibilityLabel="체중 입력, kg"
-                  />
-                  <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-                    kg
-                  </Text>
-                </View>
-              </View>
-            </GlassCard>
-          </View>
-        </Animated.View>
-
-        {/* 활동 수준 (아이콘 포함) */}
-        <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
-          <View style={{ marginBottom: spacing.lg }}>
-            <View style={styles.sectionTitleRow}>
-              <Activity size={16} color={brand.primary} strokeWidth={2} />
-              <Text
-                style={{
-                  color: colors.foreground,
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  marginLeft: 6,
-                }}
-              >
-                평소 활동 수준
-              </Text>
-            </View>
-            <View style={{ gap: spacing.sm }}>
-              {ACTIVITY_LEVELS.map((level) => {
-                const isSelected = data.basicInfo.activityLevel === level;
-                const IconComponent = ACTIVITY_ICON_MAP[level];
-                return (
-                  <Pressable
-                    key={level}
-                    style={({ pressed }) => [
-                      styles.activityButton,
-                      {
-                        backgroundColor: isSelected ? `${brand.primary}18` : colors.card,
-                        borderRadius: radii.xl,
-                        borderColor: isSelected ? brand.primary : colors.border,
-                        borderWidth: isSelected ? 2 : 1,
-                        opacity: pressed ? 0.85 : 1,
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                        ...(isSelected
-                          ? { ...shadows.md, shadowColor: brand.primary, shadowOpacity: 0.18 }
-                          : shadows.card),
-                      },
-                    ]}
-                    onPress={() => handleActivitySelect(level)}
-                    testID={`activity-${level}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={ACTIVITY_LEVEL_LABELS[level]}
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <View
-                      style={[
-                        styles.activityIconBox,
-                        {
-                          backgroundColor: isSelected ? `${brand.primary}20` : colors.secondary,
-                        },
-                      ]}
-                    >
-                      <IconComponent
-                        size={20}
-                        color={isSelected ? brand.primary : colors.mutedForeground}
-                        strokeWidth={2}
-                      />
-                    </View>
-                    <Text
-                      style={{
-                        flex: 1,
-                        fontSize: typography.size.sm,
-                        fontWeight: isSelected ? typography.weight.bold : typography.weight.medium,
-                        color: isSelected ? brand.primary : colors.foreground,
-                      }}
-                    >
-                      {ACTIVITY_LEVEL_LABELS[level]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* 선택 현황 (웹 동일 패턴 — blue-50 selection status) */}
-        {(data.basicInfo.gender || data.basicInfo.activityLevel) && (
-          <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
-            <View
+            <TextInput
               style={{
-                backgroundColor: `${STEP2_ACCENT}25`,
+                backgroundColor: colors.secondary,
                 borderRadius: radii.xl,
                 padding: spacing.md,
-                marginBottom: spacing.md,
+                color: colors.foreground,
+                fontSize: typography.size.base,
                 borderWidth: 1,
-                borderColor: `${STEP2_ACCENT}20`,
-                ...shadows.sm,
+                borderColor: colors.border,
               }}
-            >
+              value={birthYear}
+              onChangeText={handleBirthYearChange}
+              placeholder="1990"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="number-pad"
+              maxLength={4}
+              testID="birthYear-input"
+              accessibilityLabel="출생년도"
+            />
+            {birthYear.length === 4 && (
+              <Text
+                style={{
+                  fontSize: typography.size.xs,
+                  color: colors.mutedForeground,
+                  marginTop: spacing.xs,
+                }}
+              >
+                만 {CURRENT_YEAR - parseInt(birthYear, 10)}세
+              </Text>
+            )}
+          </View>
+        </Animated.View>
+
+        {/* 입력 현황 */}
+        {data.basicInfo.gender && (
+          <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
               <Text
                 style={{
                   fontSize: typography.size.sm,
@@ -381,15 +308,15 @@ export default function OnboardingStep2() {
               >
                 {[
                   data.basicInfo.gender ? `성별: ${GENDER_LABELS[data.basicInfo.gender]}` : null,
-                  data.basicInfo.birthYear ? `출생: ${data.basicInfo.birthYear}년` : null,
-                  data.basicInfo.activityLevel
-                    ? `활동: ${ACTIVITY_LEVEL_LABELS[data.basicInfo.activityLevel]}`
+                  data.stylePreference
+                    ? `스타일: ${STYLE_PREFERENCE_LABELS[data.stylePreference]}`
                     : null,
+                  data.basicInfo.birthYear ? `출생: ${data.basicInfo.birthYear}년` : null,
                 ]
                   .filter(Boolean)
                   .join(' · ')}
               </Text>
-            </View>
+            </GlassCard>
           </Animated.View>
         )}
 
@@ -404,7 +331,7 @@ export default function OnboardingStep2() {
         </View>
       </ScrollView>
 
-      {/* 푸터 페이드 + 그라디언트 CTA */}
+      {/* 푸터 */}
       <View style={styles.footerWrap}>
         <LinearGradient
           colors={['transparent', colors.background]}
@@ -475,69 +402,11 @@ export default function OnboardingStep2() {
   );
 }
 
-// Input 래퍼 (기존 barrel 사용 대신 로컬 정의 — 출생년도 전용)
-function Input({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-  maxLength,
-  testID,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  placeholder: string;
-  keyboardType: 'number-pad' | 'decimal-pad';
-  maxLength: number;
-  testID: string;
-}): React.JSX.Element {
-  const { colors, radii, spacing } = useTheme();
-  return (
-    <View>
-      <Text
-        style={{
-          color: colors.foreground,
-          fontSize: typography.size.sm,
-          fontWeight: typography.weight.semibold,
-          marginBottom: spacing.sm,
-        }}
-      >
-        {label}
-      </Text>
-      <TextInput
-        style={{
-          backgroundColor: colors.secondary,
-          borderRadius: radii.xl,
-          padding: spacing.md,
-          color: colors.foreground,
-          fontSize: typography.size.base,
-          borderWidth: 1,
-          borderColor: colors.border,
-        }}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.mutedForeground}
-        keyboardType={keyboardType}
-        maxLength={maxLength}
-        testID={testID}
-        accessibilityLabel={label}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
   },
-  // 미니 백 버튼
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -559,34 +428,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
   },
-  customInput: {
-    flex: 1,
-    padding: spacing.md,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  inputGroup: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  activityButton: {
+  styleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
   },
-  activityIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.smx,
-  },
-  // 푸터
   footerWrap: {
     position: 'absolute',
     bottom: 0,
