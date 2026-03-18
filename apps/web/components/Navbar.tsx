@@ -3,7 +3,19 @@
 import { SignedOut, SignInButton, SignedIn, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import React from 'react';
-import { Heart, ChevronDown, Palette, Sparkles, User } from 'lucide-react';
+import {
+  Heart,
+  ChevronDown,
+  Palette,
+  Sparkles,
+  Scissors,
+  Wand2,
+  Activity,
+  PersonStanding,
+  SmilePlus,
+  BarChart3,
+  LayoutGrid,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
@@ -11,6 +23,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
@@ -57,7 +71,11 @@ const Navbar = () => {
                 분석
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
+              <DropdownMenuContent align="start" className="w-56">
+                {/* 뷰티 카테고리 */}
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  뷰티
+                </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <Link
                     href="/analysis/personal-color"
@@ -69,14 +87,63 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/skin" className="flex items-center gap-2 cursor-pointer">
-                    <Sparkles className="h-4 w-4 text-emerald-500" />
+                    <Sparkles className="h-4 w-4 text-blue-400" />
                     피부 분석
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/analysis/makeup" className="flex items-center gap-2 cursor-pointer">
+                    <Wand2 className="h-4 w-4 text-fuchsia-500" />
+                    메이크업
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/analysis/hair" className="flex items-center gap-2 cursor-pointer">
+                    <Scissors className="h-4 w-4 text-amber-500" />
+                    헤어 분석
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* 건강 카테고리 */}
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  건강
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
                   <Link href="/analysis/body" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4 text-blue-500" />
+                    <Activity className="h-4 w-4 text-violet-500" />
                     체형 분석
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/analysis/posture" className="flex items-center gap-2 cursor-pointer">
+                    <PersonStanding className="h-4 w-4 text-sky-500" />
+                    자세 분석
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/analysis/oral-health"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <SmilePlus className="h-4 w-4 text-emerald-500" />
+                    구강 건강
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* 내 분석 결과 + 허브 */}
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                    <BarChart3 className="h-4 w-4 text-primary" />내 분석 결과 보기
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/analysis" className="flex items-center gap-2 cursor-pointer">
+                    <LayoutGrid className="h-4 w-4 text-primary" />
+                    분석 허브 전체보기
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
