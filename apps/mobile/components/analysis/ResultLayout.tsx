@@ -5,10 +5,12 @@
  *  GradientHeader (모듈별 accent + 이미지 + 핵심 점수/타입)
  *  └── AnalysisTrustBadge + GradeDisplay
  *  TabView (3탭: 요약 / 상세 / 추천)
+ *  NextAnalysisCard (다음 분석 추천)
  *  ExpertCTA (전문가 상담 카드)
  *  AnalysisResultButtons (하단 액션)
  *
  * D2-2: GradeDisplay 통합, 그라디언트 깊이 강화, 전문가 CTA 추가
+ * D3: 적응형 애니메이션 + 다음 분석 추천 카드 추가
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -25,7 +27,7 @@ import {
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { TIMING } from '@/lib/animations';
+import { TIMING, useAdaptiveAnimation } from '@/lib/animations';
 import { useTheme, typography, radii, borderGlow, spacing, trustColors } from '@/lib/theme';
 import { brand, moduleColors } from '@/lib/theme/tokens';
 
@@ -66,6 +68,58 @@ const MODULE_TO_GRADIENT_TEXT: Record<string, GradientTextVariant> = {
   oralHealth: 'oralHealth',
   workout: 'workout',
   nutrition: 'nutrition',
+};
+
+/**
+ * 분석 완료 후 다음 행동 안내 매핑
+ * 도메인별로 다음 추천 분석 모듈과 CTA 메시지를 정의
+ */
+const NEXT_ACTION_MAP: Record<
+  string,
+  { message: string; nextModule: string; emoji: string; route: string }
+> = {
+  personalColor: {
+    message: '컬러에 맞는 메이크업을 찾아볼까요?',
+    nextModule: '피부 분석도 해보세요!',
+    emoji: '💧',
+    route: '/(analysis)/skin',
+  },
+  skin: {
+    message: '피부에 맞는 스킨케어 루틴을 확인해요',
+    nextModule: '체형 분석도 추천해요!',
+    emoji: '✨',
+    route: '/(analysis)/body',
+  },
+  body: {
+    message: '체형에 맞는 스타일을 찾아볼까요?',
+    nextModule: '헤어 분석도 해보세요!',
+    emoji: '💇',
+    route: '/(analysis)/hair',
+  },
+  hair: {
+    message: '헤어에 맞는 스타일링을 확인해요',
+    nextModule: '메이크업 분석도 해보세요!',
+    emoji: '💄',
+    route: '/(analysis)/makeup',
+  },
+  makeup: {
+    message: '메이크업 스타일을 완성했어요',
+    nextModule: '퍼스널컬러 분석으로 시작해보세요!',
+    emoji: '🎨',
+    route: '/(analysis)/personal-color',
+  },
+  posture: {
+    message: '자세 교정 루틴을 확인해요',
+    nextModule: '체형 분석도 해보세요!',
+    emoji: '✨',
+    route: '/(analysis)/body',
+  },
+  oralHealth: {
+    message: '구강 건강 관리 루틴을 확인해요',
+    nextModule: '피부 분석도 해보세요!',
+    emoji: '💧',
+    route: '/(analysis)/skin',
+  },
 };
 
 export interface ResultLayoutProps {
@@ -122,6 +176,12 @@ export function ResultLayout({
   const { colors, isDark, spacing, radii, typography, brand } = useTheme();
   const accent = moduleColors[moduleKey];
 
+  // 접근성: 동작 줄이기 설정 시 entering 애니메이션 생략
+  const { shouldAnimate } = useAdaptiveAnimation();
+
+  // 다음 분석 추천 데이터
+  const nextAction = NEXT_ACTION_MAP[moduleKey];
+
   // 강화된 그라디언트: 2단계 (모듈 accent → brand accent → 투명)
   const gradientColors: readonly [string, string, string] = isDark
     ? [`${accent.dark}50`, `${accent.dark}20`, 'transparent']
@@ -146,6 +206,12 @@ export function ResultLayout({
     router.push('/(coach)');
   }, []);
 
+  const handleNextAnalysis = useCallback(() => {
+    if (nextAction) {
+      router.push(nextAction.route as never);
+    }
+  }, [nextAction]);
+
   // 3탭 구성
   const tabs: TabItem[] = [
     { key: 'summary', title: '요약', content: summaryTab },
@@ -168,7 +234,7 @@ export function ResultLayout({
           style={[styles.header, confidence !== undefined && confidence > 0.8 && borderGlow.pink]}
         >
           {/* 제목 — 모듈별 그래디언트 텍스트 */}
-          <Animated.View entering={FadeIn.duration(TIMING.normal)}>
+          <Animated.View entering={shouldAnimate ? FadeIn.duration(TIMING.normal) : undefined}>
             <GradientText
               variant={MODULE_TO_GRADIENT_TEXT[moduleKey] ?? 'brand'}
               fontSize={22}
@@ -179,14 +245,14 @@ export function ResultLayout({
           </Animated.View>
 
           {/* 신뢰도 배지 */}
-          <Animated.View entering={FadeIn.delay(100).duration(TIMING.normal)}>
+          <Animated.View entering={shouldAnimate ? FadeIn.delay(100).duration(TIMING.normal) : undefined}>
             <AnalysisTrustBadge type={trustBadgeType} confidence={confidence} />
           </Animated.View>
 
           {/* Mock 경고 — MockDataNotice 컴포넌트 (AI 투명성) */}
           {usedFallback && (
             <Animated.View
-              entering={FadeIn.delay(200).duration(TIMING.normal)}
+              entering={shouldAnimate ? FadeIn.delay(200).duration(TIMING.normal) : undefined}
               style={styles.fallbackContainer}
             >
               <MockDataNotice compact />
@@ -196,7 +262,7 @@ export function ResultLayout({
           {/* 이미지 */}
           {imageUri && (
             <Animated.View
-              entering={FadeInUp.delay(150).duration(TIMING.slow)}
+              entering={shouldAnimate ? FadeInUp.delay(150).duration(TIMING.slow) : undefined}
               style={styles.imageContainer}
             >
               <Image
@@ -209,7 +275,7 @@ export function ResultLayout({
 
           {/* 헤더 콘텐츠 (점수, 타입 배지 등) */}
           {headerContent && (
-            <Animated.View entering={FadeInUp.delay(300).duration(TIMING.slow)}>
+            <Animated.View entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.slow) : undefined}>
               {headerContent}
             </Animated.View>
           )}
@@ -217,7 +283,7 @@ export function ResultLayout({
           {/* GradeDisplay — 신뢰도 시각화 (confidence 있을 때만) */}
           {showGrade && confidencePercent !== undefined && confidencePercent > 0 && (
             <Animated.View
-              entering={FadeInUp.delay(400).duration(TIMING.slow)}
+              entering={shouldAnimate ? FadeInUp.delay(400).duration(TIMING.slow) : undefined}
               style={styles.gradeContainer}
             >
               <GradeDisplay confidence={confidencePercent} testID={`${testID}-grade`} />
@@ -236,15 +302,59 @@ export function ResultLayout({
 
         {/* AI 기술 사용 안내 (AI 기본법 제31조 준수) */}
         <Animated.View
-          entering={FadeInUp.delay(150).duration(TIMING.normal)}
+          entering={shouldAnimate ? FadeInUp.delay(150).duration(TIMING.normal) : undefined}
           style={styles.transparencyContainer}
         >
           <AITransparencyNotice compact />
         </Animated.View>
 
+        {/* 다음 분석 추천 카드 */}
+        {nextAction && (
+          <Animated.View
+            entering={shouldAnimate ? FadeInUp.delay(180).duration(TIMING.normal) : undefined}
+            style={styles.nextAnalysisContainer}
+          >
+            <GradientCard
+              variant={cardVariant}
+              testID={`${testID}-next-analysis`}
+            >
+              <Pressable
+                onPress={handleNextAnalysis}
+                style={styles.nextAnalysisContent}
+                accessibilityRole="button"
+                accessibilityLabel={nextAction.nextModule}
+                accessibilityHint="다음 분석 모듈로 이동해요"
+              >
+                <View style={[styles.nextAnalysisIcon, { backgroundColor: `${accent.base}20` }]}>
+                  <Text style={{ fontSize: 22 }}>{nextAction.emoji}</Text>
+                </View>
+                <View style={styles.nextAnalysisTextArea}>
+                  <Text
+                    style={[
+                      styles.nextAnalysisTitle,
+                      { color: colors.foreground, fontSize: typography.size.base },
+                    ]}
+                  >
+                    {nextAction.nextModule}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.nextAnalysisSubtitle,
+                      { color: colors.mutedForeground, fontSize: typography.size.sm },
+                    ]}
+                  >
+                    {nextAction.message}
+                  </Text>
+                </View>
+                <Text style={[styles.nextAnalysisArrow, { color: accent.base }]}>→</Text>
+              </Pressable>
+            </GradientCard>
+          </Animated.View>
+        )}
+
         {/* 전문가 상담 CTA 카드 */}
         <Animated.View
-          entering={FadeInUp.delay(200).duration(TIMING.normal)}
+          entering={shouldAnimate ? FadeInUp.delay(250).duration(TIMING.normal) : undefined}
           style={styles.ctaContainer}
         >
           <GradientCard
@@ -352,9 +462,39 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     marginBottom: spacing.mlg,
   },
-  ctaContainer: {
+  nextAnalysisContainer: {
     paddingHorizontal: spacing.md,
     marginTop: spacing.mlg,
+  },
+  nextAnalysisContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.smx,
+  },
+  nextAnalysisIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextAnalysisTextArea: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  nextAnalysisTitle: {
+    fontWeight: typography.weight.semibold,
+  },
+  nextAnalysisSubtitle: {
+    lineHeight: 20,
+  },
+  nextAnalysisArrow: {
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.semibold,
+  },
+  ctaContainer: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
   },
   ctaContent: {
     flexDirection: 'row',

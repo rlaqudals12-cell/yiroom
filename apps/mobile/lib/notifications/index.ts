@@ -42,6 +42,33 @@ export {
   useNotificationResponse,
 } from './useNotifications';
 
+// 개인화 트리거 타입
+export {
+  type PersonalizedTriggerSettings,
+  type PersonalizedTriggerType,
+  type PersonalizedTrigger,
+  type UserTriggerData,
+  DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
+} from './types';
+
+// 개인화 트리거 로직
+export {
+  PERSONALIZED_TRIGGERS,
+  evaluateTriggers,
+  getTriggerById,
+  getSeasonName,
+  isSeasonChangeMonth,
+  getDaysSinceLastAnalysis,
+} from './personalized-triggers';
+
+// 개인화 알림 훅
+export {
+  usePersonalizedNotifications,
+  saveUserTriggerData,
+  loadUserTriggerData,
+  schedulePersonalizedNotifications,
+} from './usePersonalizedNotifications';
+
 // DB API (직접 사용은 드물지만 테스트/디버깅용 export)
 export {
   getUserNotificationSettings,

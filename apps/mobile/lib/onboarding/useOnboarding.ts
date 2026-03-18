@@ -15,6 +15,7 @@ import type {
   OnboardingPreferences,
 } from './types';
 import { DEFAULT_ONBOARDING_DATA } from './types';
+import { requestNotificationPermission } from '../notifications';
 import { onboardingLogger } from '../utils/logger';
 
 const STORAGE_KEY = 'yiroom_onboarding_data';
@@ -196,6 +197,11 @@ export function useOnboarding(): UseOnboardingResult {
 
       setData(completedData);
       setIsCompleted(true);
+
+      // 온보딩 완료 직후 알림 권한 요청 (거부 시 강제하지 않음)
+      requestNotificationPermission().catch(() => {
+        // 권한 거부는 정상 케이스 — 무시
+      });
 
       // 메인 탭으로 이동
       router.replace('/(tabs)' as never);

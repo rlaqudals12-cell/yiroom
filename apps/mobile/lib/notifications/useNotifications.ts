@@ -25,7 +25,11 @@ import {
 } from './api';
 import type { NotificationType } from './templates';
 import { createNotification } from './templates';
-import { type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from './types';
+import {
+  type NotificationSettings,
+  DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
+} from './types';
 import { pushLogger } from '../utils/logger';
 
 // Re-export for backward compatibility
@@ -277,9 +281,14 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
       const stored = await AsyncStorage.getItem(SETTINGS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        // personalizedTriggers 필드가 없는 이전 설정과의 호환성 보장
         setSettings({
           ...DEFAULT_NOTIFICATION_SETTINGS,
           ...parsed,
+          personalizedTriggers: {
+            ...DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
+            ...(parsed.personalizedTriggers ?? {}),
+          },
         });
         pushLogger.info('Settings loaded from AsyncStorage');
       }

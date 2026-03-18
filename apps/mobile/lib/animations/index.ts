@@ -11,6 +11,10 @@
 // 진입/퇴장 프리셋
 export { ENTERING, EXITING, staggeredEntry, TIMING } from './presets';
 
+// 적응형 애니메이션 (접근성 대응)
+export { useAdaptiveAnimation } from './adaptive';
+export type { AnimationSpeed, AdaptiveAnimationResult } from './adaptive';
+
 // 커스텀 훅
 export {
   useShimmer,

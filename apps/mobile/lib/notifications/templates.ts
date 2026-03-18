@@ -30,6 +30,12 @@ export type NotificationType =
   | 'badge_earned'
   | 'wellness_score'
   | 'weekly_report'
+  // 개인화 트리거
+  | 'streak_reminder'
+  | 'reanalysis_due'
+  | 'seasonal_tip'
+  | 'morning_routine'
+  | 'evening_recap'
   // 시스템
   | 'daily_checkin'
   | 'test';
@@ -162,6 +168,38 @@ export const NOTIFICATION_TEMPLATES: Record<
     title: '📊 주간 리포트 도착!',
     body: '이번 주 활동을 분석한 리포트가 준비됐어요.',
     action: { label: '리포트 보기', route: '/reports' },
+  },
+
+  // 개인화 트리거
+  streak_reminder: {
+    category: 'achievement',
+    title: '🔥 {{streak}}일 연속! 오늘도 해볼까요?',
+    body: '지금까지 멋지게 이어오고 있어요. 오늘도 한 걸음 더!',
+    action: { label: '기록하기', route: '/(tabs)' },
+  },
+  reanalysis_due: {
+    category: 'system',
+    title: '🔄 피부 분석 {{days}}일 경과',
+    body: '변화를 추적해보세요. 새로운 분석으로 달라진 나를 확인할 수 있어요.',
+    action: { label: '분석하기', route: '/(analysis)/skin' },
+  },
+  seasonal_tip: {
+    category: 'system',
+    title: '🌸 {{season}} 피부 변화 추적 시간이에요',
+    body: '계절이 바뀌면서 피부 컨디션도 달라져요. 새로운 분석을 시작해보세요.',
+    action: { label: '분석 시작', route: '/(analysis)/skin' },
+  },
+  morning_routine: {
+    category: 'nutrition',
+    title: '☀️ 오늘의 스킨케어 루틴을 확인하세요',
+    body: '아침 루틴을 완료하면 하루가 더 산뜻하게 시작돼요.',
+    action: { label: '루틴 보기', route: '/(tabs)' },
+  },
+  evening_recap: {
+    category: 'achievement',
+    title: '🌙 오늘 {{count}}건 기록했어요!',
+    body: '잘하고 있어요! 내일도 화이팅 💪',
+    action: { label: '오늘 기록 보기', route: '/(tabs)/records' },
   },
 
   // 시스템

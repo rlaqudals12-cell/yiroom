@@ -1,16 +1,27 @@
 /**
- * HomeQuickActions — GlassCard AI 코치 + AnimatedCard 퀵 액션
+ * HomeQuickActions — 개인화 퀵 액션 (분석 히스토리 기반 동적 정렬)
+ * 미완료 모듈 우선 표시 + 30일 경과 재분석 안내 + 최근 완료 표시
  */
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { TIMING } from '../../lib/animations';
+import { TIMING, useAdaptiveAnimation } from '../../lib/animations';
 import { useTheme, typography, spacing } from '../../lib/theme';
-import { GlassCard, AnimatedCard } from '../ui';
+import { AnimatedCard } from '../ui';
 import { GradientBackground } from '../ui';
 import { SectionHeader } from '../ui';
+
+/** 분석 완료 시각 정보 (개인화에 필요) */
+export interface AnalysisHistory {
+  personalColor: Date | null;
+  skin: Date | null;
+  body: Date | null;
+}
+
+// 퀵 액션 상태
+type ActionStatus = 'not-started' | 'reanalysis-recommended' | 'completed';
 
 interface QuickAction {
   title: string;
@@ -22,6 +33,8 @@ interface QuickAction {
 
 interface HomeQuickActionsProps {
   actions: QuickAction[];
+  /** 분석 히스토리 — 각 모듈의 마지막 분석 일시 */
+  analysisHistory?: AnalysisHistory;
   onActionPress: (route: string) => void;
   onCoachPress: () => void;
   onChatPress?: () => void;
@@ -35,8 +48,43 @@ const ACTION_META: Record<string, { emoji: string; moduleKey: 'personalColor' | 
     '체형 분석': { emoji: '✨', moduleKey: 'body' },
   };
 
+// 재분석 추천 기준: 30일
+const REANALYSIS_THRESHOLD_DAYS = 30;
+
+/** 경과 일수 계산 */
+function daysSince(date: Date): number {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+/** 분석 상태 결정 */
+function getActionStatus(
+  moduleKey: 'personalColor' | 'skin' | 'body',
+  history?: AnalysisHistory
+): { status: ActionStatus; daysSinceAnalysis: number | null } {
+  if (!history) return { status: 'not-started', daysSinceAnalysis: null };
+  const lastDate = history[moduleKey];
+  if (!lastDate) return { status: 'not-started', daysSinceAnalysis: null };
+  const days = daysSince(lastDate);
+  if (days >= REANALYSIS_THRESHOLD_DAYS) {
+    return { status: 'reanalysis-recommended', daysSinceAnalysis: days };
+  }
+  return { status: 'completed', daysSinceAnalysis: days };
+}
+
+/** 정렬 우선순위: 미완료 > 재분석 추천 > 최근 완료 */
+function getStatusPriority(s: ActionStatus): number {
+  switch (s) {
+    case 'not-started': return 0;
+    case 'reanalysis-recommended': return 1;
+    case 'completed': return 2;
+  }
+}
+
 export function HomeQuickActions({
   actions,
+  analysisHistory,
   onActionPress,
   onCoachPress,
   onChatPress,
@@ -52,6 +100,18 @@ export function HomeQuickActions({
     isDark,
     brand,
   } = useTheme();
+
+  // 접근성: 동작 줄이기 설정 시 entering 애니메이션 생략
+  const { shouldAnimate } = useAdaptiveAnimation();
+
+  // 개인화 정렬: 미완료 우선
+  const sortedActions = [...actions].sort((a, b) => {
+    const metaA = ACTION_META[a.title];
+    const metaB = ACTION_META[b.title];
+    const statusA = getActionStatus(metaA?.moduleKey ?? 'personalColor', analysisHistory);
+    const statusB = getActionStatus(metaB?.moduleKey ?? 'personalColor', analysisHistory);
+    return getStatusPriority(statusA.status) - getStatusPriority(statusB.status);
+  });
 
   const handleActionPress = (route: string): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -71,7 +131,7 @@ export function HomeQuickActions({
   return (
     <View testID="home-quick-actions">
       {/* AI Coach 카드 — 그라디언트 배경 + 글로우 섀도 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+      <Animated.View entering={shouldAnimate ? FadeInUp.delay(200).duration(TIMING.normal) : undefined}>
         <Pressable
           style={({ pressed }) => [
             {
@@ -124,7 +184,7 @@ export function HomeQuickActions({
 
       {/* AI 채팅 카드 */}
       {onChatPress && (
-        <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
+        <Animated.View entering={shouldAnimate ? FadeInUp.delay(250).duration(TIMING.normal) : undefined}>
           <Pressable
             style={({ pressed }) => [
               {
@@ -176,12 +236,16 @@ export function HomeQuickActions({
       )}
 
       {/* 퀵 액션 */}
-      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
+      <Animated.View entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.normal) : undefined}>
         <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.smx }} />
         <View style={[styles.actionsRow, { gap: spacing.smx }]}>
-          {actions.map((action, index) => {
+          {sortedActions.map((action, index) => {
             const meta = ACTION_META[action.title];
             const modColors = moduleColors[meta?.moduleKey ?? 'personalColor'];
+            const { status: actionStatus, daysSinceAnalysis } = getActionStatus(
+              meta?.moduleKey ?? 'personalColor',
+              analysisHistory
+            );
             return (
               <AnimatedCard
                 key={action.title}
@@ -224,27 +288,45 @@ export function HomeQuickActions({
                       <Text style={{ fontSize: 22 }}>{meta?.emoji ?? '✦'}</Text>
                     </LinearGradient>
                   </View>
-                  {action.completed && (
+                  {/* 상태 배지: 미완료 */}
+                  {actionStatus === 'not-started' && (
+                    <View style={{ position: 'absolute', top: spacing.xs, right: spacing.xs }}>
+                      <LinearGradient
+                        colors={[brand.primary, '#A855F7']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ borderRadius: radii.full, paddingHorizontal: 6, paddingVertical: 2 }}
+                      >
+                        <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: typography.weight.bold }}>
+                          NEW
+                        </Text>
+                      </LinearGradient>
+                    </View>
+                  )}
+                  {/* 상태 배지: 재분석 추천 */}
+                  {actionStatus === 'reanalysis-recommended' && (
                     <View
                       style={{
-                        position: 'absolute',
-                        top: spacing.xs,
-                        right: spacing.xs,
-                        backgroundColor: status.success,
-                        borderRadius: radii.full,
-                        width: 18,
-                        height: 18,
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        position: 'absolute', top: spacing.xs, right: spacing.xs,
+                        backgroundColor: '#F97316', borderRadius: radii.full,
+                        paddingHorizontal: 5, paddingVertical: 2,
                       }}
                     >
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          color: colors.overlayForeground,
-                          fontWeight: typography.weight.bold,
-                        }}
-                      >
+                      <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: typography.weight.bold }}>
+                        재분석
+                      </Text>
+                    </View>
+                  )}
+                  {/* 상태 배지: 최근 완료 */}
+                  {actionStatus === 'completed' && (
+                    <View
+                      style={{
+                        position: 'absolute', top: spacing.xs, right: spacing.xs,
+                        backgroundColor: status.success, borderRadius: radii.full,
+                        width: 18, height: 18, alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 10, color: colors.overlayForeground, fontWeight: typography.weight.bold }}>
                         ✓
                       </Text>
                     </View>
@@ -263,11 +345,17 @@ export function HomeQuickActions({
                   <Text
                     style={{
                       fontSize: typography.size.xs - 1,
-                      color: colors.mutedForeground,
+                      color: actionStatus === 'not-started' ? brand.primary
+                        : actionStatus === 'reanalysis-recommended' ? '#F97316'
+                        : colors.mutedForeground,
                       textAlign: 'center',
+                      fontWeight: actionStatus === 'not-started' ? typography.weight.semibold : undefined,
                     }}
                   >
-                    {action.completed ? '완료됨' : action.subtitle}
+                    {actionStatus === 'not-started' ? '시작하기'
+                      : actionStatus === 'reanalysis-recommended' ? daysSinceAnalysis + '일 전'
+                      : daysSinceAnalysis !== null ? daysSinceAnalysis + '일 전 완료'
+                      : '완료됨'}
                   </Text>
                 </View>
               </AnimatedCard>

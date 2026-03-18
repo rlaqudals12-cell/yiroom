@@ -41,6 +41,7 @@ import {
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useDailyCapsule } from '../../lib/capsule/hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
+import { getContextSuggestion } from '../../lib/recommendations/context-aware';
 import { useTheme } from '../../lib/theme';
 import { useWidgetSync } from '../../lib/widgets';
 
@@ -245,6 +246,24 @@ export default function HomeScreen(): React.JSX.Element {
     [personalColor, skinAnalysis, bodyAnalysis, moduleColors]
   );
 
+  // 분석 히스토리 — 각 모듈의 마지막 분석 일시 (개인화 퀵액션용)
+  const analysisHistory = useMemo(
+    () => ({
+      personalColor: personalColor?.createdAt ?? null,
+      skin: skinAnalysis?.createdAt ?? null,
+      body: bodyAnalysis?.createdAt ?? null,
+    }),
+    [personalColor, skinAnalysis, bodyAnalysis]
+  );
+
+  // 시간대x요일 문맥 제안
+  const contextSuggestion = useMemo(() => {
+    const now = new Date();
+    const hasWorkout = workoutStreak?.lastWorkoutDate === now.toISOString().split('T')[0];
+    const hasMeal = (todaySummary?.mealCount || 0) >= 1;
+    return getContextSuggestion(now.getHours(), now.getDay(), hasWorkout, hasMeal);
+  }, [workoutStreak, todaySummary]);
+
   // 오늘의 요약 수치 (StatCard용 numeric 값)
   const streakCount = workoutStreak?.currentStreak || 0;
   const calorieProgress =
@@ -420,11 +439,14 @@ export default function HomeScreen(): React.JSX.Element {
       <HomeTodaySection
         tasks={todayTasks}
         notifications={notifications}
+        contextSuggestion={contextSuggestion}
         onTaskPress={(route) => router.push(route as never)}
+        onSuggestionPress={(route) => router.push(route as never)}
       />
 
       <HomeQuickActions
         actions={quickActions}
+        analysisHistory={analysisHistory}
         onActionPress={(route) => router.push(route as never)}
         onCoachPress={() => router.push('/(coach)')}
         onChatPress={() => router.push('/(chat)')}

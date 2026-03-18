@@ -99,6 +99,20 @@ describe('NotificationType 타입', () => {
     });
   });
 
+  it('개인화 트리거 알림 타입이 정의되어야 함', () => {
+    const personalizedTypes: NotificationType[] = [
+      'streak_reminder',
+      'reanalysis_due',
+      'seasonal_tip',
+      'morning_routine',
+      'evening_recap',
+    ];
+
+    personalizedTypes.forEach((type) => {
+      expect(NOTIFICATION_TEMPLATES[type]).toBeDefined();
+    });
+  });
+
   it('시스템 관련 알림 타입이 정의되어야 함', () => {
     const systemTypes: NotificationType[] = ['daily_checkin', 'test'];
 
@@ -255,7 +269,8 @@ describe('getNotificationTypesByCategory', () => {
 
     expect(types).toContain('nutrition_reminder');
     expect(types).toContain('water_reminder');
-    expect(types.length).toBe(4);
+    expect(types).toContain('morning_routine');
+    expect(types.length).toBe(5);
   });
 
   it('소셜 카테고리의 알림 타입을 반환해야 함', () => {
@@ -271,7 +286,9 @@ describe('getNotificationTypesByCategory', () => {
 
     expect(types).toContain('level_up');
     expect(types).toContain('badge_earned');
-    expect(types.length).toBe(4);
+    expect(types).toContain('streak_reminder');
+    expect(types).toContain('evening_recap');
+    expect(types.length).toBe(6);
   });
 
   it('시스템 카테고리의 알림 타입을 반환해야 함', () => {
@@ -279,7 +296,9 @@ describe('getNotificationTypesByCategory', () => {
 
     expect(types).toContain('daily_checkin');
     expect(types).toContain('test');
-    expect(types.length).toBe(2);
+    expect(types).toContain('reanalysis_due');
+    expect(types).toContain('seasonal_tip');
+    expect(types.length).toBe(4);
   });
 });
 

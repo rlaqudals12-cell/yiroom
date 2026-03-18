@@ -104,6 +104,13 @@ let mockSettingsState = {
     streakWarning: true,
     socialNotifications: true,
     achievementNotifications: true,
+    personalizedTriggers: {
+      streakReminder: true,
+      reanalysisDue: true,
+      seasonalTip: true,
+      morningRoutine: true,
+      eveningRecap: true,
+    },
   },
   isLoading: false,
   isSyncing: false,

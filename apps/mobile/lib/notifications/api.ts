@@ -7,6 +7,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
 import type { NotificationSettings } from './types';
+import { DEFAULT_PERSONALIZED_TRIGGER_SETTINGS } from './types';
 import { pushLogger } from '../utils/logger';
 
 // ============================================================
@@ -211,6 +212,8 @@ function transformDbToSettings(db: DbNotificationSettings): NotificationSettings
     streakWarning: db.streak_warning,
     socialNotifications: db.social_notifications,
     achievementNotifications: db.achievement_notifications,
+    // DB에 personalizedTriggers 컬럼이 아직 없으므로 기본값 사용
+    personalizedTriggers: DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
   };
 }
 
