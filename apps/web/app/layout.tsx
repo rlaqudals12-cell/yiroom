@@ -82,7 +82,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨
   other: {
-    'theme-color': '#F8C8DC', // 이룸 핑크 - manifest와 동일
+    'theme-color': '#EC4899', // 이룸 핑크 - manifest와 동일
   },
   icons: {
     icon: [
@@ -104,7 +104,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#F8C8DC',
+  themeColor: '#EC4899',
 };
 
 export default async function RootLayout({

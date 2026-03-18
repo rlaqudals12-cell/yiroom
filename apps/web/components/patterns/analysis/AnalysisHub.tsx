@@ -54,7 +54,7 @@ const THEME_CONFIG: Record<
     buttonVariant: 'brand',
   },
   skin: {
-    gradient: 'bg-gradient-to-r from-[#F8C8DC] to-[#FFB6C1]',
+    gradient: 'bg-gradient-to-r from-[#EC4899] to-[#A855F7]',
     accentClass: 'text-module-skin border-module-skin/20 bg-module-skin/10',
     shadowColor: 'shadow-[0_40px_100px_-20px_oklch(0.78_0.10_350_/_0.3)]',
     buttonVariant: 'skin',
