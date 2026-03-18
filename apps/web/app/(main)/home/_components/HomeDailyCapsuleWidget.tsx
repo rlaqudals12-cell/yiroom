@@ -201,9 +201,19 @@ export default function HomeDailyCapsuleWidget() {
 
   if (!capsule || capsule.items.length === 0) {
     return (
-      <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5 text-center">
+      <div
+        className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5 text-center"
+        data-testid="home-daily-capsule-empty"
+      >
         <Sparkles className="w-5 h-5 text-violet-400 mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">{t('capsuleEmptyState')}</p>
+        <Link
+          href="/analysis"
+          className="mt-3 inline-flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
+        >
+          {t('capsuleEmptyCta')}
+          <ChevronRight className="w-4 h-4" />
+        </Link>
       </div>
     );
   }

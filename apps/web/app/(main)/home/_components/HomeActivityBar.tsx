@@ -129,6 +129,40 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
     );
   }
 
+  // 에러 상태 재시도를 위한 fetchData 참조
+  const retryFetch = (): void => {
+    setHasError(false);
+    setIsLoading(true);
+
+    const today = new Date().toISOString().split('T')[0];
+    Promise.all([
+      getConnectionStats(supabase, userId).catch(() => null),
+      supabase.from('nutrition_settings').select('daily_calories, water_goal').single(),
+      supabase.from('daily_nutrition_summary').select('total_calories').eq('date', today).single(),
+      supabase.from('water_records').select('amount').eq('date', today),
+      supabase
+        .from('workout_logs')
+        .select('duration_minutes')
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`),
+    ])
+      .then(([connectionStats, settingsRes, nutritionRes, waterRes, workoutRes]) => {
+        setStats(connectionStats);
+        const totalWater = waterRes.data?.reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
+        const totalExercise =
+          workoutRes.data?.reduce((sum, r) => sum + (r.duration_minutes || 0), 0) || 0;
+        setActivity({
+          calories: nutritionRes.data?.total_calories || 0,
+          caloriesTarget: settingsRes.data?.daily_calories || 2000,
+          exercise: totalExercise,
+          water: Math.floor(totalWater / 250),
+          waterTarget: settingsRes.data?.water_goal || 8,
+        });
+      })
+      .catch(() => setHasError(true))
+      .finally(() => setIsLoading(false));
+  };
+
   if (hasError) {
     return (
       <section
@@ -136,6 +170,12 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
         data-testid="home-activity-bar-error"
       >
         <p className="text-sm text-muted-foreground">{t('activityLoadError')}</p>
+        <button
+          onClick={retryFetch}
+          className="mt-2 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
+        >
+          {t('activityRetry')}
+        </button>
       </section>
     );
   }

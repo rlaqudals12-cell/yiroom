@@ -5,11 +5,13 @@
  *
  * P-UX1: 2개 카드형 CTA (퍼스널 컬러 / 피부 분석)
  * P-UX6: Social Proof + 설문 대안
+ * 비주얼 증거: 분석 결과 미리보기 카드 3종
+ * 차별화: 통합 시너지 인과 체인 시각화
  */
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Palette, Sparkles, ChevronRight } from 'lucide-react';
+import { Palette, Sparkles, ChevronRight, Droplet, Shirt, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 // 시드 데이터 기반 Social Proof (MVP: 실시간 API는 Phase 2)
@@ -27,7 +29,147 @@ function useSocialProofCount(): number {
   return count;
 }
 
-export default function NewUserHero() {
+/**
+ * 분석 결과 미리보기 카드 3종
+ * CSS로 구현된 미니 프리뷰 — 실제 이미지 불필요
+ */
+function AnalysisPreviewCards({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<'home'>>;
+}): React.ReactElement {
+  return (
+    <div
+      className="flex gap-3 mt-6"
+      data-testid="hero-analysis-preview"
+      role="group"
+      aria-label={t('previewLabel')}
+    >
+      {/* 퍼스널컬러 미니카드 */}
+      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+        <div className="flex gap-1.5 mb-2">
+          <div className="w-4 h-4 rounded-full bg-[#F472B6]" />
+          <div className="w-4 h-4 rounded-full bg-[#EC4899]" />
+          <div className="w-4 h-4 rounded-full bg-[#A855F7]" />
+        </div>
+        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
+          {t('previewSpringWarm')}
+        </p>
+        <p className="text-[10px] text-muted-foreground dark:text-white/50">
+          {t('previewPersonalColor')}
+        </p>
+      </div>
+
+      {/* 피부 분석 미니카드 */}
+      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+        <div className="text-lg font-bold text-foreground dark:text-white leading-tight">85</div>
+        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
+          {t('previewSkinScore')}
+        </p>
+        <p className="text-[10px] text-muted-foreground dark:text-white/50">
+          {t('previewSkinAnalysis')}
+        </p>
+      </div>
+
+      {/* 체형 분석 미니카드 */}
+      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+        <div className="w-6 h-6 mb-1">
+          <Shirt className="w-5 h-5 text-foreground/60 dark:text-white/60" aria-hidden="true" />
+        </div>
+        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
+          {t('previewNatural')}
+        </p>
+        <p className="text-[10px] text-muted-foreground dark:text-white/50">
+          {t('previewBodyType')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// 시너지 스텝 데이터
+const SYNERGY_STEPS = [
+  {
+    icon: Palette,
+    colorFrom: 'from-pink-400',
+    colorTo: 'to-rose-500',
+    key: 'synergyStep1' as const,
+  },
+  {
+    icon: Droplet,
+    colorFrom: 'from-sky-400',
+    colorTo: 'to-blue-500',
+    key: 'synergyStep2' as const,
+  },
+  {
+    icon: Sparkles,
+    colorFrom: 'from-violet-400',
+    colorTo: 'to-purple-500',
+    key: 'synergyStep3' as const,
+  },
+  {
+    icon: ShoppingBag,
+    colorFrom: 'from-amber-400',
+    colorTo: 'to-orange-500',
+    key: 'synergyStep4' as const,
+  },
+];
+
+/**
+ * 통합 시너지 인과 체인 시각화
+ * 퍼스널컬러 → 피부 분석 → 메이크업 추천 → 제품 매칭
+ */
+function SynergyChain({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<'home'>>;
+}): React.ReactElement {
+  return (
+    <div
+      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm"
+      data-testid="hero-synergy-chain"
+      role="region"
+      aria-label={t('synergyLabel')}
+    >
+      <h3 className="text-sm font-bold text-foreground mb-1">{t('synergyTitle')}</h3>
+      <p className="text-xs text-muted-foreground mb-5">{t('synergySubtitle')}</p>
+
+      {/* 가로 스텝 인디케이터 */}
+      <div className="flex items-start justify-between gap-1">
+        {SYNERGY_STEPS.map((step, idx) => {
+          const Icon = step.icon;
+          return (
+            <div key={step.key} className="flex items-start flex-1 min-w-0">
+              {/* 스텝 */}
+              <div className="flex flex-col items-center flex-1 min-w-0">
+                <div
+                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${step.colorFrom} ${step.colorTo} flex items-center justify-center shadow-sm`}
+                >
+                  <Icon className="w-[18px] h-[18px] text-white" aria-hidden="true" />
+                </div>
+                <p className="text-[11px] font-medium text-foreground mt-2 text-center leading-tight">
+                  {t(step.key)}
+                </p>
+              </div>
+
+              {/* 연결 화살표 (마지막 스텝 제외) */}
+              {idx < SYNERGY_STEPS.length - 1 && (
+                <div className="flex items-center pt-3 px-0.5 shrink-0">
+                  <ChevronRight
+                    className="w-3.5 h-3.5 text-muted-foreground/50"
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default function NewUserHero(): React.ReactElement {
   const todayCount = useSocialProofCount();
   const t = useTranslations('home');
 
@@ -50,17 +192,21 @@ export default function NewUserHero() {
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/analysis/personal-color"
-            className="flex flex-col items-center gap-2 p-4 bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
+            className="flex flex-col items-center gap-2 p-4 min-h-[48px] bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
           >
             <Palette className="w-8 h-8 text-violet-500" />
-            <span className="text-sm font-medium text-foreground">{t('personalColor')}</span>
+            <span className="text-base font-medium text-foreground text-center leading-snug">
+              {t('personalColor')}
+            </span>
           </Link>
           <Link
             href="/analysis/skin"
-            className="flex flex-col items-center gap-2 p-4 bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
+            className="flex flex-col items-center gap-2 p-4 min-h-[48px] bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
           >
             <Sparkles className="w-8 h-8 text-indigo-500" />
-            <span className="text-sm font-medium text-foreground">{t('skinAnalysis')}</span>
+            <span className="text-base font-medium text-foreground text-center leading-snug">
+              {t('skinAnalysis')}
+            </span>
           </Link>
         </div>
 
@@ -78,6 +224,14 @@ export default function NewUserHero() {
             {t('makeupAnalysis')}
           </Link>
         </div>
+
+        {/* 분석 결과 미리보기 카드 3종 */}
+        <AnalysisPreviewCards t={t} />
+      </div>
+
+      {/* 통합 시너지 인과 체인 */}
+      <div className="mb-4">
+        <SynergyChain t={t} />
       </div>
 
       {/* 설문 대안 (P-UX6: 사진 거부감 대안) */}

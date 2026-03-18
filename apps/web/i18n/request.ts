@@ -4,35 +4,11 @@
  */
 
 import { getRequestConfig } from 'next-intl/server';
-import { cookies, headers } from 'next/headers';
-import { defaultLocale, locales, type Locale } from './config';
+import { defaultLocale } from './config';
 
 export default getRequestConfig(async () => {
-  // 1. 쿠키에서 언어 확인
-  const cookieStore = await cookies();
-  const localeCookie = cookieStore.get('NEXT_LOCALE')?.value;
-
-  // 2. Accept-Language 헤더에서 확인
-  const headerStore = await headers();
-  const acceptLanguage = headerStore.get('accept-language');
-
-  let locale: Locale = defaultLocale;
-
-  // 쿠키 우선
-  if (localeCookie && locales.includes(localeCookie as Locale)) {
-    locale = localeCookie as Locale;
-  }
-  // Accept-Language 헤더 확인
-  else if (acceptLanguage) {
-    const preferredLocale = acceptLanguage
-      .split(',')
-      .map((lang) => lang.split(';')[0].trim().substring(0, 2))
-      .find((lang) => locales.includes(lang as Locale));
-
-    if (preferredLocale) {
-      locale = preferredLocale as Locale;
-    }
-  }
+  // 한국 시장 전용: 항상 한국어 사용 (Accept-Language 무시)
+  const locale = defaultLocale; // 'ko'
 
   return {
     locale,

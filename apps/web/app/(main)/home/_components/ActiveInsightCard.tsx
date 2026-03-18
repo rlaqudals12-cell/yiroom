@@ -10,6 +10,7 @@
  */
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Sparkles,
   Palette,
@@ -20,6 +21,7 @@ import {
   SmilePlus,
   Check,
   ArrowRight,
+  ChevronRight,
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import type { AnalysisModule, Insight } from '@/lib/insights';
@@ -183,10 +185,17 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
           })}
         </div>
       ) : (
-        <div className="px-5 pb-5">
+        <div className="px-5 pb-5" data-testid="home-active-insight-empty">
           <p className="text-sm text-muted-foreground">
             더 많은 분석을 완료하면 맞춤 인사이트가 생성돼요
           </p>
+          <Link
+            href="/analysis"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
+          >
+            분석 더 하기
+            <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
       )}
     </div>
