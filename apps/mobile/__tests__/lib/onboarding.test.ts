@@ -54,7 +54,7 @@ describe('온보딩 타입', () => {
 
   describe('Gender 타입', () => {
     it('성별이 올바르게 정의됨', () => {
-      const genders: Gender[] = ['male', 'female', 'other'];
+      const genders: Gender[] = ['male', 'female', 'neutral'];
       expect(genders).toHaveLength(3);
     });
   });
@@ -114,7 +114,7 @@ describe('온보딩 상수', () => {
     it('모든 성별에 대한 라벨이 있음', () => {
       expect(GENDER_LABELS.male).toBe('남성');
       expect(GENDER_LABELS.female).toBe('여성');
-      expect(GENDER_LABELS.other).toBe('기타');
+      expect(GENDER_LABELS.neutral).toBe('선택 안 함');
     });
   });
 
@@ -138,6 +138,7 @@ describe('온보딩 상수', () => {
 
   describe('DEFAULT_ONBOARDING_DATA', () => {
     it('기본값이 올바르게 설정됨', () => {
+      expect(DEFAULT_ONBOARDING_DATA.analysisInterests).toEqual([]);
       expect(DEFAULT_ONBOARDING_DATA.goals).toEqual([]);
       expect(DEFAULT_ONBOARDING_DATA.basicInfo).toEqual({});
       expect(DEFAULT_ONBOARDING_DATA.preferences).toEqual({});
@@ -147,53 +148,59 @@ describe('온보딩 상수', () => {
 
 describe('온보딩 유틸리티 함수', () => {
   describe('isOnboardingComplete', () => {
-    it('목표가 없으면 false', () => {
+    it('관심 분석이 없으면 false', () => {
       const data: OnboardingData = {
+        analysisInterests: [],
         goals: [],
-        basicInfo: { gender: 'male', birthYear: 1990 },
-        preferences: { workoutFrequency: '3-4' },
-      };
-      expect(isOnboardingComplete(data)).toBe(false);
-    });
-
-    it('성별이 없으면 false', () => {
-      const data: OnboardingData = {
-        goals: ['weight_loss'],
-        basicInfo: { birthYear: 1990 },
-        preferences: { workoutFrequency: '3-4' },
-      };
-      expect(isOnboardingComplete(data)).toBe(false);
-    });
-
-    it('출생년도가 없으면 false', () => {
-      const data: OnboardingData = {
-        goals: ['weight_loss'],
-        basicInfo: { gender: 'male' },
-        preferences: { workoutFrequency: '3-4' },
-      };
-      expect(isOnboardingComplete(data)).toBe(false);
-    });
-
-    it('선호도가 모두 없으면 false', () => {
-      const data: OnboardingData = {
-        goals: ['weight_loss'],
         basicInfo: { gender: 'male', birthYear: 1990 },
         preferences: {},
       };
       expect(isOnboardingComplete(data)).toBe(false);
     });
 
-    it('운동 빈도만 있어도 true', () => {
+    it('성별이 없으면 false', () => {
       const data: OnboardingData = {
-        goals: ['weight_loss'],
+        analysisInterests: ['skin'],
+        goals: [],
+        basicInfo: { birthYear: 1990 },
+        preferences: {},
+      };
+      expect(isOnboardingComplete(data)).toBe(false);
+    });
+
+    it('출생년도가 없으면 false', () => {
+      const data: OnboardingData = {
+        analysisInterests: ['skin'],
+        goals: [],
+        basicInfo: { gender: 'male' },
+        preferences: {},
+      };
+      expect(isOnboardingComplete(data)).toBe(false);
+    });
+
+    it('선호도가 없어도 true (Step 3은 선택 사항)', () => {
+      const data: OnboardingData = {
+        analysisInterests: ['skin'],
+        goals: [],
         basicInfo: { gender: 'male', birthYear: 1990 },
-        preferences: { workoutFrequency: '3-4' },
+        preferences: {},
       };
       expect(isOnboardingComplete(data)).toBe(true);
     });
 
-    it('식사 선호도만 있어도 true', () => {
+    it('관심 분석 + 성별 + 출생년도만 있으면 true', () => {
       const data: OnboardingData = {
+        analysisInterests: ['personal_color'],
+        goals: [],
+        basicInfo: { gender: 'male', birthYear: 1990 },
+        preferences: {},
+      };
+      expect(isOnboardingComplete(data)).toBe(true);
+    });
+
+    it('관심 분석 여러 개 선택해도 true', () => {
+      const data: OnboardingData = {
+        analysisInterests: ['skin', 'body', 'hair'],
         goals: ['weight_loss'],
         basicInfo: { gender: 'female', birthYear: 1995 },
         preferences: { mealPreference: 'regular' },
@@ -203,6 +210,7 @@ describe('온보딩 유틸리티 함수', () => {
 
     it('모든 필드가 있으면 true', () => {
       const data: OnboardingData = {
+        analysisInterests: ['skin', 'personal_color'],
         goals: ['weight_loss', 'muscle_gain'],
         basicInfo: {
           gender: 'male',

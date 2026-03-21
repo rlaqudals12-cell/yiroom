@@ -1,8 +1,8 @@
 /**
- * 온보딩 Step 1: 목표 선택 테스트
+ * 온보딩 Step 1: 관심 분석 선택 테스트
  *
  * 대상: app/(onboarding)/step1.tsx
- * 의존성: useOnboarding, useTheme, Button, ProgressIndicator
+ * 의존성: useOnboarding, useTheme, ScreenContainer, OnboardingHero
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
@@ -31,11 +31,12 @@ import {
 // Mock 설정
 // ============================================================
 
-const mockToggleGoal = jest.fn();
+const mockToggleAnalysisInterest = jest.fn();
 const mockNextStep = jest.fn();
 
 // useOnboarding의 반환값을 테스트마다 변경할 수 있도록 변수로 관리
 let mockOnboardingData = {
+  analysisInterests: [] as string[],
   goals: [] as string[],
   basicInfo: {},
   preferences: {},
@@ -44,36 +45,32 @@ let mockOnboardingData = {
 jest.mock('../../../lib/onboarding', () => ({
   useOnboarding: jest.fn(() => ({
     data: mockOnboardingData,
-    toggleGoal: mockToggleGoal,
+    toggleAnalysisInterest: mockToggleAnalysisInterest,
     nextStep: mockNextStep,
   })),
-  GOAL_LABELS: {
-    weight_loss: '체중 감량',
-    muscle_gain: '근육 증가',
-    health_maintenance: '건강 유지',
-    stress_relief: '스트레스 해소',
-    better_sleep: '수면 개선',
+  ANALYSIS_LABELS: {
+    personal_color: '퍼스널컬러',
+    skin: '피부 분석',
+    body: '체형 분석',
+    hair: '헤어 분석',
+    makeup: '메이크업',
+    ingredients: '성분 분석',
   },
-  GOAL_DESCRIPTIONS: {
-    weight_loss: '건강한 식단과 운동으로 체중을 관리해요',
-    muscle_gain: '근력 운동과 고단백 식단을 추천해요',
-    health_maintenance: '전반적인 건강 지표를 개선해요',
-    stress_relief: '유연성과 마음 챙김으로 스트레스를 줄여요',
-    better_sleep: '수면 패턴 분석으로 숙면을 도와요',
+  ANALYSIS_DESCRIPTIONS: {
+    personal_color: '내게 어울리는 색상을 찾아요',
+    skin: '피부 타입과 맞춤 케어를 알아봐요',
+    body: '체형에 맞는 스타일링을 추천해요',
+    hair: '어울리는 헤어스타일을 찾아요',
+    makeup: '퍼스널컬러 기반 메이크업을 추천해요',
+    ingredients: '안전한 제품을 선택할 수 있어요',
   },
-  GOAL_COLORS: {
-    weight_loss: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
-    muscle_gain: { gradient: ['#A78BFA', '#8B5CF6'], bg: '#F5F3FF' },
-    health_maintenance: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },
-    stress_relief: { gradient: ['#60A5FA', '#3B82F6'], bg: '#EFF6FF' },
-    better_sleep: { gradient: ['#818CF8', '#6366F1'], bg: '#EEF2FF' },
-  },
-  GOAL_ICONS: {
-    weight_loss: '⚖️',
-    muscle_gain: '💪',
-    health_maintenance: '❤️',
-    stress_relief: '🧘',
-    better_sleep: '😴',
+  ANALYSIS_COLORS: {
+    personal_color: { gradient: ['#C084FC', '#A855F7'], bg: '#FAF5FF' },
+    skin: { gradient: ['#F472B6', '#EC4899'], bg: '#FDF2F8' },
+    body: { gradient: ['#818CF8', '#6366F1'], bg: '#EEF2FF' },
+    hair: { gradient: ['#FBBF24', '#F59E0B'], bg: '#FFFBEB' },
+    makeup: { gradient: ['#F9A8D4', '#EC4899'], bg: '#FDF2F8' },
+    ingredients: { gradient: ['#34D399', '#10B981'], bg: '#ECFDF5' },
   },
 }));
 
@@ -85,7 +82,7 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// lucide-react-native 아이콘 mock (MenuCard barrel import 경유)
+// lucide-react-native 아이콘 mock (barrel import 경유)
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
   return new Proxy(
@@ -147,13 +144,14 @@ beforeAll(() => {
 beforeEach(() => {
   jest.clearAllMocks();
   mockOnboardingData = {
+    analysisInterests: [],
     goals: [],
     basicInfo: {},
     preferences: {},
   };
 });
 
-describe('OnboardingStep1 (목표 선택)', () => {
+describe('OnboardingStep1 (관심 분석 선택)', () => {
   describe('렌더링', () => {
     it('testID="onboarding-step1" 컨테이너가 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
@@ -162,7 +160,7 @@ describe('OnboardingStep1 (목표 선택)', () => {
 
     it('헤더 타이틀이 표시된다', () => {
       const { getByText } = renderWithTheme(<OnboardingStep1 />);
-      expect(getByText('목표를 선택해주세요')).toBeTruthy();
+      expect(getByText('어떤 분석이 궁금하세요?')).toBeTruthy();
     });
 
     it('부제목에 복수 선택 안내가 표시된다', () => {
@@ -170,59 +168,51 @@ describe('OnboardingStep1 (목표 선택)', () => {
       expect(getByText(/복수 선택 가능/)).toBeTruthy();
     });
 
-    it('5개 목표 카드가 모두 렌더링된다', () => {
+    it('6개 분석 카드가 모두 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-      expect(getByTestId('goal-weight_loss')).toBeTruthy();
-      expect(getByTestId('goal-muscle_gain')).toBeTruthy();
-      expect(getByTestId('goal-health_maintenance')).toBeTruthy();
-      expect(getByTestId('goal-stress_relief')).toBeTruthy();
-      expect(getByTestId('goal-better_sleep')).toBeTruthy();
+      expect(getByTestId('analysis-personal_color')).toBeTruthy();
+      expect(getByTestId('analysis-skin')).toBeTruthy();
+      expect(getByTestId('analysis-body')).toBeTruthy();
+      expect(getByTestId('analysis-hair')).toBeTruthy();
+      expect(getByTestId('analysis-makeup')).toBeTruthy();
+      expect(getByTestId('analysis-ingredients')).toBeTruthy();
     });
 
-    it('목표 라벨이 한국어로 표시된다', () => {
+    it('분석 라벨이 한국어로 표시된다', () => {
       const { getByText } = renderWithTheme(<OnboardingStep1 />);
-      expect(getByText('체중 감량')).toBeTruthy();
-      expect(getByText('근육 증가')).toBeTruthy();
-      expect(getByText('건강 유지')).toBeTruthy();
-      expect(getByText('스트레스 해소')).toBeTruthy();
-      expect(getByText('수면 개선')).toBeTruthy();
-    });
-
-    it('ProgressIndicator 도트가 렌더링된다', () => {
-      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-      // ProgressIndicator는 도트만 표시 (텍스트 없음)
-      expect(getByTestId('onboarding-step1')).toBeTruthy();
-    });
-
-    it('다음 버튼이 렌더링된다', () => {
-      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-      expect(getByTestId('next-button')).toBeTruthy();
+      expect(getByText('퍼스널컬러')).toBeTruthy();
+      expect(getByText('피부 분석')).toBeTruthy();
+      expect(getByText('체형 분석')).toBeTruthy();
+      expect(getByText('헤어 분석')).toBeTruthy();
+      expect(getByText('메이크업')).toBeTruthy();
+      expect(getByText('성분 분석')).toBeTruthy();
     });
   });
 
-  describe('목표 선택 상호작용', () => {
-    it('목표 카드 클릭 시 toggleGoal이 호출된다', () => {
+  describe('분석 선택 상호작용', () => {
+    it('분석 카드 클릭 시 toggleAnalysisInterest가 호출된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
 
-      fireEvent.press(getByTestId('goal-weight_loss'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('weight_loss');
+      fireEvent.press(getByTestId('analysis-skin'));
+      expect(mockToggleAnalysisInterest).toHaveBeenCalledWith('skin');
     });
 
-    it('다른 목표 카드 클릭 시 해당 goal로 toggleGoal이 호출된다', () => {
+    it('다른 분석 카드 클릭 시 해당 분석으로 toggleAnalysisInterest가 호출된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
 
-      fireEvent.press(getByTestId('goal-muscle_gain'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('muscle_gain');
+      fireEvent.press(getByTestId('analysis-personal_color'));
+      expect(mockToggleAnalysisInterest).toHaveBeenCalledWith('personal_color');
 
-      fireEvent.press(getByTestId('goal-better_sleep'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('better_sleep');
+      fireEvent.press(getByTestId('analysis-hair'));
+      expect(mockToggleAnalysisInterest).toHaveBeenCalledWith('hair');
     });
   });
 
   describe('선택 상태 표시', () => {
-    it('선택된 목표에 체크마크 아이콘이 표시된다', () => {
+    it('선택된 분석에 체크마크 아이콘이 표시된다', () => {
       mockOnboardingData = {
-        goals: ['weight_loss', 'muscle_gain'],
+        analysisInterests: ['skin', 'body'],
+        goals: [],
         basicInfo: {},
         preferences: {},
       };
@@ -232,90 +222,48 @@ describe('OnboardingStep1 (목표 선택)', () => {
       expect(checkmarks.length).toBe(2);
     });
 
-    it('선택되지 않은 목표에는 체크마크가 없다', () => {
+    it('선택되지 않은 분석에는 체크마크가 없다', () => {
       mockOnboardingData = {
-        goals: ['weight_loss'],
-        basicInfo: {},
-        preferences: {},
-      };
-
-      const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
-      // 선택된 목표 1개만 체크마크 존재
-      const checkmarks = getAllByTestId('icon-Check');
-      expect(checkmarks.length).toBe(1);
-    });
-  });
-
-  describe('다음 버튼 활성화/비활성화', () => {
-    it('목표 미선택 시 다음 버튼이 비활성화된다', () => {
-      mockOnboardingData = {
+        analysisInterests: ['skin'],
         goals: [],
         basicInfo: {},
         preferences: {},
       };
 
-      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-      const nextButton = getByTestId('next-button');
-
-      expect(nextButton.props.accessibilityState).toEqual(
-        expect.objectContaining({ disabled: true })
-      );
-    });
-
-    it('목표 선택 후 다음 버튼이 활성화된다', () => {
-      mockOnboardingData = {
-        goals: ['health_maintenance'],
-        basicInfo: {},
-        preferences: {},
-      };
-
-      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-      const nextButton = getByTestId('next-button');
-
-      expect(nextButton.props.accessibilityState).toEqual(
-        expect.objectContaining({ disabled: false })
-      );
-    });
-
-    it('활성화된 다음 버튼 클릭 시 nextStep이 호출된다', () => {
-      mockOnboardingData = {
-        goals: ['stress_relief'],
-        basicInfo: {},
-        preferences: {},
-      };
-
-      const { getByTestId } = renderWithTheme(<OnboardingStep1 />);
-
-      fireEvent.press(getByTestId('next-button'));
-      expect(mockNextStep).toHaveBeenCalledTimes(1);
+      const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
+      // 선택된 분석 1개만 체크마크 존재
+      const checkmarks = getAllByTestId('icon-Check');
+      expect(checkmarks.length).toBe(1);
     });
   });
 
   describe('다크 모드', () => {
     it('다크 모드에서 정상 렌더링된다', () => {
       mockOnboardingData = {
-        goals: ['weight_loss'],
+        analysisInterests: ['personal_color'],
+        goals: [],
         basicInfo: {},
         preferences: {},
       };
 
       const { getByTestId, getByText } = renderWithTheme(<OnboardingStep1 />, true);
       expect(getByTestId('onboarding-step1')).toBeTruthy();
-      expect(getByText('목표를 선택해주세요')).toBeTruthy();
+      expect(getByText('어떤 분석이 궁금하세요?')).toBeTruthy();
     });
   });
 
   describe('엣지 케이스', () => {
-    it('5개 목표 모두 선택된 상태에서 체크마크 5개가 표시된다', () => {
+    it('6개 분석 모두 선택된 상태에서 체크마크 6개가 표시된다', () => {
       mockOnboardingData = {
-        goals: ['weight_loss', 'muscle_gain', 'health_maintenance', 'stress_relief', 'better_sleep'],
+        analysisInterests: ['personal_color', 'skin', 'body', 'hair', 'makeup', 'ingredients'],
+        goals: [],
         basicInfo: {},
         preferences: {},
       };
 
       const { getAllByTestId } = renderWithTheme(<OnboardingStep1 />);
       const checkmarks = getAllByTestId('icon-Check');
-      expect(checkmarks.length).toBe(5);
+      expect(checkmarks.length).toBe(6);
     });
   });
 });

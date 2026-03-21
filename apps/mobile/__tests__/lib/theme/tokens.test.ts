@@ -21,12 +21,12 @@ import {
 
 describe('디자인 토큰', () => {
   describe('brand', () => {
-    it('primary 색상이 #F8C8DC이어야 한다', () => {
-      expect(brand.primary).toBe('#F8C8DC');
+    it('primary 색상이 #EC4899이어야 한다', () => {
+      expect(brand.primary).toBe('#EC4899');
     });
 
-    it('primaryForeground가 어두운 색이어야 한다', () => {
-      expect(brand.primaryForeground).toBe('#0A0A0A');
+    it('primaryForeground가 흰색이어야 한다', () => {
+      expect(brand.primaryForeground).toBe('#FFFFFF');
     });
 
     it('gradient 색상이 정의되어야 한다', () => {

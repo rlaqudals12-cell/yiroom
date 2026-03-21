@@ -48,7 +48,7 @@ describe('ThemeProvider', () => {
     });
 
     it('brand가 토큰과 일치해야 한다', () => {
-      expect(lightValue.brand.primary).toBe('#F8C8DC');
+      expect(lightValue.brand.primary).toBe('#EC4899');
     });
 
     it('module이 moduleColors와 일치해야 한다', () => {

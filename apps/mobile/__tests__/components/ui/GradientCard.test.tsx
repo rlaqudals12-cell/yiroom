@@ -288,7 +288,7 @@ describe('GradientCard', () => {
     });
 
     it('다크 모드에서 보더 투명도가 0.2로 적용되어야 한다', () => {
-      // brand variant: glowColor = '#F8C8DC' → rgba(248,200,220,0.2)
+      // brand variant: glowColor = '#EC4899' → rgba(236,72,153,0.2)
       const { getByTestId } = renderWithTheme(
         <GradientCard testID="dark-border-card">
           <Text>다크 보더</Text>
@@ -301,13 +301,13 @@ describe('GradientCard', () => {
         ? card.props.style
         : [card.props.style];
       const hasBorderColor = flatStyle.some(
-        (s: Record<string, unknown>) => s && s.borderColor === 'rgba(248,200,220,0.2)'
+        (s: Record<string, unknown>) => s && s.borderColor === 'rgba(236,72,153,0.2)'
       );
       expect(hasBorderColor).toBe(true);
     });
 
     it('라이트 모드에서 보더 투명도가 0.15로 적용되어야 한다', () => {
-      // brand variant: glowColor = '#F8C8DC' → rgba(248,200,220,0.15)
+      // brand variant: glowColor = '#EC4899' → rgba(236,72,153,0.15)
       const { getByTestId } = renderWithTheme(
         <GradientCard testID="light-border-card">
           <Text>라이트 보더</Text>
@@ -320,7 +320,7 @@ describe('GradientCard', () => {
         ? card.props.style
         : [card.props.style];
       const hasBorderColor = flatStyle.some(
-        (s: Record<string, unknown>) => s && s.borderColor === 'rgba(248,200,220,0.15)'
+        (s: Record<string, unknown>) => s && s.borderColor === 'rgba(236,72,153,0.15)'
       );
       expect(hasBorderColor).toBe(true);
     });

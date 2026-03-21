@@ -17,6 +17,12 @@ jest.mock('lucide-react-native', () => {
   );
 });
 
+// useAdaptiveAnimation mock
+jest.mock('../../../lib/animations', () => ({
+  TIMING: { fast: 150, normal: 300, slow: 500, staggerInterval: 80 },
+  useAdaptiveAnimation: () => ({ shouldAnimate: false, duration: 300 }),
+}));
+
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
@@ -65,9 +71,9 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 }
 
 const mockActions = [
-  { title: '운동 기록', subtitle: '오늘의 운동', color: '#4ADE80', route: '/workout', completed: false },
-  { title: '식단 기록', subtitle: '오늘의 식단', color: '#60A5FA', route: '/nutrition', completed: true },
-  { title: '물 섭취', subtitle: '물 마시기', color: '#3B82F6', route: '/water', completed: false },
+  { title: '퍼스널 컬러', subtitle: '나에게 맞는 색상', color: '#F472B6', route: '/analysis/personal-color', completed: false },
+  { title: '피부 분석', subtitle: '피부 타입 분석', color: '#60A5FA', route: '/analysis/skin', completed: false },
+  { title: '체형 분석', subtitle: '체형 스타일링', color: '#A78BFA', route: '/analysis/body', completed: false },
 ];
 
 describe('HomeQuickActions', () => {
@@ -90,16 +96,14 @@ describe('HomeQuickActions', () => {
     expect(getByText('운동, 영양, 뷰티 궁금한 것 무엇이든')).toBeTruthy();
   });
 
-  it('퀵 액션 title과 subtitle을 렌더링해야 한다', () => {
+  it('퀵 액션 title을 렌더링해야 한다', () => {
     const { getByText } = renderWithTheme(
       <HomeQuickActions {...defaultProps} />
     );
 
-    expect(getByText('운동 기록')).toBeTruthy();
-    expect(getByText('오늘의 운동')).toBeTruthy();
-    expect(getByText('식단 기록')).toBeTruthy();
-    expect(getByText('물 섭취')).toBeTruthy();
-    expect(getByText('물 마시기')).toBeTruthy();
+    expect(getByText('퍼스널 컬러')).toBeTruthy();
+    expect(getByText('피부 분석')).toBeTruthy();
+    expect(getByText('체형 분석')).toBeTruthy();
   });
 
   it('AI 코치 카드 클릭 시 onCoachPress 콜백을 호출해야 한다', () => {
@@ -119,30 +123,21 @@ describe('HomeQuickActions', () => {
       <HomeQuickActions {...defaultProps} onActionPress={onActionPress} />
     );
 
-    fireEvent.press(getByText('운동 기록'));
-    expect(onActionPress).toHaveBeenCalledWith('/workout');
+    fireEvent.press(getByText('퍼스널 컬러'));
+    expect(onActionPress).toHaveBeenCalledWith('/analysis/personal-color');
 
-    fireEvent.press(getByText('물 섭취'));
-    expect(onActionPress).toHaveBeenCalledWith('/water');
+    fireEvent.press(getByText('체형 분석'));
+    expect(onActionPress).toHaveBeenCalledWith('/analysis/body');
   });
 
-  it('completed 상태인 액션에 "완료됨"을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
-
-    // 식단 기록은 completed=true이므로 subtitle 대신 "완료됨" 표시
-    expect(getByText('완료됨')).toBeTruthy();
-  });
-
-  it('completed 상태인 액션에 체크 표시가 있어야 한다', () => {
+  it('히스토리 없는 액션에 "시작하기" 상태가 표시되어야 한다', () => {
     const { getAllByText } = renderWithTheme(
       <HomeQuickActions {...defaultProps} />
     );
 
-    // completed=true인 액션에 체크마크 표시
-    const checkmarks = getAllByText('\u2713');
-    expect(checkmarks.length).toBeGreaterThanOrEqual(1);
+    // 히스토리 없으면 모든 액션이 "시작하기" 상태
+    const startTexts = getAllByText('시작하기');
+    expect(startTexts.length).toBe(3);
   });
 
   it('testID="home-quick-actions"가 존재해야 한다', () => {
@@ -171,7 +166,7 @@ describe('HomeQuickActions', () => {
     );
 
     expect(getByText('AI 코치에게 물어보세요')).toBeTruthy();
-    expect(queryByText('운동 기록')).toBeNull();
+    expect(queryByText('퍼스널 컬러')).toBeNull();
   });
 
   it('다크 모드에서도 정상 렌더링되어야 한다', () => {
@@ -182,6 +177,6 @@ describe('HomeQuickActions', () => {
 
     expect(getByTestId('home-quick-actions')).toBeTruthy();
     expect(getByText('AI 코치에게 물어보세요')).toBeTruthy();
-    expect(getByText('운동 기록')).toBeTruthy();
+    expect(getByText('퍼스널 컬러')).toBeTruthy();
   });
 });

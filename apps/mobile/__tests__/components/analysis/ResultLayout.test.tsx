@@ -128,12 +128,13 @@ jest.mock('../../../components/ui/GradientCard', () => {
   };
 });
 
-// @/lib/animations — TIMING 상수만 필요
+// @/lib/animations — TIMING 상수 + useAdaptiveAnimation 훅
 jest.mock('../../../lib/animations', () => ({
   TIMING: { fast: 150, normal: 300, slow: 500, staggerInterval: 80 },
   ENTERING: {},
   EXITING: {},
   staggeredEntry: jest.fn(),
+  useAdaptiveAnimation: () => ({ shouldAnimate: false, duration: 300 }),
 }));
 
 // ============================================================
