@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yiroom - LVMH Innovation Award 2026</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; background: #fff; }
+  .slide {
+    width: 100%; min-height: 100vh; padding: 50px 70px;
+    display: flex; flex-direction: column; justify-content: center;
+    page-break-after: always; position: relative;
+  }
+  .slide:last-child { page-break-after: avoid; }
+  .slide-number {
+    position: absolute; bottom: 25px; right: 45px;
+    font-size: 13px; color: #999;
+  }
+  .logo-bar {
+    position: absolute; top: 25px; left: 45px;
+    font-size: 15px; font-weight: 700; color: #ec4899;
+  }
+  .logo-bar-right {
+    position: absolute; top: 25px; right: 45px;
+    font-size: 12px; color: #999;
+  }
+  h1 { font-size: 44px; font-weight: 800; margin-bottom: 16px; }
+  h2 { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
+  h3 { font-size: 22px; font-weight: 600; margin-bottom: 12px; color: #ec4899; }
+  p { font-size: 18px; line-height: 1.7; color: #444; }
+  .subtitle { font-size: 22px; color: #ec4899; font-weight: 600; }
+  .tagline { font-size: 24px; color: #666; margin-top: 12px; line-height: 1.5; }
+  .big-number { font-size: 56px; font-weight: 800; color: #ec4899; }
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;
+  }
+  .metric-box {
+    background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 14px; padding: 24px; text-align: center;
+  }
+  .metric-box .number { font-size: 32px; font-weight: 800; color: #ec4899; }
+  .metric-box .label { font-size: 14px; color: #666; margin-top: 6px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .card {
+    background: #fdf2f8; border-radius: 14px; padding: 24px; border-left: 4px solid #ec4899;
+  }
+  .card h3 { margin-bottom: 8px; font-size: 18px; }
+  .card p { font-size: 15px; line-height: 1.5; }
+  .dark-slide {
+    background: linear-gradient(135deg, #0f0f0f, #1a1a2e); color: #fff;
+  }
+  .dark-slide h1, .dark-slide h2, .dark-slide h3 { color: #fff; }
+  .dark-slide p { color: #ccc; }
+  .dark-slide .subtitle { color: #ec4899; }
+  .pink-slide {
+    background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff;
+  }
+  .pink-slide h1, .pink-slide h2, .pink-slide h3, .pink-slide p { color: #fff; }
+  .pink-slide .metric-box { background: rgba(255,255,255,0.15); }
+  .pink-slide .metric-box .number { color: #fff; }
+  .pink-slide .metric-box .label { color: rgba(255,255,255,0.8); }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th { background: #fdf2f8; padding: 12px 16px; text-align: left; font-size: 14px; color: #ec4899; font-weight: 700; }
+  td { padding: 12px 16px; border-bottom: 1px solid #f3e8ff; font-size: 15px; }
+  .highlight { background: #ec4899; color: #fff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 14px; }
+  .vs-box {
+    background: #fff3f3; border: 2px solid #ec4899; border-radius: 14px; padding: 20px; text-align: center; margin-top: 16px;
+  }
+  .vs-box .big { font-size: 20px; font-weight: 800; color: #ec4899; }
+  ul { margin-left: 20px; margin-top: 8px; }
+  ul li { font-size: 16px; line-height: 1.8; color: #444; }
+  .ask-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+  .ask-box {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 14px; padding: 24px;
+  }
+  .ask-box h3 { color: #ec4899; font-size: 16px; }
+  .ask-box p { font-size: 15px; color: #ddd; }
+</style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- SLIDE 1: Title -->
+<!-- ============================================ -->
+<div class="slide dark-slide">
+  <div class="logo-bar" style="color: #ec4899;">YIROOM</div>
+  <div class="logo-bar-right" style="color: #666;">LVMH Innovation Award 2026</div>
+
+  <div style="margin-top: 40px;">
+    <p class="subtitle">AI Beauty Intelligence for Luxury Brands</p>
+    <h1 style="font-size: 48px; margin-top: 12px;">
+      The Personal Color Engine<br>
+      <span style="color: #ec4899;">LVMH Needs</span>
+    </h1>
+    <p class="tagline" style="color: #888; margin-top: 20px;">
+      AI-powered diagnostics that transform how consumers<br>
+      discover and connect with luxury beauty products.
+    </p>
+  </div>
+
+  <div class="metric-grid" style="margin-top: 40px;">
+    <div class="metric-box" style="background: rgba(236,72,153,0.1);">
+      <div class="number" style="color: #ec4899;">8</div>
+      <div class="label" style="color: #aaa;">AI Analysis Modules</div>
+    </div>
+    <div class="metric-box" style="background: rgba(236,72,153,0.1);">
+      <div class="number" style="color: #ec4899;">23K+</div>
+      <div class="label" style="color: #aaa;">Automated Tests</div>
+    </div>
+    <div class="metric-box" style="background: rgba(236,72,153,0.1);">
+      <div class="number" style="color: #ec4899;">90</div>
+      <div class="label" style="color: #aaa;">Days to Production</div>
+    </div>
+    <div class="metric-box" style="background: rgba(236,72,153,0.1);">
+      <div class="number" style="color: #ec4899;">$0</div>
+      <div class="label" style="color: #aaa;">External Funding</div>
+    </div>
+  </div>
+
+  <p style="color: #666; margin-top: 30px; font-size: 14px;">yiroom.vercel.app &nbsp;|&nbsp; Seoul, South Korea &nbsp;|&nbsp; Byungmin Kim, Founder</p>
+  <div class="slide-number" style="color: #666;">1 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 2: Problem -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="logo-bar">YIROOM</div>
+  <h3>THE PROBLEM</h3>
+  <h2>Luxury Beauty's $4.4B Personalization Gap</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom: 20px;">
+        <h3 style="color: #dc2626;">70% of online beauty purchases returned</h3>
+        <p>due to shade mismatch. Customers can't find their color online.</p>
+      </div>
+      <div class="card" style="margin-bottom: 20px;">
+        <h3 style="color: #dc2626;">In-store consultations don't scale</h3>
+        <p>A Sephora advisor serves ~20 customers/day. Digital channels serve millions.</p>
+      </div>
+      <div class="card">
+        <h3 style="color: #dc2626;">Generic recommendations fail luxury</h3>
+        <p>"Customers also bought" doesn't meet luxury expectations.</p>
+      </div>
+    </div>
+    <div>
+      <div style="background: #0f0f0f; border-radius: 16px; padding: 30px; color: #fff; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+        <p style="color: #ec4899; font-size: 16px; font-weight: 700;">THE MARKET</p>
+        <p style="color: #fff; font-size: 48px; font-weight: 800; margin: 16px 0;">$4.4B</p>
+        <p style="color: #aaa; font-size: 16px;">Global AI in Beauty & Cosmetics (2025)</p>
+        <p style="color: #ec4899; font-size: 24px; font-weight: 700; margin-top: 8px;">21% CAGR &rarr; $9.4B by 2029</p>
+        <hr style="border-color: #333; margin: 20px 0;">
+        <p style="color: #fff; font-size: 32px; font-weight: 800;">$11.4B</p>
+        <p style="color: #aaa; font-size: 16px;">K-Beauty exports (2025, record high)</p>
+        <p style="color: #aaa; font-size: 14px; margin-top: 4px;">202 countries, zero AI personalization</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">2 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 3: Solution -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="logo-bar">YIROOM</div>
+  <h3>THE SOLUTION</h3>
+  <h2>AI Beauty Intelligence Engine for Brands</h2>
+
+  <div class="three-col">
+    <div class="card">
+      <h3>Personal Color AI</h3>
+      <p><strong>12-tone seasonal classification</strong> using CIE Lab color science + Google Gemini VLM. Maps customer's palette to your product catalog.</p>
+      <p style="margin-top: 12px; font-size: 13px; color: #ec4899; font-weight: 600;">
+        "Find your Dior shade" &rarr; 30 seconds
+      </p>
+    </div>
+    <div class="card">
+      <h3>AI Skin Diagnostics</h3>
+      <p><strong>7-zone deep analysis</strong> (hydration, oiliness, sensitivity, wrinkles). Recommends products based on actual skin condition.</p>
+      <p style="margin-top: 12px; font-size: 13px; color: #ec4899; font-weight: 600;">
+        "Your skin needs this Guerlain serum"
+      </p>
+    </div>
+    <div class="card">
+      <h3>Color-Science Matching</h3>
+      <p><strong>CIE Lab Delta-E algorithm</strong>: Perceptually matches customer's ideal colors to exact products. Not ML guessing &mdash; mathematical precision.</p>
+      <p style="margin-top: 12px; font-size: 13px; color: #ec4899; font-weight: 600;">
+        &Delta;E < 5 = visually identical shade
+      </p>
+    </div>
+  </div>
+
+  <div style="background: #fdf2f8; border-radius: 14px; padding: 20px; margin-top: 24px; text-align: center;">
+    <p style="font-size: 14px; color: #666;">INTEGRATION ARCHITECTURE</p>
+    <p style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-top: 8px;">
+      Brand's App &rarr; <span style="color: #ec4899;">Yiroom API</span> &rarr; Gemini AI + CIE Lab Engine &rarr; <span style="color: #ec4899;">Personalized JSON Response</span> &rarr; Brand's UI
+    </p>
+    <p style="font-size: 13px; color: #888; margin-top: 4px;">RESTful API &bull; White-label widgets &bull; Zero-downtime guarantee &bull; GDPR compliant</p>
+  </div>
+
+  <div class="slide-number">3 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 4: Why LVMH -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="logo-bar">YIROOM</div>
+  <h3>WHY LVMH NEEDS THIS</h3>
+  <h2>ModiFace is L'Oreal's. You Need Your Own.</h2>
+
+  <div class="vs-box">
+    <div class="big">ModiFace = L'Oreal (acquired 2018) &nbsp;&nbsp;|&nbsp;&nbsp; Perfect Corp = NYSE:PERF ($184M mcap)</div>
+    <p style="font-size: 16px; color: #666; margin-top: 8px;">
+      Both are competitor-owned or independent public companies. <strong>LVMH has no proprietary AI beauty intelligence.</strong>
+    </p>
+  </div>
+
+  <table style="margin-top: 24px;">
+    <thead>
+      <tr>
+        <th>LVMH Maison</th>
+        <th>Yiroom Application</th>
+        <th>Business Impact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Sephora</strong></td>
+        <td>In-app personal color analysis &rarr; product matching across all brands</td>
+        <td>Reduce returns, increase AOV</td>
+      </tr>
+      <tr>
+        <td><strong>Dior Beauty</strong></td>
+        <td>AI shade matching &rarr; "Find your Dior Addict shade"</td>
+        <td>Digital clienteling at scale</td>
+      </tr>
+      <tr>
+        <td><strong>Fenty Beauty</strong></td>
+        <td>40+ foundation shades &rarr; AI skin analysis finds perfect match</td>
+        <td>Solve #1 customer pain point</td>
+      </tr>
+      <tr>
+        <td><strong>Guerlain</strong></td>
+        <td>Seasonal skin tracking &rarr; personalized skincare routine</td>
+        <td>Subscription / replenishment</td>
+      </tr>
+      <tr>
+        <td><strong>Benefit</strong></td>
+        <td>Brow + lip color matching via personal color palette</td>
+        <td>Cross-category upsell</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="slide-number">4 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 5: Tech Proof -->
+<!-- ============================================ -->
+<div class="slide pink-slide">
+  <div class="logo-bar" style="color: #fff;">YIROOM</div>
+  <h3 style="color: rgba(255,255,255,0.8);">TECHNICAL PROOF</h3>
+  <h2>Enterprise-Grade AI, Built in 90 Days</h2>
+
+  <div class="metric-grid">
+    <div class="metric-box">
+      <div class="number">23,063</div>
+      <div class="label">Automated Tests Passing</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">8</div>
+      <div class="label">S-Grade AI Modules</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">253+</div>
+      <div class="label">Mobile Components</div>
+    </div>
+    <div class="metric-box">
+      <div class="number">0</div>
+      <div class="label">TypeScript Errors</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div style="background: rgba(255,255,255,0.1); border-radius: 14px; padding: 24px;">
+      <h3 style="color: #fff; font-size: 16px;">AI Engine</h3>
+      <ul style="margin-top: 8px;">
+        <li style="color: #fff;">Google Gemini 3 Flash (Vision LM)</li>
+        <li style="color: #fff;">CIE Lab + CIEDE2000 color science</li>
+        <li style="color: #fff;">Zod schema validation (type-safe output)</li>
+        <li style="color: #fff;">3s timeout &rarr; 2 retries &rarr; mock fallback</li>
+      </ul>
+    </div>
+    <div style="background: rgba(255,255,255,0.1); border-radius: 14px; padding: 24px;">
+      <h3 style="color: #fff; font-size: 16px;">Platform</h3>
+      <ul style="margin-top: 8px;">
+        <li style="color: #fff;">Next.js 16 + React 19 (Web)</li>
+        <li style="color: #fff;">Expo SDK 54 + React Native (Mobile)</li>
+        <li style="color: #fff;">Supabase (PostgreSQL + RLS)</li>
+        <li style="color: #fff;">GDPR: 7-day retention, PII masking</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="text-align: center; margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">
+    Live demo: yiroom.vercel.app
+  </p>
+
+  <div class="slide-number" style="color: rgba(255,255,255,0.5);">5 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 6: Business Model -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="logo-bar">YIROOM</div>
+  <h3>BUSINESS MODEL</h3>
+  <h2>B2B API + White-Label SDK</h2>
+
+  <div class="two-col">
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Revenue Stream</th>
+            <th>Pricing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>API Licensing</strong></td>
+            <td>$0.03 - 0.10 per analysis call</td>
+          </tr>
+          <tr>
+            <td><strong>SDK Integration</strong></td>
+            <td>$5K - 50K / month per brand</td>
+          </tr>
+          <tr>
+            <td><strong>White-Label Platform</strong></td>
+            <td>Custom pricing</td>
+          </tr>
+          <tr>
+            <td><strong>Trend Data Reports</strong></td>
+            <td>Aggregated color/skin insights</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="background: #f0fdf4; border-radius: 12px; padding: 16px; margin-top: 20px; border-left: 4px solid #22c55e;">
+        <p style="font-size: 14px; color: #22c55e; font-weight: 700;">UNIT ECONOMICS</p>
+        <p style="font-size: 16px; margin-top: 4px;">Cost per analysis: <strong>$0.005</strong></p>
+        <p style="font-size: 16px;">API price: <strong>$0.05</strong> avg</p>
+        <p style="font-size: 20px; font-weight: 800; color: #22c55e; margin-top: 4px;">~90% Gross Margin</p>
+      </div>
+    </div>
+    <div>
+      <div style="background: #0f0f0f; border-radius: 16px; padding: 30px; color: #fff;">
+        <p style="color: #ec4899; font-size: 14px; font-weight: 700;">REVENUE PROJECTION</p>
+        <div style="margin-top: 16px;">
+          <p style="font-size: 14px; color: #888;">Year 1 (Pilot)</p>
+          <p style="font-size: 32px; font-weight: 800; color: #fff;">$200K</p>
+        </div>
+        <div style="margin-top: 16px;">
+          <p style="font-size: 14px; color: #888;">Year 3 (Multi-brand)</p>
+          <p style="font-size: 32px; font-weight: 800; color: #ec4899;">$1M+</p>
+        </div>
+        <hr style="border-color: #333; margin: 20px 0;">
+        <p style="font-size: 14px; color: #888;">At 1M monthly API calls (single brand)</p>
+        <p style="font-size: 24px; font-weight: 800; color: #fff;">$50K MRR / $600K ARR</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">6 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 7: Competitive Landscape -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="logo-bar">YIROOM</div>
+  <h3>COMPETITIVE LANDSCAPE</h3>
+  <h2>The Only Independent AI Beauty Engine</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th style="text-align: center;">ModiFace</th>
+        <th style="text-align: center;">Perfect Corp</th>
+        <th style="text-align: center;">Meitu</th>
+        <th style="text-align: center; background: #ec4899; color: #fff;">Yiroom</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Ownership</strong></td>
+        <td style="text-align: center; color: #dc2626; font-weight: 700;">L'Oreal</td>
+        <td style="text-align: center;">NYSE: PERF</td>
+        <td style="text-align: center;">HKSE: 1357</td>
+        <td style="text-align: center; font-weight: 700; color: #ec4899;">Independent</td>
+      </tr>
+      <tr>
+        <td><strong>LVMH Compatible?</strong></td>
+        <td style="text-align: center; color: #dc2626; font-weight: 700;">NO (competitor)</td>
+        <td style="text-align: center;">Yes, but $$$</td>
+        <td style="text-align: center;">B2C only</td>
+        <td style="text-align: center; font-weight: 700; color: #22c55e;">YES</td>
+      </tr>
+      <tr>
+        <td><strong>Color Science</strong></td>
+        <td style="text-align: center;">Basic</td>
+        <td style="text-align: center;">AR overlay</td>
+        <td style="text-align: center;">Filter</td>
+        <td style="text-align: center; font-weight: 700; color: #ec4899;">CIE Lab + 12-tone</td>
+      </tr>
+      <tr>
+        <td><strong>Skin Diagnostics</strong></td>
+        <td style="text-align: center;">Yes</td>
+        <td style="text-align: center;">Basic</td>
+        <td style="text-align: center;">10-dim</td>
+        <td style="text-align: center; font-weight: 700; color: #ec4899;">7-zone deep + seasonal</td>
+      </tr>
+      <tr>
+        <td><strong>Cross-Module AI</strong></td>
+        <td style="text-align: center;">No</td>
+        <td style="text-align: center;">No</td>
+        <td style="text-align: center;">No</td>
+        <td style="text-align: center; font-weight: 700; color: #ec4899;">8 modules integrated</td>
+      </tr>
+      <tr>
+        <td><strong>K-Beauty Expertise</strong></td>
+        <td style="text-align: center;">No</td>
+        <td style="text-align: center;">Taiwan</td>
+        <td style="text-align: center;">China</td>
+        <td style="text-align: center; font-weight: 700; color: #ec4899;">Seoul-native</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="vs-box" style="margin-top: 20px;">
+    <div class="big">LVMH's competitor uses ModiFace. You shouldn't.</div>
+  </div>
+
+  <div class="slide-number">7 / 8</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 8: Ask + Team -->
+<!-- ============================================ -->
+<div class="slide dark-slide">
+  <div class="logo-bar" style="color: #ec4899;">YIROOM</div>
+  <h3 style="color: #ec4899;">THE ASK</h3>
+  <h2>Let's Build LVMH's Beauty AI Together</h2>
+
+  <div class="ask-grid">
+    <div class="ask-box">
+      <h3>1. Pilot with One Maison</h3>
+      <p>Sephora or Dior Beauty preferred. We'll deliver a working POC in 90 days.</p>
+    </div>
+    <div class="ask-box">
+      <h3>2. Maison des Startups</h3>
+      <p>10 months of mentoring at Station F to build the B2B go-to-market.</p>
+    </div>
+    <div class="ask-box">
+      <h3>3. Product Catalog Access</h3>
+      <p>Brand product data for CIE Lab color matching integration.</p>
+    </div>
+    <div class="ask-box">
+      <h3>4. VivaTech Visibility</h3>
+      <p>Demo our AI live at the LVMH booth. Show the technology to the world.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; display: flex; align-items: center; gap: 30px;">
+    <div style="flex: 1;">
+      <p style="color: #ec4899; font-size: 14px; font-weight: 700;">FOUNDER</p>
+      <p style="color: #fff; font-size: 22px; font-weight: 700; margin-top: 4px;">Byungmin Kim</p>
+      <p style="color: #888; font-size: 14px; margin-top: 4px;">Solo Technical Founder &bull; Full-stack + AI Engineer</p>
+      <p style="color: #888; font-size: 14px;">Seoul, South Korea</p>
+    </div>
+    <div style="flex: 2; background: rgba(236,72,153,0.1); border-radius: 14px; padding: 20px;">
+      <p style="color: #fff; font-size: 15px; line-height: 1.6;">
+        Built the entire platform solo in 90 days: 8 AI modules, 23,063 tests, bilingual web + mobile app.
+        <strong style="color: #ec4899;">$0 raised, enterprise-grade quality.</strong>
+        GFSA Korea 2026 applicant. Ready to scale with LVMH's guidance.
+      </p>
+    </div>
+  </div>
+
+  <p style="text-align: center; margin-top: 24px; color: #666; font-size: 14px;">
+    yiroom.vercel.app &nbsp;&bull;&nbsp; github.com/rlaqudals12-cell/yiroom &nbsp;&bull;&nbsp; Seoul, South Korea
+  </p>
+
+  <div class="slide-number" style="color: #666;">8 / 8</div>
+</div>
+
+</body>
+</html>
