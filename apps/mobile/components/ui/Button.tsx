@@ -9,8 +9,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from '
 
 import { useTheme } from '../../lib/theme';
 
-type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'destructive' | 'outline';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'link';
+type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 interface ButtonProps {
   children: string;
@@ -40,11 +40,12 @@ export function Button({
   const textColor = getTextColor(variant, colors, brand);
   const borderColor = variant === 'outline' ? colors.border : 'transparent';
   const sizeStyle = getSizeStyle(size);
+  const isLink = variant === 'link';
 
   // default/destructive variant에 미세한 그림자 (다크모드 제외 — 웹 dark:shadow-none 대응)
   const needsShadow = variant === 'default' || variant === 'destructive';
-  // ghost/outline: pressed 시 배경색 변화로 자연스러운 피드백 (opacity 대신)
-  const isGhostLike = variant === 'ghost' || variant === 'outline';
+  // ghost/outline/link: pressed 시 배경색 변화로 자연스러운 피드백 (opacity 대신)
+  const isGhostLike = variant === 'ghost' || variant === 'outline' || isLink;
 
   return (
     <Pressable
@@ -78,6 +79,7 @@ export function Button({
           opacity: isDisabled ? 0.5 : pressed && !isGhostLike ? 0.9 : 1,
         },
         variant === 'outline' && styles.outlined,
+        size === 'icon' && styles.iconSize,
         externalStyle,
       ]}
       accessibilityRole="button"
@@ -94,6 +96,7 @@ export function Button({
               fontSize: sizeStyle.fontSize,
               fontWeight: typography.weight.semibold,
             },
+            isLink && { textDecorationLine: 'underline' as const },
           ]}
         >
           {children}
@@ -117,6 +120,7 @@ function getBackgroundColor(
       return colors.destructive;
     case 'ghost':
     case 'outline':
+    case 'link':
       return 'transparent';
   }
 }
@@ -134,9 +138,10 @@ function getTextColor(
     case 'destructive':
       return colors.destructiveForeground;
     case 'ghost':
-      return colors.foreground;
     case 'outline':
       return colors.foreground;
+    case 'link':
+      return brand.primary;
   }
 }
 
@@ -152,6 +157,8 @@ function getSizeStyle(size: ButtonSize): {
       return { px: 24, py: 12, fontSize: 15 };
     case 'lg':
       return { px: 32, py: 16, fontSize: 17 };
+    case 'icon':
+      return { px: 0, py: 0, fontSize: 15 };
   }
 }
 
@@ -164,6 +171,11 @@ const styles = StyleSheet.create({
   },
   outlined: {
     borderWidth: 1,
+  },
+  iconSize: {
+    width: 36,
+    height: 36,
+    minHeight: 36,
   },
   text: {
     textAlign: 'center',
