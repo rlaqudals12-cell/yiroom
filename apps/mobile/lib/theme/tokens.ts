@@ -111,6 +111,7 @@ export const radii = {
   smx: 12,
   xlg: 14,
   xl: 16,
+  xxl: 24,
   circle: 20,
   full: 9999,
 } as const;

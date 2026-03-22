@@ -24,11 +24,11 @@ export function Card({ children, style, testID }: CardProps): React.JSX.Element 
       testID={testID}
       style={[
         styles.card,
-        !isDark && shadows.card,
+        shadows.card,
         {
           backgroundColor: colors.card,
           borderColor: colors.border,
-          borderRadius: radii.xl,
+          borderRadius: radii.xxl,
         },
         style,
       ]}
