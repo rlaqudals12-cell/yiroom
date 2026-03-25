@@ -4,6 +4,7 @@
  */
 
 import { getPartnerDailyStats, getAffiliateStatsSummary, getTopClickedProducts } from './clicks';
+import { COMMISSION_RATES } from './commission';
 import type { AffiliatePartnerName } from '@/types/affiliate';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 
@@ -90,9 +91,15 @@ function generateMockPartnerRevenue(): PartnerRevenue[] {
     const conversionRate = 2 + Math.random() * 3;
     const conversions = Math.floor(clicks * (conversionRate / 100));
     const avgOrderValue = selectByKey(id, { coupang: 35000, iherb: 55000 }, 45000)!;
-    const commissionRate = selectByKey(id, { coupang: 0.03, iherb: 0.05 }, 0.04)!;
+    // 파트너별 대표 카테고리 커미션율 사용 (commission.ts 기준)
+    // 쿠팡: 스킨케어 중심 (7%), iHerb: 건강보충제 중심 (5%), 무신사: 패션 중심 (5%)
+    const commissionRatePercent = selectByKey(
+      id,
+      { coupang: COMMISSION_RATES.skincare, iherb: COMMISSION_RATES.supplement },
+      COMMISSION_RATES.fashion
+    )!;
     const salesKrw = conversions * avgOrderValue;
-    const commissionKrw = Math.floor(salesKrw * commissionRate);
+    const commissionKrw = Math.floor(salesKrw * (commissionRatePercent / 100));
 
     return {
       partnerId: id,
