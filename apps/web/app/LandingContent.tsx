@@ -237,26 +237,7 @@ export function LandingContent(): React.JSX.Element {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-neutral-950" data-testid="landing-page">
-      {/* 2-4: 스크롤 애니메이션 CSS */}
-      <style>{`
-        .landing-reveal {
-          opacity: 0;
-          transform: translateY(24px);
-          transition: opacity 0.7s ease-out, transform 0.7s ease-out;
-        }
-        .landing-visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .landing-reveal {
-            opacity: 1;
-            transform: none;
-            transition: none;
-          }
-        }
-      `}</style>
-
+      {/* 스크롤 애니메이션 CSS → globals.css로 분리 */}
       <div className="w-full px-4 md:px-10 lg:px-40 py-5">
         <div className="mx-auto max-w-[960px] w-full">
           {/* 언어 토글 */}
