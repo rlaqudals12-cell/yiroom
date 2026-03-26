@@ -22,6 +22,7 @@ import HomeRecentlyViewed from './HomeRecentlyViewed';
 import HomeActivityBar from './HomeActivityBar';
 import HomeStreakWidget from './HomeStreakWidget';
 import SortableWidgetList from './SortableWidgetList';
+import { EnvironmentAdviceCard } from '@/components/common/EnvironmentAdviceCard';
 
 interface HomeStateActiveProps {
   analyses: AnalysisSummary[];
@@ -45,6 +46,9 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
 
   return (
     <div className="space-y-5" data-testid="home-state-active">
+      {/* 환경 조언 — 날씨/UV/습도 기반 크로스 조언 */}
+      <EnvironmentAdviceCard />
+
       {/* 스트릭/뱃지 위젯 — 고정 위치 (정렬 대상 아님) */}
       <HomeStreakWidget />
 

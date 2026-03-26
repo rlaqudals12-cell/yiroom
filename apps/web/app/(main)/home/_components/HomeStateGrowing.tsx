@@ -19,6 +19,7 @@ import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
 import HomeRecentlyViewed from './HomeRecentlyViewed';
 import HomeStreakWidget from './HomeStreakWidget';
+import { EnvironmentAdviceCard } from '@/components/common/EnvironmentAdviceCard';
 import { exposeConnection } from '@/lib/connection-awareness';
 import type { ConnectionModule } from '@/lib/connection-awareness';
 
@@ -112,6 +113,9 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
           <AnalysisProgressBar completed={analysisCount} total={6} />
         </div>
       </div>
+
+      {/* 환경 조언 — 날씨/UV/습도 기반 */}
+      <EnvironmentAdviceCard />
 
       {/* 스트릭/뱃지 위젯 — 운동/영양 기록 시 표시 */}
       <HomeStreakWidget />
