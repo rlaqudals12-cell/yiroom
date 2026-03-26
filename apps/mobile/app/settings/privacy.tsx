@@ -3,11 +3,15 @@
  * 데이터 수집, 프로필 공개, 데이터 관리 설정
  */
 
+import { useAuth, useUser } from '@clerk/clerk-expo';
+import { Paths, File } from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
-import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { Stack, router } from 'expo-router';
+import * as Sharing from 'expo-sharing';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
 
+import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { ScreenContainer, GlassCard } from '../../components/ui';
@@ -26,43 +30,146 @@ const DEFAULT_SETTINGS: PrivacySettings = {
   shareResults: false,
 };
 
+// GDPR 유예기간 (일)
+const GRACE_PERIOD_DAYS = 30;
+
 export default function PrivacySettingsScreen(): React.JSX.Element {
   const { colors, brand } = useTheme();
+  const { signOut } = useAuth();
+  const supabase = useClerkSupabaseClient();
 
   const [settings, setSettings] = useState<PrivacySettings>(DEFAULT_SETTINGS);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleToggle = (key: keyof PrivacySettings, value: boolean): void => {
     Haptics.selectionAsync();
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleDownloadData = (): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      '데이터 다운로드',
-      '내 데이터를 다운로드할 준비가 되면 이메일로 알려드릴게요. 최대 24시간이 소요될 수 있어요.',
-      [{ text: '확인' }]
-    );
-  };
+  const { user } = useUser();
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleDeleteAccount = (): void => {
+  // 내 데이터 내보내기 (JSON 파일 공유)
+  const handleDownloadData = useCallback(async (): Promise<void> => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    if (!user?.id) {
+      Alert.alert('오류', '로그인이 필요합니다.');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const userId = user.id;
+
+      // 병렬로 모든 데이터 조회
+      const [userRes, pcRes, skinRes, bodyRes, workoutRes, mealRes, waterRes, badgesRes] =
+        await Promise.all([
+          supabase.from('users').select('*').eq('clerk_user_id', userId).single(),
+          supabase.from('personal_color_assessments').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+          supabase.from('skin_analyses').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+          supabase.from('body_analyses').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+          supabase.from('workout_logs').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
+          supabase.from('meal_records').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
+          supabase.from('water_records').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
+          supabase.from('user_badges').select('*').eq('clerk_user_id', userId),
+        ]);
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        user: userRes.data ? { email: userRes.data.email, name: userRes.data.name, createdAt: userRes.data.created_at } : null,
+        analyses: {
+          personalColor: pcRes.data ? { season: pcRes.data.season, subtype: pcRes.data.subtype, analyzedAt: pcRes.data.created_at } : null,
+          skin: skinRes.data ? { skinType: skinRes.data.skin_type, concerns: skinRes.data.concerns, analyzedAt: skinRes.data.created_at } : null,
+          body: bodyRes.data ? { bodyType: bodyRes.data.body_type, analyzedAt: bodyRes.data.created_at } : null,
+        },
+        records: {
+          workoutLogs: (workoutRes.data || []).length,
+          mealRecords: (mealRes.data || []).length,
+          waterRecords: (waterRes.data || []).length,
+        },
+        badges: (badgesRes.data || []).map((b) => ({ badgeId: b.badge_id, earnedAt: b.earned_at })),
+      };
+
+      // JSON 파일로 저장 후 공유
+      const file = new File(Paths.cache, `yiroom-export-${Date.now()}.json`);
+      file.create();
+      file.write(JSON.stringify(exportData, null, 2));
+      const filePath = file.uri;
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(filePath, {
+          mimeType: 'application/json',
+          dialogTitle: '이룸 데이터 내보내기',
+        });
+      } else {
+        Alert.alert('완료', '데이터 파일이 저장되었어요.');
+      }
+    } catch (error) {
+      console.error('[Privacy] Export data error:', error);
+      Alert.alert('오류', '데이터 내보내기에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [user?.id, supabase]);
+
+  // 계정 삭제 요청 (30일 유예기간 후 삭제)
+  const handleDeleteAccount = useCallback((): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
       '계정 삭제',
-      '정말 계정을 삭제하시겠어요? 모든 데이터가 영구적으로 삭제되며 복구할 수 없어요.',
+      `정말 계정을 삭제하시겠어요?\n\n• ${GRACE_PERIOD_DAYS}일 후 모든 데이터가 영구 삭제돼요\n• ${GRACE_PERIOD_DAYS}일 이내에 다시 로그인하면 삭제를 취소할 수 있어요\n• 삭제 후에는 복구할 수 없어요`,
       [
         { text: '취소', style: 'cancel' },
         {
-          text: '삭제',
+          text: '삭제 요청',
           style: 'destructive',
-          onPress: () => {
-            // 계정 삭제 로직 (추후 구현)
-            Alert.alert('안내', '계정 삭제 요청이 접수되었어요.');
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              // Supabase에 삭제 요청 기록
+              const now = new Date();
+              const scheduledAt = new Date(now);
+              scheduledAt.setDate(scheduledAt.getDate() + GRACE_PERIOD_DAYS);
+
+              const { error } = await supabase.rpc('request_account_deletion', {
+                grace_period_days: GRACE_PERIOD_DAYS,
+              });
+
+              if (error) {
+                // RPC가 없으면 직접 업데이트 시도
+                const { error: updateError } = await supabase
+                  .from('users')
+                  .update({
+                    deletion_requested_at: now.toISOString(),
+                    deletion_scheduled_at: scheduledAt.toISOString(),
+                  })
+                  .eq('clerk_user_id', (await supabase.auth.getUser()).data.user?.id ?? '');
+
+                if (updateError) {
+                  throw updateError;
+                }
+              }
+
+              // 로그아웃 처리
+              await signOut();
+
+              Alert.alert(
+                '삭제 요청 완료',
+                `계정 삭제가 예약되었어요.\n${scheduledAt.toLocaleDateString('ko-KR')}에 삭제될 예정이에요.\n그 전에 다시 로그인하면 취소할 수 있어요.`,
+                [{ text: '확인', onPress: () => router.replace('/(auth)/sign-in') }]
+              );
+            } catch (error) {
+              console.error('[Privacy] Delete account error:', error);
+              Alert.alert('오류', '계정 삭제 요청에 실패했어요. 다시 시도해주세요.');
+            } finally {
+              setIsDeleting(false);
+            }
           },
         },
       ]
     );
-  };
+  }, [supabase, signOut]);
 
   return (
     <>

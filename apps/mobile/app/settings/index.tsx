@@ -119,8 +119,25 @@ export default function SettingsScreen() {
         </GlassCard>
       </Animated.View>
 
+      {/* 내 정보 */}
+      <Animated.View entering={FadeInUp.delay(60).duration(TIMING.normal)} style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>내 정보</Text>
+        <SettingsItem
+          icon="✏️"
+          title="내 정보 수정"
+          subtitle="닉네임, 성별, 키, 몸무게"
+          onPress={() => handlePress('/settings/my-info')}
+        />
+        <SettingsItem
+          icon="🛡️"
+          title="개인정보 설정"
+          subtitle="데이터 수집, 공개 범위, 계정 삭제"
+          onPress={() => handlePress('/settings/privacy')}
+        />
+      </Animated.View>
+
       {/* 알림 및 목표 */}
-      <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)} style={styles.section}>
+      <Animated.View entering={FadeInUp.delay(120).duration(TIMING.normal)} style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
         <SettingsItem
           icon="🔔"
@@ -137,7 +154,7 @@ export default function SettingsScreen() {
       </Animated.View>
 
       {/* 위젯 */}
-      <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)} style={styles.section}>
+      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)} style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
         <SettingsItem
           icon="📱"
@@ -148,7 +165,7 @@ export default function SettingsScreen() {
       </Animated.View>
 
       {/* 앱 정보 — 네이티브 페이지로 이동 */}
-      <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)} style={styles.section}>
+      <Animated.View entering={FadeInUp.delay(280).duration(TIMING.normal)} style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>앱 정보</Text>
         <SettingsItem icon="📖" title="이용약관" onPress={() => handlePress('/terms')} />
         <SettingsItem
@@ -165,7 +182,7 @@ export default function SettingsScreen() {
       </Animated.View>
 
       {/* 계정 관리 */}
-      <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)} style={styles.section}>
+      <Animated.View entering={FadeInUp.delay(360).duration(TIMING.normal)} style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>계정</Text>
         <SettingsItem
           icon="👤"
@@ -207,7 +224,7 @@ export default function SettingsScreen() {
 
       {/* 버전 정보 */}
       <Animated.View
-        entering={FadeInUp.delay(400).duration(TIMING.normal)}
+        entering={FadeInUp.delay(440).duration(TIMING.normal)}
         style={styles.versionSection}
       >
         <Text style={[styles.versionLabel, { color: colors.foreground }]}>이룸</Text>

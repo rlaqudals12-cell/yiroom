@@ -3,9 +3,10 @@
  * 닉네임, 생년월일, 성별, 키, 몸무게, 피부 타입 편집
  */
 
+import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,10 +16,12 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { TIMING } from '@/lib/animations';
+import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { GlassCard, ScreenContainer } from '../../components/ui';
@@ -52,6 +55,8 @@ const SKIN_TYPE_OPTIONS: { key: SkinType; label: string }[] = [
 
 export default function MyInfoScreen(): React.JSX.Element {
   const { colors, brand } = useTheme();
+  const { user } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   const [info, setInfo] = useState<UserInfo>({
     nickname: '',
@@ -61,6 +66,45 @@ export default function MyInfoScreen(): React.JSX.Element {
     weightKg: '',
     skinType: null,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // DB에서 기존 정보 로드
+  useEffect(() => {
+    async function loadUserInfo(): Promise<void> {
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('nickname, birthdate, gender, height_cm, weight_kg, skin_type')
+          .eq('clerk_user_id', user.id)
+          .single();
+
+        if (data) {
+          setInfo({
+            nickname: data.nickname || user.firstName || '',
+            birthdate: data.birthdate || '',
+            gender: data.gender as Gender | null,
+            heightCm: data.height_cm ? String(data.height_cm) : '',
+            weightKg: data.weight_kg ? String(data.weight_kg) : '',
+            skinType: data.skin_type as SkinType | null,
+          });
+        } else {
+          // DB에 없으면 Clerk 이름으로 초기화
+          setInfo((prev) => ({ ...prev, nickname: user.firstName || '' }));
+        }
+      } catch {
+        // 컬럼 미존재 등 — 조용히 실패
+        setInfo((prev) => ({ ...prev, nickname: user.firstName || '' }));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadUserInfo();
+  }, [user?.id, supabase]);
 
   const handleChange = <K extends keyof UserInfo>(key: K, value: UserInfo[K]): void => {
     setInfo((prev) => ({ ...prev, [key]: value }));
@@ -76,18 +120,43 @@ export default function MyInfoScreen(): React.JSX.Element {
     handleChange('skinType', skinType);
   };
 
-  const handleSave = (): void => {
+  const handleSave = useCallback(async (): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // 기본 유효성 검사
     if (!info.nickname.trim()) {
       Alert.alert('알림', '닉네임을 입력해주세요.');
       return;
     }
 
-    // 저장 로직 (추후 Supabase 연동)
-    Alert.alert('저장 완료', '내 정보가 저장되었어요.');
-  };
+    if (!user?.id) return;
+
+    setIsSaving(true);
+    try {
+      const updateData: Record<string, unknown> = {
+        nickname: info.nickname.trim(),
+        gender: info.gender,
+        skin_type: info.skinType,
+      };
+
+      if (info.birthdate) updateData.birthdate = info.birthdate;
+      if (info.heightCm) updateData.height_cm = parseInt(info.heightCm, 10) || null;
+      if (info.weightKg) updateData.weight_kg = parseInt(info.weightKg, 10) || null;
+
+      const { error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('clerk_user_id', user.id);
+
+      if (error) throw error;
+
+      Alert.alert('저장 완료', '내 정보가 저장되었어요.');
+    } catch (error) {
+      console.error('[MyInfo] Save error:', error);
+      Alert.alert('오류', '저장에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [info, user?.id, supabase]);
 
   return (
     <>
@@ -318,12 +387,17 @@ export default function MyInfoScreen(): React.JSX.Element {
 
           {/* 저장 버튼 */}
           <Pressable
-            style={[styles.saveButton, { backgroundColor: brand.primary }]}
+            style={[styles.saveButton, { backgroundColor: brand.primary, opacity: isSaving ? 0.7 : 1 }]}
             onPress={handleSave}
+            disabled={isSaving}
             accessibilityRole="button"
             accessibilityLabel="정보 저장"
           >
-            <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>저장</Text>
+            {isSaving ? (
+              <ActivityIndicator size="small" color={brand.primaryForeground} />
+            ) : (
+              <Text style={[styles.saveButtonText, { color: brand.primaryForeground }]}>저장</Text>
+            )}
           </Pressable>
 
           {/* 안내 */}

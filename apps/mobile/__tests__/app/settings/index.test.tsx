@@ -112,6 +112,18 @@ describe('SettingsScreen', () => {
       expect(getAllByText(/앱 정보/i).length).toBeGreaterThanOrEqual(1);
     });
 
+    it('"내 정보 수정" 메뉴 항목을 표시한다', () => {
+      const { getByText } = renderWithTheme(<SettingsScreen />);
+      expect(getByText('내 정보 수정')).toBeTruthy();
+      expect(getByText('닉네임, 성별, 키, 몸무게')).toBeTruthy();
+    });
+
+    it('"개인정보 설정" 메뉴 항목을 표시한다', () => {
+      const { getByText } = renderWithTheme(<SettingsScreen />);
+      expect(getByText('개인정보 설정')).toBeTruthy();
+      expect(getByText('데이터 수집, 공개 범위, 계정 삭제')).toBeTruthy();
+    });
+
     it('알림 설정 항목을 표시한다', () => {
       const { getByText } = renderWithTheme(<SettingsScreen />);
       expect(getByText('알림 설정')).toBeTruthy();
@@ -135,6 +147,12 @@ describe('SettingsScreen', () => {
       expect(getByText('이용약관')).toBeTruthy();
       expect(getByText('개인정보 처리방침')).toBeTruthy();
       expect(getByText('피드백 보내기')).toBeTruthy();
+    });
+
+    it('계정 관리 항목을 표시한다', () => {
+      const { getByText } = renderWithTheme(<SettingsScreen />);
+      expect(getByText('계정 관리')).toBeTruthy();
+      expect(getByText('로그아웃, 데이터 관리')).toBeTruthy();
     });
 
     it('앱 이름과 버전 정보를 표시한다', () => {
@@ -183,6 +201,22 @@ describe('SettingsScreen', () => {
       expect(router.push).toHaveBeenCalledWith('/privacy-policy');
     });
 
+    it('내 정보 수정 클릭 시 /settings/my-info로 이동한다', () => {
+      const { getByText } = renderWithTheme(<SettingsScreen />);
+      fireEvent.press(getByText('내 정보 수정'));
+
+      expect(Haptics.selectionAsync).toHaveBeenCalled();
+      expect(router.push).toHaveBeenCalledWith('/settings/my-info');
+    });
+
+    it('개인정보 설정 클릭 시 /settings/privacy로 이동한다', () => {
+      const { getByText } = renderWithTheme(<SettingsScreen />);
+      fireEvent.press(getByText('개인정보 설정'));
+
+      expect(Haptics.selectionAsync).toHaveBeenCalled();
+      expect(router.push).toHaveBeenCalledWith('/settings/privacy');
+    });
+
     it('피드백 보내기 클릭 시 mailto 링크를 연다', () => {
       jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
 
@@ -222,9 +256,9 @@ describe('SettingsScreen', () => {
   describe('엣지 케이스', () => {
     it('각 설정 항목에 화살표(>)가 표시된다', () => {
       const { getAllByText } = renderWithTheme(<SettingsScreen />);
-      // 8개 설정 항목 모두에 화살표 존재 (알림, 목표, 위젯, 이용약관, 개인정보, FAQ, 피드백, 계정 관리)
+      // 10개 설정 항목 모두에 화살표 존재 (내 정보 수정, 개인정보 설정, 알림, 목표, 위젯, 이용약관, 개인정보 처리방침, FAQ, 피드백, 계정 관리)
       const arrows = getAllByText('\u203A'); // '>'
-      expect(arrows.length).toBe(8);
+      expect(arrows.length).toBe(10);
     });
   });
 });

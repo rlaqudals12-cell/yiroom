@@ -155,29 +155,53 @@ export default function ProfileScreen(): React.JSX.Element {
                 >
                   {analysisCount}/3 분석 완료
                 </Text>
-                {/* 로그아웃 — 약한 destructive 힌트 */}
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.actionButton,
-                    {
-                      backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
-                      opacity: pressed ? 0.85 : 1,
-                    },
-                  ]}
-                  onPress={handleSignOut}
-                  accessibilityRole="button"
-                  accessibilityLabel="로그아웃"
-                >
-                  <Text
-                    style={{
-                      color: colors.destructive,
-                      fontSize: typography.size.sm,
-                      fontWeight: typography.weight.semibold,
-                    }}
+                {/* 내 정보 수정 + 로그아웃 버튼 */}
+                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.actionButton,
+                      {
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                    onPress={() => router.push('/settings/my-info')}
+                    accessibilityRole="button"
+                    accessibilityLabel="내 정보 수정"
                   >
-                    로그아웃
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={{
+                        color: colors.foreground,
+                        fontSize: typography.size.sm,
+                        fontWeight: typography.weight.semibold,
+                      }}
+                    >
+                      내 정보 수정
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.actionButton,
+                      {
+                        backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                    onPress={handleSignOut}
+                    accessibilityRole="button"
+                    accessibilityLabel="로그아웃"
+                  >
+                    <Text
+                      style={{
+                        color: colors.destructive,
+                        fontSize: typography.size.sm,
+                        fontWeight: typography.weight.semibold,
+                      }}
+                    >
+                      로그아웃
+                    </Text>
+                  </Pressable>
+                </View>
               </>
             ) : (
               <>
@@ -394,6 +418,25 @@ export default function ProfileScreen(): React.JSX.Element {
             title="위젯 설정"
             subtitle="홈 화면 위젯"
             onPress={() => router.push('/settings/widgets')}
+          />
+          <View
+            style={{
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: colors.border,
+              marginHorizontal: spacing.md,
+            }}
+          />
+          <View
+            style={{
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: colors.border,
+              marginHorizontal: spacing.md,
+            }}
+          />
+          <MenuItem
+            title="개인정보 설정"
+            subtitle="데이터 관리, 계정 삭제"
+            onPress={() => router.push('/settings/privacy')}
           />
           <View
             style={{
