@@ -18,8 +18,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 핵심 가치
 
 - **앱 이름**: 이룸 (Yiroom)
-- **슬로건**: "온전한 나는?" / "Know yourself, wholly."
-- **핵심 철학**: 사용자의 변화를 돕는 통합 웰니스 AI 플랫폼
+- **슬로건**: "온전한 나를 찾는 여정" / "Know yourself, wholly."
+- **궁극의 목적지**: "나를 가장 잘 아는 존재, 그래서 세상과 나를 연결해주는 존재"
+- **3단계 진화**: 분석기(현재) → 조언자(다음) → 동반자(궁극)
+- **수익 원칙**: 사용자는 영원히 무료. 돈은 기업이 냄. 구독 최소화, 파이 우선.
+- **경쟁 포지셔닝**: 전문가 90% 수준을 무료로 즉시 24/7 제공. 진짜 경쟁자는 "아무것도 안 하는 것".
+
+> 상세 → [docs/PRODUCT-PHILOSOPHY.md](docs/PRODUCT-PHILOSOPHY.md)
 
 ## 3대 개발 원칙
 
