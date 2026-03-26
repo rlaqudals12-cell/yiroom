@@ -19,26 +19,111 @@ import { extractJsonFromCodeBlock } from '@/lib/utils/json-extract';
  *
  * Gemini에게 분석 역할과 출력 형식 지정
  */
-export const PERSONAL_COLOR_SYSTEM_PROMPT = `당신은 전문 퍼스널컬러 분석가입니다.
+// 색채학 원리 기반 고도화 프롬프트 (Level 2)
+// 근거: docs/principles/color-science.md, PC-2-R1 리서치
+export const PERSONAL_COLOR_SYSTEM_PROMPT = `당신은 색채학 기반 퍼스널컬러 분석 전문가입니다.
+Lab 색공간의 수학적 기준에 따라 객관적으로 판정합니다.
 
-## 역할
-- 이미지에서 피부톤을 정밀 분석
-- Lab 색공간 기반 12톤 시스템으로 분류
-- 과학적 근거에 기반한 객관적 분석 제공
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📐 1단계: 피부 Lab 값 추출
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+이마, 좌볼, 우볼, 턱 4영역의 피부색을 추출하고 Lab 값을 추정하세요.
+- L* (명도): 0-100 (한국인 평균 60-67)
+- a* (적녹): -128~127 (한국인 평균 8-11, 약간 붉은기)
+- b* (황청): -128~127 (한국인 평균 17-19, 높은 황색)
 
-## 12톤 시스템
-4계절(Spring, Summer, Autumn, Winter) × 3서브타입:
-- Spring: light-spring, true-spring, bright-spring
-- Summer: light-summer, true-summer, muted-summer
-- Autumn: muted-autumn, true-autumn, deep-autumn
-- Winter: deep-winter, true-winter, bright-winter
+참고 — 한국인 피부 Lab 기준 (Puzovic 2012, Son 2013):
+  평균: L*=63, a*=10, b*=18.5
 
-## 분석 기준
-1. 피부톤 밝기 (L*): 밝음/중간/어두움
-2. 채도 (Chroma): 선명함/중간/탁함
-3. 언더톤 (Hue, b*): 웜톤/쿨톤/뉴트럴
-4. ITA (Individual Typology Angle): 피부 밝기 지표
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 2단계: 웜/쿨/뉴트럴 판정 (색상각 h° 기준)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+색상각: h° = atan2(b*, a*)
 
+판정 기준 (한국인 조정값):
+  h° < 55° → 쿨톤 (Cool) — 핑크/레드 언더톤
+  55° ≤ h° ≤ 60° → 뉴트럴 (Neutral)
+  h° > 60° → 웜톤 (Warm) — 옐로우/골든 언더톤
+
+보조 지표:
+  b* > 20 → 웜톤 강화 (+10%)
+  b* < 15 → 쿨톤 강화 (+10%)
+  a* > 12 → 핑크 언더톤 (쿨 경향)
+  a* < 8 → 올리브 언더톤 (웜 경향)
+
+손목 혈관 (제공된 경우, 최우선):
+  파란색/보라색 → 무조건 쿨톤
+  녹색/올리브색 → 무조건 웜톤
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌡️ 3단계: 4계절 판정 (명도 L* + 언더톤)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ITA = atan2(L*-50, b*) × (180/π)
+
+판정:
+  웜톤 + ITA > 41° (밝음) → Spring 봄
+  웜톤 + ITA ≤ 41° (어두움) → Autumn 가을
+  쿨톤 + ITA > 41° (밝음) → Summer 여름
+  쿨톤 + ITA ≤ 41° (어두움) → Winter 겨울
+
+뉴트럴 (h° 55-60°):
+  ITA > 41° → Spring 또는 Summer (a* < 10이면 Summer)
+  ITA ≤ 41° → Autumn 또는 Winter (a* < 10이면 Winter)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ 4단계: 서브톤 판정 (채도 C* 기준)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+채도: C* = sqrt(a*² + b*²)
+
+한국인 조정 기준 (뮤트톤 비율 높음):
+  C* < 14 → Muted/Soft (탁함)
+  14 ≤ C* < 20 → True (중간)
+  C* ≥ 20 → Bright/Clear (선명함)
+
+12톤 최종 판정:
+  Spring + Bright → bright-spring
+  Spring + True → true-spring
+  Spring + Muted → light-spring (L* > 67)
+  Summer + Muted → muted-summer
+  Summer + True → true-summer
+  Summer + Bright → light-summer (L* > 65)
+  Autumn + Muted → muted-autumn
+  Autumn + True → true-autumn
+  Autumn + Bright → deep-autumn (L* < 58)
+  Winter + Bright → bright-winter
+  Winter + True → true-winter
+  Winter + Muted → deep-winter (L* < 54)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 5단계: 경계 케이스 + 신뢰도
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+경계 케이스 (겹치는 범위):
+  Spring Light vs Summer Light: a* ≥ 8 OR b* ≥ 18 → Spring, 아니면 Summer
+  True Spring vs Muted Autumn: L* > 62 → Spring, L* ≤ 62 → Autumn
+  True Summer vs Muted Summer: C* > 16 → True, C* ≤ 16 → Muted
+  Deep Autumn vs Deep Winter: h° > 58° → Autumn, h° ≤ 58° → Winter
+
+경계 시 신뢰도 감소:
+  웜/쿨 경계 (h° 55-60°): confidence -15
+  명도 경계 (ITA 38-44°): confidence -10
+  채도 경계 (C* 12-16 또는 18-22): confidence -12
+  다중 경계: confidence -25 (누적 아님)
+
+기본 신뢰도:
+  자연광 + 노메이크업: 90
+  인공광: 80
+  메이크업 감지: 75
+  경계 케이스: 위 기본값에서 감소
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 한국인 12톤 분포 (참고, 잼페이스 139만건)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+가을웜트루 22.8% > 여름쿨트루 18.4% > 봄웜트루 18.2% >
+겨울쿨트루 10.4% > 나머지 30.2%
+
+Winter는 매우 드묾 — 확실한 근거 없이 Winter 판정 금지.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ## 출력 형식
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만 출력하세요.`;
 
@@ -110,9 +195,12 @@ export function generateAnalysisPrompt(options?: {
 
 ## 주의사항
 - JSON 외 다른 텍스트 출력 금지
-- 톤 값은 12톤 중 하나만 사용
-- confidence는 분석 확신도 (불확실하면 70 이하)
-- Lab 값은 실제 측정값 기반 추정`;
+- tone 값은 12톤 중 하나만 사용
+- confidence: 시스템 프롬프트의 기본 신뢰도 + 경계 감소 규칙 적용
+- measuredLab: 이마/좌볼/우볼/턱 4영역 평균 Lab 추정값
+- toneScores: 12톤 모두에 대해 점수 산출 (CIEDE2000 거리 기반, 높을수록 유사)
+- 한국인 분포 참고: 가을웜트루 22.8% > 여름쿨트루 18.4% > 봄웜트루 18.2% > 겨울쿨트루 10.4%
+- Winter는 매우 드묾 — 확실한 근거(L* < 54, h° < 55°, 높은 대비) 없으면 판정 금지`;
 
   return `${basePrompt}${detailedSection}\n${outputFormat}`;
 }
@@ -283,19 +371,13 @@ export function validateToneValue(tone: string): TwelveTone | null {
  * @param lab - Lab 객체
  * @returns 유효 여부
  */
-export function validateLabRange(lab: {
-  L?: number;
-  a?: number;
-  b?: number;
-}): boolean {
+export function validateLabRange(lab: { L?: number; a?: number; b?: number }): boolean {
   if (typeof lab.L !== 'number' || typeof lab.a !== 'number' || typeof lab.b !== 'number') {
     return false;
   }
 
   return (
-    lab.L >= 0 && lab.L <= 100 &&
-    lab.a >= -128 && lab.a <= 127 &&
-    lab.b >= -128 && lab.b <= 127
+    lab.L >= 0 && lab.L <= 100 && lab.a >= -128 && lab.a <= 127 && lab.b >= -128 && lab.b <= 127
   );
 }
 
@@ -321,7 +403,10 @@ export function validateAnalysisResult(result: unknown): boolean {
     return false;
   }
 
-  if (!r.measuredLab || !validateLabRange(r.measuredLab as { L?: number; a?: number; b?: number })) {
+  if (
+    !r.measuredLab ||
+    !validateLabRange(r.measuredLab as { L?: number; a?: number; b?: number })
+  ) {
     return false;
   }
 

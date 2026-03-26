@@ -199,6 +199,147 @@ export function calculateCrossValidationModifiers(
 }
 
 // ============================================================================
+// PC-1 전용: AI 톤 판정 vs Lab 분류기 교차 검증
+// ============================================================================
+
+/** PC-1 AI 결과의 최소 인터페이스 (톤 판정 교차 검증용) */
+export interface PersonalColorAIResult extends AIAnalysisBase {
+  tone?: string;
+  season?: string;
+  seasonType?: string;
+  undertone?: string;
+  measuredLab?: { L: number; a: number; b: number };
+  analysisEvidence?: {
+    veinColor?: string;
+    skinUndertone?: string;
+    skinHairContrast?: string;
+  };
+}
+
+/**
+ * AI 톤 판정 vs Lab 분류기 교차 검증
+ *
+ * AI가 판정한 시즌/톤과 Lab 수치 기반 분류기의 결과를 비교하여
+ * 일치 시 신뢰도 보너스, 불일치 시 경고 + 감소
+ *
+ * 근거: docs/principles/color-science.md §5.5.4 경계 케이스 검증
+ */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- 5가지 교차 검증 규칙이 복잡도를 높이지만 분리 시 가독성 저하
+export function calculateToneValidationModifiers(
+  aiResult: PersonalColorAIResult
+): ConfidenceModifier[] {
+  const modifiers: ConfidenceModifier[] = [];
+  const lab = aiResult.measuredLab;
+
+  if (!lab || typeof lab.L !== 'number') return modifiers;
+
+  const aiSeason = aiResult.season ?? aiResult.seasonType;
+  const aiUndertone = aiResult.undertone;
+
+  // Lab에서 색상각 계산 (h° = atan2(b*, a*) × 180/π)
+  const hue = Math.atan2(lab.b, lab.a) * (180 / Math.PI);
+  const hueNormalized = hue < 0 ? hue + 360 : hue;
+
+  // Lab에서 채도 계산 (C* = sqrt(a² + b²))
+  const chroma = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+
+  // 1. 언더톤 검증: h° vs AI 판정
+  // 한국인 기준: h° < 55° = 쿨, > 60° = 웜
+  if (aiUndertone === 'warm' && hueNormalized < 55) {
+    modifiers.push({
+      reason: 'Lab 색상각이 쿨 영역(h° < 55°)인데 AI가 웜톤 판정',
+      adjustment: -15,
+      source: 'cross-validation',
+    });
+  } else if (aiUndertone === 'cool' && hueNormalized > 60) {
+    modifiers.push({
+      reason: 'Lab 색상각이 웜 영역(h° > 60°)인데 AI가 쿨톤 판정',
+      adjustment: -15,
+      source: 'cross-validation',
+    });
+  } else if (aiUndertone && hueNormalized >= 55 && hueNormalized <= 60) {
+    // 뉴트럴 영역 — 경계 케이스
+    modifiers.push({
+      reason: 'Lab 색상각이 뉴트럴 영역(h° 55-60°) — 경계 케이스',
+      adjustment: -8,
+      source: 'cross-validation',
+    });
+  }
+
+  // 2. 계절 검증: L* vs AI 판정
+  // 웜톤: L* > 60 = Spring, ≤ 60 = Autumn
+  // 쿨톤: L* > 58 = Summer, ≤ 58 = Winter
+  if (aiSeason === 'spring' && lab.L <= 55) {
+    modifiers.push({
+      reason: 'L*이 낮은데(≤55) Spring 판정 — Autumn일 가능성',
+      adjustment: -10,
+      source: 'cross-validation',
+    });
+  } else if (aiSeason === 'winter' && lab.L > 65) {
+    modifiers.push({
+      reason: 'L*이 높은데(>65) Winter 판정 — Summer일 가능성',
+      adjustment: -10,
+      source: 'cross-validation',
+    });
+  }
+
+  // 3. 서브톤 검증: C* vs AI 판정
+  // C* < 14 = Muted, 14-20 = True, ≥ 20 = Bright (한국인 기준)
+  const aiTone = aiResult.tone ?? '';
+  if (aiTone.includes('bright') && chroma < 14) {
+    modifiers.push({
+      reason: '채도가 낮은데(C* < 14) Bright 판정 — Muted일 가능성',
+      adjustment: -10,
+      source: 'cross-validation',
+    });
+  } else if (aiTone.includes('muted') && chroma > 22) {
+    modifiers.push({
+      reason: '채도가 높은데(C* > 22) Muted 판정 — Bright일 가능성',
+      adjustment: -10,
+      source: 'cross-validation',
+    });
+  }
+
+  // 4. 혈관색 vs 언더톤 교차 검증
+  const veinColor = aiResult.analysisEvidence?.veinColor;
+  if (veinColor) {
+    const isCoolVein = ['blue', 'purple', 'blue_purple'].includes(veinColor);
+    const isWarmVein = ['green', 'olive', 'green_olive'].includes(veinColor);
+
+    if (isCoolVein && aiUndertone === 'warm') {
+      modifiers.push({
+        reason: '혈관색이 파란색/보라색인데 웜톤 판정 — 쿨톤일 가능성 높음',
+        adjustment: -20,
+        source: 'cross-validation',
+      });
+    } else if (isWarmVein && aiUndertone === 'cool') {
+      modifiers.push({
+        reason: '혈관색이 녹색인데 쿨톤 판정 — 웜톤일 가능성 높음',
+        adjustment: -20,
+        source: 'cross-validation',
+      });
+    } else if ((isCoolVein && aiUndertone === 'cool') || (isWarmVein && aiUndertone === 'warm')) {
+      modifiers.push({
+        reason: '혈관색과 언더톤 판정 일치 — 신뢰도 강화',
+        adjustment: 5,
+        source: 'cross-validation',
+      });
+    }
+  }
+
+  // 5. AI-Lab 판정 완전 일치 보너스
+  if (modifiers.length === 0 || modifiers.every((m) => m.adjustment >= 0)) {
+    modifiers.push({
+      reason: 'AI 판정과 Lab 수치 기반 검증 일치',
+      adjustment: 5,
+      source: 'cross-validation',
+    });
+  }
+
+  return modifiers;
+}
+
+// ============================================================================
 // Trust Score 계산
 // ============================================================================
 
