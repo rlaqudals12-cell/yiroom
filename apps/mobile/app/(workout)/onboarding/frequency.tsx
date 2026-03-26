@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import { Dumbbell, Flame } from 'lucide-react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -21,12 +23,18 @@ import { useTheme, typography, radii, spacing, coloredShadow } from '@/lib/theme
 
 const WORKOUT_ACCENT = '#10B981';
 
-const FREQUENCY_OPTIONS = [
+type FrequencyOption = {
+  value: number;
+  label: string;
+  description: string;
+} & ({ emoji: string; icon?: never } | { icon: LucideIcon; emoji?: never });
+
+const FREQUENCY_OPTIONS: FrequencyOption[] = [
   { value: 2, label: '주 2회', description: '가볍게 시작해요', emoji: '🌱' },
   { value: 3, label: '주 3회', description: '균형 잡힌 운동', emoji: '🌿' },
   { value: 4, label: '주 4회', description: '적극적인 운동', emoji: '🌳' },
-  { value: 5, label: '주 5회', description: '열정적인 운동', emoji: '💪' },
-  { value: 6, label: '주 6회', description: '고강도 트레이닝', emoji: '🔥' },
+  { value: 5, label: '주 5회', description: '열정적인 운동', icon: Dumbbell },
+  { value: 6, label: '주 6회', description: '고강도 트레이닝', icon: Flame },
 ];
 
 const TIME_OPTIONS = [
@@ -129,7 +137,16 @@ export default function WorkoutFrequencyScreen(): React.JSX.Element {
                   isSelected && !isDark ? coloredShadow(WORKOUT_ACCENT, 'sm') : {},
                 ]}
               >
-                <Text style={styles.frequencyEmoji}>{option.emoji}</Text>
+                {option.icon ? (
+                  <View style={styles.frequencyIconWrap}>
+                    <option.icon
+                      size={24}
+                      color={isSelected ? WORKOUT_ACCENT : colors.mutedForeground}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.frequencyEmoji}>{option.emoji}</Text>
+                )}
                 <View style={styles.frequencyContent}>
                   <Text
                     style={[
@@ -279,6 +296,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   frequencyEmoji: { fontSize: 28, marginRight: spacing.smx },
+  frequencyIconWrap: { width: 28, alignItems: 'center' as const, marginRight: spacing.smx },
   frequencyContent: { flex: 1 },
   frequencyLabel: {
     fontSize: typography.size.base,

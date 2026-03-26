@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
@@ -34,7 +35,7 @@ export default function SkinCameraScreen() {
           카메라 권한이 필요해요
         </Text>
         <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>
-          피부 분석을 위해 얼굴 사진이 필요합니다.
+          피부 분석을 위해 얼굴 사진이 필요해요.
         </Text>
         <Pressable
           style={[styles.permissionButton, { backgroundColor: brand.primary }]}
@@ -66,7 +67,7 @@ export default function SkinCameraScreen() {
         navigateToResult(photo.uri, photo.base64);
       }
     } catch {
-      Alert.alert('오류', '사진 촬영에 실패했습니다.');
+      Alert.alert('오류', '사진 촬영에 실패했어요.');
     } finally {
       setIsCapturing(false);
     }
@@ -104,7 +105,7 @@ export default function SkinCameraScreen() {
   }
 
   return (
-    <View testID="analysis-skin-camera-screen" style={styles.container}>
+    <SafeAreaView testID="analysis-skin-camera-screen" style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing} mirror={facing === 'front'}>
         {/* 가이드 오버레이 */}
         <Animated.View entering={FadeIn.duration(400)} style={styles.overlay}>
@@ -140,8 +141,15 @@ export default function SkinCameraScreen() {
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>전환</Text>
           </Pressable>
         </View>
+
+        {/* 개인정보 안내 */}
+        <View style={styles.privacyNotice}>
+          <Text style={styles.privacyText}>
+            촬영한 사진은 분석 후 기기에서만 처리되며, 서버에 저장되지 않아요
+          </Text>
+        </View>
       </CameraView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -245,5 +253,16 @@ const styles = StyleSheet.create({
   },
   galleryButtonText: {
     fontSize: typography.size.base,
+  },
+  privacyNotice: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  privacyText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: typography.size.xs,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

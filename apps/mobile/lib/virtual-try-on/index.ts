@@ -26,6 +26,9 @@ export {
   calculateMatchScore,
   colorSimilarityScore,
   extractProductColor,
+  seasonBonusScore,
+  popularityScore,
+  matchProductsByColor,
 } from './product-matcher';
 export {
   getLipPresetsForSeason,

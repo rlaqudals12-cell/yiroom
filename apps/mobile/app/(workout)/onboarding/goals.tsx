@@ -4,7 +4,8 @@
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { Flame, Dumbbell, PersonStanding, Wind, HeartPulse, Smile } from 'lucide-react-native';
+import React, { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -21,13 +22,15 @@ import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme
 
 const WORKOUT_ACCENT = '#10B981';
 
-const GOALS = [
-  { id: 'weight_loss', label: '체중 감량', emoji: '🔥', description: '체지방 감소, 다이어트' },
-  { id: 'muscle_gain', label: '근육 증가', emoji: '💪', description: '근력 강화, 벌크업' },
-  { id: 'endurance', label: '체력 향상', emoji: '🏃', description: '심폐 지구력, 스태미나' },
-  { id: 'flexibility', label: '유연성 향상', emoji: '🧘', description: '스트레칭, 요가' },
-  { id: 'maintenance', label: '건강 유지', emoji: '❤️', description: '현재 상태 유지' },
-  { id: 'stress', label: '스트레스 해소', emoji: '😌', description: '정신 건강, 릴렉스' },
+type GoalIconComponent = React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+
+const GOALS: { id: string; label: string; Icon: GoalIconComponent; description: string }[] = [
+  { id: 'weight_loss', label: '체중 감량', Icon: Flame, description: '체지방 감소, 다이어트' },
+  { id: 'muscle_gain', label: '근육 증가', Icon: Dumbbell, description: '근력 강화, 벌크업' },
+  { id: 'endurance', label: '체력 향상', Icon: PersonStanding, description: '심폐 지구력, 스태미나' },
+  { id: 'flexibility', label: '유연성 향상', Icon: Wind, description: '스트레칭, 요가' },
+  { id: 'maintenance', label: '건강 유지', Icon: HeartPulse, description: '현재 상태 유지' },
+  { id: 'stress', label: '스트레스 해소', Icon: Smile, description: '정신 건강, 릴렉스' },
 ];
 
 export default function WorkoutGoalsScreen(): React.JSX.Element {
@@ -61,7 +64,9 @@ export default function WorkoutGoalsScreen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GlassCard shadowSize="lg" glowColor={WORKOUT_ACCENT} style={styles.hero}>
           <View style={styles.heroContent}>
-            <Text style={styles.heroEmoji}>🏋️</Text>
+            <View style={styles.heroIconWrap}>
+              <Dumbbell size={36} color={WORKOUT_ACCENT} />
+            </View>
             <GradientText
               variant="extended"
               fontSize={22}
@@ -120,7 +125,13 @@ export default function WorkoutGoalsScreen(): React.JSX.Element {
                   isDisabled ? styles.goalCardDisabled : {},
                 ]}
               >
-                <Text style={styles.goalEmoji}>{goal.emoji}</Text>
+                <View style={styles.goalIconWrap}>
+                  <goal.Icon
+                    size={24}
+                    color={isSelected ? WORKOUT_ACCENT : colors.mutedForeground}
+                    strokeWidth={2}
+                  />
+                </View>
                 <View style={styles.goalContent}>
                   <Text
                     style={[
@@ -203,7 +214,7 @@ export default function WorkoutGoalsScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   hero: { marginBottom: spacing.md },
   heroContent: { alignItems: 'center', padding: spacing.xl },
-  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroIconWrap: { marginBottom: spacing.sm },
   heroTitle: { marginBottom: spacing.xs },
   heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   sectionTitle: {
@@ -221,7 +232,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   goalCardDisabled: { opacity: 0.5 },
-  goalEmoji: { fontSize: 28, marginRight: spacing.smx },
+  goalIconWrap: { width: 28, alignItems: 'center', marginRight: spacing.smx },
   goalContent: { flex: 1 },
   goalLabel: {
     fontSize: typography.size.base,

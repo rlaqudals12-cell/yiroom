@@ -65,7 +65,7 @@ const CAUSAL_MAP: Record<string, NextStepMapping> = {
   },
   makeup: {
     nextType: 'oral-health',
-    message: () => '미소까지 완벽하게! 구강건강도 체크해봐요',
+    message: () => '미소까지 건강하게! 구강건강도 체크해봐요',
     href: '/analysis/oral-health',
     icon: Smile,
     sourceModule: 'makeup',

@@ -105,7 +105,7 @@ export default function OnboardingStep3() {
 
         {/* 파스텔 히어로 */}
         <OnboardingHero
-          emoji="💪"
+          icon={Dumbbell}
           title="건강 목표도 설정해볼까요?"
           subtitle={'선택 사항이에요 — 건너뛰어도 괜찮아요'}
           glowColor={STEP3_ACCENT}
@@ -450,6 +450,7 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
     marginBottom: spacing.smx,
     alignSelf: 'flex-start',
+    minHeight: 44,
   },
   sectionTitleRow: {
     flexDirection: 'row',

@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import { Dumbbell, Flame, HeartPulse, User, UserCircle, Zap } from 'lucide-react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { DisclaimerCard } from '@/components/onboarding';
@@ -22,16 +24,16 @@ import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme
 
 const NUTRITION_ACCENT = '#F97316';
 
-const GOALS = [
-  { id: 'weight_loss', label: '체중 감량', emoji: '🔥' },
-  { id: 'muscle_gain', label: '근육 증가', emoji: '💪' },
-  { id: 'health', label: '건강 유지', emoji: '❤️' },
-  { id: 'energy', label: '활력 증진', emoji: '⚡' },
+const GOALS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: 'weight_loss', label: '체중 감량', icon: Flame },
+  { id: 'muscle_gain', label: '근육 증가', icon: Dumbbell },
+  { id: 'health', label: '건강 유지', icon: HeartPulse },
+  { id: 'energy', label: '활력 증진', icon: Zap },
 ];
 
-const GENDERS = [
-  { id: 'male', label: '남성', emoji: '👨' },
-  { id: 'female', label: '여성', emoji: '👩' },
+const GENDERS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: 'male', label: '남성', icon: User },
+  { id: 'female', label: '여성', icon: UserCircle },
 ];
 
 const ACTIVITY_LEVELS = [
@@ -166,7 +168,10 @@ export default function NutritionStep1Screen(): React.JSX.Element {
                 goal === g.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
             >
-              <Text style={styles.chipEmoji}>{g.emoji}</Text>
+              <g.icon
+                size={18}
+                color={goal === g.id ? NUTRITION_ACCENT : colors.mutedForeground}
+              />
               <Text
                 style={[
                   styles.chipLabel,
@@ -205,7 +210,10 @@ export default function NutritionStep1Screen(): React.JSX.Element {
                 gender === g.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
             >
-              <Text style={{ fontSize: 24 }}>{g.emoji}</Text>
+              <g.icon
+                size={24}
+                color={gender === g.id ? NUTRITION_ACCENT : colors.mutedForeground}
+              />
               <Text
                 style={[
                   styles.chipLabel,
@@ -454,7 +462,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     gap: spacing.xs,
   },
-  chipEmoji: { fontSize: 18 },
   chipLabel: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
   genderChip: {
     flex: 1,

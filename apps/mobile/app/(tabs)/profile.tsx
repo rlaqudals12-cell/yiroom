@@ -20,6 +20,11 @@ import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme, spacing, radii, borderGlow } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
+// 영어 raw 값 → 한국어 라벨 매핑
+const SEASON_LABELS: Record<string, string> = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
+const SKIN_TYPE_LABELS: Record<string, string> = { oily: '지성', dry: '건성', combination: '복합성', normal: '중성', sensitive: '민감성' };
+const BODY_TYPE_LABELS: Record<string, string> = { hourglass: '모래시계형', rectangle: '직사각형', pear: '배형', apple: '사과형', inverted_triangle: '역삼각형' };
+
 export default function ProfileScreen(): React.JSX.Element {
   const { colors, brand, spacing, typography, isDark } = useTheme();
   const { user, isSignedIn } = useUser();
@@ -233,7 +238,7 @@ export default function ProfileScreen(): React.JSX.Element {
                     marginBottom: spacing.md,
                   }}
                 >
-                  로그인이 필요합니다
+                  로그인이 필요해요
                 </Text>
                 {/* 로그인 CTA — 그라디언트 버튼 (Phase 21 패턴) */}
                 <Pressable
@@ -313,7 +318,7 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="퍼스널 컬러"
             completed={!!personalColor}
-            subtitle={personalColor?.season ? `${personalColor.season}` : undefined}
+            subtitle={personalColor?.season ? (SEASON_LABELS[personalColor.season] || personalColor.season) : undefined}
             onPress={() => router.push('/(analysis)/personal-color')}
           />
           <View
@@ -326,7 +331,7 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="피부 분석"
             completed={!!skinAnalysis}
-            subtitle={skinAnalysis?.skinType || undefined}
+            subtitle={skinAnalysis?.skinType ? (SKIN_TYPE_LABELS[skinAnalysis.skinType] || skinAnalysis.skinType) : undefined}
             onPress={() => router.push('/(analysis)/skin')}
           />
           <View
@@ -339,7 +344,7 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="체형 분석"
             completed={!!bodyAnalysis}
-            subtitle={bodyAnalysis?.bodyType || undefined}
+            subtitle={bodyAnalysis?.bodyType ? (BODY_TYPE_LABELS[bodyAnalysis.bodyType] || bodyAnalysis.bodyType) : undefined}
             onPress={() => router.push('/(analysis)/body')}
           />
         </GlassCard>
@@ -482,7 +487,7 @@ function MenuItem({
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}${completed ? ', 완료됨' : ''}`}
-      accessibilityHint={`${title} 화면으로 이동합니다`}
+      accessibilityHint={`${title} 화면으로 이동해요`}
     >
       <View style={styles.menuItemContent}>
         <View style={styles.menuItemTitleRow}>

@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import { BarChart3 } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -125,7 +126,9 @@ export default function NutritionStep3Screen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GlassCard shadowSize="lg" glowColor={NUTRITION_ACCENT} style={styles.hero}>
           <View style={styles.heroContent}>
-            <Text style={styles.heroEmoji}>📊</Text>
+            <View style={styles.heroIconWrap}>
+              <BarChart3 size={36} color={NUTRITION_ACCENT} />
+            </View>
             <GradientText
               variant="extended"
               fontSize={22}
@@ -315,7 +318,7 @@ export default function NutritionStep3Screen(): React.JSX.Element {
 const styles = StyleSheet.create({
   hero: { marginBottom: spacing.md },
   heroContent: { alignItems: 'center', padding: spacing.xl },
-  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroIconWrap: { marginBottom: spacing.sm },
   heroTitle: { marginBottom: spacing.xs },
   heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   sectionTitle: {

@@ -131,7 +131,7 @@ export default function DomainCapsuleScreen(): React.JSX.Element {
 
       {error ? (
         <Animated.View entering={staggeredEntry(1)} style={{ marginTop: spacing.sm }}>
-          <ErrorState message={error.message} onRetry={fetchData} />
+          <ErrorState message="데이터를 불러오지 못했어요" onRetry={fetchData} />
         </Animated.View>
       ) : null}
 

@@ -34,7 +34,7 @@ function getTimeBlock(hour: number): TimeBlock {
 
 // 시간대별 기본 메시지 (피부/컬러 데이터 없을 때)
 const BASE_MESSAGES: Record<TimeBlock, string[]> = {
-  late_night: ['충분한 수면이 최고의 스킨케어예요', '잠들기 전 수분크림을 한 번 더 발라보세요'],
+  late_night: ['충분한 수면이 효과적인 스킨케어예요', '잠들기 전 수분크림을 한 번 더 발라보세요'],
   dawn: ['이른 아침, 하루를 위한 준비를 시작해요', '새벽 공기처럼 맑은 피부를 위해 세안부터!'],
   early_morning: [
     '좋은 아침이에요! 오늘의 루틴을 확인해볼까요?',

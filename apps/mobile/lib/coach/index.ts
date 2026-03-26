@@ -10,6 +10,17 @@
 // RAG 모듈
 import { getRAGContext, classifyQuestion } from './rag';
 
+// 도메인별 RAG + 환각 필터 re-export
+export { getHairRAG } from './hair-rag';
+export { getMakeupRAG } from './makeup-rag';
+export {
+  filterCoachResponse,
+  checkIngredientSafety,
+  needsDisclaimer,
+  COACH_DISCLAIMER,
+} from './hallucination-filter';
+export type { FilterResult, FilterViolation } from './hallucination-filter';
+
 export interface CoachMessage {
   id: string;
   role: 'user' | 'assistant';

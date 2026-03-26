@@ -7,8 +7,19 @@
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { User, Shirt, Calendar, ChevronLeft } from 'lucide-react-native';
-import { useState } from 'react';
+import {
+  User,
+  UserCircle,
+  Users,
+  Diamond,
+  Heart,
+  Zap,
+  Sparkles,
+  Shirt,
+  Calendar,
+  ChevronLeft,
+} from 'lucide-react-native';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -29,17 +40,17 @@ import { useTheme, typography, radii, spacing } from '../../lib/theme';
 const STEP2_ACCENT = '#8B5CF6';
 
 const GENDERS: Gender[] = ['male', 'female', 'neutral'];
-const GENDER_ICONS: Record<Gender, string> = {
-  male: '👨',
-  female: '👩',
-  neutral: '👤',
+const GENDER_ICONS: Record<Gender, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
+  male: User,
+  female: UserCircle,
+  neutral: Users,
 };
 
 const STYLES: StylePreference[] = ['masculine', 'feminine', 'unisex'];
-const STYLE_ICONS: Record<StylePreference, string> = {
-  masculine: '🔷',
-  feminine: '🔶',
-  unisex: '⚡',
+const STYLE_ICONS: Record<StylePreference, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
+  masculine: Diamond,
+  feminine: Heart,
+  unisex: Zap,
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -92,7 +103,7 @@ export default function OnboardingStep2() {
 
         {/* 파스텔 히어로 헤더 */}
         <OnboardingHero
-          emoji="✨"
+          icon={Sparkles}
           title="나에게 맞는 추천 받기"
           subtitle="성별과 스타일에 맞는 맞춤 분석을 제공해요"
           glowColor={STEP2_ACCENT}
@@ -141,9 +152,13 @@ export default function OnboardingStep2() {
                     accessibilityLabel={GENDER_LABELS[gender]}
                     accessibilityState={{ selected: isSelected }}
                   >
-                    <Text style={{ fontSize: 24, marginBottom: spacing.xs }}>
-                      {GENDER_ICONS[gender]}
-                    </Text>
+                    <View style={{ marginBottom: spacing.xs }}>
+                      {React.createElement(GENDER_ICONS[gender], {
+                        size: 24,
+                        color: isSelected ? STEP2_ACCENT : colors.mutedForeground,
+                        strokeWidth: 2,
+                      })}
+                    </View>
                     <Text
                       style={{
                         fontSize: typography.size.sm,
@@ -203,9 +218,13 @@ export default function OnboardingStep2() {
                       accessibilityLabel={STYLE_PREFERENCE_LABELS[style]}
                       accessibilityState={{ selected: isSelected }}
                     >
-                      <Text style={{ fontSize: 20, marginRight: spacing.sm }}>
-                        {STYLE_ICONS[style]}
-                      </Text>
+                      <View style={{ marginRight: spacing.sm }}>
+                        {React.createElement(STYLE_ICONS[style], {
+                          size: 20,
+                          color: isSelected ? STEP2_ACCENT : colors.mutedForeground,
+                          strokeWidth: 2,
+                        })}
+                      </View>
                       <View style={{ flex: 1 }}>
                         <Text
                           style={{
@@ -413,6 +432,7 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
     marginBottom: spacing.smx,
     alignSelf: 'flex-start',
+    minHeight: 44,
   },
   sectionTitleRow: {
     flexDirection: 'row',

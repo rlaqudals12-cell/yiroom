@@ -15,6 +15,17 @@ import {
   SmilePlus,
   BarChart3,
   LayoutGrid,
+  Apple,
+  Search,
+  Droplets,
+  UtensilsCrossed,
+  Dumbbell,
+  ClipboardList,
+  StretchHorizontal,
+  Target,
+  TrendingUp,
+  Gem,
+  Box,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -148,29 +159,127 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link
-              href="/nutrition"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
-            >
-              영양
-            </Link>
-            <Link
-              href="/workout"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
-            >
-              운동
-            </Link>
-            <Link
-              href="/reports"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
-            >
-              리포트
-            </Link>
+            {/* 영양 드롭다운 메뉴 */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                영양
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/nutrition" className="flex items-center gap-2 cursor-pointer">
+                    <Apple className="h-4 w-4 text-green-500" />
+                    영양 홈
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/nutrition/recipe" className="flex items-center gap-2 cursor-pointer">
+                    <UtensilsCrossed className="h-4 w-4 text-orange-500" />
+                    레시피
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/nutrition/water" className="flex items-center gap-2 cursor-pointer">
+                    <Droplets className="h-4 w-4 text-blue-400" />물 섭취
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/nutrition/search" className="flex items-center gap-2 cursor-pointer">
+                    <Search className="h-4 w-4 text-gray-500" />
+                    음식 검색
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {/* 운동 드롭다운 메뉴 */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                운동
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/workout" className="flex items-center gap-2 cursor-pointer">
+                    <Dumbbell className="h-4 w-4 text-violet-500" />
+                    운동 홈
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/workout/log" className="flex items-center gap-2 cursor-pointer">
+                    <ClipboardList className="h-4 w-4 text-indigo-500" />
+                    운동 로그
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/workout/stretching"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <StretchHorizontal className="h-4 w-4 text-teal-500" />
+                    스트레칭
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {/* 리포트 드롭다운 메뉴 */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                리포트
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/reports" className="flex items-center gap-2 cursor-pointer">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    리포트 홈
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/reports/weight-goal"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Target className="h-4 w-4 text-rose-500" />
+                    체중 목표
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/reports/body-progress"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    체형 변화
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link
               href="/products"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
             >
               제품
+            </Link>
+            <Link
+              href="/capsule"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+            >
+              <span className="flex items-center gap-1">
+                <Box className="h-3.5 w-3.5" />
+                캡슐
+              </span>
+            </Link>
+            <Link
+              href="/badges"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+            >
+              <span className="flex items-center gap-1">
+                <Gem className="h-3.5 w-3.5" />
+                뱃지
+              </span>
             </Link>
           </nav>
           <Link

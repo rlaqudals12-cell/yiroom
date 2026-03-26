@@ -75,7 +75,7 @@ function getSeasonLabel(season: string): string {
     autumn: '가을 웜톤',
     winter: '겨울 쿨톤',
   };
-  return labels[season] || season;
+  return labels[season] || '기타';
 }
 
 function getBodyTypeLabel(bodyType: string): string {
@@ -96,7 +96,7 @@ function getHairTypeLabel(hairType: string): string {
     curly: '곱슬',
     coily: '강한 곱슬',
   };
-  return labels[hairType] || hairType;
+  return labels[hairType] || '기타';
 }
 
 function getUndertoneLabel(undertone: string): string {
@@ -105,7 +105,7 @@ function getUndertoneLabel(undertone: string): string {
     cool: '쿨톤',
     neutral: '뉴트럴',
   };
-  return labels[undertone] || undertone;
+  return labels[undertone] || '기타';
 }
 
 /**

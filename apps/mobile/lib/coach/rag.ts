@@ -5,6 +5,8 @@
  */
 
 import type { UserContext } from './index';
+import { getHairRAG } from './hair-rag';
+import { getMakeupRAG } from './makeup-rag';
 
 // ============================================
 // 퍼스널 컬러 RAG
@@ -349,7 +351,7 @@ export function getFashionRAG(ctx: UserContext, query: string): string | null {
 // RAG 오케스트레이터
 // ============================================
 
-type DomainCategory = 'personalColor' | 'skin' | 'workout' | 'nutrition' | 'fashion' | 'general';
+type DomainCategory = 'personalColor' | 'skin' | 'workout' | 'nutrition' | 'fashion' | 'hair' | 'makeup' | 'general';
 
 /**
  * 질문 도메인 분류
@@ -357,6 +359,32 @@ type DomainCategory = 'personalColor' | 'skin' | 'workout' | 'nutrition' | 'fash
 export function classifyQuestion(query: string): DomainCategory {
   const lq = query.toLowerCase();
 
+  // 헤어/두피
+  if (
+    lq.includes('헤어') ||
+    lq.includes('두피') ||
+    lq.includes('샴푸') ||
+    lq.includes('탈모') ||
+    lq.includes('비듬') ||
+    lq.includes('머릿결') ||
+    lq.includes('트리트먼트') ||
+    lq.includes('컨디셔너')
+  ) {
+    return 'hair';
+  }
+  // 메이크업
+  if (
+    lq.includes('메이크업') ||
+    lq.includes('파운데이션') ||
+    lq.includes('아이섀도') ||
+    lq.includes('마스카라') ||
+    lq.includes('블러셔') ||
+    lq.includes('컨실러') ||
+    lq.includes('셰이딩') ||
+    lq.includes('눈썹')
+  ) {
+    return 'makeup';
+  }
   // 퍼스널 컬러
   if (
     lq.includes('퍼스널') ||
@@ -438,6 +466,10 @@ export function getRAGContext(ctx: UserContext | undefined, query: string): stri
       return getNutritionRAG(ctx, query);
     case 'fashion':
       return getFashionRAG(ctx, query);
+    case 'hair':
+      return getHairRAG(ctx, query);
+    case 'makeup':
+      return getMakeupRAG(ctx, query);
     default:
       return null;
   }

@@ -4,6 +4,7 @@
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { Apple, FlaskConical, BarChart3, Pill, UtensilsCrossed } from 'lucide-react-native';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
@@ -64,7 +65,7 @@ export default function NutritionOnboardingScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.iconGradient}
             >
-              <Text style={{ fontSize: 32 }}>🥗</Text>
+              <Apple size={32} color="#fff" strokeWidth={2} />
             </LinearGradient>
           </View>
           <Text style={[styles.title, { color: colors.foreground }]}>맞춤 영양 플랜</Text>
@@ -79,14 +80,14 @@ export default function NutritionOnboardingScreen() {
         <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>이룸 영양의 특징</Text>
           <View style={styles.featureList}>
-            <FeatureItem emoji="🔬" title="BMR/TDEE 계산" description="Mifflin-St Jeor 공식 기반" />
-            <FeatureItem emoji="📊" title="매크로 분석" description="탄수화물, 단백질, 지방 비율" />
+            <FeatureItem Icon={FlaskConical} title="BMR/TDEE 계산" description="Mifflin-St Jeor 공식 기반" />
+            <FeatureItem Icon={BarChart3} title="매크로 분석" description="탄수화물, 단백질, 지방 비율" />
             <FeatureItem
-              emoji="💊"
+              Icon={Pill}
               title="영양제 추천"
               description="부족한 영양소 기반 맞춤 추천"
             />
-            <FeatureItem emoji="🍽️" title="식단 기록" description="AI 사진 인식 + 바코드 스캔" />
+            <FeatureItem Icon={UtensilsCrossed} title="식단 기록" description="AI 사진 인식 + 바코드 스캔" />
           </View>
         </GlassCard>
       </Animated.View>
@@ -143,18 +144,20 @@ export default function NutritionOnboardingScreen() {
 }
 
 function FeatureItem({
-  emoji,
+  Icon,
   title,
   description,
 }: {
-  emoji: string;
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
   title: string;
   description: string;
 }) {
   const { colors } = useTheme();
   return (
     <View style={styles.featureItem}>
-      <Text style={styles.featureEmoji}>{emoji}</Text>
+      <View style={styles.featureIconWrap}>
+        <Icon size={22} color={colors.foreground} strokeWidth={2} />
+      </View>
       <View style={styles.featureContent}>
         <Text style={[styles.featureTitle, { color: colors.foreground }]}>{title}</Text>
         <Text style={[styles.featureDescription, { color: colors.mutedForeground }]}>
@@ -197,7 +200,7 @@ const styles = StyleSheet.create({
   },
   featureList: { gap: spacing.md },
   featureItem: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.smx },
-  featureEmoji: { fontSize: typography.size['2xl'] },
+  featureIconWrap: { width: 28, alignItems: 'center', justifyContent: 'center' },
   featureContent: { flex: 1 },
   featureTitle: { fontSize: 15, fontWeight: typography.weight.semibold, marginBottom: spacing.xxs },
   featureDescription: { fontSize: 13 },

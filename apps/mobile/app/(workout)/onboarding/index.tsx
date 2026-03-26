@@ -4,7 +4,7 @@
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Dumbbell } from 'lucide-react-native';
+import { Dumbbell, Target, BarChart3, Star, Flame } from 'lucide-react-native';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
@@ -67,13 +67,13 @@ export default function WorkoutOnboardingScreen(): React.JSX.Element {
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>이룸 운동의 특징</Text>
             <View style={styles.featureList}>
               <FeatureItem
-                emoji="🎯"
+                Icon={Target}
                 title="5가지 운동 타입"
                 description="토너, 빌더, 버너, 무버, 플렉서"
               />
-              <FeatureItem emoji="📊" title="체형 기반 추천" description="C-1 분석 결과 연동" />
-              <FeatureItem emoji="⭐" title="연예인 루틴" description="20명의 셀럽 운동 루틴" />
-              <FeatureItem emoji="🔥" title="칼로리 트래킹" description="MET 기반 정확한 계산" />
+              <FeatureItem Icon={BarChart3} title="체형 기반 추천" description="C-1 분석 결과 연동" />
+              <FeatureItem Icon={Star} title="연예인 루틴" description="20명의 셀럽 운동 루틴" />
+              <FeatureItem Icon={Flame} title="칼로리 트래킹" description="MET 기반 정확한 계산" />
             </View>
           </View>
         </GlassCard>
@@ -137,18 +137,20 @@ export default function WorkoutOnboardingScreen(): React.JSX.Element {
 }
 
 function FeatureItem({
-  emoji,
+  Icon,
   title,
   description,
 }: {
-  emoji: string;
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
   title: string;
   description: string;
 }): React.JSX.Element {
   const { colors } = useTheme();
   return (
     <View style={styles.featureItem} accessibilityLabel={`${title}: ${description}`}>
-      <Text style={styles.featureEmoji}>{emoji}</Text>
+      <View style={styles.featureIconWrap}>
+        <Icon size={22} color={colors.foreground} strokeWidth={2} />
+      </View>
       <View style={styles.featureContent}>
         <Text style={[styles.featureTitle, { color: colors.foreground }]}>{title}</Text>
         <Text style={[styles.featureDescription, { color: colors.mutedForeground }]}>
@@ -214,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.smx,
   },
-  featureEmoji: { fontSize: typography.size['2xl'] },
+  featureIconWrap: { width: 28, alignItems: 'center', justifyContent: 'center' },
   featureContent: { flex: 1 },
   featureTitle: {
     fontSize: 15,

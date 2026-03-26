@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View, Text, StyleSheet, Pressable } from 'react-native';
+import { Apple, ChefHat, Star, UtensilsCrossed } from 'lucide-react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import {
@@ -21,19 +23,30 @@ import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme
 
 const NUTRITION_ACCENT = '#F97316';
 
-const MEAL_STYLES = [
+type MealStyleOption = {
+  id: string;
+  label: string;
+} & ({ emoji: string; icon?: never } | { icon: LucideIcon; emoji?: never });
+
+const MEAL_STYLES: MealStyleOption[] = [
   { id: 'korean', label: '한식 위주', emoji: '🍚' },
   { id: 'western', label: '양식 위주', emoji: '🍝' },
   { id: 'mixed', label: '골고루', emoji: '🍱' },
-  { id: 'vegetarian', label: '채식', emoji: '🥗' },
+  { id: 'vegetarian', label: '채식', icon: Apple },
   { id: 'low_carb', label: '저탄고지', emoji: '🥩' },
   { id: 'delivery', label: '배달/외식', emoji: '🛵' },
 ];
 
-const COOKING_SKILLS = [
+type CookingSkillOption = {
+  id: string;
+  label: string;
+  description: string;
+} & ({ emoji: string; icon?: never } | { icon: LucideIcon; emoji?: never });
+
+const COOKING_SKILLS: CookingSkillOption[] = [
   { id: 'beginner', label: '초보', description: '간단한 요리만', emoji: '🔰' },
-  { id: 'intermediate', label: '중급', description: '기본 요리 가능', emoji: '👨‍🍳' },
-  { id: 'advanced', label: '고급', description: '다양한 요리 가능', emoji: '⭐' },
+  { id: 'intermediate', label: '중급', description: '기본 요리 가능', icon: ChefHat },
+  { id: 'advanced', label: '고급', description: '다양한 요리 가능', icon: Star },
 ];
 
 const BUDGETS = [
@@ -70,7 +83,9 @@ export default function NutritionStep2Screen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GlassCard shadowSize="lg" glowColor={NUTRITION_ACCENT} style={styles.hero}>
           <View style={styles.heroContent}>
-            <Text style={styles.heroEmoji}>🍽️</Text>
+            <View style={styles.heroIconWrap}>
+              <UtensilsCrossed size={36} color={NUTRITION_ACCENT} />
+            </View>
             <GradientText
               variant="extended"
               fontSize={22}
@@ -118,7 +133,14 @@ export default function NutritionStep2Screen(): React.JSX.Element {
                 mealStyle === s.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
             >
-              <Text style={{ fontSize: 24 }}>{s.emoji}</Text>
+              {s.icon ? (
+                <s.icon
+                  size={24}
+                  color={mealStyle === s.id ? NUTRITION_ACCENT : colors.mutedForeground}
+                />
+              ) : (
+                <Text style={{ fontSize: 24 }}>{s.emoji}</Text>
+              )}
               <Text
                 style={[
                   styles.styleLabel,
@@ -154,7 +176,14 @@ export default function NutritionStep2Screen(): React.JSX.Element {
                 cookingSkill === skill.id && !isDark ? coloredShadow(NUTRITION_ACCENT, 'sm') : {},
               ]}
             >
-              <Text style={{ fontSize: 22 }}>{skill.emoji}</Text>
+              {skill.icon ? (
+                <skill.icon
+                  size={22}
+                  color={cookingSkill === skill.id ? NUTRITION_ACCENT : colors.mutedForeground}
+                />
+              ) : (
+                <Text style={{ fontSize: 22 }}>{skill.emoji}</Text>
+              )}
               <View style={styles.optionContent}>
                 <Text
                   style={[
@@ -274,7 +303,7 @@ export default function NutritionStep2Screen(): React.JSX.Element {
 const styles = StyleSheet.create({
   hero: { marginBottom: spacing.md },
   heroContent: { alignItems: 'center', padding: spacing.xl },
-  heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
+  heroIconWrap: { marginBottom: spacing.sm },
   heroTitle: { marginBottom: spacing.xs },
   heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   sectionTitle: {

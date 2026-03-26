@@ -72,7 +72,7 @@ export default function WelcomeBackBanner() {
       {/* 닫기 버튼 */}
       <button
         onClick={handleDismiss}
-        className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-rose-100/50 dark:hover:bg-rose-900/30 transition-colors"
+        className="absolute top-3 right-3 p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-rose-100/50 dark:hover:bg-rose-900/30 transition-colors"
         aria-label="환영 메시지 닫기"
       >
         <X className="w-4 h-4" />

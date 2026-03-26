@@ -74,7 +74,7 @@ const TEXT = {
     footerSlogan: '온전한 나를 찾는 여정',
     // 1-4: 면책 고지 (ADR-024, AI기본법)
     footerDisclaimer:
-      '이룸의 분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않습니다.',
+      '이룸의 분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.',
   },
   en: {
     heroTitle: 'Know yourself, wholly.',
@@ -245,7 +245,7 @@ export function LandingContent(): React.JSX.Element {
             <div className="flex gap-1.5 bg-zinc-900 rounded-lg p-1">
               <button
                 onClick={() => setLang('ko')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 min-h-[44px] text-xs rounded-md transition-colors ${
                   lang === 'ko'
                     ? 'bg-pink-500/20 text-pink-300'
                     : 'text-zinc-500 hover:text-zinc-300'
@@ -256,7 +256,7 @@ export function LandingContent(): React.JSX.Element {
               </button>
               <button
                 onClick={() => setLang('en')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 min-h-[44px] text-xs rounded-md transition-colors ${
                   lang === 'en'
                     ? 'bg-pink-500/20 text-pink-300'
                     : 'text-zinc-500 hover:text-zinc-300'
@@ -433,7 +433,7 @@ export function LandingContent(): React.JSX.Element {
             <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 max-w-[600px] justify-center">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button className="min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-10 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] grow transition-all duration-300 shadow-lg shadow-pink-500/20">
+                  <Button className="min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-11 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] grow transition-all duration-300 shadow-lg shadow-pink-500/20">
                     <Palette className="w-4 h-4 mr-2" />
                     {t.ctaStart}
                   </Button>
@@ -441,7 +441,7 @@ export function LandingContent(): React.JSX.Element {
               </SignedOut>
               <SignedIn>
                 <Link href="/home" className="grow">
-                  <Button className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-10 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all duration-300 shadow-lg shadow-pink-500/20">
+                  <Button className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-11 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all duration-300 shadow-lg shadow-pink-500/20">
                     {t.ctaViewResults}
                   </Button>
                 </Link>

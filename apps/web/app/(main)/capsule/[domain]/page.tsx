@@ -1,0 +1,363 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter, useParams } from 'next/navigation';
+import {
+  ArrowLeft,
+  Loader2,
+  AlertTriangle,
+  Package,
+  Sparkles,
+  ShoppingBag,
+  ExternalLink,
+  Clock,
+} from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+interface CapsuleItem {
+  id: string;
+  label: string;
+  reason?: string;
+  category?: string;
+  score?: number;
+  productUrl?: string;
+  createdAt?: string;
+}
+
+interface Capsule {
+  id: string;
+  domainId: string;
+  items: CapsuleItem[];
+  ccsScore?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// 도메인 메타데이터
+const DOMAIN_META: Record<string, { name: string; color: string; description: string }> = {
+  skin: {
+    name: '스킨케어',
+    color: '#60A5FA',
+    description: '피부 타입에 맞는 필수 스킨케어 아이템',
+  },
+  fashion: {
+    name: '패션',
+    color: '#F472B6',
+    description: '체형과 퍼스널 컬러에 어울리는 핵심 아이템',
+  },
+  nutrition: {
+    name: '영양',
+    color: '#4ADE80',
+    description: '건강 목표에 맞는 필수 영양소와 식품',
+  },
+  workout: {
+    name: '운동',
+    color: '#4ADE80',
+    description: '체형과 목표에 최적화된 운동 루틴',
+  },
+  hair: {
+    name: '헤어',
+    color: '#D4A24E',
+    description: '헤어 타입과 얼굴형에 맞는 관리 아이템',
+  },
+  makeup: {
+    name: '메이크업',
+    color: '#D45ABF',
+    description: '퍼스널 컬러 기반 메이크업 에센셜',
+  },
+  'personal-color': {
+    name: '퍼스널 컬러',
+    color: '#F472B6',
+    description: '나만의 컬러 팔레트 핵심 아이템',
+  },
+  oral: {
+    name: '구강 건강',
+    color: '#4ABF7A',
+    description: '구강 건강 유지를 위한 필수 아이템',
+  },
+  body: {
+    name: '체형',
+    color: '#A78BFA',
+    description: '체형 관리에 도움이 되는 핵심 아이템',
+  },
+};
+
+/**
+ * 도메인별 캡슐 상세 페이지
+ *
+ * useParams()로 domain 추출, 캡슐 아이템 목록 + 큐레이션 버튼
+ */
+export default function DomainCapsulePage(): React.ReactElement {
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+  const params = useParams<{ domain: string }>();
+  const domain = params.domain;
+
+  const meta = DOMAIN_META[domain] ?? {
+    name: domain,
+    color: '#6366F1',
+    description: '캡슐 아이템',
+  };
+
+  const [capsule, setCapsule] = useState<Capsule | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCurating, setIsCurating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchCapsule = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/capsule/${domain}`);
+      if (res.status === 404) {
+        // 유효하지 않은 도메인
+        setError('존재하지 않는 도메인이에요.');
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to fetch');
+
+      const json = await res.json();
+      if (json.success) {
+        setCapsule(json.data);
+      }
+    } catch {
+      setError('캡슐 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [domain]);
+
+  // 큐레이션 실행
+  const handleCurate = useCallback(async () => {
+    setIsCurating(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/capsule/${domain}/curate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        const userMsg =
+          json?.error?.userMessage ?? '큐레이션에 실패했어요. 먼저 분석을 완료해주세요.';
+        setError(userMsg);
+        return;
+      }
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setCapsule(json.data);
+      }
+    } catch {
+      setError('큐레이션에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsCurating(false);
+    }
+  }, [domain]);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      fetchCapsule();
+    }
+  }, [isLoaded, isSignedIn, fetchCapsule]);
+
+  // 인증 로딩
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]" data-testid="capsule-domain">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  // 미로그인
+  if (!isSignedIn) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-domain">
+        <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+        <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
+        <p className="text-muted-foreground mb-4">캡슐을 확인하려면 먼저 로그인해주세요.</p>
+        <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
+      </div>
+    );
+  }
+
+  const items = capsule?.items ?? [];
+
+  return (
+    <div className="container mx-auto px-4 py-6 pb-24" data-testid="capsule-domain">
+      {/* 뒤로 가기 + 헤더 */}
+      <div className="mb-6">
+        <button
+          onClick={() => router.push('/capsule')}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          캡슐 워드로브
+        </button>
+        <div className="flex items-center gap-3 mb-1">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: `${meta.color}20` }}
+          >
+            <Sparkles className="h-5 w-5" style={{ color: meta.color }} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">{meta.name} 캡슐</h1>
+            <p className="text-sm text-muted-foreground">{meta.description}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 로딩 */}
+      {isLoading && (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {/* 에러 */}
+      {error && (
+        <div className="text-center py-12">
+          <AlertTriangle className="h-10 w-10 mx-auto mb-3 text-amber-500" />
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={fetchCapsule} variant="outline" size="sm">
+            다시 시도하기
+          </Button>
+        </div>
+      )}
+
+      {/* CCS 점수 (있으면) */}
+      {!isLoading && !error && capsule?.ccsScore != null && (
+        <Card className="p-4 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">캡슐 큐레이션 점수 (CCS)</span>
+            <span className="text-lg font-bold" style={{ color: meta.color }}>
+              {capsule.ccsScore}점
+            </span>
+          </div>
+        </Card>
+      )}
+
+      {/* 빈 상태: 캡슐 없음 */}
+      {!isLoading && !error && items.length === 0 && (
+        <div className="text-center py-12">
+          <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+          <h3 className="font-semibold mb-2">아직 캡슐이 없어요</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            큐레이션을 시작해서 나에게 맞는 아이템을 추천받아보세요.
+          </p>
+          <Button onClick={handleCurate} disabled={isCurating}>
+            {isCurating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                큐레이션 중...
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                큐레이션 시작하기
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* 아이템 리스트 */}
+      {!isLoading && !error && items.length > 0 && (
+        <>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground">아이템 {items.length}개</h3>
+            <Button variant="outline" size="sm" onClick={handleCurate} disabled={isCurating}>
+              {isCurating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+              ) : (
+                <ShoppingBag className="h-3.5 w-3.5 mr-1" />
+              )}
+              다시 큐레이션
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {items.map((item, idx) => (
+              <Card key={item.id ?? idx} className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: `${meta.color}20`,
+                          color: meta.color,
+                        }}
+                      >
+                        #{idx + 1}
+                      </span>
+                      {item.category && (
+                        <span className="text-xs text-muted-foreground">{item.category}</span>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    {item.reason && (
+                      <p className="text-xs text-muted-foreground mt-1">{item.reason}</p>
+                    )}
+                    {item.score != null && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${Math.min(100, item.score)}%`,
+                              backgroundColor: meta.color,
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">{item.score}점</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 제품 링크 (있으면) */}
+                  {item.productUrl && (
+                    <a
+                      href={item.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 ml-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    </a>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* 마지막 업데이트 시각 */}
+          {capsule?.updatedAt && (
+            <div className="flex items-center gap-1 mt-4 text-xs text-muted-foreground justify-center">
+              <Clock className="h-3 w-3" />
+              <span>
+                마지막 업데이트:{' '}
+                {new Date(capsule.updatedAt).toLocaleDateString('ko-KR', {
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

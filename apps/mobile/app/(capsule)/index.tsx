@@ -148,7 +148,7 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
       {/* 에러 표시 */}
       {daily.error ? (
         <Animated.View entering={staggeredEntry(2)} style={{ marginTop: spacing.sm }}>
-          <ErrorState message={daily.error.message} onRetry={daily.fetchToday} />
+          <ErrorState message="데이터를 불러오지 못했어요" onRetry={daily.fetchToday} />
         </Animated.View>
       ) : null}
 

@@ -4,10 +4,8 @@
  */
 
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { Paths, File } from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import { Stack, router } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
 
@@ -54,7 +52,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (!user?.id) {
-      Alert.alert('오류', '로그인이 필요합니다.');
+      Alert.alert('오류', '로그인이 필요해요.');
       return;
     }
 
@@ -91,20 +89,12 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
         badges: (badgesRes.data || []).map((b) => ({ badgeId: b.badge_id, earnedAt: b.earned_at })),
       };
 
-      // JSON 파일로 저장 후 공유
-      const file = new File(Paths.cache, `yiroom-export-${Date.now()}.json`);
-      file.create();
-      file.write(JSON.stringify(exportData, null, 2));
-      const filePath = file.uri;
-
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(filePath, {
-          mimeType: 'application/json',
-          dialogTitle: '이룸 데이터 내보내기',
-        });
-      } else {
-        Alert.alert('완료', '데이터 파일이 저장되었어요.');
-      }
+      // React Native Share API 사용 (네이티브 모듈 불필요)
+      const { Share } = require('react-native');
+      await Share.share({
+        message: JSON.stringify(exportData, null, 2),
+        title: '이룸 데이터 내보내기',
+      });
     } catch (error) {
       console.error('[Privacy] Export data error:', error);
       Alert.alert('오류', '데이터 내보내기에 실패했어요. 다시 시도해주세요.');
@@ -354,7 +344,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
         {/* 안내 */}
         <View style={styles.infoSection}>
           <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-            개인정보는 안전하게 암호화되어 저장됩니다.{'\n'}
+            개인정보는 안전하게 암호화되어 저장돼요.{'\n'}
             자세한 내용은 개인정보 처리방침을 확인해주세요.
           </Text>
         </View>

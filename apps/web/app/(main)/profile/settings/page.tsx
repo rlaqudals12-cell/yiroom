@@ -799,7 +799,7 @@ export default function SettingsPage() {
               aria-selected={activeTab === section.id}
               onClick={() => setActiveTab(section.id)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
+                'flex items-center gap-1.5 px-3 py-2.5 rounded-full text-sm whitespace-nowrap transition-colors',
                 activeTab === section.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'

@@ -1,6 +1,6 @@
 # 명령어 인덱스 (Commands Index)
 
-> **Version**: 1.2 | **Updated**: 2026-02-06
+> **Version**: 1.3 | **Updated**: 2026-03-26
 
 > 이룸 프로젝트 슬래시 명령어 가이드
 
@@ -310,6 +310,52 @@
 
 ---
 
+### /quality-improve
+
+> 모듈 단위 품질 개선 (3-Cycle 패턴)
+
+**용도**:
+
+- 모듈 품질 점수 측정 및 등급 판단
+- 3-Cycle 반복 패턴으로 품질 개선
+- Before/After 비교 보고
+
+**사용 예시**:
+
+```
+/quality-improve PC-1
+/quality-improve S-1
+/quality-improve H-1
+```
+
+**워크플로우**:
+
+```
+1. 초기 분석 (병렬 탐색) → 2. 현재 점수 측정 → 3. 등급별 사이클 실행 → 4. 최종 측정
+```
+
+**등급별 사이클 수**:
+
+| 등급       | 사이클              |
+| ---------- | ------------------- |
+| S (95-100) | 유지보수 (불필요)   |
+| A (85-94)  | 1사이클             |
+| B (70-84)  | 2사이클             |
+| C (50-69)  | 3사이클 전체        |
+| F (0-49)   | P1 재정의 → 3사이클 |
+
+**3-Cycle 구성**:
+
+- **Cycle 1**: 기능 완성 + 핵심 버그 (스펙 대비 누락, typecheck/lint/test)
+- **Cycle 2**: 사용자 경험 + UX 정제 (여정, 인지부담, 멘탈모델, 에러 경험)
+- **Cycle 3**: 시스템 품질 (단위 테스트 보강, 엣지케이스, 문서 동기화)
+
+**연동 에이전트**: yiroom-code-quality, yiroom-test-writer, korean-ux-writer
+
+**관련 규칙**: [quality-improvement-cycles.md](../rules/quality-improvement-cycles.md)
+
+---
+
 ## 명령어 선택 가이드
 
 ### 개발 시작 시
@@ -337,6 +383,12 @@
 
 ```
 /ux-check → UX 자동 점검
+```
+
+### 품질 개선 시
+
+```
+/quality-improve → 3-Cycle 모듈 품질 개선
 ```
 
 ### 완료 전

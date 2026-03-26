@@ -81,6 +81,7 @@ export default function ProfilePage() {
   const supabase = useClerkSupabaseClient();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'activity' | 'social'>('info');
 
@@ -192,14 +193,45 @@ export default function ProfilePage() {
           .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
           .slice(0, 3);
 
+        // 한국어 라벨 매핑
+        const SEASON_LABELS: Record<string, string> = {
+          spring: '봄',
+          summer: '여름',
+          autumn: '가을',
+          winter: '겨울',
+        };
+        const TONE_LABELS: Record<string, string> = {
+          warm: '웜톤',
+          cool: '쿨톤',
+          neutral: '뉴트럴',
+        };
+        const SKIN_TYPE_LABELS: Record<string, string> = {
+          oily: '지성',
+          dry: '건성',
+          combination: '복합성',
+          normal: '중성',
+          sensitive: '민감성',
+        };
+        const SENSITIVITY_LABELS: Record<string, string> = {
+          high: '고민감',
+          medium: '중민감',
+          low: '저민감',
+        };
+
         // 퍼스널 컬러 포맷팅
         const pcData = personalColorResult.data;
-        const personalColor = pcData ? `${pcData.result_season} ${pcData.result_tone}` : null;
+        const personalColor = pcData
+          ? `${SEASON_LABELS[pcData.result_season] ?? pcData.result_season} ${TONE_LABELS[pcData.result_tone] ?? pcData.result_tone}`
+          : null;
 
         // 피부 타입 포맷팅
         const skinData = skinResult.data;
-        const skinSuffix = skinData?.sensitivity_level ? '/' + skinData.sensitivity_level : '';
-        const skinType = skinData ? `${skinData.skin_type}${skinSuffix}` : null;
+        const skinSuffix = skinData?.sensitivity_level
+          ? '/' + (SENSITIVITY_LABELS[skinData.sensitivity_level] ?? skinData.sensitivity_level)
+          : '';
+        const skinType = skinData
+          ? `${SKIN_TYPE_LABELS[skinData.skin_type] ?? skinData.skin_type}${skinSuffix}`
+          : null;
 
         // 체형 포맷팅
         const bodyTypeMap: Record<string, string> = {
@@ -249,6 +281,7 @@ export default function ProfilePage() {
         });
       } catch (error) {
         console.error('[ProfilePage] 데이터 조회 실패:', error);
+        setLoadError(true);
       } finally {
         setIsLoading(false);
       }
@@ -282,6 +315,24 @@ export default function ProfilePage() {
         <div className="text-center">
           <h2 className="mb-2 text-xl font-semibold">로그인이 필요합니다</h2>
           <p className="text-muted-foreground">프로필을 확인하려면 먼저 로그인해주세요</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터 로드 실패
+  if (loadError && !profileData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">프로필을 불러오지 못했어요</h2>
+          <p className="text-muted-foreground">네트워크 상태를 확인하고 다시 시도해주세요.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            다시 시도
+          </button>
         </div>
       </div>
     );

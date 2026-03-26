@@ -7,7 +7,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Palette, Sparkles, Ruler, Scissors, Brush, FlaskConical, Check } from 'lucide-react-native';
+import { Palette, Sparkles, Ruler, Scissors, Brush, FlaskConical, Check, Search } from 'lucide-react-native';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -67,7 +67,7 @@ export default function OnboardingStep1() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* 파스텔 히어로 헤더 */}
         <OnboardingHero
-          emoji="✨"
+          icon={Sparkles}
           title="어떤 분석이 궁금하세요?"
           subtitle={'온전한 나를 찾는 여정을 시작해요\n(복수 선택 가능)'}
           glowColor={STEP1_ACCENT}
@@ -206,7 +206,7 @@ export default function OnboardingStep1() {
         {/* 운동/영양 관심 링크 */}
         <Animated.View entering={FadeInUp.delay(550).duration(TIMING.normal)}>
           <Pressable
-            style={{ marginTop: spacing.md, alignItems: 'center' }}
+            style={{ marginTop: spacing.md, alignItems: 'center', minHeight: 44, justifyContent: 'center' }}
             onPress={nextStep}
             testID="wellness-skip-link"
           >

@@ -392,6 +392,7 @@ export default function PersonalColorResultPage() {
   return (
     <div
       className="min-h-[calc(100vh-80px)] bg-muted"
+      data-testid="personal-color-result-page"
       role="region"
       aria-label={t('pageAriaLabel.personalColor')}
     >

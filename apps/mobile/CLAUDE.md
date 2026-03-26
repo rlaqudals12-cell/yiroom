@@ -4,12 +4,14 @@
 
 ## 기술 스택
 
-- **Framework**: Expo 54 + Expo Router 6
+- **Framework**: Expo SDK 54 + Expo Router 6
 - **UI**: React Native + NativeWind (Tailwind)
 - **Auth**: Clerk (@clerk/clerk-expo)
 - **DB**: Supabase (@supabase/supabase-js)
-- **AI**: Google Gemini
+- **AI**: Google Gemini (Flash)
 - **State**: Zustand
+- **Icons**: Lucide React Native (이모지 지양, 웹과 통일)
+- **Primary Color**: `#EC4899` (웹과 동일)
 
 ## 핵심 규칙
 
@@ -82,9 +84,42 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 // 권한 요청 → 촬영 → Gemini 분석 → 결과 저장
 ```
 
+## 웹-모바일 동기화 원칙
+
+> 상세: ADR-086 (웹-모바일 격차 해소), ADR-088 (VTO 모바일 렌더링)
+
+| 항목                         | 원칙                                   |
+| ---------------------------- | -------------------------------------- |
+| 디자인 토큰 (색상/폰트/간격) | 웹 기준 100% 동기화                    |
+| 아이콘                       | Lucide SVG 통일 (이모지 지양)          |
+| Primary 색상                 | `#EC4899` (웹+모바일 통일)             |
+| 텍스트 표기                  | 웹 기준 통일 ("퍼스널 컬러" 등)        |
+| 레이아웃                     | 모바일 UX 우선 (CollapsibleSection 등) |
+| 설명문 톤                    | 짧은 기능톤 유지 (P4 단순화)           |
+
 ## 주의사항
 
 - `div`, `span` 사용 금지 → `View`, `Text` 사용
 - `onClick` 사용 금지 → `onPress` 사용
 - 웹 전용 Hook 사용 금지 (useRouter from next/navigation 등)
 - StyleSheet 대신 NativeWind className 사용 권장
+- 테스트에서 `useTheme()` 컴포넌트는 `ThemeContext.Provider` 래핑 필수
+
+## 플랫폼 지원
+
+| 플랫폼      | 상태         | 비고                                                     |
+| ----------- | ------------ | -------------------------------------------------------- |
+| **Android** | 출시 준비 중 | EAS production 빌드 + Google Play 제출 설정 완료         |
+| **iOS**     | 향후 목표    | EAS 빌드 프로파일 존재, Apple Developer 계정/서명 미설정 |
+
+> iOS `eas submit` 설정은 Apple Developer Program 가입 후 추가 예정.
+
+## 현황
+
+- **253+ 컴포넌트** | **131 라우트** | **92 lib 모듈** | **4,161 tests**
+- 웹-모바일 디자인 동기화 95% 완료 (3/18)
+- 버전: v1.0.0
+
+---
+
+**Version**: 2.0 | **Updated**: 2026-03-26

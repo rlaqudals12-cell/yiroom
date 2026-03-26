@@ -99,6 +99,11 @@ yiroom/
 | `/test`            | 테스트 실행              |
 | `/review`          | 코드 리뷰                |
 | `/sisyphus`        | 적응형 오케스트레이터    |
+| `/create-feature`  | 새 기능 SDD 스캐폴딩     |
+| `/ux-check`        | UX 체크리스트 점검       |
+| `/deploy-check`    | 배포 전 필수 체크        |
+| `/standup`         | 일일 현황 요약           |
+| `/wrap-up`         | 세션 메모리 관리         |
 | `/quality-improve` | 모듈 품질 개선 (3-Cycle) |
 
 ## 핵심 규칙
