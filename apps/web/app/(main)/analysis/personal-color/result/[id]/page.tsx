@@ -48,6 +48,8 @@ import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
+import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
@@ -755,6 +757,18 @@ export default function PersonalColorResultPage() {
         <div className="max-w-lg mx-auto px-4 pb-8">
           <ContextLinkingCard currentModule="personal-color" />
           <ResultPageInsights currentModule="personal-color" />
+          <div className="mt-6">
+            <AnalysisMatchedProducts
+              analysisType="personal-color"
+              personalColorSeason={result.seasonType}
+            />
+          </div>
+          <div className="mt-4">
+            <ProgressiveProfilePrompt
+              moduleId="personal-color"
+              currentConfidence={result.confidence}
+            />
+          </div>
           <AITransparencyNotice compact className="mt-4" />
         </div>
       )}

@@ -12,6 +12,8 @@ import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShar
 import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
+import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { useExpertMode } from '@/hooks/useExpertMode';
@@ -482,6 +484,12 @@ export default function MakeupAnalysisResultPage() {
       <div className="max-w-lg mx-auto px-4 pb-8">
         <ContextLinkingCard currentModule="makeup" />
         <ResultPageInsights currentModule="makeup" />
+        <div className="mt-6">
+          <AnalysisMatchedProducts analysisType="makeup" />
+        </div>
+        <div className="mt-4">
+          <ProgressiveProfilePrompt moduleId="makeup" />
+        </div>
         <AITransparencyNotice compact className="mt-8" />
       </div>
     </div>

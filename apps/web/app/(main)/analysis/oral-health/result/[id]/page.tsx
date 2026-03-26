@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
+import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useExpertMode } from '@/hooks/useExpertMode';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
@@ -345,6 +347,12 @@ export default function OralHealthResultPage(): React.JSX.Element {
       <div className="max-w-lg mx-auto px-4 pb-8">
         <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-3 mt-6">
           <p className="text-xs text-amber-700 dark:text-amber-400">{t('oralDisclaimer')}</p>
+        </div>
+        <div className="mt-4">
+          <AnalysisMatchedProducts analysisType="oral-health" />
+        </div>
+        <div className="mt-4">
+          <ProgressiveProfilePrompt moduleId="oral-health" />
         </div>
         <AITransparencyNotice compact className="mt-6" />
         <ContextLinkingCard currentModule="oral-health" />

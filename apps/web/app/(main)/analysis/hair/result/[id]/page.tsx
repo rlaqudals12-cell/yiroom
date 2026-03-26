@@ -13,6 +13,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
+import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
 import { useExpertMode } from '@/hooks/useExpertMode';
@@ -560,6 +562,12 @@ export default function HairAnalysisResultPage() {
 
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       <div className="max-w-lg mx-auto px-4 pb-8">
+        <div className="mt-2">
+          <AnalysisMatchedProducts analysisType="hair" />
+        </div>
+        <div className="mt-4">
+          <ProgressiveProfilePrompt moduleId="hair" />
+        </div>
         <AITransparencyNotice compact className="mt-6" />
         <p className="text-xs text-muted-foreground text-center mt-4 px-2">
           분석 결과는 참고용이며, 전문가 진단을 대체하지 않아요
