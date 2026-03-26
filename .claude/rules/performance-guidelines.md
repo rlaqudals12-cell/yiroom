@@ -338,11 +338,11 @@ function sendToAnalytics(name: string, metric: Metric) {
 
 ### Lighthouse CI 설정 파일
 
-| 파일 | 위치 | 용도 |
-|------|------|------|
-| `lighthouse.yml` | `.github/workflows/` | CI 워크플로우 |
-| `lighthouse-budget.json` | `apps/web/` | 성능 예산 정의 |
-| `lighthouserc.json` | `apps/web/` | Lighthouse 설정 |
+| 파일                     | 위치                 | 용도            |
+| ------------------------ | -------------------- | --------------- |
+| `lighthouse.yml`         | `.github/workflows/` | CI 워크플로우   |
+| `lighthouse-budget.json` | `apps/web/`          | 성능 예산 정의  |
+| `lighthouserc.json`      | `apps/web/`          | Lighthouse 설정 |
 
 ### CI 임계값 (실제 적용)
 
@@ -367,4 +367,88 @@ function sendToAnalytics(name: string, metric: Metric) {
 
 ---
 
-**Version**: 1.1 | **Updated**: 2026-01-29 | CI 연동 현황 추가
+---
+
+## 실전 최적화 패턴 (2026-03-26 적용)
+
+### Dynamic Import 패턴 (번들 -145KB 달성)
+
+```typescript
+// 결과 페이지 하단 섹션 — 스크롤 시 지연 로드
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+
+// Server Component (layout.tsx) — ssr: false 불가, loading만 사용
+import nextDynamic from 'next/dynamic';
+const OnboardingTutorial = nextDynamic(
+  () => import('@/components/onboarding').then((mod) => ({ default: mod.OnboardingTutorial })),
+  { loading: () => null }
+);
+
+// Client Component에서 외부 라이브러리 지연 로드
+const Toaster = dynamic(() => import('sonner').then((mod) => ({ default: mod.Toaster })), {
+  ssr: false,
+});
+```
+
+**적용 기준:**
+
+- 스크롤 하단 섹션 (초기 뷰포트 밖) → dynamic import
+- 조건부 렌더링 (대부분 사용자 불필요) → dynamic import
+- 외부 라이브러리 15KB+ → Client Component 래퍼 + dynamic
+
+### sessionStorage 캐싱 패턴 (API 50-60% 감소)
+
+```typescript
+// 5분 TTL 캐시 — 동일 페이지 재방문 시 즉시 로드
+const cacheKey = `matched-${params.toString()}`;
+const cached = sessionStorage.getItem(cacheKey);
+if (cached) {
+  const { data, timestamp } = JSON.parse(cached);
+  if (Date.now() - timestamp < 5 * 60 * 1000) {
+    setProducts(data);
+    setIsLoading(false);
+    return;
+  }
+}
+
+// API 호출 후 캐시 저장
+try {
+  sessionStorage.setItem(
+    cacheKey,
+    JSON.stringify({
+      data: items,
+      timestamp: Date.now(),
+    })
+  );
+} catch {
+  /* 스토리지 용량 초과 — 무시 */
+}
+```
+
+**TTL 기준:**
+
+- 분석 결과 기반 데이터 (제품 매칭): 5분
+- 외부 API (날씨): 30분
+- 사용자 프로필: 캐시 안 함 (항상 fresh)
+
+### 실제 적용 결과
+
+| 대상                    | 방법                                       | 효과      |
+| ----------------------- | ------------------------------------------ | --------- |
+| 6개 결과 페이지         | ProgressiveProfile+MatchedProducts dynamic | -30KB     |
+| (main)/layout           | OnboardingTutorial+ProductCompare dynamic  | -80KB     |
+| root layout             | Toaster(sonner) → DynamicToaster           | -15KB     |
+| 홈 Active/Growing       | HomeRecentlyViewed dynamic                 | -20KB     |
+| AnalysisMatchedProducts | 5분 sessionStorage                         | API 50%↓  |
+| EnvironmentAdviceCard   | 30분 sessionStorage                        | 홈 2-3초↓ |
+| LandingContent          | inline style → globals.css                 | CSS 캐싱  |
+
+---
+
+**Version**: 1.2 | **Updated**: 2026-03-26 | 실전 최적화 패턴 추가 (dynamic import -145KB, sessionStorage 캐싱)

@@ -1,6 +1,6 @@
 # 규칙 인덱스 (Rules Index)
 
-> **Version**: 2.1 | **Updated**: 2026-02-06
+> **Version**: 2.2 | **Updated**: 2026-03-26 | /ux-check v7.0 (70항목), performance-guidelines v1.2
 
 > 이룸 프로젝트 코딩 규칙 및 표준 가이드
 

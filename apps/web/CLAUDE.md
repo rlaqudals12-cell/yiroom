@@ -57,7 +57,11 @@ lib/
 ├── mock/               # 테스트/AI Fallback
 ├── products/           # 제품 Repository
 ├── affiliate/          # 어필리에이트 시스템
-└── gemini.ts           # AI 분석 (3초 타임아웃 + 2회 재시도)
+├── product-tracking/   # 제품→결과 추적 (효과 분석, 기여도)
+├── skincare/           # 스킨케어 루틴 + 시술 추천
+├── weather/            # 날씨 API + 환경 조언 엔진
+├── analysis/personal-color-v2/  # PC-2 Lab 12톤 분류 + 캘리브레이션
+└── gemini.ts           # AI 분석 (Level 2 프롬프트, 논문 7편 기반)
 ```
 
 ## AI 통합 패턴

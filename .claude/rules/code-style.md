@@ -311,5 +311,22 @@ const result = items
 
 ---
 
-**Version**: 2.1 | **Updated**: 2026-02-11 | Tailwind CSS v4 규칙 추가
-**관련 규칙**: [typescript-strict.md](./typescript-strict.md)
+## Dynamic Import 규칙
+
+```typescript
+// 스크롤 하단/조건부 컴포넌트: dynamic import 필수
+// 기준: 초기 뷰포트 밖 + 15KB 이상
+const HeavyComponent = dynamic(
+  () => import('@/components/Heavy').then((mod) => ({ default: mod.Heavy })),
+  { loading: () => null, ssr: false } // Client Component에서만 ssr: false
+);
+
+// Server Component (layout.tsx): ssr: false 금지
+import nextDynamic from 'next/dynamic';
+const LazyComponent = nextDynamic(() => import('./Lazy'), { loading: () => null });
+```
+
+---
+
+**Version**: 2.2 | **Updated**: 2026-03-26 | Dynamic Import 규칙 추가
+**관련 규칙**: [typescript-strict.md](./typescript-strict.md), [performance-guidelines.md](./performance-guidelines.md)
