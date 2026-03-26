@@ -186,7 +186,17 @@ export function ProgressiveProfilePrompt({
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
   };
 
-  const handleSubmit = (): void => {
+  const handleSubmit = async (): Promise<void> => {
+    try {
+      // DB 저장 API 호출
+      await fetch('/api/user/progressive-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId, data: answers }),
+      });
+    } catch {
+      // 저장 실패해도 UX는 유지 (다음 분석에 반영 안 될 뿐)
+    }
     setSubmitted(true);
     onSubmit?.(answers);
   };

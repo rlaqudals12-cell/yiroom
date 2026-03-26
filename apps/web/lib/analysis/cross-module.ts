@@ -290,3 +290,105 @@ export const ANALYSIS_LABELS: Record<AnalysisModule, { ko: string; en: string }>
   skin: { ko: '피부', en: 'Skin' },
   body: { ko: '체형', en: 'Body Type' },
 };
+
+// ============================================
+// 3모듈 통합 패션 추천 (PC + C-1 + S-1)
+// ============================================
+
+/** 통합 패션 추천 결과 */
+export interface IntegratedFashionRecommendation {
+  /** 추천 코디 설명 */
+  description: string;
+  /** 추천 색상 (PC 시즌 기반) */
+  colors: string[];
+  /** 추천 소재 (S-1 피부 기반) */
+  fabrics: string[];
+  /** 추천 실루엣 (C-1 체형 기반) */
+  silhouettes: string[];
+  /** 피해야 할 것 */
+  avoid: string[];
+  /** 통합 근거 */
+  reasoning: string;
+}
+
+// 시즌별 추천 색상
+const SEASON_COLORS: Record<string, string[]> = {
+  spring: ['코랄', '살구', '밝은 오렌지', '아이보리', '카멜'],
+  summer: ['라벤더', '민트', '파우더핑크', '스카이블루', '로즈'],
+  autumn: ['버건디', '테라코타', '카키', '머스타드', '브라운'],
+  winter: ['블랙', '퓨어화이트', '로열블루', '퓨시아', '실버'],
+};
+
+// 체형별 추천 실루엣
+const BODY_SILHOUETTES: Record<string, { recommend: string[]; avoid: string[] }> = {
+  S: {
+    recommend: ['I라인', '미니멀 핏', 'V넥 상의', '스트레이트 팬츠', '미디 스커트'],
+    avoid: ['오버사이즈', '프릴 장식', '볼륨 소매'],
+  },
+  W: {
+    recommend: ['X라인', '하이웨이스트', 'A라인 스커트', '크롭 자켓', '플레어 팬츠'],
+    avoid: ['로우라이즈', '박시 핏', '긴 아우터'],
+  },
+  N: {
+    recommend: ['릴렉스드 핏', '오버핏 셔츠', '와이드 팬츠', '롱 카디건', '레이어드'],
+    avoid: ['타이트 핏', '구조적 어깨 패드', '짧은 기장'],
+  },
+};
+
+// 피부 상태별 추천 소재
+const SKIN_FABRICS: Record<string, string[]> = {
+  sensitive: ['오가닉 코튼', '대나무 섬유', '실크 (저자극)', '텐셀'],
+  dry: ['캐시미어', '벨벳', '플리스', '코튼 플란넬'],
+  oily: ['린넨', '면', '쿨맥스', '통풍 좋은 소재'],
+  combination: ['면', '린넨 블렌드', '저지'],
+  normal: ['면', '린넨', '실크', '울'],
+};
+
+/**
+ * 3모듈 통합 패션 추천 생성
+ *
+ * PC-1 퍼스널컬러 + C-1 체형 + S-1 피부 → 통합 코디 추천
+ *
+ * @param season - PC-1 시즌 (spring/summer/autumn/winter)
+ * @param bodyType - C-1 체형 (S/W/N)
+ * @param skinType - S-1 피부타입 (dry/oily/combination/sensitive/normal)
+ * @returns 통합 패션 추천
+ */
+export function generateIntegratedFashionRecommendation(
+  season?: string,
+  bodyType?: string,
+  skinType?: string
+): IntegratedFashionRecommendation {
+  const colors = SEASON_COLORS[season ?? 'spring'] ?? SEASON_COLORS.spring;
+  const silhouetteData = BODY_SILHOUETTES[bodyType ?? 'S'] ?? BODY_SILHOUETTES.S;
+  const fabrics = SKIN_FABRICS[skinType ?? 'normal'] ?? SKIN_FABRICS.normal;
+
+  const seasonLabel =
+    { spring: '봄 웜톤', summer: '여름 쿨톤', autumn: '가을 웜톤', winter: '겨울 쿨톤' }[
+      season ?? 'spring'
+    ] ?? '봄 웜톤';
+
+  const bodyLabel = { S: '스트레이트', W: '웨이브', N: '내추럴' }[bodyType ?? 'S'] ?? '스트레이트';
+
+  const skinLabel =
+    {
+      dry: '건성',
+      oily: '지성',
+      combination: '복합성',
+      sensitive: '민감성',
+      normal: '중성',
+    }[skinType ?? 'normal'] ?? '중성';
+
+  const description = `${seasonLabel} + ${bodyLabel} 체형 + ${skinLabel} 피부에 맞는 코디: ${colors.slice(0, 3).join('·')} 톤의 ${fabrics[0]} 소재, ${silhouetteData.recommend[0]} 실루엣이 베스트`;
+
+  const reasoning = `퍼스널컬러(${seasonLabel})에서 추천 색상을, 체형(${bodyLabel})에서 실루엣을, 피부(${skinLabel})에서 소재를 조합했습니다. 이 세 가지가 모두 맞아야 정말 "나에게 어울리는" 옷이 됩니다.`;
+
+  return {
+    description,
+    colors,
+    fabrics,
+    silhouettes: silhouetteData.recommend,
+    avoid: silhouetteData.avoid,
+    reasoning,
+  };
+}
