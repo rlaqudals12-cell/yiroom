@@ -31,6 +31,8 @@ import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
+import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
+import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import { ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
@@ -1109,6 +1111,25 @@ export default function SkinAnalysisResultPage() {
                       className="mt-8"
                     />
                   )}
+
+                  {/* 분석 기반 맞춤 제품 (어필리에이트 연결) */}
+                  <div className="mt-8">
+                    <AnalysisMatchedProducts
+                      analysisType="skin"
+                      skinType={skinType ?? undefined}
+                      skinConcerns={result?.metrics
+                        ?.filter((m) => m.status === 'warning')
+                        .map((m) => m.id)}
+                    />
+                  </div>
+
+                  {/* Progressive Profiling — 추가 정보 수집 */}
+                  <div className="mt-6">
+                    <ProgressiveProfilePrompt
+                      moduleId="skin"
+                      currentConfidence={result?.overallScore}
+                    />
+                  </div>
 
                   {/* AI 투명성 고지 */}
                   <AITransparencyNotice compact className="mt-8" />
