@@ -503,18 +503,76 @@ Samsung Health:
   ⚠️ 전환→구매: 동선 OK, 실전환 미검증
 ```
 
-### 적용 완료 (2026-03-26)
+### 적용 완료 — 전체 작업 목록 (2026-03-26, 커밋 14개)
 
-| #   | 항목                                                   | ADR 근거     | 상태 |
-| --- | ------------------------------------------------------ | ------------ | :--: |
-| 1-1 | 히어로 서브카피 → "셀카 한 장으로..."                  | ADR-056, 080 |  ✅  |
-| 1-2 | 소셜 프루프 "✦ 8개 AI 분석 모듈 · 23,000+ 테스트 검증" | ADR-056      |  ✅  |
-| 1-3 | "특별함" → 결과 미리보기 3장 (봄웜톤/피부78점/S타입)   | ADR-080      |  ✅  |
-| 1-4 | 푸터 AI 면책 고지                                      | ADR-024      |  ✅  |
-| 1-5 | CTA "무료 퍼스널컬러 진단 시작"으로 통일               | ADR-039      |  ✅  |
-| 2-1 | 히어로 우측 결과 카드 3장 스택 (md이상)                | ADR-057, 080 |  ✅  |
-| 2-2 | 모듈 설명 강화 "셀카 한 장 → 30초 만에..."             | ADR-080      |  ✅  |
-| 2-4 | 스크롤 fade-in + prefers-reduced-motion                | ADR-051      |  ✅  |
+**A. 랜딩 페이지 (8개)**
+
+| #   | 항목                                                   | 근거         |
+| --- | ------------------------------------------------------ | ------------ |
+| 1-1 | 히어로 서브카피 → "셀카 한 장으로..."                  | ADR-056, 080 |
+| 1-2 | 소셜 프루프 "✦ 8개 AI 분석 모듈 · 23,000+ 테스트 검증" | ADR-056      |
+| 1-3 | "특별함" → 결과 미리보기 3장 (봄웜톤/피부78점/S타입)   | ADR-080      |
+| 1-4 | 푸터 AI 면책 고지                                      | ADR-024      |
+| 1-5 | CTA "무료 퍼스널컬러 진단 시작"으로 통일               | ADR-039      |
+| 2-1 | 히어로 우측 결과 카드 3장 스택 (md이상)                | ADR-057, 080 |
+| 2-2 | 모듈 설명 강화 "셀카 한 장 → 30초 만에..."             | ADR-080      |
+| 2-4 | 스크롤 fade-in + prefers-reduced-motion → globals.css  | ADR-051      |
+
+**B. 프롬프트 고도화 Level 2 (7개 모듈)**
+
+| 모듈                          | 주입된 원리                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| PC-1 (gemini.ts + prompts.ts) | Lab h°/ITA/C\* 수치 기준, 한국인 평균, 잼페이스 분포, 경계 4종, 캘리브레이션 카드    |
+| S-1                           | TEWL 수분, Sebumeter T존/U존, 한국인 모공, Lab a\* 홍조, 트러블vs민감, 수면/생리주기 |
+| C-1                           | 비율 판정 보조, Janda 상위/하위 교차 증후군, 자세→운동 연결                          |
+| W-1                           | 점진적 과부하(Selye), 근비대(Schoenfeld), ACSM 체형별 처방, 부상별 대체운동          |
+| N-1                           | 피부-영양(Schagen), 운동-영양(ISSN), 모발-영양(Almohanna), 상호작용 5종              |
+| H-1                           | 모발-영양 상관, PC 시즌 헤어컬러, 얼굴형 6종별 스타일, 두피 케어 루틴                |
+| M-1                           | PC 4시즌 색상, S-1 피부연동 제품, 얼굴형별 메이크업 기법                             |
+
+**C. 서버 검증 강화 (2건)**
+
+| 대상 | 내용                                                                  |
+| ---- | --------------------------------------------------------------------- |
+| PC-1 | 5가지 교차 검증 (h°↔톤, L*↔계절, C*↔서브톤, 혈관↔톤, 일치 보너스)     |
+| S-1  | 피부타입 결정: oilLevel만 → T존/U존 분리 + hydration 기반 복합성 판정 |
+
+**D. 신규 기능 (9건)**
+
+| 기능                                              | 파일                                     |      연결 상태       |
+| ------------------------------------------------- | ---------------------------------------- | :------------------: |
+| ProgressiveProfilePrompt (UI+DB API)              | 컴포넌트 + /api/user/progressive-profile |  6개 결과 페이지 ✅  |
+| AnalysisMatchedProducts + matched API             | 컴포넌트 + /api/products/matched         |  6개 결과 페이지 ✅  |
+| EnvironmentAdviceCard + generateEnvironmentAdvice | 컴포넌트 + lib/weather                   | 홈 Growing+Active ✅ |
+| product-tracking (효과 분석 + 기여도)             | lib/product-tracking                     | Phase 2 활성화 대기  |
+| treatment-recommender (6종 시술 + 면책)           | lib/skincare + barrel export             |    테스트 검증 ✅    |
+| generateIntegratedFashionRecommendation           | lib/analysis/cross-module                |    테스트 검증 ✅    |
+| calibration-guide (색 보정 + 다회 분석)           | lib/analysis/personal-color-v2           |  CIE-3 활성화 대기   |
+| S-1 cleansingRoutine + dailyCareRoutine           | gemini.ts 프롬프트 출력                  |     즉시 작동 ✅     |
+| H-1 hairStyleRecommendations + scalpCareRoutine   | gemini.ts 프롬프트 출력                  |     즉시 작동 ✅     |
+
+**E. 성능 최적화 (번들 -145KB)**
+
+| 대상                    | 방법                                              | 효과      |
+| ----------------------- | ------------------------------------------------- | --------- |
+| 6개 결과 페이지         | ProgressiveProfile+MatchedProducts dynamic import | -30KB     |
+| (main)/layout.tsx       | OnboardingTutorial+ProductCompare dynamic         | -80KB     |
+| root layout.tsx         | Toaster(sonner) → DynamicToaster Client Component | -15KB     |
+| 홈 Active+Growing       | HomeRecentlyViewed dynamic import                 | -20KB     |
+| AnalysisMatchedProducts | 5분 sessionStorage 캐시                           | API 50%↓  |
+| EnvironmentAdviceCard   | 30분 sessionStorage 캐시                          | 홈 2-3초↓ |
+| LandingContent          | inline style → globals.css 분리                   | CSS 캐싱  |
+
+**F. 테스트 (66개 신규)**
+
+| 대상                             | 테스트 수 |
+| -------------------------------- | :-------: |
+| ProgressiveProfilePrompt         |    15     |
+| generateEnvironmentAdvice        |    12     |
+| calculateToneValidationModifiers |    12     |
+| treatment-recommender            |    11     |
+| product-tracking                 |     8     |
+| cross-module-fashion             |     8     |
 
 ### 출시 후 랜딩 개선 (미착수)
 
@@ -1076,7 +1134,7 @@ Phase 3 — 팀 필수:
 
 ## 변경 이력
 
-| 날짜       | 변경 내용                                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| 2026-03-26 | 전면 재작성 + 10개 전략 섹션 + Phase 1A~1B 전체 완료 + 100인 시뮬레이션 검증(5.6→6.9, NPS -3→+15) + 커밋 9개 |
-| 2026-03-07 | Phase P3+ 완료, 홈 리디자인 준비                                                                             |
+| 날짜       | 변경 내용                                                                                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------- |
+| 2026-03-26 | 전면 재작성 + Phase 1A~1B 완료 + 성능최적화(-145KB) + 시뮬레이션(5.6→6.9) + 커밋 14개, 35파일, +4,200줄, 테스트 66개 |
+| 2026-03-07 | Phase P3+ 완료, 홈 리디자인 준비                                                                                     |
