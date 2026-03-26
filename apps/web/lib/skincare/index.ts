@@ -70,3 +70,12 @@ export {
   shouldRefreshRoutine,
 } from './shelf-routine-sync';
 export type { ShelfRoutineSync, ProductLayeringInfo } from './shelf-routine-sync';
+
+// 피부 시술 추천 (ADR-045)
+export {
+  recommendTreatments,
+  extractTreatmentConcerns,
+  TREATMENT_DISCLAIMER,
+  EXCLUDED_MEDICAL_ACTS,
+} from './treatment-recommender';
+export type { TreatmentOption, TreatmentRecommendation } from './treatment-recommender';

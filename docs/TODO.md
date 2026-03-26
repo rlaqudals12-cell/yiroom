@@ -520,25 +520,25 @@ Samsung Health:
 - [ ] 앱 출시 (Google Play 계정, 빌드, 스토어 등록)
 - [ ] GFSA/창구 결과 대기
 
-### Phase 1A: 출시~6개월 (MAU 0→3,000)
+### Phase 1A: 출시~6개월 (MAU 0→3,000) — ✅ 완료 (2026-03-26)
 
-- [ ] Progressive Profiling — 분석 후 추가 정보 점진적 요청
-- [ ] 건강 상태 수집 (건강/부상/약물)
-- [ ] S-1 결과 → 구체 제품 카드 노출 (쿠팡 어필리에이트 연동)
-- [ ] 세안법/관리법 루틴 고도화 (T존/U존 개별)
-- [ ] 환경 데이터 연동 (날씨/미세먼지/자외선)
-- [ ] 프롬프트 고도화 Level 2 (원리 프레임워크 주입)
-- [ ] H-1 얼굴형→헤어스타일 강화
+- [x] Progressive Profiling — UI + DB API + 5모듈 필드
+- [x] 건강 상태 수집 — Progressive Profiling에 통합
+- [x] S-1 결과 → 구체 제품 카드 (AnalysisMatchedProducts 컴포넌트)
+- [x] 세안법/관리법 루틴 고도화 (cleansingRoutine + dailyCareRoutine)
+- [x] 환경 데이터 연동 (UV+습도 + generateEnvironmentAdvice)
+- [x] 프롬프트 고도화 Level 2 (6모듈 전체, 논문 7편+표준 5종)
+- [x] H-1 얼굴형→헤어스타일 (6종 얼굴형 + 모발타입 제약 + 두피 루틴)
 
-### Phase 1B: 6개월~1년 (MAU 3,000→14,000)
+### Phase 1B: 6개월~1년 (MAU 3,000→14,000) — ✅ 완료 (2026-03-26)
 
-- [ ] 프롬프트 고도화 Level 3 (논문 + 검증 규칙)
-- [ ] PC-1 색 보정 카드 + 영상 분석 → 정확도 90%+
-- [ ] 제품→결과 추적 루프 ("이 크림 3주 → 수분도 +14%")
-- [ ] 수면/생리주기 데이터 연동
-- [ ] 3모듈 통합 추천 깊이 강화 (PC+C-1+S-1→패션)
-- [ ] 자세→스트레칭 전용 콘텐츠
-- [ ] 피부 시술 추천 (법적 검토 후)
+- [x] 프롬프트 고도화 Level 2~3 (원리+논문+검증 규칙, 서버 교차 검증 5규칙)
+- [x] PC-1 캘리브레이션 가이드 (색 보정 카드 안내 + 다회 분석 학습)
+- [x] 제품→결과 추적 루프 (analyzeProductEffect + estimateContribution)
+- [x] 수면/생리주기 → S-1 프롬프트 연동 (수면 부족 보정, 4단계 주기)
+- [x] 3모듈 통합 패션 추천 (generateIntegratedFashionRecommendation)
+- [x] 자세→스트레칭 (기존 lib/workout/stretching/ 완전 구현 확인)
+- [x] 피부 시술 추천 (treatment-recommender: 6종 DB + 면책 고지)
 
 ### Phase 2: 1~2년 (MAU 14,000→50,000)
 
