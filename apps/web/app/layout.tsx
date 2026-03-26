@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { koKR, enUS } from '@clerk/localizations';
 import { Inter, Noto_Sans_KR } from 'next/font/google';
-import { Toaster } from 'sonner';
+import { DynamicToaster } from '@/components/providers/DynamicToaster';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { getLocale, getMessages } from 'next-intl/server';
@@ -176,23 +176,7 @@ export default async function RootLayout({
                     <PWAInstallPrompt />
                   </GamificationProvider>
                 </GenderProvider>
-                <Toaster
-                  position="top-center"
-                  theme="system"
-                  toastOptions={{
-                    classNames: {
-                      toast: 'bg-card border border-border text-foreground shadow-lg',
-                      title: 'text-foreground font-medium',
-                      description: 'text-muted-foreground',
-                      success:
-                        '!bg-status-success/10 !border-status-success/30 !text-status-success',
-                      error: '!bg-status-error/10 !border-status-error/30 !text-status-error',
-                      warning:
-                        '!bg-status-warning/10 !border-status-warning/30 !text-status-warning',
-                      info: '!bg-primary/10 !border-primary/30 !text-primary',
-                    },
-                  }}
-                />
+                <DynamicToaster />
               </SyncUserProvider>
             </I18nProvider>
             <Analytics />

@@ -17,7 +17,12 @@ import { Sparkles, CheckCircle2 } from 'lucide-react';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
-import HomeRecentlyViewed from './HomeRecentlyViewed';
+import dynamic from 'next/dynamic';
+
+const HomeRecentlyViewed = dynamic(() => import('./HomeRecentlyViewed'), {
+  loading: () => null,
+  ssr: false,
+});
 import HomeStreakWidget from './HomeStreakWidget';
 import { EnvironmentAdviceCard } from '@/components/common/EnvironmentAdviceCard';
 import { exposeConnection } from '@/lib/connection-awareness';

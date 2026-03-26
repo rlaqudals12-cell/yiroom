@@ -18,7 +18,13 @@ import type { WidgetId } from '@/hooks/useWidgetOrder';
 import ActiveInsightCard from './ActiveInsightCard';
 import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 import HomeAnalysisSummary from './HomeAnalysisSummary';
-import HomeRecentlyViewed from './HomeRecentlyViewed';
+import dynamic from 'next/dynamic';
+
+// 최근 본 제품 — 스크롤 하단이므로 지연 로드 (-20KB)
+const HomeRecentlyViewed = dynamic(() => import('./HomeRecentlyViewed'), {
+  loading: () => null,
+  ssr: false,
+});
 import HomeActivityBar from './HomeActivityBar';
 import HomeStreakWidget from './HomeStreakWidget';
 import SortableWidgetList from './SortableWidgetList';
