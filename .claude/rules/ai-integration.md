@@ -35,6 +35,7 @@ model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 > (타임아웃 3초, 재시도 2회, Mock 파일 구조, UI 신뢰도 표시 등)
 
 **핵심 원칙**:
+
 - 모든 AI 호출에 Mock Fallback 필수
 - 타임아웃: 3초 / 재시도: 2회
 - Mock 사용 시 `isMock: true` + 낮은 `confidence` 반환
@@ -135,4 +136,38 @@ console.log('[N-1] Analysis completed');
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-28 | ADR-003, ADR-007 참조
+---
+
+## 원리 기반 프롬프트 전략 (Level 2, 2026-03-26)
+
+### 핵심 원칙
+
+```
+이룸의 AI 분석 품질 = 프롬프트 품질 × 서버 검증 품질
+
+프롬프트에 "분석해주세요"만 넣으면 → AI 일반 지식 의존 → 70%
+프롬프트에 논문 수치 기준을 넣으면 → 수학적 판단 → 85-90%
+
+따라서: 모든 분석 프롬프트는 docs/principles/ 원리를 주입해야 함
+```
+
+### 프롬프트 작성 시 체크리스트
+
+```
+□ docs/principles/에 해당 도메인 원리 문서가 있는가?
+□ 원리의 핵심 수치가 프롬프트에 포함되었는가? (주관적 설명 ❌ → 객관적 수치 ✅)
+□ 한국인 기준값이 있으면 포함했는가?
+□ 경계 케이스 처리 규칙이 있는가?
+□ 서버 측 교차 검증이 있는가?
+□ 크로스 모듈 원리가 해당되면 포함했는가?
+```
+
+### 참고
+
+- 상세 Level 체계 → [prompt-engineering.md](./prompt-engineering.md) Level 섹션
+- 원리 문서 → `docs/principles/`
+- 적용 실적 → `docs/TODO.md` 섹션 9.B
+
+---
+
+**Version**: 1.1 | **Updated**: 2026-03-26 | 원리 기반 프롬프트 전략 추가
