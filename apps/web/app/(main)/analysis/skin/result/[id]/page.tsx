@@ -31,8 +31,21 @@ import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
-import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
-import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
+// 하단 섹션 — 스크롤 시 지연 로드 (초기 번들 -30KB)
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+const AnalysisMatchedProducts = dynamic(
+  () =>
+    import('@/components/analysis/AnalysisMatchedProducts').then((mod) => ({
+      default: mod.AnalysisMatchedProducts,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import { ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';

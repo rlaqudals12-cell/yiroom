@@ -33,8 +33,20 @@ import { VisualReportCard } from '@/components/analysis/visual-report';
 import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
-import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
-import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+const AnalysisMatchedProducts = dynamic(
+  () =>
+    import('@/components/analysis/AnalysisMatchedProducts').then((mod) => ({
+      default: mod.AnalysisMatchedProducts,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useExpertMode } from '@/hooks/useExpertMode';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';

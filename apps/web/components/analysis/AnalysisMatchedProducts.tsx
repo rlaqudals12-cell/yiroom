@@ -80,14 +80,39 @@ export function AnalysisMatchedProducts({
         if (scalpType) params.set('scalpType', scalpType);
         if (undertone) params.set('undertone', undertone);
 
+        // 5분 캐시 — 동일 분석 결과 재방문 시 즉시 로드
+        const cacheKey = `matched-${params.toString()}`;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const { data, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < 5 * 60 * 1000) {
+              setProducts(data);
+              setIsLoading(false);
+              return;
+            }
+          } catch {
+            /* 캐시 파싱 실패 — 무시하고 재요청 */
+          }
+        }
+
         const response = await fetch(`/api/products/matched?${params.toString()}`);
 
         if (response.ok) {
           const data = await response.json();
-          setProducts(data.products ?? []);
+          const items = data.products ?? [];
+          setProducts(items);
+          // 캐시 저장
+          try {
+            sessionStorage.setItem(
+              cacheKey,
+              JSON.stringify({ data: items, timestamp: Date.now() })
+            );
+          } catch {
+            /* 스토리지 용량 초과 — 무시 */
+          }
         }
       } catch {
-        // 제품 로딩 실패 — 조용히 처리 (핵심 분석에 영향 없음)
         setProducts([]);
       } finally {
         setIsLoading(false);

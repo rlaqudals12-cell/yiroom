@@ -13,8 +13,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
-import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
-import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
+
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+const AnalysisMatchedProducts = dynamic(
+  () =>
+    import('@/components/analysis/AnalysisMatchedProducts').then((mod) => ({
+      default: mod.AnalysisMatchedProducts,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
 import { useExpertMode } from '@/hooks/useExpertMode';

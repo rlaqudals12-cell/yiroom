@@ -23,10 +23,31 @@ export function EnvironmentAdviceCard(): React.JSX.Element | null {
 
   useEffect(() => {
     async function fetchWeather(): Promise<void> {
+      // 30분 캐시 — 날씨는 자주 안 바뀜
+      const cacheKey = 'env-weather';
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const { data: cachedData, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 30 * 60 * 1000) {
+            setWeather(cachedData);
+            setAdvice(generateEnvironmentAdvice(cachedData));
+            return;
+          }
+        } catch {
+          /* 캐시 파싱 실패 */
+        }
+      }
+
       const data = await getCurrentWeather();
       if (data) {
         setWeather(data);
         setAdvice(generateEnvironmentAdvice(data));
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
+        } catch {
+          /* 스토리지 용량 초과 */
+        }
       }
     }
     fetchWeather();

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useAuth, useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
@@ -48,8 +49,20 @@ import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
-import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
-import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+const AnalysisMatchedProducts = dynamic(
+  () =>
+    import('@/components/analysis/AnalysisMatchedProducts').then((mod) => ({
+      default: mod.AnalysisMatchedProducts,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';

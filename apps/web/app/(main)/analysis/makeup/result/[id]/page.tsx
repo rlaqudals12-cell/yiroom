@@ -12,8 +12,22 @@ import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShar
 import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
-import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
-import { AnalysisMatchedProducts } from '@/components/analysis/AnalysisMatchedProducts';
+import dynamic from 'next/dynamic';
+
+const ProgressiveProfilePrompt = dynamic(
+  () =>
+    import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
+      default: mod.ProgressiveProfilePrompt,
+    })),
+  { loading: () => null, ssr: false }
+);
+const AnalysisMatchedProducts = dynamic(
+  () =>
+    import('@/components/analysis/AnalysisMatchedProducts').then((mod) => ({
+      default: mod.AnalysisMatchedProducts,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { useExpertMode } from '@/hooks/useExpertMode';
