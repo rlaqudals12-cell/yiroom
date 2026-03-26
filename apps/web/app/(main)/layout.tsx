@@ -6,14 +6,14 @@ import { AgeVerificationProvider } from '@/components/providers/AgeVerificationP
 // 조건부 렌더링 컴포넌트 — 대부분 사용자에게 불필요하므로 지연 로드 (-80KB)
 const OnboardingTutorial = nextDynamic(
   () => import('@/components/onboarding').then((mod) => ({ default: mod.OnboardingTutorial })),
-  { loading: () => null, ssr: false }
+  { loading: () => null }
 );
 const ProductCompare = nextDynamic(
   () =>
     import('@/components/products/ProductCompare').then((mod) => ({
       default: mod.ProductCompare,
     })),
-  { loading: () => null, ssr: false }
+  { loading: () => null }
 );
 
 // (main) 그룹 전체를 dynamic으로 설정
