@@ -3,32 +3,19 @@
 import { useRouter } from 'next/navigation';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
+import { useTranslations } from 'next-intl';
 
 // 운동 빈도 옵션
-const FREQUENCIES = [
-  { id: '1-2', title: '주 1-2회', desc: '가볍게 시작하기' },
-  { id: '3-4', title: '주 3-4회', desc: '규칙적인 운동' },
-  { id: '5-6', title: '주 5-6회', desc: '적극적인 운동' },
-  { id: 'daily', title: '매일', desc: '꾸준한 루틴' },
-];
+const FREQUENCY_IDS = ['1-2', '3-4', '5-6', 'daily'];
 
 // 운동 장소 옵션
-const LOCATIONS = [
-  { id: 'home', title: '집', desc: '홈트레이닝' },
-  { id: 'gym', title: '헬스장', desc: '피트니스 센터' },
-  { id: 'outdoor', title: '야외', desc: '공원, 운동장 등' },
-];
+const LOCATION_IDS = ['home', 'gym', 'outdoor'];
 
 // 장비 옵션
-const EQUIPMENT = [
-  { id: 'none', title: '맨몸', desc: '장비 없이' },
-  { id: 'dumbbell', title: '덤벨', desc: '아령, 케틀벨' },
-  { id: 'band', title: '밴드', desc: '저항 밴드' },
-  { id: 'mat', title: '매트', desc: '요가 매트' },
-  { id: 'machine', title: '머신', desc: '헬스장 기구' },
-];
+const EQUIPMENT_IDS = ['none', 'dumbbell', 'band', 'mat', 'machine'];
 
 export default function Step2Page() {
+  const t = useTranslations('workoutOnboarding');
   const router = useRouter();
   const { frequency, location, equipment, setFrequency, setLocation, setEquipment, setStep } =
     useWorkoutInputStore();
@@ -75,18 +62,18 @@ export default function Step2Page() {
       {/* 섹션 1: 운동 빈도 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">운동 빈도</h2>
-          <p className="text-muted-foreground text-sm mt-1">일주일에 몇 번 운동하실 수 있나요?</p>
+          <h2 className="text-lg font-bold text-foreground">{t('step2FrequencyTitle')}</h2>
+          <p className="text-muted-foreground text-sm mt-1">{t('step2FrequencyDesc')}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {FREQUENCIES.map((freq) => (
+          {FREQUENCY_IDS.map((id) => (
             <SelectionCard
-              key={freq.id}
+              key={id}
               mode="single"
-              selected={frequency === freq.id}
-              onSelect={() => handleFrequencySelect(freq.id)}
-              title={freq.title}
-              description={freq.desc}
+              selected={frequency === id}
+              onSelect={() => handleFrequencySelect(id)}
+              title={t(`frequency_${id}`)}
+              description={t(`frequency_${id}_desc`)}
               compact
             />
           ))}
@@ -99,18 +86,18 @@ export default function Step2Page() {
       {/* 섹션 2: 운동 장소 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">운동 장소</h2>
-          <p className="text-muted-foreground text-sm mt-1">주로 어디서 운동하시나요?</p>
+          <h2 className="text-lg font-bold text-foreground">{t('step2LocationTitle')}</h2>
+          <p className="text-muted-foreground text-sm mt-1">{t('step2LocationDesc')}</p>
         </div>
         <div className="space-y-2">
-          {LOCATIONS.map((loc) => (
+          {LOCATION_IDS.map((id) => (
             <SelectionCard
-              key={loc.id}
+              key={id}
               mode="single"
-              selected={location === loc.id}
-              onSelect={() => handleLocationSelect(loc.id)}
-              title={loc.title}
-              description={loc.desc}
+              selected={location === id}
+              onSelect={() => handleLocationSelect(id)}
+              title={t(`location_${id}`)}
+              description={t(`location_${id}_desc`)}
             />
           ))}
         </div>
@@ -122,20 +109,18 @@ export default function Step2Page() {
       {/* 섹션 3: 사용 가능한 장비 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">사용 가능한 장비</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            사용할 수 있는 장비를 모두 선택해 주세요
-          </p>
+          <h2 className="text-lg font-bold text-foreground">{t('step2EquipmentTitle')}</h2>
+          <p className="text-muted-foreground text-sm mt-1">{t('step2EquipmentDesc')}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {EQUIPMENT.map((eq) => (
+          {EQUIPMENT_IDS.map((id) => (
             <SelectionCard
-              key={eq.id}
+              key={id}
               mode="multiple"
-              selected={equipment.includes(eq.id)}
-              onSelect={() => handleEquipmentSelect(eq.id)}
-              title={eq.title}
-              description={eq.desc}
+              selected={equipment.includes(id)}
+              onSelect={() => handleEquipmentSelect(id)}
+              title={t(`equipment_${id}`)}
+              description={t(`equipment_${id}_desc`)}
               compact
             />
           ))}
@@ -147,21 +132,19 @@ export default function Step2Page() {
         <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 space-y-1">
           {frequency && (
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              빈도:{' '}
-              <span className="font-medium">
-                {FREQUENCIES.find((f) => f.id === frequency)?.title}
-              </span>
+              {t('summaryFrequency')}{' '}
+              <span className="font-medium">{t(`frequency_${frequency}`)}</span>
             </p>
           )}
           {location && (
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              장소:{' '}
-              <span className="font-medium">{LOCATIONS.find((l) => l.id === location)?.title}</span>
+              {t('summaryLocation')}{' '}
+              <span className="font-medium">{t(`location_${location}`)}</span>
             </p>
           )}
           {equipment.length > 0 && (
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              장비: <span className="font-medium">{equipment.length}개</span> 선택됨
+              {t('summaryEquipment', { count: equipment.length })}
             </p>
           )}
         </div>

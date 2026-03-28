@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/utils/date-format';
 import { useWorkoutInputStore } from '@/lib/stores/workoutInputStore';
@@ -9,17 +9,10 @@ import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/w
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // 부상/통증 부위 옵션
-const INJURIES = [
-  { id: 'none', title: '없음', desc: '특별한 부상이나 통증 없음' },
-  { id: 'knee', title: '무릎', desc: '무릎 관절 통증' },
-  { id: 'back', title: '허리', desc: '허리 디스크, 요통' },
-  { id: 'shoulder', title: '어깨', desc: '어깨 통증, 오십견' },
-  { id: 'wrist', title: '손목', desc: '손목 터널 증후군' },
-  { id: 'ankle', title: '발목', desc: '발목 염좌, 통증' },
-  { id: 'neck', title: '목', desc: '거북목, 목 통증' },
-];
+const INJURY_IDS = ['none', 'knee', 'back', 'shoulder', 'wrist', 'ankle', 'neck'];
 
 export default function Step3Page() {
+  const t = useTranslations('workoutOnboarding');
   const router = useRouter();
   const locale = useLocale();
   const {
@@ -112,8 +105,8 @@ export default function Step3Page() {
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-foreground">건강 정보</h2>
-        <p className="text-muted-foreground mt-1">안전한 운동을 위해 알려주세요 (선택사항)</p>
+        <h2 className="text-xl font-bold text-foreground">{t('step3Title')}</h2>
+        <p className="text-muted-foreground mt-1">{t('step3Desc')}</p>
       </div>
 
       {/* 건너뛰기 버튼 */}
@@ -121,39 +114,37 @@ export default function Step3Page() {
         onClick={handleSkip}
         className="w-full py-3 text-indigo-600 text-sm font-medium hover:bg-indigo-50 rounded-xl transition-colors"
       >
-        건너뛰고 바로 시작하기
+        {t('skipAndStart')}
       </button>
 
       {/* 섹션 1: 부상/통증 */}
       <div>
         <div className="text-center mb-4">
-          <h3 className="text-lg font-bold text-foreground">부상/통증</h3>
-          <p className="text-muted-foreground text-sm mt-1">
-            현재 불편한 부위가 있나요? (복수 선택 가능)
-          </p>
+          <h3 className="text-lg font-bold text-foreground">{t('step3InjuryTitle')}</h3>
+          <p className="text-muted-foreground text-sm mt-1">{t('step3InjuryDesc')}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {INJURIES.slice(0, 1).map((injury) => (
+          {INJURY_IDS.slice(0, 1).map((id) => (
             <SelectionCard
-              key={injury.id}
+              key={id}
               mode="multiple"
-              selected={injuries.includes(injury.id)}
-              onSelect={() => handleInjurySelect(injury.id)}
-              title={injury.title}
-              description={injury.desc}
+              selected={injuries.includes(id)}
+              onSelect={() => handleInjurySelect(id)}
+              title={t(`injury_${id}`)}
+              description={t(`injury_${id}_desc`)}
               compact
             />
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
-          {INJURIES.slice(1).map((injury) => (
+          {INJURY_IDS.slice(1).map((id) => (
             <SelectionCard
-              key={injury.id}
+              key={id}
               mode="multiple"
-              selected={injuries.includes(injury.id)}
-              onSelect={() => handleInjurySelect(injury.id)}
-              title={injury.title}
-              description={injury.desc}
+              selected={injuries.includes(id)}
+              onSelect={() => handleInjurySelect(id)}
+              title={t(`injury_${id}`)}
+              description={t(`injury_${id}_desc`)}
               compact
             />
           ))}
@@ -164,9 +155,9 @@ export default function Step3Page() {
       {injuries.length > 0 && !injuries.includes('none') && (
         <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl p-4">
           <p className="text-sm text-orange-700 dark:text-orange-300">
-            <span className="font-medium">{injuries.length}개</span> 부위 선택됨
+            {t('injurySummary', { count: injuries.length })}
             <span className="block mt-1 text-orange-600 dark:text-orange-400">
-              해당 부위에 무리가 가지 않는 운동을 추천해 드릴게요
+              {t('injuryRecommendation')}
             </span>
           </p>
         </div>
@@ -180,12 +171,12 @@ export default function Step3Page() {
         <button
           onClick={() => setShowTargetSection(!showTargetSection)}
           className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
-          aria-label={showTargetSection ? '목표 설정 접기' : '목표 설정 펼치기'}
+          aria-label={showTargetSection ? t('collapseTarget') : t('expandTarget')}
           aria-expanded={showTargetSection}
         >
           <div className="text-left">
-            <p className="font-medium text-foreground">목표 설정</p>
-            <p className="text-sm text-muted-foreground">체중, 날짜 목표 (선택)</p>
+            <p className="font-medium text-foreground">{t('targetSettingTitle')}</p>
+            <p className="text-sm text-muted-foreground">{t('targetSettingDesc')}</p>
           </div>
           {showTargetSection ? (
             <ChevronUp className="w-5 h-5 text-muted-foreground" />
@@ -202,7 +193,7 @@ export default function Step3Page() {
                 htmlFor="target-weight"
                 className="block text-sm font-medium text-foreground/80 mb-2"
               >
-                목표 체중 (kg)
+                {t('targetWeightLabel')}
               </label>
               <div className="relative">
                 <input
@@ -213,7 +204,7 @@ export default function Step3Page() {
                   max="200"
                   value={weightInput}
                   onChange={(e) => handleWeightChange(e.target.value)}
-                  placeholder="예: 55.0"
+                  placeholder={t('targetWeightPlaceholder')}
                   className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors bg-card"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -228,7 +219,7 @@ export default function Step3Page() {
                 htmlFor="target-date"
                 className="block text-sm font-medium text-foreground/80 mb-2"
               >
-                목표 달성 날짜
+                {t('targetDateLabel')}
               </label>
               <input
                 id="target-date"
@@ -244,16 +235,16 @@ export default function Step3Page() {
             {(targetWeight || targetDate) && (
               <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded-xl p-4 space-y-1">
                 <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                  설정된 목표
+                  {t('targetSummaryTitle')}
                 </p>
                 {targetWeight && (
                   <p className="text-sm text-indigo-600 dark:text-indigo-400">
-                    체중: {targetWeight}kg
+                    {t('targetSummaryWeight', { weight: targetWeight })}
                   </p>
                 )}
                 {targetDate && (
                   <p className="text-sm text-indigo-600 dark:text-indigo-400">
-                    날짜: {formatDate(new Date(targetDate), locale)}
+                    {t('targetSummaryDate', { date: formatDate(new Date(targetDate), locale) })}
                   </p>
                 )}
               </div>
@@ -264,9 +255,7 @@ export default function Step3Page() {
 
       {/* 안내 문구 */}
       <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4">
-        <p className="text-sm text-amber-700 dark:text-amber-300">
-          건강 정보는 선택사항이에요. 입력하지 않아도 맞춤 운동 추천을 받을 수 있어요.
-        </p>
+        <p className="text-sm text-amber-700 dark:text-amber-300">{t('healthInfoHint')}</p>
       </div>
 
       {/* 네비게이션 버튼 */}

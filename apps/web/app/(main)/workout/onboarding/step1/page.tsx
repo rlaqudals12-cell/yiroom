@@ -10,6 +10,7 @@ import { useWorkoutInputStore, type PersonalColorSeason } from '@/lib/stores/wor
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 import { BODY_TYPES, type BodyType } from '@/lib/mock/body-analysis';
 import { workoutFunnel, durationTrackers } from '@/lib/analytics';
+import { useTranslations } from 'next-intl';
 import { Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // body_analyses 테이블 데이터 타입
@@ -25,27 +26,17 @@ interface BodyAnalysis {
   created_at: string;
 }
 
-// 운동 목표 옵션 (Step 2에서 통합)
-const GOALS = [
-  { id: 'weight_loss', title: '체중 감량', desc: '건강하게 살 빼기' },
-  { id: 'strength', title: '근력 강화', desc: '근육량 늘리기' },
-  { id: 'endurance', title: '체력 향상', desc: '지구력 키우기' },
-  { id: 'stress', title: '스트레스 해소', desc: '마음 건강 챙기기' },
-  { id: 'posture', title: '체형 교정', desc: '바른 자세 만들기' },
-];
+// 운동 목표 옵션
+const GOAL_IDS = ['weight_loss', 'strength', 'endurance', 'stress', 'posture'];
 
-// 신체 고민 옵션 (Step 3에서 통합 - 상위 4개만)
-const CONCERNS = [
-  { id: 'belly', title: '뱃살', desc: '복부 지방 감소' },
-  { id: 'thigh', title: '허벅지', desc: '하체 라인 정리' },
-  { id: 'arm', title: '팔뚝', desc: '팔 라인 탄력' },
-  { id: 'back', title: '등살', desc: '등 라인 정리' },
-];
+// 신체 고민 옵션
+const CONCERN_IDS = ['belly', 'thigh', 'arm', 'back'];
 
 const MAX_GOALS = 2;
 const MAX_CONCERNS = 3;
 
 export default function Step1Page() {
+  const t = useTranslations('workoutOnboarding');
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
@@ -86,7 +77,7 @@ export default function Step1Page() {
 
         if (bodyError && bodyError.code !== 'PGRST116') {
           console.error('Error fetching body analysis:', bodyError);
-          setError('체형 데이터를 불러오는 중 오류가 발생했어요.');
+          setError(t('bodyDataError'));
           return;
         }
 
@@ -124,7 +115,7 @@ export default function Step1Page() {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-        setError('예상치 못한 오류가 발생했어요.');
+        setError(t('unexpectedError'));
       } finally {
         setIsLoading(false);
       }
@@ -139,7 +130,7 @@ export default function Step1Page() {
       setGoals(goals.filter((id) => id !== goalId));
     } else {
       if (goals.length >= MAX_GOALS) {
-        toast.warning(`최대 ${MAX_GOALS}개까지 선택할 수 있어요`);
+        toast.warning(t('maxGoals', { max: MAX_GOALS }));
         return;
       }
       setGoals([...goals, goalId]);
@@ -152,7 +143,7 @@ export default function Step1Page() {
       setConcerns(concerns.filter((id) => id !== concernId));
     } else {
       if (concerns.length >= MAX_CONCERNS) {
-        toast.warning(`최대 ${MAX_CONCERNS}개까지 선택할 수 있어요`);
+        toast.warning(t('maxConcerns', { max: MAX_CONCERNS }));
         return;
       }
       setConcerns([...concerns, concernId]);
@@ -170,7 +161,7 @@ export default function Step1Page() {
     return (
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">로그인이 필요해요.</p>
+        <p className="text-muted-foreground">{t('loginRequired')}</p>
       </div>
     );
   }
@@ -180,7 +171,7 @@ export default function Step1Page() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
-        <p className="text-muted-foreground">체형 정보를 불러오는 중...</p>
+        <p className="text-muted-foreground">{t('loadingBodyInfo')}</p>
       </div>
     );
   }
@@ -205,13 +196,13 @@ export default function Step1Page() {
       {/* 진행 표시 - 3단계 중 1단계 */}
       <ProgressIndicator currentStep={1} totalSteps={3} />
 
-      {/* 면책 조항 (스펙 16.3: 앱 최초 실행 시 표시) */}
+      {/* 면책 조항 */}
       <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4 border border-amber-100 dark:border-amber-800">
         <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-          <span className="font-medium">서비스 이용 안내</span>
+          <span className="font-medium">{t('disclaimerTitle')}</span>
           <br />
-          <br />본 서비스는 전문 의료 조언을 대체하지 않아요. 부상이나 통증이 있는 경우 전문가와
-          상담 후 운동하면 좋아요.
+          <br />
+          {t('disclaimerBody')}
         </p>
       </div>
 
@@ -221,15 +212,13 @@ export default function Step1Page() {
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">체형 분석이 필요해요</h3>
-          <p className="text-muted-foreground text-sm mb-6">
-            맞춤 운동 추천을 위해 먼저 체형 분석을 진행해 주세요.
-          </p>
+          <h3 className="text-lg font-bold text-foreground mb-2">{t('bodyAnalysisNeeded')}</h3>
+          <p className="text-muted-foreground text-sm mb-6">{t('bodyAnalysisNeededDesc')}</p>
           <Link
             href="/analysis/body"
             className="inline-block w-full py-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl transition-colors"
           >
-            체형 분석하기
+            {t('goToBodyAnalysis')}
           </Link>
         </div>
       ) : (
@@ -239,15 +228,15 @@ export default function Step1Page() {
             <button
               onClick={() => setShowBodyInfo(!showBodyInfo)}
               className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              aria-label={showBodyInfo ? '체형 정보 접기' : '체형 정보 펼치기'}
+              aria-label={showBodyInfo ? t('collapseBodyInfo') : t('expandBodyInfo')}
               aria-expanded={showBodyInfo}
             >
               <div className="flex items-center gap-3">
                 <div className="text-left">
                   <p className="font-medium text-foreground">
-                    {bodyTypeInfo?.label || '체형 정보'}
+                    {bodyTypeInfo?.label || t('bodyInfoLabel')}
                   </p>
-                  <p className="text-sm text-muted-foreground">체형 분석 결과</p>
+                  <p className="text-sm text-muted-foreground">{t('bodyAnalysisResult')}</p>
                 </div>
               </div>
               {showBodyInfo ? (
@@ -301,20 +290,20 @@ export default function Step1Page() {
           {/* 섹션 2: 운동 목표 */}
           <div>
             <div className="text-center mb-4">
-              <h2 className="text-lg font-bold text-foreground">운동 목표</h2>
+              <h2 className="text-lg font-bold text-foreground">{t('step1GoalTitle')}</h2>
               <p className="text-muted-foreground text-sm mt-1">
-                원하는 목표를 선택해 주세요 (최대 {MAX_GOALS}개)
+                {t('step1GoalDesc', { max: MAX_GOALS })}
               </p>
             </div>
             <div className="space-y-2">
-              {GOALS.map((goal) => (
+              {GOAL_IDS.map((id) => (
                 <SelectionCard
-                  key={goal.id}
+                  key={id}
                   mode="multiple"
-                  selected={goals.includes(goal.id)}
-                  onSelect={() => handleGoalSelect(goal.id)}
-                  title={goal.title}
-                  description={goal.desc}
+                  selected={goals.includes(id)}
+                  onSelect={() => handleGoalSelect(id)}
+                  title={t(`goal_${id}`)}
+                  description={t(`goal_${id}_desc`)}
                 />
               ))}
             </div>
@@ -326,20 +315,20 @@ export default function Step1Page() {
           {/* 섹션 3: 신체 고민 */}
           <div>
             <div className="text-center mb-4">
-              <h2 className="text-lg font-bold text-foreground">개선하고 싶은 부위</h2>
+              <h2 className="text-lg font-bold text-foreground">{t('step1ConcernTitle')}</h2>
               <p className="text-muted-foreground text-sm mt-1">
-                집중하고 싶은 부위를 선택해 주세요 (최대 {MAX_CONCERNS}개)
+                {t('step1ConcernDesc', { max: MAX_CONCERNS })}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {CONCERNS.map((concern) => (
+              {CONCERN_IDS.map((id) => (
                 <SelectionCard
-                  key={concern.id}
+                  key={id}
                   mode="multiple"
-                  selected={concerns.includes(concern.id)}
-                  onSelect={() => handleConcernSelect(concern.id)}
-                  title={concern.title}
-                  description={concern.desc}
+                  selected={concerns.includes(id)}
+                  onSelect={() => handleConcernSelect(id)}
+                  title={t(`concern_${id}`)}
+                  description={t(`concern_${id}_desc`)}
                   compact
                 />
               ))}
@@ -351,12 +340,12 @@ export default function Step1Page() {
             <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded-xl p-4 space-y-1">
               {goals.length > 0 && (
                 <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                  목표: <span className="font-medium">{goals.length}개</span> 선택됨
+                  {t('summaryGoals', { count: goals.length })}
                 </p>
               )}
               {concerns.length > 0 && (
                 <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                  부위: <span className="font-medium">{concerns.length}개</span> 선택됨
+                  {t('summaryConcerns', { count: concerns.length })}
                 </p>
               )}
             </div>

@@ -12,22 +12,14 @@ import {
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 import { ACTIVITY_LEVEL_LABELS } from '@/lib/nutrition';
 import type { NutritionGoal } from '@/types/nutrition';
+import { useTranslations } from 'next-intl';
 import { Loader2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 영양 목표 옵션
-const NUTRITION_GOALS: { id: NutritionGoal; title: string; desc: string }[] = [
-  { id: 'weight_loss', title: '체중 감량', desc: '살 빼기에 맞춘 식단' },
-  { id: 'maintain', title: '체중 유지', desc: '균형 잡힌 식단' },
-  { id: 'muscle', title: '근육 증가', desc: '고단백 식단' },
-  { id: 'skin', title: '피부 개선', desc: '피부 친화 식단' },
-  { id: 'health', title: '건강 관리', desc: '균형 영양 식단' },
-];
+const NUTRITION_GOAL_IDS: NutritionGoal[] = ['weight_loss', 'maintain', 'muscle', 'skin', 'health'];
 
 // 성별 옵션
-const GENDER_OPTIONS: { id: Gender; title: string }[] = [
-  { id: 'male', title: '남성' },
-  { id: 'female', title: '여성' },
-];
+const GENDER_IDS: Gender[] = ['male', 'female'];
 
 // 활동 수준 옵션
 const ACTIVITY_OPTIONS: { id: ActivityLevel }[] = [
@@ -42,6 +34,7 @@ const ACTIVITY_OPTIONS: { id: ActivityLevel }[] = [
  * N-1 온보딩 Step 1: 목표 + 기본 정보 통합
  */
 export default function NutritionStep1Page() {
+  const t = useTranslations('nutritionOnboarding');
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
@@ -120,7 +113,7 @@ export default function NutritionStep1Page() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-4" />
-        <p className="text-muted-foreground">정보를 불러오는 중...</p>
+        <p className="text-muted-foreground">{t('loading')}</p>
       </div>
     );
   }
@@ -133,10 +126,10 @@ export default function NutritionStep1Page() {
       {/* 면책 조항 */}
       <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4 border border-amber-100 dark:border-amber-800">
         <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-          <span className="font-medium">서비스 이용 안내</span>
+          <span className="font-medium">{t('disclaimerTitle')}</span>
           <br />
-          <br />본 서비스는 전문 의료 조언을 대체하지 않아요. 특정 질환이 있거나 임신 중인 경우
-          전문가와 상담 후 이용해 주세요.
+          <br />
+          {t('disclaimerBody')}
         </p>
       </div>
 
@@ -144,19 +137,19 @@ export default function NutritionStep1Page() {
       <div>
         <div className="text-center mb-4">
           <h2 className="text-lg font-bold text-foreground">
-            식사 목표 <span className="text-red-500 text-sm">*</span>
+            {t('step1GoalTitle')} <span className="text-red-500 text-sm">*</span>
           </h2>
-          <p className="text-muted-foreground text-sm mt-1">원하는 목표를 선택해 주세요</p>
+          <p className="text-muted-foreground text-sm mt-1">{t('step1GoalDesc')}</p>
         </div>
         <div className="space-y-2">
-          {NUTRITION_GOALS.map((item) => (
+          {NUTRITION_GOAL_IDS.map((id) => (
             <SelectionCard
-              key={item.id}
+              key={id}
               mode="single"
-              selected={goal === item.id}
-              onSelect={() => setGoal(item.id)}
-              title={item.title}
-              description={item.desc}
+              selected={goal === id}
+              onSelect={() => setGoal(id)}
+              title={t(`goal_${id}`)}
+              description={t(`goal_${id}_desc`)}
             />
           ))}
         </div>
@@ -168,42 +161,38 @@ export default function NutritionStep1Page() {
       {/* 섹션 2: 기본 정보 */}
       <div>
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-foreground">기본 정보</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            칼로리 계산을 위한 정보를 입력해 주세요
-          </p>
+          <h2 className="text-lg font-bold text-foreground">{t('step1BasicInfoTitle')}</h2>
+          <p className="text-muted-foreground text-sm mt-1">{t('step1BasicInfoDesc')}</p>
         </div>
 
         {/* C-1 연동 알림 */}
         {hasC1Data && (
           <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 flex items-center gap-3 mb-4">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-            <p className="text-sm text-green-700 dark:text-green-300">
-              체형 분석 데이터에서 키/체중을 불러왔어요 (직접 수정 가능)
-            </p>
+            <p className="text-sm text-green-700 dark:text-green-300">{t('c1DataLoaded')}</p>
           </div>
         )}
 
         {/* 성별 선택 */}
         <div className="space-y-3 mb-4">
           <label className="block text-sm font-medium text-foreground/80">
-            성별 <span className="text-red-500">*</span>
+            {t('genderLabel')} <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="성별 선택">
-            {GENDER_OPTIONS.map((option) => (
+          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label={t('genderLabel')}>
+            {GENDER_IDS.map((id) => (
               <button
-                key={option.id}
-                onClick={() => setGender(option.id)}
+                key={id}
+                onClick={() => setGender(id)}
                 role="radio"
-                aria-checked={gender === option.id}
-                aria-label={option.title}
+                aria-checked={gender === id}
+                aria-label={t(`gender_${id}`)}
                 className={`p-4 rounded-xl border-2 transition-all ${
-                  gender === option.id
+                  gender === id
                     ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
                     : 'border-border hover:border-border/80'
                 }`}
               >
-                <p className="font-medium text-foreground">{option.title}</p>
+                <p className="font-medium text-foreground">{t(`gender_${id}`)}</p>
               </button>
             ))}
           </div>
@@ -212,7 +201,7 @@ export default function NutritionStep1Page() {
         {/* 생년월일 */}
         <div className="space-y-2 mb-4">
           <label className="block text-sm font-medium text-foreground/80">
-            생년월일 <span className="text-red-500">*</span>
+            {t('birthDateLabel')} <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
@@ -227,7 +216,7 @@ export default function NutritionStep1Page() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground/80">
-              키 (cm) <span className="text-red-500">*</span>
+              {t('heightLabel')} <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -241,7 +230,7 @@ export default function NutritionStep1Page() {
           </div>
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground/80">
-              체중 (kg) <span className="text-red-500">*</span>
+              {t('weightLabel')} <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -263,10 +252,12 @@ export default function NutritionStep1Page() {
           >
             <div className="text-left">
               <p className="font-medium text-foreground">
-                활동 수준 <span className="text-red-500">*</span>
+                {t('activityLevelLabel')} <span className="text-red-500">*</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                {activityLevel ? ACTIVITY_LEVEL_LABELS[activityLevel].label : '선택해 주세요'}
+                {activityLevel
+                  ? ACTIVITY_LEVEL_LABELS[activityLevel].label
+                  : t('activityLevelPlaceholder')}
               </p>
             </div>
             {showBodyInfo ? (
@@ -303,15 +294,12 @@ export default function NutritionStep1Page() {
         <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 space-y-1">
           {goal && (
             <p className="text-sm text-green-700 dark:text-green-300">
-              목표:{' '}
-              <span className="font-medium">
-                {NUTRITION_GOALS.find((g) => g.id === goal)?.title}
-              </span>
+              {t('summaryGoal')} <span className="font-medium">{t(`goal_${goal}`)}</span>
             </p>
           )}
           {gender && height && weight && (
             <p className="text-sm text-green-700 dark:text-green-300">
-              {GENDER_OPTIONS.find((g) => g.id === gender)?.title}, {height}cm, {weight}kg
+              {t(`gender_${gender}`)}, {height}cm, {weight}kg
             </p>
           )}
         </div>
