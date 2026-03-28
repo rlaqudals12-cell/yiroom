@@ -3,11 +3,12 @@
 import { useMemo } from 'react';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { Flame, Check, X, Circle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutDay {
-  date: string;          // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   status: 'completed' | 'skipped' | 'rest' | 'planned' | 'today';
-  label?: string;        // 상체, 하체 등
+  label?: string; // 상체, 하체 등
 }
 
 interface WeeklyCalendarProps {
@@ -22,11 +23,8 @@ interface WeeklyCalendarProps {
  * - Streak 표시
  * - 상태별 아이콘/색상
  */
-export function WeeklyCalendar({
-  weekDays,
-  currentStreak = 0,
-  onDayClick,
-}: WeeklyCalendarProps) {
+export function WeeklyCalendar({ weekDays, currentStreak = 0, onDayClick }: WeeklyCalendarProps) {
+  const t = useTranslations('workoutUI');
   // 요일 라벨
   const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
@@ -81,9 +79,7 @@ export function WeeklyCalendar({
         {currentStreak > 0 && (
           <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full">
             <Flame className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-orange-600">
-              {currentStreak}일 연속!
-            </span>
+            <span className="text-sm font-medium text-orange-600">{currentStreak}일 연속!</span>
           </div>
         )}
       </div>
@@ -92,10 +88,7 @@ export function WeeklyCalendar({
       <div className="grid grid-cols-7 gap-2">
         {/* 요일 헤더 */}
         {dayLabels.map((label) => (
-          <div
-            key={label}
-            className="text-center text-xs font-medium text-muted-foreground pb-2"
-          >
+          <div key={label} className="text-center text-xs font-medium text-muted-foreground pb-2">
             {label}
           </div>
         ))}
@@ -110,12 +103,16 @@ export function WeeklyCalendar({
               transition-all hover:scale-105 cursor-pointer
               ${getStatusStyle(day.status)}
             `}
-            aria-label={`${day.date} ${selectByKey(day.status, {
-              completed: '완료',
-              skipped: '미완료',
-              today: '오늘',
-              planned: '예정',
-            }, '휴식')}`}
+            aria-label={`${day.date} ${selectByKey(
+              day.status,
+              {
+                completed: '완료',
+                skipped: '미완료',
+                today: '오늘',
+                planned: '예정',
+              },
+              '휴식'
+            )}`}
           >
             {getStatusIcon(day.status)}
           </button>
@@ -136,23 +133,23 @@ export function WeeklyCalendar({
       <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-border flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-green-500" />
-          <span className="text-xs text-muted-foreground">완료</span>
+          <span className="text-xs text-muted-foreground">{t('weeklyCalendar0')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-muted border border-border" />
-          <span className="text-xs text-muted-foreground">휴식</span>
+          <span className="text-xs text-muted-foreground">{t('weeklyCalendar1')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-indigo-500" />
-          <span className="text-xs text-muted-foreground">오늘</span>
+          <span className="text-xs text-muted-foreground">{t('weeklyCalendar2')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-indigo-100 border border-indigo-200" />
-          <span className="text-xs text-muted-foreground">예정</span>
+          <span className="text-xs text-muted-foreground">{t('weeklyCalendar3')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
-          <span className="text-xs text-muted-foreground">미완료</span>
+          <span className="text-xs text-muted-foreground">{t('weeklyCalendar4')}</span>
         </div>
       </div>
     </div>

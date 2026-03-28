@@ -9,6 +9,7 @@ import {
   POSTURE_SEVERITY_LABELS,
   POSTURE_SEVERITY_STYLES,
 } from '@/types/workout-posture';
+import { useTranslations } from 'next-intl';
 
 interface PostureFeedbackPanelProps {
   issue: PostureIssue | null;
@@ -27,6 +28,7 @@ export function PostureFeedbackPanel({
   onClose,
   onExerciseClick,
 }: PostureFeedbackPanelProps) {
+  const t = useTranslations('workoutUI');
   // ESC 키로 닫기
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -82,7 +84,7 @@ export function PostureFeedbackPanel({
             <button
               onClick={onClose}
               className="p-2 -mr-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="패널 닫기"
+              aria-label={t('postureFeedbackPanel5')}
             >
               <X className="w-5 h-5 text-gray-500" />
             </button>
@@ -99,15 +101,17 @@ export function PostureFeedbackPanel({
             <div className="bg-gray-50 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">각도 분석</span>
+                <span className="text-sm font-medium text-gray-600">
+                  {t('postureFeedbackPanel0')}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <div>
-                  <span className="text-gray-500">현재 각도</span>
+                  <span className="text-gray-500">{t('postureFeedbackPanel1')}</span>
                   <p className="text-lg font-semibold text-gray-900">{issue.currentAngle}°</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-gray-500">이상 각도</span>
+                  <span className="text-gray-500">{t('postureFeedbackPanel2')}</span>
                   <p className="text-lg font-semibold text-emerald-600">{issue.idealAngle}°</p>
                 </div>
               </div>
@@ -116,7 +120,7 @@ export function PostureFeedbackPanel({
 
           {/* 교정 가이드 */}
           <div className="bg-blue-50 rounded-xl p-4">
-            <h3 className="font-medium text-blue-900 mb-2">교정 방법</h3>
+            <h3 className="font-medium text-blue-900 mb-2">{t('postureFeedbackPanel3')}</h3>
             <p className="text-blue-700">{issue.correction}</p>
           </div>
 
@@ -131,7 +135,7 @@ export function PostureFeedbackPanel({
                 'hover:from-primary/20 hover:to-primary/10 transition-colors'
               )}
             >
-              <span className="font-medium text-primary">교정 운동 보기</span>
+              <span className="font-medium text-primary">{t('postureFeedbackPanel4')}</span>
               <ChevronRight className="w-5 h-5 text-primary" />
             </button>
           )}

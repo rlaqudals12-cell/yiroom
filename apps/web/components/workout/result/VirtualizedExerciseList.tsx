@@ -6,6 +6,7 @@ import { Exercise, ExerciseCategory } from '@/types/workout';
 import { ExerciseCard } from '@/components/workout/common';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface VirtualizedExerciseListProps {
   exercises: Exercise[];
@@ -43,6 +44,7 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
   enableInfiniteScroll = true,
   pageSize = 6,
 }: VirtualizedExerciseListProps) {
+  const t = useTranslations('workoutUI');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -111,64 +113,64 @@ const VirtualizedExerciseList = memo(function VirtualizedExerciseList({
 
       {/* 운동 리스트 - 가상화 (아이템 많을 때) */}
       {itemsToRender.length > 0 && enableVirtualization && itemsToRender.length > 20 && (
+        <div
+          ref={parentRef}
+          className="h-[600px] overflow-auto"
+          data-testid="virtualized-container"
+        >
           <div
-            ref={parentRef}
-            className="h-[600px] overflow-auto"
-            data-testid="virtualized-container"
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
           >
-            <div
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const startIndex = virtualRow.index * 2;
-                const items = itemsToRender.slice(startIndex, startIndex + 2);
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const startIndex = virtualRow.index * 2;
+              const items = itemsToRender.slice(startIndex, startIndex + 2);
 
-                return (
-                  <div
-                    key={virtualRow.key}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4"
-                  >
-                    {items.map((exercise) => (
-                      <ExerciseCard
-                        key={exercise.id}
-                        exercise={exercise}
-                        onClick={onExerciseClick ? () => onExerciseClick(exercise.id) : undefined}
-                      />
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4"
+                >
+                  {items.map((exercise) => (
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      onClick={onExerciseClick ? () => onExerciseClick(exercise.id) : undefined}
+                    />
+                  ))}
+                </div>
+              );
+            })}
           </div>
+        </div>
       )}
       {/* 운동 리스트 - 일반 그리드 (아이템 적을 때) */}
       {itemsToRender.length > 0 && !(enableVirtualization && itemsToRender.length > 20) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {itemsToRender.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                onClick={onExerciseClick ? () => onExerciseClick(exercise.id) : undefined}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {itemsToRender.map((exercise) => (
+            <ExerciseCard
+              key={exercise.id}
+              exercise={exercise}
+              onClick={onExerciseClick ? () => onExerciseClick(exercise.id) : undefined}
+            />
+          ))}
+        </div>
       )}
       {/* 빈 상태 */}
       {itemsToRender.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
-          <p>해당 카테고리의 운동이 없어요.</p>
+          <p>{t('virtualizedExerciseList0')}</p>
         </div>
       )}
 

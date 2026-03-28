@@ -20,6 +20,7 @@ import {
   type ReanalysisPrompt,
   type BodyCalorieAdjustment,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface BodyInsightCardProps {
   /** C-1 체형 분석 데이터 */
@@ -99,6 +100,7 @@ function NoAnalysisCard({ onNavigate }: { onNavigate?: () => void }) {
  * 체중 변화 섹션
  */
 export function WeightChangeSection({ insight }: { insight: WeightChangeInsight }) {
+  const t = useTranslations('nutritionUI');
   const getTrendIcon = () => {
     if (insight.weightChange < -0.5) {
       return <TrendingDown className="w-5 h-5 text-green-500" />;
@@ -136,7 +138,7 @@ export function WeightChangeSection({ insight }: { insight: WeightChangeInsight 
         <div className="flex items-center gap-2">
           {getTrendIcon()}
           <div>
-            <p className="text-sm font-medium text-foreground">체중 변화</p>
+            <p className="text-sm font-medium text-foreground">{t('bodyInsightCard0')}</p>
             <p className="text-xs text-muted-foreground">
               {insight.daysSinceAnalysis}일 전 분석 대비
             </p>
@@ -215,6 +217,7 @@ export function ReanalysisPromptSection({
  * 칼로리 조정 정보 섹션
  */
 export function CalorieAdjustmentSection({ adjustment }: { adjustment: BodyCalorieAdjustment }) {
+  const t = useTranslations('nutritionUI');
   const hasAdjustment = adjustment.baseCalories !== adjustment.adjustedCalories;
   const diff = adjustment.adjustedCalories - adjustment.baseCalories;
 
@@ -224,7 +227,7 @@ export function CalorieAdjustmentSection({ adjustment }: { adjustment: BodyCalor
       data-testid="calorie-adjustment-section"
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-foreground">체형 맞춤 칼로리</p>
+        <p className="text-sm font-medium text-foreground">{t('bodyInsightCard1')}</p>
         <div className="text-right">
           <p className="text-lg font-bold text-module-body">
             {adjustment.adjustedCalories.toLocaleString()}kcal
@@ -256,6 +259,7 @@ export default function BodyInsightCard({
   onNavigateToBodyAnalysis,
   onReanalysisClick,
 }: BodyInsightCardProps) {
+  const t = useTranslations('nutritionUI');
   // 인사이트 계산
   const insight = useMemo(
     () => getBodyNutritionInsight(bodyAnalysis, currentWeight, baseCalories, nutritionGoal),
@@ -281,7 +285,7 @@ export default function BodyInsightCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Scale className="w-5 h-5 text-module-body" />
-          <h3 className="text-sm font-semibold text-foreground">체형 연동 인사이트</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t('bodyInsightCard2')}</h3>
         </div>
         <span className="text-xs text-module-body bg-module-body/20 px-2 py-0.5 rounded-full">
           C-1 연동

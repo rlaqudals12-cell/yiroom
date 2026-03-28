@@ -3,6 +3,7 @@
 import { Check, X, Circle } from 'lucide-react';
 import type { SetRecord } from '@/types/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface SetTrackerProps {
   sets: SetRecord[];
@@ -17,12 +18,8 @@ interface SetTrackerProps {
  * - 현재 세트 하이라이트
  * - 완료/건너뛰기 버튼
  */
-export function SetTracker({
-  sets,
-  currentSetIndex,
-  onCompleteSet,
-  onSkipSet,
-}: SetTrackerProps) {
+export function SetTracker({ sets, currentSetIndex, onCompleteSet, onSkipSet }: SetTrackerProps) {
+  const t = useTranslations('workoutUI');
   const currentSet = sets[currentSetIndex];
 
   // 세트 상태 아이콘
@@ -54,12 +51,14 @@ export function SetTracker({
         {sets.map((set, index) => (
           <div
             key={set.setNumber}
-            className={`flex-1 h-2 rounded-full transition-colors ${
-              selectByKey(set.status, {
+            className={`flex-1 h-2 rounded-full transition-colors ${selectByKey(
+              set.status,
+              {
                 completed: 'bg-status-success',
                 skipped: 'bg-muted-foreground',
-              }, index === currentSetIndex ? 'bg-primary' : 'bg-muted')
-            }`}
+              },
+              index === currentSetIndex ? 'bg-primary' : 'bg-muted'
+            )}`}
           />
         ))}
       </div>
@@ -76,12 +75,9 @@ export function SetTracker({
                 {getSetIcon(set, index)}
               </div>
               <div>
-                <span className="font-medium text-foreground">
-                  세트 {set.setNumber}
-                </span>
+                <span className="font-medium text-foreground">세트 {set.setNumber}</span>
                 <span className="text-sm text-muted-foreground ml-2">
-                  {set.targetReps}회
-                  {set.targetWeight && ` × ${set.targetWeight}kg`}
+                  {set.targetReps}회{set.targetWeight && ` × ${set.targetWeight}kg`}
                 </span>
               </div>
             </div>
@@ -96,7 +92,7 @@ export function SetTracker({
 
             {/* 건너뛴 세트 */}
             {set.status === 'skipped' && (
-              <span className="text-sm text-muted-foreground">건너뜀</span>
+              <span className="text-sm text-muted-foreground">{t('setTracker0')}</span>
             )}
           </div>
         ))}

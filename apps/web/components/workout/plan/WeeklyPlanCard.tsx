@@ -3,6 +3,7 @@
 import type { DayPlan, WorkoutType } from '@/types/workout';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout';
 import { Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // 요일 한글 라벨
 const DAY_LABELS: Record<string, string> = {
@@ -38,6 +39,7 @@ export function WeeklyPlanCard({
   onDayClick,
   selectedDay,
 }: WeeklyPlanCardProps) {
+  const t = useTranslations('workoutUI');
   const typeInfo = WORKOUT_TYPE_INFO[workoutType];
 
   // 오늘 요일 확인
@@ -152,16 +154,16 @@ export function WeeklyPlanCard({
       <div className="px-4 pb-4">
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <span>예정</span>
+            <span>{t('weeklyPlanCard0')}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>오늘</span>
+            <span>{t('weeklyPlanCard1')}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>휴식</span>
+            <span>{t('weeklyPlanCard2')}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>완료</span>
+            <span>{t('weeklyPlanCard3')}</span>
           </div>
         </div>
       </div>

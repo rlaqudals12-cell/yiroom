@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import type { Rating, CreateReviewInput, ProductReview } from '@/types/review';
 import { getRatingText } from '@/lib/products/services/reviews';
 import { selectByCondition } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface ReviewFormProps {
   /** 수정할 리뷰 (없으면 새 리뷰 작성) */
@@ -31,6 +32,7 @@ export function ReviewForm({
   isLoading = false,
   className,
 }: ReviewFormProps) {
+  const t = useTranslations('productsUI');
   const [rating, setRating] = useState<Rating>(review?.rating ?? 5);
   const [title, setTitle] = useState(review?.title ?? '');
   const [content, setContent] = useState(review?.content ?? '');
@@ -59,37 +61,26 @@ export function ReviewForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn('space-y-6', className)}
-      data-testid="review-form"
-    >
+    <form onSubmit={handleSubmit} className={cn('space-y-6', className)} data-testid="review-form">
       {/* 별점 선택 */}
       <div className="space-y-2">
-        <Label>별점을 선택해 주세요</Label>
+        <Label>{t('reviewForm0')}</Label>
         <div className="flex items-center gap-4">
-          <StarRating
-            rating={rating}
-            size="lg"
-            editable
-            onChange={setRating}
-          />
-          <span className="text-sm font-medium text-muted-foreground">
-            {getRatingText(rating)}
-          </span>
+          <StarRating rating={rating} size="lg" editable onChange={setRating} />
+          <span className="text-sm font-medium text-muted-foreground">{getRatingText(rating)}</span>
         </div>
       </div>
 
       {/* 제목 (선택) */}
       <div className="space-y-2">
         <Label htmlFor="review-title">
-          제목 <span className="text-muted-foreground">(선택)</span>
+          제목 <span className="text-muted-foreground">{t('reviewForm1')}</span>
         </Label>
         <Input
           id="review-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="리뷰 제목을 입력해 주세요"
+          placeholder={t('reviewForm2')}
           maxLength={100}
           disabled={isLoading}
         />
@@ -98,36 +89,27 @@ export function ReviewForm({
       {/* 내용 (선택) */}
       <div className="space-y-2">
         <Label htmlFor="review-content">
-          내용 <span className="text-muted-foreground">(선택)</span>
+          내용 <span className="text-muted-foreground">{t('reviewForm1')}</span>
         </Label>
         <Textarea
           id="review-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="제품 사용 후기를 자유롭게 작성해 주세요"
+          placeholder={t('reviewForm3')}
           rows={4}
           maxLength={1000}
           disabled={isLoading}
         />
-        <p className="text-xs text-muted-foreground text-right">
-          {content.length}/1000
-        </p>
+        <p className="text-xs text-muted-foreground text-right">{content.length}/1000</p>
       </div>
 
       {/* 에러 메시지 */}
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* 버튼 */}
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             취소
           </Button>
         )}
@@ -150,12 +132,7 @@ export function ReviewPromptCard({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        'rounded-lg border-2 border-dashed bg-muted/30 p-6 text-center',
-        className
-      )}
-    >
+    <div className={cn('rounded-lg border-2 border-dashed bg-muted/30 p-6 text-center', className)}>
       <h3 className="font-medium">이 제품을 사용해 보셨나요?</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         다른 사용자들에게 도움이 되는 리뷰를 남겨주세요

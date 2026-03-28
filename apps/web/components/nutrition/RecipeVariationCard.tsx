@@ -9,6 +9,7 @@ import { type RecipeVariation } from '@/lib/nutrition';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Lightbulb, TrendingDown, TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface RecipeVariationCardProps {
   variation: RecipeVariation;
@@ -20,6 +21,7 @@ interface RecipeVariationCardProps {
 }
 
 export function RecipeVariationCard({ variation, originalNutrition }: RecipeVariationCardProps) {
+  const t = useTranslations('nutritionUI');
   // 변형된 영양 정보 계산
   const variedNutrition = {
     calories: Math.round(
@@ -63,7 +65,7 @@ export function RecipeVariationCard({ variation, originalNutrition }: RecipeVari
       <CardContent className="space-y-4">
         {/* 영양 비교 */}
         <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-semibold text-sm mb-3">영양 성분 변화</h4>
+          <h4 className="font-semibold text-sm mb-3">{t('recipeVariationCard0')}</h4>
           <div className="grid grid-cols-3 gap-3">
             <NutritionCompare
               label="칼로리"
@@ -92,7 +94,7 @@ export function RecipeVariationCard({ variation, originalNutrition }: RecipeVari
         {/* 대체 재료 목록 */}
         {variation.substitutions.length > 0 && (
           <div>
-            <h4 className="font-semibold text-sm mb-2">대체 재료</h4>
+            <h4 className="font-semibold text-sm mb-2">{t('recipeVariationCard1')}</h4>
             <div className="space-y-2">
               {variation.substitutions.map((sub, idx) => (
                 <div
@@ -116,7 +118,7 @@ export function RecipeVariationCard({ variation, originalNutrition }: RecipeVari
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Lightbulb className="w-4 h-4 text-yellow-500" />
-              <h4 className="font-semibold text-sm">조리 팁</h4>
+              <h4 className="font-semibold text-sm">{t('recipeVariationCard2')}</h4>
             </div>
             <ul className="space-y-1">
               {variation.tips.map((tip, idx) => (

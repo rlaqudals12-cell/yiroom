@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Ticket, Clock, Tag } from 'lucide-react';
 import type { Promotion, UserCoupon } from '@/lib/products/services/coupons';
 import { getDiscountText } from '@/lib/products/services/coupons';
+import { useTranslations } from 'next-intl';
 
 interface CouponCardProps {
   /** 프로모션 정보 */
@@ -41,6 +42,7 @@ export function CouponCard({
   isLoading = false,
   className,
 }: CouponCardProps) {
+  const t = useTranslations('productsUI');
   const [claimed, setClaimed] = useState(!!userCoupon);
   const daysRemaining = getDaysRemaining(promotion.expiresAt);
   const isUsed = userCoupon?.isUsed ?? false;
@@ -126,7 +128,7 @@ export function CouponCard({
           <div className="mt-2 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
             <Clock className="h-3 w-3" />
             {isExpired ? (
-              <span>만료됨</span>
+              <span>{t('couponCard0')}</span>
             ) : (
               <span>
                 {daysRemaining}일 남음 ({new Date(promotion.expiresAt).toLocaleDateString('ko-KR')})

@@ -14,6 +14,7 @@ import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ProductPriceHistory } from '@/types/product';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface PriceHistoryChartProps {
   priceHistory: ProductPriceHistory[];
@@ -21,17 +22,16 @@ interface PriceHistoryChartProps {
 }
 
 export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryChartProps) {
+  const t = useTranslations('productsUI');
   // 차트 데이터 변환 (오래된 순으로 정렬)
   const chartData = useMemo(() => {
-    return [...priceHistory]
-      .reverse()
-      .map((item) => ({
-        date: new Date(item.recordedAt).toLocaleDateString('ko-KR', {
-          month: 'short',
-          day: 'numeric',
-        }),
-        price: item.priceKrw,
-      }));
+    return [...priceHistory].reverse().map((item) => ({
+      date: new Date(item.recordedAt).toLocaleDateString('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+      }),
+      price: item.priceKrw,
+    }));
   }, [priceHistory]);
 
   // 가격 통계 계산
@@ -67,7 +67,7 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">가격 히스토리</CardTitle>
+          <CardTitle className="text-base font-medium">{t('priceHistoryChart0')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground text-center py-8">
@@ -82,24 +82,24 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">가격 히스토리</CardTitle>
+          <CardTitle className="text-base font-medium">{t('priceHistoryChart0')}</CardTitle>
           <div className="flex items-center gap-1 text-sm">
             {stats.trend === 'down' && (
               <>
                 <TrendingDown className="h-4 w-4 text-green-500" />
-                <span className="text-green-600">하락세</span>
+                <span className="text-green-600">{t('priceHistoryChart1')}</span>
               </>
             )}
             {stats.trend === 'up' && (
               <>
                 <TrendingUp className="h-4 w-4 text-red-500" />
-                <span className="text-red-600">상승세</span>
+                <span className="text-red-600">{t('priceHistoryChart2')}</span>
               </>
             )}
             {stats.trend === 'stable' && (
               <>
                 <Minus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">안정</span>
+                <span className="text-muted-foreground">{t('priceHistoryChart3')}</span>
               </>
             )}
           </div>
@@ -109,15 +109,15 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
         {/* 가격 통계 */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-muted-foreground">최저가</p>
+            <p className="text-xs text-muted-foreground">{t('priceHistoryChart4')}</p>
             <p className="text-sm font-semibold text-green-600">{formatPrice(stats.min)}원</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">평균가</p>
+            <p className="text-xs text-muted-foreground">{t('priceHistoryChart5')}</p>
             <p className="text-sm font-semibold text-foreground/80">{formatPrice(stats.avg)}원</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">최고가</p>
+            <p className="text-xs text-muted-foreground">{t('priceHistoryChart6')}</p>
             <p className="text-sm font-semibold text-red-600">{formatPrice(stats.max)}원</p>
           </div>
         </div>
@@ -147,7 +147,10 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
                   borderRadius: '8px',
                   fontSize: '12px',
                 }}
-                formatter={(value: number | undefined) => [value !== undefined ? `${formatPrice(value)}원` : '-', '가격']}
+                formatter={(value: number | undefined) => [
+                  value !== undefined ? `${formatPrice(value)}원` : '-',
+                  '가격',
+                ]}
               />
               <Line
                 type="monotone"
@@ -166,13 +169,13 @@ export function PriceHistoryChart({ priceHistory, currentPrice }: PriceHistoryCh
           <p className="text-xs text-center text-muted-foreground">
             현재가 <span className="font-medium">{formatPrice(currentPrice)}원</span>
             {currentPrice <= stats.min && (
-              <span className="text-green-600 ml-1">(역대 최저가)</span>
+              <span className="text-green-600 ml-1">{t('priceHistoryChart7')}</span>
             )}
             {currentPrice < stats.avg && currentPrice > stats.min && (
-              <span className="text-green-600 ml-1">(평균 이하)</span>
+              <span className="text-green-600 ml-1">{t('priceHistoryChart8')}</span>
             )}
             {currentPrice > stats.avg && (
-              <span className="text-red-500 ml-1">(평균 이상)</span>
+              <span className="text-red-500 ml-1">{t('priceHistoryChart9')}</span>
             )}
           </p>
         )}

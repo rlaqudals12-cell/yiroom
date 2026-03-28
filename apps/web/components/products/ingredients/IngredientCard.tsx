@@ -16,6 +16,7 @@ import {
 import type { CosmeticIngredient, IngredientCategory } from '@/types/ingredient';
 import { IngredientEWGBadge } from './IngredientEWGBadge';
 import { INGREDIENT_CATEGORY_LABELS } from '@/types/ingredient';
+import { useTranslations } from 'next-intl';
 
 interface IngredientCardProps {
   /** 성분 데이터 */
@@ -55,6 +56,7 @@ export function IngredientCard({
   defaultExpanded = false,
   className,
 }: IngredientCardProps) {
+  const t = useTranslations('productsUI');
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const {
@@ -105,7 +107,7 @@ export function IngredientCard({
             {hasCaution && (
               <AlertTriangle
                 className="w-3.5 h-3.5 text-orange-500 shrink-0"
-                aria-label="주의 성분"
+                aria-label={t('ingredientCard1')}
               />
             )}
           </div>
@@ -152,7 +154,9 @@ export function IngredientCard({
           {/* 효능 */}
           {benefits && benefits.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">효능</p>
+              <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">
+                {t('ingredientCard0')}
+              </p>
               <ul className="text-xs text-muted-foreground space-y-0.5">
                 {benefits.map((benefit, idx) => (
                   <li key={idx} className="flex items-start gap-1">

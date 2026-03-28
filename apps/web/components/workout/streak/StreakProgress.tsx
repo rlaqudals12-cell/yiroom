@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Circle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface StreakProgressProps {
   currentStreak: number;
@@ -19,6 +20,7 @@ export function StreakProgress({
   targetDays = 7,
   showLabels = true,
 }: StreakProgressProps) {
+  const t = useTranslations('workoutUI');
   // 표시할 일수 계산 (최소 3일, 최대 14일)
   const displayDays = Math.min(Math.max(targetDays, 3), 14);
 
@@ -60,7 +62,7 @@ export function StreakProgress({
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (
-            <span className="text-status-success font-medium">목표 달성!</span>
+            <span className="text-status-success font-medium">{t('streakProgress0')}</span>
           )}
         </div>
       )}

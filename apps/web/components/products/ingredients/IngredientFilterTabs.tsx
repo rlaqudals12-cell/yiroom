@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { List, AlertTriangle, AlertCircle, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * 성분 필터 타입
@@ -40,6 +41,7 @@ export function IngredientFilterTabs({
   counts,
   className,
 }: IngredientFilterTabsProps) {
+  const t = useTranslations('productsUI');
   const options: FilterTabOption[] = [
     {
       value: 'all',
@@ -70,7 +72,7 @@ export function IngredientFilterTabs({
     <div
       className={cn('flex gap-2 overflow-x-auto pb-1', className)}
       role="tablist"
-      aria-label="성분 필터"
+      aria-label={t('ingredientFilterTabs0')}
       data-testid="ingredient-filter-tabs"
     >
       {options.map((option) => {

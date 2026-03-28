@@ -7,12 +7,10 @@ import { Clock, Package, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  useRecentlyViewedStore,
-  type RecentlyViewedItem,
-} from '@/lib/stores/recentlyViewedStore';
+import { useRecentlyViewedStore, type RecentlyViewedItem } from '@/lib/stores/recentlyViewedStore';
 import { productTypeToPath } from '@/lib/products';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface RecentlyViewedProps {
   className?: string;
@@ -24,6 +22,7 @@ interface RecentlyViewedProps {
  * 수평 스크롤로 최근 본 제품 목록 표시
  */
 export function RecentlyViewed({ className, limit = 10 }: RecentlyViewedProps) {
+  const t = useTranslations('productsUI');
   const { items, removeItem, clearAll } = useRecentlyViewedStore();
   const [mounted, setMounted] = useState(false);
 
@@ -43,10 +42,8 @@ export function RecentlyViewed({ className, limit = 10 }: RecentlyViewedProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-medium">최근 본 제품</h2>
-          <span className="text-xs text-muted-foreground">
-            ({displayItems.length})
-          </span>
+          <h2 className="text-sm font-medium">{t('recentlyViewed0')}</h2>
+          <span className="text-xs text-muted-foreground">({displayItems.length})</span>
         </div>
         <Button
           variant="ghost"

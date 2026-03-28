@@ -5,11 +5,7 @@ import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { AlertTriangle, AlertCircle, Clock, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type {
   ProductInteractionWarning,
   IngredientInteraction,
@@ -21,6 +17,7 @@ import {
   getInteractionTypeBgColor,
   getSeverityLabel,
 } from '@/types/interaction';
+import { useTranslations } from 'next-intl';
 
 // ================================================
 // 아이콘 헬퍼
@@ -51,19 +48,15 @@ interface InteractionCardProps {
 }
 
 export function InteractionCard({ interaction, className }: InteractionCardProps) {
+  const t = useTranslations('productsUI');
   const bgColor = getInteractionTypeBgColor(interaction.interactionType);
   const textColor = getInteractionTypeColor(interaction.interactionType);
 
   return (
-    <div
-      className={cn('rounded-lg border p-3', bgColor, className)}
-      data-testid="interaction-card"
-    >
+    <div className={cn('rounded-lg border p-3', bgColor, className)} data-testid="interaction-card">
       {/* 헤더 */}
       <div className="flex items-center gap-2">
-        <span className={textColor}>
-          {getInteractionIcon(interaction.interactionType)}
-        </span>
+        <span className={textColor}>{getInteractionIcon(interaction.interactionType)}</span>
         <span className={cn('font-medium text-sm', textColor)}>
           {getInteractionTypeLabel(interaction.interactionType)}
         </span>
@@ -80,22 +73,19 @@ export function InteractionCard({ interaction, className }: InteractionCardProps
       </p>
 
       {/* 설명 */}
-      <p className="mt-1 text-sm text-muted-foreground">
-        {interaction.description}
-      </p>
+      <p className="mt-1 text-sm text-muted-foreground">{interaction.description}</p>
 
       {/* 권장 사항 */}
       {interaction.recommendation && (
         <p className="mt-2 text-sm">
-          <span className="font-medium">권장:</span> {interaction.recommendation}
+          <span className="font-medium">{t('interactionWarning0')}</span>{' '}
+          {interaction.recommendation}
         </p>
       )}
 
       {/* 출처 */}
       {interaction.source && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          출처: {interaction.source}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">출처: {interaction.source}</p>
       )}
     </div>
   );
@@ -119,9 +109,7 @@ export function ProductWarningBanner({
   const [isOpen, setIsOpen] = useState(false);
 
   // 시너지만 있으면 긍정적 표시
-  const hasOnlySynergy = warning.interactions.every(
-    (i) => i.interactionType === 'synergy'
-  );
+  const hasOnlySynergy = warning.interactions.every((i) => i.interactionType === 'synergy');
 
   // 심각한 경고가 있는지
   const hasHighSeverity = warning.interactions.some(
@@ -133,15 +121,23 @@ export function ProductWarningBanner({
   if (hasOnlySynergy) severityKey = 'synergy';
   else if (hasHighSeverity) severityKey = 'high';
 
-  const bgColor = selectByKey(severityKey, {
-    synergy: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-    high: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
-  }, 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800')!;
+  const bgColor = selectByKey(
+    severityKey,
+    {
+      synergy: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      high: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    },
+    'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+  )!;
 
-  const iconColor = selectByKey(severityKey, {
-    synergy: 'text-green-600 dark:text-green-400',
-    high: 'text-red-600 dark:text-red-400',
-  }, 'text-yellow-600 dark:text-yellow-400')!;
+  const iconColor = selectByKey(
+    severityKey,
+    {
+      synergy: 'text-green-600 dark:text-green-400',
+      high: 'text-red-600 dark:text-red-400',
+    },
+    'text-yellow-600 dark:text-yellow-400'
+  )!;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -171,11 +167,7 @@ export function ProductWarningBanner({
             </div>
             {showDetails && (
               <span className="text-muted-foreground">
-                {isOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </span>
             )}
           </button>
@@ -185,10 +177,7 @@ export function ProductWarningBanner({
         {showDetails && (
           <CollapsibleContent className="mt-3 space-y-2">
             {warning.interactions.map((interaction) => (
-              <InteractionCard
-                key={interaction.id}
-                interaction={interaction}
-              />
+              <InteractionCard key={interaction.id} interaction={interaction} />
             ))}
           </CollapsibleContent>
         )}
@@ -248,20 +237,13 @@ export function InteractionSummaryBanner({
           <AlertTriangle className="h-5 w-5 mt-0.5" />
         </span>
         <div className="flex-1">
-          <p className="font-medium">
-            {actualWarnings.length}개 제품 조합에서 상호작용 주의
-          </p>
+          <p className="font-medium">{actualWarnings.length}개 제품 조합에서 상호작용 주의</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            위시리스트에 있는 영양제/건강식품 간 성분 상호작용이 발견되었습니다.
-            함께 복용 시 주의가 필요합니다.
+            위시리스트에 있는 영양제/건강식품 간 성분 상호작용이 발견되었습니다. 함께 복용 시 주의가
+            필요합니다.
           </p>
           {onViewDetails && (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={onViewDetails}
-              className="mt-2 h-auto p-0"
-            >
+            <Button variant="link" size="sm" onClick={onViewDetails} className="mt-2 h-auto p-0">
               자세히 보기
             </Button>
           )}

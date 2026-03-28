@@ -8,6 +8,7 @@
 import { Scale, Utensils, Flame } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { CalorieBalanceStatus } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface CalorieBalanceCardProps {
   totalIntake: number;
@@ -56,6 +57,7 @@ export function CalorieBalanceCard({
   status,
   avgNetPerDay,
 }: CalorieBalanceCardProps): React.ReactElement {
+  const t = useTranslations('reportsUI');
   const config = statusConfig[status];
   const maxValue = Math.max(totalIntake, totalBurned, 1);
   const intakePercent = (totalIntake / maxValue) * 100;
@@ -110,7 +112,7 @@ export function CalorieBalanceCard({
         {/* 밸런스 상태 */}
         <div className={`p-3 rounded-lg ${config.bgColor}`}>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">순 칼로리</span>
+            <span className="text-sm font-medium">{t('calorieBalanceCard0')}</span>
             <span className={`text-lg font-bold ${config.color}`}>
               {netCalories > 0 ? '+' : ''}
               {netCalories.toLocaleString()} kcal

@@ -3,6 +3,7 @@
 import type { DayPlan, WorkoutType } from '@/types/workout';
 import { calculateExerciseDetails } from '@/lib/workout';
 import { Clock, Flame, Dumbbell, ChevronRight, Coffee } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // 부위 한글 라벨 (BodyPart 타입과 일치)
 const BODY_PART_LABELS: Record<string, string> = {
@@ -37,6 +38,7 @@ export function DayExerciseList({
   userWeight,
   onExerciseClick,
 }: DayExerciseListProps) {
+  const t = useTranslations('workoutUI');
   // 휴식일 표시
   if (day.isRestDay) {
     return (
@@ -136,7 +138,7 @@ export function DayExerciseList({
       {day.exercises.length === 0 && (
         <div className="p-8 text-center text-muted-foreground">
           <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">이 날의 운동이 없어요</p>
+          <p className="text-sm">{t('dayExerciseList0')}</p>
         </div>
       )}
     </div>

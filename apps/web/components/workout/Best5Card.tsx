@@ -13,6 +13,7 @@ import {
 import { PostureType } from '@/lib/mock/posture-analysis';
 import { BodyType } from '@/types/workout';
 import { Clock, Flame, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Best5CardProps {
   goal: ExerciseGoal;
@@ -36,6 +37,7 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 };
 
 export function Best5Card({ goal, postureType, bodyType, fitnessLevel }: Best5CardProps) {
+  const t = useTranslations('workoutUI');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   // Best 5 생성
@@ -92,7 +94,7 @@ export function Best5Card({ goal, postureType, bodyType, fitnessLevel }: Best5Ca
             <div className="flex items-start gap-2">
               <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900 mb-2">운동 팁</p>
+                <p className="text-sm font-medium text-blue-900 mb-2">{t('best5Card0')}</p>
                 <ul className="space-y-1">
                   {tips.map((tip, index) => (
                     <li key={index} className="text-sm text-blue-700">
@@ -118,6 +120,7 @@ interface ExerciseItemProps {
 }
 
 function ExerciseItem({ recommendation, rank, isExpanded, onToggle }: ExerciseItemProps) {
+  const t = useTranslations('workoutUI');
   const { exercise, reason } = recommendation;
 
   return (
@@ -156,7 +159,7 @@ function ExerciseItem({ recommendation, rank, isExpanded, onToggle }: ExerciseIt
             {/* 타겟 부위 */}
             {exercise.bodyParts.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">타겟 부위</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t('best5Card1')}</p>
                 <div className="flex flex-wrap gap-1">
                   {exercise.bodyParts.map((part) => (
                     <Badge key={part} variant="outline" className="text-xs">
@@ -170,7 +173,7 @@ function ExerciseItem({ recommendation, rank, isExpanded, onToggle }: ExerciseIt
             {/* 장비 */}
             {exercise.equipment.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">필요 장비</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t('best5Card2')}</p>
                 <div className="flex flex-wrap gap-1">
                   {exercise.equipment.map((eq) => (
                     <Badge key={eq} variant="outline" className="text-xs">
@@ -184,7 +187,7 @@ function ExerciseItem({ recommendation, rank, isExpanded, onToggle }: ExerciseIt
             {/* 운동 방법 (간략) */}
             {exercise.instructions.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">운동 방법</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t('best5Card3')}</p>
                 <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
                   {exercise.instructions.slice(0, 3).map((instruction, index) => (
                     <li key={index}>{instruction}</li>

@@ -8,6 +8,7 @@
 import { Dumbbell, Flame, Clock, Activity } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { WorkoutSummaryStats, WorkoutTrend } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutSummaryCardProps {
   summary: WorkoutSummaryStats;
@@ -16,6 +17,7 @@ interface WorkoutSummaryCardProps {
 }
 
 export function WorkoutSummaryCard({ summary, trend, hasData }: WorkoutSummaryCardProps) {
+  const t = useTranslations('reportsUI');
   if (!hasData) {
     return (
       <Card data-testid="workout-summary-card">
@@ -28,8 +30,8 @@ export function WorkoutSummaryCard({ summary, trend, hasData }: WorkoutSummaryCa
         <CardContent>
           <div className="text-center py-6">
             <Activity className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-sm text-muted-foreground">이번 주 운동 기록이 없어요</p>
-            <p className="text-xs text-muted-foreground mt-1">운동을 기록하면 여기에 표시돼요</p>
+            <p className="text-sm text-muted-foreground">{t('workoutSummaryCard0')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('workoutSummaryCard1')}</p>
           </div>
         </CardContent>
       </Card>
@@ -72,7 +74,7 @@ export function WorkoutSummaryCard({ summary, trend, hasData }: WorkoutSummaryCa
         {/* 일관성 점수 */}
         <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">운동 일관성</span>
+            <span className="text-sm font-medium">{t('workoutSummaryCard2')}</span>
             <span className="text-lg font-bold text-green-600">{trend.consistencyScore}%</span>
           </div>
           <div className="mt-2 h-2 bg-green-100 dark:bg-green-900/30 rounded-full overflow-hidden">

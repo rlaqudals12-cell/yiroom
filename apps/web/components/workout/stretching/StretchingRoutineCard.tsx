@@ -14,6 +14,7 @@ import { Clock, Activity, AlertCircle, Play } from 'lucide-react';
 import type { StretchingPrescription } from '@/types/stretching';
 import { MUSCLE_NAME_KO } from '@/lib/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface StretchingRoutineCardProps {
   prescription: StretchingPrescription;
@@ -26,6 +27,7 @@ export function StretchingRoutineCard({
   onStart,
   className,
 }: StretchingRoutineCardProps) {
+  const t = useTranslations('workoutUI');
   // 주요 타겟 근육 추출
   const targetMuscles = new Set<string>();
   for (const stretch of prescription.stretches) {
@@ -80,7 +82,7 @@ export function StretchingRoutineCard({
 
         {/* 타겟 근육 */}
         <div>
-          <p className="text-xs text-muted-foreground mb-2">주요 타겟 근육</p>
+          <p className="text-xs text-muted-foreground mb-2">{t('stretchingRoutineCard0')}</p>
           <div className="flex flex-wrap gap-1">
             {muscleList.map((muscle) => (
               <Badge key={muscle} variant="outline" className="text-xs">

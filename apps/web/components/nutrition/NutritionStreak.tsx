@@ -11,6 +11,7 @@
 
 import { Check, Circle, Utensils, Trophy, TrendingUp } from 'lucide-react';
 import { NUTRITION_STREAK_BADGES, type StreakSummary } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 // =====================================================
 // NutritionStreakProgress - 진행도 표시 컴포넌트
@@ -32,6 +33,7 @@ export function NutritionStreakProgress({
   targetDays = 7,
   showLabels = true,
 }: NutritionStreakProgressProps) {
+  const t = useTranslations('nutritionUI');
   // 표시할 일수 계산 (최소 3일, 최대 14일)
   const displayDays = Math.min(Math.max(targetDays, 3), 14);
 
@@ -73,7 +75,7 @@ export function NutritionStreakProgress({
             {currentStreak}/{displayDays}일
           </span>
           {currentStreak >= displayDays && (
-            <span className="text-module-nutrition font-medium">목표 달성!</span>
+            <span className="text-module-nutrition font-medium">{t('nutritionStreak0')}</span>
           )}
         </div>
       )}
@@ -203,6 +205,7 @@ export function NutritionStreakCard({
   isLoading = false,
   testId = 'nutrition-streak-card',
 }: NutritionStreakCardProps) {
+  const t = useTranslations('nutritionUI');
   // 로딩 상태
   if (isLoading) {
     return <LoadingSkeleton testId={testId} />;
@@ -228,7 +231,7 @@ export function NutritionStreakCard({
             <Utensils className="w-5 h-5 text-module-nutrition" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">연속 기록</h3>
+            <h3 className="font-bold text-foreground">{t('nutritionStreak1')}</h3>
             <p className="text-sm text-muted-foreground">
               {isActive ? '현재 진행 중' : '다시 시작해보세요'}
             </p>
@@ -283,7 +286,7 @@ export function NutritionStreakCard({
       {/* 획득한 배지 */}
       {badges.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-muted-foreground mb-2">획득한 배지</p>
+          <p className="text-sm text-muted-foreground mb-2">{t('nutritionStreak2')}</p>
           <NutritionStreakBadgeList badges={badges} size="sm" />
         </div>
       )}

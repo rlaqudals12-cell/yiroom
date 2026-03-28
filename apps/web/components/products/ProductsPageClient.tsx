@@ -12,6 +12,7 @@ import { ProductFiltersDynamic } from './dynamic';
 import type { ProductCategory, AnyProduct, ProductSortBy, CosmeticProduct } from '@/types/product';
 import { getProductsByCategory, searchProducts } from '@/lib/products';
 import { RegionBadge } from '@/components/common/RegionSelector';
+import { useTranslations } from 'next-intl';
 
 // 시즌 라벨 변환
 function getSeasonLabel(season: string): string {
@@ -47,6 +48,7 @@ function getSkinTypeLabel(skinType: string): string {
  * - 분석 결과 기반 필터링 지원
  */
 export function ProductsPageClient() {
+  const t = useTranslations('productsUI');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -250,7 +252,7 @@ export function ProductsPageClient() {
         <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <span className="text-xl">{skinTypeParam ? '🧴' : '💄'}</span>
           <div>
-            <p className="font-medium text-foreground">맞춤 제품 추천</p>
+            <p className="font-medium text-foreground">{t('productsPageClient0')}</p>
             <p className="text-sm text-muted-foreground">{filterSource}</p>
           </div>
         </div>

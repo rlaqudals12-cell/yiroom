@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { PostureMarker } from './PostureMarker';
 import { PostureFeedbackPanel } from './PostureFeedbackPanel';
 import type { PostureIssue } from '@/types/workout-posture';
+import { useTranslations } from 'next-intl';
 
 interface PostureZoomViewerProps {
   imageUrl: string;
@@ -21,6 +22,7 @@ interface PostureZoomViewerProps {
  * - PostureFeedbackPanel로 교정 가이드 제공
  */
 export function PostureZoomViewer({ imageUrl, postureIssues, className }: PostureZoomViewerProps) {
+  const t = useTranslations('workoutUI');
   const router = useRouter();
   const [selectedIssue, setSelectedIssue] = useState<PostureIssue | null>(null);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -55,7 +57,7 @@ export function PostureZoomViewer({ imageUrl, postureIssues, className }: Postur
           className
         )}
       >
-        <p className="text-muted-foreground text-sm">이미지를 불러올 수 없어요</p>
+        <p className="text-muted-foreground text-sm">{t('postureZoomViewer0')}</p>
       </div>
     );
   }
@@ -67,7 +69,7 @@ export function PostureZoomViewer({ imageUrl, postureIssues, className }: Postur
         {/* 운동 이미지 */}
         <Image
           src={imageUrl}
-          alt="운동 자세 분석"
+          alt={t('postureZoomViewer2')}
           fill
           className={cn(
             'object-cover transition-opacity duration-300',
@@ -119,7 +121,7 @@ export function PostureZoomViewer({ imageUrl, postureIssues, className }: Postur
         {isImageLoaded && postureIssues.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="bg-emerald-500/90 text-white px-6 py-3 rounded-xl shadow-lg">
-              <span className="text-lg font-medium">자세가 좋아요!</span>
+              <span className="text-lg font-medium">{t('postureZoomViewer1')}</span>
             </div>
           </div>
         )}

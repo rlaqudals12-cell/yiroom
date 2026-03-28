@@ -9,6 +9,7 @@ import { Sparkles, Droplet, Scissors, Heart, TrendingUp, TrendingDown, Minus } f
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import type { BeautyNutritionCorrelation, TrendDirection } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface BeautyNutritionCardProps {
   correlation: BeautyNutritionCorrelation;
@@ -60,6 +61,7 @@ function ImpactBadge({ impact }: { impact: 'positive' | 'neutral' | 'negative' }
 }
 
 export function BeautyNutritionCard({ correlation }: BeautyNutritionCardProps) {
+  const t = useTranslations('reportsUI');
   const { hairHealth, skinHealth, nutrientImpacts, correlationSummary, recommendations } =
     correlation;
 
@@ -75,7 +77,7 @@ export function BeautyNutritionCard({ correlation }: BeautyNutritionCardProps) {
         {/* 종합 점수 */}
         <div className="flex items-center justify-between p-3 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-lg">
           <div>
-            <p className="text-sm text-muted-foreground">뷰티-영양 조화도</p>
+            <p className="text-sm text-muted-foreground">{t('beautyNutritionCard0')}</p>
             <p className="text-2xl font-bold">{correlationSummary.overallScore}점</p>
           </div>
           <div className="flex items-center gap-2">
@@ -91,23 +93,23 @@ export function BeautyNutritionCard({ correlation }: BeautyNutritionCardProps) {
             <div className="p-3 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Scissors className="h-4 w-4 text-amber-600" />
-                <span className="text-sm font-medium">헤어 건강</span>
+                <span className="text-sm font-medium">{t('beautyNutritionCard1')}</span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">두피</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard2')}</span>
                   <span className={getScoreColor(hairHealth.scalpScore)}>
                     {hairHealth.scalpScore ?? '-'}점
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">밀도</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard3')}</span>
                   <span className={getScoreColor(hairHealth.densityScore)}>
                     {hairHealth.densityScore ?? '-'}점
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">종합</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard4')}</span>
                   <span className={`font-medium ${getScoreColor(hairHealth.overallScore)}`}>
                     {hairHealth.overallScore ?? '-'}점
                   </span>
@@ -121,23 +123,23 @@ export function BeautyNutritionCard({ correlation }: BeautyNutritionCardProps) {
             <div className="p-3 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Heart className="h-4 w-4 text-pink-500" />
-                <span className="text-sm font-medium">피부 건강</span>
+                <span className="text-sm font-medium">{t('beautyNutritionCard5')}</span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">수분</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard6')}</span>
                   <span className={getScoreColor(skinHealth.hydration)}>
                     {skinHealth.hydration ?? '-'}점
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">텍스처</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard7')}</span>
                   <span className={getScoreColor(skinHealth.texture)}>
                     {skinHealth.texture ?? '-'}점
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">종합</span>
+                  <span className="text-muted-foreground">{t('beautyNutritionCard4')}</span>
                   <span className={`font-medium ${getScoreColor(skinHealth.overallScore)}`}>
                     {skinHealth.overallScore ?? '-'}점
                   </span>
@@ -178,7 +180,7 @@ export function BeautyNutritionCard({ correlation }: BeautyNutritionCardProps) {
         {/* 추천사항 */}
         {recommendations.length > 0 && (
           <div className="pt-2 border-t">
-            <p className="text-sm font-medium mb-2">영양 추천</p>
+            <p className="text-sm font-medium mb-2">{t('beautyNutritionCard8')}</p>
             <ul className="space-y-1.5">
               {recommendations.map((rec, idx) => (
                 <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">

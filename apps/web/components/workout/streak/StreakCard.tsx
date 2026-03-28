@@ -4,6 +4,7 @@ import { Flame, Trophy, TrendingUp } from 'lucide-react';
 import { StreakProgress } from './StreakProgress';
 import { StreakBadgeList } from './StreakBadge';
 import type { StreakSummary } from '@/lib/workout';
+import { useTranslations } from 'next-intl';
 
 interface StreakCardProps {
   summary: StreakSummary;
@@ -17,6 +18,7 @@ interface StreakCardProps {
  * - 마일스톤 메시지
  */
 export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
+  const t = useTranslations('workoutUI');
   const {
     currentStreak,
     longestStreak,
@@ -37,7 +39,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
             <Flame className="w-5 h-5 text-module-workout" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">연속 기록</h3>
+            <h3 className="font-bold text-foreground">{t('streakCard0')}</h3>
             <p className="text-sm text-muted-foreground">
               {isActive ? '현재 진행 중' : '다시 시작해보세요'}
             </p>
@@ -92,7 +94,7 @@ export function StreakCard({ summary, onStartWorkout }: StreakCardProps) {
       {/* 획득한 배지 */}
       {badges.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-muted-foreground mb-2">획득한 배지</p>
+          <p className="text-sm text-muted-foreground mb-2">{t('streakCard1')}</p>
           <StreakBadgeList badges={badges} size="sm" />
         </div>
       )}

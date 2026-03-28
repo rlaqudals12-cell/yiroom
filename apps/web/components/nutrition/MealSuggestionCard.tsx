@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type { NutritionGoal, MealType, TrafficLight } from '@/types/nutrition';
+import { useTranslations } from 'next-intl';
 
 // 추천 음식 타입
 interface SuggestedFood {
@@ -154,6 +155,7 @@ export default function MealSuggestionCard({
   skinConcerns = [],
   bodyType,
 }: MealSuggestionCardProps) {
+  const t = useTranslations('nutritionUI');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<MealSuggestionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -215,7 +217,7 @@ export default function MealSuggestionCard({
           <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-100 rounded-full mb-3">
             <ChefHat className="w-7 h-7 text-indigo-600" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">오늘 뭐 먹지?</h3>
+          <h3 className="font-semibold text-foreground mb-1">{t('mealSuggestionCard0')}</h3>
           <p className="text-sm text-muted-foreground mb-4">
             남은 칼로리:{' '}
             <span className="font-medium text-indigo-600">
@@ -264,7 +266,7 @@ export default function MealSuggestionCard({
       >
         <div className="text-center py-8">
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">맞춤 메뉴를 찾고 있어요...</p>
+          <p className="text-sm text-muted-foreground">{t('mealSuggestionCard1')}</p>
         </div>
       </div>
     );

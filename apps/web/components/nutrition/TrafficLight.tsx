@@ -9,6 +9,8 @@
  * - 🔴 빨강: 칼로리 밀도 > 2.5 (고칼로리)
  */
 
+import { useTranslations } from 'next-intl';
+
 // 신호등 타입
 export type TrafficLightColor = 'green' | 'yellow' | 'red';
 
@@ -147,6 +149,7 @@ export function TrafficLightCard({
   showTargets = true,
   title = '오늘의 음식 신호등',
 }: TrafficLightCardProps) {
+  const t = useTranslations('nutritionUI');
   // 목표 달성 여부 확인
   const isGreenMet = ratio.green >= TRAFFIC_LIGHT_TARGETS.green.min;
   const isYellowMet = ratio.yellow <= TRAFFIC_LIGHT_TARGETS.yellow.max;
@@ -198,9 +201,9 @@ export function TrafficLightCard({
       {/* 균형 메시지 */}
       <div className="mt-4 pt-3 border-t border-border/50">
         {isBalanced ? (
-          <p className="text-sm text-green-600">균형 잡힌 식단이에요!</p>
+          <p className="text-sm text-green-600">{t('trafficLight0')}</p>
         ) : (
-          <p className="text-sm text-amber-600">초록색 음식을 조금 더 섭취해보세요</p>
+          <p className="text-sm text-amber-600">{t('trafficLight1')}</p>
         )}
       </div>
     </div>

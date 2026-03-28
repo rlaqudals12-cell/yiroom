@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Coins, Gift, Star, Camera, Sparkles, ChevronRight, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /**
  * 리뷰 포인트 정책
@@ -54,6 +55,7 @@ export function ReviewPointsBadge({
   className,
   compact = false,
 }: ReviewPointsBadgeProps) {
+  const t = useTranslations('productsUI');
   const [showDetails, setShowDetails] = useState(false);
 
   // 최대 획득 가능 포인트 계산
@@ -137,7 +139,7 @@ export function ReviewPointsBadge({
       {showDetails && (
         <div className="px-4 py-3 bg-amber-100/50 dark:bg-amber-900/20 border-t border-amber-200/50 dark:border-amber-800/30 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-amber-700 dark:text-amber-300">기본 적립</span>
+            <span className="text-amber-700 dark:text-amber-300">{t('reviewPointsBadge0')}</span>
             <span className="font-medium text-amber-800 dark:text-amber-200">
               {policy.basePoints}P
             </span>
@@ -160,7 +162,7 @@ export function ReviewPointsBadge({
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-amber-700 dark:text-amber-300">상세 리뷰 (200자 이상)</span>
+            <span className="text-amber-700 dark:text-amber-300">{t('reviewPointsBadge1')}</span>
             <span className="font-medium text-amber-800 dark:text-amber-200">
               +{policy.detailedBonus}P
             </span>

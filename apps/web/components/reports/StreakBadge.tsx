@@ -8,6 +8,7 @@
 import { Flame, Award, Utensils, Dumbbell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ReportStreakStatus } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface StreakBadgeProps {
   nutritionStreak: ReportStreakStatus;
@@ -15,12 +16,13 @@ interface StreakBadgeProps {
 }
 
 export function StreakBadge({ nutritionStreak, workoutStreak }: StreakBadgeProps) {
+  const t = useTranslations('reportsUI');
   return (
     <Card data-testid="streak-badge">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Flame className="h-4 w-4 text-orange-500" />
-          <h3 className="font-medium text-sm">연속 기록</h3>
+          <h3 className="font-medium text-sm">{t('streakBadge0')}</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import type { ProductReview, ReviewSortBy } from '@/types/review';
 import { MessageSquare } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ReviewListProps {
   /** 리뷰 목록 */
@@ -63,9 +64,7 @@ export function ReviewList({
       {/* 헤더: 정렬 옵션 */}
       {reviews.length > 0 && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            총 {reviews.length}개의 리뷰
-          </span>
+          <span className="text-sm text-muted-foreground">총 {reviews.length}개의 리뷰</span>
           {onSortChange && (
             <Select value={sortBy} onValueChange={(v) => onSortChange(v as ReviewSortBy)}>
               <SelectTrigger className="w-[140px] h-9">
@@ -93,9 +92,7 @@ export function ReviewList({
         </div>
       )}
       {/* 빈 상태 */}
-      {!(isLoading && reviews.length === 0) && reviews.length === 0 && (
-        <EmptyReviews />
-      )}
+      {!(isLoading && reviews.length === 0) && reviews.length === 0 && <EmptyReviews />}
       {/* 리뷰 목록 */}
       {reviews.length > 0 && (
         <>
@@ -115,11 +112,7 @@ export function ReviewList({
           {/* 더 불러오기 */}
           {hasMore && onLoadMore && (
             <div className="flex justify-center pt-4">
-              <Button
-                variant="outline"
-                onClick={onLoadMore}
-                disabled={isLoading}
-              >
+              <Button variant="outline" onClick={onLoadMore} disabled={isLoading}>
                 {isLoading ? '불러오는 중...' : '더 보기'}
               </Button>
             </div>
@@ -143,15 +136,14 @@ export function ReviewList({
  * 빈 리뷰 상태
  */
 function EmptyReviews() {
+  const t = useTranslations('productsUI');
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="rounded-full bg-muted p-4 mb-4">
         <MessageSquare className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="font-medium">아직 리뷰가 없어요</h3>
-      <p className="mt-1 text-sm text-muted-foreground">
-        첫 번째 리뷰를 작성해 주세요!
-      </p>
+      <h3 className="font-medium">{t('reviewList0')}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">첫 번째 리뷰를 작성해 주세요!</p>
     </div>
   );
 }

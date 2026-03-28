@@ -2,13 +2,14 @@
 
 import { Activity, Flame, Clock, TrendingUp, Target } from 'lucide-react';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface HistoryStatsProps {
   totalWorkouts: number;
   totalMinutes: number;
   totalCalories: number;
   totalVolume: number;
-  completionRate: number;  // 0-100
+  completionRate: number; // 0-100
 }
 
 /**
@@ -23,6 +24,7 @@ export function HistoryStats({
   totalVolume,
   completionRate,
 }: HistoryStatsProps) {
+  const t = useTranslations('workoutUI');
   // 시간 포맷팅
   const formatTotalTime = (minutes: number) => {
     if (minutes < 60) return `${minutes}분`;
@@ -32,11 +34,14 @@ export function HistoryStats({
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white" data-testid="history-stats">
+    <div
+      className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white"
+      data-testid="history-stats"
+    >
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-6">
         <Activity className="w-5 h-5" />
-        <h2 className="text-lg font-bold">이번 주 운동 현황</h2>
+        <h2 className="text-lg font-bold">{t('historyStats0')}</h2>
       </div>
 
       {/* 통계 그리드 */}
@@ -45,7 +50,7 @@ export function HistoryStats({
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-4 h-4 text-white/80" />
-            <span className="text-sm text-white/80">운동 횟수</span>
+            <span className="text-sm text-white/80">{t('historyStats1')}</span>
           </div>
           <p className="text-2xl font-bold">{totalWorkouts}회</p>
         </div>
@@ -54,7 +59,7 @@ export function HistoryStats({
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-white/80" />
-            <span className="text-sm text-white/80">총 시간</span>
+            <span className="text-sm text-white/80">{t('historyStats2')}</span>
           </div>
           <p className="text-2xl font-bold">{formatTotalTime(totalMinutes)}</p>
         </div>
@@ -63,7 +68,7 @@ export function HistoryStats({
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Flame className="w-4 h-4 text-white/80" />
-            <span className="text-sm text-white/80">소모 칼로리</span>
+            <span className="text-sm text-white/80">{t('historyStats3')}</span>
           </div>
           <p className="text-2xl font-bold">{totalCalories.toLocaleString()}kcal</p>
         </div>
@@ -72,7 +77,7 @@ export function HistoryStats({
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-white/80" />
-            <span className="text-sm text-white/80">총 볼륨</span>
+            <span className="text-sm text-white/80">{t('historyStats4')}</span>
           </div>
           <p className="text-2xl font-bold">{totalVolume.toLocaleString()}kg</p>
         </div>
@@ -81,23 +86,21 @@ export function HistoryStats({
       {/* 목표 달성률 */}
       <div className="mt-6 pt-4 border-t border-white/20">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-white/80">목표 달성률</span>
+          <span className="text-sm text-white/80">{t('historyStats5')}</span>
           <span className="text-lg font-bold">{completionRate}%</span>
         </div>
         <div className="h-2 bg-white/20 rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all duration-500 ${
-              classifyByRange(completionRate, [
-                { max: 50, result: 'bg-white' },
-                { max: 80, result: 'bg-yellow-400' },
-                { result: 'bg-green-400' },
-              ])
-            }`}
+            className={`h-full transition-all duration-500 ${classifyByRange(completionRate, [
+              { max: 50, result: 'bg-white' },
+              { max: 80, result: 'bg-yellow-400' },
+              { result: 'bg-green-400' },
+            ])}`}
             style={{ width: `${completionRate}%` }}
           />
         </div>
         {completionRate >= 80 && (
-          <p className="text-sm text-green-300 mt-2">목표 80% 달성!</p>
+          <p className="text-sm text-green-300 mt-2">{t('historyStats6')}</p>
         )}
       </div>
     </div>

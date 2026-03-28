@@ -14,6 +14,7 @@ import type {
   WorkoutEquipment,
   HealthFood,
 } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 interface ProductDetailTabsProps {
   product: AnyProduct;
@@ -24,19 +25,22 @@ interface ProductDetailTabsProps {
  * 화장품 상세 탭
  */
 function CosmeticTabs({ product }: { product: CosmeticProduct }) {
+  const t = useTranslations('productsUI');
   return (
     <Tabs defaultValue="detail" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="detail">상세</TabsTrigger>
-        <TabsTrigger value="ingredients">성분</TabsTrigger>
-        <TabsTrigger value="purchase">구매</TabsTrigger>
+        <TabsTrigger value="detail">{t('productDetailTabs0')}</TabsTrigger>
+        <TabsTrigger value="ingredients">{t('productDetailTabs1')}</TabsTrigger>
+        <TabsTrigger value="purchase">{t('productDetailTabs2')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="detail" className="space-y-4">
         {/* 피부 타입 */}
         {product.skinTypes && product.skinTypes.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">추천 피부 타입</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs3')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.skinTypes.map((type) => (
                 <Badge key={type} variant="secondary">
@@ -54,7 +58,9 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
         {/* 피부 고민 */}
         {product.concerns && product.concerns.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">피부 고민</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs4')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.concerns.map((concern) => (
                 <Badge key={concern} variant="outline">
@@ -73,7 +79,9 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
         {/* 퍼스널 컬러 */}
         {product.personalColorSeasons && product.personalColorSeasons.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">추천 퍼스널 컬러</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs5')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.personalColorSeasons.map((season) => (
                 <Badge key={season} variant="secondary">
@@ -86,7 +94,9 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
 
         {/* 카테고리 */}
         <div>
-          <h3 className="mb-2 text-sm font-medium text-muted-foreground">카테고리</h3>
+          <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+            {t('productDetailTabs6')}
+          </h3>
           <Badge variant="outline">{product.category}</Badge>
           {product.subcategory && (
             <Badge variant="outline" className="ml-1">
@@ -101,7 +111,7 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
         {product.keyIngredients && product.keyIngredients.length > 0 ? (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">주요 성분</CardTitle>
+              <CardTitle className="text-base">{t('productDetailTabs7')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
@@ -112,14 +122,14 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
             </CardContent>
           </Card>
         ) : (
-          <p className="text-sm text-muted-foreground">성분 정보가 없습니다.</p>
+          <p className="text-sm text-muted-foreground">{t('productDetailTabs8')}</p>
         )}
 
         {/* 주의 성분 */}
         {product.avoidIngredients && product.avoidIngredients.length > 0 && (
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base text-orange-700">주의 성분</CardTitle>
+              <CardTitle className="text-base text-orange-700">{t('productDetailTabs9')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-inside list-disc space-y-1 text-sm text-orange-700">
@@ -143,19 +153,22 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
  * 영양제 상세 탭
  */
 function SupplementTabs({ product }: { product: SupplementProduct }) {
+  const t = useTranslations('productsUI');
   return (
     <Tabs defaultValue="detail" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="detail">상세</TabsTrigger>
-        <TabsTrigger value="ingredients">성분</TabsTrigger>
-        <TabsTrigger value="purchase">구매</TabsTrigger>
+        <TabsTrigger value="detail">{t('productDetailTabs0')}</TabsTrigger>
+        <TabsTrigger value="ingredients">{t('productDetailTabs1')}</TabsTrigger>
+        <TabsTrigger value="purchase">{t('productDetailTabs2')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="detail" className="space-y-4">
         {/* 효능 */}
         {product.benefits && product.benefits.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">효능</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs10')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.benefits.map((benefit) => (
                 <Badge key={benefit} variant="secondary">
@@ -176,7 +189,9 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
         {/* 복용법 */}
         {product.dosage && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">복용법</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs11')}
+            </h3>
             <p className="text-sm">{product.dosage}</p>
           </div>
         )}
@@ -184,7 +199,9 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
         {/* 제공량 */}
         {product.totalServings && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">총 제공량</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs12')}
+            </h3>
             <p className="text-sm">{product.totalServings}회분</p>
           </div>
         )}
@@ -195,7 +212,7 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
         {product.mainIngredients && product.mainIngredients.length > 0 ? (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">주요 성분</CardTitle>
+              <CardTitle className="text-base">{t('productDetailTabs7')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5 text-sm">
@@ -212,14 +229,16 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
             </CardContent>
           </Card>
         ) : (
-          <p className="text-sm text-muted-foreground">성분 정보가 없습니다.</p>
+          <p className="text-sm text-muted-foreground">{t('productDetailTabs8')}</p>
         )}
 
         {/* 주의사항 */}
         {product.warnings && product.warnings.length > 0 && (
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base text-orange-700">주의사항</CardTitle>
+              <CardTitle className="text-base text-orange-700">
+                {t('productDetailTabs13')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-inside list-disc space-y-1 text-sm text-orange-700">
@@ -243,19 +262,22 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
  * 운동 기구 상세 탭
  */
 function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
+  const t = useTranslations('productsUI');
   return (
     <Tabs defaultValue="detail" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="detail">상세</TabsTrigger>
-        <TabsTrigger value="specs">사양</TabsTrigger>
-        <TabsTrigger value="purchase">구매</TabsTrigger>
+        <TabsTrigger value="detail">{t('productDetailTabs0')}</TabsTrigger>
+        <TabsTrigger value="specs">{t('productDetailTabs14')}</TabsTrigger>
+        <TabsTrigger value="purchase">{t('productDetailTabs2')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="detail" className="space-y-4">
         {/* 타겟 근육 */}
         {product.targetMuscles && product.targetMuscles.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">타겟 근육</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs15')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.targetMuscles.map((muscle) => (
                 <Badge key={muscle} variant="secondary">
@@ -275,7 +297,9 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
         {/* 운동 타입 */}
         {product.exerciseTypes && product.exerciseTypes.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">운동 타입</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs16')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.exerciseTypes.map((type) => (
                 <Badge key={type} variant="outline">
@@ -296,7 +320,9 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
             {product.pros && product.pros.length > 0 && (
               <Card className="border-green-200 bg-green-50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-green-700">장점</CardTitle>
+                  <CardTitle className="text-base text-green-700">
+                    {t('productDetailTabs17')}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="list-inside list-disc space-y-1 text-sm text-green-700">
@@ -310,7 +336,9 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
             {product.cons && product.cons.length > 0 && (
               <Card className="border-red-200 bg-red-50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-red-700">단점</CardTitle>
+                  <CardTitle className="text-base text-red-700">
+                    {t('productDetailTabs18')}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="list-inside list-disc space-y-1 text-sm text-red-700">
@@ -328,37 +356,37 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
       <TabsContent value="specs" className="space-y-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">제품 사양</CardTitle>
+            <CardTitle className="text-base">{t('productDetailTabs19')}</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="space-y-2 text-sm">
               {product.material && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">재질</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs20')}</dt>
                   <dd>{product.material}</dd>
                 </div>
               )}
               {product.weightKg && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">무게</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs21')}</dt>
                   <dd>{product.weightKg}kg</dd>
                 </div>
               )}
               {product.weightRange && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">무게 범위</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs22')}</dt>
                   <dd>{product.weightRange}</dd>
                 </div>
               )}
               {product.size && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">크기</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs23')}</dt>
                   <dd>{product.size}</dd>
                 </div>
               )}
               {product.skillLevel && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">난이도</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs24')}</dt>
                   <dd>
                     {product.skillLevel === 'beginner' && '초급'}
                     {product.skillLevel === 'intermediate' && '중급'}
@@ -369,7 +397,7 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
               )}
               {product.useLocation && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">사용 장소</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs25')}</dt>
                   <dd>
                     {product.useLocation === 'home' && '홈'}
                     {product.useLocation === 'gym' && '헬스장'}
@@ -380,7 +408,7 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
               )}
               {product.colorOptions && product.colorOptions.length > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">색상</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs26')}</dt>
                   <dd>{product.colorOptions.join(', ')}</dd>
                 </div>
               )}
@@ -392,7 +420,7 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
         {product.features && product.features.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">특징</CardTitle>
+              <CardTitle className="text-base">{t('productDetailTabs27')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
@@ -416,19 +444,22 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
  * 건강식품 상세 탭
  */
 function HealthFoodTabs({ product }: { product: HealthFood }) {
+  const t = useTranslations('productsUI');
   return (
     <Tabs defaultValue="detail" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="detail">상세</TabsTrigger>
-        <TabsTrigger value="nutrition">영양정보</TabsTrigger>
-        <TabsTrigger value="purchase">구매</TabsTrigger>
+        <TabsTrigger value="detail">{t('productDetailTabs0')}</TabsTrigger>
+        <TabsTrigger value="nutrition">{t('productDetailTabs28')}</TabsTrigger>
+        <TabsTrigger value="purchase">{t('productDetailTabs2')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="detail" className="space-y-4">
         {/* 효능 */}
         {product.benefits && product.benefits.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">효능</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs10')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.benefits.map((benefit) => (
                 <Badge key={benefit} variant="secondary">
@@ -448,7 +479,9 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
         {/* 식이 정보 */}
         {product.dietaryInfo && product.dietaryInfo.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">식이 정보</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs29')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.dietaryInfo.map((info) => (
                 <Badge key={info} variant="outline">
@@ -469,7 +502,9 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
         {/* 맛 옵션 */}
         {product.flavorOptions && product.flavorOptions.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">맛 옵션</h3>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+              {t('productDetailTabs30')}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {product.flavorOptions.map((flavor) => (
                 <Badge key={flavor} variant="outline">
@@ -484,7 +519,9 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
         {product.allergens && product.allergens.length > 0 && (
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base text-orange-700">알레르기 유발 성분</CardTitle>
+              <CardTitle className="text-base text-orange-700">
+                {t('productDetailTabs31')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1.5">
@@ -502,7 +539,7 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
       <TabsContent value="nutrition" className="space-y-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">영양 정보</CardTitle>
+            <CardTitle className="text-base">{t('productDetailTabs32')}</CardTitle>
             {product.servingSize && (
               <p className="text-sm text-muted-foreground">1회 제공량: {product.servingSize}</p>
             )}
@@ -511,43 +548,43 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
             <dl className="grid grid-cols-2 gap-2 text-sm">
               {product.caloriesPerServing !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">칼로리</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs33')}</dt>
                   <dd className="font-medium">{product.caloriesPerServing}kcal</dd>
                 </div>
               )}
               {product.proteinG !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">단백질</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs34')}</dt>
                   <dd className="font-medium">{product.proteinG}g</dd>
                 </div>
               )}
               {product.carbsG !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">탄수화물</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs35')}</dt>
                   <dd className="font-medium">{product.carbsG}g</dd>
                 </div>
               )}
               {product.sugarG !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">당류</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs36')}</dt>
                   <dd className="font-medium">{product.sugarG}g</dd>
                 </div>
               )}
               {product.fatG !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">지방</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs37')}</dt>
                   <dd className="font-medium">{product.fatG}g</dd>
                 </div>
               )}
               {product.fiberG !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">식이섬유</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs38')}</dt>
                   <dd className="font-medium">{product.fiberG}g</dd>
                 </div>
               )}
               {product.sodiumMg !== undefined && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">나트륨</dt>
+                  <dt className="text-muted-foreground">{t('productDetailTabs39')}</dt>
                   <dd className="font-medium">{product.sodiumMg}mg</dd>
                 </div>
               )}
@@ -559,7 +596,7 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
         {product.additionalNutrients && product.additionalNutrients.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">추가 영양 성분</CardTitle>
+              <CardTitle className="text-base">{t('productDetailTabs40')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5 text-sm">
@@ -592,6 +629,7 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
  * 구매 탭 (공통)
  */
 function PurchaseTab({ product }: { product: AnyProduct }) {
+  const t = useTranslations('productsUI');
   const purchaseUrl = 'purchaseUrl' in product ? product.purchaseUrl : undefined;
   const affiliateUrl = 'affiliateUrl' in product ? product.affiliateUrl : undefined;
   const finalUrl = purchaseUrl || affiliateUrl;
@@ -599,7 +637,7 @@ function PurchaseTab({ product }: { product: AnyProduct }) {
   if (!finalUrl) {
     return (
       <div className="rounded-lg border border-dashed p-6 text-center">
-        <p className="text-sm text-muted-foreground">구매 링크 정보가 없습니다.</p>
+        <p className="text-sm text-muted-foreground">{t('productDetailTabs41')}</p>
       </div>
     );
   }

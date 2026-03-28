@@ -21,6 +21,7 @@ import { EWGDistributionChart, IngredientFunctionChart } from './IngredientFunct
 import { SkinTypeAnalysis } from './SkinTypeAnalysis';
 import { IngredientList } from './IngredientList';
 import { AIIngredientSummary } from './AIIngredientSummary';
+import { useTranslations } from 'next-intl';
 
 interface IngredientAnalysisSectionProps {
   /** 제품 ID */
@@ -44,6 +45,7 @@ export function IngredientAnalysisSection({
   preloadedIngredients,
   className,
 }: IngredientAnalysisSectionProps) {
+  const t = useTranslations('productsUI');
   const supabase = useClerkSupabaseClient();
 
   // 상태
@@ -127,7 +129,7 @@ export function IngredientAnalysisSection({
     return (
       <div className={cn('text-center py-12', className)}>
         <FlaskConical className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">성분 정보가 등록되지 않았습니다.</p>
+        <p className="text-muted-foreground">{t('ingredientAnalysisSection0')}</p>
       </div>
     );
   }
@@ -146,7 +148,7 @@ export function IngredientAnalysisSection({
         <button
           onClick={() => setShowHelp(!showHelp)}
           className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-          aria-label="EWG 등급 설명"
+          aria-label={t('ingredientAnalysisSection1')}
         >
           <HelpCircle className="w-5 h-5" />
         </button>

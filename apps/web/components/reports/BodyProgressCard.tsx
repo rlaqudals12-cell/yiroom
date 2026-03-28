@@ -10,30 +10,36 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { BodyProgress } from '@/types/report';
 import { selectByKey, getTrendDirection } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface BodyProgressCardProps {
   bodyProgress: BodyProgress;
   onReanalyze?: () => void;
 }
 
-export function BodyProgressCard({
-  bodyProgress,
-  onReanalyze,
-}: BodyProgressCardProps) {
-  const { startWeight, endWeight, weightChange, reanalysisRecommended, message } =
-    bodyProgress;
+export function BodyProgressCard({ bodyProgress, onReanalyze }: BodyProgressCardProps) {
+  const t = useTranslations('reportsUI');
+  const { startWeight, endWeight, weightChange, reanalysisRecommended, message } = bodyProgress;
 
   const hasWeightData = startWeight !== null && endWeight !== null;
 
   const trendDir = getTrendDirection(weightChange);
-  const TrendIcon = selectByKey(trendDir, {
-    up: TrendingUp,
-    down: TrendingDown,
-  }, Minus)!;
-  const trendColor = selectByKey(getTrendDirection(weightChange, 0.5), {
-    up: 'text-orange-500',
-    down: 'text-blue-500',
-  }, 'text-muted-foreground')!;
+  const TrendIcon = selectByKey(
+    trendDir,
+    {
+      up: TrendingUp,
+      down: TrendingDown,
+    },
+    Minus
+  )!;
+  const trendColor = selectByKey(
+    getTrendDirection(weightChange, 0.5),
+    {
+      up: 'text-orange-500',
+      down: 'text-blue-500',
+    },
+    'text-muted-foreground'
+  )!;
 
   return (
     <Card data-testid="body-progress-card">
@@ -49,7 +55,7 @@ export function BodyProgressCard({
             {/* 체중 변화 표시 */}
             <div className="flex items-center justify-between">
               <div className="text-center">
-                <div className="text-xs text-muted-foreground">월초</div>
+                <div className="text-xs text-muted-foreground">{t('bodyProgressCard0')}</div>
                 <div className="text-xl font-bold">{startWeight}kg</div>
               </div>
 
@@ -62,7 +68,7 @@ export function BodyProgressCard({
               </div>
 
               <div className="text-center">
-                <div className="text-xs text-muted-foreground">월말</div>
+                <div className="text-xs text-muted-foreground">{t('bodyProgressCard1')}</div>
                 <div className="text-xl font-bold">{endWeight}kg</div>
               </div>
             </div>
@@ -72,12 +78,7 @@ export function BodyProgressCard({
 
             {/* 재분석 권장 */}
             {reanalysisRecommended && onReanalyze && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={onReanalyze}
-              >
+              <Button variant="outline" size="sm" className="w-full" onClick={onReanalyze}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 체형 재분석 하기
               </Button>
@@ -88,12 +89,7 @@ export function BodyProgressCard({
             <Scale className="h-10 w-10 text-muted-foreground/50 mb-2" />
             <p className="text-sm text-muted-foreground">{message}</p>
             {onReanalyze && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-3"
-                onClick={onReanalyze}
-              >
+              <Button variant="outline" size="sm" className="mt-3" onClick={onReanalyze}>
                 체형 분석 시작
               </Button>
             )}

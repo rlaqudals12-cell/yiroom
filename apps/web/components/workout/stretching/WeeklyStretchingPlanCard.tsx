@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { WeeklyStretchingPlan, DailyRoutine } from '@/types/stretching';
+import { useTranslations } from 'next-intl';
 
 interface WeeklyStretchingPlanCardProps {
   plan: WeeklyStretchingPlan;
@@ -75,13 +76,14 @@ export function WeeklyStretchingPlanCard({
   selectedDay,
   className,
 }: WeeklyStretchingPlanCardProps) {
+  const t = useTranslations('workoutUI');
   const today = getTodayKey();
 
   return (
     <Card className={className} data-testid="weekly-stretching-plan">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>주간 스트레칭 플랜</span>
+          <span>{t('weeklyStretchingPlanCard0')}</span>
           <Badge variant="outline">{plan.progressionWeek}주차</Badge>
         </CardTitle>
         <CardDescription>{plan.weekStartDate} 시작</CardDescription>
@@ -126,7 +128,7 @@ export function WeeklyStretchingPlanCard({
         {/* 주간 요약 */}
         <div className="mt-4 pt-4 border-t">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">이번 주 예상 운동량</span>
+            <span className="text-muted-foreground">{t('weeklyStretchingPlanCard1')}</span>
             <span className="font-medium">
               {calculateWeeklyStats(plan).totalMinutes}분 /{' '}
               {calculateWeeklyStats(plan).totalExercises}개 운동

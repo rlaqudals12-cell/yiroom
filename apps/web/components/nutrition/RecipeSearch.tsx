@@ -29,6 +29,7 @@ import {
   type NutritionGoal,
   NUTRITION_GOAL_LABELS,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface RecipeSearchProps {
   /** 사용자 보유 재료 목록 */
@@ -64,6 +65,7 @@ export default function RecipeSearch({
   onSelectRecipe,
   className,
 }: RecipeSearchProps) {
+  const t = useTranslations('nutritionUI');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGoal, setSelectedGoal] = useState<NutritionGoal | undefined>(defaultGoal);
   const [maxCookTime, setMaxCookTime] = useState<number | undefined>();
@@ -127,7 +129,7 @@ export default function RecipeSearch({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ChefHat className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">레시피 추천</h2>
+          <h2 className="text-lg font-semibold">{t('recipeSearch0')}</h2>
         </div>
         <Badge variant="outline" className="text-xs">
           보유 재료 {pantryItems.length}개
@@ -140,7 +142,7 @@ export default function RecipeSearch({
         <Input
           data-testid="recipe-search-input"
           type="text"
-          placeholder="레시피 이름, 재료, 태그로 검색..."
+          placeholder={t('recipeSearch3')}
           value={searchQuery}
           onChange={handleSearchChange}
           className="pl-10 pr-10"
@@ -208,7 +210,7 @@ export default function RecipeSearch({
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">레시피를 찾는 중...</span>
+          <span className="ml-2 text-muted-foreground">{t('recipeSearch1')}</span>
         </div>
       )}
 
@@ -231,7 +233,7 @@ export default function RecipeSearch({
             <Card className="border-dashed">
               <CardContent className="py-8 text-center">
                 <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground">조건에 맞는 레시피가 없어요.</p>
+                <p className="text-muted-foreground">{t('recipeSearch2')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   필터를 조정하거나 재료를 추가해보세요.
                 </p>

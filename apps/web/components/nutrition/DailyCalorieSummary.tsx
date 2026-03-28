@@ -11,6 +11,7 @@
 
 import { useMemo } from 'react';
 import CalorieProgressRing from './CalorieProgressRing';
+import { useTranslations } from 'next-intl';
 
 // 영양소 요약 타입
 interface NutritionSummary {
@@ -82,6 +83,7 @@ export default function DailyCalorieSummary({
   isLoading = false,
   title = '오늘의 식단',
 }: DailyCalorieSummaryProps) {
+  const t = useTranslations('nutritionUI');
   // 칼로리 비율 계산
   const caloriePercentage = useMemo(() => {
     if (!goal.calories || goal.calories === 0) return 0;
@@ -104,9 +106,7 @@ export default function DailyCalorieSummary({
       data-testid="daily-calorie-summary"
     >
       {/* 제목 */}
-      <h2 className="text-lg font-bold text-foreground text-center mb-4">
-        {title}
-      </h2>
+      <h2 className="text-lg font-bold text-foreground text-center mb-4">{title}</h2>
 
       {/* 원형 진행률 차트 (Task 3.3: CalorieProgressRing 사용) */}
       <div className="flex justify-center mb-4">
@@ -116,10 +116,7 @@ export default function DailyCalorieSummary({
           testId="calorie-ring"
         >
           {/* 중앙 텍스트 */}
-          <span
-            className="text-3xl font-bold text-foreground"
-            data-testid="consumed-calories"
-          >
+          <span className="text-3xl font-bold text-foreground" data-testid="consumed-calories">
             {summary.totalCalories.toLocaleString()}
           </span>
           <span className="text-sm text-muted-foreground">
@@ -146,15 +143,17 @@ export default function DailyCalorieSummary({
             {(summary.totalCalories - goal.calories).toLocaleString()} kcal 초과
           </span>
         ) : (
-          <>남은 칼로리: <span className="font-semibold text-green-600">{remainingCalories.toLocaleString()} kcal</span></>
+          <>
+            {t('dailyCalorieSummary0')}{' '}
+            <span className="font-semibold text-green-600">
+              {remainingCalories.toLocaleString()} kcal
+            </span>
+          </>
         )}
       </p>
 
       {/* 탄단지 섭취량 */}
-      <div
-        className="flex justify-center gap-6"
-        data-testid="macros-summary"
-      >
+      <div className="flex justify-center gap-6" data-testid="macros-summary">
         <MacroItem
           label="탄수화물"
           value={summary.totalCarbs}
@@ -198,7 +197,8 @@ function MacroItem({
         {label.charAt(0)}
       </span>
       <span className="text-sm font-semibold text-foreground">
-        {Math.round(value * 10) / 10}{unit}
+        {Math.round(value * 10) / 10}
+        {unit}
       </span>
     </div>
   );

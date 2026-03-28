@@ -16,6 +16,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
 import type { AnyProduct, ProductType } from '@/types/product';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface ProductQASectionProps {
   product: AnyProduct;
@@ -33,6 +34,7 @@ interface QAItem {
  * FAQ 버튼 + 인라인 Q&A 모달
  */
 export function ProductQASection({ product, productType }: ProductQASectionProps) {
+  const t = useTranslations('productsUI');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState('');
@@ -83,8 +85,7 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
       <Card data-testid="product-qa-section">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="w-4 h-4 text-violet-500" />
-            이 제품에 대해 물어보세요
+            <Sparkles className="w-4 h-4 text-violet-500" />이 제품에 대해 물어보세요
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -124,9 +125,7 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
               {product.name}
             </DialogTitle>
             <VisuallyHidden asChild>
-              <DialogDescription>
-                {product.name}에 대해 AI에게 질문하세요
-              </DialogDescription>
+              <DialogDescription>{product.name}에 대해 AI에게 질문하세요</DialogDescription>
             </VisuallyHidden>
           </DialogHeader>
 
@@ -147,18 +146,24 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
                     <p className="text-sm">{item.answer}</p>
                     <div className="flex items-center gap-1 mt-2">
                       <span
-                        className={`w-2 h-2 rounded-full ${
-                          selectByKey(item.confidence, {
+                        className={`w-2 h-2 rounded-full ${selectByKey(
+                          item.confidence,
+                          {
                             high: 'bg-green-500',
                             medium: 'bg-yellow-500',
-                          }, 'bg-red-500')
-                        }`}
+                          },
+                          'bg-red-500'
+                        )}`}
                       />
                       <span className="text-xs text-muted-foreground">
-                        {selectByKey(item.confidence, {
-                          high: '높은 신뢰도',
-                          medium: '보통 신뢰도',
-                        }, '낮은 신뢰도')}
+                        {selectByKey(
+                          item.confidence,
+                          {
+                            high: '높은 신뢰도',
+                            medium: '보통 신뢰도',
+                          },
+                          '낮은 신뢰도'
+                        )}
                       </span>
                     </div>
                   </div>
@@ -208,7 +213,7 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="질문을 입력하세요..."
+                placeholder={t('productQASection0')}
                 className="flex-1 px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.currentTarget.value.trim()) {

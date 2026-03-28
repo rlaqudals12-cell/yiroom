@@ -7,6 +7,7 @@
 
 import { Trophy, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface BestDayHighlightCardProps {
   bestDay: string | null;
@@ -44,6 +45,7 @@ export function BestDayHighlightCard({
   worstDay,
   worstDayScore,
 }: BestDayHighlightCardProps): React.ReactElement | null {
+  const t = useTranslations('reportsUI');
   // 데이터가 없으면 렌더링하지 않음
   if (!bestDay) return null;
 
@@ -52,13 +54,13 @@ export function BestDayHighlightCard({
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="h-4 w-4 text-amber-500" />
-          <h3 className="font-medium text-sm">이번 주 하이라이트</h3>
+          <h3 className="font-medium text-sm">{t('bestDayHighlightCard0')}</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 베스트 데이 */}
           <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">가장 건강한 날</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('bestDayHighlightCard1')}</div>
             <div className="font-semibold text-sm">{formatDayLabel(bestDay)}</div>
             <div className="flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3 text-green-500" />
@@ -72,7 +74,7 @@ export function BestDayHighlightCard({
           {/* 개선 필요한 날 */}
           {worstDay && worstDayScore < bestDayScore && (
             <div className="p-3 bg-muted/50 rounded-lg">
-              <div className="text-xs text-muted-foreground mb-1">다음엔 더 잘할 수 있어요</div>
+              <div className="text-xs text-muted-foreground mb-1">{t('bestDayHighlightCard2')}</div>
               <div className="font-semibold text-sm">{formatDayLabel(worstDay)}</div>
               <div className="flex items-center gap-1 mt-1">
                 <span className={`text-sm font-bold ${getScoreColor(worstDayScore)}`}>

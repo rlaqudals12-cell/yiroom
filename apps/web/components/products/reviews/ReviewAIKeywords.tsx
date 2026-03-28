@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sparkles, ThumbsUp, ThumbsDown, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /**
  * AI 추출 키워드 타입
@@ -49,6 +50,7 @@ interface ReviewAIKeywordsProps {
  * - 추천/주의 포인트
  */
 export function ReviewAIKeywords({ aiSummary, onKeywordClick, className }: ReviewAIKeywordsProps) {
+  const t = useTranslations('productsUI');
   const [isExpanded, setIsExpanded] = useState(false);
 
   const {
@@ -107,7 +109,9 @@ export function ReviewAIKeywords({ aiSummary, onKeywordClick, className }: Revie
         <div>
           <div className="flex items-center gap-1.5 mb-2">
             <ThumbsUp className="w-3.5 h-3.5 text-green-600" aria-hidden="true" />
-            <span className="text-xs font-medium text-green-700 dark:text-green-400">좋아요</span>
+            <span className="text-xs font-medium text-green-700 dark:text-green-400">
+              {t('reviewAIKeywords0')}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {positiveKeywords.map((keyword) => (
@@ -130,7 +134,9 @@ export function ReviewAIKeywords({ aiSummary, onKeywordClick, className }: Revie
           <div>
             <div className="flex items-center gap-1.5 mb-2">
               <ThumbsDown className="w-3.5 h-3.5 text-red-600" aria-hidden="true" />
-              <span className="text-xs font-medium text-red-700 dark:text-red-400">아쉬워요</span>
+              <span className="text-xs font-medium text-red-700 dark:text-red-400">
+                {t('reviewAIKeywords1')}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {negativeKeywords.map((keyword) => (

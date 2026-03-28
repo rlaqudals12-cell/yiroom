@@ -8,16 +8,15 @@
 import { Utensils, Droplets, Target } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { NutritionSummaryStats, NutritionAchievement } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface NutritionSummaryCardProps {
   summary: NutritionSummaryStats;
   achievement: NutritionAchievement;
 }
 
-export function NutritionSummaryCard({
-  summary,
-  achievement,
-}: NutritionSummaryCardProps) {
+export function NutritionSummaryCard({ summary, achievement }: NutritionSummaryCardProps) {
+  const t = useTranslations('reportsUI');
   return (
     <Card data-testid="nutrition-summary-card">
       <CardHeader className="pb-2">
@@ -33,32 +32,22 @@ export function NutritionSummaryCard({
             label="총 섭취 칼로리"
             value={`${summary.totalCalories.toLocaleString()}kcal`}
           />
-          <StatItem
-            label="일 평균"
-            value={`${summary.avgCaloriesPerDay.toLocaleString()}kcal`}
-          />
-          <StatItem
-            label="기록한 식사"
-            value={`${summary.mealCount}회`}
-          />
-          <StatItem
-            label="기록 일수"
-            value={`${summary.daysWithRecords}일`}
-          />
+          <StatItem label="일 평균" value={`${summary.avgCaloriesPerDay.toLocaleString()}kcal`} />
+          <StatItem label="기록한 식사" value={`${summary.mealCount}회`} />
+          <StatItem label="기록 일수" value={`${summary.daysWithRecords}일`} />
         </div>
 
         {/* 수분 섭취 */}
         <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
           <Droplets className="h-5 w-5 text-blue-500" />
           <div className="flex-1">
-            <div className="text-sm font-medium">수분 섭취</div>
+            <div className="text-sm font-medium">{t('nutritionSummaryCard0')}</div>
             <div className="text-xs text-muted-foreground">
-              총 {(summary.totalWater / 1000).toFixed(1)}L (일 평균 {Math.round(summary.avgWaterPerDay)}ml)
+              총 {(summary.totalWater / 1000).toFixed(1)}L (일 평균{' '}
+              {Math.round(summary.avgWaterPerDay)}ml)
             </div>
           </div>
-          <span className="text-sm font-semibold text-blue-600">
-            {achievement.waterPercent}%
-          </span>
+          <span className="text-sm font-semibold text-blue-600">{achievement.waterPercent}%</span>
         </div>
 
         {/* 목표 달성률 */}
@@ -73,21 +62,9 @@ export function NutritionSummaryCard({
             percent={achievement.caloriesPercent}
             color="bg-orange-500"
           />
-          <ProgressItem
-            label="단백질"
-            percent={achievement.proteinPercent}
-            color="bg-red-500"
-          />
-          <ProgressItem
-            label="탄수화물"
-            percent={achievement.carbsPercent}
-            color="bg-amber-500"
-          />
-          <ProgressItem
-            label="지방"
-            percent={achievement.fatPercent}
-            color="bg-yellow-500"
-          />
+          <ProgressItem label="단백질" percent={achievement.proteinPercent} color="bg-red-500" />
+          <ProgressItem label="탄수화물" percent={achievement.carbsPercent} color="bg-amber-500" />
+          <ProgressItem label="지방" percent={achievement.fatPercent} color="bg-yellow-500" />
         </div>
       </CardContent>
     </Card>
@@ -119,9 +96,7 @@ function ProgressItem({
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
         <span>{label}</span>
-        <span className={isOver ? 'text-amber-600' : ''}>
-          {percent}%
-        </span>
+        <span className={isOver ? 'text-amber-600' : ''}>{percent}%</span>
       </div>
       <div className="relative h-2 bg-muted rounded-full overflow-hidden">
         <div

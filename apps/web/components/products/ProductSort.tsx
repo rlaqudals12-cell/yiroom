@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { ProductSortBy } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 interface ProductSortProps {
   value: ProductSortBy;
@@ -27,10 +28,11 @@ const SORT_OPTIONS: { value: ProductSortBy; label: string }[] = [
  * 제품 정렬 드롭다운
  */
 export function ProductSort({ value, onValueChange }: ProductSortProps) {
+  const t = useTranslations('productsUI');
   return (
     <Select value={value} onValueChange={(v: string) => onValueChange(v as ProductSortBy)}>
       <SelectTrigger className="w-32">
-        <SelectValue placeholder="정렬" />
+        <SelectValue placeholder={t('productSort0')} />
       </SelectTrigger>
       <SelectContent>
         {SORT_OPTIONS.map((option) => (

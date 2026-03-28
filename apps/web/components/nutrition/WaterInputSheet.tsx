@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { X, Droplets, Coffee, Leaf, CupSoda, Wine, HelpCircle, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type DrinkType, HYDRATION_FACTORS } from './WaterIntakeCard';
+import { useTranslations } from 'next-intl';
 
 // 음료 타입 정보
 const DRINK_TYPES = [
@@ -85,6 +86,7 @@ export default function WaterInputSheet({
   onAdd,
   isSaving = false,
 }: WaterInputSheetProps) {
+  const t = useTranslations('nutritionUI');
   const [selectedType, setSelectedType] = useState<DrinkType>('water');
   const [selectedAmount, setSelectedAmount] = useState<number>(250);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -160,7 +162,7 @@ export default function WaterInputSheet({
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-muted transition-colors"
-              aria-label="닫기"
+              aria-label={t('waterInputSheet2')}
               data-testid="close-button"
             >
               <X className="w-5 h-5 text-muted-foreground" />
@@ -170,9 +172,7 @@ export default function WaterInputSheet({
           <div className="p-4 space-y-5">
             {/* 음료 종류 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                음료 종류
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">음료 종류</label>
               <div className="grid grid-cols-6 gap-2">
                 {DRINK_TYPES.map((drink) => (
                   <button
@@ -204,9 +204,7 @@ export default function WaterInputSheet({
 
             {/* 양 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                섭취량
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">섭취량</label>
               <div className="grid grid-cols-4 gap-2 mb-3">
                 {AMOUNT_PRESETS.map((preset) => (
                   <button
@@ -231,7 +229,7 @@ export default function WaterInputSheet({
                 <input
                   type="text"
                   inputMode="numeric"
-                  placeholder="직접 입력"
+                  placeholder={t('waterInputSheet3')}
                   value={customAmount}
                   onChange={(e) => handleCustomInput(e.target.value)}
                   className={cn(
@@ -240,7 +238,7 @@ export default function WaterInputSheet({
                       ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30'
                       : 'border-border hover:border-border/80'
                   )}
-                  aria-label="직접 입력 (ml)"
+                  aria-label={t('waterInputSheet4')}
                   data-testid="custom-amount-input"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -252,12 +250,12 @@ export default function WaterInputSheet({
             {/* 요약 */}
             <div className="bg-muted/50 rounded-xl p-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">섭취량</span>
+                <span className="text-muted-foreground">{t('waterInputSheet0')}</span>
                 <span className="font-bold text-foreground">{currentAmount} ml</span>
               </div>
               {hydrationFactor < 1 && currentAmount > 0 && (
                 <div className="flex justify-between items-center text-sm mt-1">
-                  <span className="text-muted-foreground">실제 수분</span>
+                  <span className="text-muted-foreground">{t('waterInputSheet1')}</span>
                   <span className="font-bold text-cyan-600">{effectiveMl} ml</span>
                 </div>
               )}

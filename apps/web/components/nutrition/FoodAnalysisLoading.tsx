@@ -1,6 +1,7 @@
 'use client';
 
 import AnalysisLoadingBase from '@/components/analysis/AnalysisLoadingBase';
+import { useTranslations } from 'next-intl';
 
 interface FoodAnalysisLoadingProps {
   isApiComplete?: boolean;
@@ -17,14 +18,15 @@ const LOADING_TIPS = [
 
 // N-1 음식 분석 항목 목록
 function FoodAnalysisItems() {
+  const t = useTranslations('nutritionUI');
   return (
     <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-      <span>• 음식 인식</span>
-      <span>• 칼로리</span>
-      <span>• 탄수화물</span>
-      <span>• 단백질</span>
-      <span>• 지방</span>
-      <span>• 신호등 분류</span>
+      <span>{t('foodAnalysisLoading0')}</span>
+      <span>{t('foodAnalysisLoading1')}</span>
+      <span>{t('foodAnalysisLoading2')}</span>
+      <span>{t('foodAnalysisLoading3')}</span>
+      <span>{t('foodAnalysisLoading4')}</span>
+      <span>{t('foodAnalysisLoading5')}</span>
     </div>
   );
 }

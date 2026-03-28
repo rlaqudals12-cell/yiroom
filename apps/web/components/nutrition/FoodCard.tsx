@@ -13,6 +13,7 @@ import { ScanBarcode, ShieldCheck, ShieldAlert, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BarcodeFood } from '@/types/nutrition';
 import { getSourceLabel, calculateNutrition } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface FoodCardProps {
   /** 바코드 식품 데이터 */
@@ -55,6 +56,7 @@ export default function FoodCard({
   onClick,
   className,
 }: FoodCardProps) {
+  const t = useTranslations('nutritionUI');
   const nutrition = calculateNutrition(food, servings);
 
   // 컴팩트 모드 (이력 목록용)
@@ -183,15 +185,15 @@ export default function FoodCard({
         </div>
         <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3">
           <p className="text-lg font-semibold text-blue-600">{nutrition.protein}g</p>
-          <p className="text-xs text-muted-foreground">단백질</p>
+          <p className="text-xs text-muted-foreground">{t('foodCard0')}</p>
         </div>
         <div className="bg-yellow-50 dark:bg-yellow-950 rounded-lg p-3">
           <p className="text-lg font-semibold text-yellow-600">{nutrition.carbs}g</p>
-          <p className="text-xs text-muted-foreground">탄수화물</p>
+          <p className="text-xs text-muted-foreground">{t('foodCard1')}</p>
         </div>
         <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3">
           <p className="text-lg font-semibold text-red-600">{nutrition.fat}g</p>
-          <p className="text-xs text-muted-foreground">지방</p>
+          <p className="text-xs text-muted-foreground">{t('foodCard2')}</p>
         </div>
       </div>
 
@@ -208,7 +210,9 @@ export default function FoodCard({
       {/* 알레르기 정보 */}
       {food.allergens && food.allergens.length > 0 && (
         <div className="mt-3 flex items-start gap-2">
-          <span className="text-xs font-medium text-destructive flex-shrink-0">알레르기:</span>
+          <span className="text-xs font-medium text-destructive flex-shrink-0">
+            {t('foodCard3')}
+          </span>
           <div className="flex flex-wrap gap-1">
             {food.allergens.map((allergen, index) => (
               <span

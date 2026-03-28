@@ -8,6 +8,7 @@
 import { Lightbulb, CheckCircle2, AlertCircle, Sparkles, Award, ArrowRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { ReportInsights } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 // 도메인별 아이콘/색상 매핑
 const DOMAIN_STYLES: Record<string, { bg: string; text: string }> = {
@@ -30,6 +31,7 @@ interface InsightCardProps {
 }
 
 export function InsightCard({ insights }: InsightCardProps) {
+  const t = useTranslations('reportsUI');
   const hasAnyInsight =
     insights.highlights.length > 0 ||
     insights.improvements.length > 0 ||
@@ -71,7 +73,7 @@ export function InsightCard({ insights }: InsightCardProps) {
         {insights.achievements && insights.achievements.length > 0 && (
           <InsightSection
             icon={<Award className="h-4 w-4 text-purple-500" />}
-            title="달성한 것"
+            title={t('insightCard0')}
             items={insights.achievements}
             bgColor="bg-purple-50 dark:bg-purple-950/20"
             textColor="text-purple-700 dark:text-purple-300"
@@ -82,7 +84,7 @@ export function InsightCard({ insights }: InsightCardProps) {
         {insights.highlights.length > 0 && (
           <InsightSection
             icon={<CheckCircle2 className="h-4 w-4 text-green-500" />}
-            title="잘한 점"
+            title={t('insightCard1')}
             items={insights.highlights}
             bgColor="bg-green-50 dark:bg-green-950/20"
             textColor="text-green-700 dark:text-green-300"
@@ -93,7 +95,7 @@ export function InsightCard({ insights }: InsightCardProps) {
         {insights.improvements.length > 0 && (
           <InsightSection
             icon={<AlertCircle className="h-4 w-4 text-amber-500" />}
-            title="개선 포인트"
+            title={t('insightCard2')}
             items={insights.improvements}
             bgColor="bg-amber-50 dark:bg-amber-950/20"
             textColor="text-amber-700 dark:text-amber-300"
@@ -104,7 +106,7 @@ export function InsightCard({ insights }: InsightCardProps) {
         {insights.tips.length > 0 && (
           <InsightSection
             icon={<Sparkles className="h-4 w-4 text-blue-500" />}
-            title="다음 주 추천"
+            title={t('insightCard3')}
             items={insights.tips}
             bgColor="bg-blue-50 dark:bg-blue-950/20"
             textColor="text-blue-700 dark:text-blue-300"

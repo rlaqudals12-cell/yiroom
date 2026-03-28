@@ -17,6 +17,7 @@ import {
   type SkinFoodRecommendation,
   type HydrationInsight,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface SkinInsightCardProps {
   /** S-1 피부 분석 요약 데이터 */
@@ -149,6 +150,7 @@ function FoodRecommendationItem({
  * 수분 인사이트 섹션
  */
 function HydrationInsightSection({ insight }: { insight: HydrationInsight }) {
+  const t = useTranslations('nutritionUI');
   const percentage = insight.currentMl
     ? Math.min(100, Math.round((insight.currentMl / insight.targetMl) * 100))
     : 0;
@@ -166,7 +168,7 @@ function HydrationInsightSection({ insight }: { insight: HydrationInsight }) {
     >
       <div className="flex items-center gap-2 mb-2">
         <Droplets className="w-4 h-4 text-blue-500" />
-        <span className="text-xs font-medium text-blue-700">수분 × 피부 연동</span>
+        <span className="text-xs font-medium text-blue-700">{t('skinInsightCard0')}</span>
       </div>
       <p className="text-sm text-foreground">{insight.message}</p>
 
@@ -207,6 +209,7 @@ export default function SkinInsightCard({
   onNavigateToSkinAnalysis,
   onFoodRecommendationClick,
 }: SkinInsightCardProps) {
+  const t = useTranslations('nutritionUI');
   // 인사이트 계산
   const insight = useMemo(
     () => getSkinNutritionInsight(skinAnalysis, currentWaterMl, nutritionGoal),
@@ -232,7 +235,7 @@ export default function SkinInsightCard({
       >
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-module-skin" />
-          <h3 className="text-sm font-semibold text-foreground">피부 연동 인사이트</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t('skinInsightCard1')}</h3>
         </div>
 
         <div className="bg-card/60 rounded-xl p-4 text-center">
@@ -257,7 +260,7 @@ export default function SkinInsightCard({
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-5 h-5 text-module-skin" />
-        <h3 className="text-sm font-semibold text-foreground">피부 연동 인사이트</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('skinInsightCard1')}</h3>
       </div>
 
       {/* 요약 메시지 */}

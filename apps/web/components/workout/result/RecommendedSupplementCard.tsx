@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Pill, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
 import { getRecommendedSupplements } from '@/lib/products/repositories/supplement';
 import type { SupplementProduct, SupplementBenefit } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 // 운동 목표 → 영양제 효능 매핑
 const GOAL_TO_BENEFITS: Record<string, SupplementBenefit[]> = {
@@ -103,6 +104,7 @@ export default function RecommendedSupplementCard({
   workoutGoals,
   concerns,
 }: RecommendedSupplementCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(false);
   const [supplements, setSupplements] = useState<SupplementProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -157,7 +159,7 @@ export default function RecommendedSupplementCard({
               <Pill className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">추천 영양제</h3>
+              <h3 className="font-bold text-foreground">{t('recommendedSupplementCard0')}</h3>
               <p className="text-sm text-green-600">
                 {isLoading ? '불러오는 중...' : `운동 효과를 높여줄 ${supplements.length}개`}
               </p>

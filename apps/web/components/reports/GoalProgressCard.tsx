@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import type { GoalProgress } from '@/types/report';
 import type { NutritionGoal } from '@/types/nutrition';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface GoalProgressCardProps {
   goalProgress: GoalProgress;
@@ -33,6 +34,7 @@ const goalColors: Record<NutritionGoal, string> = {
 };
 
 export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
+  const t = useTranslations('reportsUI');
   const { goal, achievementRate, message, isOnTrack } = goalProgress;
 
   const progressColor = classifyByRange(achievementRate, [
@@ -72,7 +74,7 @@ export function GoalProgressCard({ goalProgress }: GoalProgressCardProps) {
           {/* 진행률 바 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">달성률</span>
+              <span className="text-muted-foreground">{t('goalProgressCard0')}</span>
               <span className="font-bold">{achievementRate}%</span>
             </div>
             <Progress value={achievementRate} className="h-3" indicatorClassName={progressColor} />

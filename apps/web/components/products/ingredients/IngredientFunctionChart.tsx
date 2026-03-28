@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Droplets, Sun, Sparkles, Shield, Beaker, Leaf, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface FunctionData {
   name: string;
@@ -84,6 +85,7 @@ export function IngredientFunctionChart({
   maxItems = 6,
   className,
 }: IngredientFunctionChartProps) {
+  const t = useTranslations('productsUI');
   // 정렬 및 제한
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => b.count - a.count).slice(0, maxItems);
@@ -104,7 +106,7 @@ export function IngredientFunctionChart({
 
   return (
     <div className={cn('space-y-3', className)} data-testid="function-chart">
-      <h4 className="text-sm font-medium text-muted-foreground">기능별 분포</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{t('ingredientFunctionChart0')}</h4>
 
       <div className="space-y-2">
         {sortedData.map((item) => {
@@ -151,6 +153,7 @@ interface EWGDistributionChartProps {
 }
 
 export function EWGDistributionChart({ distribution, className }: EWGDistributionChartProps) {
+  const t = useTranslations('productsUI');
   const total = distribution.low + distribution.moderate + distribution.high + distribution.unknown;
 
   if (total === 0) {
@@ -175,7 +178,7 @@ export function EWGDistributionChart({ distribution, className }: EWGDistributio
 
   return (
     <div className={cn('space-y-3', className)} data-testid="ewg-distribution-chart">
-      <h4 className="text-sm font-medium text-muted-foreground">EWG 위험등급 분포</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{t('ingredientFunctionChart1')}</h4>
 
       {/* 스택 바 */}
       <div className="h-4 bg-muted rounded-full overflow-hidden flex">

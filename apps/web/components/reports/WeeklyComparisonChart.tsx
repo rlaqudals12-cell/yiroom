@@ -18,6 +18,7 @@ import {
 import { BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { WeeklySummary } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface WeeklyComparisonChartProps {
   weeklyData: WeeklySummary[];
@@ -30,6 +31,7 @@ interface WeeklyComparisonChartProps {
 }
 
 export function WeeklyComparisonChart({ weeklyData, highlights }: WeeklyComparisonChartProps) {
+  const t = useTranslations('reportsUI');
   // 차트 데이터 변환
   const chartData = weeklyData.map((week, index) => ({
     weekNum: `${index + 1}주차`,
@@ -86,8 +88,14 @@ export function WeeklyComparisonChart({ weeklyData, highlights }: WeeklyComparis
                     <div className="bg-background border rounded-lg shadow-lg p-2 text-sm">
                       <div className="font-medium mb-1">
                         {data.weekNum}
-                        {data.isBest && <span className="ml-2 text-green-500">최고</span>}
-                        {data.isWorst && <span className="ml-2 text-orange-500">집중 필요</span>}
+                        {data.isBest && (
+                          <span className="ml-2 text-green-500">{t('weeklyComparisonChart0')}</span>
+                        )}
+                        {data.isWorst && (
+                          <span className="ml-2 text-orange-500">
+                            {t('weeklyComparisonChart1')}
+                          </span>
+                        )}
                       </div>
                       <div className="text-orange-500">
                         평균 칼로리: {data.avgCalories.toLocaleString()}kcal

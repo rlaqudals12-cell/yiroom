@@ -13,6 +13,7 @@ import { useState, useMemo } from 'react';
 import { AlertTriangle, Flame, X, ChevronRight, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getWorkoutNutritionInsight, type WorkoutSummary } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface CalorieSurplusAlertProps {
   /** 오늘의 운동 요약 */
@@ -75,6 +76,7 @@ export default function CalorieSurplusAlert({
   onNavigateToWorkout,
   isLoading = false,
 }: CalorieSurplusAlertProps) {
+  const t = useTranslations('nutritionUI');
   // 닫기 상태 (세션 동안 유지)
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -137,7 +139,7 @@ export default function CalorieSurplusAlert({
         <button
           onClick={() => setIsDismissed(true)}
           className="p-1 rounded-full hover:bg-black/5 transition-colors"
-          aria-label="알림 닫기"
+          aria-label={t('calorieSurplusAlert1')}
           data-testid="calorie-surplus-alert-dismiss"
         >
           <X className="w-4 h-4 text-muted-foreground" />
@@ -170,7 +172,7 @@ export default function CalorieSurplusAlert({
         )}
         data-testid="calorie-surplus-alert-cta"
       >
-        <span>운동하러 가기</span>
+        <span>{t('calorieSurplusAlert0')}</span>
         <ChevronRight className="w-4 h-4" />
       </button>
     </div>

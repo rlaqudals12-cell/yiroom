@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { ThumbsUp, ThumbsDown, MessageSquare, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * 감성 필터 타입
@@ -43,6 +44,7 @@ export function ReviewSentimentFilter({
   counts,
   className,
 }: ReviewSentimentFilterProps) {
+  const t = useTranslations('productsUI');
   const options: SentimentFilterOption[] = [
     {
       value: 'all',
@@ -82,7 +84,7 @@ export function ReviewSentimentFilter({
     <div
       className={cn('flex gap-2 overflow-x-auto pb-1', className)}
       role="tablist"
-      aria-label="리뷰 감성 필터"
+      aria-label={t('reviewSentimentFilter0')}
       data-testid="review-sentiment-filter"
     >
       {options.map((option) => {

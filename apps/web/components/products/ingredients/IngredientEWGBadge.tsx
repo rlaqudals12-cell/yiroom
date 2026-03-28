@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { Shield, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 import { getEWGLevel, getEWGLevelColors, getEWGLevelLabel } from '@/types/ingredient';
+import { useTranslations } from 'next-intl';
 
 interface IngredientEWGBadgeProps {
   /** EWG 점수 (1-10) */
@@ -86,6 +87,7 @@ interface EWGScoreBarProps {
 }
 
 export function EWGScoreBar({ score, className }: EWGScoreBarProps) {
+  const t = useTranslations('productsUI');
   const level = getEWGLevel(score);
   const percentage = score ? (score / 10) * 100 : 0;
 
@@ -93,7 +95,7 @@ export function EWGScoreBar({ score, className }: EWGScoreBarProps) {
     <div className={cn('w-full', className)} data-testid="ewg-score-bar">
       {/* 레이블 */}
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-muted-foreground">EWG 등급</span>
+        <span className="text-xs text-muted-foreground">{t('ingredientEWGBadge0')}</span>
         <IngredientEWGBadge score={score} size="sm" showLabel={false} />
       </div>
 
@@ -113,9 +115,9 @@ export function EWGScoreBar({ score, className }: EWGScoreBarProps) {
 
       {/* 눈금 */}
       <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-        <span>1 안전</span>
+        <span>{t('ingredientEWGBadge1')}</span>
         <span>5</span>
-        <span>10 위험</span>
+        <span>{t('ingredientEWGBadge2')}</span>
       </div>
     </div>
   );

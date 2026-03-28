@@ -21,6 +21,7 @@ import {
   type ShoppingCategory,
 } from '@/lib/workout';
 import { trackShoppingClick } from '@/lib/analytics/tracker';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutStyleCardProps {
   personalColor: PersonalColorSeason;
@@ -35,6 +36,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
   personalColor,
   bodyType,
 }: WorkoutStyleCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ShoppingCategory>('workout-top');
 
@@ -87,7 +89,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
               <Shirt className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">운동복 스타일 가이드</h3>
+              <h3 className="font-bold text-foreground">{t('workoutStyleCard0')}</h3>
               <p className={`text-sm ${theme.text}`}>
                 {emoji} {label} 맞춤 추천
               </p>
@@ -115,7 +117,7 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Palette className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground/80">추천 색상</span>
+          <span className="text-sm font-medium text-foreground/80">{t('workoutStyleCard1')}</span>
         </div>
         <div className="flex gap-2 flex-wrap" data-testid="recommended-colors">
           {recommendation.recommendedColors.map((color) => (
@@ -140,7 +142,9 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           {/* 주의할 색상 */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-foreground/80">참고 색상</span>
+              <span className="text-sm font-medium text-foreground/80">
+                {t('workoutStyleCard2')}
+              </span>
             </div>
             <div className="flex gap-2 flex-wrap" data-testid="avoid-colors">
               {recommendation.avoidColors.map((color) => (
@@ -170,13 +174,17 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
               </div>
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">상의</span>
+                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
+                    {t('workoutStyleCard3')}
+                  </span>
                   <span className="text-sm text-foreground/80">
                     {recommendation.fitRecommendation.top}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">하의</span>
+                  <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
+                    {t('workoutStyleCard4')}
+                  </span>
                   <span className="text-sm text-foreground/80">
                     {recommendation.fitRecommendation.bottom}
                   </span>
@@ -197,7 +205,9 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <Package className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground/80">운동 소품 색상</span>
+              <span className="text-sm font-medium text-foreground/80">
+                {t('workoutStyleCard5')}
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-2" data-testid="accessories">
               {recommendation.accessories.map((accessory) => (
@@ -224,7 +234,9 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground/80">어울리는 운동 분위기</span>
+              <span className="text-sm font-medium text-foreground/80">
+                {t('workoutStyleCard6')}
+              </span>
             </div>
             <div className={`p-3 rounded-xl ${theme.bgLight}`}>
               <p className={`text-sm font-medium ${theme.text} mb-2`}>
@@ -250,7 +262,9 @@ const WorkoutStyleCard = memo(function WorkoutStyleCard({
           <div className="p-4 bg-muted/50" data-testid="shopping-section">
             <div className="flex items-center gap-2 mb-3">
               <ShoppingBag className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground/80">쇼핑몰에서 찾아보기</span>
+              <span className="text-sm font-medium text-foreground/80">
+                {t('workoutStyleCard7')}
+              </span>
             </div>
 
             {/* 카테고리 선택 */}

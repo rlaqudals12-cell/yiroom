@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import NutrientBarChart, { type NutrientData } from './NutrientBarChart';
 import { type NutritionGoal, NUTRITION_GOAL_LABELS, NUTRITION_TARGETS } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface NutritionDashboardCardProps {
   /** 현재 영양 섭취 */
@@ -67,6 +68,7 @@ export default function NutritionDashboardCard({
   isLoading = false,
   className,
 }: NutritionDashboardCardProps) {
+  const t = useTranslations('nutritionUI');
   // 목표 계산 (goal과 weightKg 기반, 또는 직접 지정, 또는 기본값)
   const calculatedTargets = useMemo(() => {
     if (target) return target;
@@ -186,7 +188,7 @@ export default function NutritionDashboardCard({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-orange-500" />
-              <span className="font-medium">칼로리</span>
+              <span className="font-medium">{t('nutritionDashboardCard0')}</span>
             </div>
             <div className={cn('flex items-center gap-1 text-sm', calorieStatus.color)}>
               <StatusIcon className="h-4 w-4" />
@@ -224,7 +226,11 @@ export default function NutritionDashboardCard({
         </div>
 
         {/* 매크로 영양소 차트 */}
-        <NutrientBarChart data={nutrientData} title="영양소 현황" showWarningThreshold />
+        <NutrientBarChart
+          data={nutrientData}
+          title={t('nutritionDashboardCard4')}
+          showWarningThreshold
+        />
 
         {/* 단백질 부족 경고 */}
         {proteinStatus.warning && (
@@ -269,6 +275,7 @@ export function RecipeNutritionMini({
   fat,
   className,
 }: RecipeNutritionMiniProps) {
+  const t = useTranslations('nutritionUI');
   return (
     <div
       data-testid="recipe-nutrition-mini"
@@ -280,15 +287,15 @@ export function RecipeNutritionMini({
       </div>
       <div className="text-center p-1.5 rounded bg-blue-50 dark:bg-blue-950/50">
         <span className="font-medium text-blue-600">{protein}g</span>
-        <span className="text-muted-foreground block">단백질</span>
+        <span className="text-muted-foreground block">{t('nutritionDashboardCard1')}</span>
       </div>
       <div className="text-center p-1.5 rounded bg-yellow-50 dark:bg-yellow-950/50">
         <span className="font-medium text-yellow-600">{carbs}g</span>
-        <span className="text-muted-foreground block">탄수화물</span>
+        <span className="text-muted-foreground block">{t('nutritionDashboardCard2')}</span>
       </div>
       <div className="text-center p-1.5 rounded bg-red-50 dark:bg-red-950/50">
         <span className="font-medium text-red-600">{fat}g</span>
-        <span className="text-muted-foreground block">지방</span>
+        <span className="text-muted-foreground block">{t('nutritionDashboardCard3')}</span>
       </div>
     </div>
   );

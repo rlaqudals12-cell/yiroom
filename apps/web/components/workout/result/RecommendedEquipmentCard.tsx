@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Dumbbell, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
 import { getRecommendedEquipment } from '@/lib/products/repositories/equipment';
 import type { WorkoutEquipment, TargetMuscle, SkillLevel, UseLocation } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 interface RecommendedEquipmentCardProps {
   targetMuscles?: TargetMuscle[];
@@ -96,6 +97,7 @@ export default function RecommendedEquipmentCard({
   skillLevel,
   useLocation,
 }: RecommendedEquipmentCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(false);
   const [equipment, setEquipment] = useState<WorkoutEquipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function RecommendedEquipmentCard({
               <Dumbbell className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">추천 운동 기구</h3>
+              <h3 className="font-bold text-foreground">{t('recommendedEquipmentCard0')}</h3>
               <p className="text-sm text-indigo-600">
                 {isLoading ? '불러오는 중...' : `${equipment.length}개 추천`}
               </p>

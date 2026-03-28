@@ -13,6 +13,7 @@ import type {
   WorkoutSummaryStats,
   CalorieBalanceStatus,
 } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface ReportSummaryCardProps {
   /** 리포트 기간 라벨 (예: "이번 주", "이번 달") */
@@ -85,6 +86,7 @@ function generateNarrative({
 }
 
 export function ReportSummaryCard(props: ReportSummaryCardProps): React.ReactElement {
+  const t = useTranslations('reportsUI');
   const narrative = generateNarrative(props);
 
   return (
@@ -100,7 +102,7 @@ export function ReportSummaryCard(props: ReportSummaryCardProps): React.ReactEle
             </div>
           </div>
           <div>
-            <p className="text-xs font-medium text-primary mb-1">맞춤 요약</p>
+            <p className="text-xs font-medium text-primary mb-1">{t('reportSummaryCard0')}</p>
             <p className="text-sm leading-relaxed text-foreground">{narrative}</p>
           </div>
         </div>

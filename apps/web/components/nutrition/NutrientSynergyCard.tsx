@@ -27,6 +27,7 @@ import {
   NUTRIENT_INTERACTION_MATRIX,
   type InteractionType,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 // 영양소 한글 라벨
 const NUTRIENT_LABELS: Record<string, string> = {
@@ -151,6 +152,7 @@ export function NutrientSynergyCard({
   className,
   compact = false,
 }: NutrientSynergyCardProps) {
+  const t = useTranslations('nutritionUI');
   const [activeNutrient, setActiveNutrient] = useState<string>(selectedNutrient || 'vitaminC');
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
@@ -180,15 +182,17 @@ export function NutrientSynergyCard({
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-foreground">영양소 상호작용</h3>
-            <p className="text-sm text-muted-foreground">함께 먹으면 좋은/주의할 조합</p>
+            <h3 className="font-bold text-lg text-foreground">{t('nutrientSynergyCard0')}</h3>
+            <p className="text-sm text-muted-foreground">{t('nutrientSynergyCard1')}</p>
           </div>
         </div>
 
         {/* 영양소 선택 */}
         {!compact && (
           <div>
-            <label className="block text-sm text-muted-foreground mb-2">영양소 선택</label>
+            <label className="block text-sm text-muted-foreground mb-2">
+              {t('nutrientSynergyCard2')}
+            </label>
             <select
               value={activeNutrient}
               onChange={(e) => {
@@ -255,12 +259,14 @@ export function NutrientSynergyCard({
           <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Info className="w-4 h-4 text-emerald-600" />
-              <p className="font-medium text-sm text-emerald-800 dark:text-emerald-300">섭취 팁</p>
+              <p className="font-medium text-sm text-emerald-800 dark:text-emerald-300">
+                {t('nutrientSynergyCard3')}
+              </p>
             </div>
             <ul className="space-y-1 text-sm text-emerald-700 dark:text-emerald-200">
-              <li>• 시너지 영양소는 같은 식사에서 함께 섭취하세요.</li>
-              <li>• 길항 영양소는 2시간 이상 간격을 두세요.</li>
-              <li>• 보충제보다 자연 식품에서 섭취하는 것이 흡수율이 높아요.</li>
+              <li>{t('nutrientSynergyCard4')}</li>
+              <li>{t('nutrientSynergyCard5')}</li>
+              <li>{t('nutrientSynergyCard6')}</li>
             </ul>
           </div>
         </div>

@@ -14,6 +14,7 @@ import {
 import type { ProductReview } from '@/types/review';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useTranslations } from 'next-intl';
 
 interface ReviewCardProps {
   /** 리뷰 데이터 */
@@ -38,6 +39,7 @@ export function ReviewCard({
   onDelete,
   className,
 }: ReviewCardProps) {
+  const t = useTranslations('productsUI');
   const [isHelpful, setIsHelpful] = useState(review.isHelpfulByMe ?? false);
   const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,13 +72,7 @@ export function ReviewCard({
   };
 
   return (
-    <article
-      className={cn(
-        'rounded-lg border bg-card p-4',
-        className
-      )}
-      data-testid="review-card"
-    >
+    <article className={cn('rounded-lg border bg-card p-4', className)} data-testid="review-card">
       {/* 헤더: 사용자 정보 + 별점 + 시간 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
@@ -89,9 +85,7 @@ export function ReviewCard({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">
-                {review.user?.name ?? '익명'}
-              </span>
+              <span className="font-medium text-sm">{review.user?.name ?? '익명'}</span>
               {review.verifiedPurchase && (
                 <span className="inline-flex items-center gap-0.5 text-xs text-green-600 dark:text-green-400">
                   <CheckCircle className="h-3 w-3" />
@@ -112,7 +106,7 @@ export function ReviewCard({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">더보기</span>
+                <span className="sr-only">{t('reviewCard0')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -137,15 +131,11 @@ export function ReviewCard({
       </div>
 
       {/* 제목 */}
-      {review.title && (
-        <h4 className="mt-3 font-medium">{review.title}</h4>
-      )}
+      {review.title && <h4 className="mt-3 font-medium">{review.title}</h4>}
 
       {/* 본문 */}
       {review.content && (
-        <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">
-          {review.content}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">{review.content}</p>
       )}
 
       {/* 도움됨 버튼 */}
@@ -155,18 +145,11 @@ export function ReviewCard({
           size="sm"
           onClick={handleHelpful}
           disabled={!currentUserId || isOwner || isLoading}
-          className={cn(
-            'h-8 gap-1.5',
-            isHelpful && 'text-primary'
-          )}
+          className={cn('h-8 gap-1.5', isHelpful && 'text-primary')}
         >
-          <ThumbsUp
-            className={cn('h-4 w-4', isHelpful && 'fill-current')}
-          />
-          <span>도움됨</span>
-          {helpfulCount > 0 && (
-            <span className="text-xs">({helpfulCount})</span>
-          )}
+          <ThumbsUp className={cn('h-4 w-4', isHelpful && 'fill-current')} />
+          <span>{t('reviewCard1')}</span>
+          {helpfulCount > 0 && <span className="text-xs">({helpfulCount})</span>}
         </Button>
       </div>
     </article>

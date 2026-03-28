@@ -7,6 +7,7 @@
 
 import { Trophy, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface BestWeekHighlightCardProps {
   bestWeek: number | null;
@@ -39,6 +40,7 @@ export function BestWeekHighlightCard({
   worstWeek,
   worstWeekScore,
 }: BestWeekHighlightCardProps): React.ReactElement | null {
+  const t = useTranslations('reportsUI');
   if (!bestWeek) return null;
 
   return (
@@ -46,13 +48,13 @@ export function BestWeekHighlightCard({
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="h-4 w-4 text-amber-500" />
-          <h3 className="font-medium text-sm">이번 달 하이라이트</h3>
+          <h3 className="font-medium text-sm">{t('bestWeekHighlightCard0')}</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 베스트 위크 */}
           <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">가장 건강한 주</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('bestWeekHighlightCard1')}</div>
             <div className="font-semibold text-sm">{formatWeekLabel(bestWeek)}</div>
             <div className="flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3 text-green-500" />
@@ -66,7 +68,9 @@ export function BestWeekHighlightCard({
           {/* 개선 필요한 주 */}
           {worstWeek && worstWeekScore < bestWeekScore && (
             <div className="p-3 bg-muted/50 rounded-lg">
-              <div className="text-xs text-muted-foreground mb-1">다음 달엔 더 잘할 수 있어요</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('bestWeekHighlightCard2')}
+              </div>
               <div className="font-semibold text-sm">{formatWeekLabel(worstWeek)}</div>
               <div className="flex items-center gap-1 mt-1">
                 <span className={`text-sm font-bold ${getScoreColor(worstWeekScore)}`}>

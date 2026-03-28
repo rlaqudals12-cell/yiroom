@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { type TrafficLightColor } from './TrafficLight';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { useFocusTrap } from '@/hooks/useKeyboardNavigation';
+import { useTranslations } from 'next-intl';
 
 // 식사 타입 정보
 const MEAL_TYPES = [
@@ -86,6 +87,7 @@ export default function ManualFoodInputSheet({
   defaultMealType = 'lunch',
   isSaving = false,
 }: ManualFoodInputSheetProps) {
+  const t = useTranslations('nutritionUI');
   // 폼 상태
   const [name, setName] = useState('');
   const [calories, setCalories] = useState('');
@@ -185,7 +187,7 @@ export default function ManualFoodInputSheet({
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-muted transition-colors"
-              aria-label="닫기"
+              aria-label={t('manualFoodInputSheet2')}
               data-testid="close-button"
             >
               <X className="w-5 h-5 text-muted-foreground" />
@@ -203,16 +205,18 @@ export default function ManualFoodInputSheet({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="예: 김치찌개, 샐러드"
+                placeholder={t('manualFoodInputSheet3')}
                 className="w-full py-3 px-4 rounded-xl border-2 border-border focus:border-orange-500 focus:outline-none transition-colors bg-background"
-                aria-label="음식명"
+                aria-label={t('manualFoodInputSheet4')}
                 data-testid="food-name-input"
               />
             </div>
 
             {/* 식사 타입 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">식사 타입</label>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {t('manualFoodInputSheet0')}
+              </label>
               <div className="grid grid-cols-4 gap-2">
                 {MEAL_TYPES.map((meal) => (
                   <button
@@ -269,9 +273,9 @@ export default function ManualFoodInputSheet({
                     inputMode="numeric"
                     value={protein}
                     onChange={(e) => setProtein(extractNumber(e.target.value))}
-                    placeholder="단백질"
+                    placeholder={t('manualFoodInputSheet5')}
                     className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
-                    aria-label="단백질"
+                    aria-label={t('manualFoodInputSheet5')}
                     data-testid="protein-input"
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -285,9 +289,9 @@ export default function ManualFoodInputSheet({
                     inputMode="numeric"
                     value={carbs}
                     onChange={(e) => setCarbs(extractNumber(e.target.value))}
-                    placeholder="탄수화물"
+                    placeholder={t('manualFoodInputSheet6')}
                     className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
-                    aria-label="탄수화물"
+                    aria-label={t('manualFoodInputSheet6')}
                     data-testid="carbs-input"
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -301,9 +305,9 @@ export default function ManualFoodInputSheet({
                     inputMode="numeric"
                     value={fat}
                     onChange={(e) => setFat(extractNumber(e.target.value))}
-                    placeholder="지방"
+                    placeholder={t('manualFoodInputSheet7')}
                     className="w-full py-2 px-3 pr-6 rounded-lg border-2 border-border focus:border-orange-500 focus:outline-none transition-colors text-sm bg-background"
-                    aria-label="지방"
+                    aria-label={t('manualFoodInputSheet7')}
                     data-testid="fat-input"
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -329,7 +333,7 @@ export default function ManualFoodInputSheet({
                 type="text"
                 value={portion}
                 onChange={(e) => setPortion(e.target.value)}
-                placeholder="1인분"
+                placeholder={t('manualFoodInputSheet8')}
                 className="w-full py-3 px-4 rounded-xl border-2 border-border focus:border-orange-500 focus:outline-none transition-colors bg-background"
                 data-testid="portion-input"
               />
@@ -337,7 +341,9 @@ export default function ManualFoodInputSheet({
 
             {/* 신호등 색상 선택 */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">음식 신호등</label>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {t('manualFoodInputSheet1')}
+              </label>
               <div className="grid grid-cols-3 gap-2">
                 {TRAFFIC_LIGHTS.map((light) => (
                   <button

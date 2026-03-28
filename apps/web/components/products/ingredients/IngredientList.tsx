@@ -10,6 +10,7 @@ import {
   FunctionSubFilter,
   type IngredientFilterType,
 } from './IngredientFilterTabs';
+import { useTranslations } from 'next-intl';
 
 interface IngredientListProps {
   /** 성분 목록 */
@@ -37,6 +38,7 @@ export function IngredientList({
   isLoading = false,
   className,
 }: IngredientListProps) {
+  const t = useTranslations('productsUI');
   // 필터 상태
   const [filter, setFilter] = useState<IngredientFilterType>('all');
   const [functionFilter, setFunctionFilter] = useState<string | null>(null);
@@ -139,7 +141,7 @@ export function IngredientList({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="성분 검색..."
+          placeholder={t('ingredientList1')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -155,7 +157,7 @@ export function IngredientList({
       {/* 성분 목록 */}
       {filteredIngredients.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>해당하는 성분이 없습니다.</p>
+          <p>{t('ingredientList0')}</p>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}

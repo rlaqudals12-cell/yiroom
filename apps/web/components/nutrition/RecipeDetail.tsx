@@ -33,6 +33,7 @@ import {
   INGREDIENT_CATEGORY_LABELS,
   findSimilarIngredient,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface RecipeDetailProps {
   /** 레시피 데이터 */
@@ -82,6 +83,7 @@ export default function RecipeDetail({
   onShare,
   className,
 }: RecipeDetailProps) {
+  const t = useTranslations('nutritionUI');
   // 완료된 조리 단계 추적
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
@@ -140,7 +142,12 @@ export default function RecipeDetail({
         )}
         <div className="flex items-center gap-2 ml-auto">
           {onShare && (
-            <Button variant="ghost" size="sm" onClick={() => onShare(recipe)} aria-label="공유하기">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onShare(recipe)}
+              aria-label={t('recipeDetail9')}
+            >
               <Share2 className="h-4 w-4" />
             </Button>
           )}
@@ -149,7 +156,7 @@ export default function RecipeDetail({
               variant="ghost"
               size="sm"
               onClick={() => onBookmark(recipe)}
-              aria-label="즐겨찾기"
+              aria-label={t('recipeDetail10')}
             >
               <BookmarkPlus className="h-4 w-4" />
             </Button>
@@ -177,7 +184,7 @@ export default function RecipeDetail({
             <div className="rounded-lg bg-muted p-3">
               <Clock className="h-5 w-5 mx-auto text-muted-foreground" />
               <p className="mt-1 text-lg font-semibold">{recipe.cookTime}분</p>
-              <p className="text-xs text-muted-foreground">조리 시간</p>
+              <p className="text-xs text-muted-foreground">{t('recipeDetail0')}</p>
             </div>
             <div className="rounded-lg bg-muted p-3">
               <Flame className="h-5 w-5 mx-auto text-orange-500" />
@@ -187,7 +194,7 @@ export default function RecipeDetail({
             <div className="rounded-lg bg-muted p-3">
               <Users className="h-5 w-5 mx-auto text-muted-foreground" />
               <Badge className={cn('mt-1', difficultyInfo.color)}>{difficultyInfo.label}</Badge>
-              <p className="text-xs text-muted-foreground mt-1">난이도</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('recipeDetail1')}</p>
             </div>
           </div>
 
@@ -231,19 +238,19 @@ export default function RecipeDetail({
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="rounded-lg bg-muted p-3">
               <p className="text-lg font-semibold">{recipe.nutritionInfo.calories}</p>
-              <p className="text-xs text-muted-foreground">칼로리</p>
+              <p className="text-xs text-muted-foreground">{t('recipeDetail2')}</p>
             </div>
             <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-3">
               <p className="text-lg font-semibold text-blue-600">{recipe.nutritionInfo.protein}g</p>
-              <p className="text-xs text-muted-foreground">단백질</p>
+              <p className="text-xs text-muted-foreground">{t('recipeDetail3')}</p>
             </div>
             <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950 p-3">
               <p className="text-lg font-semibold text-yellow-600">{recipe.nutritionInfo.carbs}g</p>
-              <p className="text-xs text-muted-foreground">탄수화물</p>
+              <p className="text-xs text-muted-foreground">{t('recipeDetail4')}</p>
             </div>
             <div className="rounded-lg bg-red-50 dark:bg-red-950 p-3">
               <p className="text-lg font-semibold text-red-600">{recipe.nutritionInfo.fat}g</p>
-              <p className="text-xs text-muted-foreground">지방</p>
+              <p className="text-xs text-muted-foreground">{t('recipeDetail5')}</p>
             </div>
           </div>
         </CardContent>
@@ -253,7 +260,7 @@ export default function RecipeDetail({
       <Card data-testid="ingredients-card">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">재료</CardTitle>
+            <CardTitle className="text-base">{t('recipeDetail6')}</CardTitle>
             {pantryItems.length > 0 && (
               <Badge
                 variant={availabilityRate >= 80 ? 'default' : 'secondary'}
@@ -289,7 +296,9 @@ export default function RecipeDetail({
                     ))}
                   <span className={cn(ingredient.optional && 'text-muted-foreground')}>
                     {ingredient.name}
-                    {ingredient.optional && <span className="text-xs ml-1">(선택)</span>}
+                    {ingredient.optional && (
+                      <span className="text-xs ml-1">{t('recipeDetail7')}</span>
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -324,7 +333,7 @@ export default function RecipeDetail({
       <Card data-testid="cooking-steps-card">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">조리 방법</CardTitle>
+            <CardTitle className="text-base">{t('recipeDetail8')}</CardTitle>
             <span className="text-sm text-muted-foreground">
               {completedSteps.size}/{recipe.steps.length}단계
             </span>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Sparkles, ThumbsUp, AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import type { AIIngredientSummary as AIIngredientSummaryType } from '@/lib/products/services/ingredient-analysis';
+import { useTranslations } from 'next-intl';
 
 interface AIIngredientSummaryProps {
   /** AI 분석 결과 */
@@ -26,6 +27,7 @@ export function AIIngredientSummary({
   isLoading = false,
   className,
 }: AIIngredientSummaryProps) {
+  const t = useTranslations('productsUI');
   const [isExpanded, setIsExpanded] = useState(false);
 
   // 로딩 상태
@@ -41,7 +43,7 @@ export function AIIngredientSummary({
       >
         <div className="flex items-center gap-2 mb-3">
           <Loader2 className="w-5 h-5 text-violet-600 animate-spin" />
-          <span className="font-semibold text-foreground">AI가 성분을 분석하고 있어요...</span>
+          <span className="font-semibold text-foreground">{t('aIIngredientSummary0')}</span>
         </div>
         <div className="space-y-2">
           <div className="h-4 bg-violet-200/50 rounded animate-pulse" />
@@ -162,7 +164,9 @@ export function AIIngredientSummary({
 
           {/* 피부타입별 추천도 */}
           <div className="px-4 py-3">
-            <h4 className="text-xs font-medium text-muted-foreground mb-3">피부타입별 추천도</h4>
+            <h4 className="text-xs font-medium text-muted-foreground mb-3">
+              {t('aIIngredientSummary1')}
+            </h4>
             <div className="grid grid-cols-5 gap-2">
               {Object.entries(summary.skinTypeRecommendation).map(([type, score]) => {
                 const getScoreColor = (s: number) => {

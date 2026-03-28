@@ -14,6 +14,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Utensils, Settings, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // Props 타입 정의
 export interface FastingTimerProps {
@@ -69,6 +70,7 @@ export default function FastingTimer({
   eatingWindowHours,
   compact = false,
 }: FastingTimerProps) {
+  const t = useTranslations('nutritionUI');
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -87,34 +89,33 @@ export default function FastingTimer({
   }, [router]);
 
   // 식사 가능 시간대 계산
-  const { eatingStartHour, eatingStartMinute, eatingEndHour, eatingEndMinute } =
-    useMemo(() => {
-      if (!fastingStartTime || !eatingWindowHours) {
-        return {
-          eatingStartHour: 0,
-          eatingStartMinute: 0,
-          eatingEndHour: 0,
-          eatingEndMinute: 0,
-        };
-      }
-
-      const { hour: startHour, minute: startMinute } = parseTime(fastingStartTime);
-      const fastingHours = 24 - eatingWindowHours;
-
-      // 식사 시작 시간 = 단식 시작 시간 + 단식 시간
-      const eatingStartTotalMinutes =
-        (timeToMinutes(startHour, startMinute) + fastingHours * 60) % (24 * 60);
-      const eatingStartH = Math.floor(eatingStartTotalMinutes / 60);
-      const eatingStartM = eatingStartTotalMinutes % 60;
-
-      // 식사 종료 시간 = 단식 시작 시간
+  const { eatingStartHour, eatingStartMinute, eatingEndHour, eatingEndMinute } = useMemo(() => {
+    if (!fastingStartTime || !eatingWindowHours) {
       return {
-        eatingStartHour: eatingStartH,
-        eatingStartMinute: eatingStartM,
-        eatingEndHour: startHour,
-        eatingEndMinute: startMinute,
+        eatingStartHour: 0,
+        eatingStartMinute: 0,
+        eatingEndHour: 0,
+        eatingEndMinute: 0,
       };
-    }, [fastingStartTime, eatingWindowHours]);
+    }
+
+    const { hour: startHour, minute: startMinute } = parseTime(fastingStartTime);
+    const fastingHours = 24 - eatingWindowHours;
+
+    // 식사 시작 시간 = 단식 시작 시간 + 단식 시간
+    const eatingStartTotalMinutes =
+      (timeToMinutes(startHour, startMinute) + fastingHours * 60) % (24 * 60);
+    const eatingStartH = Math.floor(eatingStartTotalMinutes / 60);
+    const eatingStartM = eatingStartTotalMinutes % 60;
+
+    // 식사 종료 시간 = 단식 시작 시간
+    return {
+      eatingStartHour: eatingStartH,
+      eatingStartMinute: eatingStartM,
+      eatingEndHour: startHour,
+      eatingEndMinute: startMinute,
+    };
+  }, [fastingStartTime, eatingWindowHours]);
 
   // 현재 상태 계산 (단식 중 / 식사 가능)
   // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
@@ -123,10 +124,7 @@ export default function FastingTimer({
       return { isFasting: false, remainingMinutes: 0, progressPercent: 0 };
     }
 
-    const currentMinutes = timeToMinutes(
-      currentTime.getHours(),
-      currentTime.getMinutes()
-    );
+    const currentMinutes = timeToMinutes(currentTime.getHours(), currentTime.getMinutes());
     const eatingStartMinutes = timeToMinutes(eatingStartHour, eatingStartMinute);
     const eatingEndMinutes = timeToMinutes(eatingEndHour, eatingEndMinute);
 
@@ -136,12 +134,10 @@ export default function FastingTimer({
     let isInEatingWindow: boolean;
     if (eatingCrossesMidnight) {
       // 예: 식사 시간 22:00 ~ 06:00
-      isInEatingWindow =
-        currentMinutes >= eatingStartMinutes || currentMinutes < eatingEndMinutes;
+      isInEatingWindow = currentMinutes >= eatingStartMinutes || currentMinutes < eatingEndMinutes;
     } else {
       // 예: 식사 시간 12:00 ~ 20:00
-      isInEatingWindow =
-        currentMinutes >= eatingStartMinutes && currentMinutes < eatingEndMinutes;
+      isInEatingWindow = currentMinutes >= eatingStartMinutes && currentMinutes < eatingEndMinutes;
     }
 
     const fasting = !isInEatingWindow;
@@ -165,7 +161,7 @@ export default function FastingTimer({
         // 단식 시간이 자정을 넘는 경우
         if (currentMinutes >= eatingEndMinutes) {
           // 저녁 ~ 자정
-          remaining = (24 * 60 - currentMinutes) + eatingStartMinutes;
+          remaining = 24 * 60 - currentMinutes + eatingStartMinutes;
         } else {
           // 자정 ~ 식사 시작
           remaining = eatingStartMinutes - currentMinutes;
@@ -179,7 +175,7 @@ export default function FastingTimer({
       // 식사 가능: 남은 식사 가능 시간 계산
       if (eatingCrossesMidnight) {
         if (currentMinutes >= eatingStartMinutes) {
-          remaining = (24 * 60 - currentMinutes) + eatingEndMinutes;
+          remaining = 24 * 60 - currentMinutes + eatingEndMinutes;
         } else {
           remaining = eatingEndMinutes - currentMinutes;
         }
@@ -221,8 +217,8 @@ export default function FastingTimer({
               <Moon className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium text-foreground">간헐적 단식</p>
-              <p className="text-sm text-muted-foreground">단식 타이머를 활성화하세요</p>
+              <p className="font-medium text-foreground">{t('fastingTimer0')}</p>
+              <p className="text-sm text-muted-foreground">{t('fastingTimer1')}</p>
             </div>
           </div>
           <button
@@ -249,19 +245,10 @@ export default function FastingTimer({
             isFasting ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'
           }`}
         >
-          {isFasting ? (
-            <Moon className="w-3 h-3" />
-          ) : (
-            <Utensils className="w-3 h-3" />
-          )}
+          {isFasting ? <Moon className="w-3 h-3" /> : <Utensils className="w-3 h-3" />}
         </div>
-        <span className="text-sm font-medium">
-          {isFasting ? '단식 중' : '식사 가능'}
-        </span>
-        <span
-          data-testid="remaining-time"
-          className="text-sm text-muted-foreground"
-        >
+        <span className="text-sm font-medium">{isFasting ? '단식 중' : '식사 가능'}</span>
+        <span data-testid="remaining-time" className="text-sm text-muted-foreground">
           {formatRemainingTime(remainingMinutes)}
         </span>
       </div>
@@ -277,14 +264,14 @@ export default function FastingTimer({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">간헐적 단식</span>
+          <span className="text-lg font-semibold">{t('fastingTimer0')}</span>
           <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
             {fastingType ? FASTING_TYPE_LABELS[fastingType] : ''}
           </span>
         </div>
         <button
           onClick={handleSettingsClick}
-          aria-label="단식 설정"
+          aria-label={t('fastingTimer4')}
           className="p-2 rounded-full hover:bg-muted transition-colors"
         >
           <Settings className="w-5 h-5 text-muted-foreground" />
@@ -299,11 +286,7 @@ export default function FastingTimer({
             isFasting ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'
           }`}
         >
-          {isFasting ? (
-            <Moon className="w-6 h-6" />
-          ) : (
-            <Utensils className="w-6 h-6" />
-          )}
+          {isFasting ? <Moon className="w-6 h-6" /> : <Utensils className="w-6 h-6" />}
         </div>
         <div>
           <p className={`text-lg font-bold ${isFasting ? 'text-purple-700' : 'text-green-700'}`}>
@@ -320,10 +303,7 @@ export default function FastingTimer({
       </div>
 
       {/* 프로그레스 바 */}
-      <div
-        data-testid="fasting-progress"
-        className="mb-4"
-      >
+      <div data-testid="fasting-progress" className="mb-4">
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
@@ -337,13 +317,14 @@ export default function FastingTimer({
       {/* 시간 정보 */}
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div className="bg-muted/50 rounded-lg p-2">
-          <p className="text-muted-foreground text-xs">단식 시작</p>
+          <p className="text-muted-foreground text-xs">{t('fastingTimer2')}</p>
           <p className="font-medium text-foreground">{fastingStartTime}</p>
         </div>
         <div className="bg-muted/50 rounded-lg p-2">
-          <p className="text-muted-foreground text-xs">식사 가능 시간</p>
+          <p className="text-muted-foreground text-xs">{t('fastingTimer3')}</p>
           <p className="font-medium text-foreground">
-            {formatTime(eatingStartHour, eatingStartMinute)} ~ {formatTime(eatingEndHour, eatingEndMinute)}
+            {formatTime(eatingStartHour, eatingStartMinute)} ~{' '}
+            {formatTime(eatingEndHour, eatingEndMinute)}
           </p>
         </div>
       </div>

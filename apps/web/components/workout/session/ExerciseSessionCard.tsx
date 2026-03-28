@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Play, CheckCircle, SkipForward, Info } from 'lu
 import { SetTracker } from './SetTracker';
 import type { ExerciseSessionRecord } from '@/types/workout';
 import { selectByCondition } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface ExerciseSessionCardProps {
   record: ExerciseSessionRecord;
@@ -35,6 +36,7 @@ export function ExerciseSessionCard({
   onSkipExercise,
   onViewDetail,
 }: ExerciseSessionCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(exerciseIndex === currentExerciseIndex);
   const isCurrentExercise = exerciseIndex === currentExerciseIndex;
   const isCompleted = record.isCompleted;
@@ -97,7 +99,9 @@ export function ExerciseSessionCard({
 
           {/* 운동 정보 */}
           <div>
-            <h3 className={`font-medium ${isCompleted ? 'text-status-success' : 'text-foreground'}`}>
+            <h3
+              className={`font-medium ${isCompleted ? 'text-status-success' : 'text-foreground'}`}
+            >
               {record.exerciseName}
             </h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -114,7 +118,9 @@ export function ExerciseSessionCard({
         {/* 확장 아이콘 */}
         <div className="flex items-center gap-2">
           {isCompleted && (
-            <span className="text-sm text-status-success font-medium">완료</span>
+            <span className="text-sm text-status-success font-medium">
+              {t('exerciseSessionCard0')}
+            </span>
           )}
           {isExpanded ? (
             <ChevronUp className="w-5 h-5 text-muted-foreground" />
@@ -130,7 +136,7 @@ export function ExerciseSessionCard({
           {/* 대기 중인 운동 */}
           {isPending && !isCompleted && (
             <div className="flex flex-col items-center py-6">
-              <p className="text-muted-foreground mb-4">이 운동을 시작하세요</p>
+              <p className="text-muted-foreground mb-4">{t('exerciseSessionCard1')}</p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -189,7 +195,7 @@ export function ExerciseSessionCard({
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-2xl font-bold text-status-success">{completedSets}</p>
-                  <p className="text-xs text-muted-foreground">완료 세트</p>
+                  <p className="text-xs text-muted-foreground">{t('exerciseSessionCard2')}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">
@@ -197,13 +203,11 @@ export function ExerciseSessionCard({
                       .filter((s) => s.status === 'completed')
                       .reduce((sum, s) => sum + (s.actualReps || 0), 0)}
                   </p>
-                  <p className="text-xs text-muted-foreground">총 횟수</p>
+                  <p className="text-xs text-muted-foreground">{t('exerciseSessionCard3')}</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {record.restSeconds}초
-                  </p>
-                  <p className="text-xs text-muted-foreground">휴식 시간</p>
+                  <p className="text-2xl font-bold text-foreground">{record.restSeconds}초</p>
+                  <p className="text-xs text-muted-foreground">{t('exerciseSessionCard4')}</p>
                 </div>
               </div>
             </div>

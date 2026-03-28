@@ -32,6 +32,7 @@ import type {
   StretchExercise,
 } from '@/types/stretching';
 import { MUSCLE_NAME_KO } from '@/lib/workout';
+import { useTranslations } from 'next-intl';
 
 // ============================================
 // Props 타입
@@ -62,6 +63,7 @@ interface CompletedExerciseData {
 // ============================================
 
 export function StretchingGuide({ prescription, onComplete, className }: StretchingGuideProps) {
+  const t = useTranslations('workoutUI');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -161,8 +163,8 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
       <Card className={className}>
         <CardContent className="p-8 text-center">
           <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-4" />
-          <h3 className="text-lg font-semibold">스트레칭 완료!</h3>
-          <p className="text-muted-foreground mt-2">오늘의 스트레칭을 모두 마쳤어요.</p>
+          <h3 className="text-lg font-semibold">{t('stretchingGuide0')}</h3>
+          <p className="text-muted-foreground mt-2">{t('stretchingGuide1')}</p>
         </CardContent>
       </Card>
     );
@@ -198,7 +200,11 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
                 {selectByKey(exercise.type, { static: '정적', dynamic: '동적' }, 'PNF')}
               </Badge>
               <Badge variant="outline">
-                {selectByKey(exercise.difficulty, { beginner: '초급', intermediate: '중급' }, '고급')}
+                {selectByKey(
+                  exercise.difficulty,
+                  { beginner: '초급', intermediate: '중급' },
+                  '고급'
+                )}
               </Badge>
             </div>
           </div>
@@ -217,7 +223,12 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
 
           {/* 컨트롤 버튼 */}
           <div className="flex justify-center gap-4">
-            <Button variant="outline" size="icon" onClick={handleReset} title="다시 시작">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleReset}
+              title={t('stretchingGuide5')}
+            >
               <RotateCcw className="w-5 h-5" />
             </Button>
 
@@ -230,7 +241,7 @@ export function StretchingGuide({ prescription, onComplete, className }: Stretch
               size="icon"
               onClick={handleSkip}
               disabled={currentIndex >= totalExercises - 1}
-              title="건너뛰기"
+              title={t('stretchingGuide6')}
             >
               <SkipForward className="w-5 h-5" />
             </Button>
@@ -369,10 +380,11 @@ function InstructionList({ exercise }: { exercise: StretchExercise }) {
 }
 
 function BreathingGuide({ guide }: { guide: string }) {
+  const t = useTranslations('workoutUI');
   return (
     <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
       <p className="text-sm">
-        <span className="font-medium">🌬️ 호흡:</span>{' '}
+        <span className="font-medium">{t('stretchingGuide2')}</span>{' '}
         <span className="text-muted-foreground">{guide}</span>
       </p>
     </div>
@@ -380,9 +392,10 @@ function BreathingGuide({ guide }: { guide: string }) {
 }
 
 function CommonMistakes({ mistakes }: { mistakes: string[] }) {
+  const t = useTranslations('workoutUI');
   return (
     <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3">
-      <p className="text-sm font-medium mb-1">⚠️ 흔한 실수</p>
+      <p className="text-sm font-medium mb-1">{t('stretchingGuide3')}</p>
       <ul className="list-disc list-inside text-sm text-muted-foreground">
         {mistakes.map((mistake, idx) => (
           <li key={idx}>{mistake}</li>
@@ -421,10 +434,11 @@ function SafetyWarnings({ exercise }: { exercise: StretchExercise }) {
 }
 
 function NextExercisePreview({ nextStretch }: { nextStretch: PrescribedStretch }) {
+  const t = useTranslations('workoutUI');
   return (
     <Card className="opacity-60">
       <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground mb-1">다음 운동</p>
+        <p className="text-xs text-muted-foreground mb-1">{t('stretchingGuide4')}</p>
         <p className="font-medium">{nextStretch.exercise.nameKo}</p>
         <p className="text-sm text-muted-foreground">
           {nextStretch.adjustedSets}세트 x {nextStretch.adjustedDuration}

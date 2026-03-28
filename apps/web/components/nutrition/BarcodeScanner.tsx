@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X, Flashlight, FlashlightOff, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export interface BarcodeScannerProps {
   /** 바코드 스캔 성공 시 호출 */
@@ -36,6 +37,7 @@ export default function BarcodeScanner({
   onClose,
   className,
 }: BarcodeScannerProps) {
+  const t = useTranslations('nutritionUI');
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrcodeRef = useRef<unknown>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -250,12 +252,12 @@ export default function BarcodeScanner({
         <button
           onClick={onClose}
           className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          aria-label="닫기"
+          aria-label={t('barcodeScanner4')}
           data-testid="barcode-scanner-close"
         >
           <X className="w-6 h-6" />
         </button>
-        <span className="text-white text-sm font-medium">바코드를 프레임에 맞춰주세요</span>
+        <span className="text-white text-sm font-medium">{t('barcodeScanner0')}</span>
         <div className="w-10" /> {/* 균형용 스페이서 */}
       </div>
 
@@ -273,7 +275,7 @@ export default function BarcodeScanner({
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-500" />
             </div>
-            <p className="text-lg font-medium mb-2">카메라 오류</p>
+            <p className="text-lg font-medium mb-2">{t('barcodeScanner1')}</p>
             <p className="text-sm text-gray-400">{errorMessage}</p>
             <button
               onClick={onClose}
@@ -301,7 +303,7 @@ export default function BarcodeScanner({
                 />
               </svg>
             </div>
-            <p className="text-lg font-medium">스캔 완료!</p>
+            <p className="text-lg font-medium">{t('barcodeScanner2')}</p>
           </div>
         )}
 
@@ -363,7 +365,7 @@ export default function BarcodeScanner({
 
         {/* 중앙 안내 텍스트 */}
         <div className="text-center">
-          <p className="text-white/80 text-sm">EAN-13, EAN-8, UPC-A 바코드 지원</p>
+          <p className="text-white/80 text-sm">{t('barcodeScanner3')}</p>
         </div>
 
         {/* 갤러리 버튼 */}
@@ -374,7 +376,7 @@ export default function BarcodeScanner({
             'p-3 rounded-full bg-black/50 text-white transition-colors',
             isProcessingImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-black/70'
           )}
-          aria-label="갤러리에서 선택"
+          aria-label={t('barcodeScanner5')}
           data-testid="barcode-scanner-gallery"
         >
           {isProcessingImage ? (

@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import { WorkoutType } from '@/types/workout';
 import { WORKOUT_TYPE_INFO } from '@/lib/workout';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutTypeCardProps {
   type: WorkoutType;
@@ -14,6 +15,7 @@ interface WorkoutTypeCardProps {
  * props가 변경되지 않으면 리렌더링 방지
  */
 const WorkoutTypeCard = memo(function WorkoutTypeCard({ type, reason }: WorkoutTypeCardProps) {
+  const t = useTranslations('workoutUI');
   const typeInfo = WORKOUT_TYPE_INFO[type];
 
   return (
@@ -24,7 +26,7 @@ const WorkoutTypeCard = memo(function WorkoutTypeCard({ type, reason }: WorkoutT
           {typeInfo.icon}
         </div>
         <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">당신의 운동 타입</p>
+          <p className="text-sm font-medium text-muted-foreground mb-1">{t('workoutTypeCard0')}</p>
           <h2 className={`text-2xl font-bold ${typeInfo.color}`}>{typeInfo.label}</h2>
         </div>
       </div>

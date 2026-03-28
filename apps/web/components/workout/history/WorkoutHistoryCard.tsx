@@ -2,6 +2,7 @@
 
 import { Clock, Flame, Dumbbell, TrendingUp, ChevronRight } from 'lucide-react';
 import type { WorkoutLog } from '@/lib/api/workout';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutHistoryCardProps {
   log: WorkoutLog;
@@ -14,6 +15,7 @@ interface WorkoutHistoryCardProps {
  * - 시간, 칼로리, 볼륨 표시
  */
 export function WorkoutHistoryCard({ log, onClick }: WorkoutHistoryCardProps) {
+  const t = useTranslations('workoutUI');
   // 날짜 포맷팅
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -33,9 +35,8 @@ export function WorkoutHistoryCard({ log, onClick }: WorkoutHistoryCardProps) {
   };
 
   // 완료된 운동 수
-  const completedExercises = log.exercise_logs?.filter(
-    (ex) => ex.sets.some((s) => s.completed)
-  ).length ?? 0;
+  const completedExercises =
+    log.exercise_logs?.filter((ex) => ex.sets.some((s) => s.completed)).length ?? 0;
 
   const totalExercises = log.exercise_logs?.length ?? 0;
 
@@ -49,9 +50,7 @@ export function WorkoutHistoryCard({ log, onClick }: WorkoutHistoryCardProps) {
       <div className="flex items-center justify-between">
         {/* 날짜 및 운동 수 */}
         <div>
-          <p className="text-lg font-bold text-foreground">
-            {formatDate(log.workout_date)}
-          </p>
+          <p className="text-lg font-bold text-foreground">{formatDate(log.workout_date)}</p>
           <p className="text-sm text-muted-foreground">
             {completedExercises}/{totalExercises}개 운동 완료
           </p>
@@ -65,10 +64,8 @@ export function WorkoutHistoryCard({ log, onClick }: WorkoutHistoryCardProps) {
         {/* 운동 시간 */}
         <div className="bg-blue-50 rounded-xl p-3 text-center">
           <Clock className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-          <p className="text-sm font-bold text-foreground">
-            {formatDuration(log.actual_duration)}
-          </p>
-          <p className="text-xs text-muted-foreground">시간</p>
+          <p className="text-sm font-bold text-foreground">{formatDuration(log.actual_duration)}</p>
+          <p className="text-xs text-muted-foreground">{t('workoutHistoryCard0')}</p>
         </div>
 
         {/* 소모 칼로리 */}
@@ -96,7 +93,10 @@ export function WorkoutHistoryCard({ log, onClick }: WorkoutHistoryCardProps) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Dumbbell className="w-4 h-4" />
             <span className="truncate">
-              {log.exercise_logs.slice(0, 3).map((ex) => ex.exercise_name).join(', ')}
+              {log.exercise_logs
+                .slice(0, 3)
+                .map((ex) => ex.exercise_name)
+                .join(', ')}
               {log.exercise_logs.length > 3 && ` 외 ${log.exercise_logs.length - 3}개`}
             </span>
           </div>

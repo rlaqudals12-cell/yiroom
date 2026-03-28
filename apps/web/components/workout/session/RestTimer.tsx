@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Timer, Minus, Plus, SkipForward, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface RestTimerProps {
   initialSeconds: number;
-  defaultSeconds?: number;  // 기본값 버튼에 표시할 시간 (운동 타입에 따라 달라짐)
+  defaultSeconds?: number; // 기본값 버튼에 표시할 시간 (운동 타입에 따라 달라짐)
   onComplete: () => void;
   onSkip: () => void;
   onAdjust?: (delta: number) => void;
@@ -36,6 +37,7 @@ export function RestTimer({
   onSkip,
   onAdjust,
 }: RestTimerProps) {
+  const t = useTranslations('workoutUI');
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -101,7 +103,7 @@ export function RestTimer({
       <div className="absolute top-6 left-0 right-0 flex items-center justify-between px-6">
         <div className="flex items-center gap-2 text-white/80">
           <Timer className="w-5 h-5" />
-          <span className="text-sm font-medium">휴식 시간</span>
+          <span className="text-sm font-medium">{t('restTimer0')}</span>
         </div>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
@@ -145,17 +147,11 @@ export function RestTimer({
 
         {/* 중앙 시간 표시 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span
-            className={`text-6xl font-bold ${
-              seconds <= 10 ? 'text-red-500' : 'text-white'
-            }`}
-          >
+          <span className={`text-6xl font-bold ${seconds <= 10 ? 'text-red-500' : 'text-white'}`}>
             {formatTime(seconds)}
           </span>
           {seconds <= 10 && seconds > 0 && (
-            <span className="text-red-400 text-sm mt-2 animate-pulse">
-              곧 다음 세트!
-            </span>
+            <span className="text-red-400 text-sm mt-2 animate-pulse">곧 다음 세트!</span>
           )}
         </div>
       </div>
@@ -166,10 +162,10 @@ export function RestTimer({
           onClick={() => adjustTime(-10)}
           className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 flex items-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           disabled={seconds <= 30}
-          aria-label="10초 감소"
+          aria-label={t('restTimer3')}
         >
           <Minus className="w-5 h-5 text-white" />
-          <span className="text-white text-sm">10초</span>
+          <span className="text-white text-sm">{t('restTimer1')}</span>
         </button>
         <button
           onClick={resetToDefault}
@@ -183,10 +179,10 @@ export function RestTimer({
           onClick={() => adjustTime(10)}
           className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 flex items-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           disabled={seconds >= 180}
-          aria-label="10초 증가"
+          aria-label={t('restTimer4')}
         >
           <Plus className="w-5 h-5 text-white" />
-          <span className="text-white text-sm">10초</span>
+          <span className="text-white text-sm">{t('restTimer1')}</span>
         </button>
       </div>
 
@@ -196,13 +192,11 @@ export function RestTimer({
         className="mt-12 px-8 py-4 bg-white/10 hover:bg-white/20 rounded-xl flex items-center gap-2 transition-colors"
       >
         <SkipForward className="w-5 h-5 text-white" />
-        <span className="text-white font-medium">휴식 건너뛰기</span>
+        <span className="text-white font-medium">{t('restTimer2')}</span>
       </button>
 
       {/* 하단 안내 */}
-      <p className="absolute bottom-8 text-white/40 text-sm">
-        다음 세트 준비하세요
-      </p>
+      <p className="absolute bottom-8 text-white/40 text-sm">다음 세트 준비하세요</p>
     </div>
   );
 }

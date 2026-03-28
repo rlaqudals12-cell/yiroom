@@ -10,6 +10,7 @@
 
 import { Plus, ChevronRight } from 'lucide-react';
 import { TrafficLightIndicator, type TrafficLightColor } from './TrafficLight';
+import { useTranslations } from 'next-intl';
 
 // 음식 아이템 타입 (DB에서 foods JSONB 배열)
 interface FoodItem {
@@ -87,6 +88,7 @@ export default function MealSection({
   onRecordClick,
   isLoading = false,
 }: MealSectionProps) {
+  const t = useTranslations('nutritionUI');
   const hasRecords = meal.records && meal.records.length > 0;
 
   // 로딩 상태
@@ -105,9 +107,7 @@ export default function MealSection({
           <span className="text-2xl" role="img" aria-hidden="true">
             {meal.icon}
           </span>
-          <span className="text-base font-semibold text-foreground">
-            {meal.label}
-          </span>
+          <span className="text-base font-semibold text-foreground">{meal.label}</span>
         </div>
         {hasRecords && (
           <span
@@ -135,10 +135,7 @@ export default function MealSection({
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {/* 신호등 */}
                     {food.traffic_light && (
-                      <TrafficLightIndicator
-                        color={food.traffic_light}
-                        size="sm"
-                      />
+                      <TrafficLightIndicator color={food.traffic_light} size="sm" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
@@ -167,7 +164,7 @@ export default function MealSection({
             data-testid={`add-more-${meal.type}`}
           >
             <Plus className="w-4 h-4" />
-            <span className="text-sm">추가 기록하기</span>
+            <span className="text-sm">{t('mealSection0')}</span>
           </button>
         </div>
       ) : (
@@ -178,7 +175,7 @@ export default function MealSection({
           data-testid={`add-record-${meal.type}`}
         >
           <Plus className="w-5 h-5" />
-          <span className="text-sm font-medium">기록하기</span>
+          <span className="text-sm font-medium">{t('mealSection1')}</span>
         </button>
       )}
     </div>

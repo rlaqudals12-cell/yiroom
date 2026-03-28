@@ -3,6 +3,7 @@
 import { Lightbulb, Scale, TrendingUp, Flame, Users, Sparkles, Star } from 'lucide-react';
 import { GeminiWorkoutInsightResult } from '@/lib/gemini';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutInsightCardProps {
   insights: GeminiWorkoutInsightResult;
@@ -61,6 +62,7 @@ const PRIORITY_STYLES: Record<string, { label: string; className: string }> = {
 };
 
 export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps) {
+  const t = useTranslations('workoutUI');
   const { insights: insightItems, weeklyHighlight, motivationalMessage } = insights;
 
   return (
@@ -82,7 +84,7 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
               <Star className="w-4 h-4 text-indigo-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-indigo-600 mb-1">이번 주 하이라이트</p>
+              <p className="text-xs font-medium text-indigo-600 mb-1">{t('workoutInsightCard0')}</p>
               <p className="text-sm text-foreground font-medium">{weeklyHighlight}</p>
             </div>
           </div>
@@ -170,8 +172,8 @@ export default function WorkoutInsightCard({ insights }: WorkoutInsightCardProps
       {insightItems.length === 0 && !weeklyHighlight && !motivationalMessage && (
         <div className="text-center py-6 text-muted-foreground">
           <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">아직 인사이트가 없어요</p>
-          <p className="text-xs mt-1">운동 기록을 쌓으면 맞춤 인사이트를 제공해드려요</p>
+          <p className="text-sm">{t('workoutInsightCard1')}</p>
+          <p className="text-xs mt-1">{t('workoutInsightCard2')}</p>
         </div>
       )}
     </div>

@@ -18,6 +18,7 @@ import {
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { DailyNutrition, TrendDirection } from '@/types/report';
+import { useTranslations } from 'next-intl';
 
 interface CalorieTrendChartProps {
   dailyData: DailyNutrition[];
@@ -30,6 +31,7 @@ export function CalorieTrendChart({
   trend,
   targetCalories = 2000,
 }: CalorieTrendChartProps) {
+  const t = useTranslations('reportsUI');
   // 차트 데이터 변환
   const chartData = dailyData.map((d) => ({
     date: formatDate(d.date),
@@ -59,21 +61,9 @@ export function CalorieTrendChart({
       <CardContent>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="hsl(var(--muted))"
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
+            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis
                 tick={{ fontSize: 12 }}
                 tickLine={false}
@@ -97,7 +87,7 @@ export function CalorieTrendChart({
                           </div>
                         </>
                       ) : (
-                        <div className="text-muted-foreground">기록 없음</div>
+                        <div className="text-muted-foreground">{t('calorieTrendChart0')}</div>
                       )}
                     </div>
                   );
@@ -157,11 +147,11 @@ export function CalorieTrendChart({
         <div className="flex justify-center gap-6 mt-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 bg-primary rounded" />
-            <span>섭취 칼로리</span>
+            <span>{t('calorieTrendChart1')}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 border-t border-dashed border-muted-foreground" />
-            <span>목표</span>
+            <span>{t('calorieTrendChart2')}</span>
           </div>
         </div>
       </CardContent>

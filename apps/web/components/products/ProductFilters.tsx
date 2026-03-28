@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import type { PriceRange, SkinType, SkinConcern, PersonalColorSeason } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 /** 필터 상태 타입 */
 export interface ProductFilterState {
@@ -84,6 +85,7 @@ export function ProductFilters({
   userAnalysis,
   className,
 }: ProductFiltersProps) {
+  const t = useTranslations('productsUI');
   const [isOpen, setIsOpen] = useState(false);
   // 로컬 필터 상태 (Sheet 내부에서 관리)
   const [localFilters, setLocalFilters] = useState<ProductFilterState>(filters);
@@ -104,10 +106,7 @@ export function ProductFilters({
   };
 
   // 배열 필터 토글
-  const toggleArrayFilter = <T extends string>(
-    key: keyof ProductFilterState,
-    value: T
-  ) => {
+  const toggleArrayFilter = <T extends string>(key: keyof ProductFilterState, value: T) => {
     setLocalFilters((prev) => {
       const current = (prev[key] as T[] | undefined) || [];
       const updated = current.includes(value)
@@ -195,23 +194,19 @@ export function ProductFilters({
 
           <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
             <SheetHeader className="pb-4">
-              <SheetTitle>필터</SheetTitle>
+              <SheetTitle>{t('productFilters0')}</SheetTitle>
             </SheetHeader>
 
             <div className="space-y-6">
               {/* 내 분석 결과 적용 버튼 */}
               {userAnalysis && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleApplyUserAnalysis}
-                >
+                <Button variant="outline" className="w-full" onClick={handleApplyUserAnalysis}>
                   내 분석 결과 적용
                 </Button>
               )}
 
               {/* 가격대 */}
-              <FilterSection title="가격대">
+              <FilterSection title={t('productFilters1')}>
                 <div className="flex flex-wrap gap-2">
                   {PRICE_OPTIONS.map((option) => (
                     <FilterChip
@@ -225,7 +220,7 @@ export function ProductFilters({
               </FilterSection>
 
               {/* 피부 타입 */}
-              <FilterSection title="피부 타입">
+              <FilterSection title={t('productFilters2')}>
                 <div className="flex flex-wrap gap-2">
                   {SKIN_TYPE_OPTIONS.map((option) => (
                     <FilterChip
@@ -239,7 +234,7 @@ export function ProductFilters({
               </FilterSection>
 
               {/* 피부 고민 */}
-              <FilterSection title="피부 고민">
+              <FilterSection title={t('productFilters3')}>
                 <div className="flex flex-wrap gap-2">
                   {SKIN_CONCERN_OPTIONS.map((option) => (
                     <FilterChip
@@ -253,16 +248,14 @@ export function ProductFilters({
               </FilterSection>
 
               {/* 퍼스널 컬러 */}
-              <FilterSection title="퍼스널 컬러">
+              <FilterSection title={t('productFilters4')}>
                 <div className="flex flex-wrap gap-2">
                   {PERSONAL_COLOR_OPTIONS.map((option) => (
                     <FilterChip
                       key={option.value}
                       label={option.label}
                       selected={localFilters.personalColorSeasons?.includes(option.value)}
-                      onToggle={() =>
-                        toggleArrayFilter('personalColorSeasons', option.value)
-                      }
+                      onToggle={() => toggleArrayFilter('personalColorSeasons', option.value)}
                     />
                   ))}
                 </div>
@@ -318,13 +311,7 @@ export function ProductFilters({
 }
 
 /** 필터 섹션 */
-function FilterSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
@@ -360,21 +347,11 @@ function FilterChip({
 }
 
 /** 활성 필터 배지 (제거 가능) */
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <Badge variant="secondary" className="gap-1 pr-1">
       {label}
-      <button
-        type="button"
-        onClick={onRemove}
-        className="ml-1 rounded-full p-0.5 hover:bg-muted"
-      >
+      <button type="button" onClick={onRemove} className="ml-1 rounded-full p-0.5 hover:bg-muted">
         <X className="h-3 w-3" />
       </button>
     </Badge>

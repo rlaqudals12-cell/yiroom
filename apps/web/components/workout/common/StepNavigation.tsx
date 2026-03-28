@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface StepNavigationProps {
   isFirstStep: boolean;
@@ -26,6 +27,7 @@ export default function StepNavigation({
   nextLabel = '다음',
   submitLabel = '분석 시작',
 }: StepNavigationProps) {
+  const t = useTranslations('workoutUI');
   const isDisabled = !canProceed || isLoading;
   const buttonLabel = isLastStep ? submitLabel : nextLabel;
 
@@ -38,11 +40,9 @@ export default function StepNavigation({
           onClick={onPrev}
           disabled={isLoading}
           className={`flex-1 py-4 px-6 border border-border text-foreground font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
-            isLoading
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-muted'
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'
           }`}
-          aria-label="이전 단계로 이동"
+          aria-label={t('stepNavigation0')}
         >
           <ChevronLeft className="w-5 h-5" />
           이전

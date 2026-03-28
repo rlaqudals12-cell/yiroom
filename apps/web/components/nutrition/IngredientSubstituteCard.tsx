@@ -28,6 +28,7 @@ import {
   type VariationGoal,
 } from '@/lib/nutrition';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 // 목표별 스타일 정의
 const GOAL_STYLES: Record<
@@ -135,10 +136,14 @@ function SubstituteItem({
             <div className="flex items-start gap-2">
               <span className="text-xs text-muted-foreground w-16 shrink-0">대체 비율</span>
               <span className="text-sm text-foreground">
-                {selectByKey(substitute.ratio, {
-                  0: '제거',
-                  1: '동량',
-                }, `${substitute.ratio}배`)}
+                {selectByKey(
+                  substitute.ratio,
+                  {
+                    0: '제거',
+                    1: '동량',
+                  },
+                  `${substitute.ratio}배`
+                )}
               </span>
             </div>
 
@@ -164,6 +169,7 @@ export function IngredientSubstituteCard({
   className,
   compact = false,
 }: IngredientSubstituteCardProps) {
+  const t = useTranslations('nutritionUI');
   const [activeGoal, setActiveGoal] = useState<VariationGoal | undefined>(selectedGoal);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
@@ -215,8 +221,8 @@ export function IngredientSubstituteCard({
             <ArrowRight className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-foreground">건강한 재료 대체</h3>
-            <p className="text-sm text-muted-foreground">목표에 맞는 대체 재료 추천</p>
+            <h3 className="font-bold text-lg text-foreground">{t('ingredientSubstituteCard0')}</h3>
+            <p className="text-sm text-muted-foreground">{t('ingredientSubstituteCard1')}</p>
           </div>
         </div>
 
@@ -264,7 +270,7 @@ export function IngredientSubstituteCard({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="재료 검색 (예: 설탕, 밀가루)"
+              placeholder={t('ingredientSubstituteCard7')}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border bg-background focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
@@ -291,7 +297,7 @@ export function IngredientSubstituteCard({
         ) : (
           <div className="text-center py-8">
             <Search className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground">검색 결과가 없어요</p>
+            <p className="text-muted-foreground">{t('ingredientSubstituteCard2')}</p>
           </div>
         )}
       </div>
@@ -302,12 +308,14 @@ export function IngredientSubstituteCard({
           <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Lightbulb className="w-4 h-4 text-amber-600" />
-              <p className="font-medium text-sm text-amber-800 dark:text-amber-300">활용 팁</p>
+              <p className="font-medium text-sm text-amber-800 dark:text-amber-300">
+                {t('ingredientSubstituteCard3')}
+              </p>
             </div>
             <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-200">
-              <li>• 대체 재료는 질감이나 맛이 다를 수 있어 소량으로 테스트하세요.</li>
-              <li>• 비율은 참고용이며, 맛에 따라 조절하세요.</li>
-              <li>• 알레르기가 있다면 새 재료도 확인하세요.</li>
+              <li>{t('ingredientSubstituteCard4')}</li>
+              <li>{t('ingredientSubstituteCard5')}</li>
+              <li>{t('ingredientSubstituteCard6')}</li>
             </ul>
           </div>
         </div>

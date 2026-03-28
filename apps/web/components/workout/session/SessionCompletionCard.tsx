@@ -17,6 +17,7 @@ import type { WorkoutType } from '@/lib/workout';
 import { getQuickNutritionMessage, calculateProteinRecommendation } from '@/lib/workout';
 import { useShare } from '@/hooks/useShare';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface SessionCompletionCardProps {
   totalExercises: number;
@@ -57,6 +58,7 @@ export function SessionCompletionCard({
   onShare,
   showShareButton = true,
 }: SessionCompletionCardProps) {
+  const t = useTranslations('workoutUI');
   // 내부 공유 기능 (ref 캡처 방식)
   const { ref: shareRef, share: internalShare, loading: isSharing } = useShare('이룸-운동기록');
 
@@ -100,7 +102,7 @@ export function SessionCompletionCard({
         </div>
 
         {/* 축하 메시지 */}
-        <h1 className="text-3xl font-bold text-white mb-2">운동 완료!</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">{t('sessionCompletionCard0')}</h1>
         <p className="text-white/80 text-lg mb-8">{getCongratMessage()}</p>
 
         {/* Streak 표시 */}
@@ -115,7 +117,7 @@ export function SessionCompletionCard({
         {isNewRecord && (
           <div className="flex items-center gap-2 bg-yellow-400/20 px-4 py-2 rounded-full mb-8">
             <TrendingUp className="w-5 h-5 text-yellow-300" />
-            <span className="text-yellow-200 font-medium">새로운 기록 달성!</span>
+            <span className="text-yellow-200 font-medium">{t('sessionCompletionCard1')}</span>
           </div>
         )}
 
@@ -126,14 +128,14 @@ export function SessionCompletionCard({
             <div className="bg-white/10 rounded-xl p-4 text-center">
               <Clock className="w-6 h-6 text-blue-300 mx-auto mb-2" />
               <p className="text-2xl font-bold text-white">{formatTime(totalTime)}</p>
-              <p className="text-xs text-white/60">운동 시간</p>
+              <p className="text-xs text-white/60">{t('sessionCompletionCard2')}</p>
             </div>
 
             {/* 소모 칼로리 */}
             <div className="bg-white/10 rounded-xl p-4 text-center">
               <Flame className="w-6 h-6 text-orange-300 mx-auto mb-2" />
               <p className="text-2xl font-bold text-white">{Math.round(caloriesBurned)}</p>
-              <p className="text-xs text-white/60">kcal 소모</p>
+              <p className="text-xs text-white/60">{t('sessionCompletionCard3')}</p>
             </div>
 
             {/* 완료 세트 */}
@@ -142,32 +144,30 @@ export function SessionCompletionCard({
               <p className="text-2xl font-bold text-white">
                 {completedSets}/{totalSets}
               </p>
-              <p className="text-xs text-white/60">세트 완료</p>
+              <p className="text-xs text-white/60">{t('sessionCompletionCard4')}</p>
             </div>
 
             {/* 볼륨 */}
             <div className="bg-white/10 rounded-xl p-4 text-center">
               <TrendingUp className="w-6 h-6 text-purple-300 mx-auto mb-2" />
               <p className="text-2xl font-bold text-white">{totalVolume.toLocaleString()}</p>
-              <p className="text-xs text-white/60">kg 볼륨</p>
+              <p className="text-xs text-white/60">{t('sessionCompletionCard5')}</p>
             </div>
           </div>
 
           {/* 완료율 */}
           <div className="mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-white/60 text-sm">달성률</span>
+              <span className="text-white/60 text-sm">{t('sessionCompletionCard6')}</span>
               <span className="text-white font-bold">{completionRate}%</span>
             </div>
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-500 ${
-                  classifyByRange(completionRate, [
-                    { max: 80, result: 'bg-white' },
-                    { max: 100, result: 'bg-yellow-400' },
-                    { result: 'bg-green-400' },
-                  ])
-                }`}
+                className={`h-full transition-all duration-500 ${classifyByRange(completionRate, [
+                  { max: 80, result: 'bg-white' },
+                  { max: 100, result: 'bg-yellow-400' },
+                  { result: 'bg-green-400' },
+                ])}`}
                 style={{ width: `${completionRate}%` }}
               />
             </div>

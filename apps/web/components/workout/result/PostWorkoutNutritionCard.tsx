@@ -11,6 +11,7 @@ import {
   estimateCaloriesBurned,
 } from '@/lib/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface PostWorkoutNutritionCardProps {
   workoutType: WorkoutType;
@@ -60,6 +61,7 @@ export default function PostWorkoutNutritionCard({
   caloriesBurned,
   bodyWeightKg = 60,
 }: PostWorkoutNutritionCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(false);
 
   const quickMessage = getQuickNutritionMessage(workoutType, durationMinutes, caloriesBurned);
@@ -105,7 +107,9 @@ export default function PostWorkoutNutritionCard({
           >
             <Timer className="w-5 h-5 text-orange-500" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">섭취 타이밍</p>
+              <p className="text-sm font-medium text-foreground">
+                {t('postWorkoutNutritionCard0')}
+              </p>
               <p className="text-xs text-muted-foreground">
                 최적: <span className="font-medium text-orange-600">{tips.timing.optimal}</span>
                 {' | '}
@@ -117,7 +121,9 @@ export default function PostWorkoutNutritionCard({
           {/* 단백질 권장량 */}
           <div className="p-3 bg-card/60 rounded-lg" data-testid="protein-recommendation">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">단백질 권장량</span>
+              <span className="text-sm font-medium text-foreground">
+                {t('postWorkoutNutritionCard1')}
+              </span>
               <span className="text-lg font-bold text-primary">
                 {proteinRec.min}-{proteinRec.max}
                 {proteinRec.unit}
@@ -132,7 +138,9 @@ export default function PostWorkoutNutritionCard({
           {tips.proteinTips.length > 0 && (
             <div data-testid="protein-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-foreground/80">단백질 보충</span>
+                <span className="text-sm font-medium text-foreground/80">
+                  {t('postWorkoutNutritionCard2')}
+                </span>
               </div>
               <div className="space-y-2">
                 {tips.proteinTips.map((tip, index) => (
@@ -146,7 +154,9 @@ export default function PostWorkoutNutritionCard({
           {tips.mealTips.length > 0 && (
             <div data-testid="meal-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-foreground/80">식사 추천</span>
+                <span className="text-sm font-medium text-foreground/80">
+                  {t('postWorkoutNutritionCard3')}
+                </span>
               </div>
               <div className="space-y-2">
                 {tips.mealTips.map((tip, index) => (
@@ -160,7 +170,9 @@ export default function PostWorkoutNutritionCard({
           <div data-testid="hydration-tip">
             <div className="flex items-center gap-2 mb-2">
               <Droplets className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-medium text-foreground/80">수분 보충</span>
+              <span className="text-sm font-medium text-foreground/80">
+                {t('postWorkoutNutritionCard4')}
+              </span>
             </div>
             <TipCard tip={tips.hydrationTip} />
           </div>
@@ -170,7 +182,7 @@ export default function PostWorkoutNutritionCard({
             className="text-center py-4 bg-card/50 rounded-lg"
             data-testid="nutrition-analysis-cta"
           >
-            <p className="text-xs text-muted-foreground mb-3">더 정확한 식단 추천을 받고 싶다면?</p>
+            <p className="text-xs text-muted-foreground mb-3">{t('postWorkoutNutritionCard5')}</p>
             <Link
               href="/nutrition"
               className="inline-flex items-center gap-2 px-4 py-2 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium rounded-lg transition-colors"
@@ -178,7 +190,7 @@ export default function PostWorkoutNutritionCard({
               식단 분석 받기
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <p className="text-xs text-muted-foreground mt-2">* N-1 영양 모듈 출시 예정</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('postWorkoutNutritionCard6')}</p>
           </div>
         </div>
       )}

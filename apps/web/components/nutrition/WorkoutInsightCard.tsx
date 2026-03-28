@@ -17,6 +17,7 @@ import {
   type WorkoutSummary,
   type CalorieBalanceStatus,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 export interface WorkoutInsightCardProps {
   /** 오늘의 운동 요약 */
@@ -91,6 +92,7 @@ function CalorieBalanceSection({
   status: CalorieBalanceStatus;
   message: string;
 }) {
+  const t = useTranslations('nutritionUI');
   const colors = STATUS_COLORS[status];
   const percentage = target > 0 ? Math.min(150, Math.round((net / target) * 100)) : 0;
 
@@ -99,21 +101,21 @@ function CalorieBalanceSection({
       {/* 칼로리 요약 */}
       <div className="grid grid-cols-3 gap-2 text-center mb-3">
         <div>
-          <p className="text-xs text-muted-foreground">섭취</p>
+          <p className="text-xs text-muted-foreground">{t('workoutInsightCard0')}</p>
           <p className="text-sm font-semibold text-foreground">
             {intake.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
           </p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">소모</p>
+          <p className="text-xs text-muted-foreground">{t('workoutInsightCard1')}</p>
           <p className="text-sm font-semibold text-module-workout">
             -{burned.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
           </p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">순 칼로리</p>
+          <p className="text-xs text-muted-foreground">{t('workoutInsightCard2')}</p>
           <p className={cn('text-sm font-semibold', colors.text)}>
             {net.toLocaleString()}
             <span className="text-xs font-normal">kcal</span>
@@ -163,6 +165,7 @@ function WorkoutSummarySection({
   totalDuration: number;
   totalCaloriesBurned: number;
 }) {
+  const t = useTranslations('nutritionUI');
   if (workoutCount === 0) {
     return (
       <div
@@ -171,7 +174,7 @@ function WorkoutSummarySection({
       >
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">오늘 운동 기록 없음</span>
+          <span className="text-sm text-muted-foreground">{t('workoutInsightCard3')}</span>
         </div>
       </div>
     );
@@ -244,6 +247,7 @@ export default function WorkoutInsightCard({
   isLoading = false,
   onNavigateToWorkout,
 }: WorkoutInsightCardProps) {
+  const t = useTranslations('nutritionUI');
   // 인사이트 계산
   const insight = useMemo(
     () => getWorkoutNutritionInsight(workoutSummary, intakeCalories, targetCalories),
@@ -263,8 +267,8 @@ export default function WorkoutInsightCard({
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-3">
         <Scale className="w-5 h-5 text-module-workout" />
-        <h3 className="text-sm font-semibold text-foreground">칼로리 밸런스</h3>
-        <span className="text-xs text-muted-foreground ml-auto">W-1 연동</span>
+        <h3 className="text-sm font-semibold text-foreground">{t('workoutInsightCard4')}</h3>
+        <span className="text-xs text-muted-foreground ml-auto">{t('workoutInsightCard5')}</span>
       </div>
 
       {/* 운동 요약 */}

@@ -6,6 +6,7 @@ import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface ProductSearchProps {
   value: string;
@@ -27,6 +28,7 @@ export function ProductSearch({
   className,
   debounceMs = 300,
 }: ProductSearchProps) {
+  const t = useTranslations('productsUI');
   const [localValue, setLocalValue] = useState(value);
 
   // 외부 value 변경 시 로컬 상태 동기화
@@ -69,7 +71,7 @@ export function ProductSearch({
           onClick={handleClear}
         >
           <X className="h-4 w-4" />
-          <span className="sr-only">검색어 지우기</span>
+          <span className="sr-only">{t('productSearch0')}</span>
         </Button>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { CheckCircle, AlertTriangle, Minus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type SkinType = 'oily' | 'dry' | 'sensitive' | 'combination' | 'normal';
 type CompatibilityLevel = 'good' | 'neutral' | 'caution';
@@ -56,11 +57,12 @@ const COMPATIBILITY_CONFIG: Record<
  * 피부타입별 적합도 분석 컴포넌트
  */
 export function SkinTypeAnalysis({ compatibility, className }: SkinTypeAnalysisProps) {
+  const t = useTranslations('productsUI');
   const skinTypes: SkinType[] = ['oily', 'dry', 'sensitive', 'combination', 'normal'];
 
   return (
     <div className={cn('space-y-3', className)} data-testid="skin-type-analysis">
-      <h4 className="text-sm font-medium text-muted-foreground">피부타입별 적합도</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{t('skinTypeAnalysis0')}</h4>
 
       {/* 그리드 레이아웃 */}
       <div className="grid grid-cols-5 gap-2">

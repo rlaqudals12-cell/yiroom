@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { MatchReason } from '@/types/product';
+import { useTranslations } from 'next-intl';
 
 interface ProductMatchCardProps {
   matchScore?: number;
@@ -52,6 +53,7 @@ function getScoreLabel(score: number): string {
  * 미로그인 상태 카드
  */
 function NotLoggedInCard() {
+  const t = useTranslations('productsUI');
   return (
     <Card className="border-dashed">
       <CardHeader className="pb-2">
@@ -65,7 +67,7 @@ function NotLoggedInCard() {
           로그인하고 분석을 완료하면 이 제품이 나에게 얼마나 잘 맞는지 확인할 수 있어요.
         </p>
         <Button asChild className="w-full">
-          <Link href="/sign-in">로그인하고 매칭도 확인하기</Link>
+          <Link href="/sign-in">{t('productMatchCard0')}</Link>
         </Button>
       </CardContent>
     </Card>
@@ -76,6 +78,7 @@ function NotLoggedInCard() {
  * 분석 미완료 상태 카드
  */
 function NoAnalysisCard() {
+  const t = useTranslations('productsUI');
   return (
     <Card className="border-dashed border-primary/30 bg-primary/5">
       <CardHeader className="pb-2">
@@ -90,10 +93,10 @@ function NoAnalysisCard() {
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button asChild variant="outline" className="flex-1">
-            <Link href="/analysis/skin">피부 분석하기</Link>
+            <Link href="/analysis/skin">{t('productMatchCard1')}</Link>
           </Button>
           <Button asChild variant="outline" className="flex-1">
-            <Link href="/analysis/personal-color">퍼스널컬러 진단</Link>
+            <Link href="/analysis/personal-color">{t('productMatchCard2')}</Link>
           </Button>
         </div>
       </CardContent>
@@ -114,6 +117,7 @@ export function ProductMatchCard({
   hasAnalysis = false,
   className,
 }: ProductMatchCardProps) {
+  const t = useTranslations('productsUI');
   // 미로그인 상태
   if (!isLoggedIn) {
     return <NotLoggedInCard />;
@@ -136,7 +140,7 @@ export function ProductMatchCard({
   return (
     <Card className={cn('', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">나와의 매칭도</CardTitle>
+        <CardTitle className="text-base">{t('productMatchCard3')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 매칭도 점수 */}
@@ -172,23 +176,19 @@ export function ProductMatchCard({
           </div>
           <div className="flex-1">
             <p className={cn('text-lg font-semibold', scoreColor)}>{scoreLabel}</p>
-            <p className="text-sm text-muted-foreground">내 분석 결과 기반</p>
+            <p className="text-sm text-muted-foreground">{t('productMatchCard4')}</p>
           </div>
         </div>
 
         {/* 프로그레스 바 */}
         <div className="space-y-1">
-          <Progress
-            value={matchScore}
-            className="h-2"
-            indicatorClassName={progressColor}
-          />
+          <Progress value={matchScore} className="h-2" indicatorClassName={progressColor} />
         </div>
 
         {/* 매칭 이유 */}
         {matchReasons && matchReasons.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">매칭 분석</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('productMatchCard5')}</p>
             <ul className="space-y-1.5">
               {matchReasons.map((reason, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm">

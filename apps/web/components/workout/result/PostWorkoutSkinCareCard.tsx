@@ -13,6 +13,7 @@ import {
 import type { SkinCareTip, SkinAnalysisSummary } from '@/lib/workout';
 import { getPostWorkoutSkinCareTips, getQuickPostWorkoutMessage } from '@/lib/workout';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface PostWorkoutSkinCareCardProps {
   workoutType: string;
@@ -60,6 +61,7 @@ export default function PostWorkoutSkinCareCard({
   durationMinutes,
   skinAnalysis,
 }: PostWorkoutSkinCareCardProps) {
+  const t = useTranslations('workoutUI');
   const [isExpanded, setIsExpanded] = useState(false);
 
   const quickMessage = getQuickPostWorkoutMessage(workoutType, durationMinutes);
@@ -108,7 +110,9 @@ export default function PostWorkoutSkinCareCard({
             <div data-testid="immediate-actions">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-cyan-500" />
-                <span className="text-sm font-medium text-foreground/80">지금 바로</span>
+                <span className="text-sm font-medium text-foreground/80">
+                  {t('postWorkoutSkinCareCard0')}
+                </span>
               </div>
               <div className="space-y-2">
                 {tips.immediateActions.map((tip, index) => (
@@ -123,7 +127,9 @@ export default function PostWorkoutSkinCareCard({
             <div data-testid="skin-metric-tips">
               <div className="flex items-center gap-2 mb-2">
                 <Droplets className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-foreground/80">내 피부 맞춤 케어</span>
+                <span className="text-sm font-medium text-foreground/80">
+                  {t('postWorkoutSkinCareCard1')}
+                </span>
               </div>
               <div className="space-y-2">
                 {tips.skinMetricTips.map((tip, index) => (
@@ -137,7 +143,9 @@ export default function PostWorkoutSkinCareCard({
           {tips.generalTips.length > 0 && (
             <div data-testid="general-tips">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-muted-foreground">추가 팁</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {t('postWorkoutSkinCareCard2')}
+                </span>
               </div>
               <div className="space-y-2">
                 {tips.generalTips.map((tip, index) => (

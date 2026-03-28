@@ -7,6 +7,7 @@
 
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface ReportHeaderProps {
   title: string;
@@ -23,6 +24,7 @@ export function ReportHeader({
   onNext,
   canGoNext = true,
 }: ReportHeaderProps) {
+  const t = useTranslations('reportsUI');
   return (
     <div className="flex items-center justify-between mb-6" data-testid="report-header">
       <Button
@@ -30,7 +32,7 @@ export function ReportHeader({
         size="icon"
         onClick={onPrevious}
         disabled={!onPrevious}
-        aria-label="이전"
+        aria-label={t('reportHeader0')}
       >
         <ChevronLeft className="h-5 w-5" />
       </Button>
@@ -40,9 +42,7 @@ export function ReportHeader({
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
-        {subtitle && (
-          <span className="text-sm text-muted-foreground">{subtitle}</span>
-        )}
+        {subtitle && <span className="text-sm text-muted-foreground">{subtitle}</span>}
       </div>
 
       <Button
@@ -50,7 +50,7 @@ export function ReportHeader({
         size="icon"
         onClick={onNext}
         disabled={!onNext || !canGoNext}
-        aria-label="다음"
+        aria-label={t('reportHeader1')}
       >
         <ChevronRight className="h-5 w-5" />
       </Button>

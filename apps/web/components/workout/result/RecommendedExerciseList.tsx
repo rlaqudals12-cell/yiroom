@@ -3,6 +3,7 @@
 import { useState, useMemo, memo } from 'react';
 import { Exercise, ExerciseCategory } from '@/types/workout';
 import { ExerciseCard } from '@/components/workout/common';
+import { useTranslations } from 'next-intl';
 
 interface RecommendedExerciseListProps {
   exercises: Exercise[];
@@ -26,6 +27,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
   exercises,
   onExerciseClick,
 }: RecommendedExerciseListProps) {
+  const t = useTranslations('workoutUI');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [showAll, setShowAll] = useState(false);
 
@@ -87,7 +89,7 @@ const RecommendedExerciseList = memo(function RecommendedExerciseList({
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <p>해당 카테고리의 운동이 없어요.</p>
+          <p>{t('recommendedExerciseList0')}</p>
         </div>
       )}
 

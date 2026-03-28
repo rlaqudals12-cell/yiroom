@@ -19,6 +19,7 @@ import {
   type SupplementRecommendation,
   type SkinConcern,
 } from '@/lib/nutrition';
+import { useTranslations } from 'next-intl';
 
 // 대중적 브랜드 추천 (구하기 쉬운 브랜드)
 const POPULAR_BRANDS: Record<string, { name: string; badge: string }[]> = {
@@ -268,6 +269,7 @@ export default function SupplementRecommendationCard({
   isLoading = false,
   defaultExpanded = false,
 }: SupplementRecommendationCardProps) {
+  const t = useTranslations('nutritionUI');
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   // 영양제 추천 계산
@@ -293,7 +295,9 @@ export default function SupplementRecommendationCard({
       >
         <div className="flex items-center gap-2 mb-3">
           <Pill className="w-5 h-5 text-violet-500" />
-          <h3 className="text-sm font-semibold text-foreground">영양제 추천</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('supplementRecommendationCard0')}
+          </h3>
         </div>
         <p className="text-sm text-muted-foreground text-center py-4">
           현재 목표에 맞는 영양제 추천이 없어요.
@@ -311,7 +315,9 @@ export default function SupplementRecommendationCard({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Pill className="w-5 h-5 text-violet-500" />
-          <h3 className="text-sm font-semibold text-foreground">영양제 추천</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('supplementRecommendationCard0')}
+          </h3>
         </div>
         {result.allSupplements.length > 3 && (
           <button

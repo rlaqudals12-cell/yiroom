@@ -41,6 +41,7 @@ import type {
   CreateReviewInput,
 } from '@/types/review';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface ReviewSectionProps {
   /** 제품 타입 */
@@ -54,6 +55,7 @@ interface ReviewSectionProps {
 const REVIEWS_PER_PAGE = 10;
 
 export function ReviewSection({ productType, productId, className }: ReviewSectionProps) {
+  const t = useTranslations('productsUI');
   const { user, isLoaded: isUserLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -319,7 +321,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
   return (
     <Card className={cn(className)} data-testid="review-section">
       <CardHeader>
-        <CardTitle>리뷰</CardTitle>
+        <CardTitle>{t('reviewSection0')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 리뷰 요약 */}
@@ -333,7 +335,7 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
             data-testid="review-ai-loading"
           >
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">AI 리뷰를 분석하고 있어요...</span>
+            <span className="text-sm text-muted-foreground">{t('reviewSection1')}</span>
           </div>
         )}
         {!isLoading && aiSummaryError && (
@@ -407,11 +409,11 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
       <AlertDialog open={!!deleteReviewId} onOpenChange={() => setDeleteReviewId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>리뷰를 삭제하시겠어요?</AlertDialogTitle>
-            <AlertDialogDescription>삭제된 리뷰는 복구할 수 없어요.</AlertDialogDescription>
+            <AlertDialogTitle>{t('reviewSection2')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('reviewSection3')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('reviewSection4')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
@@ -430,10 +432,11 @@ export function ReviewSection({ productType, productId, className }: ReviewSecti
  * 로딩 스켈레톤
  */
 export function ReviewSectionSkeleton() {
+  const t = useTranslations('productsUI');
   return (
     <Card>
       <CardHeader>
-        <CardTitle>리뷰</CardTitle>
+        <CardTitle>{t('reviewSection0')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ReviewSummarySkeleton />

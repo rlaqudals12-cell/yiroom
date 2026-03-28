@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { X, Pause, Play, Clock, Flame, Target } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutSessionHeaderProps {
   dayLabel: string;
@@ -36,6 +37,7 @@ export function WorkoutSessionHeader({
   onResume,
   onExit,
 }: WorkoutSessionHeaderProps) {
+  const t = useTranslations('workoutUI');
   const [localElapsedTime, setLocalElapsedTime] = useState(elapsedTime);
 
   // 경과 시간 업데이트
@@ -65,13 +67,16 @@ export function WorkoutSessionHeader({
   const progressPercent = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
 
   return (
-    <div className="sticky top-0 z-40 bg-card border-b border-border" data-testid="workout-session-header">
+    <div
+      className="sticky top-0 z-40 bg-card border-b border-border"
+      data-testid="workout-session-header"
+    >
       {/* 상단 바 */}
       <div className="flex items-center justify-between p-4">
         <button
           onClick={onExit}
           className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
-          aria-label="운동 종료"
+          aria-label={t('workoutSessionHeader3')}
         >
           <X className="w-6 h-6 text-muted-foreground" />
         </button>
@@ -110,7 +115,7 @@ export function WorkoutSessionHeader({
           </div>
           <div>
             <p className="text-lg font-bold text-foreground">{formatTime(localElapsedTime)}</p>
-            <p className="text-xs text-muted-foreground">경과 시간</p>
+            <p className="text-xs text-muted-foreground">{t('workoutSessionHeader0')}</p>
           </div>
         </div>
 
@@ -134,7 +139,7 @@ export function WorkoutSessionHeader({
             <p className="text-lg font-bold text-foreground">
               {completedExercises}/{totalExercises}
             </p>
-            <p className="text-xs text-muted-foreground">운동</p>
+            <p className="text-xs text-muted-foreground">{t('workoutSessionHeader1')}</p>
           </div>
         </div>
       </div>
@@ -144,7 +149,7 @@ export function WorkoutSessionHeader({
         <div className="absolute inset-0 bg-card/90 flex flex-col items-center justify-center">
           <div className="text-center">
             <Pause className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-lg font-bold text-foreground mb-2">일시정지됨</p>
+            <p className="text-lg font-bold text-foreground mb-2">{t('workoutSessionHeader2')}</p>
             <p className="text-sm text-muted-foreground mb-6">
               {formatTime(localElapsedTime)} 경과
             </p>

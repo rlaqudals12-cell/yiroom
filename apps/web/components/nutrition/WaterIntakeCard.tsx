@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { Droplets, Plus, Coffee, GlassWater } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 // 음료 타입 정의
 export type DrinkType = 'water' | 'tea' | 'coffee' | 'juice' | 'soda' | 'other';
@@ -52,6 +53,7 @@ export default function WaterIntakeCard({
   onQuickAdd,
   onCustomAdd,
 }: WaterIntakeCardProps) {
+  const t = useTranslations('nutritionUI');
   const [addingItem, setAddingItem] = useState<string | null>(null);
 
   // 진행률 계산
@@ -107,7 +109,7 @@ export default function WaterIntakeCard({
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-3">
         <Droplets className="w-5 h-5 text-cyan-500" />
-        <h3 className="text-sm font-semibold text-foreground">수분 섭취</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('waterIntakeCard0')}</h3>
       </div>
 
       {/* 물방울 진행률 시각화 */}
@@ -174,11 +176,11 @@ export default function WaterIntakeCard({
             'flex flex-col items-center gap-1 p-2 rounded-xl transition-all',
             'bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95'
           )}
-          aria-label="직접 입력"
+          aria-label={t('waterIntakeCard1')}
           data-testid="custom-add-button"
         >
           <Plus className="w-5 h-5" />
-          <span className="text-xs font-medium">직접 입력</span>
+          <span className="text-xs font-medium">{t('waterIntakeCard1')}</span>
         </button>
       </div>
     </div>

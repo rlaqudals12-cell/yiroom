@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ProductInteractionWarning } from '@/types/interaction';
 import { ProductWarningBanner } from './InteractionWarning';
 import { filterWarningsOnly, filterSynergiesOnly } from '@/lib/products/services/interactions';
+import { useTranslations } from 'next-intl';
 
 interface InteractionDetailModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function InteractionDetailModal({
   onOpenChange,
   warnings,
 }: InteractionDetailModalProps) {
+  const t = useTranslations('productsUI');
   const warningsOnly = filterWarningsOnly(warnings);
   const synergiesOnly = filterSynergiesOnly(warnings);
 
@@ -34,11 +36,9 @@ export function InteractionDetailModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>성분 상호작용 분석</DialogTitle>
+          <DialogTitle>{t('interactionDetail0')}</DialogTitle>
           <VisuallyHidden asChild>
-            <DialogDescription>
-              제품 성분 간의 상호작용 경고와 시너지 효과 분석
-            </DialogDescription>
+            <DialogDescription>제품 성분 간의 상호작용 경고와 시너지 효과 분석</DialogDescription>
           </VisuallyHidden>
         </DialogHeader>
 
@@ -90,8 +90,8 @@ export function InteractionDetailModal({
         {/* 안내 문구 */}
         <div className="mt-4 p-3 bg-muted/50 rounded-lg">
           <p className="text-xs text-muted-foreground">
-            이 정보는 참고용이며, 의약품과의 상호작용은 포함되지 않았습니다.
-            구체적인 복용 방법은 전문가와 상담하세요.
+            이 정보는 참고용이며, 의약품과의 상호작용은 포함되지 않았습니다. 구체적인 복용 방법은
+            전문가와 상담하세요.
           </p>
         </div>
       </DialogContent>
@@ -114,6 +114,7 @@ export function QuickInteractionCheck({
   interactions,
   className,
 }: QuickInteractionCheckProps) {
+  const t = useTranslations('productsUI');
   if (interactions.length === 0) {
     return null;
   }
@@ -127,7 +128,7 @@ export function QuickInteractionCheck({
 
   return (
     <div className={cn('space-y-2', className)}>
-      <h4 className="text-sm font-medium">위시리스트 제품과의 상호작용</h4>
+      <h4 className="text-sm font-medium">{t('interactionDetail1')}</h4>
 
       {warningsOnly.length > 0 && (
         <div
@@ -139,18 +140,14 @@ export function QuickInteractionCheck({
           )}
         >
           <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span>
-            {warningsOnly.length}개 제품과 상호작용 주의
-          </span>
+          <span>{warningsOnly.length}개 제품과 상호작용 주의</span>
         </div>
       )}
 
       {synergiesOnly.length > 0 && (
         <div className="flex items-center gap-2 text-sm p-2 rounded bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
           <Sparkles className="h-4 w-4 shrink-0" />
-          <span>
-            {synergiesOnly.length}개 제품과 시너지 효과
-          </span>
+          <span>{synergiesOnly.length}개 제품과 시너지 효과</span>
         </div>
       )}
     </div>

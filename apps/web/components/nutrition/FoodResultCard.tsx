@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { AnalyzedFoodItem } from '@/lib/gemini/prompts/foodAnalysis';
 import { TrafficLightIndicator, TRAFFIC_LIGHT_CONFIG } from './TrafficLight';
+import { useTranslations } from 'next-intl';
 
 // 양 조절 배수 옵션
 const PORTION_MULTIPLIERS = [0.5, 1, 1.5, 2] as const;
@@ -41,6 +42,7 @@ export default function FoodResultCard({
   onEdit,
   showDetails = true,
 }: FoodResultCardProps) {
+  const t = useTranslations('nutritionUI');
   const [isExpanded, setIsExpanded] = useState(showDetails);
 
   const trafficLightStyle = TRAFFIC_LIGHT_CONFIG[food.trafficLight];
@@ -80,7 +82,7 @@ export default function FoodResultCard({
 
         {/* 양 조절 버튼 */}
         <div className="mt-4">
-          <p className="text-xs text-muted-foreground mb-2">양 조절</p>
+          <p className="text-xs text-muted-foreground mb-2">{t('foodResultCard0')}</p>
           <div className="flex gap-2">
             {PORTION_MULTIPLIERS.map((multiplier) => (
               <button
@@ -123,15 +125,15 @@ export default function FoodResultCard({
           {/* 영양소 정보 */}
           <div className="grid grid-cols-3 gap-4 text-center mb-4">
             <div>
-              <p className="text-xs text-muted-foreground">탄수화물</p>
+              <p className="text-xs text-muted-foreground">{t('foodResultCard1')}</p>
               <p className="font-bold text-foreground">{adjustedCarbs}g</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">단백질</p>
+              <p className="text-xs text-muted-foreground">{t('foodResultCard2')}</p>
               <p className="font-bold text-foreground">{adjustedProtein}g</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">지방</p>
+              <p className="text-xs text-muted-foreground">{t('foodResultCard3')}</p>
               <p className="font-bold text-foreground">{adjustedFat}g</p>
             </div>
           </div>
@@ -139,7 +141,7 @@ export default function FoodResultCard({
           {/* 신뢰도 표시 */}
           <div className="flex items-center justify-between pt-3 border-t border-border">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">신뢰도:</span>
+              <span className="text-sm text-muted-foreground">{t('foodResultCard4')}</span>
               <span className={`text-sm font-medium ${confidenceStyle.color}`}>
                 {confidenceStyle.label}
               </span>
