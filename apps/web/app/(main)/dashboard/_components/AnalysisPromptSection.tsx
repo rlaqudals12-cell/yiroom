@@ -1,14 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Palette, Sparkles, User, Scissors, Heart, SmilePlus, Lightbulb } from 'lucide-react';
 
-// 분석 카드 아이템 정의
+// 분석 카드 아이템 정의 (텍스트는 컴포넌트 내 t()에서 주입)
 const ANALYSIS_CARDS = [
   {
     id: 'personal-color',
-    title: '퍼스널 컬러',
-    description: '나에게 어울리는 색상',
+    titleKey: 'analysisTypes.personalColor',
+    descKey: 'analysisTypes.personalColorDesc',
     icon: Palette,
     href: '/analysis/personal-color',
     gradient: 'from-violet-500 to-purple-600',
@@ -16,8 +17,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'skin',
-    title: '피부 분석',
-    description: 'AI 피부 상태 진단',
+    titleKey: 'analysisTypes.skin',
+    descKey: 'analysisTypes.skinDesc',
     icon: Sparkles,
     href: '/analysis/skin',
     gradient: 'from-rose-400 to-pink-500',
@@ -25,8 +26,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'body',
-    title: '체형 분석',
-    description: '맞춤 스타일 추천',
+    titleKey: 'analysisTypes.body',
+    descKey: 'analysisTypes.bodyDesc',
     icon: User,
     href: '/analysis/body',
     gradient: 'from-blue-400 to-indigo-500',
@@ -34,8 +35,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'hair',
-    title: '헤어 분석',
-    description: '두피/모발 건강 체크',
+    titleKey: 'analysisTypes.hair',
+    descKey: 'analysisTypes.hairDesc',
     icon: Scissors,
     href: '/analysis/hair',
     gradient: 'from-amber-400 to-orange-500',
@@ -43,8 +44,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'makeup',
-    title: '메이크업',
-    description: '나만의 뷰티 스타일',
+    titleKey: 'analysisTypes.makeup',
+    descKey: 'analysisTypes.makeupDesc',
     icon: Heart,
     href: '/analysis/makeup',
     gradient: 'from-pink-400 to-rose-500',
@@ -52,8 +53,8 @@ const ANALYSIS_CARDS = [
   },
   {
     id: 'oral-health',
-    title: '구강건강',
-    description: '치아·잇몸 건강 체크',
+    titleKey: 'analysisTypes.oralHealth',
+    descKey: 'analysisTypes.oralHealthDesc',
     icon: SmilePlus,
     href: '/analysis/oral-health',
     gradient: 'from-cyan-400 to-blue-500',
@@ -68,6 +69,7 @@ const ANALYSIS_CARDS = [
  * - 퍼스널 컬러 분석 권장 표시
  */
 export default function AnalysisPromptSection() {
+  const t = useTranslations('dashboard');
   return (
     <section
       className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 rounded-2xl border border-border/50 p-6"
@@ -75,10 +77,8 @@ export default function AnalysisPromptSection() {
     >
       {/* 섹션 헤더 */}
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-foreground mb-2">
-          나를 알아보는 여정을 시작해볼까요?
-        </h2>
-        <p className="text-muted-foreground text-sm">AI가 당신만의 스타일을 분석해드려요</p>
+        <h2 className="text-xl font-bold text-foreground mb-2">{t('prompt.journeyTitle')}</h2>
+        <p className="text-muted-foreground text-sm">{t('prompt.journeyDesc')}</p>
       </div>
 
       {/* 분석 카드 그리드 */}
@@ -103,7 +103,7 @@ export default function AnalysisPromptSection() {
                 {/* 추천 배지 */}
                 {card.recommended && (
                   <div className="absolute -top-1 -right-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full shadow-sm">
-                    추천
+                    {t('prompt.recommended')}
                   </div>
                 )}
 
@@ -113,8 +113,8 @@ export default function AnalysisPromptSection() {
                 </div>
 
                 {/* 텍스트 */}
-                <h3 className="font-semibold text-sm mb-1">{card.title}</h3>
-                <p className="text-white/80 text-xs">{card.description}</p>
+                <h3 className="font-semibold text-sm mb-1">{t(card.titleKey)}</h3>
+                <p className="text-white/80 text-xs">{t(card.descKey)}</p>
               </div>
             </Link>
           );
@@ -127,10 +127,8 @@ export default function AnalysisPromptSection() {
           <Lightbulb className="w-4 h-4 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-medium text-foreground mb-1">퍼스널 컬러 분석부터 시작하면</p>
-          <p className="text-xs text-muted-foreground">
-            다른 분석의 정확도가 올라가고, 맞춤 제품 추천을 받을 수 있어요
-          </p>
+          <p className="text-sm font-medium text-foreground mb-1">{t('prompt.pcFirstTitle')}</p>
+          <p className="text-xs text-muted-foreground">{t('prompt.pcFirstHint')}</p>
         </div>
       </div>
     </section>

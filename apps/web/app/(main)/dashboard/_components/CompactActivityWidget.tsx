@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Flame, Dumbbell, Droplets, ChevronRight } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -21,6 +22,7 @@ interface CompactActivityWidgetProps {
  * - 기존 TodayFocusWidget + WeeklyProgressSection 대체
  */
 export default function CompactActivityWidget({ userId }: CompactActivityWidgetProps) {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const [activity, setActivity] = useState<DailyActivity>({
     calories: { current: 0, target: 2000 },
@@ -108,7 +110,7 @@ export default function CompactActivityWidget({ userId }: CompactActivityWidgetP
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
       progressColor: 'bg-orange-500',
-      label: '칼로리',
+      label: t('activity.calories'),
       current: activity.calories.current,
       target: activity.calories.target,
       unit: '',
@@ -120,10 +122,10 @@ export default function CompactActivityWidget({ userId }: CompactActivityWidgetP
       color: 'text-green-500',
       bgColor: 'bg-green-500/10',
       progressColor: 'bg-green-500',
-      label: '운동',
+      label: t('activity.exercise'),
       current: activity.exercise.current,
       target: activity.exercise.target,
-      unit: '분',
+      unit: t('activity.unitMinutes'),
       href: '/workout',
     },
     {
@@ -132,10 +134,10 @@ export default function CompactActivityWidget({ userId }: CompactActivityWidgetP
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
       progressColor: 'bg-blue-500',
-      label: '수분',
+      label: t('activity.water'),
       current: activity.water.current,
       target: activity.water.target,
-      unit: '잔',
+      unit: t('activity.unitGlasses'),
       href: '/nutrition',
     },
   ];
@@ -147,12 +149,12 @@ export default function CompactActivityWidget({ userId }: CompactActivityWidgetP
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-foreground">오늘 기록</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('activity.todayRecord')}</h3>
         <Link
           href="/nutrition"
           className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5"
         >
-          상세보기
+          {t('common.viewDetails')}
           <ChevronRight className="w-3 h-3" />
         </Link>
       </div>

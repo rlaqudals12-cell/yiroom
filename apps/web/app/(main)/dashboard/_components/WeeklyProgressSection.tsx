@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   Flame,
@@ -28,20 +29,7 @@ interface ModuleStatus {
   };
 }
 
-const GOAL_LABELS: Record<string, string> = {
-  weight_loss: '체중 감량',
-  muscle_gain: '근육 증가',
-  maintenance: '체중 유지',
-  health: '건강 관리',
-};
-
-const WORKOUT_TYPE_LABELS: Record<string, string> = {
-  toner: '토너',
-  builder: '빌더',
-  burner: '버너',
-  mover: '무버',
-  flexer: '플렉서',
-};
+// GOAL_LABELS / WORKOUT_TYPE_LABELS 는 컴포넌트 내부에서 t()로 생성
 
 /**
  * 주간 진행 상황 섹션 (Zone 2)
@@ -49,7 +37,23 @@ const WORKOUT_TYPE_LABELS: Record<string, string> = {
  * - 오른쪽: 모듈 상태 (운동/영양)
  */
 export default function WeeklyProgressSection() {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
+
+  const GOAL_LABELS: Record<string, string> = {
+    weight_loss: t('goals.weightLoss'),
+    muscle_gain: t('goals.muscleGain'),
+    maintenance: t('goals.maintenance'),
+    health: t('goals.health'),
+  };
+
+  const WORKOUT_TYPE_LABELS: Record<string, string> = {
+    toner: t('workoutTypes.toner'),
+    builder: t('workoutTypes.builder'),
+    burner: t('workoutTypes.burner'),
+    mover: t('workoutTypes.mover'),
+    flexer: t('workoutTypes.flexer'),
+  };
   const [weeklyReport, setWeeklyReport] = useState<WeeklyReport | null>(null);
   const [moduleStatus, setModuleStatus] = useState<ModuleStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +121,7 @@ export default function WeeklyProgressSection() {
     return (
       <section data-testid="weekly-progress-loading">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-muted-foreground">이번 주 현황</h2>
+          <h2 className="text-lg font-semibold text-muted-foreground">{t('weekly.title')}</h2>
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -132,13 +136,13 @@ export default function WeeklyProgressSection() {
     <section data-testid="weekly-progress-section">
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-muted-foreground">이번 주 현황</h2>
+        <h2 className="text-lg font-semibold text-muted-foreground">{t('weekly.title')}</h2>
         {hasWeeklyData && (
           <Link
             href={`/reports/weekly/${currentWeekStart}`}
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
           >
-            상세보기
+            {t('common.viewDetails')}
             <ChevronRight className="h-4 w-4" />
           </Link>
         )}
@@ -151,7 +155,7 @@ export default function WeeklyProgressSection() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              주간 요약
+              {t('weekly.summary')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -165,7 +169,7 @@ export default function WeeklyProgressSection() {
                   <p className="text-base font-bold text-foreground">
                     {Math.round(weeklyReport.nutrition.summary.avgCaloriesPerDay).toLocaleString()}
                   </p>
-                  <p className="text-xs text-muted-foreground">평균 kcal</p>
+                  <p className="text-xs text-muted-foreground">{t('weekly.avgKcal')}</p>
                 </div>
 
                 {/* 평균 수분 */}
@@ -176,7 +180,7 @@ export default function WeeklyProgressSection() {
                   <p className="text-base font-bold text-foreground">
                     {(weeklyReport.nutrition.summary.avgWaterPerDay / 1000).toFixed(1)}L
                   </p>
-                  <p className="text-xs text-muted-foreground">평균 수분</p>
+                  <p className="text-xs text-muted-foreground">{t('weekly.avgWater')}</p>
                 </div>
 
                 {/* 운동 횟수 */}
@@ -185,21 +189,18 @@ export default function WeeklyProgressSection() {
                     <Dumbbell className="h-4 w-4 text-module-workout" />
                   </div>
                   <p className="text-base font-bold text-foreground">
-                    {weeklyReport.workout.summary.totalSessions}회
+                    {t('weekly.sessionCount', {
+                      count: weeklyReport.workout.summary.totalSessions,
+                    })}
                   </p>
-                  <p className="text-xs text-muted-foreground">운동</p>
+                  <p className="text-xs text-muted-foreground">{t('activity.exercise')}</p>
                 </div>
               </div>
             ) : (
               <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground mb-2">
-                  이번 주 기록이 없습니다
-                </p>
-                <Link
-                  href="/nutrition"
-                  className="text-sm text-primary hover:underline"
-                >
-                  기록 시작하기 &rarr;
+                <p className="text-sm text-muted-foreground mb-2">{t('weekly.noRecords')}</p>
+                <Link href="/nutrition" className="text-sm text-primary hover:underline">
+                  {t('weekly.startRecording')} &rarr;
                 </Link>
               </div>
             )}
@@ -210,16 +211,20 @@ export default function WeeklyProgressSection() {
         <div className="space-y-3">
           {/* 운동 모듈 */}
           <ModuleStatusCard
-            title="운동"
+            title={t('modules.workout')}
             icon={<Dumbbell className="w-4 h-4" />}
             href="/workout"
             isCompleted={moduleStatus?.workout.hasAnalysis || false}
             completedText={
               moduleStatus?.workout.workoutType
-                ? `${WORKOUT_TYPE_LABELS[moduleStatus.workout.workoutType] || moduleStatus.workout.workoutType} 타입`
-                : '분석 완료'
+                ? t('modules.workoutTypeLabel', {
+                    type:
+                      WORKOUT_TYPE_LABELS[moduleStatus.workout.workoutType] ||
+                      moduleStatus.workout.workoutType,
+                  })
+                : t('modules.analysisComplete')
             }
-            pendingText="분석 시작하기"
+            pendingText={t('modules.startAnalysis')}
             bgColor="bg-module-workout-light"
             borderColor="border-module-workout/30"
             iconColor="text-module-workout"
@@ -227,16 +232,16 @@ export default function WeeklyProgressSection() {
 
           {/* 영양 모듈 */}
           <ModuleStatusCard
-            title="영양"
+            title={t('modules.nutrition')}
             icon={<Utensils className="w-4 h-4" />}
             href="/nutrition"
             isCompleted={moduleStatus?.nutrition.hasSettings || false}
             completedText={
               moduleStatus?.nutrition.goal
                 ? GOAL_LABELS[moduleStatus.nutrition.goal] || moduleStatus.nutrition.goal
-                : '설정 완료'
+                : t('modules.settingsComplete')
             }
-            pendingText="설정 시작하기"
+            pendingText={t('modules.startSettings')}
             bgColor="bg-module-nutrition-light"
             borderColor="border-module-nutrition/30"
             iconColor="text-module-nutrition"
@@ -283,9 +288,7 @@ function ModuleStatusCard({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className={`p-1.5 rounded-lg bg-card/70 ${iconColor}`}>
-              {icon}
-            </div>
+            <div className={`p-1.5 rounded-lg bg-card/70 ${iconColor}`}>{icon}</div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">{title}</h3>
               <div className="flex items-center gap-1 mt-0.5">

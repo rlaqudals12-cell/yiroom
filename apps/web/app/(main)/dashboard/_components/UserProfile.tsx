@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface UserProfileProps {
   name: string;
@@ -12,10 +13,8 @@ interface UserProfileProps {
  * - 작은 아바타 + 인사말만 표시
  * - PC 상태 배지는 AnalysisSection으로 이동
  */
-export default function UserProfile({
-  name,
-  imageUrl,
-}: UserProfileProps) {
+export default function UserProfile({ name, imageUrl }: UserProfileProps) {
+  const t = useTranslations('dashboard');
   return (
     <div className="flex items-center gap-3" data-testid="user-profile">
       {/* 프로필 이미지 (48px) */}
@@ -34,9 +33,7 @@ export default function UserProfile({
       )}
 
       {/* 인사말 */}
-      <h1 className="text-2xl font-bold text-foreground">
-        안녕하세요, {name}님
-      </h1>
+      <h1 className="text-2xl font-bold text-foreground">{t('userProfile.greeting', { name })}</h1>
     </div>
   );
 }

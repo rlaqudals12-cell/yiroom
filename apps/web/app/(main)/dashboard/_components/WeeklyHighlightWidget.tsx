@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Flame, Droplets, Dumbbell, ChevronRight, Loader2, BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import type { WeeklyReport } from '@/types/report';
  * - 리포트 페이지로 바로가기
  */
 export default function WeeklyHighlightWidget() {
+  const t = useTranslations('dashboard');
   const [report, setReport] = useState<WeeklyReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
@@ -54,7 +56,7 @@ export default function WeeklyHighlightWidget() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            이번 주 요약
+            {t('highlight.weekSummary')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -73,14 +75,14 @@ export default function WeeklyHighlightWidget() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            이번 주 요약
+            {t('highlight.weekSummary')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground mb-3">이번 주 기록이 아직 없습니다</p>
+            <p className="text-sm text-muted-foreground mb-3">{t('highlight.noRecordsYet')}</p>
             <Link href="/nutrition" className="text-sm text-primary hover:underline">
-              식단 기록 시작하기 &rarr;
+              {t('highlight.startMealRecording')} &rarr;
             </Link>
           </div>
         </CardContent>
@@ -96,13 +98,13 @@ export default function WeeklyHighlightWidget() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            이번 주 요약
+            {t('highlight.weekSummary')}
           </CardTitle>
           <Link
             href={`/reports/weekly/${currentWeekStart}`}
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
           >
-            상세보기
+            {t('common.viewDetails')}
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
@@ -117,7 +119,7 @@ export default function WeeklyHighlightWidget() {
             <p className="text-lg font-bold text-foreground">
               {Math.round(nutrition.summary.avgCaloriesPerDay).toLocaleString()}
             </p>
-            <p className="text-xs text-muted-foreground">평균 칼로리</p>
+            <p className="text-xs text-muted-foreground">{t('highlight.avgCalories')}</p>
           </div>
 
           {/* 평균 수분 */}
@@ -128,7 +130,7 @@ export default function WeeklyHighlightWidget() {
             <p className="text-lg font-bold text-foreground">
               {(nutrition.summary.avgWaterPerDay / 1000).toFixed(1)}L
             </p>
-            <p className="text-xs text-muted-foreground">평균 수분</p>
+            <p className="text-xs text-muted-foreground">{t('highlight.avgWater')}</p>
           </div>
 
           {/* 운동 횟수 */}
@@ -136,8 +138,10 @@ export default function WeeklyHighlightWidget() {
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-module-workout-light mb-2">
               <Dumbbell className="h-5 w-5 text-module-workout" />
             </div>
-            <p className="text-lg font-bold text-foreground">{workout.summary.totalSessions}회</p>
-            <p className="text-xs text-muted-foreground">운동 횟수</p>
+            <p className="text-lg font-bold text-foreground">
+              {t('weekly.sessionCount', { count: workout.summary.totalSessions })}
+            </p>
+            <p className="text-xs text-muted-foreground">{t('highlight.workoutCount')}</p>
           </div>
         </div>
 
@@ -148,13 +152,13 @@ export default function WeeklyHighlightWidget() {
               {streak.nutrition.current > 0 && (
                 <span className="flex items-center gap-1 text-module-nutrition">
                   <Flame className="h-4 w-4" />
-                  <span>식단 {streak.nutrition.current}일 연속</span>
+                  <span>{t('highlight.mealStreak', { days: streak.nutrition.current })}</span>
                 </span>
               )}
               {streak.workout.current > 0 && (
                 <span className="flex items-center gap-1 text-module-workout">
                   <Dumbbell className="h-4 w-4" />
-                  <span>운동 {streak.workout.current}일 연속</span>
+                  <span>{t('highlight.workoutStreak', { days: streak.workout.current })}</span>
                 </span>
               )}
             </div>

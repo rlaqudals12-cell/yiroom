@@ -1,15 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import {
-  Dumbbell,
-  Utensils,
-  ChevronRight,
-  CheckCircle2,
-  Circle,
-  Loader2,
-} from 'lucide-react';
+import { Dumbbell, Utensils, ChevronRight, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 interface Phase2Status {
@@ -23,20 +17,7 @@ interface Phase2Status {
   };
 }
 
-const GOAL_LABELS: Record<string, string> = {
-  weight_loss: '체중 감량',
-  muscle_gain: '근육 증가',
-  maintenance: '체중 유지',
-  health: '건강 관리',
-};
-
-const WORKOUT_TYPE_LABELS: Record<string, string> = {
-  toner: '토너',
-  builder: '빌더',
-  burner: '버너',
-  mover: '무버',
-  flexer: '플렉서',
-};
+// GOAL_LABELS / WORKOUT_TYPE_LABELS 는 컴포넌트 내부에서 t()로 생성
 
 /**
  * Phase 2 모듈 상태 표시 섹션 (P3-2.3)
@@ -44,7 +25,23 @@ const WORKOUT_TYPE_LABELS: Record<string, string> = {
  * - 영양 설정 완료 여부
  */
 export default function Phase2StatusSection() {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
+
+  const GOAL_LABELS: Record<string, string> = {
+    weight_loss: t('goals.weightLoss'),
+    muscle_gain: t('goals.muscleGain'),
+    maintenance: t('goals.maintenance'),
+    health: t('goals.health'),
+  };
+
+  const WORKOUT_TYPE_LABELS: Record<string, string> = {
+    toner: t('workoutTypes.toner'),
+    builder: t('workoutTypes.builder'),
+    burner: t('workoutTypes.burner'),
+    mover: t('workoutTypes.mover'),
+    flexer: t('workoutTypes.flexer'),
+  };
   const [status, setStatus] = useState<Phase2Status | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -92,7 +89,7 @@ export default function Phase2StatusSection() {
   if (isLoading) {
     return (
       <section data-testid="phase2-status-loading">
-        <h2 className="text-xl font-bold text-foreground mb-4">웰니스 관리</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4">{t('phase2.wellnessManagement')}</h2>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -104,20 +101,23 @@ export default function Phase2StatusSection() {
 
   return (
     <section data-testid="phase2-status-section">
-      <h2 className="text-xl font-bold text-foreground mb-4">웰니스 관리</h2>
+      <h2 className="text-xl font-bold text-foreground mb-4">{t('phase2.wellnessManagement')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 운동 모듈 */}
         <StatusCard
-          title="운동"
+          title={t('modules.workout')}
           icon={<Dumbbell className="w-5 h-5" />}
           href="/workout"
           isCompleted={status.workout.hasAnalysis}
           completedText={
             status.workout.workoutType
-              ? `${WORKOUT_TYPE_LABELS[status.workout.workoutType] || status.workout.workoutType} 타입`
-              : '분석 완료'
+              ? t('modules.workoutTypeLabel', {
+                  type:
+                    WORKOUT_TYPE_LABELS[status.workout.workoutType] || status.workout.workoutType,
+                })
+              : t('modules.analysisComplete')
           }
-          pendingText="운동 분석 시작하기"
+          pendingText={t('phase2.startWorkoutAnalysis')}
           bgColor="bg-module-workout-light"
           borderColor="border-module-workout/30"
           iconColor="text-module-workout"
@@ -125,16 +125,18 @@ export default function Phase2StatusSection() {
 
         {/* 영양 모듈 */}
         <StatusCard
-          title="영양"
+          title={t('modules.nutrition')}
           icon={<Utensils className="w-5 h-5" />}
           href="/nutrition"
           isCompleted={status.nutrition.hasSettings}
           completedText={
             status.nutrition.goal
-              ? `목표: ${GOAL_LABELS[status.nutrition.goal] || status.nutrition.goal}`
-              : '설정 완료'
+              ? t('phase2.nutritionGoalLabel', {
+                  goal: GOAL_LABELS[status.nutrition.goal] || status.nutrition.goal,
+                })
+              : t('modules.settingsComplete')
           }
-          pendingText="영양 설정 시작하기"
+          pendingText={t('phase2.startNutritionSettings')}
           bgColor="bg-module-nutrition-light"
           borderColor="border-module-nutrition/30"
           iconColor="text-module-nutrition"
@@ -180,9 +182,7 @@ function StatusCard({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg bg-card/70 ${iconColor}`}>
-              {icon}
-            </div>
+            <div className={`p-2 rounded-lg bg-card/70 ${iconColor}`}>{icon}</div>
             <div>
               <h3 className="font-semibold text-foreground">{title}</h3>
               <div className="flex items-center gap-1.5 mt-1">

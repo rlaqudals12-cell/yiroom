@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Target, ChevronRight, Flame, Trophy } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -24,6 +25,7 @@ interface ChallengeWidgetProps {
 }
 
 export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const [activeChallenges, setActiveChallenges] = useState<UserChallenge[]>([]);
   const [stats, setStats] = useState<ChallengeStats | null>(null);
@@ -86,8 +88,10 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
               <Target className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">챌린지</h3>
-              <p className="text-sm text-primary">{stats?.inProgress || 0}개 진행 중</p>
+              <h3 className="font-bold text-foreground">{t('challenge.title')}</h3>
+              <p className="text-sm text-primary">
+                {t('challenge.inProgressCount', { count: stats?.inProgress || 0 })}
+              </p>
             </div>
           </div>
 
@@ -95,11 +99,11 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
           <div className="flex gap-3">
             <div className="text-center">
               <p className="text-lg font-bold text-primary">{stats?.completed || 0}</p>
-              <p className="text-xs text-muted-foreground">완료</p>
+              <p className="text-xs text-muted-foreground">{t('challenge.completed')}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-muted-foreground">{stats?.total || 0}</p>
-              <p className="text-xs text-muted-foreground">전체</p>
+              <p className="text-xs text-muted-foreground">{t('challenge.total')}</p>
             </div>
           </div>
         </div>
@@ -125,7 +129,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">
-                      {uc.challenge?.name || '챌린지'}
+                      {uc.challenge?.name || t('challenge.title')}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <Progress value={progress} className="h-1.5 flex-1" />
@@ -140,12 +144,12 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
         ) : (
           <div className="text-center py-6 bg-secondary/50 rounded-xl">
             <Flame className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">진행 중인 챌린지가 없어요</p>
+            <p className="text-sm text-muted-foreground">{t('challenge.noChallenges')}</p>
             <Link
               href="/challenges"
               className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm rounded-lg hover:bg-foreground/90 transition-all duration-200 hover:-translate-y-0.5"
             >
-              챌린지 시작하기
+              {t('challenge.startChallenge')}
             </Link>
           </div>
         )}
@@ -158,7 +162,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
             href="/challenges"
             className="flex items-center justify-center gap-1 w-full py-2 text-sm text-primary hover:text-primary/80 bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
           >
-            전체 챌린지 보기
+            {t('challenge.viewAll')}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -169,8 +173,8 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
         <div className="mx-4 mb-4 bg-primary/10 rounded-lg p-3">
           <p className="text-xs text-primary">
             <Trophy className="w-3 h-3 inline mr-1" />
-            <span className="font-medium">대단해요!</span> {stats.completed}개의 챌린지를
-            완료했어요!
+            <span className="font-medium">{t('challenge.amazingLabel')}</span>{' '}
+            {t('challenge.completedCount', { count: stats.completed })}
           </p>
         </div>
       )}

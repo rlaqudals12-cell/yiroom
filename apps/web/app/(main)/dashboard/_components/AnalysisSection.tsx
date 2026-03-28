@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AnalysisCard from './AnalysisCard';
@@ -37,6 +38,7 @@ export default function AnalysisSection({
   hasPersonalColor,
   defaultExpanded,
 }: AnalysisSectionProps) {
+  const t = useTranslations('dashboard');
   // 분석 결과가 없으면 기본 펼침, 있으면 기본 접힘
   const [isOpen, setIsOpen] = useState(defaultExpanded ?? analyses.length === 0);
 
@@ -53,23 +55,27 @@ export default function AnalysisSection({
         <CollapsibleTrigger asChild>
           <button
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-            aria-label={isOpen ? '분석 프로필 섹션 접기' : '분석 프로필 섹션 펼치기'}
+            aria-label={isOpen ? t('analysis.collapseSection') : t('analysis.expandSection')}
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-module-personal-color-light flex items-center justify-center">
                 <Palette className="w-4 h-4 text-module-personal-color" aria-hidden="true" />
               </div>
               <div className="text-left">
-                <h2 className="text-lg font-semibold text-foreground">내 분석 프로필</h2>
+                <h2 className="text-lg font-semibold text-foreground">{t('analysis.myProfile')}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {hasAnalyses ? `${analyses.length}개 분석 완료` : '분석을 시작해보세요'}
+                  {hasAnalyses
+                    ? t('analysis.completedCount', { count: analyses.length })
+                    : t('analysis.startPrompt')}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {hasPersonalColor && (
                 <div className="px-2 py-1 bg-module-personal-color-light rounded-full">
-                  <span className="text-xs font-medium text-module-personal-color">PC 완료</span>
+                  <span className="text-xs font-medium text-module-personal-color">
+                    {t('analysis.pcComplete')}
+                  </span>
                 </div>
               )}
               {isOpen ? (

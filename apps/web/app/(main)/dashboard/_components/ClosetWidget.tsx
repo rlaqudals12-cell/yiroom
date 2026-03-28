@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Shirt, Sparkles, ArrowRight, Plus } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -53,6 +54,7 @@ function mapBodyType(bodyType: string | null): 'S' | 'W' | 'N' | null {
 }
 
 export default function ClosetWidget({ userId, personalColor, bodyType }: ClosetWidgetProps) {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
 
@@ -129,13 +131,12 @@ export default function ClosetWidget({ userId, personalColor, bodyType }: Closet
       <div data-testid="closet-widget-empty" className="bg-muted/30 rounded-xl p-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
           <Shirt className="w-5 h-5 text-muted-foreground" />
-          <h3 className="font-semibold">내 옷장</h3>
+          <h3 className="font-semibold">{t('closet.title')}</h3>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          옷을 등록하고 맞춤 코디를 추천받아보세요
-        </p>
+        <p className="text-sm text-muted-foreground mb-4">{t('closet.emptyDesc')}</p>
         <Button onClick={() => router.push('/closet/add')}>
-          <Plus className="w-4 h-4 mr-2" />옷 추가하기
+          <Plus className="w-4 h-4 mr-2" />
+          {t('closet.addClothes')}
         </Button>
       </div>
     );
@@ -147,11 +148,13 @@ export default function ClosetWidget({ userId, personalColor, bodyType }: Closet
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shirt className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">내 옷장</h3>
-          <span className="text-sm text-muted-foreground">({items.length}개)</span>
+          <h3 className="font-semibold">{t('closet.title')}</h3>
+          <span className="text-sm text-muted-foreground">
+            ({t('closet.itemCount', { count: items.length })})
+          </span>
         </div>
         <Button variant="ghost" size="sm" onClick={() => router.push('/closet')}>
-          전체 보기
+          {t('common.viewAll')}
           <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
@@ -179,7 +182,8 @@ export default function ClosetWidget({ userId, personalColor, bodyType }: Closet
           className="flex-1"
           onClick={() => router.push('/closet/add')}
         >
-          <Plus className="w-4 h-4 mr-1" />옷 추가
+          <Plus className="w-4 h-4 mr-1" />
+          {t('closet.addShort')}
         </Button>
         <Button
           variant="outline"
@@ -188,7 +192,7 @@ export default function ClosetWidget({ userId, personalColor, bodyType }: Closet
           onClick={() => router.push('/closet/outfits/new')}
         >
           <Sparkles className="w-4 h-4 mr-1" />
-          코디 만들기
+          {t('closet.createOutfit')}
         </Button>
       </div>
     </div>

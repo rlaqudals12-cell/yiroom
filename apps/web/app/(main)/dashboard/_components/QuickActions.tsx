@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Palette, Sparkles, User, ArrowRight, Scissors, Heart, SmilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -8,21 +9,21 @@ interface QuickActionsProps {
   hasPersonalColor: boolean;
 }
 
-// 분석 메뉴 아이템
+// 분석 메뉴 아이템 (텍스트는 컴포넌트 내 t()에서 주입)
 const ANALYSIS_ITEMS = [
   {
     id: 'personal-color',
-    title: '퍼스널 컬러 진단',
-    description: '나에게 어울리는 색상을 찾아보세요',
+    titleKey: 'quickActions.pcTitle',
+    descKey: 'quickActions.pcDesc',
     icon: Palette,
     href: '/analysis/personal-color',
     bgColor: 'bg-gradient-personal-color',
-    requiresPC: false, // PC 진단 필수 여부
+    requiresPC: false,
   },
   {
     id: 'skin',
-    title: '피부 분석',
-    description: '피부 상태를 AI로 분석해보세요',
+    titleKey: 'quickActions.skinTitle',
+    descKey: 'quickActions.skinDesc',
     icon: Sparkles,
     href: '/analysis/skin',
     bgColor: 'bg-gradient-skin',
@@ -30,8 +31,8 @@ const ANALYSIS_ITEMS = [
   },
   {
     id: 'body',
-    title: '체형 분석',
-    description: '체형에 맞는 스타일을 추천받으세요',
+    titleKey: 'quickActions.bodyTitle',
+    descKey: 'quickActions.bodyDesc',
     icon: User,
     href: '/analysis/body',
     bgColor: 'bg-gradient-body',
@@ -39,8 +40,8 @@ const ANALYSIS_ITEMS = [
   },
   {
     id: 'hair',
-    title: '헤어 분석',
-    description: '두피와 모발 상태를 분석해보세요',
+    titleKey: 'quickActions.hairTitle',
+    descKey: 'quickActions.hairDesc',
     icon: Scissors,
     href: '/analysis/hair',
     bgColor: 'bg-gradient-to-br from-amber-400 to-orange-500',
@@ -48,8 +49,8 @@ const ANALYSIS_ITEMS = [
   },
   {
     id: 'makeup',
-    title: '메이크업 분석',
-    description: '나에게 어울리는 메이크업을 찾아보세요',
+    titleKey: 'quickActions.makeupTitle',
+    descKey: 'quickActions.makeupDesc',
     icon: Heart,
     href: '/analysis/makeup',
     bgColor: 'bg-gradient-to-br from-rose-400 to-pink-500',
@@ -57,8 +58,8 @@ const ANALYSIS_ITEMS = [
   },
   {
     id: 'oral-health',
-    title: '구강건강 분석',
-    description: '치아와 잇몸 건강을 체크해보세요',
+    titleKey: 'quickActions.oralHealthTitle',
+    descKey: 'quickActions.oralHealthDesc',
     icon: SmilePlus,
     href: '/analysis/oral-health',
     bgColor: 'bg-gradient-to-br from-cyan-400 to-blue-500',
@@ -67,9 +68,10 @@ const ANALYSIS_ITEMS = [
 ];
 
 export default function QuickActions({ hasPersonalColor }: QuickActionsProps) {
+  const t = useTranslations('dashboard');
   return (
     <section>
-      <h2 className="text-xl font-bold text-foreground mb-4">분석 시작하기</h2>
+      <h2 className="text-xl font-bold text-foreground mb-4">{t('quickActions.sectionTitle')}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {ANALYSIS_ITEMS.map((item) => {
@@ -93,7 +95,7 @@ export default function QuickActions({ hasPersonalColor }: QuickActionsProps) {
                 {/* 잠금 표시 */}
                 {isLocked && (
                   <div className="absolute top-2 right-2 px-2 py-1 bg-black/20 rounded-full text-xs">
-                    PC 진단 필요
+                    {t('quickActions.pcRequired')}
                   </div>
                 )}
 
@@ -103,8 +105,8 @@ export default function QuickActions({ hasPersonalColor }: QuickActionsProps) {
                 </div>
 
                 {/* 텍스트 */}
-                <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
-                <p className="text-white/80 text-sm mb-4">{item.description}</p>
+                <h3 className="font-semibold text-lg mb-1">{t(item.titleKey)}</h3>
+                <p className="text-white/80 text-sm mb-4">{t(item.descKey)}</p>
 
                 {/* 버튼 */}
                 <Button
@@ -112,7 +114,7 @@ export default function QuickActions({ hasPersonalColor }: QuickActionsProps) {
                   size="sm"
                   className="gap-1 bg-white/20 hover:bg-white/30 text-white border-0"
                 >
-                  {isLocked ? 'PC 진단 먼저' : '시작하기'}
+                  {isLocked ? t('quickActions.pcFirst') : t('quickActions.start')}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

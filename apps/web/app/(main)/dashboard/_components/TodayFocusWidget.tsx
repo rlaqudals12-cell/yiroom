@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   Flame,
@@ -34,6 +35,7 @@ interface TodayFocusWidgetProps {
  * - 주간 요약 통계
  */
 export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const [workoutStreak, setWorkoutStreak] = useState<StreakSummary | null>(null);
   const [nutritionStreak, setNutritionStreak] = useState<NutritionStreakSummary | null>(null);
@@ -165,13 +167,13 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
                 <Flame className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-amber-700 uppercase tracking-wide">
-                오늘의 기록
+                {t('focus.todayRecord')}
               </span>
             </div>
             <Link
               href="/profile/settings?tab=notifications"
               className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
-              aria-label="알림 설정으로 이동"
+              aria-label={t('streak.notificationSettings')}
             >
               <Settings className="w-4 h-4 text-amber-600" aria-hidden="true" />
             </Link>
@@ -185,16 +187,12 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
               <div className="flex items-center gap-2">
                 <p className="text-4xl font-bold text-amber-600">
                   {totalStreak}
-                  <span className="text-xl text-amber-500 ml-1">일</span>
+                  <span className="text-xl text-amber-500 ml-1">{t('streak.days')}</span>
                 </p>
-                <InfoTooltip
-                  content="매일 운동이나 식단을 기록하면 연속 기록이 쌓여요! 연속 기록을 유지하면 특별한 보상을 받을 수 있어요."
-                  variant="help"
-                  size="md"
-                />
+                <InfoTooltip content={t('focus.streakTooltip')} variant="help" size="md" />
               </div>
               <p className="text-sm text-amber-600/80 mt-1">
-                {isAnyActive ? '연속 기록 중' : '새로운 기록을 시작해보세요'}
+                {isAnyActive ? t('streak.inProgress') : t('streak.startNew')}
               </p>
             </div>
 
@@ -203,7 +201,7 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <Dumbbell className="w-3 h-3 text-module-workout" />
-                  <span className="text-xs text-muted-foreground">운동</span>
+                  <span className="text-xs text-muted-foreground">{t('modules.workout')}</span>
                 </div>
                 <p className="text-lg font-bold text-module-workout">
                   {workoutStreak?.currentStreak || 0}
@@ -212,7 +210,7 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <Utensils className="w-3 h-3 text-module-nutrition" />
-                  <span className="text-xs text-muted-foreground">영양</span>
+                  <span className="text-xs text-muted-foreground">{t('modules.nutrition')}</span>
                 </div>
                 <p className="text-lg font-bold text-module-nutrition">
                   {nutritionStreak?.currentStreak || 0}
@@ -233,7 +231,9 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
                   {/* 아이콘 글로우 */}
                   <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-ping" />
                 </div>
-                <span className="text-sm font-medium text-amber-700">내일이면 마일스톤 달성!</span>
+                <span className="text-sm font-medium text-amber-700">
+                  {t('streak.milestoneAlert')}
+                </span>
               </div>
             </div>
           )}
@@ -242,10 +242,10 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
           <button
             onClick={() => setIsCheckinOpen(true)}
             className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
-            aria-label="오늘의 체크인 시작하기"
+            aria-label={t('streak.checkinButton')}
           >
             <Sparkles className="w-4 h-4" aria-hidden="true" />
-            오늘의 나 체크인하기
+            {t('streak.checkinButton')}
           </button>
         </div>
 
@@ -270,16 +270,18 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
                 <div className="flex items-center gap-1.5">
                   <Dumbbell className="w-3.5 h-3.5 text-module-workout" />
                   <span className="text-sm text-foreground">
-                    {weeklyReport.workout.summary.totalSessions}회
+                    {t('weekly.sessionCount', {
+                      count: weeklyReport.workout.summary.totalSessions,
+                    })}
                   </span>
                 </div>
               </div>
               <Link
                 href="/reports"
                 className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-0.5"
-                aria-label="주간 리포트 상세 보기"
+                aria-label={t('focus.weeklyReportDetail')}
               >
-                상세
+                {t('common.details')}
                 <ChevronRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>

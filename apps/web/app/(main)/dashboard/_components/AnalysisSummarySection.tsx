@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Palette,
   Sparkles,
@@ -14,46 +15,46 @@ import {
 import { Button } from '@/components/ui/button';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 
-// 분석 타입별 메타 정보
+// 분석 타입별 메타 정보 (label은 컴포넌트 내 t()에서 주입)
 const ANALYSIS_META = {
   'personal-color': {
     icon: Palette,
-    label: '퍼스널 컬러',
+    labelKey: 'analysisTypes.personalColor',
     color: 'text-violet-500',
     bgColor: 'bg-violet-500/10',
     href: '/analysis/personal-color/result',
   },
   skin: {
     icon: Sparkles,
-    label: '피부',
+    labelKey: 'analysisTypes.skin',
     color: 'text-rose-500',
     bgColor: 'bg-rose-500/10',
     href: '/analysis/skin/result',
   },
   body: {
     icon: User,
-    label: '체형',
+    labelKey: 'analysisTypes.body',
     color: 'text-blue-500',
     bgColor: 'bg-blue-500/10',
     href: '/analysis/body/result',
   },
   hair: {
     icon: Scissors,
-    label: '헤어',
+    labelKey: 'analysisTypes.hair',
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10',
     href: '/analysis/hair/result',
   },
   makeup: {
     icon: Heart,
-    label: '메이크업',
+    labelKey: 'analysisTypes.makeup',
     color: 'text-pink-500',
     bgColor: 'bg-pink-500/10',
     href: '/analysis/makeup/result',
   },
   'oral-health': {
     icon: SmilePlus,
-    label: '구강건강',
+    labelKey: 'analysisTypes.oralHealth',
     color: 'text-cyan-600',
     bgColor: 'bg-cyan-500/10',
     href: '/analysis/oral-health/result',
@@ -71,6 +72,7 @@ interface AnalysisSummarySectionProps {
  * - 추가 분석 유도 버튼
  */
 export default function AnalysisSummarySection({ analyses }: AnalysisSummarySectionProps) {
+  const t = useTranslations('dashboard');
   // 미완료 분석 타입 계산
   const completedTypes = new Set(analyses.map((a) => a.type));
   const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup', 'oral-health'] as const;
@@ -83,12 +85,12 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
     >
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground">내 분석 요약</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('summary.title')}</h2>
         <Link
           href="/analysis"
           className="text-sm text-primary hover:underline flex items-center gap-1"
         >
-          전체 보기
+          {t('common.viewAll')}
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -118,7 +120,7 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
                   >
                     <Icon className={`w-4 h-4 ${meta.color}`} />
                   </div>
-                  <span className="text-xs text-muted-foreground">{meta.label}</span>
+                  <span className="text-xs text-muted-foreground">{t(meta.labelKey)}</span>
                 </div>
 
                 {/* 요약 값 */}
@@ -136,7 +138,7 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
         <div className="pt-4 border-t border-border/50">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {incompleteTypes.length}개 분석이 남았어요
+              {t('summary.remaining', { count: incompleteTypes.length })}
             </p>
             <div className="flex items-center gap-2">
               {incompleteTypes.slice(0, 3).map((type) => {
@@ -150,7 +152,7 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
                     key={type}
                     href={analysisHref}
                     className={`w-8 h-8 rounded-lg ${meta.bgColor} flex items-center justify-center hover:scale-110 transition-transform`}
-                    title={`${meta.label} 분석하기`}
+                    title={t('summary.analyzeType', { type: t(meta.labelKey) })}
                   >
                     <Icon className={`w-4 h-4 ${meta.color}`} />
                   </Link>
@@ -159,7 +161,7 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
               <Button variant="outline" size="sm" asChild className="gap-1">
                 <Link href="/analysis">
                   <Plus className="w-4 h-4" />
-                  추가 분석
+                  {t('summary.additionalAnalysis')}
                 </Link>
               </Button>
             </div>

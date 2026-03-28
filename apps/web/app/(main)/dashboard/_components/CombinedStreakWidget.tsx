@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Flame, Dumbbell, Utensils, Sparkles, TrendingUp, Settings } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -21,6 +22,7 @@ interface CombinedStreakWidgetProps {
  * 운동 + 영양 연속 기록 표시 + 일일 체크인 유도
  */
 export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetProps) {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const [workoutStreak, setWorkoutStreak] = useState<StreakSummary | null>(null);
   const [nutritionStreak, setNutritionStreak] = useState<NutritionStreakSummary | null>(null);
@@ -135,9 +137,9 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
                 <Flame className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">연속 기록</h3>
+                <h3 className="font-bold text-foreground">{t('streak.title')}</h3>
                 <p className="text-sm text-amber-600">
-                  {isAnyActive ? '현재 진행 중' : '새로운 기록을 시작해보세요'}
+                  {isAnyActive ? t('streak.inProgress') : t('streak.startNew')}
                 </p>
               </div>
             </div>
@@ -147,14 +149,14 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
               <Link
                 href="/profile/settings?tab=notifications"
                 className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
-                title="알림 설정"
+                title={t('streak.notificationSettings')}
               >
                 <Settings className="w-4 h-4 text-amber-600" />
               </Link>
               <div className="text-right">
                 <p className="text-3xl font-bold text-amber-600">
                   {totalStreak}
-                  <span className="text-lg text-muted-foreground">일</span>
+                  <span className="text-lg text-muted-foreground">{t('streak.days')}</span>
                 </p>
               </div>
             </div>
@@ -167,15 +169,18 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
           <div className="bg-white/60 rounded-xl p-3">
             <div className="flex items-center gap-2 mb-2">
               <Dumbbell className="w-4 h-4 text-module-workout" />
-              <span className="text-sm font-medium text-foreground">운동</span>
+              <span className="text-sm font-medium text-foreground">{t('modules.workout')}</span>
             </div>
             <p className="text-2xl font-bold text-module-workout">
               {workoutStreak?.currentStreak || 0}
-              <span className="text-sm text-muted-foreground">일</span>
+              <span className="text-sm text-muted-foreground">{t('streak.days')}</span>
             </p>
             {workoutStreak?.isActive && workoutStreak.nextMilestone && (
               <p className="text-xs text-muted-foreground mt-1">
-                {workoutStreak.nextMilestone}일까지 {workoutStreak.daysToNextMilestone}일
+                {t('streak.daysToMilestone', {
+                  milestone: workoutStreak.nextMilestone,
+                  remaining: workoutStreak.daysToNextMilestone,
+                })}
               </p>
             )}
           </div>
@@ -184,15 +189,18 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
           <div className="bg-white/60 rounded-xl p-3">
             <div className="flex items-center gap-2 mb-2">
               <Utensils className="w-4 h-4 text-module-nutrition" />
-              <span className="text-sm font-medium text-foreground">영양</span>
+              <span className="text-sm font-medium text-foreground">{t('modules.nutrition')}</span>
             </div>
             <p className="text-2xl font-bold text-module-nutrition">
               {nutritionStreak?.currentStreak || 0}
-              <span className="text-sm text-muted-foreground">일</span>
+              <span className="text-sm text-muted-foreground">{t('streak.days')}</span>
             </p>
             {nutritionStreak?.isActive && nutritionStreak.nextMilestone && (
               <p className="text-xs text-muted-foreground mt-1">
-                {nutritionStreak.nextMilestone}일까지 {nutritionStreak.daysToNextMilestone}일
+                {t('streak.daysToMilestone', {
+                  milestone: nutritionStreak.nextMilestone,
+                  remaining: nutritionStreak.daysToNextMilestone,
+                })}
               </p>
             )}
           </div>
@@ -204,7 +212,9 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
           <div className="mx-4 mb-4 bg-amber-100 rounded-lg p-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-700">내일이면 마일스톤 달성! 🎉</span>
+              <span className="text-sm font-medium text-amber-700">
+                {t('streak.milestoneAlert')}
+              </span>
             </div>
           </div>
         )}
@@ -216,7 +226,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
             className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            오늘의 나 체크인하기
+            {t('streak.checkinButton')}
           </button>
         </div>
       </div>

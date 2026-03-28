@@ -8,33 +8,39 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Brain, TrendingUp } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
 import type { ConnectionStats } from '@/lib/connection-awareness';
 import { getConnectionStats } from '@/lib/connection-awareness';
 
-// 상태별 색상 + 라벨
+// 상태별 색상 (label은 컴포넌트 내 t()에서 주입)
 const STATUS_CONFIG = {
-  exposed: { label: '발견', color: 'bg-slate-300 dark:bg-slate-600', textColor: 'text-slate-500' },
+  exposed: {
+    labelKey: 'internalization.exposed',
+    color: 'bg-slate-300 dark:bg-slate-600',
+    textColor: 'text-slate-500',
+  },
   recognized: {
-    label: '인식',
+    labelKey: 'internalization.recognized',
     color: 'bg-violet-300 dark:bg-violet-700',
     textColor: 'text-violet-500',
   },
   internalized: {
-    label: '내재화',
+    labelKey: 'internalization.internalized',
     color: 'bg-indigo-400 dark:bg-indigo-600',
     textColor: 'text-indigo-500',
   },
   independent: {
-    label: '자립',
+    labelKey: 'internalization.independent',
     color: 'bg-emerald-400 dark:bg-emerald-600',
     textColor: 'text-emerald-500',
   },
 } as const;
 
 export default function InternalizationWidget() {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const { user } = useUser();
   const [stats, setStats] = useState<ConnectionStats | null>(null);
@@ -73,7 +79,7 @@ export default function InternalizationWidget() {
 
   const rate = Math.round(stats.internalizationRate * 100);
   const growthMessage =
-    rate >= 50 ? '이해가 깊어지고 있어요, 꾸준히 성장하고 있어요' : '새로운 발견이 쌓이고 있어요';
+    rate >= 50 ? t('internalization.deepUnderstanding') : t('internalization.newDiscoveries');
 
   return (
     <section
@@ -84,7 +90,7 @@ export default function InternalizationWidget() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-violet-500" />
-          <h3 className="font-semibold text-sm text-foreground">자기 이해 내재화</h3>
+          <h3 className="font-semibold text-sm text-foreground">{t('internalization.title')}</h3>
         </div>
         <div className="flex items-center gap-1">
           <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
@@ -105,7 +111,7 @@ export default function InternalizationWidget() {
               key={status}
               className={`${config.color} transition-all duration-500`}
               style={{ width: `${pct}%` }}
-              title={`${config.label}: ${count}개`}
+              title={`${t(config.labelKey)}: ${count}`}
             />
           );
         })}
@@ -121,7 +127,7 @@ export default function InternalizationWidget() {
             <div key={status} className="flex items-center gap-1">
               <div className={`w-2 h-2 rounded-full ${config.color}`} />
               <span className={count > 0 ? 'text-foreground' : 'text-muted-foreground'}>
-                {config.label} {count}
+                {t(config.labelKey)} {count}
               </span>
             </div>
           );
@@ -132,10 +138,7 @@ export default function InternalizationWidget() {
       <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
         <p className="text-xs text-muted-foreground">
           {stats.byStatus.independent > 0 ? (
-            <>
-              <span className="text-emerald-500 font-semibold">{stats.byStatus.independent}개</span>
-              의 인사이트를 스스로 판단할 수 있게 됐어요
-            </>
+            <>{t('internalization.independentMsg', { count: stats.byStatus.independent })}</>
           ) : (
             growthMessage
           )}

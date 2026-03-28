@@ -2,22 +2,26 @@
 
 import Link from 'next/link';
 import { Palette, Sparkles, User, ChevronRight, Scissors, Heart, SmilePlus } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 
-// 상대 시간 포맷팅 헬퍼 함수
-function formatRelativeTime(date: Date, locale: string): string {
+// 상대 시간 포맷팅 헬퍼 함수 (t 함수를 인자로 받음)
+function formatRelativeTime(
+  date: Date,
+  locale: string,
+  t: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return '방금 전';
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays < 7) return `${diffDays}일 전`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`;
+  if (diffMins < 1) return t('time.justNow');
+  if (diffMins < 60) return t('time.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('time.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('time.daysAgo', { count: diffDays });
+  if (diffDays < 30) return t('time.weeksAgo', { count: Math.floor(diffDays / 7) });
   return date.toLocaleDateString(getDateLocale(locale));
 }
 
@@ -38,10 +42,10 @@ interface AnalysisCardProps {
   analysis: AnalysisSummary;
 }
 
-// 분석 타입별 설정 (CSS 변수 기반 모듈 색상)
+// 분석 타입별 설정 (title은 컴포넌트 내 t()에서 주입)
 const ANALYSIS_CONFIG = {
   'personal-color': {
-    title: '퍼스널 컬러',
+    titleKey: 'analysisTypes.personalColor',
     icon: Palette,
     baseHref: '/analysis/personal-color',
     bgColor: 'bg-module-personal-color-light',
@@ -49,7 +53,7 @@ const ANALYSIS_CONFIG = {
     iconColor: 'text-module-personal-color',
   },
   skin: {
-    title: '피부 분석',
+    titleKey: 'analysisTypes.skinAnalysis',
     icon: Sparkles,
     baseHref: '/analysis/skin',
     bgColor: 'bg-module-skin-light',
@@ -57,7 +61,7 @@ const ANALYSIS_CONFIG = {
     iconColor: 'text-module-skin',
   },
   body: {
-    title: '체형 분석',
+    titleKey: 'analysisTypes.bodyAnalysis',
     icon: User,
     baseHref: '/analysis/body',
     bgColor: 'bg-module-body-light',
@@ -65,7 +69,7 @@ const ANALYSIS_CONFIG = {
     iconColor: 'text-module-body',
   },
   hair: {
-    title: '헤어 분석',
+    titleKey: 'analysisTypes.hairAnalysis',
     icon: Scissors,
     baseHref: '/analysis/hair',
     bgColor: 'bg-amber-50',
@@ -73,7 +77,7 @@ const ANALYSIS_CONFIG = {
     iconColor: 'text-amber-600',
   },
   makeup: {
-    title: '메이크업 분석',
+    titleKey: 'analysisTypes.makeupAnalysis',
     icon: Heart,
     baseHref: '/analysis/makeup',
     bgColor: 'bg-rose-50',
@@ -81,7 +85,7 @@ const ANALYSIS_CONFIG = {
     iconColor: 'text-rose-500',
   },
   'oral-health': {
-    title: '구강건강',
+    titleKey: 'analysisTypes.oralHealth',
     icon: SmilePlus,
     baseHref: '/analysis/oral-health',
     bgColor: 'bg-cyan-50',
@@ -96,6 +100,7 @@ function getAnalysisHref(type: AnalysisSummary['type'], id: string): string {
 }
 
 export default function AnalysisCard({ analysis }: AnalysisCardProps) {
+  const t = useTranslations('dashboard');
   const locale = useLocale();
   const config = ANALYSIS_CONFIG[analysis.type];
   const Icon = config.icon;
@@ -103,7 +108,7 @@ export default function AnalysisCard({ analysis }: AnalysisCardProps) {
   const href = getAnalysisHref(analysis.type, analysis.id);
 
   // 시간 포맷팅 (한국어 상대 시간)
-  const timeAgo = formatRelativeTime(analysis.createdAt, locale);
+  const timeAgo = formatRelativeTime(analysis.createdAt, locale, t);
 
   return (
     <Link href={href}>
@@ -121,7 +126,7 @@ export default function AnalysisCard({ analysis }: AnalysisCardProps) {
             <div className={`p-2 rounded-lg bg-card/70 ${config.iconColor}`}>
               <Icon className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-foreground">{config.title}</h3>
+            <h3 className="font-semibold text-foreground">{t(config.titleKey)}</h3>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>

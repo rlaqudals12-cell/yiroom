@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Award, ChevronRight, Trophy } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -27,6 +28,7 @@ interface GamificationWidgetProps {
 }
 
 export default function GamificationWidget({ userId }: GamificationWidgetProps) {
+  const t = useTranslations('dashboard');
   const supabase = useClerkSupabaseClient();
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
   const [recentBadges, setRecentBadges] = useState<UserBadge[]>([]);
@@ -100,15 +102,14 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-foreground">나의 성장</h3>
-                <InfoTooltip
-                  content="운동과 식단 기록으로 XP를 모아 레벨업하세요! 레벨이 오르면 새로운 배지와 혜택을 얻을 수 있어요."
-                  variant="help"
-                  size="sm"
-                />
+                <h3 className="font-bold text-foreground">{t('gamification.myGrowth')}</h3>
+                <InfoTooltip content={t('gamification.levelTooltip')} variant="help" size="sm" />
               </div>
               <p className="text-sm text-primary">
-                레벨 {levelInfo?.level || 1} · {levelInfo?.tierName || '비기너'}
+                {t('gamification.levelTier', {
+                  level: levelInfo?.level || 1,
+                  tier: levelInfo?.tierName || t('gamification.beginner'),
+                })}
               </p>
             </div>
           </div>
@@ -116,12 +117,8 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
           {/* 배지 통계 */}
           <div className="text-right">
             <div className="flex items-center justify-end gap-1">
-              <p className="text-sm text-muted-foreground">획득 배지</p>
-              <InfoTooltip
-                content="다양한 활동을 통해 배지를 모아보세요! 연속 기록, 목표 달성 등 특별한 업적을 달성하면 배지를 획득할 수 있어요."
-                variant="help"
-                size="sm"
-              />
+              <p className="text-sm text-muted-foreground">{t('gamification.earnedBadges')}</p>
+              <InfoTooltip content={t('gamification.badgeTooltip')} variant="help" size="sm" />
             </div>
             <p className="text-xl font-bold text-primary">
               {earnedCount}
@@ -137,7 +134,7 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
           <LevelProgress levelInfo={levelInfo} size="md" showDetails={true} />
         ) : (
           <div className="text-center py-2 text-sm text-muted-foreground">
-            레벨 정보를 불러오는 중...
+            {t('gamification.loadingLevel')}
           </div>
         )}
       </div>
@@ -147,13 +144,15 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">최근 획득 배지</span>
+            <span className="text-sm font-medium text-foreground">
+              {t('gamification.recentBadges')}
+            </span>
           </div>
           <Link
             href="/profile/badges"
             className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
           >
-            전체 보기
+            {t('common.viewAll')}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -170,17 +169,13 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
                   size="sm"
                   showDetails={false}
                 />
-              ) : null,
+              ) : null
             )}
           </div>
         ) : (
           <div className="text-center py-4 bg-secondary/50 rounded-xl">
-            <p className="text-sm text-muted-foreground">
-              아직 획득한 배지가 없어요
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              운동이나 식단을 기록하면 배지를 획득할 수 있어요!
-            </p>
+            <p className="text-sm text-muted-foreground">{t('gamification.noBadgesYet')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('gamification.noBadgesHint')}</p>
           </div>
         )}
       </div>
@@ -189,7 +184,8 @@ export default function GamificationWidget({ userId }: GamificationWidgetProps) 
       {levelInfo && levelInfo.level < 5 && (
         <div className="mx-4 mb-4 bg-primary/10 rounded-lg p-3">
           <p className="text-xs text-primary">
-            <span className="font-medium">팁:</span> 운동 기록 시 5 XP, 식단 기록 시 2 XP를 획득해요!
+            <span className="font-medium">{t('gamification.tipLabel')}</span>{' '}
+            {t('gamification.tipXp')}
           </p>
         </div>
       )}
