@@ -28,6 +28,7 @@ import {
   generateSkinIdentityLabelFromMetrics,
 } from '@/lib/analysis/skin-v2';
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
+import { detectFaceLandmarks } from '@/components/analysis/overlay';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
@@ -51,6 +52,15 @@ import { ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+
+// Layer 0.5: 피부 히트맵 오버레이 (ADR-097)
+const FaceHeatmapOverlay = dynamic(
+  () =>
+    import('@/components/analysis/overlay/FaceHeatmapOverlay').then((mod) => ({
+      default: mod.FaceHeatmapOverlay,
+    })),
+  { loading: () => null, ssr: false }
+);
 
 // FAB 메뉴 내 컴포넌트 - 조건부 렌더링이므로 dynamic import
 const SkinConsultantCTA = dynamic(
@@ -365,6 +375,8 @@ export default function SkinAnalysisResultPage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
+  // Layer 0.5: face-api.js 랜드마크 (히트맵 오버레이용)
+  const [faceLandmarks, setFaceLandmarks] = useState<Array<{ x: number; y: number }> | null>(null);
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   // PC-1 시즌 정보 (시너지 인사이트용)
@@ -711,6 +723,13 @@ export default function SkinAnalysisResultPage() {
         setPcSeason(pcData.season);
       }
 
+      // Layer 0.5: 히트맵 오버레이용 얼굴 랜드마크 감지
+      if (imageUrl) {
+        detectFaceLandmarks(imageUrl)
+          .then(setFaceLandmarks)
+          .catch(() => setFaceLandmarks(null));
+      }
+
       // S-1 + PC-1 시너지 인사이트 생성 (피부 메트릭 기반)
       const synergyMetrics = [
         { id: 'hydration', value: dbData.hydration },
@@ -915,6 +934,38 @@ export default function SkinAnalysisResultPage() {
                 </p>
               )}
             </div>
+          )}
+
+          {/* Layer 0.5: 피부 12존 히트맵 오버레이 (ADR-097) */}
+          {result && imageUrl && (
+            <FaceHeatmapOverlay
+              imageUrl={imageUrl}
+              landmarks={faceLandmarks}
+              zoneScores={
+                // 기존 metrics 배열을 12존 스코어로 변환 (간이 매핑)
+                Object.fromEntries(
+                  (result.metrics ?? []).slice(0, 12).map((m, i) => {
+                    const zoneIds = [
+                      'forehead_center',
+                      'forehead_left',
+                      'forehead_right',
+                      'eye_left',
+                      'eye_right',
+                      'nose_bridge',
+                      'nose_tip',
+                      'cheek_left',
+                      'cheek_right',
+                      'chin_center',
+                      'chin_left',
+                      'chin_right',
+                    ];
+                    return [zoneIds[i] ?? `zone_${i}`, m.value ?? 50];
+                  })
+                )
+              }
+              zoneMetrics={{}}
+              className="mb-6"
+            />
           )}
 
           {/* 탭 기반 결과 (스와이프 지원) */}
