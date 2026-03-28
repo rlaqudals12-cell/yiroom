@@ -2,14 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  Flame,
-  Droplets,
-  Dumbbell,
-  ChevronRight,
-  Loader2,
-  BarChart3,
-} from 'lucide-react';
+import { Flame, Droplets, Dumbbell, ChevronRight, Loader2, BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { WeeklyReport } from '@/types/report';
 
@@ -85,13 +78,8 @@ export default function WeeklyHighlightWidget() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground mb-3">
-              이번 주 기록이 아직 없습니다
-            </p>
-            <Link
-              href="/nutrition"
-              className="text-sm text-primary hover:underline"
-            >
+            <p className="text-sm text-muted-foreground mb-3">이번 주 기록이 아직 없습니다</p>
+            <Link href="/nutrition" className="text-sm text-primary hover:underline">
               식단 기록 시작하기 &rarr;
             </Link>
           </div>
@@ -148,9 +136,7 @@ export default function WeeklyHighlightWidget() {
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-module-workout-light mb-2">
               <Dumbbell className="h-5 w-5 text-module-workout" />
             </div>
-            <p className="text-lg font-bold text-foreground">
-              {workout.summary.totalSessions}회
-            </p>
+            <p className="text-lg font-bold text-foreground">{workout.summary.totalSessions}회</p>
             <p className="text-xs text-muted-foreground">운동 횟수</p>
           </div>
         </div>
@@ -161,13 +147,13 @@ export default function WeeklyHighlightWidget() {
             <div className="flex items-center justify-center gap-4 text-sm">
               {streak.nutrition.current > 0 && (
                 <span className="flex items-center gap-1 text-module-nutrition">
-                  <span>🔥</span>
+                  <Flame className="h-4 w-4" />
                   <span>식단 {streak.nutrition.current}일 연속</span>
                 </span>
               )}
               {streak.workout.current > 0 && (
                 <span className="flex items-center gap-1 text-module-workout">
-                  <span>💪</span>
+                  <Dumbbell className="h-4 w-4" />
                   <span>운동 {streak.workout.current}일 연속</span>
                 </span>
               )}

@@ -20,12 +20,12 @@ export const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100] as const;
  * 마일스톤별 배지 정의
  */
 export const STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> = {
-  3: { id: '3day', name: '3일 연속', emoji: '🌱' },
-  7: { id: '7day', name: '7일 연속', emoji: '🔥' },
-  14: { id: '14day', name: '2주 연속', emoji: '💪' },
-  30: { id: '30day', name: '30일 연속', emoji: '🏆' },
-  60: { id: '60day', name: '60일 연속', emoji: '⭐' },
-  100: { id: '100day', name: '100일 연속', emoji: '👑' },
+  3: { id: '3day', name: '3일 연속', emoji: '' },
+  7: { id: '7day', name: '7일 연속', emoji: '' },
+  14: { id: '14day', name: '2주 연속', emoji: '' },
+  30: { id: '30day', name: '30일 연속', emoji: '' },
+  60: { id: '60day', name: '60일 연속', emoji: '' },
+  100: { id: '100day', name: '100일 연속', emoji: '' },
 };
 
 /**
@@ -111,7 +111,7 @@ export function getDaysToNextMilestone(currentStreak: number): number | null {
  * 달성한 마일스톤 목록 조회
  */
 export function getAchievedMilestones(currentStreak: number): number[] {
-  return STREAK_MILESTONES.filter(m => currentStreak >= m);
+  return STREAK_MILESTONES.filter((m) => currentStreak >= m);
 }
 
 /**
@@ -124,7 +124,7 @@ export function getNewlyAchievedMilestones(
   const previousMilestones = getAchievedMilestones(previousStreak);
   const currentMilestones = getAchievedMilestones(currentStreak);
 
-  return currentMilestones.filter(m => !previousMilestones.includes(m));
+  return currentMilestones.filter((m) => !previousMilestones.includes(m));
 }
 
 // =====================================================
@@ -135,22 +135,17 @@ export function getNewlyAchievedMilestones(
  * 마일스톤에 해당하는 배지 ID 목록 생성
  */
 export function getBadgesForMilestones(milestones: number[]): string[] {
-  return milestones
-    .filter(m => STREAK_BADGES[m])
-    .map(m => STREAK_BADGES[m].id);
+  return milestones.filter((m) => STREAK_BADGES[m]).map((m) => STREAK_BADGES[m].id);
 }
 
 /**
  * 새로 획득해야 할 배지 확인
  */
-export function getNewBadges(
-  currentStreak: number,
-  existingBadges: string[]
-): string[] {
+export function getNewBadges(currentStreak: number, existingBadges: string[]): string[] {
   const achievedMilestones = getAchievedMilestones(currentStreak);
   const allBadges = getBadgesForMilestones(achievedMilestones);
 
-  return allBadges.filter(badge => !existingBadges.includes(badge));
+  return allBadges.filter((badge) => !existingBadges.includes(badge));
 }
 
 // =====================================================
@@ -171,22 +166,21 @@ export function getStreakMessage(streak: WorkoutStreak | null): string {
 
   // 마일스톤 달성 직전
   if (daysToNext === 1 && nextMilestone) {
-    return `내일이면 ${nextMilestone}일 연속! ${STREAK_BADGES[nextMilestone]?.emoji || '🎉'}`;
+    return `내일이면 ${nextMilestone}일 연속!`;
   }
 
   // 마일스톤 달성
-  if (STREAK_MILESTONES.includes(current_streak as typeof STREAK_MILESTONES[number])) {
-    const badge = STREAK_BADGES[current_streak];
-    return `${badge?.emoji || '🎉'} ${current_streak}일 연속 달성! 대단해요!`;
+  if (STREAK_MILESTONES.includes(current_streak as (typeof STREAK_MILESTONES)[number])) {
+    return `${current_streak}일 연속 달성! 대단해요!`;
   }
 
   // 일반 연속
   if (current_streak >= 7) {
-    return `🔥 ${current_streak}일 연속 운동 중! 멋져요!`;
+    return `${current_streak}일 연속 운동 중! 멋져요!`;
   }
 
   if (current_streak >= 3) {
-    return `💪 ${current_streak}일 연속! 좋은 습관이 만들어지고 있어요!`;
+    return `${current_streak}일 연속! 좋은 습관이 만들어지고 있어요!`;
   }
 
   return `${current_streak}일 연속 운동 중!`;
@@ -222,7 +216,7 @@ export function getStreakWarningMessage(streak: WorkoutStreak | null): string | 
  */
 export function getReEngagementMessage(streak: WorkoutStreak | null): string {
   if (!streak) {
-    return '첫 운동을 시작해보세요! 💪';
+    return '첫 운동을 시작해보세요!';
   }
 
   if (streak.longest_streak >= 7) {
@@ -245,7 +239,7 @@ export function getMilestoneAchievementMessage(milestone: number): string {
 
   if (!badge) return `${milestone}일 연속 달성!`;
 
-  let message = `${badge.emoji} ${badge.name} 달성!`;
+  let message = `${badge.name} 달성!`;
 
   if (reward) {
     message += ` ${reward.description}을 획득했어요!`;

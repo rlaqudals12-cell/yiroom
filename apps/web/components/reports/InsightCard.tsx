@@ -10,19 +10,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { ReportInsights } from '@/types/report';
 
 // 도메인별 아이콘/색상 매핑
-const DOMAIN_STYLES: Record<string, { emoji: string; bg: string; text: string }> = {
+const DOMAIN_STYLES: Record<string, { bg: string; text: string }> = {
   nutrition: {
-    emoji: '🥗',
     bg: 'bg-emerald-50 dark:bg-emerald-950/20',
     text: 'text-emerald-700 dark:text-emerald-300',
   },
   workout: {
-    emoji: '💪',
     bg: 'bg-blue-50 dark:bg-blue-950/20',
     text: 'text-blue-700 dark:text-blue-300',
   },
   beauty: {
-    emoji: '✨',
     bg: 'bg-pink-50 dark:bg-pink-950/20',
     text: 'text-pink-700 dark:text-pink-300',
   },
@@ -130,7 +127,6 @@ export function InsightCard({ insights }: InsightCardProps) {
                   data-testid="next-action-card"
                 >
                   <div className={`flex items-center gap-2 font-medium text-sm ${style.text}`}>
-                    <span>{style.emoji}</span>
                     {action.label}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1 ml-6">{action.description}</p>

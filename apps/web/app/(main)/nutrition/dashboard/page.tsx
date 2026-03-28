@@ -271,7 +271,7 @@ export default function NutritionDashboardPage() {
         {/* 영양소 진행률 섹션 */}
         <section className="rounded-2xl bg-card p-4 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
-            <span>📊</span> 오늘의 영양 분석
+            오늘의 영양 분석
           </h2>
 
           <div className="space-y-4">

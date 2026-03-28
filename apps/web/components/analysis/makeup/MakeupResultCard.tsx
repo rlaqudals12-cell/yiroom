@@ -27,36 +27,36 @@ const UNDERTONE_STYLES: Record<string, { bg: string; text: string; icon: string 
   warm: {
     bg: 'bg-amber-50 dark:bg-amber-950/30',
     text: 'text-amber-800 dark:text-amber-300',
-    icon: '🌅',
+    icon: '',
   },
-  cool: { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-800 dark:text-sky-300', icon: '❄️' },
+  cool: { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-800 dark:text-sky-300', icon: '' },
   neutral: {
     bg: 'bg-gray-50 dark:bg-gray-900/40',
     text: 'text-gray-800 dark:text-gray-300',
-    icon: '⚖️',
+    icon: '',
   },
 };
 
 // 메이크업 스타일 정보
-const STYLE_INFO: Record<string, { emoji: string; name: string }> = {
-  natural: { emoji: '🌿', name: '내추럴' },
-  glam: { emoji: '✨', name: '글램' },
-  cute: { emoji: '🎀', name: '큐트' },
-  chic: { emoji: '🖤', name: '시크' },
-  vintage: { emoji: '🌹', name: '빈티지' },
-  edgy: { emoji: '⚡', name: '엣지' },
+const STYLE_INFO: Record<string, { name: string }> = {
+  natural: { name: '내추럴' },
+  glam: { name: '글램' },
+  cute: { name: '큐트' },
+  chic: { name: '시크' },
+  vintage: { name: '빈티지' },
+  edgy: { name: '엣지' },
 };
 
 // 피부 고민 정보
-const CONCERN_INFO: Record<string, { emoji: string; name: string }> = {
-  'dark-circles': { emoji: '🌑', name: '다크서클' },
-  redness: { emoji: '🔴', name: '홍조' },
-  'uneven-tone': { emoji: '🎨', name: '피부톤 불균일' },
-  'large-pores': { emoji: '⭕', name: '넓은 모공' },
-  'oily-tzone': { emoji: '💧', name: 'T존 번들거림' },
-  'dry-patches': { emoji: '🏜️', name: '건조 부위' },
-  'acne-scars': { emoji: '🔘', name: '트러블 흔적' },
-  'fine-lines': { emoji: '〰️', name: '잔주름' },
+const CONCERN_INFO: Record<string, { name: string }> = {
+  'dark-circles': { name: '다크서클' },
+  redness: { name: '홍조' },
+  'uneven-tone': { name: '피부톤 불균일' },
+  'large-pores': { name: '넓은 모공' },
+  'oily-tzone': { name: 'T존 번들거림' },
+  'dry-patches': { name: '건조 부위' },
+  'acne-scars': { name: '트러블 흔적' },
+  'fine-lines': { name: '잔주름' },
 };
 
 export function MakeupResultCard({ result, showDetails = true }: MakeupResultCardProps) {
@@ -90,7 +90,7 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
       <CardHeader className={`${undertoneStyle.bg} rounded-t-lg`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{undertoneStyle.icon}</span>
+            {undertoneStyle.icon && <span className="text-3xl">{undertoneStyle.icon}</span>}
             <div>
               <CardTitle className={`text-2xl ${undertoneStyle.text}`}>
                 {result.undertoneLabel}
@@ -107,13 +107,13 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
         {/* 특징 뱃지 */}
         <div className="flex flex-wrap gap-2 mt-4" data-testid="makeup-feature-badges">
           <Badge variant="secondary" aria-label={`눈 모양: ${result.eyeShapeLabel}`}>
-            👁️ {result.eyeShapeLabel}
+            {result.eyeShapeLabel}
           </Badge>
           <Badge variant="secondary" aria-label={`입술 모양: ${result.lipShapeLabel}`}>
-            💋 {result.lipShapeLabel}
+            {result.lipShapeLabel}
           </Badge>
           <Badge variant="secondary" aria-label={`얼굴형: ${result.faceShapeLabel}`}>
-            🔷 {result.faceShapeLabel}
+            {result.faceShapeLabel}
           </Badge>
         </div>
       </CardHeader>
@@ -146,13 +146,12 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
           <TabsContent value="styles" className="mt-4">
             <div className="grid grid-cols-3 gap-3">
               {result.recommendedStyles.map((styleId, idx) => {
-                const style = STYLE_INFO[styleId] || { emoji: '💄', name: styleId };
+                const style = STYLE_INFO[styleId] || { name: styleId };
                 return (
                   <div
                     key={idx}
                     className="p-4 border rounded-lg text-center hover:border-primary transition-colors"
                   >
-                    <span className="text-2xl">{style.emoji}</span>
                     <p className="font-medium mt-2">{style.name}</p>
                     <Badge variant="secondary" className="mt-2 text-xs">
                       #{idx + 1} 추천
@@ -168,10 +167,10 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
                 <h4 className="text-sm font-medium mb-3">집중 케어 영역</h4>
                 <div className="flex flex-wrap gap-2">
                   {result.concerns.map((concernId, idx) => {
-                    const concern = CONCERN_INFO[concernId] || { emoji: '❓', name: concernId };
+                    const concern = CONCERN_INFO[concernId] || { name: concernId };
                     return (
                       <Badge key={idx} variant="outline">
-                        {concern.emoji} {concern.name}
+                        {concern.name}
                       </Badge>
                     );
                   })}

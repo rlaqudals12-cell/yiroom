@@ -84,7 +84,7 @@ export const YearlyReviewCard = forwardRef<HTMLDivElement, YearlyReviewCardProps
             <ul className="space-y-1.5">
               {highlights.map((highlight, index) => (
                 <li key={index} className="text-sm text-white/90 flex items-start gap-2">
-                  <span className="text-yellow-300 flex-shrink-0">✨</span>
+                  <span className="text-yellow-300 flex-shrink-0">-</span>
                   <span>{highlight}</span>
                 </li>
               ))}
@@ -95,7 +95,9 @@ export const YearlyReviewCard = forwardRef<HTMLDivElement, YearlyReviewCardProps
         {/* 레벨 & 분석 */}
         <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <div className="text-center flex-1">
-            <p className="text-3xl font-bold text-yellow-300">Lv.{stats.achievements.currentLevel}</p>
+            <p className="text-3xl font-bold text-yellow-300">
+              Lv.{stats.achievements.currentLevel}
+            </p>
             <p className="text-xs text-white/70">현재 레벨</p>
           </div>
           <div className="w-px h-10 bg-white/20" />

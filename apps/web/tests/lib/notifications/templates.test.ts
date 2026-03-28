@@ -83,10 +83,10 @@ describe('interpolateTemplate', () => {
   });
 
   it('여러 변수 치환', () => {
-    const result = interpolateTemplate(
-      '{{name}}님이 {{action}}을 했습니다.',
-      { name: '영희', action: '로그인' }
-    );
+    const result = interpolateTemplate('{{name}}님이 {{action}}을 했습니다.', {
+      name: '영희',
+      action: '로그인',
+    });
     expect(result).toBe('영희님이 로그인을 했습니다.');
   });
 
@@ -112,7 +112,7 @@ describe('createNotification', () => {
 
     expect(notification.type).toBe('workout_reminder');
     expect(notification.category).toBe('workout');
-    expect(notification.title).toBe('💪 운동할 시간이에요!');
+    expect(notification.title).toBe('운동할 시간이에요!');
     expect(notification.body).toBe('오늘의 운동 루틴을 확인해보세요.');
     expect(notification.icon).toBe('/icons/workout.png');
     expect(notification.action?.url).toBe('/workout');
@@ -121,7 +121,7 @@ describe('createNotification', () => {
   it('변수가 있는 알림 생성', () => {
     const notification = createNotification('workout_streak', { streak: 7 });
 
-    expect(notification.title).toBe('🔥 7일 연속 달성!');
+    expect(notification.title).toBe('7일 연속 달성!');
     expect(notification.body).toBe('대단해요! 7일 연속으로 운동을 기록했어요.');
   });
 
@@ -137,7 +137,7 @@ describe('createNotification', () => {
   it('친구 요청 알림', () => {
     const notification = createNotification('friend_request', { name: '김철수' });
 
-    expect(notification.title).toBe('👋 새 친구 요청!');
+    expect(notification.title).toBe('새 친구 요청!');
     expect(notification.body).toBe('김철수님이 친구 요청을 보냈어요.');
     expect(notification.action?.url).toBe('/friends/requests');
   });
@@ -145,7 +145,7 @@ describe('createNotification', () => {
   it('레벨업 알림', () => {
     const notification = createNotification('level_up', { level: 15 });
 
-    expect(notification.title).toBe('⬆️ 레벨 업!');
+    expect(notification.title).toBe('레벨 업!');
     expect(notification.body).toBe('축하해요! 레벨 15이 되었습니다!');
   });
 
@@ -245,15 +245,15 @@ describe('CATEGORY_ICONS', () => {
     ];
 
     categories.forEach((category) => {
-      expect(CATEGORY_ICONS[category]).toBeTruthy();
+      expect(CATEGORY_ICONS[category]).toBeDefined();
     });
   });
 
-  it('이모지 아이콘', () => {
-    expect(CATEGORY_ICONS.workout).toBe('💪');
-    expect(CATEGORY_ICONS.nutrition).toBe('🍽️');
-    expect(CATEGORY_ICONS.social).toBe('👥');
-    expect(CATEGORY_ICONS.achievement).toBe('🏆');
-    expect(CATEGORY_ICONS.system).toBe('⚙️');
+  it('아이콘 값이 빈 문자열이다 (이모지 제거됨)', () => {
+    expect(CATEGORY_ICONS.workout).toBe('');
+    expect(CATEGORY_ICONS.nutrition).toBe('');
+    expect(CATEGORY_ICONS.social).toBe('');
+    expect(CATEGORY_ICONS.achievement).toBe('');
+    expect(CATEGORY_ICONS.system).toBe('');
   });
 });

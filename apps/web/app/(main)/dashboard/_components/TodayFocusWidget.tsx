@@ -233,9 +233,7 @@ export default function TodayFocusWidget({ userId }: TodayFocusWidgetProps) {
                   {/* 아이콘 글로우 */}
                   <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-ping" />
                 </div>
-                <span className="text-sm font-medium text-amber-700">
-                  내일이면 마일스톤 달성! 🎯
-                </span>
+                <span className="text-sm font-medium text-amber-700">내일이면 마일스톤 달성!</span>
               </div>
             </div>
           )}

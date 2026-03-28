@@ -25,14 +25,14 @@ interface ChatHistoryPanelProps {
 
 // 카테고리별 아이콘
 const CATEGORY_ICONS: Record<string, string> = {
-  general: '💡',
-  workout: '💪',
-  nutrition: '🥗',
-  skin: '✨',
-  hair: '💇',
-  makeup: '💄',
-  fashion: '👗',
-  'personal-color': '🎨',
+  general: '',
+  workout: '',
+  nutrition: '',
+  skin: '',
+  hair: '',
+  makeup: '',
+  fashion: '',
+  'personal-color': '',
 };
 
 // 상대적 시간 표시
@@ -167,13 +167,15 @@ export function ChatHistoryPanel({
                       data-testid={`session-item-${session.id}`}
                     >
                       {/* 카테고리 아이콘 */}
-                      <span
-                        className="text-lg flex-shrink-0 mt-0.5"
-                        role="img"
-                        aria-label={session.category}
-                      >
-                        {CATEGORY_ICONS[session.category] || '💬'}
-                      </span>
+                      {CATEGORY_ICONS[session.category] && (
+                        <span
+                          className="text-lg flex-shrink-0 mt-0.5"
+                          role="img"
+                          aria-label={session.category}
+                        >
+                          {CATEGORY_ICONS[session.category]}
+                        </span>
+                      )}
 
                       {/* 세션 정보 */}
                       <div className="flex-1 min-w-0">

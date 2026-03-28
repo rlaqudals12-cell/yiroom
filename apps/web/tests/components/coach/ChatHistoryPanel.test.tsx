@@ -228,10 +228,9 @@ describe('ChatHistoryPanel', () => {
     await user.click(screen.getByTestId('chat-history-trigger'));
 
     await waitFor(() => {
-      // 피부 카테고리 아이콘
-      expect(screen.getByRole('img', { name: 'skin' })).toBeInTheDocument();
-      // 운동 카테고리 아이콘
-      expect(screen.getByRole('img', { name: 'workout' })).toBeInTheDocument();
+      // 이모지 제거됨 - 카테고리 아이콘이 빈 문자열이므로 렌더링되지 않음
+      expect(screen.queryByRole('img', { name: 'skin' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('img', { name: 'workout' })).not.toBeInTheDocument();
     });
   });
 

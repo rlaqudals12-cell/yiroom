@@ -453,7 +453,7 @@ export function calculateCaloriesPerSetFromCPM(
 
 /**
  * 운동 전체 칼로리 계산 (세트 x 횟수 기반)
- * UI 표시용: "30초 x 3세트 | 🔥 45kcal"
+ * UI 표시용: "30초 x 3세트 | 45kcal"
  *
  * @param weightKg - 체중 (kg)
  * @param met - MET 값

@@ -17,19 +17,19 @@ const ADJUSTMENT_CONFIG: Record<
   }
 > = {
   muted: {
-    icon: '🎨',
+    icon: '',
     label: '뮤트 컬러 추천',
     bgClass: 'bg-slate-100 dark:bg-slate-800',
     textClass: 'text-slate-700 dark:text-slate-300',
   },
   bright: {
-    icon: '✨',
+    icon: '',
     label: '브라이트 컬러 추천',
     bgClass: 'bg-yellow-50 dark:bg-yellow-900/30',
     textClass: 'text-yellow-800 dark:text-yellow-200',
   },
   neutral: {
-    icon: '💫',
+    icon: '',
     label: '다양한 컬러 가능',
     bgClass: 'bg-purple-50 dark:bg-purple-900/30',
     textClass: 'text-purple-800 dark:text-purple-200',
@@ -54,7 +54,7 @@ export default function SynergyInsightCard({
       {/* 헤더 */}
       <CardHeader className={cn('py-3', config.bgClass)}>
         <CardTitle className={cn('text-sm font-medium flex items-center gap-2', config.textClass)}>
-          <span className="text-lg">{config.icon}</span>
+          {config.icon && <span className="text-lg">{config.icon}</span>}
           {config.label}
         </CardTitle>
       </CardHeader>
@@ -170,7 +170,7 @@ export function SynergyInline({
       )}
       data-testid="synergy-inline"
     >
-      <span>{config.icon}</span>
+      {config.icon && <span>{config.icon}</span>}
       <span className="font-medium">{insight.message}</span>
     </div>
   );

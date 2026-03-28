@@ -18,20 +18,19 @@ describe('TrafficLightIndicator', () => {
   it('초록색 신호등을 렌더링한다', () => {
     render(<TrafficLightIndicator color="green" />);
 
-    expect(screen.getByText('🟢')).toBeInTheDocument();
     expect(screen.getByTestId('traffic-light-indicator')).toBeInTheDocument();
   });
 
   it('노란색 신호등을 렌더링한다', () => {
     render(<TrafficLightIndicator color="yellow" />);
 
-    expect(screen.getByText('🟡')).toBeInTheDocument();
+    expect(screen.getByTestId('traffic-light-indicator')).toBeInTheDocument();
   });
 
   it('빨간색 신호등을 렌더링한다', () => {
     render(<TrafficLightIndicator color="red" />);
 
-    expect(screen.getByText('🔴')).toBeInTheDocument();
+    expect(screen.getByTestId('traffic-light-indicator')).toBeInTheDocument();
   });
 
   it('showLabel=true일 때 라벨을 표시한다', () => {
@@ -74,12 +73,13 @@ describe('TrafficLightSummaryInline', () => {
     expect(screen.getByText(/23%/)).toBeInTheDocument();
   });
 
-  it('모든 이모지를 표시한다', () => {
+  it('각 색상 비율을 표시한다', () => {
     render(<TrafficLightSummaryInline ratio={mockRatio} />);
 
-    expect(screen.getByText(/🟢/)).toBeInTheDocument();
-    expect(screen.getByText(/🟡/)).toBeInTheDocument();
-    expect(screen.getByText(/🔴/)).toBeInTheDocument();
+    // 이모지 제거됨 - 비율 퍼센트 값으로 검증
+    expect(screen.getByText(/32%/)).toBeInTheDocument();
+    expect(screen.getByText(/45%/)).toBeInTheDocument();
+    expect(screen.getByText(/23%/)).toBeInTheDocument();
   });
 
   it('size=sm일 때 작은 텍스트를 사용한다', () => {
@@ -98,12 +98,7 @@ describe('TrafficLightCard', () => {
   });
 
   it('커스텀 타이틀을 표시한다', () => {
-    render(
-      <TrafficLightCard
-        ratio={{ green: 35, yellow: 40, red: 25 }}
-        title="이번 주 신호등"
-      />
-    );
+    render(<TrafficLightCard ratio={{ green: 35, yellow: 40, red: 25 }} title="이번 주 신호등" />);
 
     expect(screen.getByText(/이번 주 신호등/)).toBeInTheDocument();
   });
@@ -120,7 +115,7 @@ describe('TrafficLightCard', () => {
     // green >= 30, yellow <= 45, red <= 25
     render(<TrafficLightCard ratio={{ green: 35, yellow: 40, red: 25 }} />);
 
-    expect(screen.getByText('✅ 균형 잡힌 식단이에요!')).toBeInTheDocument();
+    expect(screen.getByText('균형 잡힌 식단이에요!')).toBeInTheDocument();
   });
 
   it('균형이 맞지 않을 때 개선 메시지를 표시한다', () => {
@@ -131,12 +126,7 @@ describe('TrafficLightCard', () => {
   });
 
   it('showTargets=false일 때 목표를 숨긴다', () => {
-    render(
-      <TrafficLightCard
-        ratio={{ green: 35, yellow: 40, red: 25 }}
-        showTargets={false}
-      />
-    );
+    render(<TrafficLightCard ratio={{ green: 35, yellow: 40, red: 25 }} showTargets={false} />);
 
     expect(screen.queryByText(/목표/)).not.toBeInTheDocument();
   });
@@ -144,6 +134,7 @@ describe('TrafficLightCard', () => {
   it('목표 달성 시 체크 표시를 보여준다', () => {
     render(<TrafficLightCard ratio={{ green: 35, yellow: 40, red: 25 }} />);
 
+    // 3개 모두 목표 달성 - 체크 표시가 포함된 요소 확인
     // 3개 모두 목표 달성 - 체크 표시가 포함된 요소 확인
     const checkmarks = screen.getAllByText(/✓/);
     expect(checkmarks.length).toBe(3);
@@ -237,19 +228,19 @@ describe('TRAFFIC_LIGHT_CONFIG', () => {
   });
 
   it('초록색 설정이 올바르다', () => {
-    expect(TRAFFIC_LIGHT_CONFIG.green.emoji).toBe('🟢');
+    expect(TRAFFIC_LIGHT_CONFIG.green.emoji).toBe('');
     expect(TRAFFIC_LIGHT_CONFIG.green.label).toBe('초록');
     expect(TRAFFIC_LIGHT_CONFIG.green.description).toBe('저칼로리');
   });
 
   it('노란색 설정이 올바르다', () => {
-    expect(TRAFFIC_LIGHT_CONFIG.yellow.emoji).toBe('🟡');
+    expect(TRAFFIC_LIGHT_CONFIG.yellow.emoji).toBe('');
     expect(TRAFFIC_LIGHT_CONFIG.yellow.label).toBe('노랑');
     expect(TRAFFIC_LIGHT_CONFIG.yellow.description).toBe('적당');
   });
 
   it('빨간색 설정이 올바르다', () => {
-    expect(TRAFFIC_LIGHT_CONFIG.red.emoji).toBe('🔴');
+    expect(TRAFFIC_LIGHT_CONFIG.red.emoji).toBe('');
     expect(TRAFFIC_LIGHT_CONFIG.red.label).toBe('빨강');
     expect(TRAFFIC_LIGHT_CONFIG.red.description).toBe('고칼로리');
   });

@@ -106,7 +106,7 @@ export default function StyleGalleryPage() {
         <div className="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-primary">{userPersonalColor}</span>에 어울리는 코디에
-            ✨ 표시됩니다
+            표시됩니다
           </p>
         </div>
       )}

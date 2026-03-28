@@ -20,7 +20,7 @@ export const MILESTONES: Milestone[] = [
     type: 'workout',
     title: '운동 10회 달성!',
     description: '꾸준히 하고 계시네요',
-    icon: '💪',
+    icon: '',
     threshold: 10,
   },
   {
@@ -28,7 +28,7 @@ export const MILESTONES: Milestone[] = [
     type: 'workout',
     title: '운동 25회 달성!',
     description: '훌륭해요!',
-    icon: '🔥',
+    icon: '',
     threshold: 25,
   },
   {
@@ -36,7 +36,7 @@ export const MILESTONES: Milestone[] = [
     type: 'workout',
     title: '운동 50회 달성!',
     description: '정말 대단해요!',
-    icon: '🏆',
+    icon: '',
     threshold: 50,
   },
   {
@@ -44,7 +44,7 @@ export const MILESTONES: Milestone[] = [
     type: 'workout',
     title: '운동 100회 달성!',
     description: '운동 마스터!',
-    icon: '👑',
+    icon: '',
     threshold: 100,
   },
 
@@ -54,7 +54,7 @@ export const MILESTONES: Milestone[] = [
     type: 'nutrition',
     title: '식단 10회 기록!',
     description: '기록 습관이 생겼어요',
-    icon: '🥗',
+    icon: '',
     threshold: 10,
   },
   {
@@ -62,7 +62,7 @@ export const MILESTONES: Milestone[] = [
     type: 'nutrition',
     title: '식단 25회 기록!',
     description: '꾸준히 관리 중!',
-    icon: '📝',
+    icon: '',
     threshold: 25,
   },
   {
@@ -70,7 +70,7 @@ export const MILESTONES: Milestone[] = [
     type: 'nutrition',
     title: '식단 50회 기록!',
     description: '영양 관리 프로!',
-    icon: '⭐',
+    icon: '',
     threshold: 50,
   },
   {
@@ -78,7 +78,7 @@ export const MILESTONES: Milestone[] = [
     type: 'nutrition',
     title: '식단 100회 기록!',
     description: '건강 전문가!',
-    icon: '🌟',
+    icon: '',
     threshold: 100,
   },
 
@@ -88,7 +88,7 @@ export const MILESTONES: Milestone[] = [
     type: 'closet',
     title: '옷 10벌 등록!',
     description: '멋진 옷장이 만들어지고 있어요',
-    icon: '👔',
+    icon: '',
     threshold: 10,
   },
   {
@@ -96,7 +96,7 @@ export const MILESTONES: Milestone[] = [
     type: 'closet',
     title: '옷 25벌 등록!',
     description: '스타일리스트 수준!',
-    icon: '👗',
+    icon: '',
     threshold: 25,
   },
   {
@@ -104,7 +104,7 @@ export const MILESTONES: Milestone[] = [
     type: 'closet',
     title: '옷 50벌 등록!',
     description: '패셔니스타!',
-    icon: '✨',
+    icon: '',
     threshold: 50,
   },
 ];

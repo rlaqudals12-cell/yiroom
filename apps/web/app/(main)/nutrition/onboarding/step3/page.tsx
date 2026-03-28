@@ -9,17 +9,17 @@ import { calculateAll } from '@/lib/nutrition';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 알레르기/기피 음식 옵션
-const ALLERGY_OPTIONS: { id: AllergyType; icon: string; title: string }[] = [
-  { id: 'dairy', icon: '🥛', title: '유제품' },
-  { id: 'eggs', icon: '🥚', title: '달걀' },
-  { id: 'nuts', icon: '🥜', title: '견과류' },
-  { id: 'seafood', icon: '🦐', title: '해산물' },
-  { id: 'gluten', icon: '🌾', title: '글루텐' },
-  { id: 'soy', icon: '🫘', title: '대두' },
-  { id: 'pork', icon: '🐷', title: '돼지고기' },
-  { id: 'beef', icon: '🐄', title: '소고기' },
-  { id: 'spicy', icon: '🌶️', title: '매운 음식' },
-  { id: 'raw', icon: '🍣', title: '날 음식' },
+const ALLERGY_OPTIONS: { id: AllergyType; title: string }[] = [
+  { id: 'dairy', title: '유제품' },
+  { id: 'eggs', title: '달걀' },
+  { id: 'nuts', title: '견과류' },
+  { id: 'seafood', title: '해산물' },
+  { id: 'gluten', title: '글루텐' },
+  { id: 'soy', title: '대두' },
+  { id: 'pork', title: '돼지고기' },
+  { id: 'beef', title: '소고기' },
+  { id: 'spicy', title: '매운 음식' },
+  { id: 'raw', title: '날 음식' },
 ];
 
 // 식사 횟수 옵션
@@ -244,19 +244,18 @@ export default function NutritionStep3Page() {
         {showAllergies && (
           <div className="px-4 pb-4 border-t border-border/50 pt-4 space-y-4">
             {/* 알레르기 선택 */}
-            <div className="grid grid-cols-5 gap-2">
+            <div className="flex flex-wrap gap-2">
               {ALLERGY_OPTIONS.map((option) => (
                 <button
                   key={option.id}
                   onClick={() => handleSelectAllergy(option.id)}
-                  className={`p-2 min-h-[44px] rounded-lg border-2 transition-all flex flex-col items-center ${
+                  className={`px-3 py-2 min-h-[36px] rounded-full border-2 transition-all text-sm font-medium ${
                     allergies.includes(option.id)
-                      ? 'border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-950/30'
-                      : 'border-border hover:border-border/80'
+                      ? 'border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300'
+                      : 'border-border hover:border-border/80 text-foreground/80'
                   }`}
                 >
-                  <span className="text-lg">{option.icon}</span>
-                  <span className="text-xs text-foreground/80">{option.title}</span>
+                  {option.title}
                 </button>
               ))}
             </div>

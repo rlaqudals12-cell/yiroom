@@ -1,8 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, ZapOff, Smartphone, Check, Lightbulb, ImageIcon, Users } from 'lucide-react';
+import {
+  User,
+  ZapOff,
+  Smartphone,
+  Check,
+  Lightbulb,
+  ImageIcon,
+  Users,
+  ShieldCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
@@ -18,6 +28,8 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
   const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
   const [isGenderSaving, setIsGenderSaving] = useState(false);
   const [autoSkipped, setAutoSkipped] = useState(false);
+  // 이미지 저장 동의 (피부 변화 추적에 활용)
+  const [consentToSaveImage, setConsentToSaveImage] = useState(true);
 
   // 프로필에서 성별 로드 및 자동 진행
   useEffect(() => {
@@ -80,7 +92,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
         <div className="absolute inset-6 border-2 border-dashed border-emerald-500/30 rounded-3xl" />
         <div className="absolute top-8 left-0 right-0 text-center">
           <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm tracking-wider">
-            BRIGHT INDOOR
+            밝은 실내
           </span>
         </div>
 
@@ -180,6 +192,31 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
             </button>
           ))}
         </div>
+      </div>
+
+      {/* 이미지 저장 동의 체크박스 */}
+      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox
+            id="consent-save-skin-image"
+            checked={consentToSaveImage}
+            onCheckedChange={(checked) => setConsentToSaveImage(checked === true)}
+            className="mt-0.5"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-semibold text-foreground">피부 변화 추적 사용</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              분석 이미지를 30일간 저장하여 피부 변화를 추적할 수 있어요.
+              <br />
+              <span className="text-emerald-600/80">
+                미동의 시 비포/애프터 비교 기능을 사용할 수 없어요.
+              </span>
+            </p>
+          </div>
+        </label>
       </div>
 
       {/* 하단 버튼 */}

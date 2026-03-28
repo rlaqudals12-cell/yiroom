@@ -14,10 +14,7 @@ interface StreakBadgeProps {
   workoutStreak: ReportStreakStatus;
 }
 
-export function StreakBadge({
-  nutritionStreak,
-  workoutStreak,
-}: StreakBadgeProps) {
+export function StreakBadge({ nutritionStreak, workoutStreak }: StreakBadgeProps) {
   return (
     <Card data-testid="streak-badge">
       <CardContent className="p-4">
@@ -82,27 +79,17 @@ function StreakItem({
       {hasMilestone && (
         <div className="flex items-center gap-1 mt-2">
           <Award className="h-3 w-3 text-amber-500" />
-          <span className="text-xs text-amber-600 dark:text-amber-400">
-            {milestone}일 달성!
-          </span>
+          <span className="text-xs text-amber-600 dark:text-amber-400">{milestone}일 달성!</span>
         </div>
       )}
 
       {longest > current && (
-        <div className="text-xs text-muted-foreground mt-1">
-          최고 기록: {longest}일
-        </div>
+        <div className="text-xs text-muted-foreground mt-1">최고 기록: {longest}일</div>
       )}
     </div>
   );
 }
 
-function getStreakEmoji(streak: number): string {
-  if (streak >= 100) return '👑';
-  if (streak >= 60) return '⭐';
-  if (streak >= 30) return '🏆';
-  if (streak >= 14) return '💪';
-  if (streak >= 7) return '🔥';
-  if (streak >= 3) return '🌱';
+function getStreakEmoji(_streak: number): string {
   return '';
 }

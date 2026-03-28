@@ -149,7 +149,7 @@ export function ChannelComparisonTable({
                   {deliveryBadge.label}
                 </Badge>
                 <p className="text-muted-foreground mt-0.5 text-[10px]">
-                  {channel.deliveryDays}일{isFastest && channel.inStock && ' ⚡'}
+                  {channel.deliveryDays}일{isFastest && channel.inStock && ' (fastest)'}
                 </p>
               </div>
 

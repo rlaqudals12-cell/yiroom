@@ -22,7 +22,6 @@ interface FeedbackOption {
   id: FeedbackType;
   label: string;
   description: string;
-  emoji: string;
 }
 
 const feedbackOptions: FeedbackOption[] = [
@@ -30,25 +29,21 @@ const feedbackOptions: FeedbackOption[] = [
     id: 'bug',
     label: '버그 신고',
     description: '오류나 문제가 발생했어요',
-    emoji: '🐛',
   },
   {
     id: 'feature',
     label: '기능 요청',
     description: '이런 기능이 있으면 좋겠어요',
-    emoji: '💡',
   },
   {
     id: 'general',
     label: '일반 의견',
     description: '앱에 대한 전반적인 피드백',
-    emoji: '💬',
   },
   {
     id: 'other',
     label: '기타',
     description: '그 외 문의사항',
-    emoji: '📝',
   },
 ];
 
@@ -154,7 +149,7 @@ export default function FeedbackPage() {
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="mb-2 block text-2xl">{option.emoji}</span>
+              <span className="mb-2 block text-2xl"></span>
               <p className="text-sm font-medium">{option.label}</p>
               <p className="text-muted-foreground text-xs">{option.description}</p>
             </button>

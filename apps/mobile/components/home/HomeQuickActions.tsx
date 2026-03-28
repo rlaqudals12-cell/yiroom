@@ -154,7 +154,7 @@ export function HomeQuickActions({
           ]}
           onPress={handleCoachPress}
           accessibilityRole="button"
-          accessibilityLabel="AI 코치에게 물어보세요"
+          accessibilityLabel="궁금한 것을 물어보세요"
           accessibilityHint="운동, 영양, 뷰티 관련 질문을 할 수 있어요"
         >
           <GradientBackground
@@ -171,7 +171,7 @@ export function HomeQuickActions({
             </View>
             <View style={styles.coachContent}>
               <Text style={[styles.coachTitle, { color: colors.overlayForeground }]}>
-                AI 코치에게 물어보세요
+                궁금한 것을 물어보세요
               </Text>
               <Text style={[styles.coachSubtitle, { color: `${colors.overlayForeground}D9` }]}>
                 운동, 영양, 뷰티 궁금한 것 무엇이든
@@ -206,8 +206,8 @@ export function HomeQuickActions({
             ]}
             onPress={handleChatPress}
             accessibilityRole="button"
-            accessibilityLabel="AI 채팅"
-            accessibilityHint="자유롭게 AI와 대화할 수 있어요"
+            accessibilityLabel="뷰티 상담"
+            accessibilityHint="뷰티, 웰니스에 대해 자유롭게 대화할 수 있어요"
           >
             <View
               style={{
@@ -221,10 +221,10 @@ export function HomeQuickActions({
               }}
             >
               <View style={[styles.coachIcon, { backgroundColor: `${brand.primary}15` }]}>
-                <Text style={{ fontSize: 22 }}>🤖</Text>
+                <Text style={{ fontSize: 22 }}>💬</Text>
               </View>
               <View style={styles.coachContent}>
-                <Text style={[styles.coachTitle, { color: colors.foreground }]}>AI 채팅</Text>
+                <Text style={[styles.coachTitle, { color: colors.foreground }]}>뷰티 상담</Text>
                 <Text style={[styles.coachSubtitle, { color: colors.mutedForeground }]}>
                   뷰티, 웰니스, 라이프스타일 자유 대화
                 </Text>

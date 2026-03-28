@@ -195,25 +195,25 @@ export const AVOID_LEVEL_COLORS: Record<
     bg: 'bg-gray-100 dark:bg-gray-800',
     text: 'text-gray-600 dark:text-gray-400',
     border: 'border-gray-300 dark:border-gray-600',
-    icon: '⚪',
+    icon: '',
   },
   avoid: {
     bg: 'bg-yellow-100 dark:bg-yellow-900/30',
     text: 'text-yellow-600 dark:text-yellow-400',
     border: 'border-yellow-300 dark:border-yellow-600',
-    icon: '🟡',
+    icon: '',
   },
   cannot: {
     bg: 'bg-orange-100 dark:bg-orange-900/30',
     text: 'text-orange-600 dark:text-orange-400',
     border: 'border-orange-300 dark:border-orange-600',
-    icon: '🟠',
+    icon: '',
   },
   danger: {
     bg: 'bg-red-100 dark:bg-red-900/30',
     text: 'text-red-600 dark:text-red-400',
     border: 'border-red-300 dark:border-red-600',
-    icon: '🔴',
+    icon: '',
   },
 } as const;
 

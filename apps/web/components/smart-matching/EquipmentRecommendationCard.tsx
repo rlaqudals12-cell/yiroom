@@ -37,14 +37,14 @@ const priorityStyles: Record<Priority, { label: string; color: string }> = {
 
 // 카테고리 아이콘
 const categoryIcons: Record<WorkoutEquipmentCategory, string> = {
-  cardio: '🏃',
-  strength: '💪',
-  resistance: '🎯',
-  flexibility: '🧘',
-  wearable: '⌚',
-  apparel: '👕',
-  accessory: '🧤',
-  supplement: '💊',
+  cardio: '',
+  strength: '',
+  resistance: '',
+  flexibility: '',
+  wearable: '',
+  apparel: '',
+  accessory: '',
+  supplement: '',
 };
 
 export function EquipmentRecommendationCard({
@@ -66,13 +66,9 @@ export function EquipmentRecommendationCard({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-semibold">추천 운동기구</h3>
-          <p className="text-sm text-muted-foreground">
-            {goalLabel} 목표 기준
-          </p>
+          <p className="text-sm text-muted-foreground">{goalLabel} 목표 기준</p>
         </div>
-        <Badge variant="secondary">
-          {match.homeGym ? '홈트레이닝' : '헬스장'}
-        </Badge>
+        <Badge variant="secondary">{match.homeGym ? '홈트레이닝' : '헬스장'}</Badge>
       </div>
 
       {/* 카테고리별 추천 */}
@@ -89,24 +85,20 @@ export function EquipmentRecommendationCard({
             <button
               className="w-full flex items-center justify-between"
               onClick={() =>
-                setExpandedCategory(
-                  expandedCategory === rec.category ? null : rec.category
-                )
+                setExpandedCategory(expandedCategory === rec.category ? null : rec.category)
               }
             >
               <div className="flex items-center gap-2">
-                <span className="text-lg">{categoryIcons[rec.category]}</span>
-                <span className="font-medium text-sm">
-                  {getCategoryLabel(rec.category)}
-                </span>
+                {categoryIcons[rec.category] && (
+                  <span className="text-lg">{categoryIcons[rec.category]}</span>
+                )}
+                <span className="font-medium text-sm">{getCategoryLabel(rec.category)}</span>
                 <Badge className={cn('text-xs', priorityStyles[rec.priority].color)}>
                   {priorityStyles[rec.priority].label}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {rec.items.length}개 추천
-                </span>
+                <span className="text-xs text-muted-foreground">{rec.items.length}개 추천</span>
                 <svg
                   className={cn(
                     'w-4 h-4 transition-transform',
@@ -140,8 +132,7 @@ export function EquipmentRecommendationCard({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{item.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatPrice(item.priceRange.min)} ~{' '}
-                        {formatPrice(item.priceRange.max)}
+                        {formatPrice(item.priceRange.min)} ~ {formatPrice(item.priceRange.max)}
                       </p>
                     </div>
                     <div className="flex gap-1">

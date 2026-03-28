@@ -328,11 +328,11 @@ export default function RecordPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/50 rounded-xl p-3">
-                <p className="text-xs text-muted-foreground">🔥 평균 칼로리</p>
+                <p className="text-xs text-muted-foreground">평균 칼로리</p>
                 <p className="text-lg font-bold">{weekSummary.avgCalories} kcal/일</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
-                <p className="text-xs text-muted-foreground">💪 운동</p>
+                <p className="text-xs text-muted-foreground">운동</p>
                 <p className="text-lg font-bold">
                   {weekSummary.workoutCount}회
                   <span className="text-sm font-normal text-muted-foreground">
@@ -342,11 +342,11 @@ export default function RecordPage() {
                 </p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
-                <p className="text-xs text-muted-foreground">💧 평균 수분</p>
+                <p className="text-xs text-muted-foreground">평균 수분</p>
                 <p className="text-lg font-bold">{weekSummary.avgWater}잔/일</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
-                <p className="text-xs text-muted-foreground">🎯 목표 칼로리</p>
+                <p className="text-xs text-muted-foreground">목표 칼로리</p>
                 <p className="text-lg font-bold">{targetCalories} kcal</p>
               </div>
             </div>
@@ -525,7 +525,7 @@ export default function RecordPage() {
             {/* 오늘의 운동 계획 */}
             <FadeInUp delay={2}>
               <section className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-4">
-                <h2 className="font-semibold mb-3 flex items-center gap-2">💪 오늘의 운동</h2>
+                <h2 className="font-semibold mb-3 flex items-center gap-2">오늘의 운동</h2>
                 {weekSummary.workoutCount > 0 ? (
                   <p className="text-sm text-muted-foreground">
                     이번 주 {weekSummary.workoutCount}회 운동했어요!

@@ -74,7 +74,7 @@ function CompareCard({
         />
       ) : (
         <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
-          <span className="text-2xl">{label === 'Before' ? '🔍' : '✨'}</span>
+          <span className="text-sm font-medium text-muted-foreground">{label}</span>
         </div>
       )}
       <p className="text-xs text-muted-foreground">{sublabel}</p>
@@ -136,7 +136,7 @@ export function BeforeAfterSection(): React.JSX.Element | null {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-2 py-4">
-            <span className="text-3xl">📸</span>
+            <span className="text-sm text-muted-foreground">Before / After</span>
             <p className="text-sm text-muted-foreground text-center">
               분석을 2회 이상 하면 변화를 비교할 수 있어요
             </p>

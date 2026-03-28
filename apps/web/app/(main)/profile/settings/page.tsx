@@ -225,7 +225,13 @@ export default function SettingsPage() {
   const [privacySettings, setPrivacySettings] = useState(DEFAULT_PRIVACY_SETTINGS);
 
   // 언어 설정 상태
-  const [language, setLanguage] = useState<'ko' | 'en'>('ko');
+  const [language, setLanguage] = useState<string>(() => {
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/NEXT_LOCALE=([^;]+)/);
+      if (match) return match[1];
+    }
+    return 'ko';
+  });
 
   // 마운트 시 설정 불러오기
   useEffect(() => {
@@ -253,10 +259,10 @@ export default function SettingsPage() {
       }
     }
 
-    // 언어 설정 불러오기
-    const savedLanguage = localStorage.getItem(STORAGE_KEYS.language);
-    if (savedLanguage === 'ko' || savedLanguage === 'en') {
-      setLanguage(savedLanguage);
+    // 언어 설정: 쿠키에서 읽기 (localStorage 대신)
+    const localeMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/);
+    if (localeMatch) {
+      setLanguage(localeMatch[1]);
     }
   }, [userId]);
 
@@ -298,10 +304,11 @@ export default function SettingsPage() {
     setTheme(newTheme);
   };
 
-  // 언어 변경 핸들러
-  const handleLanguageChange = (newLanguage: 'ko' | 'en') => {
+  // 언어 변경 핸들러 (쿠키 기반 → 서버 재렌더링)
+  const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
-    localStorage.setItem(STORAGE_KEYS.language, newLanguage);
+    document.cookie = `NEXT_LOCALE=${newLanguage};path=/;max-age=31536000;SameSite=Lax`;
+    router.refresh();
   };
 
   // 성별 변경 핸들러
@@ -633,10 +640,12 @@ export default function SettingsPage() {
                   {[
                     { id: 'ko', label: '한국어' },
                     { id: 'en', label: 'English' },
+                    { id: 'ja', label: '日本語' },
+                    { id: 'zh', label: '中文' },
                   ].map((lang) => (
                     <button
                       key={lang.id}
-                      onClick={() => handleLanguageChange(lang.id as 'ko' | 'en')}
+                      onClick={() => handleLanguageChange(lang.id)}
                       className={cn(
                         'flex-1 py-2 rounded-lg border transition-colors',
                         language === lang.id

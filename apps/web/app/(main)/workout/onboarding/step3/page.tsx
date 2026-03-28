@@ -10,13 +10,13 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // 부상/통증 부위 옵션
 const INJURIES = [
-  { id: 'none', icon: '✅', title: '없음', desc: '특별한 부상이나 통증 없음' },
-  { id: 'knee', icon: '🦵', title: '무릎', desc: '무릎 관절 통증' },
-  { id: 'back', icon: '🔙', title: '허리', desc: '허리 디스크, 요통' },
-  { id: 'shoulder', icon: '💪', title: '어깨', desc: '어깨 통증, 오십견' },
-  { id: 'wrist', icon: '🤚', title: '손목', desc: '손목 터널 증후군' },
-  { id: 'ankle', icon: '🦶', title: '발목', desc: '발목 염좌, 통증' },
-  { id: 'neck', icon: '🦒', title: '목', desc: '거북목, 목 통증' },
+  { id: 'none', title: '없음', desc: '특별한 부상이나 통증 없음' },
+  { id: 'knee', title: '무릎', desc: '무릎 관절 통증' },
+  { id: 'back', title: '허리', desc: '허리 디스크, 요통' },
+  { id: 'shoulder', title: '어깨', desc: '어깨 통증, 오십견' },
+  { id: 'wrist', title: '손목', desc: '손목 터널 증후군' },
+  { id: 'ankle', title: '발목', desc: '발목 염좌, 통증' },
+  { id: 'neck', title: '목', desc: '거북목, 목 통증' },
 ];
 
 export default function Step3Page() {
@@ -139,7 +139,6 @@ export default function Step3Page() {
               mode="multiple"
               selected={injuries.includes(injury.id)}
               onSelect={() => handleInjurySelect(injury.id)}
-              icon={<span className="text-xl">{injury.icon}</span>}
               title={injury.title}
               description={injury.desc}
               compact
@@ -153,7 +152,6 @@ export default function Step3Page() {
               mode="multiple"
               selected={injuries.includes(injury.id)}
               onSelect={() => handleInjurySelect(injury.id)}
-              icon={<span className="text-xl">{injury.icon}</span>}
               title={injury.title}
               description={injury.desc}
               compact

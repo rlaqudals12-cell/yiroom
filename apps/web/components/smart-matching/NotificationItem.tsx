@@ -19,14 +19,14 @@ interface NotificationItemProps {
 
 // 알림 타입별 스타일
 const typeStyles: Record<NotificationType, { icon: string; color: string; bgColor: string }> = {
-  product_running_low: { icon: '⚠️', color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-  expiry_approaching: { icon: '⏰', color: 'text-orange-600', bgColor: 'bg-orange-50' },
-  price_drop: { icon: '💰', color: 'text-green-600', bgColor: 'bg-green-50' },
-  back_in_stock: { icon: '📦', color: 'text-blue-600', bgColor: 'bg-blue-50' },
-  new_recommendation: { icon: '✨', color: 'text-purple-600', bgColor: 'bg-purple-50' },
-  size_available: { icon: '👕', color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-  similar_product: { icon: '🔍', color: 'text-cyan-600', bgColor: 'bg-cyan-50' },
-  reorder_reminder: { icon: '🔔', color: 'text-pink-600', bgColor: 'bg-pink-50' },
+  product_running_low: { icon: '', color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
+  expiry_approaching: { icon: '', color: 'text-orange-600', bgColor: 'bg-orange-50' },
+  price_drop: { icon: '', color: 'text-green-600', bgColor: 'bg-green-50' },
+  back_in_stock: { icon: '', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+  new_recommendation: { icon: '', color: 'text-purple-600', bgColor: 'bg-purple-50' },
+  size_available: { icon: '', color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
+  similar_product: { icon: '', color: 'text-cyan-600', bgColor: 'bg-cyan-50' },
+  reorder_reminder: { icon: '', color: 'text-pink-600', bgColor: 'bg-pink-50' },
 };
 
 export function NotificationItem({
@@ -72,9 +72,11 @@ export function NotificationItem({
       data-testid="notification-item"
     >
       {/* 아이콘 */}
-      <div className={cn('text-xl flex-shrink-0', notification.read && 'opacity-50')}>
-        {style.icon}
-      </div>
+      {style.icon && (
+        <div className={cn('text-xl flex-shrink-0', notification.read && 'opacity-50')}>
+          {style.icon}
+        </div>
+      )}
 
       {/* 내용 */}
       <div className="flex-1 min-w-0">

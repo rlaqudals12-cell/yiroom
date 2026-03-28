@@ -358,18 +358,18 @@ export function createQuickConditionCheck(): {
 } {
   return {
     hydrationOptions: [
-      { value: 'very_dry', label: '매우 건조해요', emoji: '🏜️' },
-      { value: 'dry', label: '좀 건조해요', emoji: '💧' },
-      { value: 'normal', label: '적당해요', emoji: '✨' },
-      { value: 'oily', label: '유분기 있어요', emoji: '💦' },
-      { value: 'very_oily', label: '많이 번들거려요', emoji: '🌊' },
+      { value: 'very_dry', label: '매우 건조해요', emoji: '' },
+      { value: 'dry', label: '좀 건조해요', emoji: '' },
+      { value: 'normal', label: '적당해요', emoji: '' },
+      { value: 'oily', label: '유분기 있어요', emoji: '' },
+      { value: 'very_oily', label: '많이 번들거려요', emoji: '' },
     ],
     concernOptions: [
-      { value: 'acne', label: '여드름', emoji: '🔴' },
-      { value: 'redness', label: '홍조', emoji: '😳' },
-      { value: 'dullness', label: '칙칙함', emoji: '😶' },
-      { value: 'tightness', label: '당김', emoji: '😣' },
-      { value: 'oiliness', label: '유분', emoji: '✨' },
+      { value: 'acne', label: '여드름', emoji: '' },
+      { value: 'redness', label: '홍조', emoji: '' },
+      { value: 'dullness', label: '칙칙함', emoji: '' },
+      { value: 'tightness', label: '당김', emoji: '' },
+      { value: 'oiliness', label: '유분', emoji: '' },
     ],
   };
 }

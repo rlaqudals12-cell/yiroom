@@ -113,13 +113,8 @@ export function toActivity(row: ActivityRow): Activity {
 /**
  * Supabase 조인 쿼리 결과를 Activity로 변환
  */
-export function transformToActivity(
-  raw: RawActivityData,
-  currentUserId: string
-): Activity {
-  const isLiked = raw.activity_likes.some(
-    (like) => like.user_id === currentUserId
-  );
+export function transformToActivity(raw: RawActivityData, currentUserId: string): Activity {
+  const isLiked = raw.activity_likes.some((like) => like.user_id === currentUserId);
 
   return {
     id: raw.id,
@@ -150,37 +145,37 @@ export interface ActivityTypeConfig {
 
 export const ACTIVITY_TYPE_CONFIG: Record<ActivityType, ActivityTypeConfig> = {
   workout_complete: {
-    icon: '💪',
+    icon: '',
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     label: '운동 완료',
   },
   challenge_join: {
-    icon: '🎯',
+    icon: '',
     color: 'text-purple-600',
     bgColor: 'bg-purple-100 dark:bg-purple-900/30',
     label: '챌린지 참여',
   },
   challenge_complete: {
-    icon: '🏆',
+    icon: '',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
     label: '챌린지 완료',
   },
   streak_achieved: {
-    icon: '🔥',
+    icon: '',
     color: 'text-orange-600',
     bgColor: 'bg-orange-100 dark:bg-orange-900/30',
     label: '연속 달성',
   },
   level_up: {
-    icon: '⬆️',
+    icon: '',
     color: 'text-green-600',
     bgColor: 'bg-green-100 dark:bg-green-900/30',
     label: '레벨 업',
   },
   badge_earned: {
-    icon: '🏅',
+    icon: '',
     color: 'text-amber-600',
     bgColor: 'bg-amber-100 dark:bg-amber-900/30',
     label: '뱃지 획득',

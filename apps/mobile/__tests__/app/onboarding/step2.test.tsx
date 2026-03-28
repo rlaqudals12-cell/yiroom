@@ -58,14 +58,14 @@ jest.mock('../../../lib/onboarding', () => ({
     neutral: '선택 안 함',
   },
   STYLE_PREFERENCE_LABELS: {
-    masculine: '남성적 스타일',
-    feminine: '여성적 스타일',
-    unisex: '유니섹스 스타일',
+    masculine: '미니멀 스타일',
+    feminine: '소프트 스타일',
+    unisex: '자유로운 스타일',
   },
   STYLE_PREFERENCE_DESCRIPTIONS: {
     masculine: '깔끔하고 심플한 스타일을 추천해요',
     feminine: '화사하고 부드러운 스타일을 추천해요',
-    unisex: '성별 구분 없는 다양한 스타일을 추천해요',
+    unisex: '다양한 스타일을 자유롭게 추천해요',
   },
 }));
 

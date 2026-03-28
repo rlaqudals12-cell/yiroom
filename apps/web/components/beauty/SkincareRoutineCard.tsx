@@ -10,14 +10,14 @@ import type { RoutineItem } from '@/types/hybrid';
 
 // 스킨케어 카테고리
 const SKINCARE_CATEGORIES = [
-  { value: 'cleanser', label: '클렌저', emoji: '🧴' },
-  { value: 'toner', label: '토너', emoji: '💧' },
-  { value: 'serum', label: '세럼', emoji: '✨' },
-  { value: 'moisturizer', label: '보습제', emoji: '🧊' },
-  { value: 'sunscreen', label: '선크림', emoji: '☀️' },
-  { value: 'mask', label: '마스크팩', emoji: '🎭' },
-  { value: 'eyecream', label: '아이크림', emoji: '👁️' },
-  { value: 'oilserum', label: '오일/앰플', emoji: '💎' },
+  { value: 'cleanser', label: '클렌저', emoji: '' },
+  { value: 'toner', label: '토너', emoji: '' },
+  { value: 'serum', label: '세럼', emoji: '' },
+  { value: 'moisturizer', label: '보습제', emoji: '' },
+  { value: 'sunscreen', label: '선크림', emoji: '' },
+  { value: 'mask', label: '마스크팩', emoji: '' },
+  { value: 'eyecream', label: '아이크림', emoji: '' },
+  { value: 'oilserum', label: '오일/앰플', emoji: '' },
 ];
 
 export interface SkincareRoutineCardProps {
@@ -55,7 +55,7 @@ export function SkincareRoutineCard({
 
   // 카테고리 라벨 가져오기
   const getCategoryInfo = (category: string) => {
-    return SKINCARE_CATEGORIES.find((c) => c.value === category) || { label: category, emoji: '📦' };
+    return SKINCARE_CATEGORIES.find((c) => c.value === category) || { label: category, emoji: '' };
   };
 
   return (
@@ -109,7 +109,10 @@ export function SkincareRoutineCard({
                     {/* 순서 및 드래그 핸들 */}
                     <div className="flex items-center gap-2">
                       {editable && (
-                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+                        <GripVertical
+                          className="h-4 w-4 text-muted-foreground cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-hidden="true"
+                        />
                       )}
                       <div className="w-6 h-6 rounded-full bg-pink-500 text-white text-xs font-bold flex items-center justify-center">
                         {step.order}
@@ -117,8 +120,8 @@ export function SkincareRoutineCard({
                     </div>
 
                     {/* 카테고리 아이콘 */}
-                    <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center text-xl">
-                      {categoryInfo.emoji}
+                    <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center text-sm font-medium text-muted-foreground">
+                      {categoryInfo.emoji || step.order}
                     </div>
 
                     {/* 정보 */}
@@ -155,9 +158,7 @@ export function SkincareRoutineCard({
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">
-              {activeTab === 'morning' ? '아침' : '저녁'} 루틴이 없습니다
-            </p>
+            <p className="text-sm">{activeTab === 'morning' ? '아침' : '저녁'} 루틴이 없습니다</p>
             <p className="text-xs mt-1">루틴을 추가해보세요</p>
           </div>
         )}

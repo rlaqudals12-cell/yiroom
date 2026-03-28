@@ -46,11 +46,7 @@ describe('FoodResultCard', () => {
   it('음식 이름과 칼로리를 렌더링한다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
     expect(screen.getByText('김치찌개')).toBeInTheDocument();
@@ -60,11 +56,7 @@ describe('FoodResultCard', () => {
   it('양 조절 버튼을 렌더링한다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
     expect(screen.getByRole('button', { name: '0.5' })).toBeInTheDocument();
@@ -76,11 +68,7 @@ describe('FoodResultCard', () => {
   it('양 조절 버튼 클릭 시 콜백을 호출한다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
     fireEvent.click(screen.getByRole('button', { name: '1.5' }));
@@ -93,11 +81,7 @@ describe('FoodResultCard', () => {
   it('선택된 양 버튼이 활성화 상태로 표시된다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1.5}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1.5} onPortionChange={onPortionChange} />
     );
 
     const selectedButton = screen.getByRole('button', { name: '1.5' });
@@ -107,11 +91,7 @@ describe('FoodResultCard', () => {
   it('양에 따라 칼로리가 계산되어 표시된다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={2}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={2} onPortionChange={onPortionChange} />
     );
 
     // 380 * 2 = 760
@@ -122,15 +102,12 @@ describe('FoodResultCard', () => {
   it('green 신호등 스타일을 적용한다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
-    // green 이모지 확인
-    expect(screen.getByText('🟢')).toBeInTheDocument();
+    // green 신호등 색상 확인 (이모지 제거됨 - 라벨로 검증)
+    const indicator = screen.getByTestId('traffic-light-indicator');
+    expect(indicator).toBeInTheDocument();
   });
 
   it('yellow 신호등 스타일을 적용한다', () => {
@@ -143,20 +120,18 @@ describe('FoodResultCard', () => {
       />
     );
 
-    expect(screen.getByText('🟡')).toBeInTheDocument();
+    const indicator = screen.getByTestId('traffic-light-indicator');
+    expect(indicator).toBeInTheDocument();
   });
 
   it('red 신호등 스타일을 적용한다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockRedFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockRedFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
-    expect(screen.getByText('🔴')).toBeInTheDocument();
+    const indicator = screen.getByTestId('traffic-light-indicator');
+    expect(indicator).toBeInTheDocument();
   });
 
   it('신뢰도 높음을 표시한다 (confidence >= 0.85)', () => {
@@ -282,11 +257,7 @@ describe('FoodResultCard', () => {
   it('data-testid가 설정되어 있다', () => {
     const onPortionChange = vi.fn();
     render(
-      <FoodResultCard
-        food={mockFood}
-        portionMultiplier={1}
-        onPortionChange={onPortionChange}
-      />
+      <FoodResultCard food={mockFood} portionMultiplier={1} onPortionChange={onPortionChange} />
     );
 
     expect(screen.getByTestId('food-result-card')).toBeInTheDocument();

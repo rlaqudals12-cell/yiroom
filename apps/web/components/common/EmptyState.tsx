@@ -58,7 +58,7 @@ export function EmptyState({
   const displayTitle = title || preset?.title || '데이터가 없어요';
   const displayDescription = description || preset?.description || '첫 번째 기록을 시작해보세요';
   const displayCtaText = ctaText || preset?.cta;
-  const displayEmoji = emoji || preset?.emoji || '📝';
+  const displayEmoji = emoji || preset?.emoji || '';
 
   const animationClass = noAnimation ? '' : 'animate-fade-in-up';
 
@@ -130,7 +130,7 @@ export function EmptyState({
 
       {/* 격려 메시지 */}
       {!compact && (
-        <p className="mt-4 text-xs text-muted-foreground/70">작은 시작이 큰 변화를 만들어요 ✨</p>
+        <p className="mt-4 text-xs text-muted-foreground/70">작은 시작이 큰 변화를 만들어요</p>
       )}
     </div>
   );

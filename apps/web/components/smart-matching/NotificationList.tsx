@@ -41,9 +41,7 @@ export function NotificationList({
   const [filter, setFilter] = useState<NotificationType | 'all'>('all');
 
   const filteredNotifications =
-    filter === 'all'
-      ? notifications
-      : notifications.filter((n) => n.notificationType === filter);
+    filter === 'all' ? notifications : notifications.filter((n) => n.notificationType === filter);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -89,7 +87,7 @@ export function NotificationList({
       )}
       {!loading && filteredNotifications.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <span className="text-2xl mb-2">🔔</span>
+          <span className="text-sm text-muted-foreground mb-2">--</span>
           <p className="text-muted-foreground">
             {filter === 'all' ? '알림이 없어요' : '해당 알림이 없어요'}
           </p>

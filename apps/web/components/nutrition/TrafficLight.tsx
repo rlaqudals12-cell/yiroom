@@ -15,7 +15,7 @@ export type TrafficLightColor = 'green' | 'yellow' | 'red';
 // 신호등 색상별 스타일 설정
 export const TRAFFIC_LIGHT_CONFIG = {
   green: {
-    emoji: '🟢',
+    emoji: '',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
     textColor: 'text-green-700',
@@ -24,7 +24,7 @@ export const TRAFFIC_LIGHT_CONFIG = {
     description: '저칼로리',
   },
   yellow: {
-    emoji: '🟡',
+    emoji: '',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
     textColor: 'text-yellow-700',
@@ -33,7 +33,7 @@ export const TRAFFIC_LIGHT_CONFIG = {
     description: '적당',
   },
   red: {
-    emoji: '🔴',
+    emoji: '',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     textColor: 'text-red-700',
@@ -109,10 +109,7 @@ interface TrafficLightSummaryInlineProps {
  * 신호등 비율 인라인 요약
  * 주간 리포트 등에서 한 줄로 표시: 🟢 32% 🟡 45% 🔴 23%
  */
-export function TrafficLightSummaryInline({
-  ratio,
-  size = 'md',
-}: TrafficLightSummaryInlineProps) {
+export function TrafficLightSummaryInline({ ratio, size = 'md' }: TrafficLightSummaryInlineProps) {
   const textSize = size === 'sm' ? 'text-xs' : 'text-sm';
 
   return (
@@ -157,13 +154,8 @@ export function TrafficLightCard({
   const isBalanced = isGreenMet && isYellowMet && isRedMet;
 
   return (
-    <div
-      className="bg-card rounded-2xl p-4 border border-border"
-      data-testid="traffic-light-card"
-    >
-      <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-        🚦 {title}
-      </h3>
+    <div className="bg-card rounded-2xl p-4 border border-border" data-testid="traffic-light-card">
+      <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">{title}</h3>
 
       {/* 비율 바 */}
       <div className="h-4 rounded-full overflow-hidden flex mb-4">
@@ -206,11 +198,9 @@ export function TrafficLightCard({
       {/* 균형 메시지 */}
       <div className="mt-4 pt-3 border-t border-border/50">
         {isBalanced ? (
-          <p className="text-sm text-green-600">✅ 균형 잡힌 식단이에요!</p>
+          <p className="text-sm text-green-600">균형 잡힌 식단이에요!</p>
         ) : (
-          <p className="text-sm text-amber-600">
-            💡 초록색 음식을 조금 더 섭취해보세요
-          </p>
+          <p className="text-sm text-amber-600">초록색 음식을 조금 더 섭취해보세요</p>
         )}
       </div>
     </div>

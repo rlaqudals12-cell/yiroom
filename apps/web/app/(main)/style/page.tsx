@@ -344,9 +344,7 @@ export default function StylePage() {
           <section className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 border-b">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-foreground">
-                  💡 체형 분석하면 나에게 맞는 코디 추천!
-                </p>
+                <p className="font-medium text-foreground">체형 분석하면 나에게 맞는 코디 추천!</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   AI가 내 체형에 어울리는 스타일을 찾아드려요
                 </p>
@@ -510,7 +508,7 @@ export default function StylePage() {
         <FadeInUp delay={6}>
           <section>
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              🔥 {hasAnalysis ? '내 체형 맞춤 아이템' : '인기 아이템'}
+              {hasAnalysis ? '내 체형 맞춤 아이템' : '인기 아이템'}
             </h2>
             {products.length > 0 ? (
               <div className="grid grid-cols-3 gap-3">

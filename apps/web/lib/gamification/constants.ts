@@ -147,11 +147,11 @@ export const CATEGORY_NAMES: Record<BadgeCategory, string> = {
 };
 
 export const CATEGORY_ICONS: Record<BadgeCategory, string> = {
-  streak: '🔥',
-  workout: '💪',
-  nutrition: '🥗',
-  analysis: '🔍',
-  special: '⭐',
+  streak: '',
+  workout: '',
+  nutrition: '',
+  analysis: '',
+  special: '',
 };
 
 export const RARITY_NAMES: Record<BadgeRarity, string> = {
@@ -161,7 +161,10 @@ export const RARITY_NAMES: Record<BadgeRarity, string> = {
   legendary: '전설',
 };
 
-export const RARITY_COLORS: Record<BadgeRarity, { bg: string; text: string; border: string; glow: string }> = {
+export const RARITY_COLORS: Record<
+  BadgeRarity,
+  { bg: string; text: string; border: string; glow: string }
+> = {
   common: {
     bg: 'bg-slate-100',
     text: 'text-slate-700',
@@ -202,12 +205,12 @@ export const DEFAULT_XP_REWARDS = {
   streak100: 500,
 
   // 일반 활동
-  workout: 5,       // 운동 1회
-  mealRecord: 2,    // 식단 기록 1회
-  waterGoal: 3,     // 수분 목표 달성
+  workout: 5, // 운동 1회
+  mealRecord: 2, // 식단 기록 1회
+  waterGoal: 3, // 수분 목표 달성
 
   // 분석 완료
-  analysis: 20,     // 분석 1회 완료
+  analysis: 20, // 분석 1회 완료
 } as const;
 
 // ============================================================

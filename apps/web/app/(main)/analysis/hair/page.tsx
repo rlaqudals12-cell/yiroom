@@ -188,7 +188,7 @@ export default function HairAnalysisPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">💇 헤어 분석</h1>
+          <h1 className="text-2xl font-bold text-foreground">헤어 분석</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>
 
@@ -233,7 +233,7 @@ export default function HairAnalysisPage() {
         {step === 'guide' && (
           <div className="space-y-6">
             <div className="bg-card rounded-xl p-6 shadow-sm">
-              <h2 className="font-semibold text-lg mb-4">📸 촬영 가이드</h2>
+              <h2 className="font-semibold text-lg mb-4">촬영 가이드</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500">✓</span>
@@ -351,9 +351,7 @@ export default function HairAnalysisPage() {
         {/* 로딩 */}
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 animate-pulse">
-              <span className="text-4xl">💇</span>
-            </div>
+            <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 animate-pulse"></div>
             <p className="text-lg font-medium text-foreground">AI가 헤어를 분석하고 있어요</p>
             <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
             <Loader2 className="w-8 h-8 mt-6 animate-spin text-amber-500" />
@@ -481,13 +479,13 @@ function AnalysisResultView({
 
       {/* 인사이트 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">💡 분석 요약</h3>
+        <h3 className="font-semibold mb-3">분석 요약</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>
 
       {/* 지표 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">📊 항목별 점수</h3>
+        <h3 className="font-semibold mb-4">항목별 점수</h3>
         <div className="space-y-4">
           {result.metrics.map((metric) => (
             <div key={metric.id}>
@@ -512,7 +510,7 @@ function AnalysisResultView({
 
       {/* 추천 성분 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">🧴 추천 성분</h3>
+        <h3 className="font-semibold mb-3">추천 성분</h3>
         <div className="flex flex-wrap gap-2">
           {result.recommendedIngredients.map((ingredient, i) => (
             <span
@@ -527,7 +525,7 @@ function AnalysisResultView({
 
       {/* 케어 팁 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">✨ 케어 팁</h3>
+        <h3 className="font-semibold mb-3">케어 팁</h3>
         <ul className="space-y-2">
           {result.careTips.map((tip, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">

@@ -236,7 +236,7 @@ export default function SkinInsightCard({
         </div>
 
         <div className="bg-card/60 rounded-xl p-4 text-center">
-          <span className="text-3xl">✨</span>
+          <Sparkles className="w-8 h-8 text-module-skin" />
           <p className="text-sm text-muted-foreground mt-2">{insight.summaryMessage}</p>
         </div>
 

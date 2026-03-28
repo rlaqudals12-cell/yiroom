@@ -92,11 +92,11 @@ describe('온보딩 상수', () => {
 
   describe('GOAL_ICONS', () => {
     it('모든 목표에 대한 아이콘이 있음', () => {
-      expect(GOAL_ICONS.weight_loss).toBe('⚖️');
-      expect(GOAL_ICONS.muscle_gain).toBe('💪');
-      expect(GOAL_ICONS.health_maintenance).toBe('❤️');
-      expect(GOAL_ICONS.stress_relief).toBe('🧘');
-      expect(GOAL_ICONS.better_sleep).toBe('😴');
+      expect(GOAL_ICONS.weight_loss).toBe('');
+      expect(GOAL_ICONS.muscle_gain).toBe('');
+      expect(GOAL_ICONS.health_maintenance).toBe('');
+      expect(GOAL_ICONS.stress_relief).toBe('');
+      expect(GOAL_ICONS.better_sleep).toBe('');
     });
   });
 

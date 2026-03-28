@@ -43,12 +43,12 @@ export const NUTRITION_STREAK_MILESTONES = [3, 7, 14, 30, 60, 100] as const;
  */
 export const NUTRITION_STREAK_BADGES: Record<number, { id: string; name: string; emoji: string }> =
   {
-    3: { id: '3day', name: '3일 기록', emoji: '🌱' },
-    7: { id: '7day', name: '7일 기록', emoji: '🌿' },
-    14: { id: '14day', name: '14일 기록', emoji: '🌳' },
-    30: { id: '30day', name: '30일 기록', emoji: '🏆' },
-    60: { id: '60day', name: '60일 기록', emoji: '⭐' },
-    100: { id: '100day', name: '100일 기록', emoji: '👑' },
+    3: { id: '3day', name: '3일 기록', emoji: '' },
+    7: { id: '7day', name: '7일 기록', emoji: '' },
+    14: { id: '14day', name: '14일 기록', emoji: '' },
+    30: { id: '30day', name: '30일 기록', emoji: '' },
+    60: { id: '60day', name: '60일 기록', emoji: '' },
+    100: { id: '100day', name: '100일 기록', emoji: '' },
   };
 
 /**
@@ -191,21 +191,20 @@ export function getStreakMessage(streak: NutritionStreak | null): string {
       currentStreak as (typeof NUTRITION_STREAK_MILESTONES)[number]
     )
   ) {
-    const badge = NUTRITION_STREAK_BADGES[currentStreak];
-    return `${badge?.emoji || '🎉'} ${currentStreak}일 기록 달성!`;
+    return `${currentStreak}일 기록 달성!`;
   }
 
   // 누적 기록 메시지 (연속 압박 없이)
   if (currentStreak >= 30) {
-    return `🌳 지금까지 ${currentStreak}일 기록했어요`;
+    return `지금까지 ${currentStreak}일 기록했어요`;
   }
 
   if (currentStreak >= 7) {
-    return `🌿 ${currentStreak}일째 기록 중이에요`;
+    return `${currentStreak}일째 기록 중이에요`;
   }
 
   if (currentStreak >= 3) {
-    return `🌱 ${currentStreak}일 기록했어요`;
+    return `${currentStreak}일 기록했어요`;
   }
 
   return `${currentStreak}일째 식단을 기록하고 있어요`;
@@ -242,7 +241,7 @@ export function getStreakWarningMessage(streak: NutritionStreak | null): string 
  */
 export function getReEngagementMessage(streak: NutritionStreak | null): string {
   if (!streak) {
-    return '첫 식단 기록을 시작해보세요 🍽️';
+    return '첫 식단 기록을 시작해보세요';
   }
 
   if (streak.currentStreak >= 7) {
@@ -265,7 +264,7 @@ export function getMilestoneAchievementMessage(milestone: number): string {
 
   if (!badge) return `${milestone}일 기록 달성!`;
 
-  let message = `${badge.emoji} ${badge.name} 달성!`;
+  let message = `${badge.name} 달성!`;
 
   if (reward) {
     message += ` ${reward.description}을 획득했어요!`;

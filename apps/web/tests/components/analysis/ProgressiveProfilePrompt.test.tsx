@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgressiveProfilePrompt } from '@/components/analysis/ProgressiveProfilePrompt';
 
@@ -50,13 +50,17 @@ describe('ProgressiveProfilePrompt', () => {
       expect(screen.getByText('건조함/당김').className).toContain('pink-500');
     });
 
-    it('정보 저장 후 감사 메시지를 표시한다', () => {
+    it('정보 저장 후 감사 메시지를 표시한다', async () => {
       const onSubmit = vi.fn();
+      // fetch mock (handleSubmit에서 API 호출)
+      global.fetch = vi.fn().mockResolvedValue({ ok: true });
       render(<ProgressiveProfilePrompt moduleId="personal-color" onSubmit={onSubmit} />);
       fireEvent.click(screen.getByText('더 정확한 결과를 원하시나요?'));
       fireEvent.click(screen.getByText('파란색/보라색'));
       fireEvent.click(screen.getByText('정보 저장하기'));
-      expect(screen.getByTestId('progressive-profile-thanks')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('progressive-profile-thanks')).toBeInTheDocument();
+      });
       expect(onSubmit).toHaveBeenCalledWith({ veinColor: 'blue' });
     });
 

@@ -44,10 +44,10 @@ export function StretchingRoutineCard({
   }[prescription.basedOn.purpose];
 
   const purposeIcon = {
-    posture_correction: '🧘',
-    warmup: '🔥',
-    cooldown: '❄️',
-    general: '✨',
+    posture_correction: '',
+    warmup: '',
+    cooldown: '',
+    general: '',
   }[prescription.basedOn.purpose];
 
   return (
@@ -56,7 +56,7 @@ export function StretchingRoutineCard({
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <span>{purposeIcon}</span>
+              {purposeIcon && <span>{purposeIcon}</span>}
               {purposeTitle}
             </CardTitle>
             <CardDescription>{prescription.frequency}</CardDescription>

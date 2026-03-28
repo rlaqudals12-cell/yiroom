@@ -48,22 +48,22 @@ const TYPE_CONFIG: Record<
   }
 > = {
   stretch: {
-    emoji: '🧘',
+    emoji: '',
     label: '스트레칭',
     color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   },
   strengthen: {
-    emoji: '💪',
+    emoji: '',
     label: '강화 운동',
     color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   },
   active_recovery: {
-    emoji: '🚶',
+    emoji: '',
     label: '능동적 회복',
     color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   },
   rest: {
-    emoji: '😴',
+    emoji: '',
     label: '휴식',
     color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
   },
@@ -81,7 +81,7 @@ export function WeeklyStretchingPlanCard({
     <Card className={className} data-testid="weekly-stretching-plan">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>📅 주간 스트레칭 플랜</span>
+          <span>주간 스트레칭 플랜</span>
           <Badge variant="outline">{plan.progressionWeek}주차</Badge>
         </CardTitle>
         <CardDescription>{plan.weekStartDate} 시작</CardDescription>
@@ -168,8 +168,8 @@ function DayDetail({ day, routine, isToday }: DayDetailProps) {
       ) : (
         <div className="space-y-2">
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">🕐 약 {routine.duration}분</span>
-            <span className="text-muted-foreground">💪 {routine.stretches.length}개 운동</span>
+            <span className="text-muted-foreground">약 {routine.duration}분</span>
+            <span className="text-muted-foreground">{routine.stretches.length}개 운동</span>
           </div>
 
           {routine.stretches.length > 0 && (
@@ -191,9 +191,7 @@ function DayDetail({ day, routine, isToday }: DayDetailProps) {
             </div>
           )}
 
-          {routine.notes && (
-            <p className="text-sm text-muted-foreground mt-2">📝 {routine.notes}</p>
-          )}
+          {routine.notes && <p className="text-sm text-muted-foreground mt-2">{routine.notes}</p>}
         </div>
       )}
     </div>

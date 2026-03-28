@@ -284,7 +284,7 @@ function generateProductTips(product: ShelfItem, category: ProductCategory): str
 
   // 호환성 점수 기반 추가 팁
   if (product.compatibilityScore && product.compatibilityScore >= 80) {
-    tips.push('피부에 잘 맞는 제품이에요 ✨');
+    tips.push('피부에 잘 맞는 제품이에요');
   }
 
   return tips;
@@ -338,7 +338,7 @@ function generateSyncNote(
   }
 
   if (conflictCount > 0) {
-    note += `⚠️ 함께 사용 시 주의가 필요한 성분이 ${conflictCount}개 있어요.`;
+    note += `함께 사용 시 주의가 필요한 성분이 ${conflictCount}개 있어요.`;
   }
 
   return note;

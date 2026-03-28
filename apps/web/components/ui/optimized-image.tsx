@@ -55,12 +55,7 @@ const OptimizedImage = memo(function OptimizedImage({
       // 폴백이 URL인 경우 next/image로 표시
       return (
         <div className={`relative overflow-hidden ${containerClassName}`}>
-          <Image
-            src={fallback}
-            alt={alt || 'fallback image'}
-            className={className}
-            {...props}
-          />
+          <Image src={fallback} alt={alt || 'fallback image'} className={className} {...props} />
         </div>
       );
     }
@@ -82,10 +77,7 @@ const OptimizedImage = memo(function OptimizedImage({
     <div className={`relative overflow-hidden ${containerClassName}`}>
       {/* 로딩 상태 표시 */}
       {showLoadingState && isLoading && (
-        <div
-          className={`absolute inset-0 ${loadingClassName}`}
-          aria-hidden="true"
-        />
+        <div className={`absolute inset-0 ${loadingClassName}`} aria-hidden="true" />
       )}
 
       <Image
@@ -129,10 +121,10 @@ export interface ExerciseThumbnailProps {
 
 // 카테고리별 폴백 이모지
 const CATEGORY_FALLBACK_EMOJI: Record<string, string> = {
-  upper: '💪',
-  lower: '🦵',
-  core: '🧘',
-  cardio: '🏃',
+  upper: '',
+  lower: '',
+  core: '',
+  cardio: '',
 };
 
 export const ExerciseThumbnail = memo(function ExerciseThumbnail({
@@ -155,7 +147,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
     (videoId ? getYouTubeThumbnail(videoId) : null) ||
     (videoUrl ? getYouTubeThumbnail(videoUrl) : null);
 
-  const fallbackEmoji = CATEGORY_FALLBACK_EMOJI[category] || '🏋️';
+  const fallbackEmoji = CATEGORY_FALLBACK_EMOJI[category] || '';
 
   return (
     <OptimizedImage
@@ -165,7 +157,7 @@ export const ExerciseThumbnail = memo(function ExerciseThumbnail({
       height={height}
       className={`object-cover ${className}`}
       containerClassName={containerClassName}
-      fallback={<span className="text-5xl">{fallbackEmoji}</span>}
+      fallback={fallbackEmoji ? <span className="text-5xl">{fallbackEmoji}</span> : undefined}
       fallbackBgClassName="bg-gradient-to-br from-muted/50 to-muted"
     />
   );

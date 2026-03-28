@@ -37,19 +37,19 @@ interface SkinConditionInputProps {
 // ================================================
 
 const HYDRATION_OPTIONS: { value: HydrationLevel; label: string; emoji: string }[] = [
-  { value: 'very_dry', label: '매우 건조', emoji: '🏜️' },
-  { value: 'dry', label: '건조', emoji: '🍂' },
-  { value: 'normal', label: '적당함', emoji: '💧' },
-  { value: 'oily', label: '촉촉', emoji: '💦' },
-  { value: 'very_oily', label: '번들번들', emoji: '🫧' },
+  { value: 'very_dry', label: '매우 건조', emoji: '' },
+  { value: 'dry', label: '건조', emoji: '' },
+  { value: 'normal', label: '적당함', emoji: '' },
+  { value: 'oily', label: '촉촉', emoji: '' },
+  { value: 'very_oily', label: '번들번들', emoji: '' },
 ];
 
 const CONCERN_OPTIONS: { value: TodayConcern; label: string; emoji: string }[] = [
-  { value: 'acne', label: '여드름', emoji: '🔴' },
-  { value: 'redness', label: '홍조', emoji: '🌡️' },
-  { value: 'dullness', label: '칙칙함', emoji: '☁️' },
-  { value: 'tightness', label: '당김', emoji: '😣' },
-  { value: 'oiliness', label: '번들거림', emoji: '✨' },
+  { value: 'acne', label: '여드름', emoji: '' },
+  { value: 'redness', label: '홍조', emoji: '' },
+  { value: 'dullness', label: '칙칙함', emoji: '' },
+  { value: 'tightness', label: '당김', emoji: '' },
+  { value: 'oiliness', label: '번들거림', emoji: '' },
 ];
 
 // ================================================

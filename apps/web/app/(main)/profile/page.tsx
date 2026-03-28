@@ -34,6 +34,8 @@ import {
   User,
   Flame,
   QrCode,
+  Dumbbell,
+  Utensils,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
@@ -544,7 +546,7 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-                        <span className="text-lg">💪</span>
+                        <Dumbbell className="w-5 h-5 text-orange-500" />
                       </div>
                       <div>
                         <div className="font-medium">운동</div>
@@ -563,7 +565,7 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                        <span className="text-lg">🥗</span>
+                        <Utensils className="w-5 h-5 text-green-500" />
                       </div>
                       <div>
                         <div className="font-medium">식단</div>

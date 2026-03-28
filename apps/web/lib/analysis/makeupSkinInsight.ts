@@ -65,7 +65,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   hydration: {
     warning: [
       {
-        icon: '💧',
+        icon: '',
         category: 'base',
         title: '보습형 베이스 추천',
         description:
@@ -76,7 +76,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
         relatedSkinMetric: 'hydration',
       },
       {
-        icon: '✨',
+        icon: '',
         category: 'primer',
         title: '보습 프라이머 필수',
         description:
@@ -91,7 +91,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   oil: {
     warning: [
       {
-        icon: '🧴',
+        icon: '',
         category: 'base',
         title: '유분 조절 베이스 추천',
         description:
@@ -102,7 +102,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
         relatedSkinMetric: 'oil',
       },
       {
-        icon: '💎',
+        icon: '',
         category: 'powder',
         title: '세팅 파우더 사용',
         description: 'T존에 세팅 파우더를 사용하면 유분 번들거림을 방지할 수 있어요.',
@@ -116,7 +116,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   trouble: {
     warning: [
       {
-        icon: '🩹',
+        icon: '',
         category: 'concealer',
         title: '고커버 컨실러 추천',
         description:
@@ -127,7 +127,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
         relatedSkinMetric: 'trouble',
       },
       {
-        icon: '🌿',
+        icon: '',
         category: 'base',
         title: '저자극 베이스 선택',
         description:
@@ -142,7 +142,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   wrinkles: {
     warning: [
       {
-        icon: '🌟',
+        icon: '',
         category: 'primer',
         title: '안티에이징 프라이머',
         description:
@@ -153,7 +153,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
         relatedSkinMetric: 'wrinkles',
       },
       {
-        icon: '💫',
+        icon: '',
         category: 'base',
         title: '새틴 마감 베이스',
         description:
@@ -168,7 +168,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   pores: {
     warning: [
       {
-        icon: '🔍',
+        icon: '',
         category: 'primer',
         title: '포어 미니마이징 프라이머',
         description: '모공이 넓어요. 포어 블러링 프라이머로 모공을 메워주면 베이스가 매끄러워져요.',
@@ -182,7 +182,7 @@ const SKIN_MAKEUP_ADJUSTMENTS: Record<string, Record<'warning', MakeupAdjustment
   pigmentation: {
     warning: [
       {
-        icon: '🎨',
+        icon: '',
         category: 'concealer',
         title: '컬러 코렉팅 추천',
         description:

@@ -65,7 +65,9 @@ export function getNotificationPermission(): NotificationPermission | 'unsupport
 /**
  * 알림 권한 요청
  */
-export async function requestNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
+export async function requestNotificationPermission(): Promise<
+  NotificationPermission | 'unsupported'
+> {
   if (!isNotificationSupported()) return 'unsupported';
 
   // 이미 권한이 있으면 그대로 반환
@@ -106,7 +108,7 @@ export function showNotification(notification: ReminderNotification): boolean {
 export function showWorkoutReminder(): boolean {
   return showNotification({
     type: 'workout',
-    title: '💪 운동할 시간이에요!',
+    title: '운동할 시간이에요!',
     body: '오늘의 운동 루틴을 확인해보세요.',
     tag: 'workout-reminder',
     data: { url: '/workout' },
@@ -119,7 +121,7 @@ export function showWorkoutReminder(): boolean {
 export function showNutritionReminder(): boolean {
   return showNotification({
     type: 'nutrition',
-    title: '🍽️ 식단 기록 시간이에요!',
+    title: '식단 기록 시간이에요!',
     body: '오늘 먹은 음식을 기록해보세요.',
     tag: 'nutrition-reminder',
     data: { url: '/nutrition' },
@@ -129,13 +131,15 @@ export function showNutritionReminder(): boolean {
 /**
  * Streak 끊김 경고 알림
  */
-export function showStreakWarning(streakType: 'workout' | 'nutrition', currentStreak: number): boolean {
-  const emoji = streakType === 'workout' ? '🏃' : '🥗';
+export function showStreakWarning(
+  streakType: 'workout' | 'nutrition',
+  currentStreak: number
+): boolean {
   const typeName = streakType === 'workout' ? '운동' : '식단';
 
   return showNotification({
     type: 'streak_warning',
-    title: `${emoji} ${currentStreak}일 연속 기록이 끊길 위험!`,
+    title: `${currentStreak}일 연속 ${typeName} 기록이 끊길 위험!`,
     body: `오늘 ${typeName} 기록을 남기면 연속 기록이 유지됩니다.`,
     tag: `streak-warning-${streakType}`,
     data: { url: streakType === 'workout' ? '/workout' : '/nutrition' },
@@ -148,7 +152,7 @@ export function showStreakWarning(streakType: 'workout' | 'nutrition', currentSt
 export function showCheckinReminder(): boolean {
   return showNotification({
     type: 'checkin',
-    title: '✨ 오늘의 나 체크인하기',
+    title: '오늘의 나 체크인하기',
     body: '30초만 투자해서 오늘의 상태를 기록해보세요.',
     tag: 'checkin-reminder',
     data: { url: '/dashboard' },
@@ -235,7 +239,7 @@ export function stopReminderSchedule(): void {
 export function showTestNotification(): boolean {
   return showNotification({
     type: 'checkin',
-    title: '🎉 알림 설정 완료!',
+    title: '알림 설정 완료!',
     body: '이룸에서 리마인더 알림을 받을 준비가 되었습니다.',
     tag: 'test-notification',
   });

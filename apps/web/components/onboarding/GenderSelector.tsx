@@ -14,7 +14,6 @@ interface GenderOption {
   value: GenderPreference;
   label: string;
   description: string;
-  icon: string;
 }
 
 interface StyleOption {
@@ -28,37 +27,34 @@ const GENDER_OPTIONS: GenderOption[] = [
     value: 'female',
     label: '여성',
     description: '여성 맞춤 스타일링',
-    icon: '👩',
   },
   {
     value: 'male',
     label: '남성',
     description: '남성 맞춤 스타일링',
-    icon: '👨',
   },
   {
     value: 'neutral',
     label: '선택 안함',
     description: '모든 스타일 보기',
-    icon: '🌟',
   },
 ];
 
 const STYLE_OPTIONS: StyleOption[] = [
   {
     value: 'feminine',
-    label: '페미닌',
-    description: '우아하고 부드러운 스타일',
+    label: '소프트',
+    description: '화사하고 부드러운 스타일을 추천해요',
   },
   {
     value: 'masculine',
-    label: '매스큘린',
-    description: '깔끔하고 세련된 스타일',
+    label: '미니멀',
+    description: '깔끔하고 심플한 스타일을 추천해요',
   },
   {
     value: 'unisex',
-    label: '유니섹스',
-    description: '성별 구분 없는 스타일',
+    label: '자유로운',
+    description: '다양한 스타일을 자유롭게 추천해요',
   },
 ];
 
@@ -170,9 +166,6 @@ export function GenderSelector({
               aria-pressed={selectedGender === option.value}
               aria-label={`${option.label} 선택`}
             >
-              <span className="text-3xl mb-2" role="img" aria-hidden="true">
-                {option.icon}
-              </span>
               <span className="font-medium text-foreground">{option.label}</span>
               <span className="text-xs text-muted-foreground mt-1 text-center">
                 {option.description}

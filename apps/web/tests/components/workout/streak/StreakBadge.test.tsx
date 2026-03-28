@@ -16,10 +16,11 @@ describe('StreakBadge', () => {
       expect(screen.getByText('7일 연속')).toBeInTheDocument();
     });
 
-    it('배지 이모지가 표시된다', () => {
+    it('배지가 렌더링된다', () => {
       render(<StreakBadge badgeId="7day" />);
 
-      expect(screen.getByText('🔥')).toBeInTheDocument();
+      // 이모지 제거됨 - 배지 컨테이너 존재 확인
+      expect(screen.getByTestId('streak-badge')).toBeInTheDocument();
     });
 
     it('showName=false면 이름이 숨겨진다', () => {
@@ -33,21 +34,21 @@ describe('StreakBadge', () => {
     it('3day 배지가 올바르게 표시된다', () => {
       render(<StreakBadge badgeId="3day" />);
 
-      expect(screen.getByText('🌱')).toBeInTheDocument();
+      expect(screen.getByTestId('streak-badge')).toBeInTheDocument();
       expect(screen.getByText('3일 연속')).toBeInTheDocument();
     });
 
     it('30day 배지가 올바르게 표시된다', () => {
       render(<StreakBadge badgeId="30day" />);
 
-      expect(screen.getByText('🏆')).toBeInTheDocument();
+      expect(screen.getByTestId('streak-badge')).toBeInTheDocument();
       expect(screen.getByText('30일 연속')).toBeInTheDocument();
     });
 
     it('100day 배지가 올바르게 표시된다', () => {
       render(<StreakBadge badgeId="100day" />);
 
-      expect(screen.getByText('👑')).toBeInTheDocument();
+      expect(screen.getByTestId('streak-badge')).toBeInTheDocument();
       expect(screen.getByText('100일 연속')).toBeInTheDocument();
     });
   });
@@ -86,9 +87,9 @@ describe('StreakBadgeList', () => {
     it('여러 배지가 표시된다', () => {
       render(<StreakBadgeList badges={['3day', '7day', '14day']} />);
 
-      expect(screen.getByText('🌱')).toBeInTheDocument();
-      expect(screen.getByText('🔥')).toBeInTheDocument();
-      expect(screen.getByText('💪')).toBeInTheDocument();
+      // 이모지 제거됨 - 배지 컨테이너 개수로 검증
+      const badges = screen.getAllByTestId('streak-badge');
+      expect(badges).toHaveLength(3);
     });
   });
 

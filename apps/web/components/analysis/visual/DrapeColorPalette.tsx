@@ -189,7 +189,7 @@ export default function DrapeColorPalette({
           disabled={isAnalyzing}
           className="flex-1 min-h-[44px]"
         >
-          <span className="mr-1">🥈</span> 실버
+          Silver
         </Button>
         <Button
           variant={metalType === 'gold' ? 'default' : 'outline'}
@@ -198,7 +198,7 @@ export default function DrapeColorPalette({
           disabled={isAnalyzing}
           className="flex-1 min-h-[44px]"
         >
-          <span className="mr-1">🥇</span> 골드
+          Gold
         </Button>
       </div>
 

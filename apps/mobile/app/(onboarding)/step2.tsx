@@ -8,6 +8,7 @@
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
+  AlertCircle,
   User,
   UserCircle,
   Users,
@@ -33,6 +34,7 @@ import {
   GENDER_LABELS,
   STYLE_PREFERENCE_LABELS,
   STYLE_PREFERENCE_DESCRIPTIONS,
+  validateBirthYear,
 } from '../../lib/onboarding';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
@@ -60,6 +62,7 @@ export default function OnboardingStep2() {
   const { data, setBasicInfo, setStylePreference, nextStep, prevStep } = useOnboarding();
 
   const [birthYear, setBirthYear] = useState(data.basicInfo.birthYear?.toString() || '');
+  const [birthYearError, setBirthYearError] = useState<string | null>(null);
 
   const handleGenderSelect = (gender: Gender): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -77,13 +80,21 @@ export default function OnboardingStep2() {
 
   const handleBirthYearChange = (value: string): void => {
     setBirthYear(value);
+    setBirthYearError(null);
     const year = parseInt(value, 10);
-    if (year >= 1900 && year <= CURRENT_YEAR) {
-      setBasicInfo({ birthYear: year });
+
+    // 4자리 입력 완료 시 검증
+    if (value.length === 4) {
+      const { valid, error } = validateBirthYear(year);
+      if (valid) {
+        setBasicInfo({ birthYear: year });
+      } else {
+        setBirthYearError(error ?? null);
+      }
     }
   };
 
-  const canProceed = data.basicInfo.gender && data.basicInfo.birthYear;
+  const canProceed = data.basicInfo.gender && data.basicInfo.birthYear && !birthYearError;
   const showStyleSelection = data.basicInfo.gender && data.basicInfo.gender !== 'neutral';
 
   return (
@@ -290,7 +301,21 @@ export default function OnboardingStep2() {
               testID="birthYear-input"
               accessibilityLabel="출생년도"
             />
-            {birthYear.length === 4 && (
+            {birthYear.length === 4 && birthYearError && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs, gap: 4 }}>
+                <AlertCircle size={14} color="#EF4444" strokeWidth={2} />
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    color: '#EF4444',
+                  }}
+                  testID="birthYear-error"
+                >
+                  {birthYearError}
+                </Text>
+              </View>
+            )}
+            {birthYear.length === 4 && !birthYearError && (
               <Text
                 style={{
                   fontSize: typography.size.xs,

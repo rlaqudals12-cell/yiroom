@@ -70,7 +70,7 @@ export function WeeklyPlanCard({
 
     if (day.isRestDay) {
       return {
-        icon: '⬜',
+        icon: '',
         bgColor: 'bg-muted',
         textColor: 'text-muted-foreground',
         borderColor: isToday ? 'ring-2 ring-muted-foreground' : '',
@@ -80,7 +80,7 @@ export function WeeklyPlanCard({
     // 현재는 예정 상태로만 표시 (운동 기록 연동 전)
     if (isToday) {
       return {
-        icon: '🔴',
+        icon: '',
         bgColor: 'bg-red-50',
         textColor: 'text-red-600',
         borderColor: 'ring-2 ring-red-400',
@@ -88,7 +88,7 @@ export function WeeklyPlanCard({
     }
 
     return {
-      icon: '📋',
+      icon: '',
       bgColor: 'bg-indigo-50',
       textColor: 'text-indigo-600',
       borderColor: '',
@@ -136,7 +136,7 @@ export function WeeklyPlanCard({
                 <span className="text-xs font-medium text-muted-foreground mb-1">
                   {DAY_LABELS[day.day]}
                 </span>
-                <span className="text-lg mb-1">{status.icon}</span>
+                {status.icon && <span className="text-lg mb-1">{status.icon}</span>}
                 <span
                   className={`text-xs font-medium ${status.textColor} truncate w-full text-center`}
                 >
@@ -152,19 +152,15 @@ export function WeeklyPlanCard({
       <div className="px-4 pb-4">
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <span>📋</span>
             <span>예정</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>🔴</span>
             <span>오늘</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>⬜</span>
             <span>휴식</span>
           </div>
           <div className="flex items-center gap-1">
-            <span>✅</span>
             <span>완료</span>
           </div>
         </div>

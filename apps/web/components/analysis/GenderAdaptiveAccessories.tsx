@@ -31,9 +31,9 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   sunglasses: <Glasses className="w-4 h-4" />,
   tie: <Shirt className="w-4 h-4" />,
   belt: <Shirt className="w-4 h-4" />,
-  jewelry: <span className="text-sm">💎</span>,
-  scarf: <span className="text-sm">🧣</span>,
-  bag: <span className="text-sm">👜</span>,
+  jewelry: <Shirt className="w-4 h-4" />,
+  scarf: <Shirt className="w-4 h-4" />,
+  bag: <Shirt className="w-4 h-4" />,
 };
 
 export function GenderAdaptiveAccessories({
@@ -55,8 +55,11 @@ export function GenderAdaptiveAccessories({
 
   const accessories = getAccessoryRecommendations(seasonType, {
     gender: selectedGender,
-    stylePreference:
-      selectByKey(selectedGender, { male: 'masculine' as const, female: 'feminine' as const }, 'unisex' as const)!,
+    stylePreference: selectByKey(
+      selectedGender,
+      { male: 'masculine' as const, female: 'feminine' as const },
+      'unisex' as const
+    )!,
   });
 
   // 카테고리별 그룹핑
@@ -76,7 +79,6 @@ export function GenderAdaptiveAccessories({
       data-testid="gender-adaptive-accessories"
     >
       <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-        <span className="text-lg">✨</span>
         맞춤 악세서리 추천
       </h3>
 

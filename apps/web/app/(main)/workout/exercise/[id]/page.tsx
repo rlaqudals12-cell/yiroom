@@ -28,10 +28,10 @@ const BODY_PART_LABELS: Record<string, string> = {
 
 // 카테고리 아이콘 매핑
 const CATEGORY_ICONS: Record<string, string> = {
-  upper: '💪',
-  lower: '🦵',
-  core: '🧘',
-  cardio: '🏃',
+  upper: '',
+  lower: '',
+  core: '',
+  cardio: '',
 };
 
 // 세트/횟수 추천 (난이도별)
@@ -53,7 +53,7 @@ export default function ExerciseDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-          <span className="text-3xl">🔍</span>
+          <span className="text-3xl"></span>
         </div>
         <h2 className="text-lg font-bold text-foreground">운동을 찾을 수 없어요</h2>
         <p className="text-muted-foreground text-center">요청하신 운동 정보를 찾을 수 없어요.</p>
@@ -68,7 +68,7 @@ export default function ExerciseDetailPage() {
   }
 
   const difficultyInfo = DIFFICULTY_LABELS[exercise.difficulty];
-  const categoryIcon = CATEGORY_ICONS[exercise.category] || '🏋️';
+  const categoryIcon = CATEGORY_ICONS[exercise.category] || '';
   const setReps = SET_REPS_RECOMMENDATIONS[exercise.difficulty];
   const alternativeExercises = getAlternativeExercises(exercise, 3);
 

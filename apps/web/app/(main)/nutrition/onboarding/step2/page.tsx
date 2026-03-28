@@ -10,29 +10,29 @@ import {
 import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/workout/common';
 
 // 식사 스타일 옵션
-const MEAL_STYLES: { id: MealStyle; icon: string; title: string; desc: string }[] = [
-  { id: 'korean', icon: '🍚', title: '한식 위주', desc: '밥, 국, 반찬 구성' },
-  { id: 'salad', icon: '🥗', title: '샐러드/가벼운 식사', desc: '저탄고단 식단' },
-  { id: 'western', icon: '🍝', title: '양식/파스타/빵', desc: '서양식 위주' },
-  { id: 'lunchbox', icon: '🍱', title: '도시락/간편식', desc: '편의점, 도시락' },
-  { id: 'delivery', icon: '🥡', title: '배달/외식 많이', desc: '외식 위주' },
-  { id: 'any', icon: '🔀', title: '다양하게', desc: '특정 선호 없음' },
+const MEAL_STYLES: { id: MealStyle; title: string; desc: string }[] = [
+  { id: 'korean', title: '한식 위주', desc: '밥, 국, 반찬 구성' },
+  { id: 'salad', title: '샐러드/가벼운 식사', desc: '저탄고단 식단' },
+  { id: 'western', title: '양식/파스타/빵', desc: '서양식 위주' },
+  { id: 'lunchbox', title: '도시락/간편식', desc: '편의점, 도시락' },
+  { id: 'delivery', title: '배달/외식 많이', desc: '외식 위주' },
+  { id: 'any', title: '다양하게', desc: '특정 선호 없음' },
 ];
 
 // 요리 스킬 옵션
-const COOKING_SKILLS: { id: CookingSkill; icon: string; title: string; desc: string }[] = [
-  { id: 'advanced', icon: '⭐', title: '고급', desc: '30분+ 레시피' },
-  { id: 'intermediate', icon: '👨‍🍳', title: '중급', desc: '15-30분 레시피' },
-  { id: 'beginner', icon: '🍳', title: '초보', desc: '10분 이내' },
-  { id: 'none', icon: '🚫', title: '요리 안 함', desc: '완제품/배달' },
+const COOKING_SKILLS: { id: CookingSkill; title: string; desc: string }[] = [
+  { id: 'advanced', title: '고급', desc: '30분+ 레시피' },
+  { id: 'intermediate', title: '중급', desc: '15-30분 레시피' },
+  { id: 'beginner', title: '초보', desc: '10분 이내' },
+  { id: 'none', title: '요리 안 함', desc: '완제품/배달' },
 ];
 
 // 예산 옵션
-const BUDGET_OPTIONS: { id: BudgetLevel; icon: string; title: string; desc: string }[] = [
-  { id: 'economy', icon: '💰', title: '가성비 위주', desc: '1식 5천원 이하' },
-  { id: 'moderate', icon: '⚖️', title: '적당히', desc: '1식 5천~1만원' },
-  { id: 'premium', icon: '💎', title: '좋은 재료', desc: '1식 1만원 이상' },
-  { id: 'any', icon: '🔀', title: '상관없음', desc: '예산 제한 없음' },
+const BUDGET_OPTIONS: { id: BudgetLevel; title: string; desc: string }[] = [
+  { id: 'economy', title: '가성비 위주', desc: '1식 5천원 이하' },
+  { id: 'moderate', title: '적당히', desc: '1식 5천~1만원' },
+  { id: 'premium', title: '좋은 재료', desc: '1식 1만원 이상' },
+  { id: 'any', title: '상관없음', desc: '예산 제한 없음' },
 ];
 
 /**
@@ -79,7 +79,6 @@ export default function NutritionStep2Page() {
               mode="single"
               selected={mealStyle === style.id}
               onSelect={() => setMealStyle(style.id)}
-              icon={<span className="text-xl">{style.icon}</span>}
               title={style.title}
               description={style.desc}
               compact
@@ -106,7 +105,6 @@ export default function NutritionStep2Page() {
               mode="single"
               selected={cookingSkill === skill.id}
               onSelect={() => setCookingSkill(skill.id)}
-              icon={<span className="text-xl">{skill.icon}</span>}
               title={skill.title}
               description={skill.desc}
               compact
@@ -133,7 +131,6 @@ export default function NutritionStep2Page() {
               mode="single"
               selected={budget === option.id}
               onSelect={() => setBudget(option.id)}
-              icon={<span className="text-xl">{option.icon}</span>}
               title={option.title}
               description={option.desc}
               compact

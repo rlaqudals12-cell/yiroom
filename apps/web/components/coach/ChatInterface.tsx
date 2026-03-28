@@ -197,12 +197,12 @@ export function ChatInterface({
   };
 
   const categories = [
-    { key: 'general' as const, label: '일반', icon: '💡' },
-    { key: 'workout' as const, label: '운동', icon: '💪' },
-    { key: 'nutrition' as const, label: '영양', icon: '🥗' },
-    { key: 'skin' as const, label: '피부', icon: '✨' },
-    { key: 'hair' as const, label: '헤어', icon: '💇' },
-    { key: 'makeup' as const, label: '메이크업', icon: '💄' },
+    { key: 'general' as const, label: '일반' },
+    { key: 'workout' as const, label: '운동' },
+    { key: 'nutrition' as const, label: '영양' },
+    { key: 'skin' as const, label: '피부' },
+    { key: 'hair' as const, label: '헤어' },
+    { key: 'makeup' as const, label: '메이크업' },
   ];
 
   const contextSummary = userContext ? summarizeContext(userContext) : undefined;
@@ -236,7 +236,6 @@ export function ChatInterface({
                       : 'bg-muted hover:bg-muted/80'
                   )}
                 >
-                  <span>{cat.icon}</span>
                   {cat.label}
                 </button>
               ))}
@@ -321,7 +320,6 @@ export function ChatInterface({
                       : 'bg-muted hover:bg-muted/80'
                   )}
                 >
-                  <span>{cat.icon}</span>
                   {cat.label}
                 </button>
               ))}

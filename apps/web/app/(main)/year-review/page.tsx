@@ -69,11 +69,11 @@ const bestRecords = [
 
 // 획득 배지
 const earnedBadges = [
-  { id: '1', name: '첫 운동', icon: '🏃', earnedAt: '1월 2일' },
-  { id: '2', name: '7일 연속', icon: '🔥', earnedAt: '1월 15일' },
-  { id: '3', name: '21일 연속', icon: '💪', earnedAt: '4월 23일' },
-  { id: '4', name: '100시간 달성', icon: '⏱️', earnedAt: '8월 10일' },
-  { id: '5', name: '마스터', icon: '👑', earnedAt: '12월 20일' },
+  { id: '1', name: '첫 운동', earnedAt: '1월 2일' },
+  { id: '2', name: '7일 연속', earnedAt: '1월 15일' },
+  { id: '3', name: '21일 연속', earnedAt: '4월 23일' },
+  { id: '4', name: '100시간 달성', earnedAt: '8월 10일' },
+  { id: '5', name: '마스터', earnedAt: '12월 20일' },
 ];
 
 // 친구 비교
@@ -279,7 +279,7 @@ export default function YearReviewPage() {
                   key={badge.id}
                   className="bg-white/10 backdrop-blur rounded-2xl p-4 text-center"
                 >
-                  <span className="text-4xl block mb-2">{badge.icon}</span>
+                  <span className="text-4xl block mb-2"></span>
                   <p className="font-medium text-sm">{badge.name}</p>
                   <p className="text-xs text-white/50 mt-1">{badge.earnedAt}</p>
                 </div>

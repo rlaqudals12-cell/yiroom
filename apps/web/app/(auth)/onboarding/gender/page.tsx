@@ -8,7 +8,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Users, Sparkles } from 'lucide-react';
+import { User, UserCircle, Users, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,60 +17,25 @@ import { cn } from '@/lib/utils';
 import { useGenderProfile } from '@/components/providers/gender-provider';
 import type { GenderPreference, StylePreference } from '@/lib/content/gender-adaptive';
 
-interface GenderOption {
-  value: GenderPreference;
-  label: string;
-  description: string;
-  icon: typeof User;
-}
+const GENDER_ICONS: Record<GenderPreference, typeof User> = {
+  male: User,
+  female: UserCircle,
+  neutral: Users,
+};
 
-interface StyleOption {
-  value: StylePreference;
-  label: string;
-  description: string;
-}
+const GENDER_KEYS: GenderPreference[] = ['male', 'female', 'neutral'];
+const STYLE_KEYS: StylePreference[] = ['masculine', 'feminine', 'unisex'];
 
-const GENDER_OPTIONS: GenderOption[] = [
-  {
-    value: 'male',
-    label: '남성',
-    description: '남성용 추천 스타일과 제품을 받아보세요',
-    icon: User,
-  },
-  {
-    value: 'female',
-    label: '여성',
-    description: '여성용 추천 스타일과 제품을 받아보세요',
-    icon: User,
-  },
-  {
-    value: 'neutral',
-    label: '선택 안함',
-    description: '성별 구분 없이 다양한 추천을 받아보세요',
-    icon: Users,
-  },
-];
-
-const STYLE_OPTIONS: StyleOption[] = [
-  {
-    value: 'masculine',
-    label: '남성적 스타일',
-    description: '깔끔하고 심플한 스타일 선호',
-  },
-  {
-    value: 'feminine',
-    label: '여성적 스타일',
-    description: '화사하고 부드러운 스타일 선호',
-  },
-  {
-    value: 'unisex',
-    label: '유니섹스 스타일',
-    description: '성별 구분 없는 스타일 선호',
-  },
-];
+// i18n 키 매핑 (gender → onboarding 네임스페이스)
+const STYLE_I18N_MAP: Record<StylePreference, { label: string; desc: string }> = {
+  masculine: { label: 'minimal', desc: 'minimalDesc' },
+  feminine: { label: 'soft', desc: 'softDesc' },
+  unisex: { label: 'free', desc: 'freeDesc' },
+};
 
 export default function GenderOnboardingPage() {
   const router = useRouter();
+  const t = useTranslations('onboarding');
   const { updateGenderProfile, isLoading } = useGenderProfile();
   const [gender, setGender] = useState<GenderPreference | null>(null);
   const [stylePreference, setStylePreference] = useState<StylePreference | null>(null);
@@ -137,38 +103,34 @@ export default function GenderOnboardingPage() {
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl">
-            {step === 'gender' ? '나에게 맞는 추천 받기' : '스타일 선호도'}
+            {step === 'gender' ? t('genderTitle') : t('styleTitle')}
           </CardTitle>
           <CardDescription>
-            {step === 'gender'
-              ? '성별에 맞는 맞춤 추천을 받아보세요'
-              : '선호하는 스타일을 선택해주세요'}
+            {step === 'gender' ? t('genderSubtitle') : t('styleSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {step === 'gender' ? (
             <div className="space-y-3" data-testid="gender-selection">
-              {GENDER_OPTIONS.map((option) => {
-                const Icon = option.icon;
+              {GENDER_KEYS.map((key) => {
+                const Icon = GENDER_ICONS[key];
                 return (
                   <button
-                    key={option.value}
-                    onClick={() => handleGenderSelect(option.value)}
+                    key={key}
+                    onClick={() => handleGenderSelect(key)}
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all',
                       'hover:border-primary hover:bg-primary/5',
-                      gender === option.value
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-card'
+                      gender === key ? 'border-primary bg-primary/10' : 'border-border bg-card'
                     )}
-                    data-testid={`gender-option-${option.value}`}
+                    data-testid={`gender-option-${key}`}
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium">{option.label}</div>
-                      <div className="text-sm text-muted-foreground">{option.description}</div>
+                      <div className="font-medium">{t(key)}</div>
+                      <div className="text-sm text-muted-foreground">{t(`${key}Desc`)}</div>
                     </div>
                   </button>
                 );
@@ -176,37 +138,40 @@ export default function GenderOnboardingPage() {
             </div>
           ) : (
             <div className="space-y-3" data-testid="style-selection">
-              {STYLE_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleStyleSelect(option.value)}
-                  className={cn(
-                    'w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all',
-                    'hover:border-primary hover:bg-primary/5',
-                    stylePreference === option.value
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border bg-card'
-                  )}
-                  data-testid={`style-option-${option.value}`}
-                >
-                  <div className="text-left">
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-sm text-muted-foreground">{option.description}</div>
-                  </div>
-                </button>
-              ))}
+              {STYLE_KEYS.map((key) => {
+                const i18n = STYLE_I18N_MAP[key];
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleStyleSelect(key)}
+                    className={cn(
+                      'w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all',
+                      'hover:border-primary hover:bg-primary/5',
+                      stylePreference === key
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-card'
+                    )}
+                    data-testid={`style-option-${key}`}
+                  >
+                    <div className="text-left">
+                      <div className="font-medium">{t(i18n.label)}</div>
+                      <div className="text-sm text-muted-foreground">{t(i18n.desc)}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
           <div className="mt-6 flex gap-3">
             {step === 'style' && (
               <Button variant="outline" onClick={handleBack} className="flex-1">
-                이전
+                {t('back')}
               </Button>
             )}
             {step === 'gender' ? (
               <Button variant="ghost" onClick={handleSkip} className="flex-1">
-                나중에 설정
+                {t('skip')}
               </Button>
             ) : (
               <Button
@@ -214,7 +179,7 @@ export default function GenderOnboardingPage() {
                 disabled={!stylePreference || isSubmitting}
                 className="flex-1"
               >
-                {isSubmitting ? '저장 중...' : '시작하기'}
+                {isSubmitting ? t('saving') : t('submit')}
               </Button>
             )}
           </div>

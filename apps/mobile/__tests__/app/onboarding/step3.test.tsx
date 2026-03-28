@@ -90,9 +90,9 @@ jest.mock('../../../lib/onboarding', () => ({
     neutral: '선택 안 함',
   },
   STYLE_PREFERENCE_LABELS: {
-    masculine: '남성적 스타일',
-    feminine: '여성적 스타일',
-    unisex: '유니섹스 스타일',
+    masculine: '미니멀 스타일',
+    feminine: '소프트 스타일',
+    unisex: '자유로운 스타일',
   },
   calculateAge: jest.fn((birthYear: number) => new Date().getFullYear() - birthYear),
 }));

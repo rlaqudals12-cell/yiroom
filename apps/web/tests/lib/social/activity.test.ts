@@ -78,7 +78,7 @@ describe('getActivityConfig', () => {
     types.forEach((type) => {
       const config = getActivityConfig(type);
       expect(config).toBeDefined();
-      expect(config.icon).toBeTruthy();
+      expect(config.icon).toBeDefined();
       expect(config.label).toBeTruthy();
       expect(config.color).toBeTruthy();
       expect(config.bgColor).toBeTruthy();
@@ -87,37 +87,37 @@ describe('getActivityConfig', () => {
 
   it('workout_complete 설정', () => {
     const config = getActivityConfig('workout_complete');
-    expect(config.icon).toBe('💪');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('운동 완료');
   });
 
   it('challenge_join 설정', () => {
     const config = getActivityConfig('challenge_join');
-    expect(config.icon).toBe('🎯');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('챌린지 참여');
   });
 
   it('challenge_complete 설정', () => {
     const config = getActivityConfig('challenge_complete');
-    expect(config.icon).toBe('🏆');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('챌린지 완료');
   });
 
   it('streak_achieved 설정', () => {
     const config = getActivityConfig('streak_achieved');
-    expect(config.icon).toBe('🔥');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('연속 달성');
   });
 
   it('level_up 설정', () => {
     const config = getActivityConfig('level_up');
-    expect(config.icon).toBe('⬆️');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('레벨 업');
   });
 
   it('badge_earned 설정', () => {
     const config = getActivityConfig('badge_earned');
-    expect(config.icon).toBe('🏅');
+    expect(config.icon).toBe('');
     expect(config.label).toBe('뱃지 획득');
   });
 });

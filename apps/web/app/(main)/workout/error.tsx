@@ -22,7 +22,7 @@ export default function WorkoutError({
       data-testid="workout-error-page"
     >
       <div className="text-center max-w-md">
-        <div className="text-5xl mb-4">💪</div>
+        <div className="mb-4"></div>
         <h2 className="text-xl font-bold text-foreground mb-2">문제가 발생했어요</h2>
         <p className="text-muted-foreground mb-6">
           운동 모듈에서 오류가 발생했어요. 다시 시도해주세요.

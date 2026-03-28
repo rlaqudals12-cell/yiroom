@@ -15,27 +15,27 @@ import type { NutritionGoal } from '@/types/nutrition';
 import { Loader2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 영양 목표 옵션
-const NUTRITION_GOALS: { id: NutritionGoal; icon: string; title: string; desc: string }[] = [
-  { id: 'weight_loss', icon: '🔥', title: '체중 감량', desc: '살 빼기에 맞춘 식단' },
-  { id: 'maintain', icon: '⚖️', title: '체중 유지', desc: '균형 잡힌 식단' },
-  { id: 'muscle', icon: '💪', title: '근육 증가', desc: '고단백 식단' },
-  { id: 'skin', icon: '✨', title: '피부 개선', desc: '피부 친화 식단' },
-  { id: 'health', icon: '❤️', title: '건강 관리', desc: '균형 영양 식단' },
+const NUTRITION_GOALS: { id: NutritionGoal; title: string; desc: string }[] = [
+  { id: 'weight_loss', title: '체중 감량', desc: '살 빼기에 맞춘 식단' },
+  { id: 'maintain', title: '체중 유지', desc: '균형 잡힌 식단' },
+  { id: 'muscle', title: '근육 증가', desc: '고단백 식단' },
+  { id: 'skin', title: '피부 개선', desc: '피부 친화 식단' },
+  { id: 'health', title: '건강 관리', desc: '균형 영양 식단' },
 ];
 
 // 성별 옵션
-const GENDER_OPTIONS: { id: Gender; icon: string; title: string }[] = [
-  { id: 'male', icon: '👨', title: '남성' },
-  { id: 'female', icon: '👩', title: '여성' },
+const GENDER_OPTIONS: { id: Gender; title: string }[] = [
+  { id: 'male', title: '남성' },
+  { id: 'female', title: '여성' },
 ];
 
 // 활동 수준 옵션
-const ACTIVITY_OPTIONS: { id: ActivityLevel; icon: string }[] = [
-  { id: 'sedentary', icon: '🪑' },
-  { id: 'light', icon: '🚶' },
-  { id: 'moderate', icon: '🏃' },
-  { id: 'active', icon: '💪' },
-  { id: 'very_active', icon: '🔥' },
+const ACTIVITY_OPTIONS: { id: ActivityLevel }[] = [
+  { id: 'sedentary' },
+  { id: 'light' },
+  { id: 'moderate' },
+  { id: 'active' },
+  { id: 'very_active' },
 ];
 
 /**
@@ -155,7 +155,6 @@ export default function NutritionStep1Page() {
               mode="single"
               selected={goal === item.id}
               onSelect={() => setGoal(item.id)}
-              icon={<span>{item.icon}</span>}
               title={item.title}
               description={item.desc}
             />
@@ -204,8 +203,7 @@ export default function NutritionStep1Page() {
                     : 'border-border hover:border-border/80'
                 }`}
               >
-                <span className="text-2xl">{option.icon}</span>
-                <p className="mt-1 font-medium text-foreground">{option.title}</p>
+                <p className="font-medium text-foreground">{option.title}</p>
               </button>
             ))}
           </div>
@@ -289,7 +287,6 @@ export default function NutritionStep1Page() {
                       mode="single"
                       selected={activityLevel === option.id}
                       onSelect={() => setActivityLevel(option.id)}
-                      icon={<span>{option.icon}</span>}
                       title={label.label}
                       description={label.description}
                     />

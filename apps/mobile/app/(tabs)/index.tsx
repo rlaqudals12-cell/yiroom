@@ -345,7 +345,7 @@ export default function HomeScreen(): React.JSX.Element {
                 marginBottom: spacing.md,
               }}
             >
-              오늘 {Math.floor(80 + Math.random() * 60)}명이 분석을 완료했어요
+              나에게 어울리는 스타일을 찾아보세요
             </Text>
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               <Pressable
@@ -568,31 +568,6 @@ export default function HomeScreen(): React.JSX.Element {
         </Animated.View>
       </GlassCard>
 
-      {/* 팁 — GradientCard */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GradientCard variant="professional" testID="daily-tip-card">
-          <Text
-            style={{
-              fontSize: typography.size.xs,
-              fontWeight: typography.weight.semibold,
-              color: brand.primary,
-              marginBottom: spacing.sm,
-            }}
-          >
-            오늘의 팁
-          </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.cardForeground,
-              lineHeight: 22,
-            }}
-          >
-            꾸준한 기록이 변화의 시작입니다.{'\n'}
-            오늘도 이룸과 함께해요!
-          </Text>
-        </GradientCard>
-      </Animated.View>
     </ScreenContainer>
   );
 }

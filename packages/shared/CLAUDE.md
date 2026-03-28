@@ -63,20 +63,11 @@ src/
 ├── index.ts          # 모든 export 통합
 ├── types/
 │   ├── index.ts
-│   ├── user.ts
-│   ├── workout.ts
-│   ├── nutrition.ts
-│   └── products.ts
-├── workout/
-│   ├── index.ts
-│   ├── classify.ts
-│   └── tips.ts
-├── products/
-│   └── matching.ts
+│   └── analysis.ts
+├── onboarding/       # 온보딩 공통 상수 (웹-모바일 라벨 드리프트 방지)
+│   └── index.ts      # Gender, Style, Goal 타입/라벨/검증
 └── utils/
-    ├── index.ts
-    ├── validation.ts
-    └── formatters.ts
+    └── index.ts
 ```
 
 ## Export 규칙
@@ -84,8 +75,7 @@ src/
 ```typescript
 // src/index.ts에서 모든 것을 re-export
 export * from './types';
-export * from './workout';
-export * from './products';
+export * from './onboarding';
 export * from './utils';
 
 // 사용처에서는 단일 import

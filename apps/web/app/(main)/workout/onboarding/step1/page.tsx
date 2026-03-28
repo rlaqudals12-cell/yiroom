@@ -27,19 +27,19 @@ interface BodyAnalysis {
 
 // 운동 목표 옵션 (Step 2에서 통합)
 const GOALS = [
-  { id: 'weight_loss', icon: '🔥', title: '체중 감량', desc: '건강하게 살 빼기' },
-  { id: 'strength', icon: '💪', title: '근력 강화', desc: '근육량 늘리기' },
-  { id: 'endurance', icon: '🏃', title: '체력 향상', desc: '지구력 키우기' },
-  { id: 'stress', icon: '😌', title: '스트레스 해소', desc: '마음 건강 챙기기' },
-  { id: 'posture', icon: '🧘', title: '체형 교정', desc: '바른 자세 만들기' },
+  { id: 'weight_loss', title: '체중 감량', desc: '건강하게 살 빼기' },
+  { id: 'strength', title: '근력 강화', desc: '근육량 늘리기' },
+  { id: 'endurance', title: '체력 향상', desc: '지구력 키우기' },
+  { id: 'stress', title: '스트레스 해소', desc: '마음 건강 챙기기' },
+  { id: 'posture', title: '체형 교정', desc: '바른 자세 만들기' },
 ];
 
 // 신체 고민 옵션 (Step 3에서 통합 - 상위 4개만)
 const CONCERNS = [
-  { id: 'belly', icon: '🫃', title: '뱃살', desc: '복부 지방 감소' },
-  { id: 'thigh', icon: '🦵', title: '허벅지', desc: '하체 라인 정리' },
-  { id: 'arm', icon: '💪', title: '팔뚝', desc: '팔 라인 탄력' },
-  { id: 'back', icon: '🔙', title: '등살', desc: '등 라인 정리' },
+  { id: 'belly', title: '뱃살', desc: '복부 지방 감소' },
+  { id: 'thigh', title: '허벅지', desc: '하체 라인 정리' },
+  { id: 'arm', title: '팔뚝', desc: '팔 라인 탄력' },
+  { id: 'back', title: '등살', desc: '등 라인 정리' },
 ];
 
 const MAX_GOALS = 2;
@@ -243,7 +243,6 @@ export default function Step1Page() {
               aria-expanded={showBodyInfo}
             >
               <div className="flex items-center gap-3">
-                {bodyTypeInfo && <span className="text-2xl">{bodyTypeInfo.emoji}</span>}
                 <div className="text-left">
                   <p className="font-medium text-foreground">
                     {bodyTypeInfo?.label || '체형 정보'}
@@ -314,7 +313,6 @@ export default function Step1Page() {
                   mode="multiple"
                   selected={goals.includes(goal.id)}
                   onSelect={() => handleGoalSelect(goal.id)}
-                  icon={<span>{goal.icon}</span>}
                   title={goal.title}
                   description={goal.desc}
                 />
@@ -340,7 +338,6 @@ export default function Step1Page() {
                   mode="multiple"
                   selected={concerns.includes(concern.id)}
                   onSelect={() => handleConcernSelect(concern.id)}
-                  icon={<span className="text-xl">{concern.icon}</span>}
                   title={concern.title}
                   description={concern.desc}
                   compact

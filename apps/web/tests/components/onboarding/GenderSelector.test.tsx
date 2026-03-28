@@ -56,12 +56,12 @@ describe('GenderSelector', () => {
       expect(screen.getByText('모든 스타일 보기')).toBeInTheDocument();
     });
 
-    it('아이콘 이모지가 표시됨', () => {
+    it('성별 옵션 텍스트가 표시됨', () => {
       render(<GenderSelector />);
 
-      expect(screen.getByText('👩')).toBeInTheDocument();
-      expect(screen.getByText('👨')).toBeInTheDocument();
-      expect(screen.getByText('🌟')).toBeInTheDocument();
+      expect(screen.getByText('여성')).toBeInTheDocument();
+      expect(screen.getByText('남성')).toBeInTheDocument();
+      expect(screen.getByText('선택 안함')).toBeInTheDocument();
     });
 
     it('스타일 선호도가 기본적으로 숨겨져 있음', () => {
@@ -149,9 +149,9 @@ describe('GenderSelector', () => {
       render(<GenderSelector includeStylePreference />);
       fireEvent.click(screen.getByTestId('gender-option-female'));
 
-      expect(screen.getByText('페미닌')).toBeInTheDocument();
-      expect(screen.getByText('매스큘린')).toBeInTheDocument();
-      expect(screen.getByText('유니섹스')).toBeInTheDocument();
+      expect(screen.getByText('소프트')).toBeInTheDocument();
+      expect(screen.getByText('미니멀')).toBeInTheDocument();
+      expect(screen.getByText('자유로운')).toBeInTheDocument();
     });
 
     it('성별 선택 시 기본 스타일이 자동 선택됨', () => {
@@ -286,25 +286,27 @@ describe('GenderSelector', () => {
 
       expect(screen.getByTestId('style-option-feminine')).toHaveAttribute(
         'aria-label',
-        '페미닌 스타일 선택'
+        '소프트 스타일 선택'
       );
       expect(screen.getByTestId('style-option-masculine')).toHaveAttribute(
         'aria-label',
-        '매스큘린 스타일 선택'
+        '미니멀 스타일 선택'
       );
       expect(screen.getByTestId('style-option-unisex')).toHaveAttribute(
         'aria-label',
-        '유니섹스 스타일 선택'
+        '자유로운 스타일 선택'
       );
     });
 
-    it('아이콘 이미지에 aria-hidden이 있음', () => {
+    it('성별 옵션에 aria-label이 있음', () => {
       render(<GenderSelector />);
 
-      const icons = screen.getAllByRole('img', { hidden: true });
-      icons.forEach((icon) => {
-        expect(icon).toHaveAttribute('aria-hidden', 'true');
-      });
+      expect(screen.getByTestId('gender-option-female')).toHaveAttribute('aria-label', '여성 선택');
+      expect(screen.getByTestId('gender-option-male')).toHaveAttribute('aria-label', '남성 선택');
+      expect(screen.getByTestId('gender-option-neutral')).toHaveAttribute(
+        'aria-label',
+        '선택 안함 선택'
+      );
     });
   });
 
@@ -326,7 +328,6 @@ describe('GenderSelector', () => {
         expect(option.value).toBeDefined();
         expect(option.label).toBeDefined();
         expect(option.description).toBeDefined();
-        expect(option.icon).toBeDefined();
       });
     });
 

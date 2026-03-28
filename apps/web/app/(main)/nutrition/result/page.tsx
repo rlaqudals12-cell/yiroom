@@ -13,12 +13,12 @@ import { SupplementRecommendationCardDynamic } from '@/components/nutrition/dyna
 import type { NutritionGoal } from '@/types/nutrition';
 
 // 목표 레이블
-const GOAL_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  weight_loss: { label: '체중 감량', icon: '🔥', color: 'text-orange-600' },
-  maintain: { label: '체중 유지', icon: '⚖️', color: 'text-blue-600' },
-  muscle: { label: '근육 증가', icon: '💪', color: 'text-purple-600' },
-  skin: { label: '피부 개선', icon: '✨', color: 'text-pink-600' },
-  health: { label: '건강 관리', icon: '❤️', color: 'text-red-600' },
+const GOAL_LABELS: Record<string, { label: string; color: string }> = {
+  weight_loss: { label: '체중 감량', color: 'text-orange-600' },
+  maintain: { label: '체중 유지', color: 'text-blue-600' },
+  muscle: { label: '근육 증가', color: 'text-purple-600' },
+  skin: { label: '피부 개선', color: 'text-pink-600' },
+  health: { label: '건강 관리', color: 'text-red-600' },
 };
 
 /**
@@ -188,7 +188,6 @@ export default function NutritionResultPage() {
           <FadeInUp delay={1}>
             <div className="bg-card border-border/50 rounded-2xl border p-5 shadow-sm">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{goalInfo.icon}</span>
                 <div>
                   <p className="text-muted-foreground text-sm">나의 목표</p>
                   <p className={`text-xl font-bold ${goalInfo.color}`}>{goalInfo.label}</p>

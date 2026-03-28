@@ -6,26 +6,26 @@ import { ProgressIndicator, StepNavigation, SelectionCard } from '@/components/w
 
 // 운동 빈도 옵션
 const FREQUENCIES = [
-  { id: '1-2', title: '주 1-2회', desc: '가볍게 시작하기', icon: '🌱' },
-  { id: '3-4', title: '주 3-4회', desc: '규칙적인 운동', icon: '🌿' },
-  { id: '5-6', title: '주 5-6회', desc: '적극적인 운동', icon: '🌳' },
-  { id: 'daily', title: '매일', desc: '꾸준한 루틴', icon: '🌲' },
+  { id: '1-2', title: '주 1-2회', desc: '가볍게 시작하기' },
+  { id: '3-4', title: '주 3-4회', desc: '규칙적인 운동' },
+  { id: '5-6', title: '주 5-6회', desc: '적극적인 운동' },
+  { id: 'daily', title: '매일', desc: '꾸준한 루틴' },
 ];
 
 // 운동 장소 옵션
 const LOCATIONS = [
-  { id: 'home', icon: '🏠', title: '집', desc: '홈트레이닝' },
-  { id: 'gym', icon: '🏋️', title: '헬스장', desc: '피트니스 센터' },
-  { id: 'outdoor', icon: '🌳', title: '야외', desc: '공원, 운동장 등' },
+  { id: 'home', title: '집', desc: '홈트레이닝' },
+  { id: 'gym', title: '헬스장', desc: '피트니스 센터' },
+  { id: 'outdoor', title: '야외', desc: '공원, 운동장 등' },
 ];
 
 // 장비 옵션
 const EQUIPMENT = [
-  { id: 'none', icon: '🤸', title: '맨몸', desc: '장비 없이' },
-  { id: 'dumbbell', icon: '🏋️', title: '덤벨', desc: '아령, 케틀벨' },
-  { id: 'band', icon: '🎗️', title: '밴드', desc: '저항 밴드' },
-  { id: 'mat', icon: '🧘', title: '매트', desc: '요가 매트' },
-  { id: 'machine', icon: '🏃', title: '머신', desc: '헬스장 기구' },
+  { id: 'none', title: '맨몸', desc: '장비 없이' },
+  { id: 'dumbbell', title: '덤벨', desc: '아령, 케틀벨' },
+  { id: 'band', title: '밴드', desc: '저항 밴드' },
+  { id: 'mat', title: '매트', desc: '요가 매트' },
+  { id: 'machine', title: '머신', desc: '헬스장 기구' },
 ];
 
 export default function Step2Page() {
@@ -85,7 +85,6 @@ export default function Step2Page() {
               mode="single"
               selected={frequency === freq.id}
               onSelect={() => handleFrequencySelect(freq.id)}
-              icon={<span className="text-xl">{freq.icon}</span>}
               title={freq.title}
               description={freq.desc}
               compact
@@ -110,7 +109,6 @@ export default function Step2Page() {
               mode="single"
               selected={location === loc.id}
               onSelect={() => handleLocationSelect(loc.id)}
-              icon={<span className="text-xl">{loc.icon}</span>}
               title={loc.title}
               description={loc.desc}
             />
@@ -136,7 +134,6 @@ export default function Step2Page() {
               mode="multiple"
               selected={equipment.includes(eq.id)}
               onSelect={() => handleEquipmentSelect(eq.id)}
-              icon={<span className="text-xl">{eq.icon}</span>}
               title={eq.title}
               description={eq.desc}
               compact

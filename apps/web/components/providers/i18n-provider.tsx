@@ -9,6 +9,7 @@
 import { NextIntlClientProvider, AbstractIntlMessages } from 'next-intl';
 import { ReactNode, useEffect } from 'react';
 import { TIMEZONE_COOKIE } from '@/lib/utils/timezone';
+import { LOCALE_COOKIE } from '@/lib/utils/locale';
 
 interface I18nProviderProps {
   children: ReactNode;
@@ -17,13 +18,17 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, locale, messages }: I18nProviderProps) {
-  // 브라우저 타임존을 쿠키에 저장 (서버 컴포넌트에서 읽어 사용)
   useEffect(() => {
+    // 브라우저 타임존을 쿠키에 저장 (서버 컴포넌트에서 읽어 사용)
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz && document.cookie.indexOf(`${TIMEZONE_COOKIE}=${tz}`) === -1) {
       document.cookie = `${TIMEZONE_COOKIE}=${tz};path=/;max-age=31536000;SameSite=Lax`;
     }
-  }, []);
+    // 로케일 쿠키가 없으면 현재 로케일 저장 (서버 감지 결과 유지)
+    if (document.cookie.indexOf(`${LOCALE_COOKIE}=`) === -1) {
+      document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=31536000;SameSite=Lax`;
+    }
+  }, [locale]);
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>

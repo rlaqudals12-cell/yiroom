@@ -74,7 +74,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
       followers: 12500,
     },
     content: {
-      text: '이 세럼 진짜 대박이에요! 건조한 피부가 촉촉해지고 결이 정리되는 느낌? 2주 사용 후기인데 피부톤도 밝아진 것 같아요 ✨',
+      text: '이 세럼 진짜 대박이에요! 건조한 피부가 촉촉해지고 결이 정리되는 느낌? 2주 사용 후기인데 피부톤도 밝아진 것 같아요',
       images: [
         'https://placehold.co/400x400/fce7f3/fce7f3',
         'https://placehold.co/400x400/dbeafe/dbeafe',
@@ -107,7 +107,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
       followers: 45000,
     },
     content: {
-      text: '지성피부 여름철 모닝 루틴 공유합니다! 클렌징 → 토너 → 세럼 → 수분크림 → 선크림 순서로 사용하고 있어요. 피지 컨트롤이 핵심! 🌤️',
+      text: '지성피부 여름철 모닝 루틴 공유합니다! 클렌징 → 토너 → 세럼 → 수분크림 → 선크림 순서로 사용하고 있어요. 피지 컨트롤이 핵심!',
       images: ['https://placehold.co/400x400/d1fae5/d1fae5'],
       products: [
         {
@@ -144,7 +144,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
       followers: 128000,
     },
     content: {
-      text: '💡 레티놀 사용 팁!\n1. 저농도부터 시작\n2. 밤에만 사용\n3. 선크림 필수\n4. 보습은 충분히\n5. 피부 적응 기간 필요\n\n초보자는 0.025%부터 시작하세요!',
+      text: '레티놀 사용 팁!\n1. 저농도부터 시작\n2. 밤에만 사용\n3. 선크림 필수\n4. 보습은 충분히\n5. 피부 적응 기간 필요\n\n초보자는 0.025%부터 시작하세요!',
       images: ['https://placehold.co/400x400/fef3c7/fef3c7'],
     },
     stats: { likes: 1234, comments: 89, saves: 567 },

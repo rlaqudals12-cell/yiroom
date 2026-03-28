@@ -85,7 +85,7 @@ const OutfitShareCard = forwardRef<HTMLDivElement, OutfitShareCardProps>(
         {/* 의상 섹션 */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
-            👕 의상 조합
+            의상 조합
           </div>
           <div
             style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 24 }}
@@ -132,7 +132,7 @@ const OutfitShareCard = forwardRef<HTMLDivElement, OutfitShareCardProps>(
           {/* 악세서리 */}
           <div style={{ flex: 1, background: '#f8f8f8', borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 8 }}>
-              💎 악세서리
+              악세서리
             </div>
             <div style={{ fontSize: 11, color: '#666' }}>
               {METAL_TONE_LABELS[accessory.metalTone]}
@@ -156,7 +156,7 @@ const OutfitShareCard = forwardRef<HTMLDivElement, OutfitShareCardProps>(
           {/* 메이크업 */}
           <div style={{ flex: 1, background: '#f8f8f8', borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 8 }}>
-              💄 메이크업
+              메이크업
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <div style={{ textAlign: 'center' }}>
@@ -196,7 +196,7 @@ const OutfitShareCard = forwardRef<HTMLDivElement, OutfitShareCardProps>(
             marginBottom: 16,
           }}
         >
-          <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>✨ {tip}</div>
+          <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{tip}</div>
         </div>
 
         {/* 푸터 */}

@@ -38,35 +38,35 @@ const TYPE_CONFIG: Record<
   }
 > = {
   workout_complete: {
-    icon: '✅',
+    icon: '',
     message: '운동 완료!',
     colors: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0'],
     confettiCount: 100,
     duration: 2000,
   },
   goal_achieved: {
-    icon: '🎯',
+    icon: '',
     message: '목표 달성!',
     colors: ['#F59E0B', '#FBBF24', '#FCD34D', '#FDE68A'],
     confettiCount: 150,
     duration: 3000,
   },
   streak: {
-    icon: '🔥',
+    icon: '',
     message: '연속 기록!',
     colors: ['#EF4444', '#F97316', '#FB923C', '#FDBA74'],
     confettiCount: 50,
     duration: 1500,
   },
   analysis_complete: {
-    icon: '✨',
+    icon: '',
     message: '분석 완료!',
     colors: ['#6366F1', '#8B5CF6', '#A78BFA', '#C4B5FD'],
     confettiCount: 80,
     duration: 2500,
   },
   badge_earned: {
-    icon: '🏅',
+    icon: '',
     message: '배지 획득!',
     colors: ['#EC4899', '#F472B6', '#F9A8D4', '#FBCFE8'],
     confettiCount: 120,

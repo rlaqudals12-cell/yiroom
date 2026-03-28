@@ -36,6 +36,10 @@ export {
   WORKOUT_FREQUENCY_LABELS,
   MEAL_PREFERENCE_LABELS,
   DEFAULT_ONBOARDING_DATA,
+  // 생년월일 검증
+  BIRTH_YEAR_MIN,
+  MINIMUM_AGE,
+  validateBirthYear,
   // 유틸리티 함수
   isOnboardingComplete,
   calculateBMI,

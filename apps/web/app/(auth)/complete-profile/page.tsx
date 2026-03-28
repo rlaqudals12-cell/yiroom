@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useClerk } from '@clerk/nextjs';
 import { Calendar, AlertCircle, Loader2, LogOut } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { isValidBirthDate, MINIMUM_AGE } from '@/lib/age-verification';
 
 /**
@@ -13,6 +14,7 @@ import { isValidBirthDate, MINIMUM_AGE } from '@/lib/age-verification';
 export default function CompleteProfilePage() {
   const router = useRouter();
   const { signOut } = useClerk();
+  const t = useTranslations('completeProfile');
 
   const [birthDate, setBirthDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,12 +34,12 @@ export default function CompleteProfilePage() {
 
     // 클라이언트 검증
     if (!birthDate) {
-      setError('생년월일을 입력해 주세요.');
+      setError(t('birthDateRequired'));
       return;
     }
 
     if (!isValidBirthDate(birthDate)) {
-      setError('올바른 생년월일을 입력해 주세요.');
+      setError(t('birthDateInvalid'));
       return;
     }
 
@@ -58,7 +60,7 @@ export default function CompleteProfilePage() {
           router.push('/age-restricted');
           return;
         }
-        setError(data.message || '저장 중 오류가 발생했습니다.');
+        setError(data.message || t('saveError'));
         return;
       }
 
@@ -66,7 +68,7 @@ export default function CompleteProfilePage() {
       router.push('/home');
     } catch (err) {
       console.error('Failed to save birthdate:', err);
-      setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setError(t('serverError'));
     } finally {
       setIsLoading(false);
     }
@@ -89,17 +91,16 @@ export default function CompleteProfilePage() {
 
         {/* 제목 */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">생년월일을 입력해 주세요</h1>
-          <p className="text-muted-foreground">서비스 이용을 위해 생년월일 확인이 필요합니다.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
 
         {/* 안내 박스 */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <p className="text-sm text-blue-800">
-            <strong>왜 생년월일이 필요한가요?</strong>
+            <strong>{t('whyTitle')}</strong>
             <br />
-            한국 청소년보호법에 따라 만 {MINIMUM_AGE}세 이상만 서비스를 이용할 수 있습니다. 입력하신
-            생년월일은 연령 확인 목적으로만 사용됩니다.
+            {t('whyDesc', { age: MINIMUM_AGE })}
           </p>
         </div>
 
@@ -107,7 +108,7 @@ export default function CompleteProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="birthDate" className="block text-sm font-medium text-foreground">
-              생년월일
+              {t('birthDateLabel')}
             </label>
             <input
               type="date"
@@ -139,10 +140,10 @@ export default function CompleteProfilePage() {
             {isLoading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                저장 중...
+                {t('saving')}
               </>
             ) : (
-              '시작하기'
+              t('submit')
             )}
           </button>
         </form>
@@ -154,21 +155,24 @@ export default function CompleteProfilePage() {
             className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 mx-auto"
           >
             <LogOut className="w-4 h-4" />
-            다른 계정으로 로그인
+            {t('signInOther')}
           </button>
         </div>
 
         {/* 하단 안내 */}
         <p className="text-xs text-center text-muted-foreground">
-          계속 진행하면{' '}
-          <a href="/terms" className="text-primary hover:underline">
-            이용약관
-          </a>
-          {' 및 '}
-          <a href="/privacy" className="text-primary hover:underline">
-            개인정보처리방침
-          </a>
-          에 동의하는 것으로 간주됩니다.
+          {t.rich('termsConsent', {
+            terms: (chunks) => (
+              <a href="/terms" className="text-primary hover:underline">
+                {chunks}
+              </a>
+            ),
+            privacy: (chunks) => (
+              <a href="/privacy" className="text-primary hover:underline">
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </div>
     </div>

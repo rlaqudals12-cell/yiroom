@@ -243,31 +243,26 @@ export function RecommendedProducts({
       title: '나에게 어울리는 메이크업',
       subtitle: '퍼스널 컬러 기반 추천',
       link: `/products?category=makeup&season=${analysisResult.seasonType || ''}`,
-      emoji: '💄',
     },
     skin: {
       title: '피부 맞춤 스킨케어',
       subtitle: '피부 타입 기반 추천',
       link: `/products?category=skincare&skinType=${analysisResult.skinType || ''}`,
-      emoji: '✨',
     },
     body: {
       title: '체형별 추천 운동 기구',
       subtitle: '체형 분석 기반 추천',
       link: `/products?category=equipment&bodyType=${analysisResult.bodyType || ''}`,
-      emoji: '💪',
     },
     hair: {
       title: '나에게 맞는 헤어케어',
       subtitle: '두피/모발 타입 기반 추천',
       link: `/products?category=haircare&scalpType=${analysisResult.scalpType || ''}`,
-      emoji: '💇',
     },
     makeup: {
       title: '나에게 어울리는 메이크업',
       subtitle: '얼굴형/언더톤 기반 추천',
       link: `/products?category=makeup&undertone=${analysisResult.undertone || ''}`,
-      emoji: '💄',
     },
   };
 
@@ -309,7 +304,6 @@ export function RecommendedProducts({
     return (
       <section className={className} data-testid="recommended-products-empty">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-2xl">{config.emoji}</span>
           <h3 className="text-lg font-semibold text-foreground">{config.title}</h3>
         </div>
         <div className="text-center py-8 bg-muted/30 rounded-xl border border-border/50">
@@ -325,7 +319,6 @@ export function RecommendedProducts({
       {/* 섹션 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{config.emoji}</span>
           <div>
             <h2 className="text-lg font-semibold">{config.title}</h2>
             <p className="text-sm text-muted-foreground flex items-center gap-1">

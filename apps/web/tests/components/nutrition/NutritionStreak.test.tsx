@@ -96,10 +96,11 @@ describe('NutritionStreakBadge', () => {
       expect(screen.getByTestId('nutrition-streak-badge')).toBeInTheDocument();
     });
 
-    it('배지 이모지를 표시한다', () => {
+    it('배지를 표시한다 (이모지 제거됨)', () => {
       render(<NutritionStreakBadge badgeId="3day" />);
 
-      expect(screen.getByText('🌱')).toBeInTheDocument();
+      // 이모지가 빈 문자열로 변경됨 - 배지 컨테이너 존재 확인
+      expect(screen.getByTestId('nutrition-streak-badge')).toBeInTheDocument();
     });
 
     it('배지 이름을 표시한다', () => {
@@ -146,19 +147,19 @@ describe('NutritionStreakBadge', () => {
 
   describe('각 마일스톤 배지', () => {
     const badges = [
-      { id: '3day', emoji: '🌱', name: '3일 기록' },
-      { id: '7day', emoji: '🌿', name: '7일 기록' },
-      { id: '14day', emoji: '🌳', name: '14일 기록' },
-      { id: '30day', emoji: '🏆', name: '30일 기록' },
-      { id: '60day', emoji: '⭐', name: '60일 기록' },
-      { id: '100day', emoji: '👑', name: '100일 기록' },
+      { id: '3day', name: '3일 기록' },
+      { id: '7day', name: '7일 기록' },
+      { id: '14day', name: '14일 기록' },
+      { id: '30day', name: '30일 기록' },
+      { id: '60day', name: '60일 기록' },
+      { id: '100day', name: '100일 기록' },
     ];
 
-    badges.forEach(({ id, emoji, name }) => {
+    badges.forEach(({ id, name }) => {
       it(`${id} 배지가 올바르게 표시된다`, () => {
         render(<NutritionStreakBadge badgeId={id} showName />);
 
-        expect(screen.getByText(emoji)).toBeInTheDocument();
+        expect(screen.getByTestId('nutrition-streak-badge')).toBeInTheDocument();
         expect(screen.getByText(name)).toBeInTheDocument();
       });
     });
@@ -175,9 +176,9 @@ describe('NutritionStreakBadgeList', () => {
   it('여러 배지를 표시한다', () => {
     render(<NutritionStreakBadgeList badges={['3day', '7day', '14day']} />);
 
-    expect(screen.getByText('🌱')).toBeInTheDocument();
-    expect(screen.getByText('🌿')).toBeInTheDocument();
-    expect(screen.getByText('🌳')).toBeInTheDocument();
+    // 이모지 제거됨 - 배지 컨테이너 개수로 검증
+    const badges = screen.getAllByTestId('nutrition-streak-badge');
+    expect(badges).toHaveLength(3);
   });
 
   it('빈 배열이면 null을 반환한다', () => {

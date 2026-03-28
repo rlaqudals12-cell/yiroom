@@ -20,20 +20,20 @@ import { Input } from '@/components/ui/input';
 
 // 운동 종류
 const WORKOUT_TYPES = [
-  { id: 'cardio', label: '유산소', icon: '🏃', color: 'text-red-500' },
-  { id: 'strength', label: '근력', icon: '💪', color: 'text-blue-500' },
-  { id: 'flexibility', label: '유연성', icon: '🧘', color: 'text-purple-500' },
-  { id: 'hiit', label: 'HIIT', icon: '⚡', color: 'text-orange-500' },
-  { id: 'sports', label: '스포츠', icon: '⚽', color: 'text-green-500' },
+  { id: 'cardio', label: '유산소', color: 'text-red-500' },
+  { id: 'strength', label: '근력', color: 'text-blue-500' },
+  { id: 'flexibility', label: '유연성', color: 'text-purple-500' },
+  { id: 'hiit', label: 'HIIT', color: 'text-orange-500' },
+  { id: 'sports', label: '스포츠', color: 'text-green-500' },
 ] as const;
 
 type WorkoutTypeId = (typeof WORKOUT_TYPES)[number]['id'];
 
 // 강도
 const INTENSITY_LEVELS = [
-  { id: 'low', label: '가벼움', emoji: '🟢' },
-  { id: 'medium', label: '보통', emoji: '🟡' },
-  { id: 'high', label: '격렬', emoji: '🔴' },
+  { id: 'low', label: '가벼움' },
+  { id: 'medium', label: '보통' },
+  { id: 'high', label: '격렬' },
 ] as const;
 
 type IntensityId = (typeof INTENSITY_LEVELS)[number]['id'];
@@ -229,7 +229,6 @@ export default function WorkoutLogPage(): React.ReactElement {
                     className="gap-1.5"
                     onClick={() => setSelectedType(type.id)}
                   >
-                    <span>{type.icon}</span>
                     {type.label}
                   </Button>
                 ))}
@@ -276,7 +275,6 @@ export default function WorkoutLogPage(): React.ReactElement {
                     className="flex-1 gap-1"
                     onClick={() => setIntensity(level.id)}
                   >
-                    <span>{level.emoji}</span>
                     {level.label}
                   </Button>
                 ))}
@@ -322,7 +320,7 @@ export default function WorkoutLogPage(): React.ReactElement {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{typeInfo?.icon}</span>
+                        <span className="text-2xl">{typeInfo?.label}</span>
                         <div>
                           <h3 className="font-semibold">{log.name}</h3>
                           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">

@@ -67,7 +67,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
 
       {/* 지표 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">📊 피부 상태</h3>
+        <h3 className="font-semibold mb-4">피부 상태</h3>
         <div className="space-y-4">
           {result.metrics.map((metric) => (
             <div key={metric.id}>
@@ -118,7 +118,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
       {/* 색상 추천 */}
       {result.colorRecommendations.map((cr) => (
         <div key={cr.category} className="bg-card rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold mb-3">💄 {cr.categoryLabel} 추천 색상</h3>
+          <h3 className="font-semibold mb-3">{cr.categoryLabel} 추천 색상</h3>
           <div className="flex flex-wrap gap-3">
             {cr.colors.map((color, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
 
       {/* 메이크업 팁 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">✨ 메이크업 팁</h3>
+        <h3 className="font-semibold mb-3">메이크업 팁</h3>
         <div className="space-y-4">
           {result.makeupTips.map((tipGroup, i) => (
             <div key={i}>
@@ -160,7 +160,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
       {/* 퍼스널 컬러 연동 */}
       {result.personalColorConnection && (
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
-          <h3 className="font-semibold mb-2 flex items-center gap-2">🎨 퍼스널 컬러 연동</h3>
+          <h3 className="font-semibold mb-2 flex items-center gap-2">퍼스널 컬러 연동</h3>
           <p className="text-sm text-muted-foreground mb-2">
             예상 시즌:{' '}
             <span className="font-medium text-foreground">

@@ -71,13 +71,6 @@ const TRAFFIC_LIGHT_COLORS: Record<TrafficLight, string> = {
   red: 'bg-red-100 text-red-700 border-red-200',
 };
 
-// 가격대 아이콘
-const PRICE_ICONS: Record<string, string> = {
-  저렴: '💰',
-  보통: '💰💰',
-  비쌈: '💰💰💰',
-};
-
 /**
  * 추천 음식 아이템
  */
@@ -121,10 +114,8 @@ function SuggestedFoodItem({ food }: { food: SuggestedFood }) {
 
       {/* 구하기 정보 */}
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">📍 {food.whereToGet}</span>
-        <span className="text-muted-foreground">
-          {PRICE_ICONS[food.priceRange]} {food.priceRange}
-        </span>
+        <span className="text-muted-foreground">{food.whereToGet}</span>
+        <span className="text-muted-foreground">{food.priceRange}</span>
       </div>
 
       {/* 조리 시간 (있는 경우) */}
@@ -237,12 +228,12 @@ export default function MealSuggestionCard({
             <div className="flex flex-wrap justify-center gap-2 mb-4">
               {skinConcerns.length > 0 && (
                 <span className="text-xs px-2 py-1 bg-pink-100 text-pink-600 rounded-full">
-                  ✨ 피부 고민 반영
+                  피부 고민 반영
                 </span>
               )}
               {bodyType && (
                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
-                  💪 체형 맞춤
+                  체형 맞춤
                 </span>
               )}
             </div>
@@ -257,7 +248,7 @@ export default function MealSuggestionCard({
           </button>
 
           <p className="text-xs text-muted-foreground mt-3">
-            🍚 구하기 쉽고 가성비 좋은 음식을 추천해 드려요
+            구하기 쉽고 가성비 좋은 음식을 추천해 드려요
           </p>
         </div>
       </div>
@@ -361,7 +352,7 @@ export default function MealSuggestionCard({
 
         {/* 안내 */}
         <p className="text-xs text-center text-muted-foreground mt-2">
-          💡 편의점, 마트, 식당에서 쉽게 구할 수 있는 메뉴예요
+          편의점, 마트, 식당에서 쉽게 구할 수 있는 메뉴예요
         </p>
       </div>
     );

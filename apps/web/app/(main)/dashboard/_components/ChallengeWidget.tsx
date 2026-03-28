@@ -87,24 +87,18 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
             </div>
             <div>
               <h3 className="font-bold text-foreground">챌린지</h3>
-              <p className="text-sm text-primary">
-                {stats?.inProgress || 0}개 진행 중
-              </p>
+              <p className="text-sm text-primary">{stats?.inProgress || 0}개 진행 중</p>
             </div>
           </div>
 
           {/* 챌린지 통계 */}
           <div className="flex gap-3">
             <div className="text-center">
-              <p className="text-lg font-bold text-primary">
-                {stats?.completed || 0}
-              </p>
+              <p className="text-lg font-bold text-primary">{stats?.completed || 0}</p>
               <p className="text-xs text-muted-foreground">완료</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-muted-foreground">
-                {stats?.total || 0}
-              </p>
+              <p className="text-lg font-bold text-muted-foreground">{stats?.total || 0}</p>
               <p className="text-xs text-muted-foreground">전체</p>
             </div>
           </div>
@@ -127,7 +121,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
                   className="flex items-center gap-3 p-3 bg-secondary/50 hover:bg-secondary rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
                 >
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-lg">
-                    {uc.challenge?.icon || '🎯'}
+                    {uc.challenge?.icon || ''}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">
@@ -135,9 +129,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <Progress value={progress} className="h-1.5 flex-1" />
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {progress}%
-                      </span>
+                      <span className="text-xs text-muted-foreground shrink-0">{progress}%</span>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
@@ -148,9 +140,7 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
         ) : (
           <div className="text-center py-6 bg-secondary/50 rounded-xl">
             <Flame className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              진행 중인 챌린지가 없어요
-            </p>
+            <p className="text-sm text-muted-foreground">진행 중인 챌린지가 없어요</p>
             <Link
               href="/challenges"
               className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm rounded-lg hover:bg-foreground/90 transition-all duration-200 hover:-translate-y-0.5"
@@ -179,7 +169,8 @@ export default function ChallengeWidget({ userId }: ChallengeWidgetProps) {
         <div className="mx-4 mb-4 bg-primary/10 rounded-lg p-3">
           <p className="text-xs text-primary">
             <Trophy className="w-3 h-3 inline mr-1" />
-            <span className="font-medium">대단해요!</span> {stats.completed}개의 챌린지를 완료했어요!
+            <span className="font-medium">대단해요!</span> {stats.completed}개의 챌린지를
+            완료했어요!
           </p>
         </div>
       )}

@@ -101,7 +101,7 @@ function StyleGuideSection({
   if (isMale) {
     return (
       <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-lg space-y-3">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">✨ 그루밍</p>
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">그루밍</p>
         {styleDescription.easyGrooming ? (
           <div className="space-y-2">
             <div className="flex items-start gap-2">

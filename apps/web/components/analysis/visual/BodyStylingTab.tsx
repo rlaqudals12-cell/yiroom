@@ -29,16 +29,16 @@ const BODY_TYPE_THEMES: Record<BodyType3, { primary: string; bg: string; border:
 
 // 스타일 키워드 아이콘 매핑
 const STYLE_ICONS: Record<string, string> = {
-  심플: '✨',
-  베이직: '📐',
-  깔끔: '🎯',
-  정장: '👔',
-  페미닌: '🌸',
-  하이웨이스트: '📏',
-  프릴: '🎀',
-  캐주얼: '👕',
-  오버핏: '🧥',
-  레이어드: '📚',
+  심플: '',
+  베이직: '',
+  깔끔: '',
+  정장: '',
+  페미닌: '',
+  하이웨이스트: '',
+  프릴: '',
+  캐주얼: '',
+  오버핏: '',
+  레이어드: '',
 };
 
 interface BodyStylingTabProps {
@@ -161,7 +161,8 @@ export default function BodyStylingTab({
                       'border'
                     )}
                   >
-                    {STYLE_ICONS[keyword] || '•'} {keyword}
+                    {STYLE_ICONS[keyword] ? `${STYLE_ICONS[keyword]} ` : ''}
+                    {keyword}
                   </span>
                 ))}
               </div>
@@ -182,7 +183,7 @@ export default function BodyStylingTab({
                         theme.bg
                       )}
                     >
-                      {['👔', '👖', '👕', '🧥'][i % 4]}
+                      {i + 1}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{rec.item}</p>

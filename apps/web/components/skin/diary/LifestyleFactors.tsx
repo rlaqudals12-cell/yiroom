@@ -122,7 +122,7 @@ const LifestyleFactors = memo(function LifestyleFactors({
                 aria-label={`수면 품질 ${quality}점`}
                 aria-pressed={localSleepQuality === quality}
               >
-                {'⭐'.repeat(quality)}
+                {quality}
               </button>
             ))}
           </div>

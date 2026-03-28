@@ -113,11 +113,11 @@ export const GOAL_LABELS: Record<ExerciseGoal, string> = {
 
 // 목표별 아이콘
 export const GOAL_ICONS: Record<ExerciseGoal, string> = {
-  posture_correction: '🧘',
-  weight_loss: '🔥',
-  muscle_gain: '💪',
-  flexibility: '🤸',
-  endurance: '🏃',
+  posture_correction: '',
+  weight_loss: '',
+  muscle_gain: '',
+  flexibility: '',
+  endurance: '',
 };
 
 // 목표별 운동 팁

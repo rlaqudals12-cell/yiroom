@@ -29,11 +29,11 @@ export const CATEGORY_LABELS: Record<LeaderboardCategory, string> = {
 
 // 카테고리별 아이콘
 export const CATEGORY_ICONS: Record<LeaderboardCategory, string> = {
-  workout: '💪',
-  nutrition: '🥗',
-  wellness: '✨',
-  xp: '⭐',
-  level: '🏆',
+  workout: '',
+  nutrition: '',
+  wellness: '',
+  xp: '',
+  level: '',
 };
 
 // 카테고리별 색상
