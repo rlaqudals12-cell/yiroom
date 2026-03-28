@@ -70,7 +70,6 @@
     "brandName": "이룸",
     "memberFallback": "회원",
     "greetingFallback": "안녕하세요",
-
     "analysisPromptTitle": "나만의 스타일을 찾아볼까요?",
     "analysisPromptDesc": "AI가 맞춤 분석을 해드려요",
     "analysisPromptCta": "퍼스널 컬러부터 시작하기",
@@ -81,7 +80,6 @@
     "customStyle": "내 체형에 맞는 옷 스타일을 찾아요",
     "scalpHairCheck": "두피/모발 체크",
     "beautyStyle": "뷰티 스타일",
-
     "myAnalysisResults": "내 분석 결과",
     "viewAll": "전체보기",
     "startAnalysis": "분석해보기",
@@ -102,7 +100,6 @@
     "makeupNarrative": "나만의 메이크업 포인트에요",
     "oralValueHint": "건강한 미소가 자신감의 시작이에요",
     "oralNarrative": "구강 건강 상태를 확인했어요",
-
     "activitySummary": "오늘의 활동 요약",
     "selfUnderstanding": "자기 이해",
     "startFirstRecord": "오늘의 첫 기록을 시작해볼까요?",
@@ -118,7 +115,6 @@
     "minuteUnit": "분",
     "waterLabel": "수분",
     "glassUnit": "잔",
-
     "onboardingGuide": "시작 가이드",
     "onboardingChecklist": "시작 가이드 체크리스트",
     "completedCount": "{completed}/3 완료",
@@ -128,7 +124,6 @@
     "firstAnalysisDesc": "사진 한 장으로 나를 알아가요",
     "getRecommendation": "맞춤 추천 받기",
     "getRecommendationDesc": "분석 결과로 나만의 루틴 완성",
-
     "todayRecommendation": "오늘의 추천",
     "todayRecommendationLabel": "오늘의 맞춤 추천",
     "skinRecommendLabel": "피부 맞춤 제품 추천 보기",
@@ -137,7 +132,6 @@
     "bodyRecommendLabel": "체형 맞춤 코디 추천 보기",
     "bodyCustom": "체형 맞춤",
     "outfitRecommend": "코디 추천",
-
     "capsuleLabel": "오늘의 데일리 캡슐",
     "todayRoutine": "오늘의 루틴",
     "capsuleLoadError": "캡슐을 불러오지 못했어요.",
@@ -148,17 +142,14 @@
     "capsuleMoreItems": "+{count}개 더",
     "capsuleAllComplete": "오늘 루틴을 모두 완료했어요!",
     "capsuleDetail": "상세 보기",
-
     "editOrder": "순서 편집",
     "done": "완료",
     "resetOrder": "초기화",
     "editWidgetOrder": "위젯 순서 편집",
     "doneEditing": "편집 완료",
     "resetWidgetOrder": "위젯 순서 초기화",
-
     "discoveredCount": "나에 대해 {count}가지를 발견했어요",
     "connectionRule": "{label} 결과 — 자기 이해의 한 조각",
-
     "nextStepDefault": "다음 분석을 시작해볼까요?",
     "nextStepPcBody": "{season}에 맞는 코디를 추천하려면 체형 정보가 필요해요",
     "nextStepPcBodyFallback": "퍼스널 컬러에 맞는 코디를 추천하려면 체형 정보가 필요해요",
@@ -166,7 +157,6 @@
     "nextStepBodyHair": "체형에 어울리는 헤어 스타일도 궁금하지 않으세요?",
     "nextStepHairMakeup": "헤어와 조화로운 메이크업 톤을 알아볼까요?",
     "nextStepMakeupOral": "미소까지 완벽하게! 구강건강도 체크해봐요",
-
     "insightTitle": "나를 위한 인사이트",
     "insightEmpty": "더 많은 분석을 완료하면 맞춤 인사이트가 생성돼요",
     "statusNewDiscovery": "새로운 발견",
@@ -180,7 +170,6 @@
     "bodyAnalysisLabel": "체형 분석",
     "hairAnalysisLabel": "헤어 분석",
     "oralHealthLabel": "구강건강",
-
     "insightMorningSkin": "아침 세안 후 수분 세럼을 꼼꼼히 발라주세요",
     "insightMorningColor": "{season}에 어울리는 오늘의 메이크업을 확인해보세요",
     "insightMorningDefault": "좋은 아침이에요! 오늘의 루틴을 확인해볼까요?",
@@ -189,7 +178,6 @@
     "insightEveningSkin": "하루 마무리 스킨케어 루틴을 시작해볼까요?",
     "insightNight": "충분한 수면이 최고의 스킨케어예요",
     "insightBasis": "{count}개 분석 기반 맞춤 제안",
-
     "dashboardWidgets": "대시보드 위젯"
   },
   "beauty": {
@@ -252,7 +240,11 @@
     "account": "계정",
     "notifications": "알림",
     "app": "앱 설정",
-    "privacy": "개인정보",
+    "privacy": {
+      "profilePublic": "프로필 공개",
+      "activityPublic": "활동 공개",
+      "leaderboardPublic": "리더보드 공개"
+    },
     "dataManagement": "데이터 관리",
     "appInfo": "앱 정보",
     "notif": {
@@ -284,11 +276,6 @@
       "light": "라이트",
       "dark": "다크",
       "system": "시스템"
-    },
-    "privacy": {
-      "profilePublic": "프로필 공개",
-      "activityPublic": "활동 공개",
-      "leaderboardPublic": "리더보드 공개"
     },
     "data": {
       "export": "데이터 내보내기",
@@ -628,5 +615,29 @@
     "submit": "시작하기",
     "signInOther": "다른 계정으로 로그인",
     "termsConsent": "계속 진행하면 <terms>이용약관</terms> 및 <privacy>개인정보처리방침</privacy>에 동의하는 것으로 간주됩니다."
+  },
+  "visualReport": {
+    "report": "{label} 리포트",
+    "bodyType": "체형:",
+    "typeSuffix": "{label}타입",
+    "season": "시즌:",
+    "hairType": "모발 타입:",
+    "undertone": "언더톤:",
+    "skinScore": "피부 건강 점수",
+    "bodyScore": "체형 균형 점수",
+    "hairScore": "헤어 건강 점수",
+    "makeupScore": "메이크업 분석 점수",
+    "defaultScore": "진단 신뢰도",
+    "strengthsTitle": "나의 강점",
+    "strengthsEmpty": "분석 중입니다...",
+    "growthTitle": "성장 가능성",
+    "growthEmpty": "모든 항목이 우수해요!",
+    "growthSuffix": "을(를) 개선하면 더 좋아질 수 있어요",
+    "bestColors": "나의 베스트 컬러",
+    "skinLabel": "피부 건강",
+    "bodyLabel": "체형 분석",
+    "personalColorLabel": "퍼스널 컬러",
+    "hairLabel": "헤어 분석",
+    "makeupLabel": "메이크업 분석"
   }
 }

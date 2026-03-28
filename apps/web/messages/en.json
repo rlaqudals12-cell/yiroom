@@ -70,7 +70,6 @@
     "brandName": "Yiroom",
     "memberFallback": "Member",
     "greetingFallback": "Hello",
-
     "analysisPromptTitle": "Find your unique style?",
     "analysisPromptDesc": "AI provides personalized analysis",
     "analysisPromptCta": "Start with Personal Color",
@@ -81,7 +80,6 @@
     "customStyle": "Find clothing styles that fit your body",
     "scalpHairCheck": "Scalp & hair check",
     "beautyStyle": "Beauty style",
-
     "myAnalysisResults": "My Analysis Results",
     "viewAll": "View all",
     "startAnalysis": "Analyze",
@@ -102,7 +100,6 @@
     "makeupNarrative": "These are your makeup highlights",
     "oralValueHint": "A healthy smile is where confidence begins",
     "oralNarrative": "Your oral health has been checked",
-
     "activitySummary": "Today's activity summary",
     "selfUnderstanding": "Self-understanding",
     "startFirstRecord": "Start your first record today?",
@@ -118,7 +115,6 @@
     "minuteUnit": "min",
     "waterLabel": "Water",
     "glassUnit": "cups",
-
     "onboardingGuide": "Getting Started",
     "onboardingChecklist": "Getting started checklist",
     "completedCount": "{completed}/3 done",
@@ -128,7 +124,6 @@
     "firstAnalysisDesc": "Discover yourself with just one photo",
     "getRecommendation": "Get recommendations",
     "getRecommendationDesc": "Build your routine from analysis results",
-
     "todayRecommendation": "Today's Picks",
     "todayRecommendationLabel": "Today's personalized recommendations",
     "skinRecommendLabel": "View skin-matched product recommendations",
@@ -137,7 +132,6 @@
     "bodyRecommendLabel": "View body-matched outfit recommendations",
     "bodyCustom": "Body-matched",
     "outfitRecommend": "Outfit picks",
-
     "capsuleLabel": "Today's Daily Capsule",
     "todayRoutine": "Today's Routine",
     "capsuleLoadError": "Failed to load capsule.",
@@ -148,17 +142,14 @@
     "capsuleMoreItems": "+{count} more",
     "capsuleAllComplete": "You've completed today's routine!",
     "capsuleDetail": "View details",
-
     "editOrder": "Edit order",
     "done": "Done",
     "resetOrder": "Reset",
     "editWidgetOrder": "Edit widget order",
     "doneEditing": "Done editing",
     "resetWidgetOrder": "Reset widget order",
-
     "discoveredCount": "You've discovered {count} things about yourself",
     "connectionRule": "{label} results — a piece of self-understanding",
-
     "nextStepDefault": "Ready for the next analysis?",
     "nextStepPcBody": "To recommend outfits for {season}, we need your body info",
     "nextStepPcBodyFallback": "To recommend outfits for your colors, we need your body info",
@@ -166,7 +157,6 @@
     "nextStepBodyHair": "Curious about hairstyles that suit your body type?",
     "nextStepHairMakeup": "Discover makeup tones that harmonize with your hair?",
     "nextStepMakeupOral": "Perfect your smile too! Check your oral health",
-
     "insightTitle": "Insights for You",
     "insightEmpty": "Complete more analyses to get personalized insights",
     "statusNewDiscovery": "New discovery",
@@ -180,7 +170,6 @@
     "bodyAnalysisLabel": "Body Analysis",
     "hairAnalysisLabel": "Hair Analysis",
     "oralHealthLabel": "Oral Health",
-
     "insightMorningSkin": "Apply hydrating serum carefully after morning cleansing",
     "insightMorningColor": "Check today's makeup look for {season}",
     "insightMorningDefault": "Good morning! Ready to check today's routine?",
@@ -189,7 +178,6 @@
     "insightEveningSkin": "Time to start your evening skincare routine?",
     "insightNight": "Good sleep is the best skincare",
     "insightBasis": "Personalized from {count} analyses",
-
     "dashboardWidgets": "Dashboard widgets"
   },
   "beauty": {
@@ -252,7 +240,11 @@
     "account": "Account",
     "notifications": "Notifications",
     "app": "App Settings",
-    "privacy": "Privacy",
+    "privacy": {
+      "profilePublic": "Public Profile",
+      "activityPublic": "Public Activity",
+      "leaderboardPublic": "Public Leaderboard"
+    },
     "dataManagement": "Data Management",
     "appInfo": "App Info",
     "notif": {
@@ -284,11 +276,6 @@
       "light": "Light",
       "dark": "Dark",
       "system": "System"
-    },
-    "privacy": {
-      "profilePublic": "Public Profile",
-      "activityPublic": "Public Activity",
-      "leaderboardPublic": "Public Leaderboard"
     },
     "data": {
       "export": "Export Data",
@@ -628,5 +615,29 @@
     "submit": "Get Started",
     "signInOther": "Sign in with another account",
     "termsConsent": "By continuing, you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
+  "visualReport": {
+    "report": "{label} Report",
+    "bodyType": "Body Type:",
+    "typeSuffix": "{label} Type",
+    "season": "Season:",
+    "hairType": "Hair Type:",
+    "undertone": "Undertone:",
+    "skinScore": "Skin Health Score",
+    "bodyScore": "Body Balance Score",
+    "hairScore": "Hair Health Score",
+    "makeupScore": "Makeup Analysis Score",
+    "defaultScore": "Diagnosis Confidence",
+    "strengthsTitle": "My Strengths",
+    "strengthsEmpty": "Analyzing...",
+    "growthTitle": "Growth Potential",
+    "growthEmpty": "All items are excellent!",
+    "growthSuffix": " can be improved for better results",
+    "bestColors": "My Best Colors",
+    "skinLabel": "Skin Health",
+    "bodyLabel": "Body Analysis",
+    "personalColorLabel": "Personal Color",
+    "hairLabel": "Hair Analysis",
+    "makeupLabel": "Makeup Analysis"
   }
 }

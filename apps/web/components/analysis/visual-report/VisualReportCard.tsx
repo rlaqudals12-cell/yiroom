@@ -3,12 +3,13 @@
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, User, Palette, Scissors, Heart, Clock } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { GradeDisplay } from './GradeDisplay';
 import { StrengthsFirst } from './StrengthsFirst';
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from './constants';
+import { ANALYSIS_TYPE_COLORS } from './constants';
 import type { VisualReportCardProps } from './types';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 
@@ -71,9 +72,17 @@ export function VisualReportCard({
   analyzedAt,
   className,
 }: VisualReportCardProps) {
+  const t = useTranslations('visualReport');
   const colorTheme = ANALYSIS_TYPE_COLORS[analysisType];
   const TypeIcon = ANALYSIS_ICONS[analysisType];
-  const label = ANALYSIS_TYPE_LABELS[analysisType];
+  const labelKey = {
+    skin: 'skinLabel',
+    body: 'bodyLabel',
+    'personal-color': 'personalColorLabel',
+    hair: 'hairLabel',
+    makeup: 'makeupLabel',
+  } as const;
+  const label = t(labelKey[analysisType]);
 
   // 퍼스널 컬러는 confidence를 점수로 사용
   const displayScore = analysisType === 'personal-color' && confidence ? confidence : overallScore;
@@ -87,7 +96,7 @@ export function VisualReportCard({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 <TypeIcon className={cn('w-5 h-5', colorTheme.text)} />
-                {label} 리포트
+                {t('report', { label })}
               </CardTitle>
               {analyzedAt && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -99,24 +108,27 @@ export function VisualReportCard({
             {/* 분석 타입별 서브타이틀 */}
             {analysisType === 'body' && bodyType && (
               <p className="text-sm text-muted-foreground mt-1">
-                체형:{' '}
-                <span className="font-medium text-foreground">{bodyTypeLabel || bodyType}타입</span>
+                {t('bodyType')}{' '}
+                <span className="font-medium text-foreground">
+                  {t('typeSuffix', { label: bodyTypeLabel || bodyType })}
+                </span>
               </p>
             )}
             {analysisType === 'personal-color' && seasonType && (
               <p className="text-sm text-muted-foreground mt-1">
-                시즌:{' '}
+                {t('season')}{' '}
                 <span className="font-medium text-foreground">{seasonLabel || seasonType}</span>
               </p>
             )}
             {analysisType === 'hair' && hairTypeLabel && (
               <p className="text-sm text-muted-foreground mt-1">
-                모발 타입: <span className="font-medium text-foreground">{hairTypeLabel}</span>
+                {t('hairType')} <span className="font-medium text-foreground">{hairTypeLabel}</span>
               </p>
             )}
             {analysisType === 'makeup' && undertoneLabel && (
               <p className="text-sm text-muted-foreground mt-1">
-                언더톤: <span className="font-medium text-foreground">{undertoneLabel}</span>
+                {t('undertone')}{' '}
+                <span className="font-medium text-foreground">{undertoneLabel}</span>
               </p>
             )}
           </CardHeader>
@@ -128,12 +140,12 @@ export function VisualReportCard({
                 selectByKey(
                   analysisType,
                   {
-                    skin: '피부 건강 점수',
-                    body: '체형 균형 점수',
-                    hair: '헤어 건강 점수',
-                    makeup: '메이크업 분석 점수',
+                    skin: t('skinScore'),
+                    body: t('bodyScore'),
+                    hair: t('hairScore'),
+                    makeup: t('makeupScore'),
                   },
-                  '진단 신뢰도'
+                  t('defaultScore')
                 )!
               }
               analysisType={analysisType}

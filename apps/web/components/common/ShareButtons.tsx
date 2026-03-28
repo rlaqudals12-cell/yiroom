@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { shareToX, shareToKakao, downloadShareImage, type ShareContent } from '@/lib/share/social';
 import { copyToClipboard } from '@/lib/share/shareUtils';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface ShareButtonsProps {
 }
 
 export function ShareButtons({ content, showInstagram = false, className }: ShareButtonsProps) {
+  const t = useTranslations('share');
   const [copied, setCopied] = useState(false);
 
   const handleX = () => {
@@ -28,7 +30,7 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
   const handleKakao = async () => {
     const success = await shareToKakao(content);
     if (!success) {
-      toast.error('카카오톡 공유에 실패했습니다');
+      toast.error(t('kakaoFailed'));
     }
   };
 
@@ -36,10 +38,10 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
     const success = await copyToClipboard(content.url);
     if (success) {
       setCopied(true);
-      toast.success('링크가 복사되었습니다');
+      toast.success(t('linkCopied'));
       setTimeout(() => setCopied(false), 2000);
     } else {
-      toast.error('복사에 실패했습니다');
+      toast.error(t('copyFailed'));
     }
   };
 
@@ -47,9 +49,9 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
     if (content.imageUrl) {
       const success = await downloadShareImage(content.imageUrl, 'yiroom-result');
       if (success) {
-        toast.success('이미지가 저장되었습니다. Instagram에서 공유해주세요!');
+        toast.success(t('imageSaved'));
       } else {
-        toast.error('이미지 저장에 실패했습니다');
+        toast.error(t('imageFailed'));
       }
     }
   };
@@ -63,7 +65,7 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
           'p-3 rounded-full transition-colors',
           'bg-black text-white hover:bg-gray-800'
         )}
-        aria-label="X에 공유"
+        aria-label={t('shareOnX')}
       >
         <XIcon className="w-5 h-5" />
       </button>
@@ -78,7 +80,7 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
         }}
         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--social-kakao-hover)')}
         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--social-kakao)')}
-        aria-label="카카오톡 공유"
+        aria-label={t('shareOnKakao')}
       >
         <KakaoIcon className="w-5 h-5" />
       </button>
@@ -90,7 +92,7 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
           'p-3 rounded-full transition-colors',
           'bg-secondary text-secondary-foreground hover:bg-secondary/80'
         )}
-        aria-label="링크 복사"
+        aria-label={t('copyLink')}
       >
         {copied ? <Check className="w-5 h-5 text-green-500" /> : <Link2 className="w-5 h-5" />}
       </button>
@@ -104,7 +106,7 @@ export function ShareButtons({ content, showInstagram = false, className }: Shar
             'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
             'hover:from-purple-600 hover:to-pink-600'
           )}
-          aria-label="Instagram용 이미지 저장"
+          aria-label={t('saveForInstagram')}
         >
           <Download className="w-5 h-5" />
         </button>

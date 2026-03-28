@@ -70,7 +70,6 @@
     "brandName": "Yiroom",
     "memberFallback": "用户",
     "greetingFallback": "你好",
-
     "analysisPromptTitle": "发现属于你的风格？",
     "analysisPromptDesc": "AI为你定制分析",
     "analysisPromptCta": "从个人色彩开始",
@@ -81,7 +80,6 @@
     "customStyle": "找到适合你体型的穿搭风格",
     "scalpHairCheck": "头皮/头发检查",
     "beautyStyle": "美妆风格",
-
     "myAnalysisResults": "我的分析结果",
     "viewAll": "查看全部",
     "startAnalysis": "开始分析",
@@ -102,7 +100,6 @@
     "makeupNarrative": "你的妆容亮点",
     "oralValueHint": "健康的笑容是自信的开始",
     "oralNarrative": "已确认口腔健康状态",
-
     "activitySummary": "今日活动摘要",
     "selfUnderstanding": "自我认知",
     "startFirstRecord": "开始今天的第一条记录？",
@@ -118,7 +115,6 @@
     "minuteUnit": "分钟",
     "waterLabel": "水分",
     "glassUnit": "杯",
-
     "onboardingGuide": "入门指南",
     "onboardingChecklist": "入门指南清单",
     "completedCount": "{completed}/3 完成",
@@ -128,7 +124,6 @@
     "firstAnalysisDesc": "一张照片了解自己",
     "getRecommendation": "获取推荐",
     "getRecommendationDesc": "用分析结果完善你的日程",
-
     "todayRecommendation": "今日推荐",
     "todayRecommendationLabel": "今日个性化推荐",
     "skinRecommendLabel": "查看皮肤匹配产品推荐",
@@ -137,7 +132,6 @@
     "bodyRecommendLabel": "查看体型匹配穿搭推荐",
     "bodyCustom": "体型匹配",
     "outfitRecommend": "穿搭推荐",
-
     "capsuleLabel": "今日每日胶囊",
     "todayRoutine": "今日日程",
     "capsuleLoadError": "无法加载胶囊",
@@ -148,17 +142,14 @@
     "capsuleMoreItems": "+{count}项",
     "capsuleAllComplete": "今日日程已全部完成！",
     "capsuleDetail": "查看详情",
-
     "editOrder": "编辑顺序",
     "done": "完成",
     "resetOrder": "重置",
     "editWidgetOrder": "编辑小组件顺序",
     "doneEditing": "编辑完成",
     "resetWidgetOrder": "重置小组件顺序",
-
     "discoveredCount": "发现了关于自己的{count}件事",
     "connectionRule": "{label}结果 — 自我认知的一部分",
-
     "nextStepDefault": "准备开始下一个分析？",
     "nextStepPcBody": "为{season}推荐穿搭需要体型信息",
     "nextStepPcBodyFallback": "为个人色彩推荐穿搭需要体型信息",
@@ -166,7 +157,6 @@
     "nextStepBodyHair": "想知道适合体型的发型吗？",
     "nextStepHairMakeup": "发现与发型协调的化妆色调？",
     "nextStepMakeupOral": "让笑容也完美！检查口腔健康吧",
-
     "insightTitle": "为你定制的洞察",
     "insightEmpty": "完成更多分析后将生成定制洞察",
     "statusNewDiscovery": "新发现",
@@ -180,7 +170,6 @@
     "bodyAnalysisLabel": "体型分析",
     "hairAnalysisLabel": "发型分析",
     "oralHealthLabel": "口腔健康",
-
     "insightMorningSkin": "早上洁面后请仔细涂抹保湿精华",
     "insightMorningColor": "查看适合{season}的今日妆容",
     "insightMorningDefault": "早上好！来看看今天的日程吧",
@@ -189,7 +178,6 @@
     "insightEveningSkin": "开始晚间护肤日程吧",
     "insightNight": "充足的睡眠是最好的护肤",
     "insightBasis": "基于{count}项分析的定制建议",
-
     "dashboardWidgets": "仪表盘小组件"
   },
   "beauty": {
@@ -252,7 +240,11 @@
     "account": "账户",
     "notifications": "通知",
     "app": "应用设置",
-    "privacy": "隐私",
+    "privacy": {
+      "profilePublic": "公开个人资料",
+      "activityPublic": "公开活动",
+      "leaderboardPublic": "公开排行榜"
+    },
     "dataManagement": "数据管理",
     "appInfo": "应用信息",
     "notif": {
@@ -284,11 +276,6 @@
       "light": "浅色",
       "dark": "深色",
       "system": "跟随系统"
-    },
-    "privacy": {
-      "profilePublic": "公开个人资料",
-      "activityPublic": "公开活动",
-      "leaderboardPublic": "公开排行榜"
     },
     "data": {
       "export": "导出数据",
@@ -628,5 +615,29 @@
     "submit": "开始",
     "signInOther": "使用其他账号登录",
     "termsConsent": "继续即表示您同意<terms>服务条款</terms>和<privacy>隐私政策</privacy>。"
+  },
+  "visualReport": {
+    "report": "{label} 报告",
+    "bodyType": "体型：",
+    "typeSuffix": "{label}类型",
+    "season": "季节：",
+    "hairType": "发质类型：",
+    "undertone": "色调：",
+    "skinScore": "肌肤健康评分",
+    "bodyScore": "体型平衡评分",
+    "hairScore": "头发健康评分",
+    "makeupScore": "化妆分析评分",
+    "defaultScore": "诊断置信度",
+    "strengthsTitle": "我的优势",
+    "strengthsEmpty": "分析中...",
+    "growthTitle": "成长潜力",
+    "growthEmpty": "所有项目都很优秀！",
+    "growthSuffix": "改善后会更好",
+    "bestColors": "我的最佳颜色",
+    "skinLabel": "肌肤健康",
+    "bodyLabel": "体型分析",
+    "personalColorLabel": "个人色彩",
+    "hairLabel": "发质分析",
+    "makeupLabel": "化妆分析"
   }
 }

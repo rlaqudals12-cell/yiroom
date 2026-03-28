@@ -16,6 +16,7 @@
  */
 
 import { ReactNode, useId, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { cn } from '@/lib/utils';
@@ -40,15 +41,15 @@ interface AnalysisResultCardProps {
   announceOnMount?: boolean;
 }
 
-// 분석 타입별 라벨 매핑
-const ANALYSIS_TYPE_LABELS: Record<string, string> = {
-  skin: 'AI 피부 분석',
-  'personal-color': 'AI 퍼스널컬러 분석',
-  body: 'AI 체형 분석',
-  hair: 'AI 헤어 분석',
-  makeup: 'AI 메이크업 분석',
-  nutrition: 'AI 영양 분석',
-  workout: 'AI 운동 분석',
+// 분석 타입 → i18n 키 매핑
+const ANALYSIS_TYPE_I18N_KEYS: Record<string, string> = {
+  skin: 'skin',
+  'personal-color': 'personalColor',
+  body: 'body',
+  hair: 'hair',
+  makeup: 'makeup',
+  nutrition: 'nutrition',
+  workout: 'workout',
 };
 
 /**
@@ -71,12 +72,14 @@ export function AnalysisResultCard({
   showDisclaimer = true,
   announceOnMount = true,
 }: AnalysisResultCardProps) {
+  const tType = useTranslations('analysisType');
   // 고유 ID 생성 (React 18+ useId)
   const uniqueId = useId();
   const titleId = `${uniqueId}-title`;
   const confidenceId = `${uniqueId}-confidence`;
 
-  const badgeLabel = analysisType ? ANALYSIS_TYPE_LABELS[analysisType] : 'AI 분석 결과';
+  const i18nKey = analysisType ? ANALYSIS_TYPE_I18N_KEYS[analysisType] : 'default';
+  const badgeLabel = tType(i18nKey);
 
   // 신뢰도 레벨 정보
   const confidenceInfo = confidence !== undefined ? getConfidenceLevel(confidence) : null;
@@ -89,14 +92,14 @@ export function AnalysisResultCard({
   }, [announceOnMount, analysisType, usedMock]);
 
   // 신뢰도 기반 배지 설명
-  const getBadgeDescription = () => {
+  const getBadgeDescription = (): string => {
     if (usedMock) {
-      return '이 결과는 AI 서비스 불가로 샘플 데이터입니다';
+      return tType('mockDesc');
     }
     if (confidenceInfo) {
       return confidenceInfo.description;
     }
-    return '이 결과는 AI 기술을 사용하여 생성됐어요';
+    return tType('aiDesc');
   };
 
   // ARIA 속성 결정
@@ -134,7 +137,7 @@ export function AnalysisResultCard({
                 )}
                 aria-label={confidenceInfo.description}
               >
-                신뢰도 {confidence}%
+                {tType('confidence', { percent: confidence })}
               </span>
             )}
           </div>
@@ -154,7 +157,7 @@ export function AnalysisResultCard({
       )}
 
       {/* 결과 콘텐츠 */}
-      <section className="p-6" aria-label="분석 결과 상세">
+      <section className="p-6" aria-label={tType('resultDetail')}>
         {children}
       </section>
 

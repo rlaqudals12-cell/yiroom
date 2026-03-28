@@ -70,7 +70,6 @@
     "brandName": "Yiroom",
     "memberFallback": "メンバー",
     "greetingFallback": "こんにちは",
-
     "analysisPromptTitle": "自分だけのスタイルを見つけませんか？",
     "analysisPromptDesc": "AIがパーソナル分析をお手伝い",
     "analysisPromptCta": "パーソナルカラーから始める",
@@ -81,7 +80,6 @@
     "customStyle": "体型に合う服のスタイルを探す",
     "scalpHairCheck": "頭皮・髪チェック",
     "beautyStyle": "ビューティースタイル",
-
     "myAnalysisResults": "分析結果",
     "viewAll": "すべて見る",
     "startAnalysis": "分析する",
@@ -102,7 +100,6 @@
     "makeupNarrative": "あなたのメイクポイントです",
     "oralValueHint": "健康的な笑顔が自信の始まりです",
     "oralNarrative": "口腔健康状態を確認しました",
-
     "activitySummary": "今日のアクティビティ",
     "selfUnderstanding": "自己理解",
     "startFirstRecord": "今日最初の記録を始めませんか？",
@@ -118,7 +115,6 @@
     "minuteUnit": "分",
     "waterLabel": "水分",
     "glassUnit": "杯",
-
     "onboardingGuide": "スタートガイド",
     "onboardingChecklist": "スタートガイドチェックリスト",
     "completedCount": "{completed}/3 完了",
@@ -128,7 +124,6 @@
     "firstAnalysisDesc": "写真一枚で自分を知る",
     "getRecommendation": "おすすめを受ける",
     "getRecommendationDesc": "分析結果でルーティンを完成",
-
     "todayRecommendation": "今日のおすすめ",
     "todayRecommendationLabel": "今日のパーソナルおすすめ",
     "skinRecommendLabel": "肌に合った商品おすすめを見る",
@@ -137,7 +132,6 @@
     "bodyRecommendLabel": "体型に合ったコーデおすすめを見る",
     "bodyCustom": "体型に合った",
     "outfitRecommend": "コーデおすすめ",
-
     "capsuleLabel": "今日のデイリーカプセル",
     "todayRoutine": "今日のルーティン",
     "capsuleLoadError": "カプセルを読み込めませんでした",
@@ -148,17 +142,14 @@
     "capsuleMoreItems": "+{count}件",
     "capsuleAllComplete": "今日のルーティンを全て完了しました！",
     "capsuleDetail": "詳細を見る",
-
     "editOrder": "順序を編集",
     "done": "完了",
     "resetOrder": "リセット",
     "editWidgetOrder": "ウィジェットの順序を編集",
     "doneEditing": "編集完了",
     "resetWidgetOrder": "ウィジェットの順序をリセット",
-
     "discoveredCount": "自分について{count}つ発見しました",
     "connectionRule": "{label}の結果 — 自己理解のひとかけら",
-
     "nextStepDefault": "次の分析を始めませんか？",
     "nextStepPcBody": "{season}に合うコーデを提案するには体型情報が必要です",
     "nextStepPcBodyFallback": "パーソナルカラーに合うコーデには体型情報が必要です",
@@ -166,7 +157,6 @@
     "nextStepBodyHair": "体型に似合うヘアスタイルも気になりませんか？",
     "nextStepHairMakeup": "ヘアと調和するメイクトーンを見つけませんか？",
     "nextStepMakeupOral": "笑顔も完璧に！口腔健康もチェックしましょう",
-
     "insightTitle": "あなたへのインサイト",
     "insightEmpty": "分析を完了するとインサイトが生成されます",
     "statusNewDiscovery": "新しい発見",
@@ -180,7 +170,6 @@
     "bodyAnalysisLabel": "体型分析",
     "hairAnalysisLabel": "ヘア分析",
     "oralHealthLabel": "口腔健康",
-
     "insightMorningSkin": "朝の洗顔後、保湿セラムをしっかり塗りましょう",
     "insightMorningColor": "{season}に似合う今日のメイクを確認しましょう",
     "insightMorningDefault": "おはようございます！今日のルーティンを確認しましょう",
@@ -189,7 +178,6 @@
     "insightEveningSkin": "夜のスキンケアルーティンを始めましょう",
     "insightNight": "十分な睡眠が最高のスキンケアです",
     "insightBasis": "{count}件の分析に基づくおすすめ",
-
     "dashboardWidgets": "ダッシュボードウィジェット"
   },
   "beauty": {
@@ -252,7 +240,11 @@
     "account": "アカウント",
     "notifications": "通知",
     "app": "アプリ設定",
-    "privacy": "プライバシー",
+    "privacy": {
+      "profilePublic": "プロフィール公開",
+      "activityPublic": "アクティビティ公開",
+      "leaderboardPublic": "リーダーボード公開"
+    },
     "dataManagement": "データ管理",
     "appInfo": "アプリ情報",
     "notif": {
@@ -284,11 +276,6 @@
       "light": "ライト",
       "dark": "ダーク",
       "system": "システム"
-    },
-    "privacy": {
-      "profilePublic": "プロフィール公開",
-      "activityPublic": "アクティビティ公開",
-      "leaderboardPublic": "リーダーボード公開"
     },
     "data": {
       "export": "データエクスポート",
@@ -628,5 +615,29 @@
     "submit": "始める",
     "signInOther": "別のアカウントでログイン",
     "termsConsent": "続行すると、<terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>に同意したものとみなされます。"
+  },
+  "visualReport": {
+    "report": "{label} レポート",
+    "bodyType": "体型：",
+    "typeSuffix": "{label}タイプ",
+    "season": "シーズン：",
+    "hairType": "髪タイプ：",
+    "undertone": "アンダートーン：",
+    "skinScore": "肌健康スコア",
+    "bodyScore": "体型バランススコア",
+    "hairScore": "ヘア健康スコア",
+    "makeupScore": "メイクアップ分析スコア",
+    "defaultScore": "診断信頼度",
+    "strengthsTitle": "私の強み",
+    "strengthsEmpty": "分析中です...",
+    "growthTitle": "成長の可能性",
+    "growthEmpty": "すべての項目が優秀です！",
+    "growthSuffix": "を改善するとさらに良くなります",
+    "bestColors": "マイベストカラー",
+    "skinLabel": "肌健康",
+    "bodyLabel": "体型分析",
+    "personalColorLabel": "パーソナルカラー",
+    "hairLabel": "ヘア分析",
+    "makeupLabel": "メイクアップ分析"
   }
 }
