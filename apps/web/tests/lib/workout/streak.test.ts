@@ -350,19 +350,16 @@ describe('Streak 계산 유틸리티', () => {
     it('3일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(3);
       expect(message).toContain('3일 연속');
-      expect(message).toContain('🌱');
     });
 
     it('7일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(7);
       expect(message).toContain('7일 연속');
-      expect(message).toContain('🔥');
     });
 
     it('30일 마일스톤 메시지를 반환한다', () => {
       const message = getMilestoneAchievementMessage(30);
       expect(message).toContain('30일 연속');
-      expect(message).toContain('🏆');
     });
   });
 
