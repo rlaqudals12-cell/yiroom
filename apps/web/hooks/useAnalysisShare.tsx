@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createRoot, Root } from 'react-dom/client';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils/date-format';
 import { AnalysisShareCard } from '@/components/share';
@@ -10,6 +11,17 @@ import { captureElementAsImage, shareImage } from '@/lib/share';
 import { THEME_STYLES } from '@/components/share/AnalysisShareCard';
 
 export type { ShareCardData, ShareCardTheme };
+
+/** 전체 분석 모듈 타입 (S-0) */
+export type AnalysisType =
+  | 'personal-color'
+  | 'skin'
+  | 'body'
+  | 'hair'
+  | 'makeup'
+  | 'oral-health'
+  | 'posture'
+  | 'badge';
 
 // 공유 카드에 포함할 사용자 프로필 정보
 interface ShareProfileOptions {
@@ -236,6 +248,33 @@ export function createBadgeShareData(input: BadgeShareInput, locale: string = 'k
   };
 }
 
+// 자세 분석 결과에서 공유 데이터 생성 (S-0)
+interface PostureShareInput {
+  postureType: string;
+  postureTypeLabel: string;
+  overallScore: number;
+}
+
+export function createPostureShareData(
+  result: PostureShareInput,
+  profile?: ShareProfileOptions
+): ShareCardData {
+  return {
+    analysisType: 'posture',
+    title: '나의 자세 분석',
+    subtitle: '이룸 AI 분석 결과',
+    typeLabel: result.postureTypeLabel,
+    typeEmoji: '🧘',
+    score: result.overallScore,
+    highlights: [
+      { label: '자세 유형', value: result.postureTypeLabel },
+      { label: '종합 점수', value: `${result.overallScore}점` },
+    ],
+    profileImage: profile?.profileImage,
+    userName: profile?.userName,
+  };
+}
+
 interface UseAnalysisShareReturn {
   share: () => Promise<void>;
   loading: boolean;
@@ -250,6 +289,7 @@ interface UseAnalysisShareReturn {
  * @param title 공유 제목 (파일명)
  */
 export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysisShareReturn {
+  const t = useTranslations('share');
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<Root | null>(null);
@@ -276,7 +316,7 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
 
   const share = useCallback(async () => {
     if (!containerRef.current) {
-      toast.error('공유 준비 중 오류가 발생했습니다');
+      toast.error(t('sharePrepareFailed'));
       return;
     }
 
@@ -327,14 +367,14 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
       }
 
       // 공유
-      const success = await shareImage(blob, title, `${title} - 이룸에서 확인하세요!`);
+      const success = await shareImage(blob, title, t('checkOnYiroom', { title }));
 
       if (success && !navigator.share) {
-        toast.success('이미지가 저장되었습니다');
+        toast.success(t('imageSaved'));
       }
     } catch (error) {
       console.error('[이룸] 공유 오류:', error);
-      toast.error('공유 중 오류가 발생했습니다');
+      toast.error(t('shareFailed'));
     } finally {
       setLoading(false);
     }

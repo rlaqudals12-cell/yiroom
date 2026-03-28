@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { captureElementAsImage, shareImage } from '@/lib/share';
 import { toast } from 'sonner';
 
@@ -40,23 +41,20 @@ interface UseShareReturn {
  * );
  * ```
  */
-export function useShare(
-  title: string,
-  options?: UseShareOptions
-): UseShareReturn {
+export function useShare(title: string, options?: UseShareOptions): UseShareReturn {
   const ref = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const t = useTranslations('share');
 
   const share = useCallback(async () => {
     if (!ref.current) {
-      toast.error('공유할 내용을 찾을 수 없습니다');
+      toast.error(t('sharePrepareFailed'));
       return;
     }
 
     setLoading(true);
 
     try {
-      // HTML 요소를 이미지로 캡처
       const blob = await captureElementAsImage(ref.current, {
         quality: options?.quality ?? 0.95,
         scale: options?.scale ?? 2,
@@ -64,31 +62,24 @@ export function useShare(
       });
 
       if (!blob) {
-        toast.error('이미지 생성에 실패했습니다');
+        toast.error(t('imageFailed'));
         return;
       }
 
-      // 공유 또는 다운로드
-      const success = await shareImage(
-        blob,
-        title,
-        `${title} - 이룸에서 확인하세요!`
-      );
+      const success = await shareImage(blob, title, t('checkOnYiroom', { title }));
 
       if (success) {
-        // Web Share API가 아닌 다운로드인 경우에만 토스트 표시
-        // (공유는 시스템 UI가 표시되므로 토스트 불필요)
         if (!navigator.share) {
-          toast.success('이미지가 저장되었습니다');
+          toast.success(t('imageSaved'));
         }
       }
     } catch (error) {
       console.error('[이룸] 공유 오류:', error);
-      toast.error('공유 중 오류가 발생했습니다');
+      toast.error(t('shareFailed'));
     } finally {
       setLoading(false);
     }
-  }, [title, options]);
+  }, [title, options, t]);
 
   return { ref, share, loading };
 }
