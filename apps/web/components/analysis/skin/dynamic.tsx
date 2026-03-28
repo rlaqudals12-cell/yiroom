@@ -10,13 +10,15 @@
  */
 
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 // 스켈레톤 컴포넌트 - 이미지 오버레이용
 function OverlaySkeleton() {
+  const t = useTranslations('skinAnalysisUI');
   return (
     <div className="relative w-full aspect-[3/4] bg-muted rounded-lg animate-pulse">
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-sm text-muted-foreground">분석 준비 중...</div>
+        <div className="text-sm text-muted-foreground">{t('dynamic0')}</div>
       </div>
     </div>
   );
@@ -58,5 +60,9 @@ export const FaceLandmarkHeatMapDynamic = dynamic(
 );
 
 // 타입 re-export (dynamic import에서도 타입 사용 가능하도록)
-export type { PhotoMetricOverlayV2Props, MetricScore, SkinMetricType } from './PhotoMetricOverlayV2';
+export type {
+  PhotoMetricOverlayV2Props,
+  MetricScore,
+  SkinMetricType,
+} from './PhotoMetricOverlayV2';
 export type { FaceLandmarkHeatMapProps, ZoneScore, FaceZoneType } from './FaceLandmarkHeatMap';

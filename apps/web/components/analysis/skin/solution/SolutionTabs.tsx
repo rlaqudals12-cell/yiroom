@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Droplets, Sparkles } from 'lucide-react';
 import { CleansingGuide } from './CleansingGuide';
 import type { SkinType } from '@/lib/mock/cleanser-types';
+import { useTranslations } from 'next-intl';
 
 interface SolutionTabsProps {
   userSkinType?: SkinType;
@@ -16,6 +17,7 @@ interface SolutionTabsProps {
  * 현재: 클렌징 가이드 제공 (추후 스킨케어 순서, 성분, 루틴 확장 예정)
  */
 export function SolutionTabs({ userSkinType, className }: SolutionTabsProps) {
+  const t = useTranslations('skinAnalysisUI');
   return (
     <div className={cn('', className)} data-testid="solution-tabs">
       <Card>
@@ -29,7 +31,7 @@ export function SolutionTabs({ userSkinType, className }: SolutionTabsProps) {
         <CardContent>
           <div className="flex items-center gap-2 mb-4">
             <Droplets className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold">클렌징 가이드</h3>
+            <h3 className="text-sm font-semibold">{t('solutionTabs0')}</h3>
           </div>
           <CleansingGuide userSkinType={userSkinType} />
 

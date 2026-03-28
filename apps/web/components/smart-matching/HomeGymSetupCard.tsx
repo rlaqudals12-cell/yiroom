@@ -14,6 +14,7 @@ import type {
   EquipmentRecommendation,
 } from '@/lib/smart-matching/equipment-recommend';
 import { getBudgetLabel, formatPrice } from '@/lib/smart-matching/equipment-recommend';
+import { useTranslations } from 'next-intl';
 
 interface HomeGymSetupCardProps {
   setup: HomeGymSetup;
@@ -35,6 +36,7 @@ export function HomeGymSetupCard({
   onViewPhase,
   className,
 }: HomeGymSetupCardProps) {
+  const t = useTranslations('smartMatchingUI');
   const [activePhase, setActivePhase] = useState(1);
 
   return (
@@ -45,7 +47,7 @@ export function HomeGymSetupCard({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold">홈짐 구성 추천</h3>
+          <h3 className="font-semibold">{t('homeGymSetupCard3')}</h3>
           <p className="text-sm text-muted-foreground">
             {getBudgetLabel(setup.budget)} · {spaceSizeLabels[setup.spaceSize]}
           </p>
@@ -55,12 +57,10 @@ export function HomeGymSetupCard({
       {/* 필수 세트 */}
       <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-medium text-sm">필수 장비 세트</h4>
+          <h4 className="font-medium text-sm">{t('homeGymSetupCard4')}</h4>
           <Badge variant="secondary">{formatPrice(setup.essentialSet.totalCost)}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          {setup.essentialSet.description}
-        </p>
+        <p className="text-xs text-muted-foreground mb-3">{setup.essentialSet.description}</p>
         <div className="flex flex-wrap gap-1">
           {setup.essentialSet.items.map((item) => (
             <button
@@ -78,12 +78,10 @@ export function HomeGymSetupCard({
       {setup.expandedSet && (
         <div className="mb-4 p-3 bg-muted/30 rounded-lg border">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-medium text-sm">추가 장비 세트</h4>
+            <h4 className="font-medium text-sm">{t('homeGymSetupCard5')}</h4>
             <Badge variant="outline">{formatPrice(setup.expandedSet.totalCost)}</Badge>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            {setup.expandedSet.description}
-          </p>
+          <p className="text-xs text-muted-foreground mb-3">{setup.expandedSet.description}</p>
           <div className="flex flex-wrap gap-1">
             {setup.expandedSet.items.map((item) => (
               <button
@@ -100,7 +98,7 @@ export function HomeGymSetupCard({
 
       {/* 단계별 구매 계획 */}
       <div className="border-t pt-4">
-        <h4 className="font-medium text-sm mb-3">단계별 구매 계획</h4>
+        <h4 className="font-medium text-sm mb-3">{t('homeGymSetupCard6')}</h4>
 
         {/* 탭 */}
         <div className="flex gap-1 mb-3">
@@ -148,11 +146,9 @@ export function HomeGymSetupCard({
 
       {/* 총 비용 */}
       <div className="mt-4 pt-4 border-t flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">예상 총 비용</span>
+        <span className="text-sm text-muted-foreground">{t('homeGymSetupCard7')}</span>
         <span className="font-semibold">
-          {formatPrice(
-            setup.essentialSet.totalCost + (setup.expandedSet?.totalCost ?? 0)
-          )}
+          {formatPrice(setup.essentialSet.totalCost + (setup.expandedSet?.totalCost ?? 0))}
         </span>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { FileText, Shield, CheckCircle, XCircle, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface UserAgreement {
   terms_agreed: boolean;
@@ -74,6 +75,7 @@ function AgreementItem({ icon: Icon, title, agreed, agreedAt, version, href }: A
  * SDD-LEGAL-SUPPORT.md §3.4
  */
 export function AgreementHistory() {
+  const t = useTranslations('settingsUI');
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
 
@@ -113,7 +115,7 @@ export function AgreementHistory() {
     return (
       <Card data-testid="agreement-history-loading">
         <CardHeader>
-          <CardTitle className="text-base">약관 동의 내역</CardTitle>
+          <CardTitle className="text-base">{t('agreementHistory2')}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -134,13 +136,13 @@ export function AgreementHistory() {
   return (
     <Card data-testid="agreement-history">
       <CardHeader>
-        <CardTitle className="text-base">약관 동의 내역</CardTitle>
-        <CardDescription>서비스 이용을 위해 동의한 약관 및 정책입니다</CardDescription>
+        <CardTitle className="text-base">{t('agreementHistory2')}</CardTitle>
+        <CardDescription>{t('agreementHistory3')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-1 -mx-2">
         <AgreementItem
           icon={FileText}
-          title="이용약관"
+          title={t('agreementHistory4')}
           agreed={termsAgreed}
           agreedAt={agreement?.terms_agreed_at ?? signupDate}
           version={agreement?.terms_version ?? 'v1.0'}
@@ -148,7 +150,7 @@ export function AgreementHistory() {
         />
         <AgreementItem
           icon={Shield}
-          title="개인정보처리방침"
+          title={t('agreementHistory5')}
           agreed={privacyAgreed}
           agreedAt={agreement?.privacy_agreed_at ?? signupDate}
           version={agreement?.privacy_version ?? 'v1.0'}
@@ -157,7 +159,7 @@ export function AgreementHistory() {
       </CardContent>
       <div className="px-6 pb-6">
         <Button variant="outline" className="w-full" asChild>
-          <Link href="/help">고객센터 문의하기</Link>
+          <Link href="/help">{t('agreementHistory6')}</Link>
         </Button>
       </div>
     </Card>

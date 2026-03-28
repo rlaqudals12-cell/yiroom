@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { selectByCondition } from '@/lib/utils/conditional-helpers';
 import { getKoreanColorName } from '@/lib/utils/color-names';
+import { useTranslations } from 'next-intl';
 
 /**
  * PC-1+ 드레이프 시뮬레이터
@@ -34,6 +35,7 @@ export default function DrapeSimulator({
   externalSelectedColor,
   className,
 }: DrapeSimulatorProps & { skinInsight?: string; externalSelectedColor?: string | null }) {
+  const t = useTranslations('visualAnalysisUI');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -173,13 +175,13 @@ export default function DrapeSimulator({
         <canvas
           ref={canvasRef}
           className="max-w-full max-h-full object-contain"
-          aria-label="드레이프 시뮬레이션"
+          aria-label={t('drapeSimulator0')}
         />
 
         {/* 분석 진행률 오버레이 */}
         {isAnalyzing && (
           <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-4">
-            <p className="text-sm font-medium">분석 중...</p>
+            <p className="text-sm font-medium">{t('drapeSimulator1')}</p>
             <Progress value={analysisProgress} className="w-3/4" />
             <p className="text-xs text-muted-foreground">{analysisProgress}%</p>
           </div>
@@ -189,7 +191,7 @@ export default function DrapeSimulator({
       {/* 2. 분석 전 안내 (결과 없을 때) */}
       {bestResults.length === 0 && !isAnalyzing && (
         <div className="p-3 bg-muted/50 rounded-lg text-center space-y-1">
-          <p className="text-sm font-medium">내 사진에 색상을 입혀볼 수 있어요</p>
+          <p className="text-sm font-medium">{t('drapeSimulator2')}</p>
           <p className="text-xs text-muted-foreground">
             아래 버튼을 누르면 다양한 색상을 비교 분석해서, 가장 어울리는 색을 찾아드려요.
           </p>
@@ -221,7 +223,7 @@ export default function DrapeSimulator({
       <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
         {isAnalyzing
           ? '분석 중...'
-          : selectByCondition(bestResults.length > 0, '다시 분석', '전체 컬러 분석 시작')}
+          : selectByCondition(bestResults.length > 0, t('drapeSimulator3'), t('drapeSimulator4'))}
       </Button>
     </div>
   );

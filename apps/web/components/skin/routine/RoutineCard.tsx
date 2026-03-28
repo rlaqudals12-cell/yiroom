@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { getCategoryInfo, formatDuration } from '@/lib/mock/skincare-routine';
 import type { RoutineCardProps } from '@/types/skincare-routine';
+import { useTranslations } from 'next-intl';
 
 /**
  * 루틴 요약 카드 컴포넌트
@@ -21,6 +22,7 @@ const RoutineCard = memo(function RoutineCard({
   onSelect,
   className,
 }: RoutineCardProps) {
+  const t = useTranslations('skinUI');
   const isMorning = timeOfDay === 'morning';
   const Icon = isMorning ? Sun : Moon;
 
@@ -70,7 +72,9 @@ const RoutineCard = memo(function RoutineCard({
               <Icon className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="font-bold text-lg">{isMorning ? '아침 루틴' : '저녁 루틴'}</h3>
+              <h3 className="font-bold text-lg">
+                {isMorning ? t('routineCard0') : t('routineCard1')}
+              </h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{steps.length}단계</span>
                 <span>•</span>
@@ -90,7 +94,7 @@ const RoutineCard = memo(function RoutineCard({
       <CardContent className="pt-4">
         {/* 필수 단계 */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground mb-2">필수 단계</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">{t('routineCard2')}</p>
           <div className="flex flex-wrap gap-1.5">
             {requiredSteps.map((step) => {
               const categoryInfo = getCategoryInfo(step.category);

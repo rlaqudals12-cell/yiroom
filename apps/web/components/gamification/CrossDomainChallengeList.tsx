@@ -13,6 +13,7 @@ import type {
   CrossDomainProgressView,
   CrossDomainChallengeDefinition,
 } from '@/lib/gamification/cross-domain-challenges';
+import { useTranslations } from 'next-intl';
 
 interface CrossDomainChallengeListProps {
   /** 챌린지 진행 뷰 목록 */
@@ -34,14 +35,15 @@ export function CrossDomainChallengeList({
   joinedIds = [],
   className,
 }: CrossDomainChallengeListProps) {
+  const t = useTranslations('gamificationUI');
   if (views.length === 0) {
     return (
       <div
         className="text-center py-8 text-muted-foreground"
         data-testid="cross-domain-challenge-list-empty"
       >
-        <p>참여 가능한 크로스도메인 챌린지가 없어요.</p>
-        <p className="text-sm mt-1">레벨을 올리면 새로운 챌린지가 열려요!</p>
+        <p>{t('crossDomainChallengeList0')}</p>
+        <p className="text-sm mt-1">{t('crossDomainChallengeList1')}</p>
       </div>
     );
   }

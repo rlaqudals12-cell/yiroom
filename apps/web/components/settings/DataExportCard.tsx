@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Download, Loader2, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 /**
  * 데이터 내보내기 카드
  * 사용자 데이터를 JSON 형식으로 다운로드
  */
 export function DataExportCard() {
+  const t = useTranslations('settingsUI');
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
 
@@ -46,7 +48,7 @@ export function DataExportCard() {
       setTimeout(() => setExportSuccess(false), 3000);
     } catch (error) {
       console.error('[DataExport] Failed to export:', error);
-      alert('데이터 내보내기에 실패했습니다. 다시 시도해주세요.');
+      alert(t('dataExportCard0'));
     } finally {
       setIsExporting(false);
     }

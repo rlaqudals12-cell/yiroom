@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import type { MonthlyReportCardProps } from '@/types/skin-diary';
 import { CONDITION_EMOJIS, CONDITION_COLORS } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 월간 리포트 카드 컴포넌트
@@ -29,6 +30,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
   onViewDetails,
   className,
 }: MonthlyReportCardProps) {
+  const t = useTranslations('skinUI');
   const { month, avgCondition, trendDirection, routineCompletionRate, topFactors, totalEntries } =
     report;
 
@@ -37,18 +39,30 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
   const monthLabel = `${year}년 ${parseInt(monthNum)}월`;
 
   // 트렌드 아이콘/색상/라벨
-  const TrendIcon = selectByKey(trendDirection, {
-    improving: TrendingUp,
-    declining: TrendingDown,
-  }, Minus)!;
-  const trendColor = selectByKey(trendDirection, {
-    improving: 'text-green-500',
-    declining: 'text-red-500',
-  }, 'text-muted-foreground')!;
-  const trendLabel = selectByKey(trendDirection, {
-    improving: '개선 중',
-    declining: '주의 필요',
-  }, '안정적')!;
+  const TrendIcon = selectByKey(
+    trendDirection,
+    {
+      improving: TrendingUp,
+      declining: TrendingDown,
+    },
+    Minus
+  )!;
+  const trendColor = selectByKey(
+    trendDirection,
+    {
+      improving: 'text-green-500',
+      declining: 'text-red-500',
+    },
+    'text-muted-foreground'
+  )!;
+  const trendLabel = selectByKey(
+    trendDirection,
+    {
+      improving: t('monthlyReportCard1'),
+      declining: t('monthlyReportCard2'),
+    },
+    t('monthlyReportCard3')
+  )!;
 
   // 평균 컨디션에 가장 가까운 점수
   const nearestScore = Math.round(avgCondition) as 1 | 2 | 3 | 4 | 5;
@@ -73,7 +87,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
         {/* 평균 컨디션 & 트렌드 */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">평균 컨디션</p>
+            <p className="text-sm text-muted-foreground">{t('monthlyReportCard4')}</p>
             <div className="flex items-center gap-2">
               <span className="text-3xl" style={{ textShadow: `0 0 8px ${conditionColor}` }}>
                 {conditionEmoji}
@@ -84,7 +98,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
           </div>
 
           <div className="text-right space-y-1">
-            <p className="text-sm text-muted-foreground">트렌드</p>
+            <p className="text-sm text-muted-foreground">{t('monthlyReportCard5')}</p>
             <div className={cn('flex items-center gap-1', trendColor)}>
               <TrendIcon className="h-5 w-5" aria-hidden="true" />
               <span className="font-medium">{trendLabel}</span>
@@ -94,7 +108,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
 
         {/* 루틴 완료율 */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium">루틴 완료율</h4>
+          <h4 className="text-sm font-medium">{t('monthlyReportCard6')}</h4>
 
           <div className="space-y-3">
             {/* 아침 루틴 */}
@@ -102,7 +116,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Sun className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                  <span>아침 루틴</span>
+                  <span>{t('monthlyReportCard7')}</span>
                 </div>
                 <span className="font-medium">{routineCompletionRate.morning}%</span>
               </div>
@@ -118,7 +132,7 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Moon className="h-4 w-4 text-indigo-500" aria-hidden="true" />
-                  <span>저녁 루틴</span>
+                  <span>{t('monthlyReportCard9')}</span>
                 </div>
                 <span className="font-medium">{routineCompletionRate.evening}%</span>
               </div>
@@ -164,9 +178,9 @@ const MonthlyReportCard = memo(function MonthlyReportCard({
             variant="outline"
             className="w-full"
             onClick={onViewDetails}
-            aria-label="월간 리포트 상세 보기"
+            aria-label={t('monthlyReportCard11')}
           >
-            <span>상세 리포트 보기</span>
+            <span>{t('monthlyReportCard12')}</span>
             <ChevronRight className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
         )}

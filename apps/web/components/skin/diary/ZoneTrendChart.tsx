@@ -9,6 +9,7 @@ import type {
   TrendDirection,
 } from '@/lib/analysis/skin-v2/skin-diary-zone';
 import { analyzeSkinTrend } from '@/lib/analysis/skin-v2/skin-diary-zone';
+import { useTranslations } from 'next-intl';
 
 // 트렌드 방향별 스타일
 const TREND_CONFIG: Record<
@@ -67,6 +68,7 @@ const ZoneTrendChart = memo(function ZoneTrendChart({
   periodDays = 14,
   className,
 }: ZoneTrendChartProps) {
+  const t = useTranslations('skinUI');
   const analysis: SkinTrendAnalysis | null = useMemo(() => {
     if (entries.length < 2) return null;
     return analyzeSkinTrend(entries, periodDays);
@@ -76,7 +78,7 @@ const ZoneTrendChart = memo(function ZoneTrendChart({
     return (
       <Card className={className} data-testid="zone-trend-chart">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">존별 변화 추이</CardTitle>
+          <CardTitle className="text-base">{t('zoneTrendChart3')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
@@ -100,7 +102,7 @@ const ZoneTrendChart = memo(function ZoneTrendChart({
     <Card className={className} data-testid="zone-trend-chart">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">존별 변화 추이</CardTitle>
+          <CardTitle className="text-base">{t('zoneTrendChart3')}</CardTitle>
           <span className="text-xs text-muted-foreground">최근 {periodDays}일</span>
         </div>
       </CardHeader>
@@ -108,7 +110,7 @@ const ZoneTrendChart = memo(function ZoneTrendChart({
         {/* 전체 바이탈리티 요약 */}
         <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
           <VitalityIcon className={`h-4 w-4 ${vitalityConfig.color}`} />
-          <span className="text-sm font-medium">전체 바이탈리티</span>
+          <span className="text-sm font-medium">{t('zoneTrendChart4')}</span>
           <span className={`text-sm font-bold ${vitalityConfig.color}`}>
             {vitalityConfig.label}
           </span>

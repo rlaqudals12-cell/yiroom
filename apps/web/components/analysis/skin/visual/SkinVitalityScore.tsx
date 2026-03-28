@@ -9,6 +9,7 @@
 
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /** 등급 타입 */
 export type VitalityGrade = 'S' | 'A' | 'B' | 'C' | 'D';
@@ -73,6 +74,7 @@ export function SkinVitalityScore({
   size = 'md',
   className,
 }: SkinVitalityScoreProps) {
+  const t = useTranslations('skinAnalysisUI');
   const grade = useMemo(() => getGrade(score), [score]);
   const colors = GRADE_COLORS[grade];
   const sizeConfig = SIZE_CONFIG[size];
@@ -86,10 +88,7 @@ export function SkinVitalityScore({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div
-      className={cn('flex flex-col items-center', className)}
-      data-testid="skin-vitality-score"
-    >
+    <div className={cn('flex flex-col items-center', className)} data-testid="skin-vitality-score">
       {/* 원형 게이지 */}
       <div className={cn('relative', sizeConfig.wrapper)}>
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -116,9 +115,7 @@ export function SkinVitalityScore({
 
         {/* 중앙 점수 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={cn('font-bold', sizeConfig.text, colors.text)}>
-            {score}
-          </span>
+          <span className={cn('font-bold', sizeConfig.text, colors.text)}>{score}</span>
           <span className={cn('text-gray-500', sizeConfig.subtext)}>점</span>
         </div>
       </div>
@@ -138,29 +135,19 @@ export function SkinVitalityScore({
       {/* 점수 변화량 */}
       {scoreChange !== null && (
         <div className={cn('mt-2', sizeConfig.subtext)}>
-          {scoreChange > 0 && (
-            <span className="text-emerald-600">
-              +{scoreChange}점 상승
-            </span>
-          )}
-          {scoreChange < 0 && (
-            <span className="text-red-600">
-              {scoreChange}점 하락
-            </span>
-          )}
-          {scoreChange === 0 && (
-            <span className="text-gray-500">변화 없음</span>
-          )}
+          {scoreChange > 0 && <span className="text-emerald-600">+{scoreChange}점 상승</span>}
+          {scoreChange < 0 && <span className="text-red-600">{scoreChange}점 하락</span>}
+          {scoreChange === 0 && <span className="text-gray-500">{t('skinVitalityScore5')}</span>}
         </div>
       )}
 
       {/* 점수 구성 요소 */}
       {breakdown && size !== 'sm' && (
         <div className="mt-4 w-full max-w-xs space-y-2">
-          <BreakdownBar label="수분" value={breakdown.hydration} />
-          <BreakdownBar label="탄력" value={breakdown.elasticity} />
-          <BreakdownBar label="투명도" value={breakdown.clarity} />
-          <BreakdownBar label="톤균일" value={breakdown.tone} />
+          <BreakdownBar label={t('skinVitalityScore6')} value={breakdown.hydration} />
+          <BreakdownBar label={t('skinVitalityScore7')} value={breakdown.elasticity} />
+          <BreakdownBar label={t('skinVitalityScore8')} value={breakdown.clarity} />
+          <BreakdownBar label={t('skinVitalityScore9')} value={breakdown.tone} />
         </div>
       )}
     </div>

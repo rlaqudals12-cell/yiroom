@@ -15,6 +15,7 @@ import {
   type SkinMetricId,
 } from '@/types/skin-detailed';
 import { ScientificTermTooltip } from './ScientificTermTooltip';
+import { useTranslations } from 'next-intl';
 
 interface MetricDetailCardProps {
   /** 지표 ID (hydration, oil, pores 등) */
@@ -33,6 +34,7 @@ interface MetricDetailCardProps {
  * - 간단 설명 → 상세 분석 → 과학적 배경 (Collapsible) → 솔루션
  */
 export function MetricDetailCard({ metricId, score, onClose, className }: MetricDetailCardProps) {
+  const t = useTranslations('skinAnalysisUI');
   // 과학적 배경 섹션 열림/닫힘 상태
   const [isScientificOpen, setIsScientificOpen] = useState(false);
 
@@ -66,7 +68,7 @@ export function MetricDetailCard({ metricId, score, onClose, className }: Metric
             size="icon"
             onClick={onClose}
             className="h-8 w-8"
-            aria-label="닫기"
+            aria-label={t('metricDetailCard0')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -85,20 +87,20 @@ export function MetricDetailCard({ metricId, score, onClose, className }: Metric
           </h4>
           <div className="pl-6 space-y-2 text-sm">
             <div className="flex flex-col gap-0.5">
-              <span className="text-muted-foreground">측정 기준</span>
+              <span className="text-muted-foreground">{t('metricDetailCard1')}</span>
               <span>{data.detailedAnalysis.measurementBasis}</span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-muted-foreground">정상 범위</span>
+              <span className="text-muted-foreground">{t('metricDetailCard2')}</span>
               <span>{data.detailedAnalysis.normalRange}</span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-muted-foreground">현재 상태</span>
+              <span className="text-muted-foreground">{t('metricDetailCard3')}</span>
               <span className={statusColor}>{data.detailedAnalysis.userStatus}</span>
             </div>
             {/* 가능한 원인 */}
             <div className="flex flex-col gap-1">
-              <span className="text-muted-foreground">가능한 원인</span>
+              <span className="text-muted-foreground">{t('metricDetailCard4')}</span>
               <ul className="list-disc list-inside space-y-0.5 text-sm">
                 {data.detailedAnalysis.possibleCauses.slice(0, 4).map((cause, idx) => (
                   <li key={idx}>{cause}</li>
@@ -164,7 +166,7 @@ export function MetricDetailCard({ metricId, score, onClose, className }: Metric
           <div className="pl-6 space-y-3 text-sm">
             {/* 추천 성분 */}
             <div className="space-y-1.5">
-              <span className="text-muted-foreground block">추천 성분</span>
+              <span className="text-muted-foreground block">{t('metricDetailCard5')}</span>
               <div className="grid gap-1.5">
                 {data.solutions.ingredients.slice(0, 3).map((ingredient, idx) => (
                   <div key={idx} className="flex flex-col">
@@ -177,7 +179,7 @@ export function MetricDetailCard({ metricId, score, onClose, className }: Metric
 
             {/* 추천 제품 */}
             <div className="space-y-1">
-              <span className="text-muted-foreground block">추천 제품</span>
+              <span className="text-muted-foreground block">{t('metricDetailCard6')}</span>
               <div className="flex flex-wrap gap-1.5">
                 {data.solutions.products.slice(0, 4).map((product, idx) => (
                   <span
@@ -192,7 +194,7 @@ export function MetricDetailCard({ metricId, score, onClose, className }: Metric
 
             {/* 라이프스타일 팁 */}
             <div className="space-y-1">
-              <span className="text-muted-foreground block">라이프스타일 팁</span>
+              <span className="text-muted-foreground block">{t('metricDetailCard7')}</span>
               <ul className="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
                 {data.solutions.lifestyle.slice(0, 3).map((tip, idx) => (
                   <li key={idx}>{tip}</li>

@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import type { Badge, BadgeAwardResult } from '@/types/gamification';
 import { RARITY_COLORS, RARITY_NAMES } from '@/lib/gamification/constants';
+import { useTranslations } from 'next-intl';
 
 interface BadgeNotificationProps {
   result: BadgeAwardResult | null;
@@ -24,6 +25,7 @@ export function BadgeNotification({
   onClose,
   autoCloseDelay = 5000,
 }: BadgeNotificationProps) {
+  const t = useTranslations('gamificationUI');
   useEffect(() => {
     if (isVisible && autoCloseDelay > 0) {
       const timer = setTimeout(onClose, autoCloseDelay);
@@ -60,7 +62,7 @@ export function BadgeNotification({
 
         {/* 내용 */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-500 dark:text-gray-400">배지 획득!</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('badgeNotification0')}</p>
           <p className="font-bold text-gray-900 dark:text-gray-100 truncate">{badge.name}</p>
 
           {/* 희귀도 & XP */}
@@ -93,7 +95,7 @@ export function BadgeNotification({
         <button
           onClick={onClose}
           className="shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition-colors"
-          aria-label="알림 닫기"
+          aria-label={t('badgeNotification1')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

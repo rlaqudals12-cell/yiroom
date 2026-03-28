@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { ConditionSelectorProps, SkinConditionScore } from '@/types/skin-diary';
 import { CONDITION_EMOJIS, CONDITION_LABELS, CONDITION_COLORS } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 피부 컨디션 선택기 컴포넌트
@@ -15,11 +16,12 @@ const ConditionSelector = memo(function ConditionSelector({
   onChange,
   className,
 }: ConditionSelectorProps) {
+  const t = useTranslations('skinUI');
   const scores: SkinConditionScore[] = [1, 2, 3, 4, 5];
 
   return (
     <div className={cn('space-y-3', className)} data-testid="condition-selector">
-      <label className="text-sm font-medium text-foreground">피부 컨디션</label>
+      <label className="text-sm font-medium text-foreground">{t('conditionSelector0')}</label>
 
       <div className="flex items-center justify-between gap-2">
         {scores.map((score) => {

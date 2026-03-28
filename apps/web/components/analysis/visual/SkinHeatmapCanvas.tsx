@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type { SkinHeatmapCanvasProps, LightMode } from '@/types/visual-analysis';
 import { renderHeatmapOverlay, releaseCanvas } from '@/lib/analysis';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /**
  * S-1+ 피부 히트맵 캔버스
@@ -18,6 +19,7 @@ export default function SkinHeatmapCanvas({
   opacity = 0.6,
   className,
 }: SkinHeatmapCanvasProps) {
+  const t = useTranslations('visualAnalysisUI');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isRendering, setIsRendering] = useState(false);
 
@@ -68,7 +70,9 @@ export default function SkinHeatmapCanvas({
       {/* 로딩 오버레이 */}
       {isRendering && (
         <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-          <div className="animate-pulse text-sm text-muted-foreground">렌더링 중...</div>
+          <div className="animate-pulse text-sm text-muted-foreground">
+            {t('skinHeatmapCanvas1')}
+          </div>
         </div>
       )}
 

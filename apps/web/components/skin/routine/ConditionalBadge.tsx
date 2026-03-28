@@ -12,6 +12,7 @@ import { memo } from 'react';
 import { RefreshCw, Plus, Minus, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ConditionalModification } from '@/lib/skincare/conditional-routine';
+import { useTranslations } from 'next-intl';
 
 // ================================================
 // 타입 정의
@@ -144,6 +145,7 @@ const ConditionalBadge = memo(function ConditionalBadge({
   size = 'sm',
   className,
 }: ConditionalBadgeProps) {
+  const t = useTranslations('skinUI');
   const modType = getModificationType(conditionalMod.modification);
   const modText = getModificationText(conditionalMod.modification);
   const style = MODIFICATION_STYLES[modType];
@@ -165,7 +167,7 @@ const ConditionalBadge = memo(function ConditionalBadge({
         className
       )}
       data-testid="conditional-badge"
-      title={`${conditionalMod.condition}: ${modText || '조건부 적용'}`}
+      title={`${conditionalMod.condition}: ${modText || t('conditionalBadge10')}`}
     >
       <Icon className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5')} aria-hidden="true" />
       <span className="truncate max-w-[80px]">{shortLabel}</span>

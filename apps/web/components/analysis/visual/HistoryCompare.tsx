@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // ============================================
 // 타입 정의
@@ -97,6 +98,7 @@ const METRIC_CONFIG: Record<
  * - 트렌드 시각화
  */
 export default function HistoryCompare({ history, className, onImageClick }: HistoryCompareProps) {
+  const t = useTranslations('visualAnalysisUI');
   // 비교할 두 기록 선택
   const [beforeIndex, setBeforeIndex] = useState(0);
   const [afterIndex, setAfterIndex] = useState(history.length > 1 ? history.length - 1 : 0);
@@ -151,15 +153,13 @@ export default function HistoryCompare({ history, className, onImageClick }: His
     return (
       <Card className={cn('overflow-hidden', className)} data-testid="history-compare">
         <CardHeader>
-          <CardTitle className="text-base">피부 변화 추이</CardTitle>
+          <CardTitle className="text-base">{t('historyCompare6')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              {sortedHistory.length === 0
-                ? '분석 기록이 없어요.'
-                : '2회 이상 분석하면 변화를 비교할 수 있어요.'}
+              {sortedHistory.length === 0 ? t('historyCompare7') : t('historyCompare8')}
             </p>
           </div>
         </CardContent>
@@ -171,7 +171,7 @@ export default function HistoryCompare({ history, className, onImageClick }: His
     <Card className={cn('overflow-hidden', className)} data-testid="history-compare">
       <CardHeader>
         <CardTitle className="text-base flex items-center justify-between">
-          <span>피부 변화 추이</span>
+          <span>{t('historyCompare6')}</span>
           <Badge variant="secondary" className="font-normal">
             {daysDiff}일간 변화
           </Badge>
@@ -181,7 +181,9 @@ export default function HistoryCompare({ history, className, onImageClick }: His
         {/* 날짜 선택 */}
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">이전</label>
+            <label className="text-xs text-muted-foreground mb-1 block">
+              {t('historyCompare9')}
+            </label>
             <Select value={String(beforeIndex)} onValueChange={(v) => setBeforeIndex(Number(v))}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -201,7 +203,9 @@ export default function HistoryCompare({ history, className, onImageClick }: His
           </div>
 
           <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">이후</label>
+            <label className="text-xs text-muted-foreground mb-1 block">
+              {t('historyCompare10')}
+            </label>
             <Select value={String(afterIndex)} onValueChange={(v) => setAfterIndex(Number(v))}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -231,7 +235,7 @@ export default function HistoryCompare({ history, className, onImageClick }: His
 
         {/* 수치 비교 */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium">지표별 변화</h4>
+          <h4 className="text-sm font-medium">{t('historyCompare11')}</h4>
           <div className="space-y-2">
             {comparisons.map((comp) => (
               <ComparisonRow key={comp.metric} comparison={comp} />
@@ -425,14 +429,22 @@ function SummaryCard({ comparisons, daysDiff }: SummaryCardProps) {
           })}
         >
           {(() => {
-            const IconComp = selectByKey(messageType, {
-              positive: TrendingUp,
-              negative: TrendingDown,
-            }, Minus)!;
-            const iconClass = selectByKey(messageType, {
-              positive: 'w-5 h-5 text-emerald-600 dark:text-emerald-400',
-              negative: 'w-5 h-5 text-red-600 dark:text-red-400',
-            }, 'w-5 h-5 text-muted-foreground')!;
+            const IconComp = selectByKey(
+              messageType,
+              {
+                positive: TrendingUp,
+                negative: TrendingDown,
+              },
+              Minus
+            )!;
+            const iconClass = selectByKey(
+              messageType,
+              {
+                positive: 'w-5 h-5 text-emerald-600 dark:text-emerald-400',
+                negative: 'w-5 h-5 text-red-600 dark:text-red-400',
+              },
+              'w-5 h-5 text-muted-foreground'
+            )!;
             return <IconComp className={iconClass} />;
           })()}
         </div>

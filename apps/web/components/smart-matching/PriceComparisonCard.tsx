@@ -9,11 +9,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PriceComparison, PurchaseOption } from '@/types/smart-matching';
-import {
-  formatPrice,
-  getDeliveryLabel,
-  getPlatformName,
-} from '@/lib/smart-matching/price-compare';
+import { formatPrice, getDeliveryLabel, getPlatformName } from '@/lib/smart-matching/price-compare';
+import { useTranslations } from 'next-intl';
 
 interface PriceComparisonCardProps {
   comparison: PriceComparison;
@@ -28,6 +25,7 @@ export function PriceComparisonCard({
   showAllOptions = false,
   className,
 }: PriceComparisonCardProps) {
+  const t = useTranslations('smartMatchingUI');
   const { options, bestPrice, fastestDelivery, bestValue } = comparison;
 
   // 옵션이 없는 경우
@@ -37,9 +35,7 @@ export function PriceComparisonCard({
         className={cn('rounded-lg border bg-card p-4', className)}
         data-testid="price-comparison-card"
       >
-        <p className="text-sm text-muted-foreground text-center">
-          가격 정보를 찾을 수 없어요
-        </p>
+        <p className="text-sm text-muted-foreground text-center">가격 정보를 찾을 수 없어요</p>
       </div>
     );
   }
@@ -47,10 +43,9 @@ export function PriceComparisonCard({
   // 표시할 옵션 결정
   const displayOptions = showAllOptions
     ? options
-    : [bestPrice, fastestDelivery, bestValue].filter(
-        (opt, idx, arr) =>
-          opt && arr.findIndex((o) => o?.platform === opt.platform) === idx
-      ) as PurchaseOption[];
+    : ([bestPrice, fastestDelivery, bestValue].filter(
+        (opt, idx, arr) => opt && arr.findIndex((o) => o?.platform === opt.platform) === idx
+      ) as PurchaseOption[]);
 
   return (
     <div
@@ -59,10 +54,8 @@ export function PriceComparisonCard({
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-sm">가격 비교</h3>
-        <span className="text-xs text-muted-foreground">
-          {options.length}개 판매처
-        </span>
+        <h3 className="font-semibold text-sm">{t('priceComparisonCard0')}</h3>
+        <span className="text-xs text-muted-foreground">{options.length}개 판매처</span>
       </div>
 
       {/* 베스트 옵션 하이라이트 */}
@@ -70,7 +63,7 @@ export function PriceComparisonCard({
         <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
           <div className="flex items-center justify-between">
             <div>
-              <Badge className="bg-green-600 mb-1">최저가</Badge>
+              <Badge className="bg-green-600 mb-1">{t('priceComparisonCard1')}</Badge>
               <p className="font-bold text-lg text-green-700">
                 {formatPrice(bestPrice.salePrice + bestPrice.deliveryFee)}
               </p>
@@ -78,10 +71,7 @@ export function PriceComparisonCard({
                 {getPlatformName(bestPrice.platform)} · {getDeliveryLabel(bestPrice.deliveryType)}
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => onSelectOption?.(bestPrice)}
-            >
+            <Button size="sm" onClick={() => onSelectOption?.(bestPrice)}>
               구매하기
             </Button>
           </div>
@@ -142,9 +132,7 @@ function PriceOptionRow({
     >
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sm">
-            {getPlatformName(option.platform)}
-          </span>
+          <span className="font-medium text-sm">{getPlatformName(option.platform)}</span>
           {isBestPrice && !isFastest && !isBestValue && (
             <Badge variant="outline" className="text-xs text-green-600 border-green-300">
               최저가

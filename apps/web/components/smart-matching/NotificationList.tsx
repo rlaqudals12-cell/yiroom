@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NotificationItem } from './NotificationItem';
 import type { SmartNotification, NotificationType } from '@/types/smart-matching';
+import { useTranslations } from 'next-intl';
 
 interface NotificationListProps {
   notifications: SmartNotification[];
@@ -38,6 +39,7 @@ export function NotificationList({
   loading = false,
   className,
 }: NotificationListProps) {
+  const t = useTranslations('smartMatchingUI');
   const [filter, setFilter] = useState<NotificationType | 'all'>('all');
 
   const filteredNotifications =
@@ -50,7 +52,7 @@ export function NotificationList({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold">알림</h3>
+          <h3 className="font-semibold">{t('notificationList5')}</h3>
           {unreadCount > 0 && (
             <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full">
               {unreadCount}
@@ -82,14 +84,14 @@ export function NotificationList({
       {/* 알림 목록 */}
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <span className="text-muted-foreground">불러오는 중...</span>
+          <span className="text-muted-foreground">{t('notificationList6')}</span>
         </div>
       )}
       {!loading && filteredNotifications.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <span className="text-sm text-muted-foreground mb-2">--</span>
           <p className="text-muted-foreground">
-            {filter === 'all' ? '알림이 없어요' : '해당 알림이 없어요'}
+            {filter === 'all' ? t('notificationList7') : t('notificationList8')}
           </p>
         </div>
       )}

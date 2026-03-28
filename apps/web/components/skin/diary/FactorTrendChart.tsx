@@ -5,6 +5,7 @@ import { LineChart, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { FactorTrendChartProps } from '@/types/skin-diary';
 import { CONDITION_COLORS, CONDITION_EMOJIS } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 요인별 트렌드 차트 컴포넌트
@@ -17,6 +18,7 @@ const FactorTrendChart = memo(function FactorTrendChart({
   period,
   className,
 }: FactorTrendChartProps) {
+  const t = useTranslations('skinUI');
   // 기간에 따라 필터링
   const filteredEntries = useMemo(() => {
     const now = new Date();
@@ -41,9 +43,9 @@ const FactorTrendChart = memo(function FactorTrendChart({
 
   // 기간 라벨
   const periodLabel = {
-    '7days': '최근 7일',
-    '30days': '최근 30일',
-    '90days': '최근 90일',
+    '7days': t('factorTrendChart0'),
+    '30days': t('factorTrendChart1'),
+    '90days': t('factorTrendChart2'),
   }[period];
 
   if (filteredEntries.length === 0) {
@@ -85,7 +87,7 @@ const FactorTrendChart = memo(function FactorTrendChart({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LineChart className="h-5 w-5 text-blue-500" aria-hidden="true" />
-            <CardTitle className="text-lg">피부 컨디션 트렌드</CardTitle>
+            <CardTitle className="text-lg">{t('factorTrendChart3')}</CardTitle>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -98,11 +100,11 @@ const FactorTrendChart = memo(function FactorTrendChart({
         {/* 요약 정보 */}
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div>
-            <p className="text-sm text-muted-foreground">평균 컨디션</p>
+            <p className="text-sm text-muted-foreground">{t('factorTrendChart4')}</p>
             <p className="text-xl font-bold">{avgCondition.toFixed(1)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">기록 일수</p>
+            <p className="text-sm text-muted-foreground">{t('factorTrendChart5')}</p>
             <p className="text-xl font-bold">{filteredEntries.length}일</p>
           </div>
         </div>

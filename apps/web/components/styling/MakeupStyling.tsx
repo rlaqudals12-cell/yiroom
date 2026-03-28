@@ -12,6 +12,7 @@ import type { SeasonType } from '@/lib/mock/personal-color';
 import type { MakeupColor, MakeupPalette, MakeupCategory } from '@/types/styling';
 import { MAKEUP_CATEGORY_LABELS } from '@/types/styling';
 import { getMakeupStyling } from '@/lib/mock/styling';
+import { useTranslations } from 'next-intl';
 
 interface MakeupStylingProps {
   seasonType: SeasonType;
@@ -90,6 +91,7 @@ function PaletteCard({ palette }: { palette: MakeupPalette }) {
  * 메이크업 스타일링 메인 컴포넌트
  */
 export default function MakeupStyling({ seasonType, className }: MakeupStylingProps) {
+  const t = useTranslations('stylingUI');
   const styling = getMakeupStyling(seasonType);
 
   if (!styling) {
@@ -101,7 +103,7 @@ export default function MakeupStyling({ seasonType, className }: MakeupStylingPr
   return (
     <div className={cn('space-y-6', className)} data-testid="makeup-styling">
       {/* 헤더 */}
-      <h3 className="text-lg font-semibold flex items-center gap-2">💄 메이크업 추천</h3>
+      <h3 className="text-lg font-semibold flex items-center gap-2">{t('makeupStyling4')}</h3>
 
       {/* 립스틱 */}
       <PaletteCard palette={lipstick} />

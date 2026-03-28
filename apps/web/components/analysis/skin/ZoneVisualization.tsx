@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { SkinAnalysisV2Result, SkinZoneType, ZoneAnalysisV2 } from '@/lib/analysis/skin-v2';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface ZoneVisualizationProps {
   result: SkinAnalysisV2Result;
@@ -65,6 +66,7 @@ const ZONE_POSITIONS: Record<
 };
 
 export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizationProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [selectedZone, setSelectedZone] = useState<SkinZoneType | null>(null);
 
   // 선택된 존의 상세 정보
@@ -87,7 +89,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">피부 바이탈리티</CardTitle>
+            <CardTitle className="text-lg">{t('zoneVisualization10')}</CardTitle>
             <Badge className={`${GRADE_COLORS[result.vitalityGrade]} text-white`}>
               등급 {result.vitalityGrade}
             </Badge>
@@ -106,9 +108,9 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
 
           {/* 점수 구성 */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-            <ScoreItem label="수분" value={result.scoreBreakdown.hydration} />
-            <ScoreItem label="탄력" value={result.scoreBreakdown.elasticity} />
-            <ScoreItem label="맑음" value={result.scoreBreakdown.clarity} />
+            <ScoreItem label={t('zoneVisualization11')} value={result.scoreBreakdown.hydration} />
+            <ScoreItem label={t('zoneVisualization12')} value={result.scoreBreakdown.elasticity} />
+            <ScoreItem label={t('zoneVisualization13')} value={result.scoreBreakdown.clarity} />
             <ScoreItem label="톤" value={result.scoreBreakdown.tone} />
           </div>
         </CardContent>
@@ -118,7 +120,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
       {showFaceMap && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">6존 분석</CardTitle>
+            <CardTitle className="text-lg">{t('zoneVisualization14')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -195,7 +197,15 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
                         >
                           <span className="text-sm">{ZONE_LABELS[zone]}</span>
                           <span
-                            className={`text-sm font-medium ${classifyByRange(zoneData.score, [{ max: 50, result: 'text-red-600' }, { max: 70, result: 'text-amber-600' }, { min: 70, result: 'text-emerald-600' }], 'text-red-600')}`}
+                            className={`text-sm font-medium ${classifyByRange(
+                              zoneData.score,
+                              [
+                                { max: 50, result: 'text-red-600' },
+                                { max: 70, result: 'text-amber-600' },
+                                { min: 70, result: 'text-emerald-600' },
+                              ],
+                              'text-red-600'
+                            )}`}
                           >
                             {zoneData.score}점
                           </span>
@@ -209,24 +219,26 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
 
             {/* T존-U존 차이 */}
             <div className="mt-4 p-3 bg-muted rounded-lg">
-              <h4 className="text-sm font-medium mb-2">T존-U존 분석</h4>
+              <h4 className="text-sm font-medium mb-2">{t('zoneVisualization15')}</h4>
               <div className="grid grid-cols-3 gap-2 sm:gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">유분 차이</p>
+                  <p className="text-muted-foreground">{t('zoneVisualization16')}</p>
                   <p className="font-medium">
                     {result.zoneAnalysis.tUzoneDifference.oilinessDiff}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">수분 차이</p>
+                  <p className="text-muted-foreground">{t('zoneVisualization17')}</p>
                   <p className="font-medium">
                     {result.zoneAnalysis.tUzoneDifference.hydrationDiff}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">복합성 판정</p>
+                  <p className="text-muted-foreground">{t('zoneVisualization18')}</p>
                   <p className="font-medium">
-                    {result.zoneAnalysis.tUzoneDifference.isCombiSkin ? '예' : '아니오'}
+                    {result.zoneAnalysis.tUzoneDifference.isCombiSkin
+                      ? '예'
+                      : t('zoneVisualization19')}
                   </p>
                 </div>
               </div>
@@ -238,7 +250,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
       {/* 주요 피부 고민 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">주요 피부 고민</CardTitle>
+          <CardTitle className="text-lg">{t('zoneVisualization20')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -254,7 +266,7 @@ export function ZoneVisualization({ result, showFaceMap = true }: ZoneVisualizat
       {/* 스킨케어 루틴 추천 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">추천 스킨케어 루틴</CardTitle>
+          <CardTitle className="text-lg">{t('zoneVisualization21')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

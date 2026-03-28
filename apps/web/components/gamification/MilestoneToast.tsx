@@ -2,6 +2,7 @@
 
 import type { Milestone } from '@/lib/milestones';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface MilestoneToastProps {
   milestone: Milestone;
@@ -20,6 +21,7 @@ const TYPE_COLORS: Record<Milestone['type'], string> = {
  * sonner의 custom toast로 사용
  */
 export function MilestoneToast({ milestone }: MilestoneToastProps) {
+  const t = useTranslations('gamificationUI');
   return (
     <div data-testid="milestone-toast" className="flex items-center gap-3 p-1">
       {/* 아이콘 */}
@@ -35,7 +37,7 @@ export function MilestoneToast({ milestone }: MilestoneToastProps) {
 
       {/* 텍스트 */}
       <div className="flex flex-col">
-        <span className="text-xs font-medium text-primary">축하해요!</span>
+        <span className="text-xs font-medium text-primary">{t('milestoneToast0')}</span>
         <span className="font-semibold">{milestone.title}</span>
         <span className="text-xs text-muted-foreground">{milestone.description}</span>
       </div>

@@ -6,6 +6,7 @@ import { ExternalLink, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
 import type { ProductRecommendationProps } from '@/types/skincare-routine';
+import { useTranslations } from 'next-intl';
 
 /**
  * 제품 추천 컴포넌트 (어필리에이트 연동)
@@ -19,6 +20,7 @@ const ProductRecommendation = memo(function ProductRecommendation({
   onProductClick,
   className,
 }: ProductRecommendationProps) {
+  const t = useTranslations('skinUI');
   const categoryInfo = getCategoryInfo(category);
 
   if (products.length === 0) {
@@ -27,7 +29,7 @@ const ProductRecommendation = memo(function ProductRecommendation({
         className={cn('text-center py-6 text-muted-foreground text-sm', className)}
         data-testid="product-recommendation-empty"
       >
-        <p>추천 제품을 불러오는 중...</p>
+        <p>{t('productRecommendation0')}</p>
       </div>
     );
   }

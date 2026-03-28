@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { useTranslations } from 'next-intl';
 
 interface VisualAnalysisTabProps {
   /** 분석 이미지 URL */
@@ -32,6 +33,7 @@ type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
  * - 히트맵 오버레이
  */
 export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysisTabProps) {
+  const t = useTranslations('visualAnalysisUI');
   const [state, setState] = useState<AnalysisState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [lightMode, setLightMode] = useState<LightMode>('normal');
@@ -57,10 +59,10 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('이미지 로드 실패'));
+      img.onerror = () => reject(new Error(t('visualAnalysisTab0')));
       img.src = imageUrl;
     });
-  }, [imageUrl]);
+  }, [imageUrl, t]);
 
   /**
    * 전체 분석 파이프라인
@@ -112,10 +114,10 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       setState('ready');
     } catch (err) {
       console.error('[VisualAnalysisTab] 분석 오류:', err);
-      setError(err instanceof Error ? err.message : '분석에 실패했어요');
+      setError(err instanceof Error ? err.message : t('visualAnalysisTab1'));
       setState('error');
     }
-  }, [imageUrl, loadImage, deviceCapability.tier]);
+  }, [imageUrl, loadImage, deviceCapability.tier, t]);
 
   // 컴포넌트 마운트 시 분석 시작
   useEffect(() => {
@@ -131,7 +133,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">상세 시각화 분석</CardTitle>
+          <CardTitle className="text-base">{t('visualAnalysisTab2')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="w-full aspect-[3/4] rounded-lg" />
@@ -141,7 +143,7 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
             ))}
           </div>
           <p className="text-sm text-center text-muted-foreground">
-            {state === 'loading' ? '이미지 로드 중...' : '피부 분석 중...'}
+            {state === 'loading' ? t('visualAnalysisTab3') : t('visualAnalysisTab4')}
           </p>
         </CardContent>
       </Card>
@@ -153,11 +155,11 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">상세 시각화 분석</CardTitle>
+          <CardTitle className="text-base">{t('visualAnalysisTab2')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4 rounded-lg bg-destructive/10 dark:bg-destructive/20 border border-destructive/20 dark:border-destructive/30">
-            <p className="text-sm text-destructive">{error || '분석에 실패했어요'}</p>
+            <p className="text-sm text-destructive">{error || t('visualAnalysisTab1')}</p>
           </div>
         </CardContent>
       </Card>
@@ -170,9 +172,14 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
       <Card className={cn('overflow-hidden', className)} data-testid="visual-analysis-tab">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <span>상세 시각화 분석</span>
+            <span>{t('visualAnalysisTab2')}</span>
             <span className="text-xs font-normal text-muted-foreground">
-              ({selectByKey(deviceCapability.tier, { high: '고화질', medium: '표준' }, '경량')}{' '}
+              (
+              {selectByKey(
+                deviceCapability.tier,
+                { high: t('visualAnalysisTab5'), medium: t('visualAnalysisTab6') },
+                t('visualAnalysisTab7')
+              )}{' '}
               모드)
             </span>
           </CardTitle>

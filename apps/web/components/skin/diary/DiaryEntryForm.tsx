@@ -16,6 +16,7 @@ import type {
   LifestyleFactorsInput,
   RoutineCheckboxInput,
 } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 피부 일기 입력 폼 컴포넌트
@@ -30,6 +31,7 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
   isLoading = false,
   className,
 }: DiaryEntryFormProps) {
+  const t = useTranslations('skinUI');
   // 폼 상태
   const [skinCondition, setSkinCondition] = useState<SkinConditionScore | undefined>(
     existingEntry?.skinCondition
@@ -119,10 +121,17 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle className="text-lg">{existingEntry ? '기록 수정' : '오늘의 기록'}</CardTitle>
+            <CardTitle className="text-lg">
+              {existingEntry ? t('diaryEntryForm0') : t('diaryEntryForm1')}
+            </CardTitle>
           </div>
           {onCancel && (
-            <Button variant="ghost" size="icon" onClick={onCancel} aria-label="닫기">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCancel}
+              aria-label={t('diaryEntryForm2')}
+            >
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -135,9 +144,7 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
           {/* 피부 컨디션 선택 (필수) */}
           <div className="space-y-2">
             <ConditionSelector value={skinCondition} onChange={setSkinCondition} />
-            {!skinCondition && (
-              <p className="text-xs text-destructive">피부 컨디션을 선택해주세요</p>
-            )}
+            {!skinCondition && <p className="text-xs text-destructive">{t('diaryEntryForm3')}</p>}
           </div>
 
           {/* 컨디션 메모 (선택) */}
@@ -149,7 +156,7 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
               id="condition-notes"
               value={conditionNotes}
               onChange={(e) => setConditionNotes(e.target.value)}
-              placeholder="오늘 피부 상태에 대해 메모해보세요..."
+              placeholder={t('diaryEntryForm4')}
               className="min-h-[80px] resize-none"
               maxLength={500}
             />
@@ -158,7 +165,7 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
 
           {/* 생활 요인 */}
           <div className="border-t pt-6">
-            <h3 className="text-sm font-medium mb-4">생활 요인</h3>
+            <h3 className="text-sm font-medium mb-4">{t('diaryEntryForm5')}</h3>
             <LifestyleFactors
               sleepHours={lifestyleFactors.sleepHours}
               sleepQuality={lifestyleFactors.sleepQuality}
@@ -196,7 +203,7 @@ const DiaryEntryForm = memo(function DiaryEntryForm({
               ) : (
                 <span className="flex items-center gap-2">
                   <Save className="h-4 w-4" />
-                  {existingEntry ? '수정하기' : '저장하기'}
+                  {existingEntry ? t('diaryEntryForm6') : t('diaryEntryForm7')}
                 </span>
               )}
             </Button>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import type { DeviceCapability, MetalType } from '@/types/visual-analysis';
+import { useTranslations } from 'next-intl';
 
 // ============================================
 // 색상 팔레트 데이터
@@ -151,6 +152,7 @@ export default function DrapeColorPalette({
   isAnalyzing = false,
   className,
 }: DrapeColorPaletteProps) {
+  const t = useTranslations('visualAnalysisUI');
   // 사용자 시즌이 있으면 해당 시즌만 기본 표시 (32색), 없으면 전체 (128색)
   const [activeSeasonFilter, setActiveSeasonFilter] = useState<Season | 'all'>(userSeason || 'all');
 
@@ -215,8 +217,13 @@ export default function DrapeColorPalette({
             >
               {selectByKey(
                 filter,
-                { all: '전체 보기', spring: '봄', summer: '여름', autumn: '가을' },
-                '겨울'
+                {
+                  all: t('drapeColorPalette18'),
+                  spring: '봄',
+                  summer: t('drapeColorPalette19'),
+                  autumn: t('drapeColorPalette20'),
+                },
+                t('drapeColorPalette21')
               )}
               {/* 사용자 시즌 표시 */}
               {userSeason && filter === userSeason && (
@@ -269,8 +276,8 @@ export default function DrapeColorPalette({
       <p className="text-xs text-muted-foreground text-center">
         {selectByKey(
           deviceCapability.tier,
-          { high: '상세 모드 (128색)', medium: '표준 모드 (64색)' },
-          '빠른 모드 (16색)'
+          { high: t('drapeColorPalette23'), medium: t('drapeColorPalette24') },
+          t('drapeColorPalette25')
         )}
       </p>
     </div>

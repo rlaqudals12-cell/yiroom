@@ -9,6 +9,7 @@
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /** 피부 존 타입 */
 export type SkinZone =
@@ -81,6 +82,7 @@ export function FaceZoneMap({
   onZoneSelect,
   className,
 }: FaceZoneMapProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [hoveredZone, setHoveredZone] = useState<SkinZone | null>(null);
 
   // 존 점수 찾기
@@ -111,7 +113,7 @@ export function FaceZoneMap({
       <svg
         viewBox="0 0 200 280"
         className="w-full max-w-[280px] mx-auto"
-        aria-label="피부 존 지도"
+        aria-label={t('faceZoneMap13')}
       >
         {/* 얼굴 윤곽 */}
         <ellipse
@@ -135,7 +137,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('forehead')}
           onMouseEnter={() => setHoveredZone('forehead')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="이마 영역"
+          aria-label={t('faceZoneMap14')}
         />
 
         {/* 코 */}
@@ -150,7 +152,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('nose')}
           onMouseEnter={() => setHoveredZone('nose')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="코 영역"
+          aria-label={t('faceZoneMap15')}
         />
 
         {/* 왼쪽 볼 */}
@@ -168,7 +170,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('left-cheek')}
           onMouseEnter={() => setHoveredZone('left-cheek')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="왼쪽 볼 영역"
+          aria-label={t('faceZoneMap16')}
         />
 
         {/* 오른쪽 볼 */}
@@ -186,7 +188,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('right-cheek')}
           onMouseEnter={() => setHoveredZone('right-cheek')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="오른쪽 볼 영역"
+          aria-label={t('faceZoneMap17')}
         />
 
         {/* 턱 */}
@@ -204,7 +206,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('chin')}
           onMouseEnter={() => setHoveredZone('chin')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="턱 영역"
+          aria-label={t('faceZoneMap18')}
         />
 
         {/* 눈가 (왼쪽) */}
@@ -222,7 +224,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('eye-area')}
           onMouseEnter={() => setHoveredZone('eye-area')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="눈가 영역"
+          aria-label={t('faceZoneMap19')}
         />
 
         {/* 눈가 (오른쪽) */}
@@ -240,7 +242,7 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('eye-area')}
           onMouseEnter={() => setHoveredZone('eye-area')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="눈가 영역"
+          aria-label={t('faceZoneMap19')}
         />
 
         {/* 입술 주변 */}
@@ -258,16 +260,13 @@ export function FaceZoneMap({
           onClick={() => handleZoneClick('lip-area')}
           onMouseEnter={() => setHoveredZone('lip-area')}
           onMouseLeave={() => setHoveredZone(null)}
-          aria-label="입술 주변 영역"
+          aria-label={t('faceZoneMap20')}
         />
       </svg>
 
       {/* 호버/선택 시 정보 표시 */}
       {activeZoneMeta && (
-        <div
-          className="mt-4 p-3 bg-gray-50 rounded-lg text-center"
-          aria-live="polite"
-        >
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center" aria-live="polite">
           <p className="font-medium text-gray-900">{activeZoneMeta.label}</p>
           <p className="text-sm text-gray-600">{activeZoneMeta.description}</p>
           {activeZoneScore !== null && (

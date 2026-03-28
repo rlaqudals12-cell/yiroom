@@ -5,6 +5,7 @@ import { BarChart, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CorrelationChartProps, CorrelationInsight } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 상관관계 차트 컴포넌트
@@ -15,11 +16,12 @@ const CorrelationChart = memo(function CorrelationChart({
   insights,
   className,
 }: CorrelationChartProps) {
+  const t = useTranslations('skinUI');
   if (insights.length === 0) {
     return (
       <Card className={className} data-testid="correlation-chart">
         <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">상관관계 데이터가 없어요</p>
+          <p className="text-muted-foreground">{t('correlationChart0')}</p>
           <p className="text-sm text-muted-foreground mt-1">
             7일 이상 기록하면 분석 결과를 확인할 수 있어요
           </p>
@@ -38,7 +40,7 @@ const CorrelationChart = memo(function CorrelationChart({
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <BarChart className="h-5 w-5 text-violet-500" aria-hidden="true" />
-          <CardTitle className="text-lg">피부와 생활 요인 상관관계</CardTitle>
+          <CardTitle className="text-lg">{t('correlationChart1')}</CardTitle>
         </div>
         <p className="text-sm text-muted-foreground">
           생활 요인이 피부 컨디션에 미치는 영향을 분석했어요
@@ -54,11 +56,11 @@ const CorrelationChart = memo(function CorrelationChart({
         <div className="flex justify-center gap-6 pt-4 border-t text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-muted-foreground">긍정적 영향</span>
+            <span className="text-muted-foreground">{t('correlationChart2')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-muted-foreground">부정적 영향</span>
+            <span className="text-muted-foreground">{t('correlationChart3')}</span>
           </div>
         </div>
       </CardContent>

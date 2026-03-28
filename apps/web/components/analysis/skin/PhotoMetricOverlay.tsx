@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * 피부 분석 지표 타입 (경쟁사 스타일)
@@ -134,6 +135,7 @@ export function PhotoMetricOverlay({
   showConnectors = true,
   showOverlay = true,
 }: PhotoMetricOverlayProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [hoveredMetric, setHoveredMetric] = useState<SkinMetricType | null>(null);
   const [imageError, setImageError] = useState(false);
 
@@ -158,13 +160,15 @@ export function PhotoMetricOverlay({
                 // 이미지 로드 실패 시 fallback UI
                 <div className="w-full h-full rounded-lg bg-gradient-to-b from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center gap-3">
                   <User className="w-24 h-24 text-slate-400 dark:text-slate-500" />
-                  <span className="text-sm text-slate-500 dark:text-slate-400">얼굴 이미지</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {t('photoMetricOverlay8')}
+                  </span>
                 </div>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={imageUrl}
-                  alt="피부 분석 사진"
+                  alt={t('photoMetricOverlay9')}
                   className="w-full h-full object-cover rounded-lg"
                   onError={() => setImageError(true)}
                 />
@@ -293,19 +297,19 @@ export function PhotoMetricOverlay({
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-green-500" />
-              <span>우수 (80+)</span>
+              <span>{t('photoMetricOverlay10')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-blue-500" />
-              <span>양호 (60-79)</span>
+              <span>{t('photoMetricOverlay11')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span>보통 (40-59)</span>
+              <span>{t('photoMetricOverlay12')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-red-500" />
-              <span>주의 (0-39)</span>
+              <span>{t('photoMetricOverlay13')}</span>
             </div>
           </div>
         </div>

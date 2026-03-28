@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { DiaryCalendarProps, SkinDiaryEntry, SkinConditionScore } from '@/types/skin-diary';
 import { CONDITION_EMOJIS, CONDITION_COLORS } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 피부 일기 캘린더 컴포넌트
@@ -20,6 +21,7 @@ const DiaryCalendar = memo(function DiaryCalendar({
   onMonthChange,
   className,
 }: DiaryCalendarProps) {
+  const t = useTranslations('skinUI');
   const [currentYear, setCurrentYear] = useState(selectedDate.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(selectedDate.getMonth());
 
@@ -105,7 +107,12 @@ const DiaryCalendar = memo(function DiaryCalendar({
     <div className={cn('space-y-4', className)} data-testid="diary-calendar">
       {/* 헤더: 연/월 네비게이션 */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="이전 달">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToPreviousMonth}
+          aria-label={t('diaryCalendar0')}
+        >
           <ChevronLeft className="h-5 w-5" />
         </Button>
 
@@ -118,7 +125,12 @@ const DiaryCalendar = memo(function DiaryCalendar({
           </Button>
         </div>
 
-        <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="다음 달">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToNextMonth}
+          aria-label={t('diaryCalendar1')}
+        >
           <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
@@ -140,7 +152,7 @@ const DiaryCalendar = memo(function DiaryCalendar({
       </div>
 
       {/* 캘린더 그리드 */}
-      <div className="grid grid-cols-7 gap-1" role="grid" aria-label="피부 일기 캘린더">
+      <div className="grid grid-cols-7 gap-1" role="grid" aria-label={t('diaryCalendar2')}>
         {calendarDays.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} className="aspect-square" />;

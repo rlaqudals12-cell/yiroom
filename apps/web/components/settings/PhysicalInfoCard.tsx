@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface PhysicalInfoCardProps {
   heightCm: number | null;
@@ -40,6 +41,7 @@ export function PhysicalInfoCard({
   onWeightChange,
   isLoading = false,
 }: PhysicalInfoCardProps) {
+  const t = useTranslations('settingsUI');
   const [height, setHeight] = useState<string>(heightCm?.toString() || '');
   const [weight, setWeight] = useState<string>(weightKg?.toString() || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -92,7 +94,7 @@ export function PhysicalInfoCard({
           <Ruler className="w-5 h-5" aria-hidden="true" />
           신체 정보
         </CardTitle>
-        <CardDescription>체형 분석 및 맞춤 추천에 활용됩니다</CardDescription>
+        <CardDescription>{t('physicalInfoCard4')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 키 입력 */}

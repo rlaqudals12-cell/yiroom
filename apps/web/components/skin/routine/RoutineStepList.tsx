@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import RoutineStepItem from './RoutineStepItem';
 import type { RoutineStepListProps } from '@/types/skincare-routine';
+import { useTranslations } from 'next-intl';
 
 /**
  * 루틴 단계 목록 컴포넌트
@@ -16,6 +17,7 @@ const RoutineStepList = memo(function RoutineStepList({
   onProductClick,
   className,
 }: RoutineStepListProps) {
+  const t = useTranslations('skinUI');
   // 순서대로 정렬
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
 
@@ -25,7 +27,7 @@ const RoutineStepList = memo(function RoutineStepList({
         className={cn('text-center py-8 text-muted-foreground', className)}
         data-testid="routine-step-list-empty"
       >
-        <p>루틴 단계가 없어요</p>
+        <p>{t('routineStepList0')}</p>
       </div>
     );
   }

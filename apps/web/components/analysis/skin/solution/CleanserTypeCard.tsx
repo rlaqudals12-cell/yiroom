@@ -16,6 +16,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import type { CleanserType, SkinType } from '@/lib/mock/cleanser-types';
+import { useTranslations } from 'next-intl';
 
 interface CleanserTypeCardProps {
   cleanser: CleanserType;
@@ -72,6 +73,7 @@ export function CleanserTypeCard({
   isExpanded = false,
   onToggle,
 }: CleanserTypeCardProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [localExpanded, setLocalExpanded] = useState(isExpanded);
   const expanded = onToggle ? isExpanded : localExpanded;
   const handleToggle = onToggle || (() => setLocalExpanded(!localExpanded));
@@ -114,10 +116,10 @@ export function CleanserTypeCard({
 
             {/* 추천/비추천 표시 */}
             {userSkinType && isRecommended && (
-              <Badge className="bg-green-500 text-white text-xs">추천</Badge>
+              <Badge className="bg-green-500 text-white text-xs">{t('cleanserTypeCard12')}</Badge>
             )}
             {userSkinType && isNotRecommended && (
-              <Badge className="bg-red-500 text-white text-xs">주의</Badge>
+              <Badge className="bg-red-500 text-white text-xs">{t('cleanserTypeCard13')}</Badge>
             )}
 
             {expanded ? (
@@ -191,7 +193,7 @@ export function CleanserTypeCard({
 
           {/* 추천 피부 타입 */}
           <div>
-            <h4 className="text-sm font-medium mb-2">추천 피부 타입</h4>
+            <h4 className="text-sm font-medium mb-2">{t('cleanserTypeCard14')}</h4>
             <div className="flex flex-wrap gap-1">
               {cleanser.recommendedFor.map((type) => (
                 <Badge

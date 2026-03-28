@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { PhotoReuseEligibility } from '@/lib/analysis';
+import { useTranslations } from 'next-intl';
 
 interface PhotoReuseSelectorProps {
   eligibility: PhotoReuseEligibility;
@@ -25,6 +26,7 @@ export function PhotoReuseSelector({
   onSelectNewCapture,
   className,
 }: PhotoReuseSelectorProps) {
+  const t = useTranslations('skinAnalysisUI');
   // 재사용 불가 시 새 촬영만 표시
   if (!eligibility.eligible || !eligibility.sourceImage) {
     return (
@@ -69,7 +71,7 @@ export function PhotoReuseSelector({
           <div className="aspect-square relative mb-3 rounded-lg overflow-hidden bg-muted">
             <Image
               src={sourceImage.thumbnailUrl || sourceImage.imageUrl}
-              alt="퍼스널 컬러 분석 사진"
+              alt={t('photoReuseSelector0')}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 50vw, 200px"
@@ -78,9 +80,9 @@ export function PhotoReuseSelector({
               추천
             </Badge>
           </div>
-          <div className="text-sm font-medium">이 사진 사용하기</div>
+          <div className="text-sm font-medium">{t('photoReuseSelector1')}</div>
           <div className="text-xs text-muted-foreground">
-            {daysSinceCapture === 0 ? '오늘' : `${daysSinceCapture}일 전`} 촬영
+            {daysSinceCapture === 0 ? t('photoReuseSelector2') : `${daysSinceCapture}일 전`} 촬영
           </div>
         </button>
 
@@ -94,8 +96,8 @@ export function PhotoReuseSelector({
           <div className="aspect-square flex items-center justify-center mb-3 rounded-lg bg-muted">
             <Camera className="w-8 h-8 text-muted-foreground" />
           </div>
-          <div className="text-sm font-medium">새로 촬영하기</div>
-          <div className="text-xs text-muted-foreground">더 정확한 분석</div>
+          <div className="text-sm font-medium">{t('photoReuseSelector4')}</div>
+          <div className="text-xs text-muted-foreground">{t('photoReuseSelector5')}</div>
         </button>
       </div>
 

@@ -10,6 +10,7 @@ import {
   CLEANSER_TYPES,
   type SkinType,
 } from '@/lib/mock/cleanser-types';
+import { useTranslations } from 'next-intl';
 
 interface SkinTypeRecommendationProps {
   skinType: SkinType;
@@ -52,6 +53,7 @@ function getCleanserName(id: string): string {
  * 피부 타입별 클렌징 추천 컴포넌트
  */
 export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommendationProps) {
+  const t = useTranslations('skinAnalysisUI');
   const routine = SKIN_TYPE_CLEANSER_ROUTINE[skinType];
 
   if (!routine) {
@@ -66,7 +68,9 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
           <span>{SKIN_TYPE_LABELS[skinType]} 클렌징 가이드</span>
-          <Badge variant="secondary">{skinType === 'all' ? '기본' : '맞춤'}</Badge>
+          <Badge variant="secondary">
+            {skinType === 'all' ? t('skinTypeRecommendation6') : t('skinTypeRecommendation7')}
+          </Badge>
         </CardTitle>
       </CardHeader>
 
@@ -88,11 +92,11 @@ export function SkinTypeRecommendation({ skinType, className }: SkinTypeRecommen
             {selectByKey(
               skinType,
               {
-                oily: '아침에도 가볍게 클렌징하여 밤사이 분비된 피지를 제거하세요.',
-                dry: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.',
-                sensitive: '아침에는 순한 클렌저로 가볍게, 또는 물세안도 괜찮아요.',
+                oily: t('skinTypeRecommendation8'),
+                dry: t('skinTypeRecommendation9'),
+                sensitive: t('skinTypeRecommendation9'),
               },
-              '상태에 따라 선택하세요.'
+              t('skinTypeRecommendation10')
             )}
           </p>
         </div>

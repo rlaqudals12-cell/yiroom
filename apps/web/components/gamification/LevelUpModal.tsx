@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface LevelUpModalProps {
   result: LevelUpResult | null;
@@ -26,6 +27,7 @@ interface LevelUpModalProps {
 }
 
 export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
+  const t = useTranslations('gamificationUI');
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
             </div>
           </div>
 
-          <DialogTitle className="text-2xl">레벨 업!</DialogTitle>
+          <DialogTitle className="text-2xl">{t('levelUpModal0')}</DialogTitle>
 
           <DialogDescription className="space-y-2">
             <p className="text-lg text-gray-700 dark:text-gray-300">
@@ -80,7 +82,9 @@ export function LevelUpModal({ result, isOpen, onClose }: LevelUpModalProps) {
             {/* 티어 변경 시 */}
             {result.tierChanged && (
               <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800">
-                <p className="text-amber-800 dark:text-amber-300 font-medium">새로운 티어 달성!</p>
+                <p className="text-amber-800 dark:text-amber-300 font-medium">
+                  {t('levelUpModal1')}
+                </p>
                 <p className={cn('text-xl font-bold mt-1', tierColor.text)}>
                   {TIER_NAMES[result.newTier]}
                 </p>

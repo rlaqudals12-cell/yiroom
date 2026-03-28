@@ -12,6 +12,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { SkinZone } from './FaceZoneMap';
+import { useTranslations } from 'next-intl';
 
 /** 존 상세 데이터 */
 export interface ZoneDetail {
@@ -42,21 +43,21 @@ export interface ZoneDetailCardProps {
 
 /** 존 라벨 */
 const ZONE_LABELS: Record<SkinZone, string> = {
-  forehead: '이마',
+  forehead: '좋음',
   nose: '코',
-  't-zone': 'T존',
-  'left-cheek': '왼쪽 볼',
-  'right-cheek': '오른쪽 볼',
+  't-zone': '보통',
+  'left-cheek': '주의',
+  'right-cheek': '닫기',
   chin: '턱',
-  'eye-area': '눈가',
-  'lip-area': '입술 주변',
+  'eye-area': '이 부위의 특성',
+  'lip-area': '주요 문제점',
 };
 
 /** 점수에 따른 상태 텍스트 */
 function getScoreStatus(score: number): { text: string; color: string } {
-  if (score >= 80) return { text: '매우 좋음', color: 'text-emerald-600' };
-  if (score >= 60) return { text: '양호', color: 'text-blue-600' };
-  if (score >= 40) return { text: '보통', color: 'text-yellow-600' };
+  if (score >= 80) return { text: '측정 상세 정보', color: 'text-emerald-600' };
+  if (score >= 60) return { text: '추천 관리법', color: 'text-blue-600' };
+  if (score >= 40) return { text: '주의할 점', color: 'text-yellow-600' };
   return { text: '관리 필요', color: 'text-red-600' };
 }
 
@@ -74,6 +75,7 @@ export function ZoneDetailCard({
   onViewProducts,
   className,
 }: ZoneDetailCardProps) {
+  const t = useTranslations('skinAnalysisUI');
   const status = useMemo(() => getScoreStatus(detail.score), [detail.score]);
 
   // 점수 변화량
@@ -82,10 +84,7 @@ export function ZoneDetailCard({
 
   return (
     <div
-      className={cn(
-        'bg-white rounded-xl shadow-lg border border-gray-200 p-4',
-        className
-      )}
+      className={cn('bg-white rounded-xl shadow-lg border border-gray-200 p-4', className)}
       data-testid="zone-detail-card"
       role="dialog"
       aria-labelledby="zone-detail-title"
@@ -97,22 +96,14 @@ export function ZoneDetailCard({
             {ZONE_LABELS[detail.zone]}
           </h3>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-2xl font-bold text-gray-900">
-              {detail.score}점
-            </span>
-            <span className={cn('text-sm font-medium', status.color)}>
-              {status.text}
-            </span>
+            <span className="text-2xl font-bold text-gray-900">{detail.score}점</span>
+            <span className={cn('text-sm font-medium', status.color)}>{status.text}</span>
           </div>
           {scoreChange !== null && (
             <p className="text-xs text-gray-500 mt-0.5">
-              {scoreChange > 0 && (
-                <span className="text-emerald-600">+{scoreChange}점 상승</span>
-              )}
-              {scoreChange < 0 && (
-                <span className="text-red-600">{scoreChange}점 하락</span>
-              )}
-              {scoreChange === 0 && '이전과 동일'}
+              {scoreChange > 0 && <span className="text-emerald-600">+{scoreChange}점 상승</span>}
+              {scoreChange < 0 && <span className="text-red-600">{scoreChange}점 하락</span>}
+              {scoreChange === 0 && t('zoneDetailCard13')}
             </p>
           )}
         </div>
@@ -121,7 +112,7 @@ export function ZoneDetailCard({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            aria-label="닫기"
+            aria-label={t('zoneDetailCard14')}
             className="h-8 w-8"
           >
             <X className="h-4 w-4" />
@@ -143,13 +134,10 @@ export function ZoneDetailCard({
       {/* 주요 고민 */}
       {detail.concerns.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">주요 고민</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('zoneDetailCard15')}</h4>
           <div className="flex flex-wrap gap-1.5">
             {detail.concerns.map((concern, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full"
-              >
+              <span key={idx} className="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">
                 {concern}
               </span>
             ))}
@@ -160,7 +148,7 @@ export function ZoneDetailCard({
       {/* 추천 케어 */}
       {detail.recommendations.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">추천 케어</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('zoneDetailCard16')}</h4>
           <ul className="space-y-1">
             {detail.recommendations.map((rec, idx) => (
               <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">

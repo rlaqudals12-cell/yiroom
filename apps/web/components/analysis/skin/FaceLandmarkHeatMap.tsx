@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { User, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 // CDN URL for face-api.js models
 const MODELS_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
@@ -91,6 +92,7 @@ export function FaceLandmarkHeatMap({
   selectedZone,
   onZoneClick,
 }: FaceLandmarkHeatMapProps) {
+  const t = useTranslations('skinAnalysisUI');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -127,14 +129,14 @@ export function FaceLandmarkHeatMap({
         setModelsLoaded(true);
       } catch (err) {
         console.error('[FaceLandmarkHeatMap] Model loading error:', err);
-        setError('모델 로드 실패');
+        setError(t('faceLandmarkHeatMap4'));
       }
     };
 
     if (!modelsLoaded) {
       loadModels();
     }
-  }, [modelsLoaded]);
+  }, [modelsLoaded, t]);
 
   // 이미지 로드 및 얼굴 감지
   useEffect(() => {
@@ -162,18 +164,18 @@ export function FaceLandmarkHeatMap({
         if (detectionResult) {
           setDetection(detectionResult);
         } else {
-          setError('얼굴을 감지할 수 없어요');
+          setError(t('faceLandmarkHeatMap5'));
         }
       } catch (err) {
         console.error('[FaceLandmarkHeatMap] Detection error:', err);
-        setError('얼굴 감지 실패');
+        setError(t('faceLandmarkHeatMap6'));
       } finally {
         setIsLoading(false);
       }
     };
 
     detectFace();
-  }, [modelsLoaded, imageUrl]);
+  }, [modelsLoaded, imageUrl, t]);
 
   // 캔버스에 히트맵 그리기
   useEffect(() => {
@@ -372,7 +374,7 @@ export function FaceLandmarkHeatMap({
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 z-20">
               <Loader2 className="w-10 h-10 text-white animate-spin mb-3" />
               <p className="text-white text-sm">
-                {!modelsLoaded ? 'AI 모델 로딩 중...' : '얼굴 분석 중...'}
+                {!modelsLoaded ? t('faceLandmarkHeatMap7') : t('faceLandmarkHeatMap8')}
               </p>
             </div>
           )}
@@ -395,9 +397,9 @@ export function FaceLandmarkHeatMap({
             <img
               ref={imageRef}
               src={imageUrl}
-              alt="피부 분석 얼굴 이미지"
+              alt={t('faceLandmarkHeatMap9')}
               className="w-full h-full object-cover"
-              onError={() => setError('이미지 로드 실패')}
+              onError={() => setError(t('faceLandmarkHeatMap10'))}
             />
           </div>
 
@@ -464,7 +466,7 @@ export function FaceLandmarkHeatMap({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-muted-foreground">
                 <User className="w-20 h-20 opacity-30" />
-                <p className="text-sm">얼굴 감지 대기 중</p>
+                <p className="text-sm">{t('faceLandmarkHeatMap11')}</p>
               </div>
             </div>
           )}
@@ -478,19 +480,19 @@ export function FaceLandmarkHeatMap({
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-green-500" />
-              <span>우수 (80+)</span>
+              <span>{t('faceLandmarkHeatMap12')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-blue-500" />
-              <span>양호 (60-79)</span>
+              <span>{t('faceLandmarkHeatMap13')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span>보통 (40-59)</span>
+              <span>{t('faceLandmarkHeatMap14')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-red-500" />
-              <span>주의 (0-39)</span>
+              <span>{t('faceLandmarkHeatMap15')}</span>
             </div>
           </div>
           {detection && (

@@ -21,6 +21,7 @@ import OutfitShareCard from './OutfitShareCard';
 import { useOutfitShare } from '@/hooks/useOutfitShare';
 import type { FullOutfit } from '@/types/styling';
 import type { SeasonType } from '@/lib/mock/personal-color';
+import { useTranslations } from 'next-intl';
 
 interface OutfitShareModalProps {
   open: boolean;
@@ -35,6 +36,7 @@ export default function OutfitShareModal({
   outfit,
   seasonType,
 }: OutfitShareModalProps) {
+  const t = useTranslations('stylingUI');
   const { cardRef, isGenerating, shareOutfit, downloadImage, copyToClipboard, canShare } =
     useOutfitShare(outfit, seasonType);
 
@@ -53,7 +55,7 @@ export default function OutfitShareModal({
   const handleShare = async () => {
     const success = await shareOutfit();
     if (success) {
-      toast.success('공유되었습니다');
+      toast.success(t('outfitShareModal0'));
       onOpenChange(false);
     }
   };
@@ -62,7 +64,7 @@ export default function OutfitShareModal({
   const handleDownload = async () => {
     const success = await downloadImage();
     if (success) {
-      toast.success('이미지가 다운로드되었습니다');
+      toast.success(t('outfitShareModal1'));
     }
   };
 
@@ -71,7 +73,7 @@ export default function OutfitShareModal({
     const success = await copyToClipboard();
     if (success) {
       setCopied(true);
-      toast.success('클립보드에 복사되었습니다');
+      toast.success(t('outfitShareModal2'));
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -85,7 +87,7 @@ export default function OutfitShareModal({
             코디 공유
           </DialogTitle>
           <VisuallyHidden asChild>
-            <DialogDescription>코디를 이미지로 저장하거나 공유하세요</DialogDescription>
+            <DialogDescription>{t('outfitShareModal3')}</DialogDescription>
           </VisuallyHidden>
         </DialogHeader>
 
@@ -141,9 +143,7 @@ export default function OutfitShareModal({
                   복사됨
                 </>
               )}
-              {!copied && isGenerating && (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              )}
+              {!copied && isGenerating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {!copied && !isGenerating && (
                 <>
                   <Copy className="w-4 h-4 mr-2" />

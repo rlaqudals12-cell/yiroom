@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RoutineToggleProps } from '@/types/skincare-routine';
+import { useTranslations } from 'next-intl';
 
 /**
  * 아침/저녁 루틴 토글 컴포넌트
@@ -17,12 +18,13 @@ const RoutineToggle = memo(function RoutineToggle({
   eveningStepCount,
   className,
 }: RoutineToggleProps) {
+  const t = useTranslations('skinUI');
   return (
     <div
       className={cn('flex bg-muted/50 rounded-xl p-1 gap-1', className)}
       data-testid="routine-toggle"
       role="tablist"
-      aria-label="루틴 시간대 선택"
+      aria-label={t('routineToggle0')}
     >
       {/* 아침 버튼 */}
       <button
@@ -39,7 +41,7 @@ const RoutineToggle = memo(function RoutineToggle({
         data-testid="morning-toggle-button"
       >
         <Sun className="h-4 w-4" aria-hidden="true" />
-        <span>아침</span>
+        <span>{t('routineToggle1')}</span>
         <span
           className={cn(
             'text-xs px-1.5 py-0.5 rounded-full',
@@ -67,7 +69,7 @@ const RoutineToggle = memo(function RoutineToggle({
         data-testid="evening-toggle-button"
       >
         <Moon className="h-4 w-4" aria-hidden="true" />
-        <span>저녁</span>
+        <span>{t('routineToggle2')}</span>
         <span
           className={cn(
             'text-xs px-1.5 py-0.5 rounded-full',

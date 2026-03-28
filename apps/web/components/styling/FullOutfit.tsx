@@ -16,6 +16,7 @@ import type { SeasonType } from '@/lib/mock/personal-color';
 import type { FullOutfit as FullOutfitType, OutfitOccasion } from '@/types/styling';
 import { OUTFIT_OCCASION_LABELS, OUTFIT_OCCASION_ICONS, METAL_TONE_LABELS } from '@/types/styling';
 import { getOutfitPresets, getOutfitPresetByOccasion } from '@/lib/mock/styling';
+import { useTranslations } from 'next-intl';
 
 interface FullOutfitProps {
   seasonType: SeasonType;
@@ -211,6 +212,7 @@ export default function FullOutfit({
   savedOutfitIds = [],
   className,
 }: FullOutfitProps) {
+  const t = useTranslations('stylingUI');
   const [currentOccasion, setCurrentOccasion] = useState<OutfitOccasion>('daily');
   const presets = getOutfitPresets(seasonType);
   // currentPreset은 향후 occasion별 세부 추천에 사용 예정: getOutfitPresetByOccasion(seasonType, currentOccasion)
@@ -224,7 +226,7 @@ export default function FullOutfit({
   return (
     <div className={cn('space-y-6', className)} data-testid="full-outfit">
       {/* 헤더 */}
-      <h3 className="text-lg font-semibold flex items-center gap-2">👗 전체 코디 추천</h3>
+      <h3 className="text-lg font-semibold flex items-center gap-2">{t('fullOutfit9')}</h3>
 
       {/* 상황 선택 탭 */}
       <Tabs

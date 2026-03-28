@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface AllergyInfoCardProps {
   allergies: string[];
@@ -39,6 +40,7 @@ export function AllergyInfoCard({
   onAllergiesChange,
   isLoading = false,
 }: AllergyInfoCardProps) {
+  const t = useTranslations('settingsUI');
   const [inputValue, setInputValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -114,7 +116,7 @@ export function AllergyInfoCard({
           <AlertTriangle className="w-5 h-5" aria-hidden="true" />
           알러지 정보
         </CardTitle>
-        <CardDescription>영양 및 제품 추천에 활용됩니다</CardDescription>
+        <CardDescription>{t('allergyInfoCard11')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 등록된 알러지 태그 */}
@@ -147,7 +149,7 @@ export function AllergyInfoCard({
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             type="text"
-            placeholder="알러지 추가..."
+            placeholder={t('allergyInfoCard13')}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -161,13 +163,13 @@ export function AllergyInfoCard({
             disabled={isDisabled || !inputValue.trim()}
           >
             <Plus className="w-4 h-4" />
-            <span className="sr-only">알러지 추가</span>
+            <span className="sr-only">{t('allergyInfoCard14')}</span>
           </Button>
         </form>
 
         {/* 일반적인 알러지 버튼 */}
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">일반적인 알러지</p>
+          <p className="text-xs text-muted-foreground">{t('allergyInfoCard15')}</p>
           <div className="flex flex-wrap gap-1.5">
             {COMMON_ALLERGIES.map((allergy) => {
               const isSelected = allergies.includes(allergy);
@@ -193,7 +195,7 @@ export function AllergyInfoCard({
 
         {/* 알러지 없음 안내 */}
         {allergies.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-2">등록된 알러지가 없습니다</p>
+          <p className="text-xs text-muted-foreground text-center py-2">{t('allergyInfoCard16')}</p>
         )}
       </CardContent>
     </Card>

@@ -13,6 +13,7 @@ import type { SeasonType } from '@/lib/mock/personal-color';
 import type { AccessoryItem, AccessoryRecommendation, MetalTone } from '@/types/styling';
 import { METAL_TONE_LABELS, ACCESSORY_TYPE_LABELS } from '@/types/styling';
 import { getAccessoryStyling } from '@/lib/mock/styling';
+import { useTranslations } from 'next-intl';
 
 interface AccessoryStylingProps {
   seasonType: SeasonType;
@@ -114,6 +115,7 @@ function AccessoryCard({ item }: { item: AccessoryItem }) {
  * 악세서리 스타일링 메인 컴포넌트
  */
 export default function AccessoryStyling({ seasonType, className }: AccessoryStylingProps) {
+  const t = useTranslations('stylingUI');
   const styling = getAccessoryStyling(seasonType);
 
   if (!styling) {
@@ -133,7 +135,7 @@ export default function AccessoryStyling({ seasonType, className }: AccessorySty
       {/* 금속 톤 가이드 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">금속 톤 가이드</CardTitle>
+          <CardTitle className="text-sm">{t('accessoryStyling2')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -146,7 +148,7 @@ export default function AccessoryStyling({ seasonType, className }: AccessorySty
 
       {/* 추천 악세서리 */}
       <div>
-        <h4 className="text-sm font-medium mb-3">추천 악세서리</h4>
+        <h4 className="text-sm font-medium mb-3">{t('accessoryStyling3')}</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {items.map((item, idx) => (
             <AccessoryCard key={`${item.type}-${idx}`} item={item} />

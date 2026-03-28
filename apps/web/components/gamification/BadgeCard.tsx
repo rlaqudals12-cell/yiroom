@@ -10,6 +10,7 @@ import { Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Badge } from '@/types/gamification';
 import { RARITY_COLORS, RARITY_NAMES } from '@/lib/gamification/constants';
+import { useTranslations } from 'next-intl';
 
 interface BadgeCardProps {
   badge: Badge;
@@ -30,8 +31,9 @@ export function BadgeCard({
   onClick,
   onShare,
 }: BadgeCardProps) {
+  const t = useTranslations('gamificationUI');
   const rarityColor = RARITY_COLORS[badge.rarity];
-  const earnedStatus = isEarned ? ' (획득)' : ' (미획득)';
+  const earnedStatus = isEarned ? t('badgeCard0') : t('badgeCard1');
   const badgeAriaLabel = onClick ? `배지: ${badge.name}${earnedStatus}` : undefined;
 
   // 키보드 접근성 핸들러 — onClick 있을 때만 활성화

@@ -20,6 +20,7 @@ import {
   getGoalLabel,
   formatPrice,
 } from '@/lib/smart-matching/equipment-recommend';
+import { useTranslations } from 'next-intl';
 
 interface EquipmentRecommendationCardProps {
   match: WorkoutEquipmentMatch;
@@ -53,6 +54,7 @@ export function EquipmentRecommendationCard({
   onViewDetails,
   className,
 }: EquipmentRecommendationCardProps) {
+  const t = useTranslations('smartMatchingUI');
   const [expandedCategory, setExpandedCategory] = useState<WorkoutEquipmentCategory | null>(null);
 
   const goalLabel = getGoalLabel(match.workoutGoal);
@@ -65,10 +67,12 @@ export function EquipmentRecommendationCard({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold">추천 운동기구</h3>
+          <h3 className="font-semibold">{t('equipmentRecommendationCard3')}</h3>
           <p className="text-sm text-muted-foreground">{goalLabel} 목표 기준</p>
         </div>
-        <Badge variant="secondary">{match.homeGym ? '홈트레이닝' : '헬스장'}</Badge>
+        <Badge variant="secondary">
+          {match.homeGym ? t('equipmentRecommendationCard4') : t('equipmentRecommendationCard5')}
+        </Badge>
       </div>
 
       {/* 카테고리별 추천 */}

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 // ============================================
 // 타입 정의
@@ -58,6 +59,7 @@ export default function PostureSimulator({
   showGuides,
   className,
 }: PostureSimulatorProps) {
+  const t = useTranslations('visualAnalysisUI');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -172,25 +174,25 @@ export default function PostureSimulator({
       {/* 범례 */}
       {showGuides && isImageLoaded && (
         <div className="mt-4 p-3 bg-muted rounded-lg">
-          <p className="text-xs font-medium mb-2 text-foreground">가이드 라인</p>
+          <p className="text-xs font-medium mb-2 text-foreground">{t('postureSimulator0')}</p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-good)' }} />
-              <span className="text-muted-foreground">수직 기준선</span>
+              <span className="text-muted-foreground">{t('postureSimulator1')}</span>
             </div>
             {measurements.headForwardAngle > 15 && (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-bad)' }} />
-                <span className="text-muted-foreground">머리 전방 각도</span>
+                <span className="text-muted-foreground">{t('postureSimulator2')}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
               <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-neutral)' }} />
-              <span className="text-muted-foreground">어깨 수평선</span>
+              <span className="text-muted-foreground">{t('postureSimulator3')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-0.5" style={{ backgroundColor: 'var(--posture-warning)' }} />
-              <span className="text-muted-foreground">골반선</span>
+              <span className="text-muted-foreground">{t('postureSimulator4')}</span>
             </div>
           </div>
         </div>

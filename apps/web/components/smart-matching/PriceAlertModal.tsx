@@ -18,6 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 interface PriceAlertConfig {
   targetPrice?: number;
@@ -55,6 +56,7 @@ export function PriceAlertModal({
   existingConfig,
   className,
 }: PriceAlertModalProps) {
+  const t = useTranslations('smartMatchingUI');
   const [targetPrice, setTargetPrice] = useState<string>(
     existingConfig?.targetPrice?.toString() ?? ''
   );
@@ -70,9 +72,7 @@ export function PriceAlertModal({
 
   const togglePlatform = (platformId: string) => {
     setSelectedPlatforms((prev) =>
-      prev.includes(platformId)
-        ? prev.filter((id) => id !== platformId)
-        : [...prev, platformId]
+      prev.includes(platformId) ? prev.filter((id) => id !== platformId) : [...prev, platformId]
     );
   };
 
@@ -93,16 +93,13 @@ export function PriceAlertModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn('sm:max-w-md', className)}
-        data-testid="price-alert-modal"
-      >
+      <DialogContent className={cn('sm:max-w-md', className)} data-testid="price-alert-modal">
         <DialogHeader>
-          <DialogTitle>가격 알림 설정</DialogTitle>
+          <DialogTitle>{t('priceAlertModal4')}</DialogTitle>
           <DialogDescription>
             {productName
               ? `${productName}의 가격이 조건을 충족하면 알려드려요.`
-              : '가격이 조건을 충족하면 알려드려요.'}
+              : t('priceAlertModal6')}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,7 +113,7 @@ export function PriceAlertModal({
 
           {/* 알림 타입 선택 */}
           <div className="space-y-2">
-            <Label>알림 조건</Label>
+            <Label>{t('priceAlertModal7')}</Label>
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -124,7 +121,7 @@ export function PriceAlertModal({
                 size="sm"
                 onClick={() => setAlertType('price')}
               >
-                목표 가격
+                {t('priceAlertModal8')}
               </Button>
               <Button
                 type="button"
@@ -132,7 +129,7 @@ export function PriceAlertModal({
                 size="sm"
                 onClick={() => setAlertType('percent')}
               >
-                할인율
+                {t('priceAlertModal9')}
               </Button>
             </div>
           </div>
@@ -140,7 +137,7 @@ export function PriceAlertModal({
           {/* 목표 가격 입력 */}
           {alertType === 'price' && (
             <div className="space-y-2">
-              <Label htmlFor="target-price">목표 가격</Label>
+              <Label htmlFor="target-price">{t('priceAlertModal8')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="target-price"
@@ -160,7 +157,7 @@ export function PriceAlertModal({
           {/* 할인율 입력 */}
           {alertType === 'percent' && (
             <div className="space-y-2">
-              <Label htmlFor="percent-drop">할인율</Label>
+              <Label htmlFor="percent-drop">{t('priceAlertModal9')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="percent-drop"
@@ -170,7 +167,7 @@ export function PriceAlertModal({
                   value={percentDrop}
                   onChange={(e) => setPercentDrop(e.target.value)}
                 />
-                <span className="text-sm text-muted-foreground">% 이상</span>
+                <span className="text-sm text-muted-foreground">{t('priceAlertModal10')}</span>
               </div>
               <p className="text-xs text-muted-foreground">
                 원래 가격 대비 할인율이 충족되면 알림을 보내드려요
@@ -180,7 +177,7 @@ export function PriceAlertModal({
 
           {/* 플랫폼 선택 */}
           <div className="space-y-2">
-            <Label>모니터링 플랫폼</Label>
+            <Label>{t('priceAlertModal11')}</Label>
             <div className="flex flex-wrap gap-2">
               {PLATFORMS.map((platform) => (
                 <Button

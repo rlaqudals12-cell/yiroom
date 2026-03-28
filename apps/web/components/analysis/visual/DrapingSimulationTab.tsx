@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 /** 퍼스널컬러 시즌 타입 */
 type Season = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -53,6 +54,7 @@ export default function DrapingSimulationTab({
   skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
+  const t = useTranslations('visualAnalysisUI');
   const supabase = useClerkSupabaseClient();
   const [state, setState] = useState<AnalysisState>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -80,10 +82,10 @@ export default function DrapingSimulationTab({
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('이미지 로드 실패'));
+      img.onerror = () => reject(new Error(t('drapingSimulationTab0')));
       img.src = imageUrl;
     });
-  }, [imageUrl]);
+  }, [imageUrl, t]);
 
   /**
    * 초기화 (이미지 로드 + 랜드마크 추출)
@@ -152,10 +154,10 @@ export default function DrapingSimulationTab({
       setState('ready');
     } catch (err) {
       console.error('[DrapingSimulationTab] 초기화 오류:', err);
-      setError(err instanceof Error ? err.message : '초기화에 실패했어요');
+      setError(err instanceof Error ? err.message : t('drapingSimulationTab1'));
       setState('error');
     }
-  }, [imageUrl, loadImage, deviceCapability.tier, skinAnalysisId, supabase]);
+  }, [imageUrl, loadImage, deviceCapability.tier, skinAnalysisId, supabase, t]);
 
   /**
    * 드레이프 분석 완료 핸들러
@@ -184,13 +186,13 @@ export default function DrapingSimulationTab({
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">색상 입혀보기</CardTitle>
+          <CardTitle className="text-base">{t('drapingSimulationTab2')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="w-full aspect-[3/4] rounded-lg" />
           <Skeleton className="h-10 w-full" />
           <p className="text-sm text-center text-muted-foreground">
-            {state === 'loading' ? '이미지 로드 중...' : '준비 중...'}
+            {state === 'loading' ? t('drapingSimulationTab3') : t('drapingSimulationTab4')}
           </p>
         </CardContent>
       </Card>
@@ -202,11 +204,11 @@ export default function DrapingSimulationTab({
     return (
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader>
-          <CardTitle className="text-base">색상 입혀보기</CardTitle>
+          <CardTitle className="text-base">{t('drapingSimulationTab2')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4 rounded-lg bg-destructive/10 dark:bg-destructive/20 border border-destructive/20 dark:border-destructive/30">
-            <p className="text-sm text-destructive">{error || '초기화에 실패했어요'}</p>
+            <p className="text-sm text-destructive">{error || t('drapingSimulationTab1')}</p>
           </div>
         </CardContent>
       </Card>
@@ -219,7 +221,7 @@ export default function DrapingSimulationTab({
       <Card className={cn(className)} data-testid="draping-simulation-tab">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <span>색상 입혀보기</span>
+            <span>{t('drapingSimulationTab2')}</span>
             <span className="text-xs font-normal text-muted-foreground">
               ({deviceCapability.drapeColors}색 팔레트)
             </span>
@@ -229,8 +231,8 @@ export default function DrapingSimulationTab({
           {/* 탭 전환 */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'palette' | 'simulator')}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="palette">나의 색상</TabsTrigger>
-              <TabsTrigger value="simulator">미리보기</TabsTrigger>
+              <TabsTrigger value="palette">{t('drapingSimulationTab5')}</TabsTrigger>
+              <TabsTrigger value="simulator">{t('drapingSimulationTab6')}</TabsTrigger>
             </TabsList>
 
             {/* 색상 팔레트 탭 */}

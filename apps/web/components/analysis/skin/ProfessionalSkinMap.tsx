@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DetailedZoneId, DetailedZoneStatus } from '@/types/skin-zones';
+import { useTranslations } from 'next-intl';
 
 /**
  * 광원 모드 타입
@@ -169,6 +170,7 @@ export function ProfessionalSkinMap({
   selectedZone,
   className,
 }: ProfessionalSkinMapProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [lightMode, setLightMode] = useState<LightMode>('normal');
   const [hoveredZone, setHoveredZone] = useState<DetailedZoneId | null>(null);
 
@@ -344,50 +346,64 @@ export function ProfessionalSkinMap({
 
             {/* 색상 범례 */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">상태 범례</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                {t('professionalSkinMap17')}
+              </p>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      selectByKey(lightMode, {
-                        uv: 'bg-violet-200',
-                        polarized: 'bg-cyan-200',
-                      }, 'bg-green-300')
+                      selectByKey(
+                        lightMode,
+                        {
+                          uv: 'bg-violet-200',
+                          polarized: 'bg-cyan-200',
+                        },
+                        'bg-green-300'
+                      )
                     )}
                   />
-                  <span className="text-xs">좋음 (71-100)</span>
+                  <span className="text-xs">{t('professionalSkinMap18')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      selectByKey(lightMode, {
-                        uv: 'bg-violet-400',
-                        polarized: 'bg-cyan-400',
-                      }, 'bg-yellow-300')
+                      selectByKey(
+                        lightMode,
+                        {
+                          uv: 'bg-violet-400',
+                          polarized: 'bg-cyan-400',
+                        },
+                        'bg-yellow-300'
+                      )
                     )}
                   />
-                  <span className="text-xs">보통 (41-70)</span>
+                  <span className="text-xs">{t('professionalSkinMap19')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
                       'w-4 h-4 rounded',
-                      selectByKey(lightMode, {
-                        uv: 'bg-violet-600',
-                        polarized: 'bg-cyan-600',
-                      }, 'bg-red-400')
+                      selectByKey(
+                        lightMode,
+                        {
+                          uv: 'bg-violet-600',
+                          polarized: 'bg-cyan-600',
+                        },
+                        'bg-red-400'
+                      )
                     )}
                   />
-                  <span className="text-xs">주의 (0-40)</span>
+                  <span className="text-xs">{t('professionalSkinMap20')}</span>
                 </div>
               </div>
             </div>
 
             {/* 평균 점수 */}
             <div className="p-3 rounded-lg border">
-              <p className="text-xs text-muted-foreground">전체 평균</p>
+              <p className="text-xs text-muted-foreground">{t('professionalSkinMap21')}</p>
               <p className="text-2xl font-bold">
                 {averageScore}
                 <span className="text-sm font-normal text-muted-foreground">점</span>

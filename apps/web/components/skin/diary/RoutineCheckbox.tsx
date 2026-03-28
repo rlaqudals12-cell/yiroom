@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { RoutineCheckboxProps } from '@/types/skin-diary';
 import { SPECIAL_TREATMENT_OPTIONS } from '@/lib/mock/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 루틴 완료 체크박스 컴포넌트
@@ -22,6 +23,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
   onChange,
   className,
 }: RoutineCheckboxProps) {
+  const t = useTranslations('skinUI');
   const [localMorning, setLocalMorning] = useState(morningCompleted);
   const [localEvening, setLocalEvening] = useState(eveningCompleted);
   const [localTreatments, setLocalTreatments] = useState<string[]>(specialTreatments);
@@ -69,7 +71,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
     <div className={cn('space-y-6', className)} data-testid="routine-checkbox">
       {/* 루틴 완료 체크 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium">스킨케어 루틴</h3>
+        <h3 className="text-sm font-medium">{t('routineCheckbox0')}</h3>
 
         {/* 아침 루틴 */}
         <div
@@ -117,11 +119,11 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
               >
                 아침 루틴 완료
               </p>
-              <p className="text-xs text-muted-foreground">클렌저, 토너, 크림, 선크림</p>
+              <p className="text-xs text-muted-foreground">{t('routineCheckbox1')}</p>
             </div>
           </div>
           {localMorning && (
-            <span className="text-amber-600 dark:text-amber-400" aria-label="완료됨">
+            <span className="text-amber-600 dark:text-amber-400" aria-label={t('routineCheckbox2')}>
               ✓
             </span>
           )}
@@ -176,11 +178,14 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
               >
                 저녁 루틴 완료
               </p>
-              <p className="text-xs text-muted-foreground">클렌징, 토너, 세럼, 크림</p>
+              <p className="text-xs text-muted-foreground">{t('routineCheckbox3')}</p>
             </div>
           </div>
           {localEvening && (
-            <span className="text-indigo-600 dark:text-indigo-400" aria-label="완료됨">
+            <span
+              className="text-indigo-600 dark:text-indigo-400"
+              aria-label={t('routineCheckbox2')}
+            >
               ✓
             </span>
           )}
@@ -191,7 +196,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-violet-500" aria-hidden="true" />
-          <h3 className="text-sm font-medium">특별 케어</h3>
+          <h3 className="text-sm font-medium">{t('routineCheckbox4')}</h3>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -206,7 +211,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
                   'px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-1.5',
                   isSelected ? 'bg-violet-500 text-white' : 'bg-muted hover:bg-muted/80'
                 )}
-                aria-label={`${option.label} ${isSelected ? '선택됨' : '선택 안됨'}`}
+                aria-label={`${option.label} ${isSelected ? t('routineCheckbox5') : t('routineCheckbox6')}`}
                 aria-pressed={isSelected}
               >
                 <span>{option.emoji}</span>
@@ -221,7 +226,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
           <Input
             value={customTreatment}
             onChange={(e) => setCustomTreatment(e.target.value)}
-            placeholder="다른 케어 추가..."
+            placeholder={t('routineCheckbox7')}
             className="flex-1"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -229,7 +234,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
                 addCustomTreatment();
               }
             }}
-            aria-label="다른 특별 케어 입력"
+            aria-label={t('routineCheckbox8')}
           />
           <Button
             type="button"
@@ -244,7 +249,7 @@ const RoutineCheckbox = memo(function RoutineCheckbox({
         {/* 선택된 특별 케어 표시 */}
         {localTreatments.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">오늘 한 특별 케어:</p>
+            <p className="text-xs text-muted-foreground">{t('routineCheckbox9')}</p>
             <div className="flex flex-wrap gap-2">
               {localTreatments.map((treatment) => (
                 <Badge key={treatment} variant="secondary" className="flex items-center gap-1 pr-1">

@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Megaphone, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface MarketingConsentToggleProps {
   initialValue: boolean;
@@ -21,6 +22,7 @@ export function MarketingConsentToggle({
   agreedAt,
   withdrawnAt,
 }: MarketingConsentToggleProps) {
+  const t = useTranslations('settingsUI');
   const [isAgreed, setIsAgreed] = useState(initialValue);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,13 +44,11 @@ export function MarketingConsentToggle({
         throw new Error('Failed to update');
       }
 
-      toast.success(
-        checked ? '마케팅 정보 수신에 동의했습니다' : '마케팅 정보 수신 동의를 철회했습니다'
-      );
+      toast.success(checked ? t('marketingConsentToggle0') : t('marketingConsentToggle1'));
     } catch {
       // 롤백
       setIsAgreed(previousValue);
-      toast.error('설정 변경에 실패했습니다. 다시 시도해주세요.');
+      toast.error(t('marketingConsentToggle2'));
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +56,7 @@ export function MarketingConsentToggle({
 
   // 표시할 날짜 결정
   const displayDate = isAgreed ? agreedAt : withdrawnAt;
-  const dateLabel = isAgreed ? '동의일' : '철회일';
+  const dateLabel = isAgreed ? t('marketingConsentToggle3') : t('marketingConsentToggle4');
 
   return (
     <Card data-testid="marketing-consent-card">
@@ -65,16 +65,16 @@ export function MarketingConsentToggle({
           <Megaphone className="w-5 h-5" />
           마케팅 정보 수신 동의
         </CardTitle>
-        <CardDescription>프로모션, 이벤트, 맞춤 추천 알림을 받습니다</CardDescription>
+        <CardDescription>{t('marketingConsentToggle5')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">마케팅 정보 수신</span>
+          <span className="text-sm font-medium">{t('marketingConsentToggle6')}</span>
           <Switch
             checked={isAgreed}
             onCheckedChange={handleToggle}
             disabled={isLoading}
-            aria-label="마케팅 정보 수신 동의"
+            aria-label={t('marketingConsentToggle7')}
           />
         </div>
 
@@ -88,9 +88,7 @@ export function MarketingConsentToggle({
         )}
 
         <p className="text-xs text-muted-foreground">
-          {isAgreed
-            ? '언제든 설정에서 수신 동의를 철회할 수 있습니다.'
-            : '마케팅 정보를 받지 않습니다.'}
+          {isAgreed ? t('marketingConsentToggle8') : t('marketingConsentToggle9')}
         </p>
       </CardContent>
     </Card>

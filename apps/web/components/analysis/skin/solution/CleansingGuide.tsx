@@ -10,6 +10,7 @@ import { CLEANSER_TYPES, type SkinType } from '@/lib/mock/cleanser-types';
 import { CleanserTypeCard } from './CleanserTypeCard';
 import { PhExplainer } from './PhExplainer';
 import { SkinTypeRecommendation } from './SkinTypeRecommendation';
+import { useTranslations } from 'next-intl';
 
 interface CleansingGuideProps {
   userSkinType?: SkinType;
@@ -21,6 +22,7 @@ interface CleansingGuideProps {
  * 클렌저 비교, pH 설명, 피부 타입별 추천을 통합
  */
 export function CleansingGuide({ userSkinType, className }: CleansingGuideProps) {
+  const t = useTranslations('skinAnalysisUI');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -57,18 +59,18 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="types" className="flex items-center gap-1.5">
             <Droplets className="h-4 w-4" />
-            <span className="hidden sm:inline">클렌저 종류</span>
-            <span className="sm:hidden">종류</span>
+            <span className="hidden sm:inline">{t('cleansingGuide0')}</span>
+            <span className="sm:hidden">{t('cleansingGuide1')}</span>
           </TabsTrigger>
           <TabsTrigger value="ph" className="flex items-center gap-1.5">
             <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">pH 가이드</span>
+            <span className="hidden sm:inline">{t('cleansingGuide2')}</span>
             <span className="sm:hidden">pH</span>
           </TabsTrigger>
           <TabsTrigger value="routine" className="flex items-center gap-1.5">
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">내 피부 루틴</span>
-            <span className="sm:hidden">루틴</span>
+            <span className="hidden sm:inline">{t('cleansingGuide3')}</span>
+            <span className="sm:hidden">{t('cleansingGuide4')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -78,7 +80,7 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="클렌저 검색... (예: 오일, 폼, 젤)"
+              placeholder={t('cleansingGuide5')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -90,14 +92,18 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
             <div className="bg-primary/10 rounded-lg p-3 text-sm">
               <span className="font-medium">
                 내 피부 타입:{' '}
-                {selectByKey(userSkinType, {
-                  dry: '건성',
-                  oily: '지성',
-                  combination: '복합성',
-                  sensitive: '민감성',
-                }, '중성')}
+                {selectByKey(
+                  userSkinType,
+                  {
+                    dry: t('cleansingGuide6'),
+                    oily: t('cleansingGuide7'),
+                    combination: t('cleansingGuide8'),
+                    sensitive: t('cleansingGuide9'),
+                  },
+                  t('cleansingGuide10')
+                )}
               </span>
-              <span className="text-muted-foreground ml-2">추천 클렌저가 상단에 표시돼요</span>
+              <span className="text-muted-foreground ml-2">{t('cleansingGuide11')}</span>
             </div>
           )}
 
@@ -133,7 +139,7 @@ export function CleansingGuide({ userSkinType, className }: CleansingGuideProps)
           ) : (
             <div className="text-center py-12">
               <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-medium mb-2">피부 타입 분석이 필요해요</h3>
+              <h3 className="font-medium mb-2">{t('cleansingGuide12')}</h3>
               <p className="text-sm text-muted-foreground">
                 피부 분석을 완료하면 맞춤 클렌징 루틴을 추천해드려요
               </p>

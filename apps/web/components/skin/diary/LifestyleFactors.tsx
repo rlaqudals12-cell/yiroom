@@ -13,6 +13,7 @@ import type {
   WeatherType,
 } from '@/types/skin-diary';
 import { WEATHER_EMOJIS, WEATHER_LABELS } from '@/types/skin-diary';
+import { useTranslations } from 'next-intl';
 
 /**
  * 생활 요인 입력 컴포넌트
@@ -31,6 +32,7 @@ const LifestyleFactors = memo(function LifestyleFactors({
   onChange,
   className,
 }: LifestyleFactorsProps) {
+  const t = useTranslations('skinUI');
   // 로컬 상태 관리
   const [localSleepHours, setLocalSleepHours] = useState(sleepHours ?? 7);
   const [localSleepQuality, setLocalSleepQuality] = useState(sleepQuality ?? 3);
@@ -69,13 +71,13 @@ const LifestyleFactors = memo(function LifestyleFactors({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Moon className="h-4 w-4 text-indigo-500" aria-hidden="true" />
-          <h3 className="text-sm font-medium">수면</h3>
+          <h3 className="text-sm font-medium">{t('lifestyleFactors0')}</h3>
         </div>
 
         {/* 수면 시간 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">수면 시간</Label>
+            <Label className="text-sm text-muted-foreground">{t('lifestyleFactors1')}</Label>
             <span className="text-sm font-medium">{localSleepHours.toFixed(1)}시간</span>
           </div>
           <Slider
@@ -91,17 +93,25 @@ const LifestyleFactors = memo(function LifestyleFactors({
             aria-label="수면 시간"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>0시간</span>
-            <span>12시간</span>
+            <span>{t('lifestyleFactors2')}</span>
+            <span>{t('lifestyleFactors3')}</span>
           </div>
         </div>
 
         {/* 수면 품질 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">수면 품질</Label>
+            <Label className="text-sm text-muted-foreground">{t('lifestyleFactors4')}</Label>
             <span className="text-sm font-medium">
-              {['매우 나쁨', '나쁨', '보통', '좋음', '매우 좋음'][localSleepQuality - 1]}
+              {
+                [
+                  t('lifestyleFactors5'),
+                  t('lifestyleFactors6'),
+                  t('lifestyleFactors7'),
+                  t('lifestyleFactors8'),
+                  t('lifestyleFactors9'),
+                ][localSleepQuality - 1]
+              }
             </span>
           </div>
           <div className="flex gap-2">
@@ -133,12 +143,12 @@ const LifestyleFactors = memo(function LifestyleFactors({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Droplets className="h-4 w-4 text-blue-500" aria-hidden="true" />
-          <h3 className="text-sm font-medium">수분 섭취</h3>
+          <h3 className="text-sm font-medium">{t('lifestyleFactors11')}</h3>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">수분 섭취량</Label>
+            <Label className="text-sm text-muted-foreground">{t('lifestyleFactors12')}</Label>
             <span className="text-sm font-medium">{localWaterIntake.toLocaleString()}ml</span>
           </div>
           <Slider
@@ -164,14 +174,22 @@ const LifestyleFactors = memo(function LifestyleFactors({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-rose-500" aria-hidden="true" />
-          <h3 className="text-sm font-medium">스트레스</h3>
+          <h3 className="text-sm font-medium">{t('lifestyleFactors13')}</h3>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">스트레스 레벨</Label>
+            <Label className="text-sm text-muted-foreground">{t('lifestyleFactors14')}</Label>
             <span className="text-sm font-medium">
-              {['매우 낮음', '낮음', '보통', '높음', '매우 높음'][localStressLevel - 1]}
+              {
+                [
+                  t('lifestyleFactors15'),
+                  t('lifestyleFactors16'),
+                  t('lifestyleFactors7'),
+                  t('lifestyleFactors17'),
+                  t('lifestyleFactors18'),
+                ][localStressLevel - 1]
+              }
             </span>
           </div>
           <div className="flex gap-2">
@@ -196,7 +214,7 @@ const LifestyleFactors = memo(function LifestyleFactors({
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">1: 매우 낮음 ~ 5: 매우 높음</p>
+          <p className="text-xs text-muted-foreground">{t('lifestyleFactors20')}</p>
         </div>
       </div>
 
@@ -204,12 +222,12 @@ const LifestyleFactors = memo(function LifestyleFactors({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Cloud className="h-4 w-4 text-sky-500" aria-hidden="true" />
-          <h3 className="text-sm font-medium">외부 환경</h3>
+          <h3 className="text-sm font-medium">{t('lifestyleFactors21')}</h3>
         </div>
 
         {/* 날씨 선택 */}
         <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">오늘 날씨</Label>
+          <Label className="text-sm text-muted-foreground">{t('lifestyleFactors22')}</Label>
           <div className="flex flex-wrap gap-2">
             {weatherTypes.map((w) => (
               <button
@@ -237,7 +255,7 @@ const LifestyleFactors = memo(function LifestyleFactors({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <SunIcon className="h-4 w-4 text-amber-500" aria-hidden="true" />
-            <Label className="text-sm text-muted-foreground">외출 시간</Label>
+            <Label className="text-sm text-muted-foreground">{t('lifestyleFactors24')}</Label>
           </div>
           <div className="flex items-center gap-2">
             <Input
@@ -254,7 +272,7 @@ const LifestyleFactors = memo(function LifestyleFactors({
               className="w-24"
               aria-label="외출 시간"
             />
-            <span className="text-sm text-muted-foreground">시간</span>
+            <span className="text-sm text-muted-foreground">{t('lifestyleFactors25')}</span>
           </div>
         </div>
       </div>

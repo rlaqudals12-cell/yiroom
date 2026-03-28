@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 import type { BodyType3 } from '@/lib/mock/body-analysis';
 import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
+import { useTranslations } from 'next-intl';
 
 // 체형별 색상 테마
 const BODY_TYPE_THEMES: Record<BodyType3, { primary: string; bg: string; border: string }> = {
@@ -64,6 +65,7 @@ export default function BodyStylingTab({
   personalColorSeason,
   className,
 }: BodyStylingTabProps) {
+  const t = useTranslations('visualAnalysisUI');
   const [activeTab, setActiveTab] = useState<'silhouette' | 'style'>('silhouette');
 
   const typeInfo = BODY_TYPES_3[bodyType];
@@ -94,8 +96,8 @@ export default function BodyStylingTab({
         {/* 탭 전환 */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'silhouette' | 'style')}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="silhouette">체형 시각화</TabsTrigger>
-            <TabsTrigger value="style">스타일 가이드</TabsTrigger>
+            <TabsTrigger value="silhouette">{t('bodyStylingTab0')}</TabsTrigger>
+            <TabsTrigger value="style">{t('bodyStylingTab1')}</TabsTrigger>
           </TabsList>
 
           {/* 체형 실루엣 탭 */}
@@ -114,7 +116,7 @@ export default function BodyStylingTab({
             {/* 측정값 바 그래프 */}
             {measurements && measurements.length > 0 && (
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">체형 비율</h4>
+                <h4 className="text-sm font-medium">{t('bodyStylingTab2')}</h4>
                 {measurements.map((m) => (
                   <div key={m.name} className="space-y-1">
                     <div className="flex justify-between text-xs">
@@ -149,7 +151,7 @@ export default function BodyStylingTab({
           <TabsContent value="style" className="mt-4 space-y-4">
             {/* 스타일 키워드 */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">스타일 키워드</h4>
+              <h4 className="text-sm font-medium">{t('bodyStylingTab3')}</h4>
               <div className="flex flex-wrap gap-2">
                 {typeInfo.keywords.map((keyword) => (
                   <span
@@ -170,7 +172,7 @@ export default function BodyStylingTab({
 
             {/* 추천 아이템 */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">추천 아이템</h4>
+              <h4 className="text-sm font-medium">{t('bodyStylingTab4')}</h4>
               <div className="grid gap-2">
                 {typeInfo.recommendations.map((rec, i) => (
                   <div
@@ -196,7 +198,7 @@ export default function BodyStylingTab({
 
             {/* 주의할 스타일 */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-orange-600">주의할 스타일</h4>
+              <h4 className="text-sm font-medium text-orange-600">{t('bodyStylingTab5')}</h4>
               <div className="flex flex-wrap gap-2">
                 {typeInfo.avoidStyles.map((style) => (
                   <span
@@ -212,7 +214,7 @@ export default function BodyStylingTab({
             {/* 퍼스널 컬러 연동 색상 */}
             {seasonColors && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">추천 색상 (퍼스널 컬러 기반)</h4>
+                <h4 className="text-sm font-medium">{t('bodyStylingTab6')}</h4>
                 <div className="flex gap-2">
                   {seasonColors.map((color) => (
                     <div

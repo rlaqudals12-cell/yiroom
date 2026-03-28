@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // ============================================
 // 타입 정의
@@ -65,6 +66,7 @@ export default function BeforeAfterSlider({
   className,
   aspectRatio = 'square',
 }: BeforeAfterSliderProps) {
+  const t = useTranslations('visualAnalysisUI');
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
@@ -244,7 +246,7 @@ export default function BeforeAfterSlider({
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
       role="slider"
-      aria-label="Before After 비교 슬라이더"
+      aria-label={t('beforeAfterSlider0')}
       aria-valuenow={Math.round(position)}
       aria-valuemin={0}
       aria-valuemax={100}
@@ -282,7 +284,7 @@ export default function BeforeAfterSlider({
           draggable={false}
         />
         {showLabels && allLoaded && (
-          <div className={"absolute top-3 right-3"}>
+          <div className={'absolute top-3 right-3'}>
             <span className="px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded">
               {afterLabel}
             </span>

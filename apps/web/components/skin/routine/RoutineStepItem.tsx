@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
 import type { RoutineStepItemProps } from '@/types/skincare-routine';
+import { useTranslations } from 'next-intl';
 
 /**
  * 루틴 개별 단계 컴포넌트
@@ -20,6 +21,7 @@ const RoutineStepItem = memo(function RoutineStepItem({
   onProductClick,
   className,
 }: RoutineStepItemProps) {
+  const t = useTranslations('skinUI');
   const [isExpanded, setIsExpanded] = useState(false);
   const categoryInfo = getCategoryInfo(step.category);
 
@@ -97,7 +99,7 @@ const RoutineStepItem = memo(function RoutineStepItem({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
                 <Lightbulb className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>사용 팁</span>
+                <span>{t('routineStepItem0')}</span>
               </div>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 {step.tips.map((tip, index) => (
@@ -115,7 +117,7 @@ const RoutineStepItem = memo(function RoutineStepItem({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                 <ShoppingBag className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>추천 제품</span>
+                <span>{t('routineStepItem1')}</span>
               </div>
               <div className="grid gap-2">
                 {step.recommendedProducts!.slice(0, 3).map((product) => (

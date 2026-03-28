@@ -24,10 +24,8 @@ export function I18nProvider({ children, locale, messages }: I18nProviderProps) 
     if (tz && document.cookie.indexOf(`${TIMEZONE_COOKIE}=${tz}`) === -1) {
       document.cookie = `${TIMEZONE_COOKIE}=${tz};path=/;max-age=31536000;SameSite=Lax`;
     }
-    // 로케일 쿠키가 없으면 현재 로케일 저장 (서버 감지 결과 유지)
-    if (document.cookie.indexOf(`${LOCALE_COOKIE}=`) === -1) {
-      document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=31536000;SameSite=Lax`;
-    }
+    // 현재 로케일을 쿠키에 저장 (서버 감지 결과와 동기화)
+    document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=31536000;SameSite=Lax`;
   }, [locale]);
 
   return (

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Info, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
 import { PH_EXPLANATIONS } from '@/lib/mock/cleanser-types';
+import { useTranslations } from 'next-intl';
 
 interface PhExplainerProps {
   className?: string;
@@ -60,6 +61,7 @@ function PhScale() {
  * pH와 피부 장벽 설명 컴포넌트
  */
 export function PhExplainer({ className }: PhExplainerProps) {
+  const t = useTranslations('skinAnalysisUI');
   return (
     <Card className={cn('', className)} data-testid="ph-explainer">
       <CardHeader>
@@ -72,7 +74,7 @@ export function PhExplainer({ className }: PhExplainerProps) {
       <CardContent className="space-y-6">
         {/* pH 스케일 */}
         <div>
-          <h4 className="text-sm font-medium mb-3">pH 스케일</h4>
+          <h4 className="text-sm font-medium mb-3">{t('phExplainer6')}</h4>
           <PhScale />
         </div>
 
@@ -175,11 +177,11 @@ export function PhExplainer({ className }: PhExplainerProps) {
           <div className="flex items-start gap-2">
             <Info className="h-5 w-5 text-blue-500 mt-0.5" />
             <div>
-              <h4 className="font-medium text-sm">클렌저 pH 확인 팁</h4>
+              <h4 className="font-medium text-sm">{t('phExplainer8')}</h4>
               <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                <li>• 제품 설명에 &ldquo;약산성&rdquo; 표기 확인</li>
-                <li>• pH 테스트 스트립으로 직접 측정 가능</li>
-                <li>• 사용 후 피부가 당기면 pH가 높을 수 있음</li>
+                <li>{t('phExplainer9')}</li>
+                <li>{t('phExplainer10')}</li>
+                <li>{t('phExplainer11')}</li>
               </ul>
             </div>
           </div>

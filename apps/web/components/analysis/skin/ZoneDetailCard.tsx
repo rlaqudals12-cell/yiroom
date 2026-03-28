@@ -11,6 +11,7 @@ import {
   type ZoneDetailedExplanation,
 } from '@/lib/mock/skin-zone-explanations';
 import type { DetailedZoneId } from '@/types/skin-zones';
+import { useTranslations } from 'next-intl';
 
 /**
  * 점수에 따른 색상 결정
@@ -65,6 +66,7 @@ export interface ZoneDetailCardProps {
  * 존 클릭 시 표시되며, 해당 영역의 특성/문제점/관리법 등 상세 정보 제공
  */
 export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) {
+  const t = useTranslations('skinAnalysisUI');
   const explanation: ZoneDetailedExplanation = getZoneExplanation(zoneId);
   const scoreColors = getScoreColorClass(score);
   const scoreLabel = getScoreLabel(score);
@@ -91,7 +93,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={onClose}
-            aria-label="닫기"
+            aria-label={t('zoneDetailCard3')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -103,7 +105,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <Info className="h-4 w-4" />
-            <span>이 부위의 특성</span>
+            <span>{t('zoneDetailCard4')}</span>
           </div>
           <p className="text-sm leading-relaxed text-foreground">
             {explanation.zoneCharacteristic}
@@ -114,7 +116,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <AlertCircle className="h-4 w-4" />
-            <span>주요 문제점</span>
+            <span>{t('zoneDetailCard5')}</span>
           </div>
           <ul className="space-y-1">
             {explanation.concerns.map((concern, index) => (
@@ -128,7 +130,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
 
         {/* 측정 상세 (Progressive Disclosure) */}
         <ProgressiveDisclosure
-          title="측정 상세 정보"
+          title={t('zoneDetailCard6')}
           icon={<Beaker className="h-4 w-4" />}
           defaultOpen={false}
         >
@@ -151,7 +153,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>추천 관리법</span>
+            <span>{t('zoneDetailCard7')}</span>
           </div>
           <ul className="space-y-1">
             {explanation.recommendations.map((rec, index) => (
@@ -167,7 +169,7 @@ export function ZoneDetailCard({ zoneId, score, onClose }: ZoneDetailCardProps) 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <XCircle className="h-4 w-4 text-red-500" />
-            <span>주의할 점</span>
+            <span>{t('zoneDetailCard8')}</span>
           </div>
           <ul className="space-y-1">
             {explanation.avoidance.map((avoid, index) => (

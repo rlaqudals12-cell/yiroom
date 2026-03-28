@@ -5,6 +5,7 @@ import { Info, RefreshCw, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 interface AppVersionProps {
   /** 현재 버전 */
@@ -33,6 +34,7 @@ export function AppVersion({
   onUpdate,
   'data-testid': testId,
 }: AppVersionProps) {
+  const t = useTranslations('settingsUI');
   // 빌드 날짜 포맷
   const formattedBuildDate = buildDate
     ? new Date(buildDate).toLocaleDateString('ko-KR', {
@@ -49,13 +51,10 @@ export function AppVersion({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">앱 버전</span>
+              <span className="font-medium">{t('appVersion0')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span
-                className="text-lg font-semibold"
-                data-testid="current-version"
-              >
+              <span className="text-lg font-semibold" data-testid="current-version">
                 v{version}
               </span>
               {!hasUpdate && (
@@ -66,10 +65,7 @@ export function AppVersion({
               )}
             </div>
             {formattedBuildDate && (
-              <p
-                className="text-sm text-muted-foreground"
-                data-testid="build-date"
-              >
+              <p className="text-sm text-muted-foreground" data-testid="build-date">
                 빌드: {formattedBuildDate}
               </p>
             )}
@@ -82,11 +78,7 @@ export function AppVersion({
                 v{latestVersion} 사용 가능
               </Badge>
               {onUpdate && (
-                <Button
-                  size="sm"
-                  onClick={onUpdate}
-                  data-testid="update-button"
-                >
+                <Button size="sm" onClick={onUpdate} data-testid="update-button">
                   <RefreshCw className="h-4 w-4 mr-1" />
                   업데이트
                 </Button>

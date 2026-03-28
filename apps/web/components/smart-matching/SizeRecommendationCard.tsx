@@ -10,10 +10,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { SizeRecommendation } from '@/types/smart-matching';
-import {
-  getConfidenceLabel,
-  getBasisDescription,
-} from '@/lib/smart-matching/size-recommend';
+import { getConfidenceLabel, getBasisDescription } from '@/lib/smart-matching/size-recommend';
+import { useTranslations } from 'next-intl';
 
 interface SizeRecommendationCardProps {
   recommendation: SizeRecommendation;
@@ -32,6 +30,7 @@ export function SizeRecommendationCard({
   onFeedbackClick,
   className,
 }: SizeRecommendationCardProps) {
+  const t = useTranslations('smartMatchingUI');
   const { recommendedSize, confidence, basis, alternatives, brandInfo } = recommendation;
   const confidenceInfo = getConfidenceLabel(confidence);
   const basisText = getBasisDescription(basis);
@@ -40,15 +39,12 @@ export function SizeRecommendationCard({
 
   return (
     <div
-      className={cn(
-        'rounded-lg border bg-card p-4 shadow-sm',
-        className
-      )}
+      className={cn('rounded-lg border bg-card p-4 shadow-sm', className)}
       data-testid="size-recommendation-card"
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-sm">추천 사이즈</h3>
+        <h3 className="font-semibold text-sm">{t('sizeRecommendationCard0')}</h3>
         <Badge
           variant="secondary"
           className={cn(
@@ -79,15 +75,13 @@ export function SizeRecommendationCard({
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">{basisText}</p>
           {brandInfo?.sizeNote && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {brandInfo.sizeNote}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{brandInfo.sizeNote}</p>
           )}
           {brandInfo?.fitStyle && (
             <Badge variant="outline" className="mt-1 text-xs">
-              {brandInfo.fitStyle === 'slim' && '슬림핏'}
-              {brandInfo.fitStyle === 'regular' && '레귤러핏'}
-              {brandInfo.fitStyle === 'oversized' && '오버사이즈'}
+              {brandInfo.fitStyle === 'slim' && t('sizeRecommendationCard1')}
+              {brandInfo.fitStyle === 'regular' && t('sizeRecommendationCard2')}
+              {brandInfo.fitStyle === 'oversized' && t('sizeRecommendationCard3')}
             </Badge>
           )}
         </div>
@@ -100,14 +94,19 @@ export function SizeRecommendationCard({
             onClick={() => setExpanded(!expanded)}
             className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
           >
-            <span>다른 사이즈 보기</span>
+            <span>{t('sizeRecommendationCard4')}</span>
             <svg
               className={cn('w-3 h-3 transition-transform', expanded && 'rotate-180')}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 
@@ -137,12 +136,7 @@ export function SizeRecommendationCard({
 
       {/* 피드백 버튼 */}
       {showFeedback && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-xs"
-          onClick={onFeedbackClick}
-        >
+        <Button variant="ghost" size="sm" className="w-full text-xs" onClick={onFeedbackClick}>
           사이즈 피드백 남기기
         </Button>
       )}

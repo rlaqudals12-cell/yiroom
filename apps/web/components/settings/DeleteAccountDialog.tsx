@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteAccountDialogProps {
   open: boolean;
@@ -19,11 +20,8 @@ interface DeleteAccountDialogProps {
   userEmail: string;
 }
 
-export function DeleteAccountDialog({
-  open,
-  onOpenChange,
-  userEmail,
-}: DeleteAccountDialogProps) {
+export function DeleteAccountDialog({ open, onOpenChange, userEmail }: DeleteAccountDialogProps) {
+  const t = useTranslations('settingsUI');
   const [confirmation, setConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +50,7 @@ export function DeleteAccountDialog({
       // 성공 시 홈으로 리다이렉트 (세션이 자동으로 만료됨)
       window.location.href = '/';
     } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      setError(err instanceof Error ? err.message : t('deleteAccountDialog0'));
       setIsDeleting(false);
     }
   };
@@ -81,20 +79,18 @@ export function DeleteAccountDialog({
         <div className="space-y-4 py-4">
           {/* 삭제되는 데이터 안내 */}
           <div className="p-3 bg-destructive/10 rounded-lg text-sm">
-            <p className="font-medium text-destructive mb-2">삭제되는 데이터:</p>
+            <p className="font-medium text-destructive mb-2">{t('deleteAccountDialog1')}</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
-              <li>모든 분석 결과 (퍼스널컬러, 피부, 체형, 운동)</li>
-              <li>운동 및 영양 기록</li>
-              <li>친구 및 소셜 데이터</li>
-              <li>위시리스트 및 설정</li>
+              <li>{t('deleteAccountDialog2')}</li>
+              <li>{t('deleteAccountDialog3')}</li>
+              <li>{t('deleteAccountDialog4')}</li>
+              <li>{t('deleteAccountDialog5')}</li>
             </ul>
           </div>
 
           {/* 이메일 확인 입력 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              확인을 위해 이메일을 입력하세요
-            </label>
+            <label className="text-sm font-medium">확인을 위해 이메일을 입력하세요</label>
             <Input
               type="email"
               placeholder={userEmail}
@@ -103,23 +99,15 @@ export function DeleteAccountDialog({
               disabled={isDeleting}
               data-testid="delete-confirmation-input"
             />
-            <p className="text-xs text-muted-foreground">
-              계정 이메일: {userEmail}
-            </p>
+            <p className="text-xs text-muted-foreground">계정 이메일: {userEmail}</p>
           </div>
 
           {/* 에러 메시지 */}
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isDeleting}
-          >
+          <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
             취소
           </Button>
           <Button
@@ -134,7 +122,7 @@ export function DeleteAccountDialog({
                 삭제 중...
               </>
             ) : (
-              '계정 삭제'
+              t('deleteAccountDialog6')
             )}
           </Button>
         </DialogFooter>

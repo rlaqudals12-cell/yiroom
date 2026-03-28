@@ -2,7 +2,8 @@
 
 import { SignedOut, SignInButton, SignedIn, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
-import React from 'react';
+import { useTransition } from 'react';
+import { useLocale } from 'next-intl';
 import {
   Heart,
   ChevronDown,
@@ -26,8 +27,11 @@ import {
   TrendingUp,
   Gem,
   Box,
+  Globe,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   DropdownMenu,
@@ -37,6 +41,46 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import { locales, localeNames, type Locale } from '@/i18n/config';
+import { setLocaleCookie } from '@/lib/utils/locale';
+
+// 헤더용 언어 선택 드롭다운
+function NavLocaleSwitcher(): React.JSX.Element {
+  const locale = useLocale();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleChange = (newLocale: Locale): void => {
+    setLocaleCookie(newLocale);
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label="언어 선택"
+        disabled={isPending}
+      >
+        <Globe className="h-5 w-5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-36">
+        {locales.map((l) => (
+          <DropdownMenuItem
+            key={l}
+            onClick={() => handleChange(l)}
+            className="flex items-center justify-between cursor-pointer"
+          >
+            {localeNames[l]}
+            {locale === l && <Check className="h-4 w-4 text-primary" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const Navbar = () => {
   return (
@@ -59,6 +103,7 @@ const Navbar = () => {
       </Link>
       <div className="flex gap-4 items-center">
         <SignedOut>
+          <NavLocaleSwitcher />
           <ThemeToggle compact />
           <SignInButton mode="modal">
             <Button>로그인</Button>
@@ -289,6 +334,7 @@ const Navbar = () => {
           >
             <Heart className="h-5 w-5" />
           </Link>
+          <NavLocaleSwitcher />
           <ThemeToggle compact />
           {/* 프로필 영역: 아바타 + "나" 레이블 */}
           <div className="flex flex-col items-center gap-0.5">

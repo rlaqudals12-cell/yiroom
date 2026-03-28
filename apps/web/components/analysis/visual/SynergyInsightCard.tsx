@@ -3,6 +3,7 @@
 import type { SynergyInsightCardProps, ColorAdjustment } from '@/types/visual-analysis';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 /**
  * 컬러 조정 방향별 설정
@@ -47,6 +48,7 @@ export default function SynergyInsightCard({
   avoidColors,
   className,
 }: SynergyInsightCardProps) {
+  const t = useTranslations('visualAnalysisUI');
   const config = ADJUSTMENT_CONFIG[insight.colorAdjustment];
 
   return (
@@ -66,7 +68,9 @@ export default function SynergyInsightCard({
         {/* 베스트 컬러 */}
         {bestColors.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-muted-foreground">추천 컬러</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">
+              {t('synergyInsightCard3')}
+            </h4>
             <div className="flex gap-2">
               {bestColors.slice(0, 5).map((result, index) => (
                 <div key={result.color} className="relative">
@@ -87,7 +91,9 @@ export default function SynergyInsightCard({
         {/* 덜 어울리는 컬러 */}
         {avoidColors && avoidColors.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-muted-foreground">주의할 컬러</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">
+              {t('synergyInsightCard5')}
+            </h4>
             <div className="flex gap-2">
               {avoidColors.map((color) => (
                 <div key={color} className="relative">
