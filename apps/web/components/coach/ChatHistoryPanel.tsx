@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { History, Plus, Trash2, MessageCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -36,17 +37,20 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 // 상대적 시간 표시
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(
+  date: Date,
+  tFn: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return '방금 전';
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays < 7) return `${diffDays}일 전`;
+  if (diffMins < 1) return tFn('time.justNow');
+  if (diffMins < 60) return tFn('time.minutesAgo', { minutes: diffMins });
+  if (diffHours < 24) return tFn('time.hoursAgo', { hours: diffHours });
+  if (diffDays < 7) return tFn('time.daysAgo', { days: diffDays });
 
   return date.toLocaleDateString('ko-KR', {
     month: 'short',
@@ -60,6 +64,7 @@ export function ChatHistoryPanel({
   onNewChat,
   onDeleteSession,
 }: ChatHistoryPanelProps) {
+  const t = useTranslations('coach');
   const [sessions, setSessions] = useState<CoachSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -119,7 +124,7 @@ export function ChatHistoryPanel({
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="chat-history-trigger">
           <History className="h-4 w-4" />
-          <span className="sr-only">대화 기록</span>
+          <span className="sr-only">{t('history.title')}</span>
         </Button>
       </SheetTrigger>
 
@@ -127,7 +132,7 @@ export function ChatHistoryPanel({
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            대화 기록
+            {t('history.title')}
           </SheetTitle>
         </SheetHeader>
 
@@ -135,7 +140,8 @@ export function ChatHistoryPanel({
           {/* 새 채팅 버튼 */}
           <div className="p-3 border-b">
             <Button onClick={handleNewChat} className="w-full gap-2" data-testid="new-chat-button">
-              <Plus className="h-4 w-4" />새 대화 시작
+              <Plus className="h-4 w-4" />
+              {t('history.newChat')}
             </Button>
           </div>
 
@@ -149,8 +155,8 @@ export function ChatHistoryPanel({
             {!loading && sessions.length === 0 && (
               <div className="text-center py-12 px-4">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">아직 대화 기록이 없어요</p>
-                <p className="text-xs text-muted-foreground mt-1">새 대화를 시작해보세요</p>
+                <p className="text-sm text-muted-foreground">{t('history.empty')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('history.emptyHint')}</p>
               </div>
             )}
             {!loading && sessions.length > 0 && (
@@ -179,13 +185,15 @@ export function ChatHistoryPanel({
 
                       {/* 세션 정보 */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{session.title || '새 대화'}</p>
+                        <p className="text-sm font-medium truncate">
+                          {session.title || t('history.newChatTitle')}
+                        </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">
-                            {formatRelativeTime(new Date(session.updatedAt))}
+                            {formatRelativeTime(new Date(session.updatedAt), t)}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            · {session.messageCount}개 메시지
+                            · {t('history.messageCount', { count: session.messageCount })}
                           </span>
                         </div>
                       </div>
@@ -200,7 +208,7 @@ export function ChatHistoryPanel({
                             'hover:bg-destructive/10 text-muted-foreground hover:text-destructive',
                             deletingId === session.id && 'opacity-100'
                           )}
-                          aria-label="대화 삭제"
+                          aria-label={t('history.deleteAria')}
                         >
                           {deletingId === session.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -218,9 +226,7 @@ export function ChatHistoryPanel({
 
           {/* 안내 문구 */}
           <div className="p-3 border-t bg-muted/30">
-            <p className="text-xs text-muted-foreground text-center">
-              최근 20개의 대화가 표시됩니다
-            </p>
+            <p className="text-xs text-muted-foreground text-center">{t('history.recentLimit')}</p>
           </div>
         </div>
       </SheetContent>

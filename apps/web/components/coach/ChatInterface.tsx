@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Send, Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ export function ChatInterface({
   onSendMessage,
   useStreaming = false,
 }: ChatInterfaceProps) {
+  const t = useTranslations('coach');
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -176,7 +178,7 @@ export function ChatInterface({
         const errorMessage: CoachMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
-          content: '죄송해요, 잠시 문제가 생겼어요. 다시 시도해주세요.',
+          content: t('errorMessage'),
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -197,12 +199,12 @@ export function ChatInterface({
   };
 
   const categories = [
-    { key: 'general' as const, label: '일반' },
-    { key: 'workout' as const, label: '운동' },
-    { key: 'nutrition' as const, label: '영양' },
-    { key: 'skin' as const, label: '피부' },
-    { key: 'hair' as const, label: '헤어' },
-    { key: 'makeup' as const, label: '메이크업' },
+    { key: 'general' as const, label: t('category.general') },
+    { key: 'workout' as const, label: t('category.workout') },
+    { key: 'nutrition' as const, label: t('category.nutrition') },
+    { key: 'skin' as const, label: t('category.skin') },
+    { key: 'hair' as const, label: t('category.hair') },
+    { key: 'makeup' as const, label: t('category.makeup') },
   ];
 
   const contextSummary = userContext ? summarizeContext(userContext) : undefined;
@@ -218,9 +220,9 @@ export function ChatInterface({
         {messages.length === 0 && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-6">
-              안녕하세요! 저는 이룸 웰니스 코치예요.
+              {t('greeting')}
               <br />
-              운동, 영양, 피부, 헤어, 메이크업에 대해 무엇이든 물어보세요.
+              {t('greetingSubtitle')}
             </p>
 
             {/* 카테고리 탭 */}
@@ -276,7 +278,7 @@ export function ChatInterface({
               <Loader2 className="w-4 h-4 text-white animate-spin" />
             </div>
             <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5">
-              <p className="text-sm text-muted-foreground">생각 중...</p>
+              <p className="text-sm text-muted-foreground">{t('thinking')}</p>
             </div>
           </div>
         )}
@@ -284,7 +286,7 @@ export function ChatInterface({
         {/* 추천 질문 */}
         {!loading && suggestedQuestions.length > 0 && messages.length > 0 && (
           <div className="pt-2">
-            <p className="text-xs text-muted-foreground mb-2">이런 것도 물어보세요</p>
+            <p className="text-xs text-muted-foreground mb-2">{t('suggestedQuestions')}</p>
             <QuickQuestions
               questions={suggestedQuestions}
               onSelect={handleQuickQuestion}
@@ -302,7 +304,7 @@ export function ChatInterface({
             <ChevronDown
               className={cn('h-4 w-4 transition-transform', showQuickQuestions && 'rotate-180')}
             />
-            빠른 질문 {showQuickQuestions ? '숨기기' : '보기'}
+            {showQuickQuestions ? t('quickQuestionsHide') : t('quickQuestionsShow')}
           </button>
         )}
 
@@ -342,7 +344,7 @@ export function ChatInterface({
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="질문을 입력하세요..."
+            placeholder={t('inputPlaceholder')}
             disabled={loading}
             className="flex-1"
           />
@@ -350,10 +352,7 @@ export function ChatInterface({
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          AI 답변은 참고용이며, 의료·영양·운동 전문가의 진료를 대체하지 않아요. 증상이 있으면 병원을
-          방문하세요.
-        </p>
+        <p className="text-xs text-muted-foreground text-center mt-2">{t('disclaimer')}</p>
       </div>
     </div>
   );

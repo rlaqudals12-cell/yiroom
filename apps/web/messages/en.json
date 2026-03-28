@@ -15,7 +15,12 @@
     "search": "Search",
     "noData": "No data available",
     "seeMore": "See more",
-    "showAll": "Show all"
+    "showAll": "Show all",
+    "emptyState": {
+      "noData": "No data yet",
+      "startFirst": "Start your first record",
+      "encouragement": "Small beginnings lead to big changes"
+    }
   },
   "nav": {
     "home": "Home",
@@ -181,12 +186,23 @@
     "dashboardWidgets": "Dashboard widgets"
   },
   "beauty": {
-    "title": "Beauty",
-    "personalColor": "Personal Color",
-    "skinAnalysis": "Skin Analysis",
-    "recommendations": "Recommendations",
-    "cosmetics": "Cosmetics",
-    "supplements": "Supplements"
+    "feedTitle": "Beauty Feed",
+    "viewAll": "View all",
+    "verified": "Verified",
+    "more": "More",
+    "likeAria": "Like",
+    "unlikeAria": "Unlike",
+    "commentsAria": "Comments",
+    "saveAria": "Save",
+    "unsaveAria": "Unsave",
+    "shareAria": "Share",
+    "relatedProducts": "Related Products",
+    "loadMore": "Load more",
+    "feedType": {
+      "review": "Review",
+      "routine": "Routine",
+      "tip": "Tip"
+    }
   },
   "style": {
     "title": "Style",
@@ -1000,5 +1016,195 @@
     "highlight.workoutCount": "Workouts",
     "highlight.mealStreak": "Meal {days}-day streak",
     "highlight.workoutStreak": "Workout {days}-day streak"
+  },
+  "analysisEntry": {
+    "date": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days}d ago",
+      "weeksAgo": "{weeks}w ago"
+    },
+    "season": {
+      "springWarm": "Spring Warm",
+      "summerCool": "Summer Cool",
+      "autumnWarm": "Autumn Warm",
+      "winterCool": "Winter Cool"
+    },
+    "subtitle": {
+      "aiAnalyzing": "AI is analyzing...",
+      "aiAnalyzingDone": "AI is analyzing",
+      "analysisComplete": "Analysis complete"
+    },
+    "error": {
+      "analysisError": "An error occurred during analysis",
+      "analysisFailed": "Analysis failed. Please try again.",
+      "analysisProblem": "A problem occurred during analysis",
+      "retryWithBetterLighting": "Please try again. Better lighting helps improve accuracy."
+    },
+    "loading": {
+      "checkingExisting": "Checking previous results...",
+      "pleaseWait": "Please wait..."
+    },
+    "action": {
+      "goBack": "Go back",
+      "viewExistingResult": "View existing result",
+      "reAnalyze": "Analyze again",
+      "selectPhoto": "Select photo",
+      "selectOtherPhoto": "Select another photo",
+      "startAnalysis": "Start analysis",
+      "analyzing": "Analyzing...",
+      "alreadyKnow": "I already know",
+      "backToGuide": "← Back to guide",
+      "back": "← Back",
+      "viewResult": "View result",
+      "close": "Close",
+      "closeError": "Close error",
+      "retryArrow": "Try again →"
+    },
+    "upload": {
+      "selectedImage": "Selected image",
+      "selectPhoto": "Please select a photo",
+      "tapToSelect": "Tap to select from gallery",
+      "selectPhotoAria": "Please select a photo. Tap to select from gallery"
+    },
+    "pc": {
+      "title": "Personal Color Diagnosis",
+      "existingResult": "You have a previous diagnosis",
+      "lowConfidence": "Low confidence",
+      "lowConfidenceDesc": "The previous analysis had low confidence. We recommend re-analyzing for more accurate results.",
+      "subtitle": {
+        "guide": "Photography guide for accurate diagnosis",
+        "multiAngle": "Take photos from multiple angles for accuracy",
+        "galleryUpload": "Select photos from your gallery",
+        "upload": "Take a face photo",
+        "wrist": "Take a wrist photo",
+        "knownInput": "Select your known personal color"
+      }
+    },
+    "skin": {
+      "title": "Skin Analysis",
+      "photoNeeded": "A photo is needed for skin analysis",
+      "modeCamera": "Camera",
+      "modeGallery": "Gallery",
+      "multiAngle": "multi-angle",
+      "modeCameraDesc": "Real-time camera for front + left/right multi-angle capture",
+      "modeGalleryDesc": "Upload existing photos for front + left/right multi-angle analysis",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "modeSelect": "Choose your capture method",
+        "camera": "Multi-angle skin capture",
+        "upload": "Select a skin photo"
+      }
+    },
+    "body": {
+      "title": "Body Analysis",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "input": "Curious about styles that suit you?",
+        "multiAngle": "Take front, left side, right side, and back photos",
+        "upload": "Upload a full-body photo",
+        "knownType": "Select your known body type"
+      }
+    },
+    "hair": {
+      "title": "Hair Analysis",
+      "guideTitle": "Photography Guide",
+      "guideTip1": "Take photos in bright, natural light",
+      "guideTip2": "Capture the scalp area along the parting",
+      "guideTip3": "A photo showing the full hair is also helpful",
+      "guideAvoid": "Avoid taking photos with wet hair or after using styling products",
+      "photoSelectAria": "Select photo for hair analysis",
+      "startAnalysisAria": "Start hair analysis",
+      "selectHairType": "Select your hair type",
+      "selectConcerns": "Select your main concerns (multiple selection allowed)",
+      "aiAnalyzingHair": "AI is analyzing your hair",
+      "resultSummary": "Analysis Summary",
+      "metricScores": "Scores by Category",
+      "scorePoints": "{score} pts",
+      "recommendedIngredients": "Recommended Ingredients",
+      "careTips": "Care Tips",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "upload": "Select a hair/scalp photo",
+        "knownInput": "Select your hair type"
+      }
+    },
+    "makeup": {
+      "title": "Makeup Analysis",
+      "retryAria": "Retry makeup analysis",
+      "existingResultAria": "View existing makeup analysis result ({score} pts)",
+      "photoSelectAria": "Select photo for makeup analysis",
+      "startAnalysisAria": "Start makeup analysis",
+      "aiAnalyzingFace": "AI is analyzing your face",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "upload": "Select a face photo",
+        "knownInput": "Select your skin type"
+      }
+    },
+    "oral": {
+      "title": "Oral Health Analysis",
+      "backToListAria": "Back to analysis list",
+      "guideTitle": "Photography Guide",
+      "guideTip1": "Open your mouth wide under bright lighting",
+      "guideTip2": "Show both upper and lower teeth if possible",
+      "guideTip3": "Make sure your gums are visible to check gum health",
+      "guideTip4": "Clean teeth before photographing for better accuracy",
+      "photoSelectAria": "Select photo for oral health analysis",
+      "startAnalysisAria": "Start oral health analysis",
+      "uploadHint": "Select a photo that clearly shows your teeth and gums",
+      "privacyNote": "Photos are used only for analysis and are not stored on the server",
+      "aiAnalyzing": "AI is analyzing your oral health",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "upload": "Select a teeth/gum photo"
+      }
+    },
+    "posture": {
+      "title": "Posture Analysis",
+      "scorePoints": "{score} pts",
+      "skipSidePhoto": "Skip side photo",
+      "sidePhotoHint": "Adding a side photo enables analysis of forward head posture, back curvature, and pelvic tilt. Skipping will provide front-only analysis.",
+      "subtitle": {
+        "guide": "Photography guide for accurate analysis",
+        "frontUpload": "Take a front full-body photo",
+        "sideUpload": "Take a side photo (optional)"
+      }
+    }
+  },
+  "coach": {
+    "greeting": "Hello! I'm the Yiroom Wellness Coach.",
+    "greetingSubtitle": "Ask me anything about workout, nutrition, skin, hair, or makeup.",
+    "errorMessage": "Sorry, something went wrong. Please try again.",
+    "thinking": "Thinking...",
+    "suggestedQuestions": "You can also ask",
+    "quickQuestionsHide": "Hide quick questions",
+    "quickQuestionsShow": "Show quick questions",
+    "inputPlaceholder": "Type your question...",
+    "disclaimer": "AI responses are for reference only and do not replace professional medical, nutritional, or fitness advice. Please visit a doctor if you have symptoms.",
+    "category": {
+      "general": "General",
+      "workout": "Workout",
+      "nutrition": "Nutrition",
+      "skin": "Skin",
+      "hair": "Hair",
+      "makeup": "Makeup"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
+    },
+    "history": {
+      "title": "Chat History",
+      "newChat": "Start New Chat",
+      "newChatTitle": "New Chat",
+      "empty": "No chat history yet",
+      "emptyHint": "Start a new conversation",
+      "messageCount": "{count} messages",
+      "deleteAria": "Delete chat",
+      "recentLimit": "Showing the most recent 20 conversations"
+    }
   }
 }

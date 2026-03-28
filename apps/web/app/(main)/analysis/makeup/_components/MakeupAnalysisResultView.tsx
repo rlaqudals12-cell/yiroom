@@ -12,6 +12,7 @@ import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import type { MakeupStyleId } from '@/lib/analysis/makeup';
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
+import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
@@ -41,6 +42,41 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
 
   return (
     <div className="space-y-6" data-testid="makeup-analysis-result">
+      {/* Layer 0.5: 얼굴형 일러스트 + 색상 포인트 (ADR-097) */}
+      <div className="flex justify-center">
+        <AnonymousFaceTemplate
+          faceShape={
+            result.faceShape === 'round'
+              ? 'round'
+              : result.faceShape === 'square'
+                ? 'angular'
+                : 'oval'
+          }
+          skinTone="medium"
+        >
+          {/* 카테고리별 색상 스와치 오버레이 */}
+          {result.colorRecommendations?.slice(0, 3).map((rec, i) => (
+            <div
+              key={rec.category}
+              className="absolute flex items-center gap-1"
+              style={{ top: `${30 + i * 25}%`, left: '60%' }}
+            >
+              {rec.colors.slice(0, 3).map((c, j) => (
+                <div
+                  key={j}
+                  className="w-4 h-4 rounded-full border border-white/50 shadow-sm"
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name}
+                />
+              ))}
+              <span className="text-[9px] text-white/80 ml-1">
+                {rec.categoryLabel ?? rec.category}
+              </span>
+            </div>
+          ))}
+        </AnonymousFaceTemplate>
+      </div>
+
       {/* 종합 점수 */}
       <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl p-6 text-center">
         <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-pink-900/40 shadow-lg flex items-center justify-center mb-4">

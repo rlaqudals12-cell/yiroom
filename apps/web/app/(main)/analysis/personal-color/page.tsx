@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -47,32 +47,33 @@ type AnalysisStep =
   | 'result'
   | 'known-input';
 
-// 날짜 포맷 헬퍼
-function formatDate(date: Date, locale: string): string {
+// 날짜 포맷 헬퍼 (i18n 사용 불가 — 컴포넌트 외부 함수이므로 t를 인자로 받음)
+function formatDate(
+  date: Date,
+  locale: string,
+  t: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
+  if (days === 0) return t('date.today');
+  if (days === 1) return t('date.yesterday');
+  if (days < 7) return t('date.daysAgo', { days });
+  if (days < 30) return t('date.weeksAgo', { weeks: Math.floor(days / 7) });
   return date.toLocaleDateString(getDateLocale(locale), { month: 'short', day: 'numeric' });
 }
 
-// 시즌 라벨 헬퍼
-function getSeasonLabel(season: string): string {
-  const labels: Record<string, string> = {
-    Spring: '봄 웜톤',
-    Summer: '여름 쿨톤',
-    Autumn: '가을 웜톤',
-    Winter: '겨울 쿨톤',
-    spring: '봄 웜톤',
-    summer: '여름 쿨톤',
-    autumn: '가을 웜톤',
-    winter: '겨울 쿨톤',
+// 시즌 라벨 헬퍼 (i18n)
+function getSeasonLabel(season: string, t: (key: string) => string): string {
+  const key = season.toLowerCase();
+  const map: Record<string, string> = {
+    spring: t('season.springWarm'),
+    summer: t('season.summerCool'),
+    autumn: t('season.autumnWarm'),
+    winter: t('season.winterCool'),
   };
-  return labels[season] || season;
+  return map[key] || season;
 }
 
 // 기존 분석 결과 타입
@@ -88,6 +89,7 @@ const HIGH_CONFIDENCE_THRESHOLD = 70;
 
 export default function PersonalColorPage() {
   const locale = useLocale();
+  const t = useTranslations('analysisEntry');
   const router = useRouter();
   const searchParams = useSearchParams();
   const forceNew = searchParams.get('forceNew') === 'true';
@@ -474,7 +476,7 @@ export default function PersonalColorPage() {
       router.push(`/analysis/personal-color/result/${data.data.id}`);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
+      setError(t('error.analysisFailed'));
       // 갤러리 플로우인지 카메라 플로우인지에 따라 돌아갈 step 결정
       setStep('guide'); // 가이드로 돌아가서 사용자가 다시 선택하도록
     } finally {
@@ -519,24 +521,24 @@ export default function PersonalColorPage() {
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
     // guide 단계에서는 에러를 별도 UI로 표시하므로 subtitle은 기본값 유지
-    if (error && step !== 'guide') return '분석 중 오류가 발생했어요';
+    if (error && step !== 'guide') return t('error.analysisError');
     switch (step) {
       case 'guide':
-        return '정확한 진단을 위한 촬영 가이드';
+        return t('pc.subtitle.guide');
       case 'multi-angle':
-        return '정확한 진단을 위해 여러 각도로 촬영해요';
+        return t('pc.subtitle.multiAngle');
       case 'gallery-upload':
-        return '갤러리에서 사진을 선택해주세요';
+        return t('pc.subtitle.galleryUpload');
       case 'upload':
-        return '얼굴 사진을 촬영해주세요';
+        return t('pc.subtitle.upload');
       case 'wrist':
-        return '손목 사진을 촬영해주세요';
+        return t('pc.subtitle.wrist');
       case 'known-input':
-        return '기존 퍼스널 컬러를 선택해주세요';
+        return t('pc.subtitle.knownInput');
       case 'loading':
-        return isAnalyzing ? 'AI가 분석 중이에요...' : 'AI가 분석 중이에요';
+        return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   }, [step, error, isAnalyzing]);
 
@@ -546,12 +548,12 @@ export default function PersonalColorPage() {
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">이전 분석 결과 확인 중...</p>
+          <p className="text-muted-foreground mb-4">{t('loading.checkingExisting')}</p>
           <button
             onClick={() => window.history.back()}
             className="text-sm text-muted-foreground hover:text-foreground underline"
           >
-            돌아가기
+            {t('action.goBack')}
           </button>
         </div>
       </div>
@@ -563,7 +565,7 @@ export default function PersonalColorPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">퍼스널 컬러 진단</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('pc.title')}</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>
 
@@ -574,11 +576,9 @@ export default function PersonalColorPage() {
             role="alert"
             aria-live="polite"
           >
-            <p className="font-medium">분석 중 오류가 발생했어요</p>
+            <p className="font-medium">{t('error.analysisError')}</p>
             <p className="mt-1 text-red-500">{error}</p>
-            <p className="mt-2 text-xs text-red-400">
-              다시 시도해주세요. 조명이 밝은 곳에서 촬영하면 더 좋아요.
-            </p>
+            <p className="mt-2 text-xs text-red-400">{t('error.retryWithBetterLighting')}</p>
           </div>
         )}
 
@@ -590,34 +590,34 @@ export default function PersonalColorPage() {
                 <Palette className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="font-medium text-foreground">이전 진단 결과가 있어요</p>
+                <p className="font-medium text-foreground">{t('pc.existingResult')}</p>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="font-medium text-amber-600">
-                    {getSeasonLabel(existingAnalysis.season)}
+                    {getSeasonLabel(existingAnalysis.season, t)}
                   </span>
                   <span>•</span>
-                  <span className="text-amber-500">신뢰도 낮음</span>
+                  <span className="text-amber-500">{t('pc.lowConfidence')}</span>
                   <span>•</span>
                   <Clock className="w-3 h-3" />
-                  {formatDate(new Date(existingAnalysis.created_at), locale)}
+                  {formatDate(new Date(existingAnalysis.created_at), locale, t)}
                 </div>
               </div>
             </div>
             <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
-              이전 분석의 신뢰도가 낮아요. 더 정확한 결과를 위해 재분석을 권장해요.
+              {t('pc.lowConfidenceDesc')}
             </p>
             <div className="flex gap-2">
               <Link
                 href={`/analysis/personal-color/result/${existingAnalysis.id}`}
                 className="flex-1 px-3 py-2 text-sm text-center bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
               >
-                기존 결과 보기
+                {t('action.viewExistingResult')}
               </Link>
               <button
                 onClick={() => setStep('multi-angle')}
                 className="flex-1 px-3 py-2 text-sm text-center bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
               >
-                다시 분석하기
+                {t('action.reAnalyze')}
               </button>
             </div>
           </div>

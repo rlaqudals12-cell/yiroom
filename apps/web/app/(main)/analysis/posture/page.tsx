@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -26,22 +26,26 @@ import { Confetti } from '@/components/animations';
 type AnalysisStep = 'guide' | 'front-upload' | 'side-upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date, locale: string = 'ko'): string {
+function formatDate(
+  date: Date,
+  locale: string = 'ko',
+  tFn: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
+  if (days === 0) return tFn('date.today');
+  if (days === 1) return tFn('date.yesterday');
+  if (days < 7) return tFn('date.daysAgo', { days });
+  if (days < 30) return tFn('date.weeksAgo', { weeks: Math.floor(days / 7) });
   return formatDateLocale(date, locale, { month: 'short', day: 'numeric' });
 }
 
 // 자세 타입 라벨 헬퍼
 function getPostureTypeLabel(postureType: string): string {
   const info = POSTURE_TYPES[postureType as PostureType];
-  return info?.label || '알 수 없음';
+  return info?.label || 'Unknown';
 }
 
 // 기존 분석 결과 타입
@@ -55,6 +59,7 @@ interface ExistingAnalysis {
 export default function PostureAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const locale = useLocale();
+  const t = useTranslations('analysisEntry');
   const supabase = useClerkSupabaseClient();
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
@@ -176,7 +181,7 @@ export default function PostureAnalysisPage() {
       setShowConfetti(true);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
+      setError(t('error.analysisFailed'));
       setStep('front-upload');
     } finally {
       setIsApiComplete(true);
@@ -205,18 +210,18 @@ export default function PostureAnalysisPage() {
 
   // 단계별 서브타이틀
   const getSubtitle = () => {
-    if (error) return '분석 중 오류가 발생했어요';
+    if (error) return t('error.analysisError');
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('posture.subtitle.guide');
       case 'front-upload':
-        return '정면 전신 사진을 촬영해주세요';
+        return t('posture.subtitle.frontUpload');
       case 'side-upload':
-        return '옆모습 사진을 촬영해주세요 (선택)';
+        return t('posture.subtitle.sideUpload');
       case 'loading':
-        return isAnalyzing ? 'AI가 분석 중이에요...' : 'AI가 분석 중이에요';
+        return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   };
 
@@ -229,7 +234,7 @@ export default function PostureAnalysisPage() {
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">자세 분석</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('posture.title')}</h1>
             <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
           </header>
 
@@ -240,7 +245,7 @@ export default function PostureAnalysisPage() {
               role="alert"
               aria-live="polite"
             >
-              {error}. 다시 시도해주세요.
+              {error}
             </div>
           )}
 
@@ -256,16 +261,18 @@ export default function PostureAnalysisPage() {
                     <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                    <p className="font-medium text-foreground">{t('action.viewExistingResult')}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="font-medium text-blue-600 dark:text-blue-400">
                         {getPostureTypeLabel(existingAnalysis.posture_type)}
                       </span>
                       <span>-</span>
-                      <span>{existingAnalysis.overall_score}점</span>
+                      <span>
+                        {t('posture.scorePoints', { score: existingAnalysis.overall_score })}
+                      </span>
                       <span>-</span>
                       <Clock className="w-3 h-3" />
-                      {formatDate(new Date(existingAnalysis.created_at), locale)}
+                      {formatDate(new Date(existingAnalysis.created_at), locale, t)}
                     </div>
                   </div>
                 </div>
@@ -285,12 +292,11 @@ export default function PostureAnalysisPage() {
             <div className="space-y-4">
               <PhotoUpload onPhotoSelect={handleSidePhotoSelect} angle="side" />
               <Button variant="outline" onClick={handleSkipSidePhoto} className="w-full">
-                옆모습 사진 건너뛰기
+                {t('posture.skipSidePhoto')}
               </Button>
               <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <p className="text-xs text-amber-700 dark:text-amber-300 text-center">
-                  옆모습 사진을 추가하면 거북목, 등 굽음, 골반 기울기까지 분석할 수 있어요. 건너뛰면
-                  정면 분석만 제공돼요.
+                  {t('posture.sidePhotoHint')}
                 </p>
               </div>
             </div>

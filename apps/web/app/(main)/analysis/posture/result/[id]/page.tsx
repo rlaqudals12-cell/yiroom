@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Dumbbell } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
+import { AnonymousBodyTemplate } from '@/components/analysis/overlay';
 import { Button } from '@/components/ui/button';
 import {
   type PostureAnalysisResult,
@@ -282,6 +283,24 @@ export default function PostureAnalysisResultPage() {
                   moduleName: 'posture',
                 }}
               />
+            </div>
+          )}
+
+          {/* Layer 0.5: 자세 실루엣 시각화 (ADR-097) */}
+          {result && (
+            <div className="flex justify-center mb-6">
+              <AnonymousBodyTemplate
+                bodyType={(result.bodyTypeCorrelation?.bodyType as 'S' | 'W' | 'N') || 'S'}
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center text-xs bg-background/80 rounded-lg px-3 py-2">
+                    <p className="font-semibold text-sm text-foreground mb-1">
+                      {result.postureTypeLabel}
+                    </p>
+                    <p className="text-muted-foreground">종합 {result.overallScore}점</p>
+                  </div>
+                </div>
+              </AnonymousBodyTemplate>
             </div>
           )}
 

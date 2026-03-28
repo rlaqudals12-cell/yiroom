@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Image from 'next/image';
@@ -19,15 +19,19 @@ import { MakeupAnalysisResultView } from './_components/MakeupAnalysisResultView
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date, locale: string): string {
+function formatDate(
+  date: Date,
+  locale: string,
+  tFn: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
+  if (days === 0) return tFn('date.today');
+  if (days === 1) return tFn('date.yesterday');
+  if (days < 7) return tFn('date.daysAgo', { days });
+  if (days < 30) return tFn('date.weeksAgo', { weeks: Math.floor(days / 7) });
   return date.toLocaleDateString(getDateLocale(locale), { month: 'short', day: 'numeric' });
 }
 
@@ -49,6 +53,7 @@ export default function MakeupAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const locale = useLocale();
+  const t = useTranslations('analysisEntry');
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
@@ -122,7 +127,7 @@ export default function MakeupAnalysisPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '분석에 실패했어요');
+        throw new Error(errorData.error || 'Analysis failed');
       }
 
       const data = await response.json();
@@ -145,7 +150,7 @@ export default function MakeupAnalysisPage() {
       setStep('result');
     } catch (err) {
       console.error('[M-1] Analysis error:', err);
-      setError('분석 중 문제가 발생했어요');
+      setError(t('error.analysisProblem'));
       setStep('upload');
     } finally {
       setIsAnalyzing(false);
@@ -163,18 +168,18 @@ export default function MakeupAnalysisPage() {
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 오류가 발생했어요';
+    if (error) return t('error.analysisError');
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('makeup.subtitle.guide');
       case 'upload':
-        return '얼굴 사진을 선택해주세요';
+        return t('makeup.subtitle.upload');
       case 'known-input':
-        return '피부 타입을 선택해주세요';
+        return t('makeup.subtitle.knownInput');
       case 'loading':
-        return 'AI가 분석 중이에요...';
+        return t('subtitle.aiAnalyzing');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   }, [step, error]);
 
@@ -183,7 +188,7 @@ export default function MakeupAnalysisPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">💄 메이크업 분석</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('makeup.title')}</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>
 
@@ -201,10 +206,10 @@ export default function MakeupAnalysisPage() {
               size="sm"
               onClick={handleRetry}
               className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 px-0"
-              aria-label="메이크업 분석 다시 시도"
+              aria-label={t('makeup.retryAria')}
               data-testid="makeup-error-retry-button"
             >
-              다시 시도하기 →
+              {t('action.retryArrow')}
             </Button>
           </div>
         )}
@@ -215,7 +220,7 @@ export default function MakeupAnalysisPage() {
             href={`/analysis/makeup/result/${existingAnalysis.id}`}
             className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl border border-pink-200 dark:border-pink-800 hover:shadow-md transition-shadow"
             data-testid="makeup-existing-banner"
-            aria-label={`기존 메이크업 분석 결과 보기 (${existingAnalysis.overall_score}점)`}
+            aria-label={t('makeup.existingResultAria', { score: existingAnalysis.overall_score })}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -225,10 +230,10 @@ export default function MakeupAnalysisPage() {
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                  <p className="font-medium text-foreground">{t('action.viewExistingResult')}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at), locale)} ·{' '}
+                    {formatDate(new Date(existingAnalysis.created_at), locale, t)} ·{' '}
                     {UNDERTONE_LABELS[existingAnalysis.undertone] || existingAnalysis.undertone}
                   </div>
                 </div>
@@ -257,7 +262,7 @@ export default function MakeupAnalysisPage() {
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
-              aria-label="메이크업 분석용 사진 선택"
+              aria-label={t('makeup.photoSelectAria')}
               data-testid="makeup-file-input"
             />
 
@@ -266,7 +271,7 @@ export default function MakeupAnalysisPage() {
                 <div className="aspect-square rounded-xl overflow-hidden bg-muted relative">
                   <Image
                     src={imagePreview}
-                    alt="선택된 이미지"
+                    alt={t('upload.selectedImage')}
                     fill
                     className="object-cover"
                     unoptimized
@@ -274,22 +279,22 @@ export default function MakeupAnalysisPage() {
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={handleUploadClick} className="flex-1">
-                    다른 사진 선택
+                    {t('action.selectOtherPhoto')}
                   </Button>
                   <Button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
                     className="flex-1 bg-pink-500 hover:bg-pink-600"
                     data-testid="makeup-analyze-button"
-                    aria-label="메이크업 분석 시작"
+                    aria-label={t('makeup.startAnalysisAria')}
                   >
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        분석 중...
+                        {t('action.analyzing')}
                       </>
                     ) : (
-                      '분석 시작'
+                      t('action.startAnalysis')
                     )}
                   </Button>
                 </div>
@@ -298,21 +303,21 @@ export default function MakeupAnalysisPage() {
               <button
                 onClick={handleUploadClick}
                 className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-pink-500/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
-                aria-label="사진을 선택해주세요. 탭하여 갤러리에서 선택"
+                aria-label={t('upload.selectPhotoAria')}
                 data-testid="makeup-upload-area"
               >
                 <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
                   <Upload className="w-8 h-8 text-pink-600 dark:text-pink-400" />
                 </div>
                 <div className="text-center">
-                  <p className="font-medium text-foreground">사진을 선택해주세요</p>
-                  <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
+                  <p className="font-medium text-foreground">{t('upload.selectPhoto')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('upload.tapToSelect')}</p>
                 </div>
               </button>
             )}
 
             <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
-              ← 가이드로 돌아가기
+              {t('action.backToGuide')}
             </Button>
           </div>
         )}
@@ -345,8 +350,8 @@ export default function MakeupAnalysisPage() {
             <div className="w-20 h-20 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">💄</span>
             </div>
-            <p className="text-lg font-medium text-foreground">AI가 얼굴을 분석하고 있어요</p>
-            <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
+            <p className="text-lg font-medium text-foreground">{t('makeup.aiAnalyzingFace')}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t('loading.pleaseWait')}</p>
             <Loader2 className="w-8 h-8 mt-6 animate-spin text-pink-500" />
           </div>
         )}

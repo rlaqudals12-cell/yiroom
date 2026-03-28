@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
@@ -19,19 +19,24 @@ import {
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
+import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 
 type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
 
-// 날짜 포맷 헬퍼
-function formatDate(date: Date, locale: string): string {
+// 날짜 포맷 헬퍼 (i18n)
+function formatDate(
+  date: Date,
+  locale: string,
+  t: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
+  if (days === 0) return t('date.today');
+  if (days === 1) return t('date.yesterday');
+  if (days < 7) return t('date.daysAgo', { days });
+  if (days < 30) return t('date.weeksAgo', { weeks: Math.floor(days / 7) });
   return date.toLocaleDateString(getDateLocale(locale), { month: 'short', day: 'numeric' });
 }
 
@@ -47,6 +52,7 @@ export default function HairAnalysisPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const locale = useLocale();
+  const t = useTranslations('analysisEntry');
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
@@ -122,7 +128,7 @@ export default function HairAnalysisPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '분석에 실패했어요');
+        throw new Error(errorData.error || 'Analysis failed');
       }
 
       const data = await response.json();
@@ -145,7 +151,7 @@ export default function HairAnalysisPage() {
       setStep('result');
     } catch (err) {
       console.error('[H-1] Analysis error:', err);
-      setError('분석 중 문제가 발생했어요');
+      setError(t('error.analysisProblem'));
       setStep('upload');
     } finally {
       setIsAnalyzing(false);
@@ -168,18 +174,18 @@ export default function HairAnalysisPage() {
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 문제가 발생했어요';
+    if (error) return t('error.analysisProblem');
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('hair.subtitle.guide');
       case 'upload':
-        return '헤어/두피 사진을 선택해주세요';
+        return t('hair.subtitle.upload');
       case 'known-input':
-        return '헤어 타입을 선택해주세요';
+        return t('hair.subtitle.knownInput');
       case 'loading':
-        return 'AI가 분석 중이에요...';
+        return t('subtitle.aiAnalyzing');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   }, [step, error]);
 
@@ -188,7 +194,7 @@ export default function HairAnalysisPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">헤어 분석</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('hair.title')}</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>
 
@@ -217,10 +223,10 @@ export default function HairAnalysisPage() {
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                  <p className="font-medium text-foreground">{t('action.viewExistingResult')}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at), locale)}
+                    {formatDate(new Date(existingAnalysis.created_at), locale, t)}
                   </div>
                 </div>
               </div>
@@ -233,33 +239,33 @@ export default function HairAnalysisPage() {
         {step === 'guide' && (
           <div className="space-y-6">
             <div className="bg-card rounded-xl p-6 shadow-sm">
-              <h2 className="font-semibold text-lg mb-4">촬영 가이드</h2>
+              <h2 className="font-semibold text-lg mb-4">{t('hair.guideTitle')}</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">✓</span>
-                  밝은 자연광 아래에서 촬영해주세요
+                  <span className="text-amber-500">&#10003;</span>
+                  {t('hair.guideTip1')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">✓</span>
-                  두피가 보이도록 가르마 부분을 촬영해주세요
+                  <span className="text-amber-500">&#10003;</span>
+                  {t('hair.guideTip2')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">✓</span>
-                  모발 전체가 잘 보이는 사진도 좋아요
+                  <span className="text-amber-500">&#10003;</span>
+                  {t('hair.guideTip3')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">✗</span>
-                  젖은 머리나 스타일링 제품 사용 후 촬영은 피해주세요
+                  <span className="text-red-400">&#10007;</span>
+                  {t('hair.guideAvoid')}
                 </li>
               </ul>
             </div>
 
             <div className="flex gap-3">
               <Button onClick={() => setStep('upload')} className="flex-1">
-                사진 선택하기
+                {t('action.selectPhoto')}
               </Button>
               <Button variant="outline" onClick={handleSkipToKnownInput}>
-                이미 알고 있어요
+                {t('action.alreadyKnow')}
               </Button>
             </div>
           </div>
@@ -274,7 +280,7 @@ export default function HairAnalysisPage() {
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
-              aria-label="헤어 분석용 사진 선택"
+              aria-label={t('hair.photoSelectAria')}
             />
 
             {imagePreview ? (
@@ -282,7 +288,7 @@ export default function HairAnalysisPage() {
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-muted">
                   <Image
                     src={imagePreview}
-                    alt="선택된 이미지"
+                    alt={t('upload.selectedImage')}
                     fill
                     className="object-cover"
                     unoptimized
@@ -290,21 +296,21 @@ export default function HairAnalysisPage() {
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={handleUploadClick} className="flex-1">
-                    다른 사진 선택
+                    {t('action.selectOtherPhoto')}
                   </Button>
                   <Button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
                     className="flex-1"
-                    aria-label="헤어 분석 시작"
+                    aria-label={t('hair.startAnalysisAria')}
                   >
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        분석 중...
+                        {t('action.analyzing')}
                       </>
                     ) : (
-                      '분석 시작'
+                      t('action.startAnalysis')
                     )}
                   </Button>
                 </div>
@@ -318,14 +324,14 @@ export default function HairAnalysisPage() {
                   <Upload className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="text-center">
-                  <p className="font-medium text-foreground">사진을 선택해주세요</p>
-                  <p className="text-sm text-muted-foreground mt-1">탭하여 갤러리에서 선택</p>
+                  <p className="font-medium text-foreground">{t('upload.selectPhoto')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('upload.tapToSelect')}</p>
                 </div>
               </button>
             )}
 
             <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
-              ← 가이드로 돌아가기
+              {t('action.backToGuide')}
             </Button>
           </div>
         )}
@@ -352,8 +358,8 @@ export default function HairAnalysisPage() {
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 animate-pulse"></div>
-            <p className="text-lg font-medium text-foreground">AI가 헤어를 분석하고 있어요</p>
-            <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
+            <p className="text-lg font-medium text-foreground">{t('hair.aiAnalyzingHair')}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t('loading.pleaseWait')}</p>
             <Loader2 className="w-8 h-8 mt-6 animate-spin text-amber-500" />
           </div>
         )}
@@ -375,6 +381,7 @@ function KnownTypeInput({
   onSubmit: (type: HairTypeId, concerns: HairConcernId[]) => void;
   onBack: () => void;
 }) {
+  const t = useTranslations('analysisEntry');
   const [selectedType, setSelectedType] = useState<HairTypeId | null>(null);
   const [selectedConcerns, setSelectedConcerns] = useState<HairConcernId[]>([]);
 
@@ -388,7 +395,7 @@ function KnownTypeInput({
     <div className="space-y-6">
       {/* 모발 타입 선택 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">모발 타입을 선택해주세요</h3>
+        <h3 className="font-semibold mb-4">{t('hair.selectHairType')}</h3>
         <div className="grid grid-cols-2 gap-3">
           {HAIR_TYPES.map((type) => (
             <button
@@ -409,7 +416,7 @@ function KnownTypeInput({
 
       {/* 고민 선택 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">주요 고민을 선택해주세요 (여러 개 선택 가능)</h3>
+        <h3 className="font-semibold mb-4">{t('hair.selectConcerns')}</h3>
         <div className="flex flex-wrap gap-2">
           {HAIR_CONCERNS.map((concern) => (
             <button
@@ -429,14 +436,14 @@ function KnownTypeInput({
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack}>
-          ← 뒤로
+          {t('action.back')}
         </Button>
         <Button
           onClick={() => selectedType && onSubmit(selectedType, selectedConcerns)}
           disabled={!selectedType}
           className="flex-1"
         >
-          결과 보기
+          {t('action.viewResult')}
         </Button>
       </div>
     </div>
@@ -451,6 +458,7 @@ function AnalysisResultView({
   result: HairAnalysisResult;
   onRetry: () => void;
 }) {
+  const t = useTranslations('analysisEntry');
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good':
@@ -464,6 +472,18 @@ function AnalysisResultView({
 
   return (
     <div className="space-y-6" data-testid="hair-analysis-result">
+      {/* Layer 0.5: 얼굴형 일러스트 도식 (ADR-097) */}
+      <div className="flex justify-center">
+        <AnonymousFaceTemplate faceShape="oval" skinTone="medium">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center bg-background/80 rounded-lg px-3 py-2">
+              <p className="font-semibold text-sm text-foreground">{result.hairTypeLabel}</p>
+              <p className="text-xs text-muted-foreground">{result.scalpTypeLabel}</p>
+            </div>
+          </div>
+        </AnonymousFaceTemplate>
+      </div>
+
       {/* 종합 점수 */}
       <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center">
         <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-amber-900/40 shadow-lg flex items-center justify-center mb-4">
@@ -479,13 +499,13 @@ function AnalysisResultView({
 
       {/* 인사이트 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">분석 요약</h3>
+        <h3 className="font-semibold mb-3">{t('hair.resultSummary')}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>
 
       {/* 지표 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">항목별 점수</h3>
+        <h3 className="font-semibold mb-4">{t('hair.metricScores')}</h3>
         <div className="space-y-4">
           {result.metrics.map((metric) => (
             <div key={metric.id}>
@@ -494,7 +514,7 @@ function AnalysisResultView({
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(metric.status)}`}
                 >
-                  {metric.value}점
+                  {t('hair.scorePoints', { score: metric.value })}
                 </span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -510,7 +530,7 @@ function AnalysisResultView({
 
       {/* 추천 성분 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">추천 성분</h3>
+        <h3 className="font-semibold mb-3">{t('hair.recommendedIngredients')}</h3>
         <div className="flex flex-wrap gap-2">
           {result.recommendedIngredients.map((ingredient, i) => (
             <span
@@ -525,7 +545,7 @@ function AnalysisResultView({
 
       {/* 케어 팁 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">케어 팁</h3>
+        <h3 className="font-semibold mb-3">{t('hair.careTips')}</h3>
         <ul className="space-y-2">
           {result.careTips.map((tip, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -538,7 +558,7 @@ function AnalysisResultView({
 
       {/* 버튼 */}
       <Button onClick={onRetry} variant="outline" className="w-full">
-        다시 분석하기
+        {t('action.reAnalyze')}
       </Button>
     </div>
   );

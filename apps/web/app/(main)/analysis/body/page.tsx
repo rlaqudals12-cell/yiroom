@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
@@ -36,6 +37,7 @@ type AnalysisStep =
   | 'known-type';
 
 export default function BodyAnalysisPage() {
+  const t = useTranslations('analysisEntry');
   const router = useRouter();
   const searchParams = useSearchParams();
   const forceNew = searchParams.get('forceNew') === 'true';
@@ -236,7 +238,7 @@ export default function BodyAnalysisPage() {
       setShowConfetti(true);
     } catch (err) {
       console.error('[C-1] Analysis error:', err instanceof Error ? err.message : err);
-      setError('분석에 실패했어요. 다시 시도해주세요.');
+      setError(t('error.analysisFailed'));
       setStep('multi-angle');
     } finally {
       setIsApiComplete(true);
@@ -268,19 +270,19 @@ export default function BodyAnalysisPage() {
   const getSubtitle = () => {
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('body.subtitle.guide');
       case 'input':
-        return '나에게 어울리는 스타일이 궁금하신가요?';
+        return t('body.subtitle.input');
       case 'multi-angle':
-        return '정면, 좌측면, 우측면, 후면 사진을 촬영해주세요';
+        return t('body.subtitle.multiAngle');
       case 'upload':
-        return '전신 사진을 업로드해주세요';
+        return t('body.subtitle.upload');
       case 'known-type':
-        return '기존 체형 타입을 선택해주세요';
+        return t('body.subtitle.knownType');
       case 'loading':
-        return isAnalyzing ? 'AI가 분석 중이에요...' : 'AI가 분석 중이에요';
+        return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   };
 
@@ -290,7 +292,7 @@ export default function BodyAnalysisPage() {
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">이전 분석 결과 확인 중...</p>
+          <p className="text-muted-foreground">{t('loading.checkingExisting')}</p>
         </div>
       </div>
     );
@@ -305,7 +307,7 @@ export default function BodyAnalysisPage() {
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">체형 분석</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('body.title')}</h1>
             <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
           </header>
 
@@ -316,13 +318,13 @@ export default function BodyAnalysisPage() {
               role="alert"
               aria-live="polite"
             >
-              <span>분석에 실패했어요. 다시 시도해주세요.</span>
+              <span>{t('error.analysisFailed')}</span>
               <button
                 onClick={() => setError(null)}
                 className="ml-2 text-red-400 hover:text-red-600 dark:hover:text-red-300 text-xs shrink-0"
-                aria-label="에러 닫기"
+                aria-label={t('action.closeError')}
               >
-                닫기
+                {t('action.close')}
               </button>
             </div>
           )}

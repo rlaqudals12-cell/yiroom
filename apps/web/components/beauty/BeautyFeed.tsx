@@ -14,6 +14,7 @@ import {
   Sparkles,
   ChevronRight,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 /**
@@ -162,6 +163,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
  * - 연관 제품 태그
  */
 export function BeautyFeed({ className, limit }: BeautyFeedProps) {
+  const t = useTranslations('beauty');
   const router = useRouter();
   const [feedItems, setFeedItems] = useState<FeedItem[]>(
     limit ? MOCK_FEED_ITEMS.slice(0, limit) : MOCK_FEED_ITEMS
@@ -207,11 +209,11 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
   const getTypeLabel = (type: FeedItem['type']) => {
     switch (type) {
       case 'review':
-        return '리뷰';
+        return t('feedType.review');
       case 'routine':
-        return '루틴';
+        return t('feedType.routine');
       case 'tip':
-        return '팁';
+        return t('feedType.tip');
       default:
         return '';
     }
@@ -237,13 +239,13 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Camera className="w-5 h-5 text-pink-500" aria-hidden="true" />
-          뷰티 피드
+          {t('feedTitle')}
         </h2>
         <button
           onClick={() => router.push('/beauty/feed')}
           className="text-sm text-primary flex items-center gap-0.5 hover:underline"
         >
-          전체보기
+          {t('viewAll')}
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
@@ -273,7 +275,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                     {item.user.verified && (
                       <Verified
                         className="w-3.5 h-3.5 text-primary fill-primary"
-                        aria-label="인증됨"
+                        aria-label={t('verified')}
                       />
                     )}
                   </div>
@@ -297,7 +299,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                 </span>
                 <button
                   className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="더보기"
+                  aria-label={t('more')}
                 >
                   <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
                 </button>
@@ -349,7 +351,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                     'flex items-center gap-1.5 transition-colors',
                     item.isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-foreground'
                   )}
-                  aria-label={item.isLiked ? '좋아요 취소' : '좋아요'}
+                  aria-label={item.isLiked ? t('unlikeAria') : t('likeAria')}
                 >
                   <Heart
                     className={cn('w-5 h-5', item.isLiked && 'fill-current')}
@@ -360,7 +362,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                 <button
                   onClick={() => router.push(`/beauty/feed/${item.id}#comments`)}
                   className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="댓글"
+                  aria-label={t('commentsAria')}
                 >
                   <MessageCircle className="w-5 h-5" aria-hidden="true" />
                   <span className="text-sm">{item.stats.comments}</span>
@@ -373,7 +375,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                     'transition-colors',
                     item.isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                   )}
-                  aria-label={item.isSaved ? '저장 취소' : '저장'}
+                  aria-label={item.isSaved ? t('unsaveAria') : t('saveAria')}
                 >
                   <Bookmark
                     className={cn('w-5 h-5', item.isSaved && 'fill-current')}
@@ -382,7 +384,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                 </button>
                 <button
                   className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="공유"
+                  aria-label={t('shareAria')}
                 >
                   <Share2 className="w-5 h-5" aria-hidden="true" />
                 </button>
@@ -412,7 +414,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
               <div className="px-4 pb-4">
                 <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                   <Sparkles className="w-3 h-3" aria-hidden="true" />
-                  연관 제품
+                  {t('relatedProducts')}
                 </p>
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {item.content.products.map((product) => (
@@ -457,7 +459,7 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
           }}
           className="w-full py-3 text-sm font-medium text-primary hover:bg-primary/5 rounded-lg transition-colors"
         >
-          더 많은 피드 보기
+          {t('loadMore')}
         </button>
       )}
     </section>

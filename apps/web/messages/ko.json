@@ -15,7 +15,12 @@
     "search": "검색",
     "noData": "데이터가 없습니다",
     "seeMore": "더 보기",
-    "showAll": "전체 보기"
+    "showAll": "전체 보기",
+    "emptyState": {
+      "noData": "데이터가 없어요",
+      "startFirst": "첫 번째 기록을 시작해보세요",
+      "encouragement": "작은 시작이 큰 변화를 만들어요"
+    }
   },
   "nav": {
     "home": "홈",
@@ -181,12 +186,23 @@
     "dashboardWidgets": "대시보드 위젯"
   },
   "beauty": {
-    "title": "뷰티",
-    "personalColor": "퍼스널 컬러",
-    "skinAnalysis": "피부 분석",
-    "recommendations": "추천 제품",
-    "cosmetics": "화장품",
-    "supplements": "영양제"
+    "feedTitle": "뷰티 피드",
+    "viewAll": "전체보기",
+    "verified": "인증됨",
+    "more": "더보기",
+    "likeAria": "좋아요",
+    "unlikeAria": "좋아요 취소",
+    "commentsAria": "댓글",
+    "saveAria": "저장",
+    "unsaveAria": "저장 취소",
+    "shareAria": "공유",
+    "relatedProducts": "연관 제품",
+    "loadMore": "더 많은 피드 보기",
+    "feedType": {
+      "review": "리뷰",
+      "routine": "루틴",
+      "tip": "팁"
+    }
   },
   "style": {
     "title": "스타일",
@@ -1000,5 +1016,195 @@
     "highlight.workoutCount": "운동 횟수",
     "highlight.mealStreak": "식단 {days}일 연속",
     "highlight.workoutStreak": "운동 {days}일 연속"
+  },
+  "analysisEntry": {
+    "date": {
+      "today": "오늘",
+      "yesterday": "어제",
+      "daysAgo": "{days}일 전",
+      "weeksAgo": "{weeks}주 전"
+    },
+    "season": {
+      "springWarm": "봄 웜톤",
+      "summerCool": "여름 쿨톤",
+      "autumnWarm": "가을 웜톤",
+      "winterCool": "겨울 쿨톤"
+    },
+    "subtitle": {
+      "aiAnalyzing": "AI가 분석 중이에요...",
+      "aiAnalyzingDone": "AI가 분석 중이에요",
+      "analysisComplete": "분석이 완료되었어요"
+    },
+    "error": {
+      "analysisError": "분석 중 오류가 발생했어요",
+      "analysisFailed": "분석 중 오류가 발생했어요. 다시 시도해주세요.",
+      "analysisProblem": "분석 중 문제가 발생했어요",
+      "retryWithBetterLighting": "다시 시도해주세요. 조명이 밝은 곳에서 촬영하면 더 좋아요."
+    },
+    "loading": {
+      "checkingExisting": "이전 분석 결과 확인 중...",
+      "pleaseWait": "잠시만 기다려주세요..."
+    },
+    "action": {
+      "goBack": "돌아가기",
+      "viewExistingResult": "기존 분석 결과 보기",
+      "reAnalyze": "다시 분석하기",
+      "selectPhoto": "사진 선택하기",
+      "selectOtherPhoto": "다른 사진 선택",
+      "startAnalysis": "분석 시작",
+      "analyzing": "분석 중...",
+      "alreadyKnow": "이미 알고 있어요",
+      "backToGuide": "← 가이드로 돌아가기",
+      "back": "← 뒤로",
+      "viewResult": "결과 보기",
+      "close": "닫기",
+      "closeError": "에러 닫기",
+      "retryArrow": "다시 시도하기 →"
+    },
+    "upload": {
+      "selectedImage": "선택된 이미지",
+      "selectPhoto": "사진을 선택해주세요",
+      "tapToSelect": "탭하여 갤러리에서 선택",
+      "selectPhotoAria": "사진을 선택해주세요. 탭하여 갤러리에서 선택"
+    },
+    "pc": {
+      "title": "퍼스널 컬러 진단",
+      "existingResult": "이전 진단 결과가 있어요",
+      "lowConfidence": "신뢰도 낮음",
+      "lowConfidenceDesc": "이전 분석의 신뢰도가 낮아요. 더 정확한 결과를 위해 재분석을 권장해요.",
+      "subtitle": {
+        "guide": "정확한 진단을 위한 촬영 가이드",
+        "multiAngle": "정확한 진단을 위해 여러 각도로 촬영해요",
+        "galleryUpload": "갤러리에서 사진을 선택해주세요",
+        "upload": "얼굴 사진을 촬영해주세요",
+        "wrist": "손목 사진을 촬영해주세요",
+        "knownInput": "기존 퍼스널 컬러를 선택해주세요"
+      }
+    },
+    "skin": {
+      "title": "피부 분석",
+      "photoNeeded": "피부 분석을 위한 사진이 필요해요",
+      "modeCamera": "촬영",
+      "modeGallery": "갤러리",
+      "multiAngle": "다각도",
+      "modeCameraDesc": "실시간 카메라로 정면 + 좌/우측 다각도 촬영",
+      "modeGalleryDesc": "기존에 찍은 사진으로 정면 + 좌/우측 다각도 업로드",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "modeSelect": "촬영 방법을 선택해주세요",
+        "camera": "다각도 피부 촬영",
+        "upload": "피부 사진을 선택해주세요"
+      }
+    },
+    "body": {
+      "title": "체형 분석",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "input": "나에게 어울리는 스타일이 궁금하신가요?",
+        "multiAngle": "정면, 좌측면, 우측면, 후면 사진을 촬영해주세요",
+        "upload": "전신 사진을 업로드해주세요",
+        "knownType": "기존 체형 타입을 선택해주세요"
+      }
+    },
+    "hair": {
+      "title": "헤어 분석",
+      "guideTitle": "촬영 가이드",
+      "guideTip1": "밝은 자연광 아래에서 촬영해주세요",
+      "guideTip2": "두피가 보이도록 가르마 부분을 촬영해주세요",
+      "guideTip3": "모발 전체가 잘 보이는 사진도 좋아요",
+      "guideAvoid": "젖은 머리나 스타일링 제품 사용 후 촬영은 피해주세요",
+      "photoSelectAria": "헤어 분석용 사진 선택",
+      "startAnalysisAria": "헤어 분석 시작",
+      "selectHairType": "모발 타입을 선택해주세요",
+      "selectConcerns": "주요 고민을 선택해주세요 (여러 개 선택 가능)",
+      "aiAnalyzingHair": "AI가 헤어를 분석하고 있어요",
+      "resultSummary": "분석 요약",
+      "metricScores": "항목별 점수",
+      "scorePoints": "{score}점",
+      "recommendedIngredients": "추천 성분",
+      "careTips": "케어 팁",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "upload": "헤어/두피 사진을 선택해주세요",
+        "knownInput": "헤어 타입을 선택해주세요"
+      }
+    },
+    "makeup": {
+      "title": "💄 메이크업 분석",
+      "retryAria": "메이크업 분석 다시 시도",
+      "existingResultAria": "기존 메이크업 분석 결과 보기 ({score}점)",
+      "photoSelectAria": "메이크업 분석용 사진 선택",
+      "startAnalysisAria": "메이크업 분석 시작",
+      "aiAnalyzingFace": "AI가 얼굴을 분석하고 있어요",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "upload": "얼굴 사진을 선택해주세요",
+        "knownInput": "피부 타입을 선택해주세요"
+      }
+    },
+    "oral": {
+      "title": "구강건강 분석",
+      "backToListAria": "분석 목록으로 돌아가기",
+      "guideTitle": "촬영 가이드",
+      "guideTip1": "밝은 조명 아래에서 입을 크게 벌려 촬영해주세요",
+      "guideTip2": "윗니와 아랫니 모두 보이도록 촬영하면 좋아요",
+      "guideTip3": "잇몸 상태를 확인하려면 잇몸이 잘 보이게 해주세요",
+      "guideTip4": "깨끗한 상태에서 촬영하면 더 정확해요",
+      "photoSelectAria": "구강 건강 분석용 사진 선택",
+      "startAnalysisAria": "구강 건강 분석 시작",
+      "uploadHint": "치아와 잇몸이 잘 보이는 사진을 선택해주세요",
+      "privacyNote": "사진은 분석에만 사용되며, 서버에 별도 저장되지 않아요",
+      "aiAnalyzing": "AI가 구강 상태를 분석하고 있어요",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "upload": "치아/잇몸 사진을 선택해주세요"
+      }
+    },
+    "posture": {
+      "title": "자세 분석",
+      "scorePoints": "{score}점",
+      "skipSidePhoto": "옆모습 사진 건너뛰기",
+      "sidePhotoHint": "옆모습 사진을 추가하면 거북목, 등 굽음, 골반 기울기까지 분석할 수 있어요. 건너뛰면 정면 분석만 제공돼요.",
+      "subtitle": {
+        "guide": "정확한 분석을 위한 촬영 가이드",
+        "frontUpload": "정면 전신 사진을 촬영해주세요",
+        "sideUpload": "옆모습 사진을 촬영해주세요 (선택)"
+      }
+    }
+  },
+  "coach": {
+    "greeting": "안녕하세요! 저는 이룸 웰니스 코치예요.",
+    "greetingSubtitle": "운동, 영양, 피부, 헤어, 메이크업에 대해 무엇이든 물어보세요.",
+    "errorMessage": "죄송해요, 잠시 문제가 생겼어요. 다시 시도해주세요.",
+    "thinking": "생각 중...",
+    "suggestedQuestions": "이런 것도 물어보세요",
+    "quickQuestionsHide": "빠른 질문 숨기기",
+    "quickQuestionsShow": "빠른 질문 보기",
+    "inputPlaceholder": "질문을 입력하세요...",
+    "disclaimer": "AI 답변은 참고용이며, 의료·영양·운동 전문가의 진료를 대체하지 않아요. 증상이 있으면 병원을 방문하세요.",
+    "category": {
+      "general": "일반",
+      "workout": "운동",
+      "nutrition": "영양",
+      "skin": "피부",
+      "hair": "헤어",
+      "makeup": "메이크업"
+    },
+    "time": {
+      "justNow": "방금 전",
+      "minutesAgo": "{minutes}분 전",
+      "hoursAgo": "{hours}시간 전",
+      "daysAgo": "{days}일 전"
+    },
+    "history": {
+      "title": "대화 기록",
+      "newChat": "새 대화 시작",
+      "newChatTitle": "새 대화",
+      "empty": "아직 대화 기록이 없어요",
+      "emptyHint": "새 대화를 시작해보세요",
+      "messageCount": "{count}개 메시지",
+      "deleteAria": "대화 삭제",
+      "recentLimit": "최근 20개의 대화가 표시됩니다"
+    }
   }
 }

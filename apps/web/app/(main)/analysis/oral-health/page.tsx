@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 import { formatDate as formatDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -11,20 +11,25 @@ import { Clock, ArrowRight, ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { Button } from '@/components/ui/button';
 import { OralHealthResultCard } from '@/components/analysis/oral-health';
+import { ToothDiagramOverlay } from '@/components/analysis/overlay';
 import type { OralHealthAssessment } from '@/types/oral-health';
 
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
-function formatDate(date: Date, locale: string = 'ko'): string {
+function formatDate(
+  date: Date,
+  locale: string = 'ko',
+  tFn: (key: string, values?: Record<string, unknown>) => string
+): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '오늘';
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-  if (days < 30) return `${Math.floor(days / 7)}주 전`;
+  if (days === 0) return tFn('date.today');
+  if (days === 1) return tFn('date.yesterday');
+  if (days < 7) return tFn('date.daysAgo', { days });
+  if (days < 30) return tFn('date.weeksAgo', { weeks: Math.floor(days / 7) });
   return formatDateLocale(date, locale, { month: 'short', day: 'numeric' });
 }
 
@@ -38,6 +43,7 @@ interface ExistingAnalysis {
 export default function OralHealthAnalysisPage(): React.JSX.Element {
   const { isSignedIn, isLoaded } = useAuth();
   const locale = useLocale();
+  const t = useTranslations('analysisEntry');
   const supabase = useClerkSupabaseClient();
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
@@ -117,20 +123,20 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || '분석에 실패했어요');
+        throw new Error(errorData.error?.message || 'Analysis failed');
       }
 
       const data = await response.json();
 
       if (!data.success || !data.data?.assessment) {
-        throw new Error('분석 결과를 받을 수 없었어요');
+        throw new Error('Could not receive analysis result');
       }
 
       setResult(data.data.assessment);
       setStep('result');
     } catch (err) {
       console.error('[OH-1] Analysis error:', err instanceof Error ? err.message : 'Unknown error');
-      setError('분석 중 문제가 발생했어요. 다시 시도해주세요.');
+      setError(t('error.analysisFailed'));
       setStep('upload');
     } finally {
       setIsAnalyzing(false);
@@ -148,16 +154,16 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 문제가 발생했어요';
+    if (error) return t('error.analysisProblem');
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('oral.subtitle.guide');
       case 'upload':
-        return '치아/잇몸 사진을 선택해주세요';
+        return t('oral.subtitle.upload');
       case 'loading':
-        return 'AI가 분석 중이에요...';
+        return t('subtitle.aiAnalyzing');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   }, [step, error]);
 
@@ -169,11 +175,11 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
           <Link
             href="/analysis"
             className="absolute left-0 top-1 p-1 text-muted-foreground hover:text-foreground"
-            aria-label="분석 목록으로 돌아가기"
+            aria-label={t('oral.backToListAria')}
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">구강건강 분석</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('oral.title')}</h1>
           <p className="text-muted-foreground mt-2">{subtitle}</p>
         </header>
 
@@ -202,10 +208,10 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">기존 분석 결과 보기</p>
+                  <p className="font-medium text-foreground">{t('action.viewExistingResult')}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
-                    {formatDate(new Date(existingAnalysis.created_at), locale)}
+                    {formatDate(new Date(existingAnalysis.created_at), locale, t)}
                   </div>
                 </div>
               </div>
@@ -218,29 +224,29 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
         {step === 'guide' && (
           <div className="space-y-6">
             <div className="bg-card rounded-xl p-6 shadow-sm">
-              <h2 className="font-semibold text-lg mb-4">촬영 가이드</h2>
+              <h2 className="font-semibold text-lg mb-4">{t('oral.guideTitle')}</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-500">&#10003;</span>
-                  밝은 조명 아래에서 입을 크게 벌려 촬영해주세요
+                  {t('oral.guideTip1')}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-500">&#10003;</span>
-                  윗니와 아랫니 모두 보이도록 촬영하면 좋아요
+                  {t('oral.guideTip2')}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-500">&#10003;</span>
-                  잇몸 상태를 확인하려면 잇몸이 잘 보이게 해주세요
+                  {t('oral.guideTip3')}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-500">&#10003;</span>
-                  깨끗한 상태에서 촬영하면 더 정확해요
+                  {t('oral.guideTip4')}
                 </li>
               </ul>
             </div>
 
             <Button onClick={() => setStep('upload')} className="w-full">
-              사진 선택하기
+              {t('action.selectPhoto')}
             </Button>
           </div>
         )}
@@ -254,7 +260,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
-              aria-label="구강 건강 분석용 사진 선택"
+              aria-label={t('oral.photoSelectAria')}
             />
 
             {imagePreview ? (
@@ -262,7 +268,7 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                 <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted">
                   <Image
                     src={imagePreview}
-                    alt="선택된 이미지"
+                    alt={t('upload.selectedImage')}
                     fill
                     sizes="(max-width: 768px) 100vw, 512px"
                     className="object-cover"
@@ -271,21 +277,21 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={handleUploadClick} className="flex-1">
-                    다른 사진 선택
+                    {t('action.selectOtherPhoto')}
                   </Button>
                   <Button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
                     className="flex-1"
-                    aria-label="구강 건강 분석 시작"
+                    aria-label={t('oral.startAnalysisAria')}
                   >
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        분석 중...
+                        {t('action.analyzing')}
                       </>
                     ) : (
-                      '분석 시작'
+                      t('action.startAnalysis')
                     )}
                   </Button>
                 </div>
@@ -299,20 +305,16 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
                   <Upload className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div className="text-center">
-                  <p className="font-medium text-foreground">사진을 선택해주세요</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    치아와 잇몸이 잘 보이는 사진을 선택해주세요
-                  </p>
+                  <p className="font-medium text-foreground">{t('upload.selectPhoto')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('oral.uploadHint')}</p>
                 </div>
               </button>
             )}
 
-            <p className="text-xs text-center text-muted-foreground">
-              사진은 분석에만 사용되며, 서버에 별도 저장되지 않아요
-            </p>
+            <p className="text-xs text-center text-muted-foreground">{t('oral.privacyNote')}</p>
 
             <Button variant="ghost" onClick={() => setStep('guide')} className="w-full">
-              &#8592; 가이드로 돌아가기
+              {t('action.backToGuide')}
             </Button>
           </div>
         )}
@@ -323,8 +325,8 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
             <div className="w-20 h-20 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center mb-6 animate-pulse">
               <span className="text-4xl">&#x1F9B7;</span>
             </div>
-            <p className="text-lg font-medium text-foreground">AI가 구강 상태를 분석하고 있어요</p>
-            <p className="text-sm text-muted-foreground mt-2">잠시만 기다려주세요...</p>
+            <p className="text-lg font-medium text-foreground">{t('oral.aiAnalyzing')}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t('loading.pleaseWait')}</p>
             <Loader2 className="w-8 h-8 mt-6 animate-spin text-cyan-500" />
           </div>
         )}
@@ -332,10 +334,17 @@ export default function OralHealthAnalysisPage(): React.JSX.Element {
         {/* 결과 */}
         {step === 'result' && result && (
           <div className="space-y-6">
+            {/* Layer 0.5: 치아 도식 시각화 (ADR-097) */}
+            <ToothDiagramOverlay
+              toothColor={result.toothColor}
+              gumHealth={result.gumHealth}
+              whiteningGoal={result.whiteningGoal}
+            />
+
             <OralHealthResultCard assessment={result} />
 
             <Button onClick={handleRetry} variant="outline" className="w-full">
-              다시 분석하기
+              {t('action.reAnalyze')}
             </Button>
           </div>
         )}

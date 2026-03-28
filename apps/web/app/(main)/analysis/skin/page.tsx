@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { useTranslations } from 'next-intl';
 import { Camera, ImageIcon } from 'lucide-react';
 import type { SkinAnalysisResult } from '@/lib/mock/skin-analysis';
 import type { MultiAngleImages } from '@/types/visual-analysis';
@@ -28,6 +29,7 @@ type CaptureMode = 'select' | 'camera' | 'gallery';
 type AnalysisStep = 'guide' | 'mode-select' | 'camera' | 'upload' | 'loading' | 'result';
 
 export default function SkinAnalysisPage() {
+  const t = useTranslations('analysisEntry');
   const router = useRouter();
   const searchParams = useSearchParams();
   const forceNew = searchParams.get('forceNew') === 'true';
@@ -399,7 +401,7 @@ export default function SkinAnalysisPage() {
       setShowConfetti(true);
     } catch (err) {
       console.error('[S-1] Analysis error:', err);
-      setError('분석 중 오류가 발생했어요. 다시 시도해주세요.');
+      setError(t('error.analysisFailed'));
       // 에러 시 촬영 모드에 따라 적절한 단계로 복귀
       setStep(captureMode === 'camera' ? 'camera' : 'upload');
     } finally {
@@ -430,20 +432,20 @@ export default function SkinAnalysisPage() {
 
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
-    if (error) return '분석 중 오류가 발생했어요';
+    if (error) return t('error.analysisError');
     switch (step) {
       case 'guide':
-        return '정확한 분석을 위한 촬영 가이드';
+        return t('skin.subtitle.guide');
       case 'mode-select':
-        return '촬영 방법을 선택해주세요';
+        return t('skin.subtitle.modeSelect');
       case 'camera':
-        return '다각도 피부 촬영';
+        return t('skin.subtitle.camera');
       case 'upload':
-        return '피부 사진을 선택해주세요';
+        return t('skin.subtitle.upload');
       case 'loading':
-        return isAnalyzing ? 'AI가 분석 중이에요...' : 'AI가 분석 중이에요';
+        return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
       case 'result':
-        return '분석이 완료되었어요';
+        return t('subtitle.analysisComplete');
     }
   }, [step, error, isAnalyzing]);
 
@@ -453,12 +455,12 @@ export default function SkinAnalysisPage() {
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">이전 분석 결과 확인 중...</p>
+          <p className="text-muted-foreground mb-4">{t('loading.checkingExisting')}</p>
           <button
             onClick={() => window.history.back()}
             className="text-sm text-muted-foreground hover:text-foreground underline"
           >
-            돌아가기
+            {t('action.goBack')}
           </button>
         </div>
       </div>
@@ -483,7 +485,7 @@ export default function SkinAnalysisPage() {
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* 헤더 */}
           <header className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">피부 분석</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('skin.title')}</h1>
             <p className="text-muted-foreground mt-2">{subtitle}</p>
           </header>
 
@@ -494,7 +496,7 @@ export default function SkinAnalysisPage() {
               role="alert"
               aria-live="polite"
             >
-              {error}. 다시 시도해주세요.
+              {error}
             </div>
           )}
 
@@ -520,9 +522,7 @@ export default function SkinAnalysisPage() {
               {(!photoReuseEligibility?.eligible || reuseChecking) && (
                 <>
                   <div className="text-center mb-4">
-                    <p className="text-sm text-muted-foreground">
-                      피부 분석을 위한 사진이 필요해요
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('skin.photoNeeded')}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -535,8 +535,10 @@ export default function SkinAnalysisPage() {
                       <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                         <Camera className="w-7 h-7 text-primary" aria-hidden="true" />
                       </div>
-                      <span className="font-medium text-foreground">촬영</span>
-                      <span className="text-xs text-muted-foreground mt-1">(다각도)</span>
+                      <span className="font-medium text-foreground">{t('skin.modeCamera')}</span>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        ({t('skin.multiAngle')})
+                      </span>
                     </button>
 
                     {/* 갤러리 모드 (다각도 업로드) */}
@@ -551,20 +553,22 @@ export default function SkinAnalysisPage() {
                           aria-hidden="true"
                         />
                       </div>
-                      <span className="font-medium text-foreground">갤러리</span>
-                      <span className="text-xs text-muted-foreground mt-1">(다각도)</span>
+                      <span className="font-medium text-foreground">{t('skin.modeGallery')}</span>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        ({t('skin.multiAngle')})
+                      </span>
                     </button>
                   </div>
 
                   {/* 모드 설명 */}
                   <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
                     <p className="mb-2">
-                      <strong className="text-foreground">촬영 모드</strong>: 실시간 카메라로 정면 +
-                      좌/우측 다각도 촬영
+                      <strong className="text-foreground">{t('skin.modeCamera')}</strong>:{' '}
+                      {t('skin.modeCameraDesc')}
                     </p>
                     <p>
-                      <strong className="text-foreground">갤러리 모드</strong>: 기존에 찍은 사진으로
-                      정면 + 좌/우측 다각도 업로드
+                      <strong className="text-foreground">{t('skin.modeGallery')}</strong>:{' '}
+                      {t('skin.modeGalleryDesc')}
                     </p>
                   </div>
                 </>

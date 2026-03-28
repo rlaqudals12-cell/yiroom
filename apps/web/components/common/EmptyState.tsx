@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -52,11 +53,12 @@ export function EmptyState({
   compact = false,
   noAnimation = false,
 }: EmptyStateProps) {
+  const t = useTranslations('common');
   // 타입이 지정되면 미리 정의된 메시지 사용
   const preset = type ? EMPTY_STATE_MESSAGES[type] : null;
 
-  const displayTitle = title || preset?.title || '데이터가 없어요';
-  const displayDescription = description || preset?.description || '첫 번째 기록을 시작해보세요';
+  const displayTitle = title || preset?.title || t('emptyState.noData');
+  const displayDescription = description || preset?.description || t('emptyState.startFirst');
   const displayCtaText = ctaText || preset?.cta;
   const displayEmoji = emoji || preset?.emoji || '';
 
@@ -130,7 +132,7 @@ export function EmptyState({
 
       {/* 격려 메시지 */}
       {!compact && (
-        <p className="mt-4 text-xs text-muted-foreground/70">작은 시작이 큰 변화를 만들어요</p>
+        <p className="mt-4 text-xs text-muted-foreground/70">{t('emptyState.encouragement')}</p>
       )}
     </div>
   );
