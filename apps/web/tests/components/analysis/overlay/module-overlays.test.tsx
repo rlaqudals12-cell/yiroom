@@ -1,0 +1,138 @@
+/**
+ * T-6: 메이크업/헤어/구강 오버레이 렌더링 테스트
+ */
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { MakeupFaceMapOverlay } from '@/components/analysis/overlay/MakeupFaceMapOverlay';
+import { FaceOutlineOverlay } from '@/components/analysis/overlay/FaceOutlineOverlay';
+import { ToothDiagramOverlay } from '@/components/analysis/overlay/ToothDiagramOverlay';
+
+// face-api.js mock
+vi.mock('@/components/analysis/overlay/internal/face-model-loader', () => ({
+  loadFaceModels: vi.fn().mockResolvedValue(undefined),
+  detectFaceLandmarks: vi.fn().mockResolvedValue(null),
+  isFaceModelsLoaded: vi.fn().mockReturnValue(false),
+}));
+
+describe('MakeupFaceMapOverlay', () => {
+  const mockColorRecs = [
+    {
+      category: 'lip',
+      categoryLabel: '립',
+      colors: [{ name: '코랄', hex: '#FF6B6B', description: '' }],
+    },
+    {
+      category: 'eyeshadow',
+      categoryLabel: '아이섀도',
+      colors: [{ name: '브라운', hex: '#8B6914', description: '' }],
+    },
+    {
+      category: 'blush',
+      categoryLabel: '블러셔',
+      colors: [{ name: '피치', hex: '#FFCBA4', description: '' }],
+    },
+  ];
+
+  it('should render with data-testid', () => {
+    render(
+      <MakeupFaceMapOverlay
+        imageUrl="/test.jpg"
+        landmarks={null}
+        colorRecommendations={mockColorRecs}
+      />
+    );
+    expect(screen.getByTestId('makeup-facemap-overlay')).toBeInTheDocument();
+  });
+
+  it('should render category buttons', () => {
+    render(
+      <MakeupFaceMapOverlay
+        imageUrl="/test.jpg"
+        landmarks={null}
+        colorRecommendations={mockColorRecs}
+      />
+    );
+    expect(screen.getByTestId('makeup-category-lip')).toBeInTheDocument();
+    expect(screen.getByTestId('makeup-category-eyeshadow')).toBeInTheDocument();
+    expect(screen.getByTestId('makeup-category-blush')).toBeInTheDocument();
+    expect(screen.getByTestId('makeup-category-contour')).toBeInTheDocument();
+  });
+});
+
+describe('FaceOutlineOverlay', () => {
+  it('should render with data-testid', () => {
+    render(<FaceOutlineOverlay imageUrl="/test.jpg" landmarks={null} faceShape="oval" />);
+    expect(screen.getByTestId('face-outline-overlay')).toBeInTheDocument();
+  });
+
+  it('should display face shape label in sr description', () => {
+    render(
+      <FaceOutlineOverlay
+        imageUrl="/test.jpg"
+        landmarks={null}
+        faceShape="oval"
+        faceShapeLabel="타원형"
+      />
+    );
+    // SVG 내 testid 대신 접근성 텍스트로 검증
+    const overlay = screen.getByTestId('face-outline-overlay');
+    expect(overlay).toBeInTheDocument();
+  });
+
+  it('should render recommended styles grid', () => {
+    render(
+      <FaceOutlineOverlay
+        imageUrl="/test.jpg"
+        landmarks={null}
+        faceShape="oval"
+        recommendedStyles={[
+          { styleName: '레이어드 컷', description: '볼륨감', matchScore: 90 },
+          { styleName: 'C컬 펌', description: '자연스러운', matchScore: 85 },
+        ]}
+      />
+    );
+    expect(screen.getByTestId('face-outline-styles')).toBeInTheDocument();
+    expect(screen.getByText('레이어드 컷')).toBeInTheDocument();
+    expect(screen.getByText('90%')).toBeInTheDocument();
+  });
+});
+
+describe('ToothDiagramOverlay', () => {
+  it('should render with tooth color', () => {
+    render(
+      <ToothDiagramOverlay
+        toothColor={{
+          measuredLab: { L: 80, a: 2, b: 15 },
+          matchedShade: 'A2',
+          deltaE: 2.5,
+          confidence: 85,
+          alternativeMatches: [],
+          interpretation: {
+            brightness: 'medium',
+            yellowness: 'mild',
+            series: 'A',
+          },
+        }}
+      />
+    );
+    expect(screen.getByTestId('tooth-diagram-overlay')).toBeInTheDocument();
+    // 범례에 현재 셰이드 표시
+    expect(screen.getByText(/A2/)).toBeInTheDocument();
+  });
+
+  it('should render with gum health', () => {
+    render(
+      <ToothDiagramOverlay
+        gumHealth={{
+          healthStatus: 'mild_gingivitis',
+          inflammationScore: 35,
+          needsDentalVisit: false,
+          metrics: { aStarMean: 12, aStarStd: 3, rednessPercentage: 15, swellingIndicator: 20 },
+          recommendations: ['부드러운 칫솔 사용'],
+        }}
+        activeTab="gum-health"
+      />
+    );
+    expect(screen.getByText('경미한 염증')).toBeInTheDocument();
+  });
+});

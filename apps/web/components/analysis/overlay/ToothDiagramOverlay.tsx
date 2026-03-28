@@ -21,7 +21,7 @@ import type { OverlayMode } from './internal/overlay-tokens';
 export interface ToothDiagramOverlayProps {
   toothColor?: ToothColorResult;
   gumHealth?: GumHealthResult;
-  whiteningGoal?: WhiteningGoalResult;
+  whiteningGoal?: Partial<WhiteningGoalResult>;
   mode?: OverlayMode;
   activeTab?: 'tooth-color' | 'gum-health' | 'whitening';
 }
@@ -48,7 +48,7 @@ export function ToothDiagramOverlay({
 
   // 미백 목표 진행도
   const whiteningProg =
-    whiteningGoal && toothColor
+    whiteningGoal?.targetShade && toothColor
       ? getWhiteningProgress(toothColor.matchedShade, whiteningGoal.targetShade)
       : 0;
 
@@ -116,10 +116,12 @@ export function ToothDiagramOverlay({
                 <div
                   className="w-3 h-3 rounded border border-border"
                   style={{
-                    backgroundColor: VITA_SHADE_HEX[whiteningGoal.targetShade] ?? '#F5F0E8',
+                    backgroundColor: whiteningGoal.targetShade
+                      ? VITA_SHADE_HEX[whiteningGoal.targetShade]
+                      : '#F5F0E8',
                   }}
                 />
-                <span>목표: {whiteningGoal.targetShade}</span>
+                <span>목표: {whiteningGoal.targetShade ?? '-'}</span>
               </div>
             )}
           </>

@@ -192,25 +192,25 @@
 
 ## 6. UX/디자인
 
-| 문서                                                                      | 상태      | 설명                              | 관련 ADR                                                    |
-| ------------------------------------------------------------------------- | --------- | --------------------------------- | ----------------------------------------------------------- |
-| [SDD-GLOBAL-DESIGN-SPECIFICATION](SDD-GLOBAL-DESIGN-SPECIFICATION.md)     | 구현됨    | 글로벌 디자인 시스템              | -                                                           |
-| [SDD-2026-UX-TRENDS](SDD-2026-UX-TRENDS.md)                               | 계획됨    | 2026 UX 트렌드 적용               | [ADR-051](../adr/ADR-051-2026-ux-trends.md)                 |
-| [SDD-UX-SIMULATION-V1](SDD-UX-SIMULATION-V1.md)                           | 구현됨    | 페르소나 UX 시뮬레이션 개선       | [ADR-095](../adr/ADR-095-ux-simulation-improvements.md)     |
-| [SDD-ACCESSIBILITY](SDD-ACCESSIBILITY.md)                                 | 부분 구현 | 접근성 (WCAG 2.1 AA)              | [ADR-048](../adr/ADR-048-accessibility-strategy.md)         |
-| [SDD-ACCESSIBILITY-GUIDELINES](SDD-ACCESSIBILITY-GUIDELINES.md)           | 구현됨    | 접근성 가이드라인 (WCAG 2.1)      | -                                                           |
-| [SDD-MARKETING-TOGGLE-UI](SDD-MARKETING-TOGGLE-UI.md)                     | 구현됨    | 마케팅 토글 UI                    | ADR-029                                                     |
-| [SDD-MY-INFO-SECTION](SDD-MY-INFO-SECTION.md)                             | 구현됨    | 내 정보 섹션                      | -                                                           |
-| [SDD-GAP-FIXES](SDD-GAP-FIXES.md)                                         | 구현됨    | 갭 수정 사항                      | -                                                           |
-| [SDD-PHASE-K-COMPREHENSIVE-UPGRADE](SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md) | 스펙 완료 | Phase K 종합 업그레이드           | -                                                           |
-| [SDD-GLOBAL-PARTNERS-EXPANSION](SDD-GLOBAL-PARTNERS-EXPANSION.md)         | 계획됨    | 글로벌 파트너 확장                | -                                                           |
-| [SDD-PC1-ONBOARDING](SDD-PC1-ONBOARDING.md)                               | 구현됨    | PC-1 온보딩 플로우                | [ADR-039](../adr/ADR-039-pc1-onboarding-stabilization.md)   |
-| [SDD-LOGO-IDENTITY](SDD-LOGO-IDENTITY.md)                                 | 작성됨    | 로고 아이덴티티 스펙              | [ADR-057](../adr/ADR-057-design-system-v2.md)               |
-| [SDD-VISUAL-ENHANCEMENT](SDD-VISUAL-ENHANCEMENT.md)                       | 구현 대기 | 7모듈 시각적 오버레이 + 익명 공유 | [ADR-097](../adr/ADR-097-visual-overlay-anonymous-share.md) |
-| [SDD-HOME-3STATE](SDD-HOME-3STATE.md)                                     | 구현됨    | 홈 3-State 리디자인               | [ADR-076](../adr/ADR-076-home-3state-redesign.md)           |
-| [SDD-CONCERN-CARD](SDD-CONCERN-CARD.md)                                   | 구현됨    | ConcernCard 시각화 패턴           | [ADR-077](../adr/ADR-077-concern-card-pattern.md)           |
-| [SDD-ANALYSIS-RESULT-STANDARD](SDD-ANALYSIS-RESULT-STANDARD.md)           | 작성됨    | 분석 결과 화면 100점 표준         | -                                                           |
-| [SDD-HUB-PATTERN](SDD-HUB-PATTERN.md)                                     | 연기됨    | 분석 모듈 Hub 패턴                | [ADR-058](../adr/ADR-058-hub-pattern-deferral.md)           |
+| 문서                                                                      | 상태      | 설명                                                  | 관련 ADR                                                    |
+| ------------------------------------------------------------------------- | --------- | ----------------------------------------------------- | ----------------------------------------------------------- |
+| [SDD-GLOBAL-DESIGN-SPECIFICATION](SDD-GLOBAL-DESIGN-SPECIFICATION.md)     | 구현됨    | 글로벌 디자인 시스템                                  | -                                                           |
+| [SDD-2026-UX-TRENDS](SDD-2026-UX-TRENDS.md)                               | 계획됨    | 2026 UX 트렌드 적용                                   | [ADR-051](../adr/ADR-051-2026-ux-trends.md)                 |
+| [SDD-UX-SIMULATION-V1](SDD-UX-SIMULATION-V1.md)                           | 구현됨    | 페르소나 UX 시뮬레이션 개선                           | [ADR-095](../adr/ADR-095-ux-simulation-improvements.md)     |
+| [SDD-ACCESSIBILITY](SDD-ACCESSIBILITY.md)                                 | 부분 구현 | 접근성 (WCAG 2.1 AA)                                  | [ADR-048](../adr/ADR-048-accessibility-strategy.md)         |
+| [SDD-ACCESSIBILITY-GUIDELINES](SDD-ACCESSIBILITY-GUIDELINES.md)           | 구현됨    | 접근성 가이드라인 (WCAG 2.1)                          | -                                                           |
+| [SDD-MARKETING-TOGGLE-UI](SDD-MARKETING-TOGGLE-UI.md)                     | 구현됨    | 마케팅 토글 UI                                        | ADR-029                                                     |
+| [SDD-MY-INFO-SECTION](SDD-MY-INFO-SECTION.md)                             | 구현됨    | 내 정보 섹션                                          | -                                                           |
+| [SDD-GAP-FIXES](SDD-GAP-FIXES.md)                                         | 구현됨    | 갭 수정 사항                                          | -                                                           |
+| [SDD-PHASE-K-COMPREHENSIVE-UPGRADE](SDD-PHASE-K-COMPREHENSIVE-UPGRADE.md) | 스펙 완료 | Phase K 종합 업그레이드                               | -                                                           |
+| [SDD-GLOBAL-PARTNERS-EXPANSION](SDD-GLOBAL-PARTNERS-EXPANSION.md)         | 계획됨    | 글로벌 파트너 확장                                    | -                                                           |
+| [SDD-PC1-ONBOARDING](SDD-PC1-ONBOARDING.md)                               | 구현됨    | PC-1 온보딩 플로우                                    | [ADR-039](../adr/ADR-039-pc1-onboarding-stabilization.md)   |
+| [SDD-LOGO-IDENTITY](SDD-LOGO-IDENTITY.md)                                 | 작성됨    | 로고 아이덴티티 스펙                                  | [ADR-057](../adr/ADR-057-design-system-v2.md)               |
+| [SDD-VISUAL-ENHANCEMENT](SDD-VISUAL-ENHANCEMENT.md)                       | 구현 완료 | 7모듈 시각적 오버레이 + 익명 공유 (42 ATOM, 71 tests) | [ADR-097](../adr/ADR-097-visual-overlay-anonymous-share.md) |
+| [SDD-HOME-3STATE](SDD-HOME-3STATE.md)                                     | 구현됨    | 홈 3-State 리디자인                                   | [ADR-076](../adr/ADR-076-home-3state-redesign.md)           |
+| [SDD-CONCERN-CARD](SDD-CONCERN-CARD.md)                                   | 구현됨    | ConcernCard 시각화 패턴                               | [ADR-077](../adr/ADR-077-concern-card-pattern.md)           |
+| [SDD-ANALYSIS-RESULT-STANDARD](SDD-ANALYSIS-RESULT-STANDARD.md)           | 작성됨    | 분석 결과 화면 100점 표준                             | -                                                           |
+| [SDD-HUB-PATTERN](SDD-HUB-PATTERN.md)                                     | 연기됨    | 분석 모듈 Hub 패턴                                    | [ADR-058](../adr/ADR-058-hub-pattern-deferral.md)           |
 
 ---
 
