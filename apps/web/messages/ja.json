@@ -441,7 +441,16 @@
     "oralCanImprove": "良い状態ですが、さらにケアできるポイントがあります",
     "oralHealthy": "全体的に健康な状態です",
     "oralDisclaimer": "この結果はAIの参考情報であり、医療診断ではありません。正確な診断と治療は歯科専門医にご相談ください。",
-    "analyzedAt": "分析日時"
+    "analyzedAt": "分析日時",
+    "shareTitle.personalColor": "私のパーソナルカラーは{season}タイプ！",
+    "shareDesc.personalColor": "Yiroomであなたのパーソナルカラーを見つけよう",
+    "shareTitle.body": "私の体型は{type}タイプ！",
+    "shareDesc.body": "YiroomでAI体型分析を受けよう",
+    "shareTitle.skin": "Yiroom 肌分析結果",
+    "shareTitle.oralHealth": "Yiroom 口腔健康分析結果",
+    "printTitle.personalColor": "Yiroom パーソナルカラー分析結果",
+    "printTitle.oralHealth": "Yiroom 口腔健康分析結果",
+    "printTitle.skin": "Yiroom 肌分析結果"
   },
   "emptyState": {
     "feed": {

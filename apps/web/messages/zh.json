@@ -441,7 +441,16 @@
     "oralCanImprove": "状态良好，但仍有可改善之处",
     "oralHealthy": "整体健康状态良好",
     "oralDisclaimer": "此结果为AI参考信息，并非医疗诊断。如需准确诊断和治疗，请咨询牙科专业医生。",
-    "analyzedAt": "分析时间"
+    "analyzedAt": "分析时间",
+    "shareTitle.personalColor": "我的个人色彩是{season}类型！",
+    "shareDesc.personalColor": "在Yiroom发现你的个人色彩",
+    "shareTitle.body": "我的体型是{type}类型！",
+    "shareDesc.body": "在Yiroom进行AI体型分析",
+    "shareTitle.skin": "Yiroom 肌肤分析结果",
+    "shareTitle.oralHealth": "Yiroom 口腔健康分析结果",
+    "printTitle.personalColor": "Yiroom 个人色彩分析结果",
+    "printTitle.oralHealth": "Yiroom 口腔健康分析结果",
+    "printTitle.skin": "Yiroom 肌肤分析结果"
   },
   "emptyState": {
     "feed": {

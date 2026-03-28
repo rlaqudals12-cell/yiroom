@@ -441,7 +441,16 @@
     "oralCanImprove": "좋은 상태이지만 더 신경쓸 부분이 있어요",
     "oralHealthy": "전반적으로 건강한 상태예요",
     "oralDisclaimer": "이 결과는 AI 참고 정보이며 의료 진단이 아니에요. 정확한 진단과 치료는 치과 전문의와 상담해주세요.",
-    "analyzedAt": "분석 시간"
+    "analyzedAt": "분석 시간",
+    "shareTitle.personalColor": "나의 퍼스널 컬러는 {season} 타입!",
+    "shareDesc.personalColor": "이룸에서 나만의 퍼스널 컬러를 알아보세요",
+    "shareTitle.body": "나의 체형은 {type} 타입!",
+    "shareDesc.body": "이룸에서 AI 체형 분석 받아보세요",
+    "shareTitle.skin": "이룸 피부 분석 결과",
+    "shareTitle.oralHealth": "이룸 구강건강 분석 결과",
+    "printTitle.personalColor": "이룸 퍼스널 컬러 분석 결과",
+    "printTitle.oralHealth": "이룸 구강건강 분석 결과",
+    "printTitle.skin": "이룸 피부 분석 결과"
   },
   "emptyState": {
     "feed": {

@@ -177,7 +177,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
     : createOralHealthShareData({ overallScore: 0 });
   const { share: handleShare, loading: shareLoading } = useAnalysisShare(
     shareData,
-    '이룸 구강건강 분석 결과'
+    t('shareTitle.oralHealth')
   );
 
   // 로딩 상태
@@ -271,7 +271,7 @@ export default function OralHealthResultPage(): React.JSX.Element {
               format={shareFormat}
               onFormatChange={setShareFormat}
             />
-            <PrintButton title="이룸 구강건강 분석 결과" variant="ghost" size="sm" />
+            <PrintButton title={t('printTitle.oralHealth')} variant="ghost" size="sm" />
           </div>
         </header>
 

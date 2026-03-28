@@ -33,6 +33,14 @@ import { VisualReportCard } from '@/components/analysis/visual-report';
 import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+// Layer 0.5: 체형 실루엣 시각화 (ADR-097)
+const AnonymousBodyTemplate = dynamic(
+  () =>
+    import('@/components/analysis/overlay/anonymous/AnonymousBodyTemplate').then((mod) => ({
+      default: mod.AnonymousBodyTemplate,
+    })),
+  { loading: () => null, ssr: false }
+);
 const ProgressiveProfilePrompt = dynamic(
   () =>
     import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
@@ -383,6 +391,26 @@ export default function BodyAnalysisResultPage() {
             </div>
           )}
 
+          {/* Layer 0.5: 체형 실루엣 시각화 (ADR-097) */}
+          {result && (
+            <div className="flex justify-center mb-6">
+              <AnonymousBodyTemplate bodyType={(result.bodyType as 'S' | 'W' | 'N') || 'S'}>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center text-xs text-muted-foreground bg-background/80 rounded-lg px-3 py-2">
+                    <p className="font-semibold text-sm text-foreground mb-1">
+                      {result.bodyTypeLabel}
+                    </p>
+                    {result.measurements?.map((m, i) => (
+                      <p key={i}>
+                        {m.name}: {m.value}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </AnonymousBodyTemplate>
+            </div>
+          )}
+
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -595,8 +623,8 @@ export default function BodyAnalysisResultPage() {
             <div className="flex justify-center">
               <ShareButtons
                 content={{
-                  title: `나의 체형은 ${result.bodyTypeLabel} 타입!`,
-                  description: '이룸에서 AI 체형 분석 받아보세요',
+                  title: t('shareTitle.body', { type: result.bodyTypeLabel }),
+                  description: t('shareDesc.body'),
                   url: typeof window !== 'undefined' ? window.location.href : '',
                 }}
               />

@@ -750,14 +750,14 @@ export default function PersonalColorResultPage() {
                 onFormatChange={setShareFormat}
                 className="mt-2"
               />
-              <PrintButton title="이룸 퍼스널 컬러 분석 결과" variant="outline" />
+              <PrintButton title={t('printTitle.personalColor')} variant="outline" />
             </div>
             {/* 소셜 공유 버튼 */}
             <div className="flex justify-center">
               <ShareButtons
                 content={{
-                  title: `나의 퍼스널 컬러는 ${result?.seasonLabel || ''} 타입!`,
-                  description: '이룸에서 나만의 퍼스널 컬러를 알아보세요',
+                  title: t('shareTitle.personalColor', { season: result?.seasonLabel || '' }),
+                  description: t('shareDesc.personalColor'),
                   url: currentUrl,
                 }}
               />

@@ -441,7 +441,16 @@
     "oralCanImprove": "Good condition, but some areas need attention",
     "oralHealthy": "Overall healthy condition",
     "oralDisclaimer": "This result is AI-generated reference information, not a medical diagnosis. Please consult a dental professional for accurate diagnosis and treatment.",
-    "analyzedAt": "Analyzed at"
+    "analyzedAt": "Analyzed at",
+    "shareTitle.personalColor": "My personal color is {season} type!",
+    "shareDesc.personalColor": "Discover your personal color on Yiroom",
+    "shareTitle.body": "My body type is {type}!",
+    "shareDesc.body": "Get AI body type analysis on Yiroom",
+    "shareTitle.skin": "Yiroom Skin Analysis Result",
+    "shareTitle.oralHealth": "Yiroom Oral Health Analysis Result",
+    "printTitle.personalColor": "Yiroom Personal Color Analysis Result",
+    "printTitle.oralHealth": "Yiroom Oral Health Analysis Result",
+    "printTitle.skin": "Yiroom Skin Analysis Result"
   },
   "emptyState": {
     "feed": {

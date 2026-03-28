@@ -1550,7 +1550,7 @@ export default function SkinAnalysisResultPage() {
                 className="shadow-lg bg-card whitespace-nowrap"
                 onClick={() => {
                   const originalTitle = document.title;
-                  document.title = '이룸 피부 분석 결과';
+                  document.title = t('printTitle.skin');
                   window.print();
                   setTimeout(() => {
                     document.title = originalTitle;
