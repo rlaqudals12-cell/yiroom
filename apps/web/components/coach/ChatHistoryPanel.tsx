@@ -39,7 +39,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 // 상대적 시간 표시
 function formatRelativeTime(
   date: Date,
-  tFn: (key: string, values?: Record<string, unknown>) => string
+  tFn: (key: string, values?: Record<string, string | number | Date>) => string
 ): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();

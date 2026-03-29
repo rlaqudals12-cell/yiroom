@@ -61,7 +61,7 @@ function NavLocaleSwitcher(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        aria-label="언어 선택"
+        aria-label="Language"
         disabled={isPending}
       >
         <Globe className="h-5 w-5" />

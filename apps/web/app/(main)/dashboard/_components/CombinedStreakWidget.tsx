@@ -179,7 +179,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
               <p className="text-xs text-muted-foreground mt-1">
                 {t('streak.daysToMilestone', {
                   milestone: workoutStreak.nextMilestone,
-                  remaining: workoutStreak.daysToNextMilestone,
+                  remaining: workoutStreak.daysToNextMilestone ?? 0,
                 })}
               </p>
             )}
@@ -199,7 +199,7 @@ export default function CombinedStreakWidget({ userId }: CombinedStreakWidgetPro
               <p className="text-xs text-muted-foreground mt-1">
                 {t('streak.daysToMilestone', {
                   milestone: nutritionStreak.nextMilestone,
-                  remaining: nutritionStreak.daysToNextMilestone,
+                  remaining: nutritionStreak.daysToNextMilestone ?? 0,
                 })}
               </p>
             )}

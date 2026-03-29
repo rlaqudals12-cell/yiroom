@@ -9,7 +9,7 @@ import { getDateLocale } from '@/lib/utils/date-format';
 function formatRelativeTime(
   date: Date,
   locale: string,
-  t: (key: string, values?: Record<string, unknown>) => string
+  t: (key: string, values?: Record<string, string | number | Date>) => string
 ): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();

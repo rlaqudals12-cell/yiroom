@@ -20,7 +20,7 @@ type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 function formatDate(
   date: Date,
   locale: string = 'ko',
-  tFn: (key: string, values?: Record<string, unknown>) => string
+  tFn: (key: string, values?: Record<string, string | number | Date>) => string
 ): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
