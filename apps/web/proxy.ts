@@ -115,6 +115,8 @@ const isPublicRoute = createRouteMatcher([
   '/complete-profile',
   // 초대 링크 (비로그인 사용자도 접근)
   '/invite(.*)',
+  // 데모 결과 페이지 (가입 전 체험)
+  '/demo(.*)',
   // API 웹훅 (외부 서비스 콜백)
   '/api/webhooks(.*)',
   '/api/affiliate/(.*)',

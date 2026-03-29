@@ -5,7 +5,18 @@ import Link from 'next/link';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles, Palette, User, Droplets, Sun, Shirt } from 'lucide-react';
+import {
+  Dumbbell,
+  Sparkles,
+  Palette,
+  User,
+  Droplets,
+  Sun,
+  Shirt,
+  Camera,
+  BarChart3,
+  ChevronRight,
+} from 'lucide-react';
 const MODULE_META = [
   {
     id: 'personal-color',
@@ -235,6 +246,47 @@ export function LandingContent(): React.JSX.Element {
             ))}
           </div>
 
+          {/* How it Works 3-Step */}
+          <div ref={observe} className="landing-reveal px-4 pt-8 pb-2">
+            <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-4">
+              {t('howItWorksTitle')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { icon: Camera, gradient: 'from-rose-400 to-pink-500' },
+                { icon: Sparkles, gradient: 'from-violet-400 to-purple-500' },
+                { icon: BarChart3, gradient: 'from-blue-400 to-indigo-500' },
+              ].map((step, i) => (
+                <div key={i} className="relative flex flex-col items-center text-center">
+                  <div className="flex items-center gap-3 md:flex-col md:gap-0">
+                    {/* 숫자 배지 + 아이콘 */}
+                    <div className="relative">
+                      <div
+                        className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center`}
+                      >
+                        <step.icon className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white text-neutral-950 text-xs font-bold flex items-center justify-center">
+                        {i + 1}
+                      </span>
+                    </div>
+                    {/* 제목 + 설명 (모바일: 가로 배치) */}
+                    <div className="text-left md:text-center md:mt-3">
+                      <h3 className="text-white font-semibold text-sm">{t(`step${i}Title`)}</h3>
+                      <p className="text-zinc-400 text-xs mt-1 leading-relaxed">
+                        {t(`step${i}Desc`)}
+                      </p>
+                    </div>
+                  </div>
+                  {/* 화살표 (md 이상, 마지막 제외) */}
+                  {i < 2 && (
+                    <ChevronRight className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* 웰니스 모듈 섹션 — 2-2: 강화된 설명 + 2-4: 스크롤 애니메이션 */}
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-8">
             {t('modulesTitle')}
@@ -330,6 +382,17 @@ export function LandingContent(): React.JSX.Element {
                 </div>
               );
             })}
+          </div>
+
+          {/* 데모 결과 링크 */}
+          <div className="flex justify-center px-4 pt-2 pb-4">
+            <Link
+              href="/demo/personal-color"
+              className="text-sm text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1"
+            >
+              {t('demoLink')}
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
 
           {/* 하단 CTA — 1-5: 퍼스널컬러 통일 */}
