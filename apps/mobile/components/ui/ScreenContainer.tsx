@@ -121,15 +121,16 @@ export function ScreenContainer({
     />
   ) : undefined;
 
-  // 배경 그라디언트 레이어 (pointerEvents="none"으로 터치 이벤트 통과)
+  // 배경 그라디언트 레이어 — zIndex: -1로 ScrollView 아래 배치 (Android 터치 차단 방지)
   const backgroundLayer = gradientColors ? (
-    <LinearGradient
-      colors={gradientColors as unknown as [string, string, ...string[]]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={StyleSheet.absoluteFill}
-      pointerEvents="none"
-    />
+    <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]} pointerEvents="none">
+      <LinearGradient
+        colors={gradientColors as unknown as [string, string, ...string[]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
   ) : null;
 
   if (!scrollable) {
@@ -165,6 +166,9 @@ export function ScreenContainer({
         ]}
         refreshControl={refreshControl}
         keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
+        removeClippedSubviews
+        overScrollMode="always"
       >
         {children}
       </ScrollView>

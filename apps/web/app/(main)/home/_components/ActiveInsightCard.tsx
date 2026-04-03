@@ -187,13 +187,16 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
       ) : (
         <div className="px-5 pb-5" data-testid="home-active-insight-empty">
           <p className="text-sm text-muted-foreground">
-            더 많은 분석을 완료하면 맞춤 인사이트가 생성돼요
+            분석 결과를 조합해서 인사이트를 준비하고 있어요
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            아직 완료하지 않은 분석이 있다면 추가해보세요
           </p>
           <Link
             href="/analysis"
             className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
           >
-            분석 더 하기
+            분석 허브 보기
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

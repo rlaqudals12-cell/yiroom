@@ -173,15 +173,7 @@ export function LandingContent(): React.JSX.Element {
                 </div>
               </div>
 
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  padding: '1.5rem',
-                }}
-              >
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:max-w-[60%]">
                 <h1
                   style={{
                     fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
@@ -212,7 +204,7 @@ export function LandingContent(): React.JSX.Element {
                 <p className="mt-3 text-xs text-zinc-500">✦ {t('socialProof')}</p>
 
                 {/* 1-5: CTA 통일 — 퍼스널컬러 진단 */}
-                <div className="mt-5">
+                <div className="mt-5 flex flex-wrap items-center gap-3">
                   <SignedOut>
                     <SignInButton mode="modal">
                       <Button className="h-12 px-6 md:h-14 md:px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm md:text-base font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
@@ -228,6 +220,14 @@ export function LandingContent(): React.JSX.Element {
                       </Button>
                     </Link>
                   </SignedIn>
+                  <Link href="/demo/personal-color">
+                    <Button
+                      variant="outline"
+                      className="h-12 px-6 md:h-14 md:px-8 rounded-xl border-zinc-700 text-zinc-300 hover:border-pink-500/50 hover:text-pink-300 text-sm md:text-base font-medium transition-all duration-300"
+                    >
+                      {t('demoCtaButton')}
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>

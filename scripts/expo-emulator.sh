@@ -62,4 +62,5 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 cd "$PROJECT_DIR"
-EXPO_NO_DEPENDENCY_VALIDATION=1 npx expo start --go --port $PORT
+# 에뮬레이터는 adb reverse로 localhost만 접근 가능하므로 강제 지정
+REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1 EXPO_NO_DEPENDENCY_VALIDATION=1 npx expo start --go --port $PORT --localhost

@@ -1,4 +1,47 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(grep -o '\"file_path\":\"[^\"]*\"' | sed 's/\"file_path\":\"//;s/\"$//'); if echo \"$f\" | grep -qiE '\\.env|credential|secret'; then echo \"Protected file: $f\" >&2; exit 2; fi; exit 0",
+            "timeout": 5,
+            "statusMessage": "파일 보호 검사 중..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(grep -o '\"file_path\":\"[^\"]*\"' | sed 's/\"file_path\":\"//;s/\"$//'); cd /c/dev/yiroom/apps/web && rel=$(echo \"$f\" | sed 's|.*apps/web/||'); [ -f \"$rel\" ] && npx prettier --write \"$rel\" 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "Auto-formatting..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "cd apps/web && npx tsc --noEmit 실행해서 TypeScript 에러가 있는지 확인해. 에러가 있으면 {\"ok\": false, \"reason\": \"에러 내용 요약\"} 반환. 없으면 {\"ok\": true} 반환.",
+            "timeout": 120,
+            "statusMessage": "TypeScript 검사 중..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(git push:*)",
