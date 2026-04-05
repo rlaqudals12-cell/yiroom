@@ -7,12 +7,21 @@
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Palette, Sparkles, Ruler, Scissors, Brush, FlaskConical, Check, Search } from 'lucide-react-native';
+import {
+  Palette,
+  Sparkles,
+  Ruler,
+  Scissors,
+  Brush,
+  FlaskConical,
+  Check,
+  Search,
+} from 'lucide-react-native';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { OnboardingHero } from '../../components/onboarding';
-import { GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
+import { StepProgressBar, ScreenContainer } from '../../components/ui';
 import { TIMING, staggeredEntry } from '../../lib/animations';
 import {
   useOnboarding,
@@ -74,8 +83,18 @@ export default function OnboardingStep1() {
           testID="onboarding-hero"
         />
 
+        {/* 진행 표시 — 히어로 바로 아래 */}
+        <View style={{ marginTop: spacing.sm, marginBottom: spacing.xs }}>
+          <StepProgressBar
+            current={1}
+            total={3}
+            accentColor={STEP1_ACCENT}
+            testID="step-progress"
+          />
+        </View>
+
         {/* 분석 선택 카드 */}
-        <View style={{ gap: spacing.smx, marginTop: spacing.lg }}>
+        <View style={{ gap: spacing.smx, marginTop: spacing.md }}>
           {ANALYSES.map((analysis, index) => {
             const isSelected = interests.includes(analysis);
             const IconComponent = ANALYSIS_ICON_MAP[analysis];
@@ -91,9 +110,7 @@ export default function OnboardingStep1() {
                         ? `${analysisColor.gradient[0]}30`
                         : `${colors.card}CC`,
                       borderRadius: radii.xl,
-                      borderColor: isSelected
-                        ? analysisColor.gradient[1]
-                        : `${colors.border}80`,
+                      borderColor: isSelected ? analysisColor.gradient[1] : `${colors.border}80`,
                       borderWidth: isSelected ? 2 : 1,
                       padding: spacing.md,
                       opacity: pressed ? 0.85 : 1,
@@ -121,19 +138,11 @@ export default function OnboardingStep1() {
                       end={{ x: 1, y: 1 }}
                       style={styles.iconBox}
                     >
-                      <IconComponent
-                        size={24}
-                        color={colors.overlayForeground}
-                        strokeWidth={2}
-                      />
+                      <IconComponent size={24} color={colors.overlayForeground} strokeWidth={2} />
                     </LinearGradient>
                   ) : (
                     <View style={[styles.iconBox, { backgroundColor: analysisColor.bg }]}>
-                      <IconComponent
-                        size={24}
-                        color={analysisColor.gradient[0]}
-                        strokeWidth={2}
-                      />
+                      <IconComponent size={24} color={analysisColor.gradient[0]} strokeWidth={2} />
                     </View>
                   )}
 
@@ -141,9 +150,7 @@ export default function OnboardingStep1() {
                   <View style={styles.goalTextWrap}>
                     <Text
                       style={{
-                        color: isSelected
-                          ? analysisColor.gradient[0]
-                          : colors.foreground,
+                        color: isSelected ? analysisColor.gradient[0] : colors.foreground,
                         fontSize: typography.size.base,
                         fontWeight: isSelected
                           ? typography.weight.bold
@@ -176,37 +183,15 @@ export default function OnboardingStep1() {
           })}
         </View>
 
-        {/* 선택 현황 요약 */}
-        {interests.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
-            <GlassCard shadowSize="md" style={{ marginTop: spacing.md }}>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                관심 분석 ({interests.length}개)
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.xs + 1,
-                  color: colors.mutedForeground,
-                  lineHeight: 20,
-                }}
-              >
-                {interests.map((a) => ANALYSIS_LABELS[a]).join(' · ')}
-              </Text>
-            </GlassCard>
-          </Animated.View>
-        )}
-
         {/* 운동/영양 관심 링크 */}
-        <Animated.View entering={FadeInUp.delay(550).duration(TIMING.normal)}>
+        <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
           <Pressable
-            style={{ marginTop: spacing.md, alignItems: 'center', minHeight: 44, justifyContent: 'center' }}
+            style={{
+              marginTop: spacing.md,
+              alignItems: 'center',
+              minHeight: 44,
+              justifyContent: 'center',
+            }}
             onPress={nextStep}
             testID="wellness-skip-link"
           >
@@ -219,18 +204,6 @@ export default function OnboardingStep1() {
               운동/영양도 관심 있어요 →
             </Text>
           </Pressable>
-        </Animated.View>
-
-        {/* 진행 표시 */}
-        <Animated.View entering={FadeInUp.delay(600).duration(TIMING.normal)}>
-          <View style={{ marginTop: spacing.xl }}>
-            <StepProgressBar
-              current={1}
-              total={3}
-              accentColor={STEP1_ACCENT}
-              testID="step-progress"
-            />
-          </View>
         </Animated.View>
       </ScrollView>
 
@@ -270,9 +243,7 @@ export default function OnboardingStep1() {
             accessibilityState={{ disabled: !canProceed }}
           >
             <LinearGradient
-              colors={
-                canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]
-              }
+              colors={canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}

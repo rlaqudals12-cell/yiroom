@@ -5,7 +5,6 @@
  * 모든 탭/서브 화면에서 일관된 구조를 제공.
  * 배경 그라디언트: 라이트 모드는 반투명 파스텔, 다크 모드는 미묘한 색조로 깊이감 부여.
  */
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { type ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -121,26 +120,17 @@ export function ScreenContainer({
     />
   ) : undefined;
 
-  // 배경 그라디언트 레이어 — zIndex: -1로 ScrollView 아래 배치 (Android 터치 차단 방지)
-  const backgroundLayer = gradientColors ? (
-    <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]} pointerEvents="none">
-      <LinearGradient
-        colors={gradientColors as unknown as [string, string, ...string[]]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-    </View>
-  ) : null;
+  // 배경색 — Android에서 absolute 오버레이가 ScrollView 터치를 차단하므로
+  // SafeAreaView의 backgroundColor로 그라디언트 첫 번째 색상만 적용
+  const bgColor = gradientColors ? (gradientColors[0] as string) : colors.background;
 
   if (!scrollable) {
     return (
       <SafeAreaView
         edges={edges}
         testID={testID}
-        style={[styles.container, { backgroundColor: colors.background }, style]}
+        style={[styles.container, { backgroundColor: bgColor }, style]}
       >
-        {backgroundLayer}
         <View style={[{ paddingHorizontal: contentPadding, flex: 1 }, contentContainerStyle]}>
           {children}
         </View>
@@ -152,9 +142,8 @@ export function ScreenContainer({
     <SafeAreaView
       edges={edges}
       testID={testID}
-      style={[styles.container, { backgroundColor: colors.background }, style]}
+      style={[styles.container, { backgroundColor: bgColor }, style]}
     >
-      {backgroundLayer}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[

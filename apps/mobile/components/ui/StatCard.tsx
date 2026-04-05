@@ -184,7 +184,6 @@ export function StatCard({
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
-    minWidth: 100,
     position: 'relative',
     overflow: 'hidden',
   },

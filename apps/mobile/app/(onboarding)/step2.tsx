@@ -18,14 +18,13 @@ import {
   Sparkles,
   Shirt,
   Calendar,
-  ChevronLeft,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { OnboardingHero } from '../../components/onboarding';
-import { GlassCard, StepProgressBar, Button, ScreenContainer } from '../../components/ui';
+import { StepProgressBar, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
@@ -42,14 +41,20 @@ import { useTheme, typography, radii, spacing } from '../../lib/theme';
 const STEP2_ACCENT = '#8B5CF6';
 
 const GENDERS: Gender[] = ['male', 'female', 'neutral'];
-const GENDER_ICONS: Record<Gender, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
+const GENDER_ICONS: Record<
+  Gender,
+  React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
+> = {
   male: User,
   female: UserCircle,
   neutral: Users,
 };
 
 const STYLES: StylePreference[] = ['masculine', 'feminine', 'unisex'];
-const STYLE_ICONS: Record<StylePreference, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
+const STYLE_ICONS: Record<
+  StylePreference,
+  React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
+> = {
   masculine: Diamond,
   feminine: Heart,
   unisex: Zap,
@@ -100,18 +105,6 @@ export default function OnboardingStep2() {
   return (
     <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step2">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 미니 백 버튼 */}
-        <Pressable
-          onPress={prevStep}
-          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-          testID="mini-back-button"
-          accessibilityRole="button"
-          accessibilityLabel="이전 단계로 돌아가기"
-        >
-          <ChevronLeft size={20} color={colors.foreground} strokeWidth={2} />
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
-        </Pressable>
-
         {/* 파스텔 히어로 헤더 */}
         <OnboardingHero
           icon={Sparkles}
@@ -120,6 +113,16 @@ export default function OnboardingStep2() {
           glowColor={STEP2_ACCENT}
           testID="onboarding-hero"
         />
+
+        {/* 진행 표시 — 히어로 바로 아래 */}
+        <View style={{ marginTop: spacing.sm, marginBottom: spacing.xs }}>
+          <StepProgressBar
+            current={2}
+            total={3}
+            accentColor={STEP2_ACCENT}
+            testID="step-progress"
+          />
+        </View>
 
         {/* 성별 선택 */}
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
@@ -302,7 +305,14 @@ export default function OnboardingStep2() {
               accessibilityLabel="출생년도"
             />
             {birthYear.length === 4 && birthYearError && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs, gap: 4 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: spacing.xs,
+                  gap: 4,
+                }}
+              >
                 <AlertCircle size={14} color="#EF4444" strokeWidth={2} />
                 <Text
                   style={{
@@ -328,51 +338,6 @@ export default function OnboardingStep2() {
             )}
           </View>
         </Animated.View>
-
-        {/* 입력 현황 */}
-        {data.basicInfo.gender && (
-          <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
-            <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.semibold,
-                  color: colors.foreground,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                입력 현황
-              </Text>
-              <Text
-                style={{
-                  fontSize: typography.size.xs + 1,
-                  color: colors.mutedForeground,
-                  lineHeight: 20,
-                }}
-              >
-                {[
-                  data.basicInfo.gender ? `성별: ${GENDER_LABELS[data.basicInfo.gender]}` : null,
-                  data.stylePreference
-                    ? `스타일: ${STYLE_PREFERENCE_LABELS[data.stylePreference]}`
-                    : null,
-                  data.basicInfo.birthYear ? `출생: ${data.basicInfo.birthYear}년` : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </Text>
-            </GlassCard>
-          </Animated.View>
-        )}
-
-        {/* 진행 표시 */}
-        <View style={{ marginTop: spacing.xl }}>
-          <StepProgressBar
-            current={2}
-            total={3}
-            accentColor={STEP2_ACCENT}
-            testID="step-progress"
-          />
-        </View>
       </ScrollView>
 
       {/* 푸터 */}
@@ -391,25 +356,44 @@ export default function OnboardingStep2() {
               paddingTop: spacing.md,
               gap: spacing.sm + 4,
               backgroundColor: colors.background,
+              alignItems: 'center',
             },
           ]}
         >
-          <Button
-            variant="secondary"
-            size="lg"
+          <Pressable
             onPress={prevStep}
+            style={({ pressed }) => ({
+              width: 80,
+              height: 52,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: radii.full,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.background,
+              opacity: pressed ? 0.6 : 1,
+            })}
             testID="back-button"
-            style={{ flex: 1 }}
+            accessibilityRole="button"
+            accessibilityLabel="이전"
           >
-            이전
-          </Button>
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
+              이전
+            </Text>
+          </Pressable>
           <Pressable
             onPress={nextStep}
             disabled={!canProceed}
             style={({ pressed }) => [
               shadows.md,
               {
-                flex: 2,
+                flex: 1,
                 borderRadius: radii.full,
                 overflow: 'hidden',
                 opacity: !canProceed ? 0.5 : pressed ? 0.9 : 1,
@@ -422,9 +406,7 @@ export default function OnboardingStep2() {
             accessibilityState={{ disabled: !canProceed }}
           >
             <LinearGradient
-              colors={
-                canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]
-              }
+              colors={canProceed ? ['#EC4899', '#A855F7'] : [colors.secondary, colors.secondary]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 52, alignItems: 'center', justifyContent: 'center' }}
@@ -450,14 +432,6 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xxs,
-    marginBottom: spacing.smx,
-    alignSelf: 'flex-start',
-    minHeight: 44,
   },
   sectionTitleRow: {
     flexDirection: 'row',

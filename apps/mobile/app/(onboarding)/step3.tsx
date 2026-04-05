@@ -7,23 +7,13 @@
 
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  TrendingDown,
-  Dumbbell,
-  HeartPulse,
-  Wind,
-  Moon,
-  Ruler,
-  Check,
-  ChevronLeft,
-  ClipboardCheck,
-} from 'lucide-react-native';
+import { TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Ruler, Check } from 'lucide-react-native';
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { OnboardingHero } from '../../components/onboarding';
-import { Button, GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
+import { GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
   useOnboarding,
@@ -31,10 +21,6 @@ import {
   GOAL_LABELS,
   GOAL_DESCRIPTIONS,
   GOAL_COLORS,
-  ANALYSIS_LABELS,
-  GENDER_LABELS,
-  STYLE_PREFERENCE_LABELS,
-  calculateAge,
 } from '../../lib/onboarding';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
@@ -91,18 +77,6 @@ export default function OnboardingStep3() {
   return (
     <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step3">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 미니 백 버튼 */}
-        <Pressable
-          onPress={prevStep}
-          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-          testID="mini-back-button"
-          accessibilityRole="button"
-          accessibilityLabel="이전 단계로 돌아가기"
-        >
-          <ChevronLeft size={20} color={colors.foreground} strokeWidth={2} />
-          <Text style={{ color: colors.foreground, fontSize: typography.size.sm }}>이전</Text>
-        </Pressable>
-
         {/* 파스텔 히어로 */}
         <OnboardingHero
           icon={Dumbbell}
@@ -112,9 +86,19 @@ export default function OnboardingStep3() {
           testID="onboarding-hero"
         />
 
+        {/* 진행 표시 — 히어로 바로 아래 */}
+        <View style={{ marginTop: spacing.sm, marginBottom: spacing.xs }}>
+          <StepProgressBar
+            current={3}
+            total={3}
+            accentColor={STEP3_ACCENT}
+            testID="step-progress"
+          />
+        </View>
+
         {/* 웰니스 목표 선택 */}
         <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-          <View style={{ gap: spacing.sm, marginTop: spacing.lg }}>
+          <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
             {GOALS.map((goal, index) => {
               const isSelected = data.goals.includes(goal);
               const IconComponent = GOAL_ICON_MAP[goal];
@@ -157,11 +141,7 @@ export default function OnboardingStep3() {
                       end={{ x: 1, y: 1 }}
                       style={styles.iconBox}
                     >
-                      <IconComponent
-                        size={20}
-                        color={colors.overlayForeground}
-                        strokeWidth={2}
-                      />
+                      <IconComponent size={20} color={colors.overlayForeground} strokeWidth={2} />
                     </LinearGradient>
                   ) : (
                     <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
@@ -276,77 +256,6 @@ export default function OnboardingStep3() {
             </GlassCard>
           </View>
         </Animated.View>
-
-        {/* 요약 카드 */}
-        <Animated.View entering={FadeInUp.delay(450).duration(TIMING.normal)}>
-          <GlassCard shadowSize="lg" style={{ marginBottom: spacing.md }}>
-            <View style={styles.summaryHeader}>
-              <ClipboardCheck size={18} color={STEP3_ACCENT} strokeWidth={2} />
-              <Text
-                style={{
-                  fontSize: typography.size.sm,
-                  fontWeight: typography.weight.bold,
-                  color: colors.foreground,
-                  marginLeft: spacing.xs,
-                }}
-              >
-                입력 요약
-              </Text>
-            </View>
-            <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
-              {data.analysisInterests && data.analysisInterests.length > 0 && (
-                <SummaryRow
-                  label="관심 분석"
-                  value={data.analysisInterests.map((a) => ANALYSIS_LABELS[a]).join(', ')}
-                />
-              )}
-              {data.basicInfo.gender && (
-                <SummaryRow label="성별" value={GENDER_LABELS[data.basicInfo.gender]} />
-              )}
-              {data.stylePreference && (
-                <SummaryRow
-                  label="스타일"
-                  value={STYLE_PREFERENCE_LABELS[data.stylePreference]}
-                />
-              )}
-              {data.basicInfo.birthYear && (
-                <SummaryRow
-                  label="나이"
-                  value={`만 ${calculateAge(data.basicInfo.birthYear)}세`}
-                />
-              )}
-              {data.goals.length > 0 && (
-                <SummaryRow
-                  label="건강 목표"
-                  value={data.goals.map((g) => GOAL_LABELS[g]).join(', ')}
-                />
-              )}
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: spacing.xs,
-                marginTop: spacing.md,
-              }}
-            >
-              <Check size={14} color={STEP3_ACCENT} strokeWidth={2} />
-              <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-                모든 정보는 안전하게 보관돼요
-              </Text>
-            </View>
-          </GlassCard>
-        </Animated.View>
-
-        {/* 진행 표시 */}
-        <View style={{ marginTop: spacing.xl }}>
-          <StepProgressBar
-            current={3}
-            total={3}
-            accentColor={STEP3_ACCENT}
-            testID="step-progress"
-          />
-        </View>
       </ScrollView>
 
       {/* 푸터 */}
@@ -365,24 +274,43 @@ export default function OnboardingStep3() {
               paddingTop: spacing.md,
               gap: spacing.sm + 4,
               backgroundColor: colors.background,
+              alignItems: 'center',
             },
           ]}
         >
-          <Button
-            variant="secondary"
-            size="lg"
+          <Pressable
             onPress={handleComplete}
+            style={({ pressed }) => ({
+              width: 100,
+              height: 52,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: radii.full,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.background,
+              opacity: pressed ? 0.6 : 1,
+            })}
             testID="skip-button"
-            style={{ flex: 1 }}
+            accessibilityRole="button"
+            accessibilityLabel="건너뛰기"
           >
-            건너뛰기
-          </Button>
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
+              건너뛰기
+            </Text>
+          </Pressable>
           <Pressable
             onPress={handleComplete}
             style={({ pressed }) => [
               shadows.md,
               {
-                flex: 2,
+                flex: 1,
                 borderRadius: radii.full,
                 overflow: 'hidden',
                 opacity: pressed ? 0.9 : 1,
@@ -416,41 +344,10 @@ export default function OnboardingStep3() {
   );
 }
 
-// 요약 행 컴포넌트
-function SummaryRow({ label, value }: { label: string; value: string }): React.JSX.Element {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.summaryRow}>
-      <Text style={{ fontSize: typography.size.xs + 1, color: colors.mutedForeground, width: 80 }}>
-        {label}
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.size.xs + 1,
-          color: colors.foreground,
-          fontWeight: '500' as const,
-          flex: 1,
-        }}
-        numberOfLines={2}
-      >
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   content: {
     padding: spacing.mlg,
     paddingBottom: 140,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xxs,
-    marginBottom: spacing.smx,
-    alignSelf: 'flex-start',
-    minHeight: 44,
   },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -492,14 +389,6 @@ const styles = StyleSheet.create({
   customInput: {
     flex: 1,
     padding: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
   },
   footerWrap: {
     position: 'absolute',

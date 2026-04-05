@@ -357,7 +357,13 @@ export default function HomeScreen(): React.JSX.Element {
                   paddingHorizontal: spacing.md,
                 }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
+                <Text
+                  style={{
+                    color: '#FFFFFF',
+                    fontWeight: typography.weight.semibold,
+                    fontSize: typography.size.sm,
+                  }}
+                >
                   🎨 퍼스널컬러
                 </Text>
               </Pressable>
@@ -370,7 +376,13 @@ export default function HomeScreen(): React.JSX.Element {
                   paddingHorizontal: spacing.md,
                 }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: typography.weight.semibold, fontSize: typography.size.sm }}>
+                <Text
+                  style={{
+                    color: '#FFFFFF',
+                    fontWeight: typography.weight.semibold,
+                    fontSize: typography.size.sm,
+                  }}
+                >
                   ✨ 피부 분석
                 </Text>
               </Pressable>
@@ -393,20 +405,72 @@ export default function HomeScreen(): React.JSX.Element {
               나에 대해 {analysisCount}가지를 발견했어요 ✨
             </Text>
             {/* 완료 분석 칩 */}
-            <View style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.sm, flexWrap: 'wrap' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: spacing.xs,
+                marginBottom: spacing.sm,
+                flexWrap: 'wrap',
+              }}
+            >
               {personalColor && (
-                <View style={{ backgroundColor: `${moduleColors.personalColor.base}20`, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs }}>
-                  <Text style={{ color: moduleColors.personalColor.base, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>🎨 퍼스널컬러</Text>
+                <View
+                  style={{
+                    backgroundColor: `${moduleColors.personalColor.base}20`,
+                    borderRadius: radii.full,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xxs,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: moduleColors.personalColor.base,
+                      fontSize: typography.size.xs,
+                      fontWeight: typography.weight.semibold,
+                    }}
+                  >
+                    🎨 퍼스널컬러
+                  </Text>
                 </View>
               )}
               {skinAnalysis && (
-                <View style={{ backgroundColor: `${moduleColors.skin.base}20`, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs }}>
-                  <Text style={{ color: moduleColors.skin.base, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>✨ 피부</Text>
+                <View
+                  style={{
+                    backgroundColor: `${moduleColors.skin.base}20`,
+                    borderRadius: radii.full,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xxs,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: moduleColors.skin.base,
+                      fontSize: typography.size.xs,
+                      fontWeight: typography.weight.semibold,
+                    }}
+                  >
+                    ✨ 피부
+                  </Text>
                 </View>
               )}
               {bodyAnalysis && (
-                <View style={{ backgroundColor: `${moduleColors.body.base}20`, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: spacing.xxs }}>
-                  <Text style={{ color: moduleColors.body.base, fontSize: typography.size.xs, fontWeight: typography.weight.semibold }}>📐 체형</Text>
+                <View
+                  style={{
+                    backgroundColor: `${moduleColors.body.base}20`,
+                    borderRadius: radii.full,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: spacing.xxs,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: moduleColors.body.base,
+                      fontSize: typography.size.xs,
+                      fontWeight: typography.weight.semibold,
+                    }}
+                  >
+                    📐 체형
+                  </Text>
                 </View>
               )}
             </View>
@@ -509,26 +573,31 @@ export default function HomeScreen(): React.JSX.Element {
                 suffix="일"
                 emoji="🔥"
                 moduleColor="workout"
+                style={{ flex: 1 }}
                 testID="stat-workout"
               />
             </Animated.View>
-            <StatCard
-              value={calorieProgress}
-              label="칼로리"
-              suffix="%"
-              emoji="🍽️"
-              moduleColor="nutrition"
-              style={{ flex: 1 }}
-              testID="stat-calorie"
-            />
-            <StatCard
-              value={analysisCount}
-              label="분석 완료"
-              suffix="/3"
-              emoji="✨"
-              style={{ flex: 1 }}
-              testID="stat-analysis"
-            />
+            <View style={{ flex: 1 }}>
+              <StatCard
+                value={calorieProgress}
+                label="칼로리"
+                suffix="%"
+                emoji="🍽️"
+                moduleColor="nutrition"
+                style={{ flex: 1 }}
+                testID="stat-calorie"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <StatCard
+                value={analysisCount}
+                label="분석 완료"
+                suffix="/3"
+                emoji="✨"
+                style={{ flex: 1 }}
+                testID="stat-analysis"
+              />
+            </View>
           </View>
         </GlassCard>
       </Animated.View>
@@ -567,7 +636,6 @@ export default function HomeScreen(): React.JSX.Element {
           />
         </Animated.View>
       </GlassCard>
-
     </ScreenContainer>
   );
 }
