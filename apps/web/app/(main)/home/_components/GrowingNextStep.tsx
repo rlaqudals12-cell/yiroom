@@ -15,7 +15,7 @@ import { useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { ArrowRight, Dumbbell, Sparkles, Scissors, Wand2, Smile } from 'lucide-react';
+import { ArrowRight, Dumbbell, Sparkles, Scissors, Wand2 } from 'lucide-react';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { exposeConnection, confirmConnection } from '@/lib/connection-awareness';
 import type { ConnectionModule } from '@/lib/connection-awareness';
@@ -63,25 +63,10 @@ const CAUSAL_MAP: Record<string, NextStepMapping> = {
     sourceModule: 'hair',
     targetModule: 'makeup',
   },
-  makeup: {
-    nextType: 'oral-health',
-    message: () => '미소까지 건강하게! 구강건강도 체크해봐요',
-    href: '/analysis/oral-health',
-    icon: Smile,
-    sourceModule: 'makeup',
-    targetModule: 'oral-health',
-  },
 };
 
-// 미완료 분석 목록 순서
-const ANALYSIS_ORDER: AnalysisType[] = [
-  'personal-color',
-  'skin',
-  'body',
-  'hair',
-  'makeup',
-  'oral-health',
-];
+// 미완료 분석 목록 순서 (ADR-098: OH 제외)
+const ANALYSIS_ORDER: AnalysisType[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
 
 // 분석 타입 → URL 경로 매핑
 function getAnalysisPath(type: AnalysisType): string {

@@ -30,9 +30,7 @@ registerMock('hair', generateMockHairAnalysisResult);
 import { generateMockMakeupAnalysisResult } from './makeup-analysis';
 registerMock('makeup', generateMockMakeupAnalysisResult);
 
-// OH-1 구강건강
-import { generateMockOralHealthAssessment } from './oral-health';
-registerMock('oral-health', generateMockOralHealthAssessment);
+// OH-1 구강건강 — 제거됨 (ADR-098)
 
 // W-1 운동 추천
 import { generateMockExerciseRecommendation } from './workout-analysis';
