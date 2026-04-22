@@ -13,7 +13,6 @@ import {
   Wand2,
   Activity,
   PersonStanding,
-  SmilePlus,
   BarChart3,
   LayoutGrid,
   Apple,
@@ -30,6 +29,7 @@ import {
   Globe,
   Check,
 } from 'lucide-react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -178,16 +178,6 @@ const Navbar = () => {
                     자세 분석
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/analysis/oral-health"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <SmilePlus className="h-4 w-4 text-emerald-500" />
-                    구강 건강
-                  </Link>
-                </DropdownMenuItem>
-
                 <DropdownMenuSeparator />
 
                 {/* 내 분석 결과 + 허브 */}
@@ -204,70 +194,84 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* 영양 드롭다운 메뉴 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                영양
-                <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/nutrition" className="flex items-center gap-2 cursor-pointer">
-                    <Apple className="h-4 w-4 text-green-500" />
-                    영양 홈
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/nutrition/recipe" className="flex items-center gap-2 cursor-pointer">
-                    <UtensilsCrossed className="h-4 w-4 text-orange-500" />
-                    레시피
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/nutrition/water" className="flex items-center gap-2 cursor-pointer">
-                    <Droplets className="h-4 w-4 text-blue-400" />물 섭취
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/nutrition/search" className="flex items-center gap-2 cursor-pointer">
-                    <Search className="h-4 w-4 text-gray-500" />
-                    음식 검색
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* 운동 드롭다운 메뉴 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                운동
-                <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/workout" className="flex items-center gap-2 cursor-pointer">
-                    <Dumbbell className="h-4 w-4 text-violet-500" />
-                    운동 홈
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/workout/log" className="flex items-center gap-2 cursor-pointer">
-                    <ClipboardList className="h-4 w-4 text-indigo-500" />
-                    운동 로그
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/workout/stretching"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <StretchHorizontal className="h-4 w-4 text-teal-500" />
-                    스트레칭
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* 영양/운동 드롭다운 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2) */}
+            {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+              <>
+                {/* 영양 드롭다운 메뉴 */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                    영양
+                    <ChevronDown className="h-3 w-3" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/nutrition" className="flex items-center gap-2 cursor-pointer">
+                        <Apple className="h-4 w-4 text-green-500" />
+                        영양 홈
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/nutrition/recipe"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <UtensilsCrossed className="h-4 w-4 text-orange-500" />
+                        레시피
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/nutrition/water"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Droplets className="h-4 w-4 text-blue-400" />물 섭취
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/nutrition/search"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Search className="h-4 w-4 text-gray-500" />
+                        음식 검색
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {/* 운동 드롭다운 메뉴 */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                    운동
+                    <ChevronDown className="h-3 w-3" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/workout" className="flex items-center gap-2 cursor-pointer">
+                        <Dumbbell className="h-4 w-4 text-violet-500" />
+                        운동 홈
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/workout/log" className="flex items-center gap-2 cursor-pointer">
+                        <ClipboardList className="h-4 w-4 text-indigo-500" />
+                        운동 로그
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/workout/stretching"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <StretchHorizontal className="h-4 w-4 text-teal-500" />
+                        스트레칭
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
             {/* 리포트 드롭다운 메뉴 */}
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">

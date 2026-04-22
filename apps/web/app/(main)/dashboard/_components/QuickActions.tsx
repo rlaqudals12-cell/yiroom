@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Palette, Sparkles, User, ArrowRight, Scissors, Heart, SmilePlus } from 'lucide-react';
+import { Palette, Sparkles, User, ArrowRight, Scissors, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface QuickActionsProps {
@@ -55,15 +55,6 @@ const ANALYSIS_ITEMS = [
     href: '/analysis/makeup',
     bgColor: 'bg-gradient-to-br from-rose-400 to-pink-500',
     requiresPC: true,
-  },
-  {
-    id: 'oral-health',
-    titleKey: 'quickActions.oralHealthTitle',
-    descKey: 'quickActions.oralHealthDesc',
-    icon: SmilePlus,
-    href: '/analysis/oral-health',
-    bgColor: 'bg-gradient-to-br from-cyan-400 to-blue-500',
-    requiresPC: false,
   },
 ];
 

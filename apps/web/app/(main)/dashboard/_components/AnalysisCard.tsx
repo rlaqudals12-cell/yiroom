@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, User, ChevronRight, Scissors, Heart, SmilePlus } from 'lucide-react';
+import { Palette, Sparkles, User, ChevronRight, Scissors, Heart } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 
@@ -27,7 +27,7 @@ function formatRelativeTime(
 
 interface AnalysisSummary {
   id: string;
-  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup' | 'oral-health';
+  type: 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
   createdAt: Date;
   summary: string;
   seasonType?: string;
@@ -83,14 +83,6 @@ const ANALYSIS_CONFIG = {
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200/50',
     iconColor: 'text-rose-500',
-  },
-  'oral-health': {
-    titleKey: 'analysisTypes.oralHealth',
-    icon: SmilePlus,
-    baseHref: '/analysis/oral-health',
-    bgColor: 'bg-cyan-50',
-    borderColor: 'border-cyan-200/50',
-    iconColor: 'text-cyan-600',
   },
 };
 

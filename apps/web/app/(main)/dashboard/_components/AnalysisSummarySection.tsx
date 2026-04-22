@@ -2,16 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import {
-  Palette,
-  Sparkles,
-  User,
-  Scissors,
-  Heart,
-  SmilePlus,
-  Plus,
-  ChevronRight,
-} from 'lucide-react';
+import { Palette, Sparkles, User, Scissors, Heart, Plus, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 
@@ -52,13 +43,6 @@ const ANALYSIS_META = {
     bgColor: 'bg-pink-500/10',
     href: '/analysis/makeup/result',
   },
-  'oral-health': {
-    icon: SmilePlus,
-    labelKey: 'analysisTypes.oralHealth',
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-500/10',
-    href: '/analysis/oral-health/result',
-  },
 };
 
 interface AnalysisSummarySectionProps {
@@ -75,7 +59,7 @@ export default function AnalysisSummarySection({ analyses }: AnalysisSummarySect
   const t = useTranslations('dashboard');
   // 미완료 분석 타입 계산
   const completedTypes = new Set(analyses.map((a) => a.type));
-  const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup', 'oral-health'] as const;
+  const allTypes = ['personal-color', 'skin', 'body', 'hair', 'makeup'] as const;
   const incompleteTypes = allTypes.filter((t) => !completedTypes.has(t));
 
   return (
