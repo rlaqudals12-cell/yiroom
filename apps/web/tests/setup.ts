@@ -209,6 +209,7 @@ vi.mock('lucide-react', () => ({
   Star: createIconMock('Star'),
   Heart: createIconMock('Heart'),
   HeartPulse: createIconMock('HeartPulse'),
+  FolderHeart: createIconMock('FolderHeart'),
   Armchair: createIconMock('Armchair'),
   Footprints: createIconMock('Footprints'),
   GitCompare: createIconMock('GitCompare'),

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import dynamic from 'next/dynamic';
 import {
@@ -25,6 +26,12 @@ import type {
   BodyImageQuality,
 } from '@/components/analysis/BodyAnalysisEvidenceReport';
 import AnalysisResult from '../../_components/AnalysisResult';
+// ADR-098 C-1 3섹션 리디자인: 원칙 + 코디 + 옷장 CTA
+import {
+  StylingPrinciplesCard,
+  OutfitExamplesCard,
+  ClosetPromptCard,
+} from '@/components/analysis/body';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
@@ -513,6 +520,22 @@ export default function BodyAnalysisResultPage() {
                   evidence={analysisEvidence}
                 />
 
+                {/*
+                  ADR-098 3섹션 리디자인: "이해와 표현"
+                  ① 원칙 (장기 기준) → ② 코디 (단기 실행) → ③ 옷장 (무료 경로)
+                */}
+                <div className="mt-8 space-y-5" data-testid="c1-redesign-sections">
+                  <StylingPrinciplesCard
+                    bodyType={result.bodyType as BodyType3}
+                    bodyTypeLabel={result.bodyTypeLabel}
+                  />
+                  <OutfitExamplesCard
+                    bodyType={result.bodyType as BodyType3}
+                    personalColorSeason={result.personalColorSeason ?? null}
+                  />
+                  <ClosetPromptCard />
+                </div>
+
                 {/* 맞춤 추천 제품 */}
                 <RecommendedProducts
                   analysisType="body"
@@ -594,17 +617,20 @@ export default function BodyAnalysisResultPage() {
       {result && (
         <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
-            <Button
-              className="w-full"
-              onClick={() =>
-                router.push(
-                  `/workout/onboarding?bodyType=${result.bodyType}&bmi=${result.bmi || ''}&fromAnalysis=body`
-                )
-              }
-            >
-              <Dumbbell className="w-4 h-4 mr-2" />
-              {t('recommendedExercise')}
-            </Button>
+            {/* ADR-098: 추천 운동 CTA는 WELLNESS_PHASE2 보류 중 숨김 */}
+            {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+              <Button
+                className="w-full"
+                onClick={() =>
+                  router.push(
+                    `/workout/onboarding?bodyType=${result.bodyType}&bmi=${result.bmi || ''}&fromAnalysis=body`
+                  )
+                }
+              >
+                <Dumbbell className="w-4 h-4 mr-2" />
+                {t('recommendedExercise')}
+              </Button>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
                 <RefreshCw className="w-4 h-4 mr-2" />
