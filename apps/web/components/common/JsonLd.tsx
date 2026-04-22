@@ -18,7 +18,7 @@ export function OrganizationJsonLd({
   name = '이룸',
   url = 'https://yiroom.app',
   logo = 'https://yiroom.app/logo.png',
-  description = 'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션을 제공하는 웰니스 플랫폼',
+  description = 'AI가 해석하는 시각 정체성 5축(퍼스널 컬러·피부·체형·헤어·메이크업) — 거울과 옷장까지 연결해주는 뷰티 플랫폼',
 }: OrganizationJsonLdProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -53,7 +53,7 @@ interface WebApplicationJsonLdProps {
 export function WebApplicationJsonLd({
   name = '이룸',
   url = 'https://yiroom.app',
-  description = 'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션',
+  description = 'AI가 해석하는 시각 정체성 5축 — 퍼스널 컬러·피부·체형·헤어·메이크업',
   operatingSystem = 'All',
   applicationCategory = 'HealthApplication',
 }: WebApplicationJsonLdProps) {

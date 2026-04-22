@@ -50,12 +50,24 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: '이룸 - 온전한 나는?',
+    // ADR-098 정체성 재정의 v2 — 거울+옷장 포지셔닝
+    default: '이룸 - 거울과 옷장이 나를 이해해줘요',
     template: '%s | 이룸',
   },
   description:
-    'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션을 제공하는 웰니스 플랫폼',
-  keywords: ['퍼스널컬러', '피부분석', '체형분석', 'AI분석', '뷰티', '웰니스', '이룸'],
+    'AI가 해석하는 시각 정체성 5축 — 퍼스널 컬러·피부·체형·헤어·메이크업. 나를 이해하고, 오늘 입을 옷까지 연결해줘요.',
+  keywords: [
+    '퍼스널컬러',
+    '피부분석',
+    '체형분석',
+    '헤어분석',
+    '메이크업',
+    'AI분석',
+    '시각 정체성',
+    '옷장',
+    '코디',
+    '이룸',
+  ],
   authors: [{ name: '이룸' }],
   creator: '이룸',
   openGraph: {
@@ -63,21 +75,21 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     url: siteUrl,
     siteName: '이룸',
-    title: '이룸 - 온전한 나는?',
-    description: 'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션',
+    title: '이룸 - 거울과 옷장이 나를 이해해줘요',
+    description: '시각 정체성 5축(색·피부·체형·헤어·메이크업)을 해석하고 옷장까지 연결',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: '이룸 - 온전한 나는?',
+        alt: '이룸 - 거울과 옷장이 나를 이해해줘요',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '이룸 - 온전한 나는?',
-    description: 'AI 퍼스널 컬러, 피부, 체형 분석으로 나만의 맞춤 뷰티 솔루션',
+    title: '이룸 - 거울과 옷장이 나를 이해해줘요',
+    description: '시각 정체성 5축(색·피부·체형·헤어·메이크업)을 해석하고 옷장까지 연결',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨
