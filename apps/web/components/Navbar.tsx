@@ -272,40 +272,42 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             )}
-            {/* 리포트 드롭다운 메뉴 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                리포트
-                <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/reports" className="flex items-center gap-2 cursor-pointer">
-                    <BarChart3 className="h-4 w-4 text-primary" />
-                    리포트 홈
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/reports/weight-goal"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Target className="h-4 w-4 text-rose-500" />
-                    체중 목표
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/reports/body-progress"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
-                    체형 변화
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* 리포트 드롭다운 메뉴 — Phase 2 보류 (ADR-098, W/N 리포트 데이터 기반) */}
+            {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
+                  리포트
+                  <ChevronDown className="h-3 w-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/reports" className="flex items-center gap-2 cursor-pointer">
+                      <BarChart3 className="h-4 w-4 text-primary" />
+                      리포트 홈
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/reports/weight-goal"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Target className="h-4 w-4 text-rose-500" />
+                      체중 목표
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/reports/body-progress"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                      체형 변화
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Link
               href="/products"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"

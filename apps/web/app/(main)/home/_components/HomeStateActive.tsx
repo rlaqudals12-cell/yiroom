@@ -12,6 +12,7 @@
 import { useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import type { ReactNode } from 'react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { useWidgetOrder } from '@/hooks/useWidgetOrder';
 import type { WidgetId } from '@/hooks/useWidgetOrder';
@@ -39,12 +40,14 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
   const { order, setOrder, resetOrder, isCustomized } = useWidgetOrder();
 
   // 위젯 ID → ReactNode 매핑
+  // activity-bar는 운동/영양 활동 요약을 담고 있어 ADR-098 기준 WELLNESS_PHASE2에 게이팅
   const widgets: Record<WidgetId, ReactNode> = useMemo(
     () => ({
       insight: <ActiveInsightCard analyses={analyses} />,
       capsule: <HomeDailyCapsuleWidget />,
       'analysis-summary': <HomeAnalysisSummary analyses={analyses} />,
-      'activity-bar': user?.id ? <HomeActivityBar userId={user.id} /> : null,
+      'activity-bar':
+        FEATURE_FLAGS.WELLNESS_PHASE2 && user?.id ? <HomeActivityBar userId={user.id} /> : null,
       'recently-viewed': <HomeRecentlyViewed />,
     }),
     [analyses, user?.id]
@@ -55,8 +58,8 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
       {/* 환경 조언 — 날씨/UV/습도 기반 크로스 조언 */}
       <EnvironmentAdviceCard />
 
-      {/* 스트릭/뱃지 위젯 — 고정 위치 (정렬 대상 아님) */}
-      <HomeStreakWidget />
+      {/* 스트릭/뱃지 위젯 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2) */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && <HomeStreakWidget />}
 
       <SortableWidgetList
         order={order}

@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
@@ -122,8 +123,8 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
       {/* 환경 조언 — 날씨/UV/습도 기반 */}
       <EnvironmentAdviceCard />
 
-      {/* 스트릭/뱃지 위젯 — 운동/영양 기록 시 표시 */}
-      <HomeStreakWidget />
+      {/* 스트릭/뱃지 위젯 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2) */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && <HomeStreakWidget />}
 
       {/* 인과 연결 다음 추천 (정보 블록 3) */}
       <GrowingNextStep analyses={analyses} />

@@ -27,6 +27,12 @@ vi.mock('@/app/(main)/home/_components/HomeActivityBar', () => ({
 vi.mock('@/app/(main)/home/_components/HomeRecentlyViewed', () => ({
   default: () => <div data-testid="home-recently-viewed" />,
 }));
+vi.mock('@/app/(main)/home/_components/HomeStreakWidget', () => ({
+  default: () => <div data-testid="home-streak-widget" />,
+}));
+vi.mock('@/components/common/EnvironmentAdviceCard', () => ({
+  EnvironmentAdviceCard: () => <div data-testid="environment-advice-card" />,
+}));
 
 // WS-11: SortableWidgetList + useWidgetOrder mock
 vi.mock('@/app/(main)/home/_components/SortableWidgetList', () => ({
@@ -55,6 +61,7 @@ vi.mock('@/hooks/useWidgetOrder', () => ({
 }));
 
 import React from 'react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import HomeStateActive from '@/app/(main)/home/_components/HomeStateActive';
 
 const mockAnalyses = [
@@ -70,14 +77,23 @@ describe('HomeStateActive', () => {
     expect(screen.getByTestId('home-state-active')).toBeInTheDocument();
   });
 
-  it('5개 정보 블록이 렌더링된다 (KI-007 개선)', () => {
+  it('핵심 정보 블록이 렌더링된다 (W/N 관련은 WELLNESS_PHASE2 의존)', () => {
     render(<HomeStateActive analyses={mockAnalyses} />);
 
+    // WELLNESS_PHASE2와 무관하게 항상 렌더링되는 블록
     expect(screen.getByTestId('active-insight-card')).toBeInTheDocument();
     expect(screen.getByTestId('home-daily-capsule')).toBeInTheDocument();
     expect(screen.getByTestId('home-analysis-summary')).toBeInTheDocument();
-    expect(screen.getByTestId('home-activity-bar')).toBeInTheDocument();
     expect(screen.getByTestId('home-recently-viewed')).toBeInTheDocument();
+
+    // ADR-098: W/N UI 블록은 WELLNESS_PHASE2 플래그에 따라 분기
+    if (FEATURE_FLAGS.WELLNESS_PHASE2) {
+      expect(screen.getByTestId('home-activity-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('home-streak-widget')).toBeInTheDocument();
+    } else {
+      expect(screen.queryByTestId('home-activity-bar')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('home-streak-widget')).not.toBeInTheDocument();
+    }
   });
 
   it('InternalizationWidget이 독립 블록으로 렌더링되지 않는다', () => {

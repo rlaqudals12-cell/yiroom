@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
@@ -136,21 +137,25 @@ export default function SettingsScreen() {
         />
       </Animated.View>
 
-      {/* 알림 및 목표 */}
+      {/* 알림 및 목표 — ADR-098 기준 W/N 서브타이틀은 WELLNESS_PHASE2 분기 */}
       <Animated.View entering={FadeInUp.delay(120).duration(TIMING.normal)} style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>알림 및 목표</Text>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          {FEATURE_FLAGS.WELLNESS_PHASE2 ? '알림 및 목표' : '알림'}
+        </Text>
         <SettingsItem
           icon="🔔"
           title="알림 설정"
-          subtitle="물, 운동, 식사 알림"
+          subtitle={FEATURE_FLAGS.WELLNESS_PHASE2 ? '물, 운동, 식사 알림' : '분석 리마인더 알림'}
           onPress={() => handlePress('/settings/notifications')}
         />
-        <SettingsItem
-          icon="🎯"
-          title="목표 설정"
-          subtitle="일일 물, 칼로리 목표"
-          onPress={() => handlePress('/settings/goals')}
-        />
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <SettingsItem
+            icon="🎯"
+            title="목표 설정"
+            subtitle="일일 물, 칼로리 목표"
+            onPress={() => handlePress('/settings/goals')}
+          />
+        )}
       </Animated.View>
 
       {/* 위젯 */}

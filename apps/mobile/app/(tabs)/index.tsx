@@ -11,6 +11,7 @@ import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native'
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 import { DailyCapsuleCard } from '../../components/capsule/DailyCapsuleCard';
 import {
@@ -122,7 +123,7 @@ export default function HomeScreen(): React.JSX.Element {
 
   const userName = user?.firstName || user?.username || '사용자';
 
-  // 오늘 할 일
+  // 오늘 할 일 — W/N 작업은 ADR-098 기준 WELLNESS_PHASE2에 게이팅
   const todayTasks = useMemo(() => {
     const tasks: {
       id: string;
@@ -131,30 +132,32 @@ export default function HomeScreen(): React.JSX.Element {
       route: string;
     }[] = [];
 
-    tasks.push({
-      id: 'workout',
-      label: '오늘의 운동 완료',
-      completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
-      route: '/(tabs)/records',
-    });
+    if (FEATURE_FLAGS.WELLNESS_PHASE2) {
+      tasks.push({
+        id: 'workout',
+        label: '오늘의 운동 완료',
+        completed: workoutStreak?.lastWorkoutDate === new Date().toISOString().split('T')[0],
+        route: '/(tabs)/records',
+      });
 
-    tasks.push({
-      id: 'meal',
-      label: '식사 기록하기',
-      completed: (todaySummary?.mealCount || 0) >= 1,
-      route: '/(tabs)/records',
-    });
+      tasks.push({
+        id: 'meal',
+        label: '식사 기록하기',
+        completed: (todaySummary?.mealCount || 0) >= 1,
+        route: '/(tabs)/records',
+      });
 
-    const waterProgress =
-      todaySummary && nutritionSettings && nutritionSettings.waterGoal > 0
-        ? (todaySummary.waterIntake / nutritionSettings.waterGoal) * 100
-        : 0;
-    tasks.push({
-      id: 'water',
-      label: `물 마시기 (${Math.round(waterProgress)}%)`,
-      completed: waterProgress >= 100,
-      route: '/(tabs)/records',
-    });
+      const waterProgress =
+        todaySummary && nutritionSettings && nutritionSettings.waterGoal > 0
+          ? (todaySummary.waterIntake / nutritionSettings.waterGoal) * 100
+          : 0;
+      tasks.push({
+        id: 'water',
+        label: `물 마시기 (${Math.round(waterProgress)}%)`,
+        completed: waterProgress >= 100,
+        route: '/(tabs)/records',
+      });
+    }
 
     if (!personalColor) {
       tasks.push({
@@ -168,7 +171,7 @@ export default function HomeScreen(): React.JSX.Element {
     return tasks;
   }, [workoutStreak, todaySummary, nutritionSettings, personalColor]);
 
-  // 알림 요약
+  // 알림 요약 — W/N 알림은 ADR-098 기준 WELLNESS_PHASE2에 게이팅
   const notifications = useMemo(() => {
     const items: {
       id: string;
@@ -176,7 +179,11 @@ export default function HomeScreen(): React.JSX.Element {
       type: 'info' | 'warning' | 'success';
     }[] = [];
 
-    if (workoutStreak?.currentStreak && workoutStreak.currentStreak >= 3) {
+    if (
+      FEATURE_FLAGS.WELLNESS_PHASE2 &&
+      workoutStreak?.currentStreak &&
+      workoutStreak.currentStreak >= 3
+    ) {
       items.push({
         id: 'workout-streak',
         message: `운동 ${workoutStreak.currentStreak}일 연속 달성 중!`,
@@ -193,7 +200,7 @@ export default function HomeScreen(): React.JSX.Element {
       });
     }
 
-    if (todaySummary && nutritionSettings) {
+    if (FEATURE_FLAGS.WELLNESS_PHASE2 && todaySummary && nutritionSettings) {
       const cp = calculateCalorieProgress(
         todaySummary.totalCalories,
         nutritionSettings.dailyCalorieGoal
@@ -210,7 +217,7 @@ export default function HomeScreen(): React.JSX.Element {
     if (items.length === 0) {
       items.push({
         id: 'welcome',
-        message: '오늘도 이룸과 함께 건강한 하루를!',
+        message: '오늘도 이룸과 함께 나다운 하루를!',
         type: 'info',
       });
     }
@@ -556,53 +563,59 @@ export default function HomeScreen(): React.JSX.Element {
         </Animated.View>
       )}
 
-      {/* 오늘의 요약 — StatCard 사용, staggered entry */}
-      <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
-        <SectionHeader title="오늘의 요약" gradient="brand" style={{ marginBottom: spacing.smx }} />
-        <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
-          <View style={{ flexDirection: 'row', gap: spacing.smx }}>
-            <Animated.View
-              style={[
-                { flex: 1 },
-                streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>),
-              ]}
-            >
-              <StatCard
-                value={streakCount}
-                label="연속 운동"
-                suffix="일"
-                emoji="🔥"
-                moduleColor="workout"
-                style={{ flex: 1 }}
-                testID="stat-workout"
-              />
-            </Animated.View>
-            <View style={{ flex: 1 }}>
-              <StatCard
-                value={calorieProgress}
-                label="칼로리"
-                suffix="%"
-                emoji="🍽️"
-                moduleColor="nutrition"
-                style={{ flex: 1 }}
-                testID="stat-calorie"
-              />
+      {/* 오늘의 요약 — W/N 연동 (ADR-098, Phase 2 보류 시 숨김) */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+        <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
+          <SectionHeader
+            title="오늘의 요약"
+            gradient="brand"
+            style={{ marginBottom: spacing.smx }}
+          />
+          <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
+            <View style={{ flexDirection: 'row', gap: spacing.smx }}>
+              <Animated.View
+                style={[
+                  { flex: 1 },
+                  streakCount >= 7 && (streakGlowStyle as AnimatedStyle<ViewStyle>),
+                ]}
+              >
+                <StatCard
+                  value={streakCount}
+                  label="연속 운동"
+                  suffix="일"
+                  emoji="🔥"
+                  moduleColor="workout"
+                  style={{ flex: 1 }}
+                  testID="stat-workout"
+                />
+              </Animated.View>
+              <View style={{ flex: 1 }}>
+                <StatCard
+                  value={calorieProgress}
+                  label="칼로리"
+                  suffix="%"
+                  emoji="🍽️"
+                  moduleColor="nutrition"
+                  style={{ flex: 1 }}
+                  testID="stat-calorie"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <StatCard
+                  value={analysisCount}
+                  label="분석 완료"
+                  suffix="/3"
+                  emoji="✨"
+                  style={{ flex: 1 }}
+                  testID="stat-analysis"
+                />
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <StatCard
-                value={analysisCount}
-                label="분석 완료"
-                suffix="/3"
-                emoji="✨"
-                style={{ flex: 1 }}
-                testID="stat-analysis"
-              />
-            </View>
-          </View>
-        </GlassCard>
-      </Animated.View>
+          </GlassCard>
+        </Animated.View>
+      )}
 
-      {/* 모듈 카드 — staggeredEntry 적용 */}
+      {/* 모듈 카드 — 운동/영양은 ADR-098 기준 WELLNESS_PHASE2에 게이팅 */}
       <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
         <SectionHeader
           title="나의 여정"
@@ -611,23 +624,27 @@ export default function HomeScreen(): React.JSX.Element {
         />
       </Animated.View>
       <GlassCard shadowSize="md" style={{ gap: spacing.md, marginBottom: spacing.lg }}>
-        <Animated.View entering={staggeredEntry(0)}>
-          <ModuleCard
-            title="운동"
-            description="맞춤 운동 플랜으로 목표 달성"
-            variant="workout"
-            onPress={() => router.push('/(workout)/onboarding')}
-          />
-        </Animated.View>
-        <Animated.View entering={staggeredEntry(1)}>
-          <ModuleCard
-            title="영양"
-            description="균형 잡힌 식단으로 건강 관리"
-            variant="nutrition"
-            onPress={() => router.push('/(nutrition)/dashboard')}
-          />
-        </Animated.View>
-        <Animated.View entering={staggeredEntry(2)}>
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <>
+            <Animated.View entering={staggeredEntry(0)}>
+              <ModuleCard
+                title="운동"
+                description="맞춤 운동 플랜으로 목표 달성"
+                variant="workout"
+                onPress={() => router.push('/(workout)/onboarding')}
+              />
+            </Animated.View>
+            <Animated.View entering={staggeredEntry(1)}>
+              <ModuleCard
+                title="영양"
+                description="균형 잡힌 식단으로 건강 관리"
+                variant="nutrition"
+                onPress={() => router.push('/(nutrition)/dashboard')}
+              />
+            </Animated.View>
+          </>
+        )}
+        <Animated.View entering={staggeredEntry(FEATURE_FLAGS.WELLNESS_PHASE2 ? 2 : 0)}>
           <ModuleCard
             title="제품 추천"
             description="나에게 맞는 제품 찾기"

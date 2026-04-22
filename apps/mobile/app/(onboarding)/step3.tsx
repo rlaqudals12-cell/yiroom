@@ -3,6 +3,7 @@
  *
  * V5: 뷰티 중심 전환 — 건강 목표는 선택 사항
  *     "건너뛰기" 가능 — 뷰티 분석만 원하는 사용자 배려
+ * ADR-098: WELLNESS_PHASE2=false 시 웰니스 목표 섹션 숨김, 신장/체중만 수집
  */
 
 import * as Haptics from 'expo-haptics';
@@ -11,6 +12,7 @@ import { TrendingDown, Dumbbell, HeartPulse, Wind, Moon, Ruler, Check } from 'lu
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 import { OnboardingHero } from '../../components/onboarding';
 import { GlassCard, StepProgressBar, ScreenContainer } from '../../components/ui';
@@ -77,10 +79,12 @@ export default function OnboardingStep3() {
   return (
     <ScreenContainer scrollable={false} contentPadding={0} testID="onboarding-step3">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 파스텔 히어로 */}
+        {/* 파스텔 히어로 — ADR-098 기준 문구 분기 */}
         <OnboardingHero
-          icon={Dumbbell}
-          title="건강 목표도 설정해볼까요?"
+          icon={Ruler}
+          title={
+            FEATURE_FLAGS.WELLNESS_PHASE2 ? '건강 목표도 설정해볼까요?' : '신체 정보도 알려주세요'
+          }
           subtitle={'선택 사항이에요 — 건너뛰어도 괜찮아요'}
           glowColor={STEP3_ACCENT}
           testID="onboarding-hero"
@@ -96,91 +100,93 @@ export default function OnboardingStep3() {
           />
         </View>
 
-        {/* 웰니스 목표 선택 */}
-        <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-          <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-            {GOALS.map((goal, index) => {
-              const isSelected = data.goals.includes(goal);
-              const IconComponent = GOAL_ICON_MAP[goal];
-              const goalColor = GOAL_COLORS[goal];
+        {/* 웰니스 목표 선택 — ADR-098 기준 WELLNESS_PHASE2에 게이팅 */}
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+            <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+              {GOALS.map((goal, index) => {
+                const isSelected = data.goals.includes(goal);
+                const IconComponent = GOAL_ICON_MAP[goal];
+                const goalColor = GOAL_COLORS[goal];
 
-              return (
-                <Pressable
-                  key={goal}
-                  style={({ pressed }) => [
-                    styles.goalCard,
-                    {
-                      backgroundColor: isSelected
-                        ? `${goalColor.gradient[0]}30`
-                        : `${colors.card}CC`,
-                      borderRadius: radii.xl,
-                      borderColor: isSelected ? goalColor.gradient[1] : `${colors.border}80`,
-                      borderWidth: isSelected ? 2 : 1,
-                      padding: spacing.md,
-                      opacity: pressed ? 0.85 : 1,
-                      transform: [{ scale: pressed ? 0.98 : 1 }],
-                      ...(isSelected
-                        ? {
-                            ...shadows.md,
-                            shadowColor: goalColor.gradient[1],
-                            shadowOpacity: 0.25,
-                          }
-                        : {}),
-                    },
-                  ]}
-                  onPress={() => handleToggle(goal)}
-                  testID={`goal-${goal}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${GOAL_LABELS[goal]}, ${GOAL_DESCRIPTIONS[goal]}`}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  {isSelected ? (
-                    <LinearGradient
-                      colors={goalColor.gradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.iconBox}
-                    >
-                      <IconComponent size={20} color={colors.overlayForeground} strokeWidth={2} />
-                    </LinearGradient>
-                  ) : (
-                    <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
-                      <IconComponent size={20} color={goalColor.gradient[0]} strokeWidth={2} />
+                return (
+                  <Pressable
+                    key={goal}
+                    style={({ pressed }) => [
+                      styles.goalCard,
+                      {
+                        backgroundColor: isSelected
+                          ? `${goalColor.gradient[0]}30`
+                          : `${colors.card}CC`,
+                        borderRadius: radii.xl,
+                        borderColor: isSelected ? goalColor.gradient[1] : `${colors.border}80`,
+                        borderWidth: isSelected ? 2 : 1,
+                        padding: spacing.md,
+                        opacity: pressed ? 0.85 : 1,
+                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                        ...(isSelected
+                          ? {
+                              ...shadows.md,
+                              shadowColor: goalColor.gradient[1],
+                              shadowOpacity: 0.25,
+                            }
+                          : {}),
+                      },
+                    ]}
+                    onPress={() => handleToggle(goal)}
+                    testID={`goal-${goal}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${GOAL_LABELS[goal]}, ${GOAL_DESCRIPTIONS[goal]}`}
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    {isSelected ? (
+                      <LinearGradient
+                        colors={goalColor.gradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.iconBox}
+                      >
+                        <IconComponent size={20} color={colors.overlayForeground} strokeWidth={2} />
+                      </LinearGradient>
+                    ) : (
+                      <View style={[styles.iconBox, { backgroundColor: goalColor.bg }]}>
+                        <IconComponent size={20} color={goalColor.gradient[0]} strokeWidth={2} />
+                      </View>
+                    )}
+                    <View style={styles.goalTextWrap}>
+                      <Text
+                        style={{
+                          color: isSelected ? goalColor.gradient[0] : colors.foreground,
+                          fontSize: typography.size.sm,
+                          fontWeight: isSelected
+                            ? typography.weight.bold
+                            : typography.weight.semibold,
+                        }}
+                      >
+                        {GOAL_LABELS[goal]}
+                      </Text>
+                      <Text
+                        style={{
+                          color: colors.mutedForeground,
+                          fontSize: typography.size.xs,
+                          marginTop: 2,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {GOAL_DESCRIPTIONS[goal]}
+                      </Text>
                     </View>
-                  )}
-                  <View style={styles.goalTextWrap}>
-                    <Text
-                      style={{
-                        color: isSelected ? goalColor.gradient[0] : colors.foreground,
-                        fontSize: typography.size.sm,
-                        fontWeight: isSelected
-                          ? typography.weight.bold
-                          : typography.weight.semibold,
-                      }}
-                    >
-                      {GOAL_LABELS[goal]}
-                    </Text>
-                    <Text
-                      style={{
-                        color: colors.mutedForeground,
-                        fontSize: typography.size.xs,
-                        marginTop: 2,
-                      }}
-                      numberOfLines={1}
-                    >
-                      {GOAL_DESCRIPTIONS[goal]}
-                    </Text>
-                  </View>
-                  {isSelected && (
-                    <LinearGradient colors={goalColor.gradient} style={styles.checkmark}>
-                      <Check size={12} color={colors.overlayForeground} strokeWidth={3} />
-                    </LinearGradient>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-        </Animated.View>
+                    {isSelected && (
+                      <LinearGradient colors={goalColor.gradient} style={styles.checkmark}>
+                        <Check size={12} color={colors.overlayForeground} strokeWidth={3} />
+                      </LinearGradient>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Animated.View>
+        )}
 
         {/* 신장/체중 (선택) */}
         <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>

@@ -67,15 +67,16 @@ describe('getNextStep', () => {
   });
 
   it('모든 매핑 소진 시 미완료 중 첫 번째 fallback', () => {
+    // ADR-098 OH-1 제거 후: ANALYSIS_ORDER = [personal-color, skin, body, hair, makeup]
+    // personal-color+body+hair+makeup 완료 → 미완료인 skin이 fallback
     const analyses = [
       createAnalysis('personal-color', '봄 웜톤'),
       createAnalysis('body', '모래시계형'),
       createAnalysis('hair', '직모'),
       createAnalysis('makeup', '웜톤'),
     ];
-    // personal-color→body(done), body→hair(done), hair→makeup(done), makeup→oral-health
     const result = getNextStep(analyses);
 
-    expect(result!.href).toBe('/analysis/oral-health');
+    expect(result!.href).toBe('/analysis/skin');
   });
 });

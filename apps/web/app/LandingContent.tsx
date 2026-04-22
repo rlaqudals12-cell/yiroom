@@ -6,7 +6,7 @@ import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
-  Dumbbell,
+  Scissors,
   Sparkles,
   Palette,
   User,
@@ -17,6 +17,8 @@ import {
   BarChart3,
   ChevronRight,
 } from 'lucide-react';
+// ADR-098 정체성 재정의 v2 — 5축 모델(PC/S/C/H/M) 반영
+// 기존 workout 모듈은 WELLNESS_PHASE2 보류로 헤어 분석으로 교체
 const MODULE_META = [
   {
     id: 'personal-color',
@@ -37,10 +39,10 @@ const MODULE_META = [
     icon: User,
   },
   {
-    id: 'workout',
-    href: '/workout/onboarding/step1',
-    gradient: 'from-green-400 to-emerald-500',
-    icon: Dumbbell,
+    id: 'hair',
+    href: '/analysis/hair',
+    gradient: 'from-violet-400 to-purple-500',
+    icon: Scissors,
   },
 ];
 

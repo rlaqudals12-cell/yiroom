@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Sparkles, Shirt, ClipboardList, User } from 'lucide-react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -13,18 +14,20 @@ interface NavItem {
 }
 
 /**
- * UX 리스트럭처링 5탭 구성
+ * UX 리스트럭처링 탭 구성
  * - 홈: 대시보드 + 오늘의 추천 + 미션
  * - 뷰티: 화해 스타일 제품 피드 (피부 분석 기반)
  * - 스타일: 룩핀 스타일 코디 피드 (체형 분석 기반)
- * - 기록: 운동 + 영양 통합 (세그먼트 토글)
+ * - 기록: 운동 + 영양 통합 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2)
  * - 나: 프로필 + 소셜 (친구, 리더보드, 챌린지, 배지)
  */
 const navItems: NavItem[] = [
   { href: '/home', icon: Home, label: '홈' },
   { href: '/beauty', icon: Sparkles, label: '뷰티', tutorialId: 'beauty' },
   { href: '/style', icon: Shirt, label: '스타일', tutorialId: 'style' },
-  { href: '/record', icon: ClipboardList, label: '기록', tutorialId: 'record' },
+  ...(FEATURE_FLAGS.WELLNESS_PHASE2
+    ? [{ href: '/record', icon: ClipboardList, label: '기록', tutorialId: 'record' }]
+    : []),
   { href: '/profile', icon: User, label: '나', tutorialId: 'profile' },
 ];
 
