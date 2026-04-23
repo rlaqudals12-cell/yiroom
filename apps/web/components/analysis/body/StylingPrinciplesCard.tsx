@@ -10,7 +10,7 @@
 
 import { Sparkles, Check } from 'lucide-react';
 import type { BodyType3 } from '@/lib/mock/body-analysis';
-import { STYLING_PRINCIPLES } from '@/lib/styling-principles';
+import { STYLING_PRINCIPLES } from '@yiroom/shared';
 
 interface StylingPrinciplesCardProps {
   bodyType: BodyType3;

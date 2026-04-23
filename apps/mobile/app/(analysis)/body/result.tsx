@@ -7,7 +7,7 @@
  *  추천: 추천 스타일 + 피하면 좋은 스타일
  */
 import { useUser } from '@clerk/clerk-expo';
-import type { BodyType } from '@yiroom/shared';
+import type { BodyType, StylingBodyType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -21,6 +21,11 @@ import {
   MetricBar,
   useAnalysisStyles,
 } from '@/components/analysis';
+import {
+  StylingPrinciplesCard,
+  OutfitExamplesCard,
+  ClosetPromptCard,
+} from '@/components/analysis/body';
 import { BarChart, type BarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
@@ -34,6 +39,27 @@ import {
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { typography, radii, spacing } from '@/lib/theme';
+
+/**
+ * BodyType(8분류) → StylingBodyType(3분류) 매핑.
+ *
+ * 웹과 동일한 C-1 결과 3섹션 구조(ADR-098)를 Mobile에도 적용하기 위해
+ * 기존 8타입 분석 결과를 S/W/N 3타입으로 재분류한다.
+ *
+ * - S (Straight): 직선적 실루엣 — Rectangle, Athletic, InvertedTriangle
+ * - W (Wave): 곡선미 중심 — Hourglass, Pear, Triangle
+ * - N (Natural): 프레임감 중심 — Oval, Diamond
+ */
+const BODY_TYPE_TO_STYLING: Record<BodyType, StylingBodyType> = {
+  Rectangle: 'S',
+  Athletic: 'S',
+  InvertedTriangle: 'S',
+  Hourglass: 'W',
+  Pear: 'W',
+  Triangle: 'W',
+  Oval: 'N',
+  Diamond: 'N',
+};
 
 // 체형 타입 데이터
 const BODY_TYPE_DATA: Record<
@@ -185,12 +211,12 @@ export default function BodyResultScreen() {
     analyzeBody();
   }, [analyzeBody]);
 
-  const handleWorkoutRecommendation = () => {
+  // ADR-098: W-1 UI 숨김에 따라 운동 추천 CTA 제거.
+  // 5축 정체성 맥락에서 다음 단계는 "퍼스널 컬러"(색 정체성) 유도 —
+  // 체형(표현)과 색(정체성)을 함께 알아야 시각 정체성 프로필이 완성된다.
+  const handleNextAxis = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push({
-      pathname: '/(workout)/onboarding',
-      params: { bodyType: bodyType || '', bmi: bmi?.toString() || '', fromAnalysis: 'body' },
-    });
+    router.push('/(analysis)/personal-color');
   };
 
   if (isLoading) {
@@ -338,55 +364,26 @@ export default function BodyResultScreen() {
     </View>
   );
 
-  // --- 추천 탭 ---
-  const recommendTab = (
+  // --- 추천 탭 — ADR-098 C-1 3섹션 구조 (원칙 + 코디 + 옷장 CTA) ---
+  const stylingBodyType: StylingBodyType | null = bodyType ? BODY_TYPE_TO_STYLING[bodyType] : null;
+  const recommendTab = stylingBodyType ? (
     <View style={localStyles.tabContent}>
-      {/* 추천 스타일 */}
+      {/* 섹션 1: 스타일링 원칙 (장기 기준, 쇼핑 시 판단 기준) */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>추천 스타일</Text>
-        <View style={localStyles.tagContainer}>
-          {typeData.recommendations.map((item, index) => (
-            <View
-              key={index}
-              style={[
-                localStyles.tag,
-                { backgroundColor: status.success + (isDark ? '20' : '20') },
-              ]}
-            >
-              <Text style={[localStyles.tagText, { color: status.success }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
+        <StylingPrinciplesCard bodyType={stylingBodyType} bodyTypeLabel={typeData.name} />
       </Animated.View>
 
-      {/* 피해야 할 스타일 */}
+      {/* 섹션 2: 추천 코디 3세트 (단기 실행, 오늘 따라 입기) */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          피하면 좋은 스타일
-        </Text>
-        <View style={localStyles.tagContainer}>
-          {typeData.avoidItems.map((item, index) => (
-            <View key={index} style={[localStyles.tag, { backgroundColor: status.error + '20' }]}>
-              <Text style={[localStyles.tagText, { color: status.error }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
+        <OutfitExamplesCard bodyType={stylingBodyType} personalColorSeason={null} />
       </Animated.View>
 
-      {/* 운동 추천 */}
+      {/* 섹션 3: 옷장 조합 CTA (무료 경로, Phase 1.5) */}
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>체형별 운동</Text>
-        <GradientCard variant="body" style={localStyles.tipsCard}>
-          {typeData.exerciseTips.map((tip, index) => (
-            <View key={index} style={localStyles.tipItem}>
-              <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-              <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
-            </View>
-          ))}
-        </GradientCard>
+        <ClosetPromptCard />
       </Animated.View>
     </View>
-  );
+  ) : null;
 
   return (
     <>
@@ -414,8 +411,8 @@ export default function BodyResultScreen() {
         summaryTab={summaryTab}
         detailTab={detailTab}
         recommendTab={recommendTab}
-        primaryActionText="🏃 나에게 맞는 운동 추천"
-        onPrimaryAction={handleWorkoutRecommendation}
+        primaryActionText="🎨 퍼스널 컬러로 내 색 찾기"
+        onPrimaryAction={handleNextAxis}
         retryPath="/(analysis)/body"
         testID="body-analysis-result"
       />

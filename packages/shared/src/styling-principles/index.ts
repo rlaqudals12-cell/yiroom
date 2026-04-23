@@ -9,9 +9,22 @@
  * Why: 기존 결과 페이지는 "개선점"으로 체형을 교정 대상처럼 프레이밍했다.
  *   v2 정체성은 "이해와 표현"으로 전환 — 체형은 고치는 게 아니라 읽어내는
  *   것이며, 스타일링은 그 이해를 입고 입히는 방법이다.
+ *
+ * Why shared: Web(apps/web)과 Mobile(apps/mobile)에서 동일 원칙을 사용한다.
+ *   각 앱은 자체 BodyType3(= 'S' | 'W' | 'N') 타입을 갖지만 리터럴 값이
+ *   동일하므로 이 모듈의 StylingBodyType과 호환된다.
  */
 
-import type { BodyType3 } from '@/lib/mock/body-analysis';
+/**
+ * 3타입 체형 코드.
+ *
+ * S = Straight (스트레이트, 직선 체형)
+ * W = Wave (웨이브, 곡선 체형)
+ * N = Natural (내추럴, 프레임 체형)
+ *
+ * 각 앱의 `BodyType3`와 동일 리터럴이라 상호 교환 가능.
+ */
+export type StylingBodyType = 'S' | 'W' | 'N';
 
 /**
  * 하나의 스타일링 원칙.
@@ -33,7 +46,7 @@ export interface StylingPrinciple {
  * 원칙은 "교정" 언어 대신 "이해/활용" 언어로 작성 (예: "허리가 없어 보이지
  * 않게" → "곧은 실루엣의 깔끔함을 살려서").
  */
-export const STYLING_PRINCIPLES: Record<BodyType3, StylingPrinciple[]> = {
+export const STYLING_PRINCIPLES: Record<StylingBodyType, StylingPrinciple[]> = {
   S: [
     {
       title: '곧은 실루엣의 힘을 살려요',

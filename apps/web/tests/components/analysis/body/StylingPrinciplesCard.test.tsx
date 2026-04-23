@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StylingPrinciplesCard } from '@/components/analysis/body/StylingPrinciplesCard';
-import { STYLING_PRINCIPLES } from '@/lib/styling-principles';
+import { STYLING_PRINCIPLES } from '@yiroom/shared';
 
 describe('StylingPrinciplesCard', () => {
   it('스트레이트(S) 체형 원칙을 모두 렌더링한다', () => {
