@@ -2,11 +2,30 @@
  * 뷰티 탭
  * 피부 프로필 + 필터 + 제품 피드 + 분석 모듈 네비게이션
  */
-import { useRouter } from 'expo-router';
-import { Palette, Droplets, Calendar, Scissors, Brush, SmilePlus } from 'lucide-react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import {
+  Palette,
+  Droplets,
+  Calendar,
+  Scissors,
+  Brush,
+  SmilePlus,
+  Sparkles,
+} from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+
+// 통합 큐레이션 카테고리 → 모바일 뷰티 필터 키 매핑
+// 큐레이션의 lip/base는 모바일 필터에서 'makeup'으로, skincare는 그대로.
+const CURATION_CATEGORY_MAP: Record<string, string> = {
+  skincare: 'skincare',
+  lip: 'makeup',
+  base: 'makeup',
+  bodycare: 'bodycare',
+  haircare: 'haircare',
+  suncare: 'suncare',
+};
 
 import {
   SkinProfileCard,
@@ -40,6 +59,14 @@ export default function BeautyTab(): React.JSX.Element {
   const { colors, spacing, module: moduleColors, typography } = useTheme();
   const { skinAnalysis, isLoading, refetch: refetchAnalyses } = useUserAnalyses();
 
+  // 통합 분석 큐레이션에서 진입한 경우 맥락 유지
+  const params = useLocalSearchParams<{ source?: string; category?: string }>();
+  const isFromIntegrated = params.source === 'integrated';
+  const initialCategory =
+    typeof params.category === 'string' && CURATION_CATEGORY_MAP[params.category]
+      ? CURATION_CATEGORY_MAP[params.category]
+      : 'all';
+
   // DB에서 제품 조회
   const {
     products: affiliateProducts,
@@ -61,8 +88,8 @@ export default function BeautyTab(): React.JSX.Element {
     }
   }, [refetchAnalyses, refetchProducts]);
 
-  // 필터 상태
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // 필터 상태 (통합 큐레이션에서 category 파라미터로 진입 시 초기값 주입)
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
@@ -125,6 +152,36 @@ export default function BeautyTab(): React.JSX.Element {
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
+      {/* 통합 분석 큐레이션에서 진입한 경우 맥락 배너 */}
+      {isFromIntegrated && (
+        <View
+          testID="beauty-integrated-banner"
+          accessibilityRole="text"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.xs,
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radii.lg,
+            padding: spacing.sm,
+            marginBottom: spacing.sm,
+          }}
+        >
+          <Sparkles size={16} color={moduleColors.personalColor.base} />
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              flex: 1,
+            }}
+          >
+            통합 분석 결과를 바탕으로 추천하는 제품이에요
+          </Text>
+        </View>
+      )}
+
       {/* 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GradientBackground

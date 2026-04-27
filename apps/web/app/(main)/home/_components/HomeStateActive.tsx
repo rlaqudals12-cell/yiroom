@@ -30,6 +30,7 @@ import HomeActivityBar from './HomeActivityBar';
 import HomeStreakWidget from './HomeStreakWidget';
 import SortableWidgetList from './SortableWidgetList';
 import { EnvironmentAdviceCard } from '@/components/common/EnvironmentAdviceCard';
+import { IntegratedSessionPromptCard } from './IntegratedSessionPromptCard';
 
 interface HomeStateActiveProps {
   analyses: AnalysisSummary[];
@@ -55,6 +56,9 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
 
   return (
     <div className="space-y-5" data-testid="home-state-active">
+      {/* ADR-101: 통합 분석 결과 재방문 / 신규 진입 카드 (최상단) */}
+      <IntegratedSessionPromptCard />
+
       {/* 환경 조언 — 날씨/UV/습도 기반 크로스 조언 */}
       <EnvironmentAdviceCard />
 

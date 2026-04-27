@@ -159,12 +159,13 @@ export default function HomeScreen(): React.JSX.Element {
       });
     }
 
+    // ADR-102 / Phase E: 첫 분석 유도는 통합 플로우로 연결 (5축 한 번에)
     if (!personalColor) {
       tasks.push({
-        id: 'personal-color',
-        label: '퍼스널 컬러 분석',
+        id: 'integrated-analysis',
+        label: '5축 통합 분석 (약 2분)',
         completed: false,
-        route: '/(analysis)/personal-color',
+        route: '/(analysis)/integrated',
       });
     }
 
@@ -195,7 +196,8 @@ export default function HomeScreen(): React.JSX.Element {
     if (analysisCount < 3 && analysisCount > 0) {
       items.push({
         id: 'analysis-incomplete',
-        message: `분석 ${3 - analysisCount}개가 남아있어요`,
+        // ADR-102: 통합 플로우 안내
+        message: '5축을 한 번에 알아볼 수 있어요',
         type: 'info',
       });
     }
@@ -354,46 +356,28 @@ export default function HomeScreen(): React.JSX.Element {
             >
               나에게 어울리는 스타일을 찾아보세요
             </Text>
-            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-              <Pressable
-                onPress={() => router.push('/(analysis)/personal-color' as never)}
+            {/* ADR-102: 모바일 Primary CTA 통합 분석 진입 (이전 PC+피부 2개 → 1개) */}
+            <Pressable
+              onPress={() => router.push('/(analysis)/integrated' as never)}
+              style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: radii.full,
+                paddingVertical: spacing.sm,
+                paddingHorizontal: spacing.lg,
+                alignSelf: 'flex-start',
+              }}
+              accessibilityLabel="5축 통합 분석 시작"
+            >
+              <Text
                 style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  borderRadius: radii.full,
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.md,
+                  color: '#EC4899',
+                  fontWeight: typography.weight.bold,
+                  fontSize: typography.size.sm,
                 }}
               >
-                <Text
-                  style={{
-                    color: '#FFFFFF',
-                    fontWeight: typography.weight.semibold,
-                    fontSize: typography.size.sm,
-                  }}
-                >
-                  🎨 퍼스널컬러
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/(analysis)/skin' as never)}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  borderRadius: radii.full,
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.md,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#FFFFFF',
-                    fontWeight: typography.weight.semibold,
-                    fontSize: typography.size.sm,
-                  }}
-                >
-                  ✨ 피부 분석
-                </Text>
-              </Pressable>
-            </View>
+                5축 한 번에 알아보기 (약 2분)
+              </Text>
+            </Pressable>
           </LinearGradient>
         </Animated.View>
       )}

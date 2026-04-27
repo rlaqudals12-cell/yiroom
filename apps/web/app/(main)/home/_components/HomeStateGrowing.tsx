@@ -18,6 +18,7 @@ import { FEATURE_FLAGS } from '@yiroom/shared';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import GrowingNextStep from './GrowingNextStep';
+import { IntegratedSessionPromptCard } from './IntegratedSessionPromptCard';
 import dynamic from 'next/dynamic';
 
 const HomeRecentlyViewed = dynamic(() => import('./HomeRecentlyViewed'), {
@@ -86,6 +87,9 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
 
   return (
     <div className="space-y-5" data-testid="home-state-growing">
+      {/* ADR-101: 통합 분석 진입/재방문 카드 (최상단) */}
+      <IntegratedSessionPromptCard />
+
       {/* 발견 디스커버리 (정보 블록 1) */}
       <div data-testid="home-growing-discovery">
         <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5">

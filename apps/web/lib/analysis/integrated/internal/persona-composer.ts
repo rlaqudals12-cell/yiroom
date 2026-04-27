@@ -1,0 +1,288 @@
+/**
+ * 나 프로필 합성기 (5축 결과 → "1명의 나" 내러티브)
+ *
+ * @module lib/analysis/integrated/internal/persona-composer
+ * @description
+ *   ADR-104 체크리스트 #1 — "1명의 나로 통합"의 구현체.
+ *   5축 성공 결과를 입력으로 받아 Gemini로 한 단락 페르소나를 합성.
+ *   AI 실패 시 축 라벨 조합 기반 Mock fallback.
+ *
+ * @see docs/adr/ADR-098-identity-redefinition-5axis-model.md §P1 ("나 프로필")
+ * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1
+ * @see .claude/rules/prompt-engineering.md (이모지 + JSON 전용 응답)
+ * @see .claude/rules/ai-integration.md (Mock Fallback 필수)
+ *
+ * @internal — 외부 import 금지 (오케스트레이터 전용)
+ */
+
+import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
+import type {
+  AxisResult,
+  PersonaProfile,
+  PersonalColorAxisData,
+  SkinAxisData,
+  BodyAxisData,
+  HairAxisData,
+  MakeupAxisData,
+} from '../types';
+
+// ============================================
+// 1. 입력 요약 유틸
+// ============================================
+
+interface AxisSummary {
+  pc?: { season: string; tone: string; undertone: string };
+  skin?: { type: string; score: number };
+  body?: { type: string };
+  hair?: { faceShape: string };
+  makeup?: { base: string };
+}
+
+/** 성공한 축만 요약. 실패 축은 undefined. */
+function summarizeAxes(axes: {
+  personalColor: AxisResult<PersonalColorAxisData>;
+  skin: AxisResult<SkinAxisData>;
+  body: AxisResult<BodyAxisData>;
+  hair: AxisResult<HairAxisData>;
+  makeup: AxisResult<MakeupAxisData>;
+}): AxisSummary {
+  const s: AxisSummary = {};
+  if (axes.personalColor.success) {
+    s.pc = {
+      season: axes.personalColor.data.season,
+      tone: axes.personalColor.data.tone,
+      undertone: axes.personalColor.data.undertone,
+    };
+  }
+  if (axes.skin.success) {
+    s.skin = {
+      type: axes.skin.data.skinType,
+      score: axes.skin.data.overallScore,
+    };
+  }
+  if (axes.body.success) {
+    s.body = { type: axes.body.data.bodyType };
+  }
+  if (axes.hair.success) {
+    s.hair = { faceShape: axes.hair.data.faceShape };
+  }
+  if (axes.makeup.success) {
+    s.makeup = { base: axes.makeup.data.baseRecommendation };
+  }
+  return s;
+}
+
+function successAxisCount(s: AxisSummary): number {
+  return [s.pc, s.skin, s.body, s.hair, s.makeup].filter(Boolean).length;
+}
+
+// ============================================
+// 2. Gemini 프롬프트
+// ============================================
+
+function buildPrompt(summary: AxisSummary): string {
+  const lines: string[] = [];
+  if (summary.pc) {
+    lines.push(
+      `- 퍼스널컬러: ${summary.pc.season} / ${summary.pc.tone} / ${summary.pc.undertone}톤`
+    );
+  }
+  if (summary.skin) {
+    lines.push(`- 피부: ${summary.skin.type} 타입, 바이탈리티 ${summary.skin.score}점`);
+  }
+  if (summary.body) {
+    lines.push(`- 체형: ${summary.body.type}`);
+  }
+  if (summary.hair) {
+    lines.push(`- 얼굴형: ${summary.hair.faceShape}`);
+  }
+  if (summary.makeup) {
+    lines.push(`- 메이크업 베이스: ${summary.makeup.base}`);
+  }
+
+  return `당신은 이룸(Yiroom)의 "나 프로필" 내러티브 작가예요. 5축 분석 결과를 읽고,
+사용자를 **1명의 온전한 사람**으로 한 단락에 담아주세요.
+
+⚠️ 작성 원칙:
+1. 5축을 나열하지 말고 **하나의 인상**으로 엮어주세요.
+2. "당신은 ~" 또는 은유 표현 1개 포함 (예: "봄볕에 피는 꽃 같은 사람").
+3. 한국어 해요체, 따뜻하지만 과장 없는 톤.
+4. 의학/진단 표현 금지, "어울려요/좋아요/잘 맞아요" 같은 실용어 사용.
+5. 성공한 축만 활용. 실패한 축은 언급 금지.
+
+📊 입력 (5축 성공 결과):
+${lines.join('\n')}
+
+📋 작성 순서:
+1. 5축 결과에서 **공통된 색감/분위기/이미지**를 찾으세요.
+2. 한 문장 페르소나(oneLine)를 은유로 압축.
+3. 2-4문장 내러티브(narrative)로 사용자를 하나의 존재로 묘사.
+4. 3개의 핵심 인사이트(keyInsights)를 축 조합 기반으로 짧게 정리.
+
+다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
+
+{
+  "oneLine": "은유 1개 한 문장 (최대 20자)",
+  "narrative": "2-4문장, 마침표로 끝. 총 80-180자.",
+  "keyInsights": [
+    "조합 인사이트 1 (예: 봄 웜톤 × 건성 → 코랄 듀이 베이스가 잘 맞아요)",
+    "조합 인사이트 2",
+    "조합 인사이트 3"
+  ]
+}
+
+⚠️ 주의:
+- 실패 축을 추측해서 채우지 마세요.
+- oneLine이 20자를 넘으면 압축하세요.
+- narrative가 없으면 안 돼요. 최소 2문장.
+- keyInsights는 정확히 3개.`;
+}
+
+// ============================================
+// 3. Mock Fallback
+// ============================================
+
+/**
+ * AI 호출 실패 또는 불가 시 fallback.
+ * 축 라벨 조합으로 최소 일관성 있는 persona 생성.
+ */
+function generateMockPersona(summary: AxisSummary): PersonaProfile {
+  const parts: string[] = [];
+  const insights: string[] = [];
+
+  if (summary.pc) {
+    parts.push(
+      `${summary.pc.season === 'spring' || summary.pc.season === 'autumn' ? '따뜻한' : '시원한'} 빛이 어울리는 톤`
+    );
+    insights.push(`${summary.pc.tone} 팔레트가 당신의 혈색을 살려요.`);
+  }
+  if (summary.skin) {
+    parts.push(`${summary.skin.type} 피부 (바이탈리티 ${summary.skin.score}점)`);
+    insights.push(
+      `피부 타입에 맞는 ${summary.skin.type === 'oily' ? '매트' : '듀이'} 마무리가 좋아요.`
+    );
+  }
+  if (summary.body) {
+    parts.push(`${summary.body.type} 실루엣`);
+  }
+  if (summary.hair) {
+    insights.push(`${summary.hair.faceShape}형에는 얼굴선을 살린 컷이 어울려요.`);
+  }
+  if (summary.makeup) {
+    insights.push(summary.makeup.base);
+  }
+
+  const oneLine = summary.pc
+    ? summary.pc.undertone === 'warm'
+      ? '따뜻한 빛을 품은 사람'
+      : '차분한 빛을 품은 사람'
+    : '당신만의 색을 가진 사람';
+
+  const narrative =
+    parts.length > 0
+      ? `당신은 ${parts.join(', ')}을(를) 가진 사람이에요. 분석 결과가 말하는 당신은 하나의 인상으로 엮일 수 있어요.`
+      : '분석 결과가 준비되면 당신만의 프로필을 그려드릴게요.';
+
+  return {
+    oneLine,
+    narrative,
+    keyInsights: insights.slice(0, 3),
+    usedFallback: true,
+  };
+}
+
+// ============================================
+// 4. Gemini 응답 스키마 + 검증
+// ============================================
+
+interface GeminiPersonaResponse {
+  oneLine: string;
+  narrative: string;
+  keyInsights: string[];
+}
+
+function validateResponse(raw: unknown): GeminiPersonaResponse | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const obj = raw as Record<string, unknown>;
+  if (typeof obj.oneLine !== 'string' || !obj.oneLine.trim()) return null;
+  if (typeof obj.narrative !== 'string' || !obj.narrative.trim()) return null;
+  if (!Array.isArray(obj.keyInsights)) return null;
+  const insights = obj.keyInsights.filter(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0
+  );
+  if (insights.length === 0) return null;
+  return {
+    oneLine: obj.oneLine.trim().slice(0, 40), // 20자 권장이지만 여유
+    narrative: obj.narrative.trim(),
+    keyInsights: insights.slice(0, 3),
+  };
+}
+
+// ============================================
+// 5. 공개 함수
+// ============================================
+
+export interface ComposePersonaInput {
+  personalColor: AxisResult<PersonalColorAxisData>;
+  skin: AxisResult<SkinAxisData>;
+  body: AxisResult<BodyAxisData>;
+  hair: AxisResult<HairAxisData>;
+  makeup: AxisResult<MakeupAxisData>;
+}
+
+/**
+ * 5축 결과로부터 "나 프로필" 생성.
+ *
+ * 반환 규칙:
+ * - 성공 축 0개: null (페르소나 작성 불가)
+ * - 성공 축 1개: Mock fallback (Gemini도 가능하나 비용 절약)
+ * - 성공 축 2개 이상: Gemini 시도 → 실패 시 Mock
+ *
+ * 타임아웃/에러 시 절대 throw 안 함 (orchestrator 보호).
+ */
+export async function composePersona(axes: ComposePersonaInput): Promise<PersonaProfile | null> {
+  const summary = summarizeAxes(axes);
+  const count = successAxisCount(summary);
+
+  if (count === 0) return null;
+
+  // 1축만 성공이면 Gemini 호출 없이 Mock — 내러티브 가치 낮음
+  if (count < 2) {
+    return generateMockPersona(summary);
+  }
+
+  // FORCE_MOCK 또는 Gemini 미가용 시 Mock
+  if (process.env.FORCE_MOCK_AI === 'true' || !isGeminiAvailable()) {
+    return generateMockPersona(summary);
+  }
+
+  // Gemini 호출
+  try {
+    const prompt = buildPrompt(summary);
+    const response = await generateContent({
+      contents: prompt,
+      config: {
+        temperature: 0.8, // 창의적 표현 허용 (분석이 아닌 내러티브이므로)
+        maxOutputTokens: 600,
+      },
+    });
+
+    const parsed = parseJsonResponse<unknown>(response.text);
+    const validated = validateResponse(parsed);
+
+    if (!validated) {
+      console.warn('[PersonaComposer] Gemini response validation failed, using mock');
+      return generateMockPersona(summary);
+    }
+
+    return {
+      oneLine: validated.oneLine,
+      narrative: validated.narrative,
+      keyInsights: validated.keyInsights,
+      usedFallback: false,
+    };
+  } catch (error) {
+    console.error('[PersonaComposer] Gemini error, using mock fallback:', error);
+    return generateMockPersona(summary);
+  }
+}

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, RefreshCw, Thermometer, Sparkles, ChevronRight } from 'lucide-react';
@@ -36,6 +36,12 @@ const BODY_TYPE_LABELS: Record<BodyType3, string> = {
 export default function ClosetRecommendPage() {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
+  const searchParams = useSearchParams();
+
+  // 통합 분석 큐레이션에서 진입한 경우 맥락 유지용
+  const curationSource = searchParams.get('source');
+  const curationSessionId = searchParams.get('session');
+  const isFromIntegrated = curationSource === 'integrated';
 
   // 상태
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -195,11 +201,15 @@ export default function ClosetRecommendPage() {
           <p className="text-sm font-medium truncate">{item.name}</p>
           <div className="mt-1.5 h-1 bg-muted rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full ${classifyByRange(score.total, [
-                { max: 50, result: 'bg-red-500' },
-                { max: 70, result: 'bg-yellow-500' },
-                { min: 70, result: 'bg-green-500' },
-              ], 'bg-red-500')}`}
+              className={`h-full rounded-full ${classifyByRange(
+                score.total,
+                [
+                  { max: 50, result: 'bg-red-500' },
+                  { max: 70, result: 'bg-yellow-500' },
+                  { min: 70, result: 'bg-green-500' },
+                ],
+                'bg-red-500'
+              )}`}
               style={{ width: `${score.total}%` }}
             />
           </div>
@@ -232,8 +242,11 @@ export default function ClosetRecommendPage() {
     );
   }
 
-  // 빈 옷장
+  // 빈 옷장 — 통합 분석 큐레이션 맥락 유지
   if (items.length === 0) {
+    const addHref = isFromIntegrated
+      ? `/closet/add?source=integrated${curationSessionId ? `&session=${curationSessionId}` : ''}`
+      : '/closet/add';
     return (
       <div data-testid="closet-recommend-page" className="pb-20">
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
@@ -244,15 +257,32 @@ export default function ClosetRecommendPage() {
             <h1 className="text-lg font-semibold">오늘의 코디</h1>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+        <div
+          className="flex flex-col items-center justify-center px-4 py-16 text-center"
+          data-testid="closet-empty-state"
+        >
           <span className="text-6xl mb-4">👗</span>
-          <h2 className="text-lg font-semibold mb-2">옷장이 비어있어요</h2>
+          <h2 className="text-lg font-semibold mb-2">
+            {isFromIntegrated ? '옷장을 먼저 등록해주세요' : '옷장이 비어있어요'}
+          </h2>
           <p className="text-muted-foreground mb-6">
-            옷장에 아이템을 추가하면
-            <br />
-            맞춤 코디를 추천해드려요
+            {isFromIntegrated ? (
+              <>
+                분석한 체형과 컬러에 맞춰
+                <br />
+                가지고 있는 옷으로 코디를 제안할게요
+              </>
+            ) : (
+              <>
+                옷장에 아이템을 추가하면
+                <br />
+                맞춤 코디를 추천해드려요
+              </>
+            )}
           </p>
-          <Button onClick={() => router.push('/closet/add')}>옷 추가하기</Button>
+          <Button onClick={() => router.push(addHref)} data-testid="closet-empty-cta">
+            {isFromIntegrated ? '먼저 옷장 등록하기' : '옷 추가하기'}
+          </Button>
         </div>
       </div>
     );

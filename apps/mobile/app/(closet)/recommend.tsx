@@ -5,7 +5,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Bookmark, RefreshCw, Thermometer, CloudRain, Sun, Cloud } from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
@@ -73,6 +73,9 @@ function WeatherIcon({
 export default function RecommendScreen() {
   const { colors, module: moduleTheme, status } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ source?: string; session?: string }>();
+  const isFromIntegrated = params.source === 'integrated';
+  const integratedSessionId = typeof params.session === 'string' ? params.session : undefined;
 
   // 실제 사용자 분석 결과에서 가져오기
   const { personalColor: pcResult, bodyAnalysis } = useUserAnalyses();
@@ -250,21 +253,36 @@ export default function RecommendScreen() {
   }
 
   if (items.length === 0) {
+    // 통합 분석에서 진입한 사용자는 옷장이 필수 단계임을 안내하고 옷 추가로 유도
+    const emptyTitle = isFromIntegrated ? '옷장을 먼저 등록해주세요' : '옷장에 아이템이 없어요';
+    const emptyDetail = isFromIntegrated
+      ? '분석한 체형과 컬러에 맞춰\n가지고 있는 옷으로 코디를 제안할게요'
+      : '옷장에 아이템을 추가하면\n코디 추천을 받을 수 있어요';
+    const emptyCta = isFromIntegrated ? '먼저 옷장 등록하기' : '옷장으로 가기';
+    const handleEmptyPress = (): void => {
+      if (isFromIntegrated) {
+        const query = new URLSearchParams({ source: 'integrated' });
+        if (integratedSessionId) query.set('session', integratedSessionId);
+        router.push(`/(closet)/add?${query.toString()}` as never);
+      } else {
+        router.push('/(closet)' as never);
+      }
+    };
+
     return (
       <ScreenContainer testID="closet-recommend-screen" edges={['bottom']}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>👗</Text>
-          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            옷장에 아이템이 없어요
-          </Text>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{emptyTitle}</Text>
           <Text style={[styles.emptySubtext, { color: colors.mutedForeground }]}>
-            옷장에 아이템을 추가하면{'\n'}코디 추천을 받을 수 있어요
+            {emptyDetail}
           </Text>
           <Pressable
             style={[styles.emptyButton, { backgroundColor: moduleTheme.body.dark }]}
-            onPress={() => router.push('/(closet)')}
+            onPress={handleEmptyPress}
+            testID="closet-empty-cta"
           >
-            <Text style={[styles.emptyButtonText, { color: colors.card }]}>옷장으로 가기</Text>
+            <Text style={[styles.emptyButtonText, { color: colors.card }]}>{emptyCta}</Text>
           </Pressable>
         </View>
       </ScreenContainer>

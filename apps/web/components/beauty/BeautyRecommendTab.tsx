@@ -454,6 +454,8 @@ interface BeautyRecommendTabProps {
   userSkinConcerns: SkinConcern[];
   personalColor: string | null;
   getMatchedProducts: <T extends AnyProduct>(products: T[]) => ProductWithMatch<T>[];
+  /** 큐레이션/딥링크에서 전달된 초기 카테고리 (기본 'all') */
+  initialMainCategory?: MainCategory;
 }
 
 export function BeautyRecommendTab({
@@ -462,6 +464,7 @@ export function BeautyRecommendTab({
   userSkinConcerns,
   personalColor: _personalColor,
   getMatchedProducts,
+  initialMainCategory = 'all',
 }: BeautyRecommendTabProps): React.ReactElement {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
@@ -469,7 +472,7 @@ export function BeautyRecommendTab({
   // 필터 상태 (탭 내부)
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
   const [selectedConcerns, setSelectedConcerns] = useState<SkinConcern[]>(['hydration']);
-  const [mainCategory, setMainCategory] = useState<MainCategory>('all');
+  const [mainCategory, setMainCategory] = useState<MainCategory>(initialMainCategory);
   const [subCategory, setSubCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortSheet, setShowSortSheet] = useState(false);

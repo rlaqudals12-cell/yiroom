@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FlaskConical, Palette, Sparkles } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
@@ -12,6 +12,17 @@ import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 import BeautyCareTab from '@/components/beauty/BeautyCareTab';
 import BeautyTrendsTab from '@/components/beauty/BeautyTrendsTab';
 import type { RoutineItem } from '@/types/hybrid';
+
+// 큐레이션 → 뷰티 카테고리 매핑
+// 큐레이션은 lip/base/skincare를 사용하지만, /beauty는 스킨케어 계열만 카테고리가 있음.
+// 매핑되지 않는 값(lip/base)은 'all' 그대로 두고 source=integrated 배너로 맥락 전달.
+const CURATION_CATEGORY_MAP: Record<string, 'all' | 'cleansing' | 'skincare' | 'suncare' | 'mask'> =
+  {
+    skincare: 'skincare',
+    cleansing: 'cleansing',
+    suncare: 'suncare',
+    mask: 'mask',
+  };
 
 // 피부 타입
 type SkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal';
@@ -48,6 +59,15 @@ const skinConcerns: { id: SkinConcern; label: string }[] = [
  */
 export default function BeautyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 통합 분석 큐레이션에서 왔는지, 어떤 카테고리로 요청됐는지 파악
+  const curationSource = searchParams.get('source');
+  const curationCategoryParam = searchParams.get('category');
+  const initialMainCategory = curationCategoryParam
+    ? (CURATION_CATEGORY_MAP[curationCategoryParam] ?? 'all')
+    : 'all';
+  const isFromIntegrated = curationSource === 'integrated';
 
   // useUserMatching 훅으로 분석 결과 자동 로드
   const {
@@ -156,6 +176,20 @@ export default function BeautyPage() {
       {/* F3: 시각적 위계 — h1 sr-only */}
       <h1 className="sr-only">뷰티 - 피부 맞춤 제품 추천</h1>
 
+      {/* 통합 분석 큐레이션에서 진입한 경우 맥락 안내 */}
+      {isFromIntegrated && (
+        <div
+          className="bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-transparent border-b px-4 py-3"
+          data-testid="beauty-integrated-banner"
+          role="status"
+        >
+          <p className="text-sm text-foreground">
+            <Sparkles className="w-4 h-4 inline mr-1 text-primary" aria-hidden="true" />
+            통합 분석 결과를 바탕으로 추천하는 제품이에요
+          </p>
+        </div>
+      )}
+
       {/* 프로필 섹션 — 항상 표시 (B1: data-testid, B2: 터치 타겟) */}
       {hasAnalysis ? (
         <FadeInUp>
@@ -259,6 +293,7 @@ export default function BeautyPage() {
               userSkinConcerns={userSkinConcerns}
               personalColor={personalColor}
               getMatchedProducts={getMatchedProducts}
+              initialMainCategory={initialMainCategory}
             />
           </ErrorBoundary>
         </TabsContent>

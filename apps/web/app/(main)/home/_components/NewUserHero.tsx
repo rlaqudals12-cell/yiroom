@@ -3,7 +3,7 @@
 /**
  * 신규 사용자 히어로 섹션
  *
- * P-UX1: 2개 카드형 CTA (퍼스널 컬러 / 피부 분석)
+ * ADR-101: Primary CTA는 통합 분석 1개로 일원화 (이전: 2개 분기 카드)
  * P-UX6: Social Proof + 설문 대안
  * 비주얼 증거: 분석 결과 미리보기 카드 3종
  * 차별화: 통합 시너지 인과 체인 시각화
@@ -188,30 +188,32 @@ export default function NewUserHero(): React.ReactElement {
           </p>
         )}
 
-        {/* Primary CTA: 2개 카드 */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/analysis/personal-color"
-            className="flex flex-col items-center gap-2 p-4 min-h-[48px] bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
-          >
-            <Palette className="w-8 h-8 text-violet-500" />
-            <span className="text-base font-medium text-foreground text-center leading-snug">
-              {t('personalColor')}
+        {/* ADR-101: Primary CTA 통합 진입점 (이전 2개 분기 → 1개) */}
+        <Link
+          href="/analysis/integrated"
+          data-testid="home-hero-integrated-cta"
+          className="flex items-center justify-center gap-3 px-6 py-4 min-h-[56px] bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 rounded-xl text-white font-bold shadow-md shadow-pink-500/20 transition-all"
+        >
+          <Sparkles className="w-5 h-5" aria-hidden="true" />
+          <span className="text-base leading-snug">
+            내 정체성 5축 알아보기
+            <span className="block text-xs font-normal text-white/80 mt-0.5">
+              색 · 피부 · 체형 · 헤어 한 번에 · 약 2분
             </span>
-          </Link>
-          <Link
-            href="/analysis/skin"
-            className="flex flex-col items-center gap-2 p-4 min-h-[48px] bg-white/70 dark:bg-slate-800/70 rounded-xl border border-violet-200/50 dark:border-violet-800/30 hover:bg-white dark:hover:bg-slate-800 transition-colors"
-          >
-            <Sparkles className="w-8 h-8 text-indigo-500" />
-            <span className="text-base font-medium text-foreground text-center leading-snug">
-              {t('skinAnalysis')}
-            </span>
-          </Link>
-        </div>
+          </span>
+        </Link>
 
-        {/* Secondary: 텍스트 링크 */}
-        <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
+        {/* Secondary: 개별 분석 (심화/재측정용) */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-4 text-xs text-muted-foreground">
+          <span className="text-muted-foreground/60">개별 분석:</span>
+          <Link href="/analysis/personal-color" className="hover:text-foreground transition-colors">
+            {t('personalColor')}
+          </Link>
+          <span>·</span>
+          <Link href="/analysis/skin" className="hover:text-foreground transition-colors">
+            {t('skinAnalysis')}
+          </Link>
+          <span>·</span>
           <Link href="/analysis/body" className="hover:text-foreground transition-colors">
             {t('bodyAnalysis')}
           </Link>
