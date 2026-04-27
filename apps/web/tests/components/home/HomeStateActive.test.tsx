@@ -33,6 +33,10 @@ vi.mock('@/app/(main)/home/_components/HomeStreakWidget', () => ({
 vi.mock('@/components/common/EnvironmentAdviceCard', () => ({
   EnvironmentAdviceCard: () => <div data-testid="environment-advice-card" />,
 }));
+// ADR-101 통합 분석 카드 — useLatestIntegratedSession 훅 의존이라 stub 처리
+vi.mock('@/app/(main)/home/_components/IntegratedSessionPromptCard', () => ({
+  IntegratedSessionPromptCard: () => <div data-testid="integrated-session-prompt-card" />,
+}));
 
 // WS-11: SortableWidgetList + useWidgetOrder mock
 vi.mock('@/app/(main)/home/_components/SortableWidgetList', () => ({

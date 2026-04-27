@@ -8,8 +8,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock Next.js
+// ADR-101 큐레이션 진입 보강으로 useSearchParams 추가됨 (Phase G)
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock useUserMatching
