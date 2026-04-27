@@ -2,6 +2,12 @@
  * H-1 헤어분석 v2 API (얼굴형 기반)
  *
  * @description 얼굴형 분석 기반 헤어스타일 추천 API
+ * @deprecated 2026-04-24 — 이 엔드포인트는 **orphan**입니다. 웹/모바일 UI에서 호출하지 않으며,
+ *   실제 사용자 헤어 분석은 다음 경로로 이관됐습니다:
+ *   - 개별 진입: `/api/analyze/hair` (v1, `lib/analysis/hair` 내부 재사용)
+ *   - 통합 진입: `/api/analyze/integrated` (ADR-099, PC/S/C/H/M 5축 동시 실행)
+ *   현재는 하위 호환용 레거시 shim으로만 남아 있으며, 향후 클린업 세션에서 삭제 예정입니다.
+ *   관련: ADR-104, 2026-04-24-integrated-analysis-deployment.md §8
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 

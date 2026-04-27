@@ -2,6 +2,12 @@
  * PC-2 퍼스널컬러 v2 API (Lab 12톤 시스템)
  *
  * @description Lab 색공간 기반 12톤 퍼스널컬러 분석 API
+ * @deprecated 2026-04-24 — 이 엔드포인트는 **orphan**입니다. 웹/모바일 UI에서 호출하지 않으며,
+ *   실제 사용자 퍼스널컬러 분석은 다음 경로로 이관됐습니다:
+ *   - 개별 진입: `/api/analyze/personal-color` (v1, `lib/analysis/personal-color-v2` 내부 재사용)
+ *   - 통합 진입: `/api/analyze/integrated` (ADR-099, PC/S/C/H/M 5축 동시 실행)
+ *   현재는 하위 호환용 레거시 shim으로만 남아 있으며, 향후 클린업 세션에서 삭제 예정입니다.
+ *   관련: ADR-104, 2026-04-24-integrated-analysis-deployment.md §8
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 

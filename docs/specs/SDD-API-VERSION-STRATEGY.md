@@ -1,7 +1,29 @@
 # API 버전 전략 (SDD-API-VERSION-STRATEGY)
 
-> **Version**: 1.0 | **Created**: 2026-01-30
-> **Status**: Accepted | **Priority**: P3
+> **Version**: 1.1 | **Created**: 2026-01-30 | **Updated**: 2026-04-24
+> **Status**: Superseded by ADR-099 (통합 분석 플로우) | **Priority**: P3
+
+---
+
+## ⚠️ 2026-04-24 업데이트 — v2 API Orphan 상태
+
+이 문서는 **v1/v2 접미사 방식**을 기본 전제로 작성됐습니다. 그러나 2026-04-24 통합 분석 플로우(ADR-099)가 주 진입점으로 자리잡으면서 아래 전략은 **사실상 폐기(Superseded)** 됐습니다.
+
+### 실제 현황
+
+| 엔드포인트                | 현재 상태                                                                |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `/api/analyze/*` (v1)     | **유지** — 개별 분석 페이지(`/analysis/skin` 등)에서 활발히 사용 중      |
+| `/api/analyze/*-v2` (v2)  | **Orphan** — 웹/모바일 어디서도 호출하지 않음, `@deprecated` 마커 적용됨 |
+| `/api/analyze/integrated` | **주 진입점** — 5축 동시 실행, ADR-099/101/102 기반 통합 플로우          |
+
+### 향후 방향
+
+- v2 route 4개는 향후 별도 클린업 세션에서 물리 삭제 예정 (현재는 하위 호환 shim)
+- 새 분석 API는 통합 플로우 내부 adapter로 추가 (`lib/analysis/integrated/internal/axis-adapters.ts`)
+- 외부에 공개할 API가 필요하면 `/api/v1/analyze/*` 폴더 방식으로 전환 검토 (§4 참고)
+
+아래 내용은 **역사적 기록**으로 남겨둡니다.
 
 ---
 
@@ -15,14 +37,15 @@
 
 현재 API는 두 가지 버전 패턴이 혼재:
 
-| 패턴 | 예시 | 상태 |
-|------|------|------|
+| 패턴                   | 예시                   | 상태      |
+| ---------------------- | ---------------------- | --------- |
 | **접미사 방식 (현재)** | `/api/analyze/skin-v2` | 실제 구현 |
-| **폴더 방식 (권장)** | `/api/v2/analyze/skin` | 미적용 |
+| **폴더 방식 (권장)**   | `/api/v2/analyze/skin` | 미적용    |
 
 ### 1.3 결정
 
 **접미사 방식 유지**
+
 - 이미 안정적으로 운영 중인 구조 변경은 ROI가 낮음
 - 클라이언트 코드 수정 최소화
 - 향후 v3 도입 시 폴더 방식으로 전환 검토
@@ -33,57 +56,57 @@
 
 ### 2.1 분석 API (Core)
 
-| 모듈 | v1 (레거시) | v2 (현재) | 상태 |
-|------|-------------|-----------|------|
-| **피부** | `/api/analyze/skin` | `/api/analyze/skin-v2` | v2 권장 |
+| 모듈           | v1 (레거시)                   | v2 (현재)                        | 상태    |
+| -------------- | ----------------------------- | -------------------------------- | ------- |
+| **피부**       | `/api/analyze/skin`           | `/api/analyze/skin-v2`           | v2 권장 |
 | **퍼스널컬러** | `/api/analyze/personal-color` | `/api/analyze/personal-color-v2` | v2 권장 |
-| **체형** | `/api/analyze/body` | `/api/analyze/body-v2` | v2 권장 |
-| **헤어** | `/api/analyze/hair` | `/api/analyze/hair-v2` | v2 권장 |
+| **체형**       | `/api/analyze/body`           | `/api/analyze/body-v2`           | v2 권장 |
+| **헤어**       | `/api/analyze/hair`           | `/api/analyze/hair-v2`           | v2 권장 |
 
 ### 2.2 단일 버전 API
 
-| 모듈 | 경로 | 버전 | 비고 |
-|------|------|------|------|
-| **자세** | `/api/analyze/posture` | v1 | C-1 범주 |
-| **메이크업** | `/api/analyze/makeup` | v1 | - |
-| **성분** | `/api/analyze/ingredients` | v1 | 스캔 기능 |
-| **구강건강** | `/api/analyze/oral-health` | v1 | OH-1 (신규) |
-| **피부상담** | `/api/analyze/skin/consultation` | v1 | Phase D |
+| 모듈         | 경로                             | 버전 | 비고        |
+| ------------ | -------------------------------- | ---- | ----------- |
+| **자세**     | `/api/analyze/posture`           | v1   | C-1 범주    |
+| **메이크업** | `/api/analyze/makeup`            | v1   | -           |
+| **성분**     | `/api/analyze/ingredients`       | v1   | 스캔 기능   |
+| **구강건강** | `/api/analyze/oral-health`       | v1   | OH-1 (신규) |
+| **피부상담** | `/api/analyze/skin/consultation` | v1   | Phase D     |
 
 ### 2.3 버전별 기능 차이
 
 #### 피부 분석 (S-1 → S-2)
 
-| 기능 | v1 (S-1) | v2 (S-2) |
-|------|----------|----------|
-| 분석 방식 | 전체 피부 | **6존 기반 고도화** |
-| AI 모델 | Gemini 기본 | Gemini Vision + 프롬프트 최적화 |
-| 점수 체계 | 4항목 | **6존 개별 + 종합** |
-| Vitality Grade | ❌ | ✅ A-F 등급 |
+| 기능           | v1 (S-1)    | v2 (S-2)                        |
+| -------------- | ----------- | ------------------------------- |
+| 분석 방식      | 전체 피부   | **6존 기반 고도화**             |
+| AI 모델        | Gemini 기본 | Gemini Vision + 프롬프트 최적화 |
+| 점수 체계      | 4항목       | **6존 개별 + 종합**             |
+| Vitality Grade | ❌          | ✅ A-F 등급                     |
 
 #### 퍼스널컬러 (PC-1 → PC-2)
 
-| 기능 | v1 (PC-1) | v2 (PC-2) |
-|------|-----------|-----------|
-| 색 추출 | 기본 RGB | **Lab 색공간 + 자동분류** |
-| 시즌 분류 | 4계절 | **16타입 (4계절 × 4서브)** |
-| 근거 제시 | 기본 | **상세 증거 리포트** |
+| 기능      | v1 (PC-1) | v2 (PC-2)                  |
+| --------- | --------- | -------------------------- |
+| 색 추출   | 기본 RGB  | **Lab 색공간 + 자동분류**  |
+| 시즌 분류 | 4계절     | **16타입 (4계절 × 4서브)** |
+| 근거 제시 | 기본      | **상세 증거 리포트**       |
 
 #### 체형 분석 (C-1 → C-2)
 
-| 기능 | v1 (C-1) | v2 (C-2) |
-|------|----------|----------|
-| 랜드마크 | MediaPipe 기본 | **MediaPipe + Gemini Vision** |
-| 자세 분석 | 기본 | **posture-advisor 통합** |
-| 시뮬레이션 | ❌ | ✅ 교정 시뮬레이션 |
+| 기능       | v1 (C-1)       | v2 (C-2)                      |
+| ---------- | -------------- | ----------------------------- |
+| 랜드마크   | MediaPipe 기본 | **MediaPipe + Gemini Vision** |
+| 자세 분석  | 기본           | **posture-advisor 통합**      |
+| 시뮬레이션 | ❌             | ✅ 교정 시뮬레이션            |
 
 #### 헤어 분석 (H-1 → H-2)
 
-| 기능 | v1 (H-1) | v2 (H-2) |
-|------|----------|----------|
-| 얼굴형 분석 | 기본 | **7가지 분류 + 신뢰도** |
+| 기능        | v1 (H-1) | v2 (H-2)                      |
+| ----------- | -------- | ----------------------------- |
+| 얼굴형 분석 | 기본     | **7가지 분류 + 신뢰도**       |
 | 스타일 추천 | 카테고리 | **개인화 + 피해야 할 스타일** |
-| 컬러 추천 | 기본 | **퍼스널컬러 연동** |
+| 컬러 추천   | 기본     | **퍼스널컬러 연동**           |
 
 ---
 
@@ -125,13 +148,13 @@ Link: </docs/api-migration>; rel="deprecation"
 
 ### 3.3 버전별 지원 범위
 
-| 항목 | v1 | v2 |
-|------|----|----|
-| 버그 수정 | ✅ | ✅ |
-| 보안 패치 | ✅ | ✅ |
-| 새 기능 | ❌ | ✅ |
-| 성능 최적화 | ❌ | ✅ |
-| 문서 업데이트 | 최소 | ✅ |
+| 항목          | v1   | v2  |
+| ------------- | ---- | --- |
+| 버그 수정     | ✅   | ✅  |
+| 보안 패치     | ✅   | ✅  |
+| 새 기능       | ❌   | ✅  |
+| 성능 최적화   | ❌   | ✅  |
+| 문서 업데이트 | 최소 | ✅  |
 
 ---
 
@@ -156,10 +179,10 @@ const response = await fetch('/api/analyze/skin-v2', {
 interface SkinV2Response {
   // v1 필드 (하위 호환)
   skinType: string;
-  scores: { hydration: number; oiliness: number; /* ... */ };
+  scores: { hydration: number; oiliness: number /* ... */ };
 
   // v2 신규 필드
-  zoneScores: Record<string, ZoneScore>;  // 6존 개별 점수
+  zoneScores: Record<string, ZoneScore>; // 6존 개별 점수
   vitalityGrade: 'A' | 'B' | 'C' | 'D' | 'F';
   analysisVersion: '2.0';
 }
@@ -173,10 +196,10 @@ interface SkinV2Response {
 // v1 → v2 마이그레이션 맵
 export const API_ENDPOINTS = {
   // 분석 API (v2 사용)
-  analyzeSkin: '/api/analyze/skin-v2',       // Changed
-  analyzePersonalColor: '/api/analyze/personal-color-v2',  // Changed
-  analyzeBody: '/api/analyze/body-v2',       // Changed
-  analyzeHair: '/api/analyze/hair-v2',       // Changed
+  analyzeSkin: '/api/analyze/skin-v2', // Changed
+  analyzePersonalColor: '/api/analyze/personal-color-v2', // Changed
+  analyzeBody: '/api/analyze/body-v2', // Changed
+  analyzeHair: '/api/analyze/hair-v2', // Changed
 
   // 단일 버전 API
   analyzePosture: '/api/analyze/posture',
@@ -288,11 +311,7 @@ apps/web/app/api/
 ```typescript
 // lib/analytics/api-version.ts
 
-export function trackApiVersion(
-  endpoint: string,
-  version: 'v1' | 'v2',
-  userId?: string
-) {
+export function trackApiVersion(endpoint: string, version: 'v1' | 'v2', userId?: string) {
   // Vercel Analytics 또는 Sentry로 전송
   analytics.track('api_call', {
     endpoint,
@@ -311,12 +330,12 @@ export async function POST(req: NextRequest) {
 
 ### 6.2 Sunset 대시보드 지표
 
-| 지표 | 설명 | 목표 |
-|------|------|------|
-| v1 일일 호출 수 | v1 API 총 호출 | 0 (sunset 시점) |
-| v1/v2 비율 | v1 호출 / 전체 호출 | < 5% |
-| 마이그레이션 완료 사용자 | v2만 사용하는 사용자 비율 | > 95% |
-| v1 에러율 | v1 API 에러 비율 | 모니터링 |
+| 지표                     | 설명                      | 목표            |
+| ------------------------ | ------------------------- | --------------- |
+| v1 일일 호출 수          | v1 API 총 호출            | 0 (sunset 시점) |
+| v1/v2 비율               | v1 호출 / 전체 호출       | < 5%            |
+| 마이그레이션 완료 사용자 | v2만 사용하는 사용자 비율 | > 95%           |
+| v1 에러율                | v1 API 에러 비율          | 모니터링        |
 
 ---
 
