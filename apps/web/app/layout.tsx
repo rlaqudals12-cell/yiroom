@@ -50,12 +50,12 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    // ADR-098 정체성 재정의 v2 — 거울+옷장 포지셔닝
-    default: '이룸 - 거울과 옷장이 나를 이해해줘요',
+    // ADR-098 정체성 재정의 v2 — 5축 AI 분석 (대중 카피: 셀카 한 장)
+    default: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
     template: '%s | 이룸',
   },
   description:
-    'AI가 해석하는 시각 정체성 5축 — 퍼스널 컬러·피부·체형·헤어·메이크업. 나를 이해하고, 오늘 입을 옷까지 연결해줘요.',
+    '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 5축을 AI가 분석하고, 오늘 입을 옷까지 추천해줘요.',
   keywords: [
     '퍼스널컬러',
     '피부분석',
@@ -75,21 +75,21 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     url: siteUrl,
     siteName: '이룸',
-    title: '이룸 - 거울과 옷장이 나를 이해해줘요',
-    description: '시각 정체성 5축(색·피부·체형·헤어·메이크업)을 해석하고 옷장까지 연결',
+    title: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
+    description: '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 5축을 AI가 분석해요.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: '이룸 - 거울과 옷장이 나를 이해해줘요',
+        alt: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '이룸 - 거울과 옷장이 나를 이해해줘요',
-    description: '시각 정체성 5축(색·피부·체형·헤어·메이크업)을 해석하고 옷장까지 연결',
+    title: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
+    description: '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 5축을 AI가 분석해요.',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨

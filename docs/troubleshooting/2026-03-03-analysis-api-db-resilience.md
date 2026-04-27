@@ -133,14 +133,16 @@ if (error) {
 
 ### 영향 파일
 
-#### v2 라우트 (패턴 A+C 수정)
+#### v2 라우트 (패턴 A+C 수정) — ⚠️ 2026-04-24 Orphan 처리됨
 
-| 파일                                         | 모듈 |
-| -------------------------------------------- | ---- |
-| `app/api/analyze/personal-color-v2/route.ts` | PC-2 |
-| `app/api/analyze/skin-v2/route.ts`           | S-2  |
-| `app/api/analyze/body-v2/route.ts`           | C-2  |
-| `app/api/analyze/hair-v2/route.ts`           | H-2  |
+아래 4개 라우트는 2026-04-24 시점 UI에서 호출되지 않는 orphan으로 확인되어 `@deprecated` 마커가 적용됐습니다. ADR-068 패턴은 유지되나, 실제 사용자 영향이 없는 레거시 shim으로 이해하세요.
+
+| 파일                                         | 모듈 | 상태                   |
+| -------------------------------------------- | ---- | ---------------------- |
+| `app/api/analyze/personal-color-v2/route.ts` | PC-2 | `@deprecated` (orphan) |
+| `app/api/analyze/skin-v2/route.ts`           | S-2  | `@deprecated` (orphan) |
+| `app/api/analyze/body-v2/route.ts`           | C-2  | `@deprecated` (orphan) |
+| `app/api/analyze/hair-v2/route.ts`           | H-2  | `@deprecated` (orphan) |
 
 #### v1 라우트 (패턴 A+B 수정)
 

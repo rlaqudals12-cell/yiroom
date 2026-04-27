@@ -16,10 +16,14 @@
 ```yaml
 테이블 목록:
   Phase 1 (분석):
-    1. users                        # Clerk 사용자 정보
-    2. personal_color_assessments   # PC-1 퍼스널 컬러 ⭐
-    3. skin_analyses                # S-1 피부 분석 (성분 분석 포함)
-    4. body_analyses                # C-1 체형 분석 (PC 연동)
+    1. users                          # Clerk 사용자 정보
+    2. personal_color_assessments     # PC-1 퍼스널 컬러 ⭐ (session_id FK 추가: 2026-04-23)
+    3. skin_analyses                  # S-1 피부 분석 (성분 분석 포함) (session_id FK 추가)
+    4. body_analyses                  # C-1 체형 분석 (PC 연동) (session_id FK 추가)
+
+  통합 분석 플로우 (2026-04-23, ADR-099 Phase A):
+    N1. integrated_analysis_sessions  # 5축 병렬 분석 세션 (pending/partial/completed/failed)
+    N2. hair_analyses, makeup_analyses 에도 session_id FK 추가
 
   Product DB v1:
     5. cosmetic_products            # 화장품 (500개)

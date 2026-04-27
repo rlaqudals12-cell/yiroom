@@ -511,7 +511,7 @@
     "justNow": "たった今"
   },
   "landing": {
-    "heroTitle": "鏡とクローゼットが\nあなたを理解する",
+    "heroTitle": "セルフィー1枚で\nカラー・肌・体型・ヘアを一度に",
     "heroDesc": "カラー · 肌 · 体型 · ヘア · メイクの5軸であなたの視覚的アイデンティティを読み解き、今日の装いまでつなぎます。",
     "startFree": "無料カラー診断を始める",
     "goToDashboard": "ダッシュボードへ",
@@ -538,6 +538,9 @@
     "preview2Label": "Sタイプ体型",
     "preview2Sub": "ウエスト強調がベスト",
     "preview2Tag": "体型分析",
+    "preview3Label": "ソフトウェーブ",
+    "preview3Sub": "顔の形に合うレイヤードカット",
+    "preview3Tag": "ヘア分析",
     "bottomCtaLabel": "Start Your Journey",
     "bottomCtaTitle": "今すぐ始めましょう",
     "bottomCtaDesc": "パーソナルカラー診断から始めると\nあなただけの分析をすぐに受けられます",
@@ -552,6 +555,8 @@
     "miniCardSpringWarm": "スプリングウォーム",
     "miniCardSType": "Sタイプ",
     "miniCardWaistFit": "ウエスト強調フィット",
+    "miniCardHairLabel": "ソフトウェーブ",
+    "miniCardHairDesc": "顔の形に合うカット",
     "howItWorksTitle": "分析の流れ",
     "step0Title": "セルフィーを1枚撮影",
     "step0Desc": "自然光で正面のセルフィー1枚でOK",

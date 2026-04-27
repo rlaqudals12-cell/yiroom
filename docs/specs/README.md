@@ -118,6 +118,15 @@
 | [SDD-MAKEUP-ANALYSIS](SDD-MAKEUP-ANALYSIS.md) | 작성됨 | M-1 메이크업 분석 (립, 아이, 블러셔, 컨투어링)              | [ADR-053](../adr/ADR-053-makeup-analysis-architecture.md) |
 | [SDD-MAKEUP-ENGINE](SDD-MAKEUP-ENGINE.md)     | 작성됨 | M-1 메이크업 분석 + Virtual Try-On 엔진 (5 엔진, 에러 처리) | [ADR-053](../adr/ADR-053-makeup-analysis.md)              |
 
+### 통합 분석 플로우 (5축 병렬)
+
+| 문서                                                          | 상태                                        | 설명                                                                                                        | 관련 ADR                                                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [SDD-INTEGRATED-ANALYSIS](SDD-INTEGRATED-ANALYSIS.md)         | implemented (Phase A, F.3 연결)             | 5축(PC/S/C/H/M) 병렬 분석 API + 세션 테이블 + Partial Success + 실제 Gemini 연결 (22 tests pass)            | [ADR-099](../adr/ADR-099-integrated-analysis-flow.md), [ADR-098](../adr/ADR-098-identity-redefinition-5axis-model.md), [ADR-104](../adr/ADR-104-yiroom-launch-criteria.md) |
+| [SDD-INTEGRATED-RESULT-UI](SDD-INTEGRATED-RESULT-UI.md)       | implemented (Phase B + F.1/F.2/F.4/F.5 + G) | 입력 + 결과 UI + Storage + persona/action-plan/cross-insights/curation + Phase G 링크 보강 (85+ tests pass) | [ADR-100](../adr/ADR-100-integrated-analysis-ui.md), [ADR-104](../adr/ADR-104-yiroom-launch-criteria.md)                                                                   |
+| [SDD-PHASE-C-CTA-UNIFICATION](SDD-PHASE-C-CTA-UNIFICATION.md) | implemented (Phase C)                       | 랜딩 + 홈 CTA를 통합 플로우로 일원화 (6 tests pass)                                                         | [ADR-101](../adr/ADR-101-integrated-cta-unification.md)                                                                                                                    |
+| [SDD-MOBILE-INTEGRATED](SDD-MOBILE-INTEGRATED.md)             | implemented (Phase D + G 포팅)              | 모바일 입력/결과/CTA + 큐레이션 링크 보강 (`useHasClosetItems` 훅 + 파라미터 수신) (13+10 tests pass)       | [ADR-102](../adr/ADR-102-mobile-integrated-porting.md)                                                                                                                     |
+
 ### Virtual Try-On
 
 | 문서                                                            | 상태      | 설명                          | 관련 ADR |

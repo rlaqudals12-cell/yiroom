@@ -511,7 +511,7 @@
     "justNow": "방금"
   },
   "landing": {
-    "heroTitle": "거울과 옷장이\n나를 이해해줘요",
+    "heroTitle": "셀카 한 장으로\n색·피부·체형·헤어 한 번에",
     "heroDesc": "퍼스널컬러 · 피부 · 체형 · 헤어 · 메이크업\n내 시각 정체성 5축을 해석하고, 오늘 입을 옷까지 연결해요.",
     "startFree": "무료 퍼스널컬러 진단 시작",
     "goToDashboard": "대시보드로 이동",
@@ -548,6 +548,9 @@
     "preview2Label": "S타입 체형",
     "preview2Sub": "허리 강조 핏이 베스트",
     "preview2Tag": "체형 분석",
+    "preview3Label": "소프트 웨이브",
+    "preview3Sub": "얼굴형에 어울리는 레이어드 컷",
+    "preview3Tag": "헤어 분석",
     "bottomCtaLabel": "Start Your Journey",
     "bottomCtaTitle": "지금 바로 시작해보세요",
     "bottomCtaDesc": "퍼스널컬러 진단부터 시작하면\n나만의 맞춤 분석을 바로 받을 수 있어요",
@@ -562,6 +565,8 @@
     "miniCardSpringWarm": "봄 웜톤",
     "miniCardSType": "S타입",
     "miniCardWaistFit": "허리 강조 핏 추천",
+    "miniCardHairLabel": "소프트 웨이브",
+    "miniCardHairDesc": "얼굴형에 어울리는 컷",
     "langKoLabel": "한국어로 보기",
     "langKo": "한국어",
     "langEnLabel": "View in English"

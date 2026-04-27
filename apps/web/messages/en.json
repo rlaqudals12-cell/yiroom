@@ -511,7 +511,7 @@
     "justNow": "Just now"
   },
   "landing": {
-    "heroTitle": "Your mirror and closet\nfinally understand you",
+    "heroTitle": "One selfie —\ncolor, skin, body, hair at once",
     "heroDesc": "Color · Skin · Body · Hair · Makeup\nWe read your 5 visual identity axes and connect them to what you wear today.",
     "startFree": "Free Color Analysis",
     "goToDashboard": "Go to Dashboard",
@@ -548,6 +548,9 @@
     "preview2Label": "S-Type Body",
     "preview2Sub": "Waist-defining fits are your best match",
     "preview2Tag": "Body Analysis",
+    "preview3Label": "Soft Waves",
+    "preview3Sub": "Layered cut that suits your face shape",
+    "preview3Tag": "Hair Analysis",
     "bottomCtaLabel": "Start Your Journey",
     "bottomCtaTitle": "Ready to begin?",
     "bottomCtaDesc": "Start with a personal color analysis\nto unlock your full personalized experience.",
@@ -562,6 +565,8 @@
     "miniCardSpringWarm": "Spring Warm",
     "miniCardSType": "S-Type",
     "miniCardWaistFit": "Waist-defining fits",
+    "miniCardHairLabel": "Soft Waves",
+    "miniCardHairDesc": "Cut that suits your face shape",
     "langKoLabel": "한국어로 보기",
     "langKo": "한국어",
     "langEnLabel": "View in English"

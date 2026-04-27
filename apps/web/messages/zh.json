@@ -511,7 +511,7 @@
     "justNow": "刚刚"
   },
   "landing": {
-    "heroTitle": "镜子和衣柜，\n从此懂你",
+    "heroTitle": "一张自拍，\n一次看懂色彩·肌肤·体型·发型",
     "heroDesc": "色彩·肌肤·体型·发型·妆容 5 个视觉身份维度，解读你，并连接今天该穿的搭配。",
     "startFree": "免费色彩诊断",
     "goToDashboard": "前往仪表板",
@@ -538,6 +538,9 @@
     "preview2Label": "S型体型",
     "preview2Sub": "强调腰线的款式最适合",
     "preview2Tag": "体型分析",
+    "preview3Label": "柔波卷发",
+    "preview3Sub": "适合脸型的层次剪裁",
+    "preview3Tag": "发型分析",
     "bottomCtaLabel": "Start Your Journey",
     "bottomCtaTitle": "现在就开始吧",
     "bottomCtaDesc": "从个人色彩诊断开始\n即刻获得专属分析",
@@ -552,6 +555,8 @@
     "miniCardSpringWarm": "春季暖色调",
     "miniCardSType": "S型",
     "miniCardWaistFit": "腰线强调款",
+    "miniCardHairLabel": "柔波卷发",
+    "miniCardHairDesc": "适合脸型的剪裁",
     "howItWorksTitle": "分析流程",
     "step0Title": "拍一张自拍",
     "step0Desc": "在自然光下正面自拍一张就够了",

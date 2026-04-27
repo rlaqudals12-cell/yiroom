@@ -70,6 +70,13 @@ const PREVIEW_META = [
     gradient: 'from-blue-500/20 to-indigo-500/20',
     border: 'border-blue-500/30',
   },
+  {
+    icon: Scissors,
+    iconColor: 'text-violet-400',
+    colors: [],
+    gradient: 'from-violet-500/20 to-purple-500/20',
+    border: 'border-violet-500/30',
+  },
 ];
 
 // 2-4: 스크롤 fade-in 훅
@@ -137,30 +144,30 @@ export function LandingContent(): React.JSX.Element {
                 </span>
               </div>
 
-              {/* 2-1: 비주얼 앵커 — 결과 카드 스택 (우측, md 이상) */}
-              <div className="hidden md:flex absolute top-1/2 right-8 -translate-y-1/2 z-[5] flex-col gap-3">
+              {/* 2-1: 비주얼 앵커 — 4축 시각 정체성 (ADR-098 PC/S/C/H) 2×2 그리드 */}
+              <div className="hidden md:grid grid-cols-2 gap-2.5 absolute top-1/2 right-6 -translate-y-1/2 z-[5]">
                 {/* 퍼스널컬러 미니 카드 */}
-                <div className="w-[180px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 transform rotate-2 hover:rotate-0 transition-transform duration-300">
+                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
                   <p className="text-[10px] text-pink-400 font-medium mb-1">Personal Color</p>
-                  <p className="text-white text-sm font-bold">{t('miniCardSpringWarm')}</p>
+                  <p className="text-white text-sm font-bold truncate">{t('miniCardSpringWarm')}</p>
                   <div className="flex gap-1 mt-2">
-                    {['#F9A8D4', '#FBCFE8', '#F472B6', '#EC4899', '#DB2777'].map((c) => (
+                    {['#F9A8D4', '#F472B6', '#EC4899', '#DB2777'].map((c) => (
                       <div
                         key={c}
-                        className="w-5 h-5 rounded-full"
+                        className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: c }}
                       />
                     ))}
                   </div>
                 </div>
                 {/* 피부 점수 미니 카드 */}
-                <div className="w-[180px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 transform -rotate-1 hover:rotate-0 transition-transform duration-300">
+                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
                   <p className="text-[10px] text-amber-400 font-medium mb-1">Skin Vitality</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-white">78</span>
-                    <span className="text-xs text-zinc-400">/100</span>
+                    <span className="text-xl font-bold text-white">78</span>
+                    <span className="text-[10px] text-zinc-400">/100</span>
                   </div>
-                  <div className="w-full h-1.5 bg-zinc-700 rounded-full mt-2">
+                  <div className="w-full h-1 bg-zinc-700 rounded-full mt-2">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
                       style={{ width: '78%' }}
@@ -168,10 +175,16 @@ export function LandingContent(): React.JSX.Element {
                   </div>
                 </div>
                 {/* 체형 미니 카드 */}
-                <div className="w-[180px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
                   <p className="text-[10px] text-blue-400 font-medium mb-1">Body Type</p>
-                  <p className="text-white text-sm font-bold">{t('miniCardSType')}</p>
-                  <p className="text-zinc-400 text-[10px] mt-1">{t('miniCardWaistFit')}</p>
+                  <p className="text-white text-sm font-bold truncate">{t('miniCardSType')}</p>
+                  <p className="text-zinc-400 text-[10px] mt-1 truncate">{t('miniCardWaistFit')}</p>
+                </div>
+                {/* 헤어 미니 카드 */}
+                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
+                  <p className="text-[10px] text-violet-400 font-medium mb-1">Hair Style</p>
+                  <p className="text-white text-sm font-bold truncate">{t('miniCardHairLabel')}</p>
+                  <p className="text-zinc-400 text-[10px] mt-1 truncate">{t('miniCardHairDesc')}</p>
                 </div>
               </div>
 
@@ -205,10 +218,10 @@ export function LandingContent(): React.JSX.Element {
                 {/* 1-2: 소셜 프루프 */}
                 <p className="mt-3 text-xs text-zinc-500">✦ {t('socialProof')}</p>
 
-                {/* 1-5: CTA 통일 — 퍼스널컬러 진단 */}
+                {/* ADR-101: 통합 분석 플로우로 CTA 일원화 */}
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <SignedOut>
-                    <SignInButton mode="modal">
+                    <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
                       <Button className="h-12 px-6 md:h-14 md:px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm md:text-base font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
                         <Palette className="w-4 h-4 mr-2" />
                         {t('startFree')}
@@ -313,11 +326,11 @@ export function LandingContent(): React.JSX.Element {
             ))}
           </div>
 
-          {/* 1-5: CTA 단일화 — 퍼스널컬러 진단만 */}
+          {/* ADR-101: 통합 분석 플로우로 CTA 일원화 */}
           <div className="flex justify-center pt-4">
             <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 max-w-[600px] justify-center">
               <SignedOut>
-                <SignInButton mode="modal">
+                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
                   <Button className="min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-11 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] grow transition-all duration-300 shadow-lg shadow-pink-500/20">
                     <Palette className="w-4 h-4 mr-2" />
                     {t('ctaStart')}
@@ -334,11 +347,11 @@ export function LandingContent(): React.JSX.Element {
             </div>
           </div>
 
-          {/* 1-3: 결과 미리보기 섹션 (기존 "특별함" 대체) */}
+          {/* 1-3: 결과 미리보기 섹션 — ADR-098 4축 정체성 (PC/S/C/H) */}
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-8">
             {t('previewTitle')}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4">
             {PREVIEW_META.map((meta, i) => {
               const Icon = meta.icon;
               return (
@@ -439,7 +452,7 @@ export function LandingContent(): React.JSX.Element {
                 {t('bottomCtaDesc')}
               </p>
               <SignedOut>
-                <SignInButton mode="modal">
+                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
                   <Button className="inline-flex items-center gap-2 h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
                     <Sparkles className="w-5 h-5" />
                     <span>{t('bottomCtaSignUp')}</span>
@@ -447,7 +460,7 @@ export function LandingContent(): React.JSX.Element {
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <Link href="/analysis/personal-color">
+                <Link href="/analysis/integrated">
                   <Button className="inline-flex items-center gap-2 h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
                     <Sparkles className="w-5 h-5" />
                     <span>{t('bottomCtaAnalysis')}</span>
