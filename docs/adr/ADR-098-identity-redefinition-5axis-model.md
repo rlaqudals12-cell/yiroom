@@ -224,17 +224,17 @@ export const STYLING_PRINCIPLES: Record<BodyType3, StylingPrinciple[]> = {
 ## 6. 리서치 티켓 (선택)
 
 ```
-[ADR-098-R1] "나 프로필" 통합 레이어 설계 (Phase 1.5)
+[ADR-098-R1] "나 프로필" 통합 레이어 설계 (Phase 1.5)  [✅ resolved 2026-04-26]
 ────────────────────────────────────────
 리서치 질문:
 1. 5축 결과를 하나의 카드로 통합했을 때의 정보 밀도 한계는?
 2. 축별 신뢰도가 다를 때 (예: S-1 고/C-1 저) 통합 카드에서 어떻게 처리?
 3. 사용자가 통합 프로필을 공유하고 싶어할 때 UX 패턴은?
 
-예상 출력:
-- "나 프로필" 카드 와이어프레임
-- 5축 → 한 줄 정체성 문장 생성 알고리즘
-- Phase 1.5 SDD 초안
+산출물 (출시 전 사전 작성):
+- 리서치: docs/research/profile-card-phase-1.5-research.md
+- SDD 초안: docs/specs/SDD-PROFILE-CARD-PHASE-1.5.md
+- (참고) 웹 옷장 등록 UI Phase 1.5: docs/specs/SDD-CLOSET-INVENTORY-WEB.md
 ```
 
 ## 7. 관련 문서
@@ -245,6 +245,8 @@ export const STYLING_PRINCIPLES: Record<BodyType3, StylingPrinciple[]> = {
 - [SDD-BODY-ANALYSIS](../specs/SDD-BODY-ANALYSIS-v2.md) — C-1 스펙 (v2.1 업데이트 예정)
 - [ADR-054 (수익 모델 v2)](./ADR-054-monetization-v2.md) — 어필리에이트 모델과 정합성
 - [ADR-096 (Expo 모노레포)](./ADR-096-expo-monorepo-entry-patch.md) — 최신 ADR 참조
+- [SDD-PROFILE-CARD-PHASE-1.5](../specs/SDD-PROFILE-CARD-PHASE-1.5.md) — R1 산출물 (출시 후 4~8주 착수)
+- [SDD-CLOSET-INVENTORY-WEB](../specs/SDD-CLOSET-INVENTORY-WEB.md) — 웹 옷장 등록 UI Phase 1.5 (CLOSET_INTEGRATION 활성화 경로)
 
 ---
 

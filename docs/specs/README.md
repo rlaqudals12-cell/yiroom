@@ -127,6 +127,13 @@
 | [SDD-PHASE-C-CTA-UNIFICATION](SDD-PHASE-C-CTA-UNIFICATION.md) | implemented (Phase C)                       | 랜딩 + 홈 CTA를 통합 플로우로 일원화 (6 tests pass)                                                         | [ADR-101](../adr/ADR-101-integrated-cta-unification.md)                                                                                                                    |
 | [SDD-MOBILE-INTEGRATED](SDD-MOBILE-INTEGRATED.md)             | implemented (Phase D + G 포팅)              | 모바일 입력/결과/CTA + 큐레이션 링크 보강 (`useHasClosetItems` 훅 + 파라미터 수신) (13+10 tests pass)       | [ADR-102](../adr/ADR-102-mobile-integrated-porting.md)                                                                                                                     |
 
+### Phase 1.5 (출시 후 4~8주, 사전 SDD 작성)
+
+| 문서                                                        | 상태       | 설명                                                                                              | 관련 ADR                                                                         |
+| ----------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [SDD-PROFILE-CARD-PHASE-1.5](SDD-PROFILE-CARD-PHASE-1.5.md) | 초안 (0.1) | "나 프로필" 통합 카드 — 5축 결과를 홈 상단에 압축 노출 (`PROFILE_CARD_PHASE_1_5` 플래그)          | [ADR-098](../adr/ADR-098-identity-redefinition-5axis-model.md) §6 R1             |
+| [SDD-CLOSET-INVENTORY-WEB](SDD-CLOSET-INVENTORY-WEB.md)     | 초안 (0.1) | 웹 옷장 등록/편집/매칭 UI — 모바일 1:1 포팅 + 매칭 로직 shared 이관 (`CLOSET_INTEGRATION` 플래그) | [ADR-098](../adr/ADR-098-identity-redefinition-5axis-model.md) §0 의도적 제외 #2 |
+
 ### Virtual Try-On
 
 | 문서                                                            | 상태      | 설명                          | 관련 ADR |
