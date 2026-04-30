@@ -1,11 +1,10 @@
 /**
- * T-6: 메이크업/헤어/구강 오버레이 렌더링 테스트
+ * T-6: 메이크업/헤어 오버레이 렌더링 테스트 (구강은 ADR-098 OH-1 제거로 삭제됨)
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MakeupFaceMapOverlay } from '@/components/analysis/overlay/MakeupFaceMapOverlay';
 import { FaceOutlineOverlay } from '@/components/analysis/overlay/FaceOutlineOverlay';
-import { ToothDiagramOverlay } from '@/components/analysis/overlay/ToothDiagramOverlay';
 
 // face-api.js mock
 vi.mock('@/components/analysis/overlay/internal/face-model-loader', () => ({
@@ -97,42 +96,4 @@ describe('FaceOutlineOverlay', () => {
   });
 });
 
-describe('ToothDiagramOverlay', () => {
-  it('should render with tooth color', () => {
-    render(
-      <ToothDiagramOverlay
-        toothColor={{
-          measuredLab: { L: 80, a: 2, b: 15 },
-          matchedShade: 'A2',
-          deltaE: 2.5,
-          confidence: 85,
-          alternativeMatches: [],
-          interpretation: {
-            brightness: 'medium',
-            yellowness: 'mild',
-            series: 'A',
-          },
-        }}
-      />
-    );
-    expect(screen.getByTestId('tooth-diagram-overlay')).toBeInTheDocument();
-    // 범례에 현재 셰이드 표시
-    expect(screen.getByText(/A2/)).toBeInTheDocument();
-  });
-
-  it('should render with gum health', () => {
-    render(
-      <ToothDiagramOverlay
-        gumHealth={{
-          healthStatus: 'mild_gingivitis',
-          inflammationScore: 35,
-          needsDentalVisit: false,
-          metrics: { aStarMean: 12, aStarStd: 3, rednessPercentage: 15, swellingIndicator: 20 },
-          recommendations: ['부드러운 칫솔 사용'],
-        }}
-        activeTab="gum-health"
-      />
-    );
-    expect(screen.getByText('경미한 염증')).toBeInTheDocument();
-  });
-});
+// (ToothDiagramOverlay 테스트는 ADR-098 Phase 1 OH-1 제거에 따라 정리됨)

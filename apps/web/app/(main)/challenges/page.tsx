@@ -231,7 +231,7 @@ export default function ChallengesPage() {
             </div>
             <CrossDomainChallengeList
               views={crossDomainViews}
-              onJoin={(id) => {
+              onJoin={(_id) => {
                 toast.success('크로스도메인 챌린지에 참여했어요!');
               }}
             />

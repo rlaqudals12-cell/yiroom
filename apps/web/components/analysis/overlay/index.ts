@@ -58,9 +58,7 @@ export type { PoseSkeletonOverlayProps } from './PoseSkeletonOverlay';
 export { PostureAlignmentOverlay } from './PostureAlignmentOverlay';
 export type { PostureAlignmentOverlayProps } from './PostureAlignmentOverlay';
 
-// C-4: 구강 치아 도식
-export { ToothDiagramOverlay } from './ToothDiagramOverlay';
-export type { ToothDiagramOverlayProps } from './ToothDiagramOverlay';
+// C-4: 구강 치아 도식 — ADR-098 Phase 1 OH-1 제거 시 누락된 잔존 정리됨
 
 // =============================================================================
 // Phase 3: 익명 공유

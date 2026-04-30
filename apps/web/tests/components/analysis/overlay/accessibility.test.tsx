@@ -3,24 +3,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ToothDiagramOverlay } from '@/components/analysis/overlay/ToothDiagramOverlay';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay/anonymous/AnonymousFaceTemplate';
 import { AnonymousBodyTemplate } from '@/components/analysis/overlay/anonymous/AnonymousBodyTemplate';
 import { ShareModeToggle } from '@/components/analysis/overlay/anonymous/ShareModeToggle';
 
-describe('ToothDiagramOverlay 접근성', () => {
-  it('should have data-testid', () => {
-    render(<ToothDiagramOverlay />);
-    expect(screen.getByTestId('tooth-diagram-overlay')).toBeInTheDocument();
-  });
-
-  it('should have aria-label on SVG', () => {
-    render(<ToothDiagramOverlay />);
-    const svgs = screen.getAllByRole('img');
-    const toothSvg = svgs.find((el) => el.getAttribute('aria-label')?.includes('구강'));
-    expect(toothSvg).toBeDefined();
-  });
-});
+// (ToothDiagramOverlay 접근성 테스트는 ADR-098 Phase 1 OH-1 제거에 따라 정리됨)
 
 describe('AnonymousFaceTemplate 접근성', () => {
   it('should have data-testid', () => {
