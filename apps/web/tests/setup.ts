@@ -83,262 +83,44 @@ global.ResizeObserver = MockResizeObserver;
 // 모든 아이콘을 간단한 span으로 대체
 // testid 형식: lucide-{name} (컴포넌트 testid와 충돌 방지)
 // 컴포넌트가 data-testid를 전달하면 해당 값이 우선됨
+//
+// 2026-04-26: 240줄 인라인 사전 → Proxy 패턴으로 교체 (FolderHeart 같은 신규
+// 아이콘 누락 재발 방지). PascalCase로 시작하는 모든 이름을 자동으로 아이콘
+// mock 반환.
+const iconCache = new Map<string, ReturnType<typeof createIconMock>>();
 const createIconMock = (name: string) => {
   const IconMock = (props: Record<string, unknown>) =>
     React.createElement(
       'span',
       {
         'data-testid': `lucide-${name.toLowerCase()}`,
-        ...props, // 컴포넌트에서 전달한 props (data-testid 포함) 우선 적용
+        ...props,
       },
       name
     );
   IconMock.displayName = name;
   return IconMock;
 };
+const getIcon = (name: string) => {
+  let cached = iconCache.get(name);
+  if (!cached) {
+    cached = createIconMock(name);
+    iconCache.set(name, cached);
+  }
+  return cached;
+};
 
-vi.mock('lucide-react', () => ({
-  // Navigation & UI
-  Home: createIconMock('Home'),
-  ChevronLeft: createIconMock('ChevronLeft'),
-  ChevronRight: createIconMock('ChevronRight'),
-  ChevronDown: createIconMock('ChevronDown'),
-  ChevronUp: createIconMock('ChevronUp'),
-  ArrowLeft: createIconMock('ArrowLeft'),
-  ArrowRight: createIconMock('ArrowRight'),
-  ArrowUp: createIconMock('ArrowUp'),
-  ArrowDown: createIconMock('ArrowDown'),
-  X: createIconMock('X'),
-  Check: createIconMock('Check'),
-  Plus: createIconMock('Plus'),
-  Minus: createIconMock('Minus'),
-  Search: createIconMock('Search'),
-  Settings: createIconMock('Settings'),
-  Info: createIconMock('Info'),
-  List: createIconMock('List'),
-
-  // Status & Alerts
-  Loader2: createIconMock('Loader2'),
-  AlertTriangle: createIconMock('AlertTriangle'),
-  AlertCircle: createIconMock('AlertCircle'),
-  CheckCircle: createIconMock('CheckCircle'),
-  CheckCircle2: createIconMock('CheckCircle2'),
-  XCircle: createIconMock('XCircle'),
-  HelpCircle: createIconMock('HelpCircle'),
-  Ban: createIconMock('Ban'),
-
-  // Actions
-  RefreshCw: createIconMock('RefreshCw'),
-  RefreshCcw: createIconMock('RefreshCcw'),
-  RotateCcw: createIconMock('RotateCcw'),
-  Play: createIconMock('Play'),
-  Pause: createIconMock('Pause'),
-  SkipForward: createIconMock('SkipForward'),
-  Share2: createIconMock('Share2'),
-  Download: createIconMock('Download'),
-  Save: createIconMock('Save'),
-  Trash2: createIconMock('Trash2'),
-  ExternalLink: createIconMock('ExternalLink'),
-  Send: createIconMock('Send'),
-  ThumbsUp: createIconMock('ThumbsUp'),
-  MoreVertical: createIconMock('MoreVertical'),
-  MoreHorizontal: createIconMock('MoreHorizontal'),
-  Edit2: createIconMock('Edit2'),
-  Bookmark: createIconMock('Bookmark'),
-  BookmarkPlus: createIconMock('BookmarkPlus'),
-  Reply: createIconMock('Reply'),
-
-  // Workout & Activity
-  Dumbbell: createIconMock('Dumbbell'),
-  Activity: createIconMock('Activity'),
-  Flame: createIconMock('Flame'),
-  Target: createIconMock('Target'),
-  Timer: createIconMock('Timer'),
-  Clock: createIconMock('Clock'),
-  Zap: createIconMock('Zap'),
-  ZapOff: createIconMock('ZapOff'),
-
-  // Mood & Energy
-  Smile: createIconMock('Smile'),
-  Meh: createIconMock('Meh'),
-  Frown: createIconMock('Frown'),
-  Battery: createIconMock('Battery'),
-  BatteryLow: createIconMock('BatteryLow'),
-  Bot: createIconMock('Bot'),
-
-  // Weather & Temperature
-  Thermometer: createIconMock('Thermometer'),
-  Cloud: createIconMock('Cloud'),
-  CloudRain: createIconMock('CloudRain'),
-  CloudSun: createIconMock('CloudSun'),
-  Wind: createIconMock('Wind'),
-
-  // Mental & Stress
-  Brain: createIconMock('Brain'),
-
-  // Nutrition & Health
-  Utensils: createIconMock('Utensils'),
-  UtensilsCrossed: createIconMock('UtensilsCrossed'),
-  ChefHat: createIconMock('ChefHat'),
-  Droplets: createIconMock('Droplets'),
-  GlassWater: createIconMock('GlassWater'),
-  Coffee: createIconMock('Coffee'),
-  CupSoda: createIconMock('CupSoda'),
-  Wine: createIconMock('Wine'),
-  Leaf: createIconMock('Leaf'),
-  Scale: createIconMock('Scale'),
-  Moon: createIconMock('Moon'),
-  Sun: createIconMock('Sun'),
-  Pill: createIconMock('Pill'),
-
-  // Body & Measurement
-  Ruler: createIconMock('Ruler'),
-
-  // Trends & Stats
-  TrendingUp: createIconMock('TrendingUp'),
-  TrendingDown: createIconMock('TrendingDown'),
-  BarChart: createIconMock('BarChart'),
-  BarChart3: createIconMock('BarChart3'),
-  FileBarChart: createIconMock('FileBarChart'),
-
-  // Products & Shopping
-  Package: createIconMock('Package'),
-  PackageX: createIconMock('PackageX'),
-  ShoppingBag: createIconMock('ShoppingBag'),
-  ShoppingCart: createIconMock('ShoppingCart'),
-  Star: createIconMock('Star'),
-  Heart: createIconMock('Heart'),
-  HeartPulse: createIconMock('HeartPulse'),
-  FolderHeart: createIconMock('FolderHeart'),
-  Armchair: createIconMock('Armchair'),
-  Footprints: createIconMock('Footprints'),
-  GitCompare: createIconMock('GitCompare'),
-  Droplet: createIconMock('Droplet'),
-  Bell: createIconMock('Bell'),
-
-  // Style & Beauty
-  Sparkles: createIconMock('Sparkles'),
-  Palette: createIconMock('Palette'),
-  Shirt: createIconMock('Shirt'),
-  FlaskConical: createIconMock('FlaskConical'),
-  Tag: createIconMock('Tag'),
-  Brush: createIconMock('Brush'),
-  Scissors: createIconMock('Scissors'),
-  Wand2: createIconMock('Wand2'),
-  ScanFace: createIconMock('ScanFace'),
-
-  // Media & Input
-  Camera: createIconMock('Camera'),
-  CameraOff: createIconMock('CameraOff'),
-  Image: createIconMock('Image'),
-  ImageIcon: createIconMock('ImageIcon'),
-  ImagePlus: createIconMock('ImagePlus'),
-  ScanBarcode: createIconMock('ScanBarcode'),
-  ScanLine: createIconMock('ScanLine'),
-  Flashlight: createIconMock('Flashlight'),
-  FlashlightOff: createIconMock('FlashlightOff'),
-  MessageCircle: createIconMock('MessageCircle'),
-  Volume2: createIconMock('Volume2'),
-  VolumeX: createIconMock('VolumeX'),
-  Keyboard: createIconMock('Keyboard'),
-  Hash: createIconMock('Hash'),
-
-  // People & Awards
-  User: createIconMock('User'),
-  Users: createIconMock('Users'),
-  UserPlus: createIconMock('UserPlus'),
-  Trophy: createIconMock('Trophy'),
-  Award: createIconMock('Award'),
-  Medal: createIconMock('Medal'),
-  Crown: createIconMock('Crown'),
-  Gem: createIconMock('Gem'),
-  Shield: createIconMock('Shield'),
-  Percent: createIconMock('Percent'),
-
-  // Admin & System
-  LayoutDashboard: createIconMock('LayoutDashboard'),
-  Server: createIconMock('Server'),
-  Database: createIconMock('Database'),
-  Cpu: createIconMock('Cpu'),
-  HardDrive: createIconMock('HardDrive'),
-  ToggleLeft: createIconMock('ToggleLeft'),
-  ToggleRight: createIconMock('ToggleRight'),
-  Eye: createIconMock('Eye'),
-  EyeOff: createIconMock('EyeOff'),
-
-  // Charts & Analysis
-  LineChart: createIconMock('LineChart'),
-
-  // History
-  History: createIconMock('History'),
-
-  // Oral Health (OH-1)
-  SmilePlus: createIconMock('SmilePlus'),
-
-  // Accessories (K-1)
-  Watch: createIconMock('Watch'),
-  Glasses: createIconMock('Glasses'),
-
-  // Celebration
-  PartyPopper: createIconMock('PartyPopper'),
-
-  // Misc
-  Calendar: createIconMock('Calendar'),
-  Lock: createIconMock('Lock'),
-  Lightbulb: createIconMock('Lightbulb'),
-  Circle: createIconMock('Circle'),
-  SlidersHorizontal: createIconMock('SlidersHorizontal'),
-  Apple: createIconMock('Apple'),
-  Hand: createIconMock('Hand'),
-  FileText: createIconMock('FileText'),
-  Move: createIconMock('Move'),
-  ClipboardList: createIconMock('ClipboardList'),
-  Upload: createIconMock('Upload'),
-  Megaphone: createIconMock('Megaphone'),
-  MessageSquare: createIconMock('MessageSquare'),
-  Filter: createIconMock('Filter'),
-
-  // Fashion K-2
-  Grid3X3: createIconMock('Grid3X3'),
-  Briefcase: createIconMock('Briefcase'),
-  SortAsc: createIconMock('SortAsc'),
-  ArrowUpDown: createIconMock('ArrowUpDown'),
-  Store: createIconMock('Store'),
-
-  // Product Shelf
-  Archive: createIconMock('Archive'),
-  Beaker: createIconMock('Beaker'),
-  CircleSlash: createIconMock('CircleSlash'),
-  EllipsisVertical: createIconMock('EllipsisVertical'),
-  QrCode: createIconMock('QrCode'),
-  Copy: createIconMock('Copy'),
-  Link: createIconMock('Link'),
-
-  // Print
-  Printer: createIconMock('Printer'),
-
-  // Shapes (Share Format Picker)
-  Square: createIconMock('Square'),
-  RectangleVertical: createIconMock('RectangleVertical'),
-
-  // Posture (PST-1)
-  ArrowUpRight: createIconMock('ArrowUpRight'),
-
-  // Compare & Diff
-  GitCompareArrows: createIconMock('GitCompareArrows'),
-
-  // Scan
-  Scan: createIconMock('Scan'),
-
-  // Map & Location
-  MapPin: createIconMock('MapPin'),
-
-  // UI Components (Icon 접미사 버전)
-  XIcon: createIconMock('XIcon'),
-  CheckIcon: createIconMock('CheckIcon'),
-  ChevronDownIcon: createIconMock('ChevronDownIcon'),
-  ChevronUpIcon: createIconMock('ChevronUpIcon'),
-}));
+vi.mock('lucide-react', async () => {
+  // importActual로 실제 export 목록을 enumerate해 vitest의 named export 검증을
+  // 통과시키면서, PascalCase 이름은 모두 mock 컴포넌트로 wrap.
+  // 신규 아이콘 추가 시 setup.ts 수정 불필요 (FolderHeart 같은 누락 재발 방지).
+  const actual = await vi.importActual<Record<string, unknown>>('lucide-react');
+  const wrapped: Record<string, unknown> = {};
+  for (const key of Object.keys(actual)) {
+    wrapped[key] = /^[A-Z]/.test(key) ? getIcon(key) : actual[key];
+  }
+  return wrapped;
+});
 
 // Mock @/components/animations (전체 export 매칭)
 vi.mock('@/components/animations', () => ({
