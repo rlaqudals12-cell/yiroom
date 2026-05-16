@@ -85,13 +85,6 @@ const BodyAnalysisEvidenceReport = dynamic(
   () => import('@/components/analysis/BodyAnalysisEvidenceReport'),
   { ssr: false }
 );
-const RecommendedProducts = dynamic(
-  () =>
-    import('@/components/analysis/RecommendedProducts').then((mod) => ({
-      default: mod.RecommendedProducts,
-    })),
-  { ssr: false }
-);
 const ConsultantCTA = dynamic(
   () => import('@/components/coach/ConsultantCTA').then((mod) => ({ default: mod.ConsultantCTA })),
   { ssr: false }
@@ -535,18 +528,6 @@ export default function BodyAnalysisResultPage() {
                   />
                   <ClosetPromptCard />
                 </div>
-
-                {/* 맞춤 추천 제품 */}
-                <RecommendedProducts
-                  analysisType="body"
-                  analysisResult={{
-                    bodyType: result.bodyType,
-                    recommendedExercises: result.styleRecommendations
-                      .slice(0, 3)
-                      .map((r) => r.item),
-                  }}
-                  className="mt-8"
-                />
 
                 {/* AI 코디 상담 CTA */}
                 <div className="mt-6 p-4 bg-card rounded-xl border border-border">

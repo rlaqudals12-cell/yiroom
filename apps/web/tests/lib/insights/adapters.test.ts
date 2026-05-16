@@ -264,56 +264,6 @@ describe('Insights Adapters', () => {
 
       expect(result.face).toBeNull();
     });
-
-    it('should convert oral-health analysis', () => {
-      const analyses: AnalysisSummary[] = [
-        {
-          id: 'oh_1',
-          type: 'oral-health',
-          createdAt: new Date(),
-          summary: '85점',
-          oralHealthScore: 85,
-        },
-      ];
-
-      const result = analysisToDataBundle(analyses);
-
-      expect(result.oralHealth).toBeDefined();
-      expect(result.oralHealth?.gumHealthStatus).toBe('healthy');
-      expect(result.oralHealth?.inflammationScore).toBe(15);
-    });
-
-    it('should convert oral-health with low score to poor', () => {
-      const analyses: AnalysisSummary[] = [
-        {
-          id: 'oh_1',
-          type: 'oral-health',
-          createdAt: new Date(),
-          summary: '30점',
-          oralHealthScore: 30,
-        },
-      ];
-
-      const result = analysisToDataBundle(analyses);
-
-      expect(result.oralHealth?.gumHealthStatus).toBe('poor');
-      expect(result.oralHealth?.inflammationScore).toBe(70);
-    });
-
-    it('should return null oral-health when score is undefined', () => {
-      const analyses: AnalysisSummary[] = [
-        {
-          id: 'oh_1',
-          type: 'oral-health',
-          createdAt: new Date(),
-          summary: '분석 완료',
-        },
-      ];
-
-      const result = analysisToDataBundle(analyses);
-
-      expect(result.oralHealth).toBeNull();
-    });
   });
 
   describe('calculateProgressFromFlags', () => {

@@ -1,17 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Palette,
-  Sparkles,
-  Activity,
-  Scissors,
-  ChevronRight,
-  ScanFace,
-  Wand2,
-  Dumbbell,
-  Apple,
-} from 'lucide-react';
+import { Palette, Sparkles, Activity, Scissors, ChevronRight, ScanFace, Wand2 } from 'lucide-react';
 
 /**
  * 컨텍스트 기반 다음 분석 추천 카드
@@ -45,8 +35,6 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
   hair: <Scissors className="w-5 h-5" />,
   face: <ScanFace className="w-5 h-5" />,
   body: <Activity className="w-5 h-5" />,
-  workout: <Dumbbell className="w-5 h-5" />,
-  nutrition: <Apple className="w-5 h-5" />,
 };
 
 // 모듈별 추천 연결 (도메인 논리 기반)
@@ -78,18 +66,18 @@ const MODULE_CONNECTIONS: Record<string, Omit<RelatedModule, 'icon'>[]> = {
   ],
   body: [
     {
-      id: 'workout',
-      title: '운동 추천',
-      reason: '체형에 맞는 운동 플랜을 설계해보세요',
-      href: '/workout/onboarding/step1',
-      moduleVar: 'workout',
+      id: 'personal-color',
+      title: '퍼스널 컬러',
+      reason: '체형에 어울리는 코디 색까지 함께 찾아보세요',
+      href: '/analysis/personal-color',
+      moduleVar: 'personal-color',
     },
     {
-      id: 'nutrition',
-      title: '영양 분석',
-      reason: '체형 목표에 맞는 식단을 설계해보세요',
-      href: '/nutrition',
-      moduleVar: 'nutrition',
+      id: 'hair',
+      title: '헤어 분석',
+      reason: '전체 인상을 완성하는 헤어스타일을 추천받아보세요',
+      href: '/analysis/hair',
+      moduleVar: 'hair',
     },
   ],
   face: [
@@ -131,38 +119,6 @@ const MODULE_CONNECTIONS: Record<string, Omit<RelatedModule, 'icon'>[]> = {
       reason: '피부 상태에 맞는 메이크업 제품을 찾아보세요',
       href: '/analysis/skin',
       moduleVar: 'skin',
-    },
-  ],
-  posture: [
-    {
-      id: 'body',
-      title: '체형 분석',
-      reason: '자세와 체형을 함께 분석하면 더 정확한 운동 추천을 받을 수 있어요',
-      href: '/analysis/body',
-      moduleVar: 'body',
-    },
-    {
-      id: 'workout',
-      title: '운동 추천',
-      reason: '자세 교정에 맞는 스트레칭과 운동을 설계해보세요',
-      href: '/workout/onboarding/step1',
-      moduleVar: 'workout',
-    },
-  ],
-  'oral-health': [
-    {
-      id: 'skin',
-      title: '피부 분석',
-      reason: '구강 건강과 피부 상태의 연관성을 확인해보세요',
-      href: '/analysis/skin',
-      moduleVar: 'skin',
-    },
-    {
-      id: 'nutrition',
-      title: '영양 분석',
-      reason: '구강 건강에 도움이 되는 영양 관리를 시작해보세요',
-      href: '/nutrition',
-      moduleVar: 'nutrition',
     },
   ],
 };

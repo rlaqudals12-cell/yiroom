@@ -13,7 +13,6 @@ import type {
   BodyData,
   HairData,
   FaceData,
-  OralHealthData,
 } from './types';
 
 // ============================================
@@ -66,9 +65,6 @@ export function analysisToDataBundle(analyses: AnalysisSummary[]): AnalysisDataB
         break;
       case 'makeup':
         bundle.face = extractFaceData(analysis);
-        break;
-      case 'oral-health':
-        bundle.oralHealth = extractOralHealthData(analysis);
         break;
     }
   }
@@ -160,29 +156,6 @@ function extractFaceData(analysis: AnalysisSummary): FaceData | null {
   return {
     faceShape: 'oval', // 메이크업 분석에서 얼굴형은 별도 저장 안 함 — 기본값
     facialFeatures: [analysis.undertone],
-  };
-}
-
-/**
- * 구강건강 데이터 추출
- */
-function extractOralHealthData(analysis: AnalysisSummary): OralHealthData | null {
-  const score = analysis.oralHealthScore;
-  if (score === undefined) return null;
-
-  // 점수 기반 잇몸 건강 상태 추정
-  let gumHealthStatus: string;
-  if (score >= 80) {
-    gumHealthStatus = 'healthy';
-  } else if (score >= 50) {
-    gumHealthStatus = 'moderate';
-  } else {
-    gumHealthStatus = 'poor';
-  }
-
-  return {
-    gumHealthStatus,
-    inflammationScore: Math.max(0, 100 - score),
   };
 }
 

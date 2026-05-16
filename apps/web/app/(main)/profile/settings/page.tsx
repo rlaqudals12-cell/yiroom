@@ -33,6 +33,7 @@ import type { NotificationSettings } from '@/types/notifications';
 import { DEFAULT_NOTIFICATION_SETTINGS as DB_DEFAULT_SETTINGS } from '@/types/notifications';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import {
   DeleteAccountDialog,
   DataExportButton,
@@ -433,125 +434,131 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* 운동 알림 */}
-              <div>
-                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">운동</h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    icon={Dumbbell}
-                    label="운동 리마인더"
-                    description="설정한 시간에 운동 알림을 받아요"
-                    action={
-                      <div className="flex items-center gap-3">
-                        <TimePicker
-                          value={notificationSettings.workoutReminderTime}
-                          onChange={(v) => updateNotificationSettings({ workoutReminderTime: v })}
-                          disabled={
-                            !notificationSettings.enabled || !notificationSettings.workoutReminder
-                          }
-                        />
+              {/* 운동 알림 — ADR-098: W-1 숨김 (WELLNESS_PHASE2) */}
+              {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                <div>
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">운동</h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      icon={Dumbbell}
+                      label="운동 리마인더"
+                      description="설정한 시간에 운동 알림을 받아요"
+                      action={
+                        <div className="flex items-center gap-3">
+                          <TimePicker
+                            value={notificationSettings.workoutReminderTime}
+                            onChange={(v) => updateNotificationSettings({ workoutReminderTime: v })}
+                            disabled={
+                              !notificationSettings.enabled || !notificationSettings.workoutReminder
+                            }
+                          />
+                          <Toggle
+                            enabled={notificationSettings.workoutReminder}
+                            onChange={(v) => updateNotificationSettings({ workoutReminder: v })}
+                          />
+                        </div>
+                      }
+                    />
+                    <SettingItem
+                      icon={Bell}
+                      label="연속 기록 경고"
+                      description="연속 기록이 끊기기 전에 알려드려요"
+                      action={
                         <Toggle
-                          enabled={notificationSettings.workoutReminder}
-                          onChange={(v) => updateNotificationSettings({ workoutReminder: v })}
+                          enabled={notificationSettings.streakWarning}
+                          onChange={(v) => updateNotificationSettings({ streakWarning: v })}
                         />
-                      </div>
-                    }
-                  />
-                  <SettingItem
-                    icon={Bell}
-                    label="연속 기록 경고"
-                    description="연속 기록이 끊기기 전에 알려드려요"
-                    action={
-                      <Toggle
-                        enabled={notificationSettings.streakWarning}
-                        onChange={(v) => updateNotificationSettings({ streakWarning: v })}
-                      />
-                    }
-                  />
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* 식사 알림 */}
-              <div>
-                <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">식사</h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    icon={UtensilsCrossed}
-                    label="식사 리마인더"
-                    description="식사 시간에 기록 알림을 받아요"
-                    action={
-                      <Toggle
-                        enabled={notificationSettings.nutritionReminder}
-                        onChange={(v) => updateNotificationSettings({ nutritionReminder: v })}
-                      />
-                    }
-                  />
-                  {notificationSettings.nutritionReminder && (
-                    <>
-                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
-                        <span className="text-sm text-muted-foreground">아침</span>
-                        <TimePicker
-                          value={notificationSettings.mealReminderBreakfast}
-                          onChange={(v) => updateNotificationSettings({ mealReminderBreakfast: v })}
-                          disabled={!notificationSettings.enabled}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
-                        <span className="text-sm text-muted-foreground">점심</span>
-                        <TimePicker
-                          value={notificationSettings.mealReminderLunch}
-                          onChange={(v) => updateNotificationSettings({ mealReminderLunch: v })}
-                          disabled={!notificationSettings.enabled}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
-                        <span className="text-sm text-muted-foreground">저녁</span>
-                        <TimePicker
-                          value={notificationSettings.mealReminderDinner}
-                          onChange={(v) => updateNotificationSettings({ mealReminderDinner: v })}
-                          disabled={!notificationSettings.enabled}
-                        />
-                      </div>
-                    </>
-                  )}
-                  <SettingItem
-                    icon={Droplets}
-                    label="수분 섭취 알림"
-                    description={`${notificationSettings.waterReminderInterval}시간마다 알려드려요`}
-                    action={
-                      <div className="flex items-center gap-3">
-                        <select
-                          value={notificationSettings.waterReminderInterval}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              waterReminderInterval: Number(e.target.value),
-                            })
-                          }
-                          disabled={
-                            !notificationSettings.enabled || !notificationSettings.waterReminder
-                          }
-                          className={cn(
-                            'px-2 py-1 text-sm rounded-lg border bg-card text-foreground',
-                            (!notificationSettings.enabled ||
-                              !notificationSettings.waterReminder) &&
-                              'opacity-50 cursor-not-allowed'
-                          )}
-                          aria-label="수분 알림 간격"
-                        >
-                          <option value={1}>1시간</option>
-                          <option value={2}>2시간</option>
-                          <option value={3}>3시간</option>
-                          <option value={4}>4시간</option>
-                        </select>
+              {/* 식사 알림 — ADR-098: N-1 숨김 (WELLNESS_PHASE2) */}
+              {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                <div>
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">식사</h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      icon={UtensilsCrossed}
+                      label="식사 리마인더"
+                      description="식사 시간에 기록 알림을 받아요"
+                      action={
                         <Toggle
-                          enabled={notificationSettings.waterReminder}
-                          onChange={(v) => updateNotificationSettings({ waterReminder: v })}
+                          enabled={notificationSettings.nutritionReminder}
+                          onChange={(v) => updateNotificationSettings({ nutritionReminder: v })}
                         />
-                      </div>
-                    }
-                  />
+                      }
+                    />
+                    {notificationSettings.nutritionReminder && (
+                      <>
+                        <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                          <span className="text-sm text-muted-foreground">아침</span>
+                          <TimePicker
+                            value={notificationSettings.mealReminderBreakfast}
+                            onChange={(v) =>
+                              updateNotificationSettings({ mealReminderBreakfast: v })
+                            }
+                            disabled={!notificationSettings.enabled}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                          <span className="text-sm text-muted-foreground">점심</span>
+                          <TimePicker
+                            value={notificationSettings.mealReminderLunch}
+                            onChange={(v) => updateNotificationSettings({ mealReminderLunch: v })}
+                            disabled={!notificationSettings.enabled}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
+                          <span className="text-sm text-muted-foreground">저녁</span>
+                          <TimePicker
+                            value={notificationSettings.mealReminderDinner}
+                            onChange={(v) => updateNotificationSettings({ mealReminderDinner: v })}
+                            disabled={!notificationSettings.enabled}
+                          />
+                        </div>
+                      </>
+                    )}
+                    <SettingItem
+                      icon={Droplets}
+                      label="수분 섭취 알림"
+                      description={`${notificationSettings.waterReminderInterval}시간마다 알려드려요`}
+                      action={
+                        <div className="flex items-center gap-3">
+                          <select
+                            value={notificationSettings.waterReminderInterval}
+                            onChange={(e) =>
+                              updateNotificationSettings({
+                                waterReminderInterval: Number(e.target.value),
+                              })
+                            }
+                            disabled={
+                              !notificationSettings.enabled || !notificationSettings.waterReminder
+                            }
+                            className={cn(
+                              'px-2 py-1 text-sm rounded-lg border bg-card text-foreground',
+                              (!notificationSettings.enabled ||
+                                !notificationSettings.waterReminder) &&
+                                'opacity-50 cursor-not-allowed'
+                            )}
+                            aria-label="수분 알림 간격"
+                          >
+                            <option value={1}>1시간</option>
+                            <option value={2}>2시간</option>
+                            <option value={3}>3시간</option>
+                            <option value={4}>4시간</option>
+                          </select>
+                          <Toggle
+                            enabled={notificationSettings.waterReminder}
+                            onChange={(v) => updateNotificationSettings({ waterReminder: v })}
+                          />
+                        </div>
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 소셜 & 성취 */}
               <div>
@@ -709,17 +716,20 @@ export default function SettingsPage() {
                   />
                 }
               />
-              <SettingItem
-                icon={privacySettings.activityPublic ? Eye : EyeOff}
-                label="활동 공개"
-                description="운동, 영양 기록을 친구에게 공개"
-                action={
-                  <Toggle
-                    enabled={privacySettings.activityPublic}
-                    onChange={(v) => updatePrivacySettings({ activityPublic: v })}
-                  />
-                }
-              />
+              {/* ADR-098: 운동·영양 기록 공개는 W/N 숨김 (WELLNESS_PHASE2) */}
+              {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                <SettingItem
+                  icon={privacySettings.activityPublic ? Eye : EyeOff}
+                  label="활동 공개"
+                  description="운동, 영양 기록을 친구에게 공개"
+                  action={
+                    <Toggle
+                      enabled={privacySettings.activityPublic}
+                      onChange={(v) => updatePrivacySettings({ activityPublic: v })}
+                    />
+                  }
+                />
+              )}
               <SettingItem
                 icon={Eye}
                 label="리더보드 참여"

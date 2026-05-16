@@ -6,18 +6,13 @@ import { ChevronRight, Sparkles, Loader2 } from 'lucide-react';
 
 import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
-import {
-  getCosmeticProducts,
-  getRecommendedEquipment,
-  addMatchInfoToProducts,
-} from '@/lib/products';
+import { getCosmeticProducts, addMatchInfoToProducts } from '@/lib/products';
 import type {
   AnyProduct,
   ProductWithMatch,
   SkinType,
   SkinConcern,
   PersonalColorSeason,
-  TargetMuscle,
   HairType,
   ScalpType,
   FaceShape,
@@ -26,7 +21,7 @@ import type {
 import type { UserProfile } from '@/lib/products/matching';
 
 // 분석 타입별 설정
-type AnalysisType = 'personal-color' | 'skin' | 'body' | 'hair' | 'makeup';
+type AnalysisType = 'personal-color' | 'skin' | 'hair' | 'makeup';
 
 interface AnalysisResult {
   // 퍼스널 컬러 분석 결과
@@ -126,38 +121,6 @@ export function RecommendedProducts({
             break;
           }
 
-          case 'body': {
-            // 체형 분석 → 운동 기구 추천
-            const { bodyType, recommendedExercises } = analysisResult;
-            if (bodyType) {
-              // 체형별 타겟 근육 매핑
-              const bodyTypeToMuscles: Record<string, string[]> = {
-                X: ['full_body'],
-                A: ['shoulders', 'back', 'chest'],
-                V: ['legs', 'core'],
-                H: ['core', 'legs', 'shoulders'],
-                O: ['full_body', 'core'],
-                I: ['chest', 'shoulders', 'legs'],
-                Y: ['legs', 'core'],
-                '8': ['core'],
-                S: ['full_body'],
-                W: ['core', 'legs'],
-                N: ['full_body'],
-              };
-
-              const targetMuscles = (bodyTypeToMuscles[bodyType] || [
-                'full_body',
-              ]) as TargetMuscle[];
-              userProfile = {
-                targetMuscles,
-                workoutGoals: recommendedExercises,
-              };
-
-              fetchedProducts = await getRecommendedEquipment(targetMuscles);
-            }
-            break;
-          }
-
           case 'hair': {
             // 헤어 분석 → 헤어케어 제품 추천
             const { hairType, scalpType, hairConcerns } = analysisResult;
@@ -248,11 +211,6 @@ export function RecommendedProducts({
       title: '피부 맞춤 스킨케어',
       subtitle: '피부 타입 기반 추천',
       link: `/products?category=skincare&skinType=${analysisResult.skinType || ''}`,
-    },
-    body: {
-      title: '체형별 추천 운동 기구',
-      subtitle: '체형 분석 기반 추천',
-      link: `/products?category=equipment&bodyType=${analysisResult.bodyType || ''}`,
     },
     hair: {
       title: '나에게 맞는 헤어케어',

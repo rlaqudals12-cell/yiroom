@@ -37,7 +37,6 @@ const ANALYSIS_LABELS: Record<AnalysisType, { label: string; color: string }> = 
   body: { label: '체형', color: 'text-green-500' },
   hair: { label: '헤어', color: 'text-amber-500' },
   makeup: { label: '메이크업', color: 'text-purple-500' },
-  'oral-health': { label: '구강건강', color: 'text-cyan-500' },
 };
 
 // AnalysisType → ConnectionModule 매핑
@@ -47,7 +46,6 @@ const ANALYSIS_TYPE_TO_CONNECTION: Record<AnalysisType, ConnectionModule> = {
   body: 'body',
   hair: 'hair',
   makeup: 'makeup',
-  'oral-health': 'oral-health',
 };
 
 interface HomeStateGrowingProps {
@@ -120,7 +118,7 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
           </div>
 
           {/* 프로그레스 바 (정보 블록 2) */}
-          <AnalysisProgressBar completed={analysisCount} total={6} />
+          <AnalysisProgressBar completed={analysisCount} total={5} />
         </div>
       </div>
 

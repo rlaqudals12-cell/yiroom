@@ -111,6 +111,17 @@
 - 홈 위젯(ActivityBar, StateGrowing, GrowingNextStep, CombinedStreakWidget), Navbar 드롭다운, BottomNav, Dashboard 카드, Record 페이지, Mobile 탭/설정/온보딩 모두 조건부 렌더링
 - 코드/DB는 그대로 유지 → Phase 2 재도입 시 플래그만 true로 전환하면 복원
 
+### 2.4.1 자세분석(posture) UI 숨김 — 보강 (2026-05-16)
+
+출시 직전 UX 감사에서 posture(자세 분석)가 5축 외 모듈인데도 분석 허브·Navbar·
+ContextLinkingCard에 노출되고 결과가 W-1(운동)로 연결됨을 발견. posture는 시각
+정체성 5축(PC/S/C/H/M)에 속하지 않고 W-1 인접 영역이므로 **W-1/N-1과 동일 정책
+(코드/DB 유지 + UI 숨김)** 적용으로 결정.
+
+- `app/(main)/analysis/posture/layout.tsx` 신설 → `redirect('/home')` (layout 삭제로 복원)
+- 분석 허브(`/analysis`)·Navbar 분석 드롭다운에서 진입점 제거
+- `ContextLinkingCard`의 posture·oral-health 연결 및 body→W/N 연결을 5축으로 교체
+
 ### 2.5 C-1 결과 페이지 리디자인
 
 3섹션 구조로 재편:

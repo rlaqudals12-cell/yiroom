@@ -15,7 +15,7 @@ import { useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { ArrowRight, Dumbbell, Sparkles, Scissors, Wand2 } from 'lucide-react';
+import { ArrowRight, User, Sparkles, Scissors, Wand2 } from 'lucide-react';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { exposeConnection, confirmConnection } from '@/lib/connection-awareness';
 import type { ConnectionModule } from '@/lib/connection-awareness';
@@ -25,7 +25,7 @@ interface NextStepMapping {
   nextType: AnalysisType;
   message: (result?: string) => string;
   href: string;
-  icon: typeof Dumbbell;
+  icon: typeof User;
   sourceModule: ConnectionModule;
   targetModule: ConnectionModule;
 }
@@ -35,7 +35,7 @@ const CAUSAL_MAP: Record<string, NextStepMapping> = {
     nextType: 'body',
     message: (season) => `${season || '퍼스널 컬러'}에 맞는 코디를 추천하려면 체형 정보가 필요해요`,
     href: '/analysis/body',
-    icon: Dumbbell,
+    icon: User,
     sourceModule: 'personal-color',
     targetModule: 'body',
   },
@@ -76,7 +76,6 @@ function getAnalysisPath(type: AnalysisType): string {
     body: '/analysis/body',
     hair: '/analysis/hair',
     makeup: '/analysis/makeup',
-    'oral-health': '/analysis/oral-health',
   };
   return pathMap[type];
 }
@@ -85,7 +84,7 @@ function getAnalysisPath(type: AnalysisType): string {
 interface NextStepResult {
   message: string;
   href: string;
-  icon: typeof Dumbbell;
+  icon: typeof User;
   connectionId?: string;
   sourceModule?: ConnectionModule;
   targetModule?: ConnectionModule;

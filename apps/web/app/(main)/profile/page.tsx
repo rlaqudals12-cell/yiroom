@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { BadgeCard } from '@/components/gamification';
 import { QRCodeDisplay } from '@/components/common/QRCodeDisplay';
@@ -535,55 +536,57 @@ export default function ProfilePage() {
         {/* ── 탭: 활동 ── */}
         {activeTab === 'activity' && (
           <>
-            {/* 스트릭 */}
-            <FadeInUp>
-              <section className="bg-card rounded-2xl border p-6">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                  <Flame className="h-5 w-5 text-orange-500" />
-                  연속 기록
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-                        <Dumbbell className="w-5 h-5 text-orange-500" />
-                      </div>
-                      <div>
-                        <div className="font-medium">운동</div>
-                        <div className="text-muted-foreground text-xs">
-                          최장 {profileData?.workoutStreak?.longest || 0}일
+            {/* 스트릭 — ADR-098: 운동/식단 연속기록은 W/N 숨김 (WELLNESS_PHASE2) */}
+            {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+              <FadeInUp>
+                <section className="bg-card rounded-2xl border p-6">
+                  <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                    <Flame className="h-5 w-5 text-orange-500" />
+                    연속 기록
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between rounded-xl bg-orange-50 p-4 dark:bg-orange-900/20">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                          <Dumbbell className="w-5 h-5 text-orange-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium">운동</div>
+                          <div className="text-muted-foreground text-xs">
+                            최장 {profileData?.workoutStreak?.longest || 0}일
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {profileData?.workoutStreak?.current || 0}일
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                          {profileData?.workoutStreak?.current || 0}일
+                        </div>
+                        <div className="text-muted-foreground text-xs">현재</div>
                       </div>
-                      <div className="text-muted-foreground text-xs">현재</div>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                        <Utensils className="w-5 h-5 text-green-500" />
-                      </div>
-                      <div>
-                        <div className="font-medium">식단</div>
-                        <div className="text-muted-foreground text-xs">
-                          최장 {profileData?.nutritionStreak?.longest || 0}일
+                    <div className="flex items-center justify-between rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                          <Utensils className="w-5 h-5 text-green-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium">식단</div>
+                          <div className="text-muted-foreground text-xs">
+                            최장 {profileData?.nutritionStreak?.longest || 0}일
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {profileData?.nutritionStreak?.current || 0}일
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          {profileData?.nutritionStreak?.current || 0}일
+                        </div>
+                        <div className="text-muted-foreground text-xs">현재</div>
                       </div>
-                      <div className="text-muted-foreground text-xs">현재</div>
                     </div>
                   </div>
-                </div>
-              </section>
-            </FadeInUp>
+                </section>
+              </FadeInUp>
+            )}
 
             {/* 배지 */}
             <FadeInUp delay={1}>
@@ -752,18 +755,23 @@ export default function ProfilePage() {
                     >
                       전체 순위
                     </Link>
-                    <Link
-                      href="/leaderboard/nutrition"
-                      className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
-                    >
-                      영양 순위
-                    </Link>
-                    <Link
-                      href="/leaderboard/workout"
-                      className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
-                    >
-                      운동 순위
-                    </Link>
+                    {/* ADR-098: 영양/운동 순위는 W/N 숨김 (WELLNESS_PHASE2) */}
+                    {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                      <>
+                        <Link
+                          href="/leaderboard/nutrition"
+                          className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
+                        >
+                          영양 순위
+                        </Link>
+                        <Link
+                          href="/leaderboard/workout"
+                          className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300"
+                        >
+                          운동 순위
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </section>

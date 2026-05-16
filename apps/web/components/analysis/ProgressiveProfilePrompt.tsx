@@ -92,8 +92,8 @@ const MODULE_FIELDS: Record<string, ProfileField[]> = {
     {
       id: 'healthConditions',
       label: '건강 상태 (선택)',
-      description: '운동 추천의 안전성을 높일 수 있어요',
-      accuracyBoost: '안전한 운동 추천',
+      description: '체형 분석과 스타일 제안의 정확도를 높일 수 있어요',
+      accuracyBoost: '정확한 체형 분석',
       inputType: 'multiselect',
       options: [
         { value: 'knee', label: '무릎 통증/부상' },

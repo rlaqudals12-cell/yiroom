@@ -1,16 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Palette,
-  Sparkles,
-  Activity,
-  Scissors,
-  ChevronRight,
-  Wand2,
-  PersonStanding,
-  SmilePlus,
-} from 'lucide-react';
+import { Palette, Sparkles, Activity, Scissors, ChevronRight, Wand2 } from 'lucide-react';
 
 /**
  * /analysis 메인 페이지
@@ -87,28 +78,6 @@ const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
         icon: <Activity className="w-6 h-6" />,
         moduleVar: 'body',
       },
-      {
-        id: 'posture',
-        title: '자세 분석',
-        description: '자세를 분석하고 교정 방법을 알려드려요',
-        href: '/analysis/posture',
-        icon: <PersonStanding className="w-6 h-6" />,
-        moduleVar: 'posture',
-      },
-    ],
-  },
-  {
-    id: 'health',
-    title: '건강',
-    modules: [
-      {
-        id: 'oral-health',
-        title: '구강 건강',
-        description: '구강 상태를 분석하고 관리법을 알려드려요',
-        href: '/analysis/oral-health',
-        icon: <SmilePlus className="w-6 h-6" />,
-        moduleVar: 'oral-health',
-      },
     ],
   },
 ];
@@ -161,7 +130,7 @@ export default function AnalysisPage() {
         <div
           className="mt-4 p-4 rounded-xl"
           style={{
-            background: `linear-gradient(to right, var(--module-personal-color-light), var(--module-oral-health-light))`,
+            background: `linear-gradient(to right, var(--module-personal-color-light), var(--module-makeup-light))`,
           }}
         >
           <p className="text-sm text-muted-foreground text-center">

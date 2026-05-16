@@ -55,32 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.8,
     },
-    {
-      url: `${siteUrl}/products/recommended`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
-    // 운동/영양
-    {
-      url: `${siteUrl}/workout`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/nutrition`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    // 기록/스타일
-    {
-      url: `${siteUrl}/record`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
+    // 스타일 (ADR-098: /products/recommended·운동·영양·기록은 W/N 숨김 → 색인 제외)
     {
       url: `${siteUrl}/style`,
       lastModified: new Date(),
@@ -119,12 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.6,
     },
-    {
-      url: `${siteUrl}/wellness`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
+    // ADR-098: /wellness(폐기된 웰니스 통합)는 색인 제외
   ];
 
   return staticPages;

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InventoryGrid } from '@/components/inventory/common/InventoryGrid';
 import { ItemUploader, type UploadResult } from '@/components/inventory/common/ItemUploader';
@@ -326,8 +327,8 @@ export function InventoryCategoryClient({
           <h1 className="text-xl font-bold truncate">{title}</h1>
           <p className="text-sm text-muted-foreground truncate">{description}</p>
         </div>
-        {/* 냉장고: 레시피 추천 버튼 */}
-        {category === 'pantry' && (
+        {/* 냉장고: 레시피 추천 버튼 — ADR-098: N-1 숨김 (WELLNESS_PHASE2) */}
+        {category === 'pantry' && FEATURE_FLAGS.WELLNESS_PHASE2 && (
           <Link href="/nutrition/recipes">
             <Button variant="outline" size="sm">
               <ChefHat className="w-4 h-4 mr-1" />

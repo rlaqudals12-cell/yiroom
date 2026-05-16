@@ -1,20 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  Palette,
-  Sparkles,
-  User,
-  Scissors,
-  Heart,
-  SmilePlus,
-  ChevronRight,
-  Plus,
-} from 'lucide-react';
+import { Palette, Sparkles, User, Scissors, Heart, ChevronRight, Plus } from 'lucide-react';
 import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 
-const TOTAL_ANALYSIS_TYPES = 6;
+const TOTAL_ANALYSIS_TYPES = 5;
 
 // 분석 타입별 메타 정보
 const ANALYSIS_META: Record<
@@ -80,27 +71,10 @@ const ANALYSIS_META: Record<
     href: '/analysis/makeup/result',
     analysisHref: '/analysis/makeup',
   },
-  'oral-health': {
-    icon: SmilePlus,
-    label: '구강건강',
-    valueHint: '건강한 미소가 자신감의 시작이에요',
-    narrative: '구강 건강 상태를 확인했어요',
-    gradient: 'from-cyan-400 to-blue-500',
-    shadow: 'shadow-cyan-500/30',
-    href: '/analysis/oral-health/result',
-    analysisHref: '/analysis/oral-health',
-  },
 };
 
 // 미완료 분석 추천 순서
-const ANALYSIS_ORDER: AnalysisType[] = [
-  'personal-color',
-  'skin',
-  'body',
-  'hair',
-  'makeup',
-  'oral-health',
-];
+const ANALYSIS_ORDER: AnalysisType[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
 
 interface HomeAnalysisSummaryProps {
   analyses: AnalysisSummary[];

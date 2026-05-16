@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, notFound } from 'next/navigation';
 import {
   ArrowLeft,
   Loader2,
@@ -47,16 +47,6 @@ const DOMAIN_META: Record<string, { name: string; color: string; description: st
     color: '#F472B6',
     description: '체형과 퍼스널 컬러에 어울리는 핵심 아이템',
   },
-  nutrition: {
-    name: '영양',
-    color: '#4ADE80',
-    description: '건강 목표에 맞는 필수 영양소와 식품',
-  },
-  workout: {
-    name: '운동',
-    color: '#4ADE80',
-    description: '체형과 목표에 최적화된 운동 루틴',
-  },
   hair: {
     name: '헤어',
     color: '#D4A24E',
@@ -71,11 +61,6 @@ const DOMAIN_META: Record<string, { name: string; color: string; description: st
     name: '퍼스널 컬러',
     color: '#F472B6',
     description: '나만의 컬러 팔레트 핵심 아이템',
-  },
-  oral: {
-    name: '구강 건강',
-    color: '#4ABF7A',
-    description: '구강 건강 유지를 위한 필수 아이템',
   },
   body: {
     name: '체형',
@@ -166,6 +151,11 @@ export default function DomainCapsulePage(): React.ReactElement {
       fetchCapsule();
     }
   }, [isLoaded, isSignedIn, fetchCapsule]);
+
+  // ADR-098: 허용 도메인(5축 + 패션)만. 영양/운동/구강 등 제외 도메인은 존재하지 않음.
+  if (!DOMAIN_META[domain]) {
+    notFound();
+  }
 
   // 인증 로딩
   if (!isLoaded) {

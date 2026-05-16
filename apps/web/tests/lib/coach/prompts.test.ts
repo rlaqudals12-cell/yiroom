@@ -92,7 +92,7 @@ describe('lib/coach/prompts', () => {
     it('should include base system prompt', () => {
       const prompt = buildCoachSystemPrompt(null);
 
-      expect(prompt).toContain('이룸(Yiroom)의 AI 웰니스 코치');
+      expect(prompt).toContain('이룸(Yiroom)의 AI 뷰티 코치');
       expect(prompt).toContain('역할');
       expect(prompt).toContain('응답 가이드라인');
       expect(prompt).toContain('주의사항');
@@ -230,8 +230,9 @@ describe('lib/coach/prompts', () => {
 
       expect(prompt).toContain('피부 타입');
       expect(prompt).toContain('건성');
+      // ADR-098: 페르소나가 5축을 나열하므로 '체형' 단어 부재 단언 제거.
+      // 스킨 외 분석 컨텍스트 미주입은 PC 컨텍스트 헤더 부재로 검증.
       expect(prompt).not.toContain('퍼스널 컬러');
-      expect(prompt).not.toContain('체형');
     });
 
     it('should handle empty concerns array', () => {
@@ -394,12 +395,15 @@ describe('lib/coach/prompts', () => {
       });
     });
 
-    it('should contain common wellness questions', () => {
+    // ADR-098: 시각 정체성 5축 질문만 (운동/영양 제거)
+    it('should contain 5-axis beauty questions', () => {
       const allQuestions = QUICK_QUESTIONS.join(' ');
 
-      expect(allQuestions).toContain('운동');
-      expect(allQuestions).toContain('다이어트');
-      expect(allQuestions).toContain('물');
+      expect(allQuestions).toContain('피부');
+      expect(allQuestions).toContain('퍼스널 컬러');
+      expect(allQuestions).toContain('헤어');
+      expect(allQuestions).not.toContain('운동');
+      expect(allQuestions).not.toContain('다이어트');
     });
   });
 

@@ -34,11 +34,6 @@ describe('ScanningAnimation', () => {
     expect(screen.getByText('체형 분석 중')).toBeInTheDocument();
   });
 
-  it('should display correct label for tooth type', () => {
-    render(<ScanningAnimation type="tooth" isAnalyzing={true} />);
-    expect(screen.getByText('구강 분석 중')).toBeInTheDocument();
-  });
-
   it('should show progress when provided', () => {
     render(<ScanningAnimation type="face" isAnalyzing={true} progress={45} />);
     expect(screen.getByText('얼굴 분석 중 45%')).toBeInTheDocument();

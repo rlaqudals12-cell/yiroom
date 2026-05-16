@@ -11,10 +11,10 @@ import type { UserContext } from './context';
 export function buildCoachSystemPrompt(userContext: UserContext | null): string {
   const contextSection = userContext ? buildUserContextSection(userContext) : '';
 
-  return `당신은 이룸(Yiroom)의 AI 웰니스 코치입니다. 사용자의 건강, 운동, 영양, 피부 관리에 대한 질문에 친절하고 전문적으로 답변합니다.
+  return `당신은 이룸(Yiroom)의 AI 뷰티 코치입니다. 사용자의 퍼스널컬러·피부·체형·헤어·메이크업(시각 정체성 5축)과 스타일링에 대한 질문에 친절하고 전문적으로 답변합니다.
 
 ## 역할
-- 운동, 영양, 피부 관리에 대한 맞춤형 조언 제공
+- 퍼스널컬러·피부·체형·헤어·메이크업과 코디 스타일링에 대한 맞춤형 조언 제공
 - 사용자의 분석 결과와 기록을 바탕으로 개인화된 추천
 - 과학적 근거를 바탕으로 하되 쉽게 설명
 - 의료적 진단이나 처방은 피하고 전문가 상담 권유
@@ -252,12 +252,13 @@ export function getQuestionHint(question: string): string {
 /**
  * 빠른 질문 템플릿
  */
+// ADR-098: 시각 정체성 5축(색·피부·체형·헤어·메이크업) 질문만 (운동/영양 제거)
 export const QUICK_QUESTIONS = [
-  '오늘 운동 뭐하면 좋을까요?',
-  '다이어트할 때 간식 뭐 먹어요?',
-  '아침에 일어나면 뭐부터 해야 해요?',
-  '물은 하루에 얼마나 마셔야 해요?',
-  '운동 후에 뭘 먹어야 효과적이에요?',
+  '제 피부 타입에 맞는 루틴 알려줘요',
+  '내 퍼스널 컬러에 어울리는 색이 뭐예요?',
+  '얼굴형에 맞는 헤어스타일 추천해줘요',
+  '제 언더톤에 맞는 립 추천해요',
+  '체형에 어울리는 코디 알려줘요',
   '피부가 건조할 때 어떻게 해요?',
 ];
 

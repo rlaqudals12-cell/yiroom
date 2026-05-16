@@ -6,12 +6,9 @@ import { useRouter } from 'next/navigation';
 import {
   Droplets,
   Shirt,
-  Apple,
-  Dumbbell,
   Scissors,
   Palette,
   Sparkles,
-  SmilePlus,
   PersonStanding,
   CalendarCheck,
   AlertTriangle,
@@ -22,16 +19,13 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-// 9개 도메인 정의
+// 시각 정체성 도메인 정의 (ADR-098: 영양/운동/구강 제외 — 5축+패션)
 const DOMAINS = [
   { id: 'skin', name: '스킨케어', icon: Droplets, color: '#60A5FA' },
   { id: 'fashion', name: '패션', icon: Shirt, color: '#F472B6' },
-  { id: 'nutrition', name: '영양', icon: Apple, color: '#4ADE80' },
-  { id: 'workout', name: '운동', icon: Dumbbell, color: '#4ADE80' },
   { id: 'hair', name: '헤어', icon: Scissors, color: '#D4A24E' },
   { id: 'makeup', name: '메이크업', icon: Palette, color: '#D45ABF' },
   { id: 'personal-color', name: '퍼스널 컬러', icon: Sparkles, color: '#F472B6' },
-  { id: 'oral', name: '구강 건강', icon: SmilePlus, color: '#4ABF7A' },
   { id: 'body', name: '체형', icon: PersonStanding, color: '#A78BFA' },
 ] as const;
 
@@ -65,7 +59,7 @@ interface GapData {
 /**
  * 캡슐 워드로브 대시보드
  *
- * 9개 도메인 그리드 + Daily Capsule 요약 + 갭 분석 CTA
+ * 시각 정체성 도메인 그리드 + Daily Capsule 요약 + 갭 분석 CTA
  */
 export default function CapsuleDashboardPage(): React.ReactElement {
   const { isSignedIn, isLoaded } = useUser();
@@ -180,7 +174,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
       {/* 헤더 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">캡슐 워드로브</h1>
-        <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·웰니스 캡슐을 관리해요</p>
+        <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·스타일 캡슐을 관리해요</p>
       </div>
 
       {/* Daily Capsule 요약 카드 */}
@@ -217,7 +211,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         </Card>
       )}
 
-      {/* 9개 도메인 그리드 */}
+      {/* 시각 정체성 도메인 그리드 */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {DOMAINS.map((domain) => {
           const Icon = domain.icon;

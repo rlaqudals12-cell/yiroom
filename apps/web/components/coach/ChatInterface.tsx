@@ -11,6 +11,7 @@ import { QuickQuestions } from './QuickQuestions';
 import { CoachHeader } from './CoachHeader';
 import type { CoachMessage, UserContext } from '@/lib/coach/client';
 import { QUICK_QUESTIONS_BY_CATEGORY, summarizeContext } from '@/lib/coach/client';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 interface ChatInterfaceProps {
   userContext: UserContext | null;
@@ -198,10 +199,15 @@ export function ChatInterface({
     handleSend(question);
   };
 
+  // ADR-098: 운동/영양 카테고리는 W/N 숨김 (WELLNESS_PHASE2)
   const categories = [
     { key: 'general' as const, label: t('category.general') },
-    { key: 'workout' as const, label: t('category.workout') },
-    { key: 'nutrition' as const, label: t('category.nutrition') },
+    ...(FEATURE_FLAGS.WELLNESS_PHASE2
+      ? [
+          { key: 'workout' as const, label: t('category.workout') },
+          { key: 'nutrition' as const, label: t('category.nutrition') },
+        ]
+      : []),
     { key: 'skin' as const, label: t('category.skin') },
     { key: 'hair' as const, label: t('category.hair') },
     { key: 'makeup' as const, label: t('category.makeup') },

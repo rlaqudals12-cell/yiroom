@@ -22,12 +22,14 @@ export function CoachHeader({ contextSummary }: CoachHeaderProps) {
         {/* 코치 정보 */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-foreground">이룸 웰니스 코치</h2>
+            <h2 className="font-semibold text-foreground">이룸 뷰티 코치</h2>
             <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
               AI
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">운동, 영양, 피부 관리 맞춤 조언</p>
+          <p className="text-sm text-muted-foreground">
+            퍼스널컬러·피부·체형·헤어·메이크업 맞춤 조언
+          </p>
         </div>
 
         {/* 컨텍스트 정보 버튼 */}

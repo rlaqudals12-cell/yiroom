@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Sparkles, Dumbbell, Utensils, Package } from 'lucide-react';
+import { Home, Sparkles, Droplets, Scissors, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
@@ -11,7 +11,9 @@ export default function NotFound() {
     >
       {/* 404 표시 */}
       <div className="text-center mb-8">
-        <p className="text-8xl font-bold text-primary/30 mb-4" aria-hidden="true">404</p>
+        <p className="text-8xl font-bold text-primary/30 mb-4" aria-hidden="true">
+          404
+        </p>
         <h1 id="not-found-title" className="text-2xl font-semibold text-foreground mb-2">
           페이지를 찾을 수 없어요
         </h1>
@@ -30,9 +32,7 @@ export default function NotFound() {
 
       {/* 인기 기능 링크 */}
       <nav className="w-full max-w-md" aria-label="추천 기능">
-        <p className="text-sm text-muted-foreground text-center mb-4">
-          이런 기능은 어떠세요?
-        </p>
+        <p className="text-sm text-muted-foreground text-center mb-4">이런 기능은 어떠세요?</p>
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/analysis/personal-color"
@@ -51,34 +51,34 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/workout"
-            className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-module-workout-dark/50 hover:bg-module-workout-light/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            href="/analysis/skin"
+            className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-module-skin-dark/50 hover:bg-module-skin-light/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div
-              className="w-10 h-10 bg-module-workout-light rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-module-skin-light rounded-full flex items-center justify-center"
               aria-hidden="true"
             >
-              <Dumbbell className="h-5 w-5 text-module-workout-dark" />
+              <Droplets className="h-5 w-5 text-module-skin-dark" />
             </div>
             <div>
-              <p className="font-medium text-foreground">운동</p>
-              <p className="text-xs text-muted-foreground">맞춤 운동 플랜</p>
+              <p className="font-medium text-foreground">피부 분석</p>
+              <p className="text-xs text-muted-foreground">AI 피부 상태 분석</p>
             </div>
           </Link>
 
           <Link
-            href="/nutrition"
-            className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-module-nutrition-dark/50 hover:bg-module-nutrition-light/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            href="/analysis/hair"
+            className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-module-hair-dark/50 hover:bg-module-hair-light/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div
-              className="w-10 h-10 bg-module-nutrition-light rounded-full flex items-center justify-center"
+              className="w-10 h-10 bg-module-hair-light rounded-full flex items-center justify-center"
               aria-hidden="true"
             >
-              <Utensils className="h-5 w-5 text-module-nutrition-dark" />
+              <Scissors className="h-5 w-5 text-module-hair-dark" />
             </div>
             <div>
-              <p className="font-medium text-foreground">영양</p>
-              <p className="text-xs text-muted-foreground">식단 관리</p>
+              <p className="font-medium text-foreground">헤어 분석</p>
+              <p className="text-xs text-muted-foreground">얼굴형·모발 분석</p>
             </div>
           </Link>
 

@@ -18,7 +18,7 @@ export const DEFAULT_TUTORIAL_STEPS: TutorialStep[] = [
     id: 'welcome',
     title: '이룸에 오신 것을 환영해요! 👋',
     description:
-      '이룸은 퍼스널컬러, 피부, 체형 분석부터 운동, 영양까지 통합 관리하는 웰니스 플랫폼이에요. 간단한 둘러보기를 시작할까요?',
+      '이룸은 셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업을 분석하고, 오늘 입을 옷까지 연결해주는 뷰티 플랫폼이에요. 간단한 둘러보기를 시작할까요?',
     position: 'bottom',
   },
   {
@@ -30,26 +30,10 @@ export const DEFAULT_TUTORIAL_STEPS: TutorialStep[] = [
     position: 'bottom',
   },
   {
-    id: 'workout',
-    title: '맞춤 운동 추천',
-    description:
-      '체형과 목표에 맞는 운동을 추천받고 기록해보세요. 연예인 루틴도 확인할 수 있어요!',
-    targetSelector: '[data-tutorial="workout"]',
-    position: 'top',
-  },
-  {
-    id: 'nutrition',
-    title: '스마트한 식단 관리',
-    description:
-      '음식 사진만 찍으면 AI가 칼로리와 영양소를 분석해요. 신호등 시스템으로 쉽게 관리하세요.',
-    targetSelector: '[data-tutorial="nutrition"]',
-    position: 'top',
-  },
-  {
     id: 'products',
     title: '맞춤 제품 추천',
     description:
-      '분석 결과를 바탕으로 화장품, 영양제, 운동기구를 추천받아보세요. 매칭도 점수로 확인할 수 있어요.',
+      '분석 결과를 바탕으로 나에게 어울리는 화장품을 추천받아보세요. 매칭도 점수로 확인할 수 있어요.',
     targetSelector: '[data-tutorial="products"]',
     position: 'top',
   },
@@ -57,7 +41,7 @@ export const DEFAULT_TUTORIAL_STEPS: TutorialStep[] = [
     id: 'complete',
     title: '준비 완료! 🎉',
     description:
-      '이제 이룸과 함께 건강한 변화를 시작하세요. 설정에서 언제든 튜토리얼을 다시 볼 수 있어요.',
+      '이제 이룸과 함께 온전한 나를 찾아가세요. 설정에서 언제든 튜토리얼을 다시 볼 수 있어요.',
     position: 'bottom',
   },
 ];

@@ -17,10 +17,10 @@ import { cn } from '@/lib/utils';
 // 타입
 // =============================================================================
 
-export type ScanType = 'face' | 'body' | 'tooth';
+export type ScanType = 'face' | 'body';
 
 export interface ScanningAnimationProps {
-  /** 스캔 유형 (얼굴/신체/치아) */
+  /** 스캔 유형 (얼굴/신체) */
   type: ScanType;
   /** 분석 중 여부 */
   isAnalyzing: boolean;
@@ -40,7 +40,6 @@ export interface ScanningAnimationProps {
 const SCAN_CONFIG: Record<ScanType, { label: string; color: string; duration: number }> = {
   face: { label: '얼굴 분석 중', color: '#10B981', duration: 2000 },
   body: { label: '체형 분석 중', color: '#6366F1', duration: 2500 },
-  tooth: { label: '구강 분석 중', color: '#EC4899', duration: 1800 },
 };
 
 // =============================================================================

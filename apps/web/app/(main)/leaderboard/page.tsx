@@ -15,10 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { ArrowLeft, Trophy, Star, TrendingUp, Sparkles, Dumbbell, Utensils } from 'lucide-react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 export const metadata: Metadata = {
   title: '나의 성장 | 이룸',
-  description: '나의 웰니스 여정과 성장 기록을 확인해보세요',
+  description: '나의 성장 기록과 순위를 확인해보세요',
 };
 
 export default async function LeaderboardPage() {
@@ -92,7 +93,9 @@ export default async function LeaderboardPage() {
 
       {/* 리더보드 탭 */}
       <Tabs defaultValue="xp" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList
+          className={`grid w-full ${FEATURE_FLAGS.WELLNESS_PHASE2 ? 'grid-cols-5' : 'grid-cols-3'}`}
+        >
           <TabsTrigger value="xp" className="flex items-center gap-1 text-xs sm:text-sm">
             <Star className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">경험치</span>
@@ -108,16 +111,21 @@ export default async function LeaderboardPage() {
             <span className="hidden sm:inline">웰니스</span>
             <span className="sm:hidden">WS</span>
           </TabsTrigger>
-          <TabsTrigger value="workout" className="flex items-center gap-1 text-xs sm:text-sm">
-            <Dumbbell className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">운동</span>
-            <span className="sm:hidden">W</span>
-          </TabsTrigger>
-          <TabsTrigger value="nutrition" className="flex items-center gap-1 text-xs sm:text-sm">
-            <Utensils className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">영양</span>
-            <span className="sm:hidden">N</span>
-          </TabsTrigger>
+          {/* ADR-098: 운동/영양 순위는 W/N 숨김 (WELLNESS_PHASE2) */}
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+            <>
+              <TabsTrigger value="workout" className="flex items-center gap-1 text-xs sm:text-sm">
+                <Dumbbell className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">운동</span>
+                <span className="sm:hidden">W</span>
+              </TabsTrigger>
+              <TabsTrigger value="nutrition" className="flex items-center gap-1 text-xs sm:text-sm">
+                <Utensils className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">영양</span>
+                <span className="sm:hidden">N</span>
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="xp" className="mt-4">
@@ -147,23 +155,27 @@ export default async function LeaderboardPage() {
           />
         </TabsContent>
 
-        <TabsContent value="workout" className="mt-4">
-          <LeaderboardList
-            rankings={workoutRankings}
-            category="workout"
-            currentUserId={userId}
-            title="주간 운동 시간"
-          />
-        </TabsContent>
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <>
+            <TabsContent value="workout" className="mt-4">
+              <LeaderboardList
+                rankings={workoutRankings}
+                category="workout"
+                currentUserId={userId}
+                title="주간 운동 시간"
+              />
+            </TabsContent>
 
-        <TabsContent value="nutrition" className="mt-4">
-          <LeaderboardList
-            rankings={nutritionRankings}
-            category="nutrition"
-            currentUserId={userId}
-            title="주간 영양 기록"
-          />
-        </TabsContent>
+            <TabsContent value="nutrition" className="mt-4">
+              <LeaderboardList
+                rankings={nutritionRankings}
+                category="nutrition"
+                currentUserId={userId}
+                title="주간 영양 기록"
+              />
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );

@@ -153,13 +153,13 @@ export default function BadgesPage() {
           <div className="text-center py-8 bg-gray-50 rounded-2xl">
             <p className="text-muted-foreground mb-2">아직 획득한 배지가 없어요</p>
             <p className="text-sm text-muted-foreground">
-              운동이나 식단을 기록하면 배지를 획득할 수 있어요!
+              분석을 진행하면 배지를 획득할 수 있어요!
             </p>
             <Link
-              href="/workout"
+              href="/analysis"
               className="inline-block mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
             >
-              운동 시작하기
+              분석 시작하기
             </Link>
           </div>
         )}

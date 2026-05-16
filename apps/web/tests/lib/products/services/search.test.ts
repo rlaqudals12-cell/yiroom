@@ -165,14 +165,15 @@ describe('lib/products/services/search', () => {
   // =========================================
 
   describe('PRODUCT_CATEGORIES', () => {
-    it('모든 카테고리가 정의되어 있다', () => {
-      expect(PRODUCT_CATEGORIES).toHaveLength(6);
+    // ADR-098: 화장품(전체/스킨케어/메이크업)만. 영양제/운동기구/건강식품(W/N) 제외
+    it('화장품 카테고리만 정의되어 있다', () => {
+      expect(PRODUCT_CATEGORIES).toHaveLength(3);
       expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('all');
       expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('skincare');
       expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('makeup');
-      expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('supplement');
-      expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('equipment');
-      expect(PRODUCT_CATEGORIES.map((c) => c.id)).toContain('healthfood');
+      expect(PRODUCT_CATEGORIES.map((c) => c.id)).not.toContain('supplement');
+      expect(PRODUCT_CATEGORIES.map((c) => c.id)).not.toContain('equipment');
+      expect(PRODUCT_CATEGORIES.map((c) => c.id)).not.toContain('healthfood');
     });
 
     it('각 카테고리에 한글 라벨이 있다', () => {
@@ -314,11 +315,14 @@ describe('lib/products/services/search', () => {
   // =========================================
 
   describe('getProductsByCategory', () => {
-    it('all 카테고리는 4개 테이블을 병합한다', async () => {
+    // ADR-098: 화장품만 (영양제/운동기구/건강식품 미병합)
+    it('all 카테고리는 화장품만 반환한다', async () => {
       const results = await getProductsByCategory('all');
-      // cosmetic 2 + supplement 1 + equipment 1 + healthfood 1 = 5
       expect(results.length).toBeGreaterThan(0);
-      expect(results.length).toBeLessThanOrEqual(20);
+      const ids = results.map((p) => p.id);
+      expect(ids).not.toContain('sup-1');
+      expect(ids).not.toContain('eq-1');
+      expect(ids).not.toContain('hf-1');
     });
 
     it('skincare 카테고리는 메이크업을 제외한다', async () => {
@@ -330,22 +334,15 @@ describe('lib/products/services/search', () => {
       expect(hasMakeup).toBe(false);
     });
 
-    it('supplement 카테고리는 영양제만 반환한다', async () => {
-      const results = await getProductsByCategory('supplement');
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('sup-1');
-    });
-
-    it('equipment 카테고리는 운동기구만 반환한다', async () => {
-      const results = await getProductsByCategory('equipment');
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('eq-1');
-    });
-
-    it('healthfood 카테고리는 건강식품만 반환한다', async () => {
-      const results = await getProductsByCategory('healthfood');
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('hf-1');
+    // ADR-098: W/N 카테고리 값은 화장품으로 폴백 (W/N 제품 누수 없음)
+    it('supplement/equipment/healthfood 카테고리는 화장품으로 폴백한다', async () => {
+      for (const cat of ['supplement', 'equipment', 'healthfood'] as const) {
+        const results = await getProductsByCategory(cat);
+        const ids = results.map((p) => p.id);
+        expect(ids).not.toContain('sup-1');
+        expect(ids).not.toContain('eq-1');
+        expect(ids).not.toContain('hf-1');
+      }
     });
 
     it('페이지네이션 옵션이 적용된다', async () => {
@@ -385,17 +382,16 @@ describe('lib/products/services/search', () => {
       expect(results).toEqual([]);
     });
 
-    it('카테고리 없이 검색하면 모든 테이블을 검색한다', async () => {
-      // mock 설정: 각 from 호출에 대해 빈 결과 반환
+    // ADR-098: 화장품만 검색 (영양제/운동기구/건강식품 테이블 미조회)
+    it('카테고리 없이 검색하면 화장품 테이블만 검색한다', async () => {
       mockSupabase.limit.mockResolvedValue({ data: [], error: null });
 
       await searchProducts('세럼');
 
-      // supabase.from이 4개 테이블에 대해 호출됨
       expect(mockSupabase.from).toHaveBeenCalledWith('cosmetic_products');
-      expect(mockSupabase.from).toHaveBeenCalledWith('supplement_products');
-      expect(mockSupabase.from).toHaveBeenCalledWith('workout_equipment');
-      expect(mockSupabase.from).toHaveBeenCalledWith('health_foods');
+      expect(mockSupabase.from).not.toHaveBeenCalledWith('supplement_products');
+      expect(mockSupabase.from).not.toHaveBeenCalledWith('workout_equipment');
+      expect(mockSupabase.from).not.toHaveBeenCalledWith('health_foods');
     });
 
     it('skincare 카테고리로 검색하면 cosmetic 테이블만 검색한다', async () => {

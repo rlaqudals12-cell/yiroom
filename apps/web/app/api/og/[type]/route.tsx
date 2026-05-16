@@ -29,8 +29,6 @@ const MODULE_NAMES: Record<string, string> = {
   body: '체형',
   hair: '헤어',
   makeup: '메이크업',
-  'oral-health': '구강건강',
-  posture: '자세',
 };
 
 interface RouteParams {

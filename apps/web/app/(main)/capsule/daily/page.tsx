@@ -46,12 +46,9 @@ const DOMAIN_COLORS: Record<string, string> = {
 const DOMAIN_NAMES: Record<string, string> = {
   skin: '스킨케어',
   fashion: '패션',
-  nutrition: '영양',
-  workout: '운동',
   hair: '헤어',
   makeup: '메이크업',
   'personal-color': '퍼스널 컬러',
-  oral: '구강 건강',
   body: '체형',
 };
 

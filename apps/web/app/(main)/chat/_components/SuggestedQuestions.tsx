@@ -10,10 +10,11 @@ import type { SuggestedQuestion } from '@/types/chat';
 
 // 기본 추천 질문
 const DEFAULT_QUESTIONS: SuggestedQuestion[] = [
+  // ADR-098: 시각 정체성 5축 질문만 (운동/영양 제거)
   { id: 'q1', text: '내 피부 타입에 맞는 스킨케어 루틴은?', category: 'skin' },
   { id: 'q2', text: '나에게 어울리는 립 컬러 추천해줘', category: 'color' },
-  { id: 'q3', text: '체형에 맞는 운동 추천해줘', category: 'body' },
-  { id: 'q4', text: '하루 단백질 섭취량은 얼마가 적당할까?', category: 'nutrition' },
+  { id: 'q3', text: '내 체형에 어울리는 코디 스타일 알려줘', category: 'body' },
+  { id: 'q4', text: '내 퍼스널 컬러에 맞는 메이크업은?', category: 'color' },
 ];
 
 interface SuggestedQuestionsProps {

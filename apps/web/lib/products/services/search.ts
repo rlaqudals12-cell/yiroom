@@ -10,24 +10,16 @@ import type {
   AnyProduct,
   ProductType,
   CosmeticProductRow,
-  SupplementProductRow,
-  WorkoutEquipmentRow,
-  HealthFoodRow,
 } from '@/types/product';
 
 import { getCosmeticProducts, mapCosmeticRow } from '../repositories/cosmetic';
-import { getSupplementProducts, mapSupplementRow } from '../repositories/supplement';
-import { getWorkoutEquipment, mapWorkoutEquipmentRow } from '../repositories/equipment';
-import { getHealthFoods, mapHealthFoodRow } from '../repositories/healthfood';
 
 /** 제품 카테고리 정보 상수 */
+// ADR-098: 화장품(스킨케어/메이크업)만 노출. 영양제/운동기구/건강식품(W/N) 제외.
 export const PRODUCT_CATEGORIES: Array<{ id: ProductCategory; label: string }> = [
   { id: 'all', label: '전체' },
   { id: 'skincare', label: '스킨케어' },
   { id: 'makeup', label: '메이크업' },
-  { id: 'supplement', label: '영양제' },
-  { id: 'equipment', label: '운동기구' },
-  { id: 'healthfood', label: '건강식품' },
 ];
 
 /**
@@ -48,41 +40,18 @@ export async function getProductsByCategory(
       // 스킨케어 전체 조회 (메이크업 제외)
       const products = await getCosmeticProducts(undefined, limit * 3);
       // 스킨케어 카테고리만 필터링 (메이크업 제외)
-      const skincare = products.filter(
-        (p) => p.category !== 'makeup'
-      );
+      const skincare = products.filter((p) => p.category !== 'makeup');
       return applySortAndPaginate(skincare, options, offset, limit);
     }
     case 'makeup': {
       const products = await getCosmeticProducts({ category: 'makeup' }, limit + offset);
       return applySortAndPaginate(products, options, offset, limit);
     }
-    case 'supplement': {
-      const products = await getSupplementProducts(undefined, limit + offset);
-      return applySortAndPaginate(products, options, offset, limit);
-    }
-    case 'equipment': {
-      const products = await getWorkoutEquipment(undefined, limit + offset);
-      return applySortAndPaginate(products, options, offset, limit);
-    }
-    case 'healthfood': {
-      const products = await getHealthFoods(undefined, limit + offset);
-      return applySortAndPaginate(products, options, offset, limit);
-    }
     case 'all':
     default: {
-      // 모든 카테고리에서 균등하게 조회 (화장품/영양제 중심)
-      const cosmeticLimit = Math.ceil(limit * 0.5); // 50%
-      const supplementLimit = Math.ceil(limit * 0.3); // 30%
-      const otherLimit = Math.ceil(limit * 0.1); // 각 10%
-      const [cosmetics, supplements, equipment, healthFoods] = await Promise.all([
-        getCosmeticProducts(undefined, cosmeticLimit + offset),
-        getSupplementProducts(undefined, supplementLimit + offset),
-        getWorkoutEquipment(undefined, otherLimit + offset),
-        getHealthFoods(undefined, otherLimit + offset),
-      ]);
-      const all = [...cosmetics, ...supplements, ...equipment, ...healthFoods];
-      return applySortAndPaginate(all, options, offset, limit);
+      // ADR-098: 화장품만 (영양제/운동기구/건강식품 제외)
+      const cosmetics = await getCosmeticProducts(undefined, limit + offset);
+      return applySortAndPaginate(cosmetics, options, offset, limit);
     }
   }
 }
@@ -114,45 +83,6 @@ export async function searchProducts(
 
     if (cosmetics) {
       results.push(...(cosmetics as CosmeticProductRow[]).map(mapCosmeticRow));
-    }
-  }
-
-  if (!category || category === 'all' || category === 'supplement') {
-    const { data: supplements } = await supabase
-      .from('supplement_products')
-      .select('*')
-      .eq('is_active', true)
-      .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
-      .limit(limit);
-
-    if (supplements) {
-      results.push(...(supplements as SupplementProductRow[]).map(mapSupplementRow));
-    }
-  }
-
-  if (!category || category === 'all' || category === 'equipment') {
-    const { data: equipment } = await supabase
-      .from('workout_equipment')
-      .select('*')
-      .eq('is_active', true)
-      .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
-      .limit(limit);
-
-    if (equipment) {
-      results.push(...(equipment as WorkoutEquipmentRow[]).map(mapWorkoutEquipmentRow));
-    }
-  }
-
-  if (!category || category === 'all' || category === 'healthfood') {
-    const { data: healthFoods } = await supabase
-      .from('health_foods')
-      .select('*')
-      .eq('is_active', true)
-      .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
-      .limit(limit);
-
-    if (healthFoods) {
-      results.push(...(healthFoods as HealthFoodRow[]).map(mapHealthFoodRow));
     }
   }
 
@@ -245,10 +175,7 @@ export function getProductType(product: AnyProduct): ProductType {
  * @param type 제품 타입
  * @param id 제품 ID
  */
-export async function getProductById(
-  type: ProductType,
-  id: string
-): Promise<AnyProduct | null> {
+export async function getProductById(type: ProductType, id: string): Promise<AnyProduct | null> {
   // Lazy import to avoid circular dependency
   const { getCosmeticProductById } = await import('../repositories/cosmetic');
   const { getSupplementProductById } = await import('../repositories/supplement');

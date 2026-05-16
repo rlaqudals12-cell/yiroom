@@ -12,7 +12,6 @@ import {
   Scissors,
   Wand2,
   Activity,
-  PersonStanding,
   BarChart3,
   LayoutGrid,
   Apple,
@@ -162,20 +161,14 @@ const Navbar = () => {
 
                 <DropdownMenuSeparator />
 
-                {/* 건강 카테고리 */}
+                {/* 바디 카테고리 */}
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  건강
+                  바디
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/body" className="flex items-center gap-2 cursor-pointer">
                     <Activity className="h-4 w-4 text-violet-500" />
                     체형 분석
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/analysis/posture" className="flex items-center gap-2 cursor-pointer">
-                    <PersonStanding className="h-4 w-4 text-sky-500" />
-                    자세 분석
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

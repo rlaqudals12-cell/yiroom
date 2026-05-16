@@ -29,12 +29,15 @@ describe('ContextLinkingCard', () => {
       expect(screen.getByTestId('context-link-makeup')).toBeInTheDocument();
     });
 
-    it('체형 모듈에서 운동, 영양 추천을 표시해야 함', () => {
+    // ADR-098: 체형 → 5축(퍼스널컬러·헤어). 운동/영양 추천 제거됨
+    it('체형 모듈에서 퍼스널컬러, 헤어 추천을 표시해야 함', () => {
       render(<ContextLinkingCard currentModule="body" />);
 
       expect(screen.getByTestId('context-linking-card')).toBeInTheDocument();
-      expect(screen.getByTestId('context-link-workout')).toBeInTheDocument();
-      expect(screen.getByTestId('context-link-nutrition')).toBeInTheDocument();
+      expect(screen.getByTestId('context-link-personal-color')).toBeInTheDocument();
+      expect(screen.getByTestId('context-link-hair')).toBeInTheDocument();
+      expect(screen.queryByTestId('context-link-workout')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('context-link-nutrition')).not.toBeInTheDocument();
     });
 
     it('얼굴형 모듈에서 헤어, 메이크업 추천을 표시해야 함', () => {
@@ -93,11 +96,11 @@ describe('ContextLinkingCard', () => {
     it('각 추천 모듈의 링크가 올바른 href를 가져야 함', () => {
       render(<ContextLinkingCard currentModule="body" />);
 
-      const workoutLink = screen.getByTestId('context-link-workout');
-      const nutritionLink = screen.getByTestId('context-link-nutrition');
+      const personalColorLink = screen.getByTestId('context-link-personal-color');
+      const hairLink = screen.getByTestId('context-link-hair');
 
-      expect(workoutLink).toHaveAttribute('href', '/workout/onboarding/step1');
-      expect(nutritionLink).toHaveAttribute('href', '/nutrition');
+      expect(personalColorLink).toHaveAttribute('href', '/analysis/personal-color');
+      expect(hairLink).toHaveAttribute('href', '/analysis/hair');
     });
 
     it('기본 분석 모듈 링크가 올바른 href를 가져야 함', () => {
