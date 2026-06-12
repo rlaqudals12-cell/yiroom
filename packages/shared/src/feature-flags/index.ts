@@ -27,6 +27,36 @@ export const FEATURE_FLAGS = {
    * 재검토 조건: 웹 인벤토리 등록 UI 구현 완료 (Phase 1.5)
    */
   CLOSET_INTEGRATION: false,
+
+  /**
+   * 날씨 기반 코디 추천 노출 여부.
+   *
+   * false: 홈 환경 조언 카드·/style/weather 진입점 숨김 (시각 정체성 5축 외 부가 기능).
+   * true:  복원.
+   *
+   * 근거: 기능 과잉 정리 (2026-05-16). 정체성·수익 퍼널 비기여.
+   */
+  WEATHER: false,
+
+  /**
+   * 소셜 피드(UGC) 노출 여부.
+   *
+   * false: /feed 진입점 숨김 (게이미피케이션·소셜, 정체성·수익 비기여).
+   * true:  복원.
+   *
+   * 근거: 기능 과잉 정리 (2026-05-16). 친구/리더보드/챌린지는 별도 유지.
+   */
+  SOCIAL_FEED: false,
+
+  /**
+   * 배지(게이미피케이션 보상) 노출 여부.
+   *
+   * false: /badges·/profile/badges·프로필 배지 섹션 숨김.
+   * true:  복원.
+   *
+   * 근거: 기능 과잉 정리 (2026-05-16). 참여도 보상만, 정체성·수익 비기여.
+   */
+  BADGES: false,
 } as const;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;

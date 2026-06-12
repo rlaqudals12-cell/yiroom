@@ -63,6 +63,13 @@ const AnalysisMatchedProducts = dynamic(
     })),
   { loading: () => null, ssr: false }
 );
+const ColorHarmonyGuide = dynamic(
+  () =>
+    import('@/components/analysis/ColorHarmonyGuide').then((mod) => ({
+      default: mod.ColorHarmonyGuide,
+    })),
+  { loading: () => null, ssr: false }
+);
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
@@ -554,6 +561,15 @@ export default function PersonalColorResultPage() {
                 evidence={analysisEvidence}
                 onTabChange={setActiveTab}
               />
+
+              {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (Part B 색 고도화) */}
+              {result.bestColors.length > 0 && (
+                <ColorHarmonyGuide
+                  baseHex={result.bestColors[0].hex}
+                  baseName={result.bestColors[0].name}
+                  className="mb-6"
+                />
+              )}
 
               {/* P16: 시즌별 교육 콘텐츠 트리거 */}
               <button

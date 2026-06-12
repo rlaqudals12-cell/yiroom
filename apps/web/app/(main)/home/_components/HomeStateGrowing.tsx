@@ -122,8 +122,8 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
         </div>
       </div>
 
-      {/* 환경 조언 — 날씨/UV/습도 기반 */}
-      <EnvironmentAdviceCard />
+      {/* 환경 조언 — 날씨/UV/습도 기반 (WEATHER 게이팅, 기능 과잉 정리 2026-05-16) */}
+      {FEATURE_FLAGS.WEATHER && <EnvironmentAdviceCard />}
 
       {/* 스트릭/뱃지 위젯 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2) */}
       {FEATURE_FLAGS.WELLNESS_PHASE2 && <HomeStreakWidget />}

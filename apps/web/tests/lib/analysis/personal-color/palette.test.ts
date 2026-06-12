@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   generateTonePalette,
+  generateTonePaletteV2,
   getToneCompatibility,
   getAllTonePalettes,
 } from '@/lib/analysis/personal-color/palette';
@@ -201,6 +202,32 @@ describe('lib/analysis/personal-color/palette', () => {
       const uniqueTones = new Set(tones);
 
       expect(uniqueTones.size).toBe(12);
+    });
+  });
+
+  describe('generateTonePaletteV2 (배색 가이드)', () => {
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+
+    it('대표색 기반 배색(보색/유사색/삼각/톤온톤)을 생성한다', () => {
+      const result = generateTonePaletteV2('true-spring');
+      expect(result.tone).toBe('true-spring');
+      expect(result.base.hex).toMatch(hexRe);
+      expect(result.accent).toMatch(hexRe);
+      expect(result.analogous).toHaveLength(2);
+      expect(result.triadic).toHaveLength(2);
+      expect(result.tonOnTone.length).toBeGreaterThanOrEqual(3);
+      [...result.analogous, ...result.triadic, ...result.tonOnTone].forEach((c) =>
+        expect(c).toMatch(hexRe)
+      );
+    });
+
+    it('12톤 전부에서 크래시 없이 유효 hex를 반환한다', () => {
+      const tones = getAllTonePalettes().map((p) => p.tone);
+      for (const tone of tones) {
+        const r = generateTonePaletteV2(tone);
+        expect(r.accent).toMatch(hexRe);
+        expect(r.tonOnTone.every((c) => hexRe.test(c))).toBe(true);
+      }
     });
   });
 });

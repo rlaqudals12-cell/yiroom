@@ -3,8 +3,9 @@
  * @module lib/analysis/personal-color/palette
  */
 
-import type { LabColor, TwelveTone, TonePalette, ColorCompatibility } from './types';
+import type { LabColor, TwelveTone, TonePalette, ColorInfo, ColorCompatibility } from './types';
 import { hexToLab, calculateCIEDE2000 } from '@/lib/color';
+import { complementary, analogous, triadic, tonOnTone } from '@/lib/color/harmony';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
 
 const TWELVE_TONE_PALETTES: Record<TwelveTone, TonePalette> = {
@@ -253,4 +254,44 @@ export function getToneCompatibility(tone: TwelveTone, testColor: LabColor): Col
 
 export function getAllTonePalettes(): TonePalette[] {
   return Object.values(TWELVE_TONE_PALETTES);
+}
+
+/**
+ * 배색 이론 기반 코디 가이드.
+ * 진단된 12톤의 대표색에서 배색 알고리즘(보색/유사색/삼각/톤온톤)으로 조화색을 도출한다.
+ * "예쁜 색 하드코딩"이 아니라 사용자 톤을 토대로 계산 → 코디 시 어떤 색을 함께 쓸지 안내.
+ *
+ * @see lib/color/harmony.ts
+ */
+export interface HarmonyPalette {
+  tone: TwelveTone;
+  /** 기준 대표색 (해당 톤의 첫 베스트 컬러) */
+  base: ColorInfo;
+  /** 톤온톤 — 같은 색 계열 명도 변화 (안정적 단색 코디) */
+  tonOnTone: string[];
+  /** 유사색 — 기준색 양옆 (조화로운 기본 배색) */
+  analogous: string[];
+  /** 포인트(보색) — 강한 대비 악센트 (가방/액세서리 1점) */
+  accent: string;
+  /** 삼각 배색 — 활기찬 3색 조합 */
+  triadic: string[];
+}
+
+/**
+ * 12톤 → 배색 코디 가이드 생성 (Hybrid).
+ * 기존 `TWELVE_TONE_PALETTES`는 그대로 유지(폴백)하고, 그 대표색 위에 배색을 얹는다.
+ * 기준색이 없거나 무채색이어도 harmony 함수가 유효 hex를 반환하므로 안전.
+ */
+export function generateTonePaletteV2(tone: TwelveTone): HarmonyPalette {
+  const palette = TWELVE_TONE_PALETTES[tone];
+  // 대표색: 베스트 컬러 첫 항목 (없으면 폴백)
+  const base = palette.bestColors[0] ?? { hex: '#808080', name: '뉴트럴' };
+  return {
+    tone,
+    base,
+    tonOnTone: tonOnTone(base.hex, 3),
+    analogous: analogous(base.hex, 30),
+    accent: complementary(base.hex),
+    triadic: triadic(base.hex),
+  };
 }

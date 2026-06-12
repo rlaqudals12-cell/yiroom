@@ -122,6 +122,20 @@ ContextLinkingCard에 노출되고 결과가 W-1(운동)로 연결됨을 발견.
 - 분석 허브(`/analysis`)·Navbar 분석 드롭다운에서 진입점 제거
 - `ContextLinkingCard`의 posture·oral-health 연결 및 body→W/N 연결을 5축으로 교체
 
+### 2.4.2 주변부 기능 정리 — 보강 (2026-05-16)
+
+출시 직전 제품 본질 재점검에서 "기능 과잉"(부가 기능이 정체성·수익 비기여하며
+유지비·정체성 흐림 유발)을 확인. **명백한 것만** W/N과 동일 정책(코드/DB 유지 +
+`FEATURE_FLAGS` 게이팅 + layout redirect)으로 숨김. 친구·리더보드·챌린지는 유지(별도 판단).
+
+| 대상      | 플래그        | 처리                                                                       |
+| --------- | ------------- | -------------------------------------------------------------------------- |
+| 날씨 코디 | `WEATHER`     | 홈 환경조언 카드 게이팅 + `/style/weather` redirect                        |
+| 소셜 피드 | `SOCIAL_FEED` | `/feed` redirect                                                           |
+| 배지      | `BADGES`      | `/badges`·`/profile/badges` redirect + 프로필 배지 섹션·Navbar 링크 게이팅 |
+
+플래그: `packages/shared/src/feature-flags/index.ts` (전부 `false`, 복원 시 `true`).
+
 ### 2.5 C-1 결과 페이지 리디자인
 
 3섹션 구조로 재편:

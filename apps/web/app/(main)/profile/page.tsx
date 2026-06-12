@@ -588,53 +588,60 @@ export default function ProfilePage() {
               </FadeInUp>
             )}
 
-            {/* 배지 */}
-            <FadeInUp delay={1}>
-              <section className="bg-card rounded-2xl border p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold">
-                    <Trophy className="h-5 w-5 text-yellow-500" />
-                    배지 컬렉션
-                  </h3>
-                  <Link
-                    href="/profile/badges"
-                    className="text-primary flex items-center gap-1 text-sm hover:underline"
-                  >
-                    전체 보기 <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-                <div className="bg-muted/50 mb-4 rounded-lg p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">획득한 배지</span>
-                    <span className="font-medium">
-                      {profileData?.badgeStats.earned || 0}/{profileData?.badgeStats.total || 0}개
-                    </span>
+            {/* 배지 — ADR-098 기능 과잉 정리(2026-05-16): BADGES 게이팅 */}
+            {FEATURE_FLAGS.BADGES && (
+              <FadeInUp delay={1}>
+                <section className="bg-card rounded-2xl border p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                      <Trophy className="h-5 w-5 text-yellow-500" />
+                      배지 컬렉션
+                    </h3>
+                    <Link
+                      href="/profile/badges"
+                      className="text-primary flex items-center gap-1 text-sm hover:underline"
+                    >
+                      전체 보기 <ChevronRight className="h-4 w-4" />
+                    </Link>
                   </div>
-                  <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
-                      style={{ width: `${profileData?.badgeStats.progress || 0}%` }}
-                    />
+                  <div className="bg-muted/50 mb-4 rounded-lg p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">획득한 배지</span>
+                      <span className="font-medium">
+                        {profileData?.badgeStats.earned || 0}/{profileData?.badgeStats.total || 0}개
+                      </span>
+                    </div>
+                    <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
+                        style={{ width: `${profileData?.badgeStats.progress || 0}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-                {profileData?.recentBadges && profileData.recentBadges.length > 0 ? (
-                  <div className="flex gap-3">
-                    {profileData.recentBadges
-                      .filter((ub) => ub.badge !== undefined)
-                      .map((ub) => (
-                        <div key={ub.id} className="flex-1">
-                          <BadgeCard badge={ub.badge!} isEarned earnedAt={ub.earnedAt} size="sm" />
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground py-6 text-center">
-                    <Award className="mx-auto mb-2 h-10 w-10 opacity-30" />
-                    <p className="text-sm">아직 획득한 배지가 없어요</p>
-                  </div>
-                )}
-              </section>
-            </FadeInUp>
+                  {profileData?.recentBadges && profileData.recentBadges.length > 0 ? (
+                    <div className="flex gap-3">
+                      {profileData.recentBadges
+                        .filter((ub) => ub.badge !== undefined)
+                        .map((ub) => (
+                          <div key={ub.id} className="flex-1">
+                            <BadgeCard
+                              badge={ub.badge!}
+                              isEarned
+                              earnedAt={ub.earnedAt}
+                              size="sm"
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground py-6 text-center">
+                      <Award className="mx-auto mb-2 h-10 w-10 opacity-30" />
+                      <p className="text-sm">아직 획득한 배지가 없어요</p>
+                    </div>
+                  )}
+                </section>
+              </FadeInUp>
+            )}
 
             {/* 챌린지 */}
             <FadeInUp delay={2}>

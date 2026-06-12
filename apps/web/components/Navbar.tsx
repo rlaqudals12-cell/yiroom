@@ -316,15 +316,18 @@ const Navbar = () => {
                 캡슐
               </span>
             </Link>
-            <Link
-              href="/badges"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
-            >
-              <span className="flex items-center gap-1">
-                <Gem className="h-3.5 w-3.5" />
-                뱃지
-              </span>
-            </Link>
+            {/* 뱃지 — ADR-098 기능 과잉 정리(2026-05-16): BADGES 게이팅 */}
+            {FEATURE_FLAGS.BADGES && (
+              <Link
+                href="/badges"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+              >
+                <span className="flex items-center gap-1">
+                  <Gem className="h-3.5 w-3.5" />
+                  뱃지
+                </span>
+              </Link>
+            )}
           </nav>
           <Link
             href="/wishlist"
