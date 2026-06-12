@@ -8,6 +8,7 @@
  * - 옷장 아이템 검색
  * - 피드 검색
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import {
@@ -60,13 +61,15 @@ const CATEGORY_CONFIG: Record<
   feed: { label: '피드', icon: MessageSquare, color: statusColors.info },
 };
 
+// ADR-098: W/N 칩은 WELLNESS_PHASE2 게이팅 (5축 중심 퀵서치)
 const QUICK_SEARCHES = [
   '퍼스널컬러',
   '피부 분석',
-  '운동 기록',
   '스킨케어',
   '코디 추천',
-  '영양 분석',
+  '헤어 스타일',
+  '메이크업',
+  ...(FEATURE_FLAGS.WELLNESS_PHASE2 ? ['운동 기록', '영양 분석'] : []),
 ];
 
 export default function UnifiedSearchScreen(): React.JSX.Element {
@@ -148,42 +151,46 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
           });
         }
 
-        // 운동 기록 검색
-        const { data: workouts } = await supabase
-          .from('workout_logs')
-          .select('id, workout_date, notes')
-          .ilike('notes', `%${trimmed}%`)
-          .limit(5);
+        // 운동 기록 검색 — ADR-098: W/N UI 숨김 동안 결과 제외 (WELLNESS_PHASE2 게이팅)
+        if (FEATURE_FLAGS.WELLNESS_PHASE2) {
+          const { data: workouts } = await supabase
+            .from('workout_logs')
+            .select('id, workout_date, notes')
+            .ilike('notes', `%${trimmed}%`)
+            .limit(5);
 
-        if (workouts) {
-          workouts.forEach((w) => {
-            allResults.push({
-              id: `workout-${w.id}`,
-              type: 'workout',
-              title: `운동 기록`,
-              subtitle: new Date(w.workout_date).toLocaleDateString('ko-KR'),
-              route: `/(workout)/detail?id=${w.id}`,
+          if (workouts) {
+            workouts.forEach((w) => {
+              allResults.push({
+                id: `workout-${w.id}`,
+                type: 'workout',
+                title: `운동 기록`,
+                subtitle: new Date(w.workout_date).toLocaleDateString('ko-KR'),
+                route: `/(workout)/detail?id=${w.id}`,
+              });
             });
-          });
+          }
         }
 
-        // 피드 검색
-        const { data: posts } = await supabase
-          .from('feed_posts')
-          .select('id, content, created_at')
-          .ilike('content', `%${trimmed}%`)
-          .limit(5);
+        // 피드 검색 — ADR-098 §2.4.2: 소셜 피드 숨김 동안 결과 제외 (SOCIAL_FEED 게이팅)
+        if (FEATURE_FLAGS.SOCIAL_FEED) {
+          const { data: posts } = await supabase
+            .from('feed_posts')
+            .select('id, content, created_at')
+            .ilike('content', `%${trimmed}%`)
+            .limit(5);
 
-        if (posts) {
-          posts.forEach((p) => {
-            allResults.push({
-              id: `feed-${p.id}`,
-              type: 'feed',
-              title: p.content.substring(0, 40) + (p.content.length > 40 ? '...' : ''),
-              subtitle: new Date(p.created_at).toLocaleDateString('ko-KR'),
-              route: `/(social)/feed`,
+          if (posts) {
+            posts.forEach((p) => {
+              allResults.push({
+                id: `feed-${p.id}`,
+                type: 'feed',
+                title: p.content.substring(0, 40) + (p.content.length > 40 ? '...' : ''),
+                subtitle: new Date(p.created_at).toLocaleDateString('ko-KR'),
+                route: `/(social)/feed`,
+              });
             });
-          });
+          }
         }
 
         setResults(allResults);

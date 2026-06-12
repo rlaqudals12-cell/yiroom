@@ -5,7 +5,7 @@
  * @see docs/adr/ADR-069-capsule-ecosystem-architecture.md
  */
 import { useAuth } from '@clerk/clerk-expo';
-import { useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -18,20 +18,26 @@ import { getDomainCapsule, rotateCapsule } from '../../lib/capsule/api';
 import type { CapsuleOverview, ApiError } from '../../lib/capsule/api';
 import { useTheme } from '../../lib/theme';
 
-// 도메인 메타 정보
+// 도메인 메타 정보 — ADR-098: 허용 도메인(5축+패션)만. 영양/운동/구강 등 제외 도메인은 가드 처리
 const DOMAIN_META: Record<string, { name: string; emoji: string; colorKey: string }> = {
   skin: { name: '스킨케어', emoji: '💧', colorKey: 'skin' },
   fashion: { name: '패션', emoji: '👗', colorKey: 'personalColor' },
-  nutrition: { name: '영양', emoji: '🥗', colorKey: 'nutrition' },
-  workout: { name: '운동', emoji: '💪', colorKey: 'workout' },
   hair: { name: '헤어', emoji: '💇', colorKey: 'hair' },
   makeup: { name: '메이크업', emoji: '💄', colorKey: 'makeup' },
   'personal-color': { name: '퍼스널컬러', emoji: '🎨', colorKey: 'personalColor' },
-  oral: { name: '구강건강', emoji: '🦷', colorKey: 'oralHealth' },
-  body: { name: '바디케어', emoji: '🧘', colorKey: 'body' },
+  body: { name: '체형', emoji: '🧘', colorKey: 'body' },
 };
 
-export default function DomainCapsuleScreen(): React.JSX.Element {
+// ADR-098: 허용 도메인(5축+패션) 외 직접 URL 접근 가드 (웹 [domain] notFound와 동일 정책)
+export default function DomainCapsuleScreenGuard(): React.JSX.Element {
+  const { domain } = useLocalSearchParams<{ domain: string }>();
+  if (!DOMAIN_META[domain ?? '']) {
+    return <Redirect href="/(capsule)" />;
+  }
+  return <DomainCapsuleScreen />;
+}
+
+function DomainCapsuleScreen(): React.JSX.Element {
   const { domain } = useLocalSearchParams<{ domain: string }>();
   const { getToken } = useAuth();
   const { colors, brand, spacing, radii, typography, isDark, module: moduleColors } = useTheme();

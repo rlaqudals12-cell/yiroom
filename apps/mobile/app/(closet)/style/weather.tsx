@@ -3,6 +3,8 @@
  *
  * 현재 날씨 표시 + 체감 온도 기반 3가지 코디 제안.
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect } from 'expo-router';
 import { CloudSun, Thermometer, Droplets, Wind } from 'lucide-react-native';
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
@@ -63,6 +65,11 @@ export default function WeatherOutfitScreen(): React.JSX.Element {
   const { colors, brand, status } = useTheme();
   const [weather] = useState(MOCK_WEATHER);
   const [suggestions] = useState(MOCK_SUGGESTIONS);
+
+  // ADR-098 §2.4.2 기능 과잉 정리: 날씨 코디 숨김 (코드 유지, WEATHER=true 시 복원)
+  if (!FEATURE_FLAGS.WEATHER) {
+    return <Redirect href="/(tabs)/style" />;
+  }
 
   return (
     <ScreenContainer

@@ -8,10 +8,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -32,9 +29,13 @@ import {
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
   return {
-    SafeAreaView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <View {...props}>{children}</View>
-    ),
+    SafeAreaView: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
@@ -43,7 +44,12 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('../../../hooks/useUserAnalyses', () => ({
   useUserAnalyses: jest.fn(() => ({
     analyses: [
-      { id: '1', type: 'personal-color', summary: 'Spring Warm', createdAt: new Date('2026-02-20') },
+      {
+        id: '1',
+        type: 'personal-color',
+        summary: 'Spring Warm',
+        createdAt: new Date('2026-02-20'),
+      },
       { id: '2', type: 'skin', summary: '복합성 피부', createdAt: new Date('2026-02-18') },
     ],
     personalColor: { season: 'spring' },
@@ -121,9 +127,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -181,42 +185,20 @@ describe('ProfileScreen', () => {
     });
 
     it('완료된 분석에 시즌/타입 서브타이틀이 표시된다', () => {
+      // SEASON_LABELS: 'spring' → '봄' 한국어 라벨로 표시
       const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('spring')).toBeTruthy();
+      expect(getByText('봄')).toBeTruthy();
     });
   });
 
-  describe('기록 섹션', () => {
-    it('기록 섹션 제목이 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('기록')).toBeTruthy();
-    });
-
-    it('운동 기록 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('운동 기록')).toBeTruthy();
-    });
-
-    it('식단 기록 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('식단 기록')).toBeTruthy();
-    });
-
-    it('주간 리포트 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('주간 리포트')).toBeTruthy();
-    });
-
-    it('운동 연속 일수가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText(/7일 연속/)).toBeTruthy();
-    });
-
-    it('영양 연속 일수가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('식단 기록')).toBeTruthy();
-      // 3일 연속 텍스트 (운동 7일 연속과 별개)
-      expect(getByText('3일 연속')).toBeTruthy();
+  // ADR-098: W/N 기록 섹션은 WELLNESS_PHASE2=false 동안 숨김
+  describe('기록 섹션 (WELLNESS_PHASE2 게이팅)', () => {
+    it('기록 섹션이 숨겨진다', () => {
+      const { queryByText } = renderWithTheme(<ProfileScreen />);
+      expect(queryByText('기록')).toBeNull();
+      expect(queryByText('운동 기록')).toBeNull();
+      expect(queryByText('식단 기록')).toBeNull();
+      expect(queryByText('주간 리포트')).toBeNull();
     });
   });
 
@@ -231,14 +213,10 @@ describe('ProfileScreen', () => {
       expect(getByTestId('wellness-score')).toBeTruthy();
     });
 
-    it('업적 그리드가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<ProfileScreen />);
-      expect(getByTestId('achievement-grid')).toBeTruthy();
-    });
-
-    it('나의 업적 헤더가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('나의 업적')).toBeTruthy();
+    // ADR-098 §2.4.2 기능 과잉 정리: 업적 그리드는 BADGES=false 동안 숨김
+    it('업적 그리드가 숨겨진다 (BADGES 게이팅)', () => {
+      const { queryByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(queryByTestId('achievement-grid')).toBeNull();
     });
   });
 
@@ -253,9 +231,10 @@ describe('ProfileScreen', () => {
       expect(getByText('알림 설정')).toBeTruthy();
     });
 
-    it('목표 설정 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('목표 설정')).toBeTruthy();
+    // ADR-098: 목표 설정(물/칼로리/운동)은 WELLNESS_PHASE2=false 동안 숨김
+    it('목표 설정 메뉴가 숨겨진다 (WELLNESS_PHASE2 게이팅)', () => {
+      const { queryByText } = renderWithTheme(<ProfileScreen />);
+      expect(queryByText('목표 설정')).toBeNull();
     });
 
     it('위젯 설정 메뉴가 표시된다', () => {
@@ -279,7 +258,7 @@ describe('ProfileScreen', () => {
       });
 
       const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('로그인이 필요합니다')).toBeTruthy();
+      expect(getByText('로그인이 필요해요')).toBeTruthy();
       expect(getByText('로그인')).toBeTruthy();
     });
 

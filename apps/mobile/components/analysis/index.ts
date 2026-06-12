@@ -36,6 +36,10 @@ export type { ColorSwatchProps } from './ColorSwatch';
 export { ColorPalette } from './ColorPalette';
 export type { ColorItem, ColorGroup } from './ColorPalette';
 
+// 배색 가이드 (ADR-105 — 진단 위 배색 알고리즘)
+export { ColorHarmonyGuide } from './ColorHarmonyGuide';
+export type { ColorHarmonyGuideProps } from './ColorHarmonyGuide';
+
 // 분석 이력 + 비교
 export { AnalysisTimeline } from './AnalysisTimeline';
 export type { AnalysisTimelineProps } from './AnalysisTimeline';

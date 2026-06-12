@@ -24,18 +24,8 @@ export default function GapAnalysisScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, isDark } = useTheme();
   const { profile } = useBeautyProfile();
 
-  // 미완성 모듈 기반 갭 추론
-  const allModules = [
-    'skin',
-    'fashion',
-    'nutrition',
-    'workout',
-    'hair',
-    'makeup',
-    'personal-color',
-    'oral',
-    'body',
-  ];
+  // 미완성 모듈 기반 갭 추론 — ADR-098: 5축+패션 6개 도메인만 (영양/운동/구강 제외)
+  const allModules = ['skin', 'fashion', 'hair', 'makeup', 'personal-color', 'body'];
   const completedModules = profile?.completedModules ?? [];
   const gaps: GapItem[] = allModules
     .filter((m) => !completedModules.includes(m))
@@ -157,16 +147,14 @@ export default function GapAnalysisScreen(): React.JSX.Element {
   );
 }
 
+// ADR-098: 5축+패션 6개 도메인 라벨
 const MODULE_LABELS: Record<string, string> = {
   skin: '스킨케어',
   fashion: '패션',
-  nutrition: '영양',
-  workout: '운동',
   hair: '헤어',
   makeup: '메이크업',
   'personal-color': '퍼스널컬러',
-  oral: '구강건강',
-  body: '바디케어',
+  body: '체형',
 };
 
 const styles = StyleSheet.create({

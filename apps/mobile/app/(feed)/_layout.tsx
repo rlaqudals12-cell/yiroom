@@ -2,12 +2,18 @@
  * 피드 라우트 레이아웃
  */
 
-import { Stack } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, Stack } from 'expo-router';
 
 import { useTheme } from '../../lib/theme';
 
 export default function FeedLayout() {
   const { colors } = useTheme();
+
+  // ADR-098 §2.4.2 기능 과잉 정리: 소셜 피드 숨김 (코드 유지, SOCIAL_FEED=true 시 복원)
+  if (!FEATURE_FLAGS.SOCIAL_FEED) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <Stack

@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -85,6 +82,17 @@ jest.mock('../../../hooks/useNutritionData', () => ({
   getNutrientStatusColor: jest.fn(),
 }));
 
+// ADR-098 §2.4.2: BADGES 게이팅 — 렌더링 검증을 위해 기본 ON, 게이팅 테스트에서 OFF로 전환
+jest.mock('@yiroom/shared', () => ({
+  FEATURE_FLAGS: {
+    WELLNESS_PHASE2: false,
+    CLOSET_INTEGRATION: false,
+    WEATHER: false,
+    SOCIAL_FEED: false,
+    BADGES: true,
+  },
+}));
+
 import BadgesScreen from '../../../app/badges/index';
 
 // ============================================================
@@ -114,9 +122,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -307,6 +313,21 @@ describe('BadgesScreen', () => {
       const { getByText } = renderWithTheme(<BadgesScreen />, true);
       expect(getByText('나의 뱃지')).toBeTruthy();
       expect(getByText('컬러 탐험가')).toBeTruthy();
+    });
+  });
+
+  describe('BADGES 게이팅 (ADR-098 §2.4.2)', () => {
+    const { FEATURE_FLAGS } = jest.requireMock('@yiroom/shared');
+
+    afterEach(() => {
+      FEATURE_FLAGS.BADGES = true;
+    });
+
+    it('BADGES=false면 홈으로 리다이렉트한다', () => {
+      FEATURE_FLAGS.BADGES = false;
+      const { getByTestId, queryByText } = renderWithTheme(<BadgesScreen />);
+      expect(getByTestId('redirect')).toBeTruthy();
+      expect(queryByText('나의 뱃지')).toBeNull();
     });
   });
 });

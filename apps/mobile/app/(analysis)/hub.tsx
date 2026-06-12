@@ -63,6 +63,8 @@ const CATEGORIES: AnalysisCategory[] = [
       },
     ],
   },
+  // ADR-098 정체성 v2: 시각 정체성 5축(PC/S/C/H/M)만 노출.
+  // posture(W-1 인접)·oral-health(OH-1 제거)는 허브에서 제외.
   {
     title: '바디',
     modules: [
@@ -73,27 +75,6 @@ const CATEGORIES: AnalysisCategory[] = [
         description: '체형 타입과 비율 분석',
         route: '/(analysis)/body',
         gradient: ['#818CF8', '#6366F1'],
-      },
-      {
-        id: 'posture',
-        name: '자세 분석',
-        emoji: '🧘',
-        description: '자세 교정과 체형 개선',
-        route: '/(analysis)/posture',
-        gradient: ['#60A5FA', '#3B82F6'],
-      },
-    ],
-  },
-  {
-    title: '건강',
-    modules: [
-      {
-        id: 'oral-health',
-        name: '구강 건강',
-        emoji: '🦷',
-        description: '치아와 잇몸 상태 체크',
-        route: '/(analysis)/oral-health',
-        gradient: ['#34D399', '#10B981'],
       },
     ],
   },
@@ -168,7 +149,10 @@ export default function AnalysisHubScreen(): React.JSX.Element {
                   ]}
                 >
                   <View
-                    style={[styles.iconContainer, !isDark ? coloredShadow(mod.gradient[1], 'sm') : {}]}
+                    style={[
+                      styles.iconContainer,
+                      !isDark ? coloredShadow(mod.gradient[1], 'sm') : {},
+                    ]}
                   >
                     <LinearGradient
                       colors={[mod.gradient[0], mod.gradient[1]]}
@@ -181,7 +165,9 @@ export default function AnalysisHubScreen(): React.JSX.Element {
                   </View>
 
                   <View style={styles.moduleContent}>
-                    <Text style={[styles.moduleName, { color: colors.foreground }]}>{mod.name}</Text>
+                    <Text style={[styles.moduleName, { color: colors.foreground }]}>
+                      {mod.name}
+                    </Text>
                     <Text style={[styles.moduleDesc, { color: colors.mutedForeground }]}>
                       {mod.description}
                     </Text>

@@ -4,6 +4,7 @@
  * D2-4: 그라디언트 배경, AnalysisTimeline 통합, GradientCard 적용
  */
 import { useUser, useClerk } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -21,9 +22,26 @@ import { useTheme, spacing, radii, borderGlow } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 // 영어 raw 값 → 한국어 라벨 매핑
-const SEASON_LABELS: Record<string, string> = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
-const SKIN_TYPE_LABELS: Record<string, string> = { oily: '지성', dry: '건성', combination: '복합성', normal: '중성', sensitive: '민감성' };
-const BODY_TYPE_LABELS: Record<string, string> = { hourglass: '모래시계형', rectangle: '직사각형', pear: '배형', apple: '사과형', inverted_triangle: '역삼각형' };
+const SEASON_LABELS: Record<string, string> = {
+  spring: '봄',
+  summer: '여름',
+  autumn: '가을',
+  winter: '겨울',
+};
+const SKIN_TYPE_LABELS: Record<string, string> = {
+  oily: '지성',
+  dry: '건성',
+  combination: '복합성',
+  normal: '중성',
+  sensitive: '민감성',
+};
+const BODY_TYPE_LABELS: Record<string, string> = {
+  hourglass: '모래시계형',
+  rectangle: '직사각형',
+  pear: '배형',
+  apple: '사과형',
+  inverted_triangle: '역삼각형',
+};
 
 export default function ProfileScreen(): React.JSX.Element {
   const { colors, brand, spacing, typography, isDark } = useTheme();
@@ -283,12 +301,14 @@ export default function ProfileScreen(): React.JSX.Element {
         testID="wellness-score"
       />
 
-      {/* 업적 그리드 */}
-      <AchievementGrid
-        achievements={achievements}
-        style={{ marginBottom: spacing.lg, ...borderGlow.pink }}
-        testID="achievement-grid"
-      />
+      {/* 업적 그리드 — ADR-098 §2.4.2 기능 과잉 정리: BADGES 게이팅 */}
+      {FEATURE_FLAGS.BADGES && (
+        <AchievementGrid
+          achievements={achievements}
+          style={{ marginBottom: spacing.lg, ...borderGlow.pink }}
+          testID="achievement-grid"
+        />
+      )}
 
       {/* 분석 이력 타임라인 */}
       <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
@@ -318,7 +338,11 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="퍼스널 컬러"
             completed={!!personalColor}
-            subtitle={personalColor?.season ? (SEASON_LABELS[personalColor.season] || personalColor.season) : undefined}
+            subtitle={
+              personalColor?.season
+                ? SEASON_LABELS[personalColor.season] || personalColor.season
+                : undefined
+            }
             onPress={() => router.push('/(analysis)/personal-color')}
           />
           <View
@@ -331,7 +355,11 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="피부 분석"
             completed={!!skinAnalysis}
-            subtitle={skinAnalysis?.skinType ? (SKIN_TYPE_LABELS[skinAnalysis.skinType] || skinAnalysis.skinType) : undefined}
+            subtitle={
+              skinAnalysis?.skinType
+                ? SKIN_TYPE_LABELS[skinAnalysis.skinType] || skinAnalysis.skinType
+                : undefined
+            }
             onPress={() => router.push('/(analysis)/skin')}
           />
           <View
@@ -344,52 +372,60 @@ export default function ProfileScreen(): React.JSX.Element {
           <MenuItem
             title="체형 분석"
             completed={!!bodyAnalysis}
-            subtitle={bodyAnalysis?.bodyType ? (BODY_TYPE_LABELS[bodyAnalysis.bodyType] || bodyAnalysis.bodyType) : undefined}
+            subtitle={
+              bodyAnalysis?.bodyType
+                ? BODY_TYPE_LABELS[bodyAnalysis.bodyType] || bodyAnalysis.bodyType
+                : undefined
+            }
             onPress={() => router.push('/(analysis)/body')}
           />
         </GlassCard>
       </Animated.View>
 
-      {/* 기록 */}
-      <Animated.View entering={staggeredEntry(1)}>
-        <SectionHeader title="기록" style={{ marginBottom: spacing.sm + 4 }} />
-        <GlassCard
-          intensity={20}
-          style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}
-        >
-          <MenuItem
-            title="운동 기록"
-            completed={!!workoutAnalysis}
-            subtitle={
-              workoutStreak?.currentStreak ? `${workoutStreak.currentStreak}일 연속` : undefined
-            }
-            onPress={() => router.push('/(tabs)/records')}
-          />
-          <View
-            style={{
-              height: StyleSheet.hairlineWidth,
-              backgroundColor: colors.border,
-              marginHorizontal: spacing.md,
-            }}
-          />
-          <MenuItem
-            title="식단 기록"
-            completed={!!nutritionStreak}
-            subtitle={
-              nutritionStreak?.currentStreak ? `${nutritionStreak.currentStreak}일 연속` : undefined
-            }
-            onPress={() => router.push('/(tabs)/records')}
-          />
-          <View
-            style={{
-              height: StyleSheet.hairlineWidth,
-              backgroundColor: colors.border,
-              marginHorizontal: spacing.md,
-            }}
-          />
-          <MenuItem title="주간 리포트" onPress={() => router.push('/reports')} />
-        </GlassCard>
-      </Animated.View>
+      {/* 기록 — ADR-098: W/N 기록 섹션은 WELLNESS_PHASE2에 게이팅 (Phase 2 보류) */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+        <Animated.View entering={staggeredEntry(1)}>
+          <SectionHeader title="기록" style={{ marginBottom: spacing.sm + 4 }} />
+          <GlassCard
+            intensity={20}
+            style={{ padding: 0, marginBottom: spacing.lg, overflow: 'hidden' }}
+          >
+            <MenuItem
+              title="운동 기록"
+              completed={!!workoutAnalysis}
+              subtitle={
+                workoutStreak?.currentStreak ? `${workoutStreak.currentStreak}일 연속` : undefined
+              }
+              onPress={() => router.push('/(tabs)/records')}
+            />
+            <View
+              style={{
+                height: StyleSheet.hairlineWidth,
+                backgroundColor: colors.border,
+                marginHorizontal: spacing.md,
+              }}
+            />
+            <MenuItem
+              title="식단 기록"
+              completed={!!nutritionStreak}
+              subtitle={
+                nutritionStreak?.currentStreak
+                  ? `${nutritionStreak.currentStreak}일 연속`
+                  : undefined
+              }
+              onPress={() => router.push('/(tabs)/records')}
+            />
+            <View
+              style={{
+                height: StyleSheet.hairlineWidth,
+                backgroundColor: colors.border,
+                marginHorizontal: spacing.md,
+              }}
+            />
+            <MenuItem title="주간 리포트" onPress={() => router.push('/reports')} />
+          </GlassCard>
+        </Animated.View>
+      )}
 
       {/* 설정 */}
       <Animated.View entering={staggeredEntry(2)}>
@@ -397,7 +433,7 @@ export default function ProfileScreen(): React.JSX.Element {
         <GlassCard intensity={20} style={{ padding: 0, overflow: 'hidden' }}>
           <MenuItem
             title="알림 설정"
-            subtitle="물, 운동, 식사 알림"
+            subtitle={FEATURE_FLAGS.WELLNESS_PHASE2 ? '물, 운동, 식사 알림' : '분석 리마인더 알림'}
             onPress={() => router.push('/settings/notifications')}
           />
           <View
@@ -407,18 +443,23 @@ export default function ProfileScreen(): React.JSX.Element {
               marginHorizontal: spacing.md,
             }}
           />
-          <MenuItem
-            title="목표 설정"
-            subtitle="물, 칼로리, 운동 목표"
-            onPress={() => router.push('/settings/goals')}
-          />
-          <View
-            style={{
-              height: StyleSheet.hairlineWidth,
-              backgroundColor: colors.border,
-              marginHorizontal: spacing.md,
-            }}
-          />
+          {/* ADR-098: 목표 설정(물/칼로리/운동)은 W/N 기능 — WELLNESS_PHASE2 게이팅 (settings/index와 동일) */}
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+            <>
+              <MenuItem
+                title="목표 설정"
+                subtitle="물, 칼로리, 운동 목표"
+                onPress={() => router.push('/settings/goals')}
+              />
+              <View
+                style={{
+                  height: StyleSheet.hairlineWidth,
+                  backgroundColor: colors.border,
+                  marginHorizontal: spacing.md,
+                }}
+              />
+            </>
+          )}
           <MenuItem
             title="위젯 설정"
             subtitle="홈 화면 위젯"

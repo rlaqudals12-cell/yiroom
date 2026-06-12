@@ -3,8 +3,9 @@
  * 사용자가 직접 피드에 글을 올리는 기능
  */
 import { useUser } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState, useCallback } from 'react';
 import {
   View,
@@ -44,7 +45,15 @@ const typeToActivity: Record<FeedItemType, string> = {
   badge: 'badge_earned',
 };
 
-export default function FeedCreateScreen(): React.JSX.Element {
+// ADR-098 §2.4.2 기능 과잉 정리: 소셜 피드 숨김 (코드 유지, SOCIAL_FEED=true 시 복원)
+export default function FeedCreateScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.SOCIAL_FEED) {
+    return <Redirect href="/(tabs)" />;
+  }
+  return <FeedCreateScreen />;
+}
+
+function FeedCreateScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();

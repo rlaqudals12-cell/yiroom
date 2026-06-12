@@ -2,7 +2,8 @@
  * 뱃지/업적 스크린
  * 분석 완료, 연속 기록 등 업적 표시
  */
-import { router } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
@@ -18,7 +19,15 @@ interface Badge {
   earned: boolean;
 }
 
-export default function BadgesScreen(): React.JSX.Element {
+// ADR-098 §2.4.2 기능 과잉 정리: 배지 숨김 (코드 유지, BADGES=true 시 복원)
+export default function BadgesScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.BADGES) {
+    return <Redirect href="/(tabs)" />;
+  }
+  return <BadgesScreen />;
+}
+
+function BadgesScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
   const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();

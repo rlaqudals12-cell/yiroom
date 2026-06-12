@@ -155,7 +155,7 @@ function KoreanTerms({ colors }: TermsProps) {
         <SectionTitle colors={colors}>제4조 (서비스의 내용)</SectionTitle>
         <Paragraph colors={colors}>회사가 제공하는 서비스는 다음과 같습니다:</Paragraph>
         <BulletItem colors={colors}>
-          AI 기반 분석 서비스 (퍼스널컬러, 피부, 체형, 헤어, 메이크업, 구강건강)
+          AI 기반 분석 서비스 (퍼스널컬러, 피부, 체형, 헤어, 메이크업)
         </BulletItem>
         <BulletItem colors={colors}>운동 및 영양 관리 서비스</BulletItem>
         <BulletItem colors={colors}>AI 웰니스 코칭 서비스</BulletItem>
@@ -288,7 +288,7 @@ function EnglishTerms({ colors }: TermsProps) {
         <SectionTitle colors={colors}>Article 4. Service Description</SectionTitle>
         <Paragraph colors={colors}>The Company provides the following services:</Paragraph>
         <BulletItem colors={colors}>
-          AI-based analysis services (personal color, skin, body type, hair, makeup, oral health)
+          AI-based analysis services (personal color, skin, body type, hair, makeup)
         </BulletItem>
         <BulletItem colors={colors}>Workout and nutrition management services</BulletItem>
         <BulletItem colors={colors}>AI wellness coaching services</BulletItem>

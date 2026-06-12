@@ -19,6 +19,7 @@ import {
   AnalysisErrorState,
   ResultLayout,
   ColorPalette,
+  ColorHarmonyGuide,
   MetricBar,
   DrapingPreview,
   useAnalysisStyles,
@@ -314,6 +315,17 @@ function SummaryTab({ season, accent, colors }: TabProps): React.JSX.Element {
           <ColorPalette colors={bestColorItems} columns={3} animated testID="pc-best-colors" />
         </GradientCard>
       </Animated.View>
+
+      {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (ADR-105, 웹과 동일) */}
+      {season.bestColors.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+          <ColorHarmonyGuide
+            baseHex={season.bestColors[0]}
+            style={localStyles.sectionCard}
+            testID="pc-color-harmony-guide"
+          />
+        </Animated.View>
+      )}
 
       <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
         <GradientCard variant="personalColor" style={localStyles.sectionCard}>

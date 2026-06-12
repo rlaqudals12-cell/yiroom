@@ -152,29 +152,7 @@ export default function AnalysisLayout(): React.JSX.Element {
         }}
       />
       <Stack.Screen name="makeup/history" options={{ title: '메이크업 이력' }} />
-      {/* OH-1 구강건강 분석 */}
-      <Stack.Screen
-        name="oral-health/index"
-        options={{
-          title: '구강건강 분석',
-        }}
-      />
-      <Stack.Screen
-        name="oral-health/camera"
-        options={{
-          title: '사진 촬영',
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-        }}
-      />
-      <Stack.Screen
-        name="oral-health/result"
-        options={{
-          title: '분석 결과',
-          animation: 'fade_from_bottom',
-        }}
-      />
-      <Stack.Screen name="oral-health/history" options={{ title: '구강건강 이력' }} />
+      {/* OH-1 구강건강: ADR-098로 완전 제거됨 — 화면 파일이 없으므로 등록하지 않음 */}
       {/* 분석 이력 */}
       <Stack.Screen
         name="history/index"

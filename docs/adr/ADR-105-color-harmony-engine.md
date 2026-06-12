@@ -83,5 +83,6 @@ RGB 회전이 아닌 LCh 회전이 색채학적으로 정확(지각 균등성).
 
 - 원리: `docs/principles/color-science.md §8 색상 조화 이론`
 - 스펙: `docs/specs/SDD-COLOR-HARMONY.md`
-- 코드: `lib/color/harmony.ts`, `lib/analysis/personal-color/palette.ts` (`generateTonePaletteV2`), `components/analysis/ColorHarmonyGuide.tsx`
+- 코드(웹): `lib/color/harmony.ts`, `lib/analysis/personal-color/palette.ts` (`generateTonePaletteV2`), `components/analysis/ColorHarmonyGuide.tsx`
+- 코드(모바일, 2026-06-12 포팅): `apps/mobile/lib/color/harmony.ts`, `apps/mobile/components/analysis/ColorHarmonyGuide.tsx` (PC 결과 요약 탭)
 - 선행: ADR-066 (색공간 SSOT 통합), ADR-098 (정체성 5축)

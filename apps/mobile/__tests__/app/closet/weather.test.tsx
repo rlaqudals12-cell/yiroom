@@ -20,28 +20,66 @@ jest.mock('react-native-reanimated', () => {
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
-    FadeInUp: createChainable(), FadeIn: createChainable(), FadeInDown: createChainable(),
-    ZoomIn: createChainable(), SlideInRight: createChainable(), SlideInLeft: createChainable(),
-    Easing: { out: () => ({}), exp: {}, bezier: () => ({}), linear: {}, ease: {}, in: () => ({}), inOut: () => ({}) },
+    FadeInUp: createChainable(),
+    FadeIn: createChainable(),
+    FadeInDown: createChainable(),
+    ZoomIn: createChainable(),
+    SlideInRight: createChainable(),
+    SlideInLeft: createChainable(),
+    Easing: {
+      out: () => ({}),
+      exp: {},
+      bezier: () => ({}),
+      linear: {},
+      ease: {},
+      in: () => ({}),
+      inOut: () => ({}),
+    },
     useSharedValue: (v: unknown) => ({ value: v }),
     useAnimatedStyle: () => ({}),
-    withTiming: (v: unknown) => v, withSpring: (v: unknown) => v, withDelay: (_d: unknown, v: unknown) => v,
+    withTiming: (v: unknown) => v,
+    withSpring: (v: unknown) => v,
+    withDelay: (_d: unknown, v: unknown) => v,
   };
 });
 
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
+}));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
   return {
-    SafeAreaView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    SafeAreaView: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
 
-jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
-  useLocalSearchParams: () => ({}),
+jest.mock('expo-router', () => {
+  const { View } = require('react-native');
+  return {
+    useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
+    useLocalSearchParams: () => ({}),
+    Redirect: ({ href }: { href: string }) => <View testID="redirect" accessibilityLabel={href} />,
+  };
+});
+
+// ADR-098 §2.4.2: WEATHER 게이팅 — 렌더링 검증을 위해 기본 ON, 게이팅 테스트에서 OFF로 전환
+jest.mock('@yiroom/shared', () => ({
+  FEATURE_FLAGS: {
+    WELLNESS_PHASE2: false,
+    CLOSET_INTEGRATION: false,
+    WEATHER: true,
+    SOCIAL_FEED: false,
+    BADGES: false,
+  },
 }));
 
 jest.mock('../../../lib/animations', () => ({
@@ -54,8 +92,12 @@ jest.mock('../../../lib/animations', () => ({
 jest.mock('../../../lib/theme', () => ({
   useTheme: () => ({
     colors: {
-      background: '#fff', foreground: '#000', card: '#f5f5f5', border: '#e0e0e0',
-      mutedForeground: '#888', secondary: '#f0f0f0',
+      background: '#fff',
+      foreground: '#000',
+      card: '#f5f5f5',
+      border: '#e0e0e0',
+      mutedForeground: '#888',
+      secondary: '#f0f0f0',
     },
     brand: { primary: '#6366f1', primaryForeground: '#fff' },
     spacing: { xxs: 2, xs: 4, sm: 8, smx: 12, md: 16, lg: 24, xl: 32 },
@@ -73,8 +115,12 @@ jest.mock('../../../lib/theme', () => ({
 jest.mock('../../../components/ui', () => {
   const { View } = require('react-native');
   return {
-    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string }) => (
+      <View testID={testID}>{children}</View>
+    ),
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
   };
 });
 
@@ -103,5 +149,20 @@ describe('WeatherOutfitScreen 렌더링', () => {
     expect(getByText('캐주얼 외출룩')).toBeTruthy();
     expect(getByText('오피스 룩')).toBeTruthy();
     expect(getByText('내 옷장에서 선택하기')).toBeTruthy();
+  });
+});
+
+describe('WEATHER 게이팅 (ADR-098 §2.4.2)', () => {
+  const { FEATURE_FLAGS } = jest.requireMock('@yiroom/shared');
+
+  afterEach(() => {
+    FEATURE_FLAGS.WEATHER = true;
+  });
+
+  it('WEATHER=false면 스타일 탭으로 리다이렉트한다', () => {
+    FEATURE_FLAGS.WEATHER = false;
+    const { getByTestId, queryByText } = renderWithTheme(<WeatherOutfitScreen />);
+    expect(getByTestId('redirect')).toBeTruthy();
+    expect(queryByText('오늘의 추천 코디')).toBeNull();
   });
 });

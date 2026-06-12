@@ -3,7 +3,8 @@
  *
  * 현재 날씨와 기온에 맞는 코디를 추천한다.
  */
-import { useRouter } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, useRouter } from 'expo-router';
 import { View, Text, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -50,6 +51,11 @@ const MOCK_OUTFITS: WeatherOutfit[] = [
 export default function WeatherOutfitScreen(): React.ReactElement {
   const router = useRouter();
   const { colors, brand, spacing, radii, typography, status, module: moduleColors } = useTheme();
+
+  // ADR-098 §2.4.2 기능 과잉 정리: 날씨 코디 숨김 (코드 유지, WEATHER=true 시 복원)
+  if (!FEATURE_FLAGS.WEATHER) {
+    return <Redirect href="/(tabs)/style" />;
+  }
 
   const getTemperatureColor = (temp: number): string => {
     if (temp >= 28) return status.error;

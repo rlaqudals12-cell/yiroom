@@ -3,8 +3,9 @@
  * 특정 피드 아이템의 댓글 목록 + 댓글 작성
  */
 import { useUser } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -32,7 +33,15 @@ interface Comment {
   createdAt: Date;
 }
 
-export default function CommentsScreen(): React.JSX.Element {
+// ADR-098 §2.4.2 기능 과잉 정리: 소셜 피드 숨김 (코드 유지, SOCIAL_FEED=true 시 복원)
+export default function CommentsScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.SOCIAL_FEED) {
+    return <Redirect href="/(tabs)" />;
+  }
+  return <CommentsScreen />;
+}
+
+function CommentsScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { activityId } = useLocalSearchParams<{ activityId: string }>();
   const { user } = useUser();

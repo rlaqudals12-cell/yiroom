@@ -15,17 +15,14 @@ import { staggeredEntry } from '../../lib/animations';
 import { useDailyCapsule, useBeautyProfile } from '../../lib/capsule/hooks';
 import { useTheme } from '../../lib/theme';
 
-// 도메인 목록 (표시 순서)
+// 도메인 목록 (표시 순서) — ADR-098: 시각 정체성 5축+패션만 (영양/운동/구강 제외, 웹과 동일 6개)
 const DOMAINS = [
   { id: 'skin', name: '스킨케어', emoji: '💧' },
   { id: 'fashion', name: '패션', emoji: '👗' },
-  { id: 'nutrition', name: '영양', emoji: '🥗' },
-  { id: 'workout', name: '운동', emoji: '💪' },
   { id: 'hair', name: '헤어', emoji: '💇' },
   { id: 'makeup', name: '메이크업', emoji: '💄' },
   { id: 'personal-color', name: '퍼스널컬러', emoji: '🎨' },
-  { id: 'oral', name: '구강건강', emoji: '🦷' },
-  { id: 'body', name: '바디케어', emoji: '🧘' },
+  { id: 'body', name: '체형', emoji: '🧘' },
 ] as const;
 
 export default function CapsuleDashboardScreen(): React.JSX.Element {
@@ -43,9 +40,9 @@ export default function CapsuleDashboardScreen(): React.JSX.Element {
     profile.refresh();
   }, [daily.fetchToday, profile.refresh]);
 
-  // 프로필 완성도 (완료 모듈 / 전체 모듈)
+  // 프로필 완성도 (완료 모듈 / 전체 모듈) — ADR-098: 6개 도메인 기준
   const completedCount = profile.profile?.completedModules.length ?? 0;
-  const totalModules = 9;
+  const totalModules = 6;
   const profileLevel = profile.profile?.personalizationLevel ?? 0;
 
   return (

@@ -33,6 +33,12 @@ jest.mock('expo-router', () => ({
     Screen: 'Screen',
   },
   Slot: 'Slot',
+  // 게이팅 가드(ADR-098) 검증용 — href를 accessibilityLabel로 노출
+  Redirect: ({ href }) => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return React.createElement(View, { testID: 'redirect', accessibilityLabel: String(href) });
+  },
 }));
 
 // =============================================================================
@@ -122,9 +128,7 @@ jest.mock('@supabase/supabase-js', () => ({
     },
     storage: {
       from: jest.fn(() => ({
-        upload: jest
-          .fn()
-          .mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        upload: jest.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
         getPublicUrl: jest.fn(() => ({
           data: { publicUrl: 'https://example.com/test.jpg' },
         })),
@@ -187,17 +191,14 @@ if (Platform && !Platform.OS) {
 // =============================================================================
 // AccessibilityInfo 모킹
 // =============================================================================
-jest.mock(
-  'react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo',
-  () => ({
-    isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
-    isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
-    isBoldTextEnabled: jest.fn().mockResolvedValue(false),
-    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-    announceForAccessibility: jest.fn(),
-    setAccessibilityFocus: jest.fn(),
-  })
-);
+jest.mock('react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo', () => ({
+  isScreenReaderEnabled: jest.fn().mockResolvedValue(false),
+  isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
+  isBoldTextEnabled: jest.fn().mockResolvedValue(false),
+  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  announceForAccessibility: jest.fn(),
+  setAccessibilityFocus: jest.fn(),
+}));
 
 // =============================================================================
 // AsyncStorage 모킹
@@ -221,9 +222,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     return Promise.resolve();
   }),
   multiGet: jest.fn((keys) => {
-    return Promise.resolve(
-      keys.map((key) => [key, mockAsyncStorage.get(key) || null])
-    );
+    return Promise.resolve(keys.map((key) => [key, mockAsyncStorage.get(key) || null]));
   }),
   getAllKeys: jest.fn(() => {
     return Promise.resolve(Array.from(mockAsyncStorage.keys()));
@@ -277,9 +276,7 @@ jest.mock('expo-linking', () => ({
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
-  getExpoPushTokenAsync: jest
-    .fn()
-    .mockResolvedValue({ data: 'ExponentPushToken[mock]' }),
+  getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: 'ExponentPushToken[mock]' }),
   setNotificationHandler: jest.fn(),
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   addNotificationResponseReceivedListener: jest.fn(() => ({
@@ -300,12 +297,8 @@ jest.mock('expo-image-picker', () => ({
     assets: [{ uri: 'file://mock-camera.jpg', width: 100, height: 100 }],
   }),
   MediaTypeOptions: { Images: 'Images', Videos: 'Videos', All: 'All' },
-  requestMediaLibraryPermissionsAsync: jest
-    .fn()
-    .mockResolvedValue({ status: 'granted' }),
-  requestCameraPermissionsAsync: jest
-    .fn()
-    .mockResolvedValue({ status: 'granted' }),
+  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestCameraPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
 }));
 
 // =============================================================================
@@ -422,12 +415,28 @@ jest.mock('react-native-gesture-handler', () => {
   const createGestureMock = () => {
     const gesture = {};
     const methods = [
-      'onStart', 'onUpdate', 'onEnd', 'onFinalize', 'onBegin',
-      'onTouchesBegan', 'onTouchesEnded', 'onTouchesCancelled', 'onTouchesMove',
-      'enabled', 'minDistance', 'minPointers', 'maxPointers',
-      'activeOffsetX', 'activeOffsetY', 'failOffsetX', 'failOffsetY',
-      'hitSlop', 'shouldCancelWhenOutside', 'simultaneousWithExternalGesture',
-      'requireExternalGestureToFail', 'withTestId',
+      'onStart',
+      'onUpdate',
+      'onEnd',
+      'onFinalize',
+      'onBegin',
+      'onTouchesBegan',
+      'onTouchesEnded',
+      'onTouchesCancelled',
+      'onTouchesMove',
+      'enabled',
+      'minDistance',
+      'minPointers',
+      'maxPointers',
+      'activeOffsetX',
+      'activeOffsetY',
+      'failOffsetX',
+      'failOffsetY',
+      'hitSlop',
+      'shouldCancelWhenOutside',
+      'simultaneousWithExternalGesture',
+      'requireExternalGestureToFail',
+      'withTestId',
     ];
     methods.forEach((method) => {
       gesture[method] = jest.fn(() => gesture);
@@ -517,11 +526,7 @@ console.warn = (...args) => {
 
 console.error = (...args) => {
   // 테스트 중 무시할 에러 패턴
-  const ignorePatterns = [
-    'Warning: ReactDOM.render',
-    'Warning: An update to',
-    'act(...)',
-  ];
+  const ignorePatterns = ['Warning: ReactDOM.render', 'Warning: An update to', 'act(...)'];
 
   if (ignorePatterns.some((pattern) => args[0]?.includes?.(pattern))) {
     return;

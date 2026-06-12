@@ -23,7 +23,7 @@ import {
 } from '../../../hooks/useAnalysisHistory';
 import { useTheme, spacing, radii, typography } from '../../../lib/theme';
 
-// 모듈 필터 탭
+// 모듈 필터 탭 — ADR-098: 5축(PC/S/C/H/M)만 노출. oral(제거)·posture(숨김) 탭 제외
 const MODULE_TABS: { key: AnalysisModuleType | 'all'; label: string }[] = [
   { key: 'all', label: '전체' },
   { key: 'personal-color', label: '컬러' },
@@ -31,8 +31,6 @@ const MODULE_TABS: { key: AnalysisModuleType | 'all'; label: string }[] = [
   { key: 'body', label: '체형' },
   { key: 'hair', label: '헤어' },
   { key: 'makeup', label: '메이크업' },
-  { key: 'oral-health', label: '구강' },
-  { key: 'posture', label: '자세' },
 ];
 
 // 기간 필터 탭

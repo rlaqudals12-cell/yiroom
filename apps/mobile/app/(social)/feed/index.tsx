@@ -3,9 +3,10 @@
  * 소셜 타임라인 (내 피드 / 친구 피드 / 전체)
  */
 
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import {
   View,
@@ -32,7 +33,15 @@ const TABS: { id: FeedTab; label: string }[] = [
   { id: 'all', label: '전체' },
 ];
 
-export default function FeedScreen() {
+// ADR-098 §2.4.2 기능 과잉 정리: 소셜 피드 숨김 (코드 유지, SOCIAL_FEED=true 시 복원)
+export default function FeedScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.SOCIAL_FEED) {
+    return <Redirect href="/(tabs)" />;
+  }
+  return <FeedScreen />;
+}
+
+function FeedScreen() {
   const { colors, status, module: moduleColors } = useTheme();
   const router = useRouter();
 

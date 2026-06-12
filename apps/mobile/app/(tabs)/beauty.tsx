@@ -3,29 +3,10 @@
  * 피부 프로필 + 필터 + 제품 피드 + 분석 모듈 네비게이션
  */
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import {
-  Palette,
-  Droplets,
-  Calendar,
-  Scissors,
-  Brush,
-  SmilePlus,
-  Sparkles,
-} from 'lucide-react-native';
+import { Palette, Droplets, Calendar, Scissors, Brush, Sparkles } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-
-// 통합 큐레이션 카테고리 → 모바일 뷰티 필터 키 매핑
-// 큐레이션의 lip/base는 모바일 필터에서 'makeup'으로, skincare는 그대로.
-const CURATION_CATEGORY_MAP: Record<string, string> = {
-  skincare: 'skincare',
-  lip: 'makeup',
-  base: 'makeup',
-  bodycare: 'bodycare',
-  haircare: 'haircare',
-  suncare: 'suncare',
-};
 
 import {
   SkinProfileCard,
@@ -53,6 +34,17 @@ import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
+
+// 통합 큐레이션 카테고리 → 모바일 뷰티 필터 키 매핑
+// 큐레이션의 lip/base는 모바일 필터에서 'makeup'으로, skincare는 그대로.
+const CURATION_CATEGORY_MAP: Record<string, string> = {
+  skincare: 'skincare',
+  lip: 'makeup',
+  base: 'makeup',
+  bodycare: 'bodycare',
+  haircare: 'haircare',
+  suncare: 'suncare',
+};
 
 export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
@@ -401,17 +393,6 @@ export default function BeautyTab(): React.JSX.Element {
               description="얼굴형과 톤에 맞는 메이크업 스타일을 찾아보세요"
               onPress={() => router.push('/(analysis)/makeup')}
               testID="menu-makeup"
-            />
-          </Animated.View>
-
-          <Animated.View entering={staggeredEntry(5)}>
-            <MenuCard
-              icon={<SmilePlus size={20} color={moduleColors.oralHealth.dark} />}
-              iconBg={moduleColors.oralHealth.light + ICON_BG_OPACITY}
-              title="구강건강 분석"
-              description="치아 색상과 잇몸 건강을 체크해요"
-              onPress={() => router.push('/(analysis)/oral-health')}
-              testID="menu-oral-health"
             />
           </Animated.View>
         </GlassCard>

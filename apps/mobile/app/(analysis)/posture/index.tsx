@@ -3,8 +3,9 @@
  *
  * V3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient CTA
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -25,6 +26,11 @@ const GRADIENT_COLORS = ['#60A5FA', '#3B82F6'] as const;
 export default function PostureAnalysisScreen() {
   const { colors, module: moduleColors } = useTheme();
   const accent = moduleColors.posture;
+
+  // ADR-098: posture는 시각 정체성 5축 외(W-1 인접) — W/N과 동일 정책으로 진입 차단 (코드 유지)
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   const handleStart = () => {
     router.push('/(analysis)/posture/camera');
