@@ -61,23 +61,23 @@ ALTER TABLE integrated_analysis_sessions ENABLE ROW LEVEL SECURITY;
 -- 본인 데이터만 조회 ((SELECT ...) 래핑으로 InitPlan 캐싱)
 CREATE POLICY "integrated_sessions_select_own" ON integrated_analysis_sessions
   FOR SELECT
-  USING (clerk_user_id = (SELECT auth.get_user_id()));
+  USING (clerk_user_id = (SELECT auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 삽입
 CREATE POLICY "integrated_sessions_insert_own" ON integrated_analysis_sessions
   FOR INSERT
-  WITH CHECK (clerk_user_id = (SELECT auth.get_user_id()));
+  WITH CHECK (clerk_user_id = (SELECT auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 수정 (status/axes 업데이트 허용)
 CREATE POLICY "integrated_sessions_update_own" ON integrated_analysis_sessions
   FOR UPDATE
-  USING (clerk_user_id = (SELECT auth.get_user_id()))
-  WITH CHECK (clerk_user_id = (SELECT auth.get_user_id()));
+  USING (clerk_user_id = (SELECT auth.jwt() ->> 'sub'))
+  WITH CHECK (clerk_user_id = (SELECT auth.jwt() ->> 'sub'));
 
 -- 본인 데이터만 삭제
 CREATE POLICY "integrated_sessions_delete_own" ON integrated_analysis_sessions
   FOR DELETE
-  USING (clerk_user_id = (SELECT auth.get_user_id()));
+  USING (clerk_user_id = (SELECT auth.jwt() ->> 'sub'));
 
 -- 서비스 역할 전체 접근 (API Route가 service role로 DB 저장)
 CREATE POLICY "integrated_sessions_service_role_all" ON integrated_analysis_sessions

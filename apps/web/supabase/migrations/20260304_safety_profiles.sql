@@ -55,19 +55,19 @@ ALTER TABLE safety_profiles ENABLE ROW LEVEL SECURITY;
 -- 본인 데이터만 조회
 CREATE POLICY "safety_profiles_select_own" ON safety_profiles
   FOR SELECT
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 본인 데이터만 삽입
 CREATE POLICY "safety_profiles_insert_own" ON safety_profiles
   FOR INSERT
-  WITH CHECK (clerk_user_id = auth.get_user_id());
+  WITH CHECK (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 본인 데이터만 수정
 CREATE POLICY "safety_profiles_update_own" ON safety_profiles
   FOR UPDATE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = auth.jwt() ->> 'sub');
 
 -- 삭제 정책 (본인만)
 CREATE POLICY "safety_profiles_delete_own" ON safety_profiles
   FOR DELETE
-  USING (clerk_user_id = auth.get_user_id());
+  USING (clerk_user_id = auth.jwt() ->> 'sub');
