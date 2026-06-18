@@ -25,6 +25,18 @@ import type {
   HairAxisData,
   MakeupAxisData,
 } from './types';
+// ADR-107: 얼굴형 기반 헤어스타일 추천기 — C×H 인사이트에 구체 컷·피할스타일 결합
+import { recommendHairstyles, getStylesToAvoid, type FaceShapeType } from '@/lib/analysis/hair';
+
+const VALID_FACE_SHAPES: readonly string[] = [
+  'oval',
+  'round',
+  'square',
+  'heart',
+  'oblong',
+  'diamond',
+  'rectangle',
+];
 
 // ============================================
 // 1. 타입
@@ -137,6 +149,7 @@ function bodyXhair(
   hair: { faceShape: string }
 ): Pick<CrossInsight, 'title' | 'body'> {
   const faceKey = hair.faceShape.toLowerCase();
+  // 설명형 가이드 (인사이트 한 줄용 — 얼굴형 의도 설명)
   let hairStyle = '레이어드 컷';
   if (faceKey.includes('round')) hairStyle = '얼굴선을 길게 빼는 사이드 컷';
   else if (faceKey.includes('square')) hairStyle = '턱선 부드럽게 감싸는 웨이브';
@@ -146,9 +159,19 @@ function bodyXhair(
   else if (faceKey.includes('oblong') || faceKey.includes('long'))
     hairStyle = '가로 볼륨을 만드는 뱅';
 
+  // 구체 추천: 얼굴형이 유효하면 추천기에서 톱 스타일 + 피할 스타일 결합 (ADR-107)
+  let example = '';
+  let avoid = '';
+  if (VALID_FACE_SHAPES.includes(faceKey)) {
+    const top = recommendHairstyles(faceKey as FaceShapeType, { maxResults: 1 })[0];
+    if (top) example = ` 예: ${top.name}.`;
+    const avoidList = getStylesToAvoid(faceKey as FaceShapeType);
+    if (avoidList[0]) avoid = ` ${avoidList[0]}은 피하세요.`;
+  }
+
   return {
     title: `${body.type} × ${hairStyle}`,
-    body: `${body.type} 실루엣과 ${hair.faceShape}형 얼굴의 균형은 ${hairStyle}이(가) 완성해요.`,
+    body: `${body.type} 실루엣과 ${hair.faceShape || '내'} 얼굴형 균형은 ${hairStyle}이(가) 완성해요.${example}${avoid}`,
   };
 }
 
