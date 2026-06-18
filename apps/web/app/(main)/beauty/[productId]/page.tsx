@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   Sparkles,
   ExternalLink,
-  ChevronRight,
   Loader2,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
@@ -46,41 +45,6 @@ const defaultProduct = {
   description: '',
 };
 
-// 리뷰 데이터
-const reviews = [
-  {
-    id: '1',
-    skinType: '복합성',
-    rating: 5,
-    content: '건조함 없이 촉촉해요! 비타민C 세럼 중에 제일 순해요.',
-    date: '2024-12-20',
-    helpful: 23,
-  },
-  {
-    id: '2',
-    skinType: '지성',
-    rating: 4,
-    content: '흡수가 빨라서 좋아요. 저녁에만 사용하고 있어요.',
-    date: '2024-12-18',
-    helpful: 15,
-  },
-  {
-    id: '3',
-    skinType: '민감성',
-    rating: 5,
-    content: '예민한 피부인데도 자극 없이 잘 사용하고 있어요!',
-    date: '2024-12-15',
-    helpful: 31,
-  },
-];
-
-// 구매 링크
-const purchaseLinks = [
-  { store: '올리브영', price: 32000, url: 'https://oliveyoung.co.kr' },
-  { store: '쿠팡', price: 29900, url: 'https://coupang.com' },
-  { store: '네이버', price: 30500, url: 'https://shopping.naver.com' },
-];
-
 export default function BeautyProductDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -89,8 +53,6 @@ export default function BeautyProductDetailPage() {
   const productId = params.productId as string;
 
   const [isLiked, setIsLiked] = useState(false);
-  const [filterBySkinType, setFilterBySkinType] = useState(true);
-  const [userSkinType, setUserSkinType] = useState('복합성');
   const [userSkinTypeRaw, setUserSkinTypeRaw] = useState<SkinType | null>(null);
   const [product, setProduct] = useState<CosmeticProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -163,15 +125,6 @@ export default function BeautyProductDetailPage() {
 
         if (data?.skin_type) {
           setUserSkinTypeRaw(data.skin_type as SkinType);
-          // 한글 매핑
-          const skinTypeMap: Record<string, string> = {
-            dry: '건성',
-            oily: '지성',
-            combination: '복합성',
-            sensitive: '민감성',
-            normal: '중성',
-          };
-          setUserSkinType(skinTypeMap[data.skin_type] || data.skin_type);
         }
       } catch (err) {
         console.error('[BeautyDetail] Skin analysis fetch error:', err);
@@ -220,10 +173,6 @@ export default function BeautyProductDetailPage() {
       description: '',
     };
   }, [product]);
-
-  const filteredReviews = filterBySkinType
-    ? reviews.filter((r) => r.skinType === userSkinType)
-    : reviews;
 
   // 로딩 중
   if (isLoading) {
@@ -364,93 +313,22 @@ export default function BeautyProductDetailPage() {
         <FadeInUp delay={3}>
           <IngredientAnalysisSection productId={productId} />
         </FadeInUp>
-
-        {/* 리뷰 */}
-        <FadeInUp delay={4}>
-          <section className="bg-card rounded-2xl border p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">리뷰</h3>
-              <button
-                onClick={() => setFilterBySkinType(!filterBySkinType)}
-                className={cn(
-                  'flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition-colors',
-                  filterBySkinType
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                내 피부 타입만 보기 ({userSkinType})
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {filteredReviews.length > 0 ? (
-                filteredReviews.map((review) => (
-                  <div key={review.id} className="p-3 bg-muted/50 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                        {review.skinType}
-                      </span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              'w-3 h-3',
-                              i < review.rating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-muted-foreground'
-                            )}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{review.date}</span>
-                    </div>
-                    <p className="text-sm text-foreground">{review.content}</p>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      도움됨 {review.helpful}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  내 피부 타입 리뷰가 아직 없어요
-                </p>
-              )}
-            </div>
-
-            <button
-              onClick={() => router.push(`/beauty/${productId}/reviews`)}
-              className="w-full mt-4 text-center text-sm text-primary hover:underline flex items-center justify-center gap-1"
-            >
-              리뷰 더보기 ({displayProduct.reviewCount.toLocaleString()})
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </section>
-        </FadeInUp>
       </div>
 
-      {/* 하단 구매 바 */}
+      {/* 하단 구매 바 — 외부 구매처 검색 연결 (가짜 가격비교·리뷰는 실데이터 연동 전까지 비표시) */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="flex gap-2 mb-3">
-          {purchaseLinks.map((link) => (
-            <a
-              key={link.store}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex flex-col items-center gap-1 p-2 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-            >
-              <span className="text-xs text-muted-foreground">{link.store}</span>
-              <span className="text-sm font-medium">{link.price.toLocaleString()}원</span>
-            </a>
-          ))}
-        </div>
-        <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+        <a
+          href={`https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=${encodeURIComponent(
+            displayProduct.name
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+        >
           <ShoppingCart className="w-5 h-5" />
-          최저가 구매하기 ({Math.min(...purchaseLinks.map((l) => l.price)).toLocaleString()}원)
+          구매처에서 보기
           <ExternalLink className="w-4 h-4" />
-        </button>
+        </a>
       </div>
     </div>
   );
