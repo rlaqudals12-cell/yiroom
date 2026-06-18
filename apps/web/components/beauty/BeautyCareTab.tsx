@@ -101,12 +101,8 @@ export default function BeautyCareTab({
           <p className="text-sm text-muted-foreground">
             비타민C, 콜라겐, 오메가3로 피부 속부터 관리해 보는 건 어때요?
           </p>
-          <button
-            onClick={() => router.push('/beauty?category=supplements')}
-            className="mt-3 text-sm text-green-700 dark:text-green-400 font-medium hover:underline min-h-[44px] inline-flex items-center"
-          >
-            영양제 보러가기 →
-          </button>
+          {/* '영양제 보러가기' 링크 제거: N-1(영양) 숨김 + supplement DB 미적재로 빈 결과 누수.
+              S-1 이너뷰티 하위 기능으로 부활 시 재연결 (ADR-098 / demo-polish-plan). */}
         </section>
       </FadeInUp>
 

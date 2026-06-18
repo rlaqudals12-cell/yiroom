@@ -1,0 +1,595 @@
+{
+  "summary": "i18n 마이그레이션 증명 배치 — 핵심 페이지 4개를 next-intl로 전환, 키+번역 구조화 반환",
+  "agentCount": 4,
+  "logs": [],
+  "result": [
+    {
+      "file": "app/(main)/dashboard/page.tsx",
+      "namespace": "undefined",
+      "componentType": "server",
+      "status": "no_korean",
+      "keys": [],
+      "notes": "리다이렉트 전용 컴포넌트로 사용자 노출 텍스트가 없음. 유일한 한국어는 JSDoc 주석(추출 제외 대상)이므로 변경 없음."
+    },
+    {
+      "file": "app/(main)/capsule/page.tsx",
+      "namespace": "undefined",
+      "componentType": "client",
+      "status": "migrated",
+      "keys": [
+        {
+          "key": "domainSkin",
+          "ko": "스킨케어",
+          "en": "Skincare",
+          "ja": "スキンケア",
+          "zh": "护肤"
+        },
+        {
+          "key": "domainFashion",
+          "ko": "패션",
+          "en": "Fashion",
+          "ja": "ファッション",
+          "zh": "时尚"
+        },
+        {
+          "key": "domainHair",
+          "ko": "헤어",
+          "en": "Hair",
+          "ja": "ヘア",
+          "zh": "发型"
+        },
+        {
+          "key": "domainMakeup",
+          "ko": "메이크업",
+          "en": "Makeup",
+          "ja": "メイク",
+          "zh": "彩妆"
+        },
+        {
+          "key": "domainPersonalColor",
+          "ko": "퍼스널 컬러",
+          "en": "Personal Color",
+          "ja": "パーソナルカラー",
+          "zh": "个人色彩"
+        },
+        {
+          "key": "domainBody",
+          "ko": "체형",
+          "en": "Body Shape",
+          "ja": "体型",
+          "zh": "体型"
+        },
+        {
+          "key": "loadError",
+          "ko": "캡슐 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.",
+          "en": "Couldn't load your capsule data. Please try again in a moment.",
+          "ja": "カプセルデータを読み込めませんでした。しばらくしてからもう一度お試しください。",
+          "zh": "无法加载胶囊数据。请稍后重试。"
+        },
+        {
+          "key": "loginRequired",
+          "ko": "로그인이 필요해요",
+          "en": "Login required",
+          "ja": "ログインが必要です",
+          "zh": "需要登录"
+        },
+        {
+          "key": "loginRequiredDesc",
+          "ko": "캡슐 워드로브를 이용하려면 먼저 로그인해주세요.",
+          "en": "Please log in first to use your capsule wardrobe.",
+          "ja": "カプセルワードローブを利用するには、まずログインしてください。",
+          "zh": "请先登录以使用胶囊衣橱。"
+        },
+        {
+          "key": "login",
+          "ko": "로그인하기",
+          "en": "Log in",
+          "ja": "ログイン",
+          "zh": "登录"
+        },
+        {
+          "key": "errorTitle",
+          "ko": "문제가 발생했어요",
+          "en": "Something went wrong",
+          "ja": "問題が発生しました",
+          "zh": "出现了问题"
+        },
+        {
+          "key": "retry",
+          "ko": "다시 시도하기",
+          "en": "Try again",
+          "ja": "もう一度試す",
+          "zh": "重试"
+        },
+        {
+          "key": "title",
+          "ko": "캡슐 워드로브",
+          "en": "Capsule Wardrobe",
+          "ja": "カプセルワードローブ",
+          "zh": "胶囊衣橱"
+        },
+        {
+          "key": "subtitle",
+          "ko": "나에게 꼭 맞는 뷰티·스타일 캡슐을 관리해요",
+          "en": "Manage the beauty and style capsule that's just right for you",
+          "ja": "あなたにぴったりのビューティー・スタイルカプセルを管理しましょう",
+          "zh": "管理最适合你的美妆与造型胶囊"
+        },
+        {
+          "key": "todayCapsule",
+          "ko": "오늘의 캡슐",
+          "en": "Today's Capsule",
+          "ja": "今日のカプセル",
+          "zh": "今日胶囊"
+        },
+        {
+          "key": "completedCount",
+          "ko": "{completed}/{total} 완료",
+          "en": "{completed}/{total} completed",
+          "ja": "{completed}/{total} 完了",
+          "zh": "已完成 {completed}/{total}"
+        },
+        {
+          "key": "getStarted",
+          "ko": "시작하기",
+          "en": "Get started",
+          "ja": "始める",
+          "zh": "开始"
+        },
+        {
+          "key": "gapTitle",
+          "ko": "부족한 영역이 있어요",
+          "en": "There are areas to fill in",
+          "ja": "不足している領域があります",
+          "zh": "有需要补充的领域"
+        },
+        {
+          "key": "gapSummary",
+          "ko": "{completed}/{total} 도메인 완성 · {gap}개 아이템 추가 필요",
+          "en": "{completed}/{total} domains complete · {gap} more items needed",
+          "ja": "{completed}/{total} ドメイン完成 · あと{gap}個のアイテムが必要",
+          "zh": "{completed}/{total} 个领域已完成 · 还需 {gap} 件单品"
+        },
+        {
+          "key": "completeTitle",
+          "ko": "캡슐이 완성되었어요!",
+          "en": "Your capsule is complete!",
+          "ja": "カプセルが完成しました!",
+          "zh": "你的胶囊已完成!"
+        },
+        {
+          "key": "completeDesc",
+          "ko": "모든 도메인의 캡슐이 최적 상태예요.",
+          "en": "Every domain's capsule is in its optimal state.",
+          "ja": "すべてのドメインのカプセルが最適な状態です。",
+          "zh": "所有领域的胶囊都处于最佳状态。"
+        }
+      ],
+      "notes": "Client component. Added `import { useTranslations } from 'next-intl';` and `const t = useTranslations('undefined');` at top of component body. The module-level DOMAINS array's `name` fields (rendered via {domain.name}) couldn't call t() at module scope, so they were converted to `nameKey` properties and resolved with `t(domain.nameKey)` at render time. Two dynamic strings use variable interpolation: completedCount ({completed}/{total} 완료) and gapSummary ({completed}/{total} 도메인 완성 · {gap}개 아이템 추가 필요 — originally split across two JSX lines, merged into one message). Remaining Korean in the file is only in code comments, which were intentionally left untouched."
+    },
+    {
+      "file": "app/(main)/beauty/page.tsx",
+      "namespace": "undefined",
+      "componentType": "client",
+      "status": "migrated",
+      "keys": [
+        {
+          "key": "pageTitle",
+          "ko": "뷰티 - 피부 맞춤 제품 추천",
+          "en": "Beauty - Personalized Skin Product Recommendations",
+          "ja": "ビューティー - 肌に合わせたおすすめ製品",
+          "zh": "美妆 - 肌肤定制产品推荐"
+        },
+        {
+          "key": "integratedBanner",
+          "ko": "통합 분석 결과를 바탕으로 추천하는 제품이에요",
+          "en": "These products are recommended based on your integrated analysis results",
+          "ja": "統合分析の結果をもとにおすすめする製品です",
+          "zh": "这些是根据综合分析结果为您推荐的产品"
+        },
+        {
+          "key": "mySkinProfile",
+          "ko": "내 피부 프로필",
+          "en": "My Skin Profile",
+          "ja": "私の肌プロフィール",
+          "zh": "我的肌肤档案"
+        },
+        {
+          "key": "mySkin",
+          "ko": "내 피부",
+          "en": "My Skin",
+          "ja": "私の肌",
+          "zh": "我的肌肤"
+        },
+        {
+          "key": "editSkinProfile",
+          "ko": "피부 프로필 수정",
+          "en": "Edit skin profile",
+          "ja": "肌プロフィールを編集",
+          "zh": "编辑肌肤档案"
+        },
+        {
+          "key": "edit",
+          "ko": "수정",
+          "en": "Edit",
+          "ja": "編集",
+          "zh": "编辑"
+        },
+        {
+          "key": "analyzePrompt",
+          "ko": "피부 분석하면 98% 맞춤 추천!",
+          "en": "Analyze your skin for 98% personalized recommendations!",
+          "ja": "肌を分析すれば98%パーソナライズされたおすすめ！",
+          "zh": "分析肌肤即可获得98%定制推荐！"
+        },
+        {
+          "key": "analyzePromptSub",
+          "ko": "내 피부에 딱 맞는 제품을 찾아드려요",
+          "en": "We'll find products that perfectly match your skin",
+          "ja": "あなたの肌にぴったりの製品を見つけます",
+          "zh": "为您找到最适合您肌肤的产品"
+        },
+        {
+          "key": "analyze",
+          "ko": "분석하기",
+          "en": "Analyze",
+          "ja": "分析する",
+          "zh": "开始分析"
+        },
+        {
+          "key": "beautyCategories",
+          "ko": "뷰티 카테고리",
+          "en": "Beauty categories",
+          "ja": "ビューティーカテゴリー",
+          "zh": "美妆分类"
+        },
+        {
+          "key": "tabRecommend",
+          "ko": "추천",
+          "en": "Recommend",
+          "ja": "おすすめ",
+          "zh": "推荐"
+        },
+        {
+          "key": "tabCare",
+          "ko": "케어",
+          "en": "Care",
+          "ja": "ケア",
+          "zh": "护理"
+        },
+        {
+          "key": "tabTrends",
+          "ko": "트렌드",
+          "en": "Trends",
+          "ja": "トレンド",
+          "zh": "趋势"
+        },
+        {
+          "key": "skinType_dry",
+          "ko": "건성",
+          "en": "Dry",
+          "ja": "乾燥肌",
+          "zh": "干性"
+        },
+        {
+          "key": "skinType_oily",
+          "ko": "지성",
+          "en": "Oily",
+          "ja": "脂性肌",
+          "zh": "油性"
+        },
+        {
+          "key": "skinType_combination",
+          "ko": "복합성",
+          "en": "Combination",
+          "ja": "混合肌",
+          "zh": "混合性"
+        },
+        {
+          "key": "skinType_sensitive",
+          "ko": "민감성",
+          "en": "Sensitive",
+          "ja": "敏感肌",
+          "zh": "敏感性"
+        },
+        {
+          "key": "skinType_normal",
+          "ko": "중성",
+          "en": "Normal",
+          "ja": "普通肌",
+          "zh": "中性"
+        },
+        {
+          "key": "skinConcern_hydration",
+          "ko": "보습",
+          "en": "Hydration",
+          "ja": "保湿",
+          "zh": "保湿"
+        },
+        {
+          "key": "skinConcern_whitening",
+          "ko": "미백",
+          "en": "Brightening",
+          "ja": "美白",
+          "zh": "美白"
+        },
+        {
+          "key": "skinConcern_pore",
+          "ko": "모공",
+          "en": "Pores",
+          "ja": "毛穴",
+          "zh": "毛孔"
+        },
+        {
+          "key": "skinConcern_soothing",
+          "ko": "진정",
+          "en": "Soothing",
+          "ja": "鎮静",
+          "zh": "舒缓"
+        },
+        {
+          "key": "skinConcern_acne",
+          "ko": "여드름",
+          "en": "Acne",
+          "ja": "ニキビ",
+          "zh": "痘痘"
+        },
+        {
+          "key": "skinConcern_wrinkle",
+          "ko": "주름",
+          "en": "Wrinkles",
+          "ja": "しわ",
+          "zh": "皱纹"
+        },
+        {
+          "key": "skinConcern_elasticity",
+          "ko": "탄력",
+          "en": "Elasticity",
+          "ja": "ハリ",
+          "zh": "弹性"
+        },
+        {
+          "key": "routineGentleCleanser",
+          "ko": "젠틀 클렌저",
+          "en": "Gentle Cleanser",
+          "ja": "ジェントルクレンザー",
+          "zh": "温和洁面乳"
+        },
+        {
+          "key": "routineHyaluronicToner",
+          "ko": "히알루론산 토너",
+          "en": "Hyaluronic Acid Toner",
+          "ja": "ヒアルロン酸トナー",
+          "zh": "玻尿酸爽肤水"
+        },
+        {
+          "key": "routineVitaminCSerum",
+          "ko": "비타민C 세럼",
+          "en": "Vitamin C Serum",
+          "ja": "ビタミンCセラム",
+          "zh": "维生素C精华"
+        },
+        {
+          "key": "routineHydratingCream",
+          "ko": "수분 크림",
+          "en": "Hydrating Cream",
+          "ja": "保湿クリーム",
+          "zh": "保湿面霜"
+        },
+        {
+          "key": "routineSpf50Sunscreen",
+          "ko": "SPF50+ 선크림",
+          "en": "SPF50+ Sunscreen",
+          "ja": "SPF50+ 日焼け止め",
+          "zh": "SPF50+ 防晒霜"
+        },
+        {
+          "key": "routineCleansingOil",
+          "ko": "클렌징 오일",
+          "en": "Cleansing Oil",
+          "ja": "クレンジングオイル",
+          "zh": "卸妆油"
+        },
+        {
+          "key": "routineFoamCleanser",
+          "ko": "폼 클렌저",
+          "en": "Foam Cleanser",
+          "ja": "フォームクレンザー",
+          "zh": "泡沫洁面乳"
+        },
+        {
+          "key": "routineExfoliatingToner",
+          "ko": "각질 케어 토너",
+          "en": "Exfoliating Toner",
+          "ja": "角質ケアトナー",
+          "zh": "去角质爽肤水"
+        },
+        {
+          "key": "routineRetinolSerum",
+          "ko": "레티놀 세럼",
+          "en": "Retinol Serum",
+          "ja": "レチノールセラム",
+          "zh": "视黄醇精华"
+        },
+        {
+          "key": "routineNightCream",
+          "ko": "나이트 크림",
+          "en": "Night Cream",
+          "ja": "ナイトクリーム",
+          "zh": "晚霜"
+        },
+        {
+          "key": "durationOneMinute",
+          "ko": "1분",
+          "en": "1 min",
+          "ja": "1分",
+          "zh": "1分钟"
+        },
+        {
+          "key": "durationTwoMinutes",
+          "ko": "2분",
+          "en": "2 min",
+          "ja": "2分",
+          "zh": "2分钟"
+        },
+        {
+          "key": "durationThirtySeconds",
+          "ko": "30초",
+          "en": "30 sec",
+          "ja": "30秒",
+          "zh": "30秒"
+        }
+      ],
+      "notes": "Client component. The module-level `skinTypes`/`skinConcerns` arrays held both id+Korean label; refactored to id-only arrays (`skinTypeIds`/`skinConcernIds`) at module scope and resolved labels via dynamic keys `t('skinType_<id>')` / `t('skinConcern_<id>')` inside the component, since useTranslations can only be called within the component. Mock skincare routine data (productName/duration) is rendered to users via child tabs, so it was migrated too; duration values were deduplicated into 3 shared keys (durationOneMinute/durationTwoMinutes/durationThirtySeconds). No template-literal dynamic strings. Comments, data-testid, className, and route paths were left untouched."
+    },
+    {
+      "file": "app/(main)/products/recommended/page.tsx",
+      "namespace": "undefined",
+      "componentType": "server",
+      "status": "migrated",
+      "keys": [
+        {
+          "key": "pageTitle",
+          "ko": "맞춤 추천",
+          "en": "For You",
+          "ja": "おすすめ",
+          "zh": "专属推荐"
+        },
+        {
+          "key": "pageDescription",
+          "ko": "내 분석 결과를 기반으로 추천된 제품이에요",
+          "en": "Products recommended based on your analysis results",
+          "ja": "あなたの分析結果に基づいておすすめした商品です",
+          "zh": "根据您的分析结果推荐的产品"
+        },
+        {
+          "key": "skincareTitle",
+          "ko": "내 피부에 맞는 스킨케어",
+          "en": "Skincare for Your Skin",
+          "ja": "あなたの肌に合うスキンケア",
+          "zh": "适合您肌肤的护肤品"
+        },
+        {
+          "key": "skincareLockedDescription",
+          "ko": "피부 분석을 완료하면 맞춤 스킨케어를 추천받을 수 있어요",
+          "en": "Complete your skin analysis to get personalized skincare recommendations",
+          "ja": "肌分析を完了すると、おすすめのスキンケアを受け取れます",
+          "zh": "完成肌肤分析后即可获得专属护肤品推荐"
+        },
+        {
+          "key": "skincareCtaLabel",
+          "ko": "피부 분석하기",
+          "en": "Analyze Skin",
+          "ja": "肌を分析する",
+          "zh": "开始肌肤分析"
+        },
+        {
+          "key": "makeupTitle",
+          "ko": "내 퍼스널 컬러에 맞는 메이크업",
+          "en": "Makeup for Your Personal Color",
+          "ja": "あなたのパーソナルカラーに合うメイク",
+          "zh": "适合您个人色彩的彩妆"
+        },
+        {
+          "key": "makeupLockedDescription",
+          "ko": "퍼스널컬러 진단을 완료하면 맞춤 메이크업을 추천받을 수 있어요",
+          "en": "Complete your personal color diagnosis to get personalized makeup recommendations",
+          "ja": "パーソナルカラー診断を完了すると、おすすめのメイクを受け取れます",
+          "zh": "完成个人色彩诊断后即可获得专属彩妆推荐"
+        },
+        {
+          "key": "makeupCtaLabel",
+          "ko": "퍼스널컬러 진단하기",
+          "en": "Diagnose Personal Color",
+          "ja": "パーソナルカラーを診断する",
+          "zh": "开始个人色彩诊断"
+        },
+        {
+          "key": "supplementTitle",
+          "ko": "운동 목표에 맞는 영양제",
+          "en": "Supplements for Your Workout Goals",
+          "ja": "運動目標に合うサプリメント",
+          "zh": "契合运动目标的营养补充剂"
+        },
+        {
+          "key": "supplementLockedDescription",
+          "ko": "운동 분석을 완료하면 맞춤 영양제를 추천받을 수 있어요",
+          "en": "Complete your workout analysis to get personalized supplement recommendations",
+          "ja": "運動分析を完了すると、おすすめのサプリメントを受け取れます",
+          "zh": "完成运动分析后即可获得专属营养补充剂推荐"
+        },
+        {
+          "key": "workoutCtaLabel",
+          "ko": "운동 분석하기",
+          "en": "Analyze Workout",
+          "ja": "運動を分析する",
+          "zh": "开始运动分析"
+        },
+        {
+          "key": "equipmentTitle",
+          "ko": "운동 루틴에 필요한 기구",
+          "en": "Equipment for Your Routine",
+          "ja": "運動ルーティンに必要な器具",
+          "zh": "运动计划所需的器材"
+        },
+        {
+          "key": "equipmentLockedDescription",
+          "ko": "운동 분석을 완료하면 맞춤 운동 기구를 추천받을 수 있어요",
+          "en": "Complete your workout analysis to get personalized equipment recommendations",
+          "ja": "運動分析を完了すると、おすすめの運動器具を受け取れます",
+          "zh": "完成运动分析后即可获得专属运动器材推荐"
+        },
+        {
+          "key": "healthFoodTitle",
+          "ko": "식단 목표에 맞는 건강식품",
+          "en": "Health Foods for Your Diet Goals",
+          "ja": "食事目標に合う健康食品",
+          "zh": "契合饮食目标的健康食品"
+        },
+        {
+          "key": "healthFoodLockedDescription",
+          "ko": "영양 설정을 완료하면 맞춤 건강식품을 추천받을 수 있어요",
+          "en": "Complete your nutrition setup to get personalized health food recommendations",
+          "ja": "栄養設定を完了すると、おすすめの健康食品を受け取れます",
+          "zh": "完成营养设置后即可获得专属健康食品推荐"
+        },
+        {
+          "key": "nutritionCtaLabel",
+          "ko": "영양 설정하기",
+          "en": "Set Up Nutrition",
+          "ja": "栄養を設定する",
+          "zh": "设置营养"
+        },
+        {
+          "key": "noProducts",
+          "ko": "추천 제품이 없습니다.",
+          "en": "No recommended products.",
+          "ja": "おすすめ商品がありません。",
+          "zh": "暂无推荐产品。"
+        },
+        {
+          "key": "loginRequiredTitle",
+          "ko": "로그인이 필요해요",
+          "en": "Sign In Required",
+          "ja": "ログインが必要です",
+          "zh": "需要登录"
+        },
+        {
+          "key": "loginRequiredDescription",
+          "ko": "맞춤 추천을 받으려면 로그인하고 분석을 완료해 주세요.",
+          "en": "Sign in and complete your analysis to receive personalized recommendations.",
+          "ja": "おすすめを受け取るには、ログインして分析を完了してください。",
+          "zh": "请登录并完成分析以获取专属推荐。"
+        },
+        {
+          "key": "loginCtaLabel",
+          "ko": "로그인하기",
+          "en": "Sign In",
+          "ja": "ログインする",
+          "zh": "登录"
+        }
+      ],
+      "notes": "Server component (default async page). Added getTranslations('undefined') to the page and all sub-components containing user-facing text. Converted three previously-synchronous helper functions to async so they could call getTranslations: RecommendationSection (for \"추천 제품이 없습니다.\"), NotLoggedInMessage (login messages), in addition to the already-async section components. The static `metadata` export (title/description, lines 24-25) still contains Korean because a top-level `export const metadata: Metadata` object cannot call getTranslations (no async/hook context); these are SEO metadata, not rendered in-component, so left unchanged. Korean in JSDoc/inline comments left unchanged per scope rules."
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 import { SignedOut, SignInButton, SignedIn, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTransition } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Heart,
   ChevronDown,
@@ -82,6 +82,9 @@ function NavLocaleSwitcher(): React.JSX.Element {
 }
 
 const Navbar = () => {
+  // 헤더 네비게이션 라벨 i18n (messages/*.json의 nav)
+  const t = useTranslations('nav');
+
   return (
     <header
       className="flex justify-between items-center p-4 gap-4 h-16 max-w-7xl mx-auto"
@@ -90,7 +93,7 @@ const Navbar = () => {
       <Link
         href="/"
         className="text-2xl font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-        aria-label="이룸 홈으로 이동"
+        aria-label={t('homeAria')}
         style={{
           background: 'linear-gradient(to right, #f9a8d4, #e879f9, #a855f7)',
           WebkitBackgroundClip: 'text',
@@ -105,31 +108,31 @@ const Navbar = () => {
           <NavLocaleSwitcher />
           <ThemeToggle compact />
           <SignInButton mode="modal">
-            <Button>로그인</Button>
+            <Button>{t('signIn')}</Button>
           </SignInButton>
         </SignedOut>
         <SignedIn>
           <nav
             className="hidden md:flex items-center gap-4"
-            aria-label="주요 메뉴"
+            aria-label={t('mainMenu')}
             role="navigation"
           >
             <Link
               href="/dashboard"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
             >
-              대시보드
+              {t('dashboard')}
             </Link>
             {/* 분석 드롭다운 메뉴 */}
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                분석
+                {t('analysis')}
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
                 {/* 뷰티 카테고리 */}
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  뷰티
+                  {t('beauty')}
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <Link
@@ -137,25 +140,25 @@ const Navbar = () => {
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <Palette className="h-4 w-4 text-pink-500" />
-                    퍼스널 컬러
+                    {t('personalColor')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/skin" className="flex items-center gap-2 cursor-pointer">
                     <Sparkles className="h-4 w-4 text-blue-400" />
-                    피부 분석
+                    {t('skin')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/makeup" className="flex items-center gap-2 cursor-pointer">
                     <Wand2 className="h-4 w-4 text-fuchsia-500" />
-                    메이크업
+                    {t('makeup')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/hair" className="flex items-center gap-2 cursor-pointer">
                     <Scissors className="h-4 w-4 text-amber-500" />
-                    헤어 분석
+                    {t('hair')}
                   </Link>
                 </DropdownMenuItem>
 
@@ -163,12 +166,12 @@ const Navbar = () => {
 
                 {/* 바디 카테고리 */}
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  바디
+                  {t('bodyCategory')}
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis/body" className="flex items-center gap-2 cursor-pointer">
                     <Activity className="h-4 w-4 text-violet-500" />
-                    체형 분석
+                    {t('bodyAnalysis')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -176,13 +179,14 @@ const Navbar = () => {
                 {/* 내 분석 결과 + 허브 */}
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
-                    <BarChart3 className="h-4 w-4 text-primary" />내 분석 결과 보기
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    {t('myResults')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/analysis" className="flex items-center gap-2 cursor-pointer">
                     <LayoutGrid className="h-4 w-4 text-primary" />
-                    분석 허브 전체보기
+                    {t('analysisHub')}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -193,14 +197,14 @@ const Navbar = () => {
                 {/* 영양 드롭다운 메뉴 */}
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                    영양
+                    {t('nutrition')}
                     <ChevronDown className="h-3 w-3" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
                     <DropdownMenuItem asChild>
                       <Link href="/nutrition" className="flex items-center gap-2 cursor-pointer">
                         <Apple className="h-4 w-4 text-green-500" />
-                        영양 홈
+                        {t('nutritionHome')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -210,7 +214,7 @@ const Navbar = () => {
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <UtensilsCrossed className="h-4 w-4 text-orange-500" />
-                        레시피
+                        {t('recipe')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -218,7 +222,8 @@ const Navbar = () => {
                         href="/nutrition/water"
                         className="flex items-center gap-2 cursor-pointer"
                       >
-                        <Droplets className="h-4 w-4 text-blue-400" />물 섭취
+                        <Droplets className="h-4 w-4 text-blue-400" />
+                        {t('water')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -227,7 +232,7 @@ const Navbar = () => {
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <Search className="h-4 w-4 text-gray-500" />
-                        음식 검색
+                        {t('foodSearch')}
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -235,21 +240,21 @@ const Navbar = () => {
                 {/* 운동 드롭다운 메뉴 */}
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                    운동
+                    {t('workout')}
                     <ChevronDown className="h-3 w-3" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
                     <DropdownMenuItem asChild>
                       <Link href="/workout" className="flex items-center gap-2 cursor-pointer">
                         <Dumbbell className="h-4 w-4 text-violet-500" />
-                        운동 홈
+                        {t('workoutHome')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/workout/log" className="flex items-center gap-2 cursor-pointer">
                         <ClipboardList className="h-4 w-4 text-indigo-500" />
-                        운동 로그
+                        {t('workoutLog')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -258,7 +263,7 @@ const Navbar = () => {
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <StretchHorizontal className="h-4 w-4 text-teal-500" />
-                        스트레칭
+                        {t('stretching')}
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -269,14 +274,14 @@ const Navbar = () => {
             {FEATURE_FLAGS.WELLNESS_PHASE2 && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1">
-                  리포트
+                  {t('report')}
                   <ChevronDown className="h-3 w-3" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
                   <DropdownMenuItem asChild>
                     <Link href="/reports" className="flex items-center gap-2 cursor-pointer">
                       <BarChart3 className="h-4 w-4 text-primary" />
-                      리포트 홈
+                      {t('reportHome')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -286,7 +291,7 @@ const Navbar = () => {
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <Target className="h-4 w-4 text-rose-500" />
-                      체중 목표
+                      {t('weightGoal')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -295,7 +300,7 @@ const Navbar = () => {
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <TrendingUp className="h-4 w-4 text-emerald-500" />
-                      체형 변화
+                      {t('bodyProgress')}
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -305,7 +310,7 @@ const Navbar = () => {
               href="/products"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
             >
-              제품
+              {t('products')}
             </Link>
             <Link
               href="/capsule"
@@ -313,7 +318,7 @@ const Navbar = () => {
             >
               <span className="flex items-center gap-1">
                 <Box className="h-3.5 w-3.5" />
-                캡슐
+                {t('capsule')}
               </span>
             </Link>
             {/* 뱃지 — ADR-098 기능 과잉 정리(2026-05-16): BADGES 게이팅 */}
@@ -324,7 +329,7 @@ const Navbar = () => {
               >
                 <span className="flex items-center gap-1">
                   <Gem className="h-3.5 w-3.5" />
-                  뱃지
+                  {t('badges')}
                 </span>
               </Link>
             )}
@@ -332,7 +337,7 @@ const Navbar = () => {
           <Link
             href="/wishlist"
             className="p-2 rounded-full text-muted-foreground hover:text-pink-500 hover:bg-pink-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="위시리스트"
+            aria-label={t('wishlist')}
           >
             <Heart className="h-5 w-5" />
           </Link>
@@ -345,7 +350,7 @@ const Navbar = () => {
               href="/profile"
               className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              나
+              {t('me')}
             </Link>
           </div>
         </SignedIn>

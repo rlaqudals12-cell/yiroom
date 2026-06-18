@@ -10,7 +10,7 @@ import { useUserMatching } from '@/hooks/useUserMatching';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 import BeautyCareTab from '@/components/beauty/BeautyCareTab';
-import BeautyTrendsTab from '@/components/beauty/BeautyTrendsTab';
+// 트렌드 탭(BeautyTrendsTab): ADR-098 소셜 피드 게이팅 + 상품 DB 미적재로 임시 숨김. 데이터 채워지면 복원.
 import type { RoutineItem } from '@/types/hybrid';
 
 // 큐레이션 → 뷰티 카테고리 매핑
@@ -264,10 +264,10 @@ export default function BeautyPage() {
         </FadeInUp>
       )}
 
-      {/* F1: 3탭 구조 — 추천/케어/트렌드 */}
+      {/* F1: 2탭 구조 — 추천/케어 (트렌드 탭은 ADR-098 게이팅으로 임시 숨김) */}
       <Tabs defaultValue="recommend" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-3 sticky top-0 z-10 bg-background border-b rounded-none h-12"
+          className="grid w-full grid-cols-2 sticky top-0 z-10 bg-background border-b rounded-none h-12"
           aria-label="뷰티 카테고리"
         >
           <TabsTrigger
@@ -279,9 +279,6 @@ export default function BeautyPage() {
           </TabsTrigger>
           <TabsTrigger value="care" data-testid="beauty-tab-care" className="min-h-[44px]">
             케어
-          </TabsTrigger>
-          <TabsTrigger value="trends" data-testid="beauty-tab-trends" className="min-h-[44px]">
-            트렌드
           </TabsTrigger>
         </TabsList>
 
@@ -306,12 +303,6 @@ export default function BeautyPage() {
               morningRoutine={morningRoutine}
               eveningRoutine={eveningRoutine}
             />
-          </ErrorBoundary>
-        </TabsContent>
-
-        <TabsContent value="trends">
-          <ErrorBoundary>
-            <BeautyTrendsTab />
           </ErrorBoundary>
         </TabsContent>
       </Tabs>

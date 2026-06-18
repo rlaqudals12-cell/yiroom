@@ -9,6 +9,7 @@ import {
   Scissors,
   Sparkles,
   Palette,
+  Wand2,
   User,
   Droplets,
   Sun,
@@ -43,6 +44,12 @@ const MODULE_META = [
     href: '/analysis/hair',
     gradient: 'from-violet-400 to-purple-500',
     icon: Scissors,
+  },
+  {
+    id: 'makeup',
+    href: '/analysis/makeup',
+    gradient: 'from-fuchsia-400 to-pink-500',
+    icon: Wand2,
   },
 ];
 
@@ -306,12 +313,12 @@ export function LandingContent(): React.JSX.Element {
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-8">
             {t('modulesTitle')}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 p-4">
             {MODULE_META.map((module, i) => (
-              <Link key={module.id} href={module.href} className="group">
+              <Link key={module.id} href={module.href} className="group h-full">
                 <div
                   ref={observe}
-                  className="landing-reveal relative rounded-2xl bg-neutral-900 border-glow-pink p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/10"
+                  className="landing-reveal relative h-full rounded-2xl bg-neutral-900 border-glow-pink p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/10"
                   style={{ transitionDelay: `${i * 100}ms` }}
                 >
                   <div

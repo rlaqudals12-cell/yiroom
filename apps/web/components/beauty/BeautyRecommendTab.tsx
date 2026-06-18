@@ -13,9 +13,6 @@ import {
   Zap,
   Check,
   Flame,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Crown,
   Trophy,
   X,
@@ -956,7 +953,6 @@ export function BeautyRecommendTab({
                 <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
                 {getSkinTypeLabel(userSkinType)} TOP 5
               </h2>
-              <span className="text-xs text-muted-foreground">실시간 업데이트</span>
             </div>
             <div className="space-y-2">
               {rankingBySkinType[userSkinType].map((product) => (
@@ -1001,30 +997,6 @@ export function BeautyRecommendTab({
                         ({product.reviews.toLocaleString()})
                       </span>
                     </div>
-                  </div>
-                  <div className="shrink-0">
-                    {product.change === 'up' && (
-                      <div className="flex items-center gap-0.5 text-green-500">
-                        <TrendingUp className="w-4 h-4" aria-hidden="true" />
-                        <span className="text-xs font-medium">{product.changeAmount}</span>
-                      </div>
-                    )}
-                    {product.change === 'down' && (
-                      <div className="flex items-center gap-0.5 text-red-500">
-                        <TrendingDown className="w-4 h-4" aria-hidden="true" />
-                        <span className="text-xs font-medium">{product.changeAmount}</span>
-                      </div>
-                    )}
-                    {product.change === 'same' && (
-                      <div className="flex items-center text-muted-foreground">
-                        <Minus className="w-4 h-4" aria-hidden="true" />
-                      </div>
-                    )}
-                    {product.change === 'new' && (
-                      <span className="text-xs font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">
-                        NEW
-                      </span>
-                    )}
                   </div>
                 </button>
               ))}
