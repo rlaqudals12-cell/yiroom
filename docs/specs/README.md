@@ -105,10 +105,11 @@
 
 ### 체형 분석 (C-1)
 
-| 문서                                            | 상태      | 설명               | 관련 ADR |
-| ----------------------------------------------- | --------- | ------------------ | -------- |
-| [SDD-BODY-ANALYSIS](SDD-BODY-ANALYSIS.md)       | 구현됨    | 체형 분석 모듈     | ADR-001  |
-| [SDD-BODY-ANALYSIS-v2](SDD-BODY-ANALYSIS-v2.md) | 스펙 완료 | 체형 분석 v2 (C-2) | ADR-001  |
+| 문서                                                                  | 상태      | 설명                                              | 관련 ADR |
+| --------------------------------------------------------------------- | --------- | ------------------------------------------------- | -------- |
+| [SDD-BODY-ANALYSIS](SDD-BODY-ANALYSIS.md)                             | 구현됨    | 체형 분석 모듈                                    | ADR-001  |
+| [SDD-BODY-ANALYSIS-v2](SDD-BODY-ANALYSIS-v2.md)                       | 스펙 완료 | 체형 분석 v2 (C-2)                                | ADR-001  |
+| [SDD-BODY-V2-INTEGRATED-ACCURACY](SDD-BODY-V2-INTEGRATED-ACCURACY.md) | draft     | 체형(A) 통합 정확도 — body-v2 측정 비율→통합 연결 | ADR-108  |
 
 ### 헤어/메이크업 분석
 
