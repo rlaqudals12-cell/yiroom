@@ -532,6 +532,24 @@ export default function HairAnalysisResultPage() {
               className="mt-6"
             />
           )}
+
+          {/* 헤어 스타일·염색 추천 안내 — 컷(×얼굴형)·염색(×퍼스널컬러)은 크로스축이라 종합 분석으로 유도 (ADR-107) */}
+          {result && (
+            <button
+              onClick={() => router.push('/analysis/integrated')}
+              className="mt-6 w-full text-left bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-900/20 rounded-xl border border-violet-200 dark:border-violet-800/30 p-5 hover:shadow-md transition-shadow"
+              data-testid="hair-style-consult-cta"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-violet-500" aria-hidden="true" />
+                <h3 className="font-semibold">어울리는 헤어스타일·염색 컬러는?</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                컷은 얼굴형, 염색은 퍼스널컬러를 함께 봐야 정확해요. 종합 분석에서 나에게 맞는 헤어
+                스타일과 염색 컬러를 확인해보세요. →
+              </p>
+            </button>
+          )}
         </div>
       </div>
 
