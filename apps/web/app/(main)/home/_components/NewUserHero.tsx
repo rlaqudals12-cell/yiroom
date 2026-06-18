@@ -9,25 +9,9 @@
  * 차별화: 통합 시너지 인과 체인 시각화
  */
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Palette, Sparkles, ChevronRight, Droplet, Shirt, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-// 시드 데이터 기반 Social Proof (MVP: 실시간 API는 Phase 2)
-function useSocialProofCount(): number {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    // 기본 시드값 + 시간대 기반 변동
-    const hour = new Date().getHours();
-    const base = 127;
-    const variation = Math.floor(Math.sin(hour) * 30 + 50);
-    setCount(base + variation);
-  }, []);
-
-  return count;
-}
 
 /**
  * 분석 결과 미리보기 카드 3종
@@ -170,7 +154,6 @@ function SynergyChain({
 }
 
 export default function NewUserHero(): React.ReactElement {
-  const todayCount = useSocialProofCount();
   const t = useTranslations('home');
 
   return (
@@ -181,12 +164,8 @@ export default function NewUserHero(): React.ReactElement {
           {t('heroTitle')}
         </h2>
 
-        {/* Social Proof */}
-        {todayCount > 0 && (
-          <p className="text-sm text-muted-foreground mb-5">
-            {t('socialProof', { count: todayCount.toLocaleString() })}
-          </p>
-        )}
+        {/* 가치/신뢰 문구 (가짜 DAU 제거 — 정직한 무료·삭제 카피) */}
+        <p className="text-sm text-muted-foreground mb-5">{t('socialProof')}</p>
 
         {/* ADR-101: Primary CTA 통합 진입점 (이전 2개 분기 → 1개) */}
         <Link

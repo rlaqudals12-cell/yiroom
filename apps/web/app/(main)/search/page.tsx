@@ -93,7 +93,8 @@ function getProductImageUrl(imageUrl: string | null | undefined, brand: string):
   if (imageUrl) return imageUrl;
   const colors = ['fce7f3', 'dbeafe', 'd1fae5', 'fef3c7', 'ede9fe', 'ffedd5'];
   const colorIndex = brand.charCodeAt(0) % colors.length;
-  return `https://placehold.co/200x200/${colors[colorIndex]}/888?text=`;
+  const label = encodeURIComponent(brand.slice(0, 4));
+  return `https://placehold.co/200x200/${colors[colorIndex]}/64748b?text=${label}`;
 }
 
 // 사용자 분석 결과 기반 맞춤 추천 검색어 생성

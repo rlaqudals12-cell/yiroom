@@ -101,7 +101,7 @@ const subCategories: Record<MainCategory, { id: string; label: string }[]> = {
 // 정렬 옵션
 type SortOption = 'realtime' | 'match' | 'review' | 'rating' | 'price_low' | 'price_high';
 const sortOptions: { id: SortOption; label: string }[] = [
-  { id: 'realtime', label: '실시간 인기' },
+  { id: 'realtime', label: '인기순' },
   { id: 'match', label: '매칭률순' },
   { id: 'review', label: '리뷰순' },
   { id: 'rating', label: '평점순' },
@@ -417,11 +417,13 @@ interface BeautyProduct {
 }
 
 // 이미지 placeholder 생성
+// 이미지 없는 제품은 단색 블록 대신 브랜드명을 새긴 라벨 타일로 표시 (빈 색블록 = 깨진 것처럼 보임 방지).
 function getProductImageUrl(imageUrl: string | null | undefined, brand: string): string {
   if (imageUrl) return imageUrl;
   const colors = ['fce7f3', 'dbeafe', 'd1fae5', 'fef3c7', 'ede9fe', 'ffedd5'];
   const colorIndex = brand.charCodeAt(0) % colors.length;
-  return `https://placehold.co/400x400/${colors[colorIndex]}/${colors[colorIndex]}`;
+  const label = encodeURIComponent(brand.slice(0, 4));
+  return `https://placehold.co/400x400/${colors[colorIndex]}/64748b?text=${label}`;
 }
 
 // 성분 매칭 확인
