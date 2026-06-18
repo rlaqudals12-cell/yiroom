@@ -130,6 +130,22 @@ const Navbar = () => {
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
+                {/* 종합 분석 — 차별점(크로스축 컨설팅) featured 진입점 (ADR-107) */}
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/analysis/integrated"
+                    className="flex items-start gap-2 cursor-pointer"
+                  >
+                    <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+                    <span className="flex flex-col">
+                      <span className="font-medium">{t('integratedAnalysis')}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('integratedAnalysisDesc')}
+                      </span>
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 {/* 뷰티 카테고리 */}
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
                   {t('beauty')}
