@@ -10,7 +10,7 @@
  */
 
 import Link from 'next/link';
-import { Lock, RefreshCw, CalendarDays, Plus, Check, ChevronRight } from 'lucide-react';
+import { Lock, RefreshCw, CalendarDays, Plus, Check, ChevronRight, Sparkles } from 'lucide-react';
 import type { CadenceGroup } from '@yiroom/shared';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import {
@@ -44,9 +44,11 @@ function relativeTime(date: Date): string {
 
 interface ProfileCardGridProps {
   analyses: AnalysisSummary[];
+  /** 최신 통합 분석 페르소나 한 줄("당신은 ○○한 사람") — 있으면 상단 노출 */
+  personaOneLine?: string | null;
 }
 
-export default function ProfileCardGrid({ analyses }: ProfileCardGridProps) {
+export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCardGridProps) {
   const byType = new Map(analyses.map((a) => [a.type, a]));
   const completedCount = analyses.length;
   const pct = Math.round((completedCount / TOTAL_ANALYSIS_TYPES) * 100);
@@ -57,6 +59,17 @@ export default function ProfileCardGrid({ analyses }: ProfileCardGridProps) {
       data-testid="profile-card-grid"
       aria-label="내 정체성 프로필"
     >
+      {/* 페르소나 한 줄 — "살아있는 나" (있을 때만, ADR-109 A-visual) */}
+      {personaOneLine && (
+        <p
+          className="flex items-center gap-1.5 mb-3 text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500"
+          data-testid="profile-persona-line"
+        >
+          <Sparkles className="w-4 h-4 text-pink-400 shrink-0" aria-hidden="true" />
+          {personaOneLine}
+        </p>
+      )}
+
       {/* 헤더 + 완성도 미터 */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">

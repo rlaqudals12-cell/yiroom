@@ -48,4 +48,16 @@ describe('ProfileCardGrid', () => {
     expect(screen.getByText(/나를 0% 알아냈어요/)).toBeInTheDocument();
     expect(screen.getAllByTestId(/profile-card-empty-/)).toHaveLength(5);
   });
+
+  it('페르소나 한 줄이 있으면 상단 노출, 없으면 미노출', () => {
+    const { rerender } = render(<ProfileCardGrid analyses={[summary('skin')]} />);
+    expect(screen.queryByTestId('profile-persona-line')).not.toBeInTheDocument();
+
+    rerender(
+      <ProfileCardGrid analyses={[summary('skin')]} personaOneLine="봄볕에 피는 꽃 같은 사람" />
+    );
+    expect(screen.getByTestId('profile-persona-line')).toHaveTextContent(
+      '봄볕에 피는 꽃 같은 사람'
+    );
+  });
 });
