@@ -38,6 +38,13 @@ function formatDetailValue(v: unknown): string {
   return JSON.stringify(v).slice(0, 120);
 }
 
+// A5: 체형 측정 출처 배지 라벨 (measured=실측 / estimated=추정). 미기록(구 분석)이면 미표시.
+function measurementSourceLabel(v: unknown): string | null {
+  if (v === 'measured') return '측정 기반 (전신 사진)';
+  if (v === 'estimated') return 'AI 추정';
+  return null;
+}
+
 function DetailRow({ k, v }: { k: string; v: unknown }): React.JSX.Element | null {
   if (v === null || v === undefined || v === '') return null;
 
@@ -91,6 +98,7 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       renderDetail: (r) => (
         <>
           <DetailRow k="체형 타입" v={r.body_type ? getBodyShapeLabel(r.body_type) : null} />
+          <DetailRow k="측정 방식" v={measurementSourceLabel(r.measurement_source)} />
           <DetailRow k="비율" v={r.ratio} />
           <DetailRow k="키" v={r.height} />
           <DetailRow k="몸무게" v={r.weight} />

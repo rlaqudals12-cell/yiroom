@@ -25,13 +25,7 @@ import {
 } from '@/lib/inventory/client';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
-
-// 체형 타입 라벨
-const BODY_TYPE_LABELS: Record<BodyType3, string> = {
-  S: '스트레이트',
-  W: '웨이브',
-  N: '내추럴',
-};
+import { getBodyShapeLabel } from '@/lib/body';
 
 export default function ClosetRecommendPage() {
   const router = useRouter();
@@ -327,7 +321,7 @@ export default function ClosetRecommendPage() {
               )}
               {bodyType && (
                 <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
-                  {BODY_TYPE_LABELS[bodyType]}
+                  {getBodyShapeLabel(bodyType)}
                 </Badge>
               )}
               {!personalColor && !bodyType && (

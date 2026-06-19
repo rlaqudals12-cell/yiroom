@@ -311,12 +311,16 @@ export async function runBodyAxis(
     const measured = input.measuredBody;
     const hasReliableMeasurement = Boolean(measured && measured.confidence >= 0.5);
 
+    // A4: 측정 출처 — measured(MediaPipe 실측) vs estimated(Gemini/Mock 추정). A5 배지 입력.
+    let measurementSource: 'measured' | 'estimated' = 'estimated';
+
     if (measured && hasReliableMeasurement) {
       bodyShape = measured.shape as BodyShapeType;
       if (measured.waistWidth > 0) {
         shoulderToWaistRatio = measured.shoulderWidth / measured.waistWidth;
       }
       usedFallback = false;
+      measurementSource = 'measured';
     } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
       const gemini = await analyzeBodyWithGemini(input.bodyImageBase64);
       if (gemini.data && !gemini.usedFallback) {
@@ -364,6 +368,15 @@ export async function runBodyAxis(
         success: false,
         error: normalizeError('DB_SAVE_FAILED', error, '체형 분석 저장에 실패했어요.'),
       };
+    }
+
+    // A4: 측정 출처를 best-effort로 기록. measurement_source 컬럼이 아직 없으면(마이그 전)
+    // update가 실패하지만 핵심 저장은 이미 성공했으므로 무시 → 배포-마이그 순서에 무관하게 안전.
+    if (data?.id) {
+      await supabase
+        .from('body_analyses')
+        .update({ measurement_source: measurementSource })
+        .eq('id', data.id);
     }
 
     return {

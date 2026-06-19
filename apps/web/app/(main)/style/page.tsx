@@ -6,6 +6,7 @@ import { useUser } from '@clerk/nextjs';
 import { User, Palette, Eye, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
+import { getBodyShapeLabel } from '@/lib/body';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilter';
@@ -101,12 +102,7 @@ export default function StylePage() {
     bodyData: { body_type: string; height: number | null; concerns: unknown } | null
   ) => {
     if (!bodyData) return;
-    const bodyTypeMap: Record<string, string> = {
-      S: '스트레이트',
-      W: '웨이브',
-      N: '내추럴',
-    };
-    setBodyType(bodyTypeMap[bodyData.body_type] || bodyData.body_type);
+    setBodyType(getBodyShapeLabel(bodyData.body_type));
     setHeight(bodyData.height ? `${bodyData.height}cm` : null);
     const concerns = bodyData.concerns as string[] | null;
     setFeature(concerns?.[0] || null);
