@@ -16,6 +16,7 @@
  */
 
 import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
+import { getBodyShapeLabel } from '@/lib/body';
 import type {
   AxisResult,
   PersonaProfile,
@@ -61,7 +62,7 @@ function summarizeAxes(axes: {
     };
   }
   if (axes.body.success) {
-    s.body = { type: axes.body.data.bodyType };
+    s.body = { type: getBodyShapeLabel(axes.body.data.bodyType) };
   }
   if (axes.hair.success) {
     s.hair = { faceShape: axes.hair.data.faceShape };

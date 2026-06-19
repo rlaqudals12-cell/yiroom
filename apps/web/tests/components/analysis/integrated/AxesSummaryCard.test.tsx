@@ -66,7 +66,8 @@ describe('AxesSummaryCard', () => {
 
     expect(screen.getByText(/spring/)).toBeInTheDocument();
     expect(screen.getByText(/combination/)).toBeInTheDocument();
-    expect(screen.getByText(/hourglass/)).toBeInTheDocument();
+    // body_type='hourglass'은 getBodyShapeLabel로 한글화되어 '모래시계형'으로 표시됨
+    expect(screen.getByText(/모래시계형/)).toBeInTheDocument();
   });
 
   it('축이 null이면 "분석 미완료" 표시', () => {

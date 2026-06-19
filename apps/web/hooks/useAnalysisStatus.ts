@@ -78,7 +78,7 @@ function getSeasonLabel(season: string): string {
 
 function getBodyTypeLabel(bodyType: string): string {
   // C-1 체형은 S/W/N(스트레이트·웨이브·내추럴) 골격 체계로 저장됨 (cross-module.ts와 동일 라벨).
-  // 구 서양식(hourglass 등) 값 호환도 유지.
+  // body-v2(통합 분석) 5형(BodyShapeType) + 구 서양식 값 호환도 유지.
   const labels: Record<string, string> = {
     S: '스트레이트',
     W: '웨이브',
@@ -87,7 +87,11 @@ function getBodyTypeLabel(bodyType: string): string {
     pear: '서양배형',
     apple: '사과형',
     rectangle: '직사각형',
-    inverted_triangle: '역삼각형',
+    // body-v2 5형 (BodyShapeType) — 하이픈 표기
+    'inverted-triangle': '역삼각형',
+    triangle: '삼각형',
+    oval: '타원형',
+    inverted_triangle: '역삼각형', // 언더스코어 레거시 호환
   };
   return labels[bodyType] || '기타';
 }

@@ -11,6 +11,7 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1 체크리스트 #5
  */
 
+import { getBodyShapeLabel } from '@/lib/body';
 import type {
   AxisResult,
   PersonalColorAxisData,
@@ -161,7 +162,7 @@ function buildOutfitCuration(
   hasClosetItems: boolean | undefined
 ): CurationItem | null {
   if (!body) return null;
-  const bodyType = String(body.bodyType ?? '');
+  const bodyType = getBodyShapeLabel(body.bodyType);
   const toneQuery = pc && String(pc.undertone ?? '').toLowerCase() === 'warm' ? 'warm' : 'cool';
 
   // 중첩 삼항 방지: pc 유무 + tone에 따른 라벨을 if/else로 결정

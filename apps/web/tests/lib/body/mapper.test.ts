@@ -3,6 +3,7 @@ import {
   mapBodyShape7ToBodyType,
   mapBodyShape7ToBodyType3,
   mapBodyTypeTo3Type,
+  getBodyShapeLabel,
   BODY_SHAPE7_LABELS,
   BODY_TYPE_LABELS,
   BODY_TYPE3_LABELS,
@@ -183,5 +184,28 @@ describe('BODY_TYPE_EXERCISE_PRIORITIES', () => {
     const priorities = BODY_TYPE_EXERCISE_PRIORITIES.O;
     expect(priorities.cardioEmphasis).toBe('high');
     expect(priorities.focusAreas).toContain('cardio');
+  });
+});
+
+describe('getBodyShapeLabel', () => {
+  it('S/W/N 골격 라벨', () => {
+    expect(getBodyShapeLabel('S')).toBe('스트레이트');
+    expect(getBodyShapeLabel('W')).toBe('웨이브');
+    expect(getBodyShapeLabel('N')).toBe('내추럴');
+  });
+
+  it('body-v2 5형(BodyShapeType, 하이픈) 라벨', () => {
+    expect(getBodyShapeLabel('rectangle')).toBe('직사각형');
+    expect(getBodyShapeLabel('inverted-triangle')).toBe('역삼각형');
+    expect(getBodyShapeLabel('triangle')).toBe('삼각형');
+    expect(getBodyShapeLabel('oval')).toBe('타원형');
+    expect(getBodyShapeLabel('hourglass')).toBe('모래시계형');
+  });
+
+  it('null/빈값은 미분석, 미상값은 원문 반환', () => {
+    expect(getBodyShapeLabel(null)).toBe('미분석');
+    expect(getBodyShapeLabel(undefined)).toBe('미분석');
+    expect(getBodyShapeLabel('')).toBe('미분석');
+    expect(getBodyShapeLabel('unknown_shape')).toBe('unknown_shape');
   });
 });

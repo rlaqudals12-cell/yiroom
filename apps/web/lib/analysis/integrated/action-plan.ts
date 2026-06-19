@@ -10,6 +10,7 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1 체크리스트 #2
  */
 
+import { getBodyShapeLabel } from '@/lib/body';
 import type {
   AxisResult,
   AxisCode,
@@ -124,7 +125,7 @@ function skinActions(data: SkinAxisData): ActionItem[] {
 
 /** C 성공 시 */
 function bodyActions(data: BodyAxisData): ActionItem[] {
-  const type = data.bodyType ?? '';
+  const type = getBodyShapeLabel(data.bodyType);
   return [
     {
       horizon: 'this_month',

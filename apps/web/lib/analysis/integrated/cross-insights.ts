@@ -27,6 +27,7 @@ import type {
 } from './types';
 // ADR-107: 얼굴형 기반 헤어스타일 추천기 — C×H 인사이트에 구체 컷·피할스타일 결합
 import { recommendHairstyles, getStylesToAvoid, type FaceShapeType } from '@/lib/analysis/hair';
+import { getBodyShapeLabel } from '@/lib/body';
 
 const VALID_FACE_SHAPES: readonly string[] = [
   'oval',
@@ -92,7 +93,7 @@ function getSkin(r: AxisResult<SkinAxisData>): { type: string; score: number } |
 
 function getBody(r: AxisResult<BodyAxisData>): { type: string } | null {
   if (!r.success) return null;
-  return { type: String(r.data.bodyType ?? '') };
+  return { type: getBodyShapeLabel(r.data.bodyType) };
 }
 
 function getHair(r: AxisResult<HairAxisData>): { faceShape: string } | null {

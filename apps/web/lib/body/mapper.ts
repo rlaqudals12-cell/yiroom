@@ -146,6 +146,28 @@ export const BODY_TYPE3_LABELS: Record<BodyType3, string> = {
 };
 
 /**
+ * 모든 체형 표기를 한글 라벨로 변환 (결과/대시보드 표시용 공용 헬퍼).
+ *
+ * 통합 분석은 body-v2 `BodyShapeType`(하이픈 5형: rectangle/inverted-triangle/triangle/oval/hourglass)을,
+ * C-1 골격은 S/W/N을 저장한다. 두 taxonomy + 7형 + 레거시 표기를 모두 한글화한다.
+ * 미상값은 원문 그대로 반환(영문 enum 노출 최소화는 호출부 책임), null/빈값은 '미분석'.
+ */
+export function getBodyShapeLabel(value: unknown): string {
+  if (value == null || value === '') return '미분석';
+  const key = String(value);
+  const labels: Record<string, string> = {
+    ...BODY_TYPE3_LABELS, // 골격 S/W/N
+    ...BODY_SHAPE7_LABELS, // 7형 (invertedTriangle 등)
+    // body-v2 BodyShapeType (하이픈 5형)
+    'inverted-triangle': '역삼각형',
+    triangle: '삼각형',
+    // 레거시 표기 호환
+    inverted_triangle: '역삼각형',
+  };
+  return labels[key] ?? key;
+}
+
+/**
  * 체형 문자열(소문자/케밥/스네이크) → BodyShape7 정규화
  *
  * 캡슐 엔진 등에서 BeautyProfile.body.shape(문자열)을 BodyShape7으로 변환할 때 사용

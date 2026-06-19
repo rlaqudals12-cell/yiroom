@@ -12,6 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { getBodyShapeLabel } from '@/lib/body';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 
 export interface AxisDetailAccordionProps {
@@ -89,7 +90,7 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       record: axes.body,
       renderDetail: (r) => (
         <>
-          <DetailRow k="체형 타입" v={r.body_type} />
+          <DetailRow k="체형 타입" v={r.body_type ? getBodyShapeLabel(r.body_type) : null} />
           <DetailRow k="비율" v={r.ratio} />
           <DetailRow k="키" v={r.height} />
           <DetailRow k="몸무게" v={r.weight} />

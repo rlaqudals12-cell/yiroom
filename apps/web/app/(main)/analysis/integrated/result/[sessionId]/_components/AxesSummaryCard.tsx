@@ -5,6 +5,7 @@
  */
 
 import { Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
+import { getBodyShapeLabel } from '@/lib/body';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 
 export interface AxesSummaryCardProps {
@@ -65,7 +66,9 @@ const AXES: AxisRow[] = [
     iconColor: 'text-blue-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      return <span className="text-white">{String(r.body_type ?? '-')}</span>;
+      return (
+        <span className="text-white">{r.body_type ? getBodyShapeLabel(r.body_type) : '-'}</span>
+      );
     },
   },
   {

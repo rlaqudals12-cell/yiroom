@@ -236,11 +236,16 @@ export default function ProfilePage() {
           ? `${SKIN_TYPE_LABELS[skinData.skin_type] ?? skinData.skin_type}${skinSuffix}`
           : null;
 
-        // 체형 포맷팅
+        // 체형 포맷팅 — S/W/N(골격) + body-v2 5형(BodyShapeType) 모두 한글화
         const bodyTypeMap: Record<string, string> = {
           S: '스트레이트',
           W: '웨이브',
           N: '내추럴',
+          rectangle: '직사각형',
+          'inverted-triangle': '역삼각형',
+          triangle: '삼각형',
+          oval: '타원형',
+          hourglass: '모래시계형',
         };
         const bodyData = bodyResult.data;
         const bodyType = bodyData ? bodyTypeMap[bodyData.body_type] || bodyData.body_type : null;
