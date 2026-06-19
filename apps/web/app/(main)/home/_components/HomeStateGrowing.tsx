@@ -88,39 +88,41 @@ export default function HomeStateGrowing({ analysisCount, analyses }: HomeStateG
       {/* ADR-101: 통합 분석 진입/재방문 카드 (최상단) */}
       <IntegratedSessionPromptCard />
 
-      {/* 발견 디스커버리 (정보 블록 1) */}
-      <div data-testid="home-growing-discovery">
-        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-violet-500" />
-            <h2 className="font-semibold text-foreground">
-              나에 대해 {analysisCount}가지를 발견했어요
-            </h2>
-          </div>
+      {/* 발견 디스커버리 (정보 블록 1) — ADR-109: PROFILE_HOME ON이면 프로필 카드와 중복 → 숨김 */}
+      {!FEATURE_FLAGS.PROFILE_HOME && (
+        <div data-testid="home-growing-discovery">
+          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-violet-500" />
+              <h2 className="font-semibold text-foreground">
+                나에 대해 {analysisCount}가지를 발견했어요
+              </h2>
+            </div>
 
-          {/* 완료된 분석 칩 */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {analyses.map((analysis) => {
-              const meta = ANALYSIS_LABELS[analysis.type];
-              return (
-                <div
-                  key={analysis.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/30 rounded-full"
-                >
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${meta?.color || 'text-violet-500'}`} />
-                  <span className="text-xs font-medium text-foreground">
-                    {meta?.label || analysis.type}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{analysis.summary}</span>
-                </div>
-              );
-            })}
-          </div>
+            {/* 완료된 분석 칩 */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {analyses.map((analysis) => {
+                const meta = ANALYSIS_LABELS[analysis.type];
+                return (
+                  <div
+                    key={analysis.id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/30 rounded-full"
+                  >
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${meta?.color || 'text-violet-500'}`} />
+                    <span className="text-xs font-medium text-foreground">
+                      {meta?.label || analysis.type}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{analysis.summary}</span>
+                  </div>
+                );
+              })}
+            </div>
 
-          {/* 프로그레스 바 (정보 블록 2) */}
-          <AnalysisProgressBar completed={analysisCount} total={5} />
+            {/* 프로그레스 바 (정보 블록 2) */}
+            <AnalysisProgressBar completed={analysisCount} total={5} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 환경 조언 — 날씨/UV/습도 기반 (WEATHER 게이팅, 기능 과잉 정리 2026-05-16) */}
       {FEATURE_FLAGS.WEATHER && <EnvironmentAdviceCard />}

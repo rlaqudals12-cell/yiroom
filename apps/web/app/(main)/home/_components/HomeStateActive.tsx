@@ -46,7 +46,10 @@ export default function HomeStateActive({ analyses }: HomeStateActiveProps) {
     () => ({
       insight: <ActiveInsightCard analyses={analyses} />,
       capsule: <HomeDailyCapsuleWidget />,
-      'analysis-summary': <HomeAnalysisSummary analyses={analyses} />,
+      // ADR-109: PROFILE_HOME ON이면 프로필 카드가 상위에 표시되므로 2×3 요약 메뉴는 중복 → 숨김
+      'analysis-summary': FEATURE_FLAGS.PROFILE_HOME ? null : (
+        <HomeAnalysisSummary analyses={analyses} />
+      ),
       'activity-bar':
         FEATURE_FLAGS.WELLNESS_PHASE2 && user?.id ? <HomeActivityBar userId={user.id} /> : null,
       'recently-viewed': <HomeRecentlyViewed />,

@@ -1,80 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Palette, Sparkles, User, Scissors, Heart, ChevronRight, Plus } from 'lucide-react';
-import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
+import { Sparkles, ChevronRight, Plus } from 'lucide-react';
+import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
-
-const TOTAL_ANALYSIS_TYPES = 5;
-
-// 분석 타입별 메타 정보
-const ANALYSIS_META: Record<
-  AnalysisType,
-  {
-    icon: typeof Palette;
-    label: string;
-    valueHint: string;
-    narrative: string;
-    gradient: string;
-    shadow: string;
-    href: string;
-    analysisHref: string;
-  }
-> = {
-  'personal-color': {
-    icon: Palette,
-    label: '퍼스널 컬러',
-    valueHint: '나에게 어울리는 색을 알면 선택이 쉬워져요',
-    narrative: '나에게 어울리는 색상 톤이에요',
-    gradient: 'from-violet-400 to-purple-500',
-    shadow: 'shadow-violet-500/30',
-    href: '/analysis/personal-color/result',
-    analysisHref: '/analysis/personal-color',
-  },
-  skin: {
-    icon: Sparkles,
-    label: '피부',
-    valueHint: '피부 상태를 알면 관리 방향이 보여요',
-    narrative: '현재 피부 컨디션이에요',
-    gradient: 'from-rose-400 to-pink-500',
-    shadow: 'shadow-rose-500/30',
-    href: '/analysis/skin/result',
-    analysisHref: '/analysis/skin',
-  },
-  body: {
-    icon: User,
-    label: '체형',
-    valueHint: '체형을 알면 스타일링이 달라져요',
-    narrative: '나의 체형 특징이에요',
-    gradient: 'from-blue-400 to-indigo-500',
-    shadow: 'shadow-blue-500/30',
-    href: '/analysis/body/result',
-    analysisHref: '/analysis/body',
-  },
-  hair: {
-    icon: Scissors,
-    label: '헤어',
-    valueHint: '얼굴형에 맞는 헤어를 찾아보세요',
-    narrative: '모발 특성을 알게 됐어요',
-    gradient: 'from-amber-400 to-orange-500',
-    shadow: 'shadow-amber-500/30',
-    href: '/analysis/hair/result',
-    analysisHref: '/analysis/hair',
-  },
-  makeup: {
-    icon: Heart,
-    label: '메이크업',
-    valueHint: '나만의 메이크업 포인트를 발견해요',
-    narrative: '나만의 메이크업 포인트에요',
-    gradient: 'from-pink-400 to-rose-500',
-    shadow: 'shadow-pink-500/30',
-    href: '/analysis/makeup/result',
-    analysisHref: '/analysis/makeup',
-  },
-};
-
-// 미완료 분석 추천 순서
-const ANALYSIS_ORDER: AnalysisType[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
+import {
+  ANALYSIS_META,
+  ANALYSIS_ORDER,
+  TOTAL_ANALYSIS_TYPES,
+  getResultHref,
+} from './analysis-meta';
 
 interface HomeAnalysisSummaryProps {
   analyses: AnalysisSummary[];
@@ -126,10 +61,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
         {analyses.slice(0, 6).map((analysis) => {
           const meta = ANALYSIS_META[analysis.type];
           const Icon = meta.icon;
-          const resultHref =
-            analysis.type === 'personal-color'
-              ? `/analysis/personal-color/result/${analysis.id}`
-              : `${meta.href}/${analysis.id}`;
+          const resultHref = getResultHref(analysis);
 
           return (
             <button
