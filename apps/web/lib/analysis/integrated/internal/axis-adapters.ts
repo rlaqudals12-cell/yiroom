@@ -24,7 +24,7 @@ import {
   getTonePalette,
 } from '@/lib/analysis/personal-color-v2';
 import { generateMockSkinAnalysisV2Result } from '@/lib/analysis/skin-v2';
-import { generateMockBodyAnalysisResult } from '@/lib/analysis/body-v2';
+import { generateMockBodyAnalysisResult, type BodyShapeType } from '@/lib/analysis/body-v2';
 import { generateMockHairAnalysisResult } from '@/lib/analysis/hair';
 import {
   extractSkinColorWithGemini,
@@ -305,7 +305,19 @@ export async function runBodyAxis(
     const characteristics = mockResult.bodyShapeInfo?.characteristics ?? null;
     let usedFallback = isMockMode();
 
-    if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
+    // A3: 측정값 우선 — 클라이언트 MediaPipe 측정(measuredBody)이 충분히 신뢰되면
+    // Gemini "눈대중 추정"보다 우선 사용한다. body-v2 5형 동일 taxonomy라 다운스트림 drop-in.
+    // (ADR-108의 S/W/N 저장 통일은 5+ 소비자 분기에 영향 → 별도 리팩토링으로 분리, SDD 구현 노트 참조)
+    const measured = input.measuredBody;
+    const hasReliableMeasurement = Boolean(measured && measured.confidence >= 0.5);
+
+    if (measured && hasReliableMeasurement) {
+      bodyShape = measured.shape as BodyShapeType;
+      if (measured.waistWidth > 0) {
+        shoulderToWaistRatio = measured.shoulderWidth / measured.waistWidth;
+      }
+      usedFallback = false;
+    } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
       const gemini = await analyzeBodyWithGemini(input.bodyImageBase64);
       if (gemini.data && !gemini.usedFallback) {
         bodyShape = gemini.data.bodyShape;

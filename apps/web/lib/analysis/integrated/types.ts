@@ -64,6 +64,21 @@ export const integratedAnalysisInputSchema = z.object({
     .optional()
     .refine((val) => !val || val.startsWith('data:image/'), '올바른 이미지 형식이 아니에요'),
 
+  /**
+   * C 축 클라이언트 측정값 (선택) — 전신 사진을 MediaPipe로 측정한 결과.
+   * 있고 신뢰도가 충분하면 서버가 Gemini 추정보다 우선 사용 (A2/A3, SDD-BODY-V2-INTEGRATED-ACCURACY).
+   * shape = body-v2 5형(BodyShapeType) 문자열 — 통합 플로우 기존 taxonomy와 동일.
+   */
+  measuredBody: z
+    .object({
+      shoulderWidth: z.number(),
+      waistWidth: z.number(),
+      hipWidth: z.number(),
+      shape: z.string(),
+      confidence: z.number().min(0).max(1),
+    })
+    .optional(),
+
   /** 축별 자가입력 */
   questionnaire: z
     .object({

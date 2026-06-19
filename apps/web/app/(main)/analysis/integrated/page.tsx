@@ -11,6 +11,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
+import { measureBodyClient } from '@/lib/analysis/body-v2';
 import { Button } from '@/components/ui/button';
 import { ImageUploadSection } from './_components/ImageUploadSection';
 import { QuestionnaireForm, type QuestionnaireData } from './_components/QuestionnaireForm';
@@ -36,12 +37,29 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     setIsSubmitting(true);
 
     try {
+      // 전신 사진이 있으면 제출 직전 클라이언트 MediaPipe 측정 1회 (A1) →
+      // 서버가 측정값을 Gemini 추정보다 우선 사용. 측정 실패 시 null → 서버 Gemini 폴백.
+      let measuredBody;
+      if (bodyImage) {
+        const m = await measureBodyClient(bodyImage);
+        if (m) {
+          measuredBody = {
+            shoulderWidth: m.ratios.shoulderWidth,
+            waistWidth: m.ratios.waistWidth,
+            hipWidth: m.ratios.hipWidth,
+            shape: m.shape,
+            confidence: m.confidence,
+          };
+        }
+      }
+
       const res = await fetch('/api/analyze/integrated', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           faceImageBase64: faceImage,
           bodyImageBase64: bodyImage ?? undefined,
+          measuredBody,
           questionnaire: questionnaire ?? {},
           options: { locale: 'ko' },
         }),
