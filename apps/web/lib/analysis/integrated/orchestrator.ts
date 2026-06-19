@@ -27,6 +27,18 @@ import {
 import { runMakeupComposer } from './internal/makeup-composer';
 import { uploadSessionImages } from './internal/storage-uploader';
 import { composePersona } from './internal/persona-composer';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { withGamification } from '@/lib/api/analysis-helpers/gamification';
+import { addXp } from '@/lib/gamification';
+
+// ADR-109 Phase 2: 통합 경로 게이미피케이션 보존 (개별 route와 동등, 통합은 그간 누락).
+const XP_ANALYSIS_COMPLETE = 10;
+// 배지가 있는 축만 매핑 (헤어/메이크업은 분석 배지 없음 → XP만). AxisCode(언더스코어) → 배지 타입(하이픈).
+const AXIS_BADGE_TYPE: Partial<Record<AxisCode, 'personal-color' | 'skin' | 'body'>> = {
+  personal_color: 'personal-color',
+  skin: 'skin',
+  body: 'body',
+};
 
 /**
  * Promise.allSettled 결과를 AxisResult로 변환.
@@ -186,6 +198,22 @@ export async function runIntegratedAnalysis(
     } catch (finalizeError) {
       // 왜: finalize 실패는 치명적이지 않음 — 결과는 이미 각 테이블에 저장됨
       console.error('[Integrated] finalize failed, continuing with result:', finalizeError);
+    }
+
+    // ADR-109 Phase 2: 완료 축별 게이미피케이션 부여 (개별 분석과 동등 — 통합 경로 누락 보존·수정).
+    // 배지 축(PC/피부/체형)은 XP+배지+전체배지, 헤어/메이크업은 XP만. 실패해도 결과 반환엔 영향 없음.
+    try {
+      const gamiSupabase = createServiceRoleClient();
+      for (const code of axesCompleted) {
+        const badgeType = AXIS_BADGE_TYPE[code];
+        if (badgeType) {
+          await withGamification(gamiSupabase, clerkUserId, badgeType);
+        } else {
+          await addXp(gamiSupabase, clerkUserId, XP_ANALYSIS_COMPLETE);
+        }
+      }
+    } catch (gamificationError) {
+      console.error('[Integrated] Gamification error:', gamificationError);
     }
 
     const now = new Date().toISOString();
