@@ -38,11 +38,11 @@ import {
   getStylingPriorities,
   generateMockPoseResult,
   type BodyAnalysisV2Result,
-  type BodyShapeType,
   type Landmark33,
   type PoseDetectionResult,
   type BodyRatios,
 } from '@/lib/analysis/body-v2';
+import { bodyShapeToType3 } from '@/lib/body';
 import { analyzeBodyWithGemini } from '@/lib/gemini/v2-analysis';
 import {
   awardAnalysisBadge,
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
         .insert({
           clerk_user_id: userId,
           // v2 분석 결과를 기존 스키마에 맞게 매핑
-          body_type: mapBodyShapeToLegacy(result.bodyShape),
+          body_type: bodyShapeToType3(result.bodyShape),
           body_shape: result.bodyShape,
           confidence: result.measurementConfidence,
           analysis_data: {
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
         .from('users')
         .update({
           latest_body_assessment_id: data.id,
-          body_type: mapBodyShapeToLegacy(result.bodyShape),
+          body_type: bodyShapeToType3(result.bodyShape),
         })
         .eq('clerk_user_id', userId);
 
@@ -421,17 +421,3 @@ export async function GET() {
 // =============================================================================
 // 헬퍼 함수
 // =============================================================================
-
-/**
- * 5가지 체형을 레거시 3가지 타입으로 매핑
- */
-function mapBodyShapeToLegacy(bodyShape: BodyShapeType): string {
-  const mapping: Record<BodyShapeType, string> = {
-    rectangle: 'N', // 직선형 → Natural
-    'inverted-triangle': 'S', // 역삼각형 → Straight
-    triangle: 'W', // 삼각형 → Wave
-    oval: 'W', // 타원형 → Wave
-    hourglass: 'S', // 모래시계 → Straight
-  };
-  return mapping[bodyShape] || 'N';
-}
