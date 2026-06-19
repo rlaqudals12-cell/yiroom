@@ -181,11 +181,26 @@ const SHAPE_STRING_TO_7TYPE: Record<string, BodyShape7> = {
   rectangle: 'rectangle',
   trapezoid: 'trapezoid',
   oval: 'oval',
+  // body-v2 BodyShapeType 'triangle'(삼각형 = 힙 우세) → 7형 pear(배형)
+  triangle: 'pear',
 };
 
 export function normalizeToBodyShape7(shape: string): BodyShape7 | null {
   const normalized = shape.toLowerCase().replace(/[_\-\s]/g, '');
   return SHAPE_STRING_TO_7TYPE[normalized] ?? null;
+}
+
+/**
+ * 체형 문자열(body-v2 5형 BodyShapeType / 7형 / S/W/N)을 S/W/N(BodyType3)으로 변환.
+ *
+ * ADR-108: body_analyses.body_type 저장 taxonomy = S/W/N(골격, 스타일링·옷장 추천 기준).
+ * 통합 분석이 측정/추정한 5형(BodyShapeType)을 저장 직전 S/W/N으로 통일할 때 사용.
+ * 이미 S/W/N이면 그대로, 미상값은 'N'(내추럴) 폴백.
+ */
+export function bodyShapeToType3(shape: string | null | undefined): BodyType3 {
+  if (shape === 'S' || shape === 'W' || shape === 'N') return shape;
+  const shape7 = shape ? normalizeToBodyShape7(shape) : null;
+  return shape7 ? mapBodyShape7ToBodyType3(shape7) : 'N';
 }
 
 /**

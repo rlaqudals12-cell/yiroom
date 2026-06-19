@@ -140,6 +140,7 @@ export {
   mapBodyShape7ToBodyType3,
   mapBodyTypeTo3Type,
   normalizeToBodyShape7,
+  bodyShapeToType3,
   getBodyShapeLabel,
   BODY_SHAPE7_LABELS,
   BODY_TYPE_LABELS,

@@ -6,26 +6,29 @@
 
 ---
 
-## ⚙️ 구현 노트 (2026-06-19) — 5형 taxonomy MVP, S/W/N 통일은 분리
+## ⚙️ 구현 노트 (2026-06-19) — A1~A3 + S/W/N 저장 통일 완료
 
-구현 중 발견한 사실로 **A3의 "S/W/N 저장 통일"을 보류**하고, 측정 우선만 기존 5형 taxonomy로 구현했다.
+2단계로 구현: ① 측정 우선(5형 MVP) → ② 라벨 레이어 + S/W/N 저장 통일(ADR-108).
 
-**근거(ground-truth 감사):**
+**ground-truth 감사 정정:**
 
 - body-v2 `classifyBodyType`는 `BodyShape7`이 아니라 **`BodyShapeType`(5형: rectangle/inverted-triangle/triangle/oval/hourglass)** 반환. (스펙 A1 가정 정정)
-- `normalizeToBodyShape7`는 `'triangle'`을 모름(`pear`만 있음) → 5형 그대로 S/W/N 변환 시 일부 null.
-- 결정적으로 **`bodyType`(=5형 값)을 5개 소비자가 분기/렌더**: `cross-insights`·`action-plan`·`curation`은 `${bodyType} 체형…`으로 **원문 보간**(현재 prod도 "rectangle 체형…" 영문 노출 = 기존 표시 이슈), `persona-composer`·결과 page도 소비. → S/W/N 저장 전환 시 "S 체형"으로 **악화** + 분기 로직 깨짐.
+- `normalizeToBodyShape7`가 `'triangle'`을 몰랐음(`pear`만) → **`triangle:'pear'` 매핑 추가**로 5형 전체 정규화 가능.
+- `bodyType`(=5형 값)을 5개 소비자가 **분기 아닌 표시/보간**으로 소비(`cross-insights`·`action-plan`·`curation`·`persona`·결과 page) → 분기 없음 확인. + **`closet/recommend`는 body_type을 `as BodyType3`로 캐스팅해 추천에 기능적 사용** → 5형 저장이 깨고 있었음(기존 버그).
 
-**구현 범위(MVP, zero-regression):**
+**구현 (커밋 b233e6bc + e7165fee + 후속):**
 
-- A1 `measureBodyClient`(클라이언트 MediaPipe) + A2 `measuredBody` optional 스키마 + A3 측정 우선 분기(`confidence≥0.5`면 Gemini 추정 대신 **측정 5형 + 측정 비율** 사용). 통합 page 제출 직전 1회 호출 + 페이로드 첨부.
-- 측정값은 **기존과 동일한 5형 taxonomy** → 모든 다운스트림 drop-in, 표시/분기 무변경. "Gemini 눈대중 → MediaPipe 실측"이라는 핵심 정확도 가치만 전달.
-- 검증: tsc 0, ESLint 0(runBodyAxis 인지복잡도 17 warning 1건), vitest 201 pass(A1 신규 3 + 회귀).
+- **A1** `measureBodyClient`(클라 MediaPipe) + **A2** `measuredBody` optional 스키마 + **A3** 측정 우선 분기(`confidence≥0.5`면 Gemini 대신 측정). 통합 page 제출 직전 1회 호출.
+- **라벨 레이어**: `getBodyShapeLabel`(lib/body) — S/W/N + 5형 + 7형 + 레거시 한글화. 결과(AxesSummaryCard·AxisDetailAccordion)·문장보간(cross-insights/action-plan/curation)·persona·홈·프로필 전부 적용 → 영문 enum 노출 해소.
+- **S/W/N 저장 통일(A3 완성)**: `bodyShapeToType3`(lib/body)로 runBodyAxis가 저장/반환 직전 5형 → S/W/N 변환. `body_analyses.body_type` = S/W/N → **`closet/recommend` 추천 정상화** + cross-module 일관. 표시는 라벨 헬퍼가 한글화하므로 무회귀.
+- **DRY**: 홈(useAnalysisStatus)·프로필 인라인 라벨맵 → `getBodyShapeLabel` 위임.
+- 검증: tsc 0, ESLint 0(인지복잡도 warning 2), vitest 331 pass.
 
-**의도적 분리(차기 SDD):**
+**미구현(차기):**
 
-- **ADR-108 S/W/N 저장 통일** = `bodyType` 5형 → S/W/N 전환 + 5개 소비자(cross-insights/action-plan/curation/persona/result)의 분기·한글 라벨 레이어 정비 = 교차 절단 리팩토링. (현재 "rectangle 체형" 영문 노출 표시 버그도 이때 한글 라벨화로 동시 해결 권장.)
-- A4(`measurement_source` 컬럼·prod 마이그 핸드오프 회피)·A5(측정/추정 배지 UI) 미구현.
+- **A4**(`measurement_source` 컬럼 — prod 마이그 핸드오프 회피) · **A5**(측정/추정 배지 UI).
+- **표준 `/analysis/body` 플로우의 body_type taxonomy** 점검(통합 외 — closet가 모든 body_analyses 행을 읽으므로 표준도 S/W/N 저장이어야 완전 일관). 별도 확인 필요.
+- 멀티앵글(측면 둘레 ±5mm)·percentile 코호트.
 
 ---
 

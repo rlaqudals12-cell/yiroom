@@ -4,6 +4,7 @@ import {
   mapBodyShape7ToBodyType3,
   mapBodyTypeTo3Type,
   getBodyShapeLabel,
+  bodyShapeToType3,
   BODY_SHAPE7_LABELS,
   BODY_TYPE_LABELS,
   BODY_TYPE3_LABELS,
@@ -207,5 +208,27 @@ describe('getBodyShapeLabel', () => {
     expect(getBodyShapeLabel(undefined)).toBe('미분석');
     expect(getBodyShapeLabel('')).toBe('미분석');
     expect(getBodyShapeLabel('unknown_shape')).toBe('unknown_shape');
+  });
+});
+
+describe('bodyShapeToType3 (ADR-108 저장 통일)', () => {
+  it('body-v2 5형 → S/W/N (골격)', () => {
+    expect(bodyShapeToType3('rectangle')).toBe('N');
+    expect(bodyShapeToType3('inverted-triangle')).toBe('S');
+    expect(bodyShapeToType3('triangle')).toBe('W'); // 삼각형(힙 우세) → pear → W
+    expect(bodyShapeToType3('oval')).toBe('W');
+    expect(bodyShapeToType3('hourglass')).toBe('S');
+  });
+
+  it('이미 S/W/N이면 그대로', () => {
+    expect(bodyShapeToType3('S')).toBe('S');
+    expect(bodyShapeToType3('W')).toBe('W');
+    expect(bodyShapeToType3('N')).toBe('N');
+  });
+
+  it('null/미상값은 N 폴백', () => {
+    expect(bodyShapeToType3(null)).toBe('N');
+    expect(bodyShapeToType3(undefined)).toBe('N');
+    expect(bodyShapeToType3('zzz')).toBe('N');
   });
 });

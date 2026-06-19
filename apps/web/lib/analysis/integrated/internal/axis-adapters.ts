@@ -25,6 +25,7 @@ import {
 } from '@/lib/analysis/personal-color-v2';
 import { generateMockSkinAnalysisV2Result } from '@/lib/analysis/skin-v2';
 import { generateMockBodyAnalysisResult, type BodyShapeType } from '@/lib/analysis/body-v2';
+import { bodyShapeToType3 } from '@/lib/body';
 import { generateMockHairAnalysisResult } from '@/lib/analysis/hair';
 import {
   extractSkinColorWithGemini,
@@ -306,8 +307,7 @@ export async function runBodyAxis(
     let usedFallback = isMockMode();
 
     // A3: 측정값 우선 — 클라이언트 MediaPipe 측정(measuredBody)이 충분히 신뢰되면
-    // Gemini "눈대중 추정"보다 우선 사용한다. body-v2 5형 동일 taxonomy라 다운스트림 drop-in.
-    // (ADR-108의 S/W/N 저장 통일은 5+ 소비자 분기에 영향 → 별도 리팩토링으로 분리, SDD 구현 노트 참조)
+    // Gemini "눈대중 추정"보다 우선 사용한다. (측정 5형 + 측정 비율)
     const measured = input.measuredBody;
     const hasReliableMeasurement = Boolean(measured && measured.confidence >= 0.5);
 
@@ -336,6 +336,10 @@ export async function runBodyAxis(
       usedFallback = true;
     }
 
+    // ADR-108: 저장/반환 taxonomy = S/W/N(골격). 측정/추정 5형(BodyShapeType)을 S/W/N으로 통일.
+    // 옷장 추천(closet/recommend)·cross-module이 S/W/N을 기대하므로 일관성 확보. 표시는 getBodyShapeLabel이 한글화.
+    const bodyType3 = bodyShapeToType3(bodyShape);
+
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from('body_analyses')
@@ -347,7 +351,7 @@ export async function runBodyAxis(
           : sessionImageSentinel(sessionId, 'face'), // 자가입력 모드
         height: body.heightCm ?? null,
         weight: body.weightKg ?? null,
-        body_type: bodyShape,
+        body_type: bodyType3,
         ratio: shoulderToWaistRatio ?? null,
         style_recommendations: stylingRecommendations,
         strengths: characteristics,
@@ -367,7 +371,7 @@ export async function runBodyAxis(
       usedFallback,
       data: {
         id: data?.id as string | undefined,
-        bodyType: bodyShape,
+        bodyType: bodyType3,
         ratio: shoulderToWaistRatio,
         stylingPrinciples: mockResult.bodyShapeInfo?.stylingTips,
       },

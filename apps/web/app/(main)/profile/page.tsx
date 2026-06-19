@@ -45,6 +45,7 @@ import { BadgeCard } from '@/components/gamification';
 import { QRCodeDisplay } from '@/components/common/QRCodeDisplay';
 import { LevelBadgeFilled, LevelProgress as NewLevelProgress } from '@/components/common';
 import { getUserLevel, calculateUserLevelState, type UserLevelState } from '@/lib/levels';
+import { getBodyShapeLabel } from '@/lib/body';
 import {
   getUserLevelInfo,
   getUserBadges,
@@ -236,19 +237,9 @@ export default function ProfilePage() {
           ? `${SKIN_TYPE_LABELS[skinData.skin_type] ?? skinData.skin_type}${skinSuffix}`
           : null;
 
-        // 체형 포맷팅 — S/W/N(골격) + body-v2 5형(BodyShapeType) 모두 한글화
-        const bodyTypeMap: Record<string, string> = {
-          S: '스트레이트',
-          W: '웨이브',
-          N: '내추럴',
-          rectangle: '직사각형',
-          'inverted-triangle': '역삼각형',
-          triangle: '삼각형',
-          oval: '타원형',
-          hourglass: '모래시계형',
-        };
+        // 체형 포맷팅 — lib/body 공용 헬퍼로 일원화 (S/W/N 골격 + body-v2 5형)
         const bodyData = bodyResult.data;
-        const bodyType = bodyData ? bodyTypeMap[bodyData.body_type] || bodyData.body_type : null;
+        const bodyType = bodyData?.body_type ? getBodyShapeLabel(bodyData.body_type) : null;
 
         // 리더보드 순위 변화
         const leaderData = leaderboardResult.data;
