@@ -67,7 +67,7 @@ export const FEATURE_FLAGS = {
    * 근거: ADR-109 프로필 중심 분석 아키텍처. 점진 출시·즉시 롤백용 게이트.
    * 재검토 조건: Phase 1(프로필 카드 홈) 안정화 후 ON.
    */
-  PROFILE_HOME: false,
+  PROFILE_HOME: true,
 } as const;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
