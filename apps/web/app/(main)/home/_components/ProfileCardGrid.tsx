@@ -10,7 +10,18 @@
  */
 
 import Link from 'next/link';
-import { Lock, RefreshCw, CalendarDays, Plus, Check, ChevronRight, Sparkles } from 'lucide-react';
+import {
+  Lock,
+  RefreshCw,
+  CalendarDays,
+  Plus,
+  Check,
+  ChevronRight,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from 'lucide-react';
 import type { CadenceGroup } from '@yiroom/shared';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import {
@@ -141,8 +152,12 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">{meta.label}</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                {analysis.summary}
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-white truncate">
+                <span className="truncate">{analysis.summary}</span>
+                {/* 피부 = 오늘의 컨디션: 직전 분석 대비 추이 (ADR-109 Phase 3) */}
+                {analysis.type === 'skin' && analysis.skinTrend && (
+                  <SkinTrendChip trend={analysis.skinTrend} delta={analysis.skinDelta ?? 0} />
+                )}
               </p>
               <p className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
                 <Check className="w-3 h-3 text-emerald-500" aria-hidden="true" />
@@ -165,5 +180,33 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
         </Link>
       )}
     </section>
+  );
+}
+
+/** 피부 점수 추이 칩 — 직전 분석 대비 (↑ 개선 / ↓ 하락 / 유지) */
+function SkinTrendChip({ trend, delta }: { trend: 'up' | 'down' | 'flat'; delta: number }) {
+  const config = {
+    up: {
+      Icon: TrendingUp,
+      cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+      label: `+${Math.abs(delta)}`,
+    },
+    down: {
+      Icon: TrendingDown,
+      cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+      label: `-${Math.abs(delta)}`,
+    },
+    flat: { Icon: Minus, cls: 'bg-slate-500/15 text-slate-500 dark:text-slate-400', label: '유지' },
+  }[trend];
+  const { Icon, cls, label } = config;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium shrink-0 ${cls}`}
+      title="직전 분석 대비 변화"
+      data-testid="skin-trend-chip"
+    >
+      <Icon className="w-2.5 h-2.5" aria-hidden="true" />
+      {label}
+    </span>
   );
 }

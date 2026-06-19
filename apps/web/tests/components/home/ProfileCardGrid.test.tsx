@@ -49,6 +49,16 @@ describe('ProfileCardGrid', () => {
     expect(screen.getAllByTestId(/profile-card-empty-/)).toHaveLength(5);
   });
 
+  it('피부 카드: 직전 대비 추이 칩 표시(개선 +3), 추이 없으면 미표시', () => {
+    const { rerender } = render(
+      <ProfileCardGrid analyses={[summary('skin', { skinTrend: 'up', skinDelta: 3 })]} />
+    );
+    expect(screen.getByTestId('skin-trend-chip')).toHaveTextContent('+3');
+
+    rerender(<ProfileCardGrid analyses={[summary('skin')]} />);
+    expect(screen.queryByTestId('skin-trend-chip')).not.toBeInTheDocument();
+  });
+
   it('페르소나 한 줄이 있으면 상단 노출, 없으면 미노출', () => {
     const { rerender } = render(<ProfileCardGrid analyses={[summary('skin')]} />);
     expect(screen.queryByTestId('profile-persona-line')).not.toBeInTheDocument();

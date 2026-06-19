@@ -36,6 +36,8 @@ export interface AnalysisSummary {
   // 타입별 추가 데이터
   seasonType?: string; // PC-1
   skinScore?: number; // S-1
+  skinDelta?: number; // S-1 직전 분석 대비 점수 변화 (ADR-109 Phase 3 — "오늘의 컨디션" 추이)
+  skinTrend?: 'up' | 'down' | 'flat'; // S-1 추이 방향
   bodyType?: string; // C-1
   hairScore?: number; // H-1
   hairType?: string; // H-1
@@ -90,6 +92,19 @@ function getHairTypeLabel(hairType: string): string {
     coily: '강한 곱슬',
   };
   return labels[hairType] || '기타';
+}
+
+/**
+ * 피부 점수 추이 계산 (ADR-109 Phase 3 — 피부=오늘의 컨디션)
+ * 직전 분석 대비 변화. delta 0이면 flat. 순수 함수(테스트 가능).
+ */
+export function computeSkinTrend(
+  latest: number,
+  prev: number
+): { delta: number; trend: 'up' | 'down' | 'flat' } {
+  const delta = Math.round(latest - prev);
+  const trend = delta > 0 ? 'up' : 'down';
+  return { delta, trend: delta === 0 ? 'flat' : trend };
 }
 
 function getUndertoneLabel(undertone: string): string {
@@ -160,7 +175,7 @@ export function useAnalysisStatus(): AnalysisStatus {
             .from('skin_analyses')
             .select('id, overall_score, created_at')
             .order('created_at', { ascending: false })
-            .limit(1),
+            .limit(2), // 추이(직전 대비)용 2건 — ADR-109 Phase 3
           supabase
             .from('body_analyses')
             .select('id, body_type, created_at')
@@ -191,14 +206,20 @@ export function useAnalysisStatus(): AnalysisStatus {
           });
         }
 
-        // 피부 분석
+        // 피부 분석 (직전 대비 추이 포함 — "오늘의 컨디션")
         if (skinResult.data && skinResult.data.length > 0) {
+          const latestScore = skinResult.data[0].overall_score;
+          const trend =
+            skinResult.data.length > 1
+              ? computeSkinTrend(latestScore, skinResult.data[1].overall_score)
+              : null;
           results.push({
             id: skinResult.data[0].id,
             type: 'skin',
             createdAt: new Date(skinResult.data[0].created_at),
-            summary: `${skinResult.data[0].overall_score}점`,
-            skinScore: skinResult.data[0].overall_score,
+            summary: `${latestScore}점`,
+            skinScore: latestScore,
+            ...(trend ? { skinDelta: trend.delta, skinTrend: trend.trend } : {}),
           });
         }
 
