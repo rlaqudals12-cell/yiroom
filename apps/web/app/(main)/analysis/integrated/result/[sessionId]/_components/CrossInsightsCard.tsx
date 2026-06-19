@@ -12,6 +12,7 @@
 
 import { Link2 } from 'lucide-react';
 import type { CrossInsights } from '@/lib/analysis/integrated';
+import { recLayerForInsight } from '@/lib/analysis/integrated';
 
 export interface CrossInsightsCardProps {
   insights: CrossInsights;
@@ -63,6 +64,8 @@ export function CrossInsightsCard({ insights }: CrossInsightsCardProps): React.J
       <ul className="grid gap-2 sm:grid-cols-2">
         {insights.items.map((item) => {
           const theme = COMBO_THEME[item.id] ?? DEFAULT_THEME;
+          // ADR-109 Phase 3: 고정(정체성)/오늘(컨디션) 레이어 — 피부 갱신 시 '오늘'만 변함
+          const layer = recLayerForInsight(item.id);
           return (
             <li
               key={item.id}
@@ -75,6 +78,21 @@ export function CrossInsightsCard({ insights }: CrossInsightsCardProps): React.J
                 >
                   <Link2 className="h-3 w-3" aria-hidden="true" />
                   {item.combo}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    layer === 'condition'
+                      ? 'bg-amber-500/15 text-amber-300'
+                      : 'bg-zinc-500/15 text-zinc-300'
+                  }`}
+                  title={
+                    layer === 'condition'
+                      ? '오늘의 컨디션(피부)에 따라 바뀌어요'
+                      : '정체성 기반 — 거의 변하지 않아요'
+                  }
+                  data-testid={`cross-insight-layer-${item.id}`}
+                >
+                  {layer === 'condition' ? '오늘' : '고정'}
                 </span>
               </div>
               <p className="text-sm font-semibold text-white">{item.title}</p>

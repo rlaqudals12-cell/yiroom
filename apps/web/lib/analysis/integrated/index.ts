@@ -34,6 +34,10 @@ export type { ActionPlan, ActionItem, ActionHorizon, ComposeActionPlanInput } fr
 export { composeCrossInsights } from './cross-insights';
 export type { CrossInsight, CrossInsights, ComposeCrossInsightsInput } from './cross-insights';
 
+// ADR-109 Phase 3: 2층 추천 분류 (고정/오늘)
+export { splitInsightsByCadence, recLayerForInsight } from './recommendation-engine';
+export type { RecLayer, LayeredInsights } from './recommendation-engine';
+
 // 통합 큐레이션 (ADR-104 체크리스트 #5) — 세션 기반 제품 세트
 export { composeCuration } from './curation';
 export type { Curation, CurationItem, CurationCategory, ComposeCurationInput } from './curation';
