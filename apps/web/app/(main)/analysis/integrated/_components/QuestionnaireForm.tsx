@@ -228,6 +228,13 @@ export function QuestionnaireForm({
           </p>
         </fieldset>
       )}
+
+      {/* 전신 사진 업로드 시 신체 정보 입력란이 숨겨지는 이유 안내 (QA #4) */}
+      {!showBodyFields && (
+        <p className="text-xs text-zinc-500">
+          전신 사진으로 체형을 자동 분석해요. 수동 입력은 필요 없어요.
+        </p>
+      )}
     </div>
   );
 }
@@ -254,7 +261,8 @@ function NumberInput({ label, value, min, max, onChange }: NumberInputProps): Re
           const raw = e.target.value;
           if (raw === '') return onChange('');
           const n = Number(raw);
-          if (Number.isFinite(n)) onChange(n);
+          // 상한 초과 오타(예: 어깨너비 5093284) 차단 — 서버 zod 거부로 통합분석 전체가 실패하던 버그 방지
+          if (Number.isFinite(n)) onChange(Math.min(n, max));
         }}
         className="rounded-lg border border-zinc-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none"
       />

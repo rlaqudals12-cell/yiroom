@@ -32,10 +32,32 @@ interface AxisSection {
   renderDetail: (r: AxisDbRecord) => React.JSX.Element;
 }
 
+// JSONB 객체(체형/헤어 style_recommendations {tops:[...],bottoms:[...]} 등) 키 → 한국어 라벨
+const DETAIL_KEY_LABELS: Record<string, string> = {
+  tops: '상의',
+  bottoms: '하의',
+  outerwear: '아우터',
+  dresses: '원피스',
+  accessories: '액세서리',
+  avoid: '피할 것',
+  styles: '스타일',
+  cuts: '컷',
+  colors: '컬러',
+};
+
 function formatDetailValue(v: unknown): string {
   if (typeof v !== 'object' || v === null) return String(v);
   if (Array.isArray(v)) return v.slice(0, 5).map(String).join(', ');
-  return JSON.stringify(v).slice(0, 120);
+  // 왜: JSONB 객체를 raw JSON으로 노출하던 버그 수정 — 키를 한국어 라벨로 요약
+  return Object.entries(v as Record<string, unknown>)
+    .filter(([, val]) => val != null && (!Array.isArray(val) || val.length > 0))
+    .slice(0, 4)
+    .map(([k, val]) => {
+      const label = DETAIL_KEY_LABELS[k] ?? k;
+      const text = Array.isArray(val) ? val.slice(0, 2).map(String).join(', ') : String(val);
+      return `${label}: ${text}`;
+    })
+    .join(' · ');
 }
 
 // A5: 체형 측정 출처 배지 라벨 (measured=실측 / estimated=추정). 미기록(구 분석)이면 미표시.
