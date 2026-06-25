@@ -254,14 +254,19 @@ export default function BeautyProductDetailPage() {
             <p className="text-sm text-muted-foreground">{displayProduct.brand}</p>
             <h2 className="text-xl font-bold text-foreground mt-1">{displayProduct.name}</h2>
             <div className="flex items-center gap-3 mt-2">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{displayProduct.rating}</span>
-                <span className="text-sm text-muted-foreground">
-                  ({displayProduct.reviewCount.toLocaleString()}개 리뷰)
-                </span>
-              </div>
-              <span className="text-muted-foreground">|</span>
+              {/* 평점은 리뷰가 있을 때만 — 데이터 없는 제품의 "★ 0 (0개 리뷰)" 노출 방지 */}
+              {displayProduct.reviewCount > 0 && (
+                <>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{displayProduct.rating}</span>
+                    <span className="text-sm text-muted-foreground">
+                      ({displayProduct.reviewCount.toLocaleString()}개 리뷰)
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground">|</span>
+                </>
+              )}
               <div className="flex items-center gap-1">
                 <MessageSquare className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
