@@ -78,7 +78,7 @@ const AXES: AxisRow[] = [
     iconColor: 'text-violet-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      return <span className="text-white">{String(r.face_shape ?? '-')}형</span>;
+      return <span className="text-white">{r.face_shape ? `${String(r.face_shape)}형` : '-'}</span>;
     },
   },
   {
@@ -88,7 +88,7 @@ const AXES: AxisRow[] = [
     iconColor: 'text-rose-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      return <span className="text-white">{String(r.undertone ?? '-')} 톤</span>;
+      return <span className="text-white">{r.undertone ? `${String(r.undertone)} 톤` : '-'}</span>;
     },
   },
 ];

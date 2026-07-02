@@ -87,8 +87,14 @@ describe('HomeStateActive', () => {
     // WELLNESS_PHASE2와 무관하게 항상 렌더링되는 블록
     expect(screen.getByTestId('active-insight-card')).toBeInTheDocument();
     expect(screen.getByTestId('home-daily-capsule')).toBeInTheDocument();
-    expect(screen.getByTestId('home-analysis-summary')).toBeInTheDocument();
     expect(screen.getByTestId('home-recently-viewed')).toBeInTheDocument();
+
+    // ADR-109: PROFILE_HOME ON이면 분석 요약이 프로필 카드로 대체돼 여기선 미노출
+    if (FEATURE_FLAGS.PROFILE_HOME) {
+      expect(screen.queryByTestId('home-analysis-summary')).not.toBeInTheDocument();
+    } else {
+      expect(screen.getByTestId('home-analysis-summary')).toBeInTheDocument();
+    }
 
     // ADR-098: W/N UI 블록은 WELLNESS_PHASE2 플래그에 따라 분기
     if (FEATURE_FLAGS.WELLNESS_PHASE2) {

@@ -230,6 +230,14 @@ export default function BeautyProductDetailPage() {
               <Heart className={cn('w-5 h-5', isLiked && 'fill-current')} />
             </button>
             <button
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: displayProduct.name, url }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(url);
+                }
+              }}
               className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
               aria-label="공유"
             >
@@ -267,50 +275,66 @@ export default function BeautyProductDetailPage() {
                   <span className="text-muted-foreground">|</span>
                 </>
               )}
-              <div className="flex items-center gap-1">
-                <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Q&A {displayProduct.qnaCount}개
-                </span>
-              </div>
+              {displayProduct.qnaCount > 0 && (
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Q&A {displayProduct.qnaCount}개
+                  </span>
+                </div>
+              )}
             </div>
           </section>
         </FadeInUp>
 
         {/* 매칭률 */}
         <FadeInUp delay={2}>
-          <section className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-4">
+          <section className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl border border-green-200 dark:border-green-900/50 p-4">
             <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-green-600" />내 피부 매칭률
+              <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />내 피부 매칭률
             </h3>
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-3xl font-bold text-green-600">{matchScore.overall}%</span>
+            {userSkinTypeRaw ? (
+              <>
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                      {matchScore.overall}%
+                    </span>
+                  </div>
+                  <div className="h-3 bg-green-100 dark:bg-green-900/40 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all"
+                      style={{ width: `${matchScore.overall}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {matchScore.skinType && (
+                    <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+                      <Check className="w-3 h-3" /> 피부타입
+                    </span>
+                  )}
+                  {matchScore.ingredients && (
+                    <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+                      <Check className="w-3 h-3" /> 성분
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* 피부 미분석 시: "매칭률 0%" 오해 방지 — 분석 CTA로 대체 */
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  피부 분석을 하면 이 제품이 내 피부에 얼마나 맞는지 매칭률로 볼 수 있어요.
+                </p>
+                <button
+                  onClick={() => router.push('/analysis/skin')}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" /> 피부 분석하기
+                </button>
               </div>
-              <div className="h-3 bg-green-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all"
-                  style={{ width: `${matchScore.overall}%` }}
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {matchScore.skinType && (
-                <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  <Check className="w-3 h-3" /> 피부타입
-                </span>
-              )}
-              {matchScore.skinConcerns && (
-                <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  <Check className="w-3 h-3" /> 피부고민
-                </span>
-              )}
-              {matchScore.ingredients && (
-                <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  <Check className="w-3 h-3" /> 성분
-                </span>
-              )}
-            </div>
+            )}
           </section>
         </FadeInUp>
 

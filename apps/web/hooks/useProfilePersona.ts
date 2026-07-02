@@ -32,7 +32,8 @@ export function useProfilePersona(): string | null {
           .maybeSingle();
 
         const line = (data?.persona as { oneLine?: string } | null)?.oneLine;
-        if (active && line) setOneLine(line);
+        // 없음/실패 시 null로 리셋 — 계정 전환 등에서 이전 사용자 페르소나 잔존 방지
+        if (active) setOneLine(line ?? null);
       } catch {
         // 페르소나 없음/실패는 무시 — 프로필 카드는 페르소나 없이도 정상 동작
       }

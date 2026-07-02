@@ -150,7 +150,7 @@ export default async function IntegratedResultPage({
           <p className="text-xs uppercase tracking-widest text-zinc-500">Yiroom Intelligence</p>
           <h1 className="text-2xl font-bold text-white md:text-3xl">내 정체성 5축 결과</h1>
           <p className="text-xs text-zinc-400">
-            세션 {session.id.slice(0, 8)} · {new Date(session.created_at).toLocaleString('ko-KR')}
+            {new Date(session.created_at).toLocaleString('ko-KR')}
           </p>
         </header>
 

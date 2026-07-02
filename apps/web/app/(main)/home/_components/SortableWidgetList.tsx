@@ -7,7 +7,7 @@
  * - 순서 변경 시 localStorage에 자동 저장
  */
 
-import { ReactNode, useCallback, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -93,31 +93,36 @@ export default function SortableWidgetList({
   const [isEditing, setIsEditing] = useState(false);
   const t = useTranslations('home');
 
+  // 실제 렌더되는(위젯 존재) 항목만 — 스크린리더 순번을 보이는 항목 수와 일치시킴
+  const visibleOrder = useMemo(() => order.filter((id) => widgets[id] != null), [order, widgets]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // 드래그 시작 시 스크린 리더 알림
+  // 드래그 시작 시 스크린 리더 알림 (보이는 순번 기준)
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      const idx = order.indexOf(event.active.id as WidgetId);
+      const idx = visibleOrder.indexOf(event.active.id as WidgetId);
       announce(`위젯 이동 시작, 현재 ${idx + 1}번째`, 'assertive');
     },
-    [order]
+    [visibleOrder]
   );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
       if (over && active.id !== over.id) {
+        // 영속 order(숨김 위젯 포함)는 전체 인덱스로 이동, 안내는 보이는 순번으로
         const oldIndex = order.indexOf(active.id as WidgetId);
         const newIndex = order.indexOf(over.id as WidgetId);
         onOrderChange(arrayMove(order, oldIndex, newIndex));
-        announce(`위젯을 ${newIndex + 1}번째로 이동했어요`, 'assertive');
+        const visIdx = visibleOrder.indexOf(over.id as WidgetId);
+        announce(`위젯을 ${visIdx + 1}번째로 이동했어요`, 'assertive');
       }
     },
-    [order, onOrderChange]
+    [order, visibleOrder, onOrderChange]
   );
 
   return (
@@ -160,17 +165,13 @@ export default function SortableWidgetList({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={order} strategy={verticalListSortingStrategy}>
+        <SortableContext items={visibleOrder} strategy={verticalListSortingStrategy}>
           <div className={cn('space-y-5', isEditing && 'pl-4')}>
-            {order.map((widgetId) => {
-              const widget = widgets[widgetId];
-              if (!widget) return null;
-              return (
-                <SortableItem key={widgetId} id={widgetId} isEditing={isEditing}>
-                  {widget}
-                </SortableItem>
-              );
-            })}
+            {visibleOrder.map((widgetId) => (
+              <SortableItem key={widgetId} id={widgetId} isEditing={isEditing}>
+                {widgets[widgetId]}
+              </SortableItem>
+            ))}
           </div>
         </SortableContext>
       </DndContext>

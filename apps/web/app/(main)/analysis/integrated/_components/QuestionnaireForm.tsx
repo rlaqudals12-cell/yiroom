@@ -261,8 +261,12 @@ function NumberInput({ label, value, min, max, onChange }: NumberInputProps): Re
           const raw = e.target.value;
           if (raw === '') return onChange('');
           const n = Number(raw);
-          // 상한 초과 오타(예: 어깨너비 5093284) 차단 — 서버 zod 거부로 통합분석 전체가 실패하던 버그 방지
-          if (Number.isFinite(n)) onChange(Math.min(n, max));
+          // 상한 초과 오타(예: 어깨너비 5093284)·음수 즉시 차단 — 서버 zod 거부로 통합분석 전체가 실패하던 버그 방지
+          if (Number.isFinite(n) && n >= 0) onChange(Math.min(n, max));
+        }}
+        onBlur={() => {
+          // 하한 미만은 blur 시 보정(타이핑 중 "1"→"100" 방해 방지). 상한/음수는 onChange에서 이미 처리
+          if (value !== '' && value < min) onChange(min);
         }}
         className="rounded-lg border border-zinc-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none"
       />
