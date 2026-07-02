@@ -88,6 +88,16 @@ export const integratedAnalysisInputSchema = z.object({
     })
     .default({}),
 
+  /**
+   * 재분석 모드 (ADR-109 cadence locking).
+   * - 'full'(기본): 5축 전부 실행
+   * - 'update': `axes`에 지정한 축만 재실행, 나머지는 건드리지 않아 프로필 최신값(색·체형 등) 유지
+   */
+  mode: z.enum(['full', 'update']).default('full'),
+
+  /** update 모드에서 재분석할 축. 비었으면 full처럼 전체 실행 */
+  axes: z.array(z.enum(['personal_color', 'skin', 'body', 'hair', 'makeup'])).optional(),
+
   /** 분석 옵션 */
   options: z
     .object({
@@ -114,6 +124,7 @@ export type AxisErrorCode =
   | 'IMAGE_QUALITY'
   | 'MISSING_INPUT'
   | 'REQUIRES_PC_AND_S' // M-1 전용: PC/S 실패 시
+  | 'SKIPPED' // 선택 재분석: 이번 세션에서 제외된 축 (ADR-109 cadence locking)
   | 'DB_SAVE_FAILED'
   | 'UNKNOWN';
 

@@ -16,6 +16,10 @@ import type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,
   SessionStatus,
+  PersonalColorAxisData,
+  SkinAxisData,
+  BodyAxisData,
+  HairAxisData,
 } from './types';
 import { createSession, finalizeSession, markSessionFailed } from './internal/session-store';
 import {
@@ -39,6 +43,17 @@ const AXIS_BADGE_TYPE: Partial<Record<AxisCode, 'personal-color' | 'skin' | 'bod
   skin: 'skin',
   body: 'body',
 };
+
+// 선택 재분석(update)에서 제외된 축의 센티널 결과. 집계·저장·게이미피케이션에서 제외됨 (ADR-109 cadence locking).
+const SKIPPED_AXIS = {
+  success: false,
+  error: {
+    code: 'SKIPPED' as const,
+    message: 'axis not selected for this update session',
+    userMessage: '이번 재분석에서 제외된 축이에요.',
+    retryable: false,
+  },
+} satisfies AxisResult<never>;
 
 /**
  * Promise.allSettled 결과를 AxisResult로 변환.
@@ -125,12 +140,26 @@ export async function runIntegratedAnalysis(
   });
 
   try {
-    // 2. 4축 병렬 실행 (Phase F.3: 모든 adapter가 input을 받아 Gemini 호출 가능)
+    // ADR-109 cadence locking: update 모드면 선택 축만 실행, 나머지는 프로필 최신값 유지(재실행 X → 색·체형 안 흔들림)
+    const selected: Set<AxisCode> =
+      input.mode === 'update' && input.axes && input.axes.length > 0
+        ? new Set(input.axes)
+        : new Set<AxisCode>(['personal_color', 'skin', 'body', 'hair', 'makeup']);
+
+    // 2. 선택 축만 병렬 실행 (제외 축은 SKIPPED 센티널 — DB 저장·집계 안 함)
     const [pcSettled, skinSettled, bodySettled, hairSettled] = await Promise.allSettled([
-      runPersonalColorAxis(sessionId, clerkUserId, input),
-      runSkinAxis(sessionId, clerkUserId, input),
-      runBodyAxis(sessionId, clerkUserId, input),
-      runHairAxis(sessionId, clerkUserId, input),
+      selected.has('personal_color')
+        ? runPersonalColorAxis(sessionId, clerkUserId, input)
+        : Promise.resolve<AxisResult<PersonalColorAxisData>>(SKIPPED_AXIS),
+      selected.has('skin')
+        ? runSkinAxis(sessionId, clerkUserId, input)
+        : Promise.resolve<AxisResult<SkinAxisData>>(SKIPPED_AXIS),
+      selected.has('body')
+        ? runBodyAxis(sessionId, clerkUserId, input)
+        : Promise.resolve<AxisResult<BodyAxisData>>(SKIPPED_AXIS),
+      selected.has('hair')
+        ? runHairAxis(sessionId, clerkUserId, input)
+        : Promise.resolve<AxisResult<HairAxisData>>(SKIPPED_AXIS),
     ]);
 
     const pc = settledToAxisResult(pcSettled, '퍼스널컬러');
@@ -138,18 +167,12 @@ export async function runIntegratedAnalysis(
     const body = settledToAxisResult(bodySettled, '체형');
     const hair = settledToAxisResult(hairSettled, '헤어');
 
-    // 3. M-1 composer 실행 (PC+S 의존, skipMakeup 옵션 존중)
-    const makeup = input.options.skipMakeup
-      ? ({
-          success: false,
-          error: {
-            code: 'REQUIRES_PC_AND_S' as const,
-            message: 'skipped by option',
-            userMessage: '메이크업 추천이 비활성화됐어요.',
-            retryable: false,
-          },
-        } satisfies AxisResult<never>)
-      : await runMakeupComposer(sessionId, clerkUserId, pc, skin);
+    // 3. M-1 composer (PC+S 의존). update에서 makeup 미선택이거나 skipMakeup이면 실행 안 함
+    // (makeup 선택했어도 pc/skin이 이번에 재실행 안 됐으면 composer가 REQUIRES_PC_AND_S로 자연 스킵)
+    const makeup =
+      !selected.has('makeup') || input.options.skipMakeup
+        ? SKIPPED_AXIS
+        : await runMakeupComposer(sessionId, clerkUserId, pc, skin);
 
     // 4. 축 집계
     const axesCompleted: AxisCode[] = [];
@@ -165,6 +188,8 @@ export async function runIntegratedAnalysis(
     ];
 
     for (const [code, result] of entries) {
+      // update에서 제외된 축은 집계 제외 (실패 아님 — 이번 세션에서 미변경, 프로필 최신값 유지)
+      if (!selected.has(code)) continue;
       if (result.success) {
         axesCompleted.push(code);
         if (result.usedFallback) usedFallback.push(code);

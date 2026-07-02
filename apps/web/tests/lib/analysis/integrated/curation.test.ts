@@ -122,7 +122,7 @@ describe('composeCuration', () => {
     });
     const outfit = r.items.find((i) => i.category === 'outfit');
     expect(outfit).toBeDefined();
-    expect(outfit?.title).toContain('hourglass');
+    expect(outfit?.title).toContain('모래시계형');
   });
 
   it('5축 성공 시 최대 3개로 제한', () => {

@@ -132,7 +132,7 @@ describe('composeActionPlan', () => {
     const monthItem = plan.items.find((i) => i.horizon === 'this_month');
     expect(monthItem).toBeDefined();
     expect(monthItem?.axis).toBe('body');
-    expect(monthItem?.title).toContain('hourglass');
+    expect(monthItem?.title).toContain('모래시계형');
   });
 
   it('헤어만 성공 → this_month에 헤어 액션', () => {

@@ -13,20 +13,47 @@ import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { measureBodyClient } from '@/lib/analysis/body-v2';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import type { AxisCode } from '@/lib/analysis/integrated';
 import { ImageUploadSection } from './_components/ImageUploadSection';
 import { QuestionnaireForm, type QuestionnaireData } from './_components/QuestionnaireForm';
 import { IntegratedLoadingUI } from './_components/IntegratedLoadingUI';
 
+// 선택 재분석용 축 옵션 (ADR-109 cadence locking)
+const AXIS_OPTIONS: { code: AxisCode; label: string }[] = [
+  { code: 'personal_color', label: '퍼스널컬러' },
+  { code: 'skin', label: '피부' },
+  { code: 'body', label: '체형' },
+  { code: 'hair', label: '헤어' },
+  { code: 'makeup', label: '메이크업' },
+];
+const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
+
 export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const router = useRouter();
+  const { analysisCount } = useAnalysisStatus();
 
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [bodyImage, setBodyImage] = useState<string | null>(null);
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireData | null>(null);
+  const [selectedAxes, setSelectedAxes] = useState<AxisCode[]>(ALL_AXES);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 이미 분석 이력이 있는 복귀 사용자에게만 "축 선택" 노출 (신규는 전체 분석)
+  const isReturning = analysisCount > 0;
+  // 일부만 선택 → update 모드(선택 축만 재분석, 나머지 프로필 유지)
+  const isPartialUpdate =
+    isReturning && selectedAxes.length > 0 && selectedAxes.length < ALL_AXES.length;
+
   const canSubmit = faceImage !== null && !isSubmitting;
+
+  const toggleAxis = useCallback((code: AxisCode) => {
+    setSelectedAxes((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!faceImage) {
@@ -62,6 +89,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
           measuredBody,
           questionnaire: questionnaire ?? {},
           options: { locale: 'ko' },
+          // 선택 재분석: 일부 축만 고르면 그 축만 재실행, 나머지는 프로필 최신값 유지 (ADR-109)
+          ...(isPartialUpdate ? { mode: 'update' as const, axes: selectedAxes } : {}),
         }),
       });
 
@@ -90,7 +119,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       setError('네트워크 오류가 발생했어요.');
       setIsSubmitting(false);
     }
-  }, [faceImage, bodyImage, questionnaire, router]);
+  }, [faceImage, bodyImage, questionnaire, selectedAxes, isPartialUpdate, router]);
 
   if (isSubmitting) {
     return (
@@ -124,6 +153,38 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
             약 2분이면 완료돼요. 자연광에서 찍은 정면 사진이 가장 정확해요.
           </p>
         </header>
+
+        {/* 선택 재분석 — 복귀 사용자만 (ADR-109 cadence locking) */}
+        {isReturning && (
+          <section className="space-y-2" data-testid="axis-select-section">
+            <h2 className="text-lg font-semibold text-white">다시 분석할 축</h2>
+            <p className="text-xs text-zinc-400">
+              체크한 축만 새로 분석해요. 나머지는 지금 프로필 값을 그대로 유지해서, 피부처럼 자주
+              변하는 것만 갱신할 수 있어요.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {AXIS_OPTIONS.map(({ code, label }) => {
+                const on = selectedAxes.includes(code);
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleAxis(code)}
+                    className={cn(
+                      'rounded-full border px-3 py-1.5 text-sm transition-colors',
+                      on
+                        ? 'border-pink-500 bg-pink-500/15 text-pink-200'
+                        : 'border-zinc-700 text-zinc-500 hover:border-zinc-500'
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* 1. 이미지 업로드 */}
         <section className="space-y-3">
