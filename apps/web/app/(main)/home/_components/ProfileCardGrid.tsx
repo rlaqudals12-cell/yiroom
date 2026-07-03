@@ -10,6 +10,7 @@
  */
 
 import Link from 'next/link';
+import { track } from '@vercel/analytics';
 import {
   Lock,
   RefreshCw,
@@ -113,6 +114,7 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
               <Link
                 key={type}
                 href={meta.analysisHref}
+                onClick={() => track('profile_card_cta', { axis: type })}
                 className="group flex flex-col gap-1.5 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 transition-colors"
                 data-testid={`profile-card-empty-${type}`}
               >
@@ -134,6 +136,7 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
             <Link
               key={type}
               href={getResultHref(analysis)}
+              onClick={() => track('profile_card_open', { axis: type })}
               className="group flex flex-col gap-1.5 p-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors"
               data-testid={`profile-card-${type}`}
             >
@@ -172,6 +175,7 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
       {completedCount < TOTAL_ANALYSIS_TYPES && (
         <Link
           href="/analysis/integrated"
+          onClick={() => track('profile_integrated_cta', { completed: completedCount })}
           className="mt-3 flex items-center justify-center gap-1 w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-bold shadow-md shadow-pink-500/20 hover:from-pink-400 hover:to-purple-400 transition-all"
           data-testid="profile-card-integrated-cta"
         >

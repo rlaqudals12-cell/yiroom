@@ -10,6 +10,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { track } from '@vercel/analytics';
 import { Sparkles } from 'lucide-react';
 import { measureBodyClient } from '@/lib/analysis/body-v2';
 import { Button } from '@/components/ui/button';
@@ -112,6 +113,12 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         setIsSubmitting(false);
         return;
       }
+
+      // 실사용 계측 (Vercel Analytics 커스텀 이벤트 — flagship 통합 분석 완료)
+      track('integrated_analysis_complete', {
+        mode: isPartialUpdate ? 'update' : 'full',
+        axisCount: isPartialUpdate ? selectedAxes.length : 5,
+      });
 
       router.push(`/analysis/integrated/result/${sessionId}`);
     } catch (err) {
