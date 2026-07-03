@@ -40,11 +40,26 @@ export const personalColorEngine: CapsuleEngine<PCPalette> = {
       'hair-color',
     ];
 
+    // 사용자 노출 이름 한국어화 — 시즌(DB는 'Summer'/'summer' 혼재) + 용도
+    const SEASON_LABELS: Record<string, string> = {
+      spring: '봄 웜톤',
+      summer: '여름 쿨톤',
+      autumn: '가을 웜톤',
+      winter: '겨울 쿨톤',
+    };
+    const CATEGORY_LABELS: Record<PCPalette['category'], string> = {
+      clothing: '의류',
+      makeup: '메이크업',
+      accessory: '액세서리',
+      'hair-color': '헤어컬러',
+    };
+    const seasonLabel = SEASON_LABELS[season.toLowerCase()] ?? season;
+
     return Array(maxItems)
       .fill(null)
       .map((_, i) => ({
         id: `pc-placeholder-${i}`,
-        name: `${season} ${categories[i % categories.length]} 팔레트`,
+        name: `${seasonLabel} ${CATEGORY_LABELS[categories[i % categories.length]]} 팔레트 확인`,
         category: categories[i % categories.length],
         colors: palette.length > 0 ? palette.slice(0, 5) : ['#FFFFFF'],
         season,

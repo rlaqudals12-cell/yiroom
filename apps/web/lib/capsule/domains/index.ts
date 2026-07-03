@@ -29,6 +29,24 @@ export function registerPhase3Domains(): void {
 }
 
 /**
+ * 시각 정체성 도메인 엔진 등록 (ADR-098 5축 + 옷장 연결)
+ *
+ * PC/S/C/H/M + Fashion 6개만 등록. W(운동)/N(영양)은 UI 숨김,
+ * OH(구강)는 제거된 모듈이라 데일리 캡슐에서도 제외 —
+ * 숨긴 모듈의 아이템(운동 30분 등)이 "오늘의 루틴"에 섞이는 정합성 문제 방지.
+ */
+export function registerIdentityDomains(): void {
+  // 등록 순서 = 캡슐 아이템 순서 = 홈 위젯 상위 5개 노출 순서.
+  // 아침 루틴 흐름(스킨케어→메이크업→헤어→코디)을 앞에, 정보성(PC/체형)을 뒤에.
+  registerDomain(skinEngine);
+  registerDomain(makeupEngine);
+  registerDomain(hairEngine);
+  registerDomain(fashionEngine);
+  registerDomain(personalColorEngine);
+  registerDomain(bodyEngine);
+}
+
+/**
  * 전체 도메인 엔진 등록 (9개)
  * Phase 5 이후 앱 초기화 시 이 함수 사용
  */

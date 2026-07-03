@@ -55,11 +55,21 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
       'lifestyle',
     ];
 
+    // 카테고리별 루틴명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
+    // (bodyShape 원문은 'pear' 등 영문 코드라 이름에 직접 노출하지 않음)
+    const CATEGORY_NAMES: Record<BodyPlan['category'], string> = {
+      'posture-correction': '체형 맞춤 자세 교정',
+      'stretching-routine': '데일리 스트레칭 루틴',
+      'strength-plan': '밸런스 근력 플랜',
+      'body-alignment': '바디 얼라인먼트 체크',
+      'lifestyle-habit': '생활 자세 습관 개선',
+    };
+
     return Array(maxItems)
       .fill(null)
       .map((_, i) => ({
         id: `body-placeholder-${i}`,
-        name: `${bodyShape} 체형 ${categories[i % categories.length]} ${i + 1}`,
+        name: CATEGORY_NAMES[categories[i % categories.length]],
         category: categories[i % categories.length],
         targetAreas: focusAreas.length > 0 ? [focusAreas[i % focusAreas.length]] : ['core'],
         approach: approaches[i % approaches.length],

@@ -16,7 +16,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getBeautyProfile } from './profile';
 import { collectContext } from './context';
 import { getAllDomains, getDomainCount } from './registry';
-import { registerAllDomains } from './domains';
+import { registerIdentityDomains } from './domains';
 import { calculateCCS } from './scoring';
 import type { DomainItemGroup } from './scoring';
 import { getCrossDomainRules } from './capsule-repository';
@@ -65,10 +65,11 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   const context = await collectContext(userId);
 
   // Step 3: 각 도메인 curate
-  // 도메인 엔진 등록 보장 (멱등) — registerAllDomains가 앱 부트스트랩에서 호출되지
-  // 않으면 registry가 비어 캡슐이 항상 빈 채로 생성됨. 서버리스 콜드스타트마다 1회 등록.
+  // 도메인 엔진 등록 보장 (멱등) — 부트스트랩 등록이 없으면 registry가 비어
+  // 캡슐이 항상 빈 채로 생성됨. 서버리스 콜드스타트마다 1회 등록.
+  // ADR-098: 시각 정체성 5축(PC/S/C/H/M)+Fashion만 — W/N(숨김)/OH(제거) 제외.
   if (getDomainCount() === 0) {
-    registerAllDomains();
+    registerIdentityDomains();
   }
   const domains = getAllDomains();
   const domainGroups: DomainItemGroup[] = [];
@@ -350,26 +351,46 @@ function generateReason(domainId: string, context: DailyContext): string {
     },
   };
 
-  return seasonReasons[domainId]?.[context.season] ?? '오늘의 루틴에 추천드려요';
+  // 시즌 무관 도메인 — 분석 결과 연결이 드러나는 고정 이유
+  const staticReasons: Record<string, string> = {
+    'personal-color': '내 시즌 팔레트 기준이에요',
+    makeup: '퍼스널컬러에 어울리는 톤이에요',
+    hair: '얼굴형·모발 타입에 맞춘 케어예요',
+    body: '체형 밸런스를 위한 루틴이에요',
+  };
+
+  return (
+    seasonReasons[domainId]?.[context.season] ??
+    staticReasons[domainId] ??
+    '오늘의 루틴에 추천드려요'
+  );
 }
 
 /**
  * 예상 소요 시간 계산
+ *
+ * 왜 모듈당 1회 합산인가: 스킨케어 3스텝은 "10분짜리 루틴 하나"지
+ * 30분이 아니다. 아이템×모듈시간 합산은 25개 아이템에서 "약 200분"이라는
+ * 비현실적 추정을 만들었음 (2026-07-04). 고유 모듈 시간만 1회씩 더한다.
  */
 function calculateEstimatedMinutes(items: DailyItem[]): number {
   const minutesPerModule: Record<string, number> = {
-    S: 10, // 스킨케어
+    S: 10, // 스킨케어 (루틴 전체)
     Fashion: 5, // 패션 코디
     N: 5, // 영양
     W: 30, // 운동
     H: 5, // 헤어
-    M: 10, // 메이크업
+    M: 10, // 메이크업 (루틴 전체)
     PC: 0, // 퍼스널컬러 (정보 제공)
     OH: 5, // 구강건강
     C: 0, // 체형 (정보 제공)
   };
 
-  return items.reduce((total, item) => total + (minutesPerModule[item.moduleCode] ?? 5), 0);
+  const uniqueModules = new Set(items.map((item) => item.moduleCode));
+  return Array.from(uniqueModules).reduce(
+    (total, moduleCode) => total + (minutesPerModule[moduleCode] ?? 5),
+    0
+  );
 }
 
 /**

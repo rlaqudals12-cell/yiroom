@@ -35,11 +35,21 @@ export const hairEngine: CapsuleEngine<HairProduct> = {
       'hair-oil',
     ];
 
+    // 카테고리별 헤어 케어명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
+    const CATEGORY_NAMES: Record<HairProduct['category'], string> = {
+      shampoo: '두피 타입 맞춤 샴푸',
+      conditioner: '모발 끝 컨디셔너 케어',
+      treatment: '집중 트리트먼트',
+      'scalp-care': '두피 스케일링 케어',
+      styling: '얼굴형 맞춤 스타일링',
+      'hair-oil': '헤어 오일로 마무리',
+    };
+
     return Array(maxItems)
       .fill(null)
       .map((_, i) => ({
         id: `hair-placeholder-${i}`,
-        name: `Hair Product ${i + 1}`,
+        name: CATEGORY_NAMES[categories[i % categories.length]],
         category: categories[i % categories.length],
         ingredients: [],
         hairTypes: [hairType],

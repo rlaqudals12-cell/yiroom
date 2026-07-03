@@ -13,6 +13,15 @@ import { SKIN_INGREDIENT_CONFLICTS, SKIN_INGREDIENT_SYNERGIES } from '../domain-
 // 기본 스킨케어 루틴 순서 (최소 5개)
 const ROUTINE_ORDER = ['cleanser', 'toner', 'serum', 'moisturizer', 'sunscreen'] as const;
 
+// 카테고리별 루틴 스텝명 — "오늘의 루틴" 위젯에 그대로 노출되므로 행동 단위 한국어로
+const STEP_NAMES: Record<(typeof ROUTINE_ORDER)[number], string> = {
+  cleanser: '미온수 저자극 클렌징',
+  toner: '토너로 피부결 정리',
+  serum: '수분 세럼 흡수시키기',
+  moisturizer: '수분 크림으로 마무리',
+  sunscreen: '자외선 차단제 바르기',
+};
+
 // 개인화 레벨별 최적 N
 const OPTIMAL_N: Record<number, number> = {
   1: 5, // 기본 5단계
@@ -37,7 +46,7 @@ export const skinEngine: CapsuleEngine<SkinProduct> = {
       .fill(null)
       .map((_, i) => ({
         id: `skin-placeholder-${i}`,
-        name: `Step ${i + 1}`,
+        name: STEP_NAMES[ROUTINE_ORDER[i % ROUTINE_ORDER.length]],
         brand: '',
         category: ROUTINE_ORDER[i % ROUTINE_ORDER.length],
         ingredients: [],

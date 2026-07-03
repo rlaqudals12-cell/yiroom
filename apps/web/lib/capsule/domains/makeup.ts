@@ -34,11 +34,21 @@ export const makeupEngine: CapsuleEngine<MakeupProduct> = {
       'setting',
     ];
 
+    // 카테고리별 메이크업 스텝명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
+    const CATEGORY_NAMES: Record<MakeupProduct['category'], string> = {
+      base: '톤 보정 베이스 메이크업',
+      eye: '데일리 아이 메이크업',
+      lip: '시즌 컬러 립 포인트',
+      cheek: '생기 블러셔 터치',
+      brow: '자연스러운 눈썹 정리',
+      setting: '픽서로 메이크업 고정',
+    };
+
     return Array(maxItems)
       .fill(null)
       .map((_, i) => ({
         id: `makeup-placeholder-${i}`,
-        name: `Makeup ${categories[i % categories.length]} ${i + 1}`,
+        name: CATEGORY_NAMES[categories[i % categories.length]],
         category: categories[i % categories.length],
         finish: 'satin' as const,
         seasonMatch: season ? [season] : [],

@@ -98,11 +98,15 @@ describe('BodyEngine', () => {
       expect(items.length).toBe(2);
     });
 
-    it('체형 이름이 아이템 이름에 포함된다', async () => {
+    it('아이템 이름은 한국어 루틴명이고 체형은 targetAreas에 반영된다', async () => {
+      // 'pear' 같은 영문 체형 코드는 사용자 노출 이름에서 제거 (2026-07-04)
+      // — 체형 개인화는 이름이 아니라 focusAreas 기반 targetAreas로 검증
       const items = await bodyEngine.curate(
         createProfile({ body: { shape: 'pear', measurements: {} } })
       );
-      expect(items[0].name).toContain('pear');
+      expect(items[0].name).toBe('체형 맞춤 자세 교정');
+      expect(items[0].name).not.toContain('pear');
+      expect(items[0].targetAreas.length).toBeGreaterThan(0);
     });
   });
 

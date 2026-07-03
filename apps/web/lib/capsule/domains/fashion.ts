@@ -73,14 +73,24 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
     const seasonHex = profile.personalColor?.palette?.[0] ?? '#808080';
 
+    // 카테고리별 코디 액션명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
+    const CATEGORY_NAMES: Record<FashionItem['category'], string> = {
+      top: '퍼스널 톤 상의 매치',
+      bottom: '뉴트럴 하의로 밸런스',
+      outer: '톤온톤 아우터 레이어링',
+      dress: '원피스 하나로 톤 완성',
+      shoes: '컬러 조화 슈즈 선택',
+      bag: '컬러 조화 가방 매치',
+      accessory: '포인트 액세서리 더하기',
+    };
+    const categories: FashionItem['category'][] = ['top', 'bottom', 'outer', 'shoes', 'accessory'];
+
     return Array(maxItems)
       .fill(null)
       .map((_, i) => ({
         id: `fashion-placeholder-${i}`,
-        name: `Item ${i + 1}`,
-        category: ['top', 'bottom', 'outer', 'shoes', 'accessory'][
-          i % 5
-        ] as FashionItem['category'],
+        name: CATEGORY_NAMES[categories[i % categories.length]],
+        category: categories[i % categories.length],
         color: { name: 'default', hex: seasonHex },
         tags: [],
       }));
