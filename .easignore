@@ -9,11 +9,13 @@ node_modules/
 # Git
 .git/
 
-# Web app: keep package.json for workspace resolution, exclude heavy content
-apps/web/.next/
-apps/web/node_modules/
-apps/web/tests/
-apps/web/public/
+# Web app: keep package.json for workspace resolution, exclude everything else
+# (웹 소스는 모바일 빌드에 불필요 + (main)/[id] 경로가 Linux tar 추출 실패 유발)
+apps/web/*
+!apps/web/package.json
+
+# Vercel build output (심링크 포함 → Linux tar 추출 실패, 2026-07-04 빌드 실패 원인)
+.vercel/
 
 # Documentation with Korean filenames (causes tar extraction errors on Linux)
 docs/
