@@ -8,11 +8,9 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -74,8 +72,8 @@ jest.mock('../../../hooks/useNutritionData', () => ({
     streak: null,
     isLoading: false,
   })),
-  calculateCalorieProgress: jest.fn(
-    (consumed: number, goal: number) => Math.round((consumed / goal) * 100)
+  calculateCalorieProgress: jest.fn((consumed: number, goal: number) =>
+    Math.round((consumed / goal) * 100)
   ),
   getNutrientStatus: jest.fn(),
   getNutrientStatusColor: jest.fn(),
@@ -136,27 +134,53 @@ jest.mock('../../../lib/capsule/hooks', () => ({
 jest.mock('../../../components/ui', () => {
   const { View, Text } = require('react-native');
   return {
-    GradientCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <View {...props}>{children}</View>
-    ),
-    AnimatedCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <View {...props}>{children}</View>
-    ),
+    GradientCard: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
+    AnimatedCard: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
       <View {...props}>{children}</View>
     ),
     SectionHeader: ({ title, ...props }: { title: string; [key: string]: unknown }) => (
-      <View {...props}><Text>{title}</Text></View>
+      <View {...props}>
+        <Text>{title}</Text>
+      </View>
     ),
-    StatCard: ({ label, value, ...props }: { label: string; value: string; [key: string]: unknown }) => (
-      <View testID="stat-card" {...props}><Text>{label}</Text><Text>{value}</Text></View>
+    StatCard: ({
+      label,
+      value,
+      ...props
+    }: {
+      label: string;
+      value: string;
+      [key: string]: unknown;
+    }) => (
+      <View testID="stat-card" {...props}>
+        <Text>{label}</Text>
+        <Text>{value}</Text>
+      </View>
     ),
     SkeletonText: () => <View />,
     SkeletonCard: (props: Record<string, unknown>) => <View testID={props.testID as string} />,
     SkeletonCircle: () => <View />,
-    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string; [key: string]: unknown }) => (
-      <View testID={testID}>{children}</View>
-    ),
+    ScreenContainer: ({
+      children,
+      testID,
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+      [key: string]: unknown;
+    }) => <View testID={testID}>{children}</View>,
   };
 });
 
@@ -164,9 +188,13 @@ jest.mock('../../../components/ui', () => {
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
   return {
-    SafeAreaView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <View {...props}>{children}</View>
-    ),
+    SafeAreaView: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
@@ -185,9 +213,12 @@ jest.mock('expo-haptics', () => ({
 // lucide-react-native mock
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
-  return new Proxy({}, {
-    get: () => (props: Record<string, unknown>) => <View {...props} />,
-  });
+  return new Proxy(
+    {},
+    {
+      get: () => (props: Record<string, unknown>) => <View {...props} />,
+    }
+  );
 });
 
 // react-native-reanimated mock (체이닝 전체 지원)
@@ -258,9 +289,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -287,11 +316,16 @@ describe('HomeScreen', () => {
     });
 
     it('오늘의 요약 StatCard가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<HomeScreen />);
-      // StatCard countUp 애니메이션은 Jest에서 미동작 → testID + accessibilityLabel로 검증
-      expect(getByTestId('stat-workout')).toBeTruthy();
-      expect(getByTestId('stat-calorie')).toBeTruthy();
-      expect(getByTestId('stat-analysis')).toBeTruthy();
+      const { getByTestId, queryByTestId } = renderWithTheme(<HomeScreen />);
+      // "오늘의 요약" 카드는 WELLNESS_PHASE2(W/N 연동) 게이팅 — ADR-098로 현재 OFF
+      if (FEATURE_FLAGS.WELLNESS_PHASE2) {
+        // StatCard countUp 애니메이션은 Jest에서 미동작 → testID로 검증
+        expect(getByTestId('stat-workout')).toBeTruthy();
+        expect(getByTestId('stat-calorie')).toBeTruthy();
+        expect(getByTestId('stat-analysis')).toBeTruthy();
+      } else {
+        expect(queryByTestId('stat-workout')).toBeNull();
+      }
     });
 
     it('사용자 이름을 HomeHeader에 전달한다', () => {

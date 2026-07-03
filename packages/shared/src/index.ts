@@ -9,3 +9,4 @@ export * from './onboarding';
 export * from './feature-flags';
 export * from './styling-principles';
 export * from './analysis-cadence';
+export * from './skin-trend';

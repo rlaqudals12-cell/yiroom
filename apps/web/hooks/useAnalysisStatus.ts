@@ -2,8 +2,13 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { computeSkinTrend } from '@yiroom/shared';
 import { getBodyShapeLabel } from '@/lib/body';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+
+// computeSkinTrend는 @yiroom/shared로 승격 (웹·앱 공유 — ADR-109 Phase 4A).
+// 하위 호환: 기존 '@/hooks/useAnalysisStatus' import 경로 유지용 re-export.
+export { computeSkinTrend } from '@yiroom/shared';
 
 // 캐시 TTL: 5분 (밀리초)
 const CACHE_TTL = 5 * 60 * 1000;
@@ -92,19 +97,6 @@ function getHairTypeLabel(hairType: string): string {
     coily: '강한 곱슬',
   };
   return labels[hairType] || '기타';
-}
-
-/**
- * 피부 점수 추이 계산 (ADR-109 Phase 3 — 피부=오늘의 컨디션)
- * 직전 분석 대비 변화. delta 0이면 flat. 순수 함수(테스트 가능).
- */
-export function computeSkinTrend(
-  latest: number,
-  prev: number
-): { delta: number; trend: 'up' | 'down' | 'flat' } {
-  const delta = Math.round(latest - prev);
-  const trend = delta > 0 ? 'up' : 'down';
-  return { delta, trend: delta === 0 ? 'flat' : trend };
 }
 
 function getUndertoneLabel(undertone: string): string {

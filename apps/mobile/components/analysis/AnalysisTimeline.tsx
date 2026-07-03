@@ -4,7 +4,7 @@
  * 사용자의 최근 분석 결과를 시간순으로 표시.
  * 각 분석 타입(퍼스널컬러/피부/체형)별 아이콘과 요약 포함.
  */
-import { Palette, Droplets, Ruler, Clock } from 'lucide-react-native';
+import { Palette, Droplets, Ruler, Scissors, Sparkles, Clock } from 'lucide-react-native';
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -16,13 +16,15 @@ interface TypeConfigEntry {
   label: string;
   // lucide-react-native 아이콘 컴포넌트
   IconComponent: React.ComponentType<{ size?: number; color?: string }>;
-  moduleKey: 'personalColor' | 'skin' | 'body';
+  moduleKey: 'personalColor' | 'skin' | 'body' | 'hair' | 'makeup';
 }
 
 const TYPE_CONFIG: Record<string, TypeConfigEntry> = {
   'personal-color': { label: '퍼스널컬러', IconComponent: Palette, moduleKey: 'personalColor' },
   skin: { label: '피부 분석', IconComponent: Droplets, moduleKey: 'skin' },
   body: { label: '체형 분석', IconComponent: Ruler, moduleKey: 'body' },
+  hair: { label: '헤어 분석', IconComponent: Scissors, moduleKey: 'hair' },
+  makeup: { label: '메이크업', IconComponent: Sparkles, moduleKey: 'makeup' },
 };
 
 function formatRelativeDate(date: Date): string {

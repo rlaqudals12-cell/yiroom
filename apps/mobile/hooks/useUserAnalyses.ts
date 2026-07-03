@@ -3,6 +3,7 @@
  * PC-1/S-1/C-1 분석 결과를 가져옴
  */
 import { useUser } from '@clerk/clerk-expo';
+import { computeSkinTrend } from '@yiroom/shared';
 import { useState, useEffect, useCallback } from 'react';
 
 import { useClerkSupabaseClient } from '../lib/supabase';
@@ -17,9 +18,12 @@ export interface AnalysisSummary {
   // 타입별 추가 데이터
   seasonType?: string;
   skinScore?: number;
+  skinDelta?: number; // S-1 직전 대비 점수 변화 (ADR-109 Phase 3 — "오늘의 컨디션")
+  skinTrend?: 'up' | 'down' | 'flat'; // S-1 추이 방향
   bodyType?: string;
   hairType?: string;
   hairScore?: number;
+  makeupScore?: number; // M-1
   undertone?: string;
   oralHealthScore?: number;
 }
@@ -129,29 +133,34 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
           });
         }
 
-        // 피부 분석 결과
-        const { data: skinData, error: skinError } = await supabase
+        // 피부 분석 결과 (직전 대비 추이 포함 — "오늘의 컨디션", ADR-109 Phase 3)
+        const { data: skinRows, error: skinError } = await supabase
           .from('skin_analyses')
           .select('id, skin_type, overall_score, concerns, created_at')
           .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(2); // 추이(직전 대비)용 2건
 
-        if (skinData && !skinError) {
+        if (skinRows && skinRows.length > 0 && !skinError) {
+          const latest = skinRows[0];
           const skin: SkinAnalysisResult = {
-            id: skinData.id,
-            skinType: skinData.skin_type,
-            overallScore: skinData.overall_score,
-            concerns: skinData.concerns || [],
-            createdAt: new Date(skinData.created_at),
+            id: latest.id,
+            skinType: latest.skin_type,
+            overallScore: latest.overall_score,
+            concerns: latest.concerns || [],
+            createdAt: new Date(latest.created_at),
           };
           setSkinAnalysis(skin);
+          const trend =
+            skinRows.length > 1
+              ? computeSkinTrend(latest.overall_score, skinRows[1].overall_score)
+              : null;
           results.push({
             id: skin.id,
             type: 'skin',
             createdAt: skin.createdAt,
             summary: `피부 점수 ${skin.overallScore}점`,
             skinScore: skin.overallScore,
+            ...(trend ? { skinDelta: trend.delta, skinTrend: trend.trend } : {}),
           });
         }
 
@@ -202,17 +211,18 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
           setHairAnalysis(hair);
           results.push({
             id: hair.id,
-            type: 'skin', // 일반적 분석 타입으로 표시
+            type: 'hair',
             createdAt: hair.createdAt,
-            summary: `헤어 점수 ${hair.overallScore}점`,
-            skinScore: hair.overallScore,
+            summary: `${getHairTypeLabel(hair.hairType)} · ${hair.overallScore}점`,
+            hairScore: hair.overallScore,
+            hairType: hair.hairType,
           });
         }
 
         // 메이크업 분석 결과
         const { data: makeupData, error: makeupError } = await supabase
           .from('makeup_analyses')
-          .select('id, makeup_style, color_recommendations, created_at')
+          .select('id, makeup_style, undertone, overall_score, color_recommendations, created_at')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -227,9 +237,11 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
           setMakeupAnalysis(makeup);
           results.push({
             id: makeup.id,
-            type: 'personal-color', // 분석 타입으로 표시
+            type: 'makeup',
             createdAt: makeup.createdAt,
-            summary: `메이크업 분석`,
+            summary: `${getUndertoneLabel(makeupData.undertone)} · ${makeupData.overall_score}점`,
+            makeupScore: makeupData.overall_score,
+            undertone: makeupData.undertone,
           });
         }
 
@@ -303,4 +315,23 @@ function getBodyTypeLabel(bodyType: string): string {
     inverted_triangle: '역삼각형',
   };
   return labels[bodyType] || bodyType;
+}
+
+function getHairTypeLabel(hairType: string): string {
+  const labels: Record<string, string> = {
+    straight: '직모',
+    wavy: '웨이브',
+    curly: '곱슬',
+    coily: '강한 곱슬',
+  };
+  return labels[hairType] || '기타';
+}
+
+function getUndertoneLabel(undertone: string): string {
+  const labels: Record<string, string> = {
+    warm: '웜톤',
+    cool: '쿨톤',
+    neutral: '뉴트럴',
+  };
+  return labels[undertone] || '기타';
 }
