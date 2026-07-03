@@ -245,7 +245,7 @@ export function LandingContent(): React.JSX.Element {
                   <Link href="/demo/personal-color">
                     <Button
                       variant="outline"
-                      className="h-12 px-6 md:h-14 md:px-8 rounded-xl border-zinc-700 text-zinc-300 hover:border-pink-500/50 hover:text-pink-300 text-sm md:text-base font-medium transition-all duration-300"
+                      className="h-12 px-6 md:h-14 md:px-8 rounded-xl border-zinc-600 bg-white/5 text-zinc-100 hover:bg-white/10 hover:border-pink-500/50 hover:text-pink-300 text-sm md:text-base font-medium transition-all duration-300"
                     >
                       {t('demoCtaButton')}
                     </Button>
