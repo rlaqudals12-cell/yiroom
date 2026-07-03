@@ -47,7 +47,7 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">최신 통합 결과 보기</p>
           <p className="text-xs text-muted-foreground">
-            5축 중 {completedCount}개 완료 · 언제든 다시 열어볼 수 있어요
+            이 결과에 {completedCount}개 축이 담겨 있어요 · 언제든 다시 열어볼 수 있어요
           </p>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />

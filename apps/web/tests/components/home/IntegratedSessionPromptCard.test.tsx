@@ -75,7 +75,9 @@ describe('IntegratedSessionPromptCard', () => {
     render(<IntegratedSessionPromptCard />);
     expect(screen.getByTestId('integrated-prompt-existing')).toBeInTheDocument();
     expect(screen.getByText(/최신 통합 결과 보기/)).toBeInTheDocument();
-    expect(screen.getByText(/5축 중 3개 완료/)).toBeInTheDocument();
+    // "5축 중 N개 완료"는 프로필 전체 완성도(예: 5/5)와 정면 모순되어
+    // 세션 커버리지 의미가 드러나는 문구로 교체 (2026-07-04)
+    expect(screen.getByText(/이 결과에 3개 축이 담겨 있어요/)).toBeInTheDocument();
   });
 
   it('세션 있으면 링크가 /analysis/integrated/result/[id]로', () => {

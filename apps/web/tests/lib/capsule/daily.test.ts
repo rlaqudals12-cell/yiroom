@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { _clearRegistry, registerDomain } from '@/lib/capsule/registry';
+import { _clearRegistry, registerDomain, getDomainCount } from '@/lib/capsule/registry';
 import type { BeautyProfile, DailyItem } from '@/types/capsule';
 
 // =============================================================================
@@ -207,6 +207,69 @@ describe('Daily Capsule', () => {
       expect(mockEngine.curate).toHaveBeenCalled();
       expect(mockEngine.personalize).toHaveBeenCalled();
       expect(mockEngine.minimize).toHaveBeenCalled();
+    });
+
+    it('should auto-register domains when registry is empty (dead-registration 회귀 방지)', async () => {
+      // registry는 beforeEach의 _clearRegistry()로 비어 있음.
+      // 앱 부트스트랩에서 registerAllDomains가 호출되지 않아도, generateDailyCapsule이
+      // 스스로 등록하여 빈 캡슐이 아닌 실제 아이템을 생성해야 한다.
+      vi.mocked(getBeautyProfile).mockResolvedValue(createProfile());
+      expect(getDomainCount()).toBe(0);
+
+      const insertSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'daily-autoreg',
+              clerk_user_id: 'user_test',
+              date: '2026-03-04',
+              items: [],
+              total_ccs: 0,
+              estimated_minutes: 0,
+              status: 'pending',
+              completed_at: null,
+              created_at: new Date().toISOString(),
+            },
+            error: null,
+          }),
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'daily_capsules') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+            insert: insertSpy,
+          };
+        }
+        if (table === 'cross_domain_rules') {
+          return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      await generateDailyCapsule('user_test');
+
+      // 자동 등록되어 9개 도메인이 채워짐
+      expect(getDomainCount()).toBeGreaterThan(0);
+      // 저장 시 실제 도메인 curate 결과가 비어 있지 않아야 함 (빈 캡슐 아님)
+      expect(insertSpy).toHaveBeenCalledTimes(1);
+      const savedPayload = insertSpy.mock.calls[0][0] as { items: unknown[] };
+      expect(savedPayload.items.length).toBeGreaterThan(0);
     });
 
     it('should return cached capsule if exists', async () => {

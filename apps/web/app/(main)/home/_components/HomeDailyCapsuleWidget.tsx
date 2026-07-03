@@ -73,8 +73,11 @@ export default function HomeDailyCapsuleWidget() {
       try {
         const res = await fetch('/api/capsule/daily', { method: 'POST' });
         const data = await res.json();
-        if (data.success && data.data) {
+        if (res.ok && data.success && data.data) {
           setCapsule(data.data);
+        } else {
+          // 서버 에러(500 등)를 빈 상태("분석을 더 완료하면")로 위장하지 않도록 에러 UI로 분기
+          setHasError(true);
         }
       } catch {
         setHasError(true);
@@ -184,9 +187,11 @@ export default function HomeDailyCapsuleWidget() {
             setHasError(false);
             setIsLoading(true);
             fetch('/api/capsule/daily', { method: 'POST' })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.success && data.data) setCapsule(data.data);
+              .then(async (res) => {
+                const data = await res.json();
+                // 초기 로드와 동일: 실패 응답은 빈 상태가 아닌 에러 UI로
+                if (res.ok && data.success && data.data) setCapsule(data.data);
+                else setHasError(true);
               })
               .catch(() => setHasError(true))
               .finally(() => setIsLoading(false));
