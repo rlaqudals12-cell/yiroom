@@ -57,8 +57,22 @@
 - ✅ 개별 깊이 + 통합 넓이 둘 다 확보(무손실), 피부 흔들림 차단, 1회 캡처, 차별화 데모.
 - ⚠️ Type-1(되돌리기 어려움)·개인정보 얽힘 → P7(ADR→SDD→구현) + feature flag(`PROFILE_HOME`, shared) 점진.
 - ⚠️ 보존 보강 필요: **게이미피케이션**(통합 경로 현재 누락 → 부여), 신규 온보딩/설문 경로 유지, 진행 컴포넌트 통합.
-- ⏸️ 모바일은 별도 워크스트림(웹 우선, 패리티 후속).
+- ✅ 모바일 패리티 완료(2026-07): 웹과 동일한 5축 프로필 홈.
 
 ## 구현
 
 스펙 → [SDD-PROFILE-CENTRIC-ANALYSIS](../specs/SDD-PROFILE-CENTRIC-ANALYSIS.md). 계획 → `.claude/plans/zippy-petting-cat.md`.
+
+## 구현 현황 (2026-07-04)
+
+| Phase  | 내용                                                                                                                                           | 커밋       |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 1·3    | 프로필 홈(ProfileCardGrid)·2층 추천·피부 추이 칩(웹)                                                                                           | (선행)     |
+| **2A** | 1회 캡처 + 선택 재분석 — `mode:'full'\|'update'` + `axes[]`, 제외 축은 latest 유지(흔들림 차단)                                                | `c734e48b` |
+| **2C** | 솔루션 무손실 — 통합 skin 저장을 단독과 동일 깊이로(`skin-enrichment.ts`: 성분경고·루틴·추천성분). skinType+지표 결정론 파생, V1 라우트 미변경 | `2ac27183` |
+| **4A** | `computeSkinTrend` → `@yiroom/shared` 승격(웹·앱 공유)                                                                                         | `034c5d6c` |
+| **4B** | 모바일 `useUserAnalyses` 5축 정합 — hair/makeup 오라벨 버그 정정 + 피부 추이 필드                                                              | `034c5d6c` |
+| **4C** | 웹 ProfileCardGrid → RN 포팅(`apps/mobile/components/home/ProfileCardGrid.tsx`·`profile-meta.ts`·`useProfilePersona`)                          | `e37494d1` |
+| **4D** | 모바일 홈 통합 — `PROFILE_HOME` 게이팅 마운트 + 3-State 히어로 중복 억제(/6→/5)                                                                | `e37494d1` |
+
+> 보류: 게이미피케이션 통합 경로 부여(Consequences ⚠️), 모바일 개별결과 딥링크 풀라우팅(현재 우회). 통합 이미지 라이프사이클(동의+retention+삭제)은 별도 SDD 예정.

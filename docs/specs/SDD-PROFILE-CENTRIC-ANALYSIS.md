@@ -2,7 +2,7 @@
 
 > [ADR-109](../adr/ADR-109-profile-centric-analysis-architecture.md) 구현 스펙
 > P7: 리서치 → 원리(body-mechanics 등) → ADR(109) → **스펙(본 문서)** → 구현
-> Status: draft | Created: 2026-06-19 | 계획: `.claude/plans/zippy-petting-cat.md`
+> Status: implemented (Phase 0~4, 웹+앱) | Created: 2026-06-19 | Updated: 2026-07-04 | 계획: `.claude/plans/zippy-petting-cat.md`
 
 ---
 
@@ -83,3 +83,11 @@ export type CadenceGroup = 'identity' | 'slow' | 'condition';
 ## 10. 단계
 
 Phase 0(본 문서·ADR·상수) → 1(프로필 홈, 데모 핵심) → 2(캡처/재사용/동의/게이미피케이션) → 3(2층/추이) → 4(주기/정리). Phase 0~1 먼저 후 중간 점검.
+
+### 구현 완료 (2026-07-04)
+
+- **Phase 1·3(웹)**: ProfileCardGrid·2층 추천·피부 추이 칩.
+- **Phase 2A**: 선택 재분석 — `mode:'full'|'update'` + `axes[]`, 제외 축 latest 유지 (`c734e48b`).
+- **Phase 2C**: 통합 skin 저장 무손실 — `lib/analysis/integrated/internal/skin-enrichment.ts`(성분경고·루틴·추천성분을 skinType+지표 결정론 파생, V1 라우트 미변경, 실패 시 base 저장 불변) (`2ac27183`). §8 표의 B(풍부화) 항목 충족.
+- **Phase 4(앱 패리티)**: `computeSkinTrend` shared 승격(`034c5d6c`) + 모바일 훅 5축 오라벨 정정 + ProfileCardGrid RN 포팅·홈 통합(`e37494d1`).
+- **보류**: Phase 2 게이미피케이션 통합 경로 부여, 통합 이미지 라이프사이클(동의+retention) 별도 SDD.
