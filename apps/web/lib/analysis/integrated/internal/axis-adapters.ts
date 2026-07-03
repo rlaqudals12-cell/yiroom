@@ -27,6 +27,7 @@ import { generateMockSkinAnalysisV2Result } from '@/lib/analysis/skin-v2';
 import { generateMockBodyAnalysisResult, type BodyShapeType } from '@/lib/analysis/body-v2';
 import { bodyShapeToType3 } from '@/lib/body';
 import { generateMockHairAnalysisResult } from '@/lib/analysis/hair';
+import { buildSkinEnrichment } from './skin-enrichment';
 import {
   extractSkinColorWithGemini,
   analyzeSkinV2WithGemini,
@@ -214,6 +215,32 @@ export async function runSkinAxis(
     }
 
     const supabase = createServiceRoleClient();
+
+    // scoreBreakdown 4개 지표(hydration/elasticity/clarity/tone)를 테이블 6개 지표로 매핑
+    const metrics = {
+      hydration: result.scoreBreakdown?.hydration ?? 70,
+      oil_level: 100 - (result.scoreBreakdown?.clarity ?? 50),
+      pores: 100 - (result.scoreBreakdown?.clarity ?? 50),
+      pigmentation: 100 - (result.scoreBreakdown?.tone ?? 50),
+      wrinkles: result.scoreBreakdown?.elasticity ?? 80,
+      sensitivity: 20,
+    };
+
+    // ADR-109 Phase 2C: 통합 저장을 단독 skin 분석과 동일한 깊이로 (성분경고·루틴·추천성분·insight).
+    // 대부분 skinType+지표에서 결정론적으로 파생 — 풍부화 실패는 무시하고 기본 저장은 진행(무손실 보강).
+    let enrichment: Awaited<ReturnType<typeof buildSkinEnrichment>> | null = null;
+    try {
+      enrichment = await buildSkinEnrichment(
+        supabase,
+        clerkUserId,
+        result.skinType,
+        metrics,
+        result.primaryConcerns ?? []
+      );
+    } catch {
+      enrichment = null;
+    }
+
     const { data, error } = await supabase
       .from('skin_analyses')
       .insert({
@@ -221,13 +248,7 @@ export async function runSkinAxis(
         session_id: sessionId,
         image_url: sessionImageSentinel(sessionId, 'face'),
         skin_type: result.skinType,
-        // scoreBreakdown 4개 지표(hydration/elasticity/clarity/tone)를 테이블 6개 지표로 매핑
-        hydration: result.scoreBreakdown?.hydration ?? 70,
-        oil_level: 100 - (result.scoreBreakdown?.clarity ?? 50),
-        pores: 100 - (result.scoreBreakdown?.clarity ?? 50),
-        pigmentation: 100 - (result.scoreBreakdown?.tone ?? 50),
-        wrinkles: result.scoreBreakdown?.elasticity ?? 80,
-        sensitivity: 20,
+        ...metrics,
         overall_score: result.vitalityScore,
         recommendations: {
           version: 2,
@@ -236,7 +257,17 @@ export async function runSkinAxis(
           primaryConcerns: result.primaryConcerns,
           zones: result.zoneAnalysis?.zones,
           usedFallback,
+          ...(enrichment?.recommendationExtras ?? {}),
         },
+        // 단독 분석과 동일한 상세 저장 필드 (풍부화 성공 시에만)
+        ...(enrichment
+          ? {
+              products: enrichment.products,
+              ingredient_warnings: enrichment.ingredient_warnings,
+              personal_color_season: enrichment.personal_color_season,
+              foundation_recommendation: enrichment.foundation_recommendation,
+            }
+          : {}),
       })
       .select('id')
       .single();

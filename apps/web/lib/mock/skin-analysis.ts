@@ -290,8 +290,8 @@ const INSIGHTS = [
   '탄력 관리가 잘 되고 있어요. 레티놀로 더 강화해보세요.',
 ];
 
-// 가변 보상: 추천 성분 풀
-const INGREDIENT_POOL: RecommendedIngredient[] = [
+// 가변 보상: 추천 성분 풀 (통합 분석 저장 풍부화에서도 재사용 — ADR-109 Phase 2C)
+export const INGREDIENT_POOL: RecommendedIngredient[] = [
   { name: '히알루론산', reason: '수분 보충 및 촉촉한 피부 유지' },
   { name: '나이아신아마이드', reason: '모공 개선 및 피부 톤 정돈' },
   { name: '세라마이드', reason: '피부 장벽 강화 및 보호' },
