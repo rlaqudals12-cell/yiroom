@@ -60,6 +60,28 @@ describe('mapPCAssessment', () => {
     expect(result.subType).toBe('');
     expect(result.palette).toEqual([]);
   });
+
+  // 회귀 방지: 실제 DB best_colors는 [{hex, name}] 객체 배열로 저장됨.
+  // string[] 맹목 캐스팅으로 소비처(fashion 엔진)에서 p.toLowerCase() TypeError →
+  // 캡슐 생성 전체 500 나던 버그 (2026-07-04)
+  it('should normalize object-shaped best_colors ([{hex,name}]) to hex string array', () => {
+    const row = {
+      season: 'Summer',
+      best_colors: [
+        { hex: '#92A1CF', name: '세레니티 블루' },
+        { hex: '#808080', name: '헤더 그레이' },
+        '#FF6B6B', // 레거시 문자열 혼재도 수용
+        { name: 'hex 없는 항목' }, // hex 없으면 제외
+        null,
+      ],
+    };
+
+    const result = mapPCAssessment(row);
+
+    expect(result.palette).toEqual(['#92A1CF', '#808080', '#FF6B6B']);
+    // 소비처 계약: 모든 원소가 문자열이어야 함 (toLowerCase 호출 가능)
+    result.palette.forEach((p) => expect(typeof p).toBe('string'));
+  });
 });
 
 // =============================================================================

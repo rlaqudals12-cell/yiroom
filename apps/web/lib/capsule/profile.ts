@@ -24,6 +24,7 @@ import {
   mapMakeupAnalysis,
   mapOralHealthAssessment,
   mapFashionFromBodyAndInventory,
+  normalizePalette,
 } from './profile-mappers';
 
 // =============================================================================
@@ -328,10 +329,17 @@ function rowToProfile(row: BeautyProfileRow): BeautyProfile {
     }
   }
 
+  // 기존 저장 행의 palette가 [{hex,name}] 객체 배열일 수 있어 읽기 시 정규화
+  // (On-Read 마이그레이션 이전에 저장된 프로필 대응 — mapPCAssessment 주석 참조)
+  const rawPC = row.personal_color as BeautyProfile['personalColor'] | null;
+  const personalColor = rawPC
+    ? { ...rawPC, palette: normalizePalette(rawPC.palette) }
+    : (rawPC as BeautyProfile['personalColor']);
+
   return {
     userId: row.clerk_user_id,
     updatedAt: row.updated_at,
-    personalColor: row.personal_color as BeautyProfile['personalColor'],
+    personalColor,
     skin: row.skin as BeautyProfile['skin'],
     body: row.body as BeautyProfile['body'],
     workout: row.workout as BeautyProfile['workout'],

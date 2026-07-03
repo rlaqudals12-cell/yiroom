@@ -25,15 +25,35 @@ import type {
 // personal_color_assessments → PCProfileData
 // =============================================================================
 
+/**
+ * 팔레트 정규화 — hex 문자열 배열로 통일
+ *
+ * DB best_colors는 실제로 `[{hex, name}]` 객체 배열로 저장되는데(레거시는 문자열 가능),
+ * PCProfileData.palette 계약은 string[]이라 소비처(fashion 엔진 등)에서
+ * `.toLowerCase()` 호출 시 TypeError로 캡슐 생성 전체가 500 나던 근본 원인.
+ * 읽기 경계에서 두 형태 모두 hex 문자열로 정규화한다.
+ */
+export function normalizePalette(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((c) => {
+      if (typeof c === 'string') return c;
+      if (c && typeof c === 'object' && typeof (c as { hex?: unknown }).hex === 'string') {
+        return (c as { hex: string }).hex;
+      }
+      return '';
+    })
+    .filter(Boolean);
+}
+
 /** 퍼스널컬러 분석 결과에서 프로필 요약 추출 */
 export function mapPCAssessment(row: Record<string, unknown>): PCProfileData {
   const imageAnalysis = row.image_analysis as Record<string, unknown> | null;
-  const bestColors = row.best_colors as string[] | null;
 
   return {
     season: (row.season as string) ?? '',
     subType: (imageAnalysis?.tone as string) ?? (row.undertone as string) ?? '',
-    palette: bestColors ?? [],
+    palette: normalizePalette(row.best_colors),
   };
 }
 
