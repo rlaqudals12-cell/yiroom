@@ -20,6 +20,7 @@ import {
   HomeQuickActions,
   CrossModuleInsight,
   InternalizationWidget,
+  ProfileCardGrid,
 } from '../../components/home';
 import {
   GradientCard,
@@ -36,6 +37,7 @@ import {
   useWorkoutData,
   useNutritionData,
   useUserAnalyses,
+  useProfilePersona,
   useCrossModuleInsights,
   calculateCalorieProgress,
 } from '../../hooks';
@@ -80,12 +82,16 @@ export default function HomeScreen(): React.JSX.Element {
     refetch: refetchNutrition,
   } = useNutritionData();
   const {
+    analyses,
     personalColor,
     skinAnalysis,
     bodyAnalysis,
     isLoading: _analysisLoading,
     refetch: refetchAnalyses,
   } = useUserAnalyses();
+
+  // 프로필 페르소나 한 줄 ("당신은 ○○한 사람") — ADR-109 프로필 홈 상단
+  const personaOneLine = useProfilePersona();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -319,8 +325,17 @@ export default function HomeScreen(): React.JSX.Element {
     >
       <HomeHeader userName={userName} isLoaded={isLoaded} />
 
-      {/* 3-State 히어로 — 분석 개수에 따라 분기 */}
-      {analysisCount === 0 && (
+      {/* ADR-109 프로필 중심: 최상단 "채워지는 5축 정체성 프로필". ON이면 아래 3-State 히어로는 중복 억제 */}
+      {FEATURE_FLAGS.PROFILE_HOME && (
+        <ProfileCardGrid
+          analyses={analyses}
+          personaOneLine={personaOneLine}
+          style={{ marginBottom: spacing.md }}
+        />
+      )}
+
+      {/* 3-State 히어로 — 분석 개수에 따라 분기 (PROFILE_HOME OFF일 때만) */}
+      {!FEATURE_FLAGS.PROFILE_HOME && analysisCount === 0 && (
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
           <LinearGradient
             colors={['#EC4899', '#A855F7']}
@@ -345,7 +360,7 @@ export default function HomeScreen(): React.JSX.Element {
                 marginBottom: spacing.md,
               }}
             >
-              6종 AI 뷰티 분석으로 온전한 나를 발견해요
+              5축 AI 뷰티 분석으로 온전한 나를 발견해요
             </Text>
             <Text
               style={{
@@ -382,7 +397,7 @@ export default function HomeScreen(): React.JSX.Element {
         </Animated.View>
       )}
 
-      {analysisCount > 0 && analysisCount < 4 && (
+      {!FEATURE_FLAGS.PROFILE_HOME && analysisCount > 0 && analysisCount < 4 && (
         <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
           <GlassCard shadowSize="md" style={{ marginBottom: spacing.md }}>
             <Text
@@ -480,12 +495,12 @@ export default function HomeScreen(): React.JSX.Element {
                 style={{
                   height: 6,
                   borderRadius: 3,
-                  width: `${(analysisCount / 6) * 100}%`,
+                  width: `${(analysisCount / 5) * 100}%`,
                 }}
               />
             </View>
             <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
-              {analysisCount}/6 분석 완료 — 더 많이 알수록 정확한 추천을 받을 수 있어요
+              {analysisCount}/5 분석 완료 — 더 많이 알수록 정확한 추천을 받을 수 있어요
             </Text>
           </GlassCard>
         </Animated.View>

@@ -82,11 +82,17 @@ jest.mock('../../../hooks/useNutritionData', () => ({
 // 분석 결과 mock
 jest.mock('../../../hooks/useUserAnalyses', () => ({
   useUserAnalyses: jest.fn(() => ({
+    analyses: [],
     personalColor: { season: 'spring' },
     skinAnalysis: null,
     bodyAnalysis: null,
     isLoading: false,
   })),
+}));
+
+// 프로필 페르소나 mock (ADR-109 — ProfileCardGrid 상단 배너용)
+jest.mock('../../../hooks/useProfilePersona', () => ({
+  useProfilePersona: jest.fn(() => null),
 }));
 
 // 교차 모듈 인사이트 mock
@@ -109,6 +115,7 @@ jest.mock('../../../components/home', () => {
     HomeQuickActions: () => <View testID="home-quick-actions" />,
     CrossModuleInsight: () => <View testID="cross-module-insight" />,
     InternalizationWidget: () => <View testID="internalization-widget" />,
+    ProfileCardGrid: () => <View testID="profile-card-grid" />,
   };
 });
 
