@@ -74,7 +74,7 @@ eas submit --platform android --profile production   # Google Play
 - **`eas build --local`은 Windows 미지원** (macOS/Linux만 가능)
 - **metro.config.js**: `watchFolders` 기본값 유지 + `extraNodeModules`로 React 핀 고정 필수
 - **한글 파일명 docs/**: `.easignore`에서 제외 (Linux tar 추출 실패 방지)
-- **Free 플랜**: Android 30회/월 제한. Production 종량제 $1/빌드 권장
+- **플랜**: 유료 플랜 사용 중 (2026-07 확인) — 월 30회 무료 제한 미적용
 
 ## 카메라 분석 패턴
 
