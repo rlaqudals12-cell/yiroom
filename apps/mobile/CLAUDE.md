@@ -118,8 +118,9 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 
 - **253+ 컴포넌트** | **131 라우트** | **92 lib 모듈** | **4,161 tests**
 - 웹-모바일 디자인 동기화 95% 완료 (3/18)
+- **프로필 중심 홈(ADR-109) 웹 패리티 완료 (2026-07)**: `components/home/ProfileCardGrid.tsx`+`profile-meta.ts`, `hooks/useProfilePersona.ts`, `PROFILE_HOME` 게이팅으로 홈 마운트. `useUserAnalyses` 5축 정합(hair/makeup 오라벨 정정+피부 추이). `computeSkinTrend`은 @yiroom/shared 공유.
 - 버전: v1.0.0
 
 ---
 
-**Version**: 2.0 | **Updated**: 2026-03-26
+**Version**: 2.1 | **Updated**: 2026-07-04 (ADR-109 프로필 홈 앱 패리티) | 이전 2.0 (2026-03-26)
