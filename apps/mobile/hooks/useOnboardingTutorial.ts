@@ -25,7 +25,7 @@ export const DEFAULT_TUTORIAL_STEPS: TutorialStep[] = [
     id: 'analysis',
     title: '나를 알아가는 첫 단계',
     description:
-      '퍼스널컬러, 피부, 체형을 AI로 분석해보세요. 이 결과를 바탕으로 맞춤 추천을 받을 수 있어요.',
+      '퍼스널컬러·피부·체형·헤어를 AI로 분석하고, 메이크업 가이드까지 받아보세요. 이 결과를 바탕으로 맞춤 추천을 받을 수 있어요.',
     targetSelector: '[data-tutorial="analysis"]',
     position: 'bottom',
   },
