@@ -10,8 +10,8 @@
 
 | 항목                      | 상태         | 비고                                                                          |
 | ------------------------- | ------------ | ----------------------------------------------------------------------------- |
-| production AAB            | 🔄 빌드 중   | `com.yiroom.app` v1.0.0, EAS 키스토어 서명 완료 상태                          |
-| preview APK (실기기 검증) | 🔄 빌드 중   | 내부 배포용, 출시 전 실기기 스모크 테스트                                     |
+| production AAB            | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-production.aab` (81MB, 빌드 7853935a)    |
+| preview APK (실기기 검증) | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-preview.apk` (126MB, 빌드 e409b0a8)      |
 | Google Play 개발자 계정   | ❓ 확인 필요 | $25 일회성. [play.google.com/console](https://play.google.com/console/signup) |
 | 개인정보처리방침 URL      | ✅ 있음      | `https://yiroom.vercel.app/privacy`                                           |
 | 스토어 등록정보           | ⬜ 작성 필요 | 아래 §3                                                                       |
