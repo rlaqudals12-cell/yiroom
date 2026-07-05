@@ -16,12 +16,15 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+// API(/api/capsule/daily) 실제 응답 계약 — types/capsule.ts DailyItem과 동일 형태.
+// 기존엔 label/domainId/completed를 기대해 아이템 이름이 전부 빈 카드로 렌더되던 버그.
 interface DailyItem {
   id: string;
-  label: string;
-  domainId: string;
-  category?: string;
-  completed?: boolean;
+  moduleCode: string;
+  name: string;
+  reason?: string;
+  isChecked?: boolean;
+  timeOfDay?: 'morning' | 'evening' | 'anytime';
 }
 
 interface DailyCapsule {
@@ -30,27 +33,34 @@ interface DailyCapsule {
   items: DailyItem[];
 }
 
-// 도메인 색상 매핑
-const DOMAIN_COLORS: Record<string, string> = {
-  skin: '#60A5FA',
-  fashion: '#F472B6',
-  nutrition: '#4ADE80',
-  workout: '#4ADE80',
-  hair: '#D4A24E',
-  makeup: '#D45ABF',
-  'personal-color': '#F472B6',
-  oral: '#4ABF7A',
-  body: '#A78BFA',
+// 모듈 코드 색상 매핑
+const MODULE_COLORS: Record<string, string> = {
+  S: '#60A5FA',
+  Fashion: '#F472B6',
+  N: '#4ADE80',
+  W: '#4ADE80',
+  H: '#D4A24E',
+  M: '#D45ABF',
+  PC: '#F472B6',
+  OH: '#4ABF7A',
+  C: '#A78BFA',
 };
 
-const DOMAIN_NAMES: Record<string, string> = {
-  skin: '스킨케어',
-  fashion: '패션',
-  hair: '헤어',
-  makeup: '메이크업',
-  'personal-color': '퍼스널 컬러',
-  body: '체형',
+const MODULE_NAMES: Record<string, string> = {
+  S: '스킨케어',
+  Fashion: '코디',
+  H: '헤어',
+  M: '메이크업',
+  PC: '퍼스널 컬러',
+  C: '체형',
 };
+
+// 시간대 그룹 — 사용자 멘탈 모델(아침 루틴/저녁 루틴)에 맞춘 표시 순서
+const TIME_GROUPS: Array<{ key: 'morning' | 'evening' | 'anytime'; label: string }> = [
+  { key: 'morning', label: '☀️ 아침' },
+  { key: 'evening', label: '🌙 저녁' },
+  { key: 'anytime', label: '🌤 언제든' },
+];
 
 /**
  * Daily Capsule 상세 페이지
@@ -79,10 +89,10 @@ export default function DailyCapsulePage(): React.ReactElement {
       const json = await res.json();
       if (json.success && json.data) {
         setDaily(json.data);
-        // 이미 완료된 아이템 반영
+        // 이미 완료된 아이템 반영 (API 필드명 = isChecked)
         const completed = new Set<string>();
         for (const item of json.data.items ?? []) {
-          if (item.completed) completed.add(item.id);
+          if (item.isChecked) completed.add(item.id);
         }
         setCheckedItems(completed);
       } else {
@@ -134,10 +144,11 @@ export default function DailyCapsulePage(): React.ReactElement {
 
       // 서버에 체크 상태 전송 (있으면)
       try {
+        // API 스키마 = { itemId, isChecked } — 기존 completed 키는 400으로 조용히 실패했음
         await fetch(`/api/capsule/daily/${daily.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId, completed: !checkedItems.has(itemId) }),
+          body: JSON.stringify({ itemId, isChecked: !checkedItems.has(itemId) }),
         });
       } catch {
         // 낙관적 UI이므로 실패해도 로컬 상태 유지
@@ -277,58 +288,87 @@ export default function DailyCapsulePage(): React.ReactElement {
             </div>
           </Card>
 
-          {/* 아이템 목록 */}
-          <div className="space-y-2">
-            {daily.items.map((item) => {
-              const isChecked = checkedItems.has(item.id);
-              const domainColor = DOMAIN_COLORS[item.domainId] ?? '#6366F1';
-              const domainName = DOMAIN_NAMES[item.domainId] ?? item.domainId;
+          {/* 아이템 목록 — 아침/저녁/언제든 시간대 그룹 (18개 평면 목록의 부담 해소) */}
+          <div className="space-y-5">
+            {TIME_GROUPS.map((group) => {
+              const groupItems = daily.items.filter(
+                (item) => (item.timeOfDay ?? 'anytime') === group.key
+              );
+              if (groupItems.length === 0) return null;
+              const groupDone = groupItems.filter((i) => checkedItems.has(i.id)).length;
 
               return (
-                <Card
-                  key={item.id}
-                  className={`p-3 cursor-pointer transition-all ${
-                    isChecked ? 'bg-slate-50 dark:bg-slate-800/50 opacity-75' : 'hover:shadow-sm'
-                  }`}
-                  onClick={() => toggleItem(item.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* 체크 아이콘 */}
-                    <div
-                      className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${
-                        isChecked
-                          ? 'border-emerald-500 bg-emerald-500'
-                          : 'border-slate-300 dark:border-slate-600'
-                      }`}
-                    >
-                      {isChecked ? (
-                        <Check className="h-3.5 w-3.5 text-white" />
-                      ) : (
-                        <Circle className="h-3.5 w-3.5 text-transparent" />
-                      )}
-                    </div>
-
-                    {/* 아이템 정보 */}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium ${
-                          isChecked ? 'line-through text-muted-foreground' : ''
-                        }`}
-                      >
-                        {item.label}
-                      </p>
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                        style={{
-                          backgroundColor: `${domainColor}20`,
-                          color: domainColor,
-                        }}
-                      >
-                        {domainName}
-                      </span>
-                    </div>
+                <section key={group.key} aria-label={group.label}>
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <h2 className="text-sm font-semibold">{group.label}</h2>
+                    <span className="text-xs text-muted-foreground">
+                      {groupDone}/{groupItems.length}
+                    </span>
                   </div>
-                </Card>
+                  <div className="space-y-2">
+                    {groupItems.map((item) => {
+                      const isChecked = checkedItems.has(item.id);
+                      const moduleColor = MODULE_COLORS[item.moduleCode] ?? '#6366F1';
+                      const moduleName = MODULE_NAMES[item.moduleCode] ?? item.moduleCode;
+
+                      return (
+                        <Card
+                          key={item.id}
+                          className={`p-3 cursor-pointer transition-all ${
+                            isChecked
+                              ? 'bg-slate-50 dark:bg-slate-800/50 opacity-75'
+                              : 'hover:shadow-sm'
+                          }`}
+                          onClick={() => toggleItem(item.id)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* 체크 아이콘 */}
+                            <div
+                              className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${
+                                isChecked
+                                  ? 'border-emerald-500 bg-emerald-500'
+                                  : 'border-slate-300 dark:border-slate-600'
+                              }`}
+                            >
+                              {isChecked ? (
+                                <Check className="h-3.5 w-3.5 text-white" />
+                              ) : (
+                                <Circle className="h-3.5 w-3.5 text-transparent" />
+                              )}
+                            </div>
+
+                            {/* 아이템 정보 */}
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className={`text-sm font-medium ${
+                                  isChecked ? 'line-through text-muted-foreground' : ''
+                                }`}
+                              >
+                                {item.name}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span
+                                  className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                                  style={{
+                                    backgroundColor: `${moduleColor}20`,
+                                    color: moduleColor,
+                                  }}
+                                >
+                                  {moduleName}
+                                </span>
+                                {item.reason && (
+                                  <span className="text-[11px] text-muted-foreground truncate">
+                                    {item.reason}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </section>
               );
             })}
           </div>

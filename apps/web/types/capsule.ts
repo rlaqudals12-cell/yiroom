@@ -247,6 +247,9 @@ export interface DailyCapsule {
   createdAt: string;
 }
 
+/** 아이템 실행 시간대 — 사용자 멘탈 모델(아침 루틴/저녁 루틴)에 맞춘 그룹핑용 */
+export type DailyItemTimeOfDay = 'morning' | 'evening' | 'anytime';
+
 /** 오늘의 개별 아이템 */
 export interface DailyItem {
   id: string;
@@ -255,6 +258,8 @@ export interface DailyItem {
   reason: string;
   compatibilityScore: number;
   isChecked: boolean;
+  /** 선택적(구 데이터 하위호환) — 없으면 'anytime' 취급 */
+  timeOfDay?: DailyItemTimeOfDay;
 }
 
 // =============================================================================

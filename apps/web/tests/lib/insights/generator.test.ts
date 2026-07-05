@@ -380,7 +380,9 @@ describe('Insights Generator', () => {
       expect(result.insights).toHaveLength(0);
     });
 
-    it('should calculate correct synergy score', () => {
+    it('메타 통합 인사이트("N개 분석 통합 효과")는 생성되지 않는다', () => {
+      // 2026-07-06 제거: 사용자 가치 0인 자기 홍보 문구가 인사이트 슬롯을 낭비하던 문제.
+      // synergy 카테고리 자체는 실내용 인사이트(운동-피부 등)를 위해 유지된다.
       const bundle: AnalysisDataBundle = {
         personalColor: { season: 'summer', undertone: 'cool', confidence: 85 },
         skin: { skinType: 'normal' },
@@ -390,14 +392,10 @@ describe('Insights Generator', () => {
         oralHealth: { gumHealthStatus: 'healthy' },
       };
 
-      const result = generateInsights(bundle, {
-        includeCategories: ['synergy'],
-      });
+      const result = generateInsights(bundle, { maxInsights: 20, minPriorityScore: 0 });
 
-      const insight = result.insights[0];
-      if ('synergyScore' in insight) {
-        expect(insight.synergyScore).toBe(100); // 6/6 = 100%
-      }
+      const metaInsight = result.insights.find((i) => i.title.includes('통합 효과'));
+      expect(metaInsight).toBeUndefined();
     });
   });
 

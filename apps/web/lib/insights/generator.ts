@@ -725,60 +725,10 @@ function generateBodyColorStyleInsight(
   };
 }
 
-/**
- * 종합 통합 분석 인사이트 생성
- */
-function generateSynergyInsight(
-  data: AnalysisDataBundle,
-  language: 'ko' | 'en'
-): SynergyInsight | null {
-  const completedModules: AnalysisModule[] = [];
-
-  if (data.personalColor) completedModules.push('personal_color');
-  if (data.skin) completedModules.push('skin');
-  if (data.body) completedModules.push('body');
-  if (data.face) completedModules.push('face');
-  if (data.hair) completedModules.push('hair');
-  if (data.oralHealth) completedModules.push('oral_health');
-
-  // 3개 이상 모듈이 있어야 의미 있음
-  if (completedModules.length < 3) return null;
-
-  const priorityScore = calculatePriorityScore({
-    category: 'synergy',
-    relatedModules: completedModules,
-    confidence: 85,
-    dataBundle: data,
-  });
-
-  const synergyScore = Math.round((completedModules.length / 6) * 100);
-
-  const title =
-    language === 'ko'
-      ? `${completedModules.length}개 분석 통합 효과!`
-      : `${completedModules.length} Analysis Combined Effect!`;
-
-  const description =
-    language === 'ko'
-      ? '여러 분석 결과를 종합한 맞춤형 추천을 받을 수 있어요'
-      : 'Get personalized recommendations based on multiple analysis results';
-
-  return {
-    id: generateInsightId(),
-    category: 'synergy',
-    title,
-    description,
-    relatedModules: completedModules,
-    priority: scoreToPriority(priorityScore),
-    priorityScore,
-    createdAt: nowISO(),
-    synergyEffect:
-      language === 'ko'
-        ? '통합 분석으로 더 정확한 추천 가능'
-        : 'More accurate recommendations through integrated analysis',
-    synergyScore,
-  };
-}
+// generateSynergyInsight 삭제됨 (2026-07-06, P0): "N개 분석 통합 효과! 여러 분석 결과를
+// 종합한 맞춤형 추천을 받을 수 있어요"는 사용자 가치 0인 자기 홍보 메타 문구로,
+// 홈 인사이트 슬롯(최대 2개)만 낭비했음. 실내용 있는 synergy 카테고리 인사이트
+// (운동-피부·헤어-피부 등)는 유지.
 
 // ============================================
 // 메인 생성 함수
@@ -820,7 +770,8 @@ export function generateInsights(
     generateSkinCareInsight(dataBundle, language),
     generateHairColorInsight(dataBundle, language),
     generateOralHealthInsight(dataBundle, language),
-    generateSynergyInsight(dataBundle, language),
+    // generateSynergyInsight 제외 (2026-07-06, P0): "여러 분석을 종합한 추천을 받을 수
+    // 있어요"는 사용자 가치 0인 자기 홍보 메타 문구 — 인사이트 슬롯(최대 2개)만 낭비.
     // 신규 인사이트 패턴
     generateRoutineSuggestionInsight(dataBundle, language),
     generateStressSkinInsight(dataBundle, language),

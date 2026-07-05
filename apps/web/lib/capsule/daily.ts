@@ -92,7 +92,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
     // DailyItem으로 변환
     for (const item of minimized) {
-      const typedItem = item as { id?: string; name?: string };
+      const typedItem = item as { id?: string; name?: string; category?: string };
       dailyItems.push({
         id: typedItem.id ?? `daily-${engine.domainId}-${dailyItems.length}`,
         moduleCode,
@@ -100,6 +100,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
         reason: generateReason(engine.domainId, context),
         compatibilityScore: 0, // Step 4에서 업데이트
         isChecked: false,
+        timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
       });
     }
 
@@ -126,6 +127,14 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   for (const item of dailyItems) {
     item.compatibilityScore = ccsResult.score;
   }
+
+  // 시간대 정렬: 아침 → 저녁 → 언제든 (사용자 멘탈 모델 = "아침 루틴부터")
+  // 홈 위젯이 상위 5개만 보여주므로 아침 아이템이 먼저 오게 한다.
+  const TIME_ORDER: Record<string, number> = { morning: 0, evening: 1, anytime: 2 };
+  dailyItems.sort(
+    (a, b) =>
+      (TIME_ORDER[a.timeOfDay ?? 'anytime'] ?? 2) - (TIME_ORDER[b.timeOfDay ?? 'anytime'] ?? 2)
+  );
 
   // Step 5: Safety 필터링 (BLOCK 아이템 제거)
   const filteredItems = await applySafetyFilter(userId, dailyItems);
@@ -323,6 +332,28 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
   } catch {
     // Safety 모듈 없으면 필터링 건너뜀
     return items;
+  }
+}
+
+/**
+ * 도메인/카테고리 → 실행 시간대 매핑
+ *
+ * 사용자 멘탈 모델은 "오늘 할 일 N개"가 아니라 "아침 루틴 / 저녁 루틴".
+ * - 아침: 스킨케어(외출 준비)·메이크업·코디, 헤어 스타일링
+ * - 저녁: 헤어 케어(샴푸·트리트먼트 등 세정/집중 케어)
+ * - 언제든: 정보성(퍼스널컬러 팔레트·체형 루틴)
+ */
+function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeOfDay'] {
+  switch (domainId) {
+    case 'skin':
+    case 'makeup':
+    case 'fashion':
+      return 'morning';
+    case 'hair':
+      return category === 'styling' ? 'morning' : 'evening';
+    default:
+      // personal-color, body 등 정보성 도메인
+      return 'anytime';
   }
 }
 

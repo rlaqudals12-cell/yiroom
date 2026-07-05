@@ -27,6 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Settings2, RotateCcw } from 'lucide-react';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { announce } from '@/lib/a11y';
@@ -127,36 +128,38 @@ export default function SortableWidgetList({
 
   return (
     <div data-testid="sortable-widget-list">
-      {/* 편집 토글 버튼 */}
-      <div className="flex items-center justify-end gap-2 mb-2">
-        {isEditing && isCustomized && (
-          <button
-            onClick={() => {
-              onReset();
-              setIsEditing(false);
-            }}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label={t('resetWidgetOrder')}
-          >
-            <RotateCcw className="w-3 h-3" />
-            {t('resetOrder')}
-          </button>
-        )}
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className={cn(
-            'flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
-            isEditing
-              ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30'
-              : 'text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+      {/* 편집 토글 버튼 — WIDGET_REORDER 게이팅 (기능 과잉 정리 2026-07-06, 코드·저장 순서는 유지) */}
+      {FEATURE_FLAGS.WIDGET_REORDER && (
+        <div className="flex items-center justify-end gap-2 mb-2">
+          {isEditing && isCustomized && (
+            <button
+              onClick={() => {
+                onReset();
+                setIsEditing(false);
+              }}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label={t('resetWidgetOrder')}
+            >
+              <RotateCcw className="w-3 h-3" />
+              {t('resetOrder')}
+            </button>
           )}
-          aria-label={isEditing ? t('doneEditing') : t('editWidgetOrder')}
-          aria-pressed={isEditing}
-        >
-          <Settings2 className="w-3 h-3" />
-          {isEditing ? t('done') : t('editOrder')}
-        </button>
-      </div>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className={cn(
+              'flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
+              isEditing
+                ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30'
+                : 'text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
+            aria-label={isEditing ? t('doneEditing') : t('editWidgetOrder')}
+            aria-pressed={isEditing}
+          >
+            <Settings2 className="w-3 h-3" />
+            {isEditing ? t('done') : t('editOrder')}
+          </button>
+        </div>
+      )}
 
       {/* 드래그 영역 */}
       <DndContext

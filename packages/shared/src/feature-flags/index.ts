@@ -68,6 +68,17 @@ export const FEATURE_FLAGS = {
    * 재검토 조건: Phase 1(프로필 카드 홈) 안정화 후 ON.
    */
   PROFILE_HOME: true,
+
+  /**
+   * 홈 위젯 순서 편집(드래그 재배치, WS-11) 진입점 노출 여부.
+   *
+   * false: "순서 편집" 버튼 숨김 (드래그 코드·저장된 커스텀 순서는 유지).
+   * true:  복원.
+   *
+   * 근거: 기능 과잉 정리 (2026-07-06, P0). 사용자 0명 단계에서 위젯 재배치 수요 없음 —
+   * 상시 노출 진입점이 인지 부담만 추가. 파워유저 수요 확인 시 ON.
+   */
+  WIDGET_REORDER: false,
 } as const;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
