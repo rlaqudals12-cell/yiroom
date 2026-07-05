@@ -94,7 +94,8 @@ const AXES: AxisRow[] = [
 ];
 
 function MissingLabel(): React.JSX.Element {
-  return <span className="text-zinc-500">분석 미완료</span>;
+  // "미완료"는 실패 뉘앙스 — 세션에 안 담긴 것뿐이므로 "미포함"으로 (개별 결과는 있을 수 있음)
+  return <span className="text-zinc-500">이번 분석 미포함</span>;
 }
 
 export function AxesSummaryCard({ axes }: AxesSummaryCardProps): React.JSX.Element {

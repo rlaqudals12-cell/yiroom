@@ -347,6 +347,22 @@ export default function OnboardingStep2() {
           style={styles.footerFade}
           pointerEvents="none"
         />
+        {/* 다음이 비활성인 이유 안내 — 무피드백 방지 (에뮬 스모크에서 발견한 UX 갭) */}
+        {!canProceed && (
+          <Text
+            testID="step2-blocked-hint"
+            style={{
+              textAlign: 'center',
+              fontSize: typography.size.xs,
+              color: colors.mutedForeground,
+              backgroundColor: colors.background,
+              paddingTop: spacing.xs,
+              paddingHorizontal: spacing.lg,
+            }}
+          >
+            성별과 출생년도를 입력하면 다음으로 넘어갈 수 있어요
+          </Text>
+        )}
         <View
           style={[
             styles.footer,

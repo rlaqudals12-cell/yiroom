@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -67,6 +64,8 @@ jest.mock('../../../lib/onboarding', () => ({
     feminine: '화사하고 부드러운 스타일을 추천해요',
     unisex: '다양한 스타일을 자유롭게 추천해요',
   },
+  // 순수 함수는 실제 구현 사용 (@yiroom/shared 원본 — mock 누락으로 3건 깨져 있던 것 복구)
+  validateBirthYear: jest.requireActual('@yiroom/shared').validateBirthYear,
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -357,13 +356,23 @@ describe('OnboardingStep2 (성별 / 스타일 / 생년월일)', () => {
   });
 
   describe('엣지 케이스', () => {
-    it('현재 년도를 출생년도로 입력해도 setBasicInfo가 호출된다', () => {
+    it('현재 년도(만 14세 미만)는 setBasicInfo를 호출하지 않는다 — 최소 연령 정책', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep2 />);
       const input = getByTestId('birthYear-input');
       const currentYear = new Date().getFullYear().toString();
 
       fireEvent.changeText(input, currentYear);
-      expect(mockSetBasicInfo).toHaveBeenCalledWith({ birthYear: parseInt(currentYear, 10) });
+      // validateBirthYear: 만 14세 미만 거부 (@yiroom/shared MINIMUM_AGE)
+      expect(mockSetBasicInfo).not.toHaveBeenCalled();
+    });
+
+    it('만 14세 경계 년도는 setBasicInfo가 호출된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep2 />);
+      const input = getByTestId('birthYear-input');
+      const boundaryYear = (new Date().getFullYear() - 14).toString();
+
+      fireEvent.changeText(input, boundaryYear);
+      expect(mockSetBasicInfo).toHaveBeenCalledWith({ birthYear: parseInt(boundaryYear, 10) });
     });
   });
 });

@@ -70,7 +70,8 @@ describe('AxesSummaryCard', () => {
     expect(screen.getByText(/모래시계형/)).toBeInTheDocument();
   });
 
-  it('축이 null이면 "분석 미완료" 표시', () => {
+  it('축이 null이면 "이번 분석 미포함" 표시', () => {
+    // "미완료"는 실패 뉘앙스 — 세션 스코프임을 드러내는 "미포함"으로 (2026-07-06)
     render(
       <AxesSummaryCard
         axes={{
@@ -83,7 +84,7 @@ describe('AxesSummaryCard', () => {
       />
     );
 
-    const missingLabels = screen.getAllByText('분석 미완료');
+    const missingLabels = screen.getAllByText('이번 분석 미포함');
     expect(missingLabels.length).toBe(3); // skin, body, makeup
   });
 

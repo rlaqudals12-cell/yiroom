@@ -6,6 +6,8 @@
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §4.2
  */
 
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +16,7 @@ import {
 } from '@/components/ui/accordion';
 import { getBodyShapeLabel } from '@/lib/body';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
+import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
 export interface AxisDetailAccordionProps {
   axes: {
@@ -81,7 +84,22 @@ function DetailRow({ k, v }: { k: string; v: unknown }): React.JSX.Element | nul
   );
 }
 
+// 세션 축 코드 → 개별 분석 타입 (최신 결과 링크용)
+const CODE_TO_ANALYSIS_TYPE: Record<string, AnalysisType> = {
+  personal_color: 'personal-color',
+  skin: 'skin',
+  body: 'body',
+  hair: 'hair',
+  makeup: 'makeup',
+};
+
 export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.JSX.Element {
+  // 이 세션에 없는 축이라도 개별 분석 최신 결과가 있으면 그쪽으로 안내.
+  // 왜: 옛 부분 세션에서 "결과가 없어요"라고만 하면, 이후 개별 분석으로 채운
+  // 사용자에게 거짓("내 퍼스널컬러가 사라졌나?")이 됨 — 프로필이 진실의 원천(ADR-109).
+  const { analyses } = useAnalysisStatus();
+  const latestByType = new Map(analyses.map((a) => [a.type, a]));
+
   const sections: AxisSection[] = [
     {
       code: 'personal_color',
@@ -161,30 +179,47 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       className="rounded-2xl border border-zinc-800 bg-neutral-900 px-4"
       data-testid="axis-detail-accordion"
     >
-      {sections.map((s) => (
-        <AccordionItem key={s.code} value={s.code} className="border-zinc-800">
-          <AccordionTrigger className="text-sm font-semibold text-white">
-            <span className="flex items-center gap-3">
-              <span>{s.label}</span>
-              {!s.record && (
-                <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">
-                  분석 미완료
-                </span>
+      {sections.map((s) => {
+        const latest = latestByType.get(CODE_TO_ANALYSIS_TYPE[s.code]);
+        return (
+          <AccordionItem key={s.code} value={s.code} className="border-zinc-800">
+            <AccordionTrigger className="text-sm font-semibold text-white">
+              <span className="flex items-center gap-3">
+                <span>{s.label}</span>
+                {!s.record && (
+                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">
+                    이번 분석에 미포함
+                  </span>
+                )}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              {s.record ? (
+                <div className="space-y-1">{s.renderDetail(s.record)}</div>
+              ) : latest ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-zinc-500">
+                    이번 통합 분석에는 포함되지 않았어요. 개별 분석 결과가 있어요.
+                  </p>
+                  <Link
+                    href={`/analysis/${latest.type}/result/${latest.id}`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-pink-400 hover:text-pink-300"
+                    data-testid={`axis-latest-link-${s.code}`}
+                  >
+                    최신 {s.label} 결과 보기 — {latest.summary}
+                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </div>
+              ) : (
+                <p className="text-xs text-zinc-500">
+                  이번 통합 분석에는 포함되지 않았어요. 아래 &ldquo;다시 시도&rdquo; 버튼으로 새
+                  분석을 시작할 수 있어요.
+                </p>
               )}
-            </span>
-          </AccordionTrigger>
-          <AccordionContent className="pb-4">
-            {s.record ? (
-              <div className="space-y-1">{s.renderDetail(s.record)}</div>
-            ) : (
-              <p className="text-xs text-zinc-500">
-                이 축의 분석 결과가 없어요. 아래 &ldquo;다시 시도&rdquo; 버튼으로 새 세션을 시작할
-                수 있어요.
-              </p>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-      ))}
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
     </Accordion>
   );
 }

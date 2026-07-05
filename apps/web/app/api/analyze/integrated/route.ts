@@ -98,6 +98,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 4. 통합 분석 실행 (Partial/Failed도 정상 응답 경로)
     const result: IntegratedAnalysisResult = await runIntegratedAnalysis(parsed.data, userId);
 
+    // 4.5 모바일 앱 퍼널 계측 — 웹은 클라이언트 track()이 이미 잡으므로 모바일 요청만 서버 track (중복 방지).
+    // 계측 실패가 분석 응답을 깨면 안 되므로 방어적으로 무시.
+    if (req.headers.get('x-yiroom-client') === 'mobile') {
+      try {
+        const { track } = await import('@vercel/analytics/server');
+        await track('integrated_analysis_complete', {
+          platform: 'mobile',
+          mode: parsed.data.mode ?? 'full',
+          axisCount: parsed.data.mode === 'update' ? (parsed.data.axes?.length ?? 5) : 5,
+          status: result.status,
+        });
+      } catch {
+        // no-op
+      }
+    }
+
     // 5. 응답 — Partial/Failed도 HTTP 200 (result.status로 분기)
     return withCors(
       NextResponse.json(

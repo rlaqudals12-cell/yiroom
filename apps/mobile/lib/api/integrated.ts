@@ -46,6 +46,9 @@ export interface IntegratedAnalysisInput {
     locale?: 'ko' | 'en' | 'ja' | 'zh';
     skipMakeup?: boolean;
   };
+  /** 선택 재분석 (ADR-109 2A): 'update'면 axes의 축만 재실행, 나머지는 프로필 최신값 유지 */
+  mode?: 'full' | 'update';
+  axes?: AxisCode[];
 }
 
 export interface AxisError {
@@ -160,6 +163,8 @@ export async function requestIntegratedAnalysis(
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${clerkToken}`,
+        // 서버사이드 계측용 플랫폼 식별 (웹은 클라이언트 track, 앱은 서버 track — 중복 방지)
+        'x-yiroom-client': 'mobile',
       },
       body: JSON.stringify(input),
     });

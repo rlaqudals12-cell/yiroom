@@ -34,7 +34,21 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
   const hasSession = !error && session !== null;
 
   if (hasSession && session) {
-    const completedCount = session.axes_completed?.length ?? 0;
+    // "N개 축"은 개발 용어(축) + 프로필 완성도와 혼동 유발 — 담긴 분석을 구체적으로 나열
+    const AXIS_LABELS: Record<string, string> = {
+      personal_color: '퍼스널컬러',
+      skin: '피부',
+      body: '체형',
+      hair: '헤어',
+      makeup: '메이크업',
+    };
+    const labels = (session.axes_completed ?? []).map((code) => AXIS_LABELS[code]).filter(Boolean);
+    const contentText =
+      labels.length === 0
+        ? ''
+        : labels.length <= 3
+          ? `${labels.join('·')} 분석이 담겨 있어요 · `
+          : `${labels[0]} 외 ${labels.length - 1}가지 분석이 담겨 있어요 · `;
     return (
       <Link
         href={`/analysis/integrated/result/${session.id}`}
@@ -46,9 +60,7 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">최신 통합 결과 보기</p>
-          <p className="text-xs text-muted-foreground">
-            이 결과에 {completedCount}개 축이 담겨 있어요 · 언제든 다시 열어볼 수 있어요
-          </p>
+          <p className="text-xs text-muted-foreground">{contentText}언제든 다시 열어볼 수 있어요</p>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </Link>

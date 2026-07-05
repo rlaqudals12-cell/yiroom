@@ -23,10 +23,12 @@ import {
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import {
   requestIntegratedAnalysis,
   IntegratedApiError,
+  type AxisCode,
   type IntegratedAnalysisInput,
   type SkinQuestionnaire,
   type HairQuestionnaire,
@@ -54,6 +56,16 @@ const HAIR_LENGTHS: Array<{ value: NonNullable<HairQuestionnaire['length']>; lab
   { value: 'very_long', label: '매우 김' },
 ];
 
+// 선택 재분석(ADR-109 2A): 재방문 사용자가 다시 분석할 축만 고름 (웹과 동일)
+const AXIS_OPTIONS: Array<{ code: AxisCode; label: string }> = [
+  { code: 'personal_color', label: '퍼스널 컬러' },
+  { code: 'skin', label: '피부' },
+  { code: 'body', label: '체형' },
+  { code: 'hair', label: '헤어' },
+  { code: 'makeup', label: '메이크업' },
+];
+const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
+
 // ============================================
 // 메인 화면
 // ============================================
@@ -69,6 +81,19 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const [body, setBody] = useState<BodyQuestionnaire>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 선택 재분석(2A): 분석 이력이 있는 재방문 사용자에게만 축 선택 노출.
+  // 일부 축만 고르면 update 모드 — 나머지 축은 기존 결과 유지(색·체형 안 흔들림).
+  const { analyses } = useUserAnalyses();
+  const isReturning = analyses.length > 0;
+  const [selectedAxes, setSelectedAxes] = useState<AxisCode[]>(ALL_AXES);
+  const isPartialUpdate =
+    isReturning && selectedAxes.length > 0 && selectedAxes.length < ALL_AXES.length;
+  const toggleAxis = (code: AxisCode): void => {
+    setSelectedAxes((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  };
 
   const pickImage = async (setter: (v: string | null) => void, isFace: boolean) => {
     try {
@@ -123,6 +148,8 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           body,
         },
         options: { locale: 'ko', skipMakeup: false },
+        // 선택 재분석: 일부 축만 고르면 그 축만 재실행 (ADR-109 2A, 웹과 동일)
+        ...(isPartialUpdate ? { mode: 'update' as const, axes: selectedAxes } : {}),
       };
 
       const result = await requestIntegratedAnalysis(input, token);
@@ -169,6 +196,44 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
             셀카 한 장으로 색·피부·체형·헤어를 한 번에{'\n'}약 2분이면 완료돼요
           </Text>
         </View>
+
+        {/* 선택 재분석 (재방문 사용자만, ADR-109 2A) */}
+        {isReturning && (
+          <GlassCard style={styles.section} testID="axis-select-section">
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              다시 분석할 축 선택
+            </Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+              선택하지 않은 축은 기존 결과가 그대로 유지돼요
+            </Text>
+            <View style={styles.chipGroup}>
+              {AXIS_OPTIONS.map((opt) => {
+                const active = selectedAxes.includes(opt.code);
+                return (
+                  <Pressable
+                    key={opt.code}
+                    onPress={() => toggleAxis(opt.code)}
+                    testID={`axis-chip-${opt.code}`}
+                    accessibilityLabel={`${opt.label} ${active ? '선택됨' : '선택 안 됨'}`}
+                    style={[
+                      styles.chip,
+                      {
+                        borderColor: active ? '#8B5CF6' : colors.border,
+                        backgroundColor: active ? 'rgba(139,92,246,0.15)' : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.chipText, { color: active ? '#8B5CF6' : colors.foreground }]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </GlassCard>
+        )}
 
         {/* 얼굴 셀카 (필수) */}
         <GlassCard style={styles.section}>
