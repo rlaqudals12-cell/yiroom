@@ -10,17 +10,19 @@ import type { BeautyProfile, Capsule, CompatibilityScore, CurateOptions } from '
 import type { SkinProduct } from '../domain-types';
 import { SKIN_INGREDIENT_CONFLICTS, SKIN_INGREDIENT_SYNERGIES } from '../domain-types';
 
-// 기본 스킨케어 루틴 순서 (최소 5개)
-const ROUTINE_ORDER = ['cleanser', 'toner', 'serum', 'moisturizer', 'sunscreen'] as const;
-
-// 카테고리별 루틴 스텝명 — "오늘의 루틴" 위젯에 그대로 노출되므로 행동 단위 한국어로
-const STEP_NAMES: Record<(typeof ROUTINE_ORDER)[number], string> = {
-  cleanser: '미온수 저자극 클렌징',
-  toner: '토너로 피부결 정리',
-  serum: '수분 세럼 흡수시키기',
-  moisturizer: '수분 크림으로 마무리',
-  sunscreen: '자외선 차단제 바르기',
-};
+// 데일리 루틴 스텝 — 아침/저녁 실제 스킨케어 순서 (카테고리 중복 없음: minimize가 카테고리 dedup)
+// 아침: 보습→자외선차단 (가벼운 준비) / 저녁: 클렌징→토너→세럼→아이크림 (세정+집중 케어)
+// 이름은 "오늘의 루틴" 위젯에 그대로 노출되므로 행동 단위 한국어로.
+const DAILY_STEPS: Array<{ category: SkinProduct['category']; name: string }> = [
+  // 아침 (moisturizer/sunscreen → daily.ts resolveTimeOfDay에서 morning 매핑)
+  { category: 'moisturizer', name: '수분 크림으로 아침 보습' },
+  { category: 'sunscreen', name: '자외선 차단제 바르기' },
+  // 저녁 (cleanser/toner/serum/eye-cream → evening 매핑)
+  { category: 'cleanser', name: '메이크업 지우는 꼼꼼 클렌징' },
+  { category: 'toner', name: '토너로 피부결 정리' },
+  { category: 'serum', name: '수분 세럼 흡수시키기' },
+  { category: 'eye-cream', name: '아이크림으로 눈가 마무리' },
+];
 
 // 개인화 레벨별 최적 N
 const OPTIMAL_N: Record<number, number> = {
@@ -42,17 +44,15 @@ export const skinEngine: CapsuleEngine<SkinProduct> = {
     // 실제 구현에서는 DB에서 제품 조회 후 필터링
     // 여기서는 엔진 인터페이스만 구현 (DB 조회는 capsule-repository에서)
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
-    return Array(maxItems)
-      .fill(null)
-      .map((_, i) => ({
-        id: `skin-placeholder-${i}`,
-        name: STEP_NAMES[ROUTINE_ORDER[i % ROUTINE_ORDER.length]],
-        brand: '',
-        category: ROUTINE_ORDER[i % ROUTINE_ORDER.length],
-        ingredients: [],
-        skinTypes: profile.skin?.type ? [profile.skin.type] : [],
-        concerns: profile.skin?.concerns ?? [],
-      }));
+    return DAILY_STEPS.slice(0, maxItems).map((step, i) => ({
+      id: `skin-placeholder-${i}`,
+      name: step.name,
+      brand: '',
+      category: step.category,
+      ingredients: [],
+      skinTypes: profile.skin?.type ? [profile.skin.type] : [],
+      concerns: profile.skin?.concerns ?? [],
+    }));
   },
 
   getOptimalN(profile: BeautyProfile): number {

@@ -10,7 +10,6 @@ import {
   Loader2,
   AlertTriangle,
   ArrowLeft,
-  RefreshCw,
   Package,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -199,31 +198,23 @@ export default function DailyCapsulePage(): React.ReactElement {
           <ArrowLeft className="h-4 w-4" />
           캡슐 워드로브
         </button>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">오늘의 캡슐</h1>
-            <p className="mt-1 text-muted-foreground text-sm">
-              {daily?.date
-                ? new Date(daily.date).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
-                : new Date().toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={generateDaily} disabled={isGenerating}>
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            <span className="ml-1.5">새로 만들기</span>
-          </Button>
+        {/* "새로 만들기" 버튼 제거 (2026-07-06, P0): 캡슐은 (사용자,날짜) 캐시라
+            눌러도 같은 캡슐이 반환되던 거짓 버튼 — 루틴의 가치는 일관성이라 재생성 개념 자체가 불필요 */}
+        <div>
+          <h1 className="text-2xl font-bold">오늘의 캡슐</h1>
+          <p className="mt-1 text-muted-foreground text-sm">
+            {daily?.date
+              ? new Date(daily.date).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              : new Date().toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+          </p>
         </div>
       </div>
 

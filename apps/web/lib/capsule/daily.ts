@@ -21,6 +21,16 @@ import { calculateCCS } from './scoring';
 import type { DomainItemGroup } from './scoring';
 import { getCrossDomainRules } from './capsule-repository';
 
+// 데일리 루틴 제외 도메인 — identity 축은 매일 반복할 행동이 없음 (프로필 카드 뱃지 논리와 동일)
+const DAILY_EXCLUDED_DOMAINS: ReadonlySet<string> = new Set(['personal-color']);
+
+// 도메인별 데일리 아이템 수 — 실제 루틴 모양에 맞춤 (2026-07-06 사용자 관점 정리)
+// skin 6 = 아침 2(보습·선크림) + 저녁 4(클렌징·토너·세럼·아이크림)
+// fashion 1 = 코디는 원자적 행동 1개 / hair 2 = 샴푸·컨디셔너 (매일 트리트먼트는 과함)
+// body 2 = 자세 교정·스트레칭 ("근력 플랜"은 행동이 아니라 계획이라 제외)
+const DAILY_MAX_ITEMS: Record<string, number> = { skin: 6, fashion: 1, hair: 2, body: 2 };
+const DAILY_MAX_ITEMS_DEFAULT = 3;
+
 // 도메인 → 모듈코드 매핑
 const DOMAIN_TO_MODULE: Record<string, ModuleCode> = {
   skin: 'S',
@@ -76,8 +86,15 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   const dailyItems: DailyItem[] = [];
 
   for (const engine of domains) {
+    // 퍼스널컬러는 identity 축("변하지 않아요") — "매일 할 일"이 존재하지 않으므로
+    // 데일리 루틴에서 제외 ("팔레트 확인"을 매일 체크하는 건 행동이 아니라 정보 조회).
+    if (DAILY_EXCLUDED_DOMAINS.has(engine.domainId)) continue;
+
     const items = await engine.curate(profile, {
-      maxItems: Math.min(3, engine.getOptimalN(profile)),
+      maxItems: Math.min(
+        DAILY_MAX_ITEMS[engine.domainId] ?? DAILY_MAX_ITEMS_DEFAULT,
+        engine.getOptimalN(profile)
+      ),
       excludeRecentlyUsed: true,
     });
 
@@ -97,7 +114,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
         id: typedItem.id ?? `daily-${engine.domainId}-${dailyItems.length}`,
         moduleCode,
         name: typedItem.name ?? `${engine.domainName} 아이템`,
-        reason: generateReason(engine.domainId, context),
+        reason: generateReason(engine.domainId, context, typedItem.category),
         compatibilityScore: 0, // Step 4에서 업데이트
         isChecked: false,
         timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
@@ -339,28 +356,50 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
  * 도메인/카테고리 → 실행 시간대 매핑
  *
  * 사용자 멘탈 모델은 "오늘 할 일 N개"가 아니라 "아침 루틴 / 저녁 루틴".
- * - 아침: 스킨케어(외출 준비)·메이크업·코디, 헤어 스타일링
- * - 저녁: 헤어 케어(샴푸·트리트먼트 등 세정/집중 케어)
- * - 언제든: 정보성(퍼스널컬러 팔레트·체형 루틴)
+ * - 아침: 스킨케어 준비(보습·자외선차단)·메이크업·코디, 헤어 스타일링
+ * - 저녁: 스킨케어 세정/집중(클렌징·토너·세럼·아이크림), 헤어 케어(샴푸·컨디셔너)
+ * - 언제든: 체형 루틴(자세·스트레칭)
  */
 function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeOfDay'] {
   switch (domainId) {
     case 'skin':
+      // 아침 = 외출 준비 단계, 저녁 = 세정·집중 케어 단계 (skin 엔진 DAILY_STEPS와 짝)
+      return category === 'moisturizer' || category === 'sunscreen' ? 'morning' : 'evening';
     case 'makeup':
     case 'fashion':
       return 'morning';
     case 'hair':
       return category === 'styling' ? 'morning' : 'evening';
     default:
-      // personal-color, body 등 정보성 도메인
+      // body 등 시간대 무관 루틴
       return 'anytime';
   }
 }
 
 /**
- * 아이템별 추천 이유 생성
+ * 아이템별 추천 이유 생성 — 카테고리 이유 우선, 없으면 도메인 이유
+ * (클렌징에 "자외선 차단이 중요한 계절이에요"가 붙던 어긋남 방지)
  */
-function generateReason(domainId: string, context: DailyContext): string {
+function generateReason(domainId: string, context: DailyContext, category?: string): string {
+  const categoryReasons: Record<string, string> = {
+    // skin
+    cleanser: '남은 메이크업·노폐물이 트러블의 시작이에요',
+    toner: '피부결을 정리해 다음 단계 흡수를 도와요',
+    serum: '수분 집중 보충 단계예요',
+    moisturizer: '하루 종일 수분 장벽을 지켜줘요',
+    sunscreen: '자외선 차단은 피부 노화 예방의 핵심이에요',
+    'eye-cream': '가장 얇은 눈가 피부부터 관리해요',
+    // hair
+    shampoo: '두피 타입에 맞춘 세정이 모발 건강의 기본이에요',
+    conditioner: '모발 끝 손상을 막아줘요',
+  };
+  if (category && categoryReasons[category]) return categoryReasons[category];
+
+  return generateDomainReason(domainId, context);
+}
+
+/** 도메인 단위 이유 (시즌/고정) */
+function generateDomainReason(domainId: string, context: DailyContext): string {
   const seasonReasons: Record<string, Record<string, string>> = {
     skin: {
       spring: '환절기 피부 보호가 필요해요',

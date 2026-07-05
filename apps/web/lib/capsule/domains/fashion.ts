@@ -73,6 +73,19 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
     const seasonHex = profile.personalColor?.palette?.[0] ?? '#808080';
 
+    // 데일리 캡슐(1개 요청): 코디는 상의/하의를 따로 체크하는 게 아니라 원자적 행동 1개
+    if (maxItems === 1) {
+      return [
+        {
+          id: 'fashion-daily-outfit',
+          name: '팔레트 톤으로 오늘의 코디 완성',
+          category: 'top',
+          color: { name: 'palette', hex: seasonHex },
+          tags: [],
+        },
+      ];
+    }
+
     // 카테고리별 코디 액션명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
     const CATEGORY_NAMES: Record<FashionItem['category'], string> = {
       top: '퍼스널 톤 상의 매치',
