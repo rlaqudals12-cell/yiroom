@@ -23,7 +23,7 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
-import type { CadenceGroup } from '@yiroom/shared';
+import { CADENCE_META, type CadenceGroup } from '@yiroom/shared';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import {
   ANALYSIS_META,
@@ -38,11 +38,7 @@ const CADENCE_ICON: Record<CadenceGroup, typeof Lock> = {
   slow: RefreshCw,
   condition: CalendarDays,
 };
-const CADENCE_LABEL: Record<CadenceGroup, string> = {
-  identity: '평생',
-  slow: '천천히',
-  condition: '오늘',
-};
+// 라벨/힌트는 @yiroom/shared CADENCE_META로 일원화 (웹·앱 문구 드리프트 방지)
 
 // 간단 상대시간 (외부 의존 없이): 오늘/N일 전/N개월 전
 function relativeTime(date: Date): string {
@@ -148,10 +144,10 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
                 </div>
                 <span
                   className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500"
-                  title={`${CADENCE_LABEL[cadence]} 변동`}
+                  title={CADENCE_META[cadence].hint}
                 >
                   <CadenceIcon className="w-3 h-3" aria-hidden="true" />
-                  {CADENCE_LABEL[cadence]}
+                  {CADENCE_META[cadence].label}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">{meta.label}</p>

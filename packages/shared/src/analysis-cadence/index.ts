@@ -24,11 +24,20 @@ export const AXIS_CADENCE = {
 
 export type CadenceAxis = keyof typeof AXIS_CADENCE;
 
-/** 그룹별 표시 메타 (아이콘 의미 — 실제 아이콘 매핑은 UI 레이어). */
+/**
+ * 그룹별 표시 메타 (아이콘 의미 — 실제 아이콘 매핑은 UI 레이어).
+ *
+ * label은 성격 서술형 — "평생"/"천천히" 같은 명사·부사 단독 라벨은
+ * 주어·서술어가 없어 기획자조차 해석이 애매했음(2026-07-06 사용자 피드백).
+ * hint는 툴팁/보조 설명용으로 재분석 필요 여부까지 안내.
+ */
 export const CADENCE_META: Record<CadenceGroup, { label: string; hint: string }> = {
-  identity: { label: '평생', hint: '거의 변하지 않아요' },
-  slow: { label: '천천히', hint: '체중·시간에 따라 가끔 변해요' },
-  condition: { label: '오늘', hint: '컨디션에 따라 자주 변해요' },
+  identity: { label: '변하지 않아요', hint: '타고난 정체성이라 재분석이 필요 없어요' },
+  slow: { label: '천천히 변해요', hint: '체중·시간에 따라 가끔 변해요 — 달라졌을 때만 다시' },
+  condition: {
+    label: '매일 달라져요',
+    hint: '오늘의 컨디션이에요 — 자주 확인할수록 추이가 쌓여요',
+  },
 };
 
 /** 축의 변동 그룹 조회 (미상 축은 condition 보수적 기본값). */

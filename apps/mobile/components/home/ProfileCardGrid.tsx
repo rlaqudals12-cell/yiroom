@@ -24,7 +24,7 @@ import {
 } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import type { CadenceGroup } from '@yiroom/shared';
+import { CADENCE_META, type CadenceGroup } from '@yiroom/shared';
 
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
 import { TIMING } from '../../lib/animations';
@@ -43,11 +43,7 @@ const CADENCE_ICON: Record<CadenceGroup, React.ComponentType<{ size?: number; co
   slow: RefreshCw,
   condition: CalendarDays,
 };
-const CADENCE_LABEL: Record<CadenceGroup, string> = {
-  identity: '평생',
-  slow: '천천히',
-  condition: '오늘',
-};
+// 라벨은 @yiroom/shared CADENCE_META로 일원화 (웹·앱 문구 드리프트 방지)
 
 // 추이 칩 색 (웹 emerald/amber/slate 시맨틱 유지)
 const TREND_COLORS = {
@@ -218,7 +214,7 @@ export function ProfileCardGrid({
                 <View style={styles.cadenceChip}>
                   <CadenceIcon size={11} color={colors.mutedForeground} />
                   <Text style={{ fontSize: 10, color: colors.mutedForeground }}>
-                    {CADENCE_LABEL[cadence]}
+                    {CADENCE_META[cadence].label}
                   </Text>
                 </View>
               </View>
