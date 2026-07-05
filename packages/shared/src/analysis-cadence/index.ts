@@ -44,3 +44,20 @@ export const CADENCE_META: Record<CadenceGroup, { label: string; hint: string }>
 export function getAxisCadence(axis: string): CadenceGroup {
   return (AXIS_CADENCE as Record<string, CadenceGroup>)[axis] ?? 'condition';
 }
+
+/**
+ * 프로필 카드 변동 뱃지 노출 축 — 양 극단 2축만.
+ *
+ * 왜 (2026-07-06 제품 결정, P0/P4):
+ * - 퍼스널컬러 "변하지 않아요" = 자산감, 피부 "매일 달라져요" = 재방문 넛지 — 명확한 가치.
+ * - 체형·헤어 "천천히 변해요"는 카드의 "N일 전" 대비 추가 정보가 미미하고 혼란 유발.
+ * - 메이크업은 측정이 아닌 표현 레이어(M-1)라 추구미에 따라 달라짐 —
+ *   변동 주기 뱃지를 붙이는 것 자체가 과한 주장(범주 오류).
+ * 내부 분류(AXIS_CADENCE — 추천 레이어·갱신 프롬프트)는 그대로, 카드 노출만 제한.
+ */
+const CADENCE_BADGE_AXES: ReadonlySet<string> = new Set(['personal_color', 'skin']);
+
+/** 프로필 카드에서 변동 뱃지를 보여줄 축인지 ('personal-color'/'personal_color' 표기 모두 수용). */
+export function shouldShowCadenceBadge(axis: string): boolean {
+  return CADENCE_BADGE_AXES.has(axis.replace(/-/g, '_'));
+}

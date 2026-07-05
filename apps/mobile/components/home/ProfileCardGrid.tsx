@@ -24,7 +24,7 @@ import {
 } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { CADENCE_META, type CadenceGroup } from '@yiroom/shared';
+import { CADENCE_META, shouldShowCadenceBadge, type CadenceGroup } from '@yiroom/shared';
 
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
 import { TIMING } from '../../lib/animations';
@@ -211,12 +211,15 @@ export function ProfileCardGrid({
                 >
                   <Icon size={16} color="#FFFFFF" />
                 </LinearGradient>
-                <View style={styles.cadenceChip}>
-                  <CadenceIcon size={11} color={colors.mutedForeground} />
-                  <Text style={{ fontSize: 10, color: colors.mutedForeground }}>
-                    {CADENCE_META[cadence].label}
-                  </Text>
-                </View>
+                {/* 변동 뱃지 = 양 극단(PC·피부)만 — 체형/헤어/메이크업은 과한 주장이라 미노출 */}
+                {shouldShowCadenceBadge(type) && (
+                  <View style={styles.cadenceChip}>
+                    <CadenceIcon size={11} color={colors.mutedForeground} />
+                    <Text style={{ fontSize: 10, color: colors.mutedForeground }}>
+                      {CADENCE_META[cadence].label}
+                    </Text>
+                  </View>
+                )}
               </View>
               <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
                 {meta.label}

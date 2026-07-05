@@ -23,7 +23,7 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
-import { CADENCE_META, type CadenceGroup } from '@yiroom/shared';
+import { CADENCE_META, shouldShowCadenceBadge, type CadenceGroup } from '@yiroom/shared';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import {
   ANALYSIS_META,
@@ -142,13 +142,16 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
                 >
                   <Icon className="w-4 h-4 text-white" />
                 </div>
-                <span
-                  className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500"
-                  title={CADENCE_META[cadence].hint}
-                >
-                  <CadenceIcon className="w-3 h-3" aria-hidden="true" />
-                  {CADENCE_META[cadence].label}
-                </span>
+                {/* 변동 뱃지 = 양 극단(PC·피부)만 — 체형/헤어/메이크업은 과한 주장이라 미노출 */}
+                {shouldShowCadenceBadge(type) && (
+                  <span
+                    className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500"
+                    title={CADENCE_META[cadence].hint}
+                  >
+                    <CadenceIcon className="w-3 h-3" aria-hidden="true" />
+                    {CADENCE_META[cadence].label}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">{meta.label}</p>
               <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-white truncate">
