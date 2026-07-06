@@ -180,15 +180,18 @@ export async function buildProfileFromAssessments(userId: string): Promise<Beaut
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // 왜 *_analyses: 실제 prod 테이블명. 기존 skin/body/hair_assessments는 존재하지 않는
+    // 테이블이라 조회가 항상 실패 → beauty_profiles의 skin/body/hair가 전원 null로
+    // 캡슐 개인화가 원천에서 죽어 있었음 (2026-07-06 발견). 홈 useAnalysisStatus와 동일 정본.
     supabase
-      .from('skin_assessments')
+      .from('skin_analyses')
       .select('*')
       .eq('clerk_user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
     supabase
-      .from('body_assessments')
+      .from('body_analyses')
       .select('*')
       .eq('clerk_user_id', userId)
       .order('created_at', { ascending: false })
@@ -203,7 +206,7 @@ export async function buildProfileFromAssessments(userId: string): Promise<Beaut
       .maybeSingle(),
     supabase.from('nutrition_settings').select('*').eq('clerk_user_id', userId).maybeSingle(),
     supabase
-      .from('hair_assessments')
+      .from('hair_analyses')
       .select('*')
       .eq('clerk_user_id', userId)
       .order('created_at', { ascending: false })

@@ -61,6 +61,9 @@ const TIME_GROUPS: Array<{ key: 'morning' | 'evening' | 'anytime'; label: string
   { key: 'anytime', label: '🌤 언제든' },
 ];
 
+// 시간 섹션 내 모듈 표시 순서 — 실행 순서(스킨케어→메이크업→코디, 저녁은 스킨케어→헤어)
+const MODULE_ORDER = ['S', 'M', 'Fashion', 'H', 'C', 'PC', 'N', 'W', 'OH'];
+
 /**
  * Daily Capsule 상세 페이지
  *
@@ -288,6 +291,13 @@ export default function DailyCapsulePage(): React.ReactElement {
               if (groupItems.length === 0) return null;
               const groupDone = groupItems.filter((i) => checkedItems.has(i.id)).length;
 
+              // 시간 섹션 안에서 모듈(스킨케어/메이크업/…)별로 다시 묶음 — "아침 8개"가 아니라
+              // "아침 스킨케어 4단계 + 메이크업 3단계 + 코디"라는 덩어리로 읽히게 (인지 부담 축소)
+              const moduleClusters = MODULE_ORDER.map((code) => ({
+                code,
+                items: groupItems.filter((item) => item.moduleCode === code),
+              })).filter((cluster) => cluster.items.length > 0);
+
               return (
                 <section key={group.key} aria-label={group.label}>
                   <div className="flex items-center justify-between mb-2 px-1">
@@ -296,64 +306,74 @@ export default function DailyCapsulePage(): React.ReactElement {
                       {groupDone}/{groupItems.length}
                     </span>
                   </div>
-                  <div className="space-y-2">
-                    {groupItems.map((item) => {
-                      const isChecked = checkedItems.has(item.id);
-                      const moduleColor = MODULE_COLORS[item.moduleCode] ?? '#6366F1';
-                      const moduleName = MODULE_NAMES[item.moduleCode] ?? item.moduleCode;
+                  <div className="space-y-3">
+                    {moduleClusters.map((cluster) => {
+                      const moduleColor = MODULE_COLORS[cluster.code] ?? '#6366F1';
+                      const moduleName = MODULE_NAMES[cluster.code] ?? cluster.code;
+                      const clusterDone = cluster.items.filter((i) =>
+                        checkedItems.has(i.id)
+                      ).length;
 
                       return (
-                        <Card
-                          key={item.id}
-                          className={`p-3 cursor-pointer transition-all ${
-                            isChecked
-                              ? 'bg-slate-50 dark:bg-slate-800/50 opacity-75'
-                              : 'hover:shadow-sm'
-                          }`}
-                          onClick={() => toggleItem(item.id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* 체크 아이콘 */}
-                            <div
-                              className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${
-                                isChecked
-                                  ? 'border-emerald-500 bg-emerald-500'
-                                  : 'border-slate-300 dark:border-slate-600'
-                              }`}
+                        <Card key={cluster.code} className="p-3">
+                          {/* 모듈 헤더 */}
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: `${moduleColor}20`, color: moduleColor }}
                             >
-                              {isChecked ? (
-                                <Check className="h-3.5 w-3.5 text-white" />
-                              ) : (
-                                <Circle className="h-3.5 w-3.5 text-transparent" />
-                              )}
-                            </div>
+                              {moduleName}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {clusterDone}/{cluster.items.length}
+                            </span>
+                          </div>
 
-                            {/* 아이템 정보 */}
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className={`text-sm font-medium ${
-                                  isChecked ? 'line-through text-muted-foreground' : ''
-                                }`}
-                              >
-                                {item.name}
-                              </p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                                  style={{
-                                    backgroundColor: `${moduleColor}20`,
-                                    color: moduleColor,
-                                  }}
+                          {/* 번호식 컴팩트 스텝 */}
+                          <div>
+                            {cluster.items.map((item, stepIndex) => {
+                              const isChecked = checkedItems.has(item.id);
+                              return (
+                                <button
+                                  key={item.id}
+                                  onClick={() => toggleItem(item.id)}
+                                  className="flex items-center gap-2.5 w-full py-2 min-h-[40px] text-left border-b border-slate-100 dark:border-slate-800 last:border-0"
                                 >
-                                  {moduleName}
-                                </span>
-                                {item.reason && (
-                                  <span className="text-[11px] text-muted-foreground truncate">
-                                    {item.reason}
+                                  <div
+                                    className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors ${
+                                      isChecked
+                                        ? 'border-emerald-500 bg-emerald-500'
+                                        : 'border-slate-300 dark:border-slate-600'
+                                    }`}
+                                  >
+                                    {isChecked ? (
+                                      <Check className="h-3 w-3 text-white" />
+                                    ) : (
+                                      <Circle className="h-3 w-3 text-transparent" />
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-muted-foreground w-4 shrink-0">
+                                    {cluster.items.length > 1 ? stepIndex + 1 : ''}
                                   </span>
-                                )}
-                              </div>
-                            </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p
+                                      className={`text-sm ${
+                                        isChecked
+                                          ? 'line-through text-muted-foreground'
+                                          : 'font-medium'
+                                      }`}
+                                    >
+                                      {item.name}
+                                    </p>
+                                    {item.reason && (
+                                      <p className="text-[11px] text-muted-foreground truncate">
+                                        {item.reason}
+                                      </p>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </Card>
                       );

@@ -13,6 +13,8 @@ import type {
   ModuleCode,
 } from '@/types/capsule';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { generateRoutine } from '@/lib/skincare';
+import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { getBeautyProfile } from './profile';
 import { collectContext } from './context';
 import { getAllDomains, getDomainCount } from './registry';
@@ -21,14 +23,17 @@ import { calculateCCS } from './scoring';
 import type { DomainItemGroup } from './scoring';
 import { getCrossDomainRules } from './capsule-repository';
 
-// 데일리 루틴 제외 도메인 — identity 축은 매일 반복할 행동이 없음 (프로필 카드 뱃지 논리와 동일)
-const DAILY_EXCLUDED_DOMAINS: ReadonlySet<string> = new Set(['personal-color']);
+// 데일리 루틴 제외 도메인 (2026-07-06 사용자 관점 정리)
+// - personal-color: identity 축("변하지 않아요") — 매일 반복할 행동이 없음
+// - skin: 캡슐 엔진(제품 추상화)이 아니라 정본 루틴 엔진(lib/skincare generateRoutine)에서
+//   파생 — buildSkinRoutineItems(). 행동(루틴 스텝)을 SkinProduct에 밀어 넣으면
+//   카테고리 dedup(minimize) 때문에 "세안 없는 아침" 같은 왜곡이 생겼음.
+const DAILY_EXCLUDED_DOMAINS: ReadonlySet<string> = new Set(['personal-color', 'skin']);
 
-// 도메인별 데일리 아이템 수 — 실제 루틴 모양에 맞춤 (2026-07-06 사용자 관점 정리)
-// skin 6 = 아침 2(보습·선크림) + 저녁 4(클렌징·토너·세럼·아이크림)
+// 도메인별 데일리 아이템 수 — 실제 루틴 모양에 맞춤
 // fashion 1 = 코디는 원자적 행동 1개 / hair 2 = 샴푸·컨디셔너 (매일 트리트먼트는 과함)
 // body 2 = 자세 교정·스트레칭 ("근력 플랜"은 행동이 아니라 계획이라 제외)
-const DAILY_MAX_ITEMS: Record<string, number> = { skin: 6, fashion: 1, hair: 2, body: 2 };
+const DAILY_MAX_ITEMS: Record<string, number> = { fashion: 1, hair: 2, body: 2 };
 const DAILY_MAX_ITEMS_DEFAULT = 3;
 
 // 도메인 → 모듈코드 매핑
@@ -85,9 +90,12 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   const domainGroups: DomainItemGroup[] = [];
   const dailyItems: DailyItem[] = [];
 
+  // 피부 루틴 = 정본 루틴 엔진(lib/skincare)에서 파생 — 아침/저녁 필수 스텝 + 피부타입 개인화.
+  // 먼저 push해야 아침 그룹에서 스킨케어 → 메이크업 → 코디 순서가 됨 (정렬은 timeOfDay만 봄).
+  dailyItems.push(...buildSkinRoutineItems(profile));
+
   for (const engine of domains) {
-    // 퍼스널컬러는 identity 축("변하지 않아요") — "매일 할 일"이 존재하지 않으므로
-    // 데일리 루틴에서 제외 ("팔레트 확인"을 매일 체크하는 건 행동이 아니라 정보 조회).
+    // 제외 사유는 DAILY_EXCLUDED_DOMAINS 정의 주석 참조 (PC = 행동 없음, skin = 루틴 엔진 파생)
     if (DAILY_EXCLUDED_DOMAINS.has(engine.domainId)) continue;
 
     const items = await engine.curate(profile, {
@@ -353,6 +361,55 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
 }
 
 /**
+ * 피부 데일리 아이템 — 정본 루틴 엔진(lib/skincare generateRoutine) 파생
+ *
+ * 왜 캡슐 엔진을 안 쓰나: 루틴 스텝은 "행동"인데 SkinProduct는 "제품" 추상화라
+ * minimize의 카테고리 dedup이 아침·저녁의 같은 카테고리 스텝(클렌저·토너)을 잘못 제거함.
+ * generateRoutine은 피부타입별 단계 가감 + 스텝별 purpose(이유)까지 제공하는 단일 소스.
+ */
+function buildSkinRoutineItems(profile: {
+  skin?: { type?: string; concerns?: string[] };
+}): DailyItem[] {
+  // 피부 분석이 없는 사용자는 피부 루틴 없음 (다른 축은 정상 생성)
+  if (!profile.skin?.type) return [];
+
+  const VALID_SKIN_TYPES: readonly SkinTypeId[] = [
+    'dry',
+    'oily',
+    'combination',
+    'normal',
+    'sensitive',
+  ];
+  const skinType: SkinTypeId = (VALID_SKIN_TYPES as readonly string[]).includes(profile.skin.type)
+    ? (profile.skin.type as SkinTypeId)
+    : 'normal';
+
+  const items: DailyItem[] = [];
+  for (const timeOfDay of ['morning', 'evening'] as const) {
+    const { routine } = generateRoutine({
+      skinType,
+      // concerns는 SkinConcernId 계약 — 프로필 문자열이 계약과 다를 수 있어 미전달(팁만 줄어듦)
+      concerns: [],
+      timeOfDay,
+      includeOptional: false, // 데일리 체크리스트는 필수 스텝만 (선택 스텝은 결과 페이지 영역)
+    });
+
+    for (const step of routine) {
+      items.push({
+        id: `skin-${timeOfDay}-${step.order}-${step.category}`,
+        moduleCode: 'S',
+        name: step.name,
+        reason: step.purpose,
+        compatibilityScore: 0,
+        isChecked: false,
+        timeOfDay,
+      });
+    }
+  }
+  return items;
+}
+
+/**
  * 도메인/카테고리 → 실행 시간대 매핑
  *
  * 사용자 멘탈 모델은 "오늘 할 일 N개"가 아니라 "아침 루틴 / 저녁 루틴".
@@ -362,9 +419,7 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
  */
 function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeOfDay'] {
   switch (domainId) {
-    case 'skin':
-      // 아침 = 외출 준비 단계, 저녁 = 세정·집중 케어 단계 (skin 엔진 DAILY_STEPS와 짝)
-      return category === 'moisturizer' || category === 'sunscreen' ? 'morning' : 'evening';
+    // skin은 buildSkinRoutineItems에서 timeOfDay를 명시적으로 부여 (이 함수 미경유)
     case 'makeup':
     case 'fashion':
       return 'morning';
@@ -381,15 +436,8 @@ function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeO
  * (클렌징에 "자외선 차단이 중요한 계절이에요"가 붙던 어긋남 방지)
  */
 function generateReason(domainId: string, context: DailyContext, category?: string): string {
+  // skin 이유는 루틴 엔진 step.purpose가 담당 (buildSkinRoutineItems) — 여기선 나머지 도메인만
   const categoryReasons: Record<string, string> = {
-    // skin
-    cleanser: '남은 메이크업·노폐물이 트러블의 시작이에요',
-    toner: '피부결을 정리해 다음 단계 흡수를 도와요',
-    serum: '수분 집중 보충 단계예요',
-    moisturizer: '하루 종일 수분 장벽을 지켜줘요',
-    sunscreen: '자외선 차단은 피부 노화 예방의 핵심이에요',
-    'eye-cream': '가장 얇은 눈가 피부부터 관리해요',
-    // hair
     shampoo: '두피 타입에 맞춘 세정이 모발 건강의 기본이에요',
     conditioner: '모발 끝 손상을 막아줘요',
   };

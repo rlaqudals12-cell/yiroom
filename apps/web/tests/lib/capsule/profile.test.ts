@@ -112,11 +112,11 @@ describe('BeautyProfile CRUD', () => {
       tableResponses['beauty_profiles'] = { data: null, error: null };
       // 모든 분석 테이블도 데이터 없음 (신규 사용자)
       tableResponses['personal_color_assessments'] = { data: null, error: null };
-      tableResponses['skin_assessments'] = { data: null, error: null };
-      tableResponses['body_assessments'] = { data: null, error: null };
+      tableResponses['skin_analyses'] = { data: null, error: null };
+      tableResponses['body_analyses'] = { data: null, error: null };
       tableResponses['posture_analyses'] = { data: null, error: null };
       tableResponses['nutrition_settings'] = { data: null, error: null };
-      tableResponses['hair_assessments'] = { data: null, error: null };
+      tableResponses['hair_analyses'] = { data: null, error: null };
       tableResponses['makeup_analyses'] = { data: null, error: null };
       tableResponses['oral_health_assessments'] = { data: null, error: null };
 
@@ -237,7 +237,7 @@ describe('BeautyProfile CRUD', () => {
         data: { season: 'summer', undertone: 'cool', best_colors: ['#AAA'] },
         error: null,
       };
-      tableResponses['skin_assessments'] = {
+      tableResponses['skin_analyses'] = {
         data: {
           skin_type: 'dry',
           concerns: ['건조'],
@@ -245,13 +245,13 @@ describe('BeautyProfile CRUD', () => {
         },
         error: null,
       };
-      tableResponses['body_assessments'] = {
+      tableResponses['body_analyses'] = {
         data: { body_shape: 'triangle', analysis_data: { ratios: { shoulderToWaistRatio: 1.1 } } },
         error: null,
       };
       tableResponses['posture_analyses'] = { data: null, error: null };
       tableResponses['nutrition_settings'] = { data: null, error: null };
-      tableResponses['hair_assessments'] = { data: null, error: null };
+      tableResponses['hair_analyses'] = { data: null, error: null };
       tableResponses['makeup_analyses'] = { data: null, error: null };
       tableResponses['oral_health_assessments'] = { data: null, error: null };
       // upsert 시 반환
@@ -276,11 +276,11 @@ describe('BeautyProfile CRUD', () => {
 
     it('should return empty profile when no assessments exist', async () => {
       tableResponses['personal_color_assessments'] = { data: null, error: null };
-      tableResponses['skin_assessments'] = { data: null, error: null };
-      tableResponses['body_assessments'] = { data: null, error: null };
+      tableResponses['skin_analyses'] = { data: null, error: null };
+      tableResponses['body_analyses'] = { data: null, error: null };
       tableResponses['posture_analyses'] = { data: null, error: null };
       tableResponses['nutrition_settings'] = { data: null, error: null };
-      tableResponses['hair_assessments'] = { data: null, error: null };
+      tableResponses['hair_analyses'] = { data: null, error: null };
       tableResponses['makeup_analyses'] = { data: null, error: null };
       tableResponses['oral_health_assessments'] = { data: null, error: null };
       tableResponses['beauty_profiles'] = { data: null, error: null };
@@ -300,14 +300,14 @@ describe('BeautyProfile CRUD', () => {
         error: null,
       };
       // skin 에러
-      tableResponses['skin_assessments'] = {
+      tableResponses['skin_analyses'] = {
         data: null,
         error: { message: 'timeout' },
       };
-      tableResponses['body_assessments'] = { data: null, error: null };
+      tableResponses['body_analyses'] = { data: null, error: null };
       tableResponses['posture_analyses'] = { data: null, error: null };
       tableResponses['nutrition_settings'] = { data: null, error: null };
-      tableResponses['hair_assessments'] = { data: null, error: null };
+      tableResponses['hair_analyses'] = { data: null, error: null };
       tableResponses['makeup_analyses'] = { data: null, error: null };
       tableResponses['oral_health_assessments'] = { data: null, error: null };
       tableResponses['beauty_profiles'] = { data: null, error: null };
@@ -323,14 +323,14 @@ describe('BeautyProfile CRUD', () => {
 
     it('should add Fashion module when body data exists', async () => {
       tableResponses['personal_color_assessments'] = { data: null, error: null };
-      tableResponses['skin_assessments'] = { data: null, error: null };
-      tableResponses['body_assessments'] = {
+      tableResponses['skin_analyses'] = { data: null, error: null };
+      tableResponses['body_analyses'] = {
         data: { body_shape: 'oval', styling_recommendations: { silhouettes: ['A라인'] } },
         error: null,
       };
       tableResponses['posture_analyses'] = { data: null, error: null };
       tableResponses['nutrition_settings'] = { data: null, error: null };
-      tableResponses['hair_assessments'] = { data: null, error: null };
+      tableResponses['hair_analyses'] = { data: null, error: null };
       tableResponses['makeup_analyses'] = { data: null, error: null };
       tableResponses['oral_health_assessments'] = { data: null, error: null };
       tableResponses['beauty_profiles'] = { data: null, error: null };
