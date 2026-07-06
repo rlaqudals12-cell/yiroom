@@ -11,7 +11,7 @@
 | Framework | Next.js 16+ (App Router, Turbopack) + React 19 + TypeScript |
 | Auth      | Clerk (clerk_user_id 기반 Supabase 네이티브 통합)           |
 | Database  | Supabase (PostgreSQL 15+, RLS 필수)                         |
-| AI        | Google Gemini 3 Flash (이미지 분석)                         |
+| AI        | Google Gemini 3.5 Flash (이미지 분석)                       |
 | UI        | shadcn/ui + Radix UI + Tailwind CSS v4                      |
 | State     | Zustand (다단계 폼), React Hook Form + Zod (폼)             |
 | Testing   | Vitest + React Testing Library + Playwright                 |

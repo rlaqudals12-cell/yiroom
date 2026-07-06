@@ -98,7 +98,7 @@ export function isGeminiAvailable(): boolean {
  */
 export function getGeminiModelInfo(): { model: string; available: boolean } {
   return {
-    model: process.env.GEMINI_MODEL ?? 'gemini-3-flash-preview',
+    model: process.env.GEMINI_MODEL ?? 'gemini-3.5-flash',
     available: isGeminiAvailable(),
   };
 }

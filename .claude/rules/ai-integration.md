@@ -12,12 +12,16 @@ paths:
 
 ## 모델 선택
 
-### 기본 모델: Gemini 3 Flash
+### 기본 모델: Gemini 3.5 Flash (GA)
 
 ```typescript
-// lib/gemini.ts
-model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+// lib/gemini/client.ts
+model: process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 ```
+
+> 2026-07-06 마이그레이션: `gemini-3-flash-preview`가 공식 폐기 목록에 올라 GA 승계
+> 모델 `gemini-3.5-flash`로 교체 (thinking 파라미터 미사용 → ID 교체만으로 호환).
+> 비용 3배(입력 $0.5→$1.5/1M) — 볼륨 증가 시 `gemini-3.1-flash-lite`($0.25) A/B 검토.
 
 ### 사용처
 
@@ -101,7 +105,7 @@ const prompt = `
 ```typescript
 // Gemini 3 Flash는 컨텍스트 캐싱으로 90% 비용 절감 가능
 const cachedModel = genAI.getGenerativeModel({
-  model: 'gemini-3-flash-preview',
+  model: 'gemini-3.5-flash',
   cachedContent: cachedContext,
 });
 ```
@@ -119,7 +123,7 @@ const cachedModel = genAI.getGenerativeModel({
 GOOGLE_GENERATIVE_AI_API_KEY=AIza...
 
 # 모델 오버라이드 (선택)
-GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_MODEL=gemini-3.5-flash
 
 # Mock 강제 사용 (개발/테스트)
 FORCE_MOCK_AI=true
