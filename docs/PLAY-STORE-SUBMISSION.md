@@ -8,22 +8,28 @@
 
 ## 0. 준비물 체크리스트
 
-| 항목                      | 상태         | 비고                                                                          |
-| ------------------------- | ------------ | ----------------------------------------------------------------------------- |
-| production AAB            | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-production.aab` (81MB, 빌드 7853935a)    |
-| preview APK (실기기 검증) | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-preview.apk` (126MB, 빌드 e409b0a8)      |
-| Google Play 개발자 계정   | ❓ 확인 필요 | $25 일회성. [play.google.com/console](https://play.google.com/console/signup) |
-| 개인정보처리방침 URL      | ✅ 있음      | `https://yiroom.vercel.app/privacy`                                           |
-| 스토어 등록정보           | ⬜ 작성 필요 | 아래 §3                                                                       |
+| 항목                      | 상태         | 비고                                                                                                      |
+| ------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| production AAB            | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-production.aab` (81MB, 최종 빌드 7be1eb23 — 격차수정 4건 포함)       |
+| preview APK (실기기 검증) | ✅ 확보      | `c:\dev\yiroom-release\yiroom-v1.0.0-preview.apk` (126MB, 최종 빌드 0f2be748 — md5 검증·에뮬 스모크 통과) |
+| Google Play 개발자 계정   | ❓ 확인 필요 | $25 일회성. [play.google.com/console](https://play.google.com/console/signup)                             |
+| 개인정보처리방침 URL      | ✅ 있음      | `https://yiroom.vercel.app/privacy`                                                                       |
+| 스토어 등록정보           | ⬜ 작성 필요 | 아래 §3                                                                                                   |
 
 > **키스토어 주의**: 서명 키는 EAS(Expo 서버)가 보관 중(`Build Credentials ib5NS5x9BR`).
 > 향후 EAS 없이 빌드하려면 `eas credentials`로 키스토어를 **미리 다운로드**해 안전한 곳에 백업할 것 (구독 만료 전 필수).
 
 ## 1. 실기기 스모크 테스트 (preview APK)
 
+> 에뮬레이터에서 이미 통과(2026-07-06): 설치·온보딩(힌트 포함)·프로필 홈·통합 화면(타이틀)·비로그인 제출 가드까지 크래시 0.
+> 아래는 **로그인이 필요해 에뮬에서 못 본 것** 위주로 실기기에서 확인.
+
 1. APK를 폰으로 전송(USB/링크) → 설치 (출처 불명 앱 허용)
-2. 최소 검증: 로그인 → **홈 5축 프로필 카드** → 통합 분석 1회 → 결과 → 개별 축 카드 진입
-3. 통과 기준: 크래시 없음 + 프로필 홈 정상 렌더 + 분석 저장/표시 정상
+2. 최소 검증: **로그인** → 홈 5축 프로필 카드 → 통합 분석 1회(카메라/갤러리) → 결과 → 개별 축 카드 진입
+3. 로그인 후 전용 확인 2건:
+   - **선택 재분석 칩**: 분석 1회 후 통합 화면 재진입 → "다시 분석할 축 선택" 섹션 노출 + 일부만 선택 시 나머지 축 결과 유지
+   - **앱 계측**: 통합 분석 완료 후 Vercel 대시보드 → Analytics 이벤트에 `integrated_analysis_complete`(platform: mobile) 수집 확인
+4. 통과 기준: 크래시 없음 + 프로필 홈 정상 렌더 + 분석 저장/표시 정상
 
 ## 2. Play Console 앱 생성
 
