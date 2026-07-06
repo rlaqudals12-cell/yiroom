@@ -24,6 +24,8 @@ interface DailyItem {
   reason?: string;
   isChecked?: boolean;
   timeOfDay?: 'morning' | 'evening' | 'anytime';
+  /** 모듈 그룹 개인화 근거 (그룹 첫 아이템에만) — 예: "복합성 피부 맞춤 루틴" */
+  groupNote?: string;
 }
 
 interface DailyCapsule {
@@ -314,6 +316,9 @@ export default function DailyCapsulePage(): React.ReactElement {
                         checkedItems.has(i.id)
                       ).length;
 
+                      // 개인화 근거 (그룹 첫 아이템에 실림) — "내 분석이 반영됐다" 가시화
+                      const groupNote = cluster.items.find((i) => i.groupNote)?.groupNote;
+
                       return (
                         <Card key={cluster.code} className="p-3">
                           {/* 모듈 헤더 */}
@@ -328,6 +333,11 @@ export default function DailyCapsulePage(): React.ReactElement {
                               {clusterDone}/{cluster.items.length}
                             </span>
                           </div>
+                          {groupNote && (
+                            <p className="text-[11px] text-violet-500 dark:text-violet-400 mb-1.5">
+                              ✨ {groupNote}
+                            </p>
+                          )}
 
                           {/* 번호식 컴팩트 스텝 */}
                           <div>

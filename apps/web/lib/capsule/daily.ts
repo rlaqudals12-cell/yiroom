@@ -13,7 +13,8 @@ import type {
   ModuleCode,
 } from '@/types/capsule';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { generateRoutine } from '@/lib/skincare';
+import { generateRoutine, applyConditionalModifications, getHydrationLabel } from '@/lib/skincare';
+import type { TodaySkinCondition } from '@/lib/skincare';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { getBeautyProfile } from './profile';
 import { collectContext } from './context';
@@ -368,7 +369,7 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
  * generateRoutine은 피부타입별 단계 가감 + 스텝별 purpose(이유)까지 제공하는 단일 소스.
  */
 function buildSkinRoutineItems(profile: {
-  skin?: { type?: string; concerns?: string[] };
+  skin?: { type?: string; concerns?: string[]; scores?: Record<string, number> };
 }): DailyItem[] {
   // 피부 분석이 없는 사용자는 피부 루틴 없음 (다른 축은 정상 생성)
   if (!profile.skin?.type) return [];
@@ -384,9 +385,13 @@ function buildSkinRoutineItems(profile: {
     ? (profile.skin.type as SkinTypeId)
     : 'normal';
 
+  // 최근 분석 지표 → 오늘 상태 추정 (conditional-routine 입력).
+  // 정직성: 실시간이 아니라 "최근 분석 기준"임 — groupNote 문구에 명시.
+  const condition = deriveSkinCondition(profile.skin.scores ?? {});
+
   const items: DailyItem[] = [];
   for (const timeOfDay of ['morning', 'evening'] as const) {
-    const { routine } = generateRoutine({
+    const { routine, personalizationNote } = generateRoutine({
       skinType,
       // concerns는 SkinConcernId 계약 — 프로필 문자열이 계약과 다를 수 있어 미전달(팁만 줄어듦)
       concerns: [],
@@ -394,7 +399,17 @@ function buildSkinRoutineItems(profile: {
       includeOptional: false, // 데일리 체크리스트는 필수 스텝만 (선택 스텝은 결과 페이지 영역)
     });
 
-    for (const step of routine) {
+    // 지표 기반 조정 — 수분/유분/민감도에 따라 스텝 반복·강조·생략 (예: "토너 (2회)")
+    const { adjustedRoutine } = applyConditionalModifications(routine, condition, skinType);
+
+    // 개인화 근거를 그룹 첫 아이템에 부여 → 상세 페이지 모듈 헤더 아래 노출
+    const conditionSuffix =
+      condition.hydration === 'normal'
+        ? ''
+        : ` · 최근 분석 기준 ${getHydrationLabel(condition.hydration)} 상태를 반영했어요`;
+    const groupNote = `${personalizationNote}${conditionSuffix}`;
+
+    adjustedRoutine.forEach((step, index) => {
       items.push({
         id: `skin-${timeOfDay}-${step.order}-${step.category}`,
         moduleCode: 'S',
@@ -403,10 +418,36 @@ function buildSkinRoutineItems(profile: {
         compatibilityScore: 0,
         isChecked: false,
         timeOfDay,
+        ...(index === 0 ? { groupNote } : {}),
       });
-    }
+    });
   }
   return items;
+}
+
+/**
+ * 피부 지표(0-100) → 오늘 상태 추정
+ * 유분 과다가 수분 부족보다 우선 판정 (지성 케어가 더 즉각적 조정을 요구).
+ */
+function deriveSkinCondition(scores: Record<string, number>): TodaySkinCondition {
+  const hydration = scores.hydration;
+  const oil = scores.oil_level;
+  const sensitivity = scores.sensitivity;
+
+  let level: TodaySkinCondition['hydration'] = 'normal';
+  if (typeof oil === 'number' && oil >= 75) level = 'very_oily';
+  else if (typeof oil === 'number' && oil >= 60) level = 'oily';
+  else if (typeof hydration === 'number' && hydration <= 30) level = 'very_dry';
+  else if (typeof hydration === 'number' && hydration <= 45) level = 'dry';
+
+  const sensitivityLevel: TodaySkinCondition['sensitivityLevel'] =
+    typeof sensitivity === 'number' && sensitivity >= 70
+      ? 'moderate'
+      : typeof sensitivity === 'number' && sensitivity >= 40
+        ? 'mild'
+        : 'none';
+
+  return { hydration: level, concerns: [], sensitivityLevel };
 }
 
 /**

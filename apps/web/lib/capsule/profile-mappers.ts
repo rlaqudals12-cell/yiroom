@@ -59,7 +59,7 @@ export function mapPCAssessment(row: Record<string, unknown>): PCProfileData {
 
 // =============================================================================
 // S: 피부 분석 매퍼
-// skin_assessments → SkinProfileData
+// skin_analyses → SkinProfileData
 // =============================================================================
 
 /** 피부 분석 결과에서 프로필 요약 추출 */
@@ -68,10 +68,27 @@ export function mapSkinAssessment(row: Record<string, unknown>): SkinProfileData
   const scoreBreakdown = scores?.scoreBreakdown as Record<string, number> | null;
   const concerns = row.concerns as string[] | null;
 
+  // skin_analyses는 지표가 top-level 숫자 컬럼 — 상태 기반 루틴 조정(conditional-routine)의
+  // 입력이므로 scores에 병합해 프로필로 승격 (2026-07-06, 데일리 루틴 지표 배선)
+  const metricColumns = [
+    'hydration',
+    'oil_level',
+    'sensitivity',
+    'overall_score',
+    'pores',
+    'pigmentation',
+    'wrinkles',
+  ] as const;
+  const metrics: Record<string, number> = {};
+  for (const key of metricColumns) {
+    const value = row[key];
+    if (typeof value === 'number') metrics[key] = value;
+  }
+
   return {
     type: (row.skin_type as string) ?? '',
     concerns: concerns ?? [],
-    scores: scoreBreakdown ?? {},
+    scores: { ...metrics, ...(scoreBreakdown ?? {}) },
   };
 }
 
