@@ -60,7 +60,7 @@ describe('Gemini Client Adapter', () => {
       expect(result.text).toBe('Hello from Gemini');
       expect(mockGenerateContent).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'gemini-3-flash-preview',
+          model: 'gemini-3.5-flash',
           contents: 'Say hello',
         })
       );

@@ -33,11 +33,15 @@ import {
   type MakeupAnalysisResult as MockMakeupAnalysisResult,
 } from '@/lib/mock/makeup-analysis';
 
-// 모델 설정 (어댑터에서 기본 모델 사용, temperature/topP/topK만 전달)
+// 모델 설정 (어댑터에서 기본 모델 사용)
+// thinkingLevel low: 분석은 결정론적 JSON 추출 작업이라 깊은 추론 불필요 —
+// gemini-3.5-flash의 thinking 기본값(medium)은 이미지 분석에서 3.8~6.8초로
+// 3초 타임아웃을 전부 초과시켰음 (2026-07-07 실측). low 적용 시 3.2~3.8초.
 const geminiConfig = {
   temperature: 0.1,
   topP: 0.8,
   topK: 40,
+  thinkingConfig: { thinkingLevel: 'low' },
 };
 
 // ============================================
@@ -1384,7 +1388,7 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
@@ -1392,7 +1396,7 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
             contents: [{ text: SKIN_ANALYSIS_PROMPT }, imagePart],
             config: geminiConfig,
           }),
-          3000,
+          30000,
           '[S-1] Gemini timeout'
         ),
       2,
@@ -1884,12 +1888,12 @@ export async function analyzeWorkout(
   try {
     const prompt = buildWorkoutAnalysisPrompt(input);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
           generateContent({ contents: prompt, config: geminiConfig }),
-          3000,
+          30000,
           '[W-1] Gemini timeout'
         ),
       2,
@@ -2144,12 +2148,12 @@ export async function recommendExercises(
   try {
     const prompt = buildExerciseRecommendationPrompt(input);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
           generateContent({ contents: prompt, config: geminiConfig }),
-          3000,
+          30000,
           '[W-1] Gemini timeout'
         ),
       2,
@@ -2322,12 +2326,12 @@ export async function generateWorkoutInsights(
   try {
     const prompt = buildWorkoutInsightPrompt(input);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
           generateContent({ contents: prompt, config: geminiConfig }),
-          3000,
+          30000,
           '[W-1] Gemini timeout'
         ),
       2,
@@ -2695,12 +2699,12 @@ export async function generateMealSuggestion(
   try {
     const prompt = buildMealSuggestionPrompt(input);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
           generateContent({ contents: prompt, config: geminiConfig }),
-          3000,
+          30000,
           '[N-1] Meal suggestion timeout'
         ),
       2,
@@ -2998,12 +3002,12 @@ export async function recommendWeatherOutfit(
   try {
     const prompt = buildWeatherOutfitPrompt(input);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회) 적용
+    // 타임아웃 (30초 — 3.5-flash에서 상세 JSON 응답이 10초+ 소요, 2026-07-07 실측) + 재시도 (최대 2회)
     const result = await withRetry(
       () =>
         withTimeout(
           generateContent({ contents: prompt, config: geminiConfig }),
-          3000,
+          30000,
           '[WEATHER-OUTFIT] Timeout'
         ),
       2,
