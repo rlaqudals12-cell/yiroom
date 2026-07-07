@@ -6,7 +6,7 @@
  */
 
 import { inventoryLogger } from '@/lib/utils/logger';
-import { ClothingCategory, Pattern } from '@/types/inventory';
+import { ClothingCategory, Pattern, Season, Occasion } from '@/types/inventory';
 
 // @imgly/background-removal 타입 (패키지 미설치 시에도 동작)
 interface RemoveBackgroundOptions {
@@ -190,6 +190,10 @@ export interface ClothingClassificationResult {
   suggestedName: string;
   colors: string[];
   pattern?: Pattern;
+  /** AI 추정 착용 시즌 (판단 불가 시 빈 배열) — 일괄 등록·TPO 코디용 */
+  seasons?: Season[];
+  /** AI 추정 착용 상황 (판단 불가 시 빈 배열) */
+  occasions?: Occasion[];
   confidence: number;
 }
 

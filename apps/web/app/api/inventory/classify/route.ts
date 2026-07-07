@@ -5,8 +5,8 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
-import type { ClothingCategory, Pattern } from '@/types/inventory';
+import { generateContent, isGeminiAvailable, FAST_MODEL } from '@/lib/gemini/client';
+import type { ClothingCategory, Pattern, Season, Occasion } from '@/types/inventory';
 import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // 의류 분류 Mock 결과
@@ -16,8 +16,19 @@ const generateMockClassification = () => ({
   suggestedName: '캐주얼 티셔츠',
   colors: ['화이트'],
   pattern: 'solid' as Pattern,
+  seasons: [] as Season[],
+  occasions: [] as Occasion[],
   confidence: 0.5,
 });
+
+const VALID_SEASONS: ReadonlySet<string> = new Set(['spring', 'summer', 'autumn', 'winter']);
+const VALID_OCCASIONS: ReadonlySet<string> = new Set([
+  'casual',
+  'formal',
+  'workout',
+  'date',
+  'travel',
+]);
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,8 +60,13 @@ Return a JSON object with these fields:
   "suggestedName": "descriptive Korean name (e.g., 베이지 트렌치코트)",
   "colors": ["primary color in Korean", "secondary color if any"],
   "pattern": "solid" | "stripe" | "check" | "floral" | "dot" | "geometric" | "animal" | "abstract",
+  "seasons": ["spring" | "summer" | "autumn" | "winter"],
+  "occasions": ["casual" | "formal" | "workout" | "date" | "travel"],
   "confidence": 0.0-1.0
 }
+
+seasons: seasons this item suits based on fabric weight/sleeve length (e.g., padding → ["winter"], linen shirt → ["spring","summer"]). Empty array if not determinable.
+occasions: where this item fits. Most items are ["casual"]; suits/blouses add "formal", athleisure adds "workout". Empty array if not determinable.
 
 Categories:
 - outer: coats, jackets, cardigans, paddings
@@ -82,8 +98,12 @@ Only return the JSON object, no other text.`;
         inlineData: { data: imageData, mimeType },
       };
 
+      // 구조화 추출 = FAST_MODEL (2026-07-07 A/B: 판정 동일·3~6초·1/6 가격)
+      // 일괄 등록에서 N장 연속 호출되므로 속도가 UX에 직결
       const result = await generateContent({
+        model: FAST_MODEL,
         contents: [{ text: prompt }, imagePart],
+        config: { temperature: 0.1, thinkingConfig: { thinkingLevel: 'low' } },
       });
       const text = result.text;
 
@@ -102,6 +122,12 @@ Only return the JSON object, no other text.`;
         suggestedName: classification.suggestedName || '의류',
         colors: classification.colors || [],
         pattern: classification.pattern || 'solid',
+        seasons: Array.isArray(classification.seasons)
+          ? classification.seasons.filter((s: string) => VALID_SEASONS.has(s))
+          : [],
+        occasions: Array.isArray(classification.occasions)
+          ? classification.occasions.filter((o: string) => VALID_OCCASIONS.has(o))
+          : [],
         confidence: classification.confidence || 0.8,
       });
     } catch (aiError) {

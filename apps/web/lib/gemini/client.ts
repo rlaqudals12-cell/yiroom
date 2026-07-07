@@ -33,6 +33,8 @@ export interface GeminiConfig {
   safetySettings?: GeminiSafetySetting[];
   responseMimeType?: string;
   responseSchema?: Record<string, unknown>;
+  /** 3.5-flash thinking 제어 — 구조화 추출은 'low' (기본 medium은 느리고 재현성 저하) */
+  thinkingConfig?: { thinkingLevel?: string };
 }
 
 export interface GeminiCallParams {
@@ -112,10 +114,12 @@ export async function generateContent(params: GeminiCallParams): Promise<GeminiR
   const response = await client.models.generateContent({
     model: params.model ?? DEFAULT_MODEL,
     contents: params.contents,
+    // SDK 타입은 ThinkingLevel enum이지만 런타임은 문자열("low")을 수용 —
+    // 기존 v1/v2 분석 경로가 문자열로 prod 검증됨. 타입 경계만 캐스트.
     config: {
       ...restConfig,
       safetySettings: safetySettings ?? DEFAULT_SAFETY_SETTINGS,
-    },
+    } as Parameters<typeof client.models.generateContent>[0]['config'],
   });
 
   return { text: response.text ?? '' };
@@ -135,10 +139,12 @@ export async function* generateContentStream(
   const response = await client.models.generateContentStream({
     model: params.model ?? DEFAULT_MODEL,
     contents: params.contents,
+    // SDK 타입은 ThinkingLevel enum이지만 런타임은 문자열("low")을 수용 —
+    // 기존 v1/v2 분석 경로가 문자열로 prod 검증됨. 타입 경계만 캐스트.
     config: {
       ...restConfig,
       safetySettings: safetySettings ?? DEFAULT_SAFETY_SETTINGS,
-    },
+    } as Parameters<typeof client.models.generateContent>[0]['config'],
   });
 
   for await (const chunk of response) {

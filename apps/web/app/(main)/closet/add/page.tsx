@@ -10,7 +10,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,7 +47,6 @@ type Step = 'upload' | 'details' | 'confirm';
 
 export default function AddClothingPage() {
   const router = useRouter();
-  const supabase = useClerkSupabaseClient();
 
   // 단계
   const [step, setStep] = useState<Step>('upload');
@@ -91,18 +89,14 @@ export default function AddClothingPage() {
   // 시즌 토글
   const toggleSeason = (season: Season) => {
     setSeasons((prev) =>
-      prev.includes(season)
-        ? prev.filter((s) => s !== season)
-        : [...prev, season]
+      prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]
     );
   };
 
   // 상황 토글
   const toggleOccasion = (occasion: Occasion) => {
     setOccasions((prev) =>
-      prev.includes(occasion)
-        ? prev.filter((o) => o !== occasion)
-        : [...prev, occasion]
+      prev.includes(occasion) ? prev.filter((o) => o !== occasion) : [...prev, occasion]
     );
   };
 
@@ -122,7 +116,7 @@ export default function AddClothingPage() {
 
   // 저장
   const handleSave = async () => {
-    if (!supabase || !uploadResult) return;
+    if (!uploadResult) return;
 
     setSaving(true);
     try {
@@ -157,26 +151,31 @@ export default function AddClothingPage() {
 
       const { url: imageUrl } = await uploadResponse.json();
 
-      // DB에 아이템 저장
-      const { error } = await supabase.from('user_inventory').insert({
-        id: itemId,
-        category: 'closet',
-        sub_category: subCategory || category,
-        name: name || '이름 없음',
-        image_url: imageUrl,
-        brand: brand || null,
-        tags,
-        metadata: {
-          color: colors,
-          season: seasons,
-          occasion: occasions,
-          pattern,
-        },
+      // DB에 아이템 저장 — API 경유 (직접 insert는 clerk_user_id NOT NULL/RLS에
+      // 걸려 항상 실패하던 잠복 버그, 2026-07-08 수정)
+      const saveResponse = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: 'closet',
+          subCategory: subCategory || category,
+          name: name || '이름 없음',
+          imageUrl,
+          brand: brand || null,
+          tags,
+          metadata: {
+            color: colors,
+            season: seasons,
+            occasion: occasions,
+            pattern,
+          },
+        }),
       });
 
-      if (error) {
-        console.error('[AddClothing] Save error:', error);
-        throw error;
+      if (!saveResponse.ok) {
+        const err = await saveResponse.json().catch(() => ({}));
+        console.error('[AddClothing] Save error:', err);
+        throw new Error(err.error ?? 'save failed');
       }
 
       router.push('/closet');
@@ -215,9 +214,7 @@ export default function AddClothingPage() {
             <div
               key={s}
               className={`flex-1 h-1 rounded-full ${
-                step === s || (step === 'details' && s === 'upload')
-                  ? 'bg-primary'
-                  : 'bg-muted'
+                step === s || (step === 'details' && s === 'upload') ? 'bg-primary' : 'bg-muted'
               }`}
             />
           ))}
@@ -230,9 +227,7 @@ export default function AddClothingPage() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-lg font-semibold mb-1">옷 사진을 올려주세요</h2>
-              <p className="text-sm text-muted-foreground">
-                AI가 자동으로 분류해드려요
-              </p>
+              <p className="text-sm text-muted-foreground">AI가 자동으로 분류해드려요</p>
             </div>
 
             <ItemUploader
@@ -240,6 +235,14 @@ export default function AddClothingPage() {
               autoRemoveBackground={true}
               autoClassify={true}
             />
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push('/closet/add/batch')}
+            >
+              여러 벌 한 번에 등록하기
+            </Button>
           </div>
         )}
 
@@ -356,31 +359,24 @@ export default function AddClothingPage() {
             <div className="space-y-2">
               <Label>상황</Label>
               <div className="flex flex-wrap gap-2">
-                {(Object.keys(OCCASION_LABELS) as Occasion[]).map(
-                  (occasion) => (
-                    <Button
-                      key={occasion}
-                      type="button"
-                      variant={
-                        occasions.includes(occasion) ? 'default' : 'outline'
-                      }
-                      size="sm"
-                      onClick={() => toggleOccasion(occasion)}
-                    >
-                      {OCCASION_LABELS[occasion]}
-                    </Button>
-                  )
-                )}
+                {(Object.keys(OCCASION_LABELS) as Occasion[]).map((occasion) => (
+                  <Button
+                    key={occasion}
+                    type="button"
+                    variant={occasions.includes(occasion) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleOccasion(occasion)}
+                  >
+                    {OCCASION_LABELS[occasion]}
+                  </Button>
+                ))}
               </div>
             </div>
 
             {/* 패턴 */}
             <div className="space-y-2">
               <Label>패턴</Label>
-              <Select
-                value={pattern}
-                onValueChange={(v) => setPattern(v as Pattern)}
-              >
+              <Select value={pattern} onValueChange={(v) => setPattern(v as Pattern)}>
                 <SelectTrigger>
                   <SelectValue placeholder="패턴 선택" />
                 </SelectTrigger>
@@ -430,12 +426,7 @@ export default function AddClothingPage() {
             </div>
 
             {/* 저장 버튼 */}
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleSave}
-              disabled={saving || !name}
-            >
+            <Button className="w-full" size="lg" onClick={handleSave} disabled={saving || !name}>
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
