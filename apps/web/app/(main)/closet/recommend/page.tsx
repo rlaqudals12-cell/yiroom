@@ -23,9 +23,13 @@ import {
   type BodyType3,
   type ClosetRecommendation,
 } from '@/lib/inventory/client';
+import { OCCASION_LABELS, type Occasion } from '@/types/inventory';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 import { getBodyShapeLabel } from '@/lib/body';
+import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
+import { assessOutfitHarmony } from '@/lib/inventory/color-bridge';
+import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 
 export default function ClosetRecommendPage() {
   const router = useRouter();
@@ -46,9 +50,14 @@ export default function ClosetRecommendPage() {
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
   const [bodyType, setBodyType] = useState<BodyType3 | null>(null);
 
-  // 날씨 정보 (Mock - 실제 앱에서는 날씨 API 연동)
+  // 날씨 — Open-Meteo 실연동(키 불필요). ADR-098의 WEATHER 게이팅은 "독립 날씨
+  // 위젯 = 퍼널 비기여"가 근거였고, 코디 실행에 쓰는 TPO는 그 근거 밖 (로드맵 승인).
+  // 실패 시 계절 추정으로 폴백하고 "추정"임을 표시한다 (정직성).
   const [temp, setTemp] = useState<number>(15);
-  const locationName = '서울';
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+
+  // 상황(TPO) 선택 — null = 상황 무관
+  const [occasion, setOccasion] = useState<Occasion | null>(null);
 
   // 사용자 프로필 조회
   useEffect(() => {
@@ -87,13 +96,29 @@ export default function ClosetRecommendPage() {
     fetchProfile();
   }, [supabase]);
 
-  // 계절에 맞는 온도 설정
+  // 실시간 날씨 조회 — 실패하면 계절 추정 온도 유지
   useEffect(() => {
+    // 폴백 기본값: 월 기반 계절 추정
     const month = new Date().getMonth();
     if (month >= 2 && month <= 4) setTemp(15);
     else if (month >= 5 && month <= 7) setTemp(27);
     else if (month >= 8 && month <= 10) setTemp(18);
     else setTemp(3);
+
+    let cancelled = false;
+    getWeatherWithGeolocation()
+      .then((data) => {
+        if (!cancelled && data) {
+          setWeather(data);
+          setTemp(data.temp);
+        }
+      })
+      .catch(() => {
+        /* 폴백 유지 */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // 옷장 아이템 조회
@@ -149,9 +174,25 @@ export default function ClosetRecommendPage() {
       personalColor,
       bodyType,
       temp,
-      occasion: null,
+      occasion,
     });
-  }, [items, personalColor, bodyType, temp]);
+  }, [items, personalColor, bodyType, temp, occasion]);
+
+  // 코디 색 조화 판정 (ADR-105 LCh) — 상·하의 색상명이 hex로 풀릴 때만
+  const harmony = useMemo(() => {
+    if (!outfit?.top || !outfit?.bottom) return null;
+    return assessOutfitHarmony(
+      outfit.top.item.metadata?.color as string[] | undefined,
+      outfit.bottom.item.metadata?.color as string[] | undefined
+    );
+  }, [outfit]);
+
+  // 시즌 립 추천 — "오늘 이 옷 + 이 립" (TPO 완성 레이어)
+  const lipRecommendations = useMemo(() => {
+    if (!personalColor) return [];
+    const season = personalColor.toLowerCase() as SeasonType;
+    return LIPSTICK_RECOMMENDATIONS[season] ?? [];
+  }, [personalColor]);
 
   // 옷장 분석 요약
   const summary = useMemo(() => {
@@ -305,8 +346,13 @@ export default function ClosetRecommendPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>📍</span>
-                <span>{locationName}</span>
+                <span>{weather && weather.precipitation > 0 ? '🌧' : '☀️'}</span>
+                <span>{weather ? weather.condition : '계절 기준 추정'}</span>
+                {weather && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600">
+                    현재 날씨
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Thermometer className="w-4 h-4" />
@@ -338,6 +384,33 @@ export default function ClosetRecommendPage() {
           </CardContent>
         </Card>
 
+        {/* 상황(TPO) 선택 */}
+        <div className="flex gap-2 overflow-x-auto pb-1" data-testid="occasion-chips">
+          <button
+            onClick={() => setOccasion(null)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              occasion === null
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-border'
+            }`}
+          >
+            전체
+          </button>
+          {(Object.entries(OCCASION_LABELS) as Array<[Occasion, string]>).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setOccasion(occasion === value ? null : value)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                occasion === value
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* 코디 추천 */}
         {outfit ? (
           <div className="space-y-4">
@@ -361,20 +434,59 @@ export default function ClosetRecommendPage() {
               {renderOutfitItem('액세서리', outfit.accessory)}
             </div>
 
-            {/* 코디 팁 */}
-            {outfit.tips.length > 0 && (
+            {/* 코디 팁 — 색 조화(LCh 판정)·날씨 팁을 앞에 */}
+            {(outfit.tips.length > 0 || harmony || (weather && weather.precipitation > 0)) && (
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">💡 코디 팁</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <ul className="space-y-1">
+                    {harmony && <li className="text-sm text-muted-foreground">🎨 {harmony.tip}</li>}
+                    {weather && weather.precipitation > 0 && (
+                      <li className="text-sm text-muted-foreground">
+                        ☔ 강수가 있어요 — 우산과 함께 방수 소재 신발을 권해요
+                      </li>
+                    )}
                     {outfit.tips.map((tip, idx) => (
                       <li key={idx} className="text-sm text-muted-foreground">
                         • {tip}
                       </li>
                     ))}
                   </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 오늘의 립 — 옷 + 립까지가 하나의 완성 (퍼스널컬러 시즌 기준) */}
+            {lipRecommendations.length > 0 && (
+              <Card data-testid="tpo-lip-section">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">💄 이 코디에 이 립</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2">
+                    {lipRecommendations.slice(0, 3).map((lip) => (
+                      <div key={lip.colorName} className="flex items-center gap-3">
+                        <span
+                          className="w-6 h-6 rounded-full border shrink-0"
+                          style={{ backgroundColor: lip.hex }}
+                          aria-label={lip.colorName}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{lip.colorName}</p>
+                          {(lip.oliveyoungAlt || lip.brandExample) && (
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              예: {lip.oliveyoungAlt || lip.brandExample}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    내 퍼스널컬러({personalColor}) 기준 추천이에요
+                  </p>
                 </CardContent>
               </Card>
             )}

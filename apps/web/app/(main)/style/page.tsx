@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { User, Palette, Eye, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
@@ -13,6 +13,14 @@ import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilte
 import { OutfitRoutineCard, type OutfitItem } from '@/components/style/OutfitRoutineCard';
 import { LookbookFeed } from '@/components/style/LookbookFeed';
 import type { FavoriteItem, LookbookPost } from '@/types/hybrid';
+import {
+  suggestOutfitFromCloset,
+  type BodyType3,
+  type ClosetRecommendation,
+} from '@/lib/inventory/client';
+import { colorNameToHex } from '@/lib/inventory/color-bridge';
+import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
+import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
 /**
  * 스타일 탭 - 룩핀 스타일 코디 피드
@@ -64,9 +72,14 @@ export default function StylePage() {
   const [height, setHeight] = useState<string | null>(null);
   const [feature, setFeature] = useState<string | null>(null);
 
+  // 코디 매칭용 원본 코드값 (라벨과 별도 — closetMatcher 계약)
+  const [rawBodyType, setRawBodyType] = useState<BodyType3 | null>(null);
+  const [rawSeason, setRawSeason] = useState<PersonalColorSeason | null>(null);
+  const [closetItems, setClosetItems] = useState<InventoryItem[]>([]);
+
   // DB 연결 데이터
   const [colorPalette, setColorPalette] = useState<ColorItem[]>([]);
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products] = useState<ProductItem[]>([]); // 패션 제품 DB 미보유 — 빈 상태 유지 (유령 쿼리 제거, 2026-07-08)
 
   // L-1-2: 키/몸무게 체크 상태
   const [hasMeasurements, setHasMeasurements] = useState<boolean | null>(null);
@@ -103,17 +116,24 @@ export default function StylePage() {
   ) => {
     if (!bodyData) return;
     setBodyType(getBodyShapeLabel(bodyData.body_type));
+    if (['S', 'W', 'N'].includes(bodyData.body_type)) {
+      setRawBodyType(bodyData.body_type as BodyType3);
+    }
     setHeight(bodyData.height ? `${bodyData.height}cm` : null);
     const concerns = bodyData.concerns as string[] | null;
     setFeature(concerns?.[0] || null);
   };
 
-  // 퍼스널컬러 분석 결과 적용
+  // 퍼스널컬러 분석 결과 적용 — 실제 컬럼은 season("Spring")/undertone
+  // (기존 result_season/result_tone은 유령 컬럼 — 이 섹션 전체가 죽어있던 원인)
   const applyPcData = (
-    pcData: { result_season: string; result_tone: string; best_colors: unknown } | null
+    pcData: { season: string; undertone: string | null; best_colors: unknown } | null
   ) => {
     if (!pcData) return;
-    setPersonalColor(`${pcData.result_season} ${pcData.result_tone}`);
+    setPersonalColor(pcData.undertone ? `${pcData.season} ${pcData.undertone}` : pcData.season);
+    if (['Spring', 'Summer', 'Autumn', 'Winter'].includes(pcData.season)) {
+      setRawSeason(pcData.season as PersonalColorSeason);
+    }
     const bestColors = pcData.best_colors as Array<{
       name?: string;
       hex?: string;
@@ -136,7 +156,7 @@ export default function StylePage() {
       if (!isLoaded || !user?.id || hasMeasurements === null) return;
 
       try {
-        const [bodyResult, pcResult, productsResult] = await Promise.all([
+        const [bodyResult, pcResult, closetResult] = await Promise.all([
           supabase
             .from('body_analyses')
             .select('body_type, height, concerns')
@@ -146,18 +166,19 @@ export default function StylePage() {
             .maybeSingle(),
           supabase
             .from('personal_color_assessments')
-            .select('result_season, result_tone, best_colors')
+            .select('season, undertone, best_colors')
             .eq('clerk_user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
-          // 제품 DB에서 패션 관련 제품 가져오기
+          // 내 옷장 — 오늘의 코디는 상품이 아니라 내 옷으로 (기존 fashion 제품
+          // 쿼리는 유령 컬럼(product_name/color_hex)+없는 카테고리라 항상 실패했음)
           supabase
-            .from('cosmetic_products')
-            .select('id, product_name, brand, rating, price, color_hex')
-            .eq('category', 'fashion')
-            .order('rating', { ascending: false })
-            .limit(6),
+            .from('user_inventory')
+            .select('*')
+            .eq('clerk_user_id', user.id)
+            .eq('category', 'closet')
+            .order('created_at', { ascending: false }),
         ]);
 
         const bodyData = bodyResult.data;
@@ -169,16 +190,26 @@ export default function StylePage() {
           applyPcData(pcData);
         }
 
-        // 제품 데이터 매핑
-        if (productsResult.data && productsResult.data.length > 0) {
-          setProducts(
-            productsResult.data.map((p) => ({
-              id: p.id,
-              name: p.product_name,
-              brand: p.brand ?? '',
-              rating: p.rating ?? 0,
-              matchRate: 0,
-              price: p.price ?? 0,
+        // 옷장 아이템 매핑 (코디 매칭 계약 InventoryItem으로)
+        if (closetResult.data && closetResult.data.length > 0) {
+          setClosetItems(
+            (closetResult.data as InventoryItemDB[]).map((row) => ({
+              id: row.id,
+              clerkUserId: row.clerk_user_id,
+              category: row.category,
+              subCategory: row.sub_category,
+              name: row.name,
+              imageUrl: row.image_url,
+              originalImageUrl: row.original_image_url,
+              brand: row.brand,
+              tags: row.tags,
+              isFavorite: row.is_favorite,
+              useCount: row.use_count,
+              lastUsedAt: row.last_used_at,
+              expiryDate: row.expiry_date,
+              metadata: row.metadata,
+              createdAt: row.created_at,
+              updatedAt: row.updated_at,
             }))
           );
         }
@@ -193,18 +224,43 @@ export default function StylePage() {
   // 하이브리드 UX 상태
   const [favoriteMaterials, setFavoriteMaterials] = useState<FavoriteItem[]>([]);
   const [avoidMaterials, setAvoidMaterials] = useState<FavoriteItem[]>([]);
-  const [dailyOutfit] = useState<OutfitItem[]>([
-    { order: 1, category: 'top', productName: '크롭 니트', color: '아이보리', colorHex: '#FFF8E7' },
-    {
-      order: 2,
-      category: 'bottom',
-      productName: '하이웨스트 슬랙스',
-      color: '베이지',
-      colorHex: '#D4A574',
-    },
-    { order: 3, category: 'outer', productName: '숏 재킷', color: '코랄', colorHex: '#FF6B6B' },
-    { order: 4, category: 'shoes', productName: '로퍼', color: '브라운', colorHex: '#8B4513' },
-  ]);
+
+  // 오늘의 코디 — 내 옷장에서 실제 매칭 (기존엔 하드코딩 가짜 4벌이었음)
+  const realOutfit = useMemo(() => {
+    if (closetItems.length === 0) return null;
+    const month = new Date().getMonth();
+    const temp =
+      month >= 5 && month <= 7 ? 27 : month >= 8 && month <= 10 ? 18 : month >= 2 ? 15 : 3;
+    return suggestOutfitFromCloset(closetItems, {
+      personalColor: rawSeason,
+      bodyType: rawBodyType,
+      temp,
+      occasion: null,
+    });
+  }, [closetItems, rawSeason, rawBodyType]);
+
+  const dailyOutfit = useMemo((): OutfitItem[] => {
+    if (!realOutfit) return [];
+    const slots: Array<{ category: string; rec: ClosetRecommendation | undefined }> = [
+      { category: 'top', rec: realOutfit.top },
+      { category: 'bottom', rec: realOutfit.bottom },
+      { category: 'outer', rec: realOutfit.outer },
+      { category: 'shoes', rec: realOutfit.shoes },
+    ];
+    return slots
+      .filter((s) => s.rec)
+      .map((s, i) => {
+        const colors = (s.rec!.item.metadata?.color as string[] | undefined) ?? [];
+        return {
+          order: i + 1,
+          category: s.category,
+          productName: s.rec!.item.name,
+          color: colors[0],
+          colorHex: colors[0] ? (colorNameToHex(colors[0]) ?? undefined) : undefined,
+          imageUrl: s.rec!.item.imageUrl ?? undefined,
+        };
+      });
+  }, [realOutfit]);
   const [lookbookPosts] = useState<LookbookPost[]>([
     {
       id: '1',
@@ -452,51 +508,45 @@ export default function StylePage() {
 
       {/* 본문 */}
       <div className="px-4 py-4 space-y-6">
-        {/* 오늘의 코디 추천 */}
-        {hasAnalysis && (
-          <FadeInUp delay={4}>
+        {/* 오늘의 코디 — 내 옷장 실제 매칭 (가짜 하드코딩 코디였던 것 교체, 2026-07-08) */}
+        {dailyOutfit.length > 0 && realOutfit ? (
+          <FadeInUp delay={5}>
             <section>
               <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-yellow-500" />
-                오늘의 코디 추천
+                오늘의 코디
               </h2>
+              <OutfitRoutineCard
+                occasion="daily"
+                items={dailyOutfit}
+                matchRate={realOutfit.totalScore}
+                styleTips={realOutfit.tips}
+              />
               <button
-                onClick={() => router.push('/style/outfit/today')}
-                className="w-full bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-4 text-left hover:shadow-md transition-shadow"
+                onClick={() => router.push('/closet/recommend')}
+                className="mt-3 w-full border rounded-lg py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
               >
-                <div className="w-full aspect-[3/4] bg-muted rounded-xl mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  &quot;{bodyType} 체형에 어울리는 하이웨스트&quot;
-                </p>
-                <div className="flex gap-2 mt-3">
-                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                    상의 보기
-                  </span>
-                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                    하의 보기
-                  </span>
-                  <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
-                    전체 구매
-                  </span>
-                </div>
+                날씨·상황별 코디 더 보기 →
               </button>
             </section>
           </FadeInUp>
-        )}
-
-        {/* 데일리 코디 루틴 (하이브리드 UX) */}
-        {hasAnalysis && (
+        ) : (
           <FadeInUp delay={5}>
-            <OutfitRoutineCard
-              occasion="daily"
-              items={dailyOutfit}
-              matchRate={92}
-              styleTips={[
-                '하이웨스트로 다리가 길어 보이는 효과',
-                '코랄 포인트로 봄 웜톤 강조',
-                '크롭 기장으로 허리 라인 강조',
-              ]}
-            />
+            <section className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-2xl border border-indigo-200 dark:border-indigo-900 p-4">
+              <h2 className="font-semibold mb-1 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+                오늘의 코디
+              </h2>
+              <p className="text-sm text-muted-foreground mb-3">
+                옷장에 옷을 등록하면 내 옷으로 매일 코디를 추천해드려요
+              </p>
+              <button
+                onClick={() => router.push('/closet/add/batch')}
+                className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                사진으로 옷장 한 번에 등록하기
+              </button>
+            </section>
           </FadeInUp>
         )}
 
@@ -596,9 +646,9 @@ export default function StylePage() {
               <Shirt className="w-5 h-5 text-violet-600" />
               오늘 뭐 입지?
             </h2>
-            <p className="text-sm text-muted-foreground">체형 + 퍼스널컬러 + 날씨 맞춤 AI 추천</p>
+            <p className="text-sm text-muted-foreground">체형 + 퍼스널컬러 + 날씨 맞춤 추천</p>
             <button
-              onClick={() => router.push('/style/suggest')}
+              onClick={() => router.push('/closet/recommend')}
               className="mt-3 w-full bg-violet-600 text-white py-2 rounded-lg font-medium hover:bg-violet-700 transition-colors"
             >
               추천 받기
