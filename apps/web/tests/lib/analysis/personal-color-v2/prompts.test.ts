@@ -25,20 +25,21 @@ describe('PERSONAL_COLOR_SYSTEM_PROMPT 상수', () => {
     expect(typeof PERSONAL_COLOR_SYSTEM_PROMPT).toBe('string');
   });
 
+  // Level 2 프롬프트(Lab 수치 기반)로 고도화되며 문구가 바뀜 — 현행 내용 기준으로 검증
   it('역할 설명이 포함되어 있다', () => {
-    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('퍼스널컬러 분석가');
+    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('퍼스널컬러 분석 전문가');
   });
 
-  it('12톤 시스템 설명이 포함되어 있다', () => {
-    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('12톤 시스템');
+  it('12톤 판정 설명이 포함되어 있다', () => {
+    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('12톤 최종 판정');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('Spring');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('Summer');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('Autumn');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('Winter');
   });
 
-  it('분석 기준이 포함되어 있다', () => {
-    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('피부톤 밝기');
+  it('분석 기준이 포함되어 있다 (Lab 수치 기준)', () => {
+    expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('명도');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('채도');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('언더톤');
     expect(PERSONAL_COLOR_SYSTEM_PROMPT).toContain('ITA');
@@ -143,7 +144,8 @@ describe('generateAnalysisPrompt', () => {
       const prompt = generateAnalysisPrompt();
 
       expect(prompt).toContain('confidence');
-      expect(prompt).toContain('70');
+      // Level 2: 고정 임계값(70) 대신 "기본 신뢰도 + 경계 감소 규칙" 서술로 변경됨
+      expect(prompt).toContain('신뢰도');
     });
   });
 });

@@ -87,15 +87,11 @@ describe('SetTracker', () => {
       ];
 
       render(
-        <SetTracker
-          sets={sets}
-          currentSetIndex={1}
-          onCompleteSet={vi.fn()}
-          onSkipSet={vi.fn()}
-        />
+        <SetTracker sets={sets} currentSetIndex={1} onCompleteSet={vi.fn()} onSkipSet={vi.fn()} />
       );
 
-      expect(screen.getByText('건너뜀')).toBeInTheDocument();
+      // i18n 도입으로 상태 텍스트는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '건너뜀')
+      expect(screen.getByText('setTracker0')).toBeInTheDocument();
     });
   });
 

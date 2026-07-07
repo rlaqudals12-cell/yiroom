@@ -72,12 +72,14 @@ describe('BarcodeScanner', () => {
     expect(screen.getByText('카메라 준비 중...')).toBeInTheDocument();
   });
 
+  // i18n 도입으로 안내 텍스트는 번역 키로 렌더됨 (setup 목이 키를 그대로 반환)
+  // barcodeScanner0='바코드를 프레임에 맞춰주세요', barcodeScanner3='EAN-13, EAN-8, UPC-A 바코드 지원'
   it('카메라 시작 후 안내 텍스트를 표시한다', async () => {
     render(<BarcodeScanner onScan={vi.fn()} />);
 
     // 스캐너가 시작되면 안내 텍스트가 표시됨
     await waitFor(() => {
-      expect(screen.getByText('바코드를 프레임에 맞춰주세요')).toBeInTheDocument();
+      expect(screen.getByText('barcodeScanner0')).toBeInTheDocument();
     });
   });
 
@@ -85,7 +87,7 @@ describe('BarcodeScanner', () => {
     render(<BarcodeScanner onScan={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/EAN-13, EAN-8, UPC-A/)).toBeInTheDocument();
+      expect(screen.getByText('barcodeScanner3')).toBeInTheDocument();
     });
   });
 
@@ -96,7 +98,8 @@ describe('BarcodeScanner', () => {
     render(<BarcodeScanner onScan={vi.fn()} onError={onError} />);
 
     await waitFor(() => {
-      expect(screen.getByText('카메라 오류')).toBeInTheDocument();
+      // 에러 제목은 번역 키로 렌더됨 — barcodeScanner1='카메라 오류'
+      expect(screen.getByText('barcodeScanner1')).toBeInTheDocument();
       expect(screen.getByText(/카메라 권한이 필요해요/)).toBeInTheDocument();
     });
     expect(onError).toHaveBeenCalled();
@@ -138,10 +141,11 @@ describe('BarcodeScanner', () => {
   it('aria-label이 올바르게 설정되어 있다', async () => {
     render(<BarcodeScanner onScan={vi.fn()} onClose={vi.fn()} />);
 
-    expect(screen.getByLabelText('닫기')).toBeInTheDocument();
+    // aria-label도 번역 키로 렌더됨 — barcodeScanner4='닫기', barcodeScanner5='갤러리에서 선택'
+    expect(screen.getByLabelText('barcodeScanner4')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByLabelText('갤러리에서 선택')).toBeInTheDocument();
+      expect(screen.getByLabelText('barcodeScanner5')).toBeInTheDocument();
     });
   });
 

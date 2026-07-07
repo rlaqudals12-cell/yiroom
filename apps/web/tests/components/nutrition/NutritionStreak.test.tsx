@@ -47,7 +47,8 @@ describe('NutritionStreakProgress', () => {
     it('목표 달성 시 달성 메시지를 표시한다', () => {
       render(<NutritionStreakProgress currentStreak={7} targetDays={7} />);
 
-      expect(screen.getByText(/목표 달성/)).toBeInTheDocument();
+      // i18n 마이그레이션: 달성 메시지가 nutritionStreak0 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('nutritionStreak0')).toBeInTheDocument();
     });
 
     it('기본 targetDays는 7이다', () => {
@@ -229,7 +230,8 @@ describe('NutritionStreakCard', () => {
     it('연속 기록 헤더가 표시된다', () => {
       render(<NutritionStreakCard summary={activeSummary} />);
 
-      expect(screen.getByText('연속 기록')).toBeInTheDocument();
+      // i18n 마이그레이션: 헤더가 nutritionStreak1 키로 이동
+      expect(screen.getByText('nutritionStreak1')).toBeInTheDocument();
     });
 
     it('메시지가 표시된다', () => {
@@ -327,7 +329,8 @@ describe('NutritionStreakCard', () => {
     it('배지가 표시된다', () => {
       render(<NutritionStreakCard summary={activeSummary} />);
 
-      expect(screen.getByText('획득한 배지')).toBeInTheDocument();
+      // i18n 마이그레이션: 배지 섹션 라벨이 nutritionStreak2 키로 이동
+      expect(screen.getByText('nutritionStreak2')).toBeInTheDocument();
       expect(screen.getByTestId('nutrition-streak-badge-list')).toBeInTheDocument();
     });
 
@@ -335,7 +338,7 @@ describe('NutritionStreakCard', () => {
       const noBadgesSummary: StreakSummary = { ...activeSummary, badges: [] };
       render(<NutritionStreakCard summary={noBadgesSummary} />);
 
-      expect(screen.queryByText('획득한 배지')).not.toBeInTheDocument();
+      expect(screen.queryByText('nutritionStreak2')).not.toBeInTheDocument();
     });
   });
 
@@ -349,7 +352,7 @@ describe('NutritionStreakCard', () => {
     it('로딩 중일 때 카드 내용이 표시되지 않는다', () => {
       render(<NutritionStreakCard summary={activeSummary} isLoading />);
 
-      expect(screen.queryByText('연속 기록')).not.toBeInTheDocument();
+      expect(screen.queryByText('nutritionStreak1')).not.toBeInTheDocument();
     });
   });
 

@@ -74,7 +74,8 @@ describe('IngredientSubstituteCard', () => {
       render(<IngredientSubstituteCard />);
 
       expect(screen.getByTestId('ingredient-substitute-card')).toBeInTheDocument();
-      expect(screen.getByText('건강한 재료 대체')).toBeInTheDocument();
+      // i18n 도입으로 테스트 목은 번역 키를 그대로 렌더 (ko: "건강한 재료 대체")
+      expect(screen.getByText('ingredientSubstituteCard0')).toBeInTheDocument();
     });
 
     it('목표 선택 버튼들이 표시된다', () => {
@@ -91,13 +92,15 @@ describe('IngredientSubstituteCard', () => {
     it('검색창이 표시된다', () => {
       render(<IngredientSubstituteCard />);
 
-      expect(screen.getByPlaceholderText(/재료 검색/)).toBeInTheDocument();
+      // i18n 키 (ko: "재료 검색 (예: 설탕, 밀가루)")
+      expect(screen.getByPlaceholderText('ingredientSubstituteCard7')).toBeInTheDocument();
     });
 
     it('활용 팁 섹션이 표시된다', () => {
       render(<IngredientSubstituteCard />);
 
-      expect(screen.getByText('활용 팁')).toBeInTheDocument();
+      // i18n 키 (ko: "활용 팁")
+      expect(screen.getByText('ingredientSubstituteCard3')).toBeInTheDocument();
     });
 
     it('면책조항이 표시된다', () => {
@@ -135,7 +138,7 @@ describe('IngredientSubstituteCard', () => {
     it('재료 검색이 가능하다', () => {
       render(<IngredientSubstituteCard />);
 
-      const searchInput = screen.getByPlaceholderText(/재료 검색/);
+      const searchInput = screen.getByPlaceholderText('ingredientSubstituteCard7');
       fireEvent.change(searchInput, { target: { value: '설탕' } });
 
       expect(searchInput).toHaveValue('설탕');
@@ -144,10 +147,11 @@ describe('IngredientSubstituteCard', () => {
     it('검색 결과가 없을 때 안내 메시지가 표시된다', () => {
       render(<IngredientSubstituteCard />);
 
-      const searchInput = screen.getByPlaceholderText(/재료 검색/);
+      const searchInput = screen.getByPlaceholderText('ingredientSubstituteCard7');
       fireEvent.change(searchInput, { target: { value: '존재하지않는재료' } });
 
-      expect(screen.getByText('검색 결과가 없어요')).toBeInTheDocument();
+      // i18n 키 (ko: "검색 결과가 없어요")
+      expect(screen.getByText('ingredientSubstituteCard2')).toBeInTheDocument();
     });
   });
 
@@ -192,13 +196,13 @@ describe('IngredientSubstituteCard', () => {
     it('컴팩트 모드에서 검색창이 숨겨진다', () => {
       render(<IngredientSubstituteCard compact />);
 
-      expect(screen.queryByPlaceholderText(/재료 검색/)).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('ingredientSubstituteCard7')).not.toBeInTheDocument();
     });
 
     it('컴팩트 모드에서 활용 팁이 숨겨진다', () => {
       render(<IngredientSubstituteCard compact />);
 
-      expect(screen.queryByText('활용 팁')).not.toBeInTheDocument();
+      expect(screen.queryByText('ingredientSubstituteCard3')).not.toBeInTheDocument();
     });
 
     it('컴팩트 모드에서 최대 4개 재료만 표시된다', () => {

@@ -8,6 +8,23 @@ import { describe, it, expect, vi } from 'vitest';
 import CalorieSurplusAlert from '@/components/nutrition/CalorieSurplusAlert';
 import type { WorkoutSummary } from '@/lib/nutrition/workoutInsight';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('CalorieSurplusAlert', () => {
   // 테스트용 운동 요약 데이터
   const noWorkout: WorkoutSummary = {
@@ -234,12 +251,7 @@ describe('CalorieSurplusAlert', () => {
 
   describe('기본값', () => {
     it('기본 목표 칼로리는 2000kcal다', () => {
-      render(
-        <CalorieSurplusAlert
-          workoutSummary={noWorkout}
-          intakeCalories={2300}
-        />
-      );
+      render(<CalorieSurplusAlert workoutSummary={noWorkout} intakeCalories={2300} />);
 
       // 2300 - 2000 = 300kcal 초과
       expect(screen.getByText('300kcal')).toBeInTheDocument();

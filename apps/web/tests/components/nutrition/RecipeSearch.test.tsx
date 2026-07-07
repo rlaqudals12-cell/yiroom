@@ -18,7 +18,8 @@ describe('RecipeSearch', () => {
   it('검색 입력 필드가 표시되어야 함', () => {
     render(<RecipeSearch pantryItems={mockPantryItems} />);
     expect(screen.getByTestId('recipe-search-input')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/레시피 이름, 재료, 태그로 검색/)).toBeInTheDocument();
+    // i18n 전환: placeholder가 t('recipeSearch3')(ko: "레시피 이름, 재료, 태그로 검색...") 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByPlaceholderText('recipeSearch3')).toBeInTheDocument();
   });
 
   it('보유 재료 개수가 표시되어야 함', () => {

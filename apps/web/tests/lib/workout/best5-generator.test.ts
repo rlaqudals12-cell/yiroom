@@ -133,7 +133,7 @@ describe('best5-generator', () => {
   });
 
   describe('GOAL_ICONS', () => {
-    it('모든 목표에 대한 아이콘이 정의되어야 한다', () => {
+    it('모든 목표에 대한 아이콘 키가 정의되어야 한다', () => {
       const goals: ExerciseGoal[] = [
         'posture_correction',
         'weight_loss',
@@ -142,8 +142,11 @@ describe('best5-generator', () => {
         'endurance',
       ];
 
+      // 데모 폴리시(2026-06)로 이모지 아이콘 값이 의도적으로 빈 문자열 처리됨
+      // — 키 존재와 문자열 타입만 검증
       goals.forEach((goal) => {
-        expect(GOAL_ICONS[goal]).toBeTruthy();
+        expect(goal in GOAL_ICONS).toBe(true);
+        expect(typeof GOAL_ICONS[goal]).toBe('string');
       });
     });
   });

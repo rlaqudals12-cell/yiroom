@@ -49,7 +49,8 @@ describe('Best5Card', () => {
   it('운동 팁을 표시한다', () => {
     render(<Best5Card goal="flexibility" />);
 
-    expect(screen.getByText(/운동 팁/i)).toBeInTheDocument();
+    // i18n 마이그레이션: '운동 팁' 라벨이 best5Card0 키로 이동 (테스트 목은 키를 그대로 반환)
+    expect(screen.getByText('best5Card0')).toBeInTheDocument();
   });
 
   it('운동 항목을 클릭하면 상세 정보가 토글된다', async () => {
@@ -58,16 +59,17 @@ describe('Best5Card', () => {
 
     const firstItem = screen.getByTestId('exercise-item-1');
 
+    // i18n 마이그레이션: '타겟 부위' 라벨이 best5Card1 키로 이동
     // 초기에는 상세 정보가 보이지 않음
-    expect(screen.queryByText(/타겟 부위/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('best5Card1')).not.toBeInTheDocument();
 
     // 클릭하면 상세 정보 표시
     await user.click(firstItem);
-    expect(screen.getByText(/타겟 부위/i)).toBeInTheDocument();
+    expect(screen.getByText('best5Card1')).toBeInTheDocument();
 
     // 다시 클릭하면 숨김
     await user.click(firstItem);
-    expect(screen.queryByText(/타겟 부위/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('best5Card1')).not.toBeInTheDocument();
   });
 
   it('난이도 뱃지를 표시한다', () => {

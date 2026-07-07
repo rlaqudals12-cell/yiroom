@@ -64,7 +64,9 @@ describe('NutritionDashboardCard', () => {
 
   it('영양소 바 차트가 표시되어야 함', () => {
     render(<NutritionDashboardCard current={mockCurrent} target={mockTarget} />);
-    expect(screen.getByText('영양소 현황')).toBeInTheDocument();
+    // i18n 도입으로 차트 제목은 번역 키로 렌더됨 (setup 목이 키를 그대로 반환)
+    // nutritionDashboardCard4 = '영양소 현황'
+    expect(screen.getByText('nutritionDashboardCard4')).toBeInTheDocument();
     expect(screen.getByText('단백질')).toBeInTheDocument();
     expect(screen.getByText('탄수화물')).toBeInTheDocument();
     expect(screen.getByText('지방')).toBeInTheDocument();
@@ -144,22 +146,24 @@ describe('RecipeNutritionMini', () => {
     expect(screen.getByText('kcal')).toBeInTheDocument();
   });
 
+  // i18n 도입으로 영양소 라벨은 번역 키로 렌더됨 (setup 목이 키를 그대로 반환)
+  // nutritionDashboardCard1='단백질', nutritionDashboardCard2='탄수화물', nutritionDashboardCard3='지방'
   it('단백질이 표시되어야 함', () => {
     render(<RecipeNutritionMini calories={320} protein={35} carbs={15} fat={12} />);
     expect(screen.getByText('35g')).toBeInTheDocument();
-    expect(screen.getByText('단백질')).toBeInTheDocument();
+    expect(screen.getByText('nutritionDashboardCard1')).toBeInTheDocument();
   });
 
   it('탄수화물이 표시되어야 함', () => {
     render(<RecipeNutritionMini calories={320} protein={35} carbs={15} fat={12} />);
     expect(screen.getByText('15g')).toBeInTheDocument();
-    expect(screen.getByText('탄수화물')).toBeInTheDocument();
+    expect(screen.getByText('nutritionDashboardCard2')).toBeInTheDocument();
   });
 
   it('지방이 표시되어야 함', () => {
     render(<RecipeNutritionMini calories={320} protein={35} carbs={15} fat={12} />);
     expect(screen.getByText('12g')).toBeInTheDocument();
-    expect(screen.getByText('지방')).toBeInTheDocument();
+    expect(screen.getByText('nutritionDashboardCard3')).toBeInTheDocument();
   });
 
   it('추가 클래스가 적용되어야 함', () => {

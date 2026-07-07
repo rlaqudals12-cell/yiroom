@@ -148,7 +148,8 @@ describe('FullOutfit', () => {
     render(<FullOutfit seasonType="spring" />);
 
     expect(screen.getByTestId('full-outfit')).toBeInTheDocument();
-    expect(screen.getByText(/전체 코디 추천/)).toBeInTheDocument();
+    // i18n 도입으로 제목은 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '👗 전체 코디 추천')
+    expect(screen.getByText('fullOutfit9')).toBeInTheDocument();
   });
 
   it('renders occasion tabs', () => {

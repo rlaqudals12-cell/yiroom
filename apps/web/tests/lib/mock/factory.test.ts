@@ -99,13 +99,14 @@ describe('Mock Factory', () => {
 });
 
 describe('Mock Registry 통합', () => {
-  it('registry import 시 13개 mock 생성기가 자동 등록된다', async () => {
+  it('registry import 시 12개 mock 생성기가 자동 등록된다', async () => {
     // registry를 import하면 자동으로 factory에 등록됨
     // 기존 clearRegistry 영향을 피하기 위해 fresh import
+    // ADR-098: OH-1(구강건강) 모듈 완전 제거로 'oral-health' mock도 제거됨 (13개 → 12개)
     const { getRegisteredTypes } = await import('@/lib/mock');
 
     const types = getRegisteredTypes();
-    expect(types.length).toBeGreaterThanOrEqual(13);
+    expect(types.length).toBeGreaterThanOrEqual(12);
     // v1 타입
     expect(types).toContain('skin');
     expect(types).toContain('skin-v2');
@@ -113,7 +114,6 @@ describe('Mock Registry 통합', () => {
     expect(types).toContain('body');
     expect(types).toContain('hair');
     expect(types).toContain('makeup');
-    expect(types).toContain('oral-health');
     expect(types).toContain('workout');
     expect(types).toContain('posture');
     expect(types).toContain('food');
@@ -126,6 +126,7 @@ describe('Mock Registry 통합', () => {
   it('hasMock으로 모든 등록된 타입을 확인할 수 있다', async () => {
     const { hasMock } = await import('@/lib/mock');
 
+    // ADR-098: 'oral-health' 제거 (OH-1 모듈 완전 삭제)
     const expectedTypes = [
       'skin',
       'skin-v2',
@@ -133,7 +134,6 @@ describe('Mock Registry 통합', () => {
       'body',
       'hair',
       'makeup',
-      'oral-health',
       'workout',
       'posture',
       'food',

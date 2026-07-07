@@ -8,6 +8,32 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import RecipeDetail from '@/components/nutrition/RecipeDetail';
 import { SAMPLE_RECIPES, type Recipe } from '@/lib/nutrition/recipe-matcher';
 
+// 현행 컴포넌트는 next-intl 키(nutritionUI.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (ns: string | undefined, key: string): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    return typeof value === 'string' ? value : key;
+  };
+  return {
+    useTranslations: (ns?: string) => (key: string) => resolve(ns, key),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('RecipeDetail', () => {
   const mockRecipe: Recipe = SAMPLE_RECIPES[0]; // 닭가슴살 샐러드
   const mockPantryItems = ['닭가슴살', '양상추', '방울토마토', '올리브오일'];
@@ -78,12 +104,7 @@ describe('RecipeDetail', () => {
   });
 
   it('보유 재료가 있으면 보유율이 표시되어야 함', () => {
-    render(
-      <RecipeDetail
-        recipe={mockRecipe}
-        pantryItems={mockPantryItems}
-      />
-    );
+    render(<RecipeDetail recipe={mockRecipe} pantryItems={mockPantryItems} />);
 
     expect(screen.getByText(/% 보유/)).toBeInTheDocument();
   });
@@ -132,12 +153,7 @@ describe('RecipeDetail', () => {
 
   it('뒤로가기 버튼이 표시되고 클릭하면 onBack이 호출되어야 함', () => {
     const onBack = vi.fn();
-    render(
-      <RecipeDetail
-        recipe={mockRecipe}
-        onBack={onBack}
-      />
-    );
+    render(<RecipeDetail recipe={mockRecipe} onBack={onBack} />);
 
     const backButton = screen.getByText('뒤로');
     fireEvent.click(backButton);
@@ -147,12 +163,7 @@ describe('RecipeDetail', () => {
 
   it('공유 버튼이 표시되고 클릭하면 onShare가 호출되어야 함', () => {
     const onShare = vi.fn();
-    render(
-      <RecipeDetail
-        recipe={mockRecipe}
-        onShare={onShare}
-      />
-    );
+    render(<RecipeDetail recipe={mockRecipe} onShare={onShare} />);
 
     const shareButton = screen.getByLabelText('공유하기');
     fireEvent.click(shareButton);
@@ -162,12 +173,7 @@ describe('RecipeDetail', () => {
 
   it('즐겨찾기 버튼이 표시되고 클릭하면 onBookmark가 호출되어야 함', () => {
     const onBookmark = vi.fn();
-    render(
-      <RecipeDetail
-        recipe={mockRecipe}
-        onBookmark={onBookmark}
-      />
-    );
+    render(<RecipeDetail recipe={mockRecipe} onBookmark={onBookmark} />);
 
     // aria-label로 버튼 찾기
     const bookmarkButton = screen.getByRole('button', { name: '즐겨찾기' });

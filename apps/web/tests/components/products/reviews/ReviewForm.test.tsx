@@ -66,6 +66,14 @@ const mockReview: ProductReview = {
   updatedAt: '2025-12-20T10:00:00Z',
 };
 
+// i18n 전환: 별점 라벨/플레이스홀더가 t('reviewFormN') 키로 변경됨.
+// 글로벌 setup의 next-intl mock이 번역 키를 그대로 반환하므로 키로 검증한다.
+const T = {
+  ratingLabel: 'reviewForm0', // 별점을 선택해 주세요
+  titlePlaceholder: 'reviewForm2', // 리뷰 제목을 입력해 주세요
+  contentPlaceholder: 'reviewForm3', // 제품 사용 후기를 자유롭게 작성해 주세요
+};
+
 describe('ReviewForm', () => {
   const mockOnSubmit = vi.fn();
   const mockOnCancel = vi.fn();
@@ -85,7 +93,7 @@ describe('ReviewForm', () => {
     it('별점 선택 영역 표시', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      expect(screen.getByText('별점을 선택해 주세요')).toBeInTheDocument();
+      expect(screen.getByText(T.ratingLabel)).toBeInTheDocument();
       expect(screen.getByTestId('star-rating')).toBeInTheDocument();
     });
 
@@ -93,14 +101,14 @@ describe('ReviewForm', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
       expect(screen.getByLabelText(/제목/)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('리뷰 제목을 입력해 주세요')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(T.titlePlaceholder)).toBeInTheDocument();
     });
 
     it('내용 입력 필드 표시', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
       expect(screen.getByLabelText(/내용/)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(T.contentPlaceholder)).toBeInTheDocument();
     });
 
     it('등록 버튼 표시', () => {
@@ -190,8 +198,8 @@ describe('ReviewForm', () => {
       const user = userEvent.setup();
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      await user.type(screen.getByPlaceholderText('리뷰 제목을 입력해 주세요'), '훌륭한 제품');
-      await user.type(screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요'), '정말 좋습니다');
+      await user.type(screen.getByPlaceholderText(T.titlePlaceholder), '훌륭한 제품');
+      await user.type(screen.getByPlaceholderText(T.contentPlaceholder), '정말 좋습니다');
 
       fireEvent.click(screen.getByRole('button', { name: '등록' }));
 
@@ -208,8 +216,8 @@ describe('ReviewForm', () => {
       const user = userEvent.setup();
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      await user.type(screen.getByPlaceholderText('리뷰 제목을 입력해 주세요'), '   ');
-      await user.type(screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요'), '   ');
+      await user.type(screen.getByPlaceholderText(T.titlePlaceholder), '   ');
+      await user.type(screen.getByPlaceholderText(T.contentPlaceholder), '   ');
 
       fireEvent.click(screen.getByRole('button', { name: '등록' }));
 
@@ -233,8 +241,8 @@ describe('ReviewForm', () => {
     it('로딩 중 입력 필드 비활성화', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} isLoading={true} />);
 
-      expect(screen.getByPlaceholderText('리뷰 제목을 입력해 주세요')).toBeDisabled();
-      expect(screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요')).toBeDisabled();
+      expect(screen.getByPlaceholderText(T.titlePlaceholder)).toBeDisabled();
+      expect(screen.getByPlaceholderText(T.contentPlaceholder)).toBeDisabled();
     });
 
     it('로딩 중 버튼 비활성화', () => {
@@ -252,7 +260,9 @@ describe('ReviewForm', () => {
       fireEvent.click(screen.getByRole('button', { name: '등록' }));
 
       await waitFor(() => {
-        expect(screen.getByText('리뷰 등록에 실패했습니다. 다시 시도해 주세요.')).toBeInTheDocument();
+        expect(
+          screen.getByText('리뷰 등록에 실패했습니다. 다시 시도해 주세요.')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -261,14 +271,14 @@ describe('ReviewForm', () => {
     it('제목 최대 100자', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      const titleInput = screen.getByPlaceholderText('리뷰 제목을 입력해 주세요');
+      const titleInput = screen.getByPlaceholderText(T.titlePlaceholder);
       expect(titleInput).toHaveAttribute('maxLength', '100');
     });
 
     it('내용 최대 1000자', () => {
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      const contentInput = screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요');
+      const contentInput = screen.getByPlaceholderText(T.contentPlaceholder);
       expect(contentInput).toHaveAttribute('maxLength', '1000');
     });
 
@@ -276,7 +286,7 @@ describe('ReviewForm', () => {
       const user = userEvent.setup();
       render(<ReviewForm onSubmit={mockOnSubmit} />);
 
-      const contentInput = screen.getByPlaceholderText('제품 사용 후기를 자유롭게 작성해 주세요');
+      const contentInput = screen.getByPlaceholderText(T.contentPlaceholder);
       await user.type(contentInput, 'hello');
 
       // 글자수가 0에서 변경되었는지 확인

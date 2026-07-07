@@ -91,7 +91,8 @@ describe('HomeGymSetupCard', () => {
     render(<HomeGymSetupCard setup={mockSetup} />);
 
     expect(screen.getByTestId('home-gym-setup-card')).toBeInTheDocument();
-    expect(screen.getByText('홈짐 구성 추천')).toBeInTheDocument();
+    // i18n 도입으로 테스트 목은 번역 키를 그대로 렌더 (ko: "홈짐 구성 추천")
+    expect(screen.getByText('homeGymSetupCard3')).toBeInTheDocument();
   });
 
   it('예산과 공간 정보를 표시한다', () => {
@@ -104,7 +105,8 @@ describe('HomeGymSetupCard', () => {
   it('필수 장비 세트를 표시한다', () => {
     render(<HomeGymSetupCard setup={mockSetup} />);
 
-    expect(screen.getByText('필수 장비 세트')).toBeInTheDocument();
+    // i18n 키 (ko: "필수 장비 세트")
+    expect(screen.getByText('homeGymSetupCard4')).toBeInTheDocument();
     // 줄넘기는 필수 세트와 1단계 계획에 모두 표시됨
     expect(screen.getAllByText('줄넘기').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('요가 매트')).toBeInTheDocument();
@@ -119,7 +121,8 @@ describe('HomeGymSetupCard', () => {
   it('확장 세트를 표시한다', () => {
     render(<HomeGymSetupCard setup={mockSetup} />);
 
-    expect(screen.getByText('추가 장비 세트')).toBeInTheDocument();
+    // i18n 키 (ko: "추가 장비 세트")
+    expect(screen.getByText('homeGymSetupCard5')).toBeInTheDocument();
     expect(screen.getByText('폼롤러')).toBeInTheDocument();
   });
 
@@ -127,13 +130,14 @@ describe('HomeGymSetupCard', () => {
     const setupWithoutExpanded = { ...mockSetup, expandedSet: undefined };
     render(<HomeGymSetupCard setup={setupWithoutExpanded} />);
 
-    expect(screen.queryByText('추가 장비 세트')).not.toBeInTheDocument();
+    expect(screen.queryByText('homeGymSetupCard5')).not.toBeInTheDocument();
   });
 
   it('단계별 구매 계획을 표시한다', () => {
     render(<HomeGymSetupCard setup={mockSetup} />);
 
-    expect(screen.getByText('단계별 구매 계획')).toBeInTheDocument();
+    // i18n 키 (ko: "단계별 구매 계획")
+    expect(screen.getByText('homeGymSetupCard6')).toBeInTheDocument();
     expect(screen.getByText('1단계')).toBeInTheDocument();
     expect(screen.getByText('2단계')).toBeInTheDocument();
   });
@@ -187,6 +191,7 @@ describe('HomeGymSetupCard', () => {
   it('예상 총 비용 라벨을 표시한다', () => {
     render(<HomeGymSetupCard setup={mockSetup} />);
 
-    expect(screen.getByText('예상 총 비용')).toBeInTheDocument();
+    // i18n 키 (ko: "예상 총 비용")
+    expect(screen.getByText('homeGymSetupCard7')).toBeInTheDocument();
   });
 });

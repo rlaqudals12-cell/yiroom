@@ -22,7 +22,8 @@ describe('AppVersion', () => {
 
     it('앱 버전 라벨 표시', () => {
       render(<AppVersion />);
-      expect(screen.getByText('앱 버전')).toBeInTheDocument();
+      // i18n 전환: 라벨이 t('appVersion0')(ko: "앱 버전") 키로 렌더된다 (테스트 목은 키 반환).
+      expect(screen.getByText('appVersion0')).toBeInTheDocument();
     });
 
     it('기본 버전 표시', () => {

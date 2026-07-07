@@ -166,7 +166,8 @@ describe('DayExerciseList', () => {
     it('운동이 없으면 빈 상태를 표시한다', () => {
       const emptyDay = createMockDayPlan({ exercises: [] });
       render(<DayExerciseList {...defaultProps} day={emptyDay} />);
-      expect(screen.getByText('이 날의 운동이 없어요')).toBeInTheDocument();
+      // i18n 도입으로 빈 상태 문구는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '이 날의 운동이 없어요')
+      expect(screen.getByText('dayExerciseList0')).toBeInTheDocument();
     });
   });
 

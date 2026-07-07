@@ -50,7 +50,8 @@ describe('WorkoutInsightCard', () => {
 
   it('displays weekly highlight', () => {
     render(<WorkoutInsightCard insights={mockInsights} />);
-    expect(screen.getByText('이번 주 하이라이트')).toBeInTheDocument();
+    // i18n 마이그레이션: 하이라이트 라벨이 workoutInsightCard0 키로 이동 (테스트 목은 키를 그대로 반환)
+    expect(screen.getByText('workoutInsightCard0')).toBeInTheDocument();
     expect(screen.getByText(mockInsights.weeklyHighlight)).toBeInTheDocument();
   });
 
@@ -107,7 +108,8 @@ describe('WorkoutInsightCard', () => {
     };
 
     render(<WorkoutInsightCard insights={emptyInsights} />);
-    expect(screen.getByText('아직 인사이트가 없어요')).toBeInTheDocument();
+    // i18n 마이그레이션: 빈 상태 문구가 workoutInsightCard1/2 키로 이동
+    expect(screen.getByText('workoutInsightCard1')).toBeInTheDocument();
   });
 
   it('handles partial data gracefully', () => {
@@ -126,7 +128,7 @@ describe('WorkoutInsightCard', () => {
     render(<WorkoutInsightCard insights={partialInsights} />);
     expect(screen.getByText(/워밍업/)).toBeInTheDocument();
     expect(screen.getByText('힘내세요!')).toBeInTheDocument();
-    expect(screen.queryByText('이번 주 하이라이트')).not.toBeInTheDocument();
+    expect(screen.queryByText('workoutInsightCard0')).not.toBeInTheDocument();
   });
 
   it('displays comparison insight correctly', () => {

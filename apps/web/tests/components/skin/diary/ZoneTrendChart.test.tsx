@@ -58,7 +58,8 @@ describe('ZoneTrendChart', () => {
   it('2개 이상 엔트리가 있으면 존별 트렌드를 표시한다', () => {
     const entries = [makeEntry(daysAgo(10), 60), makeEntry(daysAgo(1), 75)];
     render(<ZoneTrendChart entries={entries} periodDays={14} />);
-    expect(screen.getByText('전체 바이탈리티')).toBeInTheDocument();
+    // i18n 전환: 라벨이 t('zoneTrendChart4')(ko: "전체 바이탈리티") 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('zoneTrendChart4')).toBeInTheDocument();
     expect(screen.getByText('최근 14일')).toBeInTheDocument();
   });
 

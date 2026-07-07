@@ -139,8 +139,9 @@ describe('WaterInputSheet', () => {
     it('물 선택 시 실제 수분량을 표시하지 않는다 (100%)', () => {
       render(<WaterInputSheet {...defaultProps} />);
 
-      // 물은 100%이므로 "실제 수분" 표시 안 함
-      expect(screen.queryByText('실제 수분')).not.toBeInTheDocument();
+      // 물은 100%이므로 "실제 수분" 행 표시 안 함
+      // i18n 전환: 라벨이 t('waterInputSheet1')(ko: "실제 수분") 키로 렌더된다 (테스트 목은 키 반환).
+      expect(screen.queryByText('waterInputSheet1')).not.toBeInTheDocument();
     });
 
     it('커피 선택 시 실제 수분량을 표시한다', () => {
@@ -150,7 +151,8 @@ describe('WaterInputSheet', () => {
       fireEvent.click(screen.getByTestId('amount-preset-500'));
 
       // 커피 500ml * 0.8 = 400ml
-      expect(screen.getByText('실제 수분')).toBeInTheDocument();
+      // i18n 전환: 라벨이 t('waterInputSheet1')(ko: "실제 수분") 키로 렌더된다 (테스트 목은 키 반환).
+      expect(screen.getByText('waterInputSheet1')).toBeInTheDocument();
       expect(screen.getByText('400 ml')).toBeInTheDocument();
     });
   });
@@ -248,10 +250,7 @@ describe('WaterInputSheet', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'water-input-title');
-      expect(screen.getByText('수분 섭취 기록')).toHaveAttribute(
-        'id',
-        'water-input-title'
-      );
+      expect(screen.getByText('수분 섭취 기록')).toHaveAttribute('id', 'water-input-title');
     });
   });
 });

@@ -1,6 +1,6 @@
 /**
- * 뷰티 페이지 테스트 — 3탭 구조 (추천/케어/트렌드)
- * WS-3: 리팩토링 완료된 3탭 구조 검증
+ * 뷰티 페이지 테스트 — 2탭 구조 (추천/케어)
+ * WS-3에서 3탭이었으나 데모 폴리시(d8479120, 2026-06-16)에서 트렌드 탭 제거 → 2탭
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -32,9 +32,6 @@ vi.mock('@/components/beauty/BeautyRecommendTab', () => ({
 vi.mock('@/components/beauty/BeautyCareTab', () => ({
   default: () => <div data-testid="beauty-care-tab">케어 탭</div>,
 }));
-vi.mock('@/components/beauty/BeautyTrendsTab', () => ({
-  default: () => <div data-testid="beauty-trends-tab">트렌드 탭</div>,
-}));
 vi.mock('@/components/BottomNav', () => ({
   BottomNav: () => <nav data-testid="bottom-nav" />,
 }));
@@ -44,18 +41,18 @@ vi.mock('@/components/animations', () => ({
 
 import BeautyPage from '@/app/(main)/beauty/page';
 
-describe('BeautyPage 3탭 구조', () => {
+describe('BeautyPage 2탭 구조', () => {
   it('data-testid="beauty-page"가 존재한다', () => {
     render(<BeautyPage />);
     expect(screen.getByTestId('beauty-page')).toBeInTheDocument();
   });
 
-  it('3개 탭 트리거가 렌더링된다', () => {
+  it('2개 탭 트리거가 렌더링된다 (트렌드 탭은 데모 폴리시에서 제거됨)', () => {
     render(<BeautyPage />);
 
     expect(screen.getByTestId('beauty-tab-recommend')).toBeInTheDocument();
     expect(screen.getByTestId('beauty-tab-care')).toBeInTheDocument();
-    expect(screen.getByTestId('beauty-tab-trends')).toBeInTheDocument();
+    expect(screen.queryByTestId('beauty-tab-trends')).not.toBeInTheDocument();
   });
 
   it('기본 탭은 추천 탭이다', () => {
@@ -85,14 +82,6 @@ describe('BeautyPage 3탭 구조', () => {
 
     await user.click(screen.getByTestId('beauty-tab-care'));
     expect(screen.getByTestId('beauty-care-tab')).toBeInTheDocument();
-  });
-
-  it('트렌드 탭 전환이 동작한다', async () => {
-    const user = userEvent.setup();
-    render(<BeautyPage />);
-
-    await user.click(screen.getByTestId('beauty-tab-trends'));
-    expect(screen.getByTestId('beauty-trends-tab')).toBeInTheDocument();
   });
 
   it('sr-only h1이 존재한다', () => {

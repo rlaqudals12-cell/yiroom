@@ -10,7 +10,8 @@ describe('ConditionSelector', () => {
 
   it('displays label', () => {
     render(<ConditionSelector value={undefined} onChange={vi.fn()} />);
-    expect(screen.getByText('피부 컨디션')).toBeInTheDocument();
+    // i18n 전환: 라벨이 t('conditionSelector0')(ko: "피부 컨디션") 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('conditionSelector0')).toBeInTheDocument();
   });
 
   it('renders all 5 condition buttons', () => {

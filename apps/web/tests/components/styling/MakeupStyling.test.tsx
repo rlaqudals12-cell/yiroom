@@ -108,7 +108,8 @@ describe('MakeupStyling', () => {
     render(<MakeupStyling seasonType="spring" />);
 
     expect(screen.getByTestId('makeup-styling')).toBeInTheDocument();
-    expect(screen.getByText(/메이크업 추천/)).toBeInTheDocument();
+    // i18n 도입으로 제목은 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '💄 메이크업 추천')
+    expect(screen.getByText('makeupStyling4')).toBeInTheDocument();
   });
 
   it('renders three palette cards (lipstick, eyeshadow, blusher)', () => {

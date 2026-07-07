@@ -32,6 +32,40 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// 현행 컴포넌트는 next-intl 키(share.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (
+    ns: string | undefined,
+    key: string,
+    values?: Record<string, unknown>
+  ): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    if (typeof value !== 'string') return key;
+    return value.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`));
+  };
+  return {
+    useTranslations:
+      (ns?: string) =>
+      (key: string, values?: Record<string, unknown>): string =>
+        resolve(ns, key, values),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('ShareButtons', () => {
   const mockContent = {
     title: '테스트 제목',

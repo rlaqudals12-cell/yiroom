@@ -3,6 +3,63 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import DiaryEntryForm from '@/components/skin/diary/DiaryEntryForm';
 import type { SkinDiaryEntry } from '@/types/skin-diary';
 
+// i18n 전환(next-intl) 이후 폼과 자식 컴포넌트(ConditionSelector/LifestyleFactors/RoutineCheckbox)가
+// skinUI 네임스페이스 키를 사용하므로, 전역 setup mock(키 그대로 반환) 대신
+// 실제 ko.json 문구로 로컬 mock하여 사용자 노출 문구 기준의 검증을 유지한다.
+vi.mock('next-intl', () => {
+  const messages: Record<string, string> = {
+    // DiaryEntryForm
+    diaryEntryForm0: '기록 수정',
+    diaryEntryForm1: '오늘의 기록',
+    diaryEntryForm2: '닫기',
+    diaryEntryForm3: '피부 컨디션을 선택해주세요',
+    diaryEntryForm4: '오늘 피부 상태에 대해 메모해보세요...',
+    diaryEntryForm5: '생활 요인',
+    diaryEntryForm6: '수정하기',
+    diaryEntryForm7: '저장하기',
+    // ConditionSelector
+    conditionSelector0: '피부 컨디션',
+    // LifestyleFactors
+    lifestyleFactors0: '수면',
+    lifestyleFactors1: '수면 시간',
+    lifestyleFactors2: '0시간',
+    lifestyleFactors3: '12시간',
+    lifestyleFactors4: '수면 품질',
+    lifestyleFactors5: '매우 나쁨',
+    lifestyleFactors6: '나쁨',
+    lifestyleFactors7: '보통',
+    lifestyleFactors8: '좋음',
+    lifestyleFactors9: '매우 좋음',
+    lifestyleFactors11: '수분 섭취',
+    lifestyleFactors12: '수분 섭취량',
+    lifestyleFactors13: '스트레스',
+    lifestyleFactors14: '스트레스 레벨',
+    lifestyleFactors15: '매우 낮음',
+    lifestyleFactors16: '낮음',
+    lifestyleFactors17: '높음',
+    lifestyleFactors18: '매우 높음',
+    lifestyleFactors20: '1: 매우 낮음 ~ 5: 매우 높음',
+    lifestyleFactors21: '외부 환경',
+    lifestyleFactors22: '오늘 날씨',
+    lifestyleFactors24: '외출 시간',
+    lifestyleFactors25: '시간',
+    // RoutineCheckbox
+    routineCheckbox0: '스킨케어 루틴',
+    routineCheckbox1: '클렌저, 토너, 크림, 선크림',
+    routineCheckbox2: '완료됨',
+    routineCheckbox3: '클렌징, 토너, 세럼, 크림',
+    routineCheckbox4: '특별 케어',
+    routineCheckbox5: '선택됨',
+    routineCheckbox6: '선택 안됨',
+    routineCheckbox7: '다른 케어 추가...',
+    routineCheckbox8: '다른 특별 케어 입력',
+    routineCheckbox9: '오늘 한 특별 케어:',
+  };
+  return {
+    useTranslations: () => (key: string) => messages[key] ?? key,
+  };
+});
+
 describe('DiaryEntryForm', () => {
   const mockDate = new Date('2026-01-10');
 

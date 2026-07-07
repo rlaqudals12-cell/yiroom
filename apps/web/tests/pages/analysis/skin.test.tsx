@@ -298,21 +298,22 @@ describe('SkinAnalysisPage', () => {
 
       // 기존 분석 확인 후 로딩 완료 대기
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
+      // i18n 전환: 테스트 환경 next-intl mock이 번역 키를 그대로 반환하므로 키 기준으로 검증
       expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      expect(screen.getByText('정확한 분석을 위한 촬영 가이드')).toBeInTheDocument();
+      expect(screen.getByText('skin.subtitle.guide')).toBeInTheDocument();
     });
 
     it('헤더에 피부 분석 제목이 표시된다', async () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
-      expect(screen.getByRole('heading', { name: '피부 분석' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'skin.title' })).toBeInTheDocument();
     });
   });
 
@@ -322,13 +323,13 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
 
       expect(screen.getByTestId('capture-mode-select')).toBeInTheDocument();
-      expect(screen.getByText('촬영 방법을 선택해주세요')).toBeInTheDocument();
+      expect(screen.getByText('skin.subtitle.modeSelect')).toBeInTheDocument();
     });
 
     it('모드 선택 UI에 카메라와 갤러리 버튼이 표시된다', async () => {
@@ -336,15 +337,16 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
 
       expect(screen.getByTestId('camera-mode-button')).toBeInTheDocument();
       expect(screen.getByTestId('gallery-mode-button')).toBeInTheDocument();
-      expect(screen.getByText('촬영')).toBeInTheDocument();
-      expect(screen.getByText('갤러리')).toBeInTheDocument();
+      // 모드 라벨은 버튼과 하단 설명에 각각 표시됨 (i18n 키 기준)
+      expect(screen.getAllByText('skin.modeCamera').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('skin.modeGallery').length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -362,14 +364,14 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('camera-mode-button'));
 
       expect(screen.getByTestId('multi-angle-skin-capture')).toBeInTheDocument();
-      expect(screen.getByText('다각도 피부 촬영')).toBeInTheDocument();
+      expect(screen.getByText('skin.subtitle.camera')).toBeInTheDocument();
     });
 
     it('3장 모두 촬영 후 분석이 시작된다', async () => {
@@ -390,7 +392,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -427,7 +429,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -450,7 +452,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -478,14 +480,14 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
       await user.click(screen.getByTestId('gallery-mode-button'));
 
       expect(screen.getByTestId('gallery-multi-angle-upload')).toBeInTheDocument();
-      expect(screen.getByText('피부 사진을 선택해주세요')).toBeInTheDocument();
+      expect(screen.getByText('skin.subtitle.upload')).toBeInTheDocument();
     });
 
     it('사진 선택 후 분석이 시작된다', async () => {
@@ -505,7 +507,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -546,7 +548,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -557,7 +559,7 @@ describe('SkinAnalysisPage', () => {
         expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('분석이 완료되었어요')).toBeInTheDocument();
+      expect(screen.getByText('subtitle.analysisComplete')).toBeInTheDocument();
     });
 
     it('다시 분석하기 클릭 시 가이드로 복귀한다', async () => {
@@ -577,7 +579,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -614,7 +616,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -625,7 +627,9 @@ describe('SkinAnalysisPage', () => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
 
-      expect(screen.getAllByText(/분석 중 오류가 발생했어요/).length).toBeGreaterThan(0);
+      // 에러 alert는 error.analysisFailed, 헤더 서브타이틀은 error.analysisError 키 사용
+      expect(screen.getByRole('alert').textContent).toContain('error.analysisFailed');
+      expect(screen.getByText('error.analysisError')).toBeInTheDocument();
       expect(screen.getByTestId('multi-angle-skin-capture')).toBeInTheDocument();
     });
   });
@@ -636,15 +640,14 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
 
-      expect(screen.getByText(/실시간 카메라로 정면 \+ 좌\/우측 다각도 촬영/)).toBeInTheDocument();
-      expect(
-        screen.getByText(/기존에 찍은 사진으로 정면 \+ 좌\/우측 다각도 업로드/)
-      ).toBeInTheDocument();
+      // 설명 문단은 <strong> 라벨 + 설명 키가 한 문단에 섞여 있어 부분 일치로 검증
+      expect(screen.getByText(/skin\.modeCameraDesc/)).toBeInTheDocument();
+      expect(screen.getByText(/skin\.modeGalleryDesc/)).toBeInTheDocument();
     });
   });
 
@@ -658,7 +661,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -694,7 +697,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -739,7 +742,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -781,7 +784,7 @@ describe('SkinAnalysisPage', () => {
       render(<SkinAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));
@@ -816,7 +819,7 @@ describe('SkinAnalysisPage', () => {
 
       // 로딩 완료 대기
       await waitFor(() => {
-        expect(screen.queryByText('확인 중...')).not.toBeInTheDocument();
+        expect(screen.queryByText('loading.checkingExisting')).not.toBeInTheDocument();
       });
 
       await user.click(screen.getByTestId('guide-continue'));

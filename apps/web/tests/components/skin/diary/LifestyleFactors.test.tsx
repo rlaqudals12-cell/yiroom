@@ -2,6 +2,40 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LifestyleFactors from '@/components/skin/diary/LifestyleFactors';
 
+// i18n 전환(next-intl) 이후 컴포넌트가 skinUI 네임스페이스 키를 사용하므로,
+// 전역 setup mock(키 그대로 반환) 대신 실제 ko.json 문구로 로컬 mock하여
+// 사용자에게 노출되는 한국어 문구 기준의 검증을 유지한다.
+vi.mock('next-intl', () => {
+  const messages: Record<string, string> = {
+    lifestyleFactors0: '수면',
+    lifestyleFactors1: '수면 시간',
+    lifestyleFactors2: '0시간',
+    lifestyleFactors3: '12시간',
+    lifestyleFactors4: '수면 품질',
+    lifestyleFactors5: '매우 나쁨',
+    lifestyleFactors6: '나쁨',
+    lifestyleFactors7: '보통',
+    lifestyleFactors8: '좋음',
+    lifestyleFactors9: '매우 좋음',
+    lifestyleFactors11: '수분 섭취',
+    lifestyleFactors12: '수분 섭취량',
+    lifestyleFactors13: '스트레스',
+    lifestyleFactors14: '스트레스 레벨',
+    lifestyleFactors15: '매우 낮음',
+    lifestyleFactors16: '낮음',
+    lifestyleFactors17: '높음',
+    lifestyleFactors18: '매우 높음',
+    lifestyleFactors20: '1: 매우 낮음 ~ 5: 매우 높음',
+    lifestyleFactors21: '외부 환경',
+    lifestyleFactors22: '오늘 날씨',
+    lifestyleFactors24: '외출 시간',
+    lifestyleFactors25: '시간',
+  };
+  return {
+    useTranslations: () => (key: string) => messages[key] ?? key,
+  };
+});
+
 describe('LifestyleFactors', () => {
   it('renders with test id', () => {
     render(<LifestyleFactors onChange={vi.fn()} />);

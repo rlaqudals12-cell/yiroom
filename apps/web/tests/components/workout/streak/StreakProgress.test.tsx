@@ -37,7 +37,8 @@ describe('StreakProgress', () => {
     it('목표 달성 시 메시지가 표시된다', () => {
       render(<StreakProgress currentStreak={7} targetDays={7} />);
 
-      expect(screen.getByText(/목표 달성/)).toBeInTheDocument();
+      // i18n 도입으로 메시지는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '목표 달성!')
+      expect(screen.getByText('streakProgress0')).toBeInTheDocument();
     });
 
     it('7일 초과해도 정상 표시된다', () => {

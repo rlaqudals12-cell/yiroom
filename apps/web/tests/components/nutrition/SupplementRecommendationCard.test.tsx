@@ -33,7 +33,9 @@ describe('SupplementRecommendationCard', () => {
     it('"영양제 추천" 제목을 표시한다', () => {
       render(<SupplementRecommendationCard goal="health" />);
 
-      expect(screen.getByText('영양제 추천')).toBeInTheDocument();
+      // i18n 전환: 제목이 t('supplementRecommendationCard0')(ko: "영양제 추천")로 대체됨.
+      // 테스트 목(setup.ts)은 키를 그대로 반환한다.
+      expect(screen.getByText('supplementRecommendationCard0')).toBeInTheDocument();
     });
 
     it('요약 메시지를 표시한다', () => {

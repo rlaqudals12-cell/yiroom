@@ -36,12 +36,14 @@ describe('FoodAnalysisLoading', () => {
     render(<FoodAnalysisLoading />);
 
     expect(screen.getByText('분석 항목')).toBeInTheDocument();
-    expect(screen.getByText('• 음식 인식')).toBeInTheDocument();
-    expect(screen.getByText('• 칼로리')).toBeInTheDocument();
-    expect(screen.getByText('• 탄수화물')).toBeInTheDocument();
-    expect(screen.getByText('• 단백질')).toBeInTheDocument();
-    expect(screen.getByText('• 지방')).toBeInTheDocument();
-    expect(screen.getByText('• 신호등 분류')).toBeInTheDocument();
+    // i18n 전환: 항목이 t('foodAnalysisLoading0~5')(ko: • 음식 인식 / • 칼로리 / • 탄수화물 /
+    // • 단백질 / • 지방 / • 신호등 분류) 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('foodAnalysisLoading0')).toBeInTheDocument();
+    expect(screen.getByText('foodAnalysisLoading1')).toBeInTheDocument();
+    expect(screen.getByText('foodAnalysisLoading2')).toBeInTheDocument();
+    expect(screen.getByText('foodAnalysisLoading3')).toBeInTheDocument();
+    expect(screen.getByText('foodAnalysisLoading4')).toBeInTheDocument();
+    expect(screen.getByText('foodAnalysisLoading5')).toBeInTheDocument();
   });
 
   it('로딩 팁을 표시한다', () => {

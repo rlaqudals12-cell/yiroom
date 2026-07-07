@@ -10,6 +10,23 @@ import WaterIntakeCard, {
   type DrinkType,
 } from '@/components/nutrition/WaterIntakeCard';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('WaterIntakeCard', () => {
   describe('렌더링', () => {
     it('기본 카드를 렌더링한다', () => {
@@ -66,9 +83,7 @@ describe('WaterIntakeCard', () => {
     it('목표 미달성 시 축하 메시지를 표시하지 않는다', () => {
       render(<WaterIntakeCard currentAmount={1000} goalAmount={2000} />);
 
-      expect(
-        screen.queryByText('오늘 목표 달성! 잘하고 있어요')
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('오늘 목표 달성! 잘하고 있어요')).not.toBeInTheDocument();
     });
   });
 
@@ -172,14 +187,7 @@ describe('HYDRATION_FACTORS', () => {
   });
 
   it('모든 DrinkType에 대한 factor가 있다', () => {
-    const drinkTypes: DrinkType[] = [
-      'water',
-      'tea',
-      'coffee',
-      'juice',
-      'soda',
-      'other',
-    ];
+    const drinkTypes: DrinkType[] = ['water', 'tea', 'coffee', 'juice', 'soda', 'other'];
     drinkTypes.forEach((type) => {
       expect(HYDRATION_FACTORS[type]).toBeDefined();
       expect(HYDRATION_FACTORS[type]).toBeGreaterThan(0);

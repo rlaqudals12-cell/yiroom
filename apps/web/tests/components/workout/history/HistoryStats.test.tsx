@@ -21,7 +21,8 @@ describe('HistoryStats', () => {
     it('헤더가 표시된다', () => {
       render(<HistoryStats {...defaultProps} />);
 
-      expect(screen.getByText('이번 주 운동 현황')).toBeInTheDocument();
+      // i18n 마이그레이션: 헤더 텍스트는 workoutUI.historyStats0 키로 렌더링 (테스트 목은 키 반환)
+      expect(screen.getByText('historyStats0')).toBeInTheDocument();
     });
   });
 
@@ -67,14 +68,15 @@ describe('HistoryStats', () => {
     it('80% 이상이면 목표 달성 메시지가 표시된다', () => {
       render(<HistoryStats {...defaultProps} completionRate={85} />);
 
-      expect(screen.getByText('목표 80% 달성!')).toBeInTheDocument();
+      // i18n 마이그레이션: 달성 메시지는 workoutUI.historyStats6 키로 렌더링
+      expect(screen.getByText('historyStats6')).toBeInTheDocument();
     });
 
     it('80% 미만이면 목표 달성 메시지가 표시되지 않는다', () => {
       render(<HistoryStats {...defaultProps} completionRate={60} />);
 
-      // "목표 80% 달성!" 메시지 체크 (라벨과 구분)
-      expect(screen.queryByText('목표 80% 달성!')).not.toBeInTheDocument();
+      // 달성 메시지(historyStats6) 부재 체크 (라벨과 구분)
+      expect(screen.queryByText('historyStats6')).not.toBeInTheDocument();
     });
   });
 
@@ -114,7 +116,7 @@ describe('HistoryStats', () => {
       render(<HistoryStats {...defaultProps} completionRate={100} />);
 
       expect(screen.getByText('100%')).toBeInTheDocument();
-      expect(screen.getByText('목표 80% 달성!')).toBeInTheDocument();
+      expect(screen.getByText('historyStats6')).toBeInTheDocument();
     });
   });
 });

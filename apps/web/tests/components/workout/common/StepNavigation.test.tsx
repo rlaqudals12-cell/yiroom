@@ -77,7 +77,8 @@ describe('StepNavigation', () => {
 
     it('로딩 중이면 이전 버튼도 비활성화된다', () => {
       render(<StepNavigation {...defaultProps} isLoading={true} />);
-      const prevButton = screen.getByLabelText('이전 단계로 이동');
+      // i18n 마이그레이션: 이전 버튼 aria-label이 stepNavigation0 키로 이동 (테스트 목은 키를 그대로 반환)
+      const prevButton = screen.getByLabelText('stepNavigation0');
       expect(prevButton).toBeDisabled();
     });
 
@@ -122,7 +123,8 @@ describe('StepNavigation', () => {
 
     it('이전 버튼에 aria-label이 있다', () => {
       render(<StepNavigation {...defaultProps} />);
-      expect(screen.getByLabelText('이전 단계로 이동')).toBeInTheDocument();
+      // i18n 마이그레이션: 이전 버튼 aria-label이 stepNavigation0 키로 이동
+      expect(screen.getByLabelText('stepNavigation0')).toBeInTheDocument();
     });
   });
 

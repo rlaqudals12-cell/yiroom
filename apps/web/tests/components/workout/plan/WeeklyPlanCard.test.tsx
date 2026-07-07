@@ -164,8 +164,8 @@ describe('WeeklyPlanCard', () => {
     it('휴식일에는 휴식이 표시된다', () => {
       render(<WeeklyPlanCard {...defaultProps} />);
       const restLabels = screen.getAllByText('휴식');
-      // 3개 휴식일 (수, 토, 일) + 1개 범례 = 4개
-      expect(restLabels.length).toBe(4);
+      // i18n 마이그레이션: 범례의 '휴식'은 weeklyPlanCard2 키로 이동 → 요일 셀의 휴식일 3개(수, 토, 일)만 리터럴
+      expect(restLabels.length).toBe(3);
     });
 
     it('운동일에는 카테고리 라벨이 표시된다', () => {
@@ -207,12 +207,11 @@ describe('WeeklyPlanCard', () => {
   describe('범례', () => {
     it('범례가 표시된다', () => {
       render(<WeeklyPlanCard {...defaultProps} />);
-      expect(screen.getByText('예정')).toBeInTheDocument();
-      expect(screen.getByText('오늘')).toBeInTheDocument();
-      // 범례에서의 휴식
-      const restItems = screen.getAllByText('휴식');
-      expect(restItems.length).toBeGreaterThan(0);
-      expect(screen.getByText('완료')).toBeInTheDocument();
+      // i18n 마이그레이션: 범례(예정/오늘/휴식/완료)가 weeklyPlanCard0~3 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('weeklyPlanCard0')).toBeInTheDocument(); // 예정
+      expect(screen.getByText('weeklyPlanCard1')).toBeInTheDocument(); // 오늘
+      expect(screen.getByText('weeklyPlanCard2')).toBeInTheDocument(); // 휴식
+      expect(screen.getByText('weeklyPlanCard3')).toBeInTheDocument(); // 완료
     });
   });
 });

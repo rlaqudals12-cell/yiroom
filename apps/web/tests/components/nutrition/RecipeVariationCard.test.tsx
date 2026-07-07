@@ -73,7 +73,8 @@ describe('RecipeVariationCard', () => {
       />
     );
 
-    expect(screen.getByText('영양 성분 변화')).toBeInTheDocument();
+    // i18n 마이그레이션: 섹션 제목은 nutritionUI.recipeVariationCard0 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('recipeVariationCard0')).toBeInTheDocument();
     expect(screen.getByText('칼로리')).toBeInTheDocument();
     expect(screen.getByText('단백질')).toBeInTheDocument();
     expect(screen.getByText('탄수화물')).toBeInTheDocument();
@@ -87,7 +88,8 @@ describe('RecipeVariationCard', () => {
       />
     );
 
-    expect(screen.getByText('대체 재료')).toBeInTheDocument();
+    // i18n 마이그레이션: 섹션 제목은 nutritionUI.recipeVariationCard1 키로 렌더링
+    expect(screen.getByText('recipeVariationCard1')).toBeInTheDocument();
     expect(screen.getByText('설탕')).toBeInTheDocument();
     expect(screen.getByText('알룰로스')).toBeInTheDocument();
     expect(screen.getByText('칼로리 95% 감소')).toBeInTheDocument();
@@ -101,7 +103,8 @@ describe('RecipeVariationCard', () => {
       />
     );
 
-    expect(screen.getByText('조리 팁')).toBeInTheDocument();
+    // i18n 마이그레이션: 섹션 제목은 nutritionUI.recipeVariationCard2 키로 렌더링
+    expect(screen.getByText('recipeVariationCard2')).toBeInTheDocument();
     expect(screen.getByText(/감자 → 제거: 감자 제외하고 조리/)).toBeInTheDocument();
   });
 
@@ -147,7 +150,8 @@ describe('RecipeVariationCard', () => {
       />
     );
 
-    expect(screen.queryByText('대체 재료')).not.toBeInTheDocument();
+    // 대체 재료 섹션 부재 확인 (i18n 키 기준)
+    expect(screen.queryByText('recipeVariationCard1')).not.toBeInTheDocument();
   });
 
   it('조리 팁이 없으면 조리 팁 섹션을 표시하지 않음', () => {
@@ -168,6 +172,7 @@ describe('RecipeVariationCard', () => {
       <RecipeVariationCard variation={noTipsVariation} originalNutrition={mockOriginalNutrition} />
     );
 
-    expect(screen.queryByText('조리 팁')).not.toBeInTheDocument();
+    // 조리 팁 섹션 부재 확인 (i18n 키 기준)
+    expect(screen.queryByText('recipeVariationCard2')).not.toBeInTheDocument();
   });
 });

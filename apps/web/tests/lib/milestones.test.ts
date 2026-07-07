@@ -31,7 +31,8 @@ describe('MILESTONES', () => {
       expect(milestone.type).toBeTruthy();
       expect(milestone.title).toBeTruthy();
       expect(milestone.description).toBeTruthy();
-      expect(milestone.icon).toBeTruthy();
+      // 데모 폴리시(2026-06)로 이모지 아이콘이 의도적으로 빈 문자열 처리됨 — 타입만 검증
+      expect(typeof milestone.icon).toBe('string');
       expect(milestone.threshold).toBeGreaterThan(0);
     }
   });

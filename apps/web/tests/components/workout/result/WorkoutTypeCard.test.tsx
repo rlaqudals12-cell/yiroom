@@ -54,7 +54,8 @@ describe('WorkoutTypeCard', () => {
 
   it('당신의 운동 타입 라벨이 표시된다', () => {
     render(<WorkoutTypeCard type="toner" reason="테스트 이유" />);
-    expect(screen.getByText('당신의 운동 타입')).toBeInTheDocument();
+    // i18n 도입으로 라벨은 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '당신의 운동 타입')
+    expect(screen.getByText('workoutTypeCard0')).toBeInTheDocument();
   });
 
   it('운동 타입 라벨이 표시된다', () => {

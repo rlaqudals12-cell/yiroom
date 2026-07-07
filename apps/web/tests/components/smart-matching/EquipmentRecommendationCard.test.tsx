@@ -53,7 +53,8 @@ describe('EquipmentRecommendationCard', () => {
     render(<EquipmentRecommendationCard match={mockMatch} />);
 
     expect(screen.getByTestId('equipment-recommendation-card')).toBeInTheDocument();
-    expect(screen.getByText('추천 운동기구')).toBeInTheDocument();
+    // i18n 마이그레이션: 제목은 smartMatchingUI.equipmentRecommendationCard3 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('equipmentRecommendationCard3')).toBeInTheDocument();
   });
 
   it('운동 목표를 표시한다', () => {
@@ -65,14 +66,16 @@ describe('EquipmentRecommendationCard', () => {
   it('홈트레이닝 배지를 표시한다', () => {
     render(<EquipmentRecommendationCard match={mockMatch} />);
 
-    expect(screen.getByText('홈트레이닝')).toBeInTheDocument();
+    // i18n 마이그레이션: 홈트레이닝 배지는 smartMatchingUI.equipmentRecommendationCard4 키로 렌더링
+    expect(screen.getByText('equipmentRecommendationCard4')).toBeInTheDocument();
   });
 
   it('헬스장 배지를 표시한다', () => {
     const gymMatch = { ...mockMatch, homeGym: false };
     render(<EquipmentRecommendationCard match={gymMatch} />);
 
-    expect(screen.getByText('헬스장')).toBeInTheDocument();
+    // i18n 마이그레이션: 헬스장 배지는 smartMatchingUI.equipmentRecommendationCard5 키로 렌더링
+    expect(screen.getByText('equipmentRecommendationCard5')).toBeInTheDocument();
   });
 
   it('카테고리별 추천을 표시한다', () => {
@@ -113,9 +116,7 @@ describe('EquipmentRecommendationCard', () => {
 
   it('장비 선택 콜백을 호출한다', () => {
     const onSelectEquipment = vi.fn();
-    render(
-      <EquipmentRecommendationCard match={mockMatch} onSelectEquipment={onSelectEquipment} />
-    );
+    render(<EquipmentRecommendationCard match={mockMatch} onSelectEquipment={onSelectEquipment} />);
 
     // 카테고리 펼치기
     fireEvent.click(screen.getByText('유산소'));
@@ -142,9 +143,7 @@ describe('EquipmentRecommendationCard', () => {
   it('추천 이유를 표시한다', () => {
     render(<EquipmentRecommendationCard match={mockMatch} />);
 
-    expect(
-      screen.getByText('체지방 감량의 핵심인 유산소 운동 장비')
-    ).toBeInTheDocument();
+    expect(screen.getByText('체지방 감량의 핵심인 유산소 운동 장비')).toBeInTheDocument();
   });
 
   it('추천 개수를 표시한다', () => {

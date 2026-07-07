@@ -29,7 +29,8 @@ describe('WorkoutInsightCard', () => {
       render(<WorkoutInsightCard workoutSummary={withWorkout} intakeCalories={1800} />);
 
       expect(screen.getByTestId('workout-insight-card')).toBeInTheDocument();
-      expect(screen.getByText('칼로리 밸런스')).toBeInTheDocument();
+      // i18n: "칼로리 밸런스" 제목은 nutritionUI.workoutInsightCard4 키로 렌더 (테스트 목은 키 반환)
+      expect(screen.getByText('workoutInsightCard4')).toBeInTheDocument();
     });
 
     it('로딩 중일 때 스켈레톤을 표시한다', () => {
@@ -41,7 +42,8 @@ describe('WorkoutInsightCard', () => {
     it('W-1 연동 표시를 보여준다', () => {
       render(<WorkoutInsightCard workoutSummary={withWorkout} intakeCalories={1800} />);
 
-      expect(screen.getByText('W-1 연동')).toBeInTheDocument();
+      // i18n: "W-1 연동" 표시는 nutritionUI.workoutInsightCard5 키로 렌더
+      expect(screen.getByText('workoutInsightCard5')).toBeInTheDocument();
     });
   });
 
@@ -50,7 +52,8 @@ describe('WorkoutInsightCard', () => {
       render(<WorkoutInsightCard workoutSummary={noWorkout} intakeCalories={1800} />);
 
       expect(screen.getByTestId('workout-summary-empty')).toBeInTheDocument();
-      expect(screen.getByText('오늘 운동 기록 없음')).toBeInTheDocument();
+      // i18n: "오늘 운동 기록 없음" 문구는 nutritionUI.workoutInsightCard3 키로 렌더
+      expect(screen.getByText('workoutInsightCard3')).toBeInTheDocument();
     });
 
     it('운동 기록이 있으면 요약을 표시한다', () => {
@@ -68,9 +71,10 @@ describe('WorkoutInsightCard', () => {
       render(<WorkoutInsightCard workoutSummary={withWorkout} intakeCalories={1800} />);
 
       expect(screen.getByTestId('calorie-balance-section')).toBeInTheDocument();
-      expect(screen.getByText('섭취')).toBeInTheDocument();
-      expect(screen.getByText('소모')).toBeInTheDocument();
-      expect(screen.getByText('순 칼로리')).toBeInTheDocument();
+      // i18n: 섭취/소모/순 칼로리 라벨은 nutritionUI.workoutInsightCard0~2 키로 렌더
+      expect(screen.getByText('workoutInsightCard0')).toBeInTheDocument();
+      expect(screen.getByText('workoutInsightCard1')).toBeInTheDocument();
+      expect(screen.getByText('workoutInsightCard2')).toBeInTheDocument();
     });
 
     it('칼로리 값을 올바르게 표시한다', () => {

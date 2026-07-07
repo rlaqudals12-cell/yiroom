@@ -26,7 +26,8 @@ describe('SizeRecommendationCard', () => {
     render(<SizeRecommendationCard recommendation={mockRecommendation} />);
 
     expect(screen.getByText('M')).toBeInTheDocument();
-    expect(screen.getByText('추천 사이즈')).toBeInTheDocument();
+    // i18n 마이그레이션: 제목은 smartMatchingUI.sizeRecommendationCard0 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('sizeRecommendationCard0')).toBeInTheDocument();
   });
 
   it('신뢰도를 표시한다', () => {
@@ -40,16 +41,14 @@ describe('SizeRecommendationCard', () => {
     render(<SizeRecommendationCard recommendation={mockRecommendation} />);
 
     expect(screen.getByText('3번의 구매 기록 기반')).toBeInTheDocument();
-    expect(screen.getByText('레귤러핏')).toBeInTheDocument();
+    // i18n 마이그레이션: 레귤러핏 라벨은 smartMatchingUI.sizeRecommendationCard2 키로 렌더링
+    expect(screen.getByText('sizeRecommendationCard2')).toBeInTheDocument();
   });
 
   it('사이즈 선택 시 콜백을 호출한다', () => {
     const onSelectSize = vi.fn();
     render(
-      <SizeRecommendationCard
-        recommendation={mockRecommendation}
-        onSelectSize={onSelectSize}
-      />
+      <SizeRecommendationCard recommendation={mockRecommendation} onSelectSize={onSelectSize} />
     );
 
     fireEvent.click(screen.getByText('M'));
@@ -58,12 +57,7 @@ describe('SizeRecommendationCard', () => {
   });
 
   it('선택된 사이즈를 강조 표시한다', () => {
-    render(
-      <SizeRecommendationCard
-        recommendation={mockRecommendation}
-        selectedSize="M"
-      />
-    );
+    render(<SizeRecommendationCard recommendation={mockRecommendation} selectedSize="M" />);
 
     const sizeButton = screen.getByText('M').closest('button');
     expect(sizeButton).toHaveClass('border-primary');
@@ -75,8 +69,8 @@ describe('SizeRecommendationCard', () => {
     // 처음에는 대안이 보이지 않음
     expect(screen.queryByText('S')).not.toBeInTheDocument();
 
-    // "다른 사이즈 보기" 클릭
-    fireEvent.click(screen.getByText('다른 사이즈 보기'));
+    // "다른 사이즈 보기" 클릭 (i18n 마이그레이션: smartMatchingUI.sizeRecommendationCard4 키로 렌더링)
+    fireEvent.click(screen.getByText('sizeRecommendationCard4'));
 
     // 대안 사이즈가 보임
     expect(screen.getByText('S')).toBeInTheDocument();
@@ -99,12 +93,7 @@ describe('SizeRecommendationCard', () => {
   });
 
   it('showFeedback=false면 피드백 버튼을 숨긴다', () => {
-    render(
-      <SizeRecommendationCard
-        recommendation={mockRecommendation}
-        showFeedback={false}
-      />
-    );
+    render(<SizeRecommendationCard recommendation={mockRecommendation} showFeedback={false} />);
 
     expect(screen.queryByText('사이즈 피드백 남기기')).not.toBeInTheDocument();
   });

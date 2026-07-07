@@ -50,7 +50,9 @@ describe('ManualFoodInputSheet', () => {
       render(<ManualFoodInputSheet {...defaultProps} />);
 
       expect(screen.getByTestId('food-name-input')).toBeInTheDocument();
-      expect(screen.getByLabelText('음식명')).toBeInTheDocument();
+      // i18n 전환: aria-label이 t('manualFoodInputSheet4')(ko: "음식명")로 대체됨.
+      // 테스트 목(setup.ts)은 키를 그대로 반환하므로 접근성 이름은 키 문자열이다.
+      expect(screen.getByLabelText('manualFoodInputSheet4')).toBeInTheDocument();
     });
 
     it('음식명을 입력할 수 있다', () => {
@@ -380,10 +382,7 @@ describe('ManualFoodInputSheet', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'manual-food-input-title');
-      expect(screen.getByText('음식 직접 입력')).toHaveAttribute(
-        'id',
-        'manual-food-input-title'
-      );
+      expect(screen.getByText('음식 직접 입력')).toHaveAttribute('id', 'manual-food-input-title');
     });
   });
 

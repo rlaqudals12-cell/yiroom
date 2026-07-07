@@ -50,12 +50,14 @@ describe('RoutineCard', () => {
 
   it('displays morning title for morning routine', () => {
     render(<RoutineCard timeOfDay="morning" steps={mockSteps} estimatedTime={3} />);
-    expect(screen.getByText('아침 루틴')).toBeInTheDocument();
+    // i18n 마이그레이션: 아침 루틴 제목은 skinUI.routineCard0 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('routineCard0')).toBeInTheDocument();
   });
 
   it('displays evening title for evening routine', () => {
     render(<RoutineCard timeOfDay="evening" steps={mockSteps} estimatedTime={3} />);
-    expect(screen.getByText('저녁 루틴')).toBeInTheDocument();
+    // i18n 마이그레이션: 저녁 루틴 제목은 skinUI.routineCard1 키로 렌더링
+    expect(screen.getByText('routineCard1')).toBeInTheDocument();
   });
 
   it('displays step count', () => {
@@ -71,7 +73,8 @@ describe('RoutineCard', () => {
   it('separates required and optional steps', () => {
     render(<RoutineCard timeOfDay="morning" steps={mockSteps} estimatedTime={3} />);
 
-    expect(screen.getByText('필수 단계')).toBeInTheDocument();
+    // i18n 마이그레이션: 필수 단계 라벨은 skinUI.routineCard2 키로 렌더링 (선택 단계는 하드코딩 유지)
+    expect(screen.getByText('routineCard2')).toBeInTheDocument();
     expect(screen.getByText(/선택 단계/)).toBeInTheDocument();
   });
 

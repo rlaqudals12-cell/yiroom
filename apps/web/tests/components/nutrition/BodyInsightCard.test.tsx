@@ -8,6 +8,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import BodyInsightCard from '@/components/nutrition/BodyInsightCard';
 import type { BodyAnalysisData } from '@/lib/nutrition/bodyInsight';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('BodyInsightCard', () => {
   // 테스트용 체형 분석 데이터
   // BodyType: X(균형), A(하체 볼륨), V(상체 볼륨), H(일자), O(라운드), I(마름), Y(어깨넓음), 8(모래시계)
@@ -63,12 +80,7 @@ describe('BodyInsightCard', () => {
 
     it('체형 분석 버튼 클릭 시 핸들러를 호출한다', () => {
       const onNavigate = vi.fn();
-      render(
-        <BodyInsightCard
-          bodyAnalysis={null}
-          onNavigateToBodyAnalysis={onNavigate}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={null} onNavigateToBodyAnalysis={onNavigate} />);
 
       fireEvent.click(screen.getByTestId('navigate-body-analysis'));
 
@@ -79,12 +91,7 @@ describe('BodyInsightCard', () => {
   describe('체중 변화 섹션', () => {
     it('현재 체중이 있으면 체중 변화를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ weight: 60 });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          currentWeight={58}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} currentWeight={58} />);
 
       expect(screen.getByTestId('weight-change-section')).toBeInTheDocument();
       expect(screen.getByText('-2.0kg')).toBeInTheDocument();
@@ -92,12 +99,7 @@ describe('BodyInsightCard', () => {
 
     it('체중 감소 시 초록색 트렌드를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ weight: 60 });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          currentWeight={57}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} currentWeight={57} />);
 
       const section = screen.getByTestId('weight-change-section');
       expect(section).toHaveClass('bg-green-50');
@@ -105,12 +107,7 @@ describe('BodyInsightCard', () => {
 
     it('체중 증가 시 빨간색 트렌드를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ weight: 60 });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          currentWeight={63}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} currentWeight={63} />);
 
       const section = screen.getByTestId('weight-change-section');
       expect(section).toHaveClass('bg-red-50');
@@ -118,12 +115,7 @@ describe('BodyInsightCard', () => {
 
     it('경과 일수를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis();
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          currentWeight={60}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} currentWeight={60} />);
 
       expect(screen.getByText('14일 전 분석 대비')).toBeInTheDocument();
     });
@@ -179,12 +171,7 @@ describe('BodyInsightCard', () => {
   describe('칼로리 조정 섹션', () => {
     it('체형 맞춤 칼로리를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis();
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          baseCalories={2000}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} baseCalories={2000} />);
 
       expect(screen.getByTestId('calorie-adjustment-section')).toBeInTheDocument();
       expect(screen.getByText('체형 맞춤 칼로리')).toBeInTheDocument();
@@ -192,12 +179,7 @@ describe('BodyInsightCard', () => {
 
     it('조정된 칼로리를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ bodyType: 'A' });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          baseCalories={2000}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} baseCalories={2000} />);
 
       // A자형 체형은 5% 감소 = 1900kcal
       expect(screen.getByText('1,900kcal')).toBeInTheDocument();
@@ -205,12 +187,7 @@ describe('BodyInsightCard', () => {
 
     it('체형 특성 메시지를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ bodyType: 'A' });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          baseCalories={2000}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} baseCalories={2000} />);
 
       expect(screen.getByText(/하체 관리/)).toBeInTheDocument();
     });
@@ -219,12 +196,7 @@ describe('BodyInsightCard', () => {
   describe('요약 메시지', () => {
     it('체중 변화가 있어도 체형 기반 요약 메시지를 표시한다', () => {
       const bodyAnalysis = createBodyAnalysis({ weight: 62 });
-      render(
-        <BodyInsightCard
-          bodyAnalysis={bodyAnalysis}
-          currentWeight={59}
-        />
-      );
+      render(<BodyInsightCard bodyAnalysis={bodyAnalysis} currentWeight={59} />);
 
       // summaryMessage는 체형 기반, 체중 변화는 WeightChangeSection에서 표시
       expect(screen.getByText(/식단 관리 중/)).toBeInTheDocument();

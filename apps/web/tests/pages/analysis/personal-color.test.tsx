@@ -225,8 +225,9 @@ describe('PersonalColorPage', () => {
     it('페이지가 렌더링된다', async () => {
       render(<PersonalColorPage />);
 
+      // i18n 도입으로 테스트 환경에서는 번역 키가 렌더됨 (ko: "퍼스널 컬러 진단")
       await waitFor(() => {
-        expect(screen.getByText('퍼스널 컬러 진단')).toBeInTheDocument();
+        expect(screen.getByText('pc.title')).toBeInTheDocument();
       });
     });
 
@@ -241,8 +242,9 @@ describe('PersonalColorPage', () => {
     it('서브타이틀이 표시된다', async () => {
       render(<PersonalColorPage />);
 
+      // i18n 키 렌더 (ko: "정확한 진단을 위한 촬영 가이드")
       await waitFor(() => {
-        expect(screen.getByText('정확한 진단을 위한 촬영 가이드')).toBeInTheDocument();
+        expect(screen.getByText('pc.subtitle.guide')).toBeInTheDocument();
       });
     });
   });
@@ -436,8 +438,8 @@ describe('PersonalColorPage', () => {
       render(<PersonalColorPage />);
 
       await waitFor(() => {
-        // 낮은 신뢰도 기존 분석 배너 텍스트
-        expect(screen.getByText('기존 결과 보기')).toBeInTheDocument();
+        // 낮은 신뢰도 기존 분석 배너 — i18n 키 렌더 (ko: "기존 분석 결과 보기")
+        expect(screen.getByText('action.viewExistingResult')).toBeInTheDocument();
       });
     });
   });
@@ -475,8 +477,9 @@ describe('PersonalColorPage', () => {
       await user.click(screen.getByTestId('capture-complete'));
       await user.click(screen.getByTestId('wrist-skip'));
 
+      // 분석 진행 중 서브타이틀 — i18n 키 렌더 (ko: "AI가 분석 중이에요...")
       await waitFor(() => {
-        expect(screen.getByText(/AI가 분석 중이에요/)).toBeInTheDocument();
+        expect(screen.getByText('subtitle.aiAnalyzing')).toBeInTheDocument();
       });
     });
   });

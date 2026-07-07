@@ -7,6 +7,23 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import MealSection, { MealSectionList } from '@/components/nutrition/MealSection';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('MealSection', () => {
   // 빈 식사 데이터
   const emptyMeal = {
@@ -131,9 +148,7 @@ describe('MealSection', () => {
 
     it('음식 아이템 클릭 시 onRecordClick을 호출한다', () => {
       const onRecordClick = vi.fn();
-      render(
-        <MealSection meal={mealWithRecords} onRecordClick={onRecordClick} />
-      );
+      render(<MealSection meal={mealWithRecords} onRecordClick={onRecordClick} />);
 
       fireEvent.click(screen.getByTestId('food-item-lunch-0'));
 

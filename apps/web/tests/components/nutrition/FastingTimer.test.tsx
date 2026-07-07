@@ -46,7 +46,9 @@ describe('FastingTimer', () => {
       );
 
       expect(screen.getByTestId('fasting-timer')).toBeInTheDocument();
-      expect(screen.getByText('간헐적 단식')).toBeInTheDocument();
+      // i18n 마이그레이션: 타이틀/유도 메시지가 fastingTimer0/1 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('fastingTimer0')).toBeInTheDocument();
+      expect(screen.getByText('fastingTimer1')).toBeInTheDocument();
       expect(screen.getByText(/설정하기/)).toBeInTheDocument();
     });
 
@@ -223,7 +225,8 @@ describe('FastingTimer', () => {
         />
       );
 
-      expect(screen.getByLabelText('단식 설정')).toBeInTheDocument();
+      // i18n 마이그레이션: 설정 버튼 aria-label이 fastingTimer4 키로 이동
+      expect(screen.getByLabelText('fastingTimer4')).toBeInTheDocument();
     });
 
     it('설정 버튼 클릭 시 설정 페이지로 이동한다', () => {
@@ -238,7 +241,7 @@ describe('FastingTimer', () => {
         />
       );
 
-      const settingsButton = screen.getByLabelText('단식 설정');
+      const settingsButton = screen.getByLabelText('fastingTimer4');
       fireEvent.click(settingsButton);
 
       expect(mockPush).toHaveBeenCalledWith('/nutrition/fasting');

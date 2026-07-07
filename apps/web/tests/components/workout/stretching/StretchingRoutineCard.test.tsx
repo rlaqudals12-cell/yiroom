@@ -189,7 +189,8 @@ describe('StretchingRoutineCard', () => {
   describe('타겟 근육', () => {
     it('주요 타겟 근육이 표시된다', () => {
       render(<StretchingRoutineCard {...defaultProps} />);
-      expect(screen.getByText('주요 타겟 근육')).toBeInTheDocument();
+      // i18n 도입으로 라벨은 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '주요 타겟 근육')
+      expect(screen.getByText('stretchingRoutineCard0')).toBeInTheDocument();
       expect(screen.getByText('햄스트링')).toBeInTheDocument();
       expect(screen.getByText('대퇴사두근')).toBeInTheDocument();
     });

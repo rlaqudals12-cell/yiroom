@@ -15,12 +15,14 @@ describe('YouTubeEmbed', () => {
   describe('영상 URL이 없는 경우', () => {
     it('플레이스홀더가 표시된다', () => {
       render(<YouTubeEmbed />);
-      expect(screen.getByText('영상 준비 중')).toBeInTheDocument();
+      // i18n 마이그레이션: 플레이스홀더 텍스트는 workoutUI.youTubeEmbed0 키로 렌더링 (테스트 목은 키 반환)
+      expect(screen.getByText('youTubeEmbed0')).toBeInTheDocument();
     });
 
     it('준비 중 안내 메시지가 표시된다', () => {
       render(<YouTubeEmbed />);
-      expect(screen.getByText('곧 가이드 영상이 추가됩니다')).toBeInTheDocument();
+      // i18n 마이그레이션: 안내 메시지는 workoutUI.youTubeEmbed1 키로 렌더링
+      expect(screen.getByText('youTubeEmbed1')).toBeInTheDocument();
     });
   });
 
@@ -65,7 +67,8 @@ describe('YouTubeEmbed', () => {
   describe('유효하지 않은 URL', () => {
     it('에러 메시지가 표시된다', () => {
       render(<YouTubeEmbed videoUrl="https://invalid-url.com/video" />);
-      expect(screen.getByText('영상을 불러올 수 없어요')).toBeInTheDocument();
+      // i18n 마이그레이션: 에러 메시지는 workoutUI.youTubeEmbed2 키로 렌더링
+      expect(screen.getByText('youTubeEmbed2')).toBeInTheDocument();
     });
   });
 });

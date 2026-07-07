@@ -42,6 +42,10 @@ vi.mock('@/lib/products/repositories/supplement', () => ({
 import { getRecommendedSupplements } from '@/lib/products/repositories/supplement';
 const mockedGetRecommendedSupplements = vi.mocked(getRecommendedSupplements);
 
+// i18n 전환: 헤더 제목이 t('recommendedSupplementCard0')로 변경됨.
+// 글로벌 setup의 next-intl mock이 번역 키를 그대로 반환하므로 키로 검증한다.
+const TITLE_KEY = 'recommendedSupplementCard0';
+
 describe('RecommendedSupplementCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -61,7 +65,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
     });
 
@@ -87,7 +91,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       const expandButton = screen.getByRole('button', { name: /펼치기/i });
@@ -103,7 +107,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       // 펼치기
@@ -127,7 +131,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -142,7 +146,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -156,7 +160,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -170,7 +174,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -188,7 +192,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -206,10 +210,10 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard workoutGoals={['muscle_gain']} />);
 
       await waitFor(() => {
-        expect(mockedGetRecommendedSupplements).toHaveBeenCalledWith(
-          undefined,
-          ['muscle', 'energy']
-        );
+        expect(mockedGetRecommendedSupplements).toHaveBeenCalledWith(undefined, [
+          'muscle',
+          'energy',
+        ]);
       });
     });
 
@@ -217,10 +221,10 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard workoutGoals={['weight_loss']} />);
 
       await waitFor(() => {
-        expect(mockedGetRecommendedSupplements).toHaveBeenCalledWith(
-          undefined,
-          ['digestion', 'energy']
-        );
+        expect(mockedGetRecommendedSupplements).toHaveBeenCalledWith(undefined, [
+          'digestion',
+          'energy',
+        ]);
       });
     });
 
@@ -266,7 +270,7 @@ describe('RecommendedSupplementCard', () => {
       render(<RecommendedSupplementCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 영양제')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));

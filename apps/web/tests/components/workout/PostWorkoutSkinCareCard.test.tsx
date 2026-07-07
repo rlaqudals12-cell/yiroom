@@ -75,7 +75,8 @@ describe('PostWorkoutSkinCareCard', () => {
 
       fireEvent.click(screen.getByLabelText('펼치기'));
 
-      expect(screen.getByText('지금 바로')).toBeInTheDocument();
+      // i18n 마이그레이션: 섹션 제목은 workoutUI.postWorkoutSkinCareCard0 키로 렌더링 (테스트 목은 키 반환)
+      expect(screen.getByText('postWorkoutSkinCareCard0')).toBeInTheDocument();
     });
 
     it('펼치면 추가 팁 섹션이 표시된다', () => {
@@ -84,7 +85,8 @@ describe('PostWorkoutSkinCareCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('general-tips')).toBeInTheDocument();
-      expect(screen.getByText('추가 팁')).toBeInTheDocument();
+      // i18n 마이그레이션: 추가 팁 제목은 workoutUI.postWorkoutSkinCareCard2 키로 렌더링
+      expect(screen.getByText('postWorkoutSkinCareCard2')).toBeInTheDocument();
     });
 
     it('접기 버튼으로 닫을 수 있다', () => {
@@ -117,7 +119,8 @@ describe('PostWorkoutSkinCareCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('skin-metric-tips')).toBeInTheDocument();
-      expect(screen.getByText('내 피부 맞춤 케어')).toBeInTheDocument();
+      // i18n 마이그레이션: 맞춤 케어 제목은 workoutUI.postWorkoutSkinCareCard1 키로 렌더링
+      expect(screen.getByText('postWorkoutSkinCareCard1')).toBeInTheDocument();
     });
 
     it('피부 분석 데이터가 없으면 안내 메시지가 표시된다', () => {

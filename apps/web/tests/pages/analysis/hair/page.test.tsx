@@ -106,17 +106,18 @@ describe('HairAnalysisPage', () => {
       });
     });
 
+    // i18n 전환: 테스트 환경 next-intl mock이 번역 키를 그대로 반환하므로 키 기준으로 검증
     it('페이지 제목이 표시된다', async () => {
       render(<HairAnalysisPage />);
 
-      expect(screen.getByText(/헤어 분석/)).toBeInTheDocument();
+      expect(screen.getByText('hair.title')).toBeInTheDocument();
     });
 
     it('촬영 가이드 서브타이틀이 표시된다', async () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('정확한 분석을 위한 촬영 가이드')).toBeInTheDocument();
+        expect(screen.getByText('hair.subtitle.guide')).toBeInTheDocument();
       });
     });
   });
@@ -129,9 +130,8 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        // h2 요소로 촬영 가이드 섹션 확인 (subtitle과 구분)
-        const headings = screen.getAllByText(/촬영 가이드/);
-        expect(headings.length).toBeGreaterThanOrEqual(1);
+        // 촬영 가이드 섹션 제목 확인 (i18n 키)
+        expect(screen.getByText('hair.guideTitle')).toBeInTheDocument();
       });
     });
 
@@ -139,10 +139,10 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/밝은 자연광 아래에서 촬영/)).toBeInTheDocument();
-        expect(screen.getByText(/두피가 보이도록 가르마 부분을 촬영/)).toBeInTheDocument();
-        expect(screen.getByText(/모발 전체가 잘 보이는 사진/)).toBeInTheDocument();
-        expect(screen.getByText(/젖은 머리나 스타일링 제품 사용 후/)).toBeInTheDocument();
+        expect(screen.getByText('hair.guideTip1')).toBeInTheDocument();
+        expect(screen.getByText('hair.guideTip2')).toBeInTheDocument();
+        expect(screen.getByText('hair.guideTip3')).toBeInTheDocument();
+        expect(screen.getByText('hair.guideAvoid')).toBeInTheDocument();
       });
     });
 
@@ -150,7 +150,7 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
     });
 
@@ -158,7 +158,7 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('이미 알고 있어요')).toBeInTheDocument();
+        expect(screen.getByText('action.alreadyKnow')).toBeInTheDocument();
       });
     });
 
@@ -167,13 +167,13 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       await waitFor(() => {
-        expect(screen.getByText('헤어/두피 사진을 선택해주세요')).toBeInTheDocument();
+        expect(screen.getByText('hair.subtitle.upload')).toBeInTheDocument();
       });
     });
 
@@ -182,13 +182,13 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('이미 알고 있어요')).toBeInTheDocument();
+        expect(screen.getByText('action.alreadyKnow')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText('헤어 타입을 선택해주세요')).toBeInTheDocument();
+        expect(screen.getByText('hair.subtitle.knownInput')).toBeInTheDocument();
       });
     });
   });
@@ -211,7 +211,7 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('기존 분석 결과 보기')).toBeInTheDocument();
+        expect(screen.getByText('action.viewExistingResult')).toBeInTheDocument();
       });
     });
 
@@ -245,7 +245,7 @@ describe('HairAnalysisPage', () => {
         expect(screen.getByTestId('hair-analysis-page')).toBeInTheDocument();
       });
 
-      expect(screen.queryByText('기존 분석 결과 보기')).not.toBeInTheDocument();
+      expect(screen.queryByText('action.viewExistingResult')).not.toBeInTheDocument();
     });
   });
 
@@ -257,11 +257,11 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       await waitFor(() => {
-        expect(screen.getByText('사진을 선택해주세요')).toBeInTheDocument();
-        expect(screen.getByText('탭하여 갤러리에서 선택')).toBeInTheDocument();
+        expect(screen.getByText('upload.selectPhoto')).toBeInTheDocument();
+        expect(screen.getByText('upload.tapToSelect')).toBeInTheDocument();
       });
     });
 
@@ -269,10 +269,10 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       await waitFor(() => {
-        expect(screen.getByText(/가이드로 돌아가기/)).toBeInTheDocument();
+        expect(screen.getByText('action.backToGuide')).toBeInTheDocument();
       });
     });
 
@@ -280,17 +280,17 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       await waitFor(() => {
-        expect(screen.getByText(/가이드로 돌아가기/)).toBeInTheDocument();
+        expect(screen.getByText('action.backToGuide')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText(/가이드로 돌아가기/));
+      await user.click(screen.getByText('action.backToGuide'));
 
       await waitFor(() => {
         // 가이드 단계 복귀 확인: 사진 선택하기 버튼 존재
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
     });
 
@@ -298,9 +298,9 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       expect(fileInput).toHaveClass('hidden');
     });
   });
@@ -313,10 +313,10 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText('모발 타입을 선택해주세요')).toBeInTheDocument();
+        expect(screen.getByText('hair.selectHairType')).toBeInTheDocument();
       });
     });
 
@@ -324,7 +324,7 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
         expect(screen.getByText('직모')).toBeInTheDocument();
@@ -338,10 +338,10 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText(/주요 고민을 선택해주세요/)).toBeInTheDocument();
+        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
       });
     });
 
@@ -349,10 +349,10 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        const resultButton = screen.getByText('결과 보기');
+        const resultButton = screen.getByText('action.viewResult');
         expect(resultButton.closest('button')).toBeDisabled();
       });
     });
@@ -361,11 +361,11 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('직모'));
 
       await waitFor(() => {
-        const resultButton = screen.getByText('결과 보기');
+        const resultButton = screen.getByText('action.viewResult');
         expect(resultButton.closest('button')).not.toBeDisabled();
       });
     });
@@ -374,17 +374,17 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText(/뒤로/)).toBeInTheDocument();
+        expect(screen.getByText('action.back')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText(/뒤로/));
+      await user.click(screen.getByText('action.back'));
 
       await waitFor(() => {
         // 가이드 단계 복귀 확인: 사진 선택하기 버튼 존재
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
     });
 
@@ -392,9 +392,9 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('웨이브'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
         expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
@@ -418,21 +418,21 @@ describe('HairAnalysisPage', () => {
       render(<HairAnalysisPage />);
 
       // 업로드 단계로 이동
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       // 파일 선택 시뮬레이션
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
       // 분석 시작 버튼 클릭
-      const analyzeButton = screen.getByLabelText('헤어 분석 시작');
+      const analyzeButton = screen.getByLabelText('hair.startAnalysisAria');
       await user.click(analyzeButton);
 
       await waitFor(() => {
         const alert = screen.getByRole('alert');
         expect(alert).toBeInTheDocument();
-        expect(alert.textContent).toContain('분석 중 문제가 발생했어요');
+        expect(alert.textContent).toContain('error.analysisProblem');
       });
     });
   });
@@ -445,9 +445,9 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
         expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
@@ -458,12 +458,12 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText('다시 분석하기')).toBeInTheDocument();
+        expect(screen.getByText('action.reAnalyze')).toBeInTheDocument();
       });
     });
 
@@ -471,19 +471,19 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText('다시 분석하기')).toBeInTheDocument();
+        expect(screen.getByText('action.reAnalyze')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('다시 분석하기'));
+      await user.click(screen.getByText('action.reAnalyze'));
 
       await waitFor(() => {
         // 가이드 단계 복귀 확인: 사진 선택하기 버튼 존재
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
     });
   });
@@ -602,10 +602,10 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText(/주요 고민을 선택해주세요/)).toBeInTheDocument();
+        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
       });
 
       // 여러 고민 선택
@@ -622,10 +622,10 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
 
       await waitFor(() => {
-        expect(screen.getByText(/주요 고민을 선택해주세요/)).toBeInTheDocument();
+        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
       });
 
       // 선택 후 해제
@@ -643,14 +643,14 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        const img = screen.getByAltText('선택된 이미지');
+        const img = screen.getByAltText('upload.selectedImage');
         expect(img).toBeInTheDocument();
         expect(img).toHaveAttribute('src', 'blob:http://localhost/fake-preview');
       });
@@ -660,14 +660,14 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(screen.getByText('다른 사진 선택')).toBeInTheDocument();
+        expect(screen.getByText('action.selectOtherPhoto')).toBeInTheDocument();
       });
     });
 
@@ -675,14 +675,14 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(screen.getByLabelText('헤어 분석 시작')).toBeInTheDocument();
+        expect(screen.getByLabelText('hair.startAnalysisAria')).toBeInTheDocument();
       });
     });
   });
@@ -715,15 +715,15 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       render(<HairAnalysisPage />);
 
       // 업로드 단계로 이동
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
       // 파일 선택
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
       // 분석 시작
-      const analyzeButton = screen.getByLabelText('헤어 분석 시작');
+      const analyzeButton = screen.getByLabelText('hair.startAnalysisAria');
       await user.click(analyzeButton);
 
       await waitFor(() => {
@@ -745,18 +745,18 @@ describe('HairAnalysisPage 엣지 케이스', () => {
 
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('사진 선택하기'));
+      await user.click(screen.getByText('action.selectPhoto'));
 
-      const fileInput = screen.getByLabelText('헤어 분석용 사진 선택');
+      const fileInput = screen.getByLabelText('hair.photoSelectAria');
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
       await fireEvent.change(fileInput, { target: { files: [file] } });
 
-      const analyzeButton = screen.getByLabelText('헤어 분석 시작');
+      const analyzeButton = screen.getByLabelText('hair.startAnalysisAria');
       await user.click(analyzeButton);
 
       await waitFor(() => {
-        expect(screen.getByText('AI가 헤어를 분석하고 있어요')).toBeInTheDocument();
-        expect(screen.getByText('잠시만 기다려주세요...')).toBeInTheDocument();
+        expect(screen.getByText('hair.aiAnalyzingHair')).toBeInTheDocument();
+        expect(screen.getByText('loading.pleaseWait')).toBeInTheDocument();
       });
     });
   });
@@ -769,7 +769,7 @@ describe('HairAnalysisPage 엣지 케이스', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('hair-analysis-page')).toBeInTheDocument();
-        expect(screen.getByText('사진 선택하기')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
       });
     });
   });
@@ -789,7 +789,7 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('오늘')).toBeInTheDocument();
+        expect(screen.getByText('date.today')).toBeInTheDocument();
       });
     });
   });
@@ -799,12 +799,12 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText(/분석 요약/)).toBeInTheDocument();
+        expect(screen.getByText('hair.resultSummary')).toBeInTheDocument();
       });
     });
 
@@ -812,12 +812,12 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText(/항목별 점수/)).toBeInTheDocument();
+        expect(screen.getByText('hair.metricScores')).toBeInTheDocument();
       });
     });
 
@@ -825,12 +825,12 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText(/추천 성분/)).toBeInTheDocument();
+        expect(screen.getByText('hair.recommendedIngredients')).toBeInTheDocument();
       });
     });
 
@@ -838,12 +838,12 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('이미 알고 있어요'));
+      await user.click(screen.getByText('action.alreadyKnow'));
       await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('결과 보기'));
+      await user.click(screen.getByText('action.viewResult'));
 
       await waitFor(() => {
-        expect(screen.getByText(/케어 팁/)).toBeInTheDocument();
+        expect(screen.getByText('hair.careTips')).toBeInTheDocument();
       });
     });
   });

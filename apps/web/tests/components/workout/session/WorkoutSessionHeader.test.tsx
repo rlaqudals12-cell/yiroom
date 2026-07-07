@@ -38,7 +38,8 @@ describe('WorkoutSessionHeader', () => {
       render(<WorkoutSessionHeader {...defaultProps} elapsedTime={600} />);
 
       expect(screen.getByText('10:00')).toBeInTheDocument();
-      expect(screen.getByText('경과 시간')).toBeInTheDocument();
+      // i18n: "경과 시간" 라벨은 workoutUI.workoutSessionHeader0 키로 렌더 (테스트 목은 키 반환)
+      expect(screen.getByText('workoutSessionHeader0')).toBeInTheDocument();
     });
 
     it('칼로리가 표시된다', () => {
@@ -52,14 +53,17 @@ describe('WorkoutSessionHeader', () => {
       render(<WorkoutSessionHeader {...defaultProps} totalExercises={5} completedExercises={2} />);
 
       expect(screen.getByText('2/5')).toBeInTheDocument();
-      expect(screen.getByText('운동')).toBeInTheDocument();
+      // i18n: "운동" 라벨은 workoutUI.workoutSessionHeader1 키로 렌더
+      expect(screen.getByText('workoutSessionHeader1')).toBeInTheDocument();
     });
 
     it('진행률 바가 표시된다', () => {
       render(<WorkoutSessionHeader {...defaultProps} totalSets={10} completedSets={4} />);
 
       // 40% 진행률
-      const progressBar = screen.getByTestId('workout-session-header').querySelector('[style*="width: 40%"]');
+      const progressBar = screen
+        .getByTestId('workout-session-header')
+        .querySelector('[style*="width: 40%"]');
       expect(progressBar).toBeInTheDocument();
     });
   });
@@ -94,7 +98,8 @@ describe('WorkoutSessionHeader', () => {
     it('일시정지 상태에서 오버레이가 표시된다', () => {
       render(<WorkoutSessionHeader {...defaultProps} isPaused={true} />);
 
-      expect(screen.getByText('일시정지됨')).toBeInTheDocument();
+      // i18n: "일시정지됨" 문구는 workoutUI.workoutSessionHeader2 키로 렌더
+      expect(screen.getByText('workoutSessionHeader2')).toBeInTheDocument();
     });
   });
 
@@ -104,7 +109,8 @@ describe('WorkoutSessionHeader', () => {
 
       render(<WorkoutSessionHeader {...defaultProps} onExit={onExit} />);
 
-      fireEvent.click(screen.getByLabelText('운동 종료'));
+      // i18n: "운동 종료" aria-label은 workoutUI.workoutSessionHeader3 키로 렌더
+      fireEvent.click(screen.getByLabelText('workoutSessionHeader3'));
 
       expect(onExit).toHaveBeenCalled();
     });

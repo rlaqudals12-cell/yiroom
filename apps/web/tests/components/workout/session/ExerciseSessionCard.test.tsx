@@ -123,13 +123,7 @@ describe('ExerciseSessionCard', () => {
 
   describe('대기 중인 운동', () => {
     it('대기 중인 운동은 시작 버튼이 표시된다', () => {
-      render(
-        <ExerciseSessionCard
-          {...defaultProps}
-          exerciseIndex={1}
-          currentExerciseIndex={0}
-        />
-      );
+      render(<ExerciseSessionCard {...defaultProps} exerciseIndex={1} currentExerciseIndex={0} />);
 
       // 카드를 클릭하여 확장
       fireEvent.click(screen.getByText('스쿼트'));
@@ -172,7 +166,8 @@ describe('ExerciseSessionCard', () => {
 
       render(<ExerciseSessionCard {...defaultProps} record={record} />);
 
-      expect(screen.getByText('완료')).toBeInTheDocument();
+      // i18n 마이그레이션: 완료 표시가 exerciseSessionCard0 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('exerciseSessionCard0')).toBeInTheDocument();
     });
 
     it('완료된 운동은 요약 통계가 표시된다', () => {
@@ -198,9 +193,10 @@ describe('ExerciseSessionCard', () => {
       // 카드 클릭하여 확장
       fireEvent.click(screen.getByText('스쿼트'));
 
-      expect(screen.getByText('완료 세트')).toBeInTheDocument();
-      expect(screen.getByText('총 횟수')).toBeInTheDocument();
-      expect(screen.getByText('휴식 시간')).toBeInTheDocument();
+      // i18n 마이그레이션: 완료 세트/총 횟수/휴식 시간 라벨이 exerciseSessionCard2~4 키로 이동
+      expect(screen.getByText('exerciseSessionCard2')).toBeInTheDocument();
+      expect(screen.getByText('exerciseSessionCard3')).toBeInTheDocument();
+      expect(screen.getByText('exerciseSessionCard4')).toBeInTheDocument();
     });
   });
 
@@ -232,13 +228,7 @@ describe('ExerciseSessionCard', () => {
         ],
       });
 
-      render(
-        <ExerciseSessionCard
-          {...defaultProps}
-          record={record}
-          onViewDetail={onViewDetail}
-        />
-      );
+      render(<ExerciseSessionCard {...defaultProps} record={record} onViewDetail={onViewDetail} />);
 
       await user.click(screen.getByText('자세 가이드'));
 
@@ -258,11 +248,7 @@ describe('ExerciseSessionCard', () => {
       });
 
       render(
-        <ExerciseSessionCard
-          {...defaultProps}
-          record={record}
-          onSkipExercise={onSkipExercise}
-        />
+        <ExerciseSessionCard {...defaultProps} record={record} onSkipExercise={onSkipExercise} />
       );
 
       await user.click(screen.getByText('운동 건너뛰기'));

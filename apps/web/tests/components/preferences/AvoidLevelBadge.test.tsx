@@ -50,11 +50,15 @@ describe('AvoidLevelBadge', () => {
   });
 
   it('아이콘 표시 여부', () => {
+    // 이모지 아이콘 글리프는 제거됨(AVOID_LEVEL_COLORS.icon = '', 이모지 정리 폴리시).
+    // showIcon은 아이콘 슬롯(span[title=레이블]) 렌더 여부만 제어한다.
     const { rerender } = render(<AvoidLevelBadge level="avoid" showIcon={true} />);
-    expect(screen.getByTestId('avoid-level-badge-avoid')).toHaveTextContent('🟡');
+    let badge = screen.getByTestId('avoid-level-badge-avoid');
+    expect(badge.querySelector('span[title="피하고 싶어요"]')).toBeInTheDocument();
 
     rerender(<AvoidLevelBadge level="avoid" showIcon={false} />);
-    expect(screen.getByTestId('avoid-level-badge-avoid')).not.toHaveTextContent('🟡');
+    badge = screen.getByTestId('avoid-level-badge-avoid');
+    expect(badge.querySelector('span[title="피하고 싶어요"]')).not.toBeInTheDocument();
   });
 
   it('크기별 렌더링', () => {

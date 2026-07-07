@@ -85,7 +85,9 @@ describe('preferences/labels', () => {
         expect(colors.bg).toBeTruthy();
         expect(colors.text).toBeTruthy();
         expect(colors.border).toBeTruthy();
-        expect(colors.icon).toBeTruthy();
+        // 이모지 아이콘은 제품 정책(이모지 금지)으로 제거됨 — 필드는 유지되나 빈 문자열
+        expect(colors).toHaveProperty('icon');
+        expect(typeof colors.icon).toBe('string');
       }
     });
   });
@@ -144,16 +146,19 @@ describe('preferences/labels', () => {
   // getAvoidLevelColors
   // ============================================
   describe('getAvoidLevelColors', () => {
+    // 이모지 아이콘(🔴/⚪ 등)은 제품 정책(이모지 금지)으로 제거됨 → 색상 클래스만 검증
     it('danger → 빨간색 계열', () => {
       const colors = getAvoidLevelColors('danger');
       expect(colors.bg).toContain('red');
-      expect(colors.icon).toBe('🔴');
+      expect(colors.text).toContain('red');
+      expect(colors.border).toContain('red');
     });
 
     it('dislike → 회색 계열', () => {
       const colors = getAvoidLevelColors('dislike');
       expect(colors.bg).toContain('gray');
-      expect(colors.icon).toBe('⚪');
+      expect(colors.text).toContain('gray');
+      expect(colors.border).toContain('gray');
     });
   });
 

@@ -39,12 +39,30 @@ const createMockPlan = (overrides: Partial<WorkoutPlan> = {}): WorkoutPlan => ({
   frequency: '3-4',
   days: [
     createMockDayPlan({ day: 'mon', dayLabel: '월요일', categories: ['upper'] }),
-    createMockDayPlan({ day: 'tue', dayLabel: '화요일', isRestDay: true, categories: [], exercises: [] }),
+    createMockDayPlan({
+      day: 'tue',
+      dayLabel: '화요일',
+      isRestDay: true,
+      categories: [],
+      exercises: [],
+    }),
     createMockDayPlan({ day: 'wed', dayLabel: '수요일', categories: ['lower'] }),
-    createMockDayPlan({ day: 'thu', dayLabel: '목요일', isRestDay: true, categories: [], exercises: [] }),
+    createMockDayPlan({
+      day: 'thu',
+      dayLabel: '목요일',
+      isRestDay: true,
+      categories: [],
+      exercises: [],
+    }),
     createMockDayPlan({ day: 'fri', dayLabel: '금요일', categories: ['core'] }),
     createMockDayPlan({ day: 'sat', dayLabel: '토요일', categories: ['cardio'] }),
-    createMockDayPlan({ day: 'sun', dayLabel: '일요일', isRestDay: true, categories: [], exercises: [] }),
+    createMockDayPlan({
+      day: 'sun',
+      dayLabel: '일요일',
+      isRestDay: true,
+      categories: [],
+      exercises: [],
+    }),
   ],
   totalMinutes: 150,
   totalCalories: 750,
@@ -58,13 +76,7 @@ describe('WorkoutMetricsDashboard', () => {
     it('대시보드가 올바르게 렌더링된다', () => {
       const plan = createMockPlan();
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       expect(screen.getByTestId('workout-metrics-dashboard')).toBeInTheDocument();
       expect(screen.getByText('이번 주 운동 지표')).toBeInTheDocument();
@@ -73,13 +85,7 @@ describe('WorkoutMetricsDashboard', () => {
     it('7가지 지표가 모두 표시된다', () => {
       const plan = createMockPlan();
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       // 7가지 지표 라벨 확인
       expect(screen.getByText('운동 빈도')).toBeInTheDocument();
@@ -94,13 +100,7 @@ describe('WorkoutMetricsDashboard', () => {
     it('총 시간이 올바르게 표시된다', () => {
       const plan = createMockPlan({ totalMinutes: 210 });
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       expect(screen.getByText('210분')).toBeInTheDocument();
     });
@@ -108,13 +108,7 @@ describe('WorkoutMetricsDashboard', () => {
     it('총 칼로리가 올바르게 표시된다', () => {
       const plan = createMockPlan({ totalCalories: 1250 });
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       expect(screen.getByText('1,250kcal')).toBeInTheDocument();
     });
@@ -125,12 +119,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="1-2"
-          userWeight={60}
-          completedDays={1}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="1-2" userWeight={60} completedDays={1} />
       );
 
       expect(screen.getByText('1/2회')).toBeInTheDocument();
@@ -140,12 +129,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          completedDays={2}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} completedDays={2} />
       );
 
       expect(screen.getByText('2/4회')).toBeInTheDocument();
@@ -155,12 +139,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="5-6"
-          userWeight={60}
-          completedDays={4}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="5-6" userWeight={60} completedDays={4} />
       );
 
       expect(screen.getByText('4/6회')).toBeInTheDocument();
@@ -170,12 +149,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="daily"
-          userWeight={60}
-          completedDays={5}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="daily" userWeight={60} completedDays={5} />
       );
 
       expect(screen.getByText('5/7회')).toBeInTheDocument();
@@ -187,12 +161,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={12}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={12} />
       );
 
       expect(screen.getByText('12일')).toBeInTheDocument();
@@ -202,12 +171,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={7}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={7} />
       );
 
       expect(screen.getByText('대단해요!')).toBeInTheDocument();
@@ -217,12 +181,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={5}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={5} />
       );
 
       expect(screen.getByText('좋은 시작!')).toBeInTheDocument();
@@ -232,12 +191,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={1}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={1} />
       );
 
       expect(screen.getByText('화이팅!')).toBeInTheDocument();
@@ -249,12 +203,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          completedDays={0}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} completedDays={0} />
       );
 
       expect(screen.getByText('0%')).toBeInTheDocument();
@@ -265,12 +214,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          completedDays={2}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} completedDays={2} />
       );
 
       expect(screen.getByText('50%')).toBeInTheDocument();
@@ -282,12 +226,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          completedDays={0}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} completedDays={0} />
       );
 
       expect(
@@ -299,12 +238,7 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          completedDays={1}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} completedDays={1} />
       );
 
       expect(
@@ -327,13 +261,7 @@ describe('WorkoutMetricsDashboard', () => {
         ],
       });
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       // 부위 균형 지표가 존재하는지 확인
       expect(screen.getByText('부위 균형')).toBeInTheDocument();
@@ -344,17 +272,9 @@ describe('WorkoutMetricsDashboard', () => {
     it('레이더 차트 플레이스홀더가 표시된다', () => {
       const plan = createMockPlan();
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
-      expect(
-        screen.getByText(/운동 기록 후 상세 분석 차트가 표시됩니다/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/운동 기록 후 상세 분석 차트가 표시됩니다/)).toBeInTheDocument();
     });
   });
 
@@ -363,30 +283,21 @@ describe('WorkoutMetricsDashboard', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={7}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={7} />
       );
 
-      expect(screen.getByText('7일 달성!')).toBeInTheDocument();
+      // i18n 도입으로 축하 메시지는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '7일 달성!')
+      expect(screen.getByText('workoutMetricsDashboard0')).toBeInTheDocument();
     });
 
     it('7일 미만 연속 기록 시 축하 메시지가 표시되지 않는다', () => {
       const plan = createMockPlan();
 
       render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-          currentStreak={6}
-        />
+        <WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} currentStreak={6} />
       );
 
-      expect(screen.queryByText('7일 달성!')).not.toBeInTheDocument();
+      expect(screen.queryByText('workoutMetricsDashboard0')).not.toBeInTheDocument();
     });
   });
 
@@ -396,13 +307,7 @@ describe('WorkoutMetricsDashboard', () => {
       // 4개 운동일 x 1개 운동 x 3세트 x 12회 x 18kg = 2,592kg
       const plan = createMockPlan();
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       // 볼륨 지표 라벨이 표시되는지 확인
       expect(screen.getByText('볼륨')).toBeInTheDocument();
@@ -414,7 +319,7 @@ describe('WorkoutMetricsDashboard', () => {
           createMockDayPlan({
             day: 'mon',
             categories: ['cardio'],
-            exercises: [createMockExercise({ category: 'cardio' })]
+            exercises: [createMockExercise({ category: 'cardio' })],
           }),
           createMockDayPlan({ day: 'tue', isRestDay: true, categories: [], exercises: [] }),
           createMockDayPlan({ day: 'wed', isRestDay: true, categories: [], exercises: [] }),
@@ -425,13 +330,7 @@ describe('WorkoutMetricsDashboard', () => {
         ],
       });
 
-      render(
-        <WorkoutMetricsDashboard
-          plan={plan}
-          frequency="3-4"
-          userWeight={60}
-        />
-      );
+      render(<WorkoutMetricsDashboard plan={plan} frequency="3-4" userWeight={60} />);
 
       // 유산소만 있으면 볼륨은 0kg
       expect(screen.getByText('0kg')).toBeInTheDocument();

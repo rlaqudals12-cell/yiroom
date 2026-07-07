@@ -105,7 +105,8 @@ describe('AccessoryStyling', () => {
 
     expect(screen.getByTestId('accessory-styling')).toBeInTheDocument();
     expect(screen.getByText('악세서리 추천')).toBeInTheDocument();
-    expect(screen.getByText('금속 톤 가이드')).toBeInTheDocument();
+    // i18n 도입으로 카드 제목은 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '금속 톤 가이드')
+    expect(screen.getByText('accessoryStyling2')).toBeInTheDocument();
   });
 
   it('renders metal tone cards for all seasons', () => {

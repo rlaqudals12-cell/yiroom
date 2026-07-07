@@ -109,10 +109,11 @@ describe('알림 서비스', () => {
   });
 
   describe('getNotificationStyle', () => {
+    // 이모지 아이콘(💰/⚠️ 등)은 제품 정책(이모지 금지)으로 제거됨 — icon 필드는 빈 문자열 유지
     it('가격 하락 알림 스타일을 반환한다', () => {
       const style = getNotificationStyle('price_drop');
 
-      expect(style.icon).toBe('💰');
+      expect(style.icon).toBe('');
       expect(style.color).toContain('green');
       expect(style.bgColor).toContain('green');
     });
@@ -120,22 +121,25 @@ describe('알림 서비스', () => {
     it('소진 예정 알림 스타일을 반환한다', () => {
       const style = getNotificationStyle('product_running_low');
 
-      expect(style.icon).toBe('⚠️');
+      expect(style.icon).toBe('');
       expect(style.color).toContain('yellow');
+      expect(style.bgColor).toContain('yellow');
     });
 
     it('재입고 알림 스타일을 반환한다', () => {
       const style = getNotificationStyle('back_in_stock');
 
-      expect(style.icon).toBe('📦');
+      expect(style.icon).toBe('');
       expect(style.color).toContain('blue');
+      expect(style.bgColor).toContain('blue');
     });
 
     it('유통기한 알림 스타일을 반환한다', () => {
       const style = getNotificationStyle('expiry_approaching');
 
-      expect(style.icon).toBe('⏰');
+      expect(style.icon).toBe('');
       expect(style.color).toContain('orange');
+      expect(style.bgColor).toContain('orange');
     });
   });
 });

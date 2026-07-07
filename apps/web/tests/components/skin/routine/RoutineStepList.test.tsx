@@ -65,7 +65,8 @@ describe('RoutineStepList', () => {
     render(<RoutineStepList steps={[]} />);
 
     expect(screen.getByTestId('routine-step-list-empty')).toBeInTheDocument();
-    expect(screen.getByText('루틴 단계가 없어요')).toBeInTheDocument();
+    // i18n 도입으로 빈 상태 문구는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '루틴 단계가 없어요')
+    expect(screen.getByText('routineStepList0')).toBeInTheDocument();
   });
 
   it('passes showProducts prop to items', () => {

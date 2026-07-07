@@ -35,7 +35,8 @@ describe('SkinInsightCard', () => {
       render(<SkinInsightCard skinAnalysis={normalSkin} />);
 
       expect(screen.getByTestId('skin-insight-card')).toBeInTheDocument();
-      expect(screen.getByText('피부 연동 인사이트')).toBeInTheDocument();
+      // i18n 전환: 제목이 t('skinInsightCard1')(ko: "피부 연동 인사이트") 키로 렌더된다 (테스트 목은 키 반환).
+      expect(screen.getByText('skinInsightCard1')).toBeInTheDocument();
     });
 
     it('로딩 중일 때 스켈레톤을 표시한다', () => {

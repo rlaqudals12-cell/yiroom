@@ -35,6 +35,32 @@ vi.mock('lucide-react', async (importOriginal) => {
   };
 });
 
+// 현행 페이지는 next-intl 키(analysisEntry.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (ns: string | undefined, key: string): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    return typeof value === 'string' ? value : key;
+  };
+  return {
+    useTranslations: (ns?: string) => (key: string) => resolve(ns, key),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 // Mock Next.js router
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
@@ -447,9 +473,11 @@ describe('BodyAnalysisPage', () => {
         { timeout: 3000 }
       );
 
-      // 에러 서브타이틀 확인
+      // 에러 배너 확인 (현행 카피: analysisEntry.error.analysisFailed)
       await waitFor(() => {
-        expect(screen.getByText('분석에 실패했어요. 다시 시도해주세요.')).toBeInTheDocument();
+        expect(
+          screen.getByText('분석 중 오류가 발생했어요. 다시 시도해주세요.')
+        ).toBeInTheDocument();
       });
     });
   });

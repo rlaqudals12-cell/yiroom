@@ -78,7 +78,8 @@ describe('OutfitShareCard', () => {
   it('displays clothing colors', () => {
     render(<OutfitShareCard outfit={mockFullOutfit} seasonType="spring" />);
 
-    expect(screen.getByText('👕 의상 조합')).toBeInTheDocument();
+    // 이모지 정리: 섹션 제목에서 이모지 접두사 제거됨
+    expect(screen.getByText('의상 조합')).toBeInTheDocument();
     expect(screen.getByText('상의')).toBeInTheDocument();
     expect(screen.getByText('하의')).toBeInTheDocument();
     expect(screen.getByText('코랄 핑크')).toBeInTheDocument();
@@ -88,14 +89,16 @@ describe('OutfitShareCard', () => {
   it('displays accessory info', () => {
     render(<OutfitShareCard outfit={mockFullOutfit} seasonType="spring" />);
 
-    expect(screen.getByText('💎 악세서리')).toBeInTheDocument();
+    // 이모지 정리: 섹션 제목에서 이모지 접두사 제거됨
+    expect(screen.getByText('악세서리')).toBeInTheDocument();
     expect(screen.getByText('골드')).toBeInTheDocument();
   });
 
   it('displays makeup info', () => {
     render(<OutfitShareCard outfit={mockFullOutfit} seasonType="spring" />);
 
-    expect(screen.getByText('💄 메이크업')).toBeInTheDocument();
+    // 이모지 정리: 섹션 제목에서 이모지 접두사 제거됨
+    expect(screen.getByText('메이크업')).toBeInTheDocument();
     expect(screen.getByText('립')).toBeInTheDocument();
     expect(screen.getByText('블러셔')).toBeInTheDocument();
   });

@@ -2,6 +2,32 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { RestTimer } from '@/components/workout/session';
 
+// 현행 컴포넌트는 next-intl 키(workoutUI.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (ns: string | undefined, key: string): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    return typeof value === 'string' ? value : key;
+  };
+  return {
+    useTranslations: (ns?: string) => (key: string) => resolve(ns, key),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 // Audio 모킹 (jsdom에서 지원하지 않음)
 const mockPlay = vi.fn(() => Promise.resolve());
 const mockAudio = vi.fn(() => ({
@@ -29,38 +55,20 @@ describe('RestTimer', () => {
       const onComplete = vi.fn();
       const onSkip = vi.fn();
 
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={onComplete}
-          onSkip={onSkip}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={onComplete} onSkip={onSkip} />);
 
       expect(screen.getByTestId('rest-timer')).toBeInTheDocument();
       expect(screen.getByText('휴식 시간')).toBeInTheDocument();
     });
 
     it('초기 시간이 올바르게 표시된다', () => {
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       expect(screen.getByText('01:00')).toBeInTheDocument();
     });
 
     it('휴식 건너뛰기 버튼이 표시된다', () => {
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       expect(screen.getByText('휴식 건너뛰기')).toBeInTheDocument();
     });
@@ -68,13 +76,7 @@ describe('RestTimer', () => {
 
   describe('타이머 동작', () => {
     it('시간이 1초씩 감소한다', () => {
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       expect(screen.getByText('01:00')).toBeInTheDocument();
 
@@ -94,13 +96,7 @@ describe('RestTimer', () => {
     it('0초가 되면 onComplete가 호출된다', async () => {
       const onComplete = vi.fn();
 
-      render(
-        <RestTimer
-          initialSeconds={2}
-          onComplete={onComplete}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={2} onComplete={onComplete} onSkip={vi.fn()} />);
 
       // 2초 경과
       act(() => {
@@ -118,13 +114,7 @@ describe('RestTimer', () => {
 
   describe('시간 조절', () => {
     it('+10초 버튼을 클릭하면 시간이 증가한다', () => {
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       const increaseButton = screen.getByLabelText('10초 증가');
       fireEvent.click(increaseButton);
@@ -133,13 +123,7 @@ describe('RestTimer', () => {
     });
 
     it('-10초 버튼을 클릭하면 시간이 감소한다', () => {
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       const decreaseButton = screen.getByLabelText('10초 감소');
       fireEvent.click(decreaseButton);
@@ -148,13 +132,7 @@ describe('RestTimer', () => {
     });
 
     it('최소 30초 미만으로 감소하지 않는다', () => {
-      render(
-        <RestTimer
-          initialSeconds={35}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={35} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       const decreaseButton = screen.getByLabelText('10초 감소');
       fireEvent.click(decreaseButton);
@@ -165,12 +143,7 @@ describe('RestTimer', () => {
 
     it('기본 버튼을 클릭하면 defaultSeconds로 리셋된다', () => {
       render(
-        <RestTimer
-          initialSeconds={30}
-          defaultSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
+        <RestTimer initialSeconds={30} defaultSeconds={60} onComplete={vi.fn()} onSkip={vi.fn()} />
       );
 
       // 현재 30초
@@ -186,12 +159,7 @@ describe('RestTimer', () => {
 
     it('기본 버튼에 defaultSeconds 값이 표시된다', () => {
       render(
-        <RestTimer
-          initialSeconds={60}
-          defaultSeconds={45}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
+        <RestTimer initialSeconds={60} defaultSeconds={45} onComplete={vi.fn()} onSkip={vi.fn()} />
       );
 
       expect(screen.getByText('기본 45초')).toBeInTheDocument();
@@ -202,13 +170,7 @@ describe('RestTimer', () => {
     it('건너뛰기 버튼을 클릭하면 onSkip이 호출된다', () => {
       const onSkip = vi.fn();
 
-      render(
-        <RestTimer
-          initialSeconds={60}
-          onComplete={vi.fn()}
-          onSkip={onSkip}
-        />
-      );
+      render(<RestTimer initialSeconds={60} onComplete={vi.fn()} onSkip={onSkip} />);
 
       fireEvent.click(screen.getByText('휴식 건너뛰기'));
 
@@ -218,13 +180,7 @@ describe('RestTimer', () => {
 
   describe('10초 전 알림', () => {
     it('10초 남았을 때 경고 메시지가 표시된다', () => {
-      render(
-        <RestTimer
-          initialSeconds={12}
-          onComplete={vi.fn()}
-          onSkip={vi.fn()}
-        />
-      );
+      render(<RestTimer initialSeconds={12} onComplete={vi.fn()} onSkip={vi.fn()} />);
 
       act(() => {
         vi.advanceTimersByTime(3000); // 12 - 3 = 9초

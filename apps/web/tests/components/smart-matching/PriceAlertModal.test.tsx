@@ -15,7 +15,8 @@ describe('PriceAlertModal', () => {
   it('모달 제목을 표시한다', () => {
     render(<PriceAlertModal {...defaultProps} />);
 
-    expect(screen.getByText('가격 알림 설정')).toBeInTheDocument();
+    // i18n 마이그레이션: 제목은 smartMatchingUI.priceAlertModal4 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('priceAlertModal4')).toBeInTheDocument();
   });
 
   it('제품명을 설명에 포함한다', () => {
@@ -33,9 +34,10 @@ describe('PriceAlertModal', () => {
   it('목표 가격과 할인율 탭이 있다', () => {
     render(<PriceAlertModal {...defaultProps} />);
 
-    expect(screen.getByText('목표 가격')).toBeInTheDocument();
+    // i18n 마이그레이션: 목표 가격 = priceAlertModal8, 할인율 = priceAlertModal9 키로 렌더링
+    expect(screen.getByText('priceAlertModal8')).toBeInTheDocument();
     // 할인율은 탭 버튼과 라벨 두 곳에 있음
-    expect(screen.getAllByText('할인율').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('priceAlertModal9').length).toBeGreaterThanOrEqual(1);
   });
 
   it('플랫폼 선택 버튼이 있다', () => {
@@ -112,8 +114,8 @@ describe('PriceAlertModal', () => {
   it('목표 가격 모드에서 빈 값이면 저장 버튼이 비활성화된다', () => {
     render(<PriceAlertModal {...defaultProps} />);
 
-    // 목표 가격 탭으로 전환
-    fireEvent.click(screen.getByText('목표 가격'));
+    // 목표 가격 탭으로 전환 (i18n 마이그레이션: priceAlertModal8 키로 렌더링)
+    fireEvent.click(screen.getByText('priceAlertModal8'));
 
     // 저장 버튼 비활성화 확인
     expect(screen.getByText('저장')).toBeDisabled();

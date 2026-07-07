@@ -2,9 +2,34 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AnalysisResultCard } from '@/components/analysis/AnalysisResultCard';
 
+// next-intl 파일 로컬 mock — 글로벌 mock(키 그대로 반환)을 덮어써서
+// 실제 messages/ko.json의 analysisType 네임스페이스 문구를 반환.
+// 컴포넌트가 i18n(useTranslations)으로 전환되어 한국어 문구 기준 검증을 유지하기 위함.
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string, params?: Record<string, unknown>) => {
+    // messages/ko.json > analysisType 과 동기화된 사전
+    const messages: Record<string, string> = {
+      skin: 'AI 피부 분석',
+      personalColor: 'AI 퍼스널컬러 분석',
+      body: 'AI 체형 분석',
+      hair: 'AI 헤어 분석',
+      makeup: 'AI 메이크업 분석',
+      nutrition: 'AI 영양 분석',
+      workout: 'AI 운동 분석',
+      default: 'AI 분석 결과',
+      mockDesc: '이 결과는 AI 서비스 불가로 샘플 데이터입니다',
+      aiDesc: '이 결과는 AI 기술을 사용하여 생성됐어요',
+      confidence: `신뢰도 ${params?.percent}%`,
+      resultDetail: '분석 결과 상세',
+    };
+    return messages[key] ?? key;
+  },
+}));
+
 // ARIA 알림 함수 모킹
 vi.mock('@/lib/a11y/aria-utils', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/a11y/aria-utils')>('@/lib/a11y/aria-utils');
+  const actual =
+    await vi.importActual<typeof import('@/lib/a11y/aria-utils')>('@/lib/a11y/aria-utils');
   return {
     ...actual,
     announceAnalysisComplete: vi.fn(),
@@ -51,9 +76,7 @@ describe('AnalysisResultCard', () => {
         </AnalysisResultCard>
       );
 
-      expect(
-        screen.getByTestId('ai-transparency-notice-compact')
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('ai-transparency-notice-compact')).toBeInTheDocument();
     });
 
     it('should apply custom className', () => {
@@ -180,10 +203,7 @@ describe('AnalysisResultCard', () => {
       );
 
       const badge = screen.getByTestId('ai-badge');
-      expect(badge).toHaveAttribute(
-        'title',
-        '이 결과는 AI 서비스 불가로 샘플 데이터입니다'
-      );
+      expect(badge).toHaveAttribute('title', '이 결과는 AI 서비스 불가로 샘플 데이터입니다');
     });
   });
 
@@ -286,9 +306,7 @@ describe('AnalysisResultCard', () => {
         </AnalysisResultCard>
       );
 
-      expect(
-        screen.getByTestId('ai-transparency-notice-compact')
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('ai-transparency-notice-compact')).toBeInTheDocument();
     });
 
     it('should hide disclaimer when showDisclaimer is false', () => {
@@ -298,12 +316,8 @@ describe('AnalysisResultCard', () => {
         </AnalysisResultCard>
       );
 
-      expect(
-        screen.queryByTestId('ai-transparency-notice-compact')
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByTestId('ai-transparency-notice')
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ai-transparency-notice-compact')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ai-transparency-notice')).not.toBeInTheDocument();
     });
   });
 

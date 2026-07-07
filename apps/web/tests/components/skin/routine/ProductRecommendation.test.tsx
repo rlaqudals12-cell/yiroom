@@ -115,7 +115,8 @@ describe('ProductRecommendation', () => {
     render(<ProductRecommendation products={[]} category="cleanser" />);
 
     expect(screen.getByTestId('product-recommendation-empty')).toBeInTheDocument();
-    expect(screen.getByText('추천 제품을 불러오는 중...')).toBeInTheDocument();
+    // i18n 전환: 빈 상태 문구가 t('productRecommendation0')(ko: "추천 제품을 불러오는 중...") 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('productRecommendation0')).toBeInTheDocument();
   });
 
   it('renders product images', () => {

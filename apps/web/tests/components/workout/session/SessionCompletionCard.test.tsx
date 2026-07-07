@@ -3,6 +3,32 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SessionCompletionCard } from '@/components/workout/session';
 
+// 현행 컴포넌트는 next-intl 키(workoutUI.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (ns: string | undefined, key: string): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    return typeof value === 'string' ? value : key;
+  };
+  return {
+    useTranslations: (ns?: string) => (key: string) => resolve(ns, key),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('SessionCompletionCard', () => {
   const defaultProps = {
     totalExercises: 5,
@@ -193,13 +219,27 @@ describe('SessionCompletionCard', () => {
     });
 
     it('운동 타입에 따라 다른 메시지가 표시된다 - builder', () => {
-      render(<SessionCompletionCard {...defaultProps} workoutType="builder" totalTime={1800} caloriesBurned={300} />);
+      render(
+        <SessionCompletionCard
+          {...defaultProps}
+          workoutType="builder"
+          totalTime={1800}
+          caloriesBurned={300}
+        />
+      );
 
       expect(screen.getByText(/단백질을 섭취하면 근육 성장에 효과적/)).toBeInTheDocument();
     });
 
     it('운동 타입에 따라 다른 메시지가 표시된다 - burner', () => {
-      render(<SessionCompletionCard {...defaultProps} workoutType="burner" totalTime={2400} caloriesBurned={400} />);
+      render(
+        <SessionCompletionCard
+          {...defaultProps}
+          workoutType="burner"
+          totalTime={2400}
+          caloriesBurned={400}
+        />
+      );
 
       expect(screen.getByText(/탄수화물과 단백질을 함께 섭취/)).toBeInTheDocument();
     });

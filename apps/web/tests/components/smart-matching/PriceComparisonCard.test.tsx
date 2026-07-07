@@ -36,14 +36,16 @@ describe('PriceComparisonCard', () => {
   it('가격 비교 정보를 표시한다', () => {
     render(<PriceComparisonCard comparison={mockComparison} />);
 
-    expect(screen.getByText('가격 비교')).toBeInTheDocument();
+    // i18n 마이그레이션: 헤더가 priceComparisonCard0 키로 이동 (테스트 목은 키를 그대로 반환)
+    expect(screen.getByText('priceComparisonCard0')).toBeInTheDocument();
     expect(screen.getByText('1개 판매처')).toBeInTheDocument();
   });
 
   it('최저가 옵션을 강조 표시한다', () => {
     render(<PriceComparisonCard comparison={mockComparison} />);
 
-    expect(screen.getByText('최저가')).toBeInTheDocument();
+    // i18n 마이그레이션: 최저가 뱃지가 priceComparisonCard1 키로 이동
+    expect(screen.getByText('priceComparisonCard1')).toBeInTheDocument();
     // 가격은 하이라이트 섹션과 옵션 목록 두 곳에 표시됨
     expect(screen.getAllByText('45,000원').length).toBeGreaterThanOrEqual(1);
   });
@@ -64,12 +66,7 @@ describe('PriceComparisonCard', () => {
 
   it('구매하기 버튼 클릭 시 콜백을 호출한다', () => {
     const onSelectOption = vi.fn();
-    render(
-      <PriceComparisonCard
-        comparison={mockComparison}
-        onSelectOption={onSelectOption}
-      />
-    );
+    render(<PriceComparisonCard comparison={mockComparison} onSelectOption={onSelectOption} />);
 
     fireEvent.click(screen.getByText('구매하기'));
 

@@ -141,7 +141,8 @@ describe('PostureFeedbackPanel', () => {
     const onClose = vi.fn();
     render(<PostureFeedbackPanel issue={mockIssue} onClose={onClose} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /패널 닫기/i }));
+    // i18n: "패널 닫기" aria-label은 workoutUI.postureFeedbackPanel5 키로 렌더 (테스트 목은 키 반환)
+    fireEvent.click(screen.getByRole('button', { name: 'postureFeedbackPanel5' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -160,7 +161,8 @@ describe('PostureFeedbackPanel', () => {
       <PostureFeedbackPanel issue={mockIssue} onClose={onClose} onExerciseClick={onExerciseClick} />
     );
 
-    fireEvent.click(screen.getByText('교정 운동 보기'));
+    // i18n: "교정 운동 보기" 버튼은 workoutUI.postureFeedbackPanel4 키로 렌더
+    fireEvent.click(screen.getByText('postureFeedbackPanel4'));
     expect(onExerciseClick).toHaveBeenCalledWith('wall-squat');
   });
 });
@@ -208,8 +210,8 @@ describe('PostureZoomViewer', () => {
     // 마커 클릭하여 패널 열기
     fireEvent.click(screen.getByTestId('posture-marker-test-issue-1'));
 
-    // 교정 운동 버튼 클릭
-    fireEvent.click(screen.getByText('교정 운동 보기'));
+    // 교정 운동 버튼 클릭 (i18n: workoutUI.postureFeedbackPanel4 키로 렌더)
+    fireEvent.click(screen.getByText('postureFeedbackPanel4'));
 
     expect(mockPush).toHaveBeenCalledWith('/workout/exercise/wall-squat');
   });
@@ -218,7 +220,8 @@ describe('PostureZoomViewer', () => {
     render(<PostureZoomViewer imageUrl="/test-image.jpg" postureIssues={[]} />);
 
     await waitFor(() => {
-      expect(screen.getByText('자세가 좋아요!')).toBeInTheDocument();
+      // i18n: "자세가 좋아요!" 메시지는 workoutUI.postureZoomViewer1 키로 렌더
+      expect(screen.getByText('postureZoomViewer1')).toBeInTheDocument();
     });
   });
 });

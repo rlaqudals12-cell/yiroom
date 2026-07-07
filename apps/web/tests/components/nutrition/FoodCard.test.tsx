@@ -92,25 +92,27 @@ describe('FoodCard', () => {
       expect(screen.getByText('kcal')).toBeInTheDocument();
     });
 
+    // i18n 도입으로 영양소 라벨은 번역 키로 렌더됨 (setup 목이 키를 그대로 반환)
+    // foodCard0='단백질', foodCard1='탄수화물', foodCard2='지방'
     it('단백질을 표시한다', () => {
       render(<FoodCard food={mockFood} />);
 
       expect(screen.getByText('10g')).toBeInTheDocument();
-      expect(screen.getByText('단백질')).toBeInTheDocument();
+      expect(screen.getByText('foodCard0')).toBeInTheDocument();
     });
 
     it('탄수화물을 표시한다', () => {
       render(<FoodCard food={mockFood} />);
 
       expect(screen.getByText('80g')).toBeInTheDocument();
-      expect(screen.getByText('탄수화물')).toBeInTheDocument();
+      expect(screen.getByText('foodCard1')).toBeInTheDocument();
     });
 
     it('지방을 표시한다', () => {
       render(<FoodCard food={mockFood} />);
 
       expect(screen.getByText('16g')).toBeInTheDocument();
-      expect(screen.getByText('지방')).toBeInTheDocument();
+      expect(screen.getByText('foodCard2')).toBeInTheDocument();
     });
 
     it('섭취량에 따라 영양 정보를 조정한다', () => {
@@ -169,10 +171,11 @@ describe('FoodCard', () => {
   });
 
   describe('알레르기 정보', () => {
+    // i18n 도입으로 알레르기 라벨은 번역 키로 렌더됨 — foodCard3='알레르기:'
     it('알레르기 정보를 표시한다', () => {
       render(<FoodCard food={mockFood} />);
 
-      expect(screen.getByText('알레르기:')).toBeInTheDocument();
+      expect(screen.getByText('foodCard3')).toBeInTheDocument();
       expect(screen.getByText('밀')).toBeInTheDocument();
       expect(screen.getByText('대두')).toBeInTheDocument();
       expect(screen.getByText('쇠고기')).toBeInTheDocument();
@@ -182,7 +185,7 @@ describe('FoodCard', () => {
       const foodWithoutAllergens = { ...mockFood, allergens: undefined };
       render(<FoodCard food={foodWithoutAllergens} />);
 
-      expect(screen.queryByText('알레르기:')).not.toBeInTheDocument();
+      expect(screen.queryByText('foodCard3')).not.toBeInTheDocument();
     });
   });
 
@@ -205,9 +208,10 @@ describe('FoodCard', () => {
     it('컴팩트 모드에서 상세 영양 정보는 표시하지 않는다', () => {
       render(<FoodCard food={mockFood} compact />);
 
-      expect(screen.queryByText('단백질')).not.toBeInTheDocument();
-      expect(screen.queryByText('탄수화물')).not.toBeInTheDocument();
-      expect(screen.queryByText('지방')).not.toBeInTheDocument();
+      // i18n 키(foodCard0~2 = 단백질/탄수화물/지방)가 렌더되지 않아야 함
+      expect(screen.queryByText('foodCard0')).not.toBeInTheDocument();
+      expect(screen.queryByText('foodCard1')).not.toBeInTheDocument();
+      expect(screen.queryByText('foodCard2')).not.toBeInTheDocument();
     });
 
     it('컴팩트 모드에서 검증 아이콘을 표시한다', () => {

@@ -104,14 +104,15 @@ describe('PostureSimulator', () => {
     );
 
     // 이미지 로드 대기
+    // i18n 마이그레이션: 범례 텍스트가 postureSimulator0~4 키로 이동 (테스트 목은 키를 그대로 반환)
     await waitFor(() => {
-      expect(screen.getByText('가이드 라인')).toBeInTheDocument();
+      expect(screen.getByText('postureSimulator0')).toBeInTheDocument();
     });
 
-    // 기본 가이드
-    expect(screen.getByText('수직 기준선')).toBeInTheDocument();
-    expect(screen.getByText('어깨 수평선')).toBeInTheDocument();
-    expect(screen.getByText('골반선')).toBeInTheDocument();
+    // 기본 가이드 (수직 기준선 / 어깨 수평선 / 골반선)
+    expect(screen.getByText('postureSimulator1')).toBeInTheDocument();
+    expect(screen.getByText('postureSimulator3')).toBeInTheDocument();
+    expect(screen.getByText('postureSimulator4')).toBeInTheDocument();
   });
 
   it('headForwardAngle > 15일 때 머리 전방 각도 가이드 표시', async () => {
@@ -124,7 +125,8 @@ describe('PostureSimulator', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('머리 전방 각도')).toBeInTheDocument();
+      // i18n 마이그레이션: 머리 전방 각도 범례가 postureSimulator2 키로 이동
+      expect(screen.getByText('postureSimulator2')).toBeInTheDocument();
     });
   });
 
@@ -138,10 +140,10 @@ describe('PostureSimulator', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('가이드 라인')).toBeInTheDocument();
+      expect(screen.getByText('postureSimulator0')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('머리 전방 각도')).not.toBeInTheDocument();
+    expect(screen.queryByText('postureSimulator2')).not.toBeInTheDocument();
   });
 
   it('showGuides=false일 때 범례가 표시되지 않음', () => {
@@ -153,7 +155,7 @@ describe('PostureSimulator', () => {
       />
     );
 
-    expect(screen.queryByText('가이드 라인')).not.toBeInTheDocument();
+    expect(screen.queryByText('postureSimulator0')).not.toBeInTheDocument();
   });
 
   it('다양한 골반 기울기 측정값 처리', () => {

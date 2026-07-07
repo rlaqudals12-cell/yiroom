@@ -17,6 +17,41 @@ vi.mock('sonner', () => ({
   toast: mockToast,
 }));
 
+// 현행 훅은 next-intl 키(share.*)를 사용 — setup.ts의 "키 그대로 반환" mock 대신
+// 실제 한국어 메시지(ko.json)로 해석해 사용자 대면 텍스트 기준 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const ko = (await import('@/messages/ko.json')).default as Record<string, unknown>;
+  const resolve = (
+    ns: string | undefined,
+    key: string,
+    values?: Record<string, unknown>
+  ): string => {
+    const path = ns ? `${ns}.${key}` : key;
+    const value = path
+      .split('.')
+      .reduce<unknown>((acc, part) => (acc as Record<string, unknown> | undefined)?.[part], ko);
+    if (typeof value !== 'string') return key;
+    // {title} 등 ICU 단순 변수 보간
+    return value.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`));
+  };
+  return {
+    useTranslations:
+      (ns?: string) =>
+      (key: string, values?: Record<string, unknown>): string =>
+        resolve(ns, key, values),
+    useLocale: () => 'ko',
+    useMessages: () => ko,
+    useNow: () => new Date(),
+    useTimeZone: () => 'Asia/Seoul',
+    useFormatter: () => ({
+      number: (n: number) => String(n),
+      dateTime: (d: Date) => d.toISOString(),
+      relativeTime: (d: Date) => d.toISOString(),
+    }),
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 import { useShare } from '@/hooks/useShare';
 
 describe('useShare', () => {
@@ -42,7 +77,8 @@ describe('useShare', () => {
       await result.current.share();
     });
 
-    expect(mockToast.error).toHaveBeenCalledWith('공유할 내용을 찾을 수 없습니다');
+    // 현행 카피: share.sharePrepareFailed
+    expect(mockToast.error).toHaveBeenCalledWith('공유 준비 중 오류가 발생했습니다');
     expect(mockCaptureElementAsImage).not.toHaveBeenCalled();
   });
 
@@ -58,7 +94,8 @@ describe('useShare', () => {
       await result.current.share();
     });
 
-    expect(mockToast.error).toHaveBeenCalledWith('이미지 생성에 실패했습니다');
+    // 현행 카피: share.imageFailed
+    expect(mockToast.error).toHaveBeenCalledWith('이미지 저장에 실패했습니다');
   });
 
   it('캡처 성공 후 shareImage를 호출한다', async () => {
@@ -98,7 +135,10 @@ describe('useShare', () => {
       await result.current.share();
     });
 
-    expect(mockToast.success).toHaveBeenCalledWith('이미지가 저장되었습니다');
+    // 현행 카피: share.imageSaved
+    expect(mockToast.success).toHaveBeenCalledWith(
+      '이미지가 저장되었습니다. Instagram에서 공유해주세요!'
+    );
 
     // 복원
     Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });

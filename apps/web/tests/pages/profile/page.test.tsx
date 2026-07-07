@@ -265,7 +265,8 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('배지 컬렉션 섹션을 표시한다', async () => {
+    // ADR-098 기능 과잉 정리(2026-05-16): 배지 UI는 FEATURE_FLAGS.BADGES=false로 숨김 (코드 유지)
+    it('배지 컬렉션 섹션은 표시되지 않는다 (BADGES 게이팅)', async () => {
       render(<ProfilePage />);
 
       // 활동 탭으로 전환
@@ -274,9 +275,11 @@ describe('ProfilePage', () => {
       });
       screen.getByText('활동').click();
 
+      // 게이팅되지 않은 챌린지 섹션이 렌더된 뒤 배지 섹션 부재 확인
       await vi.waitFor(() => {
-        expect(screen.getByText('배지 컬렉션')).toBeInTheDocument();
+        expect(screen.getByText('챌린지')).toBeInTheDocument();
       });
+      expect(screen.queryByText('배지 컬렉션')).not.toBeInTheDocument();
     });
 
     it('챌린지 섹션을 표시한다', async () => {
@@ -293,7 +296,8 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('연속 기록 섹션을 표시한다', async () => {
+    // ADR-098: 운동/식단 연속기록은 FEATURE_FLAGS.WELLNESS_PHASE2=false로 숨김 (코드 유지)
+    it('연속 기록 섹션은 표시되지 않는다 (WELLNESS_PHASE2 게이팅)', async () => {
       render(<ProfilePage />);
 
       // 활동 탭으로 전환
@@ -302,9 +306,11 @@ describe('ProfilePage', () => {
       });
       screen.getByText('활동').click();
 
+      // 게이팅되지 않은 챌린지 섹션이 렌더된 뒤 연속 기록 섹션 부재 확인
       await vi.waitFor(() => {
-        expect(screen.getByText('연속 기록')).toBeInTheDocument();
+        expect(screen.getByText('챌린지')).toBeInTheDocument();
       });
+      expect(screen.queryByText('연속 기록')).not.toBeInTheDocument();
     });
 
     it('가입일 정보를 표시한다', async () => {
@@ -391,89 +397,11 @@ describe('ProfilePage', () => {
     });
   });
 
-  describe('배지 표시', () => {
-    const mockUser = {
-      id: 'user_123',
-      fullName: '테스트 사용자',
-      username: 'testuser',
-      imageUrl: null,
-      primaryEmailAddress: { emailAddress: 'test@example.com' },
-      createdAt: new Date('2024-01-01').getTime(),
-    };
-
-    beforeEach(() => {
-      vi.mocked(useUser).mockReturnValue({
-        user: mockUser,
-        isLoaded: true,
-        isSignedIn: true,
-      } as unknown as ReturnType<typeof useUser>);
-
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(createMockSupabase() as any);
-
-      vi.mocked(getUserLevelInfo).mockResolvedValue(null);
-      vi.mocked(getUserLevel).mockResolvedValue(null);
-      vi.mocked(getUserChallengeStats).mockResolvedValue({
-        total: 0,
-        inProgress: 0,
-        completed: 0,
-        failed: 0,
-        expired: 0,
-        abandoned: 0,
-      });
-    });
-
-    it('배지가 없을 때 안내 메시지를 표시한다', async () => {
-      vi.mocked(getUserBadges).mockResolvedValue([]);
-
-      render(<ProfilePage />);
-
-      // 활동 탭으로 전환
-      await vi.waitFor(() => {
-        expect(screen.getByText('활동')).toBeInTheDocument();
-      });
-      screen.getByText('활동').click();
-
-      await vi.waitFor(() => {
-        expect(screen.getByText('아직 획득한 배지가 없어요')).toBeInTheDocument();
-      });
-    });
-
-    it('획득한 배지 수를 표시한다', async () => {
-      vi.mocked(getUserBadges).mockResolvedValue([
-        {
-          id: 'ub1',
-          clerkUserId: 'user_123',
-          badgeId: 'badge1',
-          earnedAt: new Date(),
-          badge: {
-            id: 'badge1',
-            code: 'first_workout',
-            name: '첫 운동',
-            description: '첫 운동 완료',
-            icon: '🎯',
-            category: 'workout',
-            rarity: 'common',
-            requirement: { type: 'count', domain: 'workout', sessions: 1 },
-            xpReward: 10,
-            sortOrder: 1,
-            createdAt: new Date(),
-          },
-        },
-      ]);
-
-      render(<ProfilePage />);
-
-      // 활동 탭으로 전환
-      await vi.waitFor(() => {
-        expect(screen.getByText('활동')).toBeInTheDocument();
-      });
-      screen.getByText('활동').click();
-
-      await vi.waitFor(() => {
-        expect(screen.getByText('1/23개')).toBeInTheDocument();
-      });
-    });
-  });
+  // '배지 표시' describe 삭제 (2026-07-08):
+  // ADR-098 기능 과잉 정리(2026-05-16)로 배지 UI 전체가 FEATURE_FLAGS.BADGES=false 게이팅되어
+  // "아직 획득한 배지가 없어요" 안내와 "N/23개" 카운트가 렌더되지 않음.
+  // 게이팅 자체는 '로그인 상태 > 배지 컬렉션 섹션은 표시되지 않는다' 테스트로 검증.
+  // 배지 UI 복원(BADGES=true) 시 배지 빈 상태/카운트 테스트를 복구할 것.
 
   describe('프로필 이미지', () => {
     beforeEach(() => {

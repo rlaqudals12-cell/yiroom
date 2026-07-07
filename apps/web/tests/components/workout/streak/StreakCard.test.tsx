@@ -44,7 +44,8 @@ describe('StreakCard', () => {
     it('연속 기록 헤더가 표시된다', () => {
       render(<StreakCard summary={activeSummary} />);
 
-      expect(screen.getByText('연속 기록')).toBeInTheDocument();
+      // i18n 마이그레이션: 헤더 텍스트가 workoutUI.streakCard0 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('streakCard0')).toBeInTheDocument();
     });
 
     it('메시지가 표시된다', () => {
@@ -142,7 +143,8 @@ describe('StreakCard', () => {
     it('배지가 표시된다', () => {
       render(<StreakCard summary={activeSummary} />);
 
-      expect(screen.getByText('획득한 배지')).toBeInTheDocument();
+      // i18n 마이그레이션: 배지 섹션 라벨이 workoutUI.streakCard1 키로 이동
+      expect(screen.getByText('streakCard1')).toBeInTheDocument();
       expect(screen.getByTestId('streak-badge-list')).toBeInTheDocument();
     });
 
@@ -150,7 +152,7 @@ describe('StreakCard', () => {
       const noBadgesSummary = { ...activeSummary, badges: [] };
       render(<StreakCard summary={noBadgesSummary} />);
 
-      expect(screen.queryByText('획득한 배지')).not.toBeInTheDocument();
+      expect(screen.queryByText('streakCard1')).not.toBeInTheDocument();
     });
   });
 });

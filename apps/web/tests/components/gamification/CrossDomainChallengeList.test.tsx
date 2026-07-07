@@ -58,7 +58,8 @@ describe('CrossDomainChallengeList', () => {
   it('빈 목록일 때 안내 메시지가 표시된다', () => {
     render(<CrossDomainChallengeList views={[]} />);
     expect(screen.getByTestId('cross-domain-challenge-list-empty')).toBeInTheDocument();
-    expect(screen.getByText(/참여 가능한 크로스도메인 챌린지가 없어요/)).toBeInTheDocument();
+    // i18n 전환: 안내 문구가 t('crossDomainChallengeList0')(ko: "참여 가능한 크로스도메인 챌린지가 없어요.") 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('crossDomainChallengeList0')).toBeInTheDocument();
   });
 
   it('className prop이 적용된다', () => {

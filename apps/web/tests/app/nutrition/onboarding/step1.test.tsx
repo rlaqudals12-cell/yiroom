@@ -9,6 +9,47 @@ import NutritionStep1Page from '@/app/(main)/nutrition/onboarding/step1/page';
 import { useNutritionInputStore } from '@/lib/stores/nutritionInputStore';
 import { act } from '@testing-library/react';
 
+// i18n 전환(next-intl) 이후 페이지가 nutritionOnboarding 네임스페이스 키를 사용하므로,
+// 전역 setup mock(키 그대로 반환) 대신 실제 ko.json 문구로 로컬 mock하여
+// 사용자 노출 문구 기준의 검증을 유지한다.
+// 참고: nutrition layout은 ADR-098(WELLNESS_PHASE2=false)로 redirect('/home')하지만,
+// 이 테스트는 페이지 클라이언트 컴포넌트를 직접 렌더하므로 layout 게이팅과 무관하다.
+vi.mock('next-intl', () => {
+  const messages: Record<string, string> = {
+    loading: '정보를 불러오는 중...',
+    disclaimerTitle: '서비스 이용 안내',
+    disclaimerBody:
+      '본 서비스는 전문 의료 조언을 대체하지 않아요. 특정 질환이 있거나 임신 중인 경우 전문가와 상담 후 이용해 주세요.',
+    step1GoalTitle: '식사 목표',
+    step1GoalDesc: '원하는 목표를 선택해 주세요',
+    goal_weight_loss: '체중 감량',
+    goal_weight_loss_desc: '살 빼기에 맞춘 식단',
+    goal_maintain: '체중 유지',
+    goal_maintain_desc: '균형 잡힌 식단',
+    goal_muscle: '근육 증가',
+    goal_muscle_desc: '고단백 식단',
+    goal_skin: '피부 개선',
+    goal_skin_desc: '피부 친화 식단',
+    goal_health: '건강 관리',
+    goal_health_desc: '균형 영양 식단',
+    step1BasicInfoTitle: '기본 정보',
+    step1BasicInfoDesc: '칼로리 계산을 위한 정보를 입력해 주세요',
+    c1DataLoaded: '체형 분석 데이터에서 키/체중을 불러왔어요 (직접 수정 가능)',
+    genderLabel: '성별',
+    gender_male: '남성',
+    gender_female: '여성',
+    birthDateLabel: '생년월일',
+    heightLabel: '키 (cm)',
+    weightLabel: '체중 (kg)',
+    activityLevelLabel: '활동 수준',
+    activityLevelPlaceholder: '선택해 주세요',
+    summaryGoal: '목표:',
+  };
+  return {
+    useTranslations: () => (key: string) => messages[key] ?? key,
+  };
+});
+
 // Clerk mock
 vi.mock('@clerk/nextjs', () => ({
   useAuth: () => ({
@@ -33,11 +74,14 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
   }),
 }));
 
-// next/navigation mock
+// next/navigation mock (redirect 포함 — 전역 setup mock을 파일 로컬 mock이 대체하므로 보강)
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn(),
 }));
 
 describe('NutritionStep1Page', () => {

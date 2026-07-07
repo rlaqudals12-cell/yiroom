@@ -10,6 +10,32 @@ import type { SkinMetricId } from '@/types/skin-detailed';
 // Mock 설정
 // ============================================
 
+// next-intl 파일 로컬 mock — 글로벌 mock(키 그대로 반환)을 덮어써서
+// 실제 messages/ko.json의 skinAnalysisUI 네임스페이스 문구를 반환.
+// MetricDetailCard/ZoneDetailCard가 i18n으로 전환되어 한국어 문구 기준 검증을 유지하기 위함.
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    // messages/ko.json > skinAnalysisUI 와 동기화된 사전 (사용 키만 발췌)
+    const messages: Record<string, string> = {
+      metricDetailCard0: '닫기',
+      metricDetailCard1: '측정 기준',
+      metricDetailCard2: '정상 범위',
+      metricDetailCard3: '현재 상태',
+      metricDetailCard4: '가능한 원인',
+      metricDetailCard5: '추천 성분',
+      metricDetailCard6: '추천 제품',
+      metricDetailCard7: '라이프스타일 팁',
+      zoneDetailCard3: '닫기',
+      zoneDetailCard4: '이 부위의 특성',
+      zoneDetailCard5: '주요 문제점',
+      zoneDetailCard6: '측정 상세 정보',
+      zoneDetailCard7: '추천 관리법',
+      zoneDetailCard8: '주의할 점',
+    };
+    return messages[key] ?? key;
+  },
+}));
+
 // lucide-react 아이콘 mock
 vi.mock('lucide-react', () => ({
   ChevronRight: (props: Record<string, unknown>) => (

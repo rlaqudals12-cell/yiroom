@@ -41,7 +41,8 @@ describe('CorrelationChart', () => {
 
   it('displays title', () => {
     render(<CorrelationChart insights={mockInsights} />);
-    expect(screen.getByText('피부와 생활 요인 상관관계')).toBeInTheDocument();
+    // i18n 마이그레이션: 제목은 skinUI.correlationChart1 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('correlationChart1')).toBeInTheDocument();
   });
 
   it('displays all factor names', () => {
@@ -73,14 +74,16 @@ describe('CorrelationChart', () => {
 
   it('renders empty state when no insights', () => {
     render(<CorrelationChart insights={[]} />);
-    expect(screen.getByText('상관관계 데이터가 없어요')).toBeInTheDocument();
+    // i18n 마이그레이션: 빈 상태 첫 문장은 skinUI.correlationChart0 키로 렌더링 (둘째 문장은 하드코딩 유지)
+    expect(screen.getByText('correlationChart0')).toBeInTheDocument();
     expect(screen.getByText('7일 이상 기록하면 분석 결과를 확인할 수 있어요')).toBeInTheDocument();
   });
 
   it('renders legend', () => {
     render(<CorrelationChart insights={mockInsights} />);
-    expect(screen.getByText('긍정적 영향')).toBeInTheDocument();
-    expect(screen.getByText('부정적 영향')).toBeInTheDocument();
+    // i18n 마이그레이션: 범례는 skinUI.correlationChart2/3 키로 렌더링
+    expect(screen.getByText('correlationChart2')).toBeInTheDocument();
+    expect(screen.getByText('correlationChart3')).toBeInTheDocument();
   });
 
   it('renders correlation bars for each factor', () => {

@@ -85,9 +85,10 @@ describe('AgreementHistory', () => {
       expect(screen.getByTestId('agreement-history')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('약관 동의 내역')).toBeInTheDocument();
-    expect(screen.getByText('이용약관')).toBeInTheDocument();
-    expect(screen.getByText('개인정보처리방침')).toBeInTheDocument();
+    // i18n 마이그레이션: 제목/항목명은 settingsUI.agreementHistory2/4/5 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('agreementHistory2')).toBeInTheDocument();
+    expect(screen.getByText('agreementHistory4')).toBeInTheDocument();
+    expect(screen.getByText('agreementHistory5')).toBeInTheDocument();
   });
 
   it('displays agreement dates correctly', async () => {
@@ -168,7 +169,8 @@ describe('AgreementHistory', () => {
       expect(screen.getByTestId('agreement-history')).toBeInTheDocument();
     });
 
-    const helpLink = screen.getByRole('link', { name: /고객센터 문의하기/i });
+    // i18n 마이그레이션: 고객센터 버튼 라벨은 settingsUI.agreementHistory6 키로 렌더링
+    const helpLink = screen.getByRole('link', { name: /agreementHistory6/i });
     expect(helpLink).toHaveAttribute('href', '/help');
   });
 
@@ -184,8 +186,8 @@ describe('AgreementHistory', () => {
       expect(screen.getByTestId('agreement-history')).toBeInTheDocument();
     });
 
-    // 기본값으로 동의 상태 표시
-    expect(screen.getByText('이용약관')).toBeInTheDocument();
-    expect(screen.getByText('개인정보처리방침')).toBeInTheDocument();
+    // 기본값으로 동의 상태 표시 (i18n 마이그레이션: settingsUI.agreementHistory4/5 키로 렌더링)
+    expect(screen.getByText('agreementHistory4')).toBeInTheDocument();
+    expect(screen.getByText('agreementHistory5')).toBeInTheDocument();
   });
 });

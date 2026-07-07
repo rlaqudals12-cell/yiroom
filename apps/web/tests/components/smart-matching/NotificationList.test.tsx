@@ -55,10 +55,7 @@ describe('NotificationList', () => {
   it('모두 읽음 버튼을 클릭하면 콜백을 호출한다', () => {
     const onMarkAllAsRead = vi.fn();
     render(
-      <NotificationList
-        notifications={mockNotifications}
-        onMarkAllAsRead={onMarkAllAsRead}
-      />
+      <NotificationList notifications={mockNotifications} onMarkAllAsRead={onMarkAllAsRead} />
     );
 
     fireEvent.click(screen.getByText('모두 읽음'));
@@ -81,7 +78,8 @@ describe('NotificationList', () => {
   it('알림이 없으면 안내 메시지를 표시한다', () => {
     render(<NotificationList notifications={[]} />);
 
-    expect(screen.getByText('알림이 없어요')).toBeInTheDocument();
+    // i18n 마이그레이션: 빈 상태 메시지는 smartMatchingUI.notificationList7 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('notificationList7')).toBeInTheDocument();
   });
 
   it('필터링 결과가 없으면 해당 알림이 없다고 표시한다', () => {
@@ -90,13 +88,15 @@ describe('NotificationList', () => {
     // 유통기한 필터 클릭 (해당 알림 없음)
     fireEvent.click(screen.getByText('유통기한'));
 
-    expect(screen.getByText('해당 알림이 없어요')).toBeInTheDocument();
+    // i18n 마이그레이션: 필터 빈 상태 메시지는 smartMatchingUI.notificationList8 키로 렌더링
+    expect(screen.getByText('notificationList8')).toBeInTheDocument();
   });
 
   it('로딩 중일 때 로딩 메시지를 표시한다', () => {
     render(<NotificationList notifications={[]} loading />);
 
-    expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
+    // i18n 마이그레이션: 로딩 메시지는 smartMatchingUI.notificationList6 키로 렌더링
+    expect(screen.getByText('notificationList6')).toBeInTheDocument();
   });
 
   it('data-testid가 설정되어 있다', () => {
@@ -107,12 +107,7 @@ describe('NotificationList', () => {
 
   it('읽지 않은 알림이 없으면 모두 읽음 버튼을 숨긴다', () => {
     const allReadNotifications = mockNotifications.map((n) => ({ ...n, read: true }));
-    render(
-      <NotificationList
-        notifications={allReadNotifications}
-        onMarkAllAsRead={vi.fn()}
-      />
-    );
+    render(<NotificationList notifications={allReadNotifications} onMarkAllAsRead={vi.fn()} />);
 
     expect(screen.queryByText('모두 읽음')).not.toBeInTheDocument();
   });

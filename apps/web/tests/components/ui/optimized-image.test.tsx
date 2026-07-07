@@ -11,7 +11,7 @@ import OptimizedImage, {
 } from '@/components/ui/optimized-image';
 
 // next/image 모킹 (테스트용 - img 사용 필수)
- 
+
 vi.mock('next/image', () => ({
   default: vi.fn(({ src, alt, onLoad, onError, className, ...props }) => {
     return (
@@ -27,7 +27,6 @@ vi.mock('next/image', () => ({
     );
   }),
 }));
- 
 
 describe('OptimizedImage', () => {
   beforeEach(() => {
@@ -166,13 +165,7 @@ describe('ExerciseThumbnail', () => {
     });
 
     it('videoId가 있으면 YouTube 썸네일 URL 생성', () => {
-      render(
-        <ExerciseThumbnail
-          videoId="dQw4w9WgXcQ"
-          alt="운동 썸네일"
-          category="cardio"
-        />
-      );
+      render(<ExerciseThumbnail videoId="dQw4w9WgXcQ" alt="운동 썸네일" category="cardio" />);
 
       const img = screen.getByTestId('next-image');
       expect(img.getAttribute('src')).toContain('img.youtube.com/vi/dQw4w9WgXcQ');
@@ -192,33 +185,32 @@ describe('ExerciseThumbnail', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/custom.jpg');
     });
 
-    it('이미지 없으면 카테고리별 이모지 폴백 표시', async () => {
-      const { rerender } = render(
-        <ExerciseThumbnail alt="상체 운동" category="upper" />
-      );
+    // 변경: 카테고리별 이모지 폴백은 이모지 정리 정책으로 제거됨
+    // (CATEGORY_FALLBACK_EMOJI가 전부 빈 문자열 → 이모지 없는 폴백 컨테이너만 렌더링)
+    it('이미지 없으면 이모지 없는 폴백 컨테이너 표시', () => {
+      const { rerender } = render(<ExerciseThumbnail alt="상체 운동" category="upper" />);
 
-      // 상체 이모지
-      expect(screen.getByText('💪')).toBeInTheDocument();
+      // role="img" 폴백 컨테이너가 렌더링되고 이모지는 표시되지 않는다
+      expect(screen.getByRole('img', { name: '상체 운동' })).toHaveTextContent('');
+      expect(screen.queryByText('💪')).not.toBeInTheDocument();
 
       rerender(<ExerciseThumbnail alt="하체 운동" category="lower" />);
-      expect(screen.getByText('🦵')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: '하체 운동' })).toHaveTextContent('');
+      expect(screen.queryByText('🦵')).not.toBeInTheDocument();
 
       rerender(<ExerciseThumbnail alt="코어 운동" category="core" />);
-      expect(screen.getByText('🧘')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: '코어 운동' })).toHaveTextContent('');
+      expect(screen.queryByText('🧘')).not.toBeInTheDocument();
 
       rerender(<ExerciseThumbnail alt="유산소 운동" category="cardio" />);
-      expect(screen.getByText('🏃')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: '유산소 운동' })).toHaveTextContent('');
+      expect(screen.queryByText('🏃')).not.toBeInTheDocument();
     });
   });
 
   describe('크기 설정', () => {
     it('기본 크기는 320x180', () => {
-      render(
-        <ExerciseThumbnail
-          thumbnailUrl="https://example.com/thumb.jpg"
-          alt="운동 썸네일"
-        />
-      );
+      render(<ExerciseThumbnail thumbnailUrl="https://example.com/thumb.jpg" alt="운동 썸네일" />);
 
       const img = screen.getByTestId('next-image');
       expect(img).toHaveAttribute('width', '320');
@@ -249,7 +241,9 @@ describe('extractYouTubeVideoId', () => {
     });
 
     it('youtube.com/watch?v= URL에서 추출', () => {
-      expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
+      expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(
+        'dQw4w9WgXcQ'
+      );
     });
 
     it('youtu.be/ 단축 URL에서 추출', () => {
@@ -257,11 +251,15 @@ describe('extractYouTubeVideoId', () => {
     });
 
     it('youtube.com/embed/ URL에서 추출', () => {
-      expect(extractYouTubeVideoId('https://www.youtube.com/embed/dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
+      expect(extractYouTubeVideoId('https://www.youtube.com/embed/dQw4w9WgXcQ')).toBe(
+        'dQw4w9WgXcQ'
+      );
     });
 
     it('쿼리 파라미터가 있어도 추출', () => {
-      expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=30s')).toBe('dQw4w9WgXcQ');
+      expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=30s')).toBe(
+        'dQw4w9WgXcQ'
+      );
     });
   });
 
@@ -301,9 +299,7 @@ describe('getYouTubeThumbnail', () => {
     });
 
     it('쿼리 파라미터가 있어도 추출', () => {
-      const result = getYouTubeThumbnail(
-        'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=30s'
-      );
+      const result = getYouTubeThumbnail('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=30s');
       expect(result).toBe('https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
     });
   });

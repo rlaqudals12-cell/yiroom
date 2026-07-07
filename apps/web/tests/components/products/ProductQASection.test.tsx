@@ -3,6 +3,23 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProductQASection } from '@/components/products/ProductQASection';
 import type { CosmeticProduct } from '@/types/product';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 // RAG 모킹
 vi.mock('@/lib/rag/product-qa', () => ({
   askProductQuestion: vi.fn().mockResolvedValue({
@@ -16,16 +33,9 @@ vi.mock('@/lib/rag/product-qa', () => ({
       '다른 제품이랑 같이 써도 돼요?',
       '아침/저녁 언제 사용하면 좋아요?',
     ],
-    supplement: [
-      '하루에 몇 알 먹어야 해요?',
-      '다른 영양제랑 같이 먹어도 돼요?',
-    ],
-    workout_equipment: [
-      '초보자도 사용할 수 있나요?',
-    ],
-    health_food: [
-      '하루에 얼마나 먹으면 좋아요?',
-    ],
+    supplement: ['하루에 몇 알 먹어야 해요?', '다른 영양제랑 같이 먹어도 돼요?'],
+    workout_equipment: ['초보자도 사용할 수 있나요?'],
+    health_food: ['하루에 얼마나 먹으면 좋아요?'],
   },
 }));
 
@@ -122,7 +132,10 @@ describe('ProductQASection', () => {
 
     const link = screen.getByText('더 많은 질문하기');
     expect(link).toBeInTheDocument();
-    expect(link.closest('a')).toHaveAttribute('href', '/products/qa?productId=test-product-1&type=cosmetic');
+    expect(link.closest('a')).toHaveAttribute(
+      'href',
+      '/products/qa?productId=test-product-1&type=cosmetic'
+    );
   });
 
   it('직접 질문을 입력하고 전송할 수 있다', async () => {

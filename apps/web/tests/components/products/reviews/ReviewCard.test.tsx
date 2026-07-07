@@ -31,6 +31,13 @@ const mockReview: ProductReview = {
   isHelpfulByMe: false,
 };
 
+// i18n 전환: '도움됨' 라벨과 '더보기' sr-only 텍스트가 t('reviewCardN') 키로 변경됨.
+// 글로벌 setup의 next-intl mock이 번역 키를 그대로 반환하므로 키로 검증한다.
+const T = {
+  moreMenu: 'reviewCard0', // 더보기
+  helpful: 'reviewCard1', // 도움됨
+};
+
 describe('ReviewCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -101,7 +108,7 @@ describe('ReviewCard', () => {
     it('도움됨 버튼 표시', () => {
       render(<ReviewCard review={mockReview} />);
 
-      expect(screen.getByText('도움됨')).toBeInTheDocument();
+      expect(screen.getByText(T.helpful)).toBeInTheDocument();
     });
 
     it('도움됨 카운트 표시', () => {
@@ -120,48 +127,30 @@ describe('ReviewCard', () => {
     it('로그인하지 않으면 도움됨 버튼 비활성화', () => {
       render(<ReviewCard review={mockReview} />);
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
       expect(helpfulButton).toBeDisabled();
     });
 
     it('본인 리뷰에는 도움됨 버튼 비활성화', () => {
-      render(
-        <ReviewCard
-          review={mockReview}
-          currentUserId="user-123"
-          onHelpful={vi.fn()}
-        />
-      );
+      render(<ReviewCard review={mockReview} currentUserId="user-123" onHelpful={vi.fn()} />);
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
       expect(helpfulButton).toBeDisabled();
     });
 
     it('다른 사용자 리뷰에 도움됨 버튼 활성화', () => {
-      render(
-        <ReviewCard
-          review={mockReview}
-          currentUserId="other-user"
-          onHelpful={vi.fn()}
-        />
-      );
+      render(<ReviewCard review={mockReview} currentUserId="other-user" onHelpful={vi.fn()} />);
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
       expect(helpfulButton).not.toBeDisabled();
     });
 
     it('도움됨 버튼 클릭 시 낙관적 업데이트', async () => {
       const onHelpful = vi.fn().mockResolvedValue(undefined);
 
-      render(
-        <ReviewCard
-          review={mockReview}
-          currentUserId="other-user"
-          onHelpful={onHelpful}
-        />
-      );
+      render(<ReviewCard review={mockReview} currentUserId="other-user" onHelpful={onHelpful} />);
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
       fireEvent.click(helpfulButton);
 
       // 낙관적으로 카운트 증가
@@ -177,14 +166,10 @@ describe('ReviewCard', () => {
       const onHelpful = vi.fn().mockResolvedValue(undefined);
 
       render(
-        <ReviewCard
-          review={helpfulReview}
-          currentUserId="other-user"
-          onHelpful={onHelpful}
-        />
+        <ReviewCard review={helpfulReview} currentUserId="other-user" onHelpful={onHelpful} />
       );
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
       fireEvent.click(helpfulButton);
 
       await waitFor(() => {
@@ -197,15 +182,9 @@ describe('ReviewCard', () => {
     it('도움됨 API 실패 시 낙관적 업데이트 롤백', async () => {
       const onHelpful = vi.fn().mockRejectedValue(new Error('API Error'));
 
-      render(
-        <ReviewCard
-          review={mockReview}
-          currentUserId="other-user"
-          onHelpful={onHelpful}
-        />
-      );
+      render(<ReviewCard review={mockReview} currentUserId="other-user" onHelpful={onHelpful} />);
 
-      const helpfulButton = screen.getByRole('button', { name: /도움됨/ });
+      const helpfulButton = screen.getByRole('button', { name: new RegExp(T.helpful) });
 
       // 초기 카운트 확인
       expect(screen.getByText('(12)')).toBeInTheDocument();
@@ -236,7 +215,7 @@ describe('ReviewCard', () => {
       );
 
       // 버튼 이름에 아이콘 텍스트 포함
-      expect(screen.getByRole('button', { name: /더보기/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: new RegExp(T.moreMenu) })).toBeInTheDocument();
     });
 
     it('다른 사용자 리뷰에 더보기 메뉴 미표시', () => {
@@ -250,18 +229,17 @@ describe('ReviewCard', () => {
       );
 
       // aria-haspopup="menu" 버튼이 없어야 함
-      expect(screen.queryByRole('button', { name: /더보기/ })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: new RegExp(T.moreMenu) })
+      ).not.toBeInTheDocument();
     });
 
     it('핸들러 없으면 더보기 메뉴 미표시', () => {
-      render(
-        <ReviewCard
-          review={mockReview}
-          currentUserId="user-123"
-        />
-      );
+      render(<ReviewCard review={mockReview} currentUserId="user-123" />);
 
-      expect(screen.queryByRole('button', { name: /더보기/ })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: new RegExp(T.moreMenu) })
+      ).not.toBeInTheDocument();
     });
   });
 

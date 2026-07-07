@@ -87,7 +87,8 @@ describe('RecommendedExerciseList', () => {
       const exercises = [createMockExercise({ id: 'ex-1', category: 'lower' })];
       render(<RecommendedExerciseList exercises={exercises} />);
       fireEvent.click(screen.getByText(/상체/));
-      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
+      // i18n 마이그레이션: 빈 상태 메시지가 recommendedExerciseList0 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('recommendedExerciseList0')).toBeInTheDocument();
     });
   });
 
@@ -151,7 +152,7 @@ describe('RecommendedExerciseList', () => {
   describe('빈 상태', () => {
     it('운동이 없으면 빈 상태 메시지가 표시된다', () => {
       render(<RecommendedExerciseList exercises={[]} />);
-      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
+      expect(screen.getByText('recommendedExerciseList0')).toBeInTheDocument();
     });
   });
 });

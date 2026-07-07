@@ -43,12 +43,12 @@ describe('WeeklyCalendar', () => {
     it('범례가 표시된다', () => {
       render(<WeeklyCalendar weekDays={mockWeekDays} />);
 
-      // 범례는 라벨과 중복될 수 있으므로 getAllByText 사용
-      expect(screen.getAllByText('완료').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('휴식').length).toBeGreaterThan(0);
-      expect(screen.getByText('오늘')).toBeInTheDocument();
-      expect(screen.getByText('예정')).toBeInTheDocument();
-      expect(screen.getByText('미완료')).toBeInTheDocument();
+      // i18n 도입으로 범례는 번역 키로 렌더링됨 (테스트 목이 키 반환)
+      expect(screen.getByText('weeklyCalendar0')).toBeInTheDocument(); // ko: '완료'
+      expect(screen.getByText('weeklyCalendar1')).toBeInTheDocument(); // ko: '휴식'
+      expect(screen.getByText('weeklyCalendar2')).toBeInTheDocument(); // ko: '오늘'
+      expect(screen.getByText('weeklyCalendar3')).toBeInTheDocument(); // ko: '예정'
+      expect(screen.getByText('weeklyCalendar4')).toBeInTheDocument(); // ko: '미완료'
     });
   });
 

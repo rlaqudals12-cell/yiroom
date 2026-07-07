@@ -10,21 +10,24 @@ describe('PriceTrendBadge', () => {
   it('상승 트렌드를 표시한다', () => {
     render(<PriceTrendBadge trend="rising" />);
 
-    expect(screen.getByText('가격 상승')).toBeInTheDocument();
+    // i18n 마이그레이션: 라벨은 smartMatchingUI.priceTrendBadge0 키로 렌더링 (테스트 목은 키 반환)
+    expect(screen.getByText('priceTrendBadge0')).toBeInTheDocument();
     expect(screen.getByText('↑')).toBeInTheDocument();
   });
 
   it('하락 트렌드를 표시한다', () => {
     render(<PriceTrendBadge trend="falling" />);
 
-    expect(screen.getByText('가격 하락')).toBeInTheDocument();
+    // i18n 마이그레이션: 라벨은 smartMatchingUI.priceTrendBadge1 키로 렌더링
+    expect(screen.getByText('priceTrendBadge1')).toBeInTheDocument();
     expect(screen.getByText('↓')).toBeInTheDocument();
   });
 
   it('안정 트렌드를 표시한다', () => {
     render(<PriceTrendBadge trend="stable" />);
 
-    expect(screen.getByText('가격 안정')).toBeInTheDocument();
+    // i18n 마이그레이션: 라벨은 smartMatchingUI.priceTrendBadge2 키로 렌더링
+    expect(screen.getByText('priceTrendBadge2')).toBeInTheDocument();
     expect(screen.getByText('→')).toBeInTheDocument();
   });
 

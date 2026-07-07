@@ -44,6 +44,10 @@ vi.mock('@/lib/products/repositories/equipment', () => ({
 import { getRecommendedEquipment } from '@/lib/products/repositories/equipment';
 const mockedGetRecommendedEquipment = vi.mocked(getRecommendedEquipment);
 
+// i18n 전환: 헤더 제목이 t('recommendedEquipmentCard0')로 변경됨.
+// 글로벌 setup의 next-intl mock이 번역 키를 그대로 반환하므로 키로 검증한다.
+const TITLE_KEY = 'recommendedEquipmentCard0';
+
 describe('RecommendedEquipmentCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,7 +67,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
     });
 
@@ -89,7 +93,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       const expandButton = screen.getByRole('button', { name: /펼치기/i });
@@ -105,7 +109,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       // 펼치기
@@ -129,7 +133,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -144,7 +148,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -158,7 +162,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -172,7 +176,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -190,7 +194,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));
@@ -261,7 +265,7 @@ describe('RecommendedEquipmentCard', () => {
       render(<RecommendedEquipmentCard />);
 
       await waitFor(() => {
-        expect(screen.getByText('추천 운동 기구')).toBeInTheDocument();
+        expect(screen.getByText(TITLE_KEY)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /펼치기/i }));

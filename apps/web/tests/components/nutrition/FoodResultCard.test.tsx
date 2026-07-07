@@ -188,15 +188,16 @@ describe('FoodResultCard', () => {
     );
 
     // 기본적으로 펼쳐진 상태
-    expect(screen.getByText('탄수화물')).toBeInTheDocument();
-    expect(screen.getByText('단백질')).toBeInTheDocument();
-    expect(screen.getByText('지방')).toBeInTheDocument();
+    // i18n 전환: 영양소 라벨이 t('foodResultCard1~3')(ko: 탄수화물/단백질/지방) 키로 렌더된다 (테스트 목은 키 반환).
+    expect(screen.getByText('foodResultCard1')).toBeInTheDocument();
+    expect(screen.getByText('foodResultCard2')).toBeInTheDocument();
+    expect(screen.getByText('foodResultCard3')).toBeInTheDocument();
 
     // 접기 버튼 클릭
     fireEvent.click(screen.getByRole('button', { name: /접기/i }));
 
     // 상세 정보가 숨겨짐
-    expect(screen.queryByText('탄수화물')).not.toBeInTheDocument();
+    expect(screen.queryByText('foodResultCard1')).not.toBeInTheDocument();
   });
 
   it('showDetails=false일 때 상세 정보가 숨겨진다', () => {
@@ -210,8 +211,8 @@ describe('FoodResultCard', () => {
       />
     );
 
-    // 상세 정보가 숨겨진 상태
-    expect(screen.queryByText('탄수화물')).not.toBeInTheDocument();
+    // 상세 정보가 숨겨진 상태 (i18n 키 기준 — 테스트 목은 키 반환)
+    expect(screen.queryByText('foodResultCard1')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /상세 보기/i })).toBeInTheDocument();
   });
 

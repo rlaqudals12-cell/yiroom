@@ -7,6 +7,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MarketingConsentToggle } from '@/components/settings/MarketingConsentToggle';
 
+// i18n 전환(next-intl) 이후 컴포넌트가 settingsUI 네임스페이스 키를 사용하므로,
+// 전역 setup mock(키 그대로 반환) 대신 실제 ko.json 문구로 로컬 mock하여
+// 사용자 노출 문구(토스트/라벨/안내문) 기준의 검증을 유지한다.
+vi.mock('next-intl', () => {
+  const messages: Record<string, string> = {
+    marketingConsentToggle0: '마케팅 정보 수신에 동의했습니다',
+    marketingConsentToggle1: '마케팅 정보 수신 동의를 철회했습니다',
+    marketingConsentToggle2: '설정 변경에 실패했습니다. 다시 시도해주세요.',
+    marketingConsentToggle3: '동의일',
+    marketingConsentToggle4: '철회일',
+    marketingConsentToggle5: '프로모션, 이벤트, 맞춤 추천 알림을 받습니다',
+    marketingConsentToggle6: '마케팅 정보 수신',
+    marketingConsentToggle7: '마케팅 정보 수신 동의',
+    marketingConsentToggle8: '언제든 설정에서 수신 동의를 철회할 수 있습니다.',
+    marketingConsentToggle9: '마케팅 정보를 받지 않습니다.',
+  };
+  return {
+    useTranslations: () => (key: string) => messages[key] ?? key,
+  };
+});
+
 // lucide-react 아이콘 모킹
 vi.mock('lucide-react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('lucide-react')>();

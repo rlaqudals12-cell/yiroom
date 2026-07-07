@@ -4,6 +4,22 @@ import WorkoutStyleCard from '@/components/workout/result/WorkoutStyleCard';
 import type { PersonalColorSeason, BodyType } from '@/types/workout';
 import { PC_COLORS, PC_ACCESSORIES, BODY_TYPE_FITS } from '@/lib/workout/styleRecommendations';
 
+// 쇼핑 링크 클릭 시 trackShoppingClick이 호출되므로 네트워크 부수효과 차단용 모킹
+vi.mock('@/lib/analytics/tracker', () => ({
+  trackShoppingClick: vi.fn().mockResolvedValue(undefined),
+}));
+
+// i18n 전환: 섹션 제목들이 t('workoutStyleCardN') 키로 변경됨.
+// 글로벌 setup의 next-intl mock이 번역 키를 그대로 반환하므로 키로 검증한다.
+const T = {
+  title: 'workoutStyleCard0', // 운동복 스타일 가이드
+  recommendedColors: 'workoutStyleCard1', // 추천 색상
+  avoidColors: 'workoutStyleCard2', // 참고 색상
+  accessories: 'workoutStyleCard5', // 운동 소품 색상
+  ambient: 'workoutStyleCard6', // 어울리는 운동 분위기
+  shopping: 'workoutStyleCard7', // 쇼핑몰에서 찾아보기
+};
+
 describe('WorkoutStyleCard', () => {
   const personalColors: PersonalColorSeason[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
   const bodyTypes: BodyType[] = ['X', 'A', 'V', 'H', 'O', 'I', 'Y', '8'];
@@ -13,7 +29,7 @@ describe('WorkoutStyleCard', () => {
       render(<WorkoutStyleCard personalColor="Spring" bodyType={null} />);
 
       expect(screen.getByTestId('workout-style-card')).toBeInTheDocument();
-      expect(screen.getByText('운동복 스타일 가이드')).toBeInTheDocument();
+      expect(screen.getByText(T.title)).toBeInTheDocument();
     });
 
     it.each(personalColors)('PC 타입 %s에 맞는 라벨이 표시된다', (pc) => {
@@ -48,7 +64,7 @@ describe('WorkoutStyleCard', () => {
       render(<WorkoutStyleCard personalColor="Spring" bodyType={null} />);
 
       expect(screen.getByTestId('recommended-colors')).toBeInTheDocument();
-      expect(screen.getByText('추천 색상')).toBeInTheDocument();
+      expect(screen.getByText(T.recommendedColors)).toBeInTheDocument();
     });
 
     it.each(personalColors)('PC 타입 %s의 첫 번째 추천 색상이 표시된다', (pc) => {
@@ -77,7 +93,7 @@ describe('WorkoutStyleCard', () => {
 
       // 펼치면 참고 색상이 보임
       expect(screen.getByTestId('avoid-colors')).toBeInTheDocument();
-      expect(screen.getByText('참고 색상')).toBeInTheDocument();
+      expect(screen.getByText(T.avoidColors)).toBeInTheDocument();
     });
 
     it('펼치면 운동 소품이 표시된다', () => {
@@ -86,7 +102,7 @@ describe('WorkoutStyleCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('accessories')).toBeInTheDocument();
-      expect(screen.getByText('운동 소품 색상')).toBeInTheDocument();
+      expect(screen.getByText(T.accessories)).toBeInTheDocument();
 
       // 첫 번째 소품 확인
       const firstAccessory = PC_ACCESSORIES['Autumn'][0];
@@ -98,7 +114,7 @@ describe('WorkoutStyleCard', () => {
 
       fireEvent.click(screen.getByLabelText('펼치기'));
 
-      expect(screen.getByText('어울리는 운동 분위기')).toBeInTheDocument();
+      expect(screen.getByText(T.ambient)).toBeInTheDocument();
       expect(screen.getByText(/강렬하고 시크한/)).toBeInTheDocument();
     });
 
@@ -155,7 +171,7 @@ describe('WorkoutStyleCard', () => {
       fireEvent.click(screen.getByLabelText('펼치기'));
 
       expect(screen.getByTestId('shopping-section')).toBeInTheDocument();
-      expect(screen.getByText('쇼핑몰에서 찾아보기')).toBeInTheDocument();
+      expect(screen.getByText(T.shopping)).toBeInTheDocument();
     });
 
     it('카테고리 선택 버튼이 표시된다', () => {
@@ -254,7 +270,7 @@ describe('WorkoutStyleCard', () => {
       expect(screen.getByTestId('accessories')).toBeInTheDocument();
 
       // 분위기
-      expect(screen.getByText('어울리는 운동 분위기')).toBeInTheDocument();
+      expect(screen.getByText(T.ambient)).toBeInTheDocument();
     });
   });
 });

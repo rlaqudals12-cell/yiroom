@@ -54,7 +54,8 @@ describe('HistoryCompare', () => {
       const history = createMockHistory(3);
       render(<HistoryCompare history={history} />);
 
-      expect(screen.getByText('피부 변화 추이')).toBeInTheDocument();
+      // i18n 도입으로 테스트 목은 번역 키를 그대로 렌더 (ko: "피부 변화 추이")
+      expect(screen.getByText('historyCompare6')).toBeInTheDocument();
     });
 
     it('기간 차이가 표시되어야 함', () => {
@@ -74,14 +75,16 @@ describe('HistoryCompare', () => {
     it('히스토리가 없으면 안내 메시지를 표시해야 함', () => {
       render(<HistoryCompare history={[]} />);
 
-      expect(screen.getByText('분석 기록이 없어요.')).toBeInTheDocument();
+      // i18n 키 (ko: "분석 기록이 없어요.")
+      expect(screen.getByText('historyCompare7')).toBeInTheDocument();
     });
 
     it('히스토리가 1개면 비교 불가 메시지를 표시해야 함', () => {
       const history = createMockHistory(1);
       render(<HistoryCompare history={history} />);
 
-      expect(screen.getByText('2회 이상 분석하면 변화를 비교할 수 있어요.')).toBeInTheDocument();
+      // i18n 키 (ko: "2회 이상 분석하면 변화를 비교할 수 있어요.")
+      expect(screen.getByText('historyCompare8')).toBeInTheDocument();
     });
   });
 
@@ -94,8 +97,9 @@ describe('HistoryCompare', () => {
       const history = createMockHistory(3);
       render(<HistoryCompare history={history} />);
 
-      expect(screen.getByText('이전')).toBeInTheDocument();
-      expect(screen.getByText('이후')).toBeInTheDocument();
+      // i18n 키 (ko: "이전"/"이후")
+      expect(screen.getByText('historyCompare9')).toBeInTheDocument();
+      expect(screen.getByText('historyCompare10')).toBeInTheDocument();
     });
 
     it('기본적으로 가장 오래된 날짜와 최신 날짜가 선택되어야 함', () => {
@@ -117,7 +121,8 @@ describe('HistoryCompare', () => {
       const history = createMockHistory(3);
       render(<HistoryCompare history={history} />);
 
-      expect(screen.getByText('지표별 변화')).toBeInTheDocument();
+      // i18n 키 (ko: "지표별 변화")
+      expect(screen.getByText('historyCompare11')).toBeInTheDocument();
     });
 
     it('모든 점수 지표가 표시되어야 함', () => {

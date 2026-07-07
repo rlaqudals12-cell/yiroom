@@ -84,9 +84,10 @@ describe('BeautyNutritionCard', () => {
   it('헤어 건강 섹션을 표시한다', () => {
     render(<BeautyNutritionCard correlation={fullCorrelation} />);
 
-    expect(screen.getByText('헤어 건강')).toBeInTheDocument();
-    expect(screen.getByText('두피')).toBeInTheDocument();
-    expect(screen.getByText('밀도')).toBeInTheDocument();
+    // i18n 도입으로 테스트 목은 번역 키를 그대로 렌더 (ko: "헤어 건강"/"두피"/"밀도")
+    expect(screen.getByText('beautyNutritionCard1')).toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard2')).toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard3')).toBeInTheDocument();
     expect(screen.getByText('75점')).toBeInTheDocument(); // scalpScore
     expect(screen.getByText('80점')).toBeInTheDocument(); // densityScore
   });
@@ -94,9 +95,10 @@ describe('BeautyNutritionCard', () => {
   it('피부 건강 섹션을 표시한다', () => {
     render(<BeautyNutritionCard correlation={fullCorrelation} />);
 
-    expect(screen.getByText('피부 건강')).toBeInTheDocument();
-    expect(screen.getByText('수분')).toBeInTheDocument();
-    expect(screen.getByText('텍스처')).toBeInTheDocument();
+    // i18n 키 (ko: "피부 건강"/"수분"/"텍스처")
+    expect(screen.getByText('beautyNutritionCard5')).toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard6')).toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard7')).toBeInTheDocument();
     expect(screen.getByText('65점')).toBeInTheDocument(); // hydration
     expect(screen.getByText('70점')).toBeInTheDocument(); // texture
   });
@@ -113,7 +115,8 @@ describe('BeautyNutritionCard', () => {
   it('추천사항을 표시한다', () => {
     render(<BeautyNutritionCard correlation={fullCorrelation} />);
 
-    expect(screen.getByText('영양 추천')).toBeInTheDocument();
+    // i18n 키 (ko: "영양 추천")
+    expect(screen.getByText('beautyNutritionCard8')).toBeInTheDocument();
     expect(screen.getByText('비타민 C 섭취를 늘려보세요.')).toBeInTheDocument();
     expect(screen.getByText('콜라겐 음식을 더 챙겨 드세요.')).toBeInTheDocument();
   });
@@ -127,8 +130,8 @@ describe('BeautyNutritionCard', () => {
 
     render(<BeautyNutritionCard correlation={hairOnlyCorrelation} />);
 
-    expect(screen.getByText('헤어 건강')).toBeInTheDocument();
-    expect(screen.queryByText('피부 건강')).not.toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard1')).toBeInTheDocument();
+    expect(screen.queryByText('beautyNutritionCard5')).not.toBeInTheDocument();
   });
 
   it('피부 데이터만 있을 때 피부 섹션만 표시한다', () => {
@@ -140,8 +143,8 @@ describe('BeautyNutritionCard', () => {
 
     render(<BeautyNutritionCard correlation={skinOnlyCorrelation} />);
 
-    expect(screen.queryByText('헤어 건강')).not.toBeInTheDocument();
-    expect(screen.getByText('피부 건강')).toBeInTheDocument();
+    expect(screen.queryByText('beautyNutritionCard1')).not.toBeInTheDocument();
+    expect(screen.getByText('beautyNutritionCard5')).toBeInTheDocument();
   });
 
   it('영양소 임팩트가 없으면 해당 섹션을 숨긴다', () => {
@@ -163,7 +166,7 @@ describe('BeautyNutritionCard', () => {
 
     render(<BeautyNutritionCard correlation={noRecsCorrelation} />);
 
-    expect(screen.queryByText('영양 추천')).not.toBeInTheDocument();
+    expect(screen.queryByText('beautyNutritionCard8')).not.toBeInTheDocument();
   });
 
   it('최대 4개의 영양소 임팩트만 표시한다', () => {

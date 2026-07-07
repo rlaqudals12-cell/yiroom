@@ -3,6 +3,23 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 import { ProductFilters, type ProductFilterState } from '@/components/products/ProductFilters';
 
+// i18n 도입(next-intl)으로 컴포넌트가 번역 키를 사용 —
+// tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
+// 한국어 문구 검증을 유지한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 // next/navigation 모킹
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -21,23 +38,13 @@ describe('ProductFilters', () => {
 
   describe('기본 렌더링', () => {
     it('필터 버튼 표시', () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       expect(screen.getByRole('button', { name: /필터/i })).toBeInTheDocument();
     });
 
     it('활성화된 필터가 없으면 배지 미표시', () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // 필터 버튼에 배지 숫자가 없어야 함 (아이콘 텍스트 제외)
       const button = screen.getByRole('button', { name: /필터/i });
@@ -51,12 +58,7 @@ describe('ProductFilters', () => {
         skinTypes: ['dry'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       // 3개의 필터가 활성화됨 (budget, mid, dry)
       expect(screen.getByText('3')).toBeInTheDocument();
@@ -69,12 +71,7 @@ describe('ProductFilters', () => {
         priceRange: ['budget'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       expect(screen.getByText('~2만원')).toBeInTheDocument();
     });
@@ -84,12 +81,7 @@ describe('ProductFilters', () => {
         skinTypes: ['dry'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       expect(screen.getByText('건성')).toBeInTheDocument();
     });
@@ -99,12 +91,7 @@ describe('ProductFilters', () => {
         skinConcerns: ['hydration'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       expect(screen.getByText('수분')).toBeInTheDocument();
     });
@@ -114,12 +101,7 @@ describe('ProductFilters', () => {
         personalColorSeasons: ['Summer'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       expect(screen.getByText('여름 쿨톤')).toBeInTheDocument();
     });
@@ -131,12 +113,7 @@ describe('ProductFilters', () => {
         priceRange: ['budget', 'mid'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       // ~2만원 배지를 찾고 그 안의 버튼 클릭 (Badge 컴포넌트가 직접 텍스트를 포함)
       const budgetBadge = screen.getByText('~2만원');
@@ -159,12 +136,7 @@ describe('ProductFilters', () => {
         skinTypes: ['dry'],
       };
 
-      render(
-        <ProductFilters
-          filters={filters}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
 
       // 건성 배지를 찾고 그 안의 버튼 클릭
       const dryBadge = screen.getByText('건성');
@@ -184,12 +156,7 @@ describe('ProductFilters', () => {
 
   describe('Sheet 열기/닫기', () => {
     it('필터 버튼 클릭 시 Sheet 열림', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       const filterButton = screen.getByRole('button', { name: /필터/i });
       fireEvent.click(filterButton);
@@ -226,12 +193,7 @@ describe('ProductFilters', () => {
     });
 
     it('userAnalysis가 없으면 버튼 미표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -246,12 +208,7 @@ describe('ProductFilters', () => {
 
   describe('필터 옵션', () => {
     it('가격대 옵션 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -264,12 +221,7 @@ describe('ProductFilters', () => {
     });
 
     it('피부 타입 옵션 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -284,12 +236,7 @@ describe('ProductFilters', () => {
     });
 
     it('피부 고민 옵션 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -305,12 +252,7 @@ describe('ProductFilters', () => {
     });
 
     it('퍼스널 컬러 옵션 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -326,12 +268,7 @@ describe('ProductFilters', () => {
 
   describe('초기화 버튼', () => {
     it('초기화 버튼 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });
@@ -343,12 +280,7 @@ describe('ProductFilters', () => {
 
   describe('적용하기 버튼', () => {
     it('적용하기 버튼 표시', async () => {
-      render(
-        <ProductFilters
-          filters={{}}
-          onFiltersChange={mockOnFiltersChange}
-        />
-      );
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 
       // Sheet 열기
       const filterButton = screen.getByRole('button', { name: /필터/i });

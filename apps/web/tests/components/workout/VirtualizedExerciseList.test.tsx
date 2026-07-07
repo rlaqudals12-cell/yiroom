@@ -140,7 +140,8 @@ describe('VirtualizedExerciseList', () => {
     it('운동이 없으면 빈 메시지 표시', () => {
       render(<VirtualizedExerciseList exercises={[]} />);
 
-      expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
+      // i18n 마이그레이션: 빈 상태 메시지가 virtualizedExerciseList0 키로 이동 (테스트 목은 키를 그대로 반환)
+      expect(screen.getByText('virtualizedExerciseList0')).toBeInTheDocument();
     });
 
     it('필터링 후 결과 없으면 빈 메시지 표시', async () => {
@@ -154,7 +155,7 @@ describe('VirtualizedExerciseList', () => {
       fireEvent.click(screen.getByTestId('filter-lower'));
 
       await waitFor(() => {
-        expect(screen.getByText('해당 카테고리의 운동이 없어요.')).toBeInTheDocument();
+        expect(screen.getByText('virtualizedExerciseList0')).toBeInTheDocument();
       });
     });
   });
