@@ -298,7 +298,8 @@ function convertGeminiToSkinV2Result(geminiResponse: GeminiSkinV2Response): Skin
  * @returns 피부 분석 결과
  */
 export async function analyzeSkinV2WithGemini(
-  imageBase64: string
+  imageBase64: string,
+  priorHint?: string | null
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -317,7 +318,16 @@ export async function analyzeSkinV2WithGemini(
         withTimeout(
           generateContent({
             model: FAST_MODEL, // 피부 7존 = 구조화 추출 — lite 스키마 완전 준수·3~7초 (2026-07-07 A/B)
-            contents: [{ text: SKIN_V2_PROMPT }, imagePart],
+            contents: [
+              {
+                text: priorHint
+                  ? `${SKIN_V2_PROMPT}
+
+${priorHint}`
+                  : SKIN_V2_PROMPT,
+              },
+              imagePart,
+            ],
             config: geminiV2Config,
           }),
           30000,
@@ -597,7 +607,8 @@ export type GeminiBodyV2Response = z.infer<typeof GeminiBodyV2ResponseSchema>;
  * @returns 체형 분석 결과 또는 null (실패 시)
  */
 export async function analyzeBodyWithGemini(
-  imageBase64: string
+  imageBase64: string,
+  priorHint?: string | null
 ): Promise<{ data: GeminiBodyV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -612,7 +623,16 @@ export async function analyzeBodyWithGemini(
       () =>
         withTimeout(
           generateContent({
-            contents: [{ text: BODY_V2_PROMPT }, imagePart],
+            contents: [
+              {
+                text: priorHint
+                  ? `${BODY_V2_PROMPT}
+
+${priorHint}`
+                  : BODY_V2_PROMPT,
+              },
+              imagePart,
+            ],
             config: geminiV2Config,
           }),
           30000,
@@ -794,7 +814,8 @@ export type GeminiHairV2Response = z.infer<typeof GeminiHairV2ResponseSchema>;
  * @returns 얼굴형/헤어 분석 결과 또는 null (실패 시)
  */
 export async function analyzeHairWithGemini(
-  imageBase64: string
+  imageBase64: string,
+  priorHint?: string | null
 ): Promise<{ data: GeminiHairV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -809,7 +830,16 @@ export async function analyzeHairWithGemini(
       () =>
         withTimeout(
           generateContent({
-            contents: [{ text: HAIR_V2_PROMPT }, imagePart],
+            contents: [
+              {
+                text: priorHint
+                  ? `${HAIR_V2_PROMPT}
+
+${priorHint}`
+                  : HAIR_V2_PROMPT,
+              },
+              imagePart,
+            ],
             config: geminiV2Config,
           }),
           30000,

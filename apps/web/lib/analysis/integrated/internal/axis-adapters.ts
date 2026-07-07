@@ -34,6 +34,7 @@ import {
   analyzeBodyWithGemini,
   analyzeHairWithGemini,
 } from '@/lib/gemini/v2-analysis';
+import { getSkinPriorHint, getBodyPriorHint, getHairPriorHint } from '@/lib/analysis/prior-context';
 import type {
   AxisResult,
   AxisError,
@@ -209,7 +210,9 @@ export async function runSkinAxis(
       result = generateMockSkinAnalysisV2Result();
       usedFallback = true;
     } else {
-      const gemini = await analyzeSkinV2WithGemini(input.faceImageBase64);
+      // Level 3: 직전 분석 앵커 주입 (없으면 null → Level 2와 동일)
+      const skinPrior = await getSkinPriorHint(clerkUserId);
+      const gemini = await analyzeSkinV2WithGemini(input.faceImageBase64, skinPrior);
       result = gemini.result;
       usedFallback = gemini.usedFallback;
     }
@@ -353,7 +356,8 @@ export async function runBodyAxis(
       usedFallback = false;
       measurementSource = 'measured';
     } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
-      const gemini = await analyzeBodyWithGemini(input.bodyImageBase64);
+      const bodyPrior = await getBodyPriorHint(clerkUserId);
+      const gemini = await analyzeBodyWithGemini(input.bodyImageBase64, bodyPrior);
       if (gemini.data && !gemini.usedFallback) {
         bodyShape = gemini.data.bodyShape;
         shoulderToWaistRatio = gemini.data.estimatedRatios.shoulderToWaistRatio;
@@ -445,7 +449,8 @@ export async function runHairAxis(
     let usedFallback = isMockMode();
 
     if (!isMockMode()) {
-      const gemini = await analyzeHairWithGemini(input.faceImageBase64);
+      const hairPrior = await getHairPriorHint(clerkUserId);
+      const gemini = await analyzeHairWithGemini(input.faceImageBase64, hairPrior);
       if (gemini.data && !gemini.usedFallback) {
         faceShape = gemini.data.faceShape;
         // Gemini 응답의 hairAnalysis.stylingTips 있으면 사용 (schema에 따라)
