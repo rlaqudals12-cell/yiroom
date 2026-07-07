@@ -44,7 +44,7 @@
 
 - [x] **AI 컨설턴트 채팅** ✅(bb6be354): /coach — 5축 프로필 주입은 기설비(getUserContext 15테이블) 확인, 신규 = "이 옷 어울려?" 사진 판정(멀티모달 스트림, 실키 검증: 코랄→여름쿨톤 보완법) + ConsultantCTA ?q/?category 미배선 결함 수정. 대화 저장·이어보기 배선 완료 ✅(b40f94cb — 세션 자동생성+메시지 저장+히스토리 패널 마운트+baseline 테스트 5건 수정). 잔여 후보: /chat 레거시 정리, 코치 네비 노출
 - [x] **스타일 리포트** ✅(53666b50): /share/report/[token] — 비로그인 공개 문서(시즌 히어로+팔레트+시즌 립+피부/체형/헤어/메이크업+무료 CTA). report_shares 토큰(소유권 검증·재사용·화이트리스트 추출 — 사진/식별자 타입에 없음). 통합 결과에 공유 버튼. **부수 수리(12번째): /api/og가 proxy 미공개라 모든 OG가 크롤러에 404이던 것** → 공개 등록. 라이브 검증: 리포트 200·OG 200·무효토큰 404
-- [ ] 변화 추적: skinTrend 전 축 확장 + **3D 아바타** (SMPL — `docs/research/claude-ai-research/2026-07-06-3d-body-avatar-roadmap.md`)
+- [~] 변화 추적: skinTrend 전 축 확장 ✅(f79b26a8 — 헤어·메이크업 결과에 "직전 대비" 칩, 피부는 기존재. 홈 뱃지 정리 결정과 충돌 없게 결과 페이지 표면). **3D 아바타**(SMPL — `docs/research/claude-ai-research/2026-07-06-3d-body-avatar-roadmap.md`)만 잔여 — 유일한 Phase 4 대형, 새 세션 권장
 - [x] Level 3 프롬프트 ✅(9ea7c53c): skin/body/hair 3축에 직전 분석 tie-break 주입. 실측 기반 설계 — 상시 앵커는 재현성 하락(3/3→2/3), tie-break 한정으로 5/5 회복. PC는 Lab 결정론이라 미주입(판정 독립성)
 
 ## Phase 5 — 세상과 연결 (지속)
