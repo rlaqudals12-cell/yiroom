@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { getUserContext, generateCoachResponseStream, type CoachMessage } from '@/lib/coach';
+import { createCoachSession, saveCoachMessage } from '@/lib/coach/history';
 import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
 import {
   filterCoachResponse,
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { message, chatHistory, imageBase64 } = body;
+    const { message, chatHistory, imageBase64, sessionId: clientSessionId } = body;
 
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'Message is required' }), {
@@ -88,6 +89,23 @@ export async function POST(req: Request) {
     // 사용자 컨텍스트 조회
     const userContext = await getUserContext(userId);
 
+    // 대화 저장 — 세션 확보 + 사용자 메시지 기록 (2026-07-08 배선:
+    // 테이블·리포지토리·패널 전부 있었지만 라이브 채팅이 호출하지 않던 유령 기능)
+    // 저장 실패가 채팅을 깨면 안 되므로 전 과정 방어적.
+    let sessionId: string | null = typeof clientSessionId === 'string' ? clientSessionId : null;
+    try {
+      if (!sessionId) {
+        const session = await createCoachSession(userId, message);
+        sessionId = session?.id ?? null;
+      }
+      if (sessionId) {
+        await saveCoachMessage(sessionId, 'user', imageBase64 ? `[사진 첨부] ${message}` : message);
+      }
+    } catch (e) {
+      console.error('[Coach Stream] 세션/메시지 저장 실패 (채팅은 계속):', e);
+      sessionId = null;
+    }
+
     // SSE 스트림 생성
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -132,10 +150,19 @@ export async function POST(req: Request) {
           // 추천 질문 생성 (전체 응답 기반)
           const suggestedQuestions = generateSuggestedQuestions(message);
 
-          // 완료 이벤트 전송
+          // assistant 메시지 저장 (필터 반영된 최종 텍스트)
+          if (sessionId) {
+            const finalText = filterResult.isClean ? fullText : filterResult.sanitizedText;
+            saveCoachMessage(sessionId, 'assistant', finalText, suggestedQuestions).catch((e) =>
+              console.error('[Coach Stream] assistant 저장 실패:', e)
+            );
+          }
+
+          // 완료 이벤트 전송 — sessionId를 클라에 돌려줘 후속 메시지가 같은 세션에 쌓이게
           const doneData = JSON.stringify({
             type: 'done',
             suggestedQuestions,
+            ...(sessionId ? { sessionId } : {}),
           });
           controller.enqueue(encoder.encode(`data: ${doneData}\n\n`));
 

@@ -6,14 +6,17 @@ import { Badge } from '@/components/ui/badge';
 
 interface CoachHeaderProps {
   contextSummary?: string;
+  /** 좌측 액션 슬롯 (대화 히스토리 패널 트리거 등) */
+  leftAction?: React.ReactNode;
 }
 
-export function CoachHeader({ contextSummary }: CoachHeaderProps) {
+export function CoachHeader({ contextSummary, leftAction }: CoachHeaderProps) {
   const [showInfo, setShowInfo] = useState(false);
 
   return (
     <div className="relative">
       <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-pink-50 to-purple-50">
+        {leftAction}
         {/* 코치 아바타 */}
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center shadow-lg">
           <Sparkles className="w-6 h-6 text-white" />

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { MessageBubble } from './MessageBubble';
 import { QuickQuestions } from './QuickQuestions';
 import { CoachHeader } from './CoachHeader';
+import { ChatHistoryPanel } from './ChatHistoryPanel';
 import type { CoachMessage, UserContext } from '@/lib/coach/client';
 import { QUICK_QUESTIONS_BY_CATEGORY, summarizeContext } from '@/lib/coach/client';
 import { FEATURE_FLAGS } from '@yiroom/shared';
@@ -64,6 +65,9 @@ export function ChatInterface({
   const abortControllerRef = useRef<AbortController | null>(null);
   // 초기 질문 자동 전송 1회 가드
   const initialSentRef = useRef(false);
+  // 대화 세션 ID — 서버가 done 이벤트로 돌려줌, 후속 메시지가 같은 세션에 쌓임
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
 
   // 메시지 영역 스크롤
   const scrollToBottom = useCallback(() => {
@@ -93,6 +97,7 @@ export function ChatInterface({
             // 히스토리에서 이미지 dataURL은 제외 (본문 크기 폭증 방지 — 텍스트 맥락만)
             chatHistory: currentMessages.map(({ imageUrl: _omit, ...rest }) => rest),
             ...(imageBase64 ? { imageBase64 } : {}),
+            ...(sessionIdRef.current ? { sessionId: sessionIdRef.current } : {}),
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -138,6 +143,10 @@ export function ChatInterface({
 
                   if (data.suggestedQuestions) {
                     setSuggestedQuestions(data.suggestedQuestions);
+                  }
+                  if (data.sessionId) {
+                    setSessionId(data.sessionId);
+                    sessionIdRef.current = data.sessionId;
                   }
                 } else if (data.type === 'error') {
                   throw new Error(data.message);
@@ -229,6 +238,46 @@ export function ChatInterface({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 직후 1회만
   }, [initialQuestion]);
 
+  // 이전 대화 이어보기 — 저장된 세션 메시지 로드
+  const handleSelectSession = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/coach/sessions/${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const loaded: CoachMessage[] = (data.session?.messages ?? data.messages ?? []).map(
+        (m: { id: string; role: 'user' | 'assistant'; content: string; timestamp?: string }) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp ?? Date.now()),
+        })
+      );
+      setMessages(loaded);
+      setSessionId(id);
+      sessionIdRef.current = id;
+      setSuggestedQuestions([]);
+      setShowQuickQuestions(false);
+    } catch (e) {
+      console.error('[Coach] 세션 로드 실패:', e);
+    }
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
+    setSessionId(null);
+    sessionIdRef.current = null;
+    setSuggestedQuestions([]);
+    setShowQuickQuestions(true);
+  }, []);
+
+  const handleDeleteSession = useCallback(
+    async (id: string) => {
+      await fetch(`/api/coach/sessions/${id}`, { method: 'DELETE' });
+      if (sessionIdRef.current === id) handleNewChat();
+    },
+    [handleNewChat]
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSend(input);
@@ -257,7 +306,17 @@ export function ChatInterface({
   return (
     <div data-testid="coach-chat-interface" className="flex flex-col h-full bg-background">
       {/* 헤더 */}
-      <CoachHeader contextSummary={contextSummary} />
+      <CoachHeader
+        contextSummary={contextSummary}
+        leftAction={
+          <ChatHistoryPanel
+            activeSessionId={sessionId ?? undefined}
+            onSelectSession={handleSelectSession}
+            onNewChat={handleNewChat}
+            onDeleteSession={handleDeleteSession}
+          />
+        }
+      />
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

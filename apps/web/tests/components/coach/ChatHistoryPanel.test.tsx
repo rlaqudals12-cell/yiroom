@@ -91,7 +91,8 @@ describe('ChatHistoryPanel', () => {
     await user.click(screen.getByTestId('chat-history-trigger'));
 
     await waitFor(() => {
-      expect(screen.getByText('새 대화')).toBeInTheDocument();
+      // 전역 i18n mock이 키를 반환 — 번역 키 노출로 검증
+      expect(screen.getByText('history.newChatTitle')).toBeInTheDocument();
     });
   });
 
@@ -102,8 +103,8 @@ describe('ChatHistoryPanel', () => {
     await user.click(screen.getByTestId('chat-history-trigger'));
 
     await waitFor(() => {
-      expect(screen.getByText(/5개 메시지/)).toBeInTheDocument();
-      expect(screen.getByText(/3개 메시지/)).toBeInTheDocument();
+      // i18n mock은 값 보간 없이 키만 반환 — 세션 3건 모두 개수 라벨이 렌더되는지 확인
+      expect(screen.getAllByText(/history.messageCount/)).toHaveLength(3);
     });
   });
 
@@ -156,7 +157,7 @@ describe('ChatHistoryPanel', () => {
     });
 
     // 삭제 버튼 찾기 (첫 번째 세션의 삭제 버튼)
-    const deleteButtons = screen.getAllByLabelText('대화 삭제');
+    const deleteButtons = screen.getAllByLabelText('history.deleteAria');
     await user.click(deleteButtons[0]);
 
     expect(mockOnDeleteSession).toHaveBeenCalledWith('session-1');
@@ -199,7 +200,7 @@ describe('ChatHistoryPanel', () => {
     await user.click(screen.getByTestId('chat-history-trigger'));
 
     await waitFor(() => {
-      expect(screen.getByText('아직 대화 기록이 없어요')).toBeInTheDocument();
+      expect(screen.getByText('history.empty')).toBeInTheDocument();
     });
   });
 
@@ -246,7 +247,7 @@ describe('ChatHistoryPanel', () => {
     await user.click(screen.getByTestId('chat-history-trigger'));
 
     await waitFor(() => {
-      expect(screen.getByText('아직 대화 기록이 없어요')).toBeInTheDocument();
+      expect(screen.getByText('history.empty')).toBeInTheDocument();
     });
   });
 });
