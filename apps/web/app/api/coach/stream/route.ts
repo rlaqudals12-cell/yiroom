@@ -33,13 +33,27 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { message, chatHistory } = body;
+    const { message, chatHistory, imageBase64 } = body;
 
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'Message is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // 이미지 검증 — dataURL 형식 + 크기 제한 (base64 ~6MB ≈ 원본 4.5MB)
+    if (imageBase64 !== undefined) {
+      if (
+        typeof imageBase64 !== 'string' ||
+        !imageBase64.startsWith('data:image/') ||
+        imageBase64.length > 6_000_000
+      ) {
+        return new Response(
+          JSON.stringify({ error: '이미지 형식이 올바르지 않거나 너무 큽니다' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // 메시지 길이 제한
@@ -84,6 +98,7 @@ export async function POST(req: Request) {
             message,
             userContext,
             chatHistory: chatHistory as CoachMessage[] | undefined,
+            imageBase64,
           });
 
           // 청크별 전송 + 전체 텍스트 축적 (환각 필터용)

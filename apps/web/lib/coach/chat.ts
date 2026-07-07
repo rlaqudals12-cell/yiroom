@@ -3,7 +3,12 @@
  * @description Gemini 기반 맞춤 웰니스 조언 채팅 + RAG 연동
  */
 
-import { generateContent, generateContentStream, isGeminiAvailable } from '@/lib/gemini/client';
+import {
+  generateContent,
+  generateContentStream,
+  isGeminiAvailable,
+  formatImageForGemini,
+} from '@/lib/gemini/client';
 import { coachLogger } from '@/lib/utils/logger';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
@@ -34,6 +39,8 @@ export interface CoachChatRequest {
   message: string;
   userContext: UserContext | null;
   chatHistory?: CoachMessage[];
+  /** 첨부 이미지 (dataURL/base64) — 있으면 멀티모달 판정 모드 */
+  imageBase64?: string;
 }
 
 /**
@@ -759,7 +766,7 @@ function generateSuggestedQuestions(
 export async function* generateCoachResponseStream(
   request: CoachChatRequest
 ): AsyncGenerator<string, void, unknown> {
-  const { message, userContext, chatHistory } = request;
+  const { message, userContext, chatHistory, imageBase64 } = request;
 
   // 위기 상황 감지 — 즉시 전문 상담 안내
   if (detectCrisis(message)) {
@@ -789,7 +796,26 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}## 사용자 질문
 
 위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
 
-    for await (const text of generateContentStream({ contents: fullPrompt })) {
+    // 이미지 첨부 시 멀티모달 판정 모드 — 프로필(시스템 프롬프트에 이미 포함된
+    // 퍼스널컬러/체형) 기준으로 사진 속 아이템의 어울림을 판정한다.
+    const contents = imageBase64
+      ? [
+          {
+            text: `${fullPrompt}
+
+## 이미지 판정 지침 (사진 첨부됨)
+사용자가 사진을 첨부했어요. 사진 속 아이템(옷/색상/제품)을 파악하고,
+위 사용자 프로필(퍼스널컬러 시즌·체형)에 어울리는지 판정해주세요:
+1. 무엇인지 한 줄 (색상 포함)
+2. 어울림 판정 + 근거 (시즌 톤/체형 실루엣 기준)
+3. 아쉬우면 보완법 1가지 (스타일링 or 대체 색)
+사진이 흐리거나 판단이 어려우면 솔직히 말하고 추측하지 마세요.`,
+          },
+          formatImageForGemini(imageBase64),
+        ]
+      : fullPrompt;
+
+    for await (const text of generateContentStream({ contents })) {
       if (text) {
         yield text;
       }

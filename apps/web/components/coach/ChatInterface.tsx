@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, ChevronDown } from 'lucide-react';
+import { Send, Loader2, ChevronDown, ImagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -21,12 +21,29 @@ interface ChatInterfaceProps {
   ) => Promise<{ message: string; suggestedQuestions?: string[] }>;
   /** 스트리밍 응답 사용 여부 (기본: false) */
   useStreaming?: boolean;
+  /** 진입 시 자동 전송할 질문 (분석 결과 CTA의 ?q= 배선) */
+  initialQuestion?: string;
+  /** 진입 시 선택할 카테고리 (?category= 배선) */
+  initialCategory?: keyof typeof QUICK_QUESTIONS_BY_CATEGORY;
+}
+
+// 이미지 전송 전 클라이언트 리사이즈 (긴 변 1024px, JPEG 80%)
+async function fileToResizedDataUrl(file: File): Promise<string> {
+  const img = await createImageBitmap(file);
+  const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.8);
 }
 
 export function ChatInterface({
   userContext,
   onSendMessage,
   useStreaming = false,
+  initialQuestion,
+  initialCategory,
 }: ChatInterfaceProps) {
   const t = useTranslations('coach');
   const [messages, setMessages] = useState<CoachMessage[]>([]);
@@ -35,12 +52,18 @@ export function ChatInterface({
   // 스트리밍 중인 메시지 내용
   const [streamingContent, setStreamingContent] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] =
-    useState<keyof typeof QUICK_QUESTIONS_BY_CATEGORY>('general');
+  const [activeCategory, setActiveCategory] = useState<keyof typeof QUICK_QUESTIONS_BY_CATEGORY>(
+    initialCategory ?? 'general'
+  );
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
+  // 첨부 대기 이미지 (dataURL) — "이 옷 어울려?" 사진 판정
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // 스트리밍 중단을 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
+  // 초기 질문 자동 전송 1회 가드
+  const initialSentRef = useRef(false);
 
   // 메시지 영역 스크롤
   const scrollToBottom = useCallback(() => {
@@ -54,7 +77,7 @@ export function ChatInterface({
   // 스트리밍 API를 통한 메시지 전송
   const handleStreamingSend = useCallback(
     // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
-    async (messageText: string, currentMessages: CoachMessage[]) => {
+    async (messageText: string, currentMessages: CoachMessage[], imageBase64?: string) => {
       // 이전 요청 중단
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -67,7 +90,9 @@ export function ChatInterface({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: messageText,
-            chatHistory: currentMessages,
+            // 히스토리에서 이미지 dataURL은 제외 (본문 크기 폭증 방지 — 텍스트 맥락만)
+            chatHistory: currentMessages.map(({ imageUrl: _omit, ...rest }) => rest),
+            ...(imageBase64 ? { imageBase64 } : {}),
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -137,28 +162,33 @@ export function ChatInterface({
   // 메시지 전송
   const handleSend = useCallback(
     async (messageText: string) => {
-      if (!messageText.trim() || loading) return;
+      const image = pendingImage;
+      // 이미지만 첨부하고 텍스트가 없으면 기본 질문으로
+      const text = messageText.trim() || (image ? '이 사진 속 아이템, 저에게 어울릴까요?' : '');
+      if (!text || loading) return;
 
       const userMessage: CoachMessage = {
         id: `user-${Date.now()}`,
         role: 'user',
-        content: messageText.trim(),
+        content: text,
         timestamp: new Date(),
+        ...(image ? { imageUrl: image } : {}),
       };
 
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
       setInput('');
+      setPendingImage(null);
       setLoading(true);
       setShowQuickQuestions(false);
 
       try {
         if (useStreaming) {
           // 스트리밍 모드
-          await handleStreamingSend(messageText, updatedMessages);
+          await handleStreamingSend(text, updatedMessages, image ?? undefined);
         } else {
           // 일반 모드
-          const response = await onSendMessage(messageText, updatedMessages);
+          const response = await onSendMessage(text, updatedMessages);
 
           const assistantMessage: CoachMessage = {
             id: `assistant-${Date.now()}`,
@@ -187,8 +217,17 @@ export function ChatInterface({
         setLoading(false);
       }
     },
-    [loading, messages, onSendMessage, useStreaming, handleStreamingSend]
+    [loading, messages, onSendMessage, useStreaming, handleStreamingSend, pendingImage]
   );
+
+  // 분석 결과 CTA(?q=)에서 넘어온 초기 질문 1회 자동 전송
+  useEffect(() => {
+    if (initialQuestion && !initialSentRef.current && messages.length === 0 && !loading) {
+      initialSentRef.current = true;
+      handleSend(initialQuestion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 직후 1회만
+  }, [initialQuestion]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,15 +385,63 @@ export function ChatInterface({
 
       {/* 입력 영역 */}
       <div className="border-t p-4 bg-background">
+        {/* 첨부 이미지 미리보기 */}
+        {pendingImage && (
+          <div className="flex items-center gap-2 mb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element -- dataURL 미리보기 */}
+            <img
+              src={pendingImage}
+              alt="첨부 예정"
+              className="h-14 w-14 rounded-lg object-cover border"
+            />
+            <span className="text-xs text-muted-foreground flex-1">
+              사진과 함께 질문해요 — 비워두면 &quot;어울릴까요?&quot;로 물어볼게요
+            </span>
+            <button
+              type="button"
+              onClick={() => setPendingImage(null)}
+              className="p-1 rounded-full bg-muted"
+              aria-label="첨부 취소"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (!file) return;
+              try {
+                setPendingImage(await fileToResizedDataUrl(file));
+              } catch {
+                /* 손상 파일 무시 */
+              }
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="사진 첨부 — 이 옷 어울릴지 물어보기"
+          >
+            <ImagePlus className="h-4 w-4" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t('inputPlaceholder')}
+            placeholder={pendingImage ? '이 사진에 대해 물어보세요' : t('inputPlaceholder')}
             disabled={loading}
             className="flex-1"
           />
-          <Button type="submit" disabled={loading || !input.trim()} size="icon">
+          <Button type="submit" disabled={loading || (!input.trim() && !pendingImage)} size="icon">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>

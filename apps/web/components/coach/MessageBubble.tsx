@@ -88,6 +88,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'
           )}
         >
+          {message.imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- dataURL 미리보기 (next/image 불가)
+            <img
+              src={message.imageUrl}
+              alt="첨부 사진"
+              className="rounded-lg mb-2 max-h-48 w-auto object-contain"
+            />
+          )}
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
           <p
             className={cn(

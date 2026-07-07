@@ -16,6 +16,8 @@ export interface CoachMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  /** 사용자가 첨부한 이미지 (dataURL) — "이 옷 어울려?" 사진 판정용 */
+  imageUrl?: string;
 }
 
 export interface CoachChatResponse {
