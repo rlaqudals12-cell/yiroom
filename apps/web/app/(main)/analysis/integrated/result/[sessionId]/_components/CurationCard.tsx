@@ -49,7 +49,7 @@ export function CurationCard({ curation }: CurationCardProps): React.JSX.Element
           <p className="text-[11px] font-medium uppercase tracking-widest text-pink-300">
             ✨ 당신을 위한 세트
           </p>
-          <h2 className="text-xl font-bold text-white md:text-2xl">5축 프로필에 맞춰 골랐어요</h2>
+          <h2 className="text-xl font-bold text-white md:text-2xl">내 프로필에 맞춰 골랐어요</h2>
           <p className="text-xs text-zinc-400">
             축들을 종합해 지금 바로 시도할 수 있는 것부터 순서대로
           </p>

@@ -149,7 +149,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         <header className="space-y-2 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-4 py-1.5 text-xs text-pink-300">
             <Sparkles className="h-3.5 w-3.5" />
-            5축 통합 분석
+            셀카 한 장 · 통합 분석
           </div>
           <h1 className="text-2xl font-bold text-white md:text-3xl">
             셀카 한 장으로

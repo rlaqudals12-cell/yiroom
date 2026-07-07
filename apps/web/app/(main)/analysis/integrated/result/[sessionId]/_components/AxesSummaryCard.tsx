@@ -113,7 +113,7 @@ export function AxesSummaryCard({ axes }: AxesSummaryCardProps): React.JSX.Eleme
       data-testid="axes-summary-card"
     >
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-        내 정체성 5축
+        내 정체성 한눈에
       </h2>
       <ul className="space-y-3">
         {AXES.map((axis) => {

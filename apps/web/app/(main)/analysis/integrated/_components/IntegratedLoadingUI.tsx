@@ -38,7 +38,7 @@ export function IntegratedLoadingUI(): React.JSX.Element {
       className="mx-auto max-w-md rounded-2xl border border-zinc-800 bg-neutral-900 p-6"
       data-testid="integrated-loading"
     >
-      <h2 className="mb-4 text-lg font-bold text-white">5축 분석 중...</h2>
+      <h2 className="mb-4 text-lg font-bold text-white">다섯 가지를 분석하고 있어요...</h2>
 
       <ul className="space-y-3">
         {AXES.map((axis) => {

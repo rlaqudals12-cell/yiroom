@@ -55,10 +55,10 @@ describe('IntegratedSessionPromptCard', () => {
     expect(screen.getByTestId('integrated-prompt-skeleton')).toBeInTheDocument();
   });
 
-  it('세션 없으면 "5축 한 번에 알아보기" CTA 표시', () => {
+  it('세션 없으면 "5가지 한 번에 알아보기" CTA 표시', () => {
     render(<IntegratedSessionPromptCard />);
     expect(screen.getByTestId('integrated-prompt-cta')).toBeInTheDocument();
-    expect(screen.getByText(/내 정체성 5축 한 번에 알아보기/)).toBeInTheDocument();
+    expect(screen.getByText(/내 정체성 5가지 한 번에 알아보기/)).toBeInTheDocument();
   });
 
   it('세션 없으면 CTA 링크가 /analysis/integrated로', () => {

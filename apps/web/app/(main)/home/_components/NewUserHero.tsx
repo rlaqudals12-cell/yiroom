@@ -175,7 +175,7 @@ export default function NewUserHero(): React.ReactElement {
         >
           <Sparkles className="w-5 h-5" aria-hidden="true" />
           <span className="text-base leading-snug">
-            내 정체성 5축 알아보기
+            내 정체성 5가지 알아보기
             <span className="block text-xs font-normal text-white/80 mt-0.5">
               색 · 피부 · 체형 · 헤어 한 번에 · 약 2분
             </span>

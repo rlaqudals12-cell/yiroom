@@ -78,7 +78,7 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
         <Sparkles className="h-5 w-5 text-white" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0 text-white">
-        <p className="text-sm font-bold">내 정체성 5축 한 번에 알아보기</p>
+        <p className="text-sm font-bold">내 정체성 5가지 한 번에 알아보기</p>
         <p className="text-xs text-white/80">색 · 피부 · 체형 · 헤어 · 메이크업 · 약 2분</p>
       </div>
       <ChevronRight className="h-4 w-4 shrink-0 text-white/80" aria-hidden="true" />
