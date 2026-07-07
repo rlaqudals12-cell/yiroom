@@ -12,7 +12,7 @@ import type { WorkoutSummary } from '@/lib/nutrition/workoutInsight';
 // tests/setup.ts 기본 목은 키를 그대로 반환하므로 실제 ko 메시지로 오버라이드해
 // 한국어 문구 검증을 유지한다.
 vi.mock('next-intl', async () => {
-  const messages = (await import('@/messages/ko.json')).default as Record<
+  const messages = (await import('@/messages/ko.json')).default as unknown as Record<
     string,
     Record<string, string>
   >;
