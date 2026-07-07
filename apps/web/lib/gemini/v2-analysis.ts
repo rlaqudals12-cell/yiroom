@@ -317,7 +317,7 @@ export async function analyzeSkinV2WithGemini(
           30000,
           '[S-2 Gemini] Timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -466,7 +466,7 @@ export async function extractSkinColorWithGemini(
           30000,
           '[PC-2 Gemini] Timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -612,7 +612,7 @@ export async function analyzeBodyWithGemini(
           30000,
           '[C-2 Gemini] Timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -809,7 +809,7 @@ export async function analyzeHairWithGemini(
           30000,
           '[H-1 Gemini] Timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -994,7 +994,7 @@ export async function analyzeOralWithGemini(
           30000,
           '[OH-1 Gemini] Timeout'
         ),
-      2,
+      1,
       1000
     );
 

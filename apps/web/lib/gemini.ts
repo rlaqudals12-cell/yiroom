@@ -1399,7 +1399,7 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
           30000,
           '[S-1] Gemini timeout'
         ),
-      2,
+      1,
       1000
     );
     const text = result.text;
@@ -1902,7 +1902,7 @@ export async function analyzeWorkout(
           30000,
           '[W-1] Gemini timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -2162,7 +2162,7 @@ export async function recommendExercises(
           30000,
           '[W-1] Gemini timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -2340,7 +2340,7 @@ export async function generateWorkoutInsights(
           30000,
           '[W-1] Gemini timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -2713,7 +2713,7 @@ export async function generateMealSuggestion(
           30000,
           '[N-1] Meal suggestion timeout'
         ),
-      2,
+      1,
       1000
     );
 
@@ -3016,7 +3016,7 @@ export async function recommendWeatherOutfit(
           30000,
           '[WEATHER-OUTFIT] Timeout'
         ),
-      2,
+      1,
       1000
     );
 
