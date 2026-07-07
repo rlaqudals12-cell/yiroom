@@ -70,12 +70,13 @@ export function useUserMatching(): UseUserMatchingResult {
       try {
         // 병렬로 모든 분석 데이터 조회 — 하나 실패해도 나머지는 사용
         const results = await Promise.allSettled([
-          // S-1 피부 분석
+          // S-1 피부 분석 — 정본 skin_analyses (skin_assessments는 prod에 없는 유령 테이블,
+          // assessed_at도 유령 컬럼 — 실쿼리 검증 2026-07-08)
           supabase
-            .from('skin_assessments')
-            .select('skin_type, concerns')
+            .from('skin_analyses')
+            .select('skin_type')
             .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(1)
             .single(),
 
@@ -84,16 +85,16 @@ export function useUserMatching(): UseUserMatchingResult {
             .from('personal_color_assessments')
             .select('season')
             .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(1)
             .single(),
 
-          // C-1 체형 분석
+          // C-1 체형 분석 — 정본 body_analyses
           supabase
-            .from('body_assessments')
+            .from('body_analyses')
             .select('body_type')
             .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(1)
             .single(),
 
@@ -150,10 +151,12 @@ export function useUserMatching(): UseUserMatchingResult {
         const userProfile: UserProfile = {};
 
         if (skinResult.data) {
+          // skin_analyses에는 concerns 컬럼이 없음 (구 코드의 concerns는 유령 컬럼 —
+          // 항상 undefined였음). 고민 태그 소스가 생기기 전까지 빈 배열 유지 (정직).
           userProfile.skinType = skinResult.data.skin_type;
-          userProfile.skinConcerns = skinResult.data.concerns || [];
+          userProfile.skinConcerns = [];
           setSkinType(skinResult.data.skin_type);
-          setSkinConcerns(skinResult.data.concerns || []);
+          setSkinConcerns([]);
         }
 
         if (colorResult.data) {

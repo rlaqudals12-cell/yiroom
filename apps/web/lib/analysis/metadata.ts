@@ -29,6 +29,9 @@ export async function generateAnalysisMetadata(
 ): Promise<Metadata> {
   const { tableName, moduleName, titleField, titleMapper } = config;
 
+  // 테이블명 → 라우트 세그먼트 (skin_analyses → skin, personal_color_assessments → personal-color)
+  const analysisType = tableName.replace(/_(assessments|analyses)$/, '').replace(/_/g, '-');
+
   // 기본 메타데이터 (DB 조회 실패 시 폴백)
   const fallback: Metadata = {
     title: `${moduleName} 분석 결과 | 이룸`,
@@ -36,7 +39,7 @@ export async function generateAnalysisMetadata(
     openGraph: {
       title: `${moduleName} 분석 결과 | 이룸`,
       description: `이룸에서 ${moduleName} 분석 결과를 확인해보세요.`,
-      url: `${BASE_URL}/analysis/${tableName.replace('_assessments', '')}/result/${id}`,
+      url: `${BASE_URL}/analysis/${analysisType}/result/${id}`,
       siteName: '이룸',
       type: 'article',
     },
@@ -64,7 +67,6 @@ export async function generateAnalysisMetadata(
     const description = `이룸 ${moduleName} 분석 결과 — ${displayValue}. AI 기반 통합 웰니스 분석을 경험해보세요.`;
 
     // OG 이미지 URL 생성 (분석 타입 + 결과 라벨)
-    const analysisType = tableName.replace('_assessments', '').replace(/_/g, '-');
     const ogImageUrl = `${BASE_URL}/api/og/${analysisType}?label=${encodeURIComponent(String(displayValue))}`;
 
     return {
@@ -73,7 +75,7 @@ export async function generateAnalysisMetadata(
       openGraph: {
         title,
         description,
-        url: `${BASE_URL}/analysis/${tableName.replace('_assessments', '')}/result/${id}`,
+        url: `${BASE_URL}/analysis/${analysisType}/result/${id}`,
         siteName: '이룸',
         type: 'article',
         images: [
@@ -113,8 +115,10 @@ export const PERSONAL_COLOR_META: MetadataConfig = {
   },
 };
 
+// 테이블명 4곳 정정 (2026-07-08): skin/body/hair/makeup은 *_assessments가 아니라 *_analyses가
+// 정본 — 유령 테이블 조회로 OG 메타데이터가 항상 폴백으로 강등되던 것 (prod 실쿼리 검증)
 export const SKIN_META: MetadataConfig = {
-  tableName: 'skin_assessments',
+  tableName: 'skin_analyses',
   moduleName: '피부',
   titleField: 'skin_type',
   titleMapper: {
@@ -127,19 +131,19 @@ export const SKIN_META: MetadataConfig = {
 };
 
 export const BODY_META: MetadataConfig = {
-  tableName: 'body_assessments',
+  tableName: 'body_analyses',
   moduleName: '체형',
   titleField: 'body_type',
 };
 
 export const HAIR_META: MetadataConfig = {
-  tableName: 'hair_assessments',
+  tableName: 'hair_analyses',
   moduleName: '헤어',
   titleField: 'hair_type',
 };
 
 export const MAKEUP_META: MetadataConfig = {
-  tableName: 'makeup_assessments',
+  tableName: 'makeup_analyses',
   moduleName: '메이크업',
   titleField: 'face_shape',
 };
@@ -152,7 +156,7 @@ export const ORAL_HEALTH_META: MetadataConfig = {
 };
 
 export const POSTURE_META: MetadataConfig = {
-  tableName: 'posture_assessments',
+  tableName: 'posture_analyses',
   moduleName: '자세',
   titleField: 'posture_type',
 };

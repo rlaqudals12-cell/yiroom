@@ -89,9 +89,10 @@ describe('useUserMatching', () => {
       });
 
       // Supabase 응답 모킹 (skin, color, body, hair, makeup)
+      // skin은 skin_analyses 정본 스키마 — concerns 컬럼 없음 (유령 컬럼 정직화, 2026-07-08)
       mockSupabaseClient.single
         .mockResolvedValueOnce({
-          data: { skin_type: 'dry', concerns: ['acne', 'aging'] },
+          data: { skin_type: 'dry' },
           error: null,
         })
         .mockResolvedValueOnce({
@@ -119,7 +120,8 @@ describe('useUserMatching', () => {
       });
 
       expect(result.current.skinType).toBe('dry');
-      expect(result.current.skinConcerns).toEqual(['acne', 'aging']);
+      // skin_analyses에 concerns 컬럼 없음 — 고민 태그 소스 생기기 전까지 빈 배열 (정직)
+      expect(result.current.skinConcerns).toEqual([]);
       expect(result.current.personalColor).toBe('봄 웜톤');
       expect(result.current.bodyType).toBe('웨이브');
       expect(result.current.hairType).toBe('dry');
