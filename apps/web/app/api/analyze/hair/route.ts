@@ -38,6 +38,9 @@ const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
  *   useMock?: boolean       // Mock 모드 강제 (선택)
  * }
  */
+// Gemini 3.5-flash 상세 분석 15~19초 — Hobby 함수 기본 10초 제한 초과 방지 (2026-07-07)
+export const maxDuration = 60;
+
 // eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: NextRequest) {
   try {

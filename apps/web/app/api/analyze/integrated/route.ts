@@ -35,6 +35,11 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Max-Age': '86400',
 };
 
+// Gemini 3.5-flash 상세 분석은 축당 15~19초 — 5축 병렬이라도 wall-clock ~20초.
+// Vercel Hobby 함수 기본 제한(10초)으로는 완료 불가 → 60초로 확장 (Hobby 최대치).
+// 미설정 시 오늘 30초 내부 타임아웃이 함수 제한에 먼저 죽어 504/부분실패 (2026-07-07).
+export const maxDuration = 60;
+
 function withCors(response: NextResponse): NextResponse {
   for (const [key, value] of Object.entries(CORS_HEADERS)) {
     response.headers.set(key, value);

@@ -35,9 +35,13 @@ import {
 // =============================================================================
 
 // 모델 설정 (어댑터에서 기본 모델 사용)
+// thinkingLevel low: V1(gemini.ts)과 동일 — 분석은 결정론적 JSON 추출이라 깊은 추론
+// 불필요. 3.5-flash thinking 기본값(medium)은 통합 5축 병렬에서 3~5초 타임아웃을
+// 전부 초과시켜 부분 실패를 유발했음 (2026-07-07). low + 30초 예산으로 통일.
 const geminiV2Config = {
   temperature: 0.3,
   maxOutputTokens: 4096,
+  thinkingConfig: { thinkingLevel: 'low' as const },
 };
 
 // =============================================================================
@@ -302,7 +306,7 @@ export async function analyzeSkinV2WithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초) + 재시도 (최대 2회)
+    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
@@ -310,7 +314,7 @@ export async function analyzeSkinV2WithGemini(
             contents: [{ text: SKIN_V2_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
-          5000,
+          30000,
           '[S-2 Gemini] Timeout'
         ),
       2,
@@ -451,7 +455,7 @@ export async function extractSkinColorWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (3초) + 재시도 (최대 2회)
+    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
@@ -459,7 +463,7 @@ export async function extractSkinColorWithGemini(
             contents: [{ text: PERSONAL_COLOR_V2_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
-          3000,
+          30000,
           '[PC-2 Gemini] Timeout'
         ),
       2,
@@ -605,7 +609,7 @@ export async function analyzeBodyWithGemini(
             contents: [{ text: BODY_V2_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
-          5000,
+          30000,
           '[C-2 Gemini] Timeout'
         ),
       2,
@@ -794,7 +798,7 @@ export async function analyzeHairWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (4초) + 재시도 (최대 2회)
+    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
     const geminiResult = await withRetry(
       () =>
         withTimeout(
@@ -802,7 +806,7 @@ export async function analyzeHairWithGemini(
             contents: [{ text: HAIR_V2_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
-          4000,
+          30000,
           '[H-1 Gemini] Timeout'
         ),
       2,
@@ -987,7 +991,7 @@ export async function analyzeOralWithGemini(
             contents: [{ text: ORAL_HEALTH_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
-          5000,
+          30000,
           '[OH-1 Gemini] Timeout'
         ),
       2,
