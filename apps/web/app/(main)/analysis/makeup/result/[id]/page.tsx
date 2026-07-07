@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useScoreTrend } from '@/hooks/useScoreTrend';
+import { ScoreTrendChip } from '@/components/analysis/ScoreTrendChip';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -67,6 +69,12 @@ export default function MakeupAnalysisResultPage() {
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
   const [result, setResult] = useState<MakeupResultView | null>(null);
+  // 직전 분석 대비 추이 — 첫 분석이면 null (칩 미노출)
+  const scoreTrend = useScoreTrend(
+    'makeup_analyses',
+    result?.analyzedAt ?? null,
+    result?.overallScore
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -320,6 +328,11 @@ export default function MakeupAnalysisResultPage() {
                 undertoneLabel={result.undertoneLabel}
                 analyzedAt={result.analyzedAt}
               />
+              {scoreTrend && (
+                <div className="flex justify-center -mt-3">
+                  <ScoreTrendChip trend={scoreTrend} />
+                </div>
+              )}
 
               {/* 인사이트 */}
               <div className="bg-card rounded-xl p-6 shadow-sm">
