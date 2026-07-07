@@ -20,10 +20,12 @@ const MODULE_THEMES: Record<string, { bg: string; accent: string; icon: string }
   makeup: { bg: '#FFF7ED', accent: '#EA580C', icon: '💄' },
   'oral-health': { bg: '#F0FDFA', accent: '#0D9488', icon: '🦷' },
   posture: { bg: '#F5F3FF', accent: '#7C3AED', icon: '🧘' },
+  report: { bg: '#FDF2F8', accent: '#DB2777', icon: '📋' },
 };
 
 // 분석 타입별 한국어 모듈명
 const MODULE_NAMES: Record<string, string> = {
+  report: '스타일 리포트',
   'personal-color': '퍼스널컬러',
   skin: '피부',
   body: '체형',

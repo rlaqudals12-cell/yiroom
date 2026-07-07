@@ -122,6 +122,11 @@ const isPublicRoute = createRouteMatcher([
   '/api/affiliate/(.*)',
   // Health check (통합 + 하위 라우트)
   '/api/health(.*)',
+  // 스타일 리포트 공개 공유 (토큰 링크 — 비로그인 열람)
+  '/share(.*)',
+  // OG 이미지 — 크롤러(카카오/X 등)가 비로그인으로 가져감.
+  // 미등록 상태라 모든 OG가 404이던 결함 수리 (2026-07-08)
+  '/api/og(.*)',
 ]);
 
 // Next.js 16: middleware → proxy 마이그레이션

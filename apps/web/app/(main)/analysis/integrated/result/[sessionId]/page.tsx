@@ -32,6 +32,7 @@ import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
 import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
+import { ShareReportButton } from './_components/ShareReportButton';
 
 /**
  * DB 레코드 → AxisResult 변환 (action-plan 입력용).
@@ -181,6 +182,9 @@ export default async function IntegratedResultPage({
           </h2>
           <AxisDetailAccordion axes={axes} />
         </section>
+
+        {/* 스타일 리포트 공유 — 사진 없는 공개 링크 (바이럴 루프) */}
+        <ShareReportButton sessionId={session.id} />
 
         {/* 다음 단계 링크 */}
         <NextStepsLinks axesCompleted={axesCompleted} />
