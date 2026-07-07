@@ -18,6 +18,7 @@ import type { TodaySkinCondition } from '@/lib/skincare';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 import { getBeautyProfile } from './profile';
+import { attachSolutionProducts } from './solution-products';
 import { collectContext } from './context';
 import { getAllDomains } from './registry';
 import { ensureCapsuleDomains } from './domains';
@@ -125,6 +126,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
         compatibilityScore: 0, // Step 4에서 업데이트
         isChecked: false,
         timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
+        ...(typedItem.category ? { category: typedItem.category } : {}),
         ...(solution ? { solution } : {}),
       });
     }
@@ -163,6 +165,15 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
   // Step 5: Safety 필터링 (BLOCK 아이템 제거)
   const filteredItems = await applySafetyFilter(userId, dailyItems);
+
+  // Step 5.5: 솔루션 → 실제 제품 연결 (Phase 3 실물 연결)
+  // "이 토너를 바르세요"가 되도록 아이템별 최고 매칭 제품 부착.
+  // 실패해도 캡슐 생성은 계속 — 제품 없는 솔루션 텍스트로 동작 (기존과 동일).
+  try {
+    await attachSolutionProducts(filteredItems, profile);
+  } catch (e) {
+    console.error('[Daily] 솔루션 제품 부착 실패 (캡슐은 계속):', e);
+  }
 
   // 예상 소요 시간 계산 (도메인당 기본 5분)
   const estimatedMinutes = calculateEstimatedMinutes(filteredItems);
@@ -433,6 +444,7 @@ function buildSkinRoutineItems(profile: {
         compatibilityScore: 0,
         isChecked: false,
         timeOfDay,
+        category: step.category,
         ...(index === 0 ? { groupNote } : {}),
         ...(solution ? { solution } : {}),
       });

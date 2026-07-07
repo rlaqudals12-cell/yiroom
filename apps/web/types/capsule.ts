@@ -283,6 +283,22 @@ export interface DailyItem {
    * (추천 성분·파운데이션 진단·베스트컬러 이름·체형 스타일 추천). 없으면 미노출.
    */
   solution?: string;
+  /** 아이템 소스 카테고리 (제품 매칭용 내부 필드) — 예: 'toner', 'lip', 'shampoo' */
+  category?: string;
+  /**
+   * 솔루션에 대응하는 실제 제품 (cosmetic_products에서 프로필 기준 최고 매칭 1개).
+   * 없으면 미노출 — 매칭 실패 시 지어내지 않는다.
+   */
+  solutionProduct?: DailySolutionProduct;
+}
+
+/** 데일리 아이템에 붙는 실제 제품 카드 축약 — 상세는 /products/cosmetic/{id} */
+export interface DailySolutionProduct {
+  id: string;
+  name: string;
+  brand: string;
+  priceKrw?: number;
+  imageUrl?: string;
 }
 
 // =============================================================================

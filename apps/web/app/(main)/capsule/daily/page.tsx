@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   CalendarCheck,
   Check,
@@ -11,6 +12,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   Package,
+  ShoppingBag,
+  ChevronRight,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +31,14 @@ interface DailyItem {
   groupNote?: string;
   /** 실행 솔루션 한 줄 — 내 진단 데이터 기반 "무엇으로/어떤 색으로" */
   solution?: string;
+  /** 솔루션 대응 실제 제품 — 있으면 제품 링크 칩 노출 */
+  solutionProduct?: {
+    id: string;
+    name: string;
+    brand: string;
+    priceKrw?: number;
+    imageUrl?: string;
+  };
 }
 
 interface DailyCapsule {
@@ -346,49 +357,74 @@ export default function DailyCapsulePage(): React.ReactElement {
                             {cluster.items.map((item, stepIndex) => {
                               const isChecked = checkedItems.has(item.id);
                               return (
-                                <button
+                                <div
                                   key={item.id}
-                                  onClick={() => toggleItem(item.id)}
-                                  className="flex items-center gap-2.5 w-full py-2 min-h-[40px] text-left border-b border-slate-100 dark:border-slate-800 last:border-0"
+                                  className="border-b border-slate-100 dark:border-slate-800 last:border-0"
                                 >
-                                  <div
-                                    className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors ${
-                                      isChecked
-                                        ? 'border-emerald-500 bg-emerald-500'
-                                        : 'border-slate-300 dark:border-slate-600'
-                                    }`}
+                                  <button
+                                    onClick={() => toggleItem(item.id)}
+                                    className="flex items-center gap-2.5 w-full py-2 min-h-[40px] text-left"
                                   >
-                                    {isChecked ? (
-                                      <Check className="h-3 w-3 text-white" />
-                                    ) : (
-                                      <Circle className="h-3 w-3 text-transparent" />
-                                    )}
-                                  </div>
-                                  <span className="text-[11px] text-muted-foreground w-4 shrink-0">
-                                    {cluster.items.length > 1 ? stepIndex + 1 : ''}
-                                  </span>
-                                  <div className="flex-1 min-w-0">
-                                    <p
-                                      className={`text-sm ${
+                                    <div
+                                      className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors ${
                                         isChecked
-                                          ? 'line-through text-muted-foreground'
-                                          : 'font-medium'
+                                          ? 'border-emerald-500 bg-emerald-500'
+                                          : 'border-slate-300 dark:border-slate-600'
                                       }`}
                                     >
-                                      {item.name}
-                                    </p>
-                                    {item.reason && (
-                                      <p className="text-[11px] text-muted-foreground truncate">
-                                        {item.reason}
+                                      {isChecked ? (
+                                        <Check className="h-3 w-3 text-white" />
+                                      ) : (
+                                        <Circle className="h-3 w-3 text-transparent" />
+                                      )}
+                                    </div>
+                                    <span className="text-[11px] text-muted-foreground w-4 shrink-0">
+                                      {cluster.items.length > 1 ? stepIndex + 1 : ''}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <p
+                                        className={`text-sm ${
+                                          isChecked
+                                            ? 'line-through text-muted-foreground'
+                                            : 'font-medium'
+                                        }`}
+                                      >
+                                        {item.name}
                                       </p>
-                                    )}
-                                    {item.solution && (
-                                      <p className="text-[11px] text-violet-500 dark:text-violet-400">
-                                        💡 {item.solution}
-                                      </p>
-                                    )}
-                                  </div>
-                                </button>
+                                      {item.reason && (
+                                        <p className="text-[11px] text-muted-foreground truncate">
+                                          {item.reason}
+                                        </p>
+                                      )}
+                                      {item.solution && (
+                                        <p className="text-[11px] text-violet-500 dark:text-violet-400">
+                                          💡 {item.solution}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </button>
+                                  {/* 솔루션 대응 실제 제품 — 체크 토글(button)과 분리된 링크 */}
+                                  {item.solutionProduct && (
+                                    <Link
+                                      href={`/products/cosmetic/${item.solutionProduct.id}`}
+                                      className="flex items-center gap-2 mb-2 ml-11 mr-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                      <ShoppingBag className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                      <span className="flex-1 min-w-0 text-[11px] text-slate-600 dark:text-slate-300 truncate">
+                                        <span className="font-medium">
+                                          {item.solutionProduct.brand}
+                                        </span>{' '}
+                                        {item.solutionProduct.name}
+                                      </span>
+                                      {item.solutionProduct.priceKrw != null && (
+                                        <span className="shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                          ₩{item.solutionProduct.priceKrw.toLocaleString('ko-KR')}
+                                        </span>
+                                      )}
+                                      <ChevronRight className="h-3 w-3 shrink-0 text-slate-400" />
+                                    </Link>
+                                  )}
+                                </div>
                               );
                             })}
                           </div>
