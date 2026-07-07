@@ -77,6 +77,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
             hipWidth: m.ratios.hipWidth,
             shape: m.shape,
             confidence: m.confidence,
+            // 비율 전체 — body_ratios JSONB로 축적, 3D 아바타 정밀화 입력 (ADR-110)
+            ratios: { ...m.ratios },
           };
         }
       }

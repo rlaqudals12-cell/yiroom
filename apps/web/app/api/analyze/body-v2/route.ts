@@ -238,25 +238,32 @@ export async function POST(req: NextRequest) {
     try {
       const supabase = createServiceRoleClient();
 
-      // DB에 저장
+      // DB에 저장 — body_analyses가 정본. (구현이 참조하던 body_assessments는
+      // prod에 존재하지 않는 유령 테이블이라 저장이 전멸했음 → 정렬. ADR-110 후속 #1)
+      const shoulderToWaist = result.bodyRatios.shoulderToWaistRatio;
       const { data, error } = await supabase
-        .from('body_assessments')
+        .from('body_analyses')
         .insert({
           clerk_user_id: userId,
-          // v2 분석 결과를 기존 스키마에 맞게 매핑
           body_type: bodyShapeToType3(result.bodyShape),
-          body_shape: result.bodyShape,
-          confidence: result.measurementConfidence,
-          analysis_data: {
+          // ratio는 DECIMAL(3,2) — 비정상 측정값은 null (아바타 params가 tier 강등 처리)
+          ratio:
+            Number.isFinite(shoulderToWaist) && shoulderToWaist > 0.5 && shoulderToWaist < 2.5
+              ? Math.round(shoulderToWaist * 100) / 100
+              : null,
+          // 측정 비율 전체 — 3D 아바타 Tier full 입력 (ADR-110)
+          body_ratios: result.bodyRatios,
+          strengths: result.bodyShapeInfo.characteristics,
+          style_recommendations: {
             version: 2,
             bodyShape: result.bodyShape,
             bodyShapeLabel: result.bodyShapeInfo.label,
             bodyShapeDescription: result.bodyShapeInfo.description,
-            ratios: result.bodyRatios,
+            ...result.stylingRecommendations,
             postureAnalysis: result.postureAnalysis,
+            confidence: Math.round(result.measurementConfidence * 100),
+            usedMock: usedFallback,
           },
-          styling_recommendations: result.stylingRecommendations,
-          styles_to_avoid: result.stylingRecommendations?.avoid,
         })
         .select()
         .single();
@@ -277,18 +284,8 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // users 테이블에 C-2 결과 동기화 (비정규화 - 빠른 조회용)
-      const { error: userUpdateError } = await supabase
-        .from('users')
-        .update({
-          latest_body_assessment_id: data.id,
-          body_type: bodyShapeToType3(result.bodyShape),
-        })
-        .eq('clerk_user_id', userId);
-
-      if (userUpdateError) {
-        console.warn('[C-2] Failed to sync to users table:', userUpdateError);
-      }
+      // (제거) users 비정규화 동기화 — latest_body_assessment_id/body_type 컬럼이
+      // prod users에 존재하지 않아 항상 실패하던 죽은 배선 (2026-07-08 실쿼리 확인)
 
       // 게이미피케이션 연동
       const gamificationResult: {
@@ -388,7 +385,7 @@ export async function GET() {
     const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
-      .from('body_assessments')
+      .from('body_analyses')
       .select('*')
       .eq('clerk_user_id', userId)
       .order('created_at', { ascending: false })
@@ -400,8 +397,8 @@ export async function GET() {
       return dbError('분석 결과를 불러오는데 실패했습니다.', error.message);
     }
 
-    // v2 형식으로 변환 (analysis_data에 version: 2가 있으면 v2)
-    const isV2 = data?.analysis_data?.version === 2;
+    // v2 형식 판별 — v2 저장은 style_recommendations.version === 2 (body_analyses 정렬 후)
+    const isV2 = data?.style_recommendations?.version === 2;
 
     return NextResponse.json({
       success: true,

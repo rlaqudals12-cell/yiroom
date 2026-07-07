@@ -76,6 +76,11 @@ export const integratedAnalysisInputSchema = z.object({
       hipWidth: z.number(),
       shape: z.string(),
       confidence: z.number().min(0).max(1),
+      /**
+       * 측정 비율 전체(BodyRatios — 무차원) — body_ratios JSONB로 축적 (ADR-110 Tier full).
+       * 구 클라이언트는 미전송(optional) — 하위호환.
+       */
+      ratios: z.record(z.string(), z.number()).optional(),
     })
     .optional(),
 

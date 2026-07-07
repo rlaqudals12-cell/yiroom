@@ -40,11 +40,12 @@ import { VisualReportCard } from '@/components/analysis/visual-report';
 import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
-// Layer 0.5: 체형 실루엣 시각화 (ADR-097)
-const AnonymousBodyTemplate = dynamic(
+import type { BodyRowForAvatar } from '@/lib/avatar';
+// Layer 0.5: 체형 시각화 — 3D 아바타 (ADR-110) + 내부 2D 실루엣 폴백 (ADR-097)
+const BodyAvatarSection = dynamic(
   () =>
-    import('@/components/analysis/overlay/anonymous/AnonymousBodyTemplate').then((mod) => ({
-      default: mod.AnonymousBodyTemplate,
+    import('@/components/avatar/BodyAvatarSection').then((mod) => ({
+      default: mod.BodyAvatarSection,
     })),
   { loading: () => null, ssr: false }
 );
@@ -112,6 +113,9 @@ export default function BodyAnalysisResultPage() {
   const { isExpert, toggleExpert } = useExpertMode();
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
+  // 3D 아바타 입력 (ADR-110): 현재 행 + 직전 행(비교 오버레이용)
+  const [avatarRow, setAvatarRow] = useState<BodyRowForAvatar | null>(null);
+  const [prevAvatarRow, setPrevAvatarRow] = useState<BodyRowForAvatar | null>(null);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -152,7 +156,7 @@ export default function BodyAnalysisResultPage() {
       const { data, error: dbError } = await supabase
         .from('body_analyses')
         .select(
-          'id, clerk_user_id, body_type, height, weight, shoulder, waist, hip, ratio, strengths, improvements, style_recommendations, personal_color_season, color_recommendations, created_at'
+          'id, clerk_user_id, body_type, height, weight, shoulder, waist, hip, ratio, body_ratios, strengths, improvements, style_recommendations, personal_color_season, color_recommendations, created_at'
         )
         .eq('id', analysisId)
         .single();
@@ -169,6 +173,29 @@ export default function BodyAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setAnalyzedAt(dbData.created_at ?? null);
+
+      // 3D 아바타 입력 (ADR-110) — 저장된 결과의 결정론적 파생 뷰
+      setAvatarRow({
+        body_type: dbData.body_type,
+        ratio: dbData.ratio,
+        shoulder: dbData.shoulder,
+        waist: dbData.waist,
+        hip: dbData.hip,
+        body_ratios: dbData.body_ratios ?? null,
+      });
+
+      // 직전 분석 행 — "직전과 비교" 고스트 오버레이 (없으면 토글 미노출, RLS로 본인 행만)
+      const { data: prevData } = await supabase
+        .from('body_analyses')
+        .select('body_type, ratio, shoulder, waist, hip, body_ratios')
+        .eq('clerk_user_id', dbData.clerk_user_id)
+        .lt('created_at', dbData.created_at)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (prevData) {
+        setPrevAvatarRow(prevData as BodyRowForAvatar);
+      }
 
       // 분석 근거 데이터 추출 (새 구조에서)
       const styleRecs = dbData.style_recommendations;
@@ -220,6 +247,16 @@ export default function BodyAnalysisResultPage() {
           if (dbData) {
             const transformedResult = transformDbToResult(dbData as DbBodyAnalysis);
             setResult(transformedResult);
+            // 캐시 복원 시에도 아바타 입력 구성 (직전 비교는 DB 필요 — 생략)
+            const cachedRow = dbData as DbBodyAnalysis;
+            setAvatarRow({
+              body_type: cachedRow.body_type,
+              ratio: cachedRow.ratio,
+              shoulder: cachedRow.shoulder,
+              waist: cachedRow.waist,
+              hip: cachedRow.hip,
+              body_ratios: cachedRow.body_ratios ?? null,
+            });
             const styleRecs = dbData.style_recommendations;
             if (styleRecs && !Array.isArray(styleRecs)) {
               if (styleRecs.analysisEvidence) setAnalysisEvidence(styleRecs.analysisEvidence);
@@ -391,23 +428,15 @@ export default function BodyAnalysisResultPage() {
             </div>
           )}
 
-          {/* Layer 0.5: 체형 실루엣 시각화 (ADR-097) */}
+          {/* Layer 0.5: 체형 시각화 — 3D 아바타 (ADR-110), WebGL 실패/데이터 없음 시 2D 실루엣 폴백 */}
           {result && (
-            <div className="flex justify-center mb-6">
-              <AnonymousBodyTemplate bodyType={(result.bodyType as 'S' | 'W' | 'N') || 'S'}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center text-xs text-muted-foreground bg-background/80 rounded-lg px-3 py-2">
-                    <p className="font-semibold text-sm text-foreground mb-1">
-                      {result.bodyTypeLabel}
-                    </p>
-                    {result.measurements?.map((m, i) => (
-                      <p key={i}>
-                        {m.name}: {m.value}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </AnonymousBodyTemplate>
+            <div className="mb-6">
+              <BodyAvatarSection
+                row={avatarRow}
+                previousRow={prevAvatarRow}
+                label={result.bodyTypeLabel}
+                bodyType={(result.bodyType as 'S' | 'W' | 'N') || 'S'}
+              />
             </div>
           )}
 

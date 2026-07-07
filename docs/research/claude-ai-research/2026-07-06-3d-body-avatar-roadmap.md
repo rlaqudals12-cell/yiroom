@@ -23,6 +23,7 @@
 - 최적 조건에서 둘레 오차 **±1~3cm** (Amazon MeasureNet: 줄자와 통계적 동등, npj Digital Medicine 검증), 일반 자유 촬영은 ±3~5cm+
 - 단안 사진의 **스케일 모호성**이 본질 한계 → 키 입력 필수
 - 오픈소스 경로: MediaPipe → SMPL/SMPL-X 피팅. 형상 SOTA는 **SHAPY** (CVPR 2022, 코드 공개)
+- ⚠️ **SMPL 에셋 라이선스 (2026-07-08 보강)**: SMPL 모델 파일은 **비상업 연구 전용** — 상용 탑재는 Meshcapade 유료 라이선스 필요 ([모델 라이선스](https://smpl.is.tue.mpg.de/modellicense.html), [상용 창구](https://meshcapade.com/smpl/)). → ADR-110에서 "SMPL 원리 차용 + 절차적 파라메트릭 메시(에셋 비의존)"로 결정
 - VLM(Gemini류)에 사진→치수 추정은 **비신뢰** (수치 회귀 부적합, 모델별 ICC 0.07~0.81)
 - 산업 교훈: **ZOZOSUIT 실패** — 정밀도가 아니라 기대-실망 갭이 서비스를 죽임. cm 수치 노출은 리스크
 

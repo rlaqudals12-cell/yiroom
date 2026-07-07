@@ -22,6 +22,8 @@ export interface DbBodyAnalysis {
   waist: number | null;
   hip: number | null;
   ratio: number | null;
+  /** MediaPipe 측정 비율 전체 (20260708 마이그, 3D 아바타 입력 — ADR-110) */
+  body_ratios?: Record<string, number> | null;
   strengths: string[] | null;
   improvements: string[] | null;
   style_recommendations:

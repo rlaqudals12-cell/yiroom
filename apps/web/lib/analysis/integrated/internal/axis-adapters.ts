@@ -405,12 +405,17 @@ export async function runBodyAxis(
       };
     }
 
-    // A4: 측정 출처를 best-effort로 기록. measurement_source 컬럼이 아직 없으면(마이그 전)
-    // update가 실패하지만 핵심 저장은 이미 성공했으므로 무시 → 배포-마이그 순서에 무관하게 안전.
+    // A4: 측정 출처 + 측정 비율 전체(ADR-110 Tier full)를 best-effort로 기록.
+    // 컬럼이 아직 없으면(마이그 전) update가 실패하지만 핵심 저장은 이미 성공했으므로 무시
+    // → 배포-마이그 순서에 무관하게 안전.
     if (data?.id) {
       await supabase
         .from('body_analyses')
-        .update({ measurement_source: measurementSource })
+        .update({
+          measurement_source: measurementSource,
+          // 신뢰 측정일 때만 축적 — ratio 오버라이드와 동일 게이트 (아바타가 body_ratios를 우선 신뢰)
+          body_ratios: hasReliableMeasurement ? (input.measuredBody?.ratios ?? null) : null,
+        })
         .eq('id', data.id);
     }
 

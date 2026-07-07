@@ -111,6 +111,7 @@
 | [SDD-BODY-ANALYSIS-v2](SDD-BODY-ANALYSIS-v2.md)                       | 스펙 완료 | 체형 분석 v2 (C-2)                                                           | ADR-001  |
 | [SDD-BODY-V2-INTEGRATED-ACCURACY](SDD-BODY-V2-INTEGRATED-ACCURACY.md) | draft     | 체형(A) 통합 정확도 — body-v2 측정 비율→통합 연결                            | ADR-108  |
 | [SDD-PROFILE-CENTRIC-ANALYSIS](SDD-PROFILE-CENTRIC-ANALYSIS.md)       | draft     | 프로필 중심 분석 — 1회 캡처 점진 채움·변동 3그룹·2층 추천·무손실 (Phase 0~4) | ADR-109  |
+| [SDD-BODY-AVATAR-3D](SDD-BODY-AVATAR-3D.md)                           | 구현 진행 | 3D 체형 아바타 — 절차적 파라메트릭 메시, 결정론 파생 뷰, body_ratios 저장    | ADR-110  |
 
 ### 헤어/메이크업 분석
 

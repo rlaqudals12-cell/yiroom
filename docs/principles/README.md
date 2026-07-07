@@ -58,6 +58,7 @@
 | [habit-formation.md](habit-formation.md)                 | 습관 형성                                      | Fogg, Nir Eyal, Streaks                      | **1.0 (신규)**   |
 | [ux-design.md](ux-design.md)                             | UX 디자인 원칙                                 | Jobs, Rams, Norman, Laws of UX, Apple HIG    | **1.0 (신규)**   |
 | [gamification-motivation.md](gamification-motivation.md) | 게이미피케이션 동기부여                        | Goal-Setting, SDT, 크로스도메인 XP           | **1.0 (신규)**   |
+| [avatar-3d.md](avatar-3d.md)                             | 3D 체형 아바타 시각화                          | ADR-110, SMPL 원리, 모프 타겟                | **1.0 (신규)**   |
 
 ## 신규 추가 (2026-03)
 

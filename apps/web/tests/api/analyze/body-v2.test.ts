@@ -172,15 +172,19 @@ const mockGeminiResponse = {
 };
 
 // Mock DB 결과
+// body_analyses 정렬 후 저장 형태 (유령 body_assessments 정렬, ADR-110 후속 #1)
 const mockDbResult = {
   id: 'body-v2-123',
   clerk_user_id: 'user_test123',
   body_type: 'S', // 레거시 매핑
-  body_shape: 'hourglass',
-  confidence: 0.85,
-  analysis_data: { version: 2, bodyShape: 'hourglass' },
-  styling_recommendations: mockBodyAnalysisResult.stylingRecommendations,
-  styles_to_avoid: ['박시핏', '오버사이즈'],
+  ratio: 1.15,
+  body_ratios: mockBodyAnalysisResult.bodyRatios,
+  strengths: mockBodyAnalysisResult.bodyShapeInfo.characteristics,
+  style_recommendations: {
+    version: 2,
+    bodyShape: 'hourglass',
+    ...mockBodyAnalysisResult.stylingRecommendations,
+  },
   created_at: '2026-01-29T10:00:00Z',
 };
 
@@ -209,7 +213,7 @@ describe('POST /api/analyze/body-v2', () => {
 
     // Default supabase mock
     mockSupabase.from = vi.fn().mockImplementation((table: string) => {
-      if (table === 'body_assessments') {
+      if (table === 'body_analyses') {
         return {
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
@@ -436,7 +440,7 @@ describe('POST /api/analyze/body-v2', () => {
 
       expect(response.status).toBe(200);
       // DB 저장 시 body_type 필드에 레거시 값이 저장됨
-      expect(mockSupabase.from).toHaveBeenCalledWith('body_assessments');
+      expect(mockSupabase.from).toHaveBeenCalledWith('body_analyses');
     });
   });
 
@@ -455,13 +459,13 @@ describe('POST /api/analyze/body-v2', () => {
       expect(json.data.id).toBe('body-v2-123');
     });
 
-    it('users 테이블에 결과가 동기화된다', async () => {
+    it('users 비정규화 동기화는 호출하지 않는다 (prod에 없는 유령 컬럼 — 제거됨)', async () => {
       const usersUpdateMock = vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ error: null }),
       });
 
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
-        if (table === 'body_assessments') {
+        if (table === 'body_analyses') {
           return {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
@@ -495,12 +499,12 @@ describe('POST /api/analyze/body-v2', () => {
         })
       );
 
-      expect(usersUpdateMock).toHaveBeenCalled();
+      expect(usersUpdateMock).not.toHaveBeenCalled();
     });
 
     it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
       mockSupabase.from = vi.fn().mockImplementation((table: string) => {
-        if (table === 'body_assessments') {
+        if (table === 'body_analyses') {
           return {
             insert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
@@ -573,8 +577,8 @@ describe('POST /api/analyze/body-v2', () => {
       const json = await response.json();
 
       expect(response.status).toBe(200);
-      // analysis_data에 version: 2가 포함됨
-      expect(json.data.analysis_data.version).toBe(2);
+      // style_recommendations에 version: 2가 포함됨 (body_analyses 정렬 후 저장 형태)
+      expect(json.data.style_recommendations.version).toBe(2);
     });
   });
 });
@@ -653,7 +657,7 @@ describe('GET /api/analyze/body-v2', () => {
     it('v2 형식 여부를 올바르게 판별한다', async () => {
       // v2 형식 (version: 2)
       mockSupabase.single.mockResolvedValue({
-        data: { ...mockDbResult, analysis_data: { version: 2 } },
+        data: { ...mockDbResult, style_recommendations: { version: 2 } },
         error: null,
       });
 
@@ -663,7 +667,7 @@ describe('GET /api/analyze/body-v2', () => {
 
       // v1 형식 (version 없음)
       mockSupabase.single.mockResolvedValue({
-        data: { ...mockDbResult, analysis_data: {} },
+        data: { ...mockDbResult, style_recommendations: {} },
         error: null,
       });
 
