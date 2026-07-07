@@ -545,7 +545,7 @@ export default function HairAnalysisResultPage() {
                 <h3 className="font-semibold">어울리는 헤어스타일·염색 컬러는?</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                컷은 얼굴형, 염색은 퍼스널컬러를 함께 봐야 정확해요. 종합 분석에서 나에게 맞는 헤어
+                컷은 얼굴형, 염색은 퍼스널컬러를 함께 봐야 정확해요. 통합 분석에서 나에게 맞는 헤어
                 스타일과 염색 컬러를 확인해보세요. →
               </p>
             </button>
