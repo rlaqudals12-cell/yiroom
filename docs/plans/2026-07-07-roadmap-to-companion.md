@@ -38,7 +38,7 @@
 - [x] 캡슐 솔루션 → 실제 제품 카드 연결 ✅(152316b3): 아이템별 최고 매칭 제품 칩(더블클렌징 서브타입 정합·시즌 하드필터·가격 접근성) → /products/cosmetic/{id}
 - [~] **색조 SKU 확충 (수천)**: 수집기 완성 ✅(`scripts/collect-makeup-catalog.mts` — 네이버 검색→정규화/중복제거→Gemini lite 태깅[3/3 재현 검증]→적재, rating null·불확실 시즌 빈배열 정직 원칙). **네이버 API 키 등록만 남음(사용자 5분)**: developers.naver.com 앱 등록→검색 API→NAVER_CLIENT_ID/SECRET을 .env.local에
 - [x] **옷장 자동화** ✅(0186b00f): /closet/add/batch — N장 선택→장당 AI 분류(FAST_MODEL·동시3)→인라인 수정→일괄 저장. classify에 seasons/occasions 추출 추가. **잠복버그 2건 동시 해소**: ①/closet/add 직접 insert가 clerk_user_id 누락(NOT NULL+RLS)으로 등록 항상 실패→API 경유 ②inventory-images 버킷 prod 부재(업로드 전멸)→생성. 후속: 옷장이 BottomNav에 없음(통합분석 CTA로만 도달)·배색엔진(LCh) 미연결은 TPO 코디 때 배선
-- [ ] **TPO 코디**: 날씨(lib/weather 기존) + 상황 → "오늘 이 옷 + 이 립". 배색엔진+옷장+캡슐 파이프 재사용. 컨설턴트 TOP1
+- [x] **TPO 코디** ✅(ae64071f): /closet/recommend — 날씨 실연동(Open-Meteo·무키·계절추정 폴백 표시)+상황 칩+"이 코디에 이 립"(시즌 립 3종)+LCh 색조화 팁(color-bridge 신설 — 배색엔진 첫 옷장 배선). 스타일탭 정직화: 유령 PC 쿼리(result_season)·가짜 코디 4벌·죽은 라우트 2곳 → 실옷장 매칭/실라우트. **Phase 3 코어 완료** (색조 확충만 네이버 키 대기)
 
 ## Phase 4 — 동반자: 대화와 관계 (2~3주)
 
