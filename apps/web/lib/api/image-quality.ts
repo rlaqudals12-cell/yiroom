@@ -8,12 +8,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import {
-  validateImageQuality,
-  fromBase64,
-  type CIE1Output,
-  type RGBImageData,
-} from '@/lib/image-engine';
+import { validateImageQuality, type CIE1Output, type RGBImageData } from '@/lib/image-engine';
+// 서버 디코더 — 브라우저용 fromBase64(image-engine)는 서버에서 throw하므로 sharp 기반 사용
+// (V2 라우트 게이트가 prod에서 전멸하던 원인. 상세: lib/api/server-image-decode.ts)
+import { fromBase64Server } from '@/lib/api/server-image-decode';
 
 // 검증 실패 시 반환 타입
 export interface ImageQualityError {
@@ -76,14 +74,21 @@ export async function validateImageForAnalysis(
 
   try {
     // Base64 → RGBImageData 변환
-    const imageData = await fromBase64(imageBase64);
+    const imageData = await fromBase64Server(imageBase64);
 
     // CIE-1 품질 검증 실행
     const qualityResult = validateImageQuality(imageData, undefined, skipResolution);
 
+    // 해상도 미달 = 하드 게이트 (2026-07-07, Phase 1-③)
+    // 왜: 해상도는 종합 점수에 20% 가중으로만 반영돼, 194px 사진도 선명도·조명이
+    // 좋으면 72점으로 통과하던 것을 실측 확인 — 얼굴 지표 분석이 물리적으로
+    // 불가능한 해상도는 점수와 무관하게 재촬영을 요청한다.
+    const resolutionHardFail = !skipResolution && qualityResult.resolution?.isValid === false;
+
     // 검증 통과 여부 판단
     const isAcceptable =
-      qualityResult.isAcceptable || (allowWarnings && qualityResult.overallScore >= minScore);
+      !resolutionHardFail &&
+      (qualityResult.isAcceptable || (allowWarnings && qualityResult.overallScore >= minScore));
 
     if (!isAcceptable) {
       // 주요 이슈에 따른 사용자 메시지 선택

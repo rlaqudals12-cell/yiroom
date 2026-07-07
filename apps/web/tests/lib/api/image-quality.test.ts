@@ -14,6 +14,12 @@ vi.mock('@/lib/image-engine', () => ({
   fromBase64: (...args: unknown[]) => mockFromBase64(...args),
 }));
 
+// 서버 디코더(sharp) 모킹 — 브라우저용 fromBase64를 대체한 서버 전용 모듈
+// (2026-07-07, V2 게이트 prod 전멸 버그 수정). 테스트에서는 동일 mock으로 위임.
+vi.mock('@/lib/api/server-image-decode', () => ({
+  fromBase64Server: (...args: unknown[]) => mockFromBase64(...args),
+}));
+
 import {
   validateImageForAnalysis,
   imageQualityErrorResponse,

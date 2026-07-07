@@ -17,7 +17,13 @@ import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { applyRateLimit } from '@/lib/security/rate-limit';
-import { unauthorizedError, validationError, internalError } from '@/lib/api/error-response';
+import {
+  unauthorizedError,
+  validationError,
+  internalError,
+  imageQualityError,
+} from '@/lib/api/error-response';
+import { runFullPipeline } from '@/lib/api/image-pipeline';
 import {
   runIntegratedAnalysis,
   integratedAnalysisInputSchema,
@@ -98,6 +104,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const firstIssue = parsed.error.issues[0];
       const message = firstIssue?.message ?? '입력값이 올바르지 않아요.';
       return withCors(validationError(message));
+    }
+
+    // 3.5 CIE-1 품질 게이트 (2026-07-07, Phase 1-③)
+    // 저품질 얼굴 사진은 5축 분석(~20초·5콜 과금) 전에 차단하고 재촬영을 요청한다.
+    // V2 개별 라우트엔 이미 있던 게이트가 주 플로우인 통합에만 빠져 있었음 —
+    // 게이트 없으면 194px 사진도 신뢰도 medium으로 통과(과신)하는 것을 실측 확인.
+    if (process.env.FORCE_MOCK_AI !== 'true' && parsed.data.faceImageBase64) {
+      const gate = await runFullPipeline(parsed.data.faceImageBase64, {
+        minScore: 40,
+        allowWarnings: true,
+        skipExtendedPipeline: true, // 게이트 판정만 — CIE-3/4 메타는 축별 분석이 담당
+      });
+      if (!gate.success) {
+        return withCors(imageQualityError(gate.error.userMessage, gate.error.message));
+      }
     }
 
     // 4. 통합 분석 실행 (Partial/Failed도 정상 응답 경로)
