@@ -33,6 +33,7 @@ export async function trackAffiliateClick(input: TrackClickInput): Promise<boole
     clerk_user_id: input.clerkUserId ?? null,
     referrer: input.referrer ?? null,
     user_agent: input.userAgent ?? null,
+    source_page: input.sourcePage ?? null,
     // IP 해시는 서버에서 처리 (클라이언트에서 접근 불가)
   });
 
@@ -64,6 +65,8 @@ export async function openAffiliateLink(
     clerkUserId,
     referrer: typeof window !== 'undefined' ? document.referrer : undefined,
     userAgent: typeof window !== 'undefined' ? navigator.userAgent : undefined,
+    // 현재 경로 = 귀속 분석 주 신호 (SPA에선 referrer가 대부분 빈 값)
+    sourcePage: typeof window !== 'undefined' ? window.location.pathname : undefined,
   }).catch((err) => {
     affiliateLogger.error(' Track failed:', err);
   });

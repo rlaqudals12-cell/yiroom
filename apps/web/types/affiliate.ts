@@ -334,6 +334,8 @@ export interface TrackClickInput {
   clerkUserId?: string;
   referrer?: string;
   userAgent?: string;
+  /** 클릭 발생 페이지 경로 — SPA에선 document.referrer가 비어 귀속 분석의 주 신호 */
+  sourcePage?: string;
 }
 
 /** 일별 통계 */
