@@ -7,6 +7,7 @@
  * @see docs/adr/ADR-071-cross-module-scoring.md
  */
 
+import { ensureCapsuleDomains } from '@/lib/capsule';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
@@ -32,6 +33,8 @@ interface RouteContext {
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   try {
+    // 레지스트리 소비 전 도메인 등록 보장 (2026-07-07 — 미등록 시 존재하지 않는 도메인 오류)
+    ensureCapsuleDomains();
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(

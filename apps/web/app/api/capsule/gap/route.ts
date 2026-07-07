@@ -6,6 +6,7 @@
  * @see docs/adr/ADR-069-capsule-ecosystem-architecture.md
  */
 
+import { ensureCapsuleDomains } from '@/lib/capsule';
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getBeautyProfile } from '@/lib/capsule/profile';
@@ -28,6 +29,8 @@ interface GapItem {
  */
 export async function GET(): Promise<NextResponse> {
   try {
+    // 레지스트리 소비 전 도메인 등록 보장 (2026-07-07 — 미등록 시 존재하지 않는 도메인 오류)
+    ensureCapsuleDomains();
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(

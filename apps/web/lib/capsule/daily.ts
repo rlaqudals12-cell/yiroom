@@ -18,8 +18,8 @@ import type { TodaySkinCondition } from '@/lib/skincare';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { getBeautyProfile } from './profile';
 import { collectContext } from './context';
-import { getAllDomains, getDomainCount } from './registry';
-import { registerIdentityDomains } from './domains';
+import { getAllDomains } from './registry';
+import { ensureCapsuleDomains } from './domains';
 import { calculateCCS } from './scoring';
 import type { DomainItemGroup } from './scoring';
 import { getCrossDomainRules } from './capsule-repository';
@@ -81,12 +81,8 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   const context = await collectContext(userId);
 
   // Step 3: 각 도메인 curate
-  // 도메인 엔진 등록 보장 (멱등) — 부트스트랩 등록이 없으면 registry가 비어
-  // 캡슐이 항상 빈 채로 생성됨. 서버리스 콜드스타트마다 1회 등록.
   // ADR-098: 시각 정체성 5축(PC/S/C/H/M)+Fashion만 — W/N(숨김)/OH(제거) 제외.
-  if (getDomainCount() === 0) {
-    registerIdentityDomains();
-  }
+  ensureCapsuleDomains();
   const domains = getAllDomains();
   const domainGroups: DomainItemGroup[] = [];
   const dailyItems: DailyItem[] = [];

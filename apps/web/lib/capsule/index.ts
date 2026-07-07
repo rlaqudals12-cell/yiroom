@@ -85,7 +85,12 @@ export { findLowScoreItems, calculateDomainCompatibility } from './scoring';
 export type { CCSResult, DomainItemGroup } from './scoring';
 
 // Domain Engines (Phase 3 + Phase 5)
-export { registerPhase3Domains, registerAllDomains } from './domains';
+export {
+  registerPhase3Domains,
+  registerAllDomains,
+  registerIdentityDomains,
+  ensureCapsuleDomains,
+} from './domains';
 export { skinEngine } from './domains/skin';
 export { fashionEngine } from './domains/fashion';
 export { nutritionEngine } from './domains/nutrition';
