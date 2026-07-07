@@ -21,7 +21,17 @@ model: process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
 > 2026-07-06 마이그레이션: `gemini-3-flash-preview`가 공식 폐기 목록에 올라 GA 승계
 > 모델 `gemini-3.5-flash`로 교체 (thinking 파라미터 미사용 → ID 교체만으로 호환).
-> 비용 3배(입력 $0.5→$1.5/1M) — 볼륨 증가 시 `gemini-3.1-flash-lite`($0.25) A/B 검토.
+> 비용 3배(입력 $0.5→$1.5/1M).
+
+### 모듈별 모델 혼합 (2026-07-07 A/B 실측)
+
+| 작업                       | 모델                         | 근거                                                   |
+| -------------------------- | ---------------------------- | ------------------------------------------------------ |
+| 피부 S-1/S-2 (구조화 추출) | `FAST_MODEL`(3.1-flash-lite) | 판정 5/5 동일·3~7초(3.5는 15~19초)·1/6 가격            |
+| 퍼스널컬러 PC (색 판정)    | 기본(3.5-flash)              | lite는 같은 사진에서 winter↔autumn 널뜀 + invalid JSON |
+| body/hair/makeup           | 기본(3.5-flash)              | 미검증 — 검증 후 lite 확대                             |
+
+환경변수: `GEMINI_MODEL`(기본), `GEMINI_MODEL_FAST`(경량 오버라이드).
 
 ### 사용처
 

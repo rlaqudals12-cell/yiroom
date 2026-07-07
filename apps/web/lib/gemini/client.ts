@@ -52,6 +52,15 @@ const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 // (2026-07-06 마이그레이션, thinking 파라미터 미사용이라 모델 ID 교체만으로 호환)
 const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
+/**
+ * 경량 모델 — 구조화 추출 작업용 (2026-07-07 A/B 실측 기반 모듈별 혼합 전략)
+ *
+ * 피부 분석(S-1/S-2): lite가 판정 5/5 동일 + 3~6초(3.5는 15~19초) + 1/6 가격 → lite.
+ * 퍼스널컬러(PC): lite는 같은 사진에서 winter↔autumn 널뜀 + invalid JSON 생성 → 3.5 유지.
+ * body/hair/makeup: 미검증 — 3.5 유지, 검증 후 확대.
+ */
+export const FAST_MODEL = process.env.GEMINI_MODEL_FAST || 'gemini-3.1-flash-lite';
+
 // 기본 안전 설정 (기존 프로젝트와 동일)
 export const DEFAULT_SAFETY_SETTINGS: GeminiSafetySetting[] = [
   {

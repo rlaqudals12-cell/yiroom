@@ -6,7 +6,12 @@
  * Week 6: PC-1 Real AI 연동
  */
 
-import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
+import {
+  generateContent,
+  isGeminiAvailable,
+  formatImageForGemini,
+  FAST_MODEL,
+} from '@/lib/gemini/client';
 import type { GeminiContentPart } from '@/lib/gemini/client';
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
@@ -1393,6 +1398,7 @@ export async function analyzeSkin(imageBase64: string): Promise<GeminiSkinAnalys
       () =>
         withTimeout(
           generateContent({
+            model: FAST_MODEL, // 피부 = 구조화 추출 — lite가 5/5 동일·3배 빠름 (2026-07-07 A/B)
             contents: [{ text: SKIN_ANALYSIS_PROMPT }, imagePart],
             config: geminiConfig,
           }),

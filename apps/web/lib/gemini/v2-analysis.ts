@@ -7,7 +7,12 @@
  * @see docs/specs/SDD-PERSONAL-COLOR-v2.md
  */
 
-import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
+import {
+  generateContent,
+  isGeminiAvailable,
+  formatImageForGemini,
+  FAST_MODEL,
+} from '@/lib/gemini/client';
 import { z } from 'zod';
 import type {
   SkinZoneType,
@@ -311,6 +316,7 @@ export async function analyzeSkinV2WithGemini(
       () =>
         withTimeout(
           generateContent({
+            model: FAST_MODEL, // 피부 7존 = 구조화 추출 — lite 스키마 완전 준수·3~7초 (2026-07-07 A/B)
             contents: [{ text: SKIN_V2_PROMPT }, imagePart],
             config: geminiV2Config,
           }),
