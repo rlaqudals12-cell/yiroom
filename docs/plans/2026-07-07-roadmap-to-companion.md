@@ -42,7 +42,7 @@
 
 ## Phase 4 — 동반자: 대화와 관계 (2~3주)
 
-- [x] **AI 컨설턴트 채팅** ✅(bb6be354): /coach — 5축 프로필 주입은 기설비(getUserContext 15테이블) 확인, 신규 = "이 옷 어울려?" 사진 판정(멀티모달 스트림, 실키 검증: 코랄→여름쿨톤 보완법) + ConsultantCTA ?q/?category 미배선 결함 수정. 후속 후보: 대화 저장 배선(coach_sessions 테이블·리포지토리·패널 전부 존재하나 유령 — 라이브 채팅이 호출 안 함), /chat 레거시 정리, 코치 네비 노출
+- [x] **AI 컨설턴트 채팅** ✅(bb6be354): /coach — 5축 프로필 주입은 기설비(getUserContext 15테이블) 확인, 신규 = "이 옷 어울려?" 사진 판정(멀티모달 스트림, 실키 검증: 코랄→여름쿨톤 보완법) + ConsultantCTA ?q/?category 미배선 결함 수정. 대화 저장·이어보기 배선 완료 ✅(b40f94cb — 세션 자동생성+메시지 저장+히스토리 패널 마운트+baseline 테스트 5건 수정). 잔여 후보: /chat 레거시 정리, 코치 네비 노출
 - [ ] **스타일 리포트**: 진단 결과물의 공유형 문서 (오프라인 22만원 결과물의 무료판 — 바이럴 자산, 난이도 하)
 - [ ] 변화 추적: skinTrend 전 축 확장 + **3D 아바타** (SMPL — `docs/research/claude-ai-research/2026-07-06-3d-body-avatar-roadmap.md`)
 - [ ] Level 3 프롬프트: 사용자 과거 데이터 주입 (prompt-engineering.md Level 체계 기정의)
