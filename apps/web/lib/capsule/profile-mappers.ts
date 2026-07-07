@@ -46,6 +46,22 @@ export function normalizePalette(raw: unknown): string[] {
     .filter(Boolean);
 }
 
+/**
+ * 팔레트 색 이름 추출 — [{hex,name}]에서 name만 (솔루션 문구용)
+ * hex가 있는 항목만 포함해 palette(hex 배열)와 인덱스 짝을 유지한다
+ * (코디 솔루션에서 names[i] ↔ palette[i]가 같은 색이어야 함).
+ */
+export function extractPaletteNames(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((c) => {
+      if (!c || typeof c !== 'object') return '';
+      const item = c as { hex?: unknown; name?: unknown };
+      return typeof item.hex === 'string' && typeof item.name === 'string' ? item.name : '';
+    })
+    .filter(Boolean);
+}
+
 /** 퍼스널컬러 분석 결과에서 프로필 요약 추출 */
 export function mapPCAssessment(row: Record<string, unknown>): PCProfileData {
   const imageAnalysis = row.image_analysis as Record<string, unknown> | null;
@@ -54,6 +70,7 @@ export function mapPCAssessment(row: Record<string, unknown>): PCProfileData {
     season: (row.season as string) ?? '',
     subType: (imageAnalysis?.tone as string) ?? (row.undertone as string) ?? '',
     palette: normalizePalette(row.best_colors),
+    paletteNames: extractPaletteNames(row.best_colors),
   };
 }
 
@@ -85,10 +102,26 @@ export function mapSkinAssessment(row: Record<string, unknown>): SkinProfileData
     if (typeof value === 'number') metrics[key] = value;
   }
 
+  // 솔루션 문구용: 추천 성분 이름 + 파운데이션 진단 (recommendations JSONB / 컬럼)
+  const recs = row.recommendations as Record<string, unknown> | null;
+  const rawIngredients = recs?.ingredients;
+  const recommendedIngredients = Array.isArray(rawIngredients)
+    ? rawIngredients
+        .map((i) =>
+          i && typeof i === 'object' && typeof (i as { name?: unknown }).name === 'string'
+            ? (i as { name: string }).name
+            : ''
+        )
+        .filter(Boolean)
+    : [];
+
   return {
     type: (row.skin_type as string) ?? '',
     concerns: concerns ?? [],
     scores: { ...metrics, ...(scoreBreakdown ?? {}) },
+    recommendedIngredients,
+    foundation:
+      typeof row.foundation_recommendation === 'string' ? row.foundation_recommendation : undefined,
   };
 }
 
@@ -111,9 +144,23 @@ export function mapBodyAssessment(row: Record<string, unknown>): BodyProfileData
     if (ratios.upperToLowerRatio != null) measurements.upperToLowerRatio = ratios.upperToLowerRatio;
   }
 
+  // 솔루션 문구용: 체형 스타일 추천 (style_recommendations JSONB {tops,bottoms,outerwear,avoid})
+  const styleRecs = row.style_recommendations as Record<string, unknown> | null;
+  const pickStrings = (v: unknown): string[] | undefined =>
+    Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string') : undefined;
+  const styleTips = styleRecs
+    ? {
+        tops: pickStrings(styleRecs.tops),
+        bottoms: pickStrings(styleRecs.bottoms),
+        outerwear: pickStrings(styleRecs.outerwear),
+        avoid: pickStrings(styleRecs.avoid),
+      }
+    : undefined;
+
   return {
     shape: (row.body_shape as string) ?? (row.body_type as string) ?? '',
     measurements,
+    styleTips,
   };
 }
 

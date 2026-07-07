@@ -16,6 +16,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { generateRoutine, applyConditionalModifications, getHydrationLabel } from '@/lib/skincare';
 import type { TodaySkinCondition } from '@/lib/skincare';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
+import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 import { getBeautyProfile } from './profile';
 import { collectContext } from './context';
 import { getAllDomains } from './registry';
@@ -115,6 +116,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
     // DailyItem으로 변환
     for (const item of minimized) {
       const typedItem = item as { id?: string; name?: string; category?: string };
+      const solution = buildItemSolution(engine.domainId, typedItem.category, profile);
       dailyItems.push({
         id: typedItem.id ?? `daily-${engine.domainId}-${dailyItems.length}`,
         moduleCode,
@@ -123,6 +125,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
         compatibilityScore: 0, // Step 4에서 업데이트
         isChecked: false,
         timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
+        ...(solution ? { solution } : {}),
       });
     }
 
@@ -365,7 +368,12 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
  * generateRoutine은 피부타입별 단계 가감 + 스텝별 purpose(이유)까지 제공하는 단일 소스.
  */
 function buildSkinRoutineItems(profile: {
-  skin?: { type?: string; concerns?: string[]; scores?: Record<string, number> };
+  skin?: {
+    type?: string;
+    concerns?: string[];
+    scores?: Record<string, number>;
+    recommendedIngredients?: string[];
+  };
 }): DailyItem[] {
   // 피부 분석이 없는 사용자는 피부 루틴 없음 (다른 축은 정상 생성)
   if (!profile.skin?.type) return [];
@@ -405,7 +413,18 @@ function buildSkinRoutineItems(profile: {
         : ` · 최근 분석 기준 ${getHydrationLabel(condition.hydration)} 상태를 반영했어요`;
     const groupNote = `${personalizationNote}${conditionSuffix}`;
 
+    // 솔루션: 정본 루틴의 사용 팁("어떻게") + 보습 스텝엔 내 추천 성분("어떤 것으로")
+    const ingredients = profile.skin.recommendedIngredients ?? [];
+
     adjustedRoutine.forEach((step, index) => {
+      const tip = step.tips?.[0];
+      const ingredientHint =
+        (step.category === 'cream' || step.category === 'serum' || step.category === 'toner') &&
+        ingredients.length > 0
+          ? `${ingredients.slice(0, 2).join('·')} 성분 권장`
+          : undefined;
+      const solution = [tip, ingredientHint].filter(Boolean).join(' · ') || undefined;
+
       items.push({
         id: `skin-${timeOfDay}-${step.order}-${step.category}`,
         moduleCode: 'S',
@@ -415,10 +434,63 @@ function buildSkinRoutineItems(profile: {
         isChecked: false,
         timeOfDay,
         ...(index === 0 ? { groupNote } : {}),
+        ...(solution ? { solution } : {}),
       });
     });
   }
   return items;
+}
+
+/**
+ * 아이템 실행 솔루션 조립 — 내 분석 데이터 → "무엇으로/어떤 색으로" 한 줄
+ *
+ * 새 콘텐츠 생성 없이 저장된 진단만 배선:
+ * - 메이크업 base = 파운데이션 진단(foundation_recommendation)
+ * - 메이크업 lip/cheek = 베스트컬러 이름(best_colors.name)
+ * - 코디 = 베스트컬러 톤 + 체형 스타일 추천(style_recommendations.tops/bottoms)
+ * 데이터가 없으면 undefined — 없는 솔루션을 지어내지 않는다 (정직성).
+ * hair/body 아이템은 현재 대응 데이터가 부실해 미조립 (hair_analyses 확충 시 추가).
+ */
+function buildItemSolution(
+  domainId: string,
+  category: string | undefined,
+  profile: {
+    personalColor?: { season?: string; paletteNames?: string[] };
+    skin?: { foundation?: string };
+    body?: { styleTips?: { tops?: string[]; bottoms?: string[]; avoid?: string[] } };
+  }
+): string | undefined {
+  const names = profile.personalColor?.paletteNames ?? [];
+
+  if (domainId === 'makeup') {
+    switch (category) {
+      case 'base':
+        return profile.skin?.foundation ? `파운데이션: ${profile.skin.foundation}` : undefined;
+      case 'lip': {
+        // 립은 의류 팔레트(best_colors)가 아니라 시즌별 립 정본에서 —
+        // "세레니티 블루 립" 같은 오적용 방지 (2026-07-07). 제품 예시까지 제공.
+        const season = (profile.personalColor?.season ?? '').toLowerCase() as SeasonType;
+        const lip = LIPSTICK_RECOMMENDATIONS[season]?.[0];
+        if (!lip) return undefined;
+        const example = lip.oliveyoungAlt || lip.brandExample;
+        return example ? `${lip.colorName} (예: ${example})` : lip.colorName;
+      }
+      // cheek: 시즌별 블러셔 정본 데이터가 없어 미조립 — 지어내지 않음
+      default:
+        return undefined;
+    }
+  }
+
+  if (domainId === 'fashion') {
+    const top = profile.body?.styleTips?.tops?.[0];
+    const bottom = profile.body?.styleTips?.bottoms?.[0];
+    const tone = names[0] ? `${names[0]} 톤 · ` : '';
+    if (top && bottom) return `${tone}${top} + ${bottom}`;
+    if (names.length >= 2) return `${names[0]}·${names[1]} 톤 조합 추천`;
+    return undefined;
+  }
+
+  return undefined;
 }
 
 /**

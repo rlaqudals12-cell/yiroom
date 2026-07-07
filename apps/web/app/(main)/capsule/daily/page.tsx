@@ -26,6 +26,8 @@ interface DailyItem {
   timeOfDay?: 'morning' | 'evening' | 'anytime';
   /** 모듈 그룹 개인화 근거 (그룹 첫 아이템에만) — 예: "복합성 피부 맞춤 루틴" */
   groupNote?: string;
+  /** 실행 솔루션 한 줄 — 내 진단 데이터 기반 "무엇으로/어떤 색으로" */
+  solution?: string;
 }
 
 interface DailyCapsule {
@@ -378,6 +380,11 @@ export default function DailyCapsulePage(): React.ReactElement {
                                     {item.reason && (
                                       <p className="text-[11px] text-muted-foreground truncate">
                                         {item.reason}
+                                      </p>
+                                    )}
+                                    {item.solution && (
+                                      <p className="text-[11px] text-violet-500 dark:text-violet-400">
+                                        💡 {item.solution}
                                       </p>
                                     )}
                                   </div>

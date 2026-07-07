@@ -79,6 +79,8 @@ describe('mapPCAssessment', () => {
     const result = mapPCAssessment(row);
 
     expect(result.palette).toEqual(['#92A1CF', '#808080', '#FF6B6B']);
+    // 솔루션 문구용 이름 보존 (2026-07-07)
+    expect(result.paletteNames).toEqual(['세레니티 블루', '헤더 그레이']);
     // 소비처 계약: 모든 원소가 문자열이어야 함 (toLowerCase 호출 가능)
     result.palette.forEach((p) => expect(typeof p).toBe('string'));
   });

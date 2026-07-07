@@ -26,12 +26,11 @@
 - [ ] 속도 부채: gemini-3.1-flash-lite A/B (현재 15~19초/축 — lite는 더 싸고 빠름, 판정 품질만 검증)
 - [ ] isMock 표면 잔여 정리 (W/N 등 숨김 모듈 폴백 10곳 — 복원 시)
 
-## Phase 2 — 출시 & 계측 (~1주, Phase 1과 병행)
+## Phase 2 — 출시 ⏸ 파킹 (2026-07-07 사용자 결정: 합격 or 본인 만족 시점에)
 
 - [ ] 실기기 APK 스모크 (카메라·성능) — `c:\dev\yiroom-release\yiroom-v1.0.0-preview.apk`
-- [ ] Play 개발자 계정($25) + 제출 — 런북 `docs/PLAY-STORE-SUBMISSION.md` (심사 1~2주 대기가 다른 Phase와 겹치도록 일찍)
-- [ ] Vercel 자동배포 정상화 확인 (단일 push Ready 여부 — 연속 push 취소가 원인이었는지 확정)
-- [ ] 애널리틱스 이벤트 확충 (@vercel/analytics track — 캡슐 체크/솔루션 클릭/채팅 등)
+- [ ] Play 개발자 계정($25) + 제출 — 런북 `docs/PLAY-STORE-SUBMISSION.md`
+- (유지) Vercel 자동배포 정상화 확인 + 애널리틱스 이벤트 확충은 개발 중 병행
 
 ## Phase 3 — 조언자 완성: 실물 연결 (2~4주) · 목적지의 몸통, 경쟁 조건 ②③
 

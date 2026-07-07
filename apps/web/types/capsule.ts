@@ -44,6 +44,8 @@ export interface PCProfileData {
   season: string;
   subType: string;
   palette: string[];
+  /** 베스트컬러 이름 (palette hex와 짝) — 솔루션 문구용 예: "드라이 로즈" */
+  paletteNames?: string[];
 }
 
 /** 피부 분석 요약 */
@@ -51,12 +53,23 @@ export interface SkinProfileData {
   type: string;
   concerns: string[];
   scores: Record<string, number>;
+  /** 추천 성분 이름 (분석 결과 recommendations.ingredients) — 솔루션 문구용 */
+  recommendedIngredients?: string[];
+  /** 파운데이션 진단 (foundation_recommendation) — 예: "쿨톤 베이지 계열" */
+  foundation?: string;
 }
 
 /** 체형 분석 요약 */
 export interface BodyProfileData {
   shape: string;
   measurements: Record<string, number>;
+  /** 체형 스타일 추천 (style_recommendations) — 코디 솔루션 문구용 */
+  styleTips?: {
+    tops?: string[];
+    bottoms?: string[];
+    outerwear?: string[];
+    avoid?: string[];
+  };
 }
 
 /** 운동 프로필 요약 */
@@ -265,6 +278,11 @@ export interface DailyItem {
    * 낮아 보습 강화". 상세 페이지 모듈 헤더 아래에 노출해 "내 분석이 반영됐다"를 가시화.
    */
   groupNote?: string;
+  /**
+   * 실행 솔루션 한 줄 — "무엇을/어떻게"의 구체 지침. 내 분석 데이터에서 조립
+   * (추천 성분·파운데이션 진단·베스트컬러 이름·체형 스타일 추천). 없으면 미노출.
+   */
+  solution?: string;
 }
 
 // =============================================================================
