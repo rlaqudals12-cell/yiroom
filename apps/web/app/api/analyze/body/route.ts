@@ -150,13 +150,25 @@ export async function POST(req: NextRequest) {
         matchedFeatures: 4,
         // 분석 근거 데이터 (Mock)
         analysisEvidence: {
-          shoulderLine: selectByKey(mockResult.bodyType, { S: 'angular' as const, W: 'rounded' as const }, 'wide' as const)!,
+          shoulderLine: selectByKey(
+            mockResult.bodyType,
+            { S: 'angular' as const, W: 'rounded' as const },
+            'wide' as const
+          )!,
           waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
           hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
           boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
           muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
-          upperLowerBalance: selectByKey(mockResult.bodyType, { S: 'upper_dominant' as const, W: 'lower_dominant' as const }, 'balanced' as const)!,
-          silhouette: selectByKey(mockResult.bodyType, { S: 'I' as const, W: 'S' as const }, 'H' as const)!,
+          upperLowerBalance: selectByKey(
+            mockResult.bodyType,
+            { S: 'upper_dominant' as const, W: 'lower_dominant' as const },
+            'balanced' as const
+          )!,
+          silhouette: selectByKey(
+            mockResult.bodyType,
+            { S: 'I' as const, W: 'S' as const },
+            'H' as const
+          )!,
         },
         imageQuality: {
           angle: 'front',
@@ -194,13 +206,25 @@ export async function POST(req: NextRequest) {
           matchedFeatures: 4,
           // 분석 근거 데이터 (Mock)
           analysisEvidence: {
-            shoulderLine: selectByKey(mockResult.bodyType, { S: 'angular' as const, W: 'rounded' as const }, 'wide' as const)!,
+            shoulderLine: selectByKey(
+              mockResult.bodyType,
+              { S: 'angular' as const, W: 'rounded' as const },
+              'wide' as const
+            )!,
             waistDefinition: mockResult.bodyType === 'W' ? 'defined' : 'straight',
             hipLine: mockResult.bodyType === 'W' ? 'curved' : 'straight',
             boneStructure: mockResult.bodyType === 'N' ? 'large' : 'medium',
             muscleAttachment: mockResult.bodyType === 'S' ? 'easy' : 'moderate',
-            upperLowerBalance: selectByKey(mockResult.bodyType, { S: 'upper_dominant' as const, W: 'lower_dominant' as const }, 'balanced' as const)!,
-            silhouette: selectByKey(mockResult.bodyType, { S: 'I' as const, W: 'S' as const }, 'H' as const)!,
+            upperLowerBalance: selectByKey(
+              mockResult.bodyType,
+              { S: 'upper_dominant' as const, W: 'lower_dominant' as const },
+              'balanced' as const
+            )!,
+            silhouette: selectByKey(
+              mockResult.bodyType,
+              { S: 'I' as const, W: 'S' as const },
+              'H' as const
+            )!,
           },
           imageQuality: {
             angle: 'front',
@@ -215,157 +239,161 @@ export async function POST(req: NextRequest) {
 
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
-    const supabase = createServiceRoleClient();
+      const supabase = createServiceRoleClient();
 
-    // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
-    const { uploadedImages } = await checkConsentAndUploadImages(
-      supabase,
-      userId,
-      'body',
-      'body-images',
-      {
-        front: primaryImage,
-        left_side: resolvedLeftSide,
-        right_side: resolvedRightSide,
-        back: resolvedBack,
+      // 이미지 저장 동의 확인 + 업로드 (PIPA 준수)
+      const { uploadedImages } = await checkConsentAndUploadImages(
+        supabase,
+        userId,
+        'body',
+        'body-images',
+        {
+          front: primaryImage,
+          left_side: resolvedLeftSide,
+          right_side: resolvedRightSide,
+          back: resolvedBack,
+        }
+      );
+
+      // 정면 이미지 URL (하위 호환성)
+      const imageUrl = uploadedImages.front || null;
+      // 퍼스널 컬러 조회 (자동 연동)
+      const { data: pcData } = await supabase
+        .from('personal_color_assessments')
+        .select('season, best_colors')
+        .eq('clerk_user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      const personalColorSeason = pcData?.season || null;
+
+      // measurements에서 어깨/허리/골반 추출
+      const measurements = result.measurements || [];
+      const getMeasurement = (name: string) =>
+        measurements.find((m: { name: string; value: number }) => m.name === name)?.value || null;
+
+      // 퍼스널 컬러 + 체형 기반 코디 색상 추천 생성
+      const colorRecommendations = generateColorRecommendations(
+        personalColorSeason,
+        result.bodyType
+      );
+      const colorTips = getColorTipsForBodyType(result.bodyType);
+      // DB에 저장
+      const { data, error } = await supabase
+        .from('body_analyses')
+        .insert({
+          clerk_user_id: userId,
+          image_url: imageUrl || '',
+          left_side_image_url: uploadedImages.left_side || null,
+          right_side_image_url: uploadedImages.right_side || null,
+          back_image_url: uploadedImages.back || null,
+          height: userInput?.height || null,
+          weight: userInput?.weight || null,
+          body_type: result.bodyType,
+          shoulder: getMeasurement('어깨'),
+          waist: getMeasurement('허리'),
+          hip: getMeasurement('골반'),
+          strengths: result.strengths,
+          style_recommendations: {
+            items: result.styleRecommendations,
+            insight: result.insight,
+            colorTips,
+            // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
+            analysisEvidence: result.analysisEvidence || null,
+            imageQuality: result.imageQuality || null,
+            confidence: result.confidence || null,
+            matchedFeatures: result.matchedFeatures || null,
+            // Mock 폴백 여부 — 결과 페이지가 style_recommendations.usedMock을 읽어
+            // MockDataNotice 표시 (2026-07-07, skin과 동일 누락 수정)
+            usedMock,
+          },
+          personal_color_season: personalColorSeason,
+          // 퍼스널 컬러 + 체형 기반 색상 추천 (문서 구조에 맞춤)
+          color_recommendations: colorRecommendations,
+          target_weight: userInput?.targetWeight || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[C-1] Database insert error:', error);
+        // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
       }
-    );
 
-    // 정면 이미지 URL (하위 호환성)
-    const imageUrl = uploadedImages.front || null;
-    // 퍼스널 컬러 조회 (자동 연동)
-    const { data: pcData } = await supabase
-      .from('personal_color_assessments')
-      .select('season, best_colors')
-      .eq('clerk_user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      // BMI 계산 (userInput이 있는 경우)
+      let bmi: number | undefined;
+      let bmiCategory: string | undefined;
 
-    const personalColorSeason = pcData?.season || null;
+      if (userInput?.height && userInput?.weight) {
+        bmi = userInput.weight / (userInput.height / 100) ** 2;
+        if (bmi < 18.5) bmiCategory = '저체중';
+        else if (bmi < 23) bmiCategory = '정상';
+        else if (bmi < 25) bmiCategory = '과체중';
+        else bmiCategory = '비만';
+      }
 
-    // measurements에서 어깨/허리/골반 추출
-    const measurements = result.measurements || [];
-    const getMeasurement = (name: string) =>
-      measurements.find((m: { name: string; value: number }) => m.name === name)?.value || null;
+      // 체형 정보 보완 (BODY_TYPES_3에서 가져오기 - 3타입 시스템)
+      const bodyTypeInfo = BODY_TYPES_3[result.bodyType as BodyType3];
 
-    // 퍼스널 컬러 + 체형 기반 코디 색상 추천 생성
-    const colorRecommendations = generateColorRecommendations(personalColorSeason, result.bodyType);
-    const colorTips = getColorTipsForBodyType(result.bodyType);
-    // DB에 저장
-    const { data, error } = await supabase
-      .from('body_analyses')
-      .insert({
-        clerk_user_id: userId,
-        image_url: imageUrl || '',
-        left_side_image_url: uploadedImages.left_side || null,
-        right_side_image_url: uploadedImages.right_side || null,
-        back_image_url: uploadedImages.back || null,
-        height: userInput?.height || null,
-        weight: userInput?.weight || null,
-        body_type: result.bodyType,
-        shoulder: getMeasurement('어깨'),
-        waist: getMeasurement('허리'),
-        hip: getMeasurement('골반'),
-        strengths: result.strengths,
-        style_recommendations: {
-          items: result.styleRecommendations,
-          insight: result.insight,
-          colorTips,
-          // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
-          analysisEvidence: result.analysisEvidence || null,
-          imageQuality: result.imageQuality || null,
-          confidence: result.confidence || null,
-          matchedFeatures: result.matchedFeatures || null,
+      // 게이미피케이션 연동
+      const gamificationResult: {
+        badgeResults: BadgeAwardResult[];
+        xpAwarded: number;
+      } = {
+        badgeResults: [],
+        xpAwarded: 0,
+      };
+
+      try {
+        // XP 추가 (분석 완료 시 10 XP)
+        await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
+        gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
+
+        // 체형 분석 완료 배지
+        const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
+        if (bodyBadge) {
+          gamificationResult.badgeResults.push(bodyBadge);
+        }
+
+        // 모든 분석 완료 여부 체크
+        const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
+        if (allBadge) {
+          gamificationResult.badgeResults.push(allBadge);
+        }
+      } catch (gamificationError) {
+        console.error('[C-1] Gamification error:', gamificationError);
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: data,
+        result: {
+          ...result,
+          bodyTypeLabel: result.bodyTypeLabel || bodyTypeInfo?.label,
+          bodyTypeLabelEn: result.bodyTypeLabelEn || bodyTypeInfo?.labelEn,
+          bodyTypeDescription: result.bodyTypeDescription || bodyTypeInfo?.description,
+          characteristics: result.characteristics || bodyTypeInfo?.characteristics,
+          keywords: result.keywords || bodyTypeInfo?.keywords,
+          avoidStyles: result.avoidStyles || bodyTypeInfo?.avoidStyles,
+          userInput,
+          bmi,
+          bmiCategory,
+          analyzedAt: new Date().toISOString(),
         },
-        personal_color_season: personalColorSeason,
-        // 퍼스널 컬러 + 체형 기반 색상 추천 (문서 구조에 맞춤)
-        color_recommendations: colorRecommendations,
-        target_weight: userInput?.targetWeight || null,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[C-1] Database insert error:', error);
-      // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
-    }
-
-    // BMI 계산 (userInput이 있는 경우)
-    let bmi: number | undefined;
-    let bmiCategory: string | undefined;
-
-    if (userInput?.height && userInput?.weight) {
-      bmi = userInput.weight / (userInput.height / 100) ** 2;
-      if (bmi < 18.5) bmiCategory = '저체중';
-      else if (bmi < 23) bmiCategory = '정상';
-      else if (bmi < 25) bmiCategory = '과체중';
-      else bmiCategory = '비만';
-    }
-
-    // 체형 정보 보완 (BODY_TYPES_3에서 가져오기 - 3타입 시스템)
-    const bodyTypeInfo = BODY_TYPES_3[result.bodyType as BodyType3];
-
-    // 게이미피케이션 연동
-    const gamificationResult: {
-      badgeResults: BadgeAwardResult[];
-      xpAwarded: number;
-    } = {
-      badgeResults: [],
-      xpAwarded: 0,
-    };
-
-    try {
-      // XP 추가 (분석 완료 시 10 XP)
-      await addXp(supabase, userId, XP_ANALYSIS_COMPLETE);
-      gamificationResult.xpAwarded = XP_ANALYSIS_COMPLETE;
-
-      // 체형 분석 완료 배지
-      const bodyBadge = await awardAnalysisBadge(supabase, userId, 'body');
-      if (bodyBadge) {
-        gamificationResult.badgeResults.push(bodyBadge);
-      }
-
-      // 모든 분석 완료 여부 체크
-      const allBadge = await checkAndAwardAllAnalysisBadge(supabase, userId);
-      if (allBadge) {
-        gamificationResult.badgeResults.push(allBadge);
-      }
-    } catch (gamificationError) {
-      console.error('[C-1] Gamification error:', gamificationError);
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: data,
-      result: {
-        ...result,
-        bodyTypeLabel: result.bodyTypeLabel || bodyTypeInfo?.label,
-        bodyTypeLabelEn: result.bodyTypeLabelEn || bodyTypeInfo?.labelEn,
-        bodyTypeDescription: result.bodyTypeDescription || bodyTypeInfo?.description,
-        characteristics: result.characteristics || bodyTypeInfo?.characteristics,
-        keywords: result.keywords || bodyTypeInfo?.keywords,
-        avoidStyles: result.avoidStyles || bodyTypeInfo?.avoidStyles,
-        userInput,
-        bmi,
-        bmiCategory,
-        analyzedAt: new Date().toISOString(),
-      },
-      personalColorSeason,
-      colorRecommendations,
-      colorTips,
-      imagesAnalyzed,
-      usedMock,
-      gamification: gamificationResult,
-    });
+        personalColorSeason,
+        colorRecommendations,
+        colorTips,
+        imagesAnalyzed,
+        usedMock,
+        gamification: gamificationResult,
+      });
     } catch (dbOperationError) {
       // DB 실패 시 합성 응답 반환 (AI 분석 결과는 보존)
       console.warn('[C-1] DB operations failed, using synthetic response');
       console.error('[C-1] DB error details:', {
         error:
-          dbOperationError instanceof Error
-            ? dbOperationError.message
-            : String(dbOperationError),
+          dbOperationError instanceof Error ? dbOperationError.message : String(dbOperationError),
       });
       const syntheticId = crypto.randomUUID();
       return NextResponse.json({

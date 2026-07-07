@@ -445,6 +445,9 @@ export async function POST(req: NextRequest) {
             // 분석 근거 및 이미지 품질 정보 (신뢰성 리포트용)
             analysisEvidence: result.analysisEvidence || null,
             imageQuality: result.imageQuality || null,
+            // Mock 폴백 여부 — 결과 페이지가 recommendations.usedMock을 읽어 MockDataNotice
+            // 표시. 저장 누락 시 Mock 결과가 재방문에서 실분석으로 위장됨 (2026-07-07)
+            usedMock,
           },
           // 제품 추천 (피부 타입별 루틴 + 특화 제품)
           products: productsForDB,
