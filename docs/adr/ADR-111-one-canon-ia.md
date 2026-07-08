@@ -29,13 +29,13 @@
 
 **모든 정보 유형에 정본(canon) 표면을 정확히 1곳 지정하고, 나머지 표면은 흡수(재사용)하거나 링크로 위임한다.**
 
-| 정보 유형             | 정본                                                                                                           | 나머지 표면의 처리                                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 분석 진입 + 축별 요약 | **홈 ProfileCardGrid** (5축 채워지는 프로필, ADR-109)                                                          | `/analysis` 허브 → `/home` redirect. 프로필 페이지 섹션 → ProfileCardGrid 재사용(컴포넌트 `components/profile/` 승격) |
-| 축 상세(심화)         | **개별 결과 페이지** (`/analysis/{axis}/result/[id]`)                                                          | 통합 결과의 AxesSummaryCard·AxisDetailAccordion 제거, 축별 심화 링크로 위임                                           |
-| 통합 결과             | **세션 고유물만** — Persona → ActionPlan → CrossInsights → Curation → 심화 링크 → Share (컨설팅 리포트 스토리) | 개별 결과 재현물 제거                                                                                                 |
-| 제품 추천(개별)       | **AnalysisMatchedProducts** (실DB + 개인화 + matchReasons)                                                     | RecommendedProducts 블록 제거                                                                                         |
-| 스킨케어 루틴         | **`lib/skincare/routine.ts` generateRoutine**                                                                  | 스킨 결과 페이지의 Mock/DB문자열 루틴 → 정본 요약 + 루틴 페이지 링크                                                  |
+| 정보 유형             | 정본                                                                                                             | 나머지 표면의 처리                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 분석 진입 + 축별 요약 | **[나] 탭 ProfileCardGrid 단독** (ADR-114 갱신 2026-07-10 — 홈=브리핑 정본, 새 분석 진입=온보딩+프로필 빈칸 CTA) | `/analysis` 허브 → `/home` redirect 유지. 홈에서는 ProfileCardGrid 제거(ADR-114) |
+| 축 상세(심화)         | **개별 결과 페이지** (`/analysis/{axis}/result/[id]`)                                                            | 통합 결과의 AxesSummaryCard·AxisDetailAccordion 제거, 축별 심화 링크로 위임      |
+| 통합 결과             | **세션 고유물만** — Persona → ActionPlan → CrossInsights → Curation → 심화 링크 → Share (컨설팅 리포트 스토리)   | 개별 결과 재현물 제거                                                            |
+| 제품 추천(개별)       | **AnalysisMatchedProducts** (실DB + 개인화 + matchReasons)                                                       | RecommendedProducts 블록 제거                                                    |
+| 스킨케어 루틴         | **`lib/skincare/routine.ts` generateRoutine**                                                                    | 스킨 결과 페이지의 Mock/DB문자열 루틴 → 정본 요약 + 루틴 페이지 링크             |
 
 링크 재배선은 인텐트 기준: "내 결과 보기" → `/home`, "새 분석 시작" → `/analysis/integrated`(또는 해당 축 직행), 에러 폴백 → `/home`.
 

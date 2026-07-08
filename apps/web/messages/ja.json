@@ -24,6 +24,8 @@
   },
   "nav": {
     "home": "ホーム",
+    "today": "今日",
+    "coach": "きく",
     "beauty": "ビューティー",
     "style": "スタイル",
     "record": "記録",
@@ -1267,8 +1269,8 @@
     }
   },
   "coach": {
-    "greeting": "こんにちは！Yiroomウェルネスコーチです。",
-    "greetingSubtitle": "運動、栄養、肌、ヘア、メイクについて何でもお聞きください。",
+    "greeting": "こんにちは！あなた専属のビューティーチームです。",
+    "greetingSubtitle": "カラー・服・肌・ヘア・メイク、何でもお聞きください。",
     "errorMessage": "申し訳ありません。問題が発生しました。もう一度お試しください。",
     "thinking": "考え中...",
     "suggestedQuestions": "こんなことも聞いてみてください",

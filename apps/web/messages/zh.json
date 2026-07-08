@@ -24,6 +24,8 @@
   },
   "nav": {
     "home": "首页",
+    "today": "今天",
+    "coach": "提问",
     "beauty": "美妆",
     "style": "风格",
     "record": "记录",
@@ -1267,8 +1269,8 @@
     }
   },
   "coach": {
-    "greeting": "你好！我是Yiroom健康教练。",
-    "greetingSubtitle": "运动、营养、皮肤、头发、化妆，什么都可以问我。",
+    "greeting": "你好！我们是你的专属美妆团队。",
+    "greetingSubtitle": "配色、穿搭、皮肤、发型、化妆，什么都可以问。",
     "errorMessage": "抱歉，出了点问题。请重试。",
     "thinking": "思考中...",
     "suggestedQuestions": "你也可以这样问",

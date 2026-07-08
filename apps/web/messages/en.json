@@ -24,6 +24,8 @@
   },
   "nav": {
     "home": "Home",
+    "today": "Today",
+    "coach": "Ask",
     "beauty": "Beauty",
     "style": "Style",
     "record": "Record",
@@ -1267,8 +1269,8 @@
     }
   },
   "coach": {
-    "greeting": "Hello! I'm the Yiroom Wellness Coach.",
-    "greetingSubtitle": "Ask me anything about workout, nutrition, skin, hair, or makeup.",
+    "greeting": "Hi! We're your personal beauty team.",
+    "greetingSubtitle": "Ask us anything about color, outfits, skin, hair, or makeup.",
     "errorMessage": "Sorry, something went wrong. Please try again.",
     "thinking": "Thinking...",
     "suggestedQuestions": "You can also ask",

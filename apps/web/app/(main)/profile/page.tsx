@@ -34,6 +34,9 @@ import {
   QrCode,
   Dumbbell,
   Utensils,
+  BarChart3,
+  ShoppingBag,
+  Box,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
@@ -679,6 +682,44 @@ export default function ProfilePage() {
             </FadeInUp>
           </>
         )}
+
+        {/* 더 보기 — 5탭 표면에 진입점이 없는 깊은 기능 보존 (ADR-114 죽은 링크 방지).
+            분석 5축은 위 ProfileCardGrid가 정본으로 커버 → 여기엔 기록/제품/캡슐만. */}
+        <FadeInUp delay={3}>
+          <section className="bg-card overflow-hidden rounded-2xl border">
+            <div className="px-4 pt-4 pb-1 text-xs font-medium text-muted-foreground">더 보기</div>
+            <Link
+              href="/dashboard"
+              className="hover:bg-muted/50 flex items-center justify-between border-b p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-gray-500" />
+                <span>분석 기록</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+            <Link
+              href="/products"
+              className="hover:bg-muted/50 flex items-center justify-between border-b p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <ShoppingBag className="h-5 w-5 text-gray-500" />
+                <span>제품 둘러보기</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+            <Link
+              href="/capsule"
+              className="hover:bg-muted/50 flex items-center justify-between p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Box className="h-5 w-5 text-gray-500" />
+                <span>데일리 캡슐</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+          </section>
+        </FadeInUp>
 
         {/* 설정/도움말 링크들 (항상 표시) */}
         <FadeInUp delay={4}>

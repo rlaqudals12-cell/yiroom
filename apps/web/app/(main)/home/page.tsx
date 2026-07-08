@@ -1,8 +1,6 @@
 import { Suspense } from 'react';
-import { currentUser } from '@clerk/nextjs/server';
 import { BottomNav } from '@/components/BottomNav';
 import { HomeHeader } from './_components/HomeHeader';
-import { HomeGreeting } from './_components/HomeGreeting';
 import HomeStateRouter from './_components/HomeStateRouter';
 import WelcomeBackBanner from './_components/WelcomeBackBanner';
 
@@ -35,9 +33,6 @@ function HomeStateSkeleton() {
  * State 분기는 Client Component(HomeStateRouter)가 담당
  */
 export default async function HomePage() {
-  const user = await currentUser();
-  const userName = user?.firstName || user?.username || '회원';
-
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/20 dark:to-indigo-950/30 pb-20"
@@ -48,8 +43,7 @@ export default async function HomePage() {
 
       {/* 본문 */}
       <div className="px-4 py-5 space-y-5">
-        {/* 인사말 - Server Component (LCP 요소) */}
-        <HomeGreeting userName={userName} />
+        {/* ADR-114: 인사는 브리핑 레터가 담당(DailyBriefing) — 서버 인사말 중복 제거 */}
 
         {/* 복귀자 환영 배너 (3일+ 미접속 시 표시) */}
         <WelcomeBackBanner />

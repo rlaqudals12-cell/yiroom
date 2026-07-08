@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Sparkles, Shirt, ClipboardList, User } from 'lucide-react';
-import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Home, MessageCircle, Sparkles, Shirt, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -14,20 +13,21 @@ interface NavItem {
 }
 
 /**
- * UX 리스트럭처링 탭 구성
- * - 홈: 대시보드 + 오늘의 추천 + 미션
- * - 뷰티: 화해 스타일 제품 피드 (피부 분석 기반)
- * - 스타일: 룩핀 스타일 코디 피드 (체형 분석 기반)
- * - 기록: 운동 + 영양 통합 — Phase 2 보류 (ADR-098, FEATURE_FLAGS.WELLNESS_PHASE2)
- * - 나: 프로필 + 소셜 (친구, 리더보드, 챌린지, 배지)
+ * 5탭 단일 IA (ADR-114) — 데스크톱 Navbar와 동일 5항목(오늘·물어보기·뷰티·스타일·나)
+ * - 오늘: 전속 팀의 아침 브리핑 (/home)
+ * - 뷰티: 제품 피드 (피부·PC 기반, /beauty)
+ * - 물어보기: 전속 팀 코치 채팅 (/coach) — 컨설팅의 심장, 가운데(3번째) 승격
+ * - 스타일: 코디 피드 (체형 기반, /style)
+ * - 나: 5축 정체성 프로필 + 소셜 (/profile)
+ *
+ * 물어보기를 물리적 가운데에 두어 1급 동작을 강조(데스크톱은 좌→우 나열, 항목은 동일).
+ * "기록"(WELLNESS_PHASE2) 탭 제거 — 라우트(/record)는 유지, 네비 진입점만 폐기.
  */
 const navItems: NavItem[] = [
-  { href: '/home', icon: Home, label: '홈' },
+  { href: '/home', icon: Home, label: '오늘' },
   { href: '/beauty', icon: Sparkles, label: '뷰티', tutorialId: 'beauty' },
+  { href: '/coach', icon: MessageCircle, label: '물어보기', tutorialId: 'coach' },
   { href: '/style', icon: Shirt, label: '스타일', tutorialId: 'style' },
-  ...(FEATURE_FLAGS.WELLNESS_PHASE2
-    ? [{ href: '/record', icon: ClipboardList, label: '기록', tutorialId: 'record' }]
-    : []),
   { href: '/profile', icon: User, label: '나', tutorialId: 'profile' },
 ];
 

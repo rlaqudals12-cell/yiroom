@@ -24,6 +24,8 @@
   },
   "nav": {
     "home": "홈",
+    "today": "오늘",
+    "coach": "물어보기",
     "beauty": "뷰티",
     "style": "스타일",
     "record": "기록",
@@ -1267,8 +1269,8 @@
     }
   },
   "coach": {
-    "greeting": "안녕하세요! 저는 이룸 웰니스 코치예요.",
-    "greetingSubtitle": "운동, 영양, 피부, 헤어, 메이크업에 대해 무엇이든 물어보세요.",
+    "greeting": "안녕하세요! 당신의 전속 뷰티팀이에요.",
+    "greetingSubtitle": "색·옷·피부·헤어·메이크업, 무엇이든 편하게 물어보세요.",
     "errorMessage": "죄송해요, 잠시 문제가 생겼어요. 다시 시도해주세요.",
     "thinking": "생각 중...",
     "suggestedQuestions": "이런 것도 물어보세요",

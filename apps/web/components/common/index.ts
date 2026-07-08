@@ -7,7 +7,7 @@ export { Footer } from './Footer';
 export { ErrorBoundary } from './ErrorBoundary';
 export { PWAInstallPrompt } from './PWAInstallPrompt';
 export { OrganizationJsonLd, WebApplicationJsonLd, BreadcrumbJsonLd, FAQJsonLd } from './JsonLd';
-// AppTour: dead code (OnboardingTutorial이 layout.tsx에서 사용됨, P4 중복 정리)
+// AppTour: dead code, P4 중복 정리 (온보딩 오버레이는 ADR-114로 폐기)
 
 // 등급 시스템
 export { LevelBadge, LevelBadgeFilled } from './LevelBadge';

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, ChevronDown, ImagePlus, X } from 'lucide-react';
+import { Send, Loader2, ChevronDown, ImagePlus, X, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -348,12 +349,22 @@ export function ChatInterface({
             </div>
 
             {/* 빠른 질문 */}
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto flex flex-wrap justify-center gap-2">
               <QuickQuestions
                 questions={QUICK_QUESTIONS_BY_CATEGORY[activeCategory]}
                 onSelect={handleQuickQuestion}
                 disabled={loading}
               />
+              {/* ADR-114: "이 제품 나한테 맞을까요?"는 채팅 대신 스캔(사진 판정 정본)으로 분기 */}
+              {activeCategory === 'general' && (
+                <Link
+                  href="/scan"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-muted/50 hover:bg-primary/10 hover:text-primary rounded-full border border-border hover:border-primary/30 transition-colors"
+                  data-testid="coach-scan-chip"
+                >
+                  <ScanLine className="h-4 w-4" aria-hidden="true" />이 제품 나한테 맞을까요?
+                </Link>
+              )}
             </div>
           </div>
         )}

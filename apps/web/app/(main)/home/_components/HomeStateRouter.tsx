@@ -12,12 +12,9 @@
  */
 
 import { RefreshCw } from 'lucide-react';
-import { FEATURE_FLAGS } from '@yiroom/shared';
 import { Button } from '@/components/ui/button';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
-import { useProfilePersona } from '@/hooks/useProfilePersona';
 import { useOnboardingSync } from '@/hooks/useOnboardingSync';
-import { ProfileCardGrid } from '@/components/profile';
 import HomeStateNew from './HomeStateNew';
 import HomeStateGrowing from './HomeStateGrowing';
 import HomeStateActive from './HomeStateActive';
@@ -49,7 +46,6 @@ export default function HomeStateRouter() {
   useOnboardingSync();
 
   const { isLoading, hasError, analysisCount, analyses, refetch } = useAnalysisStatus();
-  const personaOneLine = useProfilePersona();
 
   if (isLoading) {
     return <HomeStateSkeleton />;
@@ -74,12 +70,9 @@ export default function HomeStateRouter() {
   const state = getHomeState(analysisCount);
 
   // aria-live: 로딩→콘텐츠 전환 시 스크린리더에 알림
-  // ADR-109: PROFILE_HOME ON이면 "프로필 카드"를 최상위에 + 상태 콘텐츠는 보조(중복 진행/요약은 상태 컴포넌트가 자체 억제).
+  // ADR-114: 홈 = 브리핑. 축 요약 정본은 [나] 탭(ProfileCardGrid) — 홈에서 제거.
   return (
     <div aria-live="polite" aria-atomic={false} className="space-y-5">
-      {FEATURE_FLAGS.PROFILE_HOME && (
-        <ProfileCardGrid analyses={analyses} personaOneLine={personaOneLine} />
-      )}
       {state === 'new' && <HomeStateNew />}
       {state === 'growing' && (
         <HomeStateGrowing analysisCount={analysisCount} analyses={analyses} />

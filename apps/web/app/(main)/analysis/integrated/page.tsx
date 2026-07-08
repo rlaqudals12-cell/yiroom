@@ -21,6 +21,7 @@ import type { AxisCode } from '@/lib/analysis/integrated';
 import { ImageUploadSection } from './_components/ImageUploadSection';
 import { QuestionnaireForm, type QuestionnaireData } from './_components/QuestionnaireForm';
 import { IntegratedLoadingUI } from './_components/IntegratedLoadingUI';
+import { OnboardingHeader } from './_components/OnboardingHeader';
 
 // 선택 재분석용 축 옵션 (ADR-109 cadence locking)
 const AXIS_OPTIONS: { code: AxisCode; label: string }[] = [
@@ -150,6 +151,9 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       data-testid="integrated-input-page"
     >
       <div className="mx-auto max-w-3xl space-y-6">
+        {/* 온보딩 모드(가입=첫 미팅) 진입 시에만 렌더 — ADR-114 */}
+        <OnboardingHeader />
+
         {/* 헤더 */}
         <header className="space-y-2 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-4 py-1.5 text-xs text-pink-300">

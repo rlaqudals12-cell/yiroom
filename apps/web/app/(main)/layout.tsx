@@ -3,11 +3,8 @@ import nextDynamic from 'next/dynamic';
 import { AgreementGuard } from '@/components/agreement';
 import { AgeVerificationProvider } from '@/components/providers/AgeVerificationProvider';
 
-// 조건부 렌더링 컴포넌트 — 대부분 사용자에게 불필요하므로 지연 로드 (-80KB)
-const OnboardingTutorial = nextDynamic(
-  () => import('@/components/onboarding').then((mod) => ({ default: mod.OnboardingTutorial })),
-  { loading: () => null }
-);
+// 조건부 렌더링 컴포넌트 — 대부분 사용자에게 불필요하므로 지연 로드
+// OnboardingTutorial 오버레이는 ADR-114로 폐기(실제 통합분석 온보딩 모드가 대체)
 const ProductCompare = nextDynamic(
   () =>
     import('@/components/products/ProductCompare').then((mod) => ({
@@ -25,7 +22,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     <AgeVerificationProvider>
       <AgreementGuard />
       {children}
-      <OnboardingTutorial />
       <ProductCompare />
     </AgeVerificationProvider>
   );
