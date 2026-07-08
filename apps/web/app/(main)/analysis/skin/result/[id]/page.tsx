@@ -103,6 +103,9 @@ import { SkinConsultationChat } from '@/components/skin-consultation';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
+import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
+import { buildSkinTopActions } from '@/components/analysis/skin/skinTopActions';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { ResultPageInsights } from '@/components/insights';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 import { useExpertMode } from '@/hooks/useExpertMode';
@@ -398,6 +401,13 @@ export default function SkinAnalysisResultPage() {
   const evidenceConcernCards = useMemo(
     () => (result ? mapSkinMetricsToConcernCards(result.metrics) : []),
     [result]
+  );
+
+  // 결론 먼저(ADR-111 표현 원칙 1): 기존 결과 데이터에서 규칙 기반으로
+  // "그래서, 이렇게 하세요" 3개를 조립 (새 fetch·AI 호출 없음 — 정직성 원칙)
+  const topActions = useMemo<TopAction[]>(
+    () => buildSkinTopActions(result, skinType),
+    [result, skinType]
   );
 
   // Identity-First 타입 라벨 (ADR-080)
@@ -980,15 +990,79 @@ export default function SkinAnalysisResultPage() {
                     className="mb-6"
                   />
 
-                  {/* 피부 활력도 점수 */}
-                  <SkinVitalityScore
-                    score={vitalityData.score}
-                    factors={vitalityData.factors}
-                    showDetails
-                    className="mb-6"
+                  {/* 결론 먼저(ADR-111): "그래서, 이렇게 하세요" — 기존 결과에서 규칙 조립 */}
+                  <TopActionsCard actions={topActions} className="mb-6" />
+
+                  {/* 본론: 고민 그리드(펼침) + 데일리 루틴(펼침) + 상세(접힘) */}
+                  <AnalysisResult
+                    result={result}
+                    onRetry={handleNewAnalysis}
+                    evidence={analysisEvidence}
+                    skinType={skinType || undefined}
+                    imageUrl={imageUrl || pcImageUrl}
                   />
 
-                  {/* S-1 + PC-1 시너지 인사이트 */}
+                  {/* 피부 활력도 점수 — 접기 (히어로에 점수가 이미 있음) */}
+                  <ProgressiveDisclosure
+                    title="피부 활력도"
+                    summary={`활력도 ${vitalityData.score}점`}
+                    className="mt-6 mb-6"
+                  >
+                    <SkinVitalityScore
+                      score={vitalityData.score}
+                      factors={vitalityData.factors}
+                      showDetails
+                    />
+                  </ProgressiveDisclosure>
+
+                  {/* 환경 요인 안내 카드 — 접기 */}
+                  <ProgressiveDisclosure
+                    title="알아두면 좋아요"
+                    summary="촬영 환경이 분석 정확도에 주는 영향"
+                    className="mb-6"
+                  >
+                    <div
+                      data-testid="environment-info-card"
+                      className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+                          <Lightbulb
+                            className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
+                          <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+                            <li className="flex items-start gap-1.5">
+                              <Sun
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
+                                aria-hidden="true"
+                              />
+                              <span>{t('lightingNote')}</span>
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Droplets
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-sky-500"
+                                aria-hidden="true"
+                              />
+                              <span>메이크업이 있으면 피부 상태 분석 정확도가 낮아져요</span>
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Sparkles
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
+                                aria-hidden="true"
+                              />
+                              <span>노메이크업 상태에서 촬영하면 가장 정확해요</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </ProgressiveDisclosure>
+
+                  {/* S-1 + PC-1 시너지 인사이트 — 루틴 아래 CTA (펼침 유지) */}
                   {synergyInsight && pcSeason && (
                     <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
                       <div className="flex items-start gap-3">
@@ -1037,7 +1111,7 @@ export default function SkinAnalysisResultPage() {
                     </Link>
                   )}
 
-                  {/* 맞춤 클렌징 가이드 CTA 카드 */}
+                  {/* 맞춤 클렌징 가이드 CTA 카드 — 루틴 아래 */}
                   <Link
                     href={`/analysis/skin/solution?skinType=${skinType || ''}`}
                     className="block mb-6"
@@ -1062,55 +1136,6 @@ export default function SkinAnalysisResultPage() {
                       </div>
                     </div>
                   </Link>
-
-                  {/* 환경 요인 안내 카드 */}
-                  <div
-                    data-testid="environment-info-card"
-                    className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-                        <Lightbulb
-                          className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
-                        <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                          <li className="flex items-start gap-1.5">
-                            <Sun
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
-                              aria-hidden="true"
-                            />
-                            <span>{t('lightingNote')}</span>
-                          </li>
-                          <li className="flex items-start gap-1.5">
-                            <Droplets
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-sky-500"
-                              aria-hidden="true"
-                            />
-                            <span>메이크업이 있으면 피부 상태 분석 정확도가 낮아져요</span>
-                          </li>
-                          <li className="flex items-start gap-1.5">
-                            <Sparkles
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
-                              aria-hidden="true"
-                            />
-                            <span>노메이크업 상태에서 촬영하면 가장 정확해요</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <AnalysisResult
-                    result={result}
-                    onRetry={handleNewAnalysis}
-                    evidence={analysisEvidence}
-                    skinType={skinType || undefined}
-                    imageUrl={imageUrl || pcImageUrl}
-                  />
 
                   {/* 다음 분석 추천 */}
                   <ContextLinkingCard currentModule="skin" />

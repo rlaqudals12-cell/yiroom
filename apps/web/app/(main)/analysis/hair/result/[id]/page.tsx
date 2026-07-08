@@ -37,6 +37,7 @@ import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
+import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
 
 // 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
@@ -436,6 +437,24 @@ export default function HairAnalysisResultPage() {
                     <ScoreTrendChip trend={scoreTrend} />
                   </div>
                 )}
+
+                {/* 그래서, 이렇게 하세요 — 결론 액션 (기존 결과 데이터에서 조립, ADR-111) */}
+                {(() => {
+                  const actions: TopAction[] = [];
+                  if (result.careTips[0]) actions.push({ title: result.careTips[0] });
+                  if (result.recommendedIngredients[0]) {
+                    actions.push({
+                      title: `${result.recommendedIngredients[0]} 성분이 든 샴푸를 골라보세요`,
+                    });
+                  }
+                  // 컷(×얼굴형)·염색(×퍼스널컬러)은 이 페이지에 데이터가 없어 통합 분석으로 정직하게 유도
+                  actions.push({
+                    title: '어울리는 컷·염색은 통합 분석에서 확인하세요',
+                    href: '/analysis/integrated',
+                    hrefLabel: '통합 분석 보기',
+                  });
+                  return <TopActionsCard actions={actions} />;
+                })()}
 
                 {/* 인사이트 */}
                 <div className="bg-card rounded-xl p-6 shadow-sm">

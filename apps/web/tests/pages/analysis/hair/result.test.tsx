@@ -508,4 +508,32 @@ describe('HairAnalysisResultPage', () => {
       });
     });
   });
+
+  // 결론 먼저(ADR-111): 기본 탭 상단 결론 액션 카드
+  describe('결론 액션 카드 (TopActionsCard)', () => {
+    it('결론 액션 카드가 기본 탭 상단에 표시된다', async () => {
+      render(<HairAnalysisResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('top-actions-card')).toBeInTheDocument();
+      });
+    });
+
+    it('추천 케어 성분으로 조립된 행동이 표시된다', async () => {
+      render(<HairAnalysisResultPage />);
+
+      await waitFor(() => {
+        // recommendedIngredients[0] = '아르간 오일'
+        expect(screen.getByText('아르간 오일 성분이 든 샴푸를 골라보세요')).toBeInTheDocument();
+      });
+    });
+
+    it('컷·염색은 통합 분석으로 정직하게 유도한다', async () => {
+      render(<HairAnalysisResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('어울리는 컷·염색은 통합 분석에서 확인하세요')).toBeInTheDocument();
+      });
+    });
+  });
 });

@@ -50,6 +50,7 @@ import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 const ProgressiveProfilePrompt = dynamic(
   () =>
     import('@/components/analysis/ProgressiveProfilePrompt').then((mod) => ({
@@ -599,28 +600,7 @@ export default function PersonalColorResultPage() {
                 />
               )}
 
-              {/* 환경 요인 안내 카드 */}
-              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
-                    <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                      <li className="flex items-start gap-1.5">
-                        <Sun className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
-                        <span>{t('lightingNote')}</span>
-                      </li>
-                      <li className="flex items-start gap-1.5">
-                        <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500" />
-                        <span>염색은 피부톤에 영향 없지만 분석 정확도에 영향을 줄 수 있어요</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
+              {/* 판정 → 결론 → 팔레트 → 접힌 심화 (ADR-111 표현 원칙 1) */}
               <AnalysisResult
                 result={result}
                 onRetry={handleNewAnalysis}
@@ -628,19 +608,73 @@ export default function PersonalColorResultPage() {
                 onTabChange={setActiveTab}
               />
 
-              {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (Part B 색 고도화) */}
+              {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (접힘 — 결론 먼저) */}
               {result.bestColors.length > 0 && (
-                <ColorHarmonyGuide
-                  baseHex={result.bestColors[0].hex}
-                  baseName={result.bestColors[0].name}
-                  className="mb-6"
-                />
+                <div className="mt-6">
+                  <ProgressiveDisclosure
+                    title="배색 가이드"
+                    summary="대표 컬러로 배색 조합을 만들어보세요"
+                    icon={<Palette className="w-4 h-4 text-primary" />}
+                  >
+                    <ColorHarmonyGuide
+                      baseHex={result.bestColors[0].hex}
+                      baseName={result.bestColors[0].name}
+                    />
+                  </ProgressiveDisclosure>
+                </div>
               )}
 
-              {/* P16: 시즌별 교육 콘텐츠 트리거 */}
+              {/* 성별 적응형 악세서리 추천 (K-1, 접힘 — 결론 먼저) */}
+              <div className="mt-4">
+                <ProgressiveDisclosure
+                  title="액세서리 추천"
+                  summary="내 톤에 어울리는 주얼리·소품을 확인해보세요"
+                  icon={<Sparkles className="w-4 h-4 text-amber-500" />}
+                >
+                  <GenderAdaptiveAccessories seasonType={result.seasonType} />
+                </ProgressiveDisclosure>
+              </div>
+
+              {/* AI 컬러 상담 + 투명성 고지 (접힘 — 결론 먼저) */}
+              <div className="mt-4">
+                <ProgressiveDisclosure
+                  title="AI 컬러 상담 받기"
+                  summary="궁금한 점을 이룸에게 물어보세요"
+                  icon={<Sparkles className="w-4 h-4 text-primary" />}
+                >
+                  <ConsultantCTA
+                    category="personalColor"
+                    params={{ season: result.seasonType }}
+                    showQuickQuestions
+                  />
+                  <AITransparencyNotice compact className="mt-4" />
+                </ProgressiveDisclosure>
+              </div>
+
+              {/* 환경 요인 안내 (심화 — 접힘) */}
+              <div className="mt-4">
+                <ProgressiveDisclosure
+                  title={t('knowThis')}
+                  summary="조명·염색이 분석 정확도에 영향을 줄 수 있어요"
+                  icon={<Lightbulb className="w-4 h-4 text-blue-500" />}
+                >
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li className="flex items-start gap-1.5">
+                      <Sun className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
+                      <span>{t('lightingNote')}</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500" />
+                      <span>염색은 피부톤에 영향 없지만 분석 정확도에 영향을 줄 수 있어요</span>
+                    </li>
+                  </ul>
+                </ProgressiveDisclosure>
+              </div>
+
+              {/* P16: 시즌별 교육 콘텐츠 트리거 (짧아서 그대로 — 접힌 섹션 아래) */}
               <button
                 type="button"
-                className="w-full p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
+                className="mt-4 w-full p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
                 onClick={() => setShowEducation(true)}
                 data-testid="season-education-trigger"
               >
@@ -653,25 +687,6 @@ export default function PersonalColorResultPage() {
                 </div>
                 <span className="text-xs text-primary">자세히 →</span>
               </button>
-
-              {/* 성별 적응형 악세서리 추천 (K-1) */}
-              <GenderAdaptiveAccessories seasonType={result.seasonType} className="mt-6" />
-
-              {/* AI 컬러 상담 + 투명성 고지 (접힘 기본) */}
-              <details className="mt-6 bg-card rounded-xl border border-border">
-                <summary className="p-4 cursor-pointer text-sm font-medium text-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  AI 컬러 상담 받기
-                </summary>
-                <div className="px-4 pb-4">
-                  <ConsultantCTA
-                    category="personalColor"
-                    params={{ season: result.seasonType }}
-                    showQuickQuestions
-                  />
-                  <AITransparencyNotice compact className="mt-4" />
-                </div>
-              </details>
 
               {/* P7: 드레이핑 시뮬레이션 연결 배너 */}
               <div className="mt-6 mb-4">

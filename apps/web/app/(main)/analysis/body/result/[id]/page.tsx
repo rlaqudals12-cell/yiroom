@@ -69,6 +69,7 @@ import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { useTranslations } from 'next-intl';
 import { transformDbToResult, type DbBodyAnalysis } from './_lib/transform';
 
@@ -503,52 +504,58 @@ export default function BodyAnalysisResultPage() {
                   />
                 )}
 
-                {/* 환경 요인 안내 카드 */}
-                <div
-                  data-testid="environment-info-card"
-                  className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
-                      <Lightbulb
-                        className="w-4 h-4 text-violet-600 dark:text-violet-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
-                      <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                        <li className="flex items-start gap-1.5">
-                          <Sun
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
-                            aria-hidden="true"
-                          />
-                          <span>조명에 따라 실루엣 인식이 달라질 수 있어요</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Shirt
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500"
-                            aria-hidden="true"
-                          />
-                          <span>오버핏 의류는 분석 정확도에 영향을 줄 수 있어요</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Sparkles
-                            className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
-                            aria-hidden="true"
-                          />
-                          <span>타이트한 옷에서 촬영하면 더 정확해요</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
                 <AnalysisResult
                   result={result}
                   onRetry={handleNewAnalysis}
                   evidence={analysisEvidence}
                 />
+
+                {/* 환경 요인 안내 — 참고 정보라 접기 (결론 먼저, ADR-111) */}
+                <ProgressiveDisclosure
+                  title="이런 점도 알아두세요"
+                  summary="조명·의상이 분석 정확도에 영향을 줄 수 있어요"
+                  className="mt-6"
+                >
+                  <div
+                    data-testid="environment-info-card"
+                    className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                        <Lightbulb
+                          className="w-4 h-4 text-violet-600 dark:text-violet-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
+                        <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
+                          <li className="flex items-start gap-1.5">
+                            <Sun
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
+                              aria-hidden="true"
+                            />
+                            <span>조명에 따라 실루엣 인식이 달라질 수 있어요</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <Shirt
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500"
+                              aria-hidden="true"
+                            />
+                            <span>오버핏 의류는 분석 정확도에 영향을 줄 수 있어요</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <Sparkles
+                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
+                              aria-hidden="true"
+                            />
+                            <span>타이트한 옷에서 촬영하면 더 정확해요</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </ProgressiveDisclosure>
 
                 {/*
                   ADR-098 3섹션 리디자인: "이해와 표현"

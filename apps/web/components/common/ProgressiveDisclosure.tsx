@@ -12,6 +12,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 export interface ProgressiveDisclosureProps {
   /** 토글 버튼에 표시될 제목 */
   title: string;
+  /** 접힌 상태에서 제목 아래 보여줄 1줄 미리보기 (결론 먼저 원칙 — 펼치기 전에도 핵심이 보이게) */
+  summary?: string;
   /** 제목 옆에 표시될 아이콘 (선택) */
   icon?: React.ReactNode;
   /** 초기 펼침 상태 (기본값: false) */
@@ -28,6 +30,7 @@ export interface ProgressiveDisclosureProps {
  */
 export function ProgressiveDisclosure({
   title,
+  summary,
   icon,
   defaultOpen = false,
   children,
@@ -50,13 +53,18 @@ export function ProgressiveDisclosure({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
         )}
       >
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-muted-foreground">{icon}</span>}
-          <span>{title}</span>
+        <div className="flex min-w-0 flex-col items-start gap-0.5 text-left">
+          <div className="flex items-center gap-2">
+            {icon && <span className="text-muted-foreground">{icon}</span>}
+            <span>{title}</span>
+          </div>
+          {summary && !isOpen && (
+            <span className="truncate text-xs font-normal text-muted-foreground">{summary}</span>
+          )}
         </div>
         <ChevronDown
           className={cn(
-            'h-4 w-4 text-muted-foreground transition-transform duration-200',
+            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />

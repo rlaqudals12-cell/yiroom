@@ -27,6 +27,8 @@ import {
 } from '@/lib/mock/personal-color';
 import { FadeInUp, ScaleIn } from '@/components/animations';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { getKoreanColorName } from '@/lib/utils/color-names';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
@@ -35,7 +37,7 @@ import {
   type PersonalColorEvidenceSummaryProps,
 } from '@/components/analysis/EvidenceSummary';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { getGenderAdaptiveTerm } from '@/lib/content/gender-adaptive';
+import { getGenderAdaptiveTerm, type GenderPreference } from '@/lib/content/gender-adaptive';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { toast } from 'sonner';
 
@@ -88,6 +90,136 @@ interface AnalysisResultProps {
   onRetry?: () => void;
   evidence?: AnalysisEvidence | null;
   onTabChange?: (tab: string) => void;
+}
+
+// "그래서, 이렇게 하세요" 액션 조립 — 규칙 기반 (새 fetch/AI 없음). 컴포넌트 복잡도 절감 위해 분리.
+function buildTopActions(args: {
+  bestColors: PersonalColorResult['bestColors'];
+  personalizedColors: PersonalColorResult['personalizedColors'];
+  seasonLabel: string;
+  isMale: boolean;
+  lipstickRecommendations: PersonalColorResult['lipstickRecommendations'];
+  groomingRecommendations: GroomingRecommendation[];
+  actionTip?: string;
+}): TopAction[] {
+  const {
+    bestColors,
+    personalizedColors,
+    seasonLabel,
+    isMale,
+    lipstickRecommendations,
+    groomingRecommendations,
+    actionTip,
+  } = args;
+  const actions: TopAction[] = [];
+
+  // ① 베스트 컬러 3가지부터
+  if (bestColors.length > 0) {
+    actions.push({
+      title: '베스트 컬러 3가지부터 활용해보세요',
+      detail: personalizedColors
+        ? '내 사진에서 찾은 맞춤 컬러예요'
+        : `${seasonLabel} 타입에 잘 어울리는 컬러예요`,
+      swatches: bestColors
+        .slice(0, 3)
+        .map((c) => ({ hex: c.hex, name: getKoreanColorName(c.hex) })),
+    });
+  }
+
+  // ② 립(여성)/그루밍(남성) 첫 추천 — 립 데이터 없으면 그루밍 대체, 둘 다 없으면 생략
+  if (!isMale && lipstickRecommendations.length > 0) {
+    const lip = lipstickRecommendations[0];
+    actions.push({
+      title: `${lip.colorName} 립부터 발라보세요`,
+      detail: lip.brandExample ?? lip.easyDescription,
+      swatches: [{ hex: lip.hex, name: lip.colorName }],
+    });
+  } else if (isMale && groomingRecommendations.length > 0) {
+    const g = groomingRecommendations[0];
+    actions.push({
+      title: `${g.itemName}부터 챙겨보세요`,
+      detail: g.easyDescription ?? g.brandExample,
+      swatches: [{ hex: g.hex, name: g.itemName }],
+    });
+  }
+
+  // ③ 초보자 실천 팁
+  if (actionTip) {
+    actions.push({ title: actionTip });
+  }
+
+  return actions;
+}
+
+// 접힘 섹션 summary 조립 — 컴포넌트 복잡도 절감 위해 분리 (결론 먼저: 펼치기 전 핵심 1줄)
+function buildSectionSummaries(args: {
+  bestColors: PersonalColorResult['bestColors'];
+  worstColors: PersonalColorResult['worstColors'];
+  easyInsight: PersonalColorResult['easyInsight'];
+  insight: string;
+  genderStyleDescription: StyleDescription;
+  userGender: GenderPreference;
+  isMale: boolean;
+  groomingRecommendations: GroomingRecommendation[];
+  lipstickRecommendations: PersonalColorResult['lipstickRecommendations'];
+  genderClothingRecommendations: ClothingRecommendation[];
+  percentage: number;
+  seasonLabel: string;
+}): {
+  comparisonSummary: string;
+  insightSummary: string;
+  keywordSummary: string;
+  guideSummary: string;
+  recSummary: string;
+  clothingSummary: string;
+  statsSummary: string;
+} {
+  const {
+    bestColors,
+    worstColors,
+    easyInsight,
+    insight,
+    genderStyleDescription,
+    userGender,
+    isMale,
+    groomingRecommendations,
+    lipstickRecommendations,
+    genderClothingRecommendations,
+    percentage,
+    seasonLabel,
+  } = args;
+
+  const comparisonSummary =
+    bestColors[0] && worstColors[0]
+      ? `${getKoreanColorName(bestColors[0].hex)}은 화사하게, ${getKoreanColorName(worstColors[0].hex)}은 칙칙하게 보여요`
+      : '어울리는 색과 아닌 색의 인상 차이';
+  // 스타일 인사이트는 [결정]성이라 첫 문장을 summary에 노출
+  const insightSummary = easyInsight?.summary ?? insight;
+  const keywordSummary = genderStyleDescription.imageKeywords
+    .slice(0, 3)
+    .map((k) => getGenderAdaptiveTerm(k, userGender))
+    .join(', ');
+  const guideSummary =
+    genderStyleDescription.easyMakeup?.lip ??
+    genderStyleDescription.easyGrooming?.skin ??
+    genderStyleDescription.makeupStyle;
+  const recSummary = isMale
+    ? (groomingRecommendations[0]?.itemName ?? '')
+    : (lipstickRecommendations[0]?.colorName ?? '');
+  const clothingSummary = genderClothingRecommendations[0]
+    ? `${genderClothingRecommendations[0].item} - ${genderClothingRecommendations[0].colorSuggestion}`
+    : '';
+  const statsSummary = `${percentage}%가 ${seasonLabel}`;
+
+  return {
+    comparisonSummary,
+    insightSummary,
+    keywordSummary,
+    guideSummary,
+    recSummary,
+    clothingSummary,
+    statsSummary,
+  };
 }
 
 // 메이크업/그루밍 가이드 섹션 — 성별 분기 추출 (cognitive complexity 절감)
@@ -234,6 +366,41 @@ export default function AnalysisResult({
   // 스타일 가이드 섹션 헤더 (남성/여성 분기)
   const styleGuideTitle = isMale ? '추천 그루밍 아이템' : '추천 립스틱';
 
+  // ─── ADR-111 표현 원칙 1: "결론 먼저" — 기존 결과 데이터에서 규칙 기반 조립 (새 fetch/AI 없음)
+  const topActions = buildTopActions({
+    bestColors,
+    personalizedColors,
+    seasonLabel,
+    isMale,
+    lipstickRecommendations,
+    groomingRecommendations,
+    actionTip: easyInsight?.actionTip,
+  });
+
+  // ─── 접힘 섹션 summary (결론 먼저: 펼치기 전에도 핵심 1줄 노출)
+  const {
+    comparisonSummary,
+    insightSummary,
+    keywordSummary,
+    guideSummary,
+    recSummary,
+    clothingSummary,
+    statsSummary,
+  } = buildSectionSummaries({
+    bestColors,
+    worstColors,
+    easyInsight,
+    insight,
+    genderStyleDescription,
+    userGender,
+    isMale,
+    groomingRecommendations,
+    lipstickRecommendations,
+    genderClothingRecommendations,
+    percentage: info.percentage,
+    seasonLabel,
+  });
+
   return (
     <div className="space-y-6" data-testid="analysis-result">
       {/* 퍼스널 컬러 타입 카드 - 메인 결과로 ScaleIn 강조 (D5 Delight + D7 감정 유도) */}
@@ -290,7 +457,10 @@ export default function AnalysisResult({
         </section>
       </ScaleIn>
 
-      {/* 베스트 컬러 팔레트 */}
+      {/* 결론 먼저 — "그래서, 이렇게 하세요" (ADR-111 표현 원칙 1) */}
+      <TopActionsCard actions={topActions} />
+
+      {/* 베스트 컬러 팔레트 (시그니처 시각물 — 펼침 유지) */}
       <FadeInUp delay={1}>
         <section className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -351,20 +521,14 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
-      {/* 컬러 비교 - Color Comparison UX (접힘 기본 — P1 스크롤 밀도) */}
+      {/* 컬러 비교 - Color Comparison UX (접힘 — 결론 먼저 원칙) */}
       <FadeInUp delay={2}>
-        <details className="bg-card rounded-xl border p-6 group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground">컬러가 주는 인상 차이</h2>
-            <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
-            <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-              접기
-            </span>
-          </summary>
-          <div className="mt-4">
+        <ProgressiveDisclosure
+          title="컬러가 주는 인상 차이"
+          summary={comparisonSummary}
+          icon={<Lightbulb className="w-4 h-4 text-amber-500" />}
+        >
+          <div>
             {/* 베스트 vs 워스트 비교 카드 */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               {/* 베스트 컬러 */}
@@ -432,16 +596,16 @@ export default function AnalysisResult({
 
             {/* dailyTip은 상세 리포트 탭에서 제공 (F4 탭 간 중복 해소) */}
           </div>
-        </details>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* AI 스타일 인사이트 (초보자 친화) */}
+      {/* AI 스타일 인사이트 (초보자 친화, 접힘 — summary에 첫 문장 노출) */}
       <FadeInUp delay={3}>
-        <section className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 rounded-xl border border-pink-200 dark:border-pink-800 p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-pink-500" />
-            <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
-          </div>
+        <ProgressiveDisclosure
+          title="스타일 인사이트"
+          summary={insightSummary}
+          icon={<Sparkles className="w-4 h-4 text-pink-500" />}
+        >
           {easyInsight ? (
             <div className="space-y-4">
               <p className="text-foreground/90 leading-relaxed font-medium">
@@ -462,21 +626,17 @@ export default function AnalysisResult({
           ) : (
             <p className="text-foreground/80 leading-relaxed">{insight}</p>
           )}
-        </section>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 스타일 키워드 - 성별 적응형 (접힘 기본 — P1 스크롤 밀도) */}
+      {/* 스타일 키워드 - 성별 적응형 (접힘 — 결론 먼저) */}
       <FadeInUp delay={4}>
-        <details className="bg-card rounded-xl border p-6 group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <Tag className="w-5 h-5 text-purple-500" />
-            <h2 className="text-lg font-semibold text-foreground">나의 스타일 키워드</h2>
-            <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
-            <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-              접기
-            </span>
-          </summary>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <ProgressiveDisclosure
+          title="나의 스타일 키워드"
+          summary={keywordSummary}
+          icon={<Tag className="w-4 h-4 text-purple-500" />}
+        >
+          <div className="flex flex-wrap gap-2">
             {genderStyleDescription.imageKeywords.map((keyword, index) => (
               <span
                 key={index}
@@ -486,21 +646,17 @@ export default function AnalysisResult({
               </span>
             ))}
           </div>
-        </details>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 메이크업/그루밍 & 패션 스타일 가이드 (접힘 기본 — P1 스크롤 밀도) */}
+      {/* 메이크업/그루밍 & 패션 스타일 가이드 (접힘 — 결론 먼저) */}
       <FadeInUp delay={5}>
-        <details className="bg-card rounded-xl border p-6 group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <Brush className="w-5 h-5 text-pink-500" />
-            <h2 className="text-lg font-semibold text-foreground">스타일 가이드</h2>
-            <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
-            <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-              접기
-            </span>
-          </summary>
-          <div className="mt-4 space-y-4">
+        <ProgressiveDisclosure
+          title="스타일 가이드"
+          summary={guideSummary}
+          icon={<Brush className="w-4 h-4 text-pink-500" />}
+        >
+          <div className="space-y-4">
             {/* 남성: 그루밍 가이드 / 여성: 메이크업 가이드 */}
             <StyleGuideSection styleDescription={genderStyleDescription} isMale={isMale} />
 
@@ -580,25 +736,23 @@ export default function AnalysisResult({
               )}
             </div>
           </div>
-        </details>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 남성: 그루밍 제품 추천 / 여성: 립스틱 추천 (접힘 기본 — P1 스크롤 밀도) */}
+      {/* 남성: 그루밍 제품 추천 / 여성: 립스틱 추천 (접힘 — 결론 먼저) */}
       <FadeInUp delay={6}>
-        <details className="bg-card rounded-xl border p-6 group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            {isMale ? (
-              <Sparkles className="w-5 h-5 text-slate-500" />
+        <ProgressiveDisclosure
+          title={styleGuideTitle}
+          summary={recSummary}
+          icon={
+            isMale ? (
+              <Sparkles className="w-4 h-4 text-slate-500" />
             ) : (
-              <Heart className="w-5 h-5 text-red-400" />
-            )}
-            <h2 className="text-lg font-semibold text-foreground">{styleGuideTitle}</h2>
-            <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
-            <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-              접기
-            </span>
-          </summary>
-          <div className="mt-4">
+              <Heart className="w-4 h-4 text-red-400" />
+            )
+          }
+        >
+          <div>
             {isMale ? (
               // 남성용 그루밍 제품 추천
               <>
@@ -678,24 +832,18 @@ export default function AnalysisResult({
               </>
             )}
           </div>
-        </details>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 파운데이션 추천 (접힌 상태 기본 — F1 정보 밀도 관리) */}
+      {/* 파운데이션 추천 (접힘 — 결론 먼저) */}
       {foundationRecommendations && foundationRecommendations.length > 0 && (
         <FadeInUp delay={7}>
-          <details className="bg-card rounded-xl border p-6 group">
-            <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-              <Droplets className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-semibold text-foreground">추천 파운데이션</h2>
-              <span className="ml-auto text-xs text-muted-foreground group-open:hidden">
-                펼치기
-              </span>
-              <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-                접기
-              </span>
-            </summary>
-            <div className="mt-4">
+          <ProgressiveDisclosure
+            title="추천 파운데이션"
+            summary={foundationBaseLabel}
+            icon={<Droplets className="w-4 h-4 text-amber-500" />}
+          >
+            <div>
               <p className="text-sm text-muted-foreground mb-4">{foundationBaseLabel}</p>
               <div className="space-y-3">
                 {foundationRecommendations.map((foundation, index) => (
@@ -751,22 +899,18 @@ export default function AnalysisResult({
                 ))}
               </div>
             </div>
-          </details>
+          </ProgressiveDisclosure>
         </FadeInUp>
       )}
 
-      {/* 의류 추천 (성별 적응형, 접힌 상태 기본 — F1 정보 밀도 관리) */}
+      {/* 의류 추천 (성별 적응형, 접힘 — 결론 먼저) */}
       <FadeInUp delay={8}>
-        <details className="bg-card rounded-xl border p-6 group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <Shirt className="w-5 h-5 text-blue-500" />
-            <h2 className="text-lg font-semibold text-foreground">추천 스타일링</h2>
-            <span className="ml-auto text-xs text-muted-foreground group-open:hidden">펼치기</span>
-            <span className="ml-auto text-xs text-muted-foreground hidden group-open:inline">
-              접기
-            </span>
-          </summary>
-          <div className="mt-4">
+        <ProgressiveDisclosure
+          title="추천 스타일링"
+          summary={clothingSummary}
+          icon={<Shirt className="w-4 h-4 text-blue-500" />}
+        >
+          <div>
             <div className="space-y-3">
               {genderClothingRecommendations.map((rec, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
@@ -786,23 +930,29 @@ export default function AnalysisResult({
               ))}
             </div>
           </div>
-        </details>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 통계 정보 */}
+      {/* 통계 정보 (접힘 — 결론 먼저) */}
       <FadeInUp delay={9}>
-        <section className="bg-muted rounded-xl border p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            전체 사용자 중{' '}
-            <span className={`font-semibold ${getSeasonColor(seasonType)}`}>
-              {info.percentage}%
-            </span>
-            가 {seasonLabel}이에요
-          </p>
-        </section>
+        <ProgressiveDisclosure
+          title="통계"
+          summary={statsSummary}
+          icon={<Star className="w-4 h-4 text-yellow-500" />}
+        >
+          <div className="bg-muted rounded-xl p-4 text-center">
+            <p className="text-sm text-muted-foreground">
+              전체 사용자 중{' '}
+              <span className={`font-semibold ${getSeasonColor(seasonType)}`}>
+                {info.percentage}%
+              </span>
+              가 {seasonLabel}이에요
+            </p>
+          </div>
+        </ProgressiveDisclosure>
       </FadeInUp>
 
-      {/* 분석 시간 */}
+      {/* 분석 시간 (짧은 메타 — 항상 노출) */}
       <p className="text-center text-sm text-muted-foreground">
         분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}
       </p>

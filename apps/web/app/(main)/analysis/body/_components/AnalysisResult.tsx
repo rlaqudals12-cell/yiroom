@@ -35,6 +35,9 @@ import { RecommendedClothingCard, BodyStyleImage } from '@/components/analysis/b
 import { getOutfitExamples } from '@/lib/color-recommendations';
 import { BodyEvidenceSummary } from '@/components/analysis/EvidenceSummary';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
+// 결론 먼저(ADR-111): 상단 액션 카드 + 접기 래퍼
+import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 
 // 체형 분석 근거 타입
 interface BodyAnalysisEvidence {
@@ -104,6 +107,20 @@ export default function AnalysisResult({
   // 체형 + 퍼스널 컬러 조합 코디 예시
   const outfitExamples = getOutfitExamples(type3, personalColorSeason || null);
 
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 기반 조립 (새 fetch/AI 없음)
+  const topActions: TopAction[] = [];
+  const primaryTip = easyBodyTip?.styleTip || easyBodyTip?.doList?.[0];
+  if (primaryTip) topActions.push({ title: primaryTip });
+  if (styleRecommendations?.[0]) {
+    topActions.push({
+      title: styleRecommendations[0].item,
+      detail: styleRecommendations[0].reason,
+    });
+  }
+  if (easyBodyTip?.dontList?.[0]) {
+    topActions.push({ title: `이건 피하세요 — ${easyBodyTip.dontList[0]}` });
+  }
+
   return (
     <div
       ref={shareRef}
@@ -112,71 +129,7 @@ export default function AnalysisResult({
       aria-label="체형 분석 결과"
       data-testid="body-analysis-result"
     >
-      {/* 기본 정보 (사용자 입력) */}
-      {userInput && (
-        <FadeInUp>
-          <section className="bg-card rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">기본 정보</h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <Ruler className="w-4 h-4" />
-                  <span className="text-xs">키</span>
-                </div>
-                <p className="text-xl font-bold text-foreground">
-                  <CountUp end={userInput.height} duration={1000} />
-                </p>
-                <p className="text-xs text-muted-foreground">cm</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <Scale className="w-4 h-4" />
-                  <span className="text-xs">몸무게</span>
-                </div>
-                <p className="text-xl font-bold text-foreground">
-                  <CountUp end={userInput.weight} duration={1000} />
-                </p>
-                <p className="text-xs text-muted-foreground">kg</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                  <Target className="w-4 h-4" />
-                  <span className="text-xs">BMI</span>
-                </div>
-                <p className="text-xl font-bold text-foreground">
-                  <CountUp end={bmi || 0} decimals={1} duration={1200} />
-                </p>
-                <p
-                  className={`text-xs ${mapToClass(
-                    bmiCategory,
-                    {
-                      정상: 'text-green-500',
-                      저체중: 'text-blue-500',
-                    },
-                    'text-orange-500'
-                  )}`}
-                >
-                  {bmiCategory}
-                </p>
-              </div>
-            </div>
-            {userInput.targetWeight && (
-              <div className="mt-4 pt-4 border-t text-center">
-                <p className="text-sm text-muted-foreground">
-                  목표 몸무게:{' '}
-                  <span className="font-medium text-foreground">{userInput.targetWeight}kg</span>
-                  <span className="ml-2 text-purple-500">
-                    ({userInput.weight > userInput.targetWeight ? '-' : '+'}
-                    {Math.abs(userInput.weight - userInput.targetWeight).toFixed(1)}kg)
-                  </span>
-                </p>
-              </div>
-            )}
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* 체형 타입 카드 - ScaleIn으로 강조 */}
+      {/* 체형 타입 카드 — 결론 먼저 (ScaleIn 강조) */}
       <ScaleIn delay={1}>
         <section className="bg-card rounded-xl border p-6 text-center">
           <p className="text-sm text-muted-foreground mb-2">체형 타입</p>
@@ -249,26 +202,10 @@ export default function AnalysisResult({
         </section>
       </ScaleIn>
 
-      {/* 자가 진단 팁 */}
-      {typeInfo3.selfCheckTip && (
-        <FadeInUp delay={2}>
-          <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
-                  알고 계셨나요?
-                </p>
-                <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
-                  {typeInfo3.selfCheckTip}
-                </p>
-              </div>
-            </div>
-          </section>
-        </FadeInUp>
-      )}
+      {/* 그래서, 이렇게 하세요 — 결론 액션 카드 */}
+      {topActions.length > 0 && <TopActionsCard actions={topActions} />}
 
-      {/* 초보자 친화 스타일 가이드 (EASY_BODY_TIPS) */}
+      {/* 초보자 친화 스타일 가이드 (EASY_BODY_TIPS) — 시그니처 [결정], 펼침 유지 */}
       {easyBodyTip && (
         <FadeInUp delay={2}>
           <section className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-200 dark:border-teal-800 p-6">
@@ -331,306 +268,405 @@ export default function AnalysisResult({
         </FadeInUp>
       )}
 
-      {/* 스타일 예시 이미지 */}
-      {is3Type && (
-        <FadeInUp delay={2}>
-          <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Camera className="w-5 h-5 text-violet-500" />
-              <h2 className="text-lg font-semibold text-foreground">추천 스타일 예시</h2>
-            </div>
-            <BodyStyleImage bodyType={type3} showLabels />
-            <p className="text-xs text-muted-foreground mt-3 text-center">
-              {typeInfo3.label} 체형에 잘 어울리는 스타일이에요
-            </p>
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* 비율 분석 */}
-      <FadeInUp delay={3}>
-        <section className="bg-card rounded-xl border p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">비율 분석</h2>
-          <div className="space-y-4">
-            {measurements.map((measurement) => (
-              <div key={measurement.name}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-foreground/80">{measurement.name}</span>
-                  <span className={`text-sm font-semibold ${getColor()}`}>{measurement.value}</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${getBgColor()}`}
-                    style={{ width: `${measurement.value}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{measurement.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </FadeInUp>
-
-      {/* 강점 */}
-      <FadeInUp delay={4}>
-        <section className="bg-card rounded-xl border p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-foreground">강점</h2>
-          </div>
-          <ul className="space-y-2">
-            {strengths.map((strength, index) => (
-              <li key={index} className="flex items-start gap-2 text-foreground/80">
-                <span className="text-green-500 mt-0.5">•</span>
-                {strength}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </FadeInUp>
-
-      {/* 주의할 스타일 */}
-      {avoidStyles && avoidStyles.length > 0 && (
-        <FadeInUp delay={5}>
-          <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
-              <h2 className="text-lg font-semibold text-foreground">주의할 스타일</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {avoidStyles.map((style, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm border border-orange-200 dark:border-orange-800"
-                >
-                  {style}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              위 스타일은 체형의 장점을 살리기 어려울 수 있어요
-            </p>
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* AI 스타일 인사이트 (가변 보상) */}
-      <FadeInUp delay={6}>
-        <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
-          </div>
-          <p className="text-foreground/80 leading-relaxed">{insight}</p>
-        </section>
-      </FadeInUp>
-
-      {/* 퍼스널 컬러 기반 색상 추천 */}
-      {colorRecommendations && (
-        <FadeInUp delay={7}>
-          <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-violet-500" />
-              <h2 className="text-lg font-semibold text-foreground">코디 색상 추천</h2>
-              {personalColorSeason && (
-                <span className="ml-auto text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2 py-1 rounded-full">
-                  {personalColorSeason} 톤
-                </span>
-              )}
-            </div>
-
-            {/* 추천 상의 색상 */}
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <Shirt className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground/80">추천 상의 색상</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {colorRecommendations.topColors.map((color, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm"
-                  >
-                    {color}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* 추천 하의 색상 */}
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <Shirt className="w-4 h-4 text-muted-foreground rotate-180" />
-                <span className="text-sm font-medium text-foreground/80">추천 하의 색상</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {colorRecommendations.bottomColors.map((color, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm"
-                  >
-                    {color}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* 베스트 조합 */}
-            {colorRecommendations.bestCombinations.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-medium text-foreground/80 mb-2">베스트 조합</p>
-                <div className="space-y-2">
-                  {colorRecommendations.bestCombinations.slice(0, 3).map((combo, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-lg"
-                    >
-                      <span className="text-violet-600 dark:text-violet-400">{combo.top}</span>
-                      <span className="text-muted-foreground">+</span>
-                      <span className="text-indigo-600 dark:text-indigo-400">{combo.bottom}</span>
+      {/* 상세 분석 — 접기 (결론 먼저, 근거는 접기) */}
+      <ProgressiveDisclosure
+        title="분석 상세 더 보기"
+        summary="기본 정보 · 비율 · 강점 · 색상 · 코디 · 추천 아이템"
+      >
+        <div className="space-y-6">
+          {/* 기본 정보 (사용자 입력) */}
+          {userInput && (
+            <FadeInUp>
+              <section className="bg-card rounded-xl border p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">기본 정보</h2>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                      <Ruler className="w-4 h-4" />
+                      <span className="text-xs">키</span>
                     </div>
-                  ))}
+                    <p className="text-xl font-bold text-foreground">
+                      <CountUp end={userInput.height} duration={1000} />
+                    </p>
+                    <p className="text-xs text-muted-foreground">cm</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                      <Scale className="w-4 h-4" />
+                      <span className="text-xs">몸무게</span>
+                    </div>
+                    <p className="text-xl font-bold text-foreground">
+                      <CountUp end={userInput.weight} duration={1000} />
+                    </p>
+                    <p className="text-xs text-muted-foreground">kg</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                      <Target className="w-4 h-4" />
+                      <span className="text-xs">BMI</span>
+                    </div>
+                    <p className="text-xl font-bold text-foreground">
+                      <CountUp end={bmi || 0} decimals={1} duration={1200} />
+                    </p>
+                    <p
+                      className={`text-xs ${mapToClass(
+                        bmiCategory,
+                        {
+                          정상: 'text-green-500',
+                          저체중: 'text-blue-500',
+                        },
+                        'text-orange-500'
+                      )}`}
+                    >
+                      {bmiCategory}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+                {userInput.targetWeight && (
+                  <div className="mt-4 pt-4 border-t text-center">
+                    <p className="text-sm text-muted-foreground">
+                      목표 몸무게:{' '}
+                      <span className="font-medium text-foreground">
+                        {userInput.targetWeight}kg
+                      </span>
+                      <span className="ml-2 text-purple-500">
+                        ({userInput.weight > userInput.targetWeight ? '-' : '+'}
+                        {Math.abs(userInput.weight - userInput.targetWeight).toFixed(1)}kg)
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </section>
+            </FadeInUp>
+          )}
 
-            {/* 악세서리 추천 */}
-            {colorRecommendations.accessories.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-medium text-foreground/80 mb-2">악세서리 추천</p>
+          {/* 자가 진단 팁 */}
+          {typeInfo3.selfCheckTip && (
+            <FadeInUp delay={2}>
+              <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                      알고 계셨나요?
+                    </p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+                      {typeInfo3.selfCheckTip}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* 스타일 예시 이미지 */}
+          {is3Type && (
+            <FadeInUp delay={2}>
+              <section className="bg-card rounded-xl border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Camera className="w-5 h-5 text-violet-500" />
+                  <h2 className="text-lg font-semibold text-foreground">추천 스타일 예시</h2>
+                </div>
+                <BodyStyleImage bodyType={type3} showLabels />
+                <p className="text-xs text-muted-foreground mt-3 text-center">
+                  {typeInfo3.label} 체형에 잘 어울리는 스타일이에요
+                </p>
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* 비율 분석 */}
+          <FadeInUp delay={3}>
+            <section className="bg-card rounded-xl border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">비율 분석</h2>
+              <div className="space-y-4">
+                {measurements.map((measurement) => (
+                  <div key={measurement.name}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-foreground/80">
+                        {measurement.name}
+                      </span>
+                      <span className={`text-sm font-semibold ${getColor()}`}>
+                        {measurement.value}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${getBgColor()}`}
+                        style={{ width: `${measurement.value}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{measurement.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </FadeInUp>
+
+          {/* 강점 */}
+          <FadeInUp delay={4}>
+            <section className="bg-card rounded-xl border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-5 h-5 text-yellow-500" />
+                <h2 className="text-lg font-semibold text-foreground">강점</h2>
+              </div>
+              <ul className="space-y-2">
+                {strengths.map((strength, index) => (
+                  <li key={index} className="flex items-start gap-2 text-foreground/80">
+                    <span className="text-green-500 mt-0.5">•</span>
+                    {strength}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </FadeInUp>
+
+          {/* 주의할 스타일 */}
+          {avoidStyles && avoidStyles.length > 0 && (
+            <FadeInUp delay={5}>
+              <section className="bg-card rounded-xl border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="w-5 h-5 text-orange-500" />
+                  <h2 className="text-lg font-semibold text-foreground">주의할 스타일</h2>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {colorRecommendations.accessories.map((acc, index) => (
+                  {avoidStyles.map((style, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-sm"
+                      className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm border border-orange-200 dark:border-orange-800"
                     >
-                      {acc}
+                      {style}
                     </span>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  위 스타일은 체형의 장점을 살리기 어려울 수 있어요
+                </p>
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* AI 스타일 인사이트 (가변 보상) */}
+          <FadeInUp delay={6}>
+            <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-purple-500" />
+                <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
               </div>
-            )}
+              <p className="text-foreground/80 leading-relaxed">{insight}</p>
+            </section>
+          </FadeInUp>
 
-            {/* 참고 색상 */}
-            {colorRecommendations.avoidColors.length > 0 && (
-              <div className="pt-3 border-t">
-                <div className="flex items-center gap-1 mb-2">
-                  <Ban className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">참고 색상</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {colorRecommendations.avoidColors.map((color, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm line-through"
-                    >
-                      {color}
+          {/* 퍼스널 컬러 기반 색상 추천 */}
+          {colorRecommendations && (
+            <FadeInUp delay={7}>
+              <section className="bg-card rounded-xl border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Palette className="w-5 h-5 text-violet-500" />
+                  <h2 className="text-lg font-semibold text-foreground">코디 색상 추천</h2>
+                  {personalColorSeason && (
+                    <span className="ml-auto text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2 py-1 rounded-full">
+                      {personalColorSeason} 톤
                     </span>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
-          </section>
-        </FadeInUp>
-      )}
 
-      {/* 색상 팁 */}
-      {colorTips && colorTips.length > 0 && (
-        <FadeInUp delay={8}>
-          <section className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-xl border border-violet-200 dark:border-violet-800 p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Palette className="w-5 h-5 text-violet-500" />
-              <h2 className="text-lg font-semibold text-foreground">색상 팁</h2>
-            </div>
-            <ul className="space-y-2">
-              {colorTips.map((tip, index) => (
-                <li key={index} className="flex items-start gap-2 text-foreground/80">
-                  <span className="text-violet-500 mt-0.5">•</span>
-                  {tip}
-                </li>
-              ))}
-            </ul>
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* 맞춤 코디 예시 (체형 + 퍼스널 컬러 조합) */}
-      {outfitExamples.length > 0 && (
-        <FadeInUp delay={9}>
-          <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Bookmark className="w-5 h-5 text-rose-500" />
-              <h2 className="text-lg font-semibold text-foreground">맞춤 코디 예시</h2>
-              {personalColorSeason && (
-                <span className="ml-auto text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-full">
-                  {typeInfo3.label} + {personalColorSeason}
-                </span>
-              )}
-            </div>
-            <div className="space-y-4">
-              {outfitExamples.map((outfit, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-lg border border-rose-100 dark:border-rose-800"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-foreground">{outfit.title}</h3>
-                    <span className="text-xs bg-white dark:bg-card px-2 py-0.5 rounded-full text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                      {outfit.occasion}
-                    </span>
+                {/* 추천 상의 색상 */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-1 mb-2">
+                    <Shirt className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground/80">추천 상의 색상</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {outfit.items.map((item, itemIndex) => (
+                    {colorRecommendations.topColors.map((color, index) => (
                       <span
-                        key={itemIndex}
-                        className="px-3 py-1.5 bg-white dark:bg-card rounded-lg text-sm text-foreground/80 border border-rose-100 dark:border-rose-900/50"
+                        key={index}
+                        className="px-3 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm"
                       >
-                        {item}
+                        {color}
                       </span>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
-              체형과 퍼스널 컬러를 고려한 맞춤 코디예요
-            </p>
-          </section>
-        </FadeInUp>
-      )}
 
-      {/* 추천 아이템 (가변 보상) */}
-      <FadeInUp delay={10}>
-        <section className="bg-card rounded-xl border p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <ShoppingBag className="w-5 h-5 text-pink-500" />
-            <h2 className="text-lg font-semibold text-foreground">추천 아이템</h2>
-          </div>
-          <div className="space-y-3">
-            {styleRecommendations.map((rec, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-sm font-medium">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="font-medium text-foreground">{rec.item}</p>
-                  <p className="text-sm text-muted-foreground">{rec.reason}</p>
+                {/* 추천 하의 색상 */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-1 mb-2">
+                    <Shirt className="w-4 h-4 text-muted-foreground rotate-180" />
+                    <span className="text-sm font-medium text-foreground/80">추천 하의 색상</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {colorRecommendations.bottomColors.map((color, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </FadeInUp>
 
-      {/* 맞춤 의류 쇼핑 추천 */}
-      <FadeInUp delay={11}>
-        <RecommendedClothingCard
-          bodyType={bodyType}
-          styleRecommendations={styleRecommendations}
-          colorRecommendations={colorRecommendations}
-          personalColorSeason={personalColorSeason}
-        />
-      </FadeInUp>
+                {/* 베스트 조합 */}
+                {colorRecommendations.bestCombinations.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-foreground/80 mb-2">베스트 조합</p>
+                    <div className="space-y-2">
+                      {colorRecommendations.bestCombinations.slice(0, 3).map((combo, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-lg"
+                        >
+                          <span className="text-violet-600 dark:text-violet-400">{combo.top}</span>
+                          <span className="text-muted-foreground">+</span>
+                          <span className="text-indigo-600 dark:text-indigo-400">
+                            {combo.bottom}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 악세서리 추천 */}
+                {colorRecommendations.accessories.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-foreground/80 mb-2">악세서리 추천</p>
+                    <div className="flex flex-wrap gap-2">
+                      {colorRecommendations.accessories.map((acc, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-sm"
+                        >
+                          {acc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 참고 색상 */}
+                {colorRecommendations.avoidColors.length > 0 && (
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center gap-1 mb-2">
+                      <Ban className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-muted-foreground">참고 색상</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {colorRecommendations.avoidColors.map((color, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm line-through"
+                        >
+                          {color}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* 색상 팁 */}
+          {colorTips && colorTips.length > 0 && (
+            <FadeInUp delay={8}>
+              <section className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-xl border border-violet-200 dark:border-violet-800 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Palette className="w-5 h-5 text-violet-500" />
+                  <h2 className="text-lg font-semibold text-foreground">색상 팁</h2>
+                </div>
+                <ul className="space-y-2">
+                  {colorTips.map((tip, index) => (
+                    <li key={index} className="flex items-start gap-2 text-foreground/80">
+                      <span className="text-violet-500 mt-0.5">•</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* 맞춤 코디 예시 (체형 + 퍼스널 컬러 조합) */}
+          {outfitExamples.length > 0 && (
+            <FadeInUp delay={9}>
+              <section className="bg-card rounded-xl border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Bookmark className="w-5 h-5 text-rose-500" />
+                  <h2 className="text-lg font-semibold text-foreground">맞춤 코디 예시</h2>
+                  {personalColorSeason && (
+                    <span className="ml-auto text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-full">
+                      {typeInfo3.label} + {personalColorSeason}
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {outfitExamples.map((outfit, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-lg border border-rose-100 dark:border-rose-800"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-foreground">{outfit.title}</h3>
+                        <span className="text-xs bg-white dark:bg-card px-2 py-0.5 rounded-full text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                          {outfit.occasion}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {outfit.items.map((item, itemIndex) => (
+                          <span
+                            key={itemIndex}
+                            className="px-3 py-1.5 bg-white dark:bg-card rounded-lg text-sm text-foreground/80 border border-rose-100 dark:border-rose-900/50"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-4 text-center">
+                  체형과 퍼스널 컬러를 고려한 맞춤 코디예요
+                </p>
+              </section>
+            </FadeInUp>
+          )}
+
+          {/* 추천 아이템 (가변 보상) */}
+          <FadeInUp delay={10}>
+            <section className="bg-card rounded-xl border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ShoppingBag className="w-5 h-5 text-pink-500" />
+                <h2 className="text-lg font-semibold text-foreground">추천 아이템</h2>
+              </div>
+              <div className="space-y-3">
+                {styleRecommendations.map((rec, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <p className="font-medium text-foreground">{rec.item}</p>
+                      <p className="text-sm text-muted-foreground">{rec.reason}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </FadeInUp>
+
+          {/* 맞춤 의류 쇼핑 추천 */}
+          <FadeInUp delay={11}>
+            <RecommendedClothingCard
+              bodyType={bodyType}
+              styleRecommendations={styleRecommendations}
+              colorRecommendations={colorRecommendations}
+              personalColorSeason={personalColorSeason}
+            />
+          </FadeInUp>
+        </div>
+      </ProgressiveDisclosure>
 
       {/* 분석 시간 */}
       <FadeInUp delay={12}>

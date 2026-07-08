@@ -46,6 +46,7 @@ import {
   transformDbToResult,
 } from './_lib/transform';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
+import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
 
 // 시즌 한국어 변환
@@ -338,6 +339,33 @@ export default function MakeupAnalysisResultPage() {
                   <ScoreTrendChip trend={scoreTrend} />
                 </div>
               )}
+
+              {/* 그래서, 이렇게 하세요 — 결론 액션 (기존 결과 데이터에서 조립, ADR-111) */}
+              {(() => {
+                const actions: TopAction[] = [];
+                const topStyle = result.recommendedStyles[0]
+                  ? MAKEUP_STYLES.find((s) => s.id === result.recommendedStyles[0])
+                  : undefined;
+                if (topStyle) {
+                  actions.push({ title: `${topStyle.label} 스타일이 잘 어울려요` });
+                }
+                // 립 카테고리 우선, 없으면 첫 카테고리의 첫 컬러 — 탭 링크 대신 안내 문구만
+                const firstGroup =
+                  result.colorRecommendations.find((c) => c.category === 'lip') ??
+                  result.colorRecommendations[0];
+                const firstColor = firstGroup?.colors[0];
+                if (firstGroup && firstColor) {
+                  actions.push({
+                    title: `${firstGroup.categoryLabel}은 ${firstColor.name}부터 발라보세요`,
+                    detail: '컬러 탭에서 전체 추천 색상을 확인할 수 있어요',
+                    swatches: [{ hex: firstColor.hex, name: firstColor.name }],
+                  });
+                }
+                if (result.personalColorConnection?.note) {
+                  actions.push({ title: result.personalColorConnection.note });
+                }
+                return <TopActionsCard actions={actions} />;
+              })()}
 
               {/* 인사이트 */}
               <div className="bg-card rounded-xl p-6 shadow-sm">

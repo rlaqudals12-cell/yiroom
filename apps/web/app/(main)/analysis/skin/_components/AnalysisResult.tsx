@@ -19,7 +19,6 @@ import {
   Heart,
   Lightbulb,
   Info,
-  ChevronDown,
   ChevronRight,
 } from 'lucide-react';
 
@@ -48,7 +47,8 @@ import {
 import Link from 'next/link';
 import { recommendMasks, MASK_TYPES } from '@/lib/skincare/mask-recommendation';
 import { generateRoutine } from '@/lib/skincare';
-import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
+import { FadeInUp, CountUp } from '@/components/animations';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { SkinEvidenceSummary } from '@/components/analysis/EvidenceSummary';
 import { MetricDetailCard } from '@/components/analysis/skin/MetricDetailCard';
 import { ZoneDetailCard } from '@/components/analysis/skin/ZoneDetailCard';
@@ -63,7 +63,6 @@ import type { SkinMetricId } from '@/types/skin-detailed';
 import type { DetailedZoneId, DetailedZoneStatus, DetailedStatusLevel } from '@/types/skin-zones';
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { TwelveZoneSummary } from '@/components/analysis/skin/TwelveZoneSummary';
 import type { ZoneMetricsV2 } from '@/lib/analysis/skin-v2/types';
 
@@ -376,65 +375,19 @@ export default function AnalysisResult({
     return recommendMasks(skinType as SkinTypeId, concerns);
   }, [skinType, metrics]);
 
+  // 결론 먼저(ADR-111): 접힌 섹션의 1줄 요약 — 펼치기 전에도 핵심이 보이도록
+  const scoreGradeLabel = classifyByRange(overallScore, [
+    { max: 41, result: '관리 필요' },
+    { min: 41, max: 71, result: '보통 상태' },
+    { min: 71, result: '건강한 피부' },
+  ]);
+  // AI 인사이트 요약 = 첫 문장 (마침표/느낌표/물음표 기준)
+  const insightFirstSentence = insight.split(/(?<=[.!?。])\s/)[0] ?? insight;
+
   return (
     <div ref={shareRef} className="space-y-6" role="region" aria-label="피부 분석 결과">
-      {/* 전체 점수 카드 - 원형 프로그레스 바 */}
-      <ScaleIn>
-        <section className="bg-gradient-to-br from-emerald-50 via-card to-teal-50 rounded-xl border p-6">
-          <p className="text-sm text-muted-foreground mb-4 text-center">전체 피부 점수</p>
-          <div className="flex justify-center mb-4">
-            <CircularProgress score={overallScore} />
-          </div>
-          <div className="flex justify-center">
-            <span
-              className={`px-4 py-1.5 rounded-full text-sm font-medium text-white ${getScoreBgColor(overallScore)}`}
-            >
-              {classifyByRange(overallScore, [
-                { max: 41, result: '관리 필요' },
-                { min: 41, max: 71, result: '보통 상태' },
-                { min: 71, result: '건강한 피부' },
-              ])}
-            </span>
-          </div>
-
-          {/* 핵심 판정 근거 요약 */}
-          {skinType && (
-            <SkinEvidenceSummary
-              tZoneOiliness={evidence?.tZoneOiliness}
-              poreVisibility={evidence?.poreVisibility}
-              skinType={skinType}
-              className="mt-4"
-            />
-          )}
-        </section>
-      </ScaleIn>
-
-      {/* 피부 상태 요약 */}
-      <FadeInUp delay={1}>
-        <section className="grid grid-cols-2 gap-3">
-          {/* 가장 좋은 지표 */}
-          <div className="bg-green-50 rounded-xl border border-green-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-xs font-medium text-green-700">Best</span>
-            </div>
-            <p className="font-semibold text-foreground">{bestMetric.name}</p>
-            <p className="text-2xl font-bold text-green-600">{bestMetric.value}점</p>
-          </div>
-          {/* 개선 필요 지표 */}
-          <div className="bg-amber-50 rounded-xl border border-amber-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-medium text-amber-700">Focus</span>
-            </div>
-            <p className="font-semibold text-foreground">{worstMetric.name}</p>
-            <p className="text-2xl font-bold text-amber-600">{worstMetric.value}점</p>
-          </div>
-        </section>
-      </FadeInUp>
-
-      {/* 피부 고민 개요 (Layer 1: CONCERN OVERVIEW) */}
-      <FadeInUp delay={2}>
+      {/* 피부 고민 한눈에 (시그니처 판정 시각물) — 펼침 유지 (결론 먼저) */}
+      <FadeInUp>
         <section>
           <h2 className="text-base font-semibold text-foreground mb-3">피부 고민 한눈에 보기</h2>
           <ConcernGrid
@@ -444,108 +397,8 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
-      {/* 피부 분석 시각화 (Layer 1: WHERE) */}
-      <FadeInUp delay={2}>
-        {imageUrl ? (
-          /* 경쟁사 스타일: 실제 사진 + 점수 배지 (룰루랩/퍼펙트코프 스타일) */
-          <PhotoMetricOverlay
-            imageUrl={imageUrl}
-            metrics={photoMetrics}
-            showConnectors
-            showOverlay
-          />
-        ) : (
-          /* 사진 없을 때: 피부과 측정 장비 스타일 12존 맵 */
-          <ProfessionalSkinMap
-            zoneData={zoneData}
-            selectedZone={selectedZone}
-            onZoneClick={(zoneId) => setSelectedZone(zoneId)}
-          />
-        )}
-      </FadeInUp>
-
-      {/* 7가지 지표 (Layer 2: WHAT) - Collapsible 래핑 (기본 접힘) */}
-      <FadeInUp delay={3}>
-        <Collapsible>
-          <CollapsibleTrigger
-            data-testid="metric-collapsible-trigger"
-            className="flex w-full items-center justify-between rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
-          >
-            <span className="text-sm font-semibold text-foreground">상세 수치 보기</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3">
-            <MetricBarGaugeList
-              metrics={
-                Object.fromEntries(
-                  metrics.map((m) => [m.id, { score: m.value, status: m.status, name: m.name }])
-                ) as Record<
-                  SkinMetricId,
-                  { score: number; status: 'good' | 'normal' | 'warning'; name: string }
-                >
-              }
-              selectedMetric={selectedMetric}
-              onMetricClick={(metricId) => setSelectedMetric(metricId)}
-              userAge={25}
-            />
-          </CollapsibleContent>
-        </Collapsible>
-      </FadeInUp>
-
-      {/* AI 인사이트 (가변 보상) */}
-      <FadeInUp delay={3}>
-        <section className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            <h2 className="text-lg font-semibold text-foreground">AI 인사이트</h2>
-          </div>
-          <p className="text-foreground/80 leading-relaxed">{insight}</p>
-        </section>
-      </FadeInUp>
-
-      {/* 12존 피부 분석 요약 (T4.5.8) */}
-      {Object.keys(twelveZoneScores).length > 0 && (
-        <FadeInUp delay={4}>
-          <TwelveZoneSummary zoneScores={twelveZoneScores} zoneMetrics={twelveZoneMetrics} />
-        </FadeInUp>
-      )}
-
-      {/* 초보자 친화 팁 (EASY_SKIN_TIPS) */}
-      {easySkinTip && (
-        <FadeInUp delay={4}>
-          <section className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-200 dark:border-teal-800 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-5 h-5 text-teal-500" />
-              <h2 className="text-lg font-semibold text-foreground">초보자를 위한 가이드</h2>
-            </div>
-
-            {/* 요약 */}
-            <p className="text-teal-800 dark:text-teal-200 font-medium mb-3">
-              {easySkinTip.summary}
-            </p>
-            <p className="text-sm text-muted-foreground mb-4">{easySkinTip.easyExplanation}</p>
-
-            {/* 제품 팁 & 주의할 점 */}
-            <div className="space-y-2">
-              <div className="flex items-start gap-2 p-2.5 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                <span className="text-green-600">✓</span>
-                <p className="text-xs text-green-800 dark:text-green-200">
-                  <span className="font-medium">추천:</span> {easySkinTip.productTip}
-                </p>
-              </div>
-              <div className="flex items-start gap-2 p-2.5 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-red-800 dark:text-red-200">
-                  <span className="font-medium">주의할 점:</span> {easySkinTip.avoidTip}
-                </p>
-              </div>
-            </div>
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* 정본 데일리 루틴 — generateRoutine 엔진(홈 오늘의 루틴·케어 탭과 동일 기준) */}
-      <FadeInUp delay={4}>
+      {/* 정본 데일리 루틴 — generateRoutine 엔진(홈 오늘의 루틴·케어 탭과 동일 기준) — 펼침 유지([결정]의 본체) */}
+      <FadeInUp delay={1}>
         <section
           className="bg-card rounded-xl border p-6"
           data-testid="skin-daily-routine"
@@ -625,37 +478,183 @@ export default function AnalysisResult({
         </section>
       </FadeInUp>
 
-      {/* 추천 성분 (가변 보상) */}
-      <FadeInUp delay={4}>
-        <section className="bg-card rounded-xl border p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FlaskConical className="w-5 h-5 text-green-500" />
-            <h2 className="text-lg font-semibold text-foreground">추천 성분</h2>
+      {/* ─── 이하 상세는 접기 (결론 먼저, 근거는 접기 — ADR-111) ─── */}
+
+      {/* 전체 피부 점수 (히어로에 점수가 이미 있어 접힘 — 제목에 점수 요약) */}
+      <ProgressiveDisclosure
+        title="전체 피부 점수"
+        summary={`${overallScore}점 · ${scoreGradeLabel}`}
+      >
+        <section className="bg-gradient-to-br from-emerald-50 via-card to-teal-50 rounded-xl border p-6">
+          <div className="flex justify-center mb-4">
+            <CircularProgress score={overallScore} />
           </div>
-          <div className="space-y-3">
-            {recommendedIngredients.map((ingredient, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-medium">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="font-medium text-foreground">{ingredient.name}</p>
-                  <p className="text-sm text-muted-foreground">{ingredient.reason}</p>
-                </div>
-              </div>
-            ))}
+          <div className="flex justify-center">
+            <span
+              className={`px-4 py-1.5 rounded-full text-sm font-medium text-white ${getScoreBgColor(overallScore)}`}
+            >
+              {scoreGradeLabel}
+            </span>
+          </div>
+          {/* 핵심 판정 근거 요약 */}
+          {skinType && (
+            <SkinEvidenceSummary
+              tZoneOiliness={evidence?.tZoneOiliness}
+              poreVisibility={evidence?.poreVisibility}
+              skinType={skinType}
+              className="mt-4"
+            />
+          )}
+        </section>
+      </ProgressiveDisclosure>
+
+      {/* 강점·집중 지표 */}
+      <ProgressiveDisclosure
+        title="강점·집중 지표"
+        summary={`강점 ${bestMetric.name} · 집중 ${worstMetric.name}`}
+      >
+        <section className="grid grid-cols-2 gap-3">
+          {/* 가장 좋은 지표 */}
+          <div className="bg-green-50 rounded-xl border border-green-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <span className="text-xs font-medium text-green-700">Best</span>
+            </div>
+            <p className="font-semibold text-foreground">{bestMetric.name}</p>
+            <p className="text-2xl font-bold text-green-600">{bestMetric.value}점</p>
+          </div>
+          {/* 개선 필요 지표 */}
+          <div className="bg-amber-50 rounded-xl border border-amber-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingDown className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-medium text-amber-700">Focus</span>
+            </div>
+            <p className="font-semibold text-foreground">{worstMetric.name}</p>
+            <p className="text-2xl font-bold text-amber-600">{worstMetric.value}점</p>
           </div>
         </section>
-      </FadeInUp>
+      </ProgressiveDisclosure>
 
-      {/* 성분 경고 (화해 스타일) */}
-      {ingredientWarnings && ingredientWarnings.length > 0 && (
-        <FadeInUp delay={5}>
-          <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
-              <h2 className="text-lg font-semibold text-foreground">주의 성분</h2>
+      {/* 얼굴 부위별 시각화 (Layer 1: WHERE) */}
+      <ProgressiveDisclosure
+        title="얼굴 부위별 시각화"
+        summary="사진 위 지표 또는 12존 맵으로 자세히 보기"
+      >
+        {imageUrl ? (
+          /* 경쟁사 스타일: 실제 사진 + 점수 배지 (룰루랩/퍼펙트코프 스타일) */
+          <PhotoMetricOverlay
+            imageUrl={imageUrl}
+            metrics={photoMetrics}
+            showConnectors
+            showOverlay
+          />
+        ) : (
+          /* 사진 없을 때: 피부과 측정 장비 스타일 12존 맵 */
+          <ProfessionalSkinMap
+            zoneData={zoneData}
+            selectedZone={selectedZone}
+            onZoneClick={(zoneId) => setSelectedZone(zoneId)}
+          />
+        )}
+      </ProgressiveDisclosure>
+
+      {/* 7가지 지표 (Layer 2: WHAT) */}
+      <ProgressiveDisclosure title="상세 수치 보기" summary="7가지 지표 점수 자세히 보기">
+        <MetricBarGaugeList
+          metrics={
+            Object.fromEntries(
+              metrics.map((m) => [m.id, { score: m.value, status: m.status, name: m.name }])
+            ) as Record<
+              SkinMetricId,
+              { score: number; status: 'good' | 'normal' | 'warning'; name: string }
+            >
+          }
+          selectedMetric={selectedMetric}
+          onMetricClick={(metricId) => setSelectedMetric(metricId)}
+          userAge={25}
+        />
+      </ProgressiveDisclosure>
+
+      {/* AI 인사이트 (가변 보상) — 요약은 첫 문장 */}
+      <ProgressiveDisclosure
+        title="AI 인사이트"
+        summary={insightFirstSentence}
+        icon={<Sparkles className="w-4 h-4 text-purple-500" />}
+      >
+        <section className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 p-6">
+          <p className="text-foreground/80 leading-relaxed">{insight}</p>
+        </section>
+      </ProgressiveDisclosure>
+
+      {/* 12존 피부 분석 요약 (T4.5.8) */}
+      {Object.keys(twelveZoneScores).length > 0 && (
+        <ProgressiveDisclosure title="12존 상세 요약" summary="이마·코·볼·턱 부위별 세부 점수">
+          <TwelveZoneSummary zoneScores={twelveZoneScores} zoneMetrics={twelveZoneMetrics} />
+        </ProgressiveDisclosure>
+      )}
+
+      {/* 초보자 친화 팁 (EASY_SKIN_TIPS) */}
+      {easySkinTip && (
+        <ProgressiveDisclosure
+          title="초보자를 위한 가이드"
+          summary={easySkinTip.summary}
+          icon={<Lightbulb className="w-4 h-4 text-teal-500" />}
+        >
+          <section className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-200 dark:border-teal-800 p-6">
+            <p className="text-sm text-muted-foreground mb-4">{easySkinTip.easyExplanation}</p>
+
+            {/* 제품 팁 & 주의할 점 */}
+            <div className="space-y-2">
+              <div className="flex items-start gap-2 p-2.5 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                <span className="text-green-600">✓</span>
+                <p className="text-xs text-green-800 dark:text-green-200">
+                  <span className="font-medium">추천:</span> {easySkinTip.productTip}
+                </p>
+              </div>
+              <div className="flex items-start gap-2 p-2.5 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-red-800 dark:text-red-200">
+                  <span className="font-medium">주의할 점:</span> {easySkinTip.avoidTip}
+                </p>
+              </div>
             </div>
+          </section>
+        </ProgressiveDisclosure>
+      )}
+
+      {/* 추천 성분 (가변 보상) */}
+      <ProgressiveDisclosure
+        title="추천 성분"
+        summary={
+          recommendedIngredients.length > 0
+            ? `${recommendedIngredients[0].name} 등 ${recommendedIngredients.length}가지`
+            : '추천 성분 보기'
+        }
+        icon={<FlaskConical className="w-4 h-4 text-green-500" />}
+      >
+        <div className="space-y-3">
+          {recommendedIngredients.map((ingredient, index) => (
+            <div key={index} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-medium">
+                {index + 1}
+              </span>
+              <div>
+                <p className="font-medium text-foreground">{ingredient.name}</p>
+                <p className="text-sm text-muted-foreground">{ingredient.reason}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ProgressiveDisclosure>
+
+      {/* 성분 경고 (화해 스타일) — 접기 */}
+      {ingredientWarnings && ingredientWarnings.length > 0 && (
+        <ProgressiveDisclosure
+          title="주의 성분"
+          summary={`${ingredientWarnings[0].ingredient} 등 ${ingredientWarnings.length}가지 주의`}
+          icon={<AlertTriangle className="w-4 h-4 text-orange-500" />}
+        >
+          <section className="bg-card rounded-xl border p-6">
             <div className="space-y-3">
               {ingredientWarnings.map((warning, index) => (
                 <div
@@ -703,18 +702,17 @@ export default function AnalysisResult({
               ))}
             </div>
           </section>
-        </FadeInUp>
+        </ProgressiveDisclosure>
       )}
 
-      {/* 제품 추천 */}
+      {/* 제품 추천 — 접기 */}
       {productRecommendations && (
-        <FadeInUp delay={6}>
+        <ProgressiveDisclosure
+          title="제품 & 케어 가이드"
+          summary="단계별 추천 제품과 주간 케어 가이드"
+          icon={<ShoppingBag className="w-4 h-4 text-pink-500" />}
+        >
           <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <ShoppingBag className="w-5 h-5 text-pink-500" />
-              <h2 className="text-lg font-semibold text-foreground">제품 &amp; 케어 가이드</h2>
-            </div>
-
             {/* 단계별 제품 추천 */}
             {productRecommendations.routine.length > 0 && (
               <div className="space-y-2">
@@ -788,18 +786,17 @@ export default function AnalysisResult({
                 </div>
               )}
           </section>
-        </FadeInUp>
+        </ProgressiveDisclosure>
       )}
 
-      {/* 마스크팩 추천 */}
+      {/* 마스크팩 추천 — 접기 */}
       {maskRecommendation && maskRecommendation.recommended.length > 0 && (
-        <FadeInUp delay={7}>
+        <ProgressiveDisclosure
+          title="맞춤 마스크팩"
+          summary="추천 마스크와 주간 마스크팩 플랜"
+          icon={<span className="text-base">🎭</span>}
+        >
           <section className="bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xl">🎭</span>
-              <h2 className="text-lg font-semibold text-foreground">맞춤 마스크팩</h2>
-            </div>
-
             {/* 개인화 노트 */}
             <div className="mb-4 p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg">
               <p className="text-sm text-violet-800 dark:text-violet-200">
@@ -899,21 +896,17 @@ export default function AnalysisResult({
               </div>
             )}
           </section>
-        </FadeInUp>
+        </ProgressiveDisclosure>
       )}
 
-      {/* 피부 타입 기반 파운데이션 제형 추천 */}
+      {/* 피부 타입 기반 파운데이션 제형 추천 — 접기 */}
       {foundationFormula && (
-        <FadeInUp delay={7}>
+        <ProgressiveDisclosure
+          title="파운데이션 제형 추천"
+          summary={`${foundationFormula.finishLabel} · ${foundationFormula.coverageLabel} · 피부 타입 기반`}
+          icon={<Palette className="w-4 h-4 text-amber-600" />}
+        >
           <section className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-amber-600" />
-              <h2 className="text-lg font-semibold text-foreground">파운데이션 제형 추천</h2>
-              <span className="ml-auto text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full">
-                피부 타입 기반
-              </span>
-            </div>
-
             {/* 3가지 핵심 추천 */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-white/60 dark:bg-black/20 rounded-lg p-3 text-center">
@@ -957,7 +950,7 @@ export default function AnalysisResult({
               </p>
             )}
           </section>
-        </FadeInUp>
+        </ProgressiveDisclosure>
       )}
 
       {/* 분석 시간 */}
