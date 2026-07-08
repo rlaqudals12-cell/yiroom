@@ -200,6 +200,8 @@ interface BeautyProduct {
   matchRate: number;
   price: number;
   imageUrl: string;
+  /** 실제 제품 이미지 보유 여부(placeholder 아님) — 동률 정렬 시 이미지 우선 표시용 */
+  hasRealImage: boolean;
   category?: string;
   keyIngredients?: string[];
   matchReasons?: MatchReason[];
@@ -393,6 +395,7 @@ export function BeautyRecommendTab({
           reviewCount: row.review_count ?? 0,
           priceKrw: row.price_krw ?? 0,
           imageUrl: getProductImageUrl(row.image_url, row.brand),
+          hasRealImage: !!row.image_url,
           keyIngredients: row.key_ingredients ?? [],
           skinTypes: row.skin_types,
           concerns: row.concerns,
@@ -419,14 +422,19 @@ export function BeautyRecommendTab({
             matchRate: m.matchScore,
             price: p.priceKrw,
             imageUrl: p.imageUrl,
+            hasRealImage: p.hasRealImage,
             keyIngredients: p.keyIngredients,
             matchReasons: m.matchReasons,
           };
         });
 
-        // 매칭률 정렬은 클라이언트 계산 값이므로 여기서 정렬
+        // 매칭률 정렬은 클라이언트 계산 값이므로 여기서 정렬.
+        // 동률(같은 매칭률)일 때만 실제 이미지 보유 제품을 앞으로 — 순위 조작이 아니라
+        // 첫 화면 표시 품질 향상(placeholder 타일이 상단을 채우지 않도록). 정직 원칙 유지.
         if (sortBy === 'match') {
-          mappedProducts.sort((a, b) => b.matchRate - a.matchRate);
+          mappedProducts.sort(
+            (a, b) => b.matchRate - a.matchRate || Number(b.hasRealImage) - Number(a.hasRealImage)
+          );
         }
 
         // 매칭 필터 적용 — 임계 이상이 0개면 자동 완화(매칭률순 전체 표시) + 안내

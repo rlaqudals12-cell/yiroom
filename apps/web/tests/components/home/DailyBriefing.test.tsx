@@ -47,6 +47,21 @@ const analyses = [
   { id: '2', type: 'personal-color', createdAt: new Date(), summary: '봄 웜톤' },
 ] as AnalysisSummary[];
 
+// 베스트 컬러가 있는 PC 분석(나의 컬러/오늘의 배색 시각화용)
+const analysesWithColors = [
+  {
+    id: 'pc-9',
+    type: 'personal-color',
+    createdAt: new Date(),
+    summary: '봄 웜톤',
+    bestColors: [
+      { name: '코랄', hex: '#FF7F50' },
+      { name: '골드', hex: '#FFD700' },
+      { name: '오렌지', hex: '#FFA500' },
+    ],
+  },
+] as AnalysisSummary[];
+
 describe('DailyBriefing', () => {
   beforeEach(() => {
     pushMock.mockClear();
@@ -89,5 +104,37 @@ describe('DailyBriefing', () => {
   it('최신 통합 결과 링크(IntegratedSessionPromptCard)를 렌더한다', () => {
     render(<DailyBriefing analyses={analyses} />);
     expect(screen.getByTestId('integrated-session-prompt-card')).toBeInTheDocument();
+  });
+
+  it('PC 베스트 컬러가 있으면 "나의 컬러" 스와치 행을 렌더하고 PC 결과로 링크한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const section = screen.getByTestId('briefing-my-colors');
+    expect(section).toBeInTheDocument();
+    // 스와치 개수 = 팔레트 색 수, 각 스와치 title=색이름
+    const swatches = screen.getAllByTestId('briefing-color-swatch');
+    expect(swatches).toHaveLength(3);
+    expect(swatches[0]).toHaveAttribute('title', '코랄');
+    // 행 전체가 PC 결과 페이지로 링크
+    expect(section.querySelector('a')).toHaveAttribute(
+      'href',
+      '/analysis/personal-color/result/pc-9'
+    );
+  });
+
+  it('PC 베스트 컬러가 없으면 "나의 컬러" 스와치 행을 렌더하지 않는다', () => {
+    render(<DailyBriefing analyses={analyses} />);
+    expect(screen.queryByTestId('briefing-my-colors')).not.toBeInTheDocument();
+  });
+
+  it('베스트 컬러가 있으면 오늘의 스타일에 배색 블록(상의·하의·포인트) 3개를 렌더한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
+    expect(screen.getAllByTestId('briefing-outfit-block')).toHaveLength(3);
+  });
+
+  it('베스트 컬러가 없으면 배색 블록 없이 오늘의 스타일 카드만 렌더한다', () => {
+    render(<DailyBriefing analyses={analyses} />);
+    expect(screen.getByTestId('briefing-style')).toBeInTheDocument();
+    expect(screen.queryByTestId('briefing-outfit-palette')).not.toBeInTheDocument();
   });
 });

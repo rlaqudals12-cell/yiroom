@@ -161,6 +161,22 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
                   <SkinTrendChip trend={analysis.skinTrend} delta={analysis.skinDelta ?? 0} />
                 )}
               </p>
+              {/* 퍼스널컬러 = "내 색"이 보이게: 진단된 베스트 컬러 미니 스와치 (V1 시각 자산) */}
+              {analysis.type === 'personal-color' &&
+                analysis.bestColors &&
+                analysis.bestColors.length > 0 && (
+                  <div className="flex items-center gap-1" data-testid="profile-mini-palette">
+                    {analysis.bestColors.slice(0, 3).map((c, i) => (
+                      <span
+                        key={`${c.hex}-${i}`}
+                        className="h-4 w-4 rounded-full border border-white/70 dark:border-slate-600 shadow-sm"
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name || c.hex}
+                        aria-label={c.name || c.hex}
+                      />
+                    ))}
+                  </div>
+                )}
               <p className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
                 <Check className="w-3 h-3 text-emerald-500" aria-hidden="true" />
                 {relativeTime(analysis.createdAt)}

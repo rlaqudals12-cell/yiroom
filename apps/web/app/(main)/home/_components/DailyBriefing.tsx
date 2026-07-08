@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { composeBriefing } from '@/lib/briefing';
+import { composeDailyOutfit } from '@/lib/color/daily-outfit';
 import { generateInsights, analysisToDataBundle } from '@/lib/insights';
 import {
   getCurrentWeather,
@@ -99,6 +100,12 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
   // 실이름만 — '회원' 같은 placeholder는 넘기지 않음(이름 없으면 생략형)
   const userName = user?.firstName || user?.username || undefined;
+
+  // 나의 컬러: 최신 퍼스널컬러의 베스트 팔레트(진단된 hex) — 있을 때만 시각화
+  const pcEntry = analyses.find((a) => a.type === 'personal-color');
+  const bestColors = useMemo(() => pcEntry?.bestColors ?? [], [pcEntry]);
+  // 오늘의 배색(상의·하의·포인트) — 베스트 컬러 기반 결정론(같은 날 같은 조합)
+  const dailyOutfit = useMemo(() => composeDailyOutfit(bestColors), [bestColors]);
 
   // 피부 추이 + 경과일
   const skinEntry = analyses.find((a) => a.type === 'skin');
@@ -182,6 +189,31 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <p className="mt-3 text-xs text-muted-foreground">{briefing.closing}</p>
       </section>
 
+      {/* 1-b) 나의 컬러 — 진단된 베스트 팔레트 스와치 (PC 분석 있을 때만) */}
+      {pcEntry && bestColors.length > 0 && (
+        <section aria-label="나의 컬러" data-testid="briefing-my-colors">
+          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">나의 컬러</h3>
+          <Link
+            href={`/analysis/personal-color/result/${pcEntry.id}`}
+            className="flex items-center gap-3 rounded-2xl border border-pink-200/50 dark:border-pink-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-pink-300 dark:hover:border-pink-800"
+          >
+            <div className="flex flex-1 items-center gap-2">
+              {bestColors.slice(0, 5).map((c, i) => (
+                <span
+                  key={`${c.hex}-${i}`}
+                  className="h-9 w-9 rounded-full border border-white/70 dark:border-slate-700 shadow-sm"
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name || c.hex}
+                  aria-label={c.name || c.hex}
+                  data-testid="briefing-color-swatch"
+                />
+              ))}
+            </div>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        </section>
+      )}
+
       {/* 2) 오늘의 실행 3개 */}
       {/* ① 오늘의 루틴 */}
       <section aria-label="오늘의 루틴" data-testid="briefing-routine">
@@ -189,23 +221,49 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <HomeDailyCapsuleWidget />
       </section>
 
-      {/* ② 오늘의 스타일 */}
+      {/* ② 오늘의 스타일 — 내 베스트 컬러 기반 오늘의 배색(상의·하의·포인트) + 날씨 팁 */}
       <section aria-label="오늘의 스타일" data-testid="briefing-style">
         <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 스타일</h3>
         <Link
           href="/closet/recommend"
-          className="flex items-center gap-3 rounded-2xl border border-blue-200/50 dark:border-blue-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-blue-300 dark:hover:border-blue-800"
+          className="block rounded-2xl border border-blue-200/50 dark:border-blue-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-blue-300 dark:hover:border-blue-800"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15">
-            <Shirt className="h-5 w-5 text-blue-500" aria-hidden="true" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-foreground/90 leading-snug">
-              {fashionTip ?? '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요'}
-            </p>
-            <p className="mt-0.5 text-xs font-medium text-blue-500">코디 추천 받기</p>
+          {/* 오늘의 배색 조합 (베스트 컬러가 있을 때만 — 결정론) */}
+          {dailyOutfit && (
+            <div
+              className="mb-3 flex items-center gap-4"
+              data-testid="briefing-outfit-palette"
+              aria-label={`오늘의 배색: ${dailyOutfit.baseName} 기반`}
+            >
+              {dailyOutfit.colors.map((c) => (
+                <div key={c.role} className="flex flex-col items-center gap-1">
+                  <span
+                    className="h-11 w-11 rounded-xl border border-white/70 dark:border-slate-700 shadow-sm"
+                    style={{ backgroundColor: c.hex }}
+                    title={`${c.role} ${c.hex.toUpperCase()}`}
+                    aria-label={`${c.role} ${c.hex.toUpperCase()}`}
+                    data-testid="briefing-outfit-block"
+                  />
+                  <span className="text-[10px] text-muted-foreground">{c.role}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15">
+              <Shirt className="h-5 w-5 text-blue-500" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-foreground/90 leading-snug">
+                {fashionTip ??
+                  (dailyOutfit
+                    ? '내 베스트 컬러로 짠 오늘의 배색이에요'
+                    : '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요')}
+              </p>
+              <p className="mt-0.5 text-xs font-medium text-blue-500">코디 추천 받기</p>
+            </div>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </Link>
       </section>
 

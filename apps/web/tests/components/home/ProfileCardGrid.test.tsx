@@ -59,6 +59,30 @@ describe('ProfileCardGrid', () => {
     expect(screen.queryByTestId('skin-trend-chip')).not.toBeInTheDocument();
   });
 
+  it('퍼스널컬러 카드: 베스트 컬러가 있으면 미니 팔레트(최대 3색) 노출, 없으면 미노출', () => {
+    const { rerender } = render(
+      <ProfileCardGrid
+        analyses={[
+          summary('personal-color', {
+            bestColors: [
+              { name: '코랄', hex: '#FF7F50' },
+              { name: '골드', hex: '#FFD700' },
+              { name: '오렌지', hex: '#FFA500' },
+              { name: '라임', hex: '#32CD32' },
+            ],
+          }),
+        ]}
+      />
+    );
+    const palette = screen.getByTestId('profile-mini-palette');
+    expect(palette).toBeInTheDocument();
+    // 최대 3색만 노출
+    expect(palette.querySelectorAll('span')).toHaveLength(3);
+
+    rerender(<ProfileCardGrid analyses={[summary('personal-color')]} />);
+    expect(screen.queryByTestId('profile-mini-palette')).not.toBeInTheDocument();
+  });
+
   it('페르소나 한 줄이 있으면 상단 노출, 없으면 미노출', () => {
     const { rerender } = render(<ProfileCardGrid analyses={[summary('skin')]} />);
     expect(screen.queryByTestId('profile-persona-line')).not.toBeInTheDocument();

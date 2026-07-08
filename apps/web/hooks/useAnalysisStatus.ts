@@ -48,6 +48,43 @@ export interface AnalysisSummary {
   hairType?: string; // H-1
   makeupScore?: number; // M-1
   undertone?: string; // M-1
+  // PC-1 베스트 컬러(진단된 hex 팔레트) — 홈 브리핑/프로필 카드 시각화용 (V1 시각 자산 노출)
+  bestColors?: Array<{ name: string; hex: string }>;
+}
+
+// DB best_colors(JSONB 배열) 항목 하나를 {name,hex}로 정규화 (AI 원본 {name,hex}, 방어적으로 color 폴백)
+function normalizeColorItem(c: unknown): { name: string; hex: string } | null {
+  if (typeof c !== 'object' || c === null) return null;
+  const item = c as { name?: unknown; hex?: unknown; color?: unknown };
+  let hex: string | null = null;
+  if (typeof item.hex === 'string') hex = item.hex;
+  else if (typeof item.color === 'string') hex = item.color;
+  if (!hex) return null;
+  return { name: typeof item.name === 'string' ? item.name : '', hex };
+}
+
+// DB best_colors 배열을 유효한 {name,hex}만 정규화
+function normalizeBestColors(raw: unknown): Array<{ name: string; hex: string }> {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeColorItem).filter((c): c is { name: string; hex: string } => c !== null);
+}
+
+// PC 분석 요약 조립 — best_colors 정규화 포함 (fetchAnalyses 복잡도 분리)
+function buildPersonalColorSummary(row: {
+  id: string;
+  season: string;
+  created_at: string;
+  best_colors: unknown;
+}): AnalysisSummary {
+  const bestColors = normalizeBestColors(row.best_colors);
+  return {
+    id: row.id,
+    type: 'personal-color',
+    createdAt: new Date(row.created_at),
+    summary: getSeasonLabel(row.season),
+    seasonType: row.season,
+    ...(bestColors.length > 0 ? { bestColors } : {}),
+  };
 }
 
 // 분석 상태 반환 타입
@@ -169,7 +206,7 @@ export function useAnalysisStatus(): AnalysisStatus {
         const [pcResult, skinResult, bodyResult, hairResult, makeupResult] = await Promise.all([
           supabase
             .from('personal_color_assessments')
-            .select('id, season, created_at')
+            .select('id, season, created_at, best_colors')
             .order('created_at', { ascending: false })
             .limit(1),
           supabase
@@ -198,13 +235,7 @@ export function useAnalysisStatus(): AnalysisStatus {
 
         // 퍼스널 컬러
         if (pcResult.data && pcResult.data.length > 0) {
-          results.push({
-            id: pcResult.data[0].id,
-            type: 'personal-color',
-            createdAt: new Date(pcResult.data[0].created_at),
-            summary: getSeasonLabel(pcResult.data[0].season),
-            seasonType: pcResult.data[0].season,
-          });
+          results.push(buildPersonalColorSummary(pcResult.data[0]));
         }
 
         // 피부 분석 (직전 대비 추이 포함 — "오늘의 컨디션")

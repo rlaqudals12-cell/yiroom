@@ -1,0 +1,54 @@
+/**
+ * composeDailyOutfit 테스트 — 베스트 컬러 → 오늘의 배색(상의·하의·포인트).
+ * 핵심: 결정론(같은 날+같은 팔레트=같은 조합), 빈 입력 null, ADR-105 배색 엔진 재사용.
+ */
+
+import { describe, it, expect } from 'vitest';
+import { composeDailyOutfit } from '@/lib/color/daily-outfit';
+
+const palette = [
+  { name: '코랄', hex: '#FF7F50' },
+  { name: '골드', hex: '#FFD700' },
+  { name: '오렌지', hex: '#FFA500' },
+];
+
+describe('composeDailyOutfit', () => {
+  it('상의·하의·포인트 3색을 순서대로 반환한다', () => {
+    const out = composeDailyOutfit(palette, new Date('2026-07-08'));
+    expect(out).not.toBeNull();
+    expect(out!.colors).toHaveLength(3);
+    expect(out!.colors.map((c) => c.role)).toEqual(['상의', '하의', '포인트']);
+    // 상의는 베스트 컬러 중 하나(그대로), 나머지는 유효 hex
+    expect(out!.colors.every((c) => /^#[0-9a-fA-F]{3,8}$/.test(c.hex))).toBe(true);
+  });
+
+  it('같은 날짜+같은 팔레트면 항상 같은 조합(결정론)', () => {
+    const a = composeDailyOutfit(palette, new Date('2026-07-08'));
+    const b = composeDailyOutfit(palette, new Date('2026-07-08'));
+    expect(a).toEqual(b);
+  });
+
+  it('날짜가 바뀌면 기준색 선택이 순환한다(회전)', () => {
+    // 팔레트 길이 3 → 시드 % 3 로 기준색 인덱스가 도는지: 서로 다른 3일의 상의색 집합이 팔레트를 덮음
+    const tops = [
+      composeDailyOutfit(palette, new Date('2026-07-08'))!.colors[0].hex,
+      composeDailyOutfit(palette, new Date('2026-07-09'))!.colors[0].hex,
+      composeDailyOutfit(palette, new Date('2026-07-10'))!.colors[0].hex,
+    ];
+    // 최소 2가지 이상의 서로 다른 상의색이 나와야 "회전"이라 볼 수 있음
+    expect(new Set(tops).size).toBeGreaterThanOrEqual(2);
+  });
+
+  it('유효한 베스트 컬러가 없으면 null(섹션 생략용)', () => {
+    expect(composeDailyOutfit([])).toBeNull();
+    expect(composeDailyOutfit([{ name: '이상값', hex: 'not-a-hex' }])).toBeNull();
+    expect(composeDailyOutfit([{ name: '빈값' }])).toBeNull();
+  });
+
+  it('기준색 이름을 baseName으로 노출(이름 없으면 폴백)', () => {
+    const named = composeDailyOutfit([{ name: '코랄', hex: '#FF7F50' }], new Date('2026-07-08'));
+    expect(named!.baseName).toBe('코랄');
+    const unnamed = composeDailyOutfit([{ hex: '#FF7F50' }], new Date('2026-07-08'));
+    expect(unnamed!.baseName).toBe('베스트 컬러');
+  });
+});
