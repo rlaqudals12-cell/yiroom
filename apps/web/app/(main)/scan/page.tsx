@@ -10,37 +10,20 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import {
-  ScanLine,
-  Keyboard,
-  ArrowLeft,
-  Package,
-  FlaskConical,
-  ShieldCheck,
-  AlertTriangle,
-  XCircle,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { ScanLine, Keyboard, ArrowLeft, Package, FlaskConical, ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScanCamera } from '@/components/scan/ScanCamera';
 import { BarcodeInput } from '@/components/scan/BarcodeInput';
 import { ScanResult } from '@/components/scan/ScanResult';
+import { ScanVerdict, type ScanVerdictData } from '@/components/scan/ScanVerdict';
 import { IngredientCapture } from '@/components/scan/IngredientCapture';
 import { lookupProduct } from '@/lib/scan';
-import type { BarcodeResult, OcrResult, CompatibilityResult } from '@/lib/scan';
+import type { BarcodeResult, OcrResult } from '@/lib/scan';
 import type { ProductLookupResult } from '@/types/scan';
 
 type ScanMode = 'camera' | 'manual' | 'ingredient';
 type ScanState = 'scanning' | 'loading' | 'result' | 'not_found' | 'ocr_result';
-
-// EWG 등급별 배지 색상 클래스
-function getEwgGradeClass(grade: number): string {
-  if (grade <= 2) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-  if (grade <= 6) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-}
 
 export default function ScanPage() {
   const router = useRouter();
@@ -50,9 +33,8 @@ export default function ScanPage() {
   const [lastBarcode, setLastBarcode] = useState<string | null>(null);
   const [addingToShelf, setAddingToShelf] = useState(false);
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [compatibilityResult, setCompatibilityResult] = useState<CompatibilityResult | null>(null);
+  const [compatibilityResult, setCompatibilityResult] = useState<ScanVerdictData | null>(null);
   const [compatibilityLoading, setCompatibilityLoading] = useState(false);
-  const [showAllIngredients, setShowAllIngredients] = useState(false);
 
   // 바코드 조회 처리
   const handleLookup = useCallback(async (barcode: string) => {
@@ -96,7 +78,6 @@ export default function ScanPage() {
     setLastBarcode(null);
     setOcrResult(null);
     setCompatibilityResult(null);
-    setShowAllIngredients(false);
     setState('scanning');
     setMode('camera');
   }, []);
@@ -167,7 +148,7 @@ export default function ScanPage() {
           body: JSON.stringify({ ingredients: ocr.ingredients }),
         });
         if (response.ok) {
-          const compat: CompatibilityResult = await response.json();
+          const compat: ScanVerdictData = await response.json();
           setCompatibilityResult(compat);
         }
       } catch (error) {
@@ -184,7 +165,6 @@ export default function ScanPage() {
     setLastBarcode(null);
     setOcrResult(null);
     setCompatibilityResult(null);
-    setShowAllIngredients(false);
     setState('scanning');
   }, []);
 
@@ -255,184 +235,44 @@ export default function ScanPage() {
           </div>
         )}
 
-        {/* OCR 성분 분석 결과 */}
+        {/* OCR 성분 분석 결과 — "나와의 적합도" 컨설팅 정본 */}
         {state === 'ocr_result' && ocrResult && (
           <div className="space-y-6">
-            {/* 제품 정보 (있는 경우) */}
-            {(ocrResult.productName || ocrResult.brandName) && (
-              <div className="p-4 bg-card rounded-xl border">
-                {ocrResult.brandName && (
-                  <p className="text-sm text-muted-foreground">{ocrResult.brandName}</p>
-                )}
-                {ocrResult.productName && (
-                  <h2 className="font-semibold text-lg">{ocrResult.productName}</h2>
-                )}
-              </div>
-            )}
-
-            {/* 호환성 점수 */}
+            {/* 호환성 분석 로딩 */}
             {compatibilityLoading && (
               <div className="p-4 bg-card rounded-xl border flex items-center gap-3">
                 <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <span className="text-muted-foreground">피부 호환성을 분석하고 있어요...</span>
+                <span className="text-muted-foreground">나와의 적합도를 분석하고 있어요...</span>
               </div>
             )}
 
-            {compatibilityResult &&
-              (() => {
-                let scoreColorClass: string;
-                if (compatibilityResult.overallScore >= 80) {
-                  scoreColorClass = 'text-green-600 dark:text-green-400';
-                } else if (compatibilityResult.overallScore >= 60) {
-                  scoreColorClass = 'text-amber-600 dark:text-amber-400';
-                } else {
-                  scoreColorClass = 'text-red-600 dark:text-red-400';
-                }
-                return (
-                  <div className="p-4 bg-card rounded-xl border space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">피부 호환성</h3>
-                      <span className={cn('text-2xl font-bold', scoreColorClass)}>
-                        {compatibilityResult.overallScore}점
-                      </span>
-                    </div>
+            {/* 판정 결과 (정본 컴포넌트) */}
+            {!compatibilityLoading && compatibilityResult && (
+              <ScanVerdict
+                verdict={compatibilityResult}
+                ingredients={ocrResult.ingredients}
+                productName={ocrResult.productName}
+                brandName={ocrResult.brandName}
+                ocrConfidence={ocrResult.confidence}
+                onRescan={handleRescanAll}
+              />
+            )}
 
-                    {/* 좋은 점 */}
-                    {compatibilityResult.skinCompatibility.goodPoints.length > 0 && (
-                      <div className="space-y-1">
-                        {compatibilityResult.skinCompatibility.goodPoints.map((point, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <ShieldCheck className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                            <span>{point.description}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 주의 */}
-                    {compatibilityResult.skinCompatibility.warnings.length > 0 && (
-                      <div className="space-y-1">
-                        {compatibilityResult.skinCompatibility.warnings.map((warning, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm">
-                            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                            <span>{warning.description}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 위험 성분 */}
-                    {compatibilityResult.ingredientAnalysis.avoid.length > 0 && (
-                      <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg space-y-1">
-                        <p className="text-sm font-medium text-red-700 dark:text-red-300">
-                          주의 성분
-                        </p>
-                        {compatibilityResult.ingredientAnalysis.avoid.map((item, i) => (
-                          <div
-                            key={i}
-                            className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400"
-                          >
-                            <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                            <span>
-                              {item.ingredient}: {item.reason}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-            {/* 추출된 성분 목록 */}
-            <div className="p-4 bg-card rounded-xl border">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">추출된 성분 ({ocrResult.ingredients.length}개)</h3>
-                {(() => {
-                  let confidenceBadgeClass: string;
-                  let confidenceText: string;
-                  if (ocrResult.confidence === 'high') {
-                    confidenceBadgeClass =
-                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-                    confidenceText = '높은 정확도';
-                  } else if (ocrResult.confidence === 'medium') {
-                    confidenceBadgeClass =
-                      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-                    confidenceText = '보통 정확도';
-                  } else {
-                    confidenceBadgeClass =
-                      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-                    confidenceText = '낮은 정확도';
-                  }
-                  return (
-                    <span className={cn('text-xs px-2 py-0.5 rounded-full', confidenceBadgeClass)}>
-                      {confidenceText}
-                    </span>
-                  );
-                })()}
+            {/* 성분을 읽지 못했거나 분석에 실패한 경우 */}
+            {!compatibilityLoading && !compatibilityResult && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                  <ImageOff className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h2 className="mt-4 text-lg font-semibold">성분을 분석하지 못했어요</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  성분표가 선명하게 보이도록 다시 촬영해 주세요
+                </p>
+                <Button onClick={handleRescanAll} className="mt-5">
+                  다시 스캔하기
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                {(showAllIngredients
-                  ? ocrResult.ingredients
-                  : ocrResult.ingredients.slice(0, 5)
-                ).map((ing, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between text-sm py-1 border-b border-border/50 last:border-0"
-                  >
-                    <div>
-                      <span className="text-muted-foreground mr-2">{ing.order}.</span>
-                      <span>{ing.nameKo || ing.inciName}</span>
-                      {ing.nameKo && ing.inciName && (
-                        <span className="text-xs text-muted-foreground ml-1">({ing.inciName})</span>
-                      )}
-                    </div>
-                    {ing.ewgGrade !== undefined && (
-                      <span
-                        className={cn(
-                          'text-xs font-medium px-1.5 py-0.5 rounded',
-                          getEwgGradeClass(ing.ewgGrade)
-                        )}
-                      >
-                        EWG {ing.ewgGrade}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {ocrResult.ingredients.length > 5 && (
-                <button
-                  onClick={() => setShowAllIngredients(!showAllIngredients)}
-                  className="mt-3 w-full flex items-center justify-center gap-1 text-sm text-primary hover:underline"
-                >
-                  {showAllIngredients ? (
-                    <>
-                      접기 <ChevronUp className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      전체 보기 ({ocrResult.ingredients.length - 5}개 더){' '}
-                      <ChevronDown className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-
-            {/* 면책 조항 */}
-            <p className="text-xs text-muted-foreground text-center px-4">
-              이 분석은 참고용이며 의학적 조언을 대체하지 않습니다. 알레르기가 있는 경우 전문가와
-              상담하세요.
-            </p>
-
-            {/* 액션 */}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={handleRescanAll} className="flex-1">
-                다시 스캔
-              </Button>
-            </div>
+            )}
           </div>
         )}
 

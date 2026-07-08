@@ -73,8 +73,9 @@ export async function analyzeIngredientImage(imageBase64: string): Promise<OcrRe
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
+    // 모델 표준화(ADR-112 결정 4): 프로젝트 표준 클라이언트 기본 모델(GEMINI_MODEL env) 사용.
+    // model 미지정 시 lib/gemini/client의 DEFAULT_MODEL로 라우팅된다.
     const result = await generateContent({
-      model: 'gemini-2.0-flash',
       contents: [imagePart, { text: INGREDIENT_OCR_PROMPT }],
     });
 

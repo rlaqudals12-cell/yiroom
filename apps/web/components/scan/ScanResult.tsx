@@ -11,7 +11,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Package,
-  Star,
+  Sparkles,
   CheckCircle2,
   Plus,
   Share2,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { IngredientEWGBadge } from '@/components/products/ingredients';
 import type { GlobalProduct, ProductLookupSource } from '@/types/scan';
 import type { AffiliateLink } from '@/lib/scan/barcode-product-bridge';
 
@@ -124,39 +125,30 @@ export function ScanResult({
             )}
           </div>
 
-          {/* EWG 등급 */}
-          {product.ewgGrade && (
-            <div className="flex items-center gap-1 mt-2">
-              <span className="text-xs text-muted-foreground">EWG 등급:</span>
-              <span
-                className={cn(
-                  'text-xs font-medium px-1.5 py-0.5 rounded',
-                  product.ewgGrade <= 2 && 'bg-green-100 text-green-700',
-                  product.ewgGrade >= 3 && product.ewgGrade <= 6 && 'bg-yellow-100 text-yellow-700',
-                  product.ewgGrade >= 7 && 'bg-red-100 text-red-700'
-                )}
-              >
-                {product.ewgGrade}
-              </span>
+          {/* EWG 등급 — 참고 지표 (데이터 있을 때만) */}
+          {product.ewgGrade != null && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="text-xs text-muted-foreground">EWG 참고 지표:</span>
+              <IngredientEWGBadge score={product.ewgGrade} size="sm" showLabel={false} />
             </div>
           )}
         </div>
       </div>
 
-      {/* 호환성 분석 (추후 구현) */}
-      <div className="p-4 bg-card rounded-xl border">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Star className="w-5 h-5" />
-          <span className="font-medium">맞춤 분석</span>
+      {/* 나와의 적합도 안내 — 성분표를 찍으면 내 피부 기준 판정 */}
+      <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+        <div className="flex items-center gap-2 text-foreground">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <span className="font-medium">나와의 적합도 보기</span>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          피부/퍼스널컬러 분석 후 맞춤 호환성을 확인할 수 있어요
+          성분표를 촬영하면 내 피부 기준으로 이 제품이 얼마나 맞는지 판정해드려요
         </p>
         <Link
-          href="/analysis/integrated"
+          href="/analysis/skin"
           className="mt-3 flex items-center gap-1 text-sm text-primary hover:underline"
         >
-          분석 시작하기
+          피부 분석 시작하기
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -188,27 +180,26 @@ export function ScanResult({
                 <span className="shrink-0 w-6 h-6 flex items-center justify-center bg-muted rounded text-xs">
                   {ing.order}
                 </span>
-                <div>
-                  <span className="font-medium">{ing.nameKo || ing.inciName}</span>
-                  {ing.nameKo && (
-                    <span className="text-muted-foreground ml-1">({ing.inciName})</span>
-                  )}
-                  {ing.ewgGrade && (
-                    <span
-                      className={cn(
-                        'ml-2 text-xs px-1 rounded',
-                        ing.ewgGrade <= 2 && 'bg-green-100 text-green-700',
-                        ing.ewgGrade >= 3 && ing.ewgGrade <= 6 && 'bg-yellow-100 text-yellow-700',
-                        ing.ewgGrade >= 7 && 'bg-red-100 text-red-700'
-                      )}
-                    >
-                      EWG {ing.ewgGrade}
-                    </span>
+                <div className="flex items-center gap-2">
+                  <span>
+                    <span className="font-medium">{ing.nameKo || ing.inciName}</span>
+                    {ing.nameKo && (
+                      <span className="text-muted-foreground ml-1">({ing.inciName})</span>
+                    )}
+                  </span>
+                  {ing.ewgGrade != null && (
+                    <IngredientEWGBadge score={ing.ewgGrade} size="sm" showLabel={false} />
                   )}
                 </div>
               </div>
             ))}
           </div>
+          {product.ingredients.some((ing) => ing.ewgGrade != null) && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              EWG 등급은 성분 안전성 참고 지표예요(출처: EWG Skin Deep). 농도·개인차는 반영되지
+              않아요.
+            </p>
+          )}
         </details>
       )}
 

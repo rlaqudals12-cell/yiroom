@@ -13,24 +13,25 @@
 
 ### P3 완료 핵심 SDD (16개)
 
-| 모듈                    | SDD                               | P3 상태 | ATOM 수 |
-| ----------------------- | --------------------------------- | ------- | ------- |
-| **영양 (N-1)**          | SDD-N1-NUTRITION                  | ✅ 완료 | 11개    |
-| **운동 (W-1)**          | SDD-W1-WORKOUT                    | ✅ 완료 | 13개    |
-| **퍼스널컬러 v2**       | SDD-PERSONAL-COLOR-v2             | ✅ 완료 | 12개    |
-| **피부 v2**             | SDD-SKIN-ANALYSIS-v2              | ✅ 완료 | 10개+   |
-| **체형 v2**             | SDD-BODY-ANALYSIS-v2              | ✅ 완료 | 10개+   |
-| **Hybrid 데이터**       | SDD-HYBRID-DATA-EXTENSION         | ✅ 완료 | 6개     |
-| **AI 투명성**           | SDD-AI-TRANSPARENCY               | ✅ 완료 | 5개     |
-| **감사 로깅**           | SDD-AUDIT-LOGGING                 | ✅ 완료 | 7개     |
-| **GDPR 삭제**           | SDD-GDPR-DELETION-CRON            | ✅ 완료 | 4개     |
-| **Rate Limiting**       | SDD-RATE-LIMITING                 | ✅ 완료 | 5개     |
-| **크로스모듈 프로토콜** | SDD-CROSS-MODULE-PROTOCOL         | ✅ 완료 | 8개     |
-| **접근성 가이드**       | SDD-ACCESSIBILITY-GUIDELINES      | ✅ 완료 | 6개     |
-| **Hub 패턴**            | SDD-HUB-PATTERN                   | ✅ 완료 | 8개     |
-| **스마트 조합 엔진**    | SDD-SMART-COMBINATION-ENGINE      | ✅ 완료 | 15개    |
-| **패션-옷장 통합**      | SDD-FASHION-CLOSET-INTEGRATION    | ✅ 완료 | 20개    |
-| **Phase-K 종합**        | SDD-PHASE-K-COMPREHENSIVE-UPGRADE | ✅ 완료 | 26개    |
+| 모듈                    | SDD                                             | P3 상태    | ATOM 수 |
+| ----------------------- | ----------------------------------------------- | ---------- | ------- |
+| **영양 (N-1)**          | SDD-N1-NUTRITION                                | ✅ 완료    | 11개    |
+| **운동 (W-1)**          | SDD-W1-WORKOUT                                  | ✅ 완료    | 13개    |
+| **퍼스널컬러 v2**       | SDD-PERSONAL-COLOR-v2                           | ✅ 완료    | 12개    |
+| **피부 v2**             | SDD-SKIN-ANALYSIS-v2                            | ✅ 완료    | 10개+   |
+| **체형 v2**             | SDD-BODY-ANALYSIS-v2                            | ✅ 완료    | 10개+   |
+| **Hybrid 데이터**       | SDD-HYBRID-DATA-EXTENSION                       | ✅ 완료    | 6개     |
+| **AI 투명성**           | SDD-AI-TRANSPARENCY                             | ✅ 완료    | 5개     |
+| **감사 로깅**           | SDD-AUDIT-LOGGING                               | ✅ 완료    | 7개     |
+| **제품 스캔 적합도**    | [SDD-PRODUCT-FIT-SCAN](SDD-PRODUCT-FIT-SCAN.md) | 🔄 구현 중 | -       |
+| **GDPR 삭제**           | SDD-GDPR-DELETION-CRON                          | ✅ 완료    | 4개     |
+| **Rate Limiting**       | SDD-RATE-LIMITING                               | ✅ 완료    | 5개     |
+| **크로스모듈 프로토콜** | SDD-CROSS-MODULE-PROTOCOL                       | ✅ 완료    | 8개     |
+| **접근성 가이드**       | SDD-ACCESSIBILITY-GUIDELINES                    | ✅ 완료    | 6개     |
+| **Hub 패턴**            | SDD-HUB-PATTERN                                 | ✅ 완료    | 8개     |
+| **스마트 조합 엔진**    | SDD-SMART-COMBINATION-ENGINE                    | ✅ 완료    | 15개    |
+| **패션-옷장 통합**      | SDD-FASHION-CLOSET-INTEGRATION                  | ✅ 완료    | 20개    |
+| **Phase-K 종합**        | SDD-PHASE-K-COMPREHENSIVE-UPGRADE               | ✅ 완료    | 26개    |
 
 ### P3 체크리스트 (스펙 작성 시 확인)
 

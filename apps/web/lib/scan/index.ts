@@ -51,6 +51,19 @@ export type {
   InteractionWarning,
 } from './ingredient-interactions';
 
+// 성분 DB 조인 매칭 (L1 규제 레이어)
+export { matchIngredientsToDb, buildRegulatoryFlags } from './ingredient-db-match';
+export type { IngredientDbMatch, RegulatoryKind, RegulatoryFlag } from './ingredient-db-match';
+
+// 효과 타임라인 (L4 레이어)
+export {
+  INGREDIENT_TIMELINES,
+  matchTimelines,
+  formatTimelineNotice,
+  TIMELINE_DISCLAIMER,
+} from './ingredient-timeline';
+export type { IngredientTimeline } from './ingredient-timeline';
+
 // 호환성 분석
 export { analyzeCompatibility, generateMockCompatibilityResult } from './compatibility';
 export type {

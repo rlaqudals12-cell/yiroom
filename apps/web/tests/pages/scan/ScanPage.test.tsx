@@ -158,28 +158,57 @@ describe('ScanPage', () => {
       expect(screen.getByText('테스트 브랜드')).toBeInTheDocument();
     });
 
-    // 성분 목록 표시 확인
-    expect(screen.getByText(/정제수/)).toBeInTheDocument();
-    expect(screen.getByText(/글리세린/)).toBeInTheDocument();
-  });
-
-  it('shows compatibility score after OCR analysis', async () => {
-    render(<ScanPage />);
-    fireEvent.click(screen.getByText('성분표'));
-    fireEvent.click(screen.getByTestId('mock-ocr-btn'));
-
+    // 전성분은 접힘(ProgressiveDisclosure) — 펼친 뒤 성분 목록 확인 (ADR-111 결론 먼저)
+    fireEvent.click(screen.getByText(/전성분 2개/));
     await waitFor(() => {
-      expect(screen.getByText('85점')).toBeInTheDocument();
+      expect(screen.getByText(/정제수/)).toBeInTheDocument();
+      expect(screen.getByText(/글리세린/)).toBeInTheDocument();
     });
   });
 
-  it('shows confidence badge', async () => {
+  it('shows fit score hero when user has skin analysis profile', async () => {
+    // 피부 프로필이 있으면 "나와의 적합도" 점수 히어로 표시 (ADR-112)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          overallScore: 85,
+          skinCompatibility: { score: 85, goodPoints: [], warnings: [] },
+          ingredientAnalysis: { beneficial: [], caution: [], avoid: [], interactions: [] },
+          hasUserAnalysis: { skinAnalysis: true, personalColor: false },
+        }),
+    });
+
     render(<ScanPage />);
     fireEvent.click(screen.getByText('성분표'));
     fireEvent.click(screen.getByTestId('mock-ocr-btn'));
 
     await waitFor(() => {
-      expect(screen.getByText('높은 정확도')).toBeInTheDocument();
+      const hero = screen.getByTestId('scan-verdict-hero');
+      expect(hero).toHaveTextContent('나와의 적합도');
+      expect(hero).toHaveTextContent('85');
+    });
+  });
+
+  it('shows skin analysis CTA instead of score when no profile', async () => {
+    // 프로필 없으면 점수 대신 분석 유도 CTA (ADR-112 — 성립 안 되는 판정을 지어내지 않음)
+    render(<ScanPage />);
+    fireEvent.click(screen.getByText('성분표'));
+    fireEvent.click(screen.getByTestId('mock-ocr-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('scan-verdict-cta')).toBeInTheDocument();
+      expect(screen.queryByTestId('scan-verdict-hero')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows OCR confidence badge', async () => {
+    render(<ScanPage />);
+    fireEvent.click(screen.getByText('성분표'));
+    fireEvent.click(screen.getByTestId('mock-ocr-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('scan-verdict-ocr-confidence')).toHaveTextContent('높은 정확도');
     });
   });
 
@@ -189,7 +218,9 @@ describe('ScanPage', () => {
     fireEvent.click(screen.getByTestId('mock-ocr-btn'));
 
     await waitFor(() => {
-      expect(screen.getByText(/참고용이며/)).toBeInTheDocument();
+      expect(screen.getByTestId('scan-verdict-disclaimer')).toHaveTextContent(
+        '의학적 조언이 아니에요'
+      );
     });
   });
 

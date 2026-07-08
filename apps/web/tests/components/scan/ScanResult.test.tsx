@@ -61,12 +61,10 @@ describe('ScanResult', () => {
   });
 
   it('EWG 등급 표시', () => {
-    render(
-      <ScanResult product={mockProduct} source="internal_db" confidence={95} />
-    );
+    render(<ScanResult product={mockProduct} source="internal_db" confidence={95} />);
 
-    expect(screen.getByText('EWG 등급:')).toBeInTheDocument();
-    // EWG 등급 값이 표시되는지 확인 (전성분 목록에도 2가 있을 수 있으므로 getAllByText 사용)
+    expect(screen.getByText('EWG 참고 지표:')).toBeInTheDocument();
+    // EWG 등급 값이 배지로 표시되는지 확인 (전성분 목록에도 2가 있을 수 있으므로 getAllByText 사용)
     const ewgGrades = screen.getAllByText('2');
     expect(ewgGrades.length).toBeGreaterThanOrEqual(1);
   });
@@ -151,6 +149,6 @@ describe('ScanResult', () => {
 
     render(<ScanResult product={productWithoutEwg} source="internal_db" confidence={95} />);
 
-    expect(screen.queryByText('EWG 등급:')).not.toBeInTheDocument();
+    expect(screen.queryByText('EWG 참고 지표:')).not.toBeInTheDocument();
   });
 });
