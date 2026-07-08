@@ -42,6 +42,19 @@ export type { RecLayer, LayeredInsights } from './recommendation-engine';
 export { composeCuration } from './curation';
 export type { Curation, CurationItem, CurationCategory, ComposeCurationInput } from './curation';
 
+// 소비자 눈높이 라벨 헬퍼 (원시 영문값 → 한국어) — 요약 카드/상세 아코디언에서 사용
+export {
+  seasonKo,
+  seasonShortKo,
+  undertoneKo,
+  skinTypeKo,
+  faceShapeKo,
+  bodyDescKo,
+} from './labels';
+
+// 실제 제품 인라인 매칭 타입 (함수는 server 전용 internal/product-matcher 직접 import)
+export type { CurationProduct } from './internal/product-matcher';
+
 // 입력 Zod 스키마 (API route에서 사용)
 export {
   integratedAnalysisInputSchema,
@@ -70,6 +83,11 @@ export type {
   MakeupAxisData,
   PersonaProfile,
   IntegratedSessionRow,
+  RecommendationGender,
+  RecommendationSituation,
 } from './types';
+
+// 추천 분기용 상수 (성별/상황 옵션 — UI 렌더링)
+export { RECOMMENDATION_GENDERS, RECOMMENDATION_SITUATIONS } from './types';
 
 // 내부 구현(internal/)은 외부에 노출하지 않음

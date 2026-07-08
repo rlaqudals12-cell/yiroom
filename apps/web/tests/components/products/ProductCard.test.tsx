@@ -143,6 +143,29 @@ describe('ProductCard', () => {
     });
   });
 
+  describe('매칭 이유 칩', () => {
+    it('매칭 이유가 있으면 칩으로 표시 (최대 2개)', () => {
+      render(
+        <ProductCard
+          product={mockCosmeticProduct}
+          matchScore={92}
+          matchReasons={['여름 쿨톤', '건성 피부', '모공']}
+        />
+      );
+
+      expect(screen.getByTestId('product-match-reasons')).toBeInTheDocument();
+      expect(screen.getByText('여름 쿨톤')).toBeInTheDocument();
+      expect(screen.getByText('건성 피부')).toBeInTheDocument();
+      // 3번째는 잘림
+      expect(screen.queryByText('모공')).not.toBeInTheDocument();
+    });
+
+    it('매칭 이유가 없으면 칩 미표시', () => {
+      render(<ProductCard product={mockCosmeticProduct} matchScore={80} />);
+      expect(screen.queryByTestId('product-match-reasons')).not.toBeInTheDocument();
+    });
+  });
+
   describe('이미지', () => {
     it('이미지 URL이 있으면 이미지 표시', () => {
       render(<ProductCard product={mockCosmeticProduct} />);

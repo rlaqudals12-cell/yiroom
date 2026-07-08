@@ -50,6 +50,21 @@ export const bodyQuestionnaireSchema = z
   })
   .default({});
 
+/**
+ * 성별 (추천 분기 전용).
+ * 왜: 33세 남성에게 "코랄 립틴트"를 첫 행동으로 제시하던 이탈 포인트 해소.
+ * 분석 판정(사진 기반)에는 절대 주입하지 않는다 — 추천 큐레이션/액션 플랜에서만 사용.
+ * 온보딩 gender_preference와 동일 taxonomy(female/male/neutral).
+ */
+export const RECOMMENDATION_GENDERS = ['female', 'male', 'neutral'] as const;
+export type RecommendationGender = (typeof RECOMMENDATION_GENDERS)[number];
+
+/**
+ * 상황(TPO, 선택) — 액션 플랜 문구에 맥락 부여 ("소개팅 전까지: ...").
+ */
+export const RECOMMENDATION_SITUATIONS = ['date', 'interview', 'daily', 'travel', 'party'] as const;
+export type RecommendationSituation = (typeof RECOMMENDATION_SITUATIONS)[number];
+
 /** 통합 분석 요청 입력 */
 export const integratedAnalysisInputSchema = z.object({
   /** 얼굴 셀카 (필수) — PC/S/H 축 공유 */
@@ -90,6 +105,10 @@ export const integratedAnalysisInputSchema = z.object({
       skin: skinQuestionnaireSchema,
       hair: hairQuestionnaireSchema,
       body: bodyQuestionnaireSchema,
+      /** 성별 (추천 분기 전용, 선택) — 분석 판정엔 미주입 */
+      gender: z.enum(RECOMMENDATION_GENDERS).optional(),
+      /** 상황/TPO (선택) — 액션 플랜 문구 맥락화 */
+      situation: z.enum(RECOMMENDATION_SITUATIONS).optional(),
     })
     .default({}),
 

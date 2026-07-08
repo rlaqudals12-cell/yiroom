@@ -161,6 +161,32 @@ export const SUBTYPES_BY_SEASON: Record<SeasonType, PersonalColorSubtypeInfo[]> 
   winter: PERSONAL_COLOR_SUBTYPES.filter((s) => s.season === 'winter'),
 };
 
+// AI가 반환하는 원시 서브타입 값(bright/light/true/mute/deep) → 한국어 shortLabel
+const RAW_SUBTYPE_TO_SHORTLABEL: Record<string, string> = {
+  bright: '브라이트',
+  light: '라이트',
+  true: '트루',
+  mute: '뮤트',
+  deep: '딥',
+};
+
+/**
+ * (시즌 + AI 원시 서브타입) → 해당 시즌의 12톤 서브타입 정보.
+ *
+ * 왜: DB에 저장된 season_subtype('mute' 등)을 실제 서브타입(예: '여름 쿨 뮤트')으로
+ * 복원해 tone/depth/라벨을 정확히 표시하기 위함. 시즌에 없는 조합(예: spring + mute)이나
+ * 미지정(null)이면 null 반환 → 호출부가 시즌 기반 파생으로 폴백(구 데이터 하위호환).
+ */
+export function resolveSubtype(
+  season: SeasonType,
+  rawSubtype: string | null | undefined
+): PersonalColorSubtypeInfo | null {
+  if (!rawSubtype) return null;
+  const shortLabel = RAW_SUBTYPE_TO_SHORTLABEL[rawSubtype.toLowerCase()];
+  if (!shortLabel) return null;
+  return SUBTYPES_BY_SEASON[season]?.find((s) => s.shortLabel === shortLabel) ?? null;
+}
+
 // 문진 질문 옵션
 export interface QuestionOption {
   id: string;
@@ -299,6 +325,8 @@ export interface PersonalColorResult {
   undertoneLabel?: string;
   // 초보자 친화 필드 (선택적, 하위 호환)
   easyInsight?: EasyInsight;
+  // 팔레트가 "내 사진에서 찾은" AI 개인 팔레트인지(true) 시즌 공통 폴백인지(false)
+  personalizedColors?: boolean;
 }
 
 // 계절별 정보

@@ -94,16 +94,29 @@ interface AITransparencyNoticeProps {
   className?: string;
   /** 컴팩트 모드 (짧은 설명만) */
   compact?: boolean;
+  /**
+   * 재현성 안내 한 줄 추가 여부.
+   * 동일 사진 반복 분석에서 판정 일치를 실측한 축(퍼스널컬러·피부/통합)에서만 켠다.
+   */
+  showReproducibility?: boolean;
 }
 
-export function AITransparencyNotice({ className, compact = false }: AITransparencyNoticeProps) {
+// 재현성 실측 문구 — 과장 없이 "같은 입력 → 같은 판정"만 주장
+const REPRODUCIBILITY_TEXT =
+  '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.';
+
+export function AITransparencyNotice({
+  className,
+  compact = false,
+  showReproducibility = false,
+}: AITransparencyNoticeProps) {
   if (compact) {
     return (
       <aside
         role="note"
         aria-label="AI 기술 사용 안내"
         className={cn(
-          'flex items-center gap-2 p-3 rounded-lg',
+          'flex items-start gap-2 p-3 rounded-lg',
           'bg-violet-50 dark:bg-violet-950/30',
           'border border-violet-200 dark:border-violet-800',
           className
@@ -111,12 +124,13 @@ export function AITransparencyNotice({ className, compact = false }: AITranspare
         data-testid="ai-transparency-notice-compact"
       >
         <Sparkles
-          className="h-4 w-4 text-violet-600 dark:text-violet-400 flex-shrink-0"
+          className="h-4 w-4 text-violet-600 dark:text-violet-400 flex-shrink-0 mt-0.5"
           aria-hidden="true"
         />
-        <p className="text-xs text-violet-700 dark:text-violet-300">
-          이 서비스는 AI 기술을 사용하여 분석 결과를 제공해요.
-        </p>
+        <div className="space-y-0.5 text-xs text-violet-700 dark:text-violet-300">
+          <p>이 서비스는 AI 기술을 사용하여 분석 결과를 제공해요.</p>
+          {showReproducibility && <p>{REPRODUCIBILITY_TEXT}</p>}
+        </div>
       </aside>
     );
   }
@@ -149,6 +163,11 @@ export function AITransparencyNotice({ className, compact = false }: AITranspare
             이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를
             제공해요. AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장해요.
           </p>
+          {showReproducibility && (
+            <p className="mt-1.5 text-xs text-violet-700 dark:text-violet-300 leading-relaxed">
+              {REPRODUCIBILITY_TEXT}
+            </p>
+          )}
         </div>
       </div>
     </aside>

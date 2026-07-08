@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * 결과 페이지 하단 "다음 단계" 링크
  *
@@ -7,6 +9,7 @@
 import Link from 'next/link';
 import { ChevronRight, Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
+import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
 interface NextStepItem {
   axis: AxisCode;
@@ -15,6 +18,8 @@ interface NextStepItem {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   iconColor: string;
+  /** 최신 결과가 있으면 분석 시작 대신 결과 페이지로 보낼 축 (재분석 유도 방지) */
+  resultType?: AnalysisType;
 }
 
 const ALL_STEPS: NextStepItem[] = [
@@ -49,6 +54,7 @@ const ALL_STEPS: NextStepItem[] = [
     description: '얼굴형 기반 컷',
     icon: Scissors,
     iconColor: 'text-violet-400',
+    resultType: 'hair',
   },
   {
     axis: 'makeup',
@@ -57,6 +63,7 @@ const ALL_STEPS: NextStepItem[] = [
     description: '단계별 가이드',
     icon: Brush,
     iconColor: 'text-rose-400',
+    resultType: 'makeup',
   },
 ];
 
@@ -68,6 +75,10 @@ export function NextStepsLinks({ axesCompleted }: NextStepsLinksProps): React.JS
   const completedSet = new Set(axesCompleted);
   const steps = ALL_STEPS.filter((s) => completedSet.has(s.axis));
 
+  // 최신 개별 결과가 있으면 "분석 시작" 대신 결과 페이지로 — "왜 또 분석해야 하지" 해소
+  const { analyses } = useAnalysisStatus();
+  const latestByType = new Map(analyses.map((a) => [a.type, a]));
+
   if (steps.length === 0) return null;
 
   return (
@@ -76,10 +87,13 @@ export function NextStepsLinks({ axesCompleted }: NextStepsLinksProps): React.JS
       <ul className="grid gap-2 sm:grid-cols-2">
         {steps.map((step) => {
           const Icon = step.icon;
+          // resultType이 있고 최신 결과가 존재하면 결과 페이지로 목적지 변경
+          const latest = step.resultType ? latestByType.get(step.resultType) : undefined;
+          const href = latest ? `/analysis/${latest.type}/result/${latest.id}` : step.href;
           return (
             <li key={step.axis}>
               <Link
-                href={step.href}
+                href={href}
                 className="group flex items-center gap-3 rounded-2xl border border-zinc-800 bg-neutral-900 p-4 transition-colors hover:border-pink-500/40 hover:bg-neutral-900/60"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">

@@ -176,6 +176,58 @@ describe('composeActionPlan', () => {
     expect(monthItem?.axis).toBe('body');
   });
 
+  it('남성 + PC 성공 → now 액션이 립틴트가 아니라 그루밍(선크림·립밤)', () => {
+    const plan = composeActionPlan({
+      ...allFailed(),
+      personalColor: pcSuccess,
+      gender: 'male',
+    });
+    const nowItem = plan.items.find((i) => i.horizon === 'now');
+    expect(nowItem?.title).not.toContain('립틴트');
+    expect(nowItem?.title).toContain('선크림');
+  });
+
+  it('여성 + PC 성공 → now 액션은 기존 립틴트 유지', () => {
+    const plan = composeActionPlan({
+      ...allFailed(),
+      personalColor: pcSuccess,
+      gender: 'female',
+    });
+    const nowItem = plan.items.find((i) => i.horizon === 'now');
+    expect(nowItem?.title).toContain('립틴트');
+  });
+
+  it('남성 + makeup 성공 → now 액션이 눈썹 정리 그루밍', () => {
+    const plan = composeActionPlan({
+      ...allFailed(),
+      makeup: makeupSuccess,
+      gender: 'male',
+    });
+    const nowItem = plan.items.find((i) => i.horizon === 'now');
+    expect(nowItem?.axis).toBe('makeup');
+    expect(nowItem?.title).toContain('눈썹');
+  });
+
+  it('상황(소개팅) → now 액션 제목에 "소개팅 전까지" 접두사', () => {
+    const plan = composeActionPlan({
+      ...allFailed(),
+      personalColor: pcSuccess,
+      situation: 'date',
+    });
+    const nowItem = plan.items.find((i) => i.horizon === 'now');
+    expect(nowItem?.title).toContain('소개팅 전까지');
+  });
+
+  it('상황(일상)은 접두사를 붙이지 않음', () => {
+    const plan = composeActionPlan({
+      ...allFailed(),
+      personalColor: pcSuccess,
+      situation: 'daily',
+    });
+    const nowItem = plan.items.find((i) => i.horizon === 'now');
+    expect(nowItem?.title).not.toContain('전까지');
+  });
+
   it('각 item에 필수 필드 존재 (axis/title/why/horizon)', () => {
     const plan = composeActionPlan({
       personalColor: pcSuccess,

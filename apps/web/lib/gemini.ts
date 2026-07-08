@@ -318,6 +318,9 @@ export interface WorkoutAnalysisInput {
 export interface GeminiPersonalColorResult {
   seasonType: 'spring' | 'summer' | 'autumn' | 'winter';
   seasonLabel: string;
+  // 12톤 서브타입 (프롬프트가 요청하는 값). JSON.parse로 이미 런타임에 존재했으나
+  // 타입에 없어 소실됐던 필드 — 저장/표시를 위해 명시적으로 선언.
+  seasonSubtype?: 'bright' | 'light' | 'true' | 'mute' | 'deep';
   seasonDescription: string;
   tone: 'warm' | 'cool';
   depth: 'light' | 'deep';

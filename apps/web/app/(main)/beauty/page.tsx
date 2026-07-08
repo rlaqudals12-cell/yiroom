@@ -28,10 +28,32 @@ const CURATION_CATEGORY_MAP: Record<
   skincare: 'skincare',
   cleansing: 'cleansing',
   suncare: 'suncare',
+  sunscreen: 'suncare',
   mask: 'mask',
   makeup: 'makeup',
   lip: 'makeup',
   base: 'makeup',
+};
+
+// NextStepsLinks의 ?filter= → 뷰티 대분류 (딥링크 착지 정밀화)
+const FILTER_CATEGORY_MAP: Record<string, 'skincare' | 'makeup'> = {
+  'personal-color': 'makeup',
+  skin: 'skincare',
+};
+
+// 큐레이션 category=lip/base → 메이크업 세부 카테고리 프리셋
+// ("코랄 립 보러가기"가 전체 목록 대신 립에 착지)
+const CATEGORY_TO_SUBCATEGORY: Record<string, string> = {
+  lip: 'lip',
+  base: 'base',
+  eye: 'eye',
+  cheek: 'cheek',
+};
+
+// 톤(warm/cool) → 시즌 필터 (초기 개인색 필터 반영)
+const TONE_TO_SEASONS: Record<string, Array<'Spring' | 'Summer' | 'Autumn' | 'Winter'>> = {
+  warm: ['Spring', 'Autumn'],
+  cool: ['Summer', 'Winter'],
 };
 
 // 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
@@ -90,9 +112,36 @@ export default function BeautyPage() {
   // 통합 분석 큐레이션에서 왔는지, 어떤 카테고리로 요청됐는지 파악
   const curationSource = searchParams.get('source');
   const curationCategoryParam = searchParams.get('category');
-  const initialMainCategory = curationCategoryParam
-    ? (CURATION_CATEGORY_MAP[curationCategoryParam] ?? 'all')
-    : 'all';
+  const filterParam = searchParams.get('filter'); // NextStepsLinks (?filter=personal-color|skin)
+  const toneParam = searchParams.get('tone'); // 큐레이션 (?tone=warm|cool)
+  const focusParam = searchParams.get('focus'); // 큐레이션 스킨케어 focus / 세부 프리셋
+
+  // 초기 대분류: category > filter 순으로 해석 (둘 다 없으면 전체)
+  const resolveInitialMainCategory = ():
+    | 'all'
+    | 'cleansing'
+    | 'skincare'
+    | 'suncare'
+    | 'makeup'
+    | 'mask' => {
+    if (curationCategoryParam) return CURATION_CATEGORY_MAP[curationCategoryParam] ?? 'all';
+    if (filterParam) return FILTER_CATEGORY_MAP[filterParam] ?? 'all';
+    return 'all';
+  };
+  const initialMainCategory = resolveInitialMainCategory();
+
+  // 초기 세부 카테고리: category=lip/base → lip/base, 아니면 focus가 세부 id면 그것
+  const initialSubCategory: string | null =
+    (curationCategoryParam && CATEGORY_TO_SUBCATEGORY[curationCategoryParam]) ||
+    (focusParam && CATEGORY_TO_SUBCATEGORY[focusParam]) ||
+    null;
+
+  // 초기 시즌 필터: tone=warm/cool → 해당 시즌들 (개인색 필터 반영)
+  const initialSeasons = useMemo(
+    () => (toneParam ? (TONE_TO_SEASONS[toneParam.toLowerCase()] ?? null) : null),
+    [toneParam]
+  );
+
   const isFromIntegrated = curationSource === 'integrated';
 
   // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
@@ -271,7 +320,7 @@ export default function BeautyPage() {
               <div>
                 <p className="font-medium text-foreground flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
-                  피부 분석하면 98% 맞춤 추천!
+                  분석하면 내 피부 기준으로 골라드려요
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   내 피부에 딱 맞는 제품을 찾아드려요
@@ -316,6 +365,8 @@ export default function BeautyPage() {
               personalColor={personalColor}
               getMatchedProducts={getMatchedProducts}
               initialMainCategory={initialMainCategory}
+              initialSubCategory={initialSubCategory}
+              initialSeasons={initialSeasons}
             />
           </ErrorBoundary>
         </TabsContent>

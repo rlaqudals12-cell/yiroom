@@ -890,7 +890,8 @@ export default function SkinAnalysisResultPage() {
             <div className="mb-6">
               <ExpertDataPanel
                 data={{
-                  confidence: usedMock ? 40 : 85,
+                  // 정직: 피부 분석은 별도 신뢰도 수치를 저장하지 않음 → 위장 값(40/85) 대신 미표시
+                  confidence: undefined,
                   usedMock: usedMock,
                   analyzedAt: result.analyzedAt,
                   imageQuality: null,

@@ -421,7 +421,12 @@ export async function POST(req: NextRequest) {
           face_image_url: faceImageUrl,
           season: season,
           undertone: undertone,
+          // 12톤 서브타입(bright/light/true/mute/deep) — 없으면 NULL(구 데이터/Mock 폴백)
+          season_subtype: result.seasonSubtype ?? null,
           confidence: result.confidence,
+          // ⚠️ season_scores는 분포(distribution)가 아니라 one-hot이다: 판정된 시즌만
+          // confidence를 갖고 나머지는 0. AI가 시즌별 확률을 산출하지 않으므로 분포처럼
+          // 소비하면 안 됨(라다 차트 등 금지). 단일 판정 + 신뢰도의 표현일 뿐.
           season_scores: {
             spring: result.seasonType === 'spring' ? result.confidence : 0,
             summer: result.seasonType === 'summer' ? result.confidence : 0,
@@ -430,12 +435,15 @@ export async function POST(req: NextRequest) {
           },
           image_analysis: {
             seasonType: result.seasonType,
+            seasonSubtype: result.seasonSubtype ?? null,
             tone: result.tone,
             depth: result.depth,
             insight: result.insight,
             styleDescription: result.styleDescription,
             analysisEvidence: aiResult.analysisEvidence || null,
             imageQuality: aiResult.imageQuality || null,
+            // Mock 폴백 여부 저장 — 재방문 시 MockDataNotice 표시 + 개인화 라벨 정직성 판단용
+            usedMock,
             multiAngle: hasMultiAngle
               ? {
                   imagesCount,
@@ -532,6 +540,7 @@ export async function POST(req: NextRequest) {
           clerk_user_id: userId,
           season,
           undertone,
+          season_subtype: result.seasonSubtype ?? null,
           confidence: result.confidence,
           best_colors: result.bestColors,
           worst_colors: result.worstColors,
@@ -546,12 +555,14 @@ export async function POST(req: NextRequest) {
           },
           image_analysis: {
             seasonType: result.seasonType,
+            seasonSubtype: result.seasonSubtype ?? null,
             tone: result.tone,
             depth: result.depth,
             insight: result.insight,
             styleDescription: result.styleDescription,
             analysisEvidence: aiResult.analysisEvidence || null,
             imageQuality: aiResult.imageQuality || null,
+            usedMock: true,
           },
           season_scores: {
             spring: result.seasonType === 'spring' ? result.confidence : 0,

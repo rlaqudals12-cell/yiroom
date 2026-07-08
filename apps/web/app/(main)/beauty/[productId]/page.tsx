@@ -334,20 +334,32 @@ export default function BeautyProductDetailPage() {
         </FadeInUp>
       </div>
 
-      {/* 하단 구매 바 — 외부 구매처 검색 연결 (가짜 가격비교·리뷰는 실데이터 연동 전까지 비표시) */}
+      {/* 하단 구매 바 — 가격(있으면) + 외부 구매처 검색 연결 (가짜 가격비교·리뷰는 실데이터 연동 전까지 비표시) */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <a
-          href={`https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=${encodeURIComponent(
-            displayProduct.name
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-        >
-          <ShoppingCart className="w-5 h-5" />
-          구매처에서 보기
-          <ExternalLink className="w-4 h-4" />
-        </a>
+        <div className="flex items-center gap-3">
+          {/* 제품 DB에 price_krw가 있으면 노출 — "가격 정보 없음" 오해 방지 */}
+          {displayProduct.price > 0 && (
+            <div className="shrink-0">
+              <p className="text-[11px] text-muted-foreground">참고가</p>
+              <p className="text-lg font-bold text-foreground">
+                {displayProduct.price.toLocaleString('ko-KR')}원
+              </p>
+            </div>
+          )}
+          <a
+            href={`https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=${encodeURIComponent(
+              displayProduct.name
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {/* 검색 링크임을 정직하게 — 상세 페이지가 아니라 올리브영 검색 결과로 이동 */}
+            올리브영에서 최저가 확인
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
       </div>
     </div>
   );

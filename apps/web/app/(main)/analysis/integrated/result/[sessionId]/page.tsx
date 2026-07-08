@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { hasAnyClosetItems } from '@/lib/analysis/integrated/internal/closet-check';
+import { fetchCurationProducts } from '@/lib/analysis/integrated/internal/product-matcher';
 import {
   composeActionPlan,
   composeCrossInsights,
@@ -23,6 +24,8 @@ import {
   type BodyAxisData,
   type HairAxisData,
   type MakeupAxisData,
+  type RecommendationGender,
+  type RecommendationSituation,
 } from '@/lib/analysis/integrated';
 import { AxesSummaryCard } from './_components/AxesSummaryCard';
 import { AxisDetailAccordion } from './_components/AxisDetailAccordion';
@@ -102,6 +105,11 @@ export default async function IntegratedResultPage({
   const axesCompleted = (session.axes_completed ?? []) as AxisCode[];
   const axesFailed = (session.axes_failed ?? []) as AxisCode[];
 
+  // 성별/상황 — 추천 분기 전용 (분석 판정엔 영향 없음). questionnaire JSONB에 저장됨.
+  const questionnaire = (session.questionnaire ?? {}) as Record<string, unknown>;
+  const gender = questionnaire.gender as RecommendationGender | undefined;
+  const situation = questionnaire.situation as RecommendationSituation | undefined;
+
   // 왜: action-plan + cross-insights가 같은 AxisResult 입력을 받음 → 변환 1회로 공유
   const axisResults = {
     personalColor: toAxisResult<PersonalColorAxisData>(axes.personalColor, (r) => ({
@@ -125,19 +133,31 @@ export default async function IntegratedResultPage({
     })),
   };
 
-  // ADR-104 체크리스트 #2: 결정론적 규칙 기반 액션 플랜
-  const actionPlan = composeActionPlan(axisResults);
+  // ADR-104 체크리스트 #2: 결정론적 규칙 기반 액션 플랜 (성별/상황 분기)
+  const actionPlan = composeActionPlan({ ...axisResults, gender, situation });
 
   // ADR-104 체크리스트 #4: 축 조합 인사이트 (0-5개)
   const crossInsights = composeCrossInsights(axisResults);
 
   // ADR-104 체크리스트 #5: 통합 큐레이션 (세션 기반 제품 세트)
   // 왜: 옷장이 비면 outfit 카드 CTA를 "먼저 옷장 등록하기"로 우회
-  const hasClosetItems = await hasAnyClosetItems();
+  // 실제 제품 3개(지갑 여는 세트)는 병렬로 매칭 — 없으면 링크 카드 폴백
+  const pcData = axisResults.personalColor.success ? axisResults.personalColor.data : null;
+  const skinData = axisResults.skin.success ? axisResults.skin.data : null;
+  const [hasClosetItems, curationProducts] = await Promise.all([
+    hasAnyClosetItems(),
+    fetchCurationProducts({
+      skinType: skinData?.skinType,
+      personalColorSeason: pcData?.season,
+      undertone: pcData?.undertone,
+      gender: gender ?? 'neutral',
+    }),
+  ]);
   const curation = composeCuration({
     ...axisResults,
     sessionId: session.id,
     hasClosetItems,
+    gender,
   });
 
   return (
@@ -169,8 +189,8 @@ export default async function IntegratedResultPage({
         {/* ADR-104 체크리스트 #4: 축 간 연결 인사이트 */}
         <CrossInsightsCard insights={crossInsights} />
 
-        {/* ADR-104 체크리스트 #5: 통합 큐레이션 (제품 세트) */}
-        <CurationCard curation={curation} />
+        {/* ADR-104 체크리스트 #5: 통합 큐레이션 (제품 세트 + 실제 제품 3개) */}
+        <CurationCard curation={curation} products={curationProducts} />
 
         {/* 5축 요약 카드 */}
         <AxesSummaryCard axes={axes} />
@@ -190,9 +210,13 @@ export default async function IntegratedResultPage({
         <NextStepsLinks axesCompleted={axesCompleted} />
 
         {/* 하단 안내 */}
-        <p className="pt-4 text-center text-[11px] text-zinc-600">
-          분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
-        </p>
+        <div className="space-y-1 pt-4 text-center text-[11px] text-zinc-600">
+          {/* 재현성 실측 — 과장 없이 "같은 입력 → 같은 판정"만 (퍼스널컬러·피부에서 검증) */}
+          <p className="text-zinc-500">
+            같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.
+          </p>
+          <p>분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.</p>
+        </div>
       </div>
     </div>
   );

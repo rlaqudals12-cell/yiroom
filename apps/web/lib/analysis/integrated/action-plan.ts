@@ -11,6 +11,7 @@
  */
 
 import { getBodyShapeLabel } from '@/lib/body';
+import { seasonKo, undertoneKo, faceShapeKo } from './labels';
 import type {
   AxisResult,
   AxisCode,
@@ -19,6 +20,8 @@ import type {
   BodyAxisData,
   HairAxisData,
   MakeupAxisData,
+  RecommendationGender,
+  RecommendationSituation,
 } from './types';
 
 // ============================================
@@ -50,19 +53,32 @@ export interface ActionPlan {
 const HORIZON_ORDER: ActionHorizon[] = ['now', 'this_week', 'this_month'];
 
 /** PC 성공 시 액션 후보. 우선순위: now > this_week */
-function pcActions(data: PersonalColorAxisData): ActionItem[] {
+function pcActions(data: PersonalColorAxisData, gender: RecommendationGender): ActionItem[] {
   const warm = data.undertone?.toLowerCase() === 'warm';
+  // 왜: 남성에게 "코랄 립틴트"를 첫 행동으로 제시하던 이탈 포인트 → 그루밍 톤으로 분기.
+  // 립틴트는 화장 습관이 있는 여성/미상(neutral)에게만.
+  // 원시 영문값(season='Autumn', undertone='Warm')을 한국어로 — 사용자 대면 문구 영문 누수 방지
+  const seasonLabel = seasonKo(data.season);
+  const now: ActionItem =
+    gender === 'male'
+      ? {
+          horizon: 'now',
+          axis: 'personal_color',
+          title: warm ? '톤 보정 선크림·립밤으로 혈색 살리기' : '톤 보정 선크림·립밤으로 화색 잡기',
+          why: `${seasonLabel}에 맞는 무겁지 않은 베이스가 인상을 정돈해줘요.`,
+        }
+      : {
+          horizon: 'now',
+          axis: 'personal_color',
+          title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
+          why: `${seasonLabel}에 혈색이 가장 잘 살아나요.`,
+        };
   return [
-    {
-      horizon: 'now',
-      axis: 'personal_color',
-      title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
-      why: `${data.season} ${data.undertone}톤에 혈색이 가장 잘 살아나요.`,
-    },
+    now,
     {
       horizon: 'this_week',
       axis: 'personal_color',
-      title: `${data.tone} 팔레트로 옷장 정리`,
+      title: `${undertoneKo(data.tone)} 팔레트로 옷장 정리`,
       why: '기존 옷 중 어울리는 3벌을 고르고 자주 입어보세요.',
     },
   ];
@@ -159,19 +175,9 @@ function bodyActions(data: BodyAxisData): ActionItem[] {
   ];
 }
 
-/** H 성공 시 — 얼굴형 원시값(영문) 노출 금지 */
-const FACE_SHAPE_KO: Record<string, string> = {
-  oval: '계란형',
-  round: '둥근형',
-  square: '각진형',
-  heart: '하트형',
-  oblong: '긴 얼굴형',
-  diamond: '다이아몬드형',
-};
-
+/** H 성공 시 — 얼굴형 원시값(영문) 노출 금지 (faceShapeKo는 ./labels 공용 헬퍼) */
 function hairActions(data: HairAxisData): ActionItem[] {
-  const shape = data.faceShape ?? 'oval';
-  const shapeKo = FACE_SHAPE_KO[shape.toLowerCase()] ?? shape;
+  const shapeKo = faceShapeKo(data.faceShape ?? 'oval');
   return [
     {
       horizon: 'this_month',
@@ -183,7 +189,18 @@ function hairActions(data: HairAxisData): ActionItem[] {
 }
 
 /** M 성공 시 */
-function makeupActions(data: MakeupAxisData): ActionItem[] {
+function makeupActions(data: MakeupAxisData, gender: RecommendationGender): ActionItem[] {
+  // 남성: 풀메이크업 대신 눈썹 정리 + 톤 보정 그루밍 (과하지 않게 인상만 또렷하게)
+  if (gender === 'male') {
+    return [
+      {
+        horizon: 'now',
+        axis: 'makeup',
+        title: '눈썹 정리 + 톤 보정 선크림으로 인상 정돈',
+        why: 'PC·피부 분석을 반영한 최소한의 그루밍이에요. 과하지 않아 부담 없어요.',
+      },
+    ];
+  }
   return [
     {
       horizon: 'now',
@@ -204,6 +221,28 @@ export interface ComposeActionPlanInput {
   body: AxisResult<BodyAxisData>;
   hair: AxisResult<HairAxisData>;
   makeup: AxisResult<MakeupAxisData>;
+  /** 성별 (추천 분기 전용). 미지정 시 'neutral' — 립틴트 등 유지 */
+  gender?: RecommendationGender;
+  /** 상황/TPO (선택) — now 액션 문구에 맥락 부여 */
+  situation?: RecommendationSituation;
+}
+
+/** 상황 라벨 (액션 문구 접두사용). 'daily'는 접두사가 어색해 제외 */
+const SITUATION_PREFIX: Partial<Record<RecommendationSituation, string>> = {
+  date: '소개팅',
+  interview: '면접',
+  travel: '여행',
+  party: '모임',
+};
+
+/** 상황(TPO)이 있으면 'now' 액션 제목에 맥락 접두사를 부여 ("소개팅 전까지 — ...") */
+function applySituationPrefix(items: ActionItem[], situation?: RecommendationSituation): void {
+  const prefix = situation ? SITUATION_PREFIX[situation] : undefined;
+  if (!prefix) return;
+  const nowItem = items.find((i) => i.horizon === 'now');
+  if (nowItem) {
+    nowItem.title = `${prefix} 전까지 — ${nowItem.title}`;
+  }
 }
 
 /**
@@ -217,10 +256,11 @@ export interface ComposeActionPlanInput {
  * 후보 없으면 해당 시점 스킵. 결과가 빈 배열이면 빈 플랜 반환.
  */
 export function composeActionPlan(input: ComposeActionPlanInput): ActionPlan {
+  const gender: RecommendationGender = input.gender ?? 'neutral';
   const candidates: ActionItem[] = [];
 
   if (input.personalColor.success) {
-    candidates.push(...pcActions(input.personalColor.data));
+    candidates.push(...pcActions(input.personalColor.data, gender));
   }
   if (input.skin.success) {
     candidates.push(...skinActions(input.skin.data));
@@ -232,7 +272,7 @@ export function composeActionPlan(input: ComposeActionPlanInput): ActionPlan {
     candidates.push(...hairActions(input.hair.data));
   }
   if (input.makeup.success) {
-    candidates.push(...makeupActions(input.makeup.data));
+    candidates.push(...makeupActions(input.makeup.data, gender));
   }
 
   // 시점별 우선순위 축 선택
@@ -259,6 +299,9 @@ export function composeActionPlan(input: ComposeActionPlanInput): ActionPlan {
       items.push(pool[0]);
     }
   }
+
+  // 상황(TPO)이 있으면 'now' 액션 제목에 맥락 접두사 부여
+  applySituationPrefix(items, input.situation);
 
   return { items };
 }

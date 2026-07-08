@@ -64,10 +64,15 @@ describe('AxesSummaryCard', () => {
     expect(screen.getByText('헤어')).toBeInTheDocument();
     expect(screen.getByText('메이크업')).toBeInTheDocument();
 
-    expect(screen.getByText(/spring/)).toBeInTheDocument();
-    expect(screen.getByText(/combination/)).toBeInTheDocument();
+    // 원시 영문값 노출 금지 — 한국어 라벨로 표시 (season/undertone/skin_type/face_shape)
+    expect(screen.getByText(/봄 웜톤/)).toBeInTheDocument();
+    expect(screen.queryByText(/spring/)).not.toBeInTheDocument();
+    expect(screen.getByText(/복합성/)).toBeInTheDocument();
+    expect(screen.queryByText(/combination/)).not.toBeInTheDocument();
     // body_type='hourglass'은 getBodyShapeLabel로 한글화되어 '모래시계형'으로 표시됨
     expect(screen.getByText(/모래시계형/)).toBeInTheDocument();
+    // 얼굴형 oval → 계란형
+    expect(screen.getByText(/계란형/)).toBeInTheDocument();
   });
 
   it('축이 null이면 "이번 분석 미포함" 표시', () => {

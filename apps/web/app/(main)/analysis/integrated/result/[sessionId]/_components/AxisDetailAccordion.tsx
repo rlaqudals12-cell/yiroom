@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { getBodyShapeLabel } from '@/lib/body';
+import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo } from '@/lib/analysis/integrated';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
@@ -84,6 +85,54 @@ function DetailRow({ k, v }: { k: string; v: unknown }): React.JSX.Element | nul
   );
 }
 
+// 색상 값 정규화: best_colors/worst_colors는 [{hex,name}] 또는 hex 문자열 배열 두 형태 모두 대응
+interface Swatch {
+  hex: string;
+  name?: string;
+}
+function toSwatches(v: unknown): Swatch[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((item): Swatch | null => {
+      if (typeof item === 'string') {
+        return /^#?[0-9a-fA-F]{3,8}$/.test(item.trim())
+          ? { hex: item.trim().startsWith('#') ? item.trim() : `#${item.trim()}` }
+          : null;
+      }
+      if (typeof item === 'object' && item !== null) {
+        const obj = item as Record<string, unknown>;
+        const hex = typeof obj.hex === 'string' ? obj.hex : null;
+        if (!hex) return null;
+        return { hex, name: typeof obj.name === 'string' ? obj.name : undefined };
+      }
+      return null;
+    })
+    .filter((s): s is Swatch => s !== null)
+    .slice(0, 10);
+}
+
+// 색상 배열은 hex 텍스트 대신 색 견본(스와치)으로 표시 — "#FF7F50" 코드 노출 금지
+function ColorDetailRow({ k, v }: { k: string; v: unknown }): React.JSX.Element | null {
+  const swatches = toSwatches(v);
+  if (swatches.length === 0) return null;
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-zinc-800 py-2 last:border-0">
+      <span className="shrink-0 text-xs text-zinc-500">{k}</span>
+      <div className="flex max-w-[70%] flex-wrap justify-end gap-1.5">
+        {swatches.map((s, i) => (
+          <span
+            key={`${s.hex}-${i}`}
+            className="h-4 w-4 rounded-full border border-white/15"
+            style={{ backgroundColor: s.hex }}
+            title={s.name ? `${s.name} (${s.hex})` : s.hex}
+            aria-label={s.name ?? s.hex}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // 세션 축 코드 → 개별 분석 타입 (최신 결과 링크용)
 const CODE_TO_ANALYSIS_TYPE: Record<string, AnalysisType> = {
   personal_color: 'personal-color',
@@ -107,11 +156,11 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       record: axes.personalColor,
       renderDetail: (r) => (
         <>
-          <DetailRow k="계절" v={r.season} />
-          <DetailRow k="언더톤" v={r.undertone} />
-          <DetailRow k="신뢰도" v={r.confidence} />
-          <DetailRow k="추천 색상" v={r.best_colors} />
-          <DetailRow k="피해야 할 색상" v={r.worst_colors} />
+          <DetailRow k="계절" v={r.season ? seasonKo(String(r.season)) : null} />
+          <DetailRow k="언더톤" v={r.undertone ? undertoneKo(String(r.undertone)) : null} />
+          <DetailRow k="신뢰도" v={r.confidence != null ? `${r.confidence}%` : null} />
+          <ColorDetailRow k="추천 색상" v={r.best_colors} />
+          <ColorDetailRow k="피해야 할 색상" v={r.worst_colors} />
         </>
       ),
     },
@@ -121,7 +170,7 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       record: axes.skin,
       renderDetail: (r) => (
         <>
-          <DetailRow k="피부 타입" v={r.skin_type} />
+          <DetailRow k="피부 타입" v={r.skin_type ? skinTypeKo(String(r.skin_type)) : null} />
           <DetailRow k="전체 점수" v={r.overall_score} />
           <DetailRow k="수분" v={r.hydration} />
           <DetailRow k="유분" v={r.oil_level} />
@@ -152,7 +201,7 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       record: axes.hair,
       renderDetail: (r) => (
         <>
-          <DetailRow k="얼굴형" v={r.face_shape} />
+          <DetailRow k="얼굴형" v={r.face_shape ? faceShapeKo(String(r.face_shape)) : null} />
           <DetailRow k="모발 타입" v={r.hair_type} />
           <DetailRow k="모발 굵기" v={r.hair_thickness} />
           <DetailRow k="추천 스타일" v={r.style_recommendations} />
@@ -165,7 +214,7 @@ export function AxisDetailAccordion({ axes }: AxisDetailAccordionProps): React.J
       record: axes.makeup,
       renderDetail: (r) => (
         <>
-          <DetailRow k="언더톤" v={r.undertone} />
+          <DetailRow k="언더톤" v={r.undertone ? undertoneKo(String(r.undertone)) : null} />
           <DetailRow k="전체 점수" v={r.overall_score} />
           <DetailRow k="추천" v={r.recommendations} />
         </>

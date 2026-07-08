@@ -204,6 +204,7 @@ export default function AnalysisResult({
     easyInsight,
     analyzedAt,
     undertoneLabel,
+    personalizedColors,
   } = result;
 
   const info = SEASON_INFO[seasonType];
@@ -260,21 +261,24 @@ export default function AnalysisResult({
           </p>
           <p className="text-muted-foreground">{seasonDescription}</p>
           <p className="mt-2 text-sm text-muted-foreground">{info.characteristics}</p>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="mt-4 inline-flex items-center gap-1 px-3 py-1 bg-card/70 rounded-full cursor-help">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm font-medium text-foreground/80">
-                    신뢰도 {confidence}%
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                <p className="text-xs">{getConfidenceGrade(confidence)}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* 신뢰도 배지 — 저장된 신뢰도(>0)가 있을 때만 (위장 수치 금지) */}
+          {confidence > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="mt-4 inline-flex items-center gap-1 px-3 py-1 bg-card/70 rounded-full cursor-help">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-medium text-foreground/80">
+                      신뢰도 {confidence}%
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                  <p className="text-xs">{getConfidenceGrade(confidence)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           {/* 핵심 판정 근거 요약 */}
           <PersonalColorEvidenceSummary
@@ -294,6 +298,12 @@ export default function AnalysisResult({
             <h2 className="text-lg font-semibold text-foreground">베스트 컬러</h2>
             <span className="text-xs text-muted-foreground ml-auto">TOP 10</span>
           </div>
+          {/* 개인화 여부 배지 — AI가 내 사진에서 뽑은 팔레트면 명시(시즌 공통 폴백과 구분) */}
+          <p className="-mt-2 mb-4 text-xs text-muted-foreground">
+            {personalizedColors
+              ? '✨ 내 사진에서 찾은 맞춤 컬러예요'
+              : `${seasonLabel} 타입에 잘 어울리는 컬러예요`}
+          </p>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {bestColors.map((color, index) => (
               <button

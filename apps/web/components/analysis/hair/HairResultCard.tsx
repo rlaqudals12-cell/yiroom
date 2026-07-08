@@ -87,14 +87,18 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
   const { faceShapeAnalysis, styleRecommendations, hairColorAnalysis, careTips } = result;
   const shapeStyle = FACE_SHAPE_STYLES[faceShapeAnalysis.faceShape] || FACE_SHAPE_STYLES.oval;
 
+  // 자가입력 경로: 사진 분석 신뢰도는 최대 95%라 100은 "직접 입력" 신호 (신뢰도 수치 위장 금지)
+  const isSelfInput = faceShapeAnalysis.confidence >= 100;
+
   // 신뢰도 등급
   const confidenceGrade = useMemo(() => {
+    if (isSelfInput) return { label: '입력하신 값 기준', color: 'text-slate-600' };
     if (faceShapeAnalysis.confidence >= 85)
       return { label: '매우 높음', color: 'text-emerald-600' };
     if (faceShapeAnalysis.confidence >= 70) return { label: '높음', color: 'text-blue-600' };
     if (faceShapeAnalysis.confidence >= 55) return { label: '보통', color: 'text-amber-600' };
     return { label: '낮음', color: 'text-red-600' };
-  }, [faceShapeAnalysis.confidence]);
+  }, [isSelfInput, faceShapeAnalysis.confidence]);
 
   // 적합도 높은 순으로 정렬
   const sortedStyles = useMemo(() => {
@@ -146,7 +150,7 @@ export function HairResultCard({ result, showDetails = true }: HairResultCardPro
           </div>
           <div className="text-right">
             <Badge variant="secondary" className={confidenceGrade.color}>
-              신뢰도 {faceShapeAnalysis.confidence}%
+              {isSelfInput ? '직접 입력' : `신뢰도 ${faceShapeAnalysis.confidence}%`}
             </Badge>
             <p className="text-xs text-muted-foreground mt-1">{confidenceGrade.label}</p>
           </div>

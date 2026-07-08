@@ -11,11 +11,24 @@
  */
 
 import Link from 'next/link';
-import { ChevronRight, Sparkles, Brush, Droplet, Shirt, Scissors } from 'lucide-react';
-import type { Curation, CurationCategory } from '@/lib/analysis/integrated';
+import { ChevronRight, Sparkles, Brush, Droplet, Shirt, Scissors, ShoppingBag } from 'lucide-react';
+import type { Curation, CurationCategory, CurationProduct } from '@/lib/analysis/integrated';
 
 export interface CurationCardProps {
   curation: Curation;
+  /**
+   * 결과 안에서 지갑이 열리는 실제 제품 3개 (스킨케어/립 카테고리 대체).
+   * 비어있으면 링크 카드로 폴백.
+   */
+  products?: CurationProduct[];
+}
+
+// 실제 제품이 커버하는 뷰티 카테고리 — 이 카테고리 링크 카드는 제품 블록으로 대체됨
+const BEAUTY_CATEGORIES = new Set<CurationCategory>(['lip', 'base', 'skincare']);
+
+function formatPrice(krw: number | null): string | null {
+  if (krw === null || krw <= 0) return null;
+  return `${krw.toLocaleString('ko-KR')}원`;
 }
 
 const CATEGORY_ICON: Record<
@@ -29,8 +42,17 @@ const CATEGORY_ICON: Record<
   hair: { icon: Scissors, accent: 'text-amber-300' },
 };
 
-export function CurationCard({ curation }: CurationCardProps): React.JSX.Element | null {
-  if (curation.items.length === 0) return null;
+export function CurationCard({
+  curation,
+  products = [],
+}: CurationCardProps): React.JSX.Element | null {
+  const hasProducts = products.length > 0;
+  // 실제 제품이 있으면 뷰티 링크 카드는 제품 블록으로 대체하고, 나머지(옷장/헤어)만 링크로 유지
+  const linkItems = hasProducts
+    ? curation.items.filter((i) => !BEAUTY_CATEGORIES.has(i.category))
+    : curation.items;
+
+  if (!hasProducts && linkItems.length === 0) return null;
 
   return (
     <section
@@ -55,9 +77,47 @@ export function CurationCard({ curation }: CurationCardProps): React.JSX.Element
           </p>
         </div>
 
-        {/* 큐레이션 아이템 */}
+        {/* 실제 제품 3개 (지갑 여는 "너를 위한 이 세트") */}
+        {hasProducts && (
+          <ul className="space-y-2" data-testid="curation-products">
+            {products.map((p) => {
+              const price = formatPrice(p.priceKrw);
+              return (
+                <li key={p.id}>
+                  <Link
+                    href={`/beauty/${p.id}?source=integrated`}
+                    className="group flex items-center gap-3 rounded-2xl border border-zinc-800 bg-neutral-950/60 p-4 transition-colors hover:border-pink-500/40 hover:bg-neutral-900/80"
+                    data-testid="curation-product-item"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
+                      <ShoppingBag className="h-4 w-4 text-rose-300" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-sm font-semibold text-white">{p.name}</p>
+                        {price && (
+                          <span className="shrink-0 text-xs font-medium text-pink-200">
+                            {price}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-zinc-500">{p.brand}</p>
+                      <p className="text-xs text-zinc-400">{p.reason}</p>
+                    </div>
+                    <ChevronRight
+                      className="h-3.5 w-3.5 shrink-0 text-pink-300 group-hover:text-pink-200"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* 큐레이션 아이템 (링크) */}
         <ul className="space-y-2">
-          {curation.items.map((item) => {
+          {linkItems.map((item) => {
             const meta = CATEGORY_ICON[item.category];
             const Icon = meta.icon;
             return (

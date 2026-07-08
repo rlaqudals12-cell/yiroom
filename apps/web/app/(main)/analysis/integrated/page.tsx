@@ -16,6 +16,7 @@ import { measureBodyClient } from '@/lib/analysis/body-v2';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import { useGender } from '@/components/providers/gender-provider';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { ImageUploadSection } from './_components/ImageUploadSection';
 import { QuestionnaireForm, type QuestionnaireData } from './_components/QuestionnaireForm';
@@ -34,6 +35,8 @@ const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const router = useRouter();
   const { analysisCount } = useAnalysisStatus();
+  // 온보딩에서 저장된 성별을 추천 맞춤 기본값으로 재사용 (neutral은 미선택으로 취급)
+  const savedGender = useGender();
 
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [bodyImage, setBodyImage] = useState<string | null>(null);
@@ -203,8 +206,15 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
         {/* 2. 자가입력 */}
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">2. 나에 대한 정보</h2>
-          <QuestionnaireForm onChange={setQuestionnaire} showBodyFields={bodyImage === null} />
+          <div className="space-y-0.5">
+            <h2 className="text-lg font-semibold text-white">2. 나에 대한 정보</h2>
+            <p className="text-xs text-zinc-500">선택 — 건너뛰어도 분석돼요</p>
+          </div>
+          <QuestionnaireForm
+            onChange={setQuestionnaire}
+            showBodyFields={bodyImage === null}
+            defaultGender={savedGender === 'neutral' ? undefined : savedGender}
+          />
         </section>
 
         {/* 에러 메시지 */}

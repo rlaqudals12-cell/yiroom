@@ -244,6 +244,10 @@ interface BeautyRecommendTabProps {
   getMatchedProducts: <T extends AnyProduct>(products: T[]) => ProductWithMatch<T>[];
   /** 큐레이션/딥링크에서 전달된 초기 카테고리 (기본 'all') */
   initialMainCategory?: MainCategory;
+  /** 딥링크 세부 카테고리 프리셋 (예: 'lip' — "코랄 립 보러가기"가 립에 착지) */
+  initialSubCategory?: string | null;
+  /** 딥링크 톤→시즌 필터 (예: ['Spring','Autumn']) — 개인색 필터 반영 */
+  initialSeasons?: Array<'Spring' | 'Summer' | 'Autumn' | 'Winter'> | null;
 }
 
 export function BeautyRecommendTab({
@@ -253,6 +257,8 @@ export function BeautyRecommendTab({
   personalColor: _personalColor,
   getMatchedProducts,
   initialMainCategory = 'all',
+  initialSubCategory = null,
+  initialSeasons = null,
 }: BeautyRecommendTabProps): React.ReactElement {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
@@ -261,7 +267,8 @@ export function BeautyRecommendTab({
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
   const [selectedConcerns, setSelectedConcerns] = useState<SkinConcern[]>(['hydration']);
   const [mainCategory, setMainCategory] = useState<MainCategory>(initialMainCategory);
-  const [subCategory, setSubCategory] = useState<string | null>(null);
+  // 딥링크 세부 카테고리 프리셋 반영 (예: category=lip → 립)
+  const [subCategory, setSubCategory] = useState<string | null>(initialSubCategory);
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortSheet, setShowSortSheet] = useState(false);
   // 매칭 필터는 기본 OFF — 기본 상태에서는 제품이 보여야 한다 (0개 화면 방지)
@@ -336,6 +343,14 @@ export function BeautyRecommendTab({
 
         if (selectedConcerns.length > 0) {
           query = query.or(`concerns.ov.{${selectedConcerns.join(',')}},concerns.is.null`);
+        }
+
+        // 딥링크 톤→시즌 필터: 태깅된 시즌이 겹치거나(개인색 매칭) 미태깅(null)이면 통과.
+        // 87% 미태깅 현실상 null을 배제하면 전멸하므로 "모름"은 통과시킨다 (정직 원칙).
+        if (initialSeasons && initialSeasons.length > 0) {
+          query = query.or(
+            `personal_color_seasons.ov.{${initialSeasons.join(',')}},personal_color_seasons.is.null`
+          );
         }
 
         if (selectedAgeGroups.length > 0) {
@@ -470,6 +485,7 @@ export function BeautyRecommendTab({
     hasAnalysis,
     getMatchedProducts,
     retryCount,
+    initialSeasons,
   ]);
 
   const handleMainCategoryChange = (cat: MainCategory): void => {

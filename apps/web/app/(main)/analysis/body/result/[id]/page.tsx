@@ -34,7 +34,6 @@ import {
 } from '@/components/analysis/body';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
-import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { VisualReportCard } from '@/components/analysis/visual-report';
 import { Palette } from 'lucide-react';
@@ -665,15 +664,10 @@ export default function BodyAnalysisResultPage() {
               />
               <PrintButton title={t('printTitle.body')} variant="outline" />
             </div>
-            <div className="flex justify-center">
-              <ShareButtons
-                content={{
-                  title: t('shareTitle.body', { type: result.bodyTypeLabel }),
-                  description: t('shareDesc.body'),
-                  url: typeof window !== 'undefined' ? window.location.href : '',
-                }}
-              />
-            </div>
+            {/*
+              URL 공유는 제거 — 결과 페이지는 로그인+본인 소유(RLS)라 친구가 열면 로그인 벽/404.
+              공유는 위의 이미지 카드(ShareButton)로만. 공개 링크는 통합 리포트 토큰 경로에서 제공.
+            */}
           </div>
         </div>
       )}

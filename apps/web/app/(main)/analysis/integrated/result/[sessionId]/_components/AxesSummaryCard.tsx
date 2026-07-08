@@ -6,6 +6,7 @@
 
 import { Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
 import { getBodyShapeLabel } from '@/lib/body';
+import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo } from '@/lib/analysis/integrated';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 
 export interface AxesSummaryCardProps {
@@ -34,11 +35,13 @@ const AXES: AxisRow[] = [
     iconColor: 'text-pink-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      const season = String(r.season ?? '-');
-      const undertone = String(r.undertone ?? '-');
+      // 원시 영문값(Autumn/Warm) 노출 금지 — 한국어 라벨로
+      const season = r.season ? seasonKo(String(r.season)) : '-';
+      const undertone = r.undertone ? undertoneKo(String(r.undertone)) : '';
       return (
         <span className="text-white">
-          {season} / <span className="text-zinc-400">{undertone}</span>
+          {season}
+          {undertone && <span className="text-zinc-400"> / {undertone}</span>}
         </span>
       );
     },
@@ -50,7 +53,7 @@ const AXES: AxisRow[] = [
     iconColor: 'text-amber-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      const type = String(r.skin_type ?? '-');
+      const type = r.skin_type ? skinTypeKo(String(r.skin_type)) : '-';
       const score = Number(r.overall_score ?? 0);
       return (
         <span className="text-white">
@@ -78,7 +81,10 @@ const AXES: AxisRow[] = [
     iconColor: 'text-violet-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      return <span className="text-white">{r.face_shape ? `${String(r.face_shape)}형` : '-'}</span>;
+      // 얼굴형 원시값(oval)을 한국어(계란형)로 — faceShapeKo가 이미 "형"까지 포함
+      return (
+        <span className="text-white">{r.face_shape ? faceShapeKo(String(r.face_shape)) : '-'}</span>
+      );
     },
   },
   {
@@ -88,7 +94,10 @@ const AXES: AxisRow[] = [
     iconColor: 'text-rose-400',
     renderSummary: (r) => {
       if (!r) return <MissingLabel />;
-      return <span className="text-white">{r.undertone ? `${String(r.undertone)} 톤` : '-'}</span>;
+      // 언더톤 원시값(warm)을 한국어(웜톤)로
+      return (
+        <span className="text-white">{r.undertone ? undertoneKo(String(r.undertone)) : '-'}</span>
+      );
     },
   },
 ];

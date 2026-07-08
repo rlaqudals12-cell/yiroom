@@ -14,6 +14,8 @@ import { getProductType, productTypeToPath } from '@/lib/products';
 interface ProductCardProps {
   product: AnyProduct;
   matchScore?: number;
+  /** 매칭 이유 라벨 (예: "여름 쿨톤", "건성 피부") — 상위 1~2개만 칩으로 표시 */
+  matchReasons?: string[];
   className?: string;
   priority?: boolean;
 }
@@ -27,9 +29,12 @@ interface ProductCardProps {
 export function ProductCard({
   product,
   matchScore,
+  matchReasons,
   className,
   priority = false,
 }: ProductCardProps) {
+  // 매칭 이유는 최대 2개까지만 (카드 공간 제약 + 인지 부담)
+  const shownReasons = matchReasons?.slice(0, 2) ?? [];
   const productType = getProductType(product);
   const typePath = productTypeToPath(productType);
   const href = `/products/${typePath}/${product.id}`;
@@ -127,6 +132,20 @@ export function ProductCard({
           <h3 className="mt-1 text-sm font-medium line-clamp-2 min-h-[2.5rem] transition-colors duration-300 group-hover:text-primary">
             {product.name}
           </h3>
+
+          {/* 매칭 이유 칩 — "왜 이 제품인지" 인과 연결 (92% 숫자만 보이던 문제 해소) */}
+          {shownReasons.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1" data-testid="product-match-reasons">
+              {shownReasons.map((reason) => (
+                <span
+                  key={reason}
+                  className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                >
+                  {reason}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* 평점 */}
           {rating !== undefined && (

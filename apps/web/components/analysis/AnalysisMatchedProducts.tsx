@@ -164,8 +164,13 @@ export function AnalysisMatchedProducts({
     <div data-testid="matched-products-section">
       <SectionHeader analysisType={analysisType} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {products.map(({ product, matchScore }) => (
-          <ProductCard key={product.id} product={product} matchScore={matchScore} />
+        {products.map(({ product, matchScore, matchReasons }) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            matchScore={matchScore}
+            matchReasons={matchReasons}
+          />
         ))}
       </div>
       <div className="mt-3 text-center">

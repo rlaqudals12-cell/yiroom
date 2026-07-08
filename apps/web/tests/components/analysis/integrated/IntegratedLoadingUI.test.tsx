@@ -28,31 +28,44 @@ describe('IntegratedLoadingUI', () => {
     expect(loaders).toHaveLength(5);
   });
 
-  it('시간이 지나면 완료 아이콘으로 전환', () => {
+  it('시간이 지나면 완료 아이콘으로 전환 (60초+에 걸쳐 순차)', () => {
     render(<IntegratedLoadingUI />);
 
-    // 4초 경과 → PC(3s) 완료 / 나머지 4개 진행 중
+    // 15초 경과 → PC(14s) 완료 / 나머지 진행 중
     act(() => {
-      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(15000);
     });
 
     const checks = screen.getAllByTestId('icon-check');
     expect(checks.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('12초 초과 시 느린 경고 메시지 표시', () => {
+  it('마지막 축(메이크업)은 타이머로 완료되지 않음 — 응답 도착까지 스피너 유지', () => {
+    render(<IntegratedLoadingUI />);
+
+    // 충분히 오래(120초) 지나도 마지막 축은 완료 처리 안 됨 (완료 위장 금지)
+    act(() => {
+      vi.advanceTimersByTime(120000);
+    });
+
+    // PC/피부/체형/헤어 4개만 완료, 메이크업은 스피너 유지
+    expect(screen.getAllByTestId('icon-check')).toHaveLength(4);
+    expect(screen.getAllByTestId('icon-loader')).toHaveLength(1);
+  });
+
+  it('75초 초과 시 느린 경고 메시지 표시', () => {
     render(<IntegratedLoadingUI />);
 
     act(() => {
-      vi.advanceTimersByTime(13000);
+      vi.advanceTimersByTime(76000);
     });
 
-    expect(screen.getByText(/조금 오래 걸릴 수 있어요/)).toBeInTheDocument();
+    expect(screen.getByText(/거의 다 됐어요/)).toBeInTheDocument();
   });
 
-  it('초기에는 예상 소요 메시지 표시', () => {
+  it('초기에는 정직한 소요 안내 메시지 표시', () => {
     render(<IntegratedLoadingUI />);
-    expect(screen.getByText(/예상 소요: 약 10초/)).toBeInTheDocument();
+    expect(screen.getByText(/최대 1~2분 걸릴 수 있어요/)).toBeInTheDocument();
   });
 
   it('최상위 컨테이너 data-testid 존재', () => {

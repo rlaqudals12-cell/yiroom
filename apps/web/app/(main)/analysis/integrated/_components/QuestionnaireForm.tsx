@@ -11,18 +11,40 @@ import type {
   SkinQuestionnaire,
   HairQuestionnaire,
   BodyQuestionnaire,
+  RecommendationGender,
+  RecommendationSituation,
 } from '@/lib/analysis/integrated';
 
 export interface QuestionnaireData {
   skin: SkinQuestionnaire;
   hair: HairQuestionnaire;
   body: BodyQuestionnaire;
+  /** 성별 (추천 분기 전용, 선택) — 분석 판정엔 미주입 */
+  gender?: RecommendationGender;
+  /** 상황/TPO (선택) */
+  situation?: RecommendationSituation;
 }
 
 export interface QuestionnaireFormProps {
   onChange: (data: QuestionnaireData) => void;
   showBodyFields: boolean; // 전신 사진 없으면 true
+  /** 온보딩에서 저장된 성별 기본값 (있으면 미리 선택) */
+  defaultGender?: RecommendationGender;
 }
+
+const GENDER_OPTIONS: Array<{ value: RecommendationGender; label: string }> = [
+  { value: 'female', label: '여성' },
+  { value: 'male', label: '남성' },
+  { value: 'neutral', label: '선택 안 함' },
+];
+
+const SITUATION_OPTIONS: Array<{ value: RecommendationSituation; label: string }> = [
+  { value: 'daily', label: '일상' },
+  { value: 'date', label: '소개팅' },
+  { value: 'interview', label: '면접' },
+  { value: 'party', label: '모임' },
+  { value: 'travel', label: '여행' },
+];
 
 const SKIN_TYPES: Array<{ value: SkinQuestionnaire['selfReportedType']; label: string }> = [
   { value: 'dry', label: '건성' },
@@ -57,7 +79,10 @@ const HAIR_CURL: Array<{ value: NonNullable<HairQuestionnaire['curlType']>; labe
 export function QuestionnaireForm({
   onChange,
   showBodyFields,
+  defaultGender,
 }: QuestionnaireFormProps): React.JSX.Element {
+  const [gender, setGender] = useState<RecommendationGender | undefined>(defaultGender);
+  const [situation, setSituation] = useState<RecommendationSituation | undefined>();
   const [skinType, setSkinType] = useState<SkinQuestionnaire['selfReportedType']>('unknown');
   const [hairLength, setHairLength] = useState<HairQuestionnaire['length']>();
   const [hairDensity, setHairDensity] = useState<HairQuestionnaire['density']>();
@@ -81,9 +106,13 @@ export function QuestionnaireForm({
         shoulderWidthCm: shoulderCm === '' ? undefined : shoulderCm,
         waistCm: waistCm === '' ? undefined : waistCm,
       },
+      gender,
+      situation,
     };
     onChange(data);
   }, [
+    gender,
+    situation,
     skinType,
     hairLength,
     hairDensity,
@@ -102,6 +131,57 @@ export function QuestionnaireForm({
 
   return (
     <div className="space-y-6" data-testid="integrated-questionnaire">
+      {/* 성별 + 상황 (추천 분기용 — 분석 판정엔 영향 없음) */}
+      <fieldset data-testid="recommendation-context">
+        <legend className="mb-3 text-sm font-semibold text-white">
+          추천 맞춤 <span className="text-zinc-500">(선택)</span>
+        </legend>
+        <div className="space-y-3">
+          <div>
+            <p className="mb-2 text-xs text-zinc-400">성별 (추천 제안에만 사용해요)</p>
+            <div className="flex flex-wrap gap-2">
+              {GENDER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  aria-pressed={gender === opt.value}
+                  onClick={() => setGender(gender === opt.value ? undefined : opt.value)}
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                    gender === opt.value
+                      ? 'border-pink-500 bg-pink-500/20 text-pink-300'
+                      : 'border-zinc-700 bg-neutral-900 text-zinc-300 hover:border-pink-500/50'
+                  }`}
+                  data-testid={`gender-option-${opt.value}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs text-zinc-400">어떤 상황을 준비하나요?</p>
+            <div className="flex flex-wrap gap-2">
+              {SITUATION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  aria-pressed={situation === opt.value}
+                  onClick={() => setSituation(situation === opt.value ? undefined : opt.value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                    situation === opt.value
+                      ? 'border-violet-500 bg-violet-500/20 text-violet-300'
+                      : 'border-zinc-700 bg-neutral-900 text-zinc-400 hover:border-violet-500/50'
+                  }`}
+                  data-testid={`situation-option-${opt.value}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
       {/* 피부 타입 (1문항) */}
       <fieldset>
         <legend className="mb-3 text-sm font-semibold text-white">피부 타입</legend>

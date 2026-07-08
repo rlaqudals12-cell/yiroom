@@ -45,6 +45,13 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
   const theme = MODULE_THEMES[type] || MODULE_THEMES['skin'];
   const moduleName = MODULE_NAMES[type] || type;
 
+  // 베스트 컬러 스와치 — 실제 색을 보여줘 밋밋함 해소 (#RGB/#RRGGBB만 허용, 최대 5개)
+  const swatches = (searchParams.get('colors') || '')
+    .split(',')
+    .map((c) => c.trim())
+    .filter((c) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c))
+    .slice(0, 5);
+
   return new ImageResponse(
     <div
       style={{
@@ -93,11 +100,30 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
             fontSize: 56,
             fontWeight: 700,
             color: theme.accent,
-            marginBottom: 32,
+            marginBottom: swatches.length > 0 ? 20 : 32,
             display: 'flex',
           }}
         >
           {label}
+        </div>
+      )}
+
+      {/* 베스트 컬러 스와치 — 실제 색 사각형 */}
+      {swatches.length > 0 && (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+          {swatches.map((hex) => (
+            <div
+              key={hex}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 12,
+                backgroundColor: hex,
+                border: '2px solid rgba(255,255,255,0.7)',
+                display: 'flex',
+              }}
+            />
+          ))}
         </div>
       )}
 

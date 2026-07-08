@@ -23,6 +23,10 @@ export function ImageUploadSection({
   const [facePreview, setFacePreview] = useState<string | null>(null);
   const [bodyPreview, setBodyPreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState<'face' | 'body' | null>(null);
+  // 왜: 브라우저 alert() 대신 인라인 에러 — 흐름 끊김·접근성 문제 해소
+  const [uploadError, setUploadError] = useState<{ kind: 'face' | 'body'; message: string } | null>(
+    null
+  );
 
   const handleImageChange = useCallback(
     async (
@@ -31,6 +35,8 @@ export function ImageUploadSection({
       onChange: (b: string | null) => void,
       kind: 'face' | 'body'
     ) => {
+      // 새 시도 시 해당 슬롯의 이전 에러 초기화
+      setUploadError((prev) => (prev?.kind === kind ? null : prev));
       if (!file) {
         setPreview(null);
         onChange(null);
@@ -44,7 +50,7 @@ export function ImageUploadSection({
         onChange(base64);
       } catch (err) {
         console.error('[ImageUpload] compression failed:', err);
-        alert('이미지 처리에 실패했어요. 다른 사진을 선택해주세요.');
+        setUploadError({ kind, message: '이미지 처리에 실패했어요. 다른 사진을 선택해주세요.' });
       } finally {
         setIsProcessing(null);
       }
@@ -111,6 +117,11 @@ export function ImageUploadSection({
             />
           </label>
         )}
+        {uploadError?.kind === 'face' && (
+          <p role="alert" className="mt-2 text-xs text-red-400" data-testid="face-upload-error">
+            {uploadError.message}
+          </p>
+        )}
       </div>
 
       {/* 전신 사진 (선택) */}
@@ -160,6 +171,11 @@ export function ImageUploadSection({
               }
             />
           </label>
+        )}
+        {uploadError?.kind === 'body' && (
+          <p role="alert" className="mt-2 text-xs text-red-400" data-testid="body-upload-error">
+            {uploadError.message}
+          </p>
         )}
       </div>
     </div>

@@ -54,7 +54,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const label = report?.personalColor
     ? `${seasonLabel(report.personalColor.season)} 스타일 리포트`
     : '나만의 스타일 리포트';
-  const ogUrl = `/api/og/report?label=${encodeURIComponent(label)}`;
+  // 베스트 컬러 hex를 OG에 전달 — 실제 색 스와치 렌더 (최대 5개)
+  const colorsParam = (report?.personalColor?.bestColors ?? [])
+    .map((c) => c.hex)
+    .filter((hex) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex))
+    .slice(0, 5)
+    .join(',');
+  const ogUrl =
+    `/api/og/report?label=${encodeURIComponent(label)}` +
+    (colorsParam ? `&colors=${encodeURIComponent(colorsParam)}` : '');
   return {
     title: `${label} | 이룸`,
     description: '퍼스널컬러·피부·체형·헤어·메이크업 진단을 담은 스타일 리포트',
@@ -248,7 +256,7 @@ export default async function SharedReportPage({ params }: PageProps) {
             사진 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업을 한 번에 — 무료
           </p>
           <Link
-            href="/home"
+            href="/"
             className="inline-block px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             무료로 분석받기

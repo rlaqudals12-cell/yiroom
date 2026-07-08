@@ -632,7 +632,7 @@ describe('HairResultCard', () => {
       expect(screen.getByText('낮음')).toBeInTheDocument();
     });
 
-    it('신뢰도 100% 처리', () => {
+    it('신뢰도 100% = 자가입력 → "직접 입력" 라벨 (위장 수치 금지)', () => {
       const result = createMockResult({
         faceShapeAnalysis: {
           ...createMockResult().faceShapeAnalysis,
@@ -643,8 +643,10 @@ describe('HairResultCard', () => {
         currentHairInfo: undefined,
       });
       render(<HairResultCard result={result} />);
-      expect(screen.getByText(/신뢰도 100%/)).toBeInTheDocument();
-      expect(screen.getByText('매우 높음')).toBeInTheDocument();
+      // 사진 분석 신뢰도는 최대 95%라 100은 "직접 입력" 신호 — 숫자 대신 라벨 노출
+      expect(screen.queryByText(/신뢰도 100%/)).not.toBeInTheDocument();
+      expect(screen.getByText('직접 입력')).toBeInTheDocument();
+      expect(screen.getByText('입력하신 값 기준')).toBeInTheDocument();
     });
 
     it('적합도 0% 스타일 추천', () => {

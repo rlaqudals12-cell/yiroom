@@ -131,7 +131,7 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
     const colorMatched = product.personalColorSeasons.includes(profile.personalColorSeason);
     reasons.push({
       type: 'personalColor',
-      label: `${profile.personalColorSeason} 타입`,
+      label: getPersonalColorLabel(profile.personalColorSeason),
       matched: colorMatched,
     });
     if (colorMatched) {
@@ -911,6 +911,17 @@ function getSkinTypeLabel(skinType: SkinType): string {
     normal: '정상 피부',
   };
   return labels[skinType] || skinType;
+}
+
+// 매칭 사유 라벨용 시즌 한국어 (원시 영문 "Spring 타입" 노출 방지)
+function getPersonalColorLabel(season: string): string {
+  const labels: Record<string, string> = {
+    Spring: '봄 웜톤',
+    Summer: '여름 쿨톤',
+    Autumn: '가을 웜톤',
+    Winter: '겨울 쿨톤',
+  };
+  return labels[season] ?? `${season} 타입`;
 }
 
 function getSkinConcernLabel(concern: SkinConcern): string {

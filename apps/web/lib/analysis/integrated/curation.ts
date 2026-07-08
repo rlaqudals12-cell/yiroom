@@ -12,6 +12,7 @@
  */
 
 import { getBodyShapeLabel } from '@/lib/body';
+import { seasonKo, skinTypeKo } from './labels';
 import type {
   AxisResult,
   PersonalColorAxisData,
@@ -19,6 +20,7 @@ import type {
   BodyAxisData,
   HairAxisData,
   MakeupAxisData,
+  RecommendationGender,
 } from './types';
 
 // ============================================
@@ -53,6 +55,11 @@ export interface ComposeCurationInput {
   /** 세션 ID (URL 추적용, 향후 어필리에이트 기여도 추적) */
   sessionId: string;
   /**
+   * 성별 (추천 분기 전용). 남성이면 립틴트 대신 그루밍(선크림·립밤)으로 대체.
+   * 미지정 시 'neutral' — 기존 립/베이스 유지.
+   */
+  gender?: RecommendationGender;
+  /**
    * 사용자가 옷장에 아이템을 등록했는지 여부.
    * 왜: outfit 카드는 `/closet/recommend`로 보내는데, 옷장이 비면 빈 상태를 마주치게 됨.
    * 비어있다면 CTA를 "먼저 옷장 등록하기"로 바꾸고 목적지를 `/closet/add`로 변경.
@@ -83,7 +90,8 @@ function buildClosetUrl(params: Record<string, string>, sessionId: string): stri
 function buildBeautyCuration(
   pc: PersonalColorAxisData | null,
   skin: SkinAxisData | null,
-  sessionId: string
+  sessionId: string,
+  gender: RecommendationGender
 ): CurationItem[] {
   if (!pc) return [];
   const warm = String(pc.undertone ?? '').toLowerCase() === 'warm';
@@ -91,17 +99,28 @@ function buildBeautyCuration(
   const toneKey = warm ? 'warm' : 'cool';
   const items: CurationItem[] = [];
 
-  // 립
-  items.push({
-    category: 'lip',
-    title: `${tone} 계열 립틴트`,
-    reason: `${pc.season ?? '당신'} ${pc.undertone ?? ''}톤 혈색을 가장 자연스럽게 살려요.`,
-    href: buildBeautyUrl({ category: 'lip', tone: toneKey }, sessionId),
-    cta: '립 보러가기',
-  });
+  // 왜: 남성에게 립틴트 큐레이션은 이질적 → 톤 보정 그루밍(선크림·립밤)으로 대체
+  if (gender === 'male') {
+    items.push({
+      category: 'skincare',
+      title: '톤 보정 선크림 · 립밤',
+      reason: `${seasonKo(pc.season) || '당신의'} 인상을 부담 없이 정돈해줘요.`,
+      href: buildBeautyUrl({ category: 'sunscreen', tone: toneKey }, sessionId),
+      cta: '그루밍 보러가기',
+    });
+  } else {
+    // 립
+    items.push({
+      category: 'lip',
+      title: `${tone} 계열 립틴트`,
+      reason: `${seasonKo(pc.season) || '당신의'} 혈색을 가장 자연스럽게 살려요.`,
+      href: buildBeautyUrl({ category: 'lip', tone: toneKey }, sessionId),
+      cta: '립 보러가기',
+    });
+  }
 
-  // 베이스 — 피부 타입 반영
-  if (skin) {
+  // 베이스 — 피부 타입 반영 (남성은 베이스 메이크업 제외, 위 그루밍 카드로 대체)
+  if (skin && gender !== 'male') {
     const skinType = String(skin.skinType ?? '').toLowerCase();
     let finish = 'satin';
     let finishLabel = '사틴';
@@ -145,19 +164,12 @@ function buildSkincareCuration(skin: SkinAxisData, sessionId: string): CurationI
     focus = '부위별 밸런스';
     query = 'combination';
   }
-  // 원시 영문 타입("normal")·전문용어("바이탈리티") 노출 금지 — 초보자 눈높이
-  const SKIN_TYPE_KO: Record<string, string> = {
-    dry: '건성',
-    oily: '지성',
-    combination: '복합성',
-    normal: '중성',
-    sensitive: '민감성',
-  };
-  const skinTypeKo = SKIN_TYPE_KO[skinType] ?? skin.skinType ?? '내';
+  // 원시 영문 타입("normal") 노출 금지 — 초보자 눈높이 (skinTypeKo는 ./labels 공용 헬퍼)
+  const skinTypeLabel = skinTypeKo(skin.skinType) || '내';
   return {
     category: 'skincare',
     title: `${focus} 스킨케어 루틴`,
-    reason: `${skinTypeKo} 피부(컨디션 점수 ${skin.overallScore ?? 70}점)에 맞춘 추천이에요.`,
+    reason: `${skinTypeLabel} 피부(컨디션 점수 ${skin.overallScore ?? 70}점)에 맞춘 추천이에요.`,
     href: buildBeautyUrl({ category: 'skincare', focus: query }, sessionId),
     cta: '스킨케어 보러가기',
   };
@@ -204,8 +216,8 @@ function buildOutfitCuration(
     };
   }
 
-  // 중첩 템플릿 리터럴 방지: pc 팔레트 설명을 별도 변수로 분리
-  const paletteDescription = pc ? `${pc.season} ${pc.undertone}톤` : '컬러 팔레트';
+  // 중첩 템플릿 리터럴 방지: pc 팔레트 설명을 별도 변수로 분리 (원시 영문 → 한국어)
+  const paletteDescription = pc ? seasonKo(pc.season) || '컬러 팔레트' : '컬러 팔레트';
 
   return {
     category: 'outfit',
@@ -234,11 +246,12 @@ export function composeCuration(input: ComposeCurationInput): Curation {
   const skin = input.skin.success ? input.skin.data : null;
   const body = input.body.success ? input.body.data : null;
 
+  const gender: RecommendationGender = input.gender ?? 'neutral';
   const items: CurationItem[] = [];
 
   // PC가 있으면 Beauty 카테고리 2개 시도
   if (pc) {
-    items.push(...buildBeautyCuration(pc, skin, input.sessionId));
+    items.push(...buildBeautyCuration(pc, skin, input.sessionId, gender));
   } else if (skin) {
     // PC 없고 S만 → 스킨케어
     items.push(buildSkincareCuration(skin, input.sessionId));

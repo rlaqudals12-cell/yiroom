@@ -17,6 +17,7 @@
 
 import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
 import { getBodyShapeLabel } from '@/lib/body';
+import { skinTypeKo, faceShapeKo, bodyDescKo } from '../labels';
 import type {
   AxisResult,
   PersonaProfile,
@@ -77,50 +78,7 @@ function successAxisCount(s: AxisSummary): number {
   return [s.pc, s.skin, s.body, s.hair, s.makeup].filter(Boolean).length;
 }
 
-// ============================================
-// 1-b. 소비자 눈높이 라벨 (초보자 기준 — 원시 영문/전문용어 노출 금지)
-// ============================================
-
-/** 피부 타입 원시값(영문) → 한국어 */
-const SKIN_TYPE_KO: Record<string, string> = {
-  dry: '건성',
-  oily: '지성',
-  combination: '복합성',
-  normal: '중성',
-  sensitive: '민감성',
-};
-
-function skinTypeKo(raw: string | undefined): string {
-  if (!raw) return '';
-  return SKIN_TYPE_KO[raw.toLowerCase()] ?? raw;
-}
-
-/** 골격 라벨 → 짧은 풀이 (사용자는 웨이브/스트레이트가 뭔지 모른다) */
-const BODY_DESC_KO: Record<string, string> = {
-  스트레이트: '직선이 깔끔한 스트레이트',
-  웨이브: '곡선이 부드러운 웨이브',
-  내추럴: '골격감이 자연스러운 내추럴',
-};
-
-function bodyDescKo(label: string | undefined): string {
-  if (!label) return '';
-  return BODY_DESC_KO[label] ?? label;
-}
-
-/** 얼굴형 원시값(영문) → 한국어 */
-const FACE_SHAPE_KO: Record<string, string> = {
-  oval: '계란형',
-  round: '둥근형',
-  square: '각진형',
-  heart: '하트형',
-  oblong: '긴 얼굴형',
-  diamond: '다이아몬드형',
-};
-
-function faceShapeKo(raw: string | undefined): string {
-  if (!raw) return '';
-  return FACE_SHAPE_KO[raw.toLowerCase()] ?? raw;
-}
+// 소비자 눈높이 라벨(skinTypeKo/faceShapeKo/bodyDescKo)은 ../labels 공용 헬퍼로 일원화.
 
 // ============================================
 // 2. Gemini 프롬프트

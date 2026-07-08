@@ -165,6 +165,39 @@ describe('composeCuration', () => {
     }
   });
 
+  it('남성 → 립틴트 대신 그루밍(선크림·립밤) 큐레이션', () => {
+    const r = composeCuration({
+      ...allFailed(),
+      personalColor: pcWarm,
+      sessionId: SESSION_ID,
+      gender: 'male',
+    });
+    expect(r.items.find((i) => i.category === 'lip')).toBeUndefined();
+    expect(r.items.some((i) => i.title.includes('선크림'))).toBe(true);
+  });
+
+  it('남성 + PC + 지성 피부 → 베이스 메이크업 카드 제외', () => {
+    const r = composeCuration({
+      ...allFailed(),
+      personalColor: pcWarm,
+      skin: skinOily,
+      sessionId: SESSION_ID,
+      gender: 'male',
+    });
+    expect(r.items.find((i) => i.category === 'base')).toBeUndefined();
+  });
+
+  it('여성 → 기존 립틴트 큐레이션 유지', () => {
+    const r = composeCuration({
+      ...allFailed(),
+      personalColor: pcWarm,
+      sessionId: SESSION_ID,
+      gender: 'female',
+    });
+    expect(r.items[0].category).toBe('lip');
+    expect(r.items[0].title).toContain('코랄');
+  });
+
   it('hasClosetItems=false → outfit 카드가 /closet/add로 우회', () => {
     const r = composeCuration({
       ...allFailed(),

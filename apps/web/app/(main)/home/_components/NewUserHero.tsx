@@ -215,10 +215,11 @@ export default function NewUserHero(): React.ReactElement {
         <SynergyChain t={t} />
       </div>
 
-      {/* 설문 대안 (P-UX6: 사진 거부감 대안) */}
+      {/* 부담 없이 시작 유도 — 통합 분석(사진 1장)로 연결.
+          이전 /onboarding은 레거시 3축+음식 알레르기(W/N 유령) 설문이라 5축 정체성과 불일치 */}
       <div data-testid="home-new-survey-alt">
         <Link
-          href="/onboarding"
+          href="/analysis/integrated"
           className="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <span>{t('surveyAltLabel')}</span>

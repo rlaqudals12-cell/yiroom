@@ -21,6 +21,8 @@ import {
   type SeasonType,
   type ToneType,
   type DepthType,
+  type ColorInfo,
+  type LipstickRecommendation,
   SEASON_INFO,
   BEST_COLORS,
   WORST_COLORS,
@@ -29,12 +31,12 @@ import {
   CLOTHING_RECOMMENDATIONS,
   STYLE_DESCRIPTIONS,
   EASY_INSIGHTS,
+  resolveSubtype,
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
-import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
@@ -85,11 +87,20 @@ interface DbPersonalColorAssessment {
   clerk_user_id: string;
   season: string;
   undertone: string | null;
+  // 12톤 서브타입 (bright/light/true/mute/deep) — NULL이면 구 데이터
+  season_subtype?: string | null;
   confidence: number | null;
   best_colors: Array<{ name: string; hex: string }> | null;
   worst_colors: Array<{ name: string; hex: string }> | null;
+  // 저장 실체는 AI 원본 형태({colorName, hex, brandExample}) — 방어적으로 두 형태 모두 수용
   makeup_recommendations: {
-    lipstick?: Array<{ shade: string; hex: string; description?: string }>;
+    lipstick?: Array<{
+      colorName?: string;
+      shade?: string;
+      hex: string;
+      brandExample?: string;
+      description?: string;
+    }>;
   } | null;
   fashion_recommendations: {
     tops?: string[];
@@ -98,6 +109,7 @@ interface DbPersonalColorAssessment {
   } | null;
   image_analysis: {
     insight?: string;
+    seasonSubtype?: string | null;
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
     usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
@@ -123,24 +135,72 @@ function getSeasonToneDepth(seasonType: SeasonType): { tone: ToneType; depth: De
   }
 }
 
-// DB → PersonalColorResult 변환 (Hybrid: DB는 핵심 데이터만, 표시용은 최신 Mock 사용)
+// DB best_colors/worst_colors 배열을 ColorInfo[]로 정규화 (유효한 {name,hex}만)
+function normalizeDbColors(raw: unknown): ColorInfo[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (c): c is { name: string; hex: string } =>
+        typeof c === 'object' &&
+        c !== null &&
+        typeof (c as { hex?: unknown }).hex === 'string' &&
+        typeof (c as { name?: unknown }).name === 'string'
+    )
+    .map((c) => ({ name: c.name, hex: c.hex }));
+}
+
+// DB 립스틱(저장 실체 {colorName,hex,brandExample} 또는 구 {shade,...})을 LipstickRecommendation[]로
+function normalizeDbLipstick(
+  raw: DbPersonalColorAssessment['makeup_recommendations']
+): LipstickRecommendation[] {
+  const list = raw?.lipstick;
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter((l): l is NonNullable<typeof l> => !!l && typeof l.hex === 'string')
+    .map((l) => ({
+      colorName: l.colorName ?? l.shade ?? '추천 컬러',
+      hex: l.hex,
+      brandExample: l.brandExample,
+      easyDescription: l.description,
+    }));
+}
+
+// DB → PersonalColorResult 변환.
+// 개인화 우선: usedMock이 아니고 DB에 AI가 사진에서 뽑은 팔레트가 있으면 그걸 표시
+// (같은 시즌이어도 사람마다 다른 "내 팔레트"). 없거나 Mock이면 시즌 공통 Mock으로 폴백.
 function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorResult {
   const seasonType = dbData.season.toLowerCase() as SeasonType;
   const info = SEASON_INFO[seasonType] || SEASON_INFO.spring;
-  const { tone, depth } = getSeasonToneDepth(seasonType);
 
-  // 서브톤 라벨 생성: DB undertone 우선, 없으면 시즌 기반 fallback
-  const TONE_LABELS: Record<string, string> = { warm: '웜톤', cool: '쿨톤', neutral: '뉴트럴' };
-  const toneLabel = dbData.undertone
-    ? (TONE_LABELS[dbData.undertone] ?? '뉴트럴')
-    : (TONE_LABELS[tone] ?? '웜톤');
-  const depthLabel = depth === 'light' ? '라이트' : '딥';
-  const undertoneLabel = `${toneLabel} · ${depthLabel}`;
+  // 12톤 서브타입 우선: 저장값이 유효하면 tone/depth/라벨을 서브타입에서 도출
+  // (예: 여름 쿨 뮤트 사용자에게 하드코딩 "라이트" 대신 "뮤트" 정확 표시). 없으면 시즌 파생.
+  const rawSubtype = dbData.season_subtype ?? dbData.image_analysis?.seasonSubtype ?? null;
+  const subtype = resolveSubtype(seasonType, rawSubtype);
+  const { tone, depth } = subtype
+    ? { tone: subtype.tone, depth: subtype.depth }
+    : getSeasonToneDepth(seasonType);
 
-  // Hybrid 전략: 표시 데이터는 항상 최신 Mock 사용 (코드 업데이트 시 기존 사용자도 혜택)
-  const mockBestColors = BEST_COLORS[seasonType] || [];
-  const mockWorstColors = WORST_COLORS[seasonType] || [];
-  const mockLipstick = LIPSTICK_RECOMMENDATIONS[seasonType] || [];
+  // 서브톤 라벨: 서브타입이 있으면 "여름 쿨 뮤트", 없으면 톤·깊이 조합 폴백
+  let undertoneLabel: string;
+  if (subtype) {
+    undertoneLabel = subtype.label;
+  } else {
+    const TONE_LABELS: Record<string, string> = { warm: '웜톤', cool: '쿨톤', neutral: '뉴트럴' };
+    const toneLabel = dbData.undertone
+      ? (TONE_LABELS[dbData.undertone] ?? '뉴트럴')
+      : (TONE_LABELS[tone] ?? '웜톤');
+    const depthLabel = depth === 'light' ? '라이트' : '딥';
+    undertoneLabel = `${toneLabel} · ${depthLabel}`;
+  }
+
+  // 개인화 판정: Mock 폴백이 아니고 DB에 실제 팔레트가 있을 때만 "내 사진에서 찾은 컬러"
+  const usedMock = dbData.image_analysis?.usedMock === true;
+  const dbBestColors = normalizeDbColors(dbData.best_colors);
+  const dbWorstColors = normalizeDbColors(dbData.worst_colors);
+  const dbLipstick = normalizeDbLipstick(dbData.makeup_recommendations);
+  const personalizedColors = !usedMock && dbBestColors.length > 0;
+
+  // 시즌 공통 Mock (폴백용)
   const mockFoundation = FOUNDATION_RECOMMENDATIONS[seasonType] || [];
   const mockStyle = STYLE_DESCRIPTIONS[seasonType];
   const mockEasyInsight = EASY_INSIGHTS[seasonType]?.[0];
@@ -151,13 +211,18 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     seasonDescription: info.description,
     tone,
     depth,
-    confidence: dbData.confidence || 85,
+    // 정직: 저장된 신뢰도가 없으면 85로 위장하지 않는다. 0 = "저장값 없음" → UI에서 미표시
+    // (실제 분석 신뢰도는 항상 85~95라 0과 충돌하지 않음)
+    confidence: dbData.confidence ?? 0,
     undertoneLabel,
-    // 컬러 데이터: 최신 Mock 사용 (초보자 친화 이름 적용)
-    bestColors: mockBestColors,
-    worstColors: mockWorstColors,
-    // 립스틱 추천: 최신 Mock 사용
-    lipstickRecommendations: mockLipstick,
+    // 컬러 데이터: AI 개인 팔레트 우선, 없으면 시즌 Mock 폴백
+    bestColors: personalizedColors ? dbBestColors : BEST_COLORS[seasonType] || [],
+    worstColors:
+      !usedMock && dbWorstColors.length > 0 ? dbWorstColors : WORST_COLORS[seasonType] || [],
+    personalizedColors,
+    // 립스틱 추천: AI 개인 추천 우선, 없으면 Mock
+    lipstickRecommendations:
+      !usedMock && dbLipstick.length > 0 ? dbLipstick : LIPSTICK_RECOMMENDATIONS[seasonType] || [],
     // 파운데이션 추천: 최신 Mock 사용
     foundationRecommendations: mockFoundation,
     // 의류 추천: Hybrid 전략 - 최신 Mock 사용 (DB 데이터는 무시, 최신 추천 제공)
@@ -204,8 +269,6 @@ export default function PersonalColorResultPage() {
   const [usedMock, setUsedMock] = useState(false);
   const { isExpert, toggleExpert } = useExpertMode();
   const fetchedRef = useRef(false);
-  // 현재 URL (hydration 불일치 방지를 위해 클라이언트에서만 설정)
-  const [currentUrl, setCurrentUrl] = useState('');
 
   const analysisId = params.id as string;
 
@@ -323,11 +386,6 @@ export default function PersonalColorResultPage() {
       fetchAnalysis();
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
-
-  // 클라이언트에서만 URL 설정 (hydration 불일치 방지)
-  useEffect(() => {
-    setCurrentUrl(window.location.href);
-  }, []);
 
   // 다시 시도 (일시적 에러 시 재조회)
   const handleRetry = useCallback(() => {
@@ -457,7 +515,7 @@ export default function PersonalColorResultPage() {
           <div className="mb-6">
             <ExpertDataPanel
               data={{
-                confidence: result.confidence,
+                confidence: result.confidence > 0 ? result.confidence : undefined,
                 usedMock: usedMock,
                 analyzedAt: result.analyzedAt,
                 imageQuality: imageQuality,
@@ -479,8 +537,8 @@ export default function PersonalColorResultPage() {
           </div>
         )}
 
-        {/* 낮은 신뢰도 경고 배너 */}
-        {result && result.confidence < LOW_CONFIDENCE_THRESHOLD && (
+        {/* 낮은 신뢰도 경고 배너 — 저장된 신뢰도(>0)가 있을 때만 판단 */}
+        {result && result.confidence > 0 && result.confidence < LOW_CONFIDENCE_THRESHOLD && (
           <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
@@ -529,17 +587,19 @@ export default function PersonalColorResultPage() {
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="basic-tab"
             >
-              {/* 비주얼 리포트 카드 */}
-              <VisualReportCard
-                analysisType="personal-color"
-                overallScore={result.confidence}
-                seasonType={result.seasonType}
-                seasonLabel={result.seasonLabel}
-                confidence={result.confidence}
-                bestColors={result.bestColors}
-                analyzedAt={result.analyzedAt}
-                className="mb-6"
-              />
+              {/* 비주얼 리포트 카드 — 저장된 신뢰도(>0)가 있을 때만 (위장 점수 금지, 체형 정책과 동일) */}
+              {result.confidence > 0 && (
+                <VisualReportCard
+                  analysisType="personal-color"
+                  overallScore={result.confidence}
+                  seasonType={result.seasonType}
+                  seasonLabel={result.seasonLabel}
+                  confidence={result.confidence}
+                  bestColors={result.bestColors}
+                  analyzedAt={result.analyzedAt}
+                  className="mb-6"
+                />
+              )}
 
               {/* 환경 요인 안내 카드 */}
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-blue-900/50">
@@ -776,16 +836,10 @@ export default function PersonalColorResultPage() {
               />
               <PrintButton title={t('printTitle.personalColor')} variant="outline" />
             </div>
-            {/* 소셜 공유 버튼 */}
-            <div className="flex justify-center">
-              <ShareButtons
-                content={{
-                  title: t('shareTitle.personalColor', { season: result?.seasonLabel || '' }),
-                  description: t('shareDesc.personalColor'),
-                  url: currentUrl,
-                }}
-              />
-            </div>
+            {/*
+              URL 공유는 제거 — 결과 페이지는 로그인+본인 소유(RLS)라 친구가 열면 로그인 벽/404.
+              공유는 위의 이미지 카드(ShareButton)로만. 공개 링크는 통합 리포트 토큰 경로에서 제공.
+            */}
           </div>
         </div>
       )}
@@ -804,10 +858,11 @@ export default function PersonalColorResultPage() {
           <div className="mt-4">
             <ProgressiveProfilePrompt
               moduleId="personal-color"
-              currentConfidence={result.confidence}
+              currentConfidence={result.confidence > 0 ? result.confidence : undefined}
             />
           </div>
-          <AITransparencyNotice compact className="mt-4" />
+          {/* 퍼스널컬러는 동일 사진 반복 분석 판정 일치를 실측 → 재현성 문구 노출 */}
+          <AITransparencyNotice compact showReproducibility className="mt-4" />
         </div>
       )}
 
