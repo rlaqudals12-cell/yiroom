@@ -37,6 +37,25 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { InventoryItem, ClothingMetadata } from '@/types/inventory';
 import { SEASON_LABELS, OCCASION_LABELS, PATTERN_LABELS } from '@/types/inventory';
+import { TryonButton } from '@/components/visual-expression';
+import type { TryonCategory } from '@/lib/visual-expression/types';
+
+// 옷장 아이템 → FASHN 착장 카테고리 매핑 (표현 레이어, ADR-113)
+// 상의/아우터→tops, 하의→bottoms, 원피스→one-pieces, 그 외(신발/가방/액세서리)→null(비대상)
+function toTryonCategory(item: InventoryItem): TryonCategory | null {
+  if (item.category !== 'closet') return null;
+  const hay = `${item.subCategory ?? ''} ${item.name}`;
+  if (/원피스|점프수트|투피스|dress/i.test(hay)) return 'one-pieces';
+  if (/청바지|슬랙스|스커트|반바지|레깅스|면바지|조거|팬츠|바지|bottom/i.test(hay))
+    return 'bottoms';
+  if (
+    /티셔츠|셔츠|블라우스|니트|맨투맨|후드|탱크|코트|자켓|재킷|패딩|가디건|점퍼|트렌치|블레이저|상의|아우터|top|outer/i.test(
+      hay
+    )
+  )
+    return 'tops';
+  return null;
+}
 
 interface ItemDetailSheetProps {
   item: InventoryItem | null;
@@ -66,6 +85,7 @@ export function ItemDetailSheet({
   const seasons = metadata?.season || [];
   const occasions = metadata?.occasion || [];
   const pattern = metadata?.pattern;
+  const tryonCategory = toTryonCategory(item);
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -169,6 +189,15 @@ export function ItemDetailSheet({
                 <Shirt className="w-4 h-4 mr-2" />
                 오늘 착용 기록
               </Button>
+            )}
+
+            {/* 가상 착장 "입어보기" — FASHN 키 있을 때만 렌더 (표현 레이어, ADR-113) */}
+            {tryonCategory && (
+              <TryonButton
+                garmentImageUrl={item.imageUrl}
+                category={tryonCategory}
+                className="w-full"
+              />
             )}
 
             {/* 상세 정보 */}

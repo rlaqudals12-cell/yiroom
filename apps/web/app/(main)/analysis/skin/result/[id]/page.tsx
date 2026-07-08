@@ -48,6 +48,7 @@ const AnalysisMatchedProducts = dynamic(
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
 import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import { ShareThemePicker } from '@/components/share';
+import { BeautifyShareButton } from '@/components/visual-expression';
 import type { ShareCardFormat } from '@/components/share';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
@@ -1508,6 +1509,9 @@ export default function SkinAnalysisResultPage() {
                 format={shareFormat}
                 onFormatChange={setShareFormat}
               />
+
+              {/* 내 사진으로 공유 (AI 자연 보정) — 기존 익명 일러스트 공유와 별개 옵션 */}
+              <BeautifyShareButton />
 
               {/* PDF 저장 */}
               <Button
