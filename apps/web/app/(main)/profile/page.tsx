@@ -54,6 +54,7 @@ import {
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
 import { WellnessScoreRing, MyInfoSummaryCard, ProfileCardGrid } from '@/components/profile';
+import { MyTwinCard } from '@/components/visual-expression';
 import { BeforeAfterSection } from '@/components/profile/BeforeAfterSection';
 import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
@@ -371,6 +372,11 @@ export default function ProfilePage() {
         {/* ── 탭: 내 정보 ── */}
         {activeTab === 'info' && (
           <>
+            {/* 내 트윈 (ADR-115) — 승인된 트윈만 노출, 없으면 만들기 CTA */}
+            <FadeInUp>
+              <MyTwinCard />
+            </FadeInUp>
+
             {/* 내 QR 코드 */}
             <FadeInUp>
               <section className="bg-card rounded-2xl border p-4">

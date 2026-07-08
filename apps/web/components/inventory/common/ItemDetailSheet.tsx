@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { InventoryItem, ClothingMetadata } from '@/types/inventory';
 import { SEASON_LABELS, OCCASION_LABELS, PATTERN_LABELS } from '@/types/inventory';
-import { TryonButton } from '@/components/visual-expression';
+import { TryonButton, TwinTryonButton, useApprovedTwin } from '@/components/visual-expression';
 import type { TryonCategory } from '@/lib/visual-expression/types';
 
 // 옷장 아이템 → FASHN 착장 카테고리 매핑 (표현 레이어, ADR-113)
@@ -77,6 +77,8 @@ export function ItemDetailSheet({
   onRecordWear,
 }: ItemDetailSheetProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  // 승인된 트윈이 있으면 착장을 "트윈 경로"로, 없으면 기존 FASHN 경로로 (ADR-115)
+  const { approvedTwin } = useApprovedTwin();
 
   if (!item) return null;
 
@@ -191,14 +193,22 @@ export function ItemDetailSheet({
               </Button>
             )}
 
-            {/* 가상 착장 "입어보기" — FASHN 키 있을 때만 렌더 (표현 레이어, ADR-113) */}
-            {tryonCategory && (
-              <TryonButton
-                garmentImageUrl={item.imageUrl}
-                category={tryonCategory}
-                className="w-full"
-              />
-            )}
+            {/* 가상 착장 — 승인된 트윈이 있으면 트윈 경로(ADR-115), 없으면 기존 FASHN 경로(ADR-113).
+                둘 다 착장 대상(tops/bottoms/one-pieces)일 때만 노출 */}
+            {tryonCategory &&
+              (approvedTwin ? (
+                <TwinTryonButton
+                  twinId={approvedTwin.id}
+                  garmentImageUrl={item.imageUrl}
+                  className="w-full"
+                />
+              ) : (
+                <TryonButton
+                  garmentImageUrl={item.imageUrl}
+                  category={tryonCategory}
+                  className="w-full"
+                />
+              ))}
 
             {/* 상세 정보 */}
             <div className="space-y-3">

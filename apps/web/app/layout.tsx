@@ -163,7 +163,7 @@ export default async function RootLayout({
           className={`${inter.variable} ${notoSansKR.variable} antialiased bg-background text-foreground`}
           style={{ fontFamily: 'Inter, "Noto Sans KR", system-ui, sans-serif' }}
         >
-          <ThemeProvider defaultTheme="dark">
+          <ThemeProvider defaultTheme="system">
             <I18nProvider locale={locale} messages={messages}>
               <OfflineBanner />
               <a

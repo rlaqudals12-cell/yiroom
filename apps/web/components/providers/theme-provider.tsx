@@ -26,7 +26,9 @@ export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProvid
     if (typeof document !== 'undefined') {
       return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     }
-    return 'dark'; // SSR 기본값 = defaultTheme('dark')과 일치
+    // SSR 폴백: 실제 테마는 <head> inline script가 OS 설정(prefers-color-scheme)에
+    // 따라 이미 html에 클래스로 심어두므로, 클라이언트 마운트 시 위 분기에서 교정됨.
+    return 'light';
   });
   const [mounted, setMounted] = useState(false);
 

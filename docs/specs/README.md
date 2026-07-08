@@ -24,7 +24,8 @@
 | **AI 투명성**              | SDD-AI-TRANSPARENCY                               | ✅ 완료    | 5개     |
 | **감사 로깅**              | SDD-AUDIT-LOGGING                                 | ✅ 완료    | 7개     |
 | **제품 스캔 적합도**       | [SDD-PRODUCT-FIT-SCAN](SDD-PRODUCT-FIT-SCAN.md)   | ✅ 완료    | -       |
-| **표현 레이어(보정·착장)** | [SDD-VISUAL-EXPRESSION](SDD-VISUAL-EXPRESSION.md) | 🔄 구현 중 | -       |
+| **표현 레이어(보정·착장)** | [SDD-VISUAL-EXPRESSION](SDD-VISUAL-EXPRESSION.md) | ✅ 완료    | -       |
+| **AI 트윈**                | [SDD-AI-TWIN](SDD-AI-TWIN.md)                     | 🔄 구현 중 | -       |
 | **GDPR 삭제**              | SDD-GDPR-DELETION-CRON                            | ✅ 완료    | 4개     |
 | **Rate Limiting**          | SDD-RATE-LIMITING                                 | ✅ 완료    | 5개     |
 | **크로스모듈 프로토콜**    | SDD-CROSS-MODULE-PROTOCOL                         | ✅ 완료    | 8개     |
