@@ -26,9 +26,12 @@ import {
   type MakeupAxisData,
   type RecommendationGender,
   type RecommendationSituation,
+  seasonKo,
+  undertoneKo,
+  skinTypeKo,
+  faceShapeKo,
 } from '@/lib/analysis/integrated';
-import { AxesSummaryCard } from './_components/AxesSummaryCard';
-import { AxisDetailAccordion } from './_components/AxisDetailAccordion';
+import { getBodyShapeLabel } from '@/lib/body';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
 import { NextStepsLinks } from './_components/NextStepsLinks';
 import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
@@ -66,6 +69,50 @@ function extractNested(record: AxisDbRecord, key: string, field: string): string
     if (typeof value === 'string') return value;
   }
   return '';
+}
+
+/** 비어 있지 않은 라벨만 " · "로 이어붙임 (없으면 undefined) */
+function joinLabels(...parts: Array<string | false | 0 | null | undefined>): string | undefined {
+  const nonEmpty = parts.filter((p): p is string => typeof p === 'string' && p.length > 0);
+  return nonEmpty.length > 0 ? nonEmpty.join(' · ') : undefined;
+}
+
+function pcSummary(r: AxisDbRecord | null): string | undefined {
+  if (!r) return undefined;
+  return joinLabels(
+    r.season ? seasonKo(String(r.season)) : undefined,
+    r.undertone ? undertoneKo(String(r.undertone)) : undefined
+  );
+}
+
+function skinSummary(r: AxisDbRecord | null): string | undefined {
+  if (!r) return undefined;
+  const score = Number(r.overall_score ?? 0);
+  return joinLabels(
+    r.skin_type ? skinTypeKo(String(r.skin_type)) : undefined,
+    score > 0 ? `컨디션 ${score}점` : undefined
+  );
+}
+
+/**
+ * 축별 "핵심 결과 1줄" 요약 (NextStepsLinks 심화 링크용).
+ * 반드시 공용 라벨 헬퍼로 한국어화 — 원시 영문값(Autumn/combination) 노출 금지.
+ * 세션에 담긴 축(DB 레코드 존재)만 요약을 만든다.
+ */
+function buildAxisSummaries(axes: {
+  personalColor: AxisDbRecord | null;
+  skin: AxisDbRecord | null;
+  body: AxisDbRecord | null;
+  hair: AxisDbRecord | null;
+  makeup: AxisDbRecord | null;
+}): Partial<Record<AxisCode, string>> {
+  return {
+    personal_color: pcSummary(axes.personalColor),
+    skin: skinSummary(axes.skin),
+    body: axes.body?.body_type ? getBodyShapeLabel(axes.body.body_type) : undefined,
+    hair: axes.hair?.face_shape ? faceShapeKo(String(axes.hair.face_shape)) : undefined,
+    makeup: axes.makeup?.undertone ? undertoneKo(String(axes.makeup.undertone)) : undefined,
+  };
 }
 
 export const metadata: Metadata = {
@@ -160,6 +207,9 @@ export default async function IntegratedResultPage({
     gender,
   });
 
+  // 축별 심화 링크 요약 (원시 영문값 노출 방지 — 공용 라벨 헬퍼 사용, 새 fetch 없음)
+  const axisSummaries = buildAxisSummaries(axes);
+
   return (
     <div
       className="min-h-[calc(100vh-80px)] bg-neutral-950 px-4 py-8"
@@ -192,22 +242,11 @@ export default async function IntegratedResultPage({
         {/* ADR-104 체크리스트 #5: 통합 큐레이션 (제품 세트 + 실제 제품 3개) */}
         <CurationCard curation={curation} products={curationProducts} />
 
-        {/* 5축 요약 카드 */}
-        <AxesSummaryCard axes={axes} />
-
-        {/* 축별 상세 아코디언 */}
-        <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-            상세 분석
-          </h2>
-          <AxisDetailAccordion axes={axes} />
-        </section>
+        {/* 더 깊이 — 축별 심화 링크 (개별 결과 페이지가 축 상세의 정본, ADR-111 One Canon) */}
+        <NextStepsLinks axesCompleted={axesCompleted} axisSummaries={axisSummaries} />
 
         {/* 스타일 리포트 공유 — 사진 없는 공개 링크 (바이럴 루프) */}
         <ShareReportButton sessionId={session.id} />
-
-        {/* 다음 단계 링크 */}
-        <NextStepsLinks axesCompleted={axesCompleted} />
 
         {/* 하단 안내 */}
         <div className="space-y-1 pt-4 text-center text-[11px] text-zinc-600">

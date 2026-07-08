@@ -313,12 +313,6 @@ vi.mock('@/components/analysis/visual-report', () => ({
   VisualReportCard: () => <div data-testid="mock-visual-report">VisualReportCard Mock</div>,
 }));
 
-vi.mock('@/components/analysis/RecommendedProducts', () => ({
-  RecommendedProducts: () => (
-    <div data-testid="mock-recommended-products">RecommendedProducts Mock</div>
-  ),
-}));
-
 vi.mock('@/components/share', () => ({
   ShareButton: () => <button data-testid="mock-share-button">Share</button>,
   PrintButton: () => <button data-testid="mock-print-button">Print</button>,

@@ -135,12 +135,12 @@ describe('BeautyCareTab', () => {
     expect(mockPush).toHaveBeenCalledWith('/analysis/skin/result/skin-abc-123');
   });
 
-  it('분석 id가 없으면 주의 성분 버튼이 /analysis 허브로 폴백한다', async () => {
+  it('분석 id가 없으면 주의 성분 버튼이 피부 분석 시작으로 폴백한다 (ADR-111: 허브 폐지)', async () => {
     const user = userEvent.setup();
     renderTab({ skinAnalysisId: null });
 
     await user.click(screen.getByText(/내 분석 결과에서 확인하기/));
-    expect(mockPush).toHaveBeenCalledWith('/analysis');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
   });
 
   it('이너뷰티 추천 섹션이 항상 표시되고 실제품 컴포넌트가 마운트된다', () => {

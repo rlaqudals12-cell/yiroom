@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import ProfileCardGrid from '@/app/(main)/home/_components/ProfileCardGrid';
+import ProfileCardGrid from '@/components/profile/ProfileCardGrid';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 
 function summary(

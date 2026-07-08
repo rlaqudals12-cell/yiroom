@@ -153,7 +153,7 @@ export function ScanResult({
           피부/퍼스널컬러 분석 후 맞춤 호환성을 확인할 수 있어요
         </p>
         <Link
-          href="/analysis"
+          href="/analysis/integrated"
           className="mt-3 flex items-center gap-1 text-sm text-primary hover:underline"
         >
           분석 시작하기

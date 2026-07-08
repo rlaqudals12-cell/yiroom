@@ -30,7 +30,6 @@ import {
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 // 하단 섹션 — 스크롤 시 지연 로드 (초기 번들 -30KB)
 const ProgressiveProfilePrompt = dynamic(
   () =>
@@ -62,7 +61,6 @@ const SkinConsultantCTA = dynamic(
   { ssr: false }
 );
 import Link from 'next/link';
-import type { SkinType as ProductSkinType, SkinConcern } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   VisualAnalysisTab,
@@ -1117,30 +1115,6 @@ export default function SkinAnalysisResultPage() {
                   {/* 다음 분석 추천 */}
                   <ContextLinkingCard currentModule="skin" />
                   <ResultPageInsights currentModule="skin" />
-
-                  {/* 맞춤 추천 제품 */}
-                  {skinType && (
-                    <RecommendedProducts
-                      analysisType="skin"
-                      analysisResult={{
-                        skinType: skinType as ProductSkinType,
-                        skinConcerns: result.metrics
-                          .filter((m) => m.status === 'warning')
-                          .map((m) => {
-                            const concernMap: Record<string, SkinConcern> = {
-                              hydration: 'hydration',
-                              pores: 'pore',
-                              pigmentation: 'whitening',
-                              wrinkles: 'aging',
-                              sensitivity: 'redness',
-                            };
-                            return concernMap[m.id];
-                          })
-                          .filter((c): c is SkinConcern => c !== undefined),
-                      }}
-                      className="mt-8"
-                    />
-                  )}
 
                   {/* 분석 기반 맞춤 제품 (어필리에이트 연결) */}
                   <div className="mt-8">

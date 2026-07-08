@@ -13,7 +13,6 @@ import {
   Wand2,
   Activity,
   BarChart3,
-  LayoutGrid,
   Apple,
   Search,
   Droplets,
@@ -192,17 +191,11 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
 
-                {/* 내 분석 결과 + 허브 */}
+                {/* 내 분석 결과 — 새 분석 시작(통합 분석)은 상단 featured 항목으로 일원화 (ADR-111) */}
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
                     <BarChart3 className="h-4 w-4 text-primary" />
                     {t('myResults')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/analysis" className="flex items-center gap-2 cursor-pointer">
-                    <LayoutGrid className="h-4 w-4 text-primary" />
-                    {t('analysisHub')}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

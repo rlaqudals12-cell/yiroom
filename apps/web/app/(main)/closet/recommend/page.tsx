@@ -372,7 +372,7 @@ export default function ClosetRecommendPage() {
               )}
               {!personalColor && !bodyType && (
                 <Link
-                  href="/analysis"
+                  href="/analysis/integrated"
                   className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
                 >
                   <Sparkles className="w-4 h-4" />

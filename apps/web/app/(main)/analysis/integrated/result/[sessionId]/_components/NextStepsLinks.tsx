@@ -1,8 +1,14 @@
 'use client';
 
 /**
- * 결과 페이지 하단 "다음 단계" 링크
+ * 결과 페이지 "더 깊이" — 축별 심화 링크
  *
+ * One Canon(ADR-111): 축 상세의 정본은 개별 결과 페이지다. 통합 리포트는
+ * 세션 고유물(Persona/ActionPlan/CrossInsights/Curation)만 담고, 축 요약은
+ * 여기서 "핵심 결과 1줄 + 심화 보기 →"로 개별 결과 페이지에 연결한다.
+ * (구 AxesSummaryCard/AxisDetailAccordion 흡수)
+ *
+ * @see docs/adr/ADR-111-one-canon-ia.md
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §4.4
  */
 
@@ -13,69 +19,76 @@ import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus'
 
 interface NextStepItem {
   axis: AxisCode;
-  href: string;
-  label: string;
-  description: string;
+  /** 축 이름 (행 제목) */
+  axisName: string;
+  /** 개별 분석 타입 — 최신 결과 딥링크 + 폴백 시작 라우팅 */
+  analysisType: AnalysisType;
+  /** 최신 개별 결과가 없을 때 이동할 분석 시작 경로 */
+  fallbackHref: string;
   icon: React.ComponentType<{ className?: string }>;
   iconColor: string;
-  /** 최신 결과가 있으면 분석 시작 대신 결과 페이지로 보낼 축 (재분석 유도 방지) */
-  resultType?: AnalysisType;
 }
 
 const ALL_STEPS: NextStepItem[] = [
   {
     axis: 'personal_color',
-    href: '/beauty?filter=personal-color',
-    label: '내 색 기반 화장품 보기',
-    description: '어울리는 립·아이섀도 추천',
+    axisName: '퍼스널컬러',
+    analysisType: 'personal-color',
+    fallbackHref: '/analysis/personal-color',
     icon: Palette,
     iconColor: 'text-pink-400',
   },
   {
     axis: 'skin',
-    href: '/beauty?filter=skin',
-    label: '피부 타입 맞춤 추천',
-    description: '스킨케어 루틴',
+    axisName: '피부',
+    analysisType: 'skin',
+    fallbackHref: '/analysis/skin',
     icon: Sparkles,
     iconColor: 'text-amber-400',
   },
   {
     axis: 'body',
-    href: '/closet',
-    label: '체형별 코디 가이드',
-    description: '옷장 조합',
+    axisName: '체형',
+    analysisType: 'body',
+    fallbackHref: '/analysis/body',
     icon: Shirt,
     iconColor: 'text-blue-400',
   },
   {
     axis: 'hair',
-    href: '/analysis/hair',
-    label: '헤어스타일 추천 자세히',
-    description: '얼굴형 기반 컷',
+    axisName: '헤어',
+    analysisType: 'hair',
+    fallbackHref: '/analysis/hair',
     icon: Scissors,
     iconColor: 'text-violet-400',
-    resultType: 'hair',
   },
   {
     axis: 'makeup',
-    href: '/analysis/makeup',
-    label: '메이크업 튜토리얼',
-    description: '단계별 가이드',
+    axisName: '메이크업',
+    analysisType: 'makeup',
+    fallbackHref: '/analysis/makeup',
     icon: Brush,
     iconColor: 'text-rose-400',
-    resultType: 'makeup',
   },
 ];
 
 export interface NextStepsLinksProps {
   axesCompleted: AxisCode[];
+  /**
+   * 축별 핵심 결과 1줄 요약 (서버에서 공용 라벨 헬퍼로 생성 — 원시 영문값 노출 금지).
+   * 예: personal_color → "가을 웜톤 · 웜톤", skin → "복합성 · 컨디션 72점"
+   */
+  axisSummaries?: Partial<Record<AxisCode, string>>;
 }
 
-export function NextStepsLinks({ axesCompleted }: NextStepsLinksProps): React.JSX.Element | null {
+export function NextStepsLinks({
+  axesCompleted,
+  axisSummaries,
+}: NextStepsLinksProps): React.JSX.Element | null {
   const completedSet = new Set(axesCompleted);
   const steps = ALL_STEPS.filter((s) => completedSet.has(s.axis));
 
-  // 최신 개별 결과가 있으면 "분석 시작" 대신 결과 페이지로 — "왜 또 분석해야 하지" 해소
+  // 최신 개별 결과가 있으면 개별 결과 페이지(축 상세의 정본)로 딥링크 — 재분석 유도 방지
   const { analyses } = useAnalysisStatus();
   const latestByType = new Map(analyses.map((a) => [a.type, a]));
 
@@ -83,27 +96,34 @@ export function NextStepsLinks({ axesCompleted }: NextStepsLinksProps): React.JS
 
   return (
     <section className="space-y-3" data-testid="next-steps-links">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">다음 단계</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        각 축 더 깊이 보기
+      </h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {steps.map((step) => {
           const Icon = step.icon;
-          // resultType이 있고 최신 결과가 존재하면 결과 페이지로 목적지 변경
-          const latest = step.resultType ? latestByType.get(step.resultType) : undefined;
-          const href = latest ? `/analysis/${latest.type}/result/${latest.id}` : step.href;
+          const summary = axisSummaries?.[step.axis];
+          // 최신 개별 결과가 있으면 결과 페이지로, 없으면 분석 시작 경로로 폴백
+          const latest = latestByType.get(step.analysisType);
+          const href = latest ? `/analysis/${latest.type}/result/${latest.id}` : step.fallbackHref;
           return (
             <li key={step.axis}>
               <Link
                 href={href}
                 className="group flex items-center gap-3 rounded-2xl border border-zinc-800 bg-neutral-900 p-4 transition-colors hover:border-pink-500/40 hover:bg-neutral-900/60"
+                data-testid={`next-step-${step.axis}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
                   <Icon className={`h-5 w-5 ${step.iconColor}`} />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">{step.label}</p>
-                  <p className="text-xs text-zinc-400">{step.description}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-white">{step.axisName}</p>
+                  <p className="truncate text-xs text-zinc-400">{summary ?? '결과 자세히 보기'}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-zinc-600 transition-colors group-hover:text-pink-400" />
+                <span className="flex shrink-0 items-center gap-0.5 text-xs font-medium text-zinc-500 transition-colors group-hover:text-pink-400">
+                  심화 보기
+                  <ChevronRight className="h-4 w-4" />
+                </span>
               </Link>
             </li>
           );

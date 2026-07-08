@@ -47,13 +47,6 @@ const ContextLinkingCard = dynamic(
     })),
   { ssr: false }
 );
-const RecommendedProducts = dynamic(
-  () =>
-    import('@/components/analysis/RecommendedProducts').then((mod) => ({
-      default: mod.RecommendedProducts,
-    })),
-  { ssr: false }
-);
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -540,19 +533,6 @@ export default function HairAnalysisResultPage() {
             </Tabs>
           )}
 
-          {/* 맞춤 헤어케어 제품 추천 */}
-          {result && (
-            <RecommendedProducts
-              analysisType="hair"
-              analysisResult={{
-                hairType: result.hairType,
-                scalpType: result.scalpType,
-                hairConcerns: result.concerns as string[],
-              }}
-              className="mt-6"
-            />
-          )}
-
           {/* 헤어 스타일·염색 추천 안내 — 컷(×얼굴형)·염색(×퍼스널컬러)은 크로스축이라 종합 분석으로 유도 (ADR-107) */}
           {result && (
             <button
@@ -614,7 +594,11 @@ export default function HairAnalysisResultPage() {
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       <div className="max-w-lg mx-auto px-4 pb-8">
         <div className="mt-2">
-          <AnalysisMatchedProducts analysisType="hair" />
+          <AnalysisMatchedProducts
+            analysisType="hair"
+            hairType={result?.hairType}
+            scalpType={result?.scalpType}
+          />
         </div>
         <div className="mt-4">
           <ProgressiveProfilePrompt moduleId="hair" />

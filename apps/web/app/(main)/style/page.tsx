@@ -316,7 +316,7 @@ export default function StylePage() {
                 )}
               </div>
               <button
-                onClick={() => router.push('/analysis')}
+                onClick={() => router.push('/analysis/integrated')}
                 className="text-xs text-primary hover:underline"
                 aria-label="체형 프로필 수정"
               >

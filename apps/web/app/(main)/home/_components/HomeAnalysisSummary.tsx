@@ -9,7 +9,7 @@ import {
   ANALYSIS_ORDER,
   TOTAL_ANALYSIS_TYPES,
   getResultHref,
-} from './analysis-meta';
+} from '@/components/profile/analysis-meta';
 
 interface HomeAnalysisSummaryProps {
   analyses: AnalysisSummary[];
@@ -39,7 +39,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
           <Sparkles className="w-5 h-5 text-amber-500" />내 분석 결과
         </h3>
         <button
-          onClick={() => router.push('/analysis')}
+          onClick={() => router.push('/analysis/integrated')}
           className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 min-h-[44px]"
         >
           전체보기

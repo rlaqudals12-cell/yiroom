@@ -41,6 +41,16 @@ vi.mock('@/components/common', () => ({
 vi.mock('@/components/profile', () => ({
   WellnessScoreRing: vi.fn(() => <div data-testid="wellness-score-ring">WellnessScoreRing</div>),
   MyInfoSummaryCard: vi.fn(() => <div data-testid="my-info-summary-card">MyInfoSummaryCard</div>),
+  // 내 분석 결과 = 홈과 동일한 정본 카드로 통일 (ADR-111 One Canon)
+  ProfileCardGrid: vi.fn(() => <div data-testid="profile-card-grid">ProfileCardGrid</div>),
+}));
+
+// 5축 요약은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 — 프로필 페이지는 값만 전달 (ADR-111)
+vi.mock('@/hooks/useAnalysisStatus', () => ({
+  useAnalysisStatus: vi.fn(() => ({ analyses: [] })),
+}));
+vi.mock('@/hooks/useProfilePersona', () => ({
+  useProfilePersona: vi.fn(() => null),
 }));
 
 // Mock QRCodeDisplay
@@ -248,11 +258,11 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('내 분석 결과 섹션을 표시한다', async () => {
+    it('내 분석 결과 섹션(정본 ProfileCardGrid)을 표시한다', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText(/내 분석 결과/)).toBeInTheDocument();
+        expect(screen.getByTestId('profile-card-grid')).toBeInTheDocument();
       });
     });
 
@@ -262,7 +272,7 @@ describe('ProfilePage', () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        expect(screen.getByText(/내 분석 결과/)).toBeInTheDocument();
+        expect(screen.getByTestId('profile-card-grid')).toBeInTheDocument();
       });
       expect(screen.queryByTestId('wellness-score-ring')).not.toBeInTheDocument();
     });

@@ -518,14 +518,14 @@ describe('HairAnalysisError', () => {
     ).toBeInTheDocument();
   });
 
-  it('분석 목록으로 링크가 표시된다', async () => {
+  it('홈으로 링크가 표시된다 (ADR-111: 에러 폴백 = 홈)', async () => {
     const HairAnalysisError = (await import('@/app/(main)/analysis/hair/error')).default;
     const mockReset = vi.fn();
     const mockError = new Error('테스트 에러');
 
     render(<HairAnalysisError error={mockError} reset={mockReset} />);
 
-    expect(screen.getByText('분석 목록으로')).toBeInTheDocument();
+    expect(screen.getByText('홈으로')).toBeInTheDocument();
   });
 
   it('다시 시도 버튼 클릭 시 reset이 호출된다', async () => {

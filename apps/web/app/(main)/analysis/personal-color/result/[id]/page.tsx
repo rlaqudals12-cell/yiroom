@@ -34,13 +34,11 @@ import {
   resolveSubtype,
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
-import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
 import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
-import type { PersonalColorSeason } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
 import { VisualReportCard } from '@/components/analysis/visual-report';
@@ -658,16 +656,6 @@ export default function PersonalColorResultPage() {
 
               {/* 성별 적응형 악세서리 추천 (K-1) */}
               <GenderAdaptiveAccessories seasonType={result.seasonType} className="mt-6" />
-
-              {/* 맞춤 추천 제품 */}
-              <RecommendedProducts
-                analysisType="personal-color"
-                analysisResult={{
-                  seasonType: (result.seasonType.charAt(0).toUpperCase() +
-                    result.seasonType.slice(1)) as PersonalColorSeason,
-                }}
-                className="mt-8"
-              />
 
               {/* AI 컬러 상담 + 투명성 고지 (접힘 기본) */}
               <details className="mt-6 bg-card rounded-xl border border-border">

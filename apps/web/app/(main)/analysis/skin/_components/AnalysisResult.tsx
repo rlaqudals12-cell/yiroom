@@ -20,6 +20,7 @@ import {
   Lightbulb,
   Info,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 // zoneId 기반 deterministic 변화값 생성 (Math.random() 대체)
@@ -44,7 +45,9 @@ import {
   getScoreColor,
   getScoreBgColor,
 } from '@/lib/mock/skin-analysis';
+import Link from 'next/link';
 import { recommendMasks, MASK_TYPES } from '@/lib/skincare/mask-recommendation';
+import { generateRoutine } from '@/lib/skincare';
 import { FadeInUp, ScaleIn, CountUp } from '@/components/animations';
 import { SkinEvidenceSummary } from '@/components/analysis/EvidenceSummary';
 import { MetricDetailCard } from '@/components/analysis/skin/MetricDetailCard';
@@ -196,6 +199,45 @@ export default function AnalysisResult({
 
   // ConcernCard 데이터 변환 (V4 Concern Card 패턴)
   const concernCards = useMemo(() => mapSkinMetricsToConcernCards(metrics), [metrics]);
+
+  // 정본 데일리 루틴 — /beauty 케어 탭·캡슐 데일리·루틴 페이지와 동일한 generateRoutine 엔진 사용.
+  // includeOptional:false = 필수 스텝만 요약(3~5개). 심화(선택 스텝 포함)는 /analysis/skin/routine.
+  const dailyRoutine = useMemo(() => {
+    const valid: SkinTypeId[] = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
+    const normalized = (skinType?.toLowerCase() ?? '') as SkinTypeId;
+    const resolvedSkinType: SkinTypeId = valid.includes(normalized) ? normalized : 'normal';
+
+    // 실측 지표(경고 상태)에서 고민 파생 — 루틴 개인화 노트 강화용
+    const CONCERN_MAP: Record<string, SkinConcernId> = {
+      hydration: 'dryness',
+      oil: 'excess_oil',
+      pores: 'pores',
+      wrinkles: 'wrinkles',
+      pigmentation: 'pigmentation',
+      sensitivity: 'sensitivity',
+      trouble: 'acne',
+    };
+    const concerns = metrics
+      .filter((m) => m.status === 'warning')
+      .map((m) => CONCERN_MAP[m.id])
+      .filter((c): c is SkinConcernId => c !== undefined);
+
+    return {
+      resolvedSkinType,
+      morning: generateRoutine({
+        skinType: resolvedSkinType,
+        concerns,
+        timeOfDay: 'morning',
+        includeOptional: false,
+      }),
+      evening: generateRoutine({
+        skinType: resolvedSkinType,
+        concerns,
+        timeOfDay: 'evening',
+        includeOptional: false,
+      }),
+    };
+  }, [skinType, metrics]);
 
   // PhotoMetricOverlay용 메트릭 변환 (경쟁사 스타일 8개 지표)
   const photoMetrics = useMemo((): MetricScore[] => {
@@ -483,45 +525,6 @@ export default function AnalysisResult({
             </p>
             <p className="text-sm text-muted-foreground mb-4">{easySkinTip.easyExplanation}</p>
 
-            {/* 루틴 가이드 */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {/* 아침 루틴 */}
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Sun className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                    아침
-                  </span>
-                </div>
-                <ol className="text-xs text-amber-700 dark:text-amber-300 space-y-1">
-                  {easySkinTip.morningRoutine.map((step, i) => (
-                    <li key={i} className="flex items-start gap-1">
-                      <span className="text-amber-500">{i + 1}.</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              {/* 저녁 루틴 */}
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Moon className="w-4 h-4 text-indigo-500" />
-                  <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
-                    저녁
-                  </span>
-                </div>
-                <ol className="text-xs text-indigo-700 dark:text-indigo-300 space-y-1">
-                  {easySkinTip.eveningRoutine.map((step, i) => (
-                    <li key={i} className="flex items-start gap-1">
-                      <span className="text-indigo-500">{i + 1}.</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-
             {/* 제품 팁 & 주의할 점 */}
             <div className="space-y-2">
               <div className="flex items-start gap-2 p-2.5 bg-green-50 dark:bg-green-950/30 rounded-lg">
@@ -540,6 +543,87 @@ export default function AnalysisResult({
           </section>
         </FadeInUp>
       )}
+
+      {/* 정본 데일리 루틴 — generateRoutine 엔진(홈 오늘의 루틴·케어 탭과 동일 기준) */}
+      <FadeInUp delay={4}>
+        <section
+          className="bg-card rounded-xl border p-6"
+          data-testid="skin-daily-routine"
+          aria-label="나에게 맞는 데일리 루틴"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-5 h-5 text-pink-500" />
+            <h2 className="text-lg font-semibold text-foreground">나에게 맞는 데일리 루틴</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            홈의 &lsquo;오늘의 루틴&rsquo;과 같은 기준으로 만들어져요. 매일 이 순서대로만 발라도
+            충분해요.
+          </p>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* 아침 루틴 */}
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+              <div className="flex items-center gap-1.5 mb-3">
+                <Sun className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  아침 (세안 후 바르는 순서)
+                </span>
+              </div>
+              <ol className="space-y-2">
+                {dailyRoutine.morning.routine.slice(0, 5).map((step, i) => (
+                  <li key={`${step.category}-${i}`} className="flex items-start gap-2">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center text-xs font-medium">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{step.name}</p>
+                      <p className="text-xs text-muted-foreground">{step.purpose}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* 저녁 루틴 */}
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+              <div className="flex items-center gap-1.5 mb-3">
+                <Moon className="w-4 h-4 text-indigo-500" />
+                <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
+                  저녁 (세안 후 바르는 순서)
+                </span>
+              </div>
+              <ol className="space-y-2">
+                {dailyRoutine.evening.routine.slice(0, 5).map((step, i) => (
+                  <li key={`${step.category}-${i}`} className="flex items-start gap-2">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-medium">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{step.name}</p>
+                      <p className="text-xs text-muted-foreground">{step.purpose}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          {/* 개인화 노트 */}
+          <p className="mt-3 text-xs text-muted-foreground">
+            {dailyRoutine.morning.personalizationNote}
+          </p>
+
+          {/* 전체 루틴 보기 (선택 스텝·제품 추천 포함 심화 페이지) */}
+          <Link
+            href="/analysis/skin/routine"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-pink-600 dark:text-pink-400 hover:underline"
+            data-testid="skin-routine-full-link"
+          >
+            전체 루틴 보기
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </section>
+      </FadeInUp>
 
       {/* 추천 성분 (가변 보상) */}
       <FadeInUp delay={4}>
@@ -628,29 +712,7 @@ export default function AnalysisResult({
           <section className="bg-card rounded-xl border p-6">
             <div className="flex items-center gap-2 mb-4">
               <ShoppingBag className="w-5 h-5 text-pink-500" />
-              <h2 className="text-lg font-semibold text-foreground">맞춤 루틴</h2>
-            </div>
-
-            {/* 아침/저녁 루틴 */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
-                <Sun className="w-4 h-4 text-amber-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">아침 루틴</p>
-                  <p className="text-sm text-muted-foreground">
-                    {productRecommendations.skincareRoutine.morning}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
-                <Moon className="w-4 h-4 text-indigo-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">저녁 루틴</p>
-                  <p className="text-sm text-muted-foreground">
-                    {productRecommendations.skincareRoutine.evening}
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-lg font-semibold text-foreground">제품 &amp; 케어 가이드</h2>
             </div>
 
             {/* 단계별 제품 추천 */}

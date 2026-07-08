@@ -29,8 +29,6 @@ import {
   HelpCircle,
   MessageSquare,
   LogOut,
-  Palette,
-  FlaskConical,
   User,
   Flame,
   QrCode,
@@ -45,7 +43,6 @@ import { BadgeCard } from '@/components/gamification';
 import { QRCodeDisplay } from '@/components/common/QRCodeDisplay';
 import { LevelBadgeFilled, LevelProgress as NewLevelProgress } from '@/components/common';
 import { getUserLevel, calculateUserLevelState, type UserLevelState } from '@/lib/levels';
-import { getBodyShapeLabel } from '@/lib/body';
 import {
   getUserLevelInfo,
   getUserBadges,
@@ -53,9 +50,11 @@ import {
   type UserBadge,
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
-import { WellnessScoreRing, MyInfoSummaryCard } from '@/components/profile';
+import { WellnessScoreRing, MyInfoSummaryCard, ProfileCardGrid } from '@/components/profile';
 import { BeforeAfterSection } from '@/components/profile/BeforeAfterSection';
 import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
+import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import { useProfilePersona } from '@/hooks/useProfilePersona';
 
 // 프로필 데이터 타입
 interface ProfileData {
@@ -65,11 +64,8 @@ interface ProfileData {
   challengeStats: ChallengeStats;
   workoutStreak: { current: number; longest: number } | null;
   nutritionStreak: { current: number; longest: number } | null;
-  // 분석 결과
+  // 분석 결과 (5축 요약은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 — ADR-111)
   wellnessScore: number;
-  personalColor: string | null;
-  skinType: string | null;
-  bodyType: string | null;
   // 소셜
   friendCount: number;
   friendRequests: number;
@@ -83,6 +79,9 @@ export default function ProfilePage() {
   const locale = useLocale();
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
+  // 5축 분석 요약 = 홈과 동일한 정본(ProfileCardGrid). 프로필 페이지도 같은 소스를 재사용 (ADR-111)
+  const { analyses } = useAnalysisStatus();
+  const personaOneLine = useProfilePersona();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -102,9 +101,6 @@ export default function ProfilePage() {
           levelInfo,
           userBadges,
           challengeStats,
-          personalColorResult,
-          skinResult,
-          bodyResult,
           friendsResult,
           friendRequestsResult,
           leaderboardResult,
@@ -113,30 +109,7 @@ export default function ProfilePage() {
           getUserLevelInfo(supabase, user.id),
           getUserBadges(supabase, user.id),
           getUserChallengeStats(supabase, user.id),
-          // 퍼스널 컬러 분석 결과 — 정본 컬럼: season("Spring" 등)/undertone("Warm" 등)
-          supabase
-            .from('personal_color_assessments')
-            .select('season, undertone')
-            .eq('clerk_user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single(),
-          // 피부 분석 결과
-          supabase
-            .from('skin_analyses')
-            .select('skin_type, sensitivity_level')
-            .eq('clerk_user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single(),
-          // 체형 분석 결과
-          supabase
-            .from('body_analyses')
-            .select('body_type')
-            .eq('clerk_user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single(),
+          // 5축 분석 요약(퍼스널컬러·피부·체형 등)은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 (ADR-111)
           // 친구 수 (accepted 상태)
           supabase
             .from('friendships')
@@ -198,56 +171,6 @@ export default function ProfilePage() {
           .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
           .slice(0, 3);
 
-        // 한국어 라벨 매핑
-        const SEASON_LABELS: Record<string, string> = {
-          spring: '봄',
-          summer: '여름',
-          autumn: '가을',
-          winter: '겨울',
-        };
-        const TONE_LABELS: Record<string, string> = {
-          warm: '웜톤',
-          cool: '쿨톤',
-          neutral: '뉴트럴',
-        };
-        const SKIN_TYPE_LABELS: Record<string, string> = {
-          oily: '지성',
-          dry: '건성',
-          combination: '복합성',
-          normal: '중성',
-          sensitive: '민감성',
-        };
-        const SENSITIVITY_LABELS: Record<string, string> = {
-          high: '고민감',
-          medium: '중민감',
-          low: '저민감',
-        };
-
-        // 퍼스널 컬러 포맷팅 — DB 값은 "Spring"/"Warm" 등 대문자 시작이라 소문자로 정규화 후 라벨 매핑
-        const pcData = personalColorResult.data;
-        const pcSeasonLabel = pcData?.season
-          ? (SEASON_LABELS[String(pcData.season).toLowerCase()] ?? pcData.season)
-          : null;
-        const pcToneLabel = pcData?.undertone
-          ? (TONE_LABELS[String(pcData.undertone).toLowerCase()] ?? pcData.undertone)
-          : null;
-        const personalColor = pcSeasonLabel
-          ? [pcSeasonLabel, pcToneLabel].filter(Boolean).join(' ')
-          : null;
-
-        // 피부 타입 포맷팅
-        const skinData = skinResult.data;
-        const skinSuffix = skinData?.sensitivity_level
-          ? '/' + (SENSITIVITY_LABELS[skinData.sensitivity_level] ?? skinData.sensitivity_level)
-          : '';
-        const skinType = skinData
-          ? `${SKIN_TYPE_LABELS[skinData.skin_type] ?? skinData.skin_type}${skinSuffix}`
-          : null;
-
-        // 체형 포맷팅 — lib/body 공용 헬퍼로 일원화 (S/W/N 골격 + body-v2 5형)
-        const bodyData = bodyResult.data;
-        const bodyType = bodyData?.body_type ? getBodyShapeLabel(bodyData.body_type) : null;
-
         // 리더보드 순위 변화
         const leaderData = leaderboardResult.data;
         const weeklyRank = leaderData?.rank ?? null;
@@ -274,9 +197,6 @@ export default function ProfilePage() {
             : null,
           // 분석 결과
           wellnessScore: wellnessResult.data?.total_score ?? 0,
-          personalColor,
-          skinType,
-          bodyType,
           // 소셜
           friendCount: friendsResult.count ?? 0,
           friendRequests: friendRequestsResult.count ?? 0,
@@ -346,9 +266,6 @@ export default function ProfilePage() {
 
   // profileData에서 값 추출 (없으면 기본값)
   const wellnessScore = profileData?.wellnessScore ?? 0;
-  const personalColor = profileData?.personalColor ?? '미분석';
-  const skinType = profileData?.skinType ?? '미분석';
-  const bodyType = profileData?.bodyType ?? '미분석';
   const friendCount = profileData?.friendCount ?? 0;
   const friendRequests = profileData?.friendRequests ?? 0;
   const weeklyRank = profileData?.weeklyRank;
@@ -483,33 +400,9 @@ export default function ProfilePage() {
               <MyInfoSummaryCard />
             </FadeInUp>
 
-            {/* 내 분석 결과 */}
+            {/* 내 분석 결과 = 홈과 동일한 정본 카드(5축 채워지는 프로필, ADR-111) */}
             <FadeInUp delay={2}>
-              <section className="bg-card rounded-2xl border p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-foreground font-semibold">내 분석 결과</h3>
-                  <Link href="/analysis" className="text-primary text-xs hover:underline">
-                    분석 다시하기
-                  </Link>
-                </div>
-                <div className="space-y-2">
-                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                    <Palette className="h-4 w-4 text-rose-500" />
-                    <span className="text-muted-foreground text-sm">퍼스널 컬러:</span>
-                    <span className="text-sm font-medium">{personalColor}</span>
-                  </div>
-                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                    <FlaskConical className="h-4 w-4 text-pink-500" />
-                    <span className="text-muted-foreground text-sm">피부:</span>
-                    <span className="text-sm font-medium">{skinType}</span>
-                  </div>
-                  <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-2">
-                    <User className="h-4 w-4 text-blue-500" />
-                    <span className="text-muted-foreground text-sm">체형:</span>
-                    <span className="text-sm font-medium">{bodyType}</span>
-                  </div>
-                </div>
-              </section>
+              <ProfileCardGrid analyses={analyses} personaOneLine={personaOneLine} />
             </FadeInUp>
 
             {/* Before/After 비교 */}

@@ -17,10 +17,10 @@ import { Button } from '@/components/ui/button';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 import { useProfilePersona } from '@/hooks/useProfilePersona';
 import { useOnboardingSync } from '@/hooks/useOnboardingSync';
+import { ProfileCardGrid } from '@/components/profile';
 import HomeStateNew from './HomeStateNew';
 import HomeStateGrowing from './HomeStateGrowing';
 import HomeStateActive from './HomeStateActive';
-import ProfileCardGrid from './ProfileCardGrid';
 
 // State 분기 함수 (테스트 가능하도록 export)
 export type HomeState = 'new' | 'growing' | 'active';

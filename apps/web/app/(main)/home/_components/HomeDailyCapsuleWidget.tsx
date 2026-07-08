@@ -213,7 +213,7 @@ export default function HomeDailyCapsuleWidget() {
         <Sparkles className="w-5 h-5 text-violet-400 mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">{t('capsuleEmptyState')}</p>
         <Link
-          href="/analysis"
+          href="/analysis/integrated"
           className="mt-3 inline-flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
         >
           {t('capsuleEmptyCta')}

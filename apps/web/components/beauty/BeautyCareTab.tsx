@@ -169,11 +169,11 @@ export default function BeautyCareTab({
             <p className="text-sm text-muted-foreground">
               내 피부에 맞지 않는 성분이 포함된 제품을 알려드려요
             </p>
-            {/* 최신 피부 분석 결과의 성분 경고 섹션으로 딥링크 (id 없으면 분석 허브로) */}
+            {/* 최신 피부 분석 결과의 성분 경고 섹션으로 딥링크 (id 없으면 피부 분석 시작으로) */}
             <button
               onClick={() =>
                 router.push(
-                  skinAnalysisId ? `/analysis/skin/result/${skinAnalysisId}` : '/analysis'
+                  skinAnalysisId ? `/analysis/skin/result/${skinAnalysisId}` : '/analysis/skin'
                 )
               }
               className="mt-3 text-sm text-orange-700 dark:text-orange-400 font-medium hover:underline min-h-[44px] inline-flex items-center"

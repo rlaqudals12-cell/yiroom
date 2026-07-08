@@ -37,11 +37,9 @@ import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ResultPageInsights } from '@/components/insights';
-import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { MAKEUP_STYLES, MAKEUP_CONCERNS } from '@/lib/analysis/makeup';
-import type { PersonalColorSeason } from '@/types/product';
 import {
   type DbMakeupAnalysis,
   type MakeupResultView,
@@ -471,19 +469,6 @@ export default function MakeupAnalysisResultPage() {
             </TabsContent>
           </Tabs>
         )}
-
-        {/* 맞춤 메이크업 제품 추천 */}
-        {result && (
-          <RecommendedProducts
-            analysisType="makeup"
-            analysisResult={{
-              undertone: result.undertone,
-              faceShape: result.faceShape,
-              seasonType: result.personalColorConnection?.season as PersonalColorSeason | undefined,
-            }}
-            className="mt-6"
-          />
-        )}
       </div>
 
       {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
@@ -519,7 +504,11 @@ export default function MakeupAnalysisResultPage() {
         <ContextLinkingCard currentModule="makeup" />
         <ResultPageInsights currentModule="makeup" />
         <div className="mt-6">
-          <AnalysisMatchedProducts analysisType="makeup" />
+          <AnalysisMatchedProducts
+            analysisType="makeup"
+            undertone={result?.undertone}
+            personalColorSeason={result?.personalColorConnection?.season}
+          />
         </div>
         <div className="mt-4">
           <ProgressiveProfilePrompt moduleId="makeup" />

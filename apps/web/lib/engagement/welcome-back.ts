@@ -72,9 +72,9 @@ export function generateWelcomeBackMessage(
         title: `${absentDays}일 만에 돌아오셨군요!`,
         description: '오랜만에 내 상태를 다시 확인해보세요',
         absentDays,
-        // 배너가 홈에 표시되므로 /dashboard(자기 자신) 대신 분석 허브로 유도
+        // 배너가 홈에 표시되므로 /dashboard(자기 자신) 대신 통합 분석으로 유도 (ADR-111)
         ctaText: '다시 분석하기',
-        ctaHref: '/analysis',
+        ctaHref: '/analysis/integrated',
       };
 
     case 'long':

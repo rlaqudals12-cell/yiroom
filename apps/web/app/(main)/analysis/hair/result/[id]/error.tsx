@@ -28,9 +28,9 @@ export default function HairResultError({ error, reset }: ErrorProps) {
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" asChild>
-              <Link href="/analysis">
+              <Link href="/home">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                분석 목록으로
+                홈으로
               </Link>
             </Button>
             <Button onClick={reset}>

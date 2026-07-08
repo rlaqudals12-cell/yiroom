@@ -156,7 +156,7 @@ export default function BadgesPage() {
               분석을 진행하면 배지를 획득할 수 있어요!
             </p>
             <Link
-              href="/analysis"
+              href="/analysis/integrated"
               className="inline-block mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
             >
               분석 시작하기

@@ -207,10 +207,10 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
             아직 완료하지 않은 분석이 있다면 추가해보세요
           </p>
           <Link
-            href="/analysis"
+            href="/analysis/integrated"
             className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
           >
-            분석 허브 보기
+            분석하러 가기
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

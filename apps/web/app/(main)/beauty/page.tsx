@@ -287,7 +287,7 @@ export default function BeautyPage() {
               </div>
               {/* B2: 터치 타겟 44px+ */}
               <button
-                onClick={() => router.push('/analysis')}
+                onClick={() => router.push('/analysis/integrated')}
                 className="text-sm text-primary hover:underline px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-primary/5 transition-colors"
                 aria-label="내 분석 결과 보기"
               >
