@@ -141,6 +141,10 @@ export {
   syncRoutineToCapsule,
 } from './daily';
 
+// 코디 솔루션 색 스와치 (2026-07-08: 색상명 텍스트 → 색 견본 칩)
+export { extractSolutionColors } from './solution-colors';
+export type { SolutionColorChip } from './solution-colors';
+
 // Curate 실물 연결 (2026-07-08: 도메인 캡슐 아이템에 실제 제품 부착)
 export { attachCurateProducts } from './curate-products';
 export type { CurateSolutionProduct, CurateTargetItem } from './curate-products';

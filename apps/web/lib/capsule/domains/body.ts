@@ -1,7 +1,8 @@
 /**
  * Body 도메인 캡슐 엔진
  *
- * CapsuleEngine<BodyPlan> — 체형 기반 자세교정/관리 큐레이션
+ * CapsuleEngine<BodyPlan> — 체형 이해를 스타일링 행동으로 잇는 큐레이션
+ * (ADR-098: 자세교정/운동류는 off-thesis — 표시명은 스타일링 행동만 사용)
  * @see docs/adr/ADR-069-capsule-ecosystem-architecture.md
  */
 
@@ -16,10 +17,10 @@ import {
 import type { BodyType } from '@/lib/body';
 
 const OPTIMAL_N: Record<number, number> = {
-  1: 2, // 자세교정 + 스트레칭
-  2: 3, // + 근력 운동
-  3: 3, // 체형 관리는 3개면 충분
-  4: 4, // + 생활습관
+  1: 2, // 실루엣 점검 + 전신 밸런스 체크
+  2: 3, // + 포인트 아이템
+  3: 3, // 체형 스타일링은 3개면 충분
+  4: 4, // + 코디 기록 습관
 };
 
 // 접근법 간 시너지 (함께 하면 효과 높은 조합)
@@ -57,12 +58,17 @@ export const bodyEngine: CapsuleEngine<BodyPlan> = {
 
     // 카테고리별 루틴명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
     // (bodyShape 원문은 'pear' 등 영문 코드라 이름에 직접 노출하지 않음)
+    //
+    // ADR-098: 자세교정·스트레칭·근력은 시각 정체성 5축 밖(운동/의료 인접, W-1 숨김 영역)이라
+    // 사용자 표면에서 제거 — 체형 축의 역할("이해와 표현")에 맞는 스타일링 행동으로 교체
+    // (2026-07-08 사용자 피드백: 눌러도 방법이 없고, off-thesis 항목이 새어나옴).
+    // 카테고리 코드(BodyPlan['category'])는 타입 계약이라 유지, 표시명만 스타일링 행동.
     const CATEGORY_NAMES: Record<BodyPlan['category'], string> = {
-      'posture-correction': '체형 맞춤 자세 교정',
-      'stretching-routine': '데일리 스트레칭 루틴',
-      'strength-plan': '밸런스 근력 플랜',
-      'body-alignment': '바디 얼라인먼트 체크',
-      'lifestyle-habit': '생활 자세 습관 개선',
+      'posture-correction': '오늘 입을 옷 실루엣 점검',
+      'stretching-routine': '거울 앞 전신 밸런스 체크',
+      'strength-plan': '체형 강점 살리는 포인트 아이템',
+      'body-alignment': '상하의 비율(3:7) 체크',
+      'lifestyle-habit': '오늘의 코디 기록 남기기',
     };
 
     return Array(maxItems)

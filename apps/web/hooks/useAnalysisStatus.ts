@@ -85,8 +85,17 @@ function getSeasonLabel(season: string): string {
 }
 
 // 체형 라벨은 lib/body 공용 헬퍼로 일원화 (S/W/N 골격 + body-v2 5형 + 레거시).
+// 초보자는 "웨이브"가 골격 용어인 걸 모르므로 짧은 풀이를 병기한다.
+const BODY_TYPE_DESC: Record<string, string> = {
+  스트레이트: '직선형',
+  웨이브: '곡선형',
+  내추럴: '골격형',
+};
+
 function getBodyTypeLabel(bodyType: string): string {
-  return getBodyShapeLabel(bodyType);
+  const label = getBodyShapeLabel(bodyType);
+  const desc = BODY_TYPE_DESC[label];
+  return desc ? `${label} · ${desc}` : label;
 }
 
 function getHairTypeLabel(hairType: string): string {

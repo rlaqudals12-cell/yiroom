@@ -35,7 +35,8 @@ const DAILY_EXCLUDED_DOMAINS: ReadonlySet<string> = new Set(['personal-color', '
 
 // 도메인별 데일리 아이템 수 — 실제 루틴 모양에 맞춤
 // fashion 1 = 코디는 원자적 행동 1개 / hair 2 = 샴푸·컨디셔너 (매일 트리트먼트는 과함)
-// body 2 = 자세 교정·스트레칭 ("근력 플랜"은 행동이 아니라 계획이라 제외)
+// body 2 = 실루엣 점검·전신 밸런스 체크 (ADR-098: 자세교정/스트레칭류 off-thesis 제거,
+// 스타일링 행동으로 교체 — lib/capsule/domains/body.ts CATEGORY_NAMES 참조)
 const DAILY_MAX_ITEMS: Record<string, number> = { fashion: 1, hair: 2, body: 2 };
 const DAILY_MAX_ITEMS_DEFAULT = 3;
 
@@ -428,7 +429,8 @@ function buildSkinRoutineItems(profile: {
     const ingredients = profile.skin.recommendedIngredients ?? [];
 
     adjustedRoutine.forEach((step, index) => {
-      const tip = step.tips?.[0];
+      // 초보자용 하우투: 팁 2개까지 노출 (제형 선택 + 바르는 방법이 함께 담기도록)
+      const tip = step.tips?.slice(0, 2).filter(Boolean).join(' · ') || undefined;
       const ingredientHint =
         (step.category === 'cream' || step.category === 'serum' || step.category === 'toner') &&
         ingredients.length > 0
@@ -453,56 +455,128 @@ function buildSkinRoutineItems(profile: {
   return items;
 }
 
+// =============================================================================
+// 스텝 하우투 (초보자용 "어떻게") — 2026-07-08 사용자 피드백: 항목을 눌러도 방법이 없음.
+// 개인 진단을 지어내는 게 아니라 일반 방법 지식이라 정직성 원칙과 충돌하지 않는다.
+// 개인 데이터 기반 부분(파운데이션 호수·립 컬러)은 여전히 데이터 없으면 생략.
+// =============================================================================
+
+const MAKEUP_HOWTO: Record<string, string> = {
+  base: '얼굴 중앙(볼·이마)부터 바깥쪽으로 얇게 펴 바르기',
+  lip: '입술 안쪽부터 바깥으로 톡톡 두드려 펴 바르면 자연스러운 그라데이션',
+  eye: '밝은 색을 눈두덩 전체에 펴고, 진한 색은 눈꼬리 쪽 1/3에만 얇게',
+  cheek: '웃을 때 볼록 올라오는 볼 위치에 원을 그리듯 소량씩 겹쳐 바르기',
+  brow: '눈썹 앞머리는 비우고 꼬리 쪽만 결 방향대로 채우기',
+  setting: '얼굴에서 20cm 이상 띄우고 고루 분사해 지속력 높이기',
+};
+
+const HAIR_HOWTO: Record<string, string> = {
+  shampoo: '미지근한 물로 충분히 적신 뒤, 손에서 거품 내 두피를 손끝으로 마사지 (손톱 사용 금지)',
+  conditioner: '두피는 피하고 모발 중간부터 끝에만 바른 뒤 2-3분 후 헹구기',
+  treatment: '샴푸 후 물기를 가볍게 짜고 모발 끝 위주로 바른 뒤 5-10분 후 헹구기',
+  'scalp-care': '샴푸 전 두피에 나눠 바르고 손끝으로 원을 그리며 부드럽게 마사지',
+  styling: '드라이는 뿌리부터 말리고, 마지막에 찬바람으로 모양 고정',
+  'hair-oil': '타월 드라이 후 반쯤 마른 상태에서 모발 끝에 1-2방울만 가볍게',
+};
+
+// ADR-098: body 축은 "이해와 표현" — 스타일링 행동의 실행 방법만 안내 (자세교정/운동 지도 아님)
+const BODY_HOWTO: Record<string, string> = {
+  'posture-correction': '상의 어깨선이 어깨 끝과 맞는지, 허리 라인이 사는 핏인지 거울로 확인',
+  'stretching-routine': '전신 거울 앞에서 상·하의 길이 비율과 색 조합이 어색하지 않은지 1분 체크',
+  'strength-plan': '내 체형 강점을 드러내는 아이템 하나를 오늘 코디에 넣어보기',
+  'body-alignment': '상의는 짧게, 하의는 길게 — 전체 비율이 3:7에 가까운지 확인',
+  'lifestyle-habit': '오늘 잘 어울린 조합을 사진으로 남겨 나만의 코디 기록 만들기',
+};
+
+/** buildItemSolution이 참조하는 프로필 조각 */
+interface SolutionProfile {
+  personalColor?: { season?: string; paletteNames?: string[] };
+  skin?: { foundation?: string };
+  body?: { styleTips?: { tops?: string[]; bottoms?: string[]; avoid?: string[] } };
+}
+
+/** 메이크업: "무엇으로(내 진단 컬러)" + "어떻게(하우투)" */
+function buildMakeupSolution(
+  category: string | undefined,
+  profile: SolutionProfile
+): string | undefined {
+  const howto = category ? MAKEUP_HOWTO[category] : undefined;
+
+  if (category === 'base') {
+    const foundation = profile.skin?.foundation
+      ? `파운데이션: ${profile.skin.foundation}`
+      : undefined;
+    return [foundation, howto].filter(Boolean).join(' · ') || undefined;
+  }
+
+  if (category === 'lip') {
+    // 립은 의류 팔레트(best_colors)가 아니라 시즌별 립 정본에서 —
+    // "세레니티 블루 립" 같은 오적용 방지 (2026-07-07). 제품 예시까지 제공.
+    const season = (profile.personalColor?.season ?? '').toLowerCase() as SeasonType;
+    const lip = LIPSTICK_RECOMMENDATIONS[season]?.[0];
+    let color: string | undefined;
+    if (lip) {
+      const example = lip.oliveyoungAlt || lip.brandExample;
+      color = example ? `${lip.colorName} (예: ${example})` : lip.colorName;
+    }
+    return [color, howto].filter(Boolean).join(' · ') || undefined;
+  }
+
+  // cheek 등: 시즌별 정본 컬러 데이터가 없어 색은 미조립(지어내지 않음), 방법만 안내
+  return howto;
+}
+
+/** 체형: 스타일링 행동 하우투 + "피하면 좋은 핏"(내 데이터) 배선 */
+function buildBodySolution(
+  category: string | undefined,
+  profile: SolutionProfile
+): string | undefined {
+  const howto = category ? BODY_HOWTO[category] : undefined;
+  const avoid = profile.body?.styleTips?.avoid?.[0];
+  if (category === 'posture-correction' && howto && avoid) {
+    return `${howto} · 피하면 좋은 핏: ${avoid}`;
+  }
+  return howto;
+}
+
+/** 코디: 베스트컬러 톤 + 체형 스타일 추천 — 데이터 없으면 생략 */
+function buildFashionSolution(profile: SolutionProfile): string | undefined {
+  const names = profile.personalColor?.paletteNames ?? [];
+  const top = profile.body?.styleTips?.tops?.[0];
+  const bottom = profile.body?.styleTips?.bottoms?.[0];
+  const tone = names[0] ? `${names[0]} 톤 · ` : '';
+  if (top && bottom) return `${tone}${top} + ${bottom}`;
+  if (names.length >= 2) return `${names[0]}·${names[1]} 톤 조합 추천`;
+  return undefined;
+}
+
 /**
- * 아이템 실행 솔루션 조립 — 내 분석 데이터 → "무엇으로/어떤 색으로" 한 줄
+ * 아이템 실행 솔루션 조립 — "무엇으로(내 진단)" + "어떻게(하우투)" 한 줄
  *
- * 새 콘텐츠 생성 없이 저장된 진단만 배선:
- * - 메이크업 base = 파운데이션 진단(foundation_recommendation)
- * - 메이크업 lip/cheek = 베스트컬러 이름(best_colors.name)
+ * 저장된 진단 배선 + 일반 하우투:
+ * - 메이크업 base = 파운데이션 진단(foundation_recommendation) + 바르는 방법
+ * - 메이크업 lip = 시즌별 립 정본 컬러 + 바르는 방법
  * - 코디 = 베스트컬러 톤 + 체형 스타일 추천(style_recommendations.tops/bottoms)
- * 데이터가 없으면 undefined — 없는 솔루션을 지어내지 않는다 (정직성).
- * hair/body 아이템은 현재 대응 데이터가 부실해 미조립 (hair_analyses 확충 시 추가).
+ * - 헤어/체형 = 카테고리별 실행 방법 (HAIR_HOWTO/BODY_HOWTO)
+ * 개인 데이터가 없는 부분은 생략 — 없는 진단을 지어내지 않는다 (정직성).
  */
 function buildItemSolution(
   domainId: string,
   category: string | undefined,
-  profile: {
-    personalColor?: { season?: string; paletteNames?: string[] };
-    skin?: { foundation?: string };
-    body?: { styleTips?: { tops?: string[]; bottoms?: string[]; avoid?: string[] } };
-  }
+  profile: SolutionProfile
 ): string | undefined {
-  const names = profile.personalColor?.paletteNames ?? [];
-
-  if (domainId === 'makeup') {
-    switch (category) {
-      case 'base':
-        return profile.skin?.foundation ? `파운데이션: ${profile.skin.foundation}` : undefined;
-      case 'lip': {
-        // 립은 의류 팔레트(best_colors)가 아니라 시즌별 립 정본에서 —
-        // "세레니티 블루 립" 같은 오적용 방지 (2026-07-07). 제품 예시까지 제공.
-        const season = (profile.personalColor?.season ?? '').toLowerCase() as SeasonType;
-        const lip = LIPSTICK_RECOMMENDATIONS[season]?.[0];
-        if (!lip) return undefined;
-        const example = lip.oliveyoungAlt || lip.brandExample;
-        return example ? `${lip.colorName} (예: ${example})` : lip.colorName;
-      }
-      // cheek: 시즌별 블러셔 정본 데이터가 없어 미조립 — 지어내지 않음
-      default:
-        return undefined;
-    }
+  switch (domainId) {
+    case 'makeup':
+      return buildMakeupSolution(category, profile);
+    case 'hair':
+      return category ? HAIR_HOWTO[category] : undefined;
+    case 'body':
+      return buildBodySolution(category, profile);
+    case 'fashion':
+      return buildFashionSolution(profile);
+    default:
+      return undefined;
   }
-
-  if (domainId === 'fashion') {
-    const top = profile.body?.styleTips?.tops?.[0];
-    const bottom = profile.body?.styleTips?.bottoms?.[0];
-    const tone = names[0] ? `${names[0]} 톤 · ` : '';
-    if (top && bottom) return `${tone}${top} + ${bottom}`;
-    if (names.length >= 2) return `${names[0]}·${names[1]} 톤 조합 추천`;
-    return undefined;
-  }
-
-  return undefined;
 }
 
 /**
@@ -534,20 +608,21 @@ function deriveSkinCondition(scores: Record<string, number>): TodaySkinCondition
  * 도메인/카테고리 → 실행 시간대 매핑
  *
  * 사용자 멘탈 모델은 "오늘 할 일 N개"가 아니라 "아침 루틴 / 저녁 루틴".
- * - 아침: 스킨케어 준비(보습·자외선차단)·메이크업·코디, 헤어 스타일링
+ * - 아침: 스킨케어 준비(보습·자외선차단)·메이크업·코디, 체형 실루엣 점검, 헤어 스타일링
  * - 저녁: 스킨케어 세정/집중(클렌징·토너·세럼·아이크림), 헤어 케어(샴푸·컨디셔너)
- * - 언제든: 체형 루틴(자세·스트레칭)
+ * (body는 "옷 입기 전 점검" 행동이라 아침 — '언제든' 섹션의 방치 항목이던 문제 해소)
  */
 function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeOfDay'] {
   switch (domainId) {
     // skin은 buildSkinRoutineItems에서 timeOfDay를 명시적으로 부여 (이 함수 미경유)
     case 'makeup':
     case 'fashion':
+    case 'body':
       return 'morning';
     case 'hair':
       return category === 'styling' ? 'morning' : 'evening';
     default:
-      // body 등 시간대 무관 루틴
+      // 시간대 무관 루틴
       return 'anytime';
   }
 }
@@ -561,6 +636,9 @@ function generateReason(domainId: string, context: DailyContext, category?: stri
   const categoryReasons: Record<string, string> = {
     shampoo: '두피 타입에 맞춘 세정이 모발 건강의 기본이에요',
     conditioner: '모발 끝 손상을 막아줘요',
+    // body — ADR-098: 스타일링 행동 (자세교정/운동류 문구 금지)
+    'posture-correction': '체형 분석 결과를 오늘 옷차림에 적용하는 습관이에요',
+    'stretching-routine': '입은 모습을 객관적으로 보면 코디 감각이 늘어요',
   };
   if (category && categoryReasons[category]) return categoryReasons[category];
 
@@ -595,7 +673,7 @@ function generateDomainReason(domainId: string, context: DailyContext): string {
     'personal-color': '내 시즌 팔레트 기준이에요',
     makeup: '퍼스널컬러에 어울리는 톤이에요',
     hair: '얼굴형·모발 타입에 맞춘 케어예요',
-    body: '체형 밸런스를 위한 루틴이에요',
+    body: '체형 분석 결과를 스타일링에 활용해요',
   };
 
   return (

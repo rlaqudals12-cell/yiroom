@@ -65,6 +65,7 @@ const AnalysisMatchedProducts = dynamic(
 );
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useExpertMode } from '@/hooks/useExpertMode';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
@@ -91,6 +92,9 @@ const ConsultantCTA = dynamic(
   { ssr: false }
 );
 
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const RESULT_TABS = ['basic', 'evidence', 'styling', 'draping'] as const;
+
 export default function BodyAnalysisResultPage() {
   const t = useTranslations('analysis');
   const params = useParams();
@@ -106,7 +110,8 @@ export default function BodyAnalysisResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('basic');
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(RESULT_TABS, 'basic');
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
   const [analyzedAt, setAnalyzedAt] = useState<string | null>(null);

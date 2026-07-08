@@ -145,10 +145,19 @@ function buildSkincareCuration(skin: SkinAxisData, sessionId: string): CurationI
     focus = '부위별 밸런스';
     query = 'combination';
   }
+  // 원시 영문 타입("normal")·전문용어("바이탈리티") 노출 금지 — 초보자 눈높이
+  const SKIN_TYPE_KO: Record<string, string> = {
+    dry: '건성',
+    oily: '지성',
+    combination: '복합성',
+    normal: '중성',
+    sensitive: '민감성',
+  };
+  const skinTypeKo = SKIN_TYPE_KO[skinType] ?? skin.skinType ?? '내';
   return {
     category: 'skincare',
     title: `${focus} 스킨케어 루틴`,
-    reason: `${skin.skinType ?? '당신'} 피부 바이탈리티 ${skin.overallScore ?? 70}점에 맞춘 추천이에요.`,
+    reason: `${skinTypeKo} 피부(컨디션 점수 ${skin.overallScore ?? 70}점)에 맞춘 추천이에요.`,
     href: buildBeautyUrl({ category: 'skincare', focus: query }, sessionId),
     cta: '스킨케어 보러가기',
   };
@@ -171,6 +180,13 @@ function buildOutfitCuration(
     toneLabel = toneQuery === 'warm' ? '따뜻한' : '시원한';
   }
 
+  // 초보자 눈높이: 골격 용어에 짧은 풀이 병기 (웨이브가 뭔지 모르는 사용자 기준)
+  const BODY_DESC: Record<string, string> = {
+    스트레이트: '직선이 깔끔한',
+    웨이브: '곡선이 부드러운',
+    내추럴: '골격감이 자연스러운',
+  };
+  const bodyDesc = BODY_DESC[bodyType] ?? '';
   const title = `${bodyType} 체형 × ${toneLabel || '나'} 톤 코디`;
 
   // 왜: 옷장이 비어있으면 `/closet/recommend`가 빈 상태로 떠 사용자 기대 위반 → 옷장 등록으로 우회
@@ -182,7 +198,7 @@ function buildOutfitCuration(
     return {
       category: 'outfit',
       title,
-      reason: '분석 결과에 맞춘 코디를 받으려면 먼저 옷장을 등록해주세요.',
+      reason: `${bodyDesc} ${bodyType} 체형에 맞춘 코디를 받으려면 먼저 갖고 있는 옷을 등록해주세요.`,
       href: `/closet/add?${params.toString()}`,
       cta: '먼저 옷장 등록하기',
     };

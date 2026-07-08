@@ -75,6 +75,7 @@ import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { useTranslations } from 'next-intl';
 import { SeasonEducationModal } from '@/components/analysis/personal-color/SeasonEducationModal';
 import { useExpertMode } from '@/hooks/useExpertMode';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 
@@ -179,6 +180,9 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
   };
 }
 
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const RESULT_TABS = ['basic', 'draping', 'detailed'] as const;
+
 export default function PersonalColorResultPage() {
   const t = useTranslations('analysis');
   const params = useParams();
@@ -193,7 +197,8 @@ export default function PersonalColorResultPage() {
   const [error, setError] = useState<string | null>(null);
   // 일시적 에러(5xx) 시 재시도 가능 여부
   const [isRetryable, setIsRetryable] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('basic');
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(RESULT_TABS, 'basic');
   const [showEducation, setShowEducation] = useState(false);
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);

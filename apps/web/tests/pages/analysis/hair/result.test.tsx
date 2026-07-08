@@ -12,9 +12,11 @@ const mockPush = vi.fn();
 const mockParams = { id: 'hair-123' };
 
 // Mock Next.js
+// useUrlTab(URL 탭 동기화)이 useSearchParams/replace를 사용하므로 함께 mock
 vi.mock('next/navigation', () => ({
   useParams: () => mockParams,
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock Clerk

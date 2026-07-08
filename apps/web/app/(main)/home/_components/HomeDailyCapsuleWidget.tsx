@@ -294,6 +294,12 @@ export default function HomeDailyCapsuleWidget() {
                     {item.reason}
                   </span>
                 )}
+                {/* 실행 가이드("어떤 것으로/어떻게") — 엔진이 이미 생성하지만 위젯에서 숨겨져 있었음 */}
+                {depth === 'full' && item.solution && (
+                  <span className="text-[11px] text-violet-500/90 dark:text-violet-400/90 truncate block">
+                    {item.solution}
+                  </span>
+                )}
                 {/* minimal/none: reason 생략 — 사용자가 이미 이해함 */}
               </div>
             </button>

@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,6 +27,11 @@ import { useUser } from '@clerk/nextjs';
 import type { SeasonType } from '@/lib/mock/personal-color';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지). 운동복 탭은 WELLNESS_PHASE2 게이팅과 동일 조건
+const STYLING_TABS: readonly string[] = FEATURE_FLAGS.WELLNESS_PHASE2
+  ? ['daily', 'workout', 'accessory', 'makeup']
+  : ['daily', 'accessory', 'makeup'];
+
 // 시즌 타입별 한글 라벨
 const SEASON_LABELS: Record<SeasonType, string> = {
   spring: '봄 웜톤',
@@ -42,6 +48,8 @@ export default function StylingPage() {
   const [seasonType, setSeasonType] = useState<SeasonType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(STYLING_TABS, 'daily');
 
   // PC-1 결과 가져오기
   useEffect(() => {
@@ -210,7 +218,7 @@ export default function StylingPage() {
       </Card>
 
       {/* 탭 콘텐츠 — 운동복은 웰니스 Phase 2 보류 기능 (ADR-098, WELLNESS_PHASE2 게이팅) */}
-      <Tabs defaultValue="daily" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList
           className={`grid w-full mb-6 ${FEATURE_FLAGS.WELLNESS_PHASE2 ? 'grid-cols-4' : 'grid-cols-3'}`}
         >

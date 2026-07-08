@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
@@ -19,6 +20,9 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
  */
 
 type SearchTab = 'all' | 'beauty' | 'ingredient';
+
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const SEARCH_TABS = ['all', 'beauty', 'ingredient'] as const satisfies readonly SearchTab[];
 
 const tabs: { id: SearchTab; label: string }[] = [
   { id: 'all', label: '전체' },
@@ -137,7 +141,8 @@ export default function SearchPage() {
   const [query, setQuery] = useState(initialQuery);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<SearchTab>('all');
+  // 탭 상태를 URL ?tab= 과 동기화 — 결과 링크로 나갔다 뒤로가기 해도 탭 유지 (q는 보존)
+  const [activeTab, setActiveTab] = useUrlTab(SEARCH_TABS, 'all');
   const [searches, setSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userSkinType, setUserSkinType] = useState<string | null>(null);

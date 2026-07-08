@@ -79,7 +79,7 @@ function skinActions(data: SkinAxisData): ActionItem[] {
         horizon: 'this_week',
         axis: 'skin',
         title: 'T존 매트 파우더 루틴 시작',
-        why: '유분 조절로 피부 바이탈리티가 올라가요.',
+        why: '이마·코의 유분을 잡아주면 피부 컨디션 점수가 올라가요.',
       },
     ];
   }
@@ -117,34 +117,67 @@ function skinActions(data: SkinAxisData): ActionItem[] {
     {
       horizon: 'this_week',
       axis: 'skin',
-      title: lowScore ? '기본 보습·자외선 차단 루틴 점검' : '현재 루틴 유지 + 주 1회 각질 관리',
-      why: lowScore ? '바이탈리티를 올리기 위한 기초부터.' : '좋은 상태를 유지하는 데 집중.',
+      // 초보자 눈높이: "어떤 루틴인지·어떻게 하는지"까지 구체화 (막연한 지시 금지)
+      title: lowScore
+        ? '기본 보습·자외선 차단부터 점검 (홈의 "오늘의 루틴" 참고)'
+        : '홈의 "오늘의 루틴" 이어가기 + 주 1회 각질 케어',
+      why: lowScore
+        ? '피부 컨디션을 올리는 기초예요. 오늘의 루틴이 내 피부에 맞춘 순서를 알려드려요.'
+        : '각질 케어는 세안 후 저자극 필링 패드(AHA/BHA)를 주 1회 밤에, 다음 날 자외선 차단과 함께 하면 돼요.',
     },
   ];
 }
 
-/** C 성공 시 */
+/** C 성공 시 — 타입별 구체 아이템 제시 (초보자는 "실루엣 아이템"이 뭔지 모른다) */
+const BODY_ITEM_SUGGESTION: Record<string, { item: string; why: string }> = {
+  스트레이트: {
+    item: '어깨선이 깔끔한 셔츠나 테일러드 재킷',
+    why: '직선이 살아있는 스트레이트 체형은 각 잡힌 어깨 라인이 몸의 장점을 살려줘요.',
+  },
+  웨이브: {
+    item: '허리 라인이 들어간 상의나 하이웨이스트 하의',
+    why: '곡선이 부드러운 웨이브 체형은 허리 위치를 높여주면 비율이 살아나요.',
+  },
+  내추럴: {
+    item: '여유 있는 핏의 스트레이트 팬츠나 오버셔츠',
+    why: '골격감이 자연스러운 내추럴 체형은 몸을 조이지 않는 여유 핏이 멋을 만들어요.',
+  },
+};
+
 function bodyActions(data: BodyAxisData): ActionItem[] {
   const type = getBodyShapeLabel(data.bodyType);
+  const suggestion = BODY_ITEM_SUGGESTION[type];
   return [
     {
       horizon: 'this_month',
       axis: 'body',
-      title: `${type} 체형에 맞는 실루엣 아이템 1개 추가`,
-      why: '핏 포인트를 살리는 아이템으로 스타일 완성도가 올라가요.',
+      title: suggestion
+        ? `이번 달 옷 한 벌: ${suggestion.item}`
+        : `${type} 체형에 어울리는 옷 1개 들이기`,
+      why: suggestion?.why ?? '핏 포인트를 살리는 아이템으로 스타일 완성도가 올라가요.',
     },
   ];
 }
 
-/** H 성공 시 */
+/** H 성공 시 — 얼굴형 원시값(영문) 노출 금지 */
+const FACE_SHAPE_KO: Record<string, string> = {
+  oval: '계란형',
+  round: '둥근형',
+  square: '각진형',
+  heart: '하트형',
+  oblong: '긴 얼굴형',
+  diamond: '다이아몬드형',
+};
+
 function hairActions(data: HairAxisData): ActionItem[] {
   const shape = data.faceShape ?? 'oval';
+  const shapeKo = FACE_SHAPE_KO[shape.toLowerCase()] ?? shape;
   return [
     {
       horizon: 'this_month',
       axis: 'hair',
-      title: `${shape}형에 어울리는 컷 시도`,
-      why: '얼굴선과 균형 있는 헤어라인이 인상을 바꿔요.',
+      title: `${shapeKo} 얼굴에 어울리는 컷 시도`,
+      why: '얼굴선과 균형 있는 헤어라인이 인상을 바꿔요. 미용실에서 얼굴형을 말하면 어울리는 컷을 제안받기 쉬워요.',
     },
   ];
 }

@@ -47,6 +47,20 @@ const MODULE_META: Record<AnalysisModule, { label: string; icon: typeof Palette 
   oral_health: { label: '구강건강', icon: SmilePlus },
 };
 
+// 인사이트 카테고리 → 실행 링크 (카드가 정보만 주고 끝나지 않도록 — "그래서 어디서?"에 답)
+const CATEGORY_ACTION: Record<string, { href: string; label: string }> = {
+  color_match: { href: '/beauty', label: '맞는 제품 보러가기' },
+  product_recommendation: { href: '/beauty', label: '추천 제품 보러가기' },
+  skin_care: { href: '/capsule/daily', label: '오늘의 루틴 보러가기' },
+  routine_suggestion: { href: '/capsule/daily', label: '오늘의 루틴 보러가기' },
+  style_tip: { href: '/closet/recommend', label: '코디 추천 받으러 가기' },
+  synergy: { href: '/analysis/integrated', label: '통합 분석 보러가기' },
+};
+
+function getInsightAction(insight: Insight): { href: string; label: string } | null {
+  return CATEGORY_ACTION[insight.category] ?? null;
+}
+
 // 인사이트 카테고리별 아이콘 색상
 function getInsightColor(insight: Insight): string {
   switch (insight.category) {
@@ -281,9 +295,9 @@ function InsightItem({
         <span className="text-xs text-muted-foreground">기반</span>
       </div>
 
-      {/* 확인 버튼 — 사용자가 인사이트를 이해했음을 표시 */}
+      {/* 확인 버튼 + 실행 링크 — 정보로 끝나지 않고 바로 해볼 수 있게 */}
       {depth !== 'minimal' && (
-        <div className="pt-1">
+        <div className="pt-1 flex items-center justify-between gap-2">
           {isConfirmed ? (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-500">
               <Check className="w-3.5 h-3.5" />
@@ -292,12 +306,25 @@ function InsightItem({
           ) : (
             <button
               onClick={onConfirm}
-              className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-600 transition-colors min-h-[44px] min-w-[44px] px-2"
+              className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-600 transition-colors min-h-[44px] px-2"
             >
               <Check className="w-3.5 h-3.5" />
               확인했어요
             </button>
           )}
+          {(() => {
+            const action = getInsightAction(insight);
+            if (!action) return null;
+            return (
+              <Link
+                href={action.href}
+                className="inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors min-h-[44px] px-2"
+              >
+                {action.label}
+                <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            );
+          })()}
         </div>
       )}
     </div>

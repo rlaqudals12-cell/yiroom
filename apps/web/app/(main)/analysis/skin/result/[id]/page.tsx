@@ -108,6 +108,7 @@ import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinCon
 import { ResultPageInsights } from '@/components/insights';
 import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 import { useExpertMode } from '@/hooks/useExpertMode';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 
@@ -345,6 +346,9 @@ interface DbSkinAnalysis {
   created_at: string;
 }
 
+// 탭 목록 — URL ?tab= 동기화 + 스와이프 전환 공용 (뒤로가기 시 탭 유지)
+const RESULT_TABS = ['basic', 'evidence', 'visual', 'draping', 'consultation'] as const;
+
 // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
 export default function SkinAnalysisResultPage() {
   const t = useTranslations('analysis');
@@ -363,7 +367,8 @@ export default function SkinAnalysisResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('basic');
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(RESULT_TABS, 'basic');
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
@@ -384,7 +389,7 @@ export default function SkinAnalysisResultPage() {
 
   // 탭 스와이프 훅
   const { containerRef: swipeContainerRef, handlers: swipeHandlers } = useSwipeTab({
-    tabs: ['basic', 'evidence', 'visual', 'draping', 'consultation'],
+    tabs: [...RESULT_TABS],
     activeTab,
     onTabChange: setActiveTab,
   });

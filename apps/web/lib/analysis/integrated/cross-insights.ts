@@ -205,12 +205,12 @@ function skinXmakeup(skin: { type: string; score: number }): Pick<CrossInsight, 
       body: '복합성은 부위별 다른 피니시가 정답이에요. T존만 파우더로 세팅하세요.',
     };
   }
-  // normal / default
+  // normal / default — "어떤 루틴/어떻게"까지 구체화 (초보자 눈높이)
   return {
-    title: lowScore ? '기초 루틴 안정화 먼저' : '현재 루틴 유지',
+    title: lowScore ? '기초 루틴 안정화 먼저' : '지금 스킨케어 그대로 + 주 1회 각질 케어',
     body: lowScore
       ? '메이크업 전 기본 보습/차단부터 1-2주 안정화하면 발색이 달라져요.'
-      : '좋은 상태에 유지 중심. 주간 각질 관리로 베이스 밀착을 높이세요.',
+      : '피부가 좋은 상태예요. 주 1회 밤에 저자극 필링 패드로 각질만 정리해주면 베이스 메이크업이 더 잘 밀착돼요.',
   };
 }
 

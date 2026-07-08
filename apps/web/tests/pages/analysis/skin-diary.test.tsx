@@ -8,11 +8,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
 // Mock 설정
+// useUrlTab(URL 탭 동기화)이 searchParams.toString()/router.replace를 사용하므로 실제 URLSearchParams 반환
 vi.mock('next/navigation', () => ({
-  useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     back: vi.fn(),
     push: vi.fn(),
+    replace: vi.fn(),
   }),
 }));
 

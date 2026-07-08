@@ -272,6 +272,112 @@ describe('Daily Capsule', () => {
       expect(savedPayload.items.length).toBeGreaterThan(0);
     });
 
+    it('스텝에 하우투가 담기고 off-thesis(자세/스트레칭) 항목이 없다 (2026-07-08 피드백)', async () => {
+      // 실제 도메인 엔진(자동 등록)으로 생성한 payload를 검사
+      vi.mocked(getBeautyProfile).mockResolvedValue({
+        userId: 'user_test',
+        updatedAt: new Date().toISOString(),
+        completedModules: ['S', 'PC', 'C', 'H', 'M'],
+        personalizationLevel: 2,
+        lastFullUpdate: new Date().toISOString(),
+        personalColor: {
+          season: 'summer',
+          subType: 'light',
+          palette: ['#AABBCC'],
+          paletteNames: ['세레니티 블루'],
+        },
+        skin: { type: 'combination', concerns: [], scores: {}, foundation: '쿨톤 베이지 21호' },
+        body: {
+          shape: 'pear',
+          measurements: {},
+          styleTips: { tops: ['세미오버 셔츠'], bottoms: ['와이드 팬츠'], avoid: ['스키니 팬츠'] },
+        },
+        hair: { type: 'wavy', scalp: 'oily', concerns: ['frizz'] },
+        makeup: { preferences: {}, skillLevel: 'beginner' },
+      });
+
+      const insertSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'daily-howto',
+              clerk_user_id: 'user_test',
+              date: '2026-07-08',
+              items: [],
+              total_ccs: 0,
+              estimated_minutes: 0,
+              status: 'pending',
+              completed_at: null,
+              created_at: new Date().toISOString(),
+            },
+            error: null,
+          }),
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'daily_capsules') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+            insert: insertSpy,
+          };
+        }
+        if (table === 'cross_domain_rules') {
+          return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      await generateDailyCapsule('user_test');
+
+      expect(insertSpy).toHaveBeenCalledTimes(1);
+      const items = (insertSpy.mock.calls[0][0] as { items: DailyItem[] }).items;
+      expect(items.length).toBeGreaterThan(0);
+
+      // ① 저녁 스킨케어에 세럼 포함 (저녁 상식 루틴 = 클렌징→토너→세럼→크림)
+      const eveningSkin = items.filter((i) => i.moduleCode === 'S' && i.timeOfDay === 'evening');
+      expect(eveningSkin.some((i) => i.category === 'serum')).toBe(true);
+
+      // ② ADR-098: 자세교정/스트레칭류 off-thesis 문구가 사용자 표면에 없다
+      for (const item of items) {
+        expect(item.name).not.toMatch(/자세|스트레칭|근력/);
+      }
+
+      // ③ 체형 아이템 = 아침(옷 입기 전 점검) + 실행 방법(solution) 포함
+      const bodyItems = items.filter((i) => i.moduleCode === 'C');
+      expect(bodyItems.length).toBeGreaterThan(0);
+      for (const item of bodyItems) {
+        expect(item.timeOfDay).toBe('morning');
+        expect(item.solution).toBeTruthy();
+      }
+
+      // ④ 헤어·메이크업 아이템에 하우투(solution) 포함
+      const hairItems = items.filter((i) => i.moduleCode === 'H');
+      expect(hairItems.length).toBeGreaterThan(0);
+      for (const item of hairItems) {
+        expect(item.solution).toBeTruthy();
+      }
+      const makeupItems = items.filter((i) => i.moduleCode === 'M');
+      expect(makeupItems.length).toBeGreaterThan(0);
+      for (const item of makeupItems) {
+        expect(item.solution).toBeTruthy();
+      }
+    });
+
     it('should return cached capsule if exists', async () => {
       const cachedData = {
         id: 'daily-cached',

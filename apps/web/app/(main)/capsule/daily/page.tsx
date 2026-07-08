@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+// 코디 색상명 → 색 견본 칩 (클라이언트 파싱 — 배럴(index) 대신 직접 import:
+// index.ts가 service-role 등 서버 전용 모듈을 함께 끌고 오는 것 방지)
+import { extractSolutionColors } from '@/lib/capsule/solution-colors';
 
 // API(/api/capsule/daily) 실제 응답 계약 — types/capsule.ts DailyItem과 동일 형태.
 // 기존엔 label/domainId/completed를 기대해 아이템 이름이 전부 빈 카드로 렌더되던 버그.
@@ -114,7 +117,7 @@ export default function DailyCapsulePage(): React.ReactElement {
         setDaily(null);
       }
     } catch {
-      setError('오늘의 캡슐을 불러올 수 없어요.');
+      setError('오늘의 루틴을 불러올 수 없어요.');
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +138,7 @@ export default function DailyCapsulePage(): React.ReactElement {
         setCheckedItems(new Set());
       }
     } catch {
-      setError('캡슐 생성에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setError('루틴을 만들지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsGenerating(false);
     }
@@ -196,7 +199,7 @@ export default function DailyCapsulePage(): React.ReactElement {
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-daily">
         <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
-        <p className="text-muted-foreground mb-4">오늘의 캡슐을 확인하려면 먼저 로그인해주세요.</p>
+        <p className="text-muted-foreground mb-4">오늘의 루틴을 확인하려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
       </div>
     );
@@ -211,12 +214,14 @@ export default function DailyCapsulePage(): React.ReactElement {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          캡슐 워드로브
+          나만의 플랜
         </button>
         {/* "새로 만들기" 버튼 제거 (2026-07-06, P0): 캡슐은 (사용자,날짜) 캐시라
             눌러도 같은 캡슐이 반환되던 거짓 버튼 — 루틴의 가치는 일관성이라 재생성 개념 자체가 불필요 */}
+        {/* "캡슐" 용어는 사용자 표면에서 제거 (2026-07-08 피드백: 초보자가 모르는 내부 용어)
+            — 라우트/타입/코드 개념은 capsule 유지 */}
         <div>
-          <h1 className="text-2xl font-bold">오늘의 캡슐</h1>
+          <h1 className="text-2xl font-bold">오늘의 루틴</h1>
           <p className="mt-1 text-muted-foreground text-sm">
             {daily?.date
               ? new Date(daily.date).toLocaleDateString('ko-KR', {
@@ -257,18 +262,18 @@ export default function DailyCapsulePage(): React.ReactElement {
       {!isLoading && !error && !daily && (
         <div className="text-center py-12">
           <CalendarCheck className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-          <h3 className="font-semibold mb-2">아직 오늘의 캡슐이 없어요</h3>
+          <h3 className="font-semibold mb-2">아직 오늘의 루틴이 없어요</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            버튼을 눌러 오늘의 뷰티·웰니스 루틴을 만들어보세요.
+            버튼을 눌러 오늘의 뷰티·스타일 루틴을 만들어보세요.
           </p>
           <Button onClick={generateDaily} disabled={isGenerating}>
             {isGenerating ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                생성 중...
+                만드는 중...
               </>
             ) : (
-              '오늘의 캡슐 만들기'
+              '오늘의 루틴 만들기'
             )}
           </Button>
         </div>
@@ -395,7 +400,20 @@ export default function DailyCapsulePage(): React.ReactElement {
                                       )}
                                       {item.solution && (
                                         <p className="text-[11px] text-violet-500 dark:text-violet-400">
-                                          💡 {item.solution}
+                                          💡{' '}
+                                          {/* 코디 색상명은 텍스트만으론 무슨 색인지 알 수 없어
+                                              색 견본 칩 함께 노출 (맵에 없는 색은 칩 생략) */}
+                                          {item.moduleCode === 'Fashion' &&
+                                            extractSolutionColors(item.solution).map((chip) => (
+                                              <span
+                                                key={chip.name}
+                                                className="inline-block w-3 h-3 rounded-full border border-black/10 dark:border-white/20 mr-1 align-[-1px]"
+                                                style={{ backgroundColor: chip.hex }}
+                                                title={chip.name}
+                                                aria-label={`${chip.name} 색 견본`}
+                                              />
+                                            ))}
+                                          {item.solution}
                                         </p>
                                       )}
                                     </div>

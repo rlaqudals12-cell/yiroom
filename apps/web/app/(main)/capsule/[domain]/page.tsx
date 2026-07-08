@@ -105,12 +105,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   // personal-color
   clothing: '의류',
   'hair-color': '헤어 컬러',
-  // body
-  'posture-correction': '자세 교정',
-  'stretching-routine': '스트레칭',
-  'strength-plan': '근력',
-  'body-alignment': '얼라인먼트',
-  'lifestyle-habit': '생활 습관',
+  // body — ADR-098: 자세교정/스트레칭/근력은 off-thesis, 스타일링 관점 라벨로 표기
+  // (카테고리 코드는 BodyPlan 타입 계약이라 유지)
+  'posture-correction': '실루엣 점검',
+  'stretching-routine': '밸런스 체크',
+  'strength-plan': '핏 포인트',
+  'body-alignment': '비율 체크',
+  'lifestyle-habit': '코디 기록',
 };
 
 /** API 아이템 래퍼 → 뷰 모델 (실제품 부착 시 브랜드·가격을 보조 라인으로) */
@@ -178,7 +179,8 @@ const DOMAIN_META: Record<string, { name: string; color: string; description: st
   body: {
     name: '체형',
     color: '#A78BFA',
-    description: '체형 관리에 도움이 되는 핵심 아이템',
+    // ADR-098: "관리(운동/교정)"가 아니라 "이해와 표현(스타일링)"
+    description: '체형에 어울리는 실루엣과 핏 포인트',
   },
 };
 
@@ -196,7 +198,7 @@ export default function DomainCapsulePage(): React.ReactElement {
   const meta = DOMAIN_META[domain] ?? {
     name: domain,
     color: '#6366F1',
-    description: '캡슐 아이템',
+    description: '플랜 아이템',
   };
 
   const [capsule, setCapsule] = useState<Capsule | null>(null);
@@ -223,7 +225,7 @@ export default function DomainCapsulePage(): React.ReactElement {
         setCapsule(json.data ? mapApiCapsule(json.data as ApiCapsule) : null);
       }
     } catch {
-      setError('캡슐 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
+      setError('플랜을 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -292,7 +294,7 @@ export default function DomainCapsulePage(): React.ReactElement {
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-domain">
         <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
-        <p className="text-muted-foreground mb-4">캡슐을 확인하려면 먼저 로그인해주세요.</p>
+        <p className="text-muted-foreground mb-4">플랜을 확인하려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
       </div>
     );
@@ -309,8 +311,9 @@ export default function DomainCapsulePage(): React.ReactElement {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          캡슐 워드로브
+          나만의 플랜
         </button>
+        {/* "캡슐" 용어는 사용자 표면에서 제거 (2026-07-08 피드백) — 코드 개념은 capsule 유지 */}
         <div className="flex items-center gap-3 mb-1">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -319,7 +322,7 @@ export default function DomainCapsulePage(): React.ReactElement {
             <Sparkles className="h-5 w-5" style={{ color: meta.color }} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{meta.name} 캡슐</h1>
+            <h1 className="text-2xl font-bold">{meta.name} 플랜</h1>
             <p className="text-sm text-muted-foreground">{meta.description}</p>
           </div>
         </div>
@@ -349,7 +352,7 @@ export default function DomainCapsulePage(): React.ReactElement {
       {!isLoading && !error && capsule?.ccsScore != null && (
         <Card className="p-4 mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">캡슐 큐레이션 점수 (CCS)</span>
+            <span className="text-sm font-medium">아이템 조합 점수</span>
             <span className="text-lg font-bold" style={{ color: meta.color }}>
               {capsule.ccsScore}점
             </span>
@@ -361,7 +364,7 @@ export default function DomainCapsulePage(): React.ReactElement {
       {!isLoading && !error && items.length === 0 && (
         <div className="text-center py-12">
           <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-          <h3 className="font-semibold mb-2">아직 캡슐이 없어요</h3>
+          <h3 className="font-semibold mb-2">아직 플랜이 없어요</h3>
           <p className="text-sm text-muted-foreground mb-4">
             큐레이션을 시작해서 나에게 맞는 아이템을 추천받아보세요.
           </p>

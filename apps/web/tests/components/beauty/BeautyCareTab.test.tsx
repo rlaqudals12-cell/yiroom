@@ -21,6 +21,10 @@ vi.mock('@/components/beauty/SkinAgeCalculator', () => ({
 vi.mock('@/components/beauty/SkincareRoutineCard', () => ({
   SkincareRoutineCard: () => <div data-testid="skincare-routine-card" />,
 }));
+// 이너뷰티 실제품 컴포넌트 — 자체 Supabase 조회가 있어 목킹
+vi.mock('@/components/beauty/InnerBeautySupplements', () => ({
+  InnerBeautySupplements: () => <div data-testid="inner-beauty-supplements" />,
+}));
 
 import BeautyCareTab from '@/components/beauty/BeautyCareTab';
 import type { SkinAgeMetrics } from '@/components/beauty/SkinAgeCalculator';
@@ -90,13 +94,23 @@ describe('BeautyCareTab', () => {
     expect(screen.getByTestId('skin-age-calculator')).toBeInTheDocument();
   });
 
-  it('실지표가 없으면(skinMetrics=null) 계산기 대신 안내가 표시된다', () => {
-    renderTab({ skinMetrics: null });
+  it('실지표·종합점수 둘 다 없으면 계산기 대신 안내가 표시된다', () => {
+    renderTab({ skinMetrics: null, skinOverallScore: null });
 
     expect(screen.queryByTestId('skin-age-input')).not.toBeInTheDocument();
     expect(screen.queryByTestId('skin-age-calculator')).not.toBeInTheDocument();
     expect(screen.getByTestId('beauty-skin-age')).toBeInTheDocument();
     expect(screen.getByText(/피부나이를 알려드려요/)).toBeInTheDocument();
+  });
+
+  it('세부 지표가 없어도 종합 점수가 있으면 계산기를 제공한다 (통합 분석 경로 대응)', async () => {
+    const user = userEvent.setup();
+    renderTab({ skinMetrics: null, skinOverallScore: 70 });
+
+    const ageInput = screen.getByTestId('skin-age-input');
+    await user.type(ageInput, '28');
+
+    expect(screen.getByTestId('skin-age-calculator')).toBeInTheDocument();
   });
 
   it('hasAnalysis=false일 때 분석 CTA가 표시된다', () => {
@@ -113,18 +127,27 @@ describe('BeautyCareTab', () => {
     expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
   });
 
-  it('주의 성분 확인 버튼이 /analysis로 이동한다 (죽은 /profile/analysis 링크 제거)', async () => {
+  it('주의 성분 확인 버튼이 최신 피부 분석 결과(성분 경고 표시 위치)로 딥링크된다', async () => {
     const user = userEvent.setup();
-    renderTab();
+    renderTab({ skinAnalysisId: 'skin-abc-123' });
+
+    await user.click(screen.getByText(/내 분석 결과에서 확인하기/));
+    expect(mockPush).toHaveBeenCalledWith('/analysis/skin/result/skin-abc-123');
+  });
+
+  it('분석 id가 없으면 주의 성분 버튼이 /analysis 허브로 폴백한다', async () => {
+    const user = userEvent.setup();
+    renderTab({ skinAnalysisId: null });
 
     await user.click(screen.getByText(/내 분석 결과에서 확인하기/));
     expect(mockPush).toHaveBeenCalledWith('/analysis');
   });
 
-  it('이너뷰티 추천 섹션이 항상 표시된다', () => {
+  it('이너뷰티 추천 섹션이 항상 표시되고 실제품 컴포넌트가 마운트된다', () => {
     renderTab({ hasAnalysis: false, skinMetrics: null });
     expect(screen.getByTestId('beauty-supplements')).toBeInTheDocument();
     expect(screen.getByText('이너뷰티 추천')).toBeInTheDocument();
+    expect(screen.getByTestId('inner-beauty-supplements')).toBeInTheDocument();
   });
 
   it('주의 성분 알림 섹션이 표시된다', () => {

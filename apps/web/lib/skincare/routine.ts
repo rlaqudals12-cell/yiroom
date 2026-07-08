@@ -31,7 +31,10 @@ import { getRecommendedProductsBySkin } from '@/lib/affiliate/products';
  * 피부 타입과 고민을 기반으로 개인화된 루틴 생성
  */
 export function generateRoutine(input: RoutineGenerationInput): RoutineGenerationResult {
-  const { skinType, concerns, timeOfDay, includeOptional = true } = input;
+  // includeOptional 기본값 = false — 체크리스트 표면(/beauty 케어 탭·캡슐 데일리)이 같은
+  // "필수 스텝" 루틴을 보도록 정합화 (2026-07-08 사용자 피드백: 두 화면 루틴이 서로 달랐음).
+  // 선택 스텝까지 보여주는 심화 페이지(analysis/skin/routine)는 명시적으로 true를 전달한다.
+  const { skinType, concerns, timeOfDay, includeOptional = false } = input;
 
   // 기본 템플릿 선택
   const baseSteps =

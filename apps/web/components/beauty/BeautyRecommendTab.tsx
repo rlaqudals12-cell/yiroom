@@ -53,48 +53,129 @@ const skinConcerns: { id: SkinConcern; label: string; icon: React.ReactNode }[] 
 ];
 
 // 대분류 카테고리
-type MainCategory = 'all' | 'cleansing' | 'skincare' | 'suncare' | 'mask';
+// DB(cosmetic_products)의 category 컬럼은 이미 세분류 값(serum/toner/moisturizer/...)이라
+// 대분류는 "DB category 값의 집합"으로 매핑한다 (실DB 값 검증 2026-07-08).
+type MainCategory = 'all' | 'cleansing' | 'skincare' | 'suncare' | 'makeup' | 'mask';
 const mainCategories: { id: MainCategory; label: string }[] = [
   { id: 'all', label: '전체' },
   { id: 'cleansing', label: '클렌징' },
   { id: 'skincare', label: '스킨케어' },
   { id: 'suncare', label: '선케어' },
+  { id: 'makeup', label: '메이크업' },
   { id: 'mask', label: '마스크/팩' },
 ];
 
-// 세부 카테고리
-const subCategories: Record<MainCategory, { id: string; label: string }[]> = {
+// 대분류 → DB category 값 집합
+const CATEGORY_MAP: Record<MainCategory, string[]> = {
+  all: [],
+  cleansing: ['cleanser'],
+  skincare: ['toner', 'essence', 'serum', 'moisturizer', 'eye_cream', 'lip_care'],
+  suncare: ['sunscreen'],
+  makeup: ['makeup'],
+  mask: ['mask'],
+};
+
+// 세부 카테고리 — DB 실값 기준 필터 정의.
+// 스킨케어 세분류는 DB category 자체가 세분류 값이고, 나머지는 subcategory 컬럼(kebab-case)을 쓴다.
+interface SubCategoryDef {
+  id: string;
+  label: string;
+  /** 필터 대상 컬럼 */
+  column: 'category' | 'subcategory';
+  /** DB 실값 목록 (2026-07-08 prod 실쿼리 검증) */
+  values: string[];
+}
+
+const subCategories: Record<MainCategory, SubCategoryDef[]> = {
   all: [],
   cleansing: [
-    { id: 'cleansing_foam', label: '클렌징폼' },
-    { id: 'cleansing_oil', label: '클렌징오일' },
-    { id: 'cleansing_water', label: '클렌징워터' },
-    { id: 'cleansing_gel', label: '클렌징젤' },
-    { id: 'cleansing_balm', label: '클렌징밤' },
-    { id: 'scrub_peeling', label: '스크럽/필링' },
+    { id: 'cleansing_foam', label: '클렌징폼', column: 'subcategory', values: ['foam'] },
+    {
+      id: 'cleansing_oil',
+      label: '클렌징오일',
+      column: 'subcategory',
+      values: ['oil', 'cleansing-oil'],
+    },
+    {
+      id: 'cleansing_water',
+      label: '클렌징워터',
+      column: 'subcategory',
+      values: ['cleansing-water', 'micellar'],
+    },
+    { id: 'cleansing_gel', label: '클렌징젤', column: 'subcategory', values: ['gel'] },
+    {
+      id: 'cleansing_balm',
+      label: '클렌징밤',
+      column: 'subcategory',
+      values: ['cleansing-balm', 'balm'],
+    },
+    {
+      id: 'scrub_peeling',
+      label: '스크럽/필링',
+      column: 'subcategory',
+      values: ['scrub', 'powder-wash'],
+    },
   ],
   skincare: [
-    { id: 'toner', label: '스킨/토너' },
-    { id: 'essence', label: '에센스' },
-    { id: 'serum', label: '세럼/앰플' },
-    { id: 'lotion', label: '로션/에멀전' },
-    { id: 'cream', label: '크림' },
-    { id: 'eye_cream', label: '아이크림' },
-    { id: 'mist', label: '미스트' },
+    { id: 'toner', label: '스킨/토너', column: 'category', values: ['toner'] },
+    { id: 'essence', label: '에센스', column: 'category', values: ['essence'] },
+    { id: 'serum', label: '세럼/앰플', column: 'category', values: ['serum'] },
+    { id: 'moisturizer', label: '로션/크림', column: 'category', values: ['moisturizer'] },
+    { id: 'eye_cream', label: '아이크림', column: 'category', values: ['eye_cream'] },
+    { id: 'lip_care', label: '립케어', column: 'category', values: ['lip_care'] },
   ],
   suncare: [
-    { id: 'sun_cream', label: '선크림' },
-    { id: 'sun_stick', label: '선스틱' },
-    { id: 'sun_spray', label: '선스프레이' },
-    { id: 'sun_cushion', label: '선쿠션' },
+    {
+      id: 'sun_cream',
+      label: '선크림',
+      column: 'subcategory',
+      values: ['cream', 'physical', 'mineral', 'fluid', 'milk', 'tone-up'],
+    },
+    { id: 'sun_stick', label: '선스틱', column: 'subcategory', values: ['stick'] },
+    { id: 'sun_cushion', label: '선쿠션', column: 'subcategory', values: ['cushion'] },
+  ],
+  makeup: [
+    { id: 'lip', label: '립', column: 'subcategory', values: ['lip', 'lip-gloss', 'lip-liner'] },
+    {
+      id: 'base',
+      label: '베이스',
+      column: 'subcategory',
+      values: ['foundation', 'cushion', 'concealer', 'primer', 'powder'],
+    },
+    {
+      id: 'eye',
+      label: '아이',
+      column: 'subcategory',
+      values: ['eyeshadow', 'eyeliner', 'mascara', 'brow'],
+    },
+    {
+      id: 'cheek',
+      label: '치크/하이라이터',
+      column: 'subcategory',
+      values: ['blush', 'highlighter', 'contour'],
+    },
   ],
   mask: [
-    { id: 'sheet_mask', label: '시트마스크' },
-    { id: 'wash_off', label: '워시오프팩' },
-    { id: 'sleeping_pack', label: '슬리핑팩' },
-    { id: 'peel_off', label: '필오프팩' },
+    {
+      id: 'sheet_mask',
+      label: '시트마스크',
+      column: 'subcategory',
+      values: ['sheet-mask', 'sheet'],
+    },
+    {
+      id: 'wash_off',
+      label: '워시오프팩',
+      column: 'subcategory',
+      values: ['wash-off-mask', 'wash-off'],
+    },
+    { id: 'sleeping_pack', label: '슬리핑팩', column: 'subcategory', values: ['sleeping-mask'] },
+    { id: 'peel_off', label: '필오프팩', column: 'subcategory', values: ['peel-off-mask'] },
   ],
 };
+
+// 매칭 필터 임계값 — 현 매칭 점수 분포(스킨케어 상한 ~77+α, 메이크업 ~100)에서
+// 90은 사실상 도달 불가라 80으로 설정. 0개면 자동 완화 + 안내 (아래 fetch 로직 참조)
+const MATCH_FILTER_THRESHOLD = 80;
 
 // 정렬 옵션
 // 평점/리뷰수는 DB에 대부분 null이라 정렬 축으로 쓰면 순서가 사실상 무의미 —
@@ -183,7 +264,10 @@ export function BeautyRecommendTab({
   const [subCategory, setSubCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortSheet, setShowSortSheet] = useState(false);
-  const [matchFilterOn, setMatchFilterOn] = useState(true);
+  // 매칭 필터는 기본 OFF — 기본 상태에서는 제품이 보여야 한다 (0개 화면 방지)
+  const [matchFilterOn, setMatchFilterOn] = useState(false);
+  // 매칭 필터 ON인데 임계 이상 제품이 0개라 자동 완화된 상태 (안내 표시용)
+  const [matchFilterRelaxed, setMatchFilterRelaxed] = useState(false);
 
   // 하이브리드 UX 상태
   const [favoriteIngredients, setFavoriteIngredients] = useState<FavoriteItem[]>([]);
@@ -215,44 +299,50 @@ export function BeautyRecommendTab({
       setProductsLoading(true);
       setProductsError(false);
       try {
-        const categoryMap: Record<MainCategory, string | null> = {
-          all: null,
-          cleansing: 'cleanser',
-          skincare: 'toner',
-          suncare: 'sunscreen',
-          mask: 'mask',
-        };
-
         let query = supabase
           .from('cosmetic_products')
           .select(
             'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, target_age_groups'
           )
           .eq('is_active', true)
-          .limit(20);
+          .limit(40);
 
         if (mainCategory !== 'all') {
-          if (subCategory) {
-            query = query.eq('subcategory', subCategory);
+          const subDef = subCategory
+            ? subCategories[mainCategory].find((s) => s.id === subCategory)
+            : null;
+
+          if (subDef?.column === 'category') {
+            // 스킨케어 세분류: DB category 자체가 세분류 값 (예: '세럼/앰플' → category='serum')
+            query = query.in('category', subDef.values);
           } else {
-            const dbCategory = categoryMap[mainCategory];
-            if (dbCategory) {
-              query = query.eq('category', dbCategory);
+            const dbCategories = CATEGORY_MAP[mainCategory];
+            if (dbCategories.length > 0) {
+              query = query.in('category', dbCategories);
+            }
+            // subcategory 값(gel 등)은 카테고리 간 중복되므로 category 제한과 함께 적용
+            if (subDef) {
+              query = query.in('subcategory', subDef.values);
             }
           }
         }
 
+        // 태그 배열 필터: 태그가 없는(null) 제품을 배제하지 않는다.
+        // DB의 87%(2,459/2,821)가 skin_types 미태깅이라 overlap 필터만 쓰면 사실상 전멸 —
+        // "모름"은 "불일치"가 아니므로 null은 통과시키고, 태깅된 불일치만 거른다 (정직 원칙)
         if (selectedSkinTypes.length > 0) {
-          query = query.filter('skin_types', 'ov', `{${selectedSkinTypes.join(',')}}`);
+          query = query.or(`skin_types.ov.{${selectedSkinTypes.join(',')}},skin_types.is.null`);
         }
 
         if (selectedConcerns.length > 0) {
-          query = query.filter('concerns', 'ov', `{${selectedConcerns.join(',')}}`);
+          query = query.or(`concerns.ov.{${selectedConcerns.join(',')}},concerns.is.null`);
         }
 
         if (selectedAgeGroups.length > 0) {
           const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
-          query = query.filter('target_age_groups', 'ov', `{${dbAgeGroups.join(',')}}`);
+          query = query.or(
+            `target_age_groups.ov.{${dbAgeGroups.join(',')}},target_age_groups.is.null`
+          );
         }
 
         switch (sortBy) {
@@ -324,11 +414,21 @@ export function BeautyRecommendTab({
           mappedProducts.sort((a, b) => b.matchRate - a.matchRate);
         }
 
-        // 매칭 필터 적용
-        let filteredProducts =
-          matchFilterOn && hasAnalysis
-            ? mappedProducts.filter((p) => p.matchRate >= 90)
-            : mappedProducts;
+        // 매칭 필터 적용 — 임계 이상이 0개면 자동 완화(매칭률순 전체 표시) + 안내
+        let filteredProducts = mappedProducts;
+        let relaxed = false;
+        if (matchFilterOn && hasAnalysis) {
+          const aboveThreshold = mappedProducts.filter(
+            (p) => p.matchRate >= MATCH_FILTER_THRESHOLD
+          );
+          if (aboveThreshold.length > 0) {
+            filteredProducts = aboveThreshold;
+          } else if (mappedProducts.length > 0) {
+            relaxed = true;
+            filteredProducts = [...mappedProducts].sort((a, b) => b.matchRate - a.matchRate);
+          }
+        }
+        setMatchFilterRelaxed(relaxed);
 
         // 선호 성분 필터
         if (favoriteIngredients.length > 0) {
@@ -565,10 +665,10 @@ export function BeautyRecommendTab({
             className="flex items-center gap-2"
             role="switch"
             aria-checked={matchFilterOn}
-            aria-label="90% 이상 매칭 제품만 표시"
+            aria-label={`${MATCH_FILTER_THRESHOLD}% 이상 매칭 제품만 표시`}
             data-testid="beauty-match-toggle"
           >
-            <span className="text-sm text-muted-foreground">90%+ 매칭</span>
+            <span className="text-sm text-muted-foreground">{MATCH_FILTER_THRESHOLD}%+ 매칭</span>
             <div
               className={cn(
                 'w-10 h-6 rounded-full transition-colors relative',
@@ -651,6 +751,17 @@ export function BeautyRecommendTab({
 
       {/* 콘텐츠 영역 */}
       <div className="px-4 py-4 space-y-6">
+        {/* 매칭 필터 자동 완화 안내 — 임계 이상 제품이 없을 때 숨기는 대신 정직하게 알리고 전체 표시 */}
+        {matchFilterOn && matchFilterRelaxed && !productsLoading && (
+          <p
+            className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2"
+            role="status"
+            data-testid="beauty-match-relaxed-notice"
+          >
+            {MATCH_FILTER_THRESHOLD}% 이상 매칭 제품이 없어 매칭률이 높은 순서로 모두 보여드려요
+          </p>
+        )}
+
         {/* 제품 목록 */}
         <section data-testid="beauty-product-grid">
           <div className="flex items-center justify-between mb-3">
@@ -698,10 +809,13 @@ export function BeautyRecommendTab({
               <p className="text-sm mt-1">필터를 조정하면 숨겨진 제품을 발견할 수 있어요</p>
               <button
                 onClick={() => {
-                  setSelectedSkinTypes(['combination']);
-                  setSelectedConcerns(['hydration']);
+                  // 초기화 = 필터 전부 해제 (기본값 재주입이 아니라, 제품이 보이는 상태로 복귀)
+                  setSelectedSkinTypes([]);
+                  setSelectedConcerns([]);
+                  setSelectedAgeGroups([]);
                   setMainCategory('all');
                   setSubCategory(null);
+                  setMatchFilterOn(false);
                 }}
                 className="mt-3 text-sm text-primary font-medium hover:underline"
               >

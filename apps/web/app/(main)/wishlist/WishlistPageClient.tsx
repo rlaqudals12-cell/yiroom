@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Heart, Package, Sparkles, Pill, Dumbbell, Leaf, Loader2, Trash2 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { getUserWishlist, removeFromWishlist } from '@/lib/wishlist';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import {
   getCosmeticProductById,
   getSupplementProductById,
@@ -37,8 +38,13 @@ const PRODUCT_TYPE_LABELS: Record<ProductType, { label: string; icon: React.Reac
   health_food: { label: '건강식품', icon: <Leaf className="h-4 w-4" /> },
 };
 
+// 탭 목록 — URL ?tab= 동기화용 (제품 링크로 나갔다 뒤로가기 해도 탭 유지)
+const WISHLIST_TABS = ['all', ...Object.keys(PRODUCT_TYPE_LABELS)] as readonly string[];
+
 export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
   const supabase = useClerkSupabaseClient();
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(WISHLIST_TABS, 'all');
   const [wishlists, setWishlists] = useState<WishlistItem[]>([]);
   const [products, setProducts] = useState<Map<string, AnyProduct>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -207,7 +213,7 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
         warnings={interactions}
       />
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto mb-4">
           <TabsTrigger value="all" className="gap-1">
             전체 ({wishlists.length})

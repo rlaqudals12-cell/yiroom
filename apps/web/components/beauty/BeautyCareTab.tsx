@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Sparkles, Pill, AlertTriangle } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
+import { InnerBeautySupplements } from '@/components/beauty/InnerBeautySupplements';
 import { SkinAgeCalculator, type SkinAgeMetrics } from '@/components/beauty/SkinAgeCalculator';
 import { SkincareRoutineCard } from '@/components/beauty/SkincareRoutineCard';
 import { Input } from '@/components/ui/input';
@@ -15,8 +16,12 @@ interface BeautyCareTabProps {
   router: AppRouterInstance;
   morningRoutine: RoutineItem[];
   eveningRoutine: RoutineItem[];
-  /** 최신 피부 분석 실지표 (없으면 null → 피부나이 계산기 대신 분석 안내) */
+  /** 최신 피부 분석 실지표 (없으면 overall_score 기반 추정 또는 분석 안내) */
   skinMetrics: SkinAgeMetrics | null;
+  /** 최신 피부 분석 종합 점수 — 세부 지표가 없어도 이 값으로 피부나이 추정 가능 */
+  skinOverallScore?: number | null;
+  /** 최신 피부 분석 id — 주의 성분 알림에서 해당 결과로 딥링크 */
+  skinAnalysisId?: string | null;
 }
 
 // 케어 탭 — 스킨케어 루틴, 피부나이, 영양제, 주의 성분
@@ -26,6 +31,8 @@ export default function BeautyCareTab({
   morningRoutine,
   eveningRoutine,
   skinMetrics,
+  skinOverallScore = null,
+  skinAnalysisId = null,
 }: BeautyCareTabProps) {
   // 실제 나이는 DB에 저장하지 않는 정보 — 사용자가 직접 입력한 값으로만 계산 (정직 원칙)
   const [ageInput, setAgeInput] = useState('');
@@ -69,9 +76,9 @@ export default function BeautyCareTab({
         )}
       </FadeInUp>
 
-      {/* 피부나이 계산기 — 실제 분석 지표가 있을 때만 (하드코딩 지표 금지) */}
+      {/* 피부나이 계산기 — 실제 분석 데이터(세부 지표 또는 종합 점수)가 있을 때만 (하드코딩 지표 금지) */}
       <FadeInUp delay={2}>
-        {hasAnalysis && skinMetrics ? (
+        {hasAnalysis && (skinMetrics || skinOverallScore != null) ? (
           <div data-testid="beauty-skin-age" className="space-y-3">
             <section className="bg-card rounded-2xl border p-4">
               <h2 className="font-semibold mb-2 flex items-center gap-2">
@@ -79,7 +86,7 @@ export default function BeautyCareTab({
                 피부나이 측정
               </h2>
               <p className="text-sm text-muted-foreground mb-3">
-                실제 나이를 입력하면 최근 피부 분석 지표로 피부나이를 계산해 드려요. 입력한 나이는
+                실제 나이를 입력하면 최근 피부 분석 결과로 피부나이를 계산해 드려요. 입력한 나이는
                 저장되지 않아요.
               </p>
               <div className="flex items-center gap-3">
@@ -102,7 +109,11 @@ export default function BeautyCareTab({
               </div>
             </section>
             {actualAge !== null && (
-              <SkinAgeCalculator actualAge={actualAge} skinMetrics={skinMetrics} />
+              <SkinAgeCalculator
+                actualAge={actualAge}
+                skinMetrics={skinMetrics}
+                overallScore={skinOverallScore}
+              />
             )}
           </div>
         ) : (
@@ -134,10 +145,11 @@ export default function BeautyCareTab({
             <span className="text-xs text-muted-foreground">(피부 개선용)</span>
           </h2>
           <p className="text-sm text-muted-foreground">
-            비타민C, 콜라겐, 오메가3로 피부 속부터 관리해 보는 건 어때요?
+            콜라겐, 비타민, 오메가3로 피부 속부터 관리해 보는 건 어때요?
           </p>
-          {/* '영양제 보러가기' 링크 제거: N-1(영양) 숨김 + supplement DB 미적재로 빈 결과 누수.
-              S-1 이너뷰티 하위 기능으로 부활 시 재연결 (ADR-098 / demo-polish-plan). */}
+          {/* supplement_products 실데이터(200개) 적재 완료(2026-07-08) → 실제품 연결.
+              데이터가 없으면 컴포넌트가 아무것도 렌더링하지 않는다. */}
+          <InnerBeautySupplements />
         </section>
       </FadeInUp>
 
@@ -157,8 +169,13 @@ export default function BeautyCareTab({
             <p className="text-sm text-muted-foreground">
               내 피부에 맞지 않는 성분이 포함된 제품을 알려드려요
             </p>
+            {/* 최신 피부 분석 결과의 성분 경고 섹션으로 딥링크 (id 없으면 분석 허브로) */}
             <button
-              onClick={() => router.push('/analysis')}
+              onClick={() =>
+                router.push(
+                  skinAnalysisId ? `/analysis/skin/result/${skinAnalysisId}` : '/analysis'
+                )
+              }
               className="mt-3 text-sm text-orange-700 dark:text-orange-400 font-medium hover:underline min-h-[44px] inline-flex items-center"
             >
               내 분석 결과에서 확인하기 →

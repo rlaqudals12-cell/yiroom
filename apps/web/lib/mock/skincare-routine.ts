@@ -144,7 +144,11 @@ export const MORNING_ROUTINE_STEPS: RoutineStep[] = [
     name: '선크림',
     purpose: '자외선(UV) 차단 및 광노화 예방',
     duration: '30초',
-    tips: ['외출 30분 전에 바르기', '충분한 양(500원 동전 크기) 사용', '2-3시간마다 덧바르기'],
+    tips: [
+      'SPF50+ PA+++ 제품을 외출 30분 전에 바르기',
+      '충분한 양(500원 동전 크기) 사용',
+      '2-3시간마다 덧바르기',
+    ],
     isOptional: false,
   },
 ];
@@ -197,8 +201,13 @@ export const EVENING_ROUTINE_STEPS: RoutineStep[] = [
     name: '세럼/앰플',
     purpose: '피부 고민에 맞는 집중 케어',
     duration: '1분',
-    tips: ['비타민C, 레티놀 등 목적에 맞게 선택', '점점 늘려가며 적응 기간 갖기'],
-    isOptional: true,
+    tips: [
+      '토너 후 2-3방울을 얼굴 전체에 펴 바르고 손바닥으로 눌러 흡수',
+      '비타민C, 레티놀 등 목적에 맞게 선택',
+    ],
+    // 저녁 상식 루틴 = 클렌징→토너→세럼→크림 — 세럼은 저녁 핵심 스텝 (2026-07-08 사용자 피드백:
+    // "아침엔 세럼을 바르는데 저녁 루틴에 세럼이 없음")
+    isOptional: false,
   },
   {
     order: 6,

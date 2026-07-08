@@ -103,6 +103,12 @@ describe('EVENING_ROUTINE_STEPS', () => {
     expect(spotStep).toBeDefined();
     expect(spotStep!.isOptional).toBe(true);
   });
+
+  it('includes serum as required step (저녁 상식 루틴 = 클렌징→토너→세럼→크림)', () => {
+    const serumStep = EVENING_ROUTINE_STEPS.find((s) => s.category === 'serum');
+    expect(serumStep).toBeDefined();
+    expect(serumStep!.isOptional).toBe(false);
+  });
 });
 
 describe('SKIN_TYPE_MODIFIERS', () => {

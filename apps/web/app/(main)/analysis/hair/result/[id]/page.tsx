@@ -33,6 +33,7 @@ const AnalysisMatchedProducts = dynamic(
 import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { ResultPageInsights } from '@/components/insights';
 import { useExpertMode } from '@/hooks/useExpertMode';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
@@ -173,6 +174,9 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
   };
 }
 
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const RESULT_TABS = ['basic', 'details'] as const;
+
 export default function HairAnalysisResultPage() {
   const t = useTranslations('analysis');
   const params = useParams();
@@ -192,7 +196,8 @@ export default function HairAnalysisResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [usedMock, setUsedMock] = useState(false);
   const { isExpert, toggleExpert } = useExpertMode();
-  const [activeTab, setActiveTab] = useState<string>('basic');
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(RESULT_TABS, 'basic');
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;

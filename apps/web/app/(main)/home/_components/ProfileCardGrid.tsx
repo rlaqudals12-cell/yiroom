@@ -191,24 +191,32 @@ function SkinTrendChip({ trend, delta }: { trend: 'up' | 'down' | 'flat'; delta:
   const config = {
     up: {
       Icon: TrendingUp,
-      cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-      label: `+${Math.abs(delta)}`,
+      cls: 'bg-emerald-500/25 text-emerald-700 dark:text-emerald-300',
+      label: `+${Math.abs(delta)}점`,
+      desc: `지난 분석보다 ${Math.abs(delta)}점 올랐어요`,
     },
     down: {
       Icon: TrendingDown,
-      cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-      label: `-${Math.abs(delta)}`,
+      cls: 'bg-amber-500/25 text-amber-700 dark:text-amber-300',
+      label: `-${Math.abs(delta)}점`,
+      desc: `지난 분석보다 ${Math.abs(delta)}점 내려갔어요`,
     },
-    flat: { Icon: Minus, cls: 'bg-slate-500/15 text-slate-500 dark:text-slate-400', label: '유지' },
+    flat: {
+      Icon: Minus,
+      cls: 'bg-slate-500/20 text-slate-600 dark:text-slate-300',
+      label: '유지',
+      desc: '지난 분석과 같은 점수예요',
+    },
   }[trend];
-  const { Icon, cls, label } = config;
+  const { Icon, cls, label, desc } = config;
   return (
     <span
-      className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium shrink-0 ${cls}`}
-      title="직전 분석 대비 변화"
+      className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold shrink-0 ${cls}`}
+      title={desc}
+      aria-label={desc}
       data-testid="skin-trend-chip"
     >
-      <Icon className="w-2.5 h-2.5" aria-hidden="true" />
+      <Icon className="w-3 h-3" aria-hidden="true" />
       {label}
     </span>
   );

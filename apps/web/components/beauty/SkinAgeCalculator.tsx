@@ -8,22 +8,36 @@ import { cn } from '@/lib/utils';
 import { assessImpact, getTrendDirection, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { SkinAgeResult } from '@/types/hybrid';
 
-/** 피부나이 계산 입력 지표 (skin_analyses 실지표 기반) */
+/**
+ * 피부나이 계산 입력 지표 (skin_analyses 실지표 기반)
+ *
+ * 방향 규약: 모든 지표는 "점수"로, 높을수록 좋음.
+ * skin_analyses 저장 규약(gemini 프롬프트 채점 기준: 매끈한 피부 = 주름 71-100점)과
+ * 피부 분석 결과 페이지의 getStatus(≥71 good) 해석을 그대로 따른다.
+ * (이전 구현이 주름/모공/색소침착을 "낮을수록 좋음"으로 뒤집어 계산해
+ *  분석 결과와 피부나이가 어긋나던 버그 수정 — 2026-07-08)
+ */
 export interface SkinAgeMetrics {
-  hydration: number; // 수분 (0-100)
-  oil: number; // 유분 (0-100)
+  hydration: number; // 수분 점수 (0-100, 높을수록 좋음)
+  oil: number; // 유분 (0-100, 40-60 중간대가 이상적)
   /** 탄력 (0-100) — skin_analyses에 없는 지표라 선택적. 없으면 나머지 지표로 가중치 재분배 */
   elasticity?: number;
-  wrinkles: number; // 주름 (0-100, 낮을수록 좋음)
-  pores: number; // 모공 (0-100, 낮을수록 좋음)
-  pigmentation: number; // 색소침착 (0-100, 낮을수록 좋음)
+  wrinkles: number; // 주름 점수 (0-100, 높을수록 좋음 = 주름 적음)
+  pores: number; // 모공 점수 (0-100, 높을수록 좋음)
+  pigmentation: number; // 색소침착 점수 (0-100, 높을수록 좋음 = 깨끗함)
 }
 
 export interface SkinAgeCalculatorProps {
   /** 실제 나이 */
   actualAge: number;
-  /** 피부 분석 점수들 */
-  skinMetrics: SkinAgeMetrics;
+  /** 피부 분석 세부 지표 — 없으면 overallScore 기반 추정만 수행 */
+  skinMetrics: SkinAgeMetrics | null;
+  /**
+   * 최신 분석의 종합 점수 (0-100).
+   * 있으면 피부나이 산출의 기준 점수로 사용 — 결과 페이지("내 피부 NN점")와 동일한 척도 유지.
+   * 없으면 세부 지표 가중 평균으로 계산.
+   */
+  overallScore?: number | null;
   /** 결과 변경 콜백 */
   onResultChange?: (result: SkinAgeResult) => void;
   /** 추가 className */
@@ -39,50 +53,40 @@ export interface SkinAgeCalculatorProps {
 export function SkinAgeCalculator({
   actualAge,
   skinMetrics,
+  overallScore = null,
   onResultChange,
   className,
 }: SkinAgeCalculatorProps) {
   // 피부나이 계산 로직
-  const result = useMemo<SkinAgeResult>(() => {
-    const hasElasticity = typeof skinMetrics.elasticity === 'number';
+  const result = useMemo<SkinAgeResult | null>(() => {
+    const hasOverall = typeof overallScore === 'number';
+    if (!hasOverall && !skinMetrics) return null;
 
-    // 긍정 요인 (높을수록 좋음) — 탄력은 데이터가 있을 때만 포함
-    const positiveFactors = [
-      { value: skinMetrics.hydration, weight: 0.25 },
-      ...(hasElasticity ? [{ value: skinMetrics.elasticity as number, weight: 0.3 }] : []),
-    ];
+    // 세부 지표 가중 평균 (모든 지표는 높을수록 좋음 — DB 저장 규약과 동일)
+    let metricScore: number | null = null;
+    let oilBalance: number | null = null;
+    if (skinMetrics) {
+      const hasElasticity = typeof skinMetrics.elasticity === 'number';
 
-    // 부정 요인 (낮을수록 좋음)
-    const negativeFactors = [
-      { value: skinMetrics.wrinkles, weight: 0.2 },
-      { value: skinMetrics.pores, weight: 0.1 },
-      { value: skinMetrics.pigmentation, weight: 0.1 },
-    ];
+      // 유분만 예외: 과다/과소 모두 부정적이라 중간값(40-60)이 이상적
+      oilBalance = 100 - Math.abs(skinMetrics.oil - 50) * 2;
 
-    // 유분은 중간값이 좋음 (40-60이 최적)
-    const oilBalance = 100 - Math.abs(skinMetrics.oil - 50) * 2;
+      const factors = [
+        { value: skinMetrics.hydration, weight: 0.25 },
+        ...(hasElasticity ? [{ value: skinMetrics.elasticity as number, weight: 0.3 }] : []),
+        { value: skinMetrics.wrinkles, weight: 0.2 },
+        { value: skinMetrics.pores, weight: 0.1 },
+        { value: skinMetrics.pigmentation, weight: 0.1 },
+        { value: oilBalance, weight: 0.05 },
+      ];
 
-    // 종합 피부 점수 (0-100) — 사용된 가중치 합으로 정규화해 탄력 유무와 무관하게 동일 척도 유지
-    let weightedSum = 0;
-    let totalWeight = 0;
+      // 사용된 가중치 합으로 정규화해 탄력 유무와 무관하게 동일 척도 유지
+      const totalWeight = factors.reduce((sum, f) => sum + f.weight, 0);
+      metricScore = factors.reduce((sum, f) => sum + f.value * f.weight, 0) / totalWeight;
+    }
 
-    // 긍정 요인 점수
-    positiveFactors.forEach((f) => {
-      weightedSum += f.value * f.weight;
-      totalWeight += f.weight;
-    });
-
-    // 부정 요인 점수 (역산)
-    negativeFactors.forEach((f) => {
-      weightedSum += (100 - f.value) * f.weight;
-      totalWeight += f.weight;
-    });
-
-    // 유분 밸런스 추가
-    weightedSum += oilBalance * 0.05;
-    totalWeight += 0.05;
-
-    const skinScore = weightedSum / totalWeight;
+    // 기준 점수: 분석 종합 점수(결과 페이지와 동일 척도) 우선, 없으면 세부 지표 가중 평균
+    const skinScore = hasOverall ? (overallScore as number) : (metricScore as number);
 
     // 피부나이 계산 (점수가 높을수록 젊음)
     // 기준: 50점 = 실제나이, 점수 10점 차이 = 나이 3살 차이
@@ -98,49 +102,48 @@ export function SkinAgeCalculator({
     else if (skinScore >= 35) grade = 'D';
     else grade = 'F';
 
-    // 영향 요인 분석
-    // 긍정 요인: 값이 높을수록 좋음 (positiveMin 이상 = positive)
-    // 부정 요인: 값이 낮을수록 좋음 (negativeMax 이하 = positive, positiveMin 이상 = negative)
-    const factors: SkinAgeResult['factors'] = [
-      {
-        name: '수분',
-        value: skinMetrics.hydration,
-        impact: assessImpact(skinMetrics.hydration, { positiveMin: 60, negativeMax: 30 }),
-      },
-      ...(hasElasticity
-        ? [
-            {
-              name: '탄력',
-              value: skinMetrics.elasticity as number,
-              impact: assessImpact(skinMetrics.elasticity as number, {
-                positiveMin: 60,
-                negativeMax: 30,
-              }),
-            },
-          ]
-        : []),
-      {
-        name: '주름',
-        value: skinMetrics.wrinkles,
-        // 주름은 역산: 낮을수록 좋음. 100에서 뒤집어서 assessImpact 적용
-        impact: assessImpact(100 - skinMetrics.wrinkles, { positiveMin: 70, negativeMax: 40 }),
-      },
-      {
-        name: '모공',
-        value: skinMetrics.pores,
-        impact: assessImpact(100 - skinMetrics.pores, { positiveMin: 70, negativeMax: 40 }),
-      },
-      {
-        name: '색소침착',
-        value: skinMetrics.pigmentation,
-        impact: assessImpact(100 - skinMetrics.pigmentation, { positiveMin: 70, negativeMax: 40 }),
-      },
-      {
-        name: '유분 밸런스',
-        value: Math.round(oilBalance),
-        impact: assessImpact(oilBalance, { positiveMin: 70, negativeMax: 40 }),
-      },
-    ];
+    // 영향 요인 분석 — 결과 페이지 getStatus(≥71 good / ≤40 warning)와 동일 임계값
+    const factors: SkinAgeResult['factors'] = skinMetrics
+      ? [
+          {
+            name: '수분',
+            value: skinMetrics.hydration,
+            impact: assessImpact(skinMetrics.hydration, { positiveMin: 71, negativeMax: 40 }),
+          },
+          ...(typeof skinMetrics.elasticity === 'number'
+            ? [
+                {
+                  name: '탄력',
+                  value: skinMetrics.elasticity,
+                  impact: assessImpact(skinMetrics.elasticity, {
+                    positiveMin: 71,
+                    negativeMax: 40,
+                  }),
+                },
+              ]
+            : []),
+          {
+            name: '주름',
+            value: skinMetrics.wrinkles,
+            impact: assessImpact(skinMetrics.wrinkles, { positiveMin: 71, negativeMax: 40 }),
+          },
+          {
+            name: '모공',
+            value: skinMetrics.pores,
+            impact: assessImpact(skinMetrics.pores, { positiveMin: 71, negativeMax: 40 }),
+          },
+          {
+            name: '색소침착',
+            value: skinMetrics.pigmentation,
+            impact: assessImpact(skinMetrics.pigmentation, { positiveMin: 71, negativeMax: 40 }),
+          },
+          {
+            name: '유분 밸런스',
+            value: Math.round(oilBalance as number),
+            impact: assessImpact(oilBalance as number, { positiveMin: 71, negativeMax: 40 }),
+          },
+        ]
+      : [];
 
     const calculatedResult: SkinAgeResult = {
       score: Math.round(skinScore),
@@ -156,7 +159,10 @@ export function SkinAgeCalculator({
     onResultChange?.(calculatedResult);
 
     return calculatedResult;
-  }, [actualAge, skinMetrics, onResultChange]);
+  }, [actualAge, skinMetrics, overallScore, onResultChange]);
+
+  // 지표도 종합 점수도 없으면 계산 근거가 없음 — 지어내지 않고 렌더링하지 않는다
+  if (!result) return null;
 
   // 차이 표시
   const trendDir = getTrendDirection(result.difference);
@@ -233,38 +239,52 @@ export function SkinAgeCalculator({
           </div>
         </div>
 
-        {/* 영향 요인 */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">영향 요인</p>
-          <div className="grid grid-cols-2 gap-2">
-            {result.factors.map((factor) => (
-              <div
-                key={factor.name}
-                className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
-              >
-                <span className="text-sm">{factor.name}</span>
-                <div className="flex items-center gap-1">
-                  <span
-                    className={cn(
-                      'text-sm font-medium',
-                      factor.impact === 'positive' && 'text-green-600',
-                      factor.impact === 'negative' && 'text-red-600',
-                      factor.impact === 'neutral' && 'text-muted-foreground'
+        {/* 계산 근거 표기 — 종합 점수 기반이면 그 사실을 정직하게 안내 */}
+        {typeof overallScore === 'number' && (
+          <p
+            className="text-xs text-muted-foreground text-center mb-4"
+            data-testid="skin-age-basis-note"
+          >
+            {result.factors.length > 0
+              ? `최근 피부 분석 종합 점수(${overallScore}점) 기준으로 계산했어요`
+              : `세부 지표가 없어 최근 분석의 종합 점수(${overallScore}점) 기반 추정이에요`}
+          </p>
+        )}
+
+        {/* 영향 요인 — 세부 지표가 있을 때만 (없는 값을 지어내지 않음) */}
+        {result.factors.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">영향 요인</p>
+            <div className="grid grid-cols-2 gap-2">
+              {result.factors.map((factor) => (
+                <div
+                  key={factor.name}
+                  className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
+                >
+                  <span className="text-sm">{factor.name}</span>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={cn(
+                        'text-sm font-medium',
+                        factor.impact === 'positive' && 'text-green-600',
+                        factor.impact === 'negative' && 'text-red-600',
+                        factor.impact === 'neutral' && 'text-muted-foreground'
+                      )}
+                    >
+                      {factor.value}점
+                    </span>
+                    {factor.impact === 'positive' && (
+                      <TrendingUp className="h-3 w-3 text-green-600" />
                     )}
-                  >
-                    {factor.value}점
-                  </span>
-                  {factor.impact === 'positive' && (
-                    <TrendingUp className="h-3 w-3 text-green-600" />
-                  )}
-                  {factor.impact === 'negative' && (
-                    <TrendingDown className="h-3 w-3 text-red-600" />
-                  )}
+                    {factor.impact === 'negative' && (
+                      <TrendingDown className="h-3 w-3 text-red-600" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

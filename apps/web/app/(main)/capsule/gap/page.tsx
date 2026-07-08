@@ -68,10 +68,10 @@ export default function CapsuleGapPage(): React.ReactElement {
       if (json.success) {
         setGapData(json.data);
       } else {
-        setError('갭 분석 데이터를 불러올 수 없어요.');
+        setError('부족한 영역 데이터를 불러올 수 없어요.');
       }
     } catch {
-      setError('갭 분석 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
+      setError('부족한 영역 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +125,7 @@ export default function CapsuleGapPage(): React.ReactElement {
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-gap">
         <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
-        <p className="text-muted-foreground mb-4">갭 분석을 확인하려면 먼저 로그인해주세요.</p>
+        <p className="text-muted-foreground mb-4">부족한 영역을 확인하려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
       </div>
     );
@@ -140,11 +140,12 @@ export default function CapsuleGapPage(): React.ReactElement {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          캡슐 워드로브
+          나만의 플랜
         </button>
-        <h1 className="text-2xl font-bold">갭 분석</h1>
+        {/* "캡슐" 용어는 사용자 표면에서 제거 (2026-07-08 피드백) — 코드 개념은 capsule 유지 */}
+        <h1 className="text-2xl font-bold">부족한 영역 찾기</h1>
         <p className="mt-1 text-muted-foreground text-sm">
-          부족한 영역을 파악하고 캡슐을 완성해보세요
+          부족한 영역을 파악하고 나만의 플랜을 완성해보세요
         </p>
       </div>
 
@@ -182,13 +183,13 @@ export default function CapsuleGapPage(): React.ReactElement {
                 <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                   {gapData.completedDomains}
                 </p>
-                <p className="text-xs text-muted-foreground">완성 도메인</p>
+                <p className="text-xs text-muted-foreground">완성 영역</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                   {gapData.totalDomains - gapData.completedDomains}
                 </p>
-                <p className="text-xs text-muted-foreground">미완성 도메인</p>
+                <p className="text-xs text-muted-foreground">미완성 영역</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
@@ -200,7 +201,7 @@ export default function CapsuleGapPage(): React.ReactElement {
           </Card>
 
           {/* 도메인별 갭 리스트 */}
-          <h3 className="font-semibold mb-3 text-sm text-muted-foreground">도메인별 상태</h3>
+          <h3 className="font-semibold mb-3 text-sm text-muted-foreground">영역별 상태</h3>
           <div className="space-y-2">
             {gapData.gaps.map((item) => {
               const domainColor = DOMAIN_COLORS[item.domainId] ?? '#6366F1';
@@ -272,7 +273,7 @@ export default function CapsuleGapPage(): React.ReactElement {
                       onClick={() => router.push(`/capsule/${item.domainId}`)}
                       className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
                     >
-                      캡슐 보기 <ArrowRight className="h-3 w-3" />
+                      플랜 보기 <ArrowRight className="h-3 w-3" />
                     </button>
                   )}
                 </Card>
@@ -286,7 +287,7 @@ export default function CapsuleGapPage(): React.ReactElement {
       {!isLoading && !error && gapData && gapData.totalGap === 0 && (
         <Card className="p-6 text-center mt-6 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800">
           <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-emerald-500" />
-          <h3 className="font-semibold mb-1">모든 캡슐이 완성되었어요!</h3>
+          <h3 className="font-semibold mb-1">모든 플랜이 완성되었어요!</h3>
           <p className="text-sm text-muted-foreground">훌륭해요. 꾸준히 유지해보세요.</p>
         </Card>
       )}

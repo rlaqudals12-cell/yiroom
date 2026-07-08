@@ -26,7 +26,7 @@ export function PersonaNarrativeCard({
     <section
       className="relative overflow-hidden rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-indigo-500/10 p-6 md:p-8"
       data-testid="persona-narrative-card"
-      aria-label="나 프로필"
+      aria-label="내 프로필"
     >
       {/* 배경 글로우 */}
       <div
@@ -38,7 +38,7 @@ export function PersonaNarrativeCard({
         {/* 라벨 */}
         <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-400/40 bg-pink-500/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-pink-300">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
-          <span>나 프로필</span>
+          <span>내 프로필</span>
         </div>
 
         {/* 한 줄 페르소나 */}

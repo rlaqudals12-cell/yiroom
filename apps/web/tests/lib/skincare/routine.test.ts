@@ -62,14 +62,53 @@ describe('generateRoutine', () => {
   });
 
   it('adds oil category for dry skin', () => {
+    // 오일은 선택 스텝 — 선택 포함 모드에서 추가 여부 확인
     const result = generateRoutine({
       skinType: 'dry',
       concerns: [],
       timeOfDay: 'evening',
+      includeOptional: true,
     });
 
     const hasOil = result.routine.some((step) => step.category === 'oil');
     expect(hasOil).toBe(true);
+  });
+
+  it('includes serum in essential evening routine (2026-07-08 저녁 세럼 누락 수리)', () => {
+    // 저녁 상식 루틴 = 클렌징→토너→세럼→크림. 세럼은 필수 스텝이라
+    // 체크리스트 모드(includeOptional: false)에서도 반드시 포함되어야 한다.
+    const result = generateRoutine({
+      skinType: 'normal',
+      concerns: [],
+      timeOfDay: 'evening',
+      includeOptional: false,
+    });
+
+    expect(result.routine.some((step) => step.category === 'serum')).toBe(true);
+    // 순서: 토너 → 세럼 → 크림
+    const categories = result.routine.map((s) => s.category);
+    expect(categories.indexOf('toner')).toBeLessThan(categories.indexOf('serum'));
+    expect(categories.indexOf('serum')).toBeLessThan(categories.indexOf('cream'));
+  });
+
+  it('defaults to essential-only routine (체크리스트 표면 정합 — /beauty = 캡슐 데일리)', () => {
+    // includeOptional 미전달 = false — 파라미터 차이로 화면마다 루틴이 달라지던 문제 방지
+    const byDefault = generateRoutine({
+      skinType: 'combination',
+      concerns: [],
+      timeOfDay: 'evening',
+    });
+    const essential = generateRoutine({
+      skinType: 'combination',
+      concerns: [],
+      timeOfDay: 'evening',
+      includeOptional: false,
+    });
+
+    expect(byDefault.routine.map((s) => s.category)).toEqual(
+      essential.routine.map((s) => s.category)
+    );
+    expect(byDefault.routine.every((step) => !step.isOptional)).toBe(true);
   });
 
   it('removes oil category for oily skin', () => {

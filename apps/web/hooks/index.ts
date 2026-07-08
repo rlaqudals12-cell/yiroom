@@ -23,6 +23,9 @@ export { useOnlineStatus } from './useOnlineStatus';
 // A/B 테스트 실험
 export { useExperiment } from './useExperiment';
 
+// URL 탭 동기화 (뒤로가기 시 탭 리셋 방지)
+export { useUrlTab } from './useUrlTab';
+
 // 음성 인식
 export { useVoiceRecognition } from './useVoiceRecognition';
 export type { UseVoiceRecognitionOptions, UseVoiceRecognitionReturn } from './useVoiceRecognition';

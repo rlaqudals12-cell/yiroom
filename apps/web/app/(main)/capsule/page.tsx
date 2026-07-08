@@ -96,7 +96,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         }
       }
     } catch {
-      setError('캡슐 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
+      setError('플랜 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -126,9 +126,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-dashboard">
         <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
-        <p className="text-muted-foreground mb-4">
-          캡슐 워드로브를 이용하려면 먼저 로그인해주세요.
-        </p>
+        <p className="text-muted-foreground mb-4">나만의 플랜을 보려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
       </div>
     );
@@ -174,10 +172,10 @@ export default function CapsuleDashboardPage(): React.ReactElement {
 
   return (
     <div className="container mx-auto px-4 py-6 pb-24" data-testid="capsule-dashboard">
-      {/* 헤더 */}
+      {/* 헤더 — "캡슐" 용어는 사용자 표면에서 제거 (2026-07-08 피드백: 초보자가 모르는 내부 용어) */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">캡슐 워드로브</h1>
-        <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·스타일 캡슐을 관리해요</p>
+        <h1 className="text-2xl font-bold">나만의 플랜</h1>
+        <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·스타일 플랜을 관리해요</p>
       </div>
 
       {/* Daily Capsule 요약 카드 */}
@@ -192,7 +190,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
                 <CalendarCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm">오늘의 캡슐</h3>
+                <h3 className="font-semibold text-sm">오늘의 루틴</h3>
                 <p className="text-xs text-muted-foreground">
                   {completedCount}/{totalCount} 완료
                 </p>
@@ -259,8 +257,8 @@ export default function CapsuleDashboardPage(): React.ReactElement {
               <div>
                 <h3 className="font-semibold text-sm">부족한 영역이 있어요</h3>
                 <p className="text-xs text-muted-foreground">
-                  {gapData.completedDomains}/{gapData.totalDomains} 도메인 완성 · {gapData.totalGap}
-                  개 아이템 추가 필요
+                  {gapData.completedDomains}/{gapData.totalDomains} 영역 완성 · {gapData.totalGap}개
+                  아이템 추가 필요
                 </p>
               </div>
             </div>
@@ -277,8 +275,8 @@ export default function CapsuleDashboardPage(): React.ReactElement {
               <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">캡슐이 완성되었어요!</h3>
-              <p className="text-xs text-muted-foreground">모든 도메인의 캡슐이 최적 상태예요.</p>
+              <h3 className="font-semibold text-sm">플랜이 완성되었어요!</h3>
+              <p className="text-xs text-muted-foreground">모든 영역의 플랜이 잘 갖춰져 있어요.</p>
             </div>
           </div>
         </Card>

@@ -25,6 +25,10 @@ import type {
 } from '@/types/skin-diary';
 import { analyzeCorrelations } from '@/lib/skincare/correlation';
 import { DEFAULT_INSIGHTS } from '@/lib/mock/skin-diary';
+import { useUrlTab } from '@/hooks/useUrlTab';
+
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const DIARY_TABS = ['calendar', 'insights'] as const;
 
 // DB 엔트리를 앱 엔트리로 변환
 function transformDbToEntry(dbEntry: DbSkinDiaryEntry): SkinDiaryEntry {
@@ -55,8 +59,8 @@ export default function SkinDiaryPage() {
   const { isSignedIn, isLoaded, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
 
-  // 상태
-  const [activeTab, setActiveTab] = useState<'calendar' | 'insights'>('calendar');
+  // 상태 — 탭은 URL ?tab= 과 동기화 (링크로 나갔다 뒤로가기 해도 탭 유지)
+  const [activeTab, setActiveTab] = useUrlTab(DIARY_TABS, 'calendar');
   const [entries, setEntries] = useState<SkinDiaryEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEntry, setSelectedEntry] = useState<SkinDiaryEntry | undefined>();
@@ -309,7 +313,7 @@ export default function SkinDiaryPage() {
             isLoading={saving}
           />
         ) : (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'calendar' | 'insights')}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="calendar" className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />

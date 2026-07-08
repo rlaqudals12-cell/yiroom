@@ -78,6 +78,51 @@ function successAxisCount(s: AxisSummary): number {
 }
 
 // ============================================
+// 1-b. 소비자 눈높이 라벨 (초보자 기준 — 원시 영문/전문용어 노출 금지)
+// ============================================
+
+/** 피부 타입 원시값(영문) → 한국어 */
+const SKIN_TYPE_KO: Record<string, string> = {
+  dry: '건성',
+  oily: '지성',
+  combination: '복합성',
+  normal: '중성',
+  sensitive: '민감성',
+};
+
+function skinTypeKo(raw: string | undefined): string {
+  if (!raw) return '';
+  return SKIN_TYPE_KO[raw.toLowerCase()] ?? raw;
+}
+
+/** 골격 라벨 → 짧은 풀이 (사용자는 웨이브/스트레이트가 뭔지 모른다) */
+const BODY_DESC_KO: Record<string, string> = {
+  스트레이트: '직선이 깔끔한 스트레이트',
+  웨이브: '곡선이 부드러운 웨이브',
+  내추럴: '골격감이 자연스러운 내추럴',
+};
+
+function bodyDescKo(label: string | undefined): string {
+  if (!label) return '';
+  return BODY_DESC_KO[label] ?? label;
+}
+
+/** 얼굴형 원시값(영문) → 한국어 */
+const FACE_SHAPE_KO: Record<string, string> = {
+  oval: '계란형',
+  round: '둥근형',
+  square: '각진형',
+  heart: '하트형',
+  oblong: '긴 얼굴형',
+  diamond: '다이아몬드형',
+};
+
+function faceShapeKo(raw: string | undefined): string {
+  if (!raw) return '';
+  return FACE_SHAPE_KO[raw.toLowerCase()] ?? raw;
+}
+
+// ============================================
 // 2. Gemini 프롬프트
 // ============================================
 
@@ -89,13 +134,15 @@ function buildPrompt(summary: AxisSummary): string {
     );
   }
   if (summary.skin) {
-    lines.push(`- 피부: ${summary.skin.type} 타입, 바이탈리티 ${summary.skin.score}점`);
+    lines.push(
+      `- 피부: ${skinTypeKo(summary.skin.type)} 타입, 피부 컨디션 점수 ${summary.skin.score}점`
+    );
   }
   if (summary.body) {
-    lines.push(`- 체형: ${summary.body.type}`);
+    lines.push(`- 체형: ${bodyDescKo(summary.body.type)}`);
   }
   if (summary.hair) {
-    lines.push(`- 얼굴형: ${summary.hair.faceShape}`);
+    lines.push(`- 얼굴형: ${faceShapeKo(summary.hair.faceShape)}`);
   }
   if (summary.makeup) {
     lines.push(`- 메이크업 베이스: ${summary.makeup.base}`);
@@ -110,6 +157,8 @@ function buildPrompt(summary: AxisSummary): string {
 3. 한국어 해요체, 따뜻하지만 과장 없는 톤.
 4. 의학/진단 표현 금지, "어울려요/좋아요/잘 맞아요" 같은 실용어 사용.
 5. 성공한 축만 활용. 실패한 축은 언급 금지.
+6. 사용자는 뷰티 초보자예요 — 영문 용어(normal, oval 등)와 전문용어를 그대로 쓰지 말고,
+   전문 표현(웨이브 체형 등)을 쓸 땐 "곡선이 부드러운"처럼 짧은 풀이를 곁들여주세요.
 
 📊 입력 (5축 성공 결과):
 ${lines.join('\n')}
@@ -158,16 +207,17 @@ function generateMockPersona(summary: AxisSummary): PersonaProfile {
     insights.push(`${summary.pc.tone} 팔레트가 당신의 혈색을 살려요.`);
   }
   if (summary.skin) {
-    parts.push(`${summary.skin.type} 피부 (바이탈리티 ${summary.skin.score}점)`);
+    // 초보자 눈높이: 원시 영문 타입·"바이탈리티" 전문용어 노출 금지
+    parts.push(`${skinTypeKo(summary.skin.type)} 피부 (피부 컨디션 점수 ${summary.skin.score}점)`);
     insights.push(
-      `피부 타입에 맞는 ${summary.skin.type === 'oily' ? '매트' : '듀이'} 마무리가 좋아요.`
+      `피부 타입에 맞는 ${summary.skin.type === 'oily' ? '매트(보송한)' : '듀이(촉촉한)'} 마무리가 좋아요.`
     );
   }
   if (summary.body) {
-    parts.push(`${summary.body.type} 실루엣`);
+    parts.push(`${bodyDescKo(summary.body.type)} 체형`);
   }
   if (summary.hair) {
-    insights.push(`${summary.hair.faceShape}형에는 얼굴선을 살린 컷이 어울려요.`);
+    insights.push(`${faceShapeKo(summary.hair.faceShape)} 얼굴에는 얼굴선을 살린 컷이 어울려요.`);
   }
   if (summary.makeup) {
     insights.push(summary.makeup.base);

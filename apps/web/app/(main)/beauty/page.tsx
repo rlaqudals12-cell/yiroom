@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useUserMatching } from '@/hooks/useUserMatching';
+import { useUrlTab } from '@/hooks/useUrlTab';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { generateRoutine } from '@/lib/skincare';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,15 +20,22 @@ import type { RoutineItem } from '@/types/hybrid';
 import type { RoutineStep } from '@/types/skincare-routine';
 
 // 큐레이션 → 뷰티 카테고리 매핑
-// 큐레이션은 lip/base/skincare를 사용하지만, /beauty는 스킨케어 계열만 카테고리가 있음.
-// 매핑되지 않는 값(lip/base)은 'all' 그대로 두고 source=integrated 배너로 맥락 전달.
-const CURATION_CATEGORY_MAP: Record<string, 'all' | 'cleansing' | 'skincare' | 'suncare' | 'mask'> =
-  {
-    skincare: 'skincare',
-    cleansing: 'cleansing',
-    suncare: 'suncare',
-    mask: 'mask',
-  };
+// 추천 탭에 메이크업 대분류가 생겨(2026-07-08) 큐레이션의 lip/base도 메이크업으로 연결한다.
+const CURATION_CATEGORY_MAP: Record<
+  string,
+  'all' | 'cleansing' | 'skincare' | 'suncare' | 'makeup' | 'mask'
+> = {
+  skincare: 'skincare',
+  cleansing: 'cleansing',
+  suncare: 'suncare',
+  mask: 'mask',
+  makeup: 'makeup',
+  lip: 'makeup',
+  base: 'makeup',
+};
+
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
+const BEAUTY_TABS = ['recommend', 'care'] as const;
 
 // 피부 타입
 type SkinType = 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal';
@@ -87,6 +95,9 @@ export default function BeautyPage() {
     : 'all';
   const isFromIntegrated = curationSource === 'integrated';
 
+  // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
+  const [activeTab, setActiveTab] = useUrlTab(BEAUTY_TABS, 'recommend');
+
   // useUserMatching 훅으로 분석 결과 자동 로드
   const {
     skinType: userSkinTypeFromHook,
@@ -125,8 +136,12 @@ export default function BeautyPage() {
     };
   }, [hasAnalysis, userSkinTypeFromHook, userSkinType]);
 
-  // 피부나이 계산용 실지표 — 최신 skin_analyses에서 로드 (지표가 없으면 계산기 숨김)
+  // 피부나이 계산용 실지표 — 최신 skin_analyses에서 로드.
+  // 세부 지표가 일부 null이어도(통합 분석 경로 등) overall_score가 있으면
+  // "종합 점수 기반 추정"으로 계산기를 제공한다 (둘 다 없으면 계산기 숨김).
   const [skinMetrics, setSkinMetrics] = useState<SkinAgeMetrics | null>(null);
+  const [skinOverallScore, setSkinOverallScore] = useState<number | null>(null);
+  const [skinAnalysisId, setSkinAnalysisId] = useState<string | null>(null);
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
     let cancelled = false;
@@ -135,13 +150,18 @@ export default function BeautyPage() {
       try {
         const { data } = await supabase
           .from('skin_analyses')
-          .select('hydration, oil_level, wrinkles, pores, pigmentation')
+          .select('id, overall_score, hydration, oil_level, wrinkles, pores, pigmentation')
           .eq('clerk_user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (cancelled || !data) return;
+
+        setSkinAnalysisId(data.id ?? null);
+        if (typeof data.overall_score === 'number') {
+          setSkinOverallScore(data.overall_score);
+        }
 
         const { hydration, oil_level, wrinkles, pores, pigmentation } = data;
         const values = [hydration, oil_level, wrinkles, pores, pigmentation];
@@ -270,7 +290,7 @@ export default function BeautyPage() {
       )}
 
       {/* F1: 2탭 구조 — 추천/케어 (트렌드 탭은 ADR-098 게이팅으로 임시 숨김) */}
-      <Tabs defaultValue="recommend" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList
           className="grid w-full grid-cols-2 sticky top-0 z-10 bg-background border-b rounded-none h-12"
           aria-label="뷰티 카테고리"
@@ -308,6 +328,8 @@ export default function BeautyPage() {
               morningRoutine={morningRoutine}
               eveningRoutine={eveningRoutine}
               skinMetrics={skinMetrics}
+              skinOverallScore={skinOverallScore}
+              skinAnalysisId={skinAnalysisId}
             />
           </ErrorBoundary>
         </TabsContent>

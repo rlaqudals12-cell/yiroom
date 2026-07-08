@@ -219,14 +219,16 @@ export async function runSkinAxis(
 
     const supabase = createServiceRoleClient();
 
-    // scoreBreakdown 4개 지표(hydration/elasticity/clarity/tone)를 테이블 6개 지표로 매핑
+    // scoreBreakdown 4개 지표(hydration/elasticity/clarity/tone)를 테이블 6개 지표로 매핑.
+    // ⚠️ 테이블 규약 = 6개 지표 전부 "높을수록 좋음"(결과 페이지 getStatus ≥71 good 동일 적용) —
+    // 과거 100-clarity/100-tone 반전 저장은 단독 분석 경로와 컬럼 의미가 반대였던 버그 (2026-07-09 수리).
     const metrics = {
       hydration: result.scoreBreakdown?.hydration ?? 70,
-      oil_level: 100 - (result.scoreBreakdown?.clarity ?? 50),
-      pores: 100 - (result.scoreBreakdown?.clarity ?? 50),
-      pigmentation: 100 - (result.scoreBreakdown?.tone ?? 50),
+      oil_level: result.scoreBreakdown?.clarity ?? 70, // 맑음 → 유수분 밸런스 양호 근사
+      pores: result.scoreBreakdown?.clarity ?? 70,
+      pigmentation: result.scoreBreakdown?.tone ?? 70,
       wrinkles: result.scoreBreakdown?.elasticity ?? 80,
-      sensitivity: 20,
+      sensitivity: 70, // 통합 경로엔 민감도 신호 없음 — 중립 근사 (구 20은 "매우 민감"으로 위장)
     };
 
     // ADR-109 Phase 2C: 통합 저장을 단독 skin 분석과 동일한 깊이로 (성분경고·루틴·추천성분·insight).
