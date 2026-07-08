@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, CheckCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Send, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -54,11 +54,13 @@ export default function FeedbackPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!feedbackType || !content.trim()) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       const response = await fetch('/api/feedback', {
@@ -75,16 +77,17 @@ export default function FeedbackPage() {
         throw new Error('피드백 전송 실패');
       }
 
-      // API 응답 확인 (DB 저장 결과)
+      // API 응답 확인 (DB 저장 결과) — 실패를 성공으로 위장하지 않는다
       const result = await response.json();
-      if (result.success) {
+      if (!result.success) {
+        throw new Error(result.error || '피드백 저장 실패');
       }
 
       setIsSubmitted(true);
     } catch (error) {
       console.error('[Feedback] 피드백 전송 오류:', error);
-      // 오류가 발생해도 성공으로 처리 (UX)
-      setIsSubmitted(true);
+      // 실패를 사용자에게 정직하게 안내 (입력 내용은 유지되어 재시도 가능)
+      setSubmitError('피드백 전송에 실패했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -186,6 +189,23 @@ export default function FeedbackPage() {
         <p className="text-muted-foreground text-xs">이메일을 입력하시면 답변을 드릴 수 있어요</p>
       </div>
 
+      {/* 전송 실패 안내 + 재시도 */}
+      {submitError && (
+        <div
+          className="border-destructive/30 bg-destructive/5 flex items-start gap-3 rounded-xl border p-4"
+          role="alert"
+          data-testid="feedback-error"
+        >
+          <AlertCircle className="text-destructive mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{submitError}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              작성하신 내용은 그대로 남아 있어요.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* 제출 버튼 */}
       <Button
         onClick={handleSubmit}
@@ -198,7 +218,7 @@ export default function FeedbackPage() {
         ) : (
           <>
             <Send className="mr-2 h-4 w-4" />
-            피드백 보내기
+            {submitError ? '다시 시도' : '피드백 보내기'}
           </>
         )}
       </Button>

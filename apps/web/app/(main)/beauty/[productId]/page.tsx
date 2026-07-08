@@ -6,7 +6,6 @@ import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
   ArrowLeft,
-  Heart,
   Share2,
   Star,
   MessageSquare,
@@ -18,9 +17,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
-import { cn } from '@/lib/utils';
 import type { CosmeticProduct, SkinType } from '@/types/product';
 import { IngredientAnalysisSection } from '@/components/products/ingredients';
+import { WishlistButton } from '@/components/products/WishlistButton';
 
 /**
  * 뷰티 제품 상세 페이지 - UX 리스트럭처링
@@ -52,7 +51,6 @@ export default function BeautyProductDetailPage() {
   const supabase = useClerkSupabaseClient();
   const productId = params.productId as string;
 
-  const [isLiked, setIsLiked] = useState(false);
   const [userSkinTypeRaw, setUserSkinTypeRaw] = useState<SkinType | null>(null);
   const [product, setProduct] = useState<CosmeticProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -219,16 +217,8 @@ export default function BeautyProductDetailPage() {
           </button>
           <h1 className="text-base font-medium truncate max-w-[200px]">{displayProduct.name}</h1>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsLiked(!isLiked)}
-              className={cn(
-                'p-2 rounded-lg transition-colors',
-                isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-foreground'
-              )}
-              aria-label={isLiked ? '좋아요 취소' : '좋아요'}
-            >
-              <Heart className={cn('w-5 h-5', isLiked && 'fill-current')} />
-            </button>
+            {/* 로컬 state만 토글하던 가짜 하트 → 실제 위시리스트 연동 (user_wishlists) */}
+            <WishlistButton productType="cosmetic" productId={productId} variant="icon" />
             <button
               onClick={() => {
                 const url = window.location.href;

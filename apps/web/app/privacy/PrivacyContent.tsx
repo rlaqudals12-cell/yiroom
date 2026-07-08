@@ -117,7 +117,10 @@ function KoreanContent() {
             분석 이미지: 분석·결과 확인을 위해 안전하게 보관되며, 요청 시 언제든 삭제 (회원 탈퇴 시
             파기)
           </li>
-          <li>AI 코치 대화: 세션 종료 시 삭제 (대화 내용은 서버에 영구 저장하지 않음)</li>
+          <li>
+            AI 코치 대화: 대화 이어보기 기능 제공을 위해 서버에 저장되며, 설정 또는 삭제 요청으로
+            언제든 삭제 가능 (회원 탈퇴 시 파기)
+          </li>
           <li>소셜 활동 기록: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
           <li>서비스 이용 기록: 3년</li>
         </ul>
@@ -196,6 +199,14 @@ function KoreanContent() {
             서비스에서의 구매 정보는 수집하지 않습니다.
           </p>
         </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">개인정보 처리 위탁 현황</p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>Supabase: 데이터 저장 및 관리 (클라우드 데이터베이스)</li>
+            <li>Google (Gemini API): AI 이미지 분석 처리</li>
+            <li>Clerk: 회원 인증 및 계정 관리</li>
+          </ul>
+        </div>
       </section>
 
       <section className="mt-8">
@@ -245,6 +256,15 @@ function KoreanContent() {
           </p>
           <p>이메일: privacy@yiroom.app</p>
         </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          개인정보 침해에 대한 신고나 상담이 필요하신 경우 아래 기관에 문의하실 수 있습니다:
+        </p>
+        <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>개인정보 침해신고센터: 118</li>
+          <li>개인정보 분쟁조정위원회: 1833-6972</li>
+          <li>대검찰청 사이버수사과: 1301</li>
+          <li>경찰청 사이버안전국: 182</li>
+        </ul>
       </section>
 
       <section className="mt-8">
@@ -331,12 +351,12 @@ function EnglishContent() {
             Account information: Until account deletion (destroyed within 30 days of deletion)
           </li>
           <li>
-            Analysis images: Retained for 1 year with consent; immediately deleted after analysis if
-            no consent given
+            Analysis images: Securely retained so you can review your analysis results; can be
+            deleted anytime upon request (destroyed upon account deletion)
           </li>
           <li>
-            AI coach conversations: Deleted upon session end (conversations are not permanently
-            stored on servers)
+            AI coach conversations: Stored on our servers so you can resume previous conversations;
+            you can delete them anytime via settings or by request (destroyed upon account deletion)
           </li>
           <li>
             Social activity records: Until account deletion (destroyed within 30 days of deletion)
@@ -362,8 +382,8 @@ function EnglishContent() {
             progress tracking
           </li>
           <li>
-            <strong>Retention:</strong> 1 year with consent; immediately deleted upon consent
-            withdrawal
+            <strong>Retention:</strong> Until deletion request or account deletion (destroyed
+            immediately upon request)
           </li>
           <li>
             <strong>Consent method:</strong> Separate consent screen provided when using analysis
@@ -423,6 +443,14 @@ function EnglishContent() {
             Yiroom only collects anonymized click statistics and does not collect any purchase
             information from external services.
           </p>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">Data Processing Partners</p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>Supabase: Data storage and management (cloud database)</li>
+            <li>Google (Gemini API): AI image analysis processing</li>
+            <li>Clerk: Member authentication and account management</li>
+          </ul>
         </div>
       </section>
 

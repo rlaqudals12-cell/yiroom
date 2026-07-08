@@ -87,20 +87,20 @@ describe('WelcomeBackBanner', () => {
     });
     mockGenerateWelcomeBackMessage.mockReturnValue({
       title: '10일 만에 돌아오셨군요!',
-      description: '그동안 새로운 변화가 있었어요.',
+      description: '오랜만에 내 상태를 다시 확인해보세요',
       absentDays: 10,
-      ctaText: '변화 확인하기',
-      ctaHref: '/dashboard',
+      ctaText: '다시 분석하기',
+      ctaHref: '/analysis',
     });
 
     render(<WelcomeBackBanner />);
 
     await waitFor(() => {
-      expect(screen.getByText('변화 확인하기')).toBeInTheDocument();
+      expect(screen.getByText('다시 분석하기')).toBeInTheDocument();
     });
 
-    const ctaLink = screen.getByText('변화 확인하기').closest('a');
-    expect(ctaLink).toHaveAttribute('href', '/dashboard');
+    const ctaLink = screen.getByText('다시 분석하기').closest('a');
+    expect(ctaLink).toHaveAttribute('href', '/analysis');
   });
 
   it('닫기 버튼 클릭 시 dismissWelcomeBack()을 호출하고 배너를 숨긴다', async () => {

@@ -98,6 +98,71 @@ export interface HairAnalysisResult {
   analysisReliability: 'high' | 'medium' | 'low';
 }
 
+// 라벨 맵 (Mock 생성/자가입력 프리셋 공용)
+const HAIR_TYPE_LABELS: Record<HairTypeId, string> = {
+  straight: '직모',
+  wavy: '웨이브',
+  curly: '곱슬',
+  coily: '강한 곱슬',
+};
+
+const THICKNESS_LABELS: Record<HairThicknessId, string> = {
+  fine: '가는 모발',
+  medium: '보통',
+  thick: '굵은 모발',
+};
+
+const SCALP_TYPE_LABELS: Record<ScalpTypeId, string> = {
+  dry: '건성 두피',
+  normal: '중성 두피',
+  oily: '지성 두피',
+  sensitive: '민감성 두피',
+};
+
+// 두피 타입별 추천 성분 (공용)
+const INGREDIENTS_BY_SCALP: Record<ScalpTypeId, string[]> = {
+  dry: ['히알루론산', '아르간 오일', '시어버터', '판테놀'],
+  normal: ['케라틴', '실크 아미노산', '비오틴', '프로비타민 B5'],
+  oily: ['티트리 오일', '살리실산', '녹차 추출물', '멘톨'],
+  sensitive: ['알로에베라', '카모마일', '센텔라', '병풀 추출물'],
+};
+
+// 공용 케어 팁 (결정론)
+const COMMON_CARE_TIPS = [
+  '미지근한 물로 샴푸하세요',
+  '드라이기는 20cm 이상 거리에서 사용하세요',
+  '자외선 노출 시 모발 보호 제품을 사용하세요',
+  '일주일에 1-2회 헤어 마스크를 사용하세요',
+];
+
+// 점수 → 상태 (공용)
+function getMetricStatus(value: number): 'good' | 'normal' | 'warning' {
+  if (value >= 70) return 'good';
+  if (value >= 40) return 'normal';
+  return 'warning';
+}
+
+// 두피 타입 기반 추천 제품 (결정론)
+function buildRecommendedProducts(scalpType: ScalpTypeId) {
+  return [
+    {
+      category: '샴푸',
+      name: `${SCALP_TYPE_LABELS[scalpType]}용 샴푸`,
+      description: '두피 타입에 맞는 클렌징',
+    },
+    {
+      category: '트리트먼트',
+      name: '집중 영양 트리트먼트',
+      description: '손상 모발 케어',
+    },
+    {
+      category: '에센스',
+      name: '헤어 에센스',
+      description: '모발 보호 및 윤기',
+    },
+  ];
+}
+
 /**
  * Mock 분석 결과 생성
  */
@@ -110,34 +175,14 @@ export function generateMockHairAnalysisResult(): HairAnalysisResult {
   const randomThickness = thicknesses[Math.floor(Math.random() * thicknesses.length)];
   const randomScalpType = scalpTypes[Math.floor(Math.random() * scalpTypes.length)];
 
-  const hairTypeLabels: Record<HairTypeId, string> = {
-    straight: '직모',
-    wavy: '웨이브',
-    curly: '곱슬',
-    coily: '강한 곱슬',
-  };
-
-  const thicknessLabels: Record<HairThicknessId, string> = {
-    fine: '가는 모발',
-    medium: '보통',
-    thick: '굵은 모발',
-  };
-
-  const scalpTypeLabels: Record<ScalpTypeId, string> = {
-    dry: '건성 두피',
-    normal: '중성 두피',
-    oily: '지성 두피',
-    sensitive: '민감성 두피',
-  };
+  const hairTypeLabels = HAIR_TYPE_LABELS;
+  const thicknessLabels = THICKNESS_LABELS;
+  const scalpTypeLabels = SCALP_TYPE_LABELS;
 
   const generateScore = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const getStatus = (value: number): 'good' | 'normal' | 'warning' => {
-    if (value >= 70) return 'good';
-    if (value >= 40) return 'normal';
-    return 'warning';
-  };
+  const getStatus = getMetricStatus;
 
   const hydration = generateScore(30, 90);
   const scalp = generateScore(40, 85);
@@ -202,14 +247,6 @@ export function generateMockHairAnalysisResult(): HairAnalysisResult {
   if (density < 50) concerns.push('hairloss', 'lack-volume');
   if (concerns.length === 0) concerns.push('split-ends');
 
-  // 두피 타입별 추천 성분
-  const ingredientsByScalp: Record<ScalpTypeId, string[]> = {
-    dry: ['히알루론산', '아르간 오일', '시어버터', '판테놀'],
-    normal: ['케라틴', '실크 아미노산', '비오틴', '프로비타민 B5'],
-    oily: ['티트리 오일', '살리실산', '녹차 추출물', '멘톨'],
-    sensitive: ['알로에베라', '카모마일', '센텔라', '병풀 추출물'],
-  };
-
   // 모발 상태별 케어 메시지
   let careMessage = '현재 상태를 유지하는 케어를 추천드려요.';
   if (concerns.includes('damage')) careMessage = '손상된 모발 회복에 집중해주세요.';
@@ -228,31 +265,80 @@ export function generateMockHairAnalysisResult(): HairAnalysisResult {
     metrics,
     concerns,
     insight,
-    recommendedIngredients: ingredientsByScalp[randomScalpType],
-    recommendedProducts: [
-      {
-        category: '샴푸',
-        name: `${scalpTypeLabels[randomScalpType]}용 샴푸`,
-        description: '두피 타입에 맞는 클렌징',
-      },
-      {
-        category: '트리트먼트',
-        name: '집중 영양 트리트먼트',
-        description: '손상 모발 케어',
-      },
-      {
-        category: '에센스',
-        name: '헤어 에센스',
-        description: '모발 보호 및 윤기',
-      },
-    ],
-    careTips: [
-      '미지근한 물로 샴푸하세요',
-      '드라이기는 20cm 이상 거리에서 사용하세요',
-      '자외선 노출 시 모발 보호 제품을 사용하세요',
-      '일주일에 1-2회 헤어 마스크를 사용하세요',
-    ],
+    recommendedIngredients: INGREDIENTS_BY_SCALP[randomScalpType],
+    recommendedProducts: buildRecommendedProducts(randomScalpType),
+    careTips: COMMON_CARE_TIPS,
     analyzedAt: new Date(),
     analysisReliability: 'medium',
+  };
+}
+
+/**
+ * 자가입력(known-input) 결과 생성 — 결정론 (랜덤 없음)
+ *
+ * 왜: "타입을 이미 알아요" 경로는 사진 분석이 없으므로 랜덤 점수·두피타입을
+ * 실측처럼 보여주면 안 된다. 선택한 모발 타입 + 고민에서 결정론적으로 파생하고
+ * 신뢰도는 'low'로 표시, UI에서 "자가입력 기반 추정" 안내와 함께 사용한다.
+ */
+export function generateKnownHairTypeResult(
+  hairType: HairTypeId,
+  concerns: HairConcernId[]
+): HairAnalysisResult {
+  // 두피 타입: 선택한 고민에서 결정론적으로 파생 (파생 불가 시 중성)
+  let scalpType: ScalpTypeId = 'normal';
+  if (concerns.includes('oily-scalp')) scalpType = 'oily';
+  else if (concerns.includes('dry-scalp') || concerns.includes('dandruff')) scalpType = 'dry';
+
+  // 지표: 기준값 65(보통), 선택한 고민과 연결된 지표만 45(주의)로 낮춤
+  const has = (...ids: HairConcernId[]) => ids.some((id) => concerns.includes(id));
+  const hydration = has('frizz', 'dry-scalp') ? 45 : 65;
+  const scalp = has('oily-scalp', 'dry-scalp', 'dandruff') ? 45 : 65;
+  const damageHealth = has('damage', 'split-ends') ? 45 : 65; // 표시값 = 건강도
+  const density = has('hairloss', 'lack-volume') ? 45 : 65;
+  const elasticity = has('damage') ? 55 : 65;
+  const shine = has('frizz') ? 55 : 65;
+
+  const metricDefs: Array<[string, string, number, string]> = [
+    ['hydration', '수분도', hydration, '모발의 수분 함량 (자가입력 기반 추정)'],
+    ['scalp', '두피 건강', scalp, '두피 상태 점수 (자가입력 기반 추정)'],
+    ['damage', '손상도', damageHealth, '모발 손상 정도 (높을수록 건강, 자가입력 기반 추정)'],
+    ['density', '모발 밀도', density, '모발의 밀집도 (자가입력 기반 추정)'],
+    ['elasticity', '탄력', elasticity, '모발의 탄력성 (자가입력 기반 추정)'],
+    ['shine', '윤기', shine, '모발의 광택 (자가입력 기반 추정)'],
+  ];
+
+  const metrics: HairAnalysisMetric[] = metricDefs.map(([id, label, value, description]) => ({
+    id,
+    label,
+    value,
+    status: getMetricStatus(value),
+    description,
+  }));
+
+  const overallScore = Math.round(metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length);
+
+  let careMessage = '현재 상태를 유지하는 케어를 추천드려요.';
+  if (concerns.includes('damage')) careMessage = '손상된 모발 회복에 집중해주세요.';
+  else if (concerns.includes('frizz')) careMessage = '수분 공급에 신경써주세요.';
+
+  const insight = `${HAIR_TYPE_LABELS[hairType]} 타입으로 선택해주셨어요. 사진 분석 없이 입력하신 내용을 바탕으로 한 추정 가이드예요. ${SCALP_TYPE_LABELS[scalpType]} 경향에 맞는 케어가 도움이 돼요. ${careMessage}`;
+
+  return {
+    hairType,
+    hairTypeLabel: HAIR_TYPE_LABELS[hairType],
+    // 굵기는 자가입력에 없음 — 형태는 기본값, 라벨은 비워 UI에서 미표시
+    hairThickness: 'medium',
+    hairThicknessLabel: '',
+    scalpType,
+    scalpTypeLabel: SCALP_TYPE_LABELS[scalpType],
+    overallScore,
+    metrics,
+    concerns,
+    insight,
+    recommendedIngredients: INGREDIENTS_BY_SCALP[scalpType],
+    recommendedProducts: buildRecommendedProducts(scalpType),
+    careTips: COMMON_CARE_TIPS,
+    analyzedAt: new Date(),
+    analysisReliability: 'low',
   };
 }

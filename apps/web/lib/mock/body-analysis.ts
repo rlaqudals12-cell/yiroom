@@ -685,6 +685,31 @@ export interface BodyAnalysisResult3 {
 }
 
 /**
+ * 자가입력(known-type) 플로우용 결정론 측정값 프리셋
+ *
+ * 왜: "타입을 이미 알아요" 경로는 사진 분석이 없으므로 랜덤 수치를 실측처럼
+ * 보여주면 안 된다. 각 타입의 정의상 대표값(기존 범위의 중앙값)을 고정으로
+ * 사용하고, UI에서 "자가입력 기반 추정" 안내와 함께 표시한다.
+ */
+export const KNOWN_BODY_TYPE_MEASUREMENTS: Record<BodyType3, BodyMeasurement[]> = {
+  S: [
+    { name: '어깨', value: 85, description: '스트레이트 타입 대표값 (자가입력 기반 추정)' },
+    { name: '허리', value: 70, description: '스트레이트 타입 대표값 (자가입력 기반 추정)' },
+    { name: '골반', value: 75, description: '스트레이트 타입 대표값 (자가입력 기반 추정)' },
+  ],
+  W: [
+    { name: '어깨', value: 70, description: '웨이브 타입 대표값 (자가입력 기반 추정)' },
+    { name: '허리', value: 65, description: '웨이브 타입 대표값 (자가입력 기반 추정)' },
+    { name: '골반', value: 85, description: '웨이브 타입 대표값 (자가입력 기반 추정)' },
+  ],
+  N: [
+    { name: '어깨', value: 80, description: '내추럴 타입 대표값 (자가입력 기반 추정)' },
+    { name: '허리', value: 75, description: '내추럴 타입 대표값 (자가입력 기반 추정)' },
+    { name: '골반', value: 77, description: '내추럴 타입 대표값 (자가입력 기반 추정)' },
+  ],
+};
+
+/**
  * Mock 체형 분석 결과 생성 (3타입)
  */
 export function generateMockBodyAnalysis3(userInput?: UserBodyInput): BodyAnalysisResult3 {

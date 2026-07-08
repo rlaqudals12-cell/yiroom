@@ -9,7 +9,7 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
-import type { ShareCardFormat } from '@/components/share';
+import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { useAnalysisShare, createMakeupShareData } from '@/hooks/useAnalysisShare';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -86,8 +86,9 @@ export default function MakeupAnalysisResultPage() {
   const rawId = params.id;
   const analysisId = Array.isArray(rawId) ? rawId[0] : rawId;
 
-  // 공유 카드 데이터
+  // 공유 카드 데이터 (테마/포맷은 ShareThemePicker에서 선택)
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
+  const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -103,8 +104,9 @@ export default function MakeupAnalysisResultPage() {
         { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
       ),
       format: shareFormat,
+      theme: shareTheme,
     };
-  }, [result, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
+  }, [result, shareFormat, shareTheme, user?.firstName, user?.imageUrl, user?.username]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -495,8 +497,8 @@ export default function MakeupAnalysisResultPage() {
             <div className="flex gap-2">
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker
-                value={shareData?.theme ?? 'default'}
-                onChange={() => {}}
+                value={shareTheme}
+                onChange={setShareTheme}
                 format={shareFormat}
                 onFormatChange={setShareFormat}
                 className="mt-2"

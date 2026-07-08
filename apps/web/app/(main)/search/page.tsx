@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Search, X, TrendingUp, Clock, Sparkles, SearchX } from 'lucide-react';
+import { ArrowLeft, Search, X, Clock, Sparkles, SearchX } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
@@ -12,60 +12,50 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 /**
  * 검색 페이지 - UX 리스트럭처링
- * - 최근 검색어
- * - 인기 검색어
+ * - 최근 검색어 (localStorage 기반, 기본값 없음)
+ * - 추천 검색어 (큐레이션 목록 — 실시간 인기 집계 아님)
  * - 맞춤 추천 검색
- * - 검색 결과 (탭: 전체/뷰티/스타일/성분)
+ * - 검색 결과 (탭: 전체/뷰티/성분)
  */
 
-type SearchTab = 'all' | 'beauty' | 'style' | 'ingredient';
+type SearchTab = 'all' | 'beauty' | 'ingredient';
 
 const tabs: { id: SearchTab; label: string }[] = [
   { id: 'all', label: '전체' },
   { id: 'beauty', label: '뷰티' },
-  { id: 'style', label: '스타일' },
   { id: 'ingredient', label: '성분' },
 ];
 
 // 로컬 스토리지 키
 const RECENT_SEARCHES_KEY = 'yiroom_recent_searches';
 
-// 임시 데이터
-const popularSearches = [
+// 추천 검색어 — 큐레이션 목록 (실시간 인기 집계가 아니므로 순위 표시하지 않음)
+const suggestedSearches = [
   '레티놀',
   '선크림',
-  '하이웨스트',
   '비타민C',
   '토너패드',
-  '웨이브 코디',
   '나이아신아마이드',
   '세럼',
-  '와이드팬츠',
   '크림',
 ];
 
-const defaultRecentSearches = ['비타민C 세럼', '하이웨스트', '레티놀'];
-
 const defaultRecommendedSearches = [
-  { query: '수분크림', reason: '인기 추천' },
-  { query: '레티놀 세럼', reason: '인기 추천' },
+  { query: '수분크림', reason: '기본 추천' },
+  { query: '레티놀 세럼', reason: '기본 추천' },
 ];
 
 // 자동완성용 전체 검색어 데이터베이스
 const allSearchTerms = [
-  ...popularSearches,
+  ...suggestedSearches,
   '비타민C 세럼',
   '레티놀 크림',
   '나이아신아마이드 세럼',
-  '하이웨스트 팬츠',
-  '크롭 니트',
-  'A라인 스커트',
   '수분 크림',
   '선크림 SPF50',
   '클렌징 오일',
   '웜톤 립스틱',
   '쿨톤 블러셔',
-  '체형 커버',
 ];
 
 // 검색 결과 타입
@@ -73,7 +63,6 @@ interface SearchProduct {
   id: string;
   name: string;
   brand: string;
-  matchRate: number;
   imageUrl: string;
 }
 
@@ -84,7 +73,6 @@ interface IngredientResult {
 
 interface SearchResults {
   beauty: SearchProduct[];
-  style: SearchProduct[];
   ingredient: IngredientResult[];
 }
 
@@ -150,13 +138,12 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<SearchTab>('all');
-  const [searches, setSearches] = useState<string[]>(defaultRecentSearches);
+  const [searches, setSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [userSkinType, setUserSkinType] = useState<string | null>(null);
   const [userSeasonType, setUserSeasonType] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResults>({
     beauty: [],
-    style: [],
     ingredient: [],
   });
 
@@ -179,26 +166,28 @@ export default function SearchPage() {
   // 사용자 분석 데이터 로드 (맞춤 추천용)
   useEffect(() => {
     async function loadUserProfile(): Promise<void> {
+      // 정본 테이블: skin_analyses (skin_assessments는 유령 테이블)
       const { data } = await supabase
-        .from('skin_assessments')
+        .from('skin_analyses')
         .select('skin_type')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
       if (data?.skin_type) {
-        setUserSkinType(data.skin_type);
+        setUserSkinType(String(data.skin_type).toLowerCase());
       }
 
+      // 정본 컬럼: season ("Spring" 등 대문자 시작 — 매핑 키는 소문자로 정규화)
       const { data: pcData } = await supabase
         .from('personal_color_assessments')
-        .select('season_type')
+        .select('season')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
-      if (pcData?.season_type) {
-        setUserSeasonType(pcData.season_type);
+      if (pcData?.season) {
+        setUserSeasonType(String(pcData.season).toLowerCase());
       }
     }
 
@@ -257,11 +246,10 @@ export default function SearchPage() {
           .order('rating', { ascending: false })
           .limit(6);
 
-        const beautyResults: SearchProduct[] = (cosmeticData || []).map((row, index) => ({
+        const beautyResults: SearchProduct[] = (cosmeticData || []).map((row) => ({
           id: row.id,
           name: row.name,
           brand: row.brand,
-          matchRate: Math.max(85, 98 - index * 3),
           imageUrl: getProductImageUrl(row.image_url, row.brand),
         }));
 
@@ -302,12 +290,11 @@ export default function SearchPage() {
 
         setSearchResults({
           beauty: beautyResults,
-          style: [], // 스타일 검색은 추후 구현
           ingredient: ingredientResults,
         });
       } catch (err) {
         console.error('[Search] 검색 오류:', err);
-        setSearchResults({ beauty: [], style: [], ingredient: [] });
+        setSearchResults({ beauty: [], ingredient: [] });
       } finally {
         setIsLoading(false);
       }
@@ -353,7 +340,7 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="search-page">
       {/* 페이지 제목 (스크린리더용) */}
-      <h1 className="sr-only">통합 검색 - 뷰티, 스타일, 성분</h1>
+      <h1 className="sr-only">통합 검색 - 뷰티, 성분</h1>
 
       {/* 검색 헤더 */}
       <header className="sticky top-0 z-40 bg-background border-b">
@@ -372,7 +359,7 @@ export default function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-              placeholder="제품, 성분, 코디 검색..."
+              placeholder="제품, 성분 검색..."
               data-testid="search-input"
               className="w-full pl-10 pr-10 py-2.5 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               autoFocus
@@ -497,29 +484,21 @@ export default function SearchPage() {
               </FadeInUp>
             )}
 
-            {/* 인기 검색어 */}
+            {/* 추천 검색어 — 큐레이션 목록 (실시간 인기 집계 아님, 순위 표시 없음) */}
             <FadeInUp delay={1}>
-              <section aria-label="인기 검색어">
+              <section aria-label="추천 검색어">
                 <h2 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-4 h-4 text-red-500" aria-hidden="true" />
-                  인기 검색어
+                  <Search className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                  추천 검색어
                 </h2>
-                <div className="grid grid-cols-2 gap-2">
-                  {popularSearches.map((search, index) => (
+                <div className="flex flex-wrap gap-2">
+                  {suggestedSearches.map((search) => (
                     <button
                       key={search}
                       onClick={() => handleSearch(search)}
-                      className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors text-left"
+                      className="px-3 py-1.5 bg-muted rounded-full text-sm text-foreground hover:bg-muted/80 transition-colors"
                     >
-                      <span
-                        className={cn(
-                          'w-5 text-center font-bold',
-                          index < 3 ? 'text-red-500' : 'text-muted-foreground'
-                        )}
-                      >
-                        {index + 1}
-                      </span>
-                      <span className="text-sm">{search}</span>
+                      {search}
                     </button>
                   ))}
                 </div>
@@ -584,27 +563,25 @@ export default function SearchPage() {
           // 검색 결과 화면
           <div className="space-y-6">
             {/* 결과 없음 */}
-            {searchResults.beauty.length === 0 &&
-              searchResults.style.length === 0 &&
-              searchResults.ingredient.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <SearchX className="w-16 h-16 text-muted-foreground/50 mb-4" />
-                  <h3 className="font-semibold text-foreground mb-2">검색 결과가 없습니다</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    &quot;{query}&quot;에 대한 결과를 찾을 수 없어요.
-                    <br />
-                    다른 검색어로 시도해 보세요.
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleClearSearch}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium"
-                    >
-                      새로운 검색
-                    </button>
-                  </div>
+            {searchResults.beauty.length === 0 && searchResults.ingredient.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <SearchX className="w-16 h-16 text-muted-foreground/50 mb-4" />
+                <h3 className="font-semibold text-foreground mb-2">검색 결과가 없습니다</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  &quot;{query}&quot;에 대한 결과를 찾을 수 없어요.
+                  <br />
+                  다른 검색어로 시도해 보세요.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleClearSearch}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium"
+                  >
+                    새로운 검색
+                  </button>
                 </div>
-              )}
+              </div>
+            )}
 
             {/* 뷰티 제품 결과 */}
             {(activeTab === 'all' || activeTab === 'beauty') && searchResults.beauty.length > 0 && (
@@ -630,54 +607,6 @@ export default function SearchPage() {
                         onClick={() => router.push(`/beauty/${product.id}`)}
                         className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
                       >
-                        <div className="text-xs font-bold text-primary mb-1">
-                          {product.matchRate}%
-                        </div>
-                        <div className="w-full aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">{product.brand}</p>
-                        <p className="text-sm font-medium line-clamp-2">{product.name}</p>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              </FadeInUp>
-            )}
-
-            {/* 스타일 제품 결과 */}
-            {(activeTab === 'all' || activeTab === 'style') && searchResults.style.length > 0 && (
-              <FadeInUp delay={1}>
-                <section>
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold text-foreground">
-                      👕 스타일 ({searchResults.style.length}개)
-                    </h2>
-                    {activeTab === 'all' && (
-                      <button
-                        onClick={() => setActiveTab('style')}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        더보기
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {searchResults.style.map((product) => (
-                      <button
-                        key={product.id}
-                        onClick={() => router.push(`/style/${product.id}`)}
-                        className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
-                      >
-                        <div className="text-xs font-bold text-primary mb-1">
-                          {product.matchRate}%
-                        </div>
                         <div className="w-full aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -702,14 +631,9 @@ export default function SearchPage() {
                 <FadeInUp delay={2}>
                   <section>
                     <h2 className="font-semibold text-foreground mb-3">🧪 성분 정보</h2>
+                    {/* 성분 상세 페이지(/ingredients/[name])가 없어 링크 없이 정보 카드로만 표시 */}
                     {searchResults.ingredient.map((ingredient, index) => (
-                      <button
-                        key={index}
-                        onClick={() =>
-                          router.push(`/ingredients/${encodeURIComponent(ingredient.name)}`)
-                        }
-                        className="w-full bg-card rounded-xl border p-4 text-left hover:shadow-md transition-shadow"
-                      >
+                      <div key={index} className="w-full bg-card rounded-xl border p-4 text-left">
                         <p className="font-medium text-foreground">{ingredient.name}</p>
                         <div className="flex gap-2 mt-2">
                           {ingredient.effects.map((effect) => (
@@ -721,7 +645,7 @@ export default function SearchPage() {
                             </span>
                           ))}
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </section>
                 </FadeInUp>

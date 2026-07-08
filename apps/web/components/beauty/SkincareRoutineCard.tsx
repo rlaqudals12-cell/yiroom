@@ -8,16 +8,22 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { RoutineItem } from '@/types/hybrid';
 
-// 스킨케어 카테고리
+// 스킨케어 카테고리 (lib/skincare 루틴 엔진 카테고리 포함)
 const SKINCARE_CATEGORIES = [
   { value: 'cleanser', label: '클렌저', emoji: '' },
   { value: 'toner', label: '토너', emoji: '' },
+  { value: 'essence', label: '에센스', emoji: '' },
   { value: 'serum', label: '세럼', emoji: '' },
+  { value: 'ampoule', label: '앰플', emoji: '' },
   { value: 'moisturizer', label: '보습제', emoji: '' },
+  { value: 'cream', label: '크림', emoji: '' },
   { value: 'sunscreen', label: '선크림', emoji: '' },
   { value: 'mask', label: '마스크팩', emoji: '' },
   { value: 'eyecream', label: '아이크림', emoji: '' },
+  { value: 'eye_cream', label: '아이크림', emoji: '' },
   { value: 'oilserum', label: '오일/앰플', emoji: '' },
+  { value: 'oil', label: '페이스 오일', emoji: '' },
+  { value: 'spot_treatment', label: '스팟 케어', emoji: '' },
 ];
 
 export interface SkincareRoutineCardProps {
@@ -124,14 +130,17 @@ export function SkincareRoutineCard({
                       {categoryInfo.emoji || step.order}
                     </div>
 
-                    {/* 정보 */}
+                    {/* 정보 — 제품명 > 스텝 설명(note) > 미설정 순으로 표시 */}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{categoryInfo.label}</p>
-                      {step.productName ? (
-                        <p className="text-xs text-muted-foreground truncate">{step.productName}</p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground italic">제품 미설정</p>
-                      )}
+                      {(() => {
+                        const subtitle = step.productName || step.note;
+                        return subtitle ? (
+                          <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">제품 미설정</p>
+                        );
+                      })()}
                     </div>
 
                     {/* 소요 시간 */}
@@ -181,10 +190,17 @@ export function SkincareRoutineCard({
             <span>총 {currentRoutine.length}단계</span>
             <span>
               예상 소요 시간:{' '}
-              {currentRoutine.reduce((acc, step) => {
-                const minutes = parseInt(step.duration || '0');
-                return acc + (isNaN(minutes) ? 0 : minutes);
-              }, 0)}
+              {Math.max(
+                1,
+                Math.round(
+                  currentRoutine.reduce((acc, step) => {
+                    const value = parseInt(step.duration || '0');
+                    if (isNaN(value)) return acc;
+                    // "30초" 같은 초 단위 표기를 분으로 환산 (기존엔 30분으로 합산되던 버그)
+                    return acc + (step.duration?.includes('초') ? value / 60 : value);
+                  }, 0)
+                )
+              )}
               분
             </span>
           </div>

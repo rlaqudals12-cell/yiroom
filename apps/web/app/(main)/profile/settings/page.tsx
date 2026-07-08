@@ -19,7 +19,6 @@ import {
   Sun,
   Globe,
   Eye,
-  EyeOff,
   Trash2,
   FileText,
   Lock,
@@ -47,13 +46,14 @@ import { useColorBlindMode } from '@/hooks/useColorBlindMode';
  * - 계정 설정 (이름, 이메일, 프로필 사진)
  * - 알림 설정 (토글: 푸시, 이메일, 마케팅)
  * - 앱 설정 (테마, 언어)
- * - 개인정보 설정 (프로필 공개, 활동 공개)
  * - 데이터 관리 (내보내기, 삭제)
  * - 앱 정보 (버전, 이용약관, 개인정보처리방침)
+ *
+ * 개인정보 공개 토글(프로필/활동/리더보드)은 읽는 곳이 없는 무효 설정이라 제거 (정직 원칙)
  */
 
 type ThemeOption = 'light' | 'dark' | 'system';
-type SettingsTab = 'account' | 'notifications' | 'app' | 'privacy' | 'data' | 'info';
+type SettingsTab = 'account' | 'notifications' | 'app' | 'data' | 'info';
 
 interface SettingSection {
   id: SettingsTab;
@@ -65,22 +65,9 @@ const settingsSections: SettingSection[] = [
   { id: 'account', label: '계정', icon: User },
   { id: 'notifications', label: '알림', icon: Bell },
   { id: 'app', label: '앱 설정', icon: Palette },
-  { id: 'privacy', label: '개인정보', icon: Shield },
   { id: 'data', label: '데이터 관리', icon: Database },
   { id: 'info', label: '앱 정보', icon: Info },
 ];
-
-// LocalStorage 키
-const STORAGE_KEYS = {
-  privacy: 'yiroom_privacy_settings',
-  language: 'yiroom_language',
-} as const;
-
-const DEFAULT_PRIVACY_SETTINGS = {
-  profilePublic: true,
-  activityPublic: false,
-  leaderboardPublic: true,
-};
 
 // 시간 선택 옵션 (HH:00 ~ HH:30)
 const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
@@ -210,7 +197,11 @@ export default function SettingsPage() {
     updateAllergies,
     isLoading: isProfileLoading,
   } = useUserProfile();
-  const initialTab = (searchParams.get('tab') as SettingsTab) || 'account';
+  // URL tab 파라미터 검증 — 존재하지 않는 탭(제거된 privacy 등)은 account로 폴백
+  const tabParam = searchParams.get('tab');
+  const initialTab: SettingsTab = settingsSections.some((s) => s.id === tabParam)
+    ? (tabParam as SettingsTab)
+    : 'account';
 
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -221,9 +212,6 @@ export default function SettingsPage() {
   const [notificationSettings, setNotificationSettings] =
     useState<NotificationSettings>(DB_DEFAULT_SETTINGS);
   const { userId } = useAuth();
-
-  // 개인정보 설정 상태
-  const [privacySettings, setPrivacySettings] = useState(DEFAULT_PRIVACY_SETTINGS);
 
   // 언어 설정 상태
   const [language, setLanguage] = useState<string>(() => {
@@ -248,16 +236,6 @@ export default function SettingsPage() {
         .catch(() => {
           /* 네트워크 오류 시 기본값 사용 */
         });
-    }
-
-    // 개인정보 설정 불러오기
-    const savedPrivacy = localStorage.getItem(STORAGE_KEYS.privacy);
-    if (savedPrivacy) {
-      try {
-        setPrivacySettings({ ...DEFAULT_PRIVACY_SETTINGS, ...JSON.parse(savedPrivacy) });
-      } catch {
-        /* 무시 */
-      }
     }
 
     // 언어 설정: 쿠키에서 읽기 (localStorage 대신)
@@ -290,15 +268,6 @@ export default function SettingsPage() {
       return newSettings;
     });
   }, []);
-
-  // 개인정보 설정 변경 시 저장
-  const updatePrivacySettings = (update: Partial<typeof privacySettings>) => {
-    setPrivacySettings((prev) => {
-      const newSettings = { ...prev, ...update };
-      localStorage.setItem(STORAGE_KEYS.privacy, JSON.stringify(newSettings));
-      return newSettings;
-    });
-  };
 
   // 테마 변경 핸들러
   const handleThemeChange = (newTheme: ThemeOption) => {
@@ -697,50 +666,6 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </FadeInUp>
-        );
-
-      case 'privacy':
-        return (
-          <FadeInUp>
-            <div className="space-y-3">
-              <SettingItem
-                icon={Eye}
-                label="프로필 공개"
-                description="다른 사용자가 내 프로필을 볼 수 있음"
-                action={
-                  <Toggle
-                    enabled={privacySettings.profilePublic}
-                    onChange={(v) => updatePrivacySettings({ profilePublic: v })}
-                  />
-                }
-              />
-              {/* ADR-098: 운동·영양 기록 공개는 W/N 숨김 (WELLNESS_PHASE2) */}
-              {FEATURE_FLAGS.WELLNESS_PHASE2 && (
-                <SettingItem
-                  icon={privacySettings.activityPublic ? Eye : EyeOff}
-                  label="활동 공개"
-                  description="운동, 영양 기록을 친구에게 공개"
-                  action={
-                    <Toggle
-                      enabled={privacySettings.activityPublic}
-                      onChange={(v) => updatePrivacySettings({ activityPublic: v })}
-                    />
-                  }
-                />
-              )}
-              <SettingItem
-                icon={Eye}
-                label="리더보드 참여"
-                description="랭킹에 내 정보 표시"
-                action={
-                  <Toggle
-                    enabled={privacySettings.leaderboardPublic}
-                    onChange={(v) => updatePrivacySettings({ leaderboardPublic: v })}
-                  />
-                }
-              />
             </div>
           </FadeInUp>
         );

@@ -33,7 +33,7 @@ import {
   ClosetPromptCard,
 } from '@/components/analysis/body';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
-import type { ShareCardFormat } from '@/components/share';
+import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { VisualReportCard } from '@/components/analysis/visual-report';
@@ -120,8 +120,9 @@ export default function BodyAnalysisResultPage() {
 
   const analysisId = params.id as string;
 
-  // 공유 카드 데이터
+  // 공유 카드 데이터 (테마/포맷은 ShareThemePicker에서 선택)
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
+  const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -134,8 +135,9 @@ export default function BodyAnalysisResultPage() {
         { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
       ),
       format: shareFormat,
+      theme: shareTheme,
     };
-  }, [result, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
+  }, [result, shareFormat, shareTheme, user?.firstName, user?.imageUrl, user?.username]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -483,17 +485,19 @@ export default function BodyAnalysisResultPage() {
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0">
-                {/* 비주얼 리포트 카드 */}
-                <VisualReportCard
-                  analysisType="body"
-                  overallScore={confidence || 70}
-                  bodyType={result.bodyType as 'S' | 'W' | 'N'}
-                  bodyTypeLabel={result.bodyTypeLabel}
-                  bodyStrengths={result.strengths}
-                  bodyMeasurements={result.measurements}
-                  analyzedAt={result.analyzedAt}
-                  className="mb-6"
-                />
+                {/* 비주얼 리포트 카드 — 신뢰도(confidence)가 저장된 경우에만 표시 (위장 점수 금지) */}
+                {confidence !== null && (
+                  <VisualReportCard
+                    analysisType="body"
+                    overallScore={confidence}
+                    bodyType={result.bodyType as 'S' | 'W' | 'N'}
+                    bodyTypeLabel={result.bodyTypeLabel}
+                    bodyStrengths={result.strengths}
+                    bodyMeasurements={result.measurements}
+                    analyzedAt={result.analyzedAt}
+                    className="mb-6"
+                  />
+                )}
 
                 {/* 환경 요인 안내 카드 */}
                 <div
@@ -633,7 +637,7 @@ export default function BodyAnalysisResultPage() {
                 className="w-full"
                 onClick={() =>
                   router.push(
-                    `/workout/onboarding?bodyType=${result.bodyType}&bmi=${result.bmi || ''}&fromAnalysis=body`
+                    `/workout/onboarding/step1?bodyType=${result.bodyType}&bmi=${result.bmi || ''}&fromAnalysis=body`
                   )
                 }
               >
@@ -648,8 +652,8 @@ export default function BodyAnalysisResultPage() {
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker
-                value={shareData?.theme ?? 'default'}
-                onChange={() => {}}
+                value={shareTheme}
+                onChange={setShareTheme}
                 format={shareFormat}
                 onFormatChange={setShareFormat}
                 className="mt-2"

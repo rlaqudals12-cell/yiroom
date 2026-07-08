@@ -48,15 +48,17 @@ export function AgreementCheckbox({ item, checked, onChange, className }: Agreem
         </label>
       </div>
 
-      <Link
-        href={item.detailUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="p-2 hover:bg-muted rounded-lg transition-colors"
-        aria-label={`${item.label} 상세 보기`}
-      >
-        <ChevronRight className="w-5 h-5 text-muted-foreground" />
-      </Link>
+      {item.detailUrl && (
+        <Link
+          href={item.detailUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 hover:bg-muted rounded-lg transition-colors"
+          aria-label={`${item.label} 상세 보기`}
+        >
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        </Link>
+      )}
     </div>
   );
 }

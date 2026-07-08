@@ -1,6 +1,10 @@
 /**
  * AI 채팅 API
  * POST /api/chat
+ *
+ * @deprecated 레거시 (2026-07 감사): 프론트 /chat 페이지가 /coach로 리다이렉트되어
+ * 이 API의 호출처가 없다. /coach는 /api/coach(대화 DB 저장/이어보기)를 사용한다.
+ * 인메모리 sessionStore(서버 재시작 시 유실)도 정본 패턴이 아님. 제거는 후속 작업.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

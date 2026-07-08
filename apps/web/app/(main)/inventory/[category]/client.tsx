@@ -329,7 +329,7 @@ export function InventoryCategoryClient({
         </div>
         {/* 냉장고: 레시피 추천 버튼 — ADR-098: N-1 숨김 (WELLNESS_PHASE2) */}
         {category === 'pantry' && FEATURE_FLAGS.WELLNESS_PHASE2 && (
-          <Link href="/nutrition/recipes">
+          <Link href="/nutrition/recipe">
             <Button variant="outline" size="sm">
               <ChefHat className="w-4 h-4 mr-1" />
               레시피

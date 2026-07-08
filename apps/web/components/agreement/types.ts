@@ -24,7 +24,8 @@ export interface AgreementItem {
   label: string;
   required: boolean;
   description?: string;
-  detailUrl: string;
+  /** 상세 문서 링크 (약관·개인정보만 제공, 없으면 링크 미노출) */
+  detailUrl?: string;
 }
 
 export const AGREEMENT_ITEMS: AgreementItem[] = [
@@ -41,11 +42,11 @@ export const AGREEMENT_ITEMS: AgreementItem[] = [
     detailUrl: '/privacy',
   },
   {
+    // 마케팅 항목은 별도 상세 페이지가 없음 — detailUrl 미지정 (구 /help/marketing은 404)
     id: 'marketing',
     label: '마케팅 정보 수신 동의',
     required: false,
     description: '프로모션, 이벤트, 신기능 알림을 받습니다',
-    detailUrl: '/help/marketing',
   },
 ];
 

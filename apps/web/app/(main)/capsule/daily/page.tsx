@@ -47,16 +47,13 @@ interface DailyCapsule {
   items: DailyItem[];
 }
 
-// 모듈 코드 색상 매핑
+// 모듈 코드 색상 매핑 (ADR-098: 5축 + 패션 — N/W/OH 잔재 제거)
 const MODULE_COLORS: Record<string, string> = {
   S: '#60A5FA',
   Fashion: '#F472B6',
-  N: '#4ADE80',
-  W: '#4ADE80',
   H: '#D4A24E',
   M: '#D45ABF',
   PC: '#F472B6',
-  OH: '#4ABF7A',
   C: '#A78BFA',
 };
 
@@ -77,7 +74,7 @@ const TIME_GROUPS: Array<{ key: 'morning' | 'evening' | 'anytime'; label: string
 ];
 
 // 시간 섹션 내 모듈 표시 순서 — 실행 순서(스킨케어→메이크업→코디, 저녁은 스킨케어→헤어)
-const MODULE_ORDER = ['S', 'M', 'Fashion', 'H', 'C', 'PC', 'N', 'W', 'OH'];
+const MODULE_ORDER = ['S', 'M', 'Fashion', 'H', 'C', 'PC'];
 
 /**
  * Daily Capsule 상세 페이지

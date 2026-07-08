@@ -62,8 +62,9 @@ describe('welcome-back', () => {
       const msg = generateWelcomeBackMessage(tenDaysAgo.toISOString());
       expect(msg).not.toBeNull();
       expect(msg!.title).toContain('10일 만에');
-      expect(msg!.ctaText).toBe('변화 확인하기');
-      expect(msg!.ctaHref).toBe('/dashboard');
+      // CTA는 /dashboard(배너 표시 위치 자기 자신) 대신 분석 허브로 유도
+      expect(msg!.ctaText).toBe('다시 분석하기');
+      expect(msg!.ctaHref).toBe('/analysis');
     });
 
     it('should return long message with analysis CTA for 14+ days', () => {

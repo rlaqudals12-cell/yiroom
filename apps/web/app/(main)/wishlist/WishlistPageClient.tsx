@@ -11,6 +11,7 @@ import {
   getWorkoutEquipmentById,
   getHealthFoodById,
   checkProductInteractions,
+  productTypeToPath,
 } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -189,9 +190,7 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
     <div className="px-4 py-6 pb-24">
       <h1 className="text-2xl font-bold text-foreground mb-6">
         위시리스트
-        <span className="text-pink-500 text-lg font-normal ml-2">
-          {wishlists.length}개
-        </span>
+        <span className="text-pink-500 text-lg font-normal ml-2">{wishlists.length}개</span>
       </h1>
 
       {/* 성분 상호작용 경고 배너 */}
@@ -259,13 +258,7 @@ interface WishlistGridProps {
   formatPrice: (price: number) => string;
 }
 
-function WishlistGrid({
-  items,
-  products,
-  onRemove,
-  removingIds,
-  formatPrice,
-}: WishlistGridProps) {
+function WishlistGrid({ items, products, onRemove, removingIds, formatPrice }: WishlistGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {items.map((item) => {
@@ -286,7 +279,8 @@ function WishlistGrid({
         return (
           <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <Link href={`/products/${item.productType}/${item.productId}`}>
+              {/* enum(workout_equipment 등) 원시값이 아닌 라우트 경로(equipment/healthfood)로 변환 */}
+              <Link href={`/products/${productTypeToPath(item.productType)}/${item.productId}`}>
                 <div className="flex gap-4">
                   {/* 제품 이미지 */}
                   <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">

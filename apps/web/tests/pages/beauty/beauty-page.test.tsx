@@ -25,6 +25,25 @@ vi.mock('@/hooks/useUserMatching', () => ({
   }),
 }));
 
+// Mock Clerk (피부나이 실지표 로드용 useUser 사용)
+vi.mock('@clerk/nextjs', () => ({
+  useUser: () => ({ user: null, isLoaded: true }),
+}));
+
+// Mock Supabase 클라이언트 (skin_analyses 실지표 조회)
+vi.mock('@/lib/supabase/clerk-client', () => ({
+  useClerkSupabaseClient: () => ({
+    from: () => {
+      const query: Record<string, unknown> = {};
+      for (const method of ['select', 'eq', 'order', 'limit']) {
+        query[method] = () => query;
+      }
+      query.maybeSingle = () => Promise.resolve({ data: null, error: null });
+      return query;
+    },
+  }),
+}));
+
 // Mock 하위 컴포넌트
 vi.mock('@/components/beauty/BeautyRecommendTab', () => ({
   BeautyRecommendTab: () => <div data-testid="beauty-recommend-tab">추천 탭</div>,

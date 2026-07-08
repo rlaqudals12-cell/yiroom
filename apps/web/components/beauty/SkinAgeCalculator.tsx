@@ -8,18 +8,22 @@ import { cn } from '@/lib/utils';
 import { assessImpact, getTrendDirection, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { SkinAgeResult } from '@/types/hybrid';
 
+/** 피부나이 계산 입력 지표 (skin_analyses 실지표 기반) */
+export interface SkinAgeMetrics {
+  hydration: number; // 수분 (0-100)
+  oil: number; // 유분 (0-100)
+  /** 탄력 (0-100) — skin_analyses에 없는 지표라 선택적. 없으면 나머지 지표로 가중치 재분배 */
+  elasticity?: number;
+  wrinkles: number; // 주름 (0-100, 낮을수록 좋음)
+  pores: number; // 모공 (0-100, 낮을수록 좋음)
+  pigmentation: number; // 색소침착 (0-100, 낮을수록 좋음)
+}
+
 export interface SkinAgeCalculatorProps {
   /** 실제 나이 */
   actualAge: number;
   /** 피부 분석 점수들 */
-  skinMetrics: {
-    hydration: number; // 수분 (0-100)
-    oil: number; // 유분 (0-100)
-    elasticity: number; // 탄력 (0-100)
-    wrinkles: number; // 주름 (0-100, 낮을수록 좋음)
-    pores: number; // 모공 (0-100, 낮을수록 좋음)
-    pigmentation: number; // 색소침착 (0-100, 낮을수록 좋음)
-  };
+  skinMetrics: SkinAgeMetrics;
   /** 결과 변경 콜백 */
   onResultChange?: (result: SkinAgeResult) => void;
   /** 추가 className */
@@ -40,37 +44,45 @@ export function SkinAgeCalculator({
 }: SkinAgeCalculatorProps) {
   // 피부나이 계산 로직
   const result = useMemo<SkinAgeResult>(() => {
-    // 긍정 요인 (높을수록 좋음)
-    const positiveFactors = {
-      hydration: { value: skinMetrics.hydration, weight: 0.25 },
-      elasticity: { value: skinMetrics.elasticity, weight: 0.3 },
-    };
+    const hasElasticity = typeof skinMetrics.elasticity === 'number';
+
+    // 긍정 요인 (높을수록 좋음) — 탄력은 데이터가 있을 때만 포함
+    const positiveFactors = [
+      { value: skinMetrics.hydration, weight: 0.25 },
+      ...(hasElasticity ? [{ value: skinMetrics.elasticity as number, weight: 0.3 }] : []),
+    ];
 
     // 부정 요인 (낮을수록 좋음)
-    const negativeFactors = {
-      wrinkles: { value: skinMetrics.wrinkles, weight: 0.2 },
-      pores: { value: skinMetrics.pores, weight: 0.1 },
-      pigmentation: { value: skinMetrics.pigmentation, weight: 0.1 },
-    };
+    const negativeFactors = [
+      { value: skinMetrics.wrinkles, weight: 0.2 },
+      { value: skinMetrics.pores, weight: 0.1 },
+      { value: skinMetrics.pigmentation, weight: 0.1 },
+    ];
 
     // 유분은 중간값이 좋음 (40-60이 최적)
     const oilBalance = 100 - Math.abs(skinMetrics.oil - 50) * 2;
 
-    // 종합 피부 점수 (0-100)
-    let skinScore = 0;
+    // 종합 피부 점수 (0-100) — 사용된 가중치 합으로 정규화해 탄력 유무와 무관하게 동일 척도 유지
+    let weightedSum = 0;
+    let totalWeight = 0;
 
     // 긍정 요인 점수
-    Object.values(positiveFactors).forEach((f) => {
-      skinScore += f.value * f.weight;
+    positiveFactors.forEach((f) => {
+      weightedSum += f.value * f.weight;
+      totalWeight += f.weight;
     });
 
     // 부정 요인 점수 (역산)
-    Object.values(negativeFactors).forEach((f) => {
-      skinScore += (100 - f.value) * f.weight;
+    negativeFactors.forEach((f) => {
+      weightedSum += (100 - f.value) * f.weight;
+      totalWeight += f.weight;
     });
 
     // 유분 밸런스 추가
-    skinScore += oilBalance * 0.05;
+    weightedSum += oilBalance * 0.05;
+    totalWeight += 0.05;
+
+    const skinScore = weightedSum / totalWeight;
 
     // 피부나이 계산 (점수가 높을수록 젊음)
     // 기준: 50점 = 실제나이, 점수 10점 차이 = 나이 3살 차이
@@ -95,11 +107,18 @@ export function SkinAgeCalculator({
         value: skinMetrics.hydration,
         impact: assessImpact(skinMetrics.hydration, { positiveMin: 60, negativeMax: 30 }),
       },
-      {
-        name: '탄력',
-        value: skinMetrics.elasticity,
-        impact: assessImpact(skinMetrics.elasticity, { positiveMin: 60, negativeMax: 30 }),
-      },
+      ...(hasElasticity
+        ? [
+            {
+              name: '탄력',
+              value: skinMetrics.elasticity as number,
+              impact: assessImpact(skinMetrics.elasticity as number, {
+                positiveMin: 60,
+                negativeMax: 30,
+              }),
+            },
+          ]
+        : []),
       {
         name: '주름',
         value: skinMetrics.wrinkles,

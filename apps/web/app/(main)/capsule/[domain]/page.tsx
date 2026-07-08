@@ -16,6 +16,41 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+// ===== API 응답 계약 (GET /api/capsule/[domain] — capsule-repository Capsule<T>) =====
+// items는 {id, item: <도메인 아이템>, profileFitScore, ...} 래퍼 구조.
+// 기존엔 item.label 등을 직접 읽어 전부 빈 카드로 렌더되던 버그 (2026-07-08 감사 수리).
+
+interface ApiSolutionProduct {
+  id: string;
+  name: string;
+  brand: string;
+  priceKrw?: number;
+  imageUrl?: string;
+  purchaseUrl?: string;
+}
+
+interface ApiCapsuleItem {
+  id: string;
+  item?: {
+    name?: string;
+    category?: string;
+    solutionProduct?: ApiSolutionProduct;
+  } | null;
+  profileFitScore?: number;
+  addedAt?: string;
+}
+
+interface ApiCapsule {
+  id: string;
+  domainId: string;
+  items?: ApiCapsuleItem[];
+  ccs?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ===== 화면 표시용 뷰 모델 =====
+
 interface CapsuleItem {
   id: string;
   label: string;
@@ -23,7 +58,6 @@ interface CapsuleItem {
   category?: string;
   score?: number;
   productUrl?: string;
-  createdAt?: string;
 }
 
 interface Capsule {
@@ -31,8 +65,87 @@ interface Capsule {
   domainId: string;
   items: CapsuleItem[];
   ccsScore?: number;
-  createdAt?: string;
   updatedAt?: string;
+}
+
+// 카테고리 코드 → 사용자 노출 한국어 (영문 코드 노출 방지)
+const CATEGORY_LABELS: Record<string, string> = {
+  // skin
+  cleanser: '클렌저',
+  toner: '토너',
+  serum: '세럼',
+  moisturizer: '보습',
+  sunscreen: '자외선 차단',
+  mask: '마스크',
+  'eye-cream': '아이크림',
+  exfoliator: '각질 케어',
+  // makeup (PC의 makeup 카테고리 포함)
+  base: '베이스',
+  eye: '아이',
+  lip: '립',
+  cheek: '치크',
+  brow: '브로우',
+  setting: '세팅',
+  makeup: '메이크업',
+  // hair
+  shampoo: '샴푸',
+  conditioner: '컨디셔너',
+  treatment: '트리트먼트',
+  'scalp-care': '두피 케어',
+  styling: '스타일링',
+  'hair-oil': '헤어 오일',
+  // fashion
+  top: '상의',
+  bottom: '하의',
+  outer: '아우터',
+  dress: '원피스',
+  shoes: '슈즈',
+  bag: '가방',
+  accessory: '액세서리',
+  // personal-color
+  clothing: '의류',
+  'hair-color': '헤어 컬러',
+  // body
+  'posture-correction': '자세 교정',
+  'stretching-routine': '스트레칭',
+  'strength-plan': '근력',
+  'body-alignment': '얼라인먼트',
+  'lifestyle-habit': '생활 습관',
+};
+
+/** API 아이템 래퍼 → 뷰 모델 (실제품 부착 시 브랜드·가격을 보조 라인으로) */
+function mapApiItem(raw: ApiCapsuleItem, idx: number): CapsuleItem {
+  const inner = raw.item ?? {};
+  const product = inner.solutionProduct;
+  let reason: string | undefined;
+  if (product) {
+    const priceText =
+      product.priceKrw != null ? ` · ${product.priceKrw.toLocaleString('ko-KR')}원` : '';
+    reason = `${product.brand} ${product.name}${priceText}`;
+  }
+
+  return {
+    id: raw.id ?? `item-${idx}`,
+    label: inner.name ?? '아이템',
+    reason,
+    category: inner.category ? (CATEGORY_LABELS[inner.category] ?? inner.category) : undefined,
+    // insertItems 기본값 0은 미산정 상태 — 0점으로 표시하지 않음
+    score:
+      typeof raw.profileFitScore === 'number' && raw.profileFitScore > 0
+        ? raw.profileFitScore
+        : undefined,
+    productUrl: product?.purchaseUrl,
+  };
+}
+
+function mapApiCapsule(raw: ApiCapsule): Capsule {
+  return {
+    id: raw.id,
+    domainId: raw.domainId,
+    items: (raw.items ?? []).map(mapApiItem),
+    ccsScore: typeof raw.ccs === 'number' ? raw.ccs : undefined,
+    updatedAt: raw.updatedAt,
+  };
 }
 
 // 도메인 메타데이터
@@ -106,7 +219,8 @@ export default function DomainCapsulePage(): React.ReactElement {
 
       const json = await res.json();
       if (json.success) {
-        setCapsule(json.data);
+        // 캡슐이 아직 없으면 data가 null — 빈 상태로 렌더
+        setCapsule(json.data ? mapApiCapsule(json.data as ApiCapsule) : null);
       }
     } catch {
       setError('캡슐 데이터를 불러올 수 없어요. 잠시 후 다시 시도해주세요.');
@@ -136,8 +250,14 @@ export default function DomainCapsulePage(): React.ReactElement {
       }
 
       const json = await res.json();
-      if (json.success && json.data) {
-        setCapsule(json.data);
+      // curate 응답은 {capsule, ccs} 래퍼 — data 직접 세팅 시 무반응이던 버그 (2026-07-08)
+      if (json.success && json.data?.capsule) {
+        const mapped = mapApiCapsule(json.data.capsule as ApiCapsule);
+        // 캡슐 행에 ccs가 없으면 CCS 계산 결과에서 보충
+        if (mapped.ccsScore == null && typeof json.data.ccs?.score === 'number') {
+          mapped.ccsScore = json.data.ccs.score;
+        }
+        setCapsule(mapped);
       }
     } catch {
       setError('큐레이션에 실패했어요. 잠시 후 다시 시도해주세요.');

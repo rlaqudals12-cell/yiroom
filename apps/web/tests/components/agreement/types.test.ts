@@ -39,7 +39,8 @@ describe('AGREEMENT_ITEMS', () => {
     expect(marketing?.label).toBe('마케팅 정보 수신 동의');
     expect(marketing?.required).toBe(false);
     expect(marketing?.description).toBe('프로모션, 이벤트, 신기능 알림을 받습니다');
-    expect(marketing?.detailUrl).toBe('/help/marketing');
+    // 마케팅은 별도 상세 페이지가 없음 (구 /help/marketing 죽은 링크 제거)
+    expect(marketing?.detailUrl).toBeUndefined();
   });
 });
 

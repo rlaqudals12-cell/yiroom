@@ -1,17 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { FlaskConical, Palette, Sparkles } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useUserMatching } from '@/hooks/useUserMatching';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { generateRoutine } from '@/lib/skincare';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 import BeautyCareTab from '@/components/beauty/BeautyCareTab';
 // 트렌드 탭(BeautyTrendsTab): ADR-098 소셜 피드 게이팅 + 상품 DB 미적재로 임시 숨김. 데이터 채워지면 복원.
+import type { SkinAgeMetrics } from '@/components/beauty/SkinAgeCalculator';
 import type { RoutineItem } from '@/types/hybrid';
+import type { RoutineStep } from '@/types/skincare-routine';
 
 // 큐레이션 → 뷰티 카테고리 매핑
 // 큐레이션은 lip/base/skincare를 사용하지만, /beauty는 스킨케어 계열만 카테고리가 있음.
@@ -53,6 +58,17 @@ const skinConcerns: { id: SkinConcern; label: string }[] = [
   { id: 'elasticity', label: '탄력' },
 ];
 
+// 루틴 엔진 스텝 → 케어 탭 표시용 RoutineItem 변환
+function toRoutineItems(steps: RoutineStep[], timing: 'morning' | 'evening'): RoutineItem[] {
+  return steps.map((step) => ({
+    order: step.order,
+    category: step.category,
+    note: step.purpose,
+    timing,
+    duration: step.duration,
+  }));
+}
+
 /**
  * 뷰티 페이지 — 3탭 구조 (추천/케어/트렌드)
  * F1: 15개 섹션 → 3탭으로 분리, 각 탭 ≤ 7블록
@@ -60,6 +76,8 @@ const skinConcerns: { id: SkinConcern; label: string }[] = [
 export default function BeautyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
 
   // 통합 분석 큐레이션에서 왔는지, 어떤 카테고리로 요청됐는지 파악
   const curationSource = searchParams.get('source');
@@ -85,81 +103,68 @@ export default function BeautyPage() {
     [userSkinConcernsFromHook]
   );
 
-  // 스킨케어 루틴 데이터
-  const [morningRoutine] = useState<RoutineItem[]>([
-    {
-      order: 1,
-      category: 'cleanser',
-      productName: '젠틀 클렌저',
-      timing: 'morning',
-      duration: '1분',
-    },
-    {
-      order: 2,
-      category: 'toner',
-      productName: '히알루론산 토너',
-      timing: 'morning',
-      duration: '30초',
-    },
-    {
-      order: 3,
-      category: 'serum',
-      productName: '비타민C 세럼',
-      timing: 'morning',
-      duration: '30초',
-    },
-    {
-      order: 4,
-      category: 'moisturizer',
-      productName: '수분 크림',
-      timing: 'morning',
-      duration: '30초',
-    },
-    {
-      order: 5,
-      category: 'sunscreen',
-      productName: 'SPF50+ 선크림',
-      timing: 'morning',
-      duration: '30초',
-    },
-  ]);
-  const [eveningRoutine] = useState<RoutineItem[]>([
-    {
-      order: 1,
-      category: 'cleanser',
-      productName: '클렌징 오일',
-      timing: 'evening',
-      duration: '2분',
-    },
-    {
-      order: 2,
-      category: 'cleanser',
-      productName: '폼 클렌저',
-      timing: 'evening',
-      duration: '1분',
-    },
-    {
-      order: 3,
-      category: 'toner',
-      productName: '각질 케어 토너',
-      timing: 'evening',
-      duration: '30초',
-    },
-    {
-      order: 4,
-      category: 'serum',
-      productName: '레티놀 세럼',
-      timing: 'evening',
-      duration: '30초',
-    },
-    {
-      order: 5,
-      category: 'moisturizer',
-      productName: '나이트 크림',
-      timing: 'evening',
-      duration: '30초',
-    },
-  ]);
+  // 스킨케어 루틴 — 정본 엔진(lib/skincare generateRoutine, 캡슐 데일리와 동일) 파생.
+  // 하드코딩 제품명 루틴 대신 피부타입 기반 실제 루틴 스텝을 사용 (미분석 시 케어 탭이 CTA 표시)
+  const { morningRoutine, eveningRoutine } = useMemo(() => {
+    if (!hasAnalysis || !userSkinTypeFromHook) {
+      return { morningRoutine: [] as RoutineItem[], eveningRoutine: [] as RoutineItem[] };
+    }
+    const morning = generateRoutine({
+      skinType: userSkinType,
+      concerns: [],
+      timeOfDay: 'morning',
+    });
+    const evening = generateRoutine({
+      skinType: userSkinType,
+      concerns: [],
+      timeOfDay: 'evening',
+    });
+    return {
+      morningRoutine: toRoutineItems(morning.routine, 'morning'),
+      eveningRoutine: toRoutineItems(evening.routine, 'evening'),
+    };
+  }, [hasAnalysis, userSkinTypeFromHook, userSkinType]);
+
+  // 피부나이 계산용 실지표 — 최신 skin_analyses에서 로드 (지표가 없으면 계산기 숨김)
+  const [skinMetrics, setSkinMetrics] = useState<SkinAgeMetrics | null>(null);
+  useEffect(() => {
+    if (!isLoaded || !user?.id) return;
+    let cancelled = false;
+
+    const loadSkinMetrics = async (): Promise<void> => {
+      try {
+        const { data } = await supabase
+          .from('skin_analyses')
+          .select('hydration, oil_level, wrinkles, pores, pigmentation')
+          .eq('clerk_user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || !data) return;
+
+        const { hydration, oil_level, wrinkles, pores, pigmentation } = data;
+        const values = [hydration, oil_level, wrinkles, pores, pigmentation];
+        if (values.every((v) => typeof v === 'number')) {
+          setSkinMetrics({
+            hydration: hydration as number,
+            oil: oil_level as number,
+            wrinkles: wrinkles as number,
+            pores: pores as number,
+            pigmentation: pigmentation as number,
+            // elasticity는 skin_analyses에 없는 지표 — 계산기에서 가중치 재분배로 처리
+          });
+        }
+      } catch (err) {
+        console.error('[Beauty] 피부 지표 로드 실패:', err);
+      }
+    };
+
+    loadSkinMetrics();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, user?.id, supabase]);
 
   // 피부타입 한글 라벨
   const getSkinTypeLabel = (type: SkinType): string => {
@@ -213,11 +218,11 @@ export default function BeautyPage() {
               </div>
               {/* B2: 터치 타겟 44px+ */}
               <button
-                onClick={() => router.push('/profile/analysis')}
+                onClick={() => router.push('/analysis')}
                 className="text-sm text-primary hover:underline px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-primary/5 transition-colors"
-                aria-label="피부 프로필 수정"
+                aria-label="내 분석 결과 보기"
               >
-                수정
+                분석 결과
               </button>
             </div>
             {/* AI 진단 결과: 피부타입 및 피부고민 */}
@@ -254,7 +259,7 @@ export default function BeautyPage() {
               </div>
               {/* F2: Primary CTA — 프로필 섹션 1개만 */}
               <button
-                onClick={() => router.push('/onboarding/skin')}
+                onClick={() => router.push('/analysis/skin')}
                 className="bg-primary text-primary-foreground px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
               >
                 분석하기
@@ -302,6 +307,7 @@ export default function BeautyPage() {
               router={router}
               morningRoutine={morningRoutine}
               eveningRoutine={eveningRoutine}
+              skinMetrics={skinMetrics}
             />
           </ErrorBoundary>
         </TabsContent>

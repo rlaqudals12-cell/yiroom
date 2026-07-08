@@ -84,12 +84,15 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
             {result.overallScore}
           </span>
         </div>
+        {/* 자가입력 경로는 얼굴형/눈/입술 라벨이 비어있음 — 빈 값은 표시하지 않음 */}
         <h2 className="text-xl font-bold text-foreground">
-          {result.undertoneLabel} · {result.faceShapeLabel}
+          {[result.undertoneLabel, result.faceShapeLabel].filter(Boolean).join(' · ')}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {result.eyeShapeLabel} · {result.lipShapeLabel}
-        </p>
+        {(result.eyeShapeLabel || result.lipShapeLabel) && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {[result.eyeShapeLabel, result.lipShapeLabel].filter(Boolean).join(' · ')}
+          </p>
+        )}
       </div>
 
       {/* 인사이트 */}

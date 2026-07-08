@@ -13,12 +13,10 @@ import {
   Zap,
   Check,
   Flame,
-  Crown,
-  Trophy,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { classifyByRange, mapToClass } from '@/lib/utils/conditional-helpers';
+import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
@@ -99,314 +97,24 @@ const subCategories: Record<MainCategory, { id: string; label: string }[]> = {
 };
 
 // 정렬 옵션
-type SortOption = 'realtime' | 'match' | 'review' | 'rating' | 'price_low' | 'price_high';
+// 평점/리뷰수는 DB에 대부분 null이라 정렬 축으로 쓰면 순서가 사실상 무의미 —
+// 실데이터가 있는 축(매칭률/등록일/이름/가격)만 제공 (정직 원칙)
+type SortOption = 'match' | 'latest' | 'name' | 'price_low' | 'price_high';
 const sortOptions: { id: SortOption; label: string }[] = [
-  { id: 'realtime', label: '인기순' },
   { id: 'match', label: '매칭률순' },
-  { id: 'review', label: '리뷰순' },
-  { id: 'rating', label: '평점순' },
+  { id: 'latest', label: '최신순' },
+  { id: 'name', label: '이름순' },
   { id: 'price_low', label: '가격 낮은순' },
   { id: 'price_high', label: '가격 높은순' },
 ];
-
-// 랭킹 변동 타입
-type RankChange = 'up' | 'down' | 'same' | 'new';
-
-interface RankingProduct {
-  id: string;
-  name: string;
-  brand: string;
-  rating: number;
-  reviews: number;
-  rank: number;
-  change: RankChange;
-  changeAmount?: number;
-  imageUrl: string;
-}
-
-// 피부타입별 TOP 5 랭킹 데이터
-const rankingBySkinType: Record<SkinType, RankingProduct[]> = {
-  dry: [
-    {
-      id: 'r1',
-      name: '수분 폭탄 크림',
-      brand: '아비브',
-      rating: 4.9,
-      reviews: 8923,
-      rank: 1,
-      change: 'same',
-      imageUrl: '/images/products/cream-1.jpg',
-    },
-    {
-      id: 'r2',
-      name: '히알루론산 세럼',
-      brand: '토리든',
-      rating: 4.8,
-      reviews: 6721,
-      rank: 2,
-      change: 'up',
-      changeAmount: 2,
-      imageUrl: '/images/products/serum-1.jpg',
-    },
-    {
-      id: 'r3',
-      name: '세라마이드 토너',
-      brand: '코스알엑스',
-      rating: 4.7,
-      reviews: 5432,
-      rank: 3,
-      change: 'down',
-      changeAmount: 1,
-      imageUrl: '/images/products/toner-1.jpg',
-    },
-    {
-      id: 'r4',
-      name: '오일 세럼',
-      brand: '클리오',
-      rating: 4.6,
-      reviews: 4211,
-      rank: 4,
-      change: 'new',
-      imageUrl: '/images/products/oil-1.jpg',
-    },
-    {
-      id: 'r5',
-      name: '수분 앰플',
-      brand: '마녀공장',
-      rating: 4.6,
-      reviews: 3987,
-      rank: 5,
-      change: 'up',
-      changeAmount: 3,
-      imageUrl: '/images/products/ampoule-1.jpg',
-    },
-  ],
-  oily: [
-    {
-      id: 'r6',
-      name: 'BHA 블랙헤드 토너',
-      brand: '코스알엑스',
-      rating: 4.8,
-      reviews: 12453,
-      rank: 1,
-      change: 'same',
-      imageUrl: '/images/products/toner-2.jpg',
-    },
-    {
-      id: 'r7',
-      name: '티트리 진정 세럼',
-      brand: '아이소이',
-      rating: 4.7,
-      reviews: 8932,
-      rank: 2,
-      change: 'up',
-      changeAmount: 1,
-      imageUrl: '/images/products/serum-2.jpg',
-    },
-    {
-      id: 'r8',
-      name: '노세범 선크림',
-      brand: '라로슈포제',
-      rating: 4.9,
-      reviews: 7654,
-      rank: 3,
-      change: 'down',
-      changeAmount: 2,
-      imageUrl: '/images/products/sun-1.jpg',
-    },
-    {
-      id: 'r9',
-      name: 'AHA/BHA 필링젤',
-      brand: '메디힐',
-      rating: 4.5,
-      reviews: 5432,
-      rank: 4,
-      change: 'same',
-      imageUrl: '/images/products/peeling-1.jpg',
-    },
-    {
-      id: 'r10',
-      name: '워터 젤 크림',
-      brand: '벨리프',
-      rating: 4.6,
-      reviews: 4321,
-      rank: 5,
-      change: 'new',
-      imageUrl: '/images/products/gel-1.jpg',
-    },
-  ],
-  combination: [
-    {
-      id: 'r11',
-      name: '밸런싱 토너',
-      brand: '달바',
-      rating: 4.8,
-      reviews: 9876,
-      rank: 1,
-      change: 'up',
-      changeAmount: 1,
-      imageUrl: '/images/products/toner-3.jpg',
-    },
-    {
-      id: 'r12',
-      name: '나이아신 앰플',
-      brand: '마녀공장',
-      rating: 4.9,
-      reviews: 8234,
-      rank: 2,
-      change: 'down',
-      changeAmount: 1,
-      imageUrl: '/images/products/ampoule-2.jpg',
-    },
-    {
-      id: 'r13',
-      name: '멀티 세럼',
-      brand: '아이소이',
-      rating: 4.7,
-      reviews: 6543,
-      rank: 3,
-      change: 'same',
-      imageUrl: '/images/products/serum-3.jpg',
-    },
-    {
-      id: 'r14',
-      name: '수분 젤 크림',
-      brand: '라운드랩',
-      rating: 4.6,
-      reviews: 5421,
-      rank: 4,
-      change: 'up',
-      changeAmount: 2,
-      imageUrl: '/images/products/gel-2.jpg',
-    },
-    {
-      id: 'r15',
-      name: 'T존 세범 컨트롤',
-      brand: '이니스프리',
-      rating: 4.5,
-      reviews: 4532,
-      rank: 5,
-      change: 'new',
-      imageUrl: '/images/products/control-1.jpg',
-    },
-  ],
-  sensitive: [
-    {
-      id: 'r16',
-      name: '시카 크림',
-      brand: '닥터지',
-      rating: 4.9,
-      reviews: 15432,
-      rank: 1,
-      change: 'same',
-      imageUrl: '/images/products/cica-1.jpg',
-    },
-    {
-      id: 'r17',
-      name: '마데카 세럼',
-      brand: '아비브',
-      rating: 4.8,
-      reviews: 11234,
-      rank: 2,
-      change: 'same',
-      imageUrl: '/images/products/madeca-1.jpg',
-    },
-    {
-      id: 'r18',
-      name: '센텔라 토너',
-      brand: '토리든',
-      rating: 4.7,
-      reviews: 8765,
-      rank: 3,
-      change: 'up',
-      changeAmount: 1,
-      imageUrl: '/images/products/centella-1.jpg',
-    },
-    {
-      id: 'r19',
-      name: '진정 마스크팩',
-      brand: '메디힐',
-      rating: 4.6,
-      reviews: 6543,
-      rank: 4,
-      change: 'down',
-      changeAmount: 1,
-      imageUrl: '/images/products/mask-1.jpg',
-    },
-    {
-      id: 'r20',
-      name: '무자극 클렌저',
-      brand: '라운드랩',
-      rating: 4.5,
-      reviews: 5432,
-      rank: 5,
-      change: 'new',
-      imageUrl: '/images/products/cleanser-1.jpg',
-    },
-  ],
-  normal: [
-    {
-      id: 'r21',
-      name: '비타민C 세럼',
-      brand: '클레어스',
-      rating: 4.8,
-      reviews: 10234,
-      rank: 1,
-      change: 'up',
-      changeAmount: 2,
-      imageUrl: '/images/products/vitaminc-1.jpg',
-    },
-    {
-      id: 'r22',
-      name: '글로우 토너',
-      brand: '아이소이',
-      rating: 4.7,
-      reviews: 7654,
-      rank: 2,
-      change: 'down',
-      changeAmount: 1,
-      imageUrl: '/images/products/glow-1.jpg',
-    },
-    {
-      id: 'r23',
-      name: '수분 크림',
-      brand: '벨리프',
-      rating: 4.9,
-      reviews: 6543,
-      rank: 3,
-      change: 'down',
-      changeAmount: 1,
-      imageUrl: '/images/products/moisture-1.jpg',
-    },
-    {
-      id: 'r24',
-      name: '멀티 에센스',
-      brand: '달바',
-      rating: 4.6,
-      reviews: 5432,
-      rank: 4,
-      change: 'same',
-      imageUrl: '/images/products/essence-1.jpg',
-    },
-    {
-      id: 'r25',
-      name: '선 에센스',
-      brand: '라로슈포제',
-      rating: 4.7,
-      reviews: 4321,
-      rank: 5,
-      change: 'new',
-      imageUrl: '/images/products/sun-2.jpg',
-    },
-  ],
-};
 
 // 제품 타입 정의 (matchReasons 포함 — E1)
 interface BeautyProduct {
   id: string;
   name: string;
   brand: string;
-  rating: number;
+  /** 실제 평점 (없으면 null — UI에서 미표시) */
+  rating: number | null;
   reviews: number;
   matchRate: number;
   price: number;
@@ -548,11 +256,8 @@ export function BeautyRecommendTab({
         }
 
         switch (sortBy) {
-          case 'rating':
-            query = query.order('rating', { ascending: false });
-            break;
-          case 'review':
-            query = query.order('review_count', { ascending: false });
+          case 'name':
+            query = query.order('name', { ascending: true });
             break;
           case 'price_low':
             query = query.order('price_krw', { ascending: true });
@@ -560,8 +265,9 @@ export function BeautyRecommendTab({
           case 'price_high':
             query = query.order('price_krw', { ascending: false });
             break;
+          // latest 및 match(클라이언트 정렬)의 DB 기본 순서는 최신 등록순
           default:
-            query = query.order('rating', { ascending: false });
+            query = query.order('created_at', { ascending: false });
         }
 
         const { data, error } = await query;
@@ -577,7 +283,8 @@ export function BeautyRecommendTab({
           name: row.name,
           brand: row.brand,
           category: row.category as string,
-          rating: row.rating ?? 4.0,
+          // 평점 없는 제품에 가짜 기본값(4.0)을 채우지 않는다 — null이면 미표시 (정직 원칙)
+          rating: row.rating ?? null,
           reviewCount: row.review_count ?? 0,
           priceKrw: row.price_krw ?? 0,
           imageUrl: getProductImageUrl(row.image_url, row.brand),
@@ -611,6 +318,11 @@ export function BeautyRecommendTab({
             matchReasons: m.matchReasons,
           };
         });
+
+        // 매칭률 정렬은 클라이언트 계산 값이므로 여기서 정렬
+        if (sortBy === 'match') {
+          mappedProducts.sort((a, b) => b.matchRate - a.matchRate);
+        }
 
         // 매칭 필터 적용
         let filteredProducts =
@@ -663,10 +375,6 @@ export function BeautyRecommendTab({
   const handleMainCategoryChange = (cat: MainCategory): void => {
     setMainCategory(cat);
     setSubCategory(null);
-  };
-
-  const getSkinTypeLabel = (type: SkinType): string => {
-    return skinTypes.find((t) => t.id === type)?.label || type;
   };
 
   const toggleSkinType = (type: SkinType): void => {
@@ -878,7 +586,7 @@ export function BeautyRecommendTab({
           </button>
         ) : (
           <button
-            onClick={() => router.push('/onboarding/skin')}
+            onClick={() => router.push('/analysis/skin')}
             className="text-xs text-primary font-medium hover:underline"
           >
             분석하면 매칭률 확인
@@ -943,104 +651,12 @@ export function BeautyRecommendTab({
 
       {/* 콘텐츠 영역 */}
       <div className="px-4 py-4 space-y-6">
-        {/* 피부타입별 오늘의 랭킹 */}
-        {hasAnalysis ? (
-          <section
-            className="bg-card rounded-2xl border p-4"
-            aria-label="오늘의 랭킹"
-            data-testid="beauty-ranking"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
-                {getSkinTypeLabel(userSkinType)} TOP 5
-              </h2>
-            </div>
-            <div className="space-y-2">
-              {rankingBySkinType[userSkinType].map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => router.push(`/beauty/${product.id}`)}
-                  className="w-full flex items-center gap-3 bg-card rounded-xl border p-3 hover:shadow-md hover:bg-muted/30 transition-all duration-200 group"
-                >
-                  <div
-                    className={cn(
-                      'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0',
-                      mapToClass(
-                        product.rank,
-                        {
-                          1: 'bg-yellow-500 text-white',
-                          2: 'bg-gray-400 text-white',
-                          3: 'bg-amber-700 text-white',
-                        },
-                        'bg-muted text-muted-foreground'
-                      )
-                    )}
-                  >
-                    {product.rank === 1 ? (
-                      <Crown className="w-4 h-4" aria-hidden="true" />
-                    ) : (
-                      product.rank
-                    )}
-                  </div>
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-muted to-muted/50 overflow-hidden shrink-0" />
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs text-muted-foreground">{product.brand}</p>
-                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                      {product.name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Star
-                        className="w-3 h-3 fill-yellow-400 text-yellow-400"
-                        aria-hidden="true"
-                      />
-                      <span className="text-xs font-medium">{product.rating}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.reviews.toLocaleString()})
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-            {/* 다른 피부타입 랭킹 — B2: min-h-[44px] */}
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {skinTypes
-                .filter((t) => t.id !== userSkinType)
-                .map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => setSelectedSkinTypes([type.id])}
-                    className="px-3 py-2.5 min-h-[44px] rounded-full text-xs font-medium whitespace-nowrap bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-                  >
-                    {type.label} 랭킹
-                  </button>
-                ))}
-            </div>
-          </section>
-        ) : (
-          <section
-            className="bg-card rounded-2xl border p-4"
-            aria-label="오늘의 랭킹"
-            data-testid="beauty-ranking"
-          >
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-2">
-              <Trophy className="w-5 h-5 text-yellow-500" aria-hidden="true" />
-              피부타입별 인기 랭킹
-            </h2>
-            {/* F2: CTA 중복 제거 — 텍스트 안내만, 링크 아님 */}
-            <p className="text-sm text-muted-foreground">
-              피부 분석을 완료하면 내 피부타입에 맞는 TOP 5를 확인할 수 있어요
-            </p>
-          </section>
-        )}
-
         {/* 제품 목록 */}
         <section data-testid="beauty-product-grid">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
-              {hasAnalysis ? '내 피부 맞춤' : '인기 제품'}
+              {hasAnalysis ? '내 피부 맞춤' : '추천 제품'}
             </h2>
             <span className="text-sm text-muted-foreground">
               {productsLoading ? '로딩...' : `${products.length}개 제품`}
@@ -1145,16 +761,19 @@ export function BeautyRecommendTab({
                     </p>
                   )}
 
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <Star
-                      className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
-                      aria-hidden="true"
-                    />
-                    <span className="text-xs font-medium">{product.rating}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({product.reviews.toLocaleString()})
-                    </span>
-                  </div>
+                  {/* 평점은 실데이터가 있을 때만 표시 (null → 미표시) */}
+                  {product.rating != null && product.reviews > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Star
+                        className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs font-medium">{product.rating}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({product.reviews.toLocaleString()})
+                      </span>
+                    </div>
+                  )}
                   <p className="text-sm font-bold mt-2">{formatPrice(product.price)}원</p>
                 </button>
               ))}

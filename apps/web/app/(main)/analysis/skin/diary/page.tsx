@@ -15,13 +15,6 @@ import {
   CorrelationChart,
   FactorTrendChart,
 } from '@/components/skin/diary';
-import ZoneTrendChart from '@/components/skin/diary/ZoneTrendChart';
-import DeteriorationAlertCard from '@/components/skin/diary/DeteriorationAlertCard';
-import {
-  detectDeteriorationAlerts,
-  type SkinDiaryEntry as ZoneDiaryEntry,
-} from '@/lib/analysis/skin-v2/skin-diary-zone';
-import type { DetailedZoneId } from '@/types/skin-zones';
 import type {
   SkinDiaryEntry,
   SkinDiaryEntryInput,
@@ -59,7 +52,7 @@ function transformDbToEntry(dbEntry: DbSkinDiaryEntry): SkinDiaryEntry {
 
 export default function SkinDiaryPage() {
   const router = useRouter();
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   // 상태
@@ -140,10 +133,17 @@ export default function SkinDiaryPage() {
         setSaving(true);
         setError(null);
 
+        if (!userId) {
+          setError('로그인 정보를 확인할 수 없어요. 다시 로그인해주세요.');
+          return;
+        }
+
         const dateStr = input.entryDate.toISOString().split('T')[0];
 
+        // clerk_user_id는 NOT NULL + RLS WITH CHECK 대상 — 누락 시 저장이 항상 실패함
         const { error: err } = await supabase.from('skin_diary_entries').upsert(
           {
+            clerk_user_id: userId,
             entry_date: dateStr,
             skin_condition: input.skinCondition,
             condition_notes: input.conditionNotes || null,
@@ -175,7 +175,7 @@ export default function SkinDiaryPage() {
         setSaving(false);
       }
     },
-    [supabase, loadEntries, currentYear, currentMonth]
+    [supabase, userId, loadEntries, currentYear, currentMonth]
   );
 
   // 폼 취소 핸들러
@@ -246,52 +246,6 @@ export default function SkinDiaryPage() {
       weeklyAverages: [],
     };
   }, [entries, correlationInsights, currentYear, currentMonth]);
-
-  // 12존 일기 데이터 변환 (기존 entries → ZoneDiaryEntry 포맷)
-  // skinCondition(1-5)을 12존 점수(0-100)로 시뮬레이션
-  const zoneDiaryEntries = useMemo<ZoneDiaryEntry[]>(() => {
-    return entries.map((e) => {
-      const baseScore = e.skinCondition * 20;
-      const ALL_ZONES: DetailedZoneId[] = [
-        'forehead_center',
-        'forehead_left',
-        'forehead_right',
-        'eye_left',
-        'eye_right',
-        'cheek_left',
-        'cheek_right',
-        'nose_bridge',
-        'nose_tip',
-        'chin_center',
-        'chin_left',
-        'chin_right',
-      ];
-      const zoneScores: Partial<Record<DetailedZoneId, number>> = {};
-      // 존별 약간의 변동을 주어 트렌드 분석 의미 부여
-      for (const zone of ALL_ZONES) {
-        let offset = 0;
-        if (zone.includes('nose')) offset = -5;
-        else if (zone.includes('cheek')) offset = 3;
-        zoneScores[zone] = Math.max(0, Math.min(100, baseScore + offset));
-      }
-      return {
-        date: e.entryDate.toISOString().split('T')[0],
-        zoneScores,
-        vitalityScore: baseScore,
-        environment: {
-          weather: e.weather as 'sunny' | 'cloudy' | 'rainy' | 'snowy' | undefined,
-          sleepHours: e.sleepHours,
-          stressLevel: e.stressLevel != null ? e.stressLevel * 2 : undefined,
-        },
-      };
-    });
-  }, [entries]);
-
-  // 악화 알림 계산
-  const deteriorationAlerts = useMemo(() => {
-    if (zoneDiaryEntries.length < 3) return [];
-    return detectDeteriorationAlerts(zoneDiaryEntries);
-  }, [zoneDiaryEntries]);
 
   // 로딩/인증 체크
   if (!isLoaded) {
@@ -415,12 +369,7 @@ export default function SkinDiaryPage() {
                 </Card>
               ) : (
                 <>
-                  {/* 존 악화 알림 */}
-                  <DeteriorationAlertCard alerts={deteriorationAlerts} />
-
-                  {/* 12존 트렌드 차트 */}
-                  <ZoneTrendChart entries={zoneDiaryEntries} periodDays={14} />
-
+                  {/* 존별 실측 데이터가 없으므로 존 트렌드/악화 알림은 표시하지 않음 — 실기록 기반 컨디션 추이만 표시 */}
                   {/* 트렌드 차트 */}
                   <FactorTrendChart entries={entries} factor="skinCondition" period="30days" />
 

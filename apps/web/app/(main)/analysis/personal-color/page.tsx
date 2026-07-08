@@ -7,15 +7,13 @@ import { getDateLocale } from '@/lib/utils/date-format';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { Clock, Palette } from 'lucide-react';
-import { selectByCondition } from '@/lib/utils/conditional-helpers';
+import { Clock, Palette, PenLine } from 'lucide-react';
 import {
   type PersonalColorResult,
   type SeasonType,
   type PersonalColorSubtype,
-  generateMockPersonalColorResult,
+  generateSeasonPersonalColorResult,
   PERSONAL_COLOR_SUBTYPES,
-  SEASON_INFO,
 } from '@/lib/mock/personal-color';
 import type { ImageConsent } from '@/components/analysis/consent/types';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
@@ -104,6 +102,8 @@ export default function PersonalColorPage() {
   // 다각도 촬영 이미지
   const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleImages | null>(null);
   const [result, setResult] = useState<PersonalColorResult | null>(null);
+  // 자가입력(시즌 직접 선택) 기반 결과 여부 — AI 분석 결과와 구분해 안내 표시
+  const [isSelfReported, setIsSelfReported] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // API 완료 상태 (로딩 프로그레스 동기화)
@@ -339,32 +339,24 @@ export default function PersonalColorPage() {
   // 기존 퍼스널 컬러 입력 → 결과 생성
   const handleKnownColorSelect = useCallback(
     (seasonType: SeasonType, subtype?: PersonalColorSubtype) => {
-      // Mock 결과 생성 (해당 시즌 타입으로)
-      const mockResult = generateMockPersonalColorResult();
+      // 선택한 시즌 기반으로 전체 데이터를 결정론적으로 구성
+      // (팔레트/립/스타일 등 모든 표시 데이터가 선택 시즌과 일치, 랜덤 요소 없음)
+      const seasonResult = generateSeasonPersonalColorResult(seasonType, 100);
 
-      // 서브타입 정보 찾기
+      // 서브타입 정보 찾기 (있으면 라벨/톤/깊이만 세분화)
       const subtypeInfo = subtype ? PERSONAL_COLOR_SUBTYPES.find((s) => s.id === subtype) : null;
 
-      // 시즌 라벨 결정 (서브타입이 있으면 서브타입 라벨 사용)
-      const seasonLabel = subtypeInfo ? subtypeInfo.label : SEASON_INFO[seasonType].label;
-
-      // 톤과 깊이 결정
-      const tone = subtypeInfo
-        ? subtypeInfo.tone
-        : selectByCondition(seasonType === 'spring' || seasonType === 'autumn', 'warm', 'cool');
-      const depth = subtypeInfo
-        ? subtypeInfo.depth
-        : selectByCondition(seasonType === 'spring' || seasonType === 'summer', 'light', 'deep');
-
       setResult({
-        ...mockResult,
-        seasonType,
-        seasonLabel,
-        tone,
-        depth,
-        confidence: 100, // 사용자가 직접 입력했으므로 100%
-        analyzedAt: new Date(),
+        ...seasonResult,
+        ...(subtypeInfo
+          ? {
+              seasonLabel: subtypeInfo.label,
+              tone: subtypeInfo.tone,
+              depth: subtypeInfo.depth,
+            }
+          : {}),
       });
+      setIsSelfReported(true);
       setStep('result');
     },
     []
@@ -511,6 +503,7 @@ export default function PersonalColorPage() {
     setMultiAngleImages(null);
     setImageUrl(null);
     setResult(null);
+    setIsSelfReported(false);
     setStep('guide');
     setError(null);
     setCurrentSessionConsent(false); // 세션 동의 상태 초기화
@@ -662,7 +655,24 @@ export default function PersonalColorPage() {
 
         {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
-        {step === 'result' && result && <AnalysisResult result={result} onRetry={handleRetry} />}
+        {step === 'result' && result && (
+          <>
+            {/* 자가입력 기반 안내 — AI 사진 분석이 아닌 사용자가 선택한 시즌 기준임을 명시 */}
+            {isSelfReported && (
+              <div
+                className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2"
+                data-testid="self-reported-notice"
+              >
+                <PenLine className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  직접 입력하신 퍼스널 컬러를 기준으로 구성한 가이드예요. 사진으로 분석하면 AI가
+                  피부톤을 직접 진단해드려요.
+                </p>
+              </div>
+            )}
+            <AnalysisResult result={result} onRetry={handleRetry} />
+          </>
+        )}
       </div>
     </div>
   );

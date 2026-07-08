@@ -170,7 +170,8 @@ export const NOTIFICATION_TEMPLATES: Record<
     title: '이번 주 웰니스 점수',
     body: '이번 주 웰니스 점수는 {{score}}점이에요! {{grade}}등급입니다.',
     icon: '/icons/wellness.png',
-    action: { label: '자세히 보기', url: '/wellness' },
+    // /wellness는 WELLNESS_PHASE2 게이팅으로 홈 리다이렉트 — 직접 /home으로 안내
+    action: { label: '자세히 보기', url: '/home' },
   },
   weekly_report: {
     category: 'achievement',

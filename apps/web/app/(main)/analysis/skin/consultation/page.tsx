@@ -70,9 +70,9 @@ export default function SkinConsultationPage() {
     loadSkinAnalysis();
   }, [isLoaded, userId, analysisId, supabase]);
 
-  // 제품 클릭 핸들러
+  // 제품 클릭 핸들러 — 제품 상세 라우트는 /products/[type]/[id] (화장품은 cosmetic)
   const handleProductClick = (productId: string) => {
-    router.push(`/products/${productId}`);
+    router.push(`/products/cosmetic/${productId}`);
   };
 
   return (

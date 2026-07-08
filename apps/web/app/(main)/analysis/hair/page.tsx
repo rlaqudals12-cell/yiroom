@@ -13,7 +13,7 @@ import {
   type HairAnalysisResult,
   type HairTypeId,
   type HairConcernId,
-  generateMockHairAnalysisResult,
+  generateKnownHairTypeResult,
   HAIR_TYPES,
   HAIR_CONCERNS,
 } from '@/lib/mock/hair-analysis';
@@ -59,6 +59,8 @@ export default function HairAnalysisPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
+  // 자가입력(known-input) 경로 여부 — 결과 화면에 "자가입력 기반 추정" 안내 표시
+  const [isSelfEstimate, setIsSelfEstimate] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,6 +170,7 @@ export default function HairAnalysisPage() {
     setImageFile(null);
     setImagePreview(null);
     setResult(null);
+    setIsSelfEstimate(false);
     setStep('guide');
     setError(null);
   }, []);
@@ -336,18 +339,12 @@ export default function HairAnalysisPage() {
           </div>
         )}
 
-        {/* 알고있는 타입 입력 */}
+        {/* 알고있는 타입 입력 — 선택한 타입/고민 기반 결정론 프리셋 (랜덤 없음) */}
         {step === 'known-input' && (
           <KnownTypeInput
             onSubmit={(type, concerns) => {
-              const mockResult = generateMockHairAnalysisResult();
-              setResult({
-                ...mockResult,
-                hairType: type,
-                hairTypeLabel: HAIR_TYPES.find((t) => t.id === type)?.label || '',
-                concerns,
-                analyzedAt: new Date(),
-              });
+              setResult(generateKnownHairTypeResult(type, concerns));
+              setIsSelfEstimate(true);
               setStep('result');
             }}
             onBack={() => setStep('guide')}
@@ -366,7 +363,20 @@ export default function HairAnalysisPage() {
 
         {/* 결과 */}
         {step === 'result' && result && (
-          <AnalysisResultView result={result} onRetry={handleRetry} />
+          <>
+            {/* 자가입력 기반 추정 안내 — 사진 분석이 아님을 명시 (정직 원칙) */}
+            {isSelfEstimate && (
+              <div
+                data-testid="self-estimate-notice"
+                role="note"
+                className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300"
+              >
+                자가입력 기반 추정 결과예요. 사진 분석 없이 선택하신 타입과 고민의 대표값으로
+                안내해드려요. 정확한 진단은 사진 분석을 이용해주세요.
+              </div>
+            )}
+            <AnalysisResultView result={result} onRetry={handleRetry} />
+          </>
         )}
       </div>
     </div>
@@ -491,8 +501,9 @@ function AnalysisResultView({
             {result.overallScore}
           </span>
         </div>
+        {/* 자가입력 경로는 굵기 라벨이 비어있음 — 빈 값은 표시하지 않음 */}
         <h2 className="text-xl font-bold text-foreground">
-          {result.hairTypeLabel} · {result.hairThicknessLabel}
+          {[result.hairTypeLabel, result.hairThicknessLabel].filter(Boolean).join(' · ')}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">{result.scalpTypeLabel}</p>
       </div>

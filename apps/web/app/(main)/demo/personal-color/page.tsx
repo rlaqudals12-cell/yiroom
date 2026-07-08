@@ -15,20 +15,11 @@ import { SignedOut, SignInButton, SignedIn } from '@clerk/nextjs';
 import { ArrowRight, Sparkles, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AnalysisResult from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
-import { generateMockPersonalColorResult, type SeasonType } from '@/lib/mock/personal-color';
+import { generateSeasonPersonalColorResult } from '@/lib/mock/personal-color';
 
-// 봄 웜톤 고정 데모 데이터
+// 봄 웜톤 고정 데모 데이터 — 팔레트/립/스타일 전부 spring 시즌 상수에서 결정론 구성
 function createDemoResult() {
-  const result = generateMockPersonalColorResult();
-  // 봄 웜톤으로 고정 (데모 일관성)
-  return {
-    ...result,
-    seasonType: 'spring' as SeasonType,
-    seasonLabel: '봄 웜톤',
-    seasonDescription: '밝고 화사한 웜톤',
-    confidence: 92,
-    analyzedAt: new Date(),
-  };
+  return generateSeasonPersonalColorResult('spring', 92);
 }
 
 export default function DemoPersonalColorPage(): React.JSX.Element {

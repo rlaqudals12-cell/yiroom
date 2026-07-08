@@ -10,12 +10,10 @@ import {
   type UserBodyInput,
   type BodyType3,
   BODY_TYPES_3,
-  generateMockBodyAnalysis3,
+  KNOWN_BODY_TYPE_MEASUREMENTS,
 } from '@/lib/mock/body-analysis';
-import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import BodyPhotographyGuide from './_components/BodyPhotographyGuide';
 import InputForm from './_components/InputForm';
-import PhotoUpload from './_components/PhotoUpload';
 import KnownBodyTypeInput from './_components/KnownBodyTypeInput';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
@@ -25,16 +23,8 @@ import { Confetti } from '@/components/animations';
 import { MultiAngleBodyCapture, type MultiAngleBodyImages } from '@/components/analysis/camera';
 
 // 새로운 흐름: guide → input → multi-angle → loading → result
-// 또는: guide → input → upload → loading → result (갤러리 단일 이미지)
 // 또는: guide → known-type → result
-type AnalysisStep =
-  | 'guide'
-  | 'input'
-  | 'multi-angle'
-  | 'upload'
-  | 'loading'
-  | 'result'
-  | 'known-type';
+type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'loading' | 'result' | 'known-type';
 
 export default function BodyAnalysisPage() {
   const t = useTranslations('analysisEntry');
@@ -47,9 +37,10 @@ export default function BodyAnalysisPage() {
   const existingCheckedRef = useRef(false);
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [userInput, setUserInput] = useState<UserBodyInput | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleBodyImages | null>(null);
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
+  // 자가입력(known-type) 경로 여부 — 결과 화면에 "자가입력 기반 추정" 안내 표시
+  const [isSelfEstimate, setIsSelfEstimate] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -114,24 +105,24 @@ export default function BodyAnalysisPage() {
     setStep('guide');
   }, []);
 
-  // 기존 체형 타입 선택 → Mock 결과 생성
+  // 기존 체형 타입 선택 → 타입 기반 결정론 프리셋으로 결과 구성 (랜덤 없음)
   const handleKnownTypeSelect = useCallback(
     (bodyType: BodyType3) => {
       const typeInfo = BODY_TYPES_3[bodyType];
-      const mockResult = generateMockBodyAnalysis3(userInput || undefined);
 
-      // 선택된 타입으로 결과 덮어쓰기 (BodyAnalysisResult 형식으로 변환)
       setResult({
         bodyType: bodyType,
         bodyTypeLabel: typeInfo.label,
         bodyTypeDescription: typeInfo.description,
-        measurements: mockResult.measurements,
+        // 선택한 타입의 정의상 대표값 — 실측이 아니므로 결과 화면에 추정 안내 동반
+        measurements: KNOWN_BODY_TYPE_MEASUREMENTS[bodyType],
         strengths: typeInfo.strengths,
         insight: typeInfo.insights[0],
         styleRecommendations: typeInfo.recommendations,
         analyzedAt: new Date(),
         userInput: userInput || undefined,
       });
+      setIsSelfEstimate(true);
       setStep('result');
       setShowConfetti(true);
     },
@@ -160,19 +151,9 @@ export default function BodyAnalysisPage() {
     setError(null);
   }, []);
 
-  // 사진 선택 시 로딩 단계로 전환 (갤러리에서 단일 이미지 선택 시)
-  const handlePhotoSelect = useCallback((file: File) => {
-    setImageFile(file);
-    setStep('loading');
-    setError(null);
-    setIsApiComplete(false);
-    analysisStartedRef.current = false;
-  }, []);
-
-  // AI 분석 실행 (API 호출) - 다각도 또는 단일 이미지
+  // AI 분석 실행 (API 호출) - 다각도 이미지
   const runAnalysis = useCallback(async () => {
-    // 다각도 이미지 또는 단일 이미지 중 하나가 있어야 함
-    if ((!imageFile && !multiAngleImages) || !isSignedIn || analysisStartedRef.current) {
+    if (!multiAngleImages || !isSignedIn || analysisStartedRef.current) {
       return;
     }
 
@@ -180,24 +161,13 @@ export default function BodyAnalysisPage() {
     setIsAnalyzing(true);
 
     try {
-      let requestBody: Record<string, unknown>;
-
-      if (multiAngleImages) {
-        // 다각도 이미지 사용
-        requestBody = {
-          frontImageBase64: multiAngleImages.frontImageBase64,
-          leftSideImageBase64: multiAngleImages.leftSideImageBase64,
-          rightSideImageBase64: multiAngleImages.rightSideImageBase64,
-          backImageBase64: multiAngleImages.backImageBase64,
-          userInput,
-        };
-      } else if (imageFile) {
-        // 단일 이미지 사용 (갤러리에서 선택)
-        const imageBase64 = await compressFileToBase64(imageFile);
-        requestBody = { imageBase64, userInput };
-      } else {
-        return;
-      }
+      const requestBody: Record<string, unknown> = {
+        frontImageBase64: multiAngleImages.frontImageBase64,
+        leftSideImageBase64: multiAngleImages.leftSideImageBase64,
+        rightSideImageBase64: multiAngleImages.rightSideImageBase64,
+        backImageBase64: multiAngleImages.backImageBase64,
+        userInput,
+      };
 
       const response = await fetch('/api/analyze/body', {
         method: 'POST',
@@ -244,7 +214,7 @@ export default function BodyAnalysisPage() {
       setIsApiComplete(true);
       setIsAnalyzing(false);
     }
-  }, [imageFile, multiAngleImages, userInput, isSignedIn]);
+  }, [multiAngleImages, userInput, isSignedIn]);
 
   // 로딩 단계 진입 시 즉시 API 호출 시작
   useEffect(() => {
@@ -256,9 +226,9 @@ export default function BodyAnalysisPage() {
   // 다시 분석하기
   const handleRetry = useCallback(() => {
     setUserInput(null);
-    setImageFile(null);
     setMultiAngleImages(null);
     setResult(null);
+    setIsSelfEstimate(false);
     setStep('guide');
     setError(null);
     setShowConfetti(false);
@@ -275,8 +245,6 @@ export default function BodyAnalysisPage() {
         return t('body.subtitle.input');
       case 'multi-angle':
         return t('body.subtitle.multiAngle');
-      case 'upload':
-        return t('body.subtitle.upload');
       case 'known-type':
         return t('body.subtitle.knownType');
       case 'loading':
@@ -311,8 +279,8 @@ export default function BodyAnalysisPage() {
             <p className="text-muted-foreground mt-2">{getSubtitle()}</p>
           </header>
 
-          {/* 에러 메시지 (multi-angle, upload 단계에서 표시) */}
-          {error && (step === 'upload' || step === 'multi-angle') && (
+          {/* 에러 메시지 (multi-angle 단계에서 표시) */}
+          {error && step === 'multi-angle' && (
             <div
               className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center justify-between"
               role="alert"
@@ -349,8 +317,6 @@ export default function BodyAnalysisPage() {
             </div>
           )}
 
-          {step === 'upload' && <PhotoUpload onPhotoSelect={handlePhotoSelect} />}
-
           {step === 'known-type' && (
             <KnownBodyTypeInput onSelect={handleKnownTypeSelect} onBack={handleKnownTypeBack} />
           )}
@@ -358,7 +324,20 @@ export default function BodyAnalysisPage() {
           {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
-            <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
+            <>
+              {/* 자가입력 기반 추정 안내 — 사진 분석이 아님을 명시 (정직 원칙) */}
+              {isSelfEstimate && (
+                <div
+                  data-testid="self-estimate-notice"
+                  role="note"
+                  className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300"
+                >
+                  자가입력 기반 추정 결과예요. 사진 분석 없이 선택하신 타입의 대표값으로
+                  안내해드려요. 정확한 측정은 사진 분석을 이용해주세요.
+                </div>
+              )}
+              <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
+            </>
           )}
         </div>
       </div>

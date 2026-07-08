@@ -2,13 +2,25 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Shirt, Sparkles, Dumbbell, Pill, Refrigerator } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 export const metadata: Metadata = {
   title: '내 인벤토리 | 이룸',
-  description: '옷장, 화장대, 운동장비, 영양제, 냉장고를 한눈에 관리하세요',
+  description: '옷장, 화장대 등 보유한 아이템을 한눈에 관리하세요',
 };
 
-const inventoryCategories = [
+interface InventoryCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof Shirt;
+  href: string;
+  color: string;
+  /** ADR-098: W/N 숨김 — WELLNESS_PHASE2 복원 시에만 노출 */
+  wellnessPhase2?: boolean;
+}
+
+const inventoryCategories: InventoryCategory[] = [
   {
     id: 'closet',
     name: '내 옷장',
@@ -32,6 +44,7 @@ const inventoryCategories = [
     icon: Dumbbell,
     href: '/inventory/equipment',
     color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+    wellnessPhase2: true,
   },
   {
     id: 'supplement',
@@ -48,8 +61,14 @@ const inventoryCategories = [
     icon: Refrigerator,
     href: '/inventory/pantry',
     color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
+    wellnessPhase2: true,
   },
 ];
+
+// ADR-098: 운동장비/냉장고는 W-1/N-1 인접 기능 — WELLNESS_PHASE2 게이팅
+const visibleCategories = inventoryCategories.filter(
+  (category) => !category.wellnessPhase2 || FEATURE_FLAGS.WELLNESS_PHASE2
+);
 
 export default function InventoryPage() {
   return (
@@ -62,7 +81,7 @@ export default function InventoryPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {inventoryCategories.map((category) => {
+        {visibleCategories.map((category) => {
           const Icon = category.icon;
           return (
             <Link
@@ -93,7 +112,7 @@ export default function InventoryPage() {
         <ul className="text-sm text-muted-foreground space-y-1">
           <li>사진을 찍으면 AI가 자동으로 카테고리와 색상을 분석해요</li>
           <li>퍼스널컬러와 체형 분석 결과를 기반으로 코디를 추천받을 수 있어요</li>
-          <li>유통기한이 있는 제품은 알림을 받을 수 있어요</li>
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && <li>유통기한이 있는 제품은 알림을 받을 수 있어요</li>}
         </ul>
       </div>
     </div>

@@ -91,7 +91,8 @@ export default function AddPantryItemPage() {
           category: 'pantry',
           name: name.trim(),
           brand: brand.trim() || null,
-          imageUrl: _imageUrl || '/placeholder-pantry.png', // 기본 이미지
+          // 이미지 미업로드 시 투명 placeholder — 카드에서 빈 배경으로 표시 (API가 imageUrl 필수)
+          imageUrl: _imageUrl || '/placeholder-pantry.png',
           expiryDate: expiryDate || null,
           metadata,
         }),

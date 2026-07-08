@@ -16,6 +16,8 @@ import { getDomain } from '@/lib/capsule/registry';
 import { createCapsule, getCrossDomainRules } from '@/lib/capsule/capsule-repository';
 import { calculateCCS } from '@/lib/capsule/scoring';
 import type { DomainItemGroup } from '@/lib/capsule/scoring';
+import { attachCurateProducts } from '@/lib/capsule/curate-products';
+import type { CurateTargetItem } from '@/lib/capsule/curate-products';
 
 const curateSchema = z.object({
   maxItems: z.number().int().min(1).max(30).optional(),
@@ -92,6 +94,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // 2. 큐레이션 실행
     const items = await engine.curate(profile, validated.data);
+
+    // 2.5. 실물 연결 — 아이템에 실제 제품 부착 (2026-07-08 감사 수리: placeholder → 실제품)
+    // 매칭 실패 아이템은 행동형 스텝으로 유지(지어내지 않음). 실패해도 캡슐 생성은 계속.
+    try {
+      await attachCurateProducts(domain, items as CurateTargetItem[], profile);
+    } catch (e) {
+      console.error('[API] curate 제품 부착 실패 (캡슐은 계속):', e);
+    }
 
     // 3. CCS 계산
     const rules = await getCrossDomainRules();

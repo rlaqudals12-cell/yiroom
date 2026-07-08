@@ -56,7 +56,10 @@ describe('TermsPage', () => {
   it('includes service description content', () => {
     render(<TermsPage />);
     expect(screen.getByText(/이룸\(Yiroom, 이하 "서비스"\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/AI 피부 분석, 체형 분석, 퍼스널컬러 진단/i)).toBeInTheDocument();
+    // 현행 서비스 정의: 다섯 가지 분석 (운동·영양/소셜은 ADR-098로 제공 목록에서 제외)
+    expect(
+      screen.getByText(/AI 퍼스널컬러 진단, 피부·체형·헤어·메이크업 분석/i)
+    ).toBeInTheDocument();
   });
 
   it('has a back link to help page', () => {

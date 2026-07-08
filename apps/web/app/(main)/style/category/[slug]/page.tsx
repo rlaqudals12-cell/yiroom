@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { ArrowLeft, SlidersHorizontal, ChevronDown, Star, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Star, Sparkles, Loader2, Shirt, ExternalLink } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { BottomNav } from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
@@ -11,17 +11,19 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// 제품 타입
+// 제품 타입 — 평점/리뷰수/매칭률은 실데이터가 있을 때만 (임의 생성 금지, 2026-07-08)
 interface Product {
   id: string;
   name: string;
   brand: string;
   price: number;
-  rating: number;
-  reviewCount: number;
-  matchRate: number;
+  rating?: number;
+  reviewCount?: number;
+  matchRate?: number;
   type: 'item' | 'outfit';
   imageUrl?: string;
+  /** 외부 제품 링크 (affiliate_url) — 내부 상세 페이지 없음 */
+  url?: string;
 }
 
 /**
@@ -61,90 +63,6 @@ const categoryToSubcategory: Record<string, string[]> = {
   shoes: ['sneakers', 'heels', 'boots', 'loafers', 'sandals'],
   bags: ['tote', 'shoulder', 'crossbody', 'clutch', 'backpack'],
 };
-
-// 폴백 제품 데이터 (데이터가 없을 때 사용)
-const fallbackProducts: Product[] = [
-  {
-    id: '1',
-    name: '크롭 니트',
-    brand: '무신사',
-    price: 39000,
-    rating: 4.8,
-    reviewCount: 1234,
-    matchRate: 95,
-    type: 'item',
-  },
-  {
-    id: '2',
-    name: '하이웨스트 슬랙스',
-    brand: 'W컨셉',
-    price: 59000,
-    rating: 4.7,
-    reviewCount: 892,
-    matchRate: 93,
-    type: 'item',
-  },
-  {
-    id: '3',
-    name: '플레어 스커트',
-    brand: '룩핀',
-    price: 45000,
-    rating: 4.6,
-    reviewCount: 567,
-    matchRate: 90,
-    type: 'item',
-  },
-  {
-    id: '4',
-    name: '오버사이즈 셔츠',
-    brand: '유니클로',
-    price: 49900,
-    rating: 4.5,
-    reviewCount: 2341,
-    matchRate: 88,
-    type: 'item',
-  },
-  {
-    id: '5',
-    name: '봄 웜톤 코디',
-    brand: '이룸 추천',
-    price: 187000,
-    rating: 4.9,
-    reviewCount: 432,
-    matchRate: 97,
-    type: 'outfit',
-  },
-  {
-    id: '6',
-    name: 'A라인 원피스',
-    brand: 'ZARA',
-    price: 79000,
-    rating: 4.7,
-    reviewCount: 1567,
-    matchRate: 91,
-    type: 'item',
-  },
-  {
-    id: '7',
-    name: '와이드 데님',
-    brand: '리바이스',
-    price: 89000,
-    rating: 4.6,
-    reviewCount: 789,
-    matchRate: 86,
-    type: 'item',
-  },
-  {
-    id: '8',
-    name: '캐주얼 데일리 코디',
-    brand: '이룸 추천',
-    price: 156000,
-    rating: 4.8,
-    reviewCount: 1023,
-    matchRate: 94,
-    type: 'outfit',
-  },
-];
 
 export default function StyleCategoryPage() {
   const router = useRouter();
@@ -188,8 +106,7 @@ export default function StyleCategoryPage() {
               name: post.caption || '코디 룩',
               brand: '이룸 추천',
               price: 0,
-              rating: 4.5 + Math.random() * 0.5,
-              reviewCount: post.likes_count || 0,
+              // 평점/리뷰는 실데이터 없음 — 임의 생성하지 않음
               matchRate: userBodyTypeRaw && post.body_type === userBodyTypeRaw ? 95 : 70,
               type: 'outfit',
               imageUrl: post.image_url,
@@ -197,14 +114,16 @@ export default function StyleCategoryPage() {
           );
           setProducts(mappedProducts);
         } else {
-          setProducts(fallbackProducts.filter((p) => p.type === 'outfit'));
+          setProducts([]); // 가짜 폴백 대신 정직한 빈 상태
         }
       } else {
-        // 패션 제품은 affiliate_products에서 가져옴
+        // 패션 제품은 affiliate_products에서 가져옴 (실 필드만: rating/review_count/affiliate_url)
         const subcategories = categoryToSubcategory[slug] || [];
         let query = supabase
           .from('affiliate_products')
-          .select('id, name, brand, price_krw, image_url, subcategory')
+          .select(
+            'id, name, brand, price_krw, image_url, subcategory, rating, review_count, affiliate_url'
+          )
           .eq('category', 'fashion')
           .eq('is_active', true)
           .limit(20);
@@ -224,21 +143,22 @@ export default function StyleCategoryPage() {
               name: product.name,
               brand: product.brand || '',
               price: product.price_krw || 0,
-              rating: 4.0 + Math.random() * 1,
-              reviewCount: Math.floor(Math.random() * 1000) + 100,
-              matchRate: 75 + Math.floor(Math.random() * 25),
+              rating: product.rating ?? undefined,
+              reviewCount: product.review_count ?? undefined,
+              // 매칭률은 근거 데이터 없음 — 임의 생성하지 않음
               type: 'item',
               imageUrl: product.image_url,
+              url: product.affiliate_url ?? undefined,
             })
           );
           setProducts(mappedProducts);
         } else {
-          setProducts(fallbackProducts.filter((p) => p.type === 'item'));
+          setProducts([]); // 패션 제품 DB 미보유 — 정직한 빈 상태
         }
       }
     } catch (err) {
       console.error('[StyleCategory] Products fetch error:', err);
-      setProducts(fallbackProducts);
+      setProducts([]);
     } finally {
       setIsProductsLoading(false);
     }
@@ -280,25 +200,25 @@ export default function StyleCategoryPage() {
     fetchBodyType();
   }, [isLoaded, user?.id, supabase]);
 
-  // 필터링 및 정렬된 제품
+  // 필터링 및 정렬된 제품 (matchRate/rating/reviewCount는 실데이터 있을 때만 존재)
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // 매칭률 필터
+    // 매칭률 필터 — 매칭률 데이터가 있는 항목에만 적용 (없는 항목은 유지)
     if (matchFilterOn) {
-      result = result.filter((p) => p.matchRate >= minMatchRate);
+      result = result.filter((p) => p.matchRate === undefined || p.matchRate >= minMatchRate);
     }
 
     // 정렬
     switch (sortBy) {
       case 'match':
-        result.sort((a, b) => b.matchRate - a.matchRate);
+        result.sort((a, b) => (b.matchRate ?? 0) - (a.matchRate ?? 0));
         break;
       case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
         break;
       case 'review':
-        result.sort((a, b) => b.reviewCount - a.reviewCount);
+        result.sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0));
         break;
       case 'price_low':
         result.sort((a, b) => a.price - b.price);
@@ -337,13 +257,6 @@ export default function StyleCategoryPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={() => router.push('/style/filter')}
-            className="p-2 text-muted-foreground hover:text-foreground"
-            aria-label="필터"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-          </button>
         </div>
 
         {/* 체형 프로필 */}
@@ -411,28 +324,44 @@ export default function StyleCategoryPage() {
           <>
             <p className="text-sm text-muted-foreground mb-4">{filteredProducts.length}개 아이템</p>
 
+            {/* 빈 상태 — 패션 제품 DB 미보유 시 가짜 폴백 대신 정직한 안내 */}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12 bg-card rounded-xl border">
+                <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="font-medium mb-1">아직 준비된 아이템이 없어요</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  내 옷장을 등록하면 갖고 있는 옷으로 코디를 추천해드려요
+                </p>
+                <button
+                  onClick={() => router.push('/closet/add/batch')}
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  옷장 등록하기
+                </button>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
-              {displayedItems.map((product, index) => (
-                <FadeInUp key={product.id} delay={Math.min(index, 5) as 0 | 1 | 2 | 3 | 4 | 5}>
-                  <button
-                    onClick={() =>
-                      product.type === 'outfit'
-                        ? router.push(`/style/outfit/${product.id}`)
-                        : router.push(`/style/${product.id}`)
-                    }
-                    className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow w-full"
-                  >
-                    {/* 매칭률 */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-primary">
-                        {product.matchRate}% 매칭
-                      </span>
-                      {product.type === 'outfit' && (
-                        <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                          코디
-                        </span>
-                      )}
-                    </div>
+              {displayedItems.map((product, index) => {
+                const cardContent = (
+                  <>
+                    {/* 매칭률 (실 계산값 있을 때만) */}
+                    {(product.matchRate !== undefined || product.type === 'outfit') && (
+                      <div className="flex items-center justify-between mb-2">
+                        {product.matchRate !== undefined ? (
+                          <span className="text-xs font-bold text-primary">
+                            {product.matchRate}% 매칭
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {product.type === 'outfit' && (
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                            코디
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* 이미지 */}
                     <div className="w-full aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
@@ -443,20 +372,66 @@ export default function StyleCategoryPage() {
                     <p className="text-xs text-muted-foreground">{product.brand}</p>
                     <p className="text-sm font-medium line-clamp-2 mt-0.5">{product.name}</p>
 
-                    {/* 평점 */}
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">{product.rating}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.reviewCount.toLocaleString()})
-                      </span>
-                    </div>
+                    {/* 평점 (실데이터 있을 때만) */}
+                    {product.rating !== undefined && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium">{product.rating}</span>
+                        {product.reviewCount !== undefined && (
+                          <span className="text-xs text-muted-foreground">
+                            ({product.reviewCount.toLocaleString()})
+                          </span>
+                        )}
+                      </div>
+                    )}
 
-                    {/* 가격 */}
-                    <p className="text-sm font-semibold mt-2">{product.price.toLocaleString()}원</p>
-                  </button>
-                </FadeInUp>
-              ))}
+                    {/* 가격 (있을 때만) */}
+                    {product.price > 0 && (
+                      <p className="text-sm font-semibold mt-2">
+                        {product.price.toLocaleString()}원
+                      </p>
+                    )}
+                  </>
+                );
+
+                const cardClass =
+                  'bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow w-full block';
+
+                // 코디 → 내부 상세 페이지 (실존 라우트)
+                // 제품 → 외부 제품 링크 (기존 /style/{id} 내부 라우트는 404였음)
+                // 링크 없는 제품 → 비링크 카드
+                let card: React.ReactNode;
+                if (product.type === 'outfit') {
+                  card = (
+                    <button
+                      onClick={() => router.push(`/style/outfit/${product.id}`)}
+                      className={cardClass}
+                    >
+                      {cardContent}
+                    </button>
+                  );
+                } else if (product.url) {
+                  card = (
+                    <a
+                      href={product.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(cardClass, 'relative')}
+                    >
+                      <ExternalLink className="w-3 h-3 absolute top-3 right-3 text-muted-foreground" />
+                      {cardContent}
+                    </a>
+                  );
+                } else {
+                  card = <div className={cardClass}>{cardContent}</div>;
+                }
+
+                return (
+                  <FadeInUp key={product.id} delay={Math.min(index, 5) as 0 | 1 | 2 | 3 | 4 | 5}>
+                    {card}
+                  </FadeInUp>
+                );
+              })}
             </div>
 
             {/* 무한 스크롤 트리거 */}

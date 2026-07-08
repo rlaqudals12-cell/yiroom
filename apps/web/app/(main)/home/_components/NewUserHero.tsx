@@ -218,7 +218,7 @@ export default function NewUserHero(): React.ReactElement {
       {/* 설문 대안 (P-UX6: 사진 거부감 대안) */}
       <div data-testid="home-new-survey-alt">
         <Link
-          href="/onboarding/survey"
+          href="/onboarding"
           className="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <span>{t('surveyAltLabel')}</span>

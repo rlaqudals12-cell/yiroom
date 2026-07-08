@@ -117,9 +117,9 @@ export default function BadgesPage() {
         {/* 헤더 */}
         <header className="flex items-center gap-4">
           <Link
-            href="/dashboard"
+            href="/home"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="대시보드로 돌아가기"
+            aria-label="홈으로"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>

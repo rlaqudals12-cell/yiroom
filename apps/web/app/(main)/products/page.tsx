@@ -7,7 +7,7 @@ import { RecentlyViewed } from '@/components/products/RecentlyViewed';
 
 export const metadata: Metadata = {
   title: '제품 | 이룸',
-  description: '이룸이 추천하는 스킨케어, 메이크업, 영양제, 운동기구, 건강식품을 만나보세요.',
+  description: '이룸이 추천하는 스킨케어, 메이크업 제품을 만나보세요.',
 };
 
 /**

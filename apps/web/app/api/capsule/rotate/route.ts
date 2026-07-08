@@ -2,6 +2,10 @@
  * 캡슐 로테이션 API
  *
  * POST — 지정 도메인 캡슐 로테이션 실행
+ *
+ * ⚠️ UI 미배선 (호출처 0, 2026-07-08 감사) — 로테이션 UX 도입 시 사용.
+ *    라우트는 의도적으로 유지 (제거는 보류).
+ *
  * @see docs/adr/ADR-069-capsule-ecosystem-architecture.md
  */
 

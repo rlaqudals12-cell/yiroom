@@ -144,6 +144,154 @@ export interface MakeupAnalysisResult {
   analysisReliability: 'high' | 'medium' | 'low';
 }
 
+// 점수 → 상태 (공용)
+function getMetricStatus(value: number): 'good' | 'normal' | 'warning' {
+  if (value >= 70) return 'good';
+  if (value >= 40) return 'normal';
+  return 'warning';
+}
+
+// 언더톤 라벨 (Mock 생성/자가입력 프리셋 공용)
+const UNDERTONE_LABEL_MAP: Record<UndertoneId, string> = {
+  warm: '웜톤',
+  cool: '쿨톤',
+  neutral: '뉴트럴',
+};
+
+// 언더톤 → 추정 퍼스널컬러 시즌 (공용)
+const SEASON_BY_UNDERTONE: Record<UndertoneId, string> = {
+  warm: '봄 웜 또는 가을 웜',
+  cool: '여름 쿨 또는 겨울 쿨',
+  neutral: '뉴트럴 (봄/가을 웜 or 여름/겨울 쿨)',
+};
+
+// 언더톤별 색상 추천 (공용, 결정론)
+const COLORS_BY_UNDERTONE: Record<UndertoneId, ColorRecommendation[]> = {
+  warm: [
+    {
+      category: 'foundation',
+      categoryLabel: '파운데이션',
+      colors: [
+        { name: '골든 베이지', hex: '#E8C39E', description: '웜톤에 어울리는 황금빛 베이지' },
+        { name: '피치 베이지', hex: '#EFCEB1', description: '복숭아빛이 도는 베이지' },
+      ],
+    },
+    {
+      category: 'lip',
+      categoryLabel: '립',
+      colors: [
+        { name: '코랄 오렌지', hex: '#FF6B4A', description: '화사한 코랄' },
+        { name: '브릭 레드', hex: '#B84A3A', description: '따뜻한 브릭 레드' },
+        { name: '누드 피치', hex: '#E8A490', description: '자연스러운 누드' },
+      ],
+    },
+    {
+      category: 'eyeshadow',
+      categoryLabel: '아이섀도',
+      colors: [
+        { name: '골드 브론즈', hex: '#C9A86A', description: '화려한 골드' },
+        { name: '테라코타', hex: '#A66858', description: '따뜻한 브라운' },
+        { name: '오렌지 브라운', hex: '#B87333', description: '오렌지빛 브라운' },
+      ],
+    },
+    {
+      category: 'blush',
+      categoryLabel: '블러셔',
+      colors: [
+        { name: '피치 핑크', hex: '#FFAB91', description: '복숭아빛 핑크' },
+        { name: '아프리코트', hex: '#FFCC80', description: '살구빛 블러셔' },
+      ],
+    },
+    {
+      category: 'contour',
+      categoryLabel: '컨투어',
+      colors: [{ name: '웜 브라운', hex: '#8B6914', description: '따뜻한 브라운 쉐딩' }],
+    },
+  ],
+  cool: [
+    {
+      category: 'foundation',
+      categoryLabel: '파운데이션',
+      colors: [
+        { name: '핑크 베이지', hex: '#E8D0C4', description: '핑크빛이 도는 베이지' },
+        { name: '포슬린', hex: '#F5E6E0', description: '밝은 쿨톤 베이지' },
+      ],
+    },
+    {
+      category: 'lip',
+      categoryLabel: '립',
+      colors: [
+        { name: '로즈 핑크', hex: '#E8818C', description: '사랑스러운 로즈' },
+        { name: '버건디', hex: '#8E2043', description: '깊이있는 버건디' },
+        { name: 'MLBB 핑크', hex: '#C48B9F', description: '내 입술 같은 핑크' },
+      ],
+    },
+    {
+      category: 'eyeshadow',
+      categoryLabel: '아이섀도',
+      colors: [
+        { name: '로즈 골드', hex: '#B76E79', description: '핑크빛 골드' },
+        { name: '그레이 브라운', hex: '#8B8589', description: '차가운 브라운' },
+        { name: '플럼', hex: '#8E4585', description: '보랏빛 플럼' },
+      ],
+    },
+    {
+      category: 'blush',
+      categoryLabel: '블러셔',
+      colors: [
+        { name: '로즈 핑크', hex: '#F7CAC9', description: '로즈빛 핑크' },
+        { name: '라벤더 핑크', hex: '#E6A8D7', description: '라벤더빛 블러셔' },
+      ],
+    },
+    {
+      category: 'contour',
+      categoryLabel: '컨투어',
+      colors: [{ name: '쿨 그레이', hex: '#6B5E5E', description: '차가운 그레이 쉐딩' }],
+    },
+  ],
+  neutral: [
+    {
+      category: 'foundation',
+      categoryLabel: '파운데이션',
+      colors: [
+        { name: '내추럴 베이지', hex: '#E0C8A8', description: '중간 톤의 베이지' },
+        { name: '샌드', hex: '#D2B48C', description: '자연스러운 샌드 톤' },
+      ],
+    },
+    {
+      category: 'lip',
+      categoryLabel: '립',
+      colors: [
+        { name: '모브 핑크', hex: '#C4A4A4', description: '세련된 모브 핑크' },
+        { name: '로지 브라운', hex: '#A67B5B', description: '로즈빛 브라운' },
+        { name: '베리 레드', hex: '#B03060', description: '밸런스 잡힌 베리' },
+      ],
+    },
+    {
+      category: 'eyeshadow',
+      categoryLabel: '아이섀도',
+      colors: [
+        { name: '토프', hex: '#8B7355', description: '뉴트럴 브라운' },
+        { name: '모브', hex: '#8B668B', description: '모브 퍼플' },
+        { name: '샴페인', hex: '#F7E7CE', description: '샴페인 골드' },
+      ],
+    },
+    {
+      category: 'blush',
+      categoryLabel: '블러셔',
+      colors: [
+        { name: '더스티 로즈', hex: '#C9A0A0', description: '먼지빛 로즈' },
+        { name: '소프트 코랄', hex: '#F08080', description: '부드러운 코랄' },
+      ],
+    },
+    {
+      category: 'contour',
+      categoryLabel: '컨투어',
+      colors: [{ name: '토프 브라운', hex: '#7A6A5F', description: '뉴트럴 브라운 쉐딩' }],
+    },
+  ],
+};
+
 /**
  * Mock 분석 결과 생성
  */
@@ -158,11 +306,7 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
   const randomLipShape = lipShapes[Math.floor(Math.random() * lipShapes.length)];
   const randomFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
 
-  const undertoneLabels: Record<UndertoneId, string> = {
-    warm: '웜톤',
-    cool: '쿨톤',
-    neutral: '뉴트럴',
-  };
+  const undertoneLabels = UNDERTONE_LABEL_MAP;
 
   const eyeShapeLabels: Record<EyeShapeId, string> = {
     monolid: '무쌍',
@@ -194,11 +338,7 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
   const generateScore = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const getStatus = (value: number): 'good' | 'normal' | 'warning' => {
-    if (value >= 70) return 'good';
-    if (value >= 40) return 'normal';
-    return 'warning';
-  };
+  const getStatus = getMetricStatus;
 
   const skinTexture = generateScore(40, 90);
   const skinTone = generateScore(45, 85);
@@ -255,132 +395,8 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
   if (Math.random() > 0.5) concerns.push('dark-circles');
   if (concerns.length === 0) concerns.push('redness');
 
-  // 언더톤별 색상 추천
-  const colorsByUndertone: Record<UndertoneId, ColorRecommendation[]> = {
-    warm: [
-      {
-        category: 'foundation',
-        categoryLabel: '파운데이션',
-        colors: [
-          { name: '골든 베이지', hex: '#E8C39E', description: '웜톤에 어울리는 황금빛 베이지' },
-          { name: '피치 베이지', hex: '#EFCEB1', description: '복숭아빛이 도는 베이지' },
-        ],
-      },
-      {
-        category: 'lip',
-        categoryLabel: '립',
-        colors: [
-          { name: '코랄 오렌지', hex: '#FF6B4A', description: '화사한 코랄' },
-          { name: '브릭 레드', hex: '#B84A3A', description: '따뜻한 브릭 레드' },
-          { name: '누드 피치', hex: '#E8A490', description: '자연스러운 누드' },
-        ],
-      },
-      {
-        category: 'eyeshadow',
-        categoryLabel: '아이섀도',
-        colors: [
-          { name: '골드 브론즈', hex: '#C9A86A', description: '화려한 골드' },
-          { name: '테라코타', hex: '#A66858', description: '따뜻한 브라운' },
-          { name: '오렌지 브라운', hex: '#B87333', description: '오렌지빛 브라운' },
-        ],
-      },
-      {
-        category: 'blush',
-        categoryLabel: '블러셔',
-        colors: [
-          { name: '피치 핑크', hex: '#FFAB91', description: '복숭아빛 핑크' },
-          { name: '아프리코트', hex: '#FFCC80', description: '살구빛 블러셔' },
-        ],
-      },
-      {
-        category: 'contour',
-        categoryLabel: '컨투어',
-        colors: [{ name: '웜 브라운', hex: '#8B6914', description: '따뜻한 브라운 쉐딩' }],
-      },
-    ],
-    cool: [
-      {
-        category: 'foundation',
-        categoryLabel: '파운데이션',
-        colors: [
-          { name: '핑크 베이지', hex: '#E8D0C4', description: '핑크빛이 도는 베이지' },
-          { name: '포슬린', hex: '#F5E6E0', description: '밝은 쿨톤 베이지' },
-        ],
-      },
-      {
-        category: 'lip',
-        categoryLabel: '립',
-        colors: [
-          { name: '로즈 핑크', hex: '#E8818C', description: '사랑스러운 로즈' },
-          { name: '버건디', hex: '#8E2043', description: '깊이있는 버건디' },
-          { name: 'MLBB 핑크', hex: '#C48B9F', description: '내 입술 같은 핑크' },
-        ],
-      },
-      {
-        category: 'eyeshadow',
-        categoryLabel: '아이섀도',
-        colors: [
-          { name: '로즈 골드', hex: '#B76E79', description: '핑크빛 골드' },
-          { name: '그레이 브라운', hex: '#8B8589', description: '차가운 브라운' },
-          { name: '플럼', hex: '#8E4585', description: '보랏빛 플럼' },
-        ],
-      },
-      {
-        category: 'blush',
-        categoryLabel: '블러셔',
-        colors: [
-          { name: '로즈 핑크', hex: '#F7CAC9', description: '로즈빛 핑크' },
-          { name: '라벤더 핑크', hex: '#E6A8D7', description: '라벤더빛 블러셔' },
-        ],
-      },
-      {
-        category: 'contour',
-        categoryLabel: '컨투어',
-        colors: [{ name: '쿨 그레이', hex: '#6B5E5E', description: '차가운 그레이 쉐딩' }],
-      },
-    ],
-    neutral: [
-      {
-        category: 'foundation',
-        categoryLabel: '파운데이션',
-        colors: [
-          { name: '내추럴 베이지', hex: '#E0C8A8', description: '중간 톤의 베이지' },
-          { name: '샌드', hex: '#D2B48C', description: '자연스러운 샌드 톤' },
-        ],
-      },
-      {
-        category: 'lip',
-        categoryLabel: '립',
-        colors: [
-          { name: '모브 핑크', hex: '#C4A4A4', description: '세련된 모브 핑크' },
-          { name: '로지 브라운', hex: '#A67B5B', description: '로즈빛 브라운' },
-          { name: '베리 레드', hex: '#B03060', description: '밸런스 잡힌 베리' },
-        ],
-      },
-      {
-        category: 'eyeshadow',
-        categoryLabel: '아이섀도',
-        colors: [
-          { name: '토프', hex: '#8B7355', description: '뉴트럴 브라운' },
-          { name: '모브', hex: '#8B668B', description: '모브 퍼플' },
-          { name: '샴페인', hex: '#F7E7CE', description: '샴페인 골드' },
-        ],
-      },
-      {
-        category: 'blush',
-        categoryLabel: '블러셔',
-        colors: [
-          { name: '더스티 로즈', hex: '#C9A0A0', description: '먼지빛 로즈' },
-          { name: '소프트 코랄', hex: '#F08080', description: '부드러운 코랄' },
-        ],
-      },
-      {
-        category: 'contour',
-        categoryLabel: '컨투어',
-        colors: [{ name: '토프 브라운', hex: '#7A6A5F', description: '뉴트럴 브라운 쉐딩' }],
-      },
-    ],
-  };
+  // 언더톤별 색상 추천 (모듈 공용 상수 사용)
+  const colorsByUndertone = COLORS_BY_UNDERTONE;
 
   // 추천 스타일 (언더톤 + 얼굴형 기반)
   const stylesByType: Record<FaceShapeId, MakeupStyleId[]> = {
@@ -392,7 +408,11 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     diamond: ['chic', 'edgy', 'glam'],
   };
 
-  const colorSuggestion = selectByKey(randomUndertone, { warm: '따뜻한 코랄, 브라운 계열', cool: '로즈, 핑크 계열' }, '다양한 컬러')!;
+  const colorSuggestion = selectByKey(
+    randomUndertone,
+    { warm: '따뜻한 코랄, 브라운 계열', cool: '로즈, 핑크 계열' },
+    '다양한 컬러'
+  )!;
   const insight = `${undertoneLabels[randomUndertone]}에 ${faceShapeLabels[randomFaceShape]} 얼굴형이시네요. ${eyeShapeLabels[randomEyeShape]}과 ${lipShapeLabels[randomLipShape]}의 특성을 살려 ${colorSuggestion}의 메이크업을 추천드려요.`;
 
   // 메이크업 팁
@@ -413,33 +433,53 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     },
     {
       category: '아이 메이크업',
-      tips: selectByKey(randomEyeShape, {
-        monolid: ['눈 앞머리에서 눈꼬리 방향으로 그라데이션하세요', '펄 섀도로 중앙을 포인트 주세요'],
-        hooded: ['눈을 떴을 때 보이는 부분까지 섀도를 발라주세요', '아이라인은 눈꼬리를 살짝 올려서 그리세요'],
-      }, ['눈의 자연스러운 곡선을 따라 그리세요', '눈꼬리 쪽에 음영을 넣어 깊이감을 주세요'])!,
+      tips: selectByKey(
+        randomEyeShape,
+        {
+          monolid: [
+            '눈 앞머리에서 눈꼬리 방향으로 그라데이션하세요',
+            '펄 섀도로 중앙을 포인트 주세요',
+          ],
+          hooded: [
+            '눈을 떴을 때 보이는 부분까지 섀도를 발라주세요',
+            '아이라인은 눈꼬리를 살짝 올려서 그리세요',
+          ],
+        },
+        ['눈의 자연스러운 곡선을 따라 그리세요', '눈꼬리 쪽에 음영을 넣어 깊이감을 주세요']
+      )!,
     },
     {
       category: '립 메이크업',
-      tips: selectByKey(randomLipShape, {
-        thin: ['립 라인 바깥으로 살짝 오버립을 해주세요', '글로시한 텍스처로 볼륨감을 더해주세요'],
-        full: ['매트 텍스처로 깔끔하게 발라주세요', '입술 라인을 정교하게 그려주세요'],
-      }, ['입술 중앙에 밝은 컬러로 하이라이트 효과를 주세요', '자연스러운 그라데이션 립을 추천해요'])!,
+      tips: selectByKey(
+        randomLipShape,
+        {
+          thin: [
+            '립 라인 바깥으로 살짝 오버립을 해주세요',
+            '글로시한 텍스처로 볼륨감을 더해주세요',
+          ],
+          full: ['매트 텍스처로 깔끔하게 발라주세요', '입술 라인을 정교하게 그려주세요'],
+        },
+        ['입술 중앙에 밝은 컬러로 하이라이트 효과를 주세요', '자연스러운 그라데이션 립을 추천해요']
+      )!,
     },
     {
       category: '컨투어링',
-      tips: selectByKey(randomFaceShape, {
-        round: ['광대 아래와 턱 라인에 쉐딩을 넣어주세요', '코 옆라인도 슬림하게 음영을 넣어주세요'],
-        square: ['턱 양 옆에 부드럽게 쉐딩하세요', '이마 양 끝도 살짝 음영을 넣어주세요'],
-      }, ['T존과 광대 위에 하이라이트를 주세요', '자연스럽게 음영을 넣어 입체감을 살리세요'])!,
+      tips: selectByKey(
+        randomFaceShape,
+        {
+          round: [
+            '광대 아래와 턱 라인에 쉐딩을 넣어주세요',
+            '코 옆라인도 슬림하게 음영을 넣어주세요',
+          ],
+          square: ['턱 양 옆에 부드럽게 쉐딩하세요', '이마 양 끝도 살짝 음영을 넣어주세요'],
+        },
+        ['T존과 광대 위에 하이라이트를 주세요', '자연스럽게 음영을 넣어 입체감을 살리세요']
+      )!,
     },
   ];
 
-  // 퍼스널 컬러 연동 (기본값)
-  const seasonByUndertone: Record<UndertoneId, string> = {
-    warm: '봄 웜 또는 가을 웜',
-    cool: '여름 쿨 또는 겨울 쿨',
-    neutral: '뉴트럴 (봄/가을 웜 or 여름/겨울 쿨)',
-  };
+  // 퍼스널 컬러 연동 (모듈 공용 상수 사용)
+  const seasonByUndertone = SEASON_BY_UNDERTONE;
 
   return {
     undertone: randomUndertone,
@@ -464,5 +504,122 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     },
     analyzedAt: new Date(),
     analysisReliability: 'medium',
+  };
+}
+
+/**
+ * 자가입력(known-input) 결과 생성 — 결정론 (랜덤 없음)
+ *
+ * 왜: "타입을 이미 알아요" 경로는 사진 분석이 없으므로 랜덤 얼굴형·점수를
+ * 실측처럼 보여주면 안 된다. 선택한 언더톤 + 고민에서 결정론적으로 파생하고,
+ * 알 수 없는 눈/입술/얼굴형 라벨은 비워 신뢰도 'low'와 "자가입력 기반 추정"
+ * 안내와 함께 사용한다.
+ */
+export function generateKnownUndertoneResult(
+  undertone: UndertoneId,
+  concerns: MakeupConcernId[]
+): MakeupAnalysisResult {
+  // 지표: 기준값 65(보통), 선택한 고민과 연결된 지표만 45(주의)로 낮춤
+  const has = (...ids: MakeupConcernId[]) => ids.some((id) => concerns.includes(id));
+  const skinTexture = has('acne-scars', 'fine-lines') ? 45 : 65;
+  const skinTone = has('uneven-tone', 'redness') ? 45 : 65;
+  const hydration = has('dry-patches') ? 45 : 65;
+  const poreVisibility = has('large-pores') ? 45 : 65;
+  const oilBalance = has('oily-tzone') ? 45 : 65;
+
+  const metricDefs: Array<[string, string, number, string]> = [
+    ['skinTexture', '피부 결', skinTexture, '피부 표면의 매끄러움 (자가입력 기반 추정)'],
+    ['skinTone', '피부톤 균일도', skinTone, '전체적인 피부톤 일관성 (자가입력 기반 추정)'],
+    ['hydration', '수분감', hydration, '피부의 촉촉함 (자가입력 기반 추정)'],
+    [
+      'poreVisibility',
+      '모공 상태',
+      poreVisibility,
+      '모공의 눈에 띄는 정도 (높을수록 덜 보임, 자가입력 기반 추정)',
+    ],
+    ['oilBalance', '유수분 밸런스', oilBalance, '피부의 유분/수분 균형 (자가입력 기반 추정)'],
+  ];
+
+  const metrics: MakeupAnalysisMetric[] = metricDefs.map(([id, label, value, description]) => ({
+    id,
+    label,
+    value,
+    status: getMetricStatus(value),
+    description,
+  }));
+
+  const overallScore = Math.round(metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length);
+
+  // 추천 스타일: 언더톤 기반 결정론 (얼굴형 미상이므로 무난한 조합)
+  const stylesByUndertone: Record<UndertoneId, MakeupStyleId[]> = {
+    warm: ['natural', 'cute', 'vintage'],
+    cool: ['chic', 'glam', 'edgy'],
+    neutral: ['natural', 'chic', 'glam'],
+  };
+
+  const colorSuggestion = selectByKey(
+    undertone,
+    { warm: '따뜻한 코랄, 브라운 계열', cool: '로즈, 핑크 계열' },
+    '다양한 컬러'
+  )!;
+  const insight = `${UNDERTONE_LABEL_MAP[undertone]}으로 선택해주셨어요. 사진 분석 없이 입력하신 내용을 바탕으로 ${colorSuggestion}의 메이크업 컬러를 정리했어요.`;
+
+  // 메이크업 팁: 베이스는 선택한 고민 기반, 나머지는 얼굴형 미상이라 범용 팁
+  const makeupTips = [
+    {
+      category: '베이스',
+      tips: [
+        concerns.includes('large-pores')
+          ? '프라이머로 모공을 먼저 메워주세요'
+          : '피부결에 맞게 파운데이션을 발라주세요',
+        concerns.includes('oily-tzone')
+          ? 'T존은 파우더로 유분기를 잡아주세요'
+          : '전체적으로 촉촉하게 마무리하세요',
+        concerns.includes('dark-circles')
+          ? '컨실러를 삼각형으로 발라 다크서클을 커버하세요'
+          : '얇게 베이스를 발라 피부결을 살리세요',
+      ],
+    },
+    {
+      category: '아이 메이크업',
+      tips: ['눈의 자연스러운 곡선을 따라 그리세요', '눈꼬리 쪽에 음영을 넣어 깊이감을 주세요'],
+    },
+    {
+      category: '립 메이크업',
+      tips: [
+        '입술 중앙에 밝은 컬러로 하이라이트 효과를 주세요',
+        '자연스러운 그라데이션 립을 추천해요',
+      ],
+    },
+    {
+      category: '컨투어링',
+      tips: ['T존과 광대 위에 하이라이트를 주세요', '자연스럽게 음영을 넣어 입체감을 살리세요'],
+    },
+  ];
+
+  return {
+    undertone,
+    undertoneLabel: UNDERTONE_LABEL_MAP[undertone],
+    // 눈/입술/얼굴형은 자가입력에 없음 — 형태는 기본값, 라벨은 비워 UI에서 미표시
+    eyeShape: 'double',
+    eyeShapeLabel: '',
+    lipShape: 'full',
+    lipShapeLabel: '',
+    faceShape: 'oval',
+    faceShapeLabel: '',
+    overallScore,
+    metrics,
+    concerns,
+    insight,
+    recommendedStyles: stylesByUndertone[undertone],
+    colorRecommendations: COLORS_BY_UNDERTONE[undertone],
+    makeupTips,
+    personalColorConnection: {
+      season: SEASON_BY_UNDERTONE[undertone],
+      compatibility: undertone === 'neutral' ? 'high' : 'medium',
+      note: `퍼스널 컬러 진단 결과와 함께 보시면 더 정확한 컬러 추천을 받으실 수 있어요.`,
+    },
+    analyzedAt: new Date(),
+    analysisReliability: 'low',
   };
 }

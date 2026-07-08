@@ -70,10 +70,11 @@ export function generateWelcomeBackMessage(
     case 'medium':
       return {
         title: `${absentDays}일 만에 돌아오셨군요!`,
-        description: '그동안 새로운 변화가 있었어요. 확인해보세요',
+        description: '오랜만에 내 상태를 다시 확인해보세요',
         absentDays,
-        ctaText: '변화 확인하기',
-        ctaHref: '/dashboard',
+        // 배너가 홈에 표시되므로 /dashboard(자기 자신) 대신 분석 허브로 유도
+        ctaText: '다시 분석하기',
+        ctaHref: '/analysis',
       };
 
     case 'long':

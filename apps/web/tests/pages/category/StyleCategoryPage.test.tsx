@@ -1,6 +1,10 @@
 /**
  * StyleCategoryPage 테스트
  * @description 스타일 카테고리 페이지 테스트
+ *
+ * 2026-07-08 정직화 반영: 가짜 폴백 제품(무신사/ZARA + Math.random 평점)·
+ * `/style/filter` 필터 버튼·`/style/{id}` 죽은 링크가 제거되고,
+ * 패션 제품 DB 미보유 시 정직한 빈 상태 + 옷장 등록 CTA를 렌더한다.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -75,7 +79,7 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
       if (table === 'body_analyses') {
         return createChainableMock({ body_type: 'W' });
       }
-      // affiliate_products, lookbook_posts - 빈 배열 반환하여 fallback 데이터 사용
+      // affiliate_products 등 — 빈 배열 = 정직한 빈 상태 렌더
       return createChainableMock([]);
     }),
   }),
@@ -118,21 +122,22 @@ describe('StyleCategoryPage', () => {
       });
     });
 
-    it('제품 목록이 표시된다', async () => {
+    it('제품 DB가 비어 있으면 가짜 폴백 없이 정직한 빈 상태를 표시한다', async () => {
       render(<StyleCategoryPage />);
 
-      // 비동기 데이터 로드 대기 (fallback 데이터 사용)
       await waitFor(() => {
-        expect(screen.getByText('크롭 니트')).toBeInTheDocument();
+        expect(screen.getByText('아직 준비된 아이템이 없어요')).toBeInTheDocument();
       });
-      expect(screen.getByText('하이웨스트 슬랙스')).toBeInTheDocument();
+      // 제거된 가짜 폴백 제품이 다시 나타나지 않아야 함
+      expect(screen.queryByText('크롭 니트')).not.toBeInTheDocument();
+      expect(screen.queryByText('무신사')).not.toBeInTheDocument();
     });
 
-    it('제품/아이템 개수가 표시된다', async () => {
+    it('빈 상태에서 옷장 등록 CTA가 표시된다', async () => {
       render(<StyleCategoryPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/\d+개 아이템/)).toBeInTheDocument();
+        expect(screen.getByText('옷장 등록하기')).toBeInTheDocument();
       });
     });
 
@@ -154,66 +159,15 @@ describe('StyleCategoryPage', () => {
       expect(mockRouter.back).toHaveBeenCalled();
     });
 
-    it('필터 버튼 클릭 시 필터 페이지로 이동', async () => {
-      const user = userEvent.setup();
+    it('필터 버튼(/style/filter 죽은 링크)은 더 이상 렌더되지 않는다', () => {
       render(<StyleCategoryPage />);
 
-      const filterButton = screen.getByLabelText('필터');
-      await user.click(filterButton);
-
-      expect(mockRouter.push).toHaveBeenCalledWith('/style/filter');
-    });
-
-    it('일반 아이템 클릭 시 상세 페이지로 이동', async () => {
-      const user = userEvent.setup();
-      render(<StyleCategoryPage />);
-
-      // 비동기 데이터 로드 대기
-      await waitFor(() => {
-        expect(screen.getByText('크롭 니트')).toBeInTheDocument();
-      });
-
-      const productCard = screen.getByText('크롭 니트').closest('button');
-      await user.click(productCard!);
-
-      expect(mockRouter.push).toHaveBeenCalledWith('/style/1');
-    });
-
-    it('코디 아이템 클릭 시 outfit 페이지로 이동', async () => {
-      // outfit 카테고리에서만 코디 아이템이 표시됨
-      mockParams.slug = 'outfit';
-      const user = userEvent.setup();
-      render(<StyleCategoryPage />);
-
-      // 비동기 데이터 로드 대기
-      await waitFor(() => {
-        expect(screen.getByText('봄 웜톤 코디')).toBeInTheDocument();
-      });
-
-      const outfitCard = screen.getByText('봄 웜톤 코디').closest('button');
-      await user.click(outfitCard!);
-
-      expect(mockRouter.push).toHaveBeenCalledWith('/style/outfit/5');
-    });
-  });
-
-  describe('매칭률 필터', () => {
-    it('매칭률 필터 토글 시 제품 목록이 변경된다', async () => {
-      const user = userEvent.setup();
-      render(<StyleCategoryPage />);
-
-      // 초기: 80% 이상 필터 ON
-      const filterButton = screen.getByText(/80% 이상/);
-      expect(filterButton).toHaveClass('bg-primary');
-
-      // 필터 OFF
-      await user.click(filterButton);
-      expect(filterButton).toHaveClass('bg-muted');
+      expect(screen.queryByLabelText('필터')).not.toBeInTheDocument();
     });
   });
 
   describe('정렬', () => {
-    it('정렬 메뉴가 열리고 닫힌다', async () => {
+    it('정렬 메뉴가 열리고 옵션이 표시된다', async () => {
       const user = userEvent.setup();
       render(<StyleCategoryPage />);
 
@@ -239,60 +193,8 @@ describe('StyleCategoryPage', () => {
       await user.click(screen.getByText('가격 낮은순'));
 
       // 메뉴가 닫히고 버튼 텍스트 변경
-      // getAllByText 사용 (버튼과 메뉴 아이템 모두에 있을 수 있음)
       const sortButtons = screen.getAllByText('가격 낮은순');
       expect(sortButtons.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('제품 카드', () => {
-    it('제품 정보가 올바르게 표시된다', async () => {
-      render(<StyleCategoryPage />);
-
-      // 비동기 데이터 로드 대기
-      await waitFor(() => {
-        expect(screen.getByText('크롭 니트')).toBeInTheDocument();
-      });
-
-      // 제품명
-      expect(screen.getByText('크롭 니트')).toBeInTheDocument();
-      // 브랜드
-      expect(screen.getByText('무신사')).toBeInTheDocument();
-      // 가격
-      expect(screen.getByText('39,000원')).toBeInTheDocument();
-      // 매칭률
-      expect(screen.getByText('95% 매칭')).toBeInTheDocument();
-    });
-
-    it('코디 카테고리에서는 코디 뱃지가 표시된다', async () => {
-      // outfit 카테고리에서 코디 뱃지 확인
-      // 카테고리별 표시 테스트에서 outfit 검증함
-      mockParams.slug = 'outfit';
-      const { unmount } = render(<StyleCategoryPage />);
-
-      // 코디 카테고리 헤더 확인 (비동기 대기 없이 헤더는 바로 표시)
-      expect(screen.getByText('완성된 코디 추천')).toBeInTheDocument();
-
-      // 코디 카테고리명이 헤더에 표시됨
-      const outfitHeaders = screen.getAllByText('코디');
-      expect(outfitHeaders.length).toBeGreaterThan(0);
-
-      unmount();
-    });
-
-    it('평점과 리뷰 수가 표시된다', async () => {
-      render(<StyleCategoryPage />);
-
-      // 비동기 데이터 로드 대기
-      await waitFor(() => {
-        expect(screen.getByText('크롭 니트')).toBeInTheDocument();
-      });
-
-      // 여러 제품의 평점이 있을 수 있음
-      const ratings = screen.getAllByText('4.8');
-      expect(ratings.length).toBeGreaterThan(0);
-      const reviewCounts = screen.getAllByText('(1,234)');
-      expect(reviewCounts.length).toBeGreaterThan(0);
     });
   });
 

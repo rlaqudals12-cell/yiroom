@@ -28,7 +28,6 @@ import {
   generateSkinIdentityLabelFromMetrics,
 } from '@/lib/analysis/skin-v2';
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
-import { detectFaceLandmarks } from '@/components/analysis/overlay';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 import { RecommendedProducts } from '@/components/analysis/RecommendedProducts';
@@ -48,19 +47,11 @@ const AnalysisMatchedProducts = dynamic(
   { loading: () => null, ssr: false }
 );
 import { useAnalysisShare, createSkinShareData } from '@/hooks/useAnalysisShare';
+import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import { ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-
-// Layer 0.5: 피부 히트맵 오버레이 (ADR-097)
-const FaceHeatmapOverlay = dynamic(
-  () =>
-    import('@/components/analysis/overlay/FaceHeatmapOverlay').then((mod) => ({
-      default: mod.FaceHeatmapOverlay,
-    })),
-  { loading: () => null, ssr: false }
-);
 
 // FAB 메뉴 내 컴포넌트 - 조건부 렌더링이므로 dynamic import
 const SkinConsultantCTA = dynamic(
@@ -97,7 +88,6 @@ import {
 } from '@/components/analysis/visual-report';
 import { SkinZoomViewer } from '@/components/analysis/SkinZoomViewer';
 import type { ProblemArea } from '@/types/skin-problem-area';
-import { MOCK_PROBLEM_AREAS } from '@/lib/mock/skin-problem-areas';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
 import type { MetricStatus } from '@/lib/mock/skin-analysis';
 // face-api.js 사용 컴포넌트 - 동적 import (번들 최적화)
@@ -368,15 +358,13 @@ export default function SkinAnalysisResultPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysisEvidence, setAnalysisEvidence] = useState<SkinAnalysisEvidence | null>(null);
   const [imageQuality, setImageQuality] = useState<SkinImageQuality | null>(null);
-  // Phase E: 문제 영역 데이터 (DB 없으면 Mock 사용)
+  // Phase E: 문제 영역 데이터 (AI가 실제로 반환한 경우에만 표시 — 지어낸 좌표 금지)
   const [problemAreas, setProblemAreas] = useState<ProblemArea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [selectedZone, setSelectedZone] = useState<FaceZoneId | null>(null);
-  // Layer 0.5: face-api.js 랜드마크 (히트맵 오버레이용)
-  const [faceLandmarks, setFaceLandmarks] = useState<Array<{ x: number; y: number }> | null>(null);
   // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
   const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   // PC-1 시즌 정보 (시너지 인사이트용)
@@ -422,6 +410,7 @@ export default function SkinAnalysisResultPage() {
 
   // 공유 카드 데이터
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
+  const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -434,8 +423,17 @@ export default function SkinAnalysisResultPage() {
         { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
       ),
       format: shareFormat,
+      theme: shareTheme,
     };
-  }, [result, skinIdentityLabel, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
+  }, [
+    result,
+    skinIdentityLabel,
+    shareFormat,
+    shareTheme,
+    user?.firstName,
+    user?.imageUrl,
+    user?.username,
+  ]);
 
   // 얼굴 존 상태 계산 (메트릭 기반) - FaceZoneMapProps.zones 형식
   const zoneStatuses = useMemo((): FaceZoneMapProps['zones'] => {
@@ -657,12 +655,11 @@ export default function SkinAnalysisResultPage() {
         setUsedMock(true);
       }
 
-      // Phase E: 문제 영역 (DB에 있으면 사용, 없으면 Mock)
+      // Phase E: 문제 영역 — AI가 실제로 반환한 좌표만 표시 (없으면 섹션 미표시)
       if (dbData.problem_areas && dbData.problem_areas.length > 0) {
         setProblemAreas(dbData.problem_areas);
       } else {
-        // MVP: Mock 데이터로 데모 (추후 Gemini 응답에서 추출)
-        setProblemAreas(MOCK_PROBLEM_AREAS);
+        setProblemAreas([]);
       }
 
       // DB 조회 성공 → 최근 결과 ID 업데이트 (checkExisting fallback용)
@@ -723,13 +720,6 @@ export default function SkinAnalysisResultPage() {
         setPcSeason(pcData.season);
       }
 
-      // Layer 0.5: 히트맵 오버레이용 얼굴 랜드마크 감지
-      if (imageUrl) {
-        detectFaceLandmarks(imageUrl)
-          .then(setFaceLandmarks)
-          .catch(() => setFaceLandmarks(null));
-      }
-
       // S-1 + PC-1 시너지 인사이트 생성 (피부 메트릭 기반)
       const synergyMetrics = [
         { id: 'hydration', value: dbData.hydration },
@@ -763,7 +753,7 @@ export default function SkinAnalysisResultPage() {
             if (cachedData.dbData.problem_areas?.length > 0) {
               setProblemAreas(cachedData.dbData.problem_areas);
             } else {
-              setProblemAreas(MOCK_PROBLEM_AREAS);
+              setProblemAreas([]);
             }
             // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
@@ -936,37 +926,7 @@ export default function SkinAnalysisResultPage() {
             </div>
           )}
 
-          {/* Layer 0.5: 피부 12존 히트맵 오버레이 (ADR-097) */}
-          {result && imageUrl && (
-            <FaceHeatmapOverlay
-              imageUrl={imageUrl}
-              landmarks={faceLandmarks}
-              zoneScores={
-                // 기존 metrics 배열을 12존 스코어로 변환 (간이 매핑)
-                Object.fromEntries(
-                  (result.metrics ?? []).slice(0, 12).map((m, i) => {
-                    const zoneIds = [
-                      'forehead_center',
-                      'forehead_left',
-                      'forehead_right',
-                      'eye_left',
-                      'eye_right',
-                      'nose_bridge',
-                      'nose_tip',
-                      'cheek_left',
-                      'cheek_right',
-                      'chin_center',
-                      'chin_left',
-                      'chin_right',
-                    ];
-                    return [zoneIds[i] ?? `zone_${i}`, m.value ?? 50];
-                  })
-                )
-              }
-              zoneMetrics={{}}
-              className="mb-6"
-            />
-          )}
+          {/* 12존 히트맵 오버레이 제거 — 전신 지표를 존별 실측처럼 임의 배정하던 표시(사용자 오인 소지) */}
 
           {/* 탭 기반 결과 (스와이프 지원) */}
           {result && (
@@ -1453,7 +1413,8 @@ export default function SkinAnalysisResultPage() {
                           : null
                       }
                       onProductClick={(productId) => {
-                        router.push(`/products/${productId}`);
+                        // 제품 상세 라우트는 /products/[type]/[id] — 화장품은 cosmetic
+                        router.push(`/products/cosmetic/${productId}`);
                       }}
                     />
                   </div>
@@ -1537,8 +1498,8 @@ export default function SkinAnalysisResultPage() {
                 {t('share')}
               </Button>
               <ShareThemePicker
-                value={shareData?.theme ?? 'default'}
-                onChange={() => {}}
+                value={shareTheme}
+                onChange={setShareTheme}
                 format={shareFormat}
                 onFormatChange={setShareFormat}
               />

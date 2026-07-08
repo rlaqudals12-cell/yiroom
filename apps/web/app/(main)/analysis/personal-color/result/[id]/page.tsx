@@ -36,6 +36,7 @@ import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
+import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import type { PersonalColorSeason } from '@/types/product';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -205,6 +206,7 @@ export default function PersonalColorResultPage() {
 
   // 공유 카드 데이터
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
+  const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -217,8 +219,9 @@ export default function PersonalColorResultPage() {
         { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
       ),
       format: shareFormat,
+      theme: shareTheme,
     };
-  }, [result, shareFormat, user?.firstName, user?.imageUrl, user?.username]);
+  }, [result, shareFormat, shareTheme, user?.firstName, user?.imageUrl, user?.username]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -760,8 +763,8 @@ export default function PersonalColorResultPage() {
               </Button>
               <ShareButton onShare={share} loading={shareLoading} variant="outline" />
               <ShareThemePicker
-                value={shareData?.theme ?? 'default'}
-                onChange={() => {}}
+                value={shareTheme}
+                onChange={setShareTheme}
                 format={shareFormat}
                 onFormatChange={setShareFormat}
                 className="mt-2"

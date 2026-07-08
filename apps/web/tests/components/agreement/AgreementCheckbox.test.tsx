@@ -20,7 +20,7 @@ const mockMarketingItem: AgreementItem = {
   label: '마케팅 정보 수신 동의',
   required: false,
   description: '프로모션, 이벤트, 신기능 알림을 받습니다',
-  detailUrl: '/help/marketing',
+  // 마케팅은 상세 페이지 없음 — detailUrl 미지정
 };
 
 describe('AgreementCheckbox', () => {
@@ -98,6 +98,12 @@ describe('AgreementCheckbox', () => {
       expect(link).toHaveAttribute('href', '/terms');
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
+    it('detailUrl이 없으면 상세 보기 링크를 렌더링하지 않는다', () => {
+      render(<AgreementCheckbox item={mockMarketingItem} checked={false} onChange={vi.fn()} />);
+
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
   });
 

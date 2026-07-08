@@ -165,14 +165,17 @@ function CombinationCard({
               제품 보기
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-            onClick={() => onSave?.(combination.id)}
-          >
-            <Bookmark className="w-3 h-3" />
-          </Button>
+          {/* 저장 핸들러가 실제로 연결된 경우에만 노출 — 동작 없는 버튼 금지 (P4) */}
+          {onSave && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => onSave(combination.id)}
+            >
+              <Bookmark className="w-3 h-3" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

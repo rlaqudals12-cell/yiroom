@@ -8,6 +8,8 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   ScanLine,
   Keyboard,
@@ -41,10 +43,12 @@ function getEwgGradeClass(grade: number): string {
 }
 
 export default function ScanPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<ScanMode>('camera');
   const [state, setState] = useState<ScanState>('scanning');
   const [result, setResult] = useState<ProductLookupResult | null>(null);
   const [lastBarcode, setLastBarcode] = useState<string | null>(null);
+  const [addingToShelf, setAddingToShelf] = useState(false);
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
   const [compatibilityResult, setCompatibilityResult] = useState<CompatibilityResult | null>(null);
   const [compatibilityLoading, setCompatibilityLoading] = useState(false);
@@ -97,13 +101,46 @@ export default function ScanPage() {
     setMode('camera');
   }, []);
 
-  // 제품함 추가
-  // [DEFERRED] 실제 API 구현 - user_product_shelves 테이블 필요
-  // 선행 조건: 사용자 제품함 DB 스키마 설계
-  // 재검토 트리거: 제품함 기능 요청 시
-  const handleAddToShelf = useCallback(() => {
-    alert('내 제품함에 추가되었어요.');
-  }, []);
+  // 제품함 추가 — POST /api/scan/shelf (user_product_shelf 테이블)
+  const handleAddToShelf = useCallback(async () => {
+    const product = result?.product;
+    if (!product || addingToShelf) return;
+
+    setAddingToShelf(true);
+    try {
+      const response = await fetch('/api/scan/shelf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // product_id는 내부 DB 제품일 때만 유효한 FK — 외부 소스 id는 보내지 않음
+          productId: result.source === 'internal_db' ? product.id : undefined,
+          productName: product.name,
+          productBrand: product.brand,
+          productBarcode: product.barcode ?? lastBarcode ?? undefined,
+          productImageUrl: product.imageUrl,
+          productIngredients: product.ingredients ?? [],
+          scanMethod: mode === 'manual' ? 'manual' : 'barcode',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.error || `HTTP ${response.status}`);
+      }
+
+      toast.success('내 제품함에 추가했어요', {
+        action: {
+          label: '제품함 보기',
+          onClick: () => router.push('/scan/shelf'),
+        },
+      });
+    } catch (error) {
+      console.error('[ScanPage] 제품함 추가 실패:', error);
+      toast.error('제품함 추가에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setAddingToShelf(false);
+    }
+  }, [result, lastBarcode, mode, addingToShelf, router]);
 
   // [DEFERRED] 공유 기능 — Web Share API 기본 구현, 세부 커스터마이징은 향후
   const handleShare = useCallback(() => {

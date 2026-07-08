@@ -2,6 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ScanPage from '@/app/(main)/scan/page';
 
+// Mock Next.js router (제품함 추가 토스트 액션에서 사용)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+}));
+
+// Mock sonner (성공/실패 토스트)
+const mockToastSuccess = vi.fn();
+const mockToastError = vi.fn();
+vi.mock('sonner', () => ({
+  toast: {
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
+  },
+}));
+
 // Mock 컴포넌트
 vi.mock('@/components/scan/ScanCamera', () => ({
   ScanCamera: ({
@@ -31,7 +46,14 @@ vi.mock('@/components/scan/BarcodeInput', () => ({
 }));
 
 vi.mock('@/components/scan/ScanResult', () => ({
-  ScanResult: () => <div data-testid="scan-result">Result</div>,
+  ScanResult: ({ onAddToShelf }: { onAddToShelf?: () => void }) => (
+    <div data-testid="scan-result">
+      Result
+      <button data-testid="mock-add-shelf-btn" onClick={onAddToShelf}>
+        내 제품함에 추가
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('@/components/scan/IngredientCapture', () => ({
@@ -168,6 +190,56 @@ describe('ScanPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/참고용이며/)).toBeInTheDocument();
+    });
+  });
+
+  it('adds product to shelf via POST /api/scan/shelf and shows success toast', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 'shelf-item-1' }),
+    });
+
+    render(<ScanPage />);
+    fireEvent.click(screen.getByTestId('mock-scan-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('scan-result')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('mock-add-shelf-btn'));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/scan/shelf',
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(mockToastSuccess).toHaveBeenCalled();
+    });
+
+    const [, options] = mockFetch.mock.calls.find(([url]) => url === '/api/scan/shelf')!;
+    const body = JSON.parse((options as RequestInit).body as string);
+    expect(body.productName).toBe('테스트');
+    expect(body.scanMethod).toBe('barcode');
+  });
+
+  it('shows error toast when shelf API fails', async () => {
+    render(<ScanPage />);
+    fireEvent.click(screen.getByTestId('mock-scan-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('scan-result')).toBeInTheDocument();
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ error: '제품함 추가 중 오류가 발생했습니다' }),
+    });
+
+    fireEvent.click(screen.getByTestId('mock-add-shelf-btn'));
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalled();
     });
   });
 });

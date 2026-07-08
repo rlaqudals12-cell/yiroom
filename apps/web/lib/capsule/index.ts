@@ -141,6 +141,10 @@ export {
   syncRoutineToCapsule,
 } from './daily';
 
+// Curate 실물 연결 (2026-07-08: 도메인 캡슐 아이템에 실제 제품 부착)
+export { attachCurateProducts } from './curate-products';
+export type { CurateSolutionProduct, CurateTargetItem } from './curate-products';
+
 // Shopping Companion (Phase 5: 갭 분석)
 export { analyzeGap } from './shopping';
 export type { GapItem, GapAnalysisResult, DomainCapsuleStatus } from './shopping';

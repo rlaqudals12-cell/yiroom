@@ -67,9 +67,11 @@ export async function getSavedOutfits(
     offset?: number;
   }
 ): Promise<{ data: SavedOutfit[]; count: number }> {
+  // outfit_snapshot이 없는 행(옷장 코디 저장 행)은 제외 — 스냅샷 렌더링 시 크래시 방지
   let query = supabase
     .from('saved_outfits')
     .select('*', { count: 'exact' })
+    .not('outfit_snapshot', 'is', null)
     .order('created_at', { ascending: false });
 
   if (options?.seasonType) {
@@ -147,6 +149,8 @@ export async function saveOutfit(
   clerkUserId: string,
   request: SaveOutfitRequest
 ): Promise<SavedOutfit> {
+  // item_ids는 옷장 코디 행 전용 — 스냅샷 저장은 빈 배열 명시
+  // (prod 스키마의 item_ids UUID[] 컬럼과 정합, 20260708 마이그레이션 참조)
   const { data, error } = await supabase
     .from('saved_outfits')
     .insert({
@@ -155,6 +159,7 @@ export async function saveOutfit(
       season_type: request.seasonType,
       occasion: request.occasion,
       outfit_snapshot: request.outfit,
+      item_ids: [],
       note: request.note || null,
     })
     .select()

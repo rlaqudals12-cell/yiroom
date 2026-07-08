@@ -41,16 +41,17 @@ export default function StyleGalleryPage() {
       }
 
       try {
+        // 정본 컬럼은 season("Spring" 등) — 기존 result_season은 유령 컬럼이었음
         const { data } = await supabase
           .from('personal_color_assessments')
-          .select('result_season')
+          .select('season')
           .eq('clerk_user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        if (data?.result_season) {
-          setUserPersonalColor(data.result_season as PersonalColorSeason);
+        if (data?.season && ['Spring', 'Summer', 'Autumn', 'Winter'].includes(data.season)) {
+          setUserPersonalColor(data.season as PersonalColorSeason);
         }
       } catch (err) {
         console.error('[StyleGallery] Failed to fetch personal color:', err);

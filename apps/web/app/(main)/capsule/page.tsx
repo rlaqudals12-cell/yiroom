@@ -29,11 +29,13 @@ const DOMAINS = [
   { id: 'body', name: '체형', icon: PersonStanding, color: '#A78BFA' },
 ] as const;
 
+// API(/api/capsule/daily) 실제 응답 계약 — types/capsule.ts DailyItem 형태.
+// 기존엔 completed를 읽어 통계가 항상 0이던 버그 (실필드 isChecked, 2026-07-08 감사 수리)
 interface DailyItem {
   id: string;
-  label: string;
-  domainId: string;
-  completed?: boolean;
+  name?: string;
+  moduleCode?: string;
+  isChecked?: boolean;
 }
 
 interface DailyCapsule {
@@ -140,8 +142,9 @@ export default function CapsuleDashboardPage(): React.ReactElement {
           <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
           <div className="h-4 w-64 bg-slate-200 dark:bg-slate-700 rounded mt-2 animate-pulse" />
         </div>
+        {/* 도메인 그리드와 동일한 6칸 (5축 + 패션) */}
         <div className="grid grid-cols-3 gap-3">
-          {Array.from({ length: 9 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
               className="h-28 bg-slate-200 dark:bg-slate-700 rounded-2xl animate-pulse"
@@ -166,7 +169,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
     );
   }
 
-  const completedCount = daily?.items.filter((i) => i.completed).length ?? 0;
+  const completedCount = daily?.items.filter((i) => i.isChecked).length ?? 0;
   const totalCount = daily?.items.length ?? 0;
 
   return (

@@ -17,12 +17,30 @@ import { formatDuration, calculateEstimatedTime } from '@/lib/mock/skincare-rout
 import type { TimeOfDay, RoutineStep } from '@/types/skincare-routine';
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
 
-// 피부 분석 결과 타입
+// 피부 분석 결과 타입 (skin_analyses 실존 컬럼만 — concerns 컬럼은 존재하지 않음)
 interface SkinAnalysisData {
   id: string;
   skin_type: SkinTypeId;
-  concerns: SkinConcernId[];
+  hydration: number;
+  oil_level: number;
+  pores: number;
+  pigmentation: number;
+  wrinkles: number;
+  sensitivity: number;
   created_at: string;
+}
+
+// 지표 점수 → 피부 고민 파생 (41 미만 = 케어 필요, 결과 페이지 warning 기준과 동일)
+function deriveConcernsFromMetrics(data: SkinAnalysisData): SkinConcernId[] {
+  const CONCERN_THRESHOLD = 40;
+  const concerns: SkinConcernId[] = [];
+  if (data.hydration <= CONCERN_THRESHOLD) concerns.push('dryness');
+  if (data.oil_level <= CONCERN_THRESHOLD) concerns.push('excess_oil');
+  if (data.pores <= CONCERN_THRESHOLD) concerns.push('pores');
+  if (data.pigmentation <= CONCERN_THRESHOLD) concerns.push('pigmentation');
+  if (data.wrinkles <= CONCERN_THRESHOLD) concerns.push('wrinkles');
+  if (data.sensitivity <= CONCERN_THRESHOLD) concerns.push('sensitivity');
+  return concerns;
 }
 
 export default function SkincareRoutinePage() {
@@ -47,7 +65,9 @@ export default function SkincareRoutinePage() {
       try {
         const { data, error: fetchError } = await supabase
           .from('skin_analyses')
-          .select('id, skin_type, concerns, created_at')
+          .select(
+            'id, skin_type, hydration, oil_level, pores, pigmentation, wrinkles, sensitivity, created_at'
+          )
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -78,7 +98,8 @@ export default function SkincareRoutinePage() {
     if (!skinData) return;
 
     const skinType = skinData.skin_type || 'normal';
-    const concerns = (skinData.concerns || []) as SkinConcernId[];
+    // 실측 지표에서 고민 파생 (DB에 concerns 컬럼 없음)
+    const concerns = deriveConcernsFromMetrics(skinData);
 
     // 아침 루틴 생성
     const morningResult = generateRoutine({

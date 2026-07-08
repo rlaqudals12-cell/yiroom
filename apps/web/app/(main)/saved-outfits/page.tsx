@@ -55,6 +55,11 @@ function SavedOutfitCard({
   const { outfit, seasonType, occasion, savedAt } = savedOutfit;
   const locale = useLocale();
 
+  // 옷장 코디 행(outfit_snapshot 없음)은 API에서 필터되지만, 형식이 다른 행 방어
+  if (!outfit?.clothing?.colors || !outfit.makeup || !outfit.accessory?.items) {
+    return null;
+  }
+
   return (
     <Card className="overflow-hidden" data-testid="saved-outfit-card">
       <CardContent className="p-4 space-y-3">
@@ -62,13 +67,13 @@ function SavedOutfitCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge
-              style={{ backgroundColor: SEASON_COLORS[seasonType] }}
+              style={{ backgroundColor: SEASON_COLORS[seasonType] ?? '#888888' }}
               className="text-white text-[10px]"
             >
-              {SEASON_LABELS[seasonType]}
+              {SEASON_LABELS[seasonType] ?? seasonType}
             </Badge>
             <Badge variant="outline" className="text-[10px]">
-              {OUTFIT_OCCASION_ICONS[occasion]} {OUTFIT_OCCASION_LABELS[occasion]}
+              {OUTFIT_OCCASION_ICONS[occasion] ?? ''} {OUTFIT_OCCASION_LABELS[occasion] ?? occasion}
             </Badge>
           </div>
           <Button

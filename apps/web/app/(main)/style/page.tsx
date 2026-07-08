@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { User, Palette, Eye, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
+import { User, Palette, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { getBodyShapeLabel } from '@/lib/body';
@@ -11,8 +11,7 @@ import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilter';
 import { OutfitRoutineCard, type OutfitItem } from '@/components/style/OutfitRoutineCard';
-import { LookbookFeed } from '@/components/style/LookbookFeed';
-import type { FavoriteItem, LookbookPost } from '@/types/hybrid';
+import type { FavoriteItem } from '@/types/hybrid';
 import {
   suggestOutfitFromCloset,
   type BodyType3,
@@ -28,10 +27,9 @@ import type { PersonalColorSeason } from '@/lib/color-recommendations';
  * - 내 컬러 팔레트
  * - 체형 맞춤 필터 토글
  * - 카테고리 필터 (전체/상의/하의/아우터/코디)
- * - 오늘의 코디 추천
+ * - 오늘의 코디 추천 (내 옷장 실제 매칭)
  * - 맞춤 아이템 추천
- * - 비슷한 체형 리뷰
- * - 오늘 뭐 입지? AI 추천
+ * - 오늘 뭐 입지? 추천
  */
 
 type Category = 'all' | 'tops' | 'bottoms' | 'outer' | 'outfit';
@@ -261,56 +259,6 @@ export default function StylePage() {
         };
       });
   }, [realOutfit]);
-  const [lookbookPosts] = useState<LookbookPost[]>([
-    {
-      id: '1',
-      clerkUserId: 'user1',
-      imageUrl: 'https://placehold.co/400x600/fff8e7/d4a574?text=Spring+Look',
-      bodyType: 'W',
-      personalColor: 'Spring',
-      caption: '봄 웜톤에 어울리는 데일리 코디',
-      outfitItems: [
-        { category: 'top', description: '크롭 니트', color: '아이보리', colorHex: '#FFF8E7' },
-        { category: 'bottom', description: '와이드 팬츠', color: '베이지', colorHex: '#D4A574' },
-      ],
-      likesCount: 234,
-      commentsCount: 12,
-      isPublic: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      clerkUserId: 'user2',
-      imageUrl: 'https://placehold.co/400x600/ffb4a2/d4a574?text=Office+Look',
-      bodyType: 'W',
-      personalColor: 'Spring',
-      caption: '웨이브 체형 출근룩',
-      outfitItems: [
-        { category: 'top', description: '블라우스', color: '피치', colorHex: '#FFB4A2' },
-        { category: 'bottom', description: '플레어 스커트', color: '베이지', colorHex: '#D4A574' },
-      ],
-      likesCount: 189,
-      commentsCount: 8,
-      isPublic: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      clerkUserId: 'user3',
-      imageUrl: 'https://placehold.co/400x600/e8eef8/808080?text=Minimal+Look',
-      bodyType: 'S',
-      personalColor: 'Summer',
-      caption: '미니멀 오피스룩',
-      outfitItems: [
-        { category: 'top', description: '셔츠', color: '화이트', colorHex: '#FFFFFF' },
-        { category: 'bottom', description: '슬랙스', color: '그레이', colorHex: '#808080' },
-      ],
-      likesCount: 156,
-      commentsCount: 5,
-      isPublic: true,
-      createdAt: new Date().toISOString(),
-    },
-  ]);
 
   // L-1-2: 키/몸무게 체크 중이면 로딩 표시
   if (hasMeasurements === null) {
@@ -368,7 +316,7 @@ export default function StylePage() {
                 )}
               </div>
               <button
-                onClick={() => router.push('/profile/analysis')}
+                onClick={() => router.push('/analysis')}
                 className="text-xs text-primary hover:underline"
                 aria-label="체형 프로필 수정"
               >
@@ -402,7 +350,7 @@ export default function StylePage() {
                 </p>
               </div>
               <button
-                onClick={() => router.push('/onboarding/body')}
+                onClick={() => router.push('/analysis/body')}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium"
               >
                 지금 분석하기
@@ -594,53 +542,8 @@ export default function StylePage() {
           </section>
         </FadeInUp>
 
-        {/* 비슷한 체형 리뷰 */}
-        {hasAnalysis && (
-          <FadeInUp delay={7}>
-            <section className="bg-card rounded-2xl border p-4">
-              <h2 className="font-semibold mb-3 flex items-center gap-2">
-                <Eye className="w-5 h-5 text-blue-500" />
-                비슷한 체형 리뷰
-              </h2>
-              <div className="space-y-3">
-                <div className="bg-muted/50 rounded-xl p-3">
-                  <p className="text-sm text-foreground">
-                    &quot;저도 {bodyType}인데 이 바지 핏 좋아요!&quot;
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-muted-foreground">{bodyType}</span>
-                    <span className="text-xs text-muted-foreground">|</span>
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => router.push('/style?tab=reviews')}
-                className="mt-3 text-sm text-primary hover:underline"
-              >
-                리뷰 더보기 →
-              </button>
-            </section>
-          </FadeInUp>
-        )}
-
-        {/* 룩북 피드 (하이브리드 UX) */}
-        <FadeInUp delay={8}>
-          <section aria-label="룩북 피드">
-            <h2 className="text-lg font-semibold mb-3">룩북 피드</h2>
-            <LookbookFeed
-              posts={lookbookPosts}
-              onPostClick={(postId) => router.push(`/style/lookbook/${postId}`)}
-            />
-          </section>
-        </FadeInUp>
-
         {/* 오늘 뭐 입지? */}
-        <FadeInUp delay={9}>
+        <FadeInUp delay={7}>
           <section className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2">
               <Shirt className="w-5 h-5 text-violet-600" />

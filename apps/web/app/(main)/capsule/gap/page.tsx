@@ -32,16 +32,13 @@ interface GapData {
   totalDomains: number;
 }
 
-// 도메인 색상 매핑
+// 도메인 색상 매핑 (ADR-098: 5축 + 패션 — 영양/운동/구강 잔재 제거)
 const DOMAIN_COLORS: Record<string, string> = {
   skin: '#60A5FA',
   fashion: '#F472B6',
-  nutrition: '#4ADE80',
-  workout: '#4ADE80',
   hair: '#D4A24E',
   makeup: '#D45ABF',
   'personal-color': '#F472B6',
-  oral: '#4ABF7A',
   body: '#A78BFA',
 };
 

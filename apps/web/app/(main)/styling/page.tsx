@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * Phase J: AI 스타일링 페이지
- * PC-1 결과 기반 색상 조합 및 운동복 스타일링 추천
+ * Phase J: 시즌 스타일링 페이지
+ * PC-1 결과 기반 정적 시즌 프리셋 색상 조합 추천
+ * (AI 실시간 생성이 아니므로 "AI 스타일링" 표기 금지 — 정직 원칙, 2026-07-08)
  */
 
 import { useEffect, useState } from 'react';
@@ -19,6 +20,7 @@ import {
   MakeupStyling,
 } from '@/components/styling';
 import { getColorCombinations } from '@/lib/mock/styling';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useUser } from '@clerk/nextjs';
 import type { SeasonType } from '@/lib/mock/personal-color';
@@ -87,11 +89,6 @@ export default function StylingPage() {
   const handleWorkoutProductClick = (_combinationId: string, _partner: 'musinsa' | 'coupang') => {
     // 향후 파트너별 제품 페이지로 연결
     router.push('/products?category=workout');
-  };
-
-  // 저장 핸들러
-  const handleSave = (_combinationId: string) => {
-    // 향후 저장 기능 구현
   };
 
   // 로딩 상태
@@ -165,7 +162,7 @@ export default function StylingPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            AI 스타일링
+            시즌 스타일링
           </h1>
           <p className="text-muted-foreground text-sm">
             {SEASON_LABELS[seasonType]}에 어울리는 코디 추천
@@ -181,11 +178,15 @@ export default function StylingPage() {
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{
-                  backgroundColor: selectByKey(seasonType, {
-                    spring: '#FFD700',
-                    summer: '#87CEEB',
-                    autumn: '#D2691E',
-                  }, '#4169E1'),
+                  backgroundColor: selectByKey(
+                    seasonType,
+                    {
+                      spring: '#FFD700',
+                      summer: '#87CEEB',
+                      autumn: '#D2691E',
+                    },
+                    '#4169E1'
+                  ),
                 }}
               >
                 <Palette className="w-6 h-6 text-white" />
@@ -208,17 +209,21 @@ export default function StylingPage() {
         </CardContent>
       </Card>
 
-      {/* 탭 콘텐츠 */}
+      {/* 탭 콘텐츠 — 운동복은 웰니스 Phase 2 보류 기능 (ADR-098, WELLNESS_PHASE2 게이팅) */}
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+        <TabsList
+          className={`grid w-full mb-6 ${FEATURE_FLAGS.WELLNESS_PHASE2 ? 'grid-cols-4' : 'grid-cols-3'}`}
+        >
           <TabsTrigger value="daily" className="gap-1 text-xs">
             <Palette className="w-4 h-4" />
             <span className="hidden sm:inline">일상</span> 코디
           </TabsTrigger>
-          <TabsTrigger value="workout" className="gap-1 text-xs">
-            <Dumbbell className="w-4 h-4" />
-            운동복
-          </TabsTrigger>
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+            <TabsTrigger value="workout" className="gap-1 text-xs">
+              <Dumbbell className="w-4 h-4" />
+              운동복
+            </TabsTrigger>
+          )}
           <TabsTrigger value="accessory" className="gap-1 text-xs">
             <Gem className="w-4 h-4" />
             악세서리
@@ -228,21 +233,22 @@ export default function StylingPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* 일상 코디 탭 */}
+        {/* 일상 코디 탭 — 저장 기능 미구현이라 onSave 미연결 (동작 없는 버튼 금지) */}
         <TabsContent value="daily">
           <ColorCombination
             combinations={combinations}
             title={`${SEASON_LABELS[seasonType]} 추천 코디`}
             showProducts={true}
             onProductClick={handleProductClick}
-            onSave={handleSave}
           />
         </TabsContent>
 
-        {/* 운동복 탭 */}
-        <TabsContent value="workout">
-          <WorkoutStyling seasonType={seasonType} onProductClick={handleWorkoutProductClick} />
-        </TabsContent>
+        {/* 운동복 탭 (WELLNESS_PHASE2) */}
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <TabsContent value="workout">
+            <WorkoutStyling seasonType={seasonType} onProductClick={handleWorkoutProductClick} />
+          </TabsContent>
+        )}
 
         {/* 악세서리 탭 */}
         <TabsContent value="accessory">

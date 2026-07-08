@@ -1327,6 +1327,45 @@ export const generateMockPersonalColorResult = (
   };
 };
 
+// 시즌 → 톤/깊이 매핑 (결정론)
+const SEASON_TONE_DEPTH: Record<SeasonType, { tone: ToneType; depth: DepthType }> = {
+  spring: { tone: 'warm', depth: 'light' },
+  summer: { tone: 'cool', depth: 'light' },
+  autumn: { tone: 'warm', depth: 'deep' },
+  winter: { tone: 'cool', depth: 'deep' },
+};
+
+/**
+ * 시즌 기반 결정론 결과 생성 (랜덤 요소 없음)
+ * - 사용자가 시즌을 직접 선택한 경우(자가입력) / 데모 등
+ * - 모든 표시 데이터를 해당 시즌의 Hybrid 상수에서 조합
+ */
+export const generateSeasonPersonalColorResult = (
+  seasonType: SeasonType,
+  confidence: number = 100
+): PersonalColorResult => {
+  const info = SEASON_INFO[seasonType];
+  const { tone, depth } = SEASON_TONE_DEPTH[seasonType];
+
+  return {
+    seasonType,
+    seasonLabel: info.label,
+    seasonDescription: info.description,
+    tone,
+    depth,
+    confidence,
+    bestColors: BEST_COLORS[seasonType],
+    worstColors: WORST_COLORS[seasonType],
+    lipstickRecommendations: LIPSTICK_RECOMMENDATIONS[seasonType],
+    foundationRecommendations: FOUNDATION_RECOMMENDATIONS[seasonType],
+    clothingRecommendations: CLOTHING_RECOMMENDATIONS[seasonType],
+    styleDescription: STYLE_DESCRIPTIONS[seasonType],
+    insight: INSIGHTS[seasonType][0],
+    easyInsight: EASY_INSIGHTS[seasonType][0],
+    analyzedAt: new Date(),
+  };
+};
+
 // 유틸리티 함수: 계절 타입 색상
 export const getSeasonColor = (seasonType: SeasonType): string => {
   const colors: Record<SeasonType, string> = {

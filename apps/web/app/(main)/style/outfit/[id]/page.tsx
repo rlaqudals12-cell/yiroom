@@ -6,28 +6,21 @@ import { useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   Heart,
-  Share2,
-  Star,
   Sparkles,
   ExternalLink,
-  ChevronRight,
-  Eye,
-  ShoppingBag,
   Loader2,
   AlertTriangle,
+  Shirt,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 /**
- * 코디 상세 페이지 - UX 리스트럭처링
+ * 코디 상세 페이지
  * - 코디 이미지 + 아이템 태그
- * - 내 체형 매칭률
- * - 스타일 팁
- * - 코디 아이템 리스트
- * - 비슷한 체형 리뷰
- * - 전체 구매 버튼
+ * - 내 프로필 매칭 (체형·퍼스널컬러 일치 기반 근사치)
+ * - 코디 아이템 리스트 (실데이터만 — 없으면 정직한 빈 상태)
  */
 
 // 체형 코드 → 한글 매핑
@@ -69,79 +62,6 @@ interface OutfitItem {
   price?: number;
   url?: string;
 }
-
-// 폴백 코디 아이템 (데이터가 없을 때 사용)
-const fallbackOutfitItems = [
-  {
-    id: '1',
-    category: '상의',
-    name: '크롭 니트',
-    brand: '무신사',
-    price: 39000,
-    color: '코랄',
-    colorHex: '#FF6B6B',
-    url: 'https://musinsa.com',
-    matchNote: '봄 웜톤 추천 컬러',
-  },
-  {
-    id: '2',
-    category: '하의',
-    name: '하이웨스트 슬랙스',
-    brand: 'W컨셉',
-    price: 59000,
-    color: '베이지',
-    colorHex: '#D4A574',
-    url: 'https://wconcept.co.kr',
-    matchNote: '웨이브 체형 추천',
-  },
-  {
-    id: '3',
-    category: '신발',
-    name: '메리제인 슈즈',
-    brand: '무신사',
-    price: 89000,
-    color: '아이보리',
-    colorHex: '#FFF8E7',
-    url: 'https://musinsa.com',
-    matchNote: '봄 웜톤 추천 컬러',
-  },
-];
-
-// 스타일 팁
-const styleTips = [
-  '하이웨스트 팬츠로 허리 라인을 강조해 다리가 길어 보여요',
-  '크롭 니트와 하이웨스트 조합으로 상체는 짧게, 하체는 길게',
-  '부드러운 니트 소재가 웨이브 체형의 곡선미를 살려줘요',
-  '코랄과 베이지 조합이 봄 웜톤을 더 화사하게 만들어줘요',
-];
-
-// 비슷한 체형 리뷰
-const reviews = [
-  {
-    id: '1',
-    bodyType: '웨이브',
-    height: '165cm',
-    rating: 5,
-    content: '저도 웨이브인데 이 조합 핏 좋아요! 허리 라인 잘 살아요.',
-    helpful: 45,
-  },
-  {
-    id: '2',
-    bodyType: '웨이브',
-    height: '160cm',
-    rating: 5,
-    content: '하이웨스트 덕분에 다리가 길어 보여요. 강추!',
-    helpful: 32,
-  },
-  {
-    id: '3',
-    bodyType: '웨이브',
-    height: '168cm',
-    rating: 4,
-    content: '색감도 예쁘고 체형 보완돼요. 니트 소재가 약간 얇아요.',
-    helpful: 18,
-  },
-];
 
 export default function OutfitDetailPage() {
   const router = useRouter();
@@ -208,9 +128,10 @@ export default function OutfitDetailPage() {
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
+          // 정본 컬럼은 season("Spring")/undertone — 기존 result_season/result_tone은 유령 컬럼
           supabase
             .from('personal_color_assessments')
-            .select('result_season, result_tone')
+            .select('season, undertone')
             .eq('clerk_user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -222,9 +143,10 @@ export default function OutfitDetailPage() {
           setUserBodyType(bodyTypeMap[bodyResult.data.body_type] || bodyResult.data.body_type);
         }
 
-        if (pcResult.data) {
-          setUserPersonalColorRaw(pcResult.data.result_season);
-          setUserPersonalColor(`${pcResult.data.result_season} ${pcResult.data.result_tone}`);
+        if (pcResult.data?.season) {
+          // season 값 형식은 "Spring" 등 — lookbook_posts.personal_color와 동일 형식
+          setUserPersonalColorRaw(pcResult.data.season);
+          setUserPersonalColor(seasonMap[pcResult.data.season] || pcResult.data.season);
         }
       } catch (err) {
         console.error('[OutfitDetail] Analysis fetch error:', err);
@@ -276,10 +198,10 @@ export default function OutfitDetailPage() {
     };
   }, [lookbookPost, matchRate]);
 
-  // 표시용 아이템 목록
+  // 표시용 아이템 목록 — 실데이터만 (가짜 폴백 아이템 제거, 2026-07-08)
   const displayItems = useMemo(() => {
     if (!lookbookPost || lookbookPost.outfit_items.length === 0) {
-      return fallbackOutfitItems;
+      return [];
     }
 
     return lookbookPost.outfit_items.map((item, index) => ({
@@ -291,11 +213,11 @@ export default function OutfitDetailPage() {
       color: item.color || '',
       colorHex: item.colorHex || '#CCCCCC',
       url: item.url || '',
-      matchNote: '',
     }));
   }, [lookbookPost]);
 
-  const totalPrice = displayItems.reduce((sum, item) => sum + item.price, 0);
+  // 분석 결과가 하나라도 있어야 매칭률 표시 (없으면 베이스 50%는 무의미)
+  const hasProfile = Boolean(userBodyTypeRaw || userPersonalColorRaw);
 
   // 로딩 중
   if (isLoading) {
@@ -329,7 +251,7 @@ export default function OutfitDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24" data-testid="outfit-detail">
+    <div className="min-h-screen bg-background pb-8" data-testid="outfit-detail">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b">
         <div className="flex items-center justify-between px-4 py-3">
@@ -351,12 +273,6 @@ export default function OutfitDetailPage() {
               aria-label={isLiked ? '좋아요 취소' : '좋아요'}
             >
               <Heart className={cn('w-5 h-5', isLiked && 'fill-current')} />
-            </button>
-            <button
-              className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
-              aria-label="공유"
-            >
-              <Share2 className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -389,155 +305,105 @@ export default function OutfitDetailPage() {
           </div>
         </FadeInUp>
 
-        {/* 매칭률 */}
-        <FadeInUp delay={1}>
-          <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-indigo-600" />내 체형 매칭률
-            </h3>
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-3xl font-bold text-indigo-600">
-                  {displayOutfit.matchRate}%
-                </span>
+        {/* 프로필 매칭 — 체형·퍼스널컬러 일치 여부 기반 근사치 (분석 결과 있을 때만) */}
+        {hasProfile && (
+          <FadeInUp delay={1}>
+            <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-indigo-600" />내 프로필 매칭
+              </h3>
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-3xl font-bold text-indigo-600">
+                    {displayOutfit.matchRate}%
+                  </span>
+                </div>
+                <div className="h-3 bg-indigo-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
+                    style={{ width: `${displayOutfit.matchRate}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-3 bg-indigo-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
-                  style={{ width: `${displayOutfit.matchRate}%` }}
-                />
-              </div>
-            </div>
-            <p className="text-sm text-indigo-700">
-              {userBodyType} 체형 + {userPersonalColor}에 추천!
-            </p>
-          </section>
-        </FadeInUp>
+              <p className="text-sm text-indigo-700">
+                {[
+                  userBodyTypeRaw ? `${userBodyType} 체형` : null,
+                  userPersonalColorRaw ? userPersonalColor : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+                과 이 코디의 체형·컬러 태그 일치 여부로 계산한 근사치예요
+              </p>
+            </section>
+          </FadeInUp>
+        )}
 
-        {/* 스타일 팁 */}
+        {/* 코디 아이템 — 실데이터만, 없으면 정직한 빈 상태 */}
         <FadeInUp delay={2}>
           <section className="bg-card rounded-2xl border p-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-yellow-500" />
-              스타일 팁
-            </h3>
-            <ul className="space-y-2">
-              {styleTips.map((tip, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm text-foreground">
-                  <span className="text-primary">•</span>
-                  {tip}
-                </li>
-              ))}
-            </ul>
-          </section>
-        </FadeInUp>
-
-        {/* 코디 아이템 */}
-        <FadeInUp delay={3}>
-          <section className="bg-card rounded-2xl border p-4">
             <h3 className="font-semibold text-foreground mb-4">코디 아이템</h3>
-            <div className="space-y-3">
-              {displayItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={cn(
-                    'flex items-center gap-4 p-3 rounded-xl border transition-colors',
-                    selectedItem === item.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted/50'
-                  )}
-                  onClick={() => setSelectedItem(item.id)}
-                >
-                  {/* 이미지 */}
+            {displayItems.length === 0 ? (
+              <div className="text-center py-8">
+                <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  이 코디에는 아직 아이템 정보가 등록되지 않았어요
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {displayItems.map((item) => (
                   <div
-                    className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${item.colorHex}20` }}
+                    key={item.id}
+                    className={cn(
+                      'flex items-center gap-4 p-3 rounded-xl border transition-colors',
+                      selectedItem === item.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:bg-muted/50'
+                    )}
+                    onClick={() => setSelectedItem(item.id)}
                   >
+                    {/* 이미지 */}
                     <div
-                      className="w-10 h-10 rounded-full"
-                      style={{ backgroundColor: item.colorHex }}
-                    />
-                  </div>
-
-                  {/* 정보 */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">{item.category}</p>
-                    <p className="font-medium text-foreground">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.brand}</p>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full inline-block mt-1">
-                      {item.matchNote}
-                    </span>
-                  </div>
-
-                  {/* 가격 + 링크 */}
-                  <div className="text-right flex-shrink-0">
-                    <p className="font-semibold text-foreground">{item.price.toLocaleString()}원</p>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline flex items-center justify-end gap-1 mt-1"
+                      className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${item.colorHex}20` }}
                     >
-                      보기 <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </FadeInUp>
+                      <div
+                        className="w-10 h-10 rounded-full"
+                        style={{ backgroundColor: item.colorHex }}
+                      />
+                    </div>
 
-        {/* 비슷한 체형 리뷰 */}
-        <FadeInUp delay={4}>
-          <section className="bg-card rounded-2xl border p-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Eye className="w-5 h-5 text-blue-500" />
-              비슷한 체형 리뷰
-            </h3>
-            <div className="space-y-3">
-              {reviews.map((review) => (
-                <div key={review.id} className="p-3 bg-muted/50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                      {review.bodyType}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{review.height}</span>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={cn(
-                            'w-3 h-3',
-                            i < review.rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted-foreground'
-                          )}
-                        />
-                      ))}
+                    {/* 정보 */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground">{item.category}</p>
+                      <p className="font-medium text-foreground">{item.name}</p>
+                      {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
+                    </div>
+
+                    {/* 가격 + 링크 (실데이터 있을 때만) */}
+                    <div className="text-right flex-shrink-0">
+                      {item.price > 0 && (
+                        <p className="font-semibold text-foreground">
+                          {item.price.toLocaleString()}원
+                        </p>
+                      )}
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center justify-end gap-1 mt-1"
+                        >
+                          보기 <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
                     </div>
                   </div>
-                  <p className="text-sm text-foreground">{review.content}</p>
-                  <p className="text-xs text-muted-foreground mt-2">도움됨 {review.helpful}</p>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => router.push(`/style/outfit/${outfitId}/reviews`)}
-              className="w-full mt-4 text-center text-sm text-primary hover:underline flex items-center justify-center gap-1"
-            >
-              리뷰 더보기
-              <ChevronRight className="w-4 h-4" />
-            </button>
+                ))}
+              </div>
+            )}
           </section>
         </FadeInUp>
-      </div>
-
-      {/* 하단 구매 바 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-          <ShoppingBag className="w-5 h-5" />
-          전체 구매 ({totalPrice.toLocaleString()}원)
-        </button>
       </div>
     </div>
   );

@@ -113,10 +113,10 @@ export default function ProfilePage() {
           getUserLevelInfo(supabase, user.id),
           getUserBadges(supabase, user.id),
           getUserChallengeStats(supabase, user.id),
-          // 퍼스널 컬러 분석 결과
+          // 퍼스널 컬러 분석 결과 — 정본 컬럼: season("Spring" 등)/undertone("Warm" 등)
           supabase
             .from('personal_color_assessments')
-            .select('result_season, result_tone')
+            .select('season, undertone')
             .eq('clerk_user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -185,9 +185,10 @@ export default function ProfilePage() {
           ? calculateUserLevelState(userLevelData.totalActivityCount)
           : null;
 
-        // 배지 통계 (전체 배지 수는 임시로 고정)
+        // 배지 통계 — 배지 섹션은 FEATURE_FLAGS.BADGES(현재 false)로 게이팅되어 미노출.
+        // 노출 재개 시 total 하드코딩(23) 대신 getAllBadges() 실카운트로 교체 필요.
         const badgeStats = {
-          total: 23, // 전체 배지 수
+          total: 23, // 전체 배지 수 (하드코딩 — BADGES 플래그 OFF 상태라 사용자 표면 미노출)
           earned: userBadges.length,
           progress: Math.round((userBadges.length / 23) * 100),
         };
@@ -222,10 +223,16 @@ export default function ProfilePage() {
           low: '저민감',
         };
 
-        // 퍼스널 컬러 포맷팅
+        // 퍼스널 컬러 포맷팅 — DB 값은 "Spring"/"Warm" 등 대문자 시작이라 소문자로 정규화 후 라벨 매핑
         const pcData = personalColorResult.data;
-        const personalColor = pcData
-          ? `${SEASON_LABELS[pcData.result_season] ?? pcData.result_season} ${TONE_LABELS[pcData.result_tone] ?? pcData.result_tone}`
+        const pcSeasonLabel = pcData?.season
+          ? (SEASON_LABELS[String(pcData.season).toLowerCase()] ?? pcData.season)
+          : null;
+        const pcToneLabel = pcData?.undertone
+          ? (TONE_LABELS[String(pcData.undertone).toLowerCase()] ?? pcData.undertone)
+          : null;
+        const personalColor = pcSeasonLabel
+          ? [pcSeasonLabel, pcToneLabel].filter(Boolean).join(' ')
           : null;
 
         // 피부 타입 포맷팅
@@ -412,8 +419,10 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              {/* K-5: 웰니스 스코어 링 차트 */}
-              <WellnessScoreRing score={wellnessScore} size="sm" showLabel />
+              {/* K-5: 웰니스 스코어 링 차트 — ADR-098: W/N 기반 지표, 쓰기 경로 부재로 WELLNESS_PHASE2 게이팅 */}
+              {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                <WellnessScoreRing score={wellnessScore} size="sm" showLabel />
+              )}
             </div>
           </section>
         </FadeInUp>
@@ -479,7 +488,7 @@ export default function ProfilePage() {
               <section className="bg-card rounded-2xl border p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-foreground font-semibold">내 분석 결과</h3>
-                  <Link href="/profile/analysis" className="text-primary text-xs hover:underline">
+                  <Link href="/analysis" className="text-primary text-xs hover:underline">
                     분석 다시하기
                   </Link>
                 </div>
@@ -691,22 +700,18 @@ export default function ProfilePage() {
                     친구 ({friendCount}명)
                   </h3>
                   <Link
-                    href="/profile/friends"
+                    href="/friends"
                     className="text-primary flex items-center gap-1 text-sm hover:underline"
                   >
                     전체보기 <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <div className="mb-3 flex gap-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-muted text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full"
-                    >
-                      👤
-                    </div>
-                  ))}
-                </div>
+                {/* 친구 아바타 placeholder 제거 — 실제 친구 목록은 /friends에서 확인 */}
+                {friendCount === 0 && (
+                  <p className="text-muted-foreground mb-3 text-sm">
+                    아직 친구가 없어요. 친구를 추가해보세요.
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <Link
                     href="/friends/search"

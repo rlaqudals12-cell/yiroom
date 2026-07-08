@@ -256,13 +256,15 @@ describe('ProfilePage', () => {
       });
     });
 
-    it('웰니스 스코어 링을 표시한다', async () => {
+    // ADR-098: 웰니스 스코어는 W/N 기반 지표 — WELLNESS_PHASE2=false에서 숨김
+    // (prod wellness_scores 0행·쓰기 경로 부재 확인, 2026-07-08 정직화)
+    it('웰니스 스코어 링은 표시되지 않는다 (WELLNESS_PHASE2 게이팅)', async () => {
       render(<ProfilePage />);
 
       await vi.waitFor(() => {
-        // K-5: WellnessScoreRing 컴포넌트 testid로 확인
-        expect(screen.getByTestId('wellness-score-ring')).toBeInTheDocument();
+        expect(screen.getByText(/내 분석 결과/)).toBeInTheDocument();
       });
+      expect(screen.queryByTestId('wellness-score-ring')).not.toBeInTheDocument();
     });
 
     // ADR-098 기능 과잉 정리(2026-05-16): 배지 UI는 FEATURE_FLAGS.BADGES=false로 숨김 (코드 유지)
