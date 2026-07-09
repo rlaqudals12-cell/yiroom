@@ -34,6 +34,72 @@ interface ExpertDataPanelProps {
   className?: string;
 }
 
+// 원시 영문 값 → 한국어 매핑 (필드별) — 여러 분석이 공유하는 패널이라 전 분석에 전파.
+// 미지 값은 원문 유지(지어내기 금지). straight/wide 처럼 필드마다 뜻이 달라 필드 키로 구분.
+const EXPERT_VALUE_LABELS: Record<string, Record<string, string>> = {
+  angle: { front: '정면 촬영', side: '측면 촬영', angled: '비스듬한 각도' },
+  lighting: {
+    natural: '자연광',
+    bright: '밝은 조명',
+    dim: '어두운 조명',
+    even: '고른 조명',
+    uneven: '불균일한 조명',
+    warm: '따뜻한 조명',
+    cool: '차가운 조명',
+    mixed: '혼합 조명',
+  },
+  facePosition: {
+    front: '정면',
+    centered: '중앙 정렬',
+    tilted: '기울어짐',
+    off_center: '중앙에서 벗어남',
+  },
+  clothingFit: { fitted: '몸에 맞는 옷', loose: '헐렁한 옷', oversized: '오버사이즈' },
+  analysisReliability: { high: '높음', medium: '중간', low: '낮음' },
+  shoulderLine: {
+    angular: '각진 어깨선',
+    rounded: '둥근 어깨선',
+    wide: '넓은 어깨',
+    narrow: '좁은 어깨',
+  },
+  waistDefinition: { defined: '잘록한 허리', straight: '직선 허리', natural: '자연스러운 허리' },
+  hipLine: { curved: '곡선 힙라인', straight: '직선 힙라인', wide: '넓은 골반' },
+  boneStructure: { small: '작은 골격', medium: '중간 골격', large: '큰 골격' },
+  silhouette: { I: 'I자형', S: 'S자형', X: 'X자형', H: 'H자형', Y: 'Y자형' },
+  upperLowerBalance: { upper_dominant: '상체 우세', balanced: '균형', lower_dominant: '하체 우세' },
+};
+
+// 값 자체가 필드와 무관하게 일반적인 경우의 폴백
+const EXPERT_GENERIC_VALUE_LABELS: Record<string, string> = {
+  high: '높음',
+  medium: '중간',
+  low: '낮음',
+  true: '예',
+  false: '아니오',
+};
+
+// 근거 요약 키(영문) → 한국어 라벨
+const EXPERT_KEY_LABELS: Record<string, string> = {
+  shoulderLine: '어깨선',
+  waistDefinition: '허리',
+  hipLine: '골반',
+  boneStructure: '골격',
+  silhouette: '실루엣',
+  upperLowerBalance: '상하 밸런스',
+  muscleAttachment: '근육 부착',
+};
+
+/** 원시 값 → 한국어 (필드별 우선, 없으면 일반 폴백, 그래도 없으면 원문 유지) */
+function translateExpertValue(fieldKey: string, value: string | number | boolean): string {
+  const raw = String(value);
+  return EXPERT_VALUE_LABELS[fieldKey]?.[raw] ?? EXPERT_GENERIC_VALUE_LABELS[raw] ?? raw;
+}
+
+/** 근거 요약 키 → 한국어 (없으면 원문 유지) */
+function translateExpertKey(key: string): string {
+  return EXPERT_KEY_LABELS[key] ?? key;
+}
+
 // 신뢰도 게이지 색상
 function getConfidenceColor(score: number): string {
   if (score >= 80) return 'text-green-600 dark:text-green-400';
@@ -130,33 +196,41 @@ export function ExpertDataPanel({ data, className }: ExpertDataPanelProps) {
             {imageQuality.angle && (
               <div className="bg-card rounded px-2 py-1">
                 <span className="text-muted-foreground">{t('expertAngle')}: </span>
-                <span className="text-foreground font-medium">{imageQuality.angle}</span>
+                <span className="text-foreground font-medium">
+                  {translateExpertValue('angle', imageQuality.angle)}
+                </span>
               </div>
             )}
             {imageQuality.lighting && (
               <div className="bg-card rounded px-2 py-1">
                 <span className="text-muted-foreground">{t('expertLighting')}: </span>
-                <span className="text-foreground font-medium">{imageQuality.lighting}</span>
+                <span className="text-foreground font-medium">
+                  {translateExpertValue('lighting', imageQuality.lighting)}
+                </span>
               </div>
             )}
             {imageQuality.analysisReliability && (
               <div className="bg-card rounded px-2 py-1">
                 <span className="text-muted-foreground">{t('expertReliability')}: </span>
                 <span className="text-foreground font-medium">
-                  {imageQuality.analysisReliability}
+                  {translateExpertValue('analysisReliability', imageQuality.analysisReliability)}
                 </span>
               </div>
             )}
             {imageQuality.facePosition && (
               <div className="bg-card rounded px-2 py-1">
                 <span className="text-muted-foreground">{t('expertFacePosition')}: </span>
-                <span className="text-foreground font-medium">{imageQuality.facePosition}</span>
+                <span className="text-foreground font-medium">
+                  {translateExpertValue('facePosition', imageQuality.facePosition)}
+                </span>
               </div>
             )}
             {imageQuality.clothingFit && (
               <div className="bg-card rounded px-2 py-1">
                 <span className="text-muted-foreground">{t('expertClothingFit')}: </span>
-                <span className="text-foreground font-medium">{imageQuality.clothingFit}</span>
+                <span className="text-foreground font-medium">
+                  {translateExpertValue('clothingFit', imageQuality.clothingFit)}
+                </span>
               </div>
             )}
             {imageQuality.poseNatural != null && (
@@ -181,8 +255,10 @@ export function ExpertDataPanel({ data, className }: ExpertDataPanelProps) {
           <div className="grid grid-cols-2 gap-1.5 text-xs">
             {Object.entries(evidenceSummary).map(([key, value]) => (
               <div key={key} className="bg-card rounded px-2 py-1">
-                <span className="text-muted-foreground">{key}: </span>
-                <span className="text-foreground font-medium">{String(value)}</span>
+                <span className="text-muted-foreground">{translateExpertKey(key)}: </span>
+                <span className="text-foreground font-medium">
+                  {translateExpertValue(key, value)}
+                </span>
               </div>
             ))}
           </div>

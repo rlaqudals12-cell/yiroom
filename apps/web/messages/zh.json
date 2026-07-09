@@ -1149,7 +1149,6 @@
       "selectOtherPhoto": "选择其他照片",
       "startAnalysis": "开始分析",
       "analyzing": "分析中...",
-      "alreadyKnow": "我已经知道了",
       "backToGuide": "← 返回指南",
       "back": "← 返回",
       "viewResult": "查看结果",
@@ -1173,8 +1172,7 @@
         "multiAngle": "多角度拍摄以获得准确诊断",
         "galleryUpload": "请从相册选择照片",
         "upload": "请拍摄面部照片",
-        "wrist": "请拍摄手腕照片",
-        "knownInput": "请选择已知的个人色彩"
+        "wrist": "请拍摄手腕照片"
       }
     },
     "skin": {
@@ -1198,31 +1196,30 @@
         "guide": "准确分析��摄指南",
         "input": "想知道适合自己的风格吗？",
         "multiAngle": "请拍摄正面、左侧、右侧、背面照片",
-        "upload": "请上传全身照",
-        "knownType": "请选择已知的体型类型"
+        "upload": "请上传全身照"
       }
     },
     "hair": {
       "title": "发质分析",
       "guideTitle": "拍摄指南",
+      "guideSinglePhoto": "一张就够了 — 能看到头皮的分界线照片最准确",
       "guideTip1": "请在明亮的自然光下拍摄",
       "guideTip2": "请拍摄能看到头皮的分界线处",
-      "guideTip3": "能看到整体头发的照片也很好",
+      "guideTip3": "分界线连同整体头发都能看到会更准确",
       "guideAvoid": "请避免在头发湿着或使用造型产品后拍摄",
       "photoSelectAria": "选择发质分析照片",
       "startAnalysisAria": "开始发质分析",
-      "selectHairType": "请选择发质类型",
-      "selectConcerns": "请选择主要问题（可多选）",
       "aiAnalyzingHair": "AI正在分析您的发质",
       "resultSummary": "分析摘要",
       "metricScores": "各项评分",
       "scorePoints": "{score}分",
       "recommendedIngredients": "推荐成分",
+      "cautionIngredients": "需注意的成分",
+      "scalpConcernTitle": "如有头皮困扰",
       "careTips": "护理技巧",
       "subtitle": {
         "guide": "准确分析拍摄指南",
-        "upload": "请选择头发/头皮照片",
-        "knownInput": "请选择发质类型"
+        "upload": "请选择头发/头皮照片"
       }
     },
     "makeup": {
@@ -1234,8 +1231,7 @@
       "aiAnalyzingFace": "AI正在分析您的面部",
       "subtitle": {
         "guide": "准确分析拍摄指南",
-        "upload": "请选择面部照片",
-        "knownInput": "请选择皮肤类型"
+        "upload": "请选择面部照片"
       }
     },
     "oral": {

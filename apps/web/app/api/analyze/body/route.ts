@@ -42,7 +42,6 @@ const bodyAnalysisSchema = z.object({
     .object({
       height: z.number().min(50).max(300),
       weight: z.number().min(10).max(500),
-      targetWeight: z.number().min(10).max(500).optional(),
       bodyType: z.string().optional(),
       gender: z.string().optional(),
     })
@@ -314,7 +313,8 @@ export async function POST(req: NextRequest) {
           personal_color_season: personalColorSeason,
           // 퍼스널 컬러 + 체형 기반 색상 추천 (문서 구조에 맞춤)
           color_recommendations: colorRecommendations,
-          target_weight: userInput?.targetWeight || null,
+          // target_weight: 운동 모듈(UI 숨김) 잔재 — 체형 분석에서 목표 몸무게 입력 제거(W4)
+          target_weight: null,
         })
         .select()
         .single();

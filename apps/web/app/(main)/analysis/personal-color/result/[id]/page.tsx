@@ -770,6 +770,7 @@ export default function PersonalColorResultPage() {
                 <DrapingSimulationTab
                   imageUrl={imageUrl}
                   userSeason={result.seasonType}
+                  userSubtypeLabel={result.undertoneLabel}
                   className="w-full"
                 />
               )}

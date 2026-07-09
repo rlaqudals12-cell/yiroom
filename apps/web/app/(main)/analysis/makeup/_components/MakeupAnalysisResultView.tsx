@@ -6,10 +6,18 @@
  * page.tsx 내 결과 표시용 (result/[id]와는 별도)
  */
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Palette, Sparkles } from 'lucide-react';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import type { MakeupStyleId } from '@/lib/analysis/makeup';
+import {
+  extractGlossaryTerms,
+  buildSituationalTips,
+  detectMakeupShelfCategory,
+  type MakeupShelfCategory,
+} from '@/lib/analysis/makeup';
+import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
@@ -28,7 +36,65 @@ const STYLE_LABELS: Record<MakeupStyleId, string> = {
   edgy: '엣지',
 };
 
+// 얼굴 도식 위 카테고리별 마커 위치 (AnonymousFaceTemplate viewBox 200×210 기준 %)
+// 왜: 기존엔 배열 순서대로 좌측 60%에 세로로 쌓아 립이 볼 옆·아이섀도가 턱 근처로
+// 어긋났다. 각 부위의 실제 위치(눈/입술/볼/이마)에 매핑한다.
+const FACE_ZONE_POS: Record<MakeupShelfCategory, { top: string; left: string }> = {
+  foundation: { top: '23%', left: '50%' }, // 이마/전체 베이스
+  eyeshadow: { top: '37%', left: '50%' }, // 눈 (cy≈80/210)
+  blush: { top: '52%', left: '27%' }, // 볼 (왼쪽)
+  contour: { top: '60%', left: '75%' }, // 턱선/광대 (오른쪽)
+  lip: { top: '65%', left: '50%' }, // 입술 (y≈135/210)
+};
+
+// 얼굴형 → 익명 템플릿 형태 매핑 (round/square 외에는 oval)
+function toAnonymousFaceShape(faceShape: string): 'round' | 'angular' | 'oval' {
+  if (faceShape === 'round') return 'round';
+  if (faceShape === 'square') return 'angular';
+  return 'oval';
+}
+
 export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResultViewProps) {
+  // 상황별 팁 탭 (데일리 / 풀메이크업) — 기존 추천 데이터 재구성 (새 AI 없음)
+  const situational = useMemo(() => buildSituationalTips(result), [result]);
+  const [situation, setSituation] = useState<'daily' | 'full'>('daily');
+
+  // 요약/인사이트에서 전문 용어 쉬운 풀이 추출
+  const glossary = useMemo(
+    () =>
+      extractGlossaryTerms(
+        [result.undertoneLabel, result.faceShapeLabel, result.insight].join(' ')
+      ),
+    [result.undertoneLabel, result.faceShapeLabel, result.insight]
+  );
+
+  // 내 화장대 보유 메이크업 카테고리 — "내 ○○ 활용" 배지용.
+  // 1회 조회, 비로그인/실패 시 빈 세트(무표시).
+  const [ownedCats, setOwnedCats] = useState<Set<MakeupShelfCategory>>(new Set());
+  useEffect(() => {
+    let cancelled = false;
+    async function loadShelf() {
+      try {
+        const res = await fetch('/api/scan/shelf?status=owned&limit=100');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.items)) return;
+        const cats = new Set<MakeupShelfCategory>();
+        for (const item of data.items as ShelfItem[]) {
+          const cat = detectMakeupShelfCategory(item);
+          if (cat) cats.add(cat);
+        }
+        if (!cancelled) setOwnedCats(cats);
+      } catch {
+        /* 조회 실패 — 무표시 */
+      }
+    }
+    loadShelf();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'good':
@@ -40,40 +106,41 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
     }
   };
 
+  const situationTips = situation === 'daily' ? situational.daily : situational.full;
+
   return (
     <div className="space-y-6" data-testid="makeup-analysis-result">
       {/* Layer 0.5: 얼굴형 일러스트 + 색상 포인트 (ADR-097) */}
       <div className="flex justify-center">
-        <AnonymousFaceTemplate
-          faceShape={
-            result.faceShape === 'round'
-              ? 'round'
-              : result.faceShape === 'square'
-                ? 'angular'
-                : 'oval'
-          }
-          skinTone="medium"
-        >
-          {/* 카테고리별 색상 스와치 오버레이 */}
-          {result.colorRecommendations?.slice(0, 3).map((rec, i) => (
-            <div
-              key={rec.category}
-              className="absolute flex items-center gap-1"
-              style={{ top: `${30 + i * 25}%`, left: '60%' }}
-            >
-              {rec.colors.slice(0, 3).map((c, j) => (
-                <div
-                  key={j}
-                  className="w-4 h-4 rounded-full border border-white/50 shadow-sm"
-                  style={{ backgroundColor: c.hex }}
-                  title={c.name}
-                />
-              ))}
-              <span className="text-[9px] text-white/80 ml-1">
-                {rec.categoryLabel ?? rec.category}
-              </span>
-            </div>
-          ))}
+        <AnonymousFaceTemplate faceShape={toAnonymousFaceShape(result.faceShape)} skinTone="medium">
+          {/* 카테고리별 색상 스와치 — 각 부위 위치에 배치 */}
+          {result.colorRecommendations?.map((rec) => {
+            const pos = FACE_ZONE_POS[rec.category];
+            if (!pos) return null;
+            return (
+              <div
+                key={rec.category}
+                className="absolute flex flex-col items-center gap-0.5 -translate-x-1/2 -translate-y-1/2"
+                style={{ top: pos.top, left: pos.left }}
+                data-testid={`makeup-facemarker-${rec.category}`}
+                data-top={pos.top}
+              >
+                <div className="flex items-center gap-0.5">
+                  {rec.colors.slice(0, 3).map((c, j) => (
+                    <div
+                      key={j}
+                      className="w-3 h-3 rounded-full border border-white/70 shadow-sm"
+                      style={{ backgroundColor: c.hex }}
+                      title={c.name}
+                    />
+                  ))}
+                </div>
+                <span className="text-[8px] leading-none text-white bg-black/40 rounded px-1 py-0.5 whitespace-nowrap">
+                  {rec.categoryLabel ?? rec.category}
+                </span>
+              </div>
+            );
+          })}
         </AnonymousFaceTemplate>
       </div>
 
@@ -102,6 +169,23 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
           분석 요약
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
+
+        {/* 초보자용 쉬운 풀이 — 요약에 등장한 전문 용어 설명 */}
+        {glossary.length > 0 && (
+          <div
+            className="mt-4 pt-4 border-t border-border/60 space-y-1.5"
+            data-testid="makeup-glossary"
+          >
+            <p className="text-xs font-medium text-pink-600 dark:text-pink-400">쉬운 풀이</p>
+            <ul className="space-y-1">
+              {glossary.map((g) => (
+                <li key={g.term} className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">{g.term}</span> = {g.easy}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* 지표 */}
@@ -155,26 +239,88 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
       </div>
 
       {/* 색상 추천 */}
-      {result.colorRecommendations.map((cr) => (
-        <div key={cr.category} className="bg-card rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold mb-3">{cr.categoryLabel} 추천 색상</h3>
-          <div className="flex flex-wrap gap-3">
-            {cr.colors.map((color, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-md"
-                  style={{ backgroundColor: color.hex }}
-                  aria-hidden="true"
-                />
-                <div>
-                  <p className="text-sm font-medium">{color.name}</p>
-                  <p className="text-xs text-muted-foreground">{color.description}</p>
+      {result.colorRecommendations.map((cr) => {
+        const owned = ownedCats.has(cr.category);
+        return (
+          <div key={cr.category} className="bg-card rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">{cr.categoryLabel} 추천 색상</h3>
+              {/* 보유 화장품 연동 배지 */}
+              {owned && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300"
+                  data-testid={`makeup-shelf-badge-${cr.category}`}
+                >
+                  내 {cr.categoryLabel} 활용
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {cr.colors.map((color, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div
+                    className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-md"
+                    style={{ backgroundColor: color.hex }}
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{color.name}</p>
+                    <p className="text-xs text-muted-foreground">{color.description}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+        );
+      })}
+
+      {/* 상황별 메이크업 (데일리 / 풀) */}
+      <div className="bg-card rounded-xl p-6 shadow-sm" data-testid="makeup-situational-tabs">
+        <h3 className="font-semibold mb-3">상황별 메이크업</h3>
+        <div className="inline-flex rounded-lg bg-muted p-1 mb-4">
+          <button
+            type="button"
+            onClick={() => setSituation('daily')}
+            aria-pressed={situation === 'daily'}
+            data-testid="makeup-situation-daily"
+            className={`px-4 py-1.5 text-sm rounded-md transition-colors ${
+              situation === 'daily'
+                ? 'bg-pink-500 text-white shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            데일리
+          </button>
+          <button
+            type="button"
+            onClick={() => setSituation('full')}
+            aria-pressed={situation === 'full'}
+            data-testid="makeup-situation-full"
+            className={`px-4 py-1.5 text-sm rounded-md transition-colors ${
+              situation === 'full'
+                ? 'bg-pink-500 text-white shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            풀메이크업
+          </button>
         </div>
-      ))}
+        <div className="space-y-4">
+          {situationTips.map((tipGroup, i) => (
+            <div key={i}>
+              <p className="text-sm font-medium text-pink-600 mb-2">{tipGroup.category}</p>
+              <ul className="space-y-1">
+                {tipGroup.tips.map((tip, j) => (
+                  <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="text-pink-500">•</span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* 메이크업 팁 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">

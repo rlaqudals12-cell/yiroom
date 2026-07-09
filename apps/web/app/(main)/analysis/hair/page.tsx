@@ -11,17 +11,14 @@ import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import {
   type HairAnalysisResult,
-  type HairTypeId,
-  type HairConcernId,
-  generateKnownHairTypeResult,
-  HAIR_TYPES,
-  HAIR_CONCERNS,
+  getCautionIngredients,
+  getScalpConcernNotice,
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 
-type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
+type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼 (i18n)
 function formatDate(
@@ -59,8 +56,6 @@ export default function HairAnalysisPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
-  // 자가입력(known-input) 경로 여부 — 결과 화면에 "자가입력 기반 추정" 안내 표시
-  const [isSelfEstimate, setIsSelfEstimate] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -160,17 +155,11 @@ export default function HairAnalysisPage() {
     }
   }, [imageFile, isSignedIn]);
 
-  // 알고 있는 타입으로 건너뛰기
-  const handleSkipToKnownInput = useCallback(() => {
-    setStep('known-input');
-  }, []);
-
   // 다시 분석하기
   const handleRetry = useCallback(() => {
     setImageFile(null);
     setImagePreview(null);
     setResult(null);
-    setIsSelfEstimate(false);
     setStep('guide');
     setError(null);
   }, []);
@@ -183,8 +172,6 @@ export default function HairAnalysisPage() {
         return t('hair.subtitle.guide');
       case 'upload':
         return t('hair.subtitle.upload');
-      case 'known-input':
-        return t('hair.subtitle.knownInput');
       case 'loading':
         return t('subtitle.aiAnalyzing');
       case 'result':
@@ -241,6 +228,14 @@ export default function HairAnalysisPage() {
         {/* 촬영 가이드 */}
         {step === 'guide' && (
           <div className="space-y-6">
+            {/* 한 장이면 충분 — 사용자가 여러 장 촬영을 혼동하지 않도록 명시 */}
+            <div
+              className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm text-amber-800 dark:text-amber-300"
+              data-testid="hair-single-photo-notice"
+            >
+              {t('hair.guideSinglePhoto')}
+            </div>
+
             <div className="bg-card rounded-xl p-6 shadow-sm">
               <h2 className="font-semibold text-lg mb-4">{t('hair.guideTitle')}</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
@@ -263,14 +258,9 @@ export default function HairAnalysisPage() {
               </ul>
             </div>
 
-            <div className="flex gap-3">
-              <Button onClick={() => setStep('upload')} className="flex-1">
-                {t('action.selectPhoto')}
-              </Button>
-              <Button variant="outline" onClick={handleSkipToKnownInput}>
-                {t('action.alreadyKnow')}
-              </Button>
-            </div>
+            <Button onClick={() => setStep('upload')} className="w-full">
+              {t('action.selectPhoto')}
+            </Button>
           </div>
         )}
 
@@ -339,18 +329,6 @@ export default function HairAnalysisPage() {
           </div>
         )}
 
-        {/* 알고있는 타입 입력 — 선택한 타입/고민 기반 결정론 프리셋 (랜덤 없음) */}
-        {step === 'known-input' && (
-          <KnownTypeInput
-            onSubmit={(type, concerns) => {
-              setResult(generateKnownHairTypeResult(type, concerns));
-              setIsSelfEstimate(true);
-              setStep('result');
-            }}
-            onBack={() => setStep('guide')}
-          />
-        )}
-
         {/* 로딩 */}
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
@@ -363,98 +341,8 @@ export default function HairAnalysisPage() {
 
         {/* 결과 */}
         {step === 'result' && result && (
-          <>
-            {/* 자가입력 기반 추정 안내 — 사진 분석이 아님을 명시 (정직 원칙) */}
-            {isSelfEstimate && (
-              <div
-                data-testid="self-estimate-notice"
-                role="note"
-                className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300"
-              >
-                자가입력 기반 추정 결과예요. 사진 분석 없이 선택하신 타입과 고민의 대표값으로
-                안내해드려요. 정확한 진단은 사진 분석을 이용해주세요.
-              </div>
-            )}
-            <AnalysisResultView result={result} onRetry={handleRetry} />
-          </>
+          <AnalysisResultView result={result} onRetry={handleRetry} />
         )}
-      </div>
-    </div>
-  );
-}
-
-// 알고있는 타입 입력 컴포넌트
-function KnownTypeInput({
-  onSubmit,
-  onBack,
-}: {
-  onSubmit: (type: HairTypeId, concerns: HairConcernId[]) => void;
-  onBack: () => void;
-}) {
-  const t = useTranslations('analysisEntry');
-  const [selectedType, setSelectedType] = useState<HairTypeId | null>(null);
-  const [selectedConcerns, setSelectedConcerns] = useState<HairConcernId[]>([]);
-
-  const toggleConcern = (id: HairConcernId) => {
-    setSelectedConcerns((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* 모발 타입 선택 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">{t('hair.selectHairType')}</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {HAIR_TYPES.map((type) => (
-            <button
-              key={type.id}
-              onClick={() => setSelectedType(type.id)}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                selectedType === type.id
-                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30'
-                  : 'border-muted hover:border-amber-200'
-              }`}
-            >
-              <span className="text-2xl mb-2 block">{type.emoji}</span>
-              <span className="font-medium text-sm">{type.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 고민 선택 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">{t('hair.selectConcerns')}</h3>
-        <div className="flex flex-wrap gap-2">
-          {HAIR_CONCERNS.map((concern) => (
-            <button
-              key={concern.id}
-              onClick={() => toggleConcern(concern.id)}
-              className={`px-3 py-2 rounded-full text-sm transition-all ${
-                selectedConcerns.includes(concern.id)
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-            >
-              {concern.emoji} {concern.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={onBack}>
-          {t('action.back')}
-        </Button>
-        <Button
-          onClick={() => selectedType && onSubmit(selectedType, selectedConcerns)}
-          disabled={!selectedType}
-          className="flex-1"
-        >
-          {t('action.viewResult')}
-        </Button>
       </div>
     </div>
   );
@@ -553,6 +441,45 @@ function AnalysisResultView({
           ))}
         </div>
       </div>
+
+      {/* 주의 성분 — 두피 타입별 피하면 좋은 성분 (초보자 실행 도움) */}
+      {(() => {
+        const cautions = getCautionIngredients(result.scalpType);
+        if (cautions.length === 0) return null;
+        return (
+          <div className="bg-card rounded-xl p-6 shadow-sm" data-testid="hair-caution-ingredients">
+            <h3 className="font-semibold mb-3">{t('hair.cautionIngredients')}</h3>
+            <div className="flex flex-wrap gap-2">
+              {cautions.map((ingredient, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300 rounded-full text-sm"
+                >
+                  {ingredient}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 두피 고민 안내 — 탈모·비듬 등은 진단이 아닌 "전문의 상담 권유" 형태로만 */}
+      {(() => {
+        const notice = getScalpConcernNotice(result.concerns);
+        if (!notice) return null;
+        return (
+          <div
+            className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5"
+            role="note"
+            data-testid="hair-scalp-concern-notice"
+          >
+            <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 text-sm">
+              {t('hair.scalpConcernTitle')}
+            </h3>
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">{notice}</p>
+          </div>
+        );
+      })()}
 
       {/* 케어 팁 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">

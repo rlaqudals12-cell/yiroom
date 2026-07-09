@@ -49,8 +49,15 @@ vi.mock('@/lib/safety', () => ({
   }),
 }));
 
-import { generateDailyCapsule, checkDailyItem, syncRoutineToCapsule } from '@/lib/capsule/daily';
+import {
+  generateDailyCapsule,
+  checkDailyItem,
+  syncRoutineToCapsule,
+  isCapsuleStale,
+  CAPSULE_ENGINE_VERSION,
+} from '@/lib/capsule/daily';
 import { getBeautyProfile } from '@/lib/capsule/profile';
+import type { DailyCapsule } from '@/types/capsule';
 
 // =============================================================================
 // Mock 데이터
@@ -391,6 +398,8 @@ describe('Daily Capsule', () => {
             reason: '캐시',
             compatibilityScore: 90,
             isChecked: false,
+            // 현재 엔진 버전 스탬프 → 신선한 캐시로 간주되어 그대로 반환
+            engineVersion: CAPSULE_ENGINE_VERSION,
           },
         ],
         total_ccs: 90,
@@ -416,6 +425,137 @@ describe('Daily Capsule', () => {
       expect(result.totalCcs).toBe(90);
       // getBeautyProfile은 캐시 히트 시 호출되지 않아야 함
       expect(getBeautyProfile).not.toHaveBeenCalled();
+    });
+
+    it('스테일(옛 엔진 버전) 캐시는 삭제 후 재생성한다 (2026-07-10 캐시 무효화)', async () => {
+      vi.mocked(getBeautyProfile).mockResolvedValue(createProfile());
+
+      // 옛 엔진 버전 스탬프가 붙은 캐시 (또는 버전 없음)
+      const staleData = {
+        id: 'daily-stale',
+        clerk_user_id: 'user_test',
+        date: '2026-03-04',
+        items: [
+          {
+            id: 'stale-item',
+            moduleCode: 'S',
+            name: 'Old routine',
+            reason: '옛 루틴',
+            compatibilityScore: 90,
+            isChecked: false,
+            engineVersion: 'v1-old',
+          },
+        ],
+        total_ccs: 90,
+        estimated_minutes: 10,
+        status: 'pending',
+        completed_at: null,
+        created_at: new Date().toISOString(),
+      };
+
+      const deleteSpy = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'daily_capsules') {
+          return {
+            // 캐시 조회 → 스테일 반환
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: staleData, error: null }),
+                }),
+              }),
+            }),
+            delete: deleteSpy,
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'daily-regenerated',
+                    clerk_user_id: 'user_test',
+                    date: '2026-03-04',
+                    items: [],
+                    total_ccs: 0,
+                    estimated_minutes: 0,
+                    status: 'pending',
+                    completed_at: null,
+                    created_at: new Date().toISOString(),
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'cross_domain_rules') {
+          return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      const result = await generateDailyCapsule('user_test');
+
+      // 스테일 → 삭제 호출 + 재생성(getBeautyProfile 호출) + 새 캡슐 반환
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
+      expect(getBeautyProfile).toHaveBeenCalled();
+      expect(result.id).toBe('daily-regenerated');
+    });
+  });
+
+  // =========================================================================
+  // isCapsuleStale (캐시 버전 무효화)
+  // =========================================================================
+
+  describe('isCapsuleStale', () => {
+    const makeCapsule = (items: DailyItem[]): DailyCapsule => ({
+      id: 'c1',
+      userId: 'user_test',
+      date: '2026-03-04',
+      items,
+      totalCcs: 0,
+      estimatedMinutes: 0,
+      status: 'pending',
+      completedAt: null,
+      createdAt: new Date().toISOString(),
+    });
+    const item = (extra: Partial<DailyItem> = {}): DailyItem => ({
+      id: 'i1',
+      moduleCode: 'S',
+      name: 'x',
+      reason: 'y',
+      compatibilityScore: 0,
+      isChecked: false,
+      ...extra,
+    });
+
+    it('현재 엔진 버전이면 신선(false)', () => {
+      const c = makeCapsule([{ ...item(), engineVersion: CAPSULE_ENGINE_VERSION } as DailyItem]);
+      expect(isCapsuleStale(c)).toBe(false);
+    });
+
+    it('버전 없는 옛 캐시는 스테일(true)', () => {
+      expect(isCapsuleStale(makeCapsule([item()]))).toBe(true);
+    });
+
+    it('다른 버전이면 스테일(true)', () => {
+      const c = makeCapsule([{ ...item(), engineVersion: 'v0-legacy' } as DailyItem]);
+      expect(isCapsuleStale(c)).toBe(true);
+    });
+
+    it('빈 캡슐은 무효화 대상 아님(false) — 재생성 루프 방지', () => {
+      expect(isCapsuleStale(makeCapsule([]))).toBe(false);
     });
   });
 

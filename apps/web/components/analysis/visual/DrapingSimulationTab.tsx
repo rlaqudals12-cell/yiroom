@@ -33,6 +33,8 @@ interface DrapingSimulationTabProps {
   imageUrl: string;
   /** 사용자 퍼스널컬러 시즌 (기본 필터로 사용) */
   userSeason?: Season;
+  /** 사용자 진단 서브톤 라벨 (예: "여름 쿨 뮤트") */
+  userSubtypeLabel?: string;
   /** 피부 분석 ID (시너지 연동용) */
   skinAnalysisId?: string;
   /** 추가 클래스 */
@@ -51,6 +53,7 @@ type AnalysisState = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
 export default function DrapingSimulationTab({
   imageUrl,
   userSeason,
+  userSubtypeLabel,
   skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
@@ -244,6 +247,7 @@ export default function DrapingSimulationTab({
                 metalType={metalType}
                 onMetalTypeChange={setMetalType}
                 userSeason={userSeason}
+                userSubtypeLabel={userSubtypeLabel}
               />
             </TabsContent>
 

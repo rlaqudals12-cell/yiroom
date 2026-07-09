@@ -10,13 +10,11 @@ import Link from 'next/link';
 import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
-import { generateKnownUndertoneResult } from '@/lib/mock/makeup-analysis';
 import { Button } from '@/components/ui/button';
 import { MakeupGuide } from './_components/MakeupGuide';
-import { MakeupKnownTypeInput } from './_components/MakeupKnownTypeInput';
 import { MakeupAnalysisResultView } from './_components/MakeupAnalysisResultView';
 
-type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
+type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
 // 날짜 포맷 헬퍼
 function formatDate(
@@ -60,8 +58,6 @@ export default function MakeupAnalysisPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
-  // 자가입력(known-input) 경로 여부 — 결과 화면에 "자가입력 기반 추정" 안내 표시
-  const [isSelfEstimate, setIsSelfEstimate] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,7 +160,6 @@ export default function MakeupAnalysisPage() {
     setImageFile(null);
     setImagePreview(null);
     setResult(null);
-    setIsSelfEstimate(false);
     setStep('guide');
     setError(null);
   }, []);
@@ -177,8 +172,6 @@ export default function MakeupAnalysisPage() {
         return t('makeup.subtitle.guide');
       case 'upload':
         return t('makeup.subtitle.upload');
-      case 'known-input':
-        return t('makeup.subtitle.knownInput');
       case 'loading':
         return t('subtitle.aiAnalyzing');
       case 'result':
@@ -252,7 +245,6 @@ export default function MakeupAnalysisPage() {
             existingAnalysis={existingAnalysis}
             checkingExisting={checkingExisting}
             onStartUpload={() => setStep('upload')}
-            onSkipToKnownInput={() => setStep('known-input')}
           />
         )}
 
@@ -325,18 +317,6 @@ export default function MakeupAnalysisPage() {
           </div>
         )}
 
-        {/* 알고있는 타입 입력 — 선택한 언더톤/고민 기반 결정론 프리셋 (랜덤 없음) */}
-        {step === 'known-input' && (
-          <MakeupKnownTypeInput
-            onSubmit={(undertone, concerns) => {
-              setResult(generateKnownUndertoneResult(undertone, concerns));
-              setIsSelfEstimate(true);
-              setStep('result');
-            }}
-            onBack={() => setStep('guide')}
-          />
-        )}
-
         {/* 로딩 */}
         {step === 'loading' && (
           <div
@@ -355,20 +335,7 @@ export default function MakeupAnalysisPage() {
 
         {/* 결과 */}
         {step === 'result' && result && (
-          <>
-            {/* 자가입력 기반 추정 안내 — 사진 분석이 아님을 명시 (정직 원칙) */}
-            {isSelfEstimate && (
-              <div
-                data-testid="self-estimate-notice"
-                role="note"
-                className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300"
-              >
-                자가입력 기반 추정 결과예요. 사진 분석 없이 선택하신 언더톤과 고민의 대표값으로
-                안내해드려요. 정확한 진단은 사진 분석을 이용해주세요.
-              </div>
-            )}
-            <MakeupAnalysisResultView result={result} onRetry={handleRetry} />
-          </>
+          <MakeupAnalysisResultView result={result} onRetry={handleRetry} />
         )}
       </div>
     </div>

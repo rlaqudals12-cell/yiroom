@@ -14,17 +14,19 @@ import type { ProductCategory } from '@/types/skincare-routine';
 import type { SkinConcernId } from '@/lib/mock/skin-analysis';
 
 describe('getStepSpec — 클렌저', () => {
-  it('건성 → 촉촉한 약산성 클렌저', () => {
-    expect(getStepSpec('cleanser', 'dry', [])?.specName).toBe('촉촉한 약산성 클렌저');
+  it('건성 → 크림·로션 제형 약산성 클렌저', () => {
+    expect(getStepSpec('cleanser', 'dry', [])?.specName).toBe(
+      '촉촉한 약산성 클렌저(크림·로션 제형)'
+    );
   });
-  it('지성 → 약산성 클렌저', () => {
-    expect(getStepSpec('cleanser', 'oily', [])?.specName).toBe('약산성 클렌저');
+  it('지성 → 약산성 젤 클렌저', () => {
+    expect(getStepSpec('cleanser', 'oily', [])?.specName).toBe('약산성 젤 클렌저');
   });
-  it('민감성 → 약산성 클렌저', () => {
-    expect(getStepSpec('cleanser', 'sensitive', [])?.specName).toBe('약산성 클렌저');
+  it('민감성 → 무향 약산성 클렌저', () => {
+    expect(getStepSpec('cleanser', 'sensitive', [])?.specName).toBe('무향 약산성 클렌저');
   });
-  it('중성 → 약산성 클렌저 (기본도 약산성 권장)', () => {
-    expect(getStepSpec('cleanser', 'normal', [])?.specName).toBe('약산성 클렌저');
+  it('중성 → 약산성 폼 클렌저 (제형까지 안내)', () => {
+    expect(getStepSpec('cleanser', 'normal', [])?.specName).toBe('약산성 폼 클렌저');
   });
 });
 

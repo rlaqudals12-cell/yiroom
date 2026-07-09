@@ -5,26 +5,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import {
-  type BodyAnalysisResult,
-  type UserBodyInput,
-  type BodyType3,
-  BODY_TYPES_3,
-  KNOWN_BODY_TYPE_MEASUREMENTS,
-} from '@/lib/mock/body-analysis';
+import { type BodyAnalysisResult, type UserBodyInput } from '@/lib/mock/body-analysis';
 import BodyPhotographyGuide from './_components/BodyPhotographyGuide';
 import InputForm from './_components/InputForm';
-import KnownBodyTypeInput from './_components/KnownBodyTypeInput';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 import { MultiAngleBodyCapture, type MultiAngleBodyImages } from '@/components/analysis/camera';
 
-// 새로운 흐름: guide → input → multi-angle → loading → result
-// 또는: guide → known-type → result
-type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'loading' | 'result' | 'known-type';
+// 흐름: guide → input → multi-angle → loading → result
+type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'loading' | 'result';
 
 export default function BodyAnalysisPage() {
   const t = useTranslations('analysisEntry');
@@ -39,8 +34,8 @@ export default function BodyAnalysisPage() {
   const [userInput, setUserInput] = useState<UserBodyInput | null>(null);
   const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleBodyImages | null>(null);
   const [result, setResult] = useState<BodyAnalysisResult | null>(null);
-  // 자가입력(known-type) 경로 여부 — 결과 화면에 "자가입력 기반 추정" 안내 표시
-  const [isSelfEstimate, setIsSelfEstimate] = useState(false);
+  // 저장된 분석 ID — 전체 결과 페이지 딥링크용 (사진 분석 경로에서만 존재)
+  const [resultId, setResultId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -94,40 +89,6 @@ export default function BodyAnalysisPage() {
   const handleGuideComplete = useCallback(() => {
     setStep('input');
   }, []);
-
-  // 기존 체형 타입 알고 있음 → known-type 단계로
-  const handleSkipToKnownType = useCallback(() => {
-    setStep('known-type');
-  }, []);
-
-  // 기존 체형 타입 입력에서 돌아가기
-  const handleKnownTypeBack = useCallback(() => {
-    setStep('guide');
-  }, []);
-
-  // 기존 체형 타입 선택 → 타입 기반 결정론 프리셋으로 결과 구성 (랜덤 없음)
-  const handleKnownTypeSelect = useCallback(
-    (bodyType: BodyType3) => {
-      const typeInfo = BODY_TYPES_3[bodyType];
-
-      setResult({
-        bodyType: bodyType,
-        bodyTypeLabel: typeInfo.label,
-        bodyTypeDescription: typeInfo.description,
-        // 선택한 타입의 정의상 대표값 — 실측이 아니므로 결과 화면에 추정 안내 동반
-        measurements: KNOWN_BODY_TYPE_MEASUREMENTS[bodyType],
-        strengths: typeInfo.strengths,
-        insight: typeInfo.insights[0],
-        styleRecommendations: typeInfo.recommendations,
-        analyzedAt: new Date(),
-        userInput: userInput || undefined,
-      });
-      setIsSelfEstimate(true);
-      setStep('result');
-      setShowConfetti(true);
-    },
-    [userInput]
-  );
 
   // 기본 정보 입력 완료 시 다각도 촬영 단계로 전환
   const handleInputSubmit = useCallback((data: UserBodyInput) => {
@@ -193,6 +154,9 @@ export default function BodyAnalysisPage() {
         imagesAnalyzed: data.imagesAnalyzed,
       });
 
+      // 전체 결과 페이지 딥링크용 ID 저장
+      setResultId(data.data?.id ?? null);
+
       // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
       try {
         sessionStorage.setItem(
@@ -228,7 +192,7 @@ export default function BodyAnalysisPage() {
     setUserInput(null);
     setMultiAngleImages(null);
     setResult(null);
-    setIsSelfEstimate(false);
+    setResultId(null);
     setStep('guide');
     setError(null);
     setShowConfetti(false);
@@ -245,8 +209,6 @@ export default function BodyAnalysisPage() {
         return t('body.subtitle.input');
       case 'multi-angle':
         return t('body.subtitle.multiAngle');
-      case 'known-type':
-        return t('body.subtitle.knownType');
       case 'loading':
         return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
       case 'result':
@@ -298,9 +260,7 @@ export default function BodyAnalysisPage() {
           )}
 
           {/* Step별 컴포넌트 렌더링 */}
-          {step === 'guide' && (
-            <BodyPhotographyGuide onContinue={handleGuideComplete} onSkip={handleSkipToKnownType} />
-          )}
+          {step === 'guide' && <BodyPhotographyGuide onContinue={handleGuideComplete} />}
 
           {step === 'input' && <InputForm onSubmit={handleInputSubmit} />}
 
@@ -317,24 +277,18 @@ export default function BodyAnalysisPage() {
             </div>
           )}
 
-          {step === 'known-type' && (
-            <KnownBodyTypeInput onSelect={handleKnownTypeSelect} onBack={handleKnownTypeBack} />
-          )}
-
           {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
             <>
-              {/* 자가입력 기반 추정 안내 — 사진 분석이 아님을 명시 (정직 원칙) */}
-              {isSelfEstimate && (
-                <div
-                  data-testid="self-estimate-notice"
-                  role="note"
-                  className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300"
-                >
-                  자가입력 기반 추정 결과예요. 사진 분석 없이 선택하신 타입의 대표값으로
-                  안내해드려요. 정확한 측정은 사진 분석을 이용해주세요.
-                </div>
+              {/* 전체 결과 페이지로의 명확한 진입 — 딥링크 (사진 분석 경로에서만) */}
+              {resultId && (
+                <Button asChild className="w-full h-12 text-base gap-2 mb-4">
+                  <Link href={`/analysis/body/result/${resultId}`} data-testid="view-full-result">
+                    전체 결과 보기
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </Button>
               )}
               <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
             </>

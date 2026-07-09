@@ -1149,7 +1149,6 @@
       "selectOtherPhoto": "Select another photo",
       "startAnalysis": "Start analysis",
       "analyzing": "Analyzing...",
-      "alreadyKnow": "I already know",
       "backToGuide": "← Back to guide",
       "back": "← Back",
       "viewResult": "View result",
@@ -1173,8 +1172,7 @@
         "multiAngle": "Take photos from multiple angles for accuracy",
         "galleryUpload": "Select photos from your gallery",
         "upload": "Take a face photo",
-        "wrist": "Take a wrist photo",
-        "knownInput": "Select your known personal color"
+        "wrist": "Take a wrist photo"
       }
     },
     "skin": {
@@ -1198,31 +1196,30 @@
         "guide": "Photography guide for accurate analysis",
         "input": "Curious about styles that suit you?",
         "multiAngle": "Take front, left side, right side, and back photos",
-        "upload": "Upload a full-body photo",
-        "knownType": "Select your known body type"
+        "upload": "Upload a full-body photo"
       }
     },
     "hair": {
       "title": "Hair Analysis",
       "guideTitle": "Photography Guide",
+      "guideSinglePhoto": "One photo is enough — a parting photo showing your scalp is the most accurate",
       "guideTip1": "Take photos in bright, natural light",
       "guideTip2": "Capture the scalp area along the parting",
-      "guideTip3": "A photo showing the full hair is also helpful",
+      "guideTip3": "It's more accurate if the full hair is visible along with the parting",
       "guideAvoid": "Avoid taking photos with wet hair or after using styling products",
       "photoSelectAria": "Select photo for hair analysis",
       "startAnalysisAria": "Start hair analysis",
-      "selectHairType": "Select your hair type",
-      "selectConcerns": "Select your main concerns (multiple selection allowed)",
       "aiAnalyzingHair": "AI is analyzing your hair",
       "resultSummary": "Analysis Summary",
       "metricScores": "Scores by Category",
       "scorePoints": "{score} pts",
       "recommendedIngredients": "Recommended Ingredients",
+      "cautionIngredients": "Ingredients to Avoid",
+      "scalpConcernTitle": "If you have scalp concerns",
       "careTips": "Care Tips",
       "subtitle": {
         "guide": "Photography guide for accurate analysis",
-        "upload": "Select a hair/scalp photo",
-        "knownInput": "Select your hair type"
+        "upload": "Select a hair/scalp photo"
       }
     },
     "makeup": {
@@ -1234,8 +1231,7 @@
       "aiAnalyzingFace": "AI is analyzing your face",
       "subtitle": {
         "guide": "Photography guide for accurate analysis",
-        "upload": "Select a face photo",
-        "knownInput": "Select your skin type"
+        "upload": "Select a face photo"
       }
     },
     "oral": {

@@ -12,10 +12,20 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => null,
 }));
 
-// next/link mock (Link가 href만 사용)
+// next/link mock (href + data-testid 등 부가 props 전달)
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
+  default: ({
+    children,
+    href,
+    ...rest
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
   ),
 }));
 
@@ -54,9 +64,31 @@ describe('PartialSuccessBanner', () => {
     expect(screen.getByText(/퍼스널컬러, 피부/)).toBeInTheDocument();
   });
 
-  it('"다시 시도" 버튼이 /analysis/integrated로 링크됨', () => {
+  it('실패한 축은 개별 분석으로 다시 시도 안내 문구 표시', () => {
     render(<PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={['body']} />);
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/analysis/integrated');
+    expect(screen.getByText(/실패한 축은 개별 분석으로 다시 시도해주세요/)).toBeInTheDocument();
+  });
+
+  it('실패한 각 축이 개별 분석 경로(forceNew)로 딥링크됨 (통합 재실행 아님)', () => {
+    render(
+      <PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={['body', 'hair']} />
+    );
+    const bodyLink = screen.getByTestId('partial-retry-body');
+    const hairLink = screen.getByTestId('partial-retry-hair');
+    expect(bodyLink).toHaveAttribute('href', '/analysis/body?forceNew=true');
+    expect(hairLink).toHaveAttribute('href', '/analysis/hair?forceNew=true');
+    // 통합 전체 재실행(/analysis/integrated)으로 링크하지 않음
+    const allLinks = screen.getAllByRole('link');
+    expect(allLinks.every((l) => l.getAttribute('href') !== '/analysis/integrated')).toBe(true);
+  });
+
+  it('실패 축 개수만큼 재시도 링크가 생성됨', () => {
+    render(
+      <PartialSuccessBanner
+        axesCompleted={['personal_color']}
+        axesFailed={['skin', 'body', 'makeup']}
+      />
+    );
+    expect(screen.getAllByRole('link')).toHaveLength(3);
   });
 });

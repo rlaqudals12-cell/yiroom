@@ -127,6 +127,35 @@ const INGREDIENTS_BY_SCALP: Record<ScalpTypeId, string[]> = {
   sensitive: ['알로에베라', '카모마일', '센텔라', '병풀 추출물'],
 };
 
+// 두피 타입별 주의 성분 (공용) — 추천 성분만으로는 초보자가 무엇을 피할지 모른다.
+const CAUTION_INGREDIENTS_BY_SCALP: Record<ScalpTypeId, string[]> = {
+  dry: ['강한 설페이트(SLS·SLES) 세정제', '고농도 변성 알코올', '과도한 멘톨'],
+  normal: ['실리콘 과다(빌드업 유발)', '인공 향료 과다'],
+  oily: ['무거운 오일(코코넛·시어버터 과다)', '실리콘 과다(빌드업 유발)'],
+  sensitive: ['강한 설페이트(SLS)', '인공 향료·색소', '고농도 멘톨·에센셜 오일'],
+};
+
+/**
+ * 두피 타입별 주의(피하면 좋은) 성분 — scalpType 미상이면 공통 주의 성분 반환.
+ */
+export function getCautionIngredients(scalpType?: ScalpTypeId): string[] {
+  if (scalpType && CAUTION_INGREDIENTS_BY_SCALP[scalpType]) {
+    return CAUTION_INGREDIENTS_BY_SCALP[scalpType];
+  }
+  return ['강한 설페이트(SLS·SLES) 세정제', '인공 향료 과다', '실리콘 과다(빌드업 유발)'];
+}
+
+/**
+ * 두피 고민 안내 — 탈모·비듬 등 의료적 상담이 필요할 수 있는 증상이면 안내 문구 반환.
+ *
+ * 왜: 진단은 이룸의 역할이 아니다(경계 준수). "의심되면 전문의 상담" 형태로만 안내한다.
+ */
+export function getScalpConcernNotice(concerns: HairConcernId[]): string | null {
+  const needsReferral = concerns.some((c) => c === 'hairloss' || c === 'dandruff');
+  if (!needsReferral) return null;
+  return '탈모·심한 비듬·지속되는 두피 각질은 지루성 두피염이나 탈모 질환이 의심될 수 있어요. 증상이 오래 지속되거나 심해지면 피부과 전문의 상담을 권해요. (이룸의 분석은 진단이 아니에요)';
+}
+
 // 공용 케어 팁 (결정론)
 const COMMON_CARE_TIPS = [
   '미지근한 물로 샴푸하세요',

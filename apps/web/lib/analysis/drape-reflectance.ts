@@ -26,6 +26,22 @@ export const METAL_REFLECTANCE: Record<MetalType, ReflectanceConfig> = {
 };
 
 // ============================================
+// 드레이프 레이아웃 상수
+// ============================================
+
+/**
+ * 드레이프(천) 영역 배치 — "얼굴 아래에 천을 대본다"는 은유에 맞춤.
+ * - START: 얼굴 아래(목/어깨)에서 시작. 얼굴 침범을 줄이기 위해 하단 28%만 사용.
+ * - FADE: 상단 경계 부드러운 전환 구간.
+ * - MAX_BLEND: 반투명 천 느낌(단색 도포 방지). 마스크가 부정확해 얼굴에 번지더라도
+ *   불투명 단색이 아니라 은은한 틴트로 보이게 해 "얼굴 절반이 단색" 현상을 완화.
+ * applyDrapeColor / analyzeColorOnCanvas 두 경로가 반드시 동일 값을 사용한다.
+ */
+const DRAPE_START_RATIO = 0.72;
+const DRAPE_FADE_RATIO = 0.08;
+const DRAPE_MAX_BLEND = 0.68;
+
+// ============================================
 // 반사광 적용
 // ============================================
 
@@ -104,9 +120,9 @@ export function applyDrapeColor(
   const g = parseInt(drapeColor.slice(3, 5), 16);
   const b = parseInt(drapeColor.slice(5, 7), 16);
 
-  // 드레이프 영역 (하단 35% - 목/어깨 덮도록)
-  const drapeStartY = Math.floor(canvasHeight * 0.65);
-  const fadeZone = Math.floor(canvasHeight * 0.08); // 페이드 영역 8%
+  // 드레이프 영역 (얼굴 아래 목/어깨 — 얼굴 침범 최소화)
+  const drapeStartY = Math.floor(canvasHeight * DRAPE_START_RATIO);
+  const fadeZone = Math.floor(canvasHeight * DRAPE_FADE_RATIO);
 
   // 드레이프 색상 적용
   const imageData = ctx.getImageData(0, drapeStartY, canvasWidth, canvasHeight - drapeStartY);
@@ -127,10 +143,10 @@ export function applyDrapeColor(
     // 마스크 영역 외부만 드레이프 적용
     if (faceMask[pixelIndex] === 0) {
       // 상단 페이드 (부드러운 경계)
-      let blendRatio = 0.85;
+      let blendRatio = DRAPE_MAX_BLEND;
       if (localY < fadeZone) {
-        // 0 ~ fadeZone 사이: 0.2 → 0.85 그라데이션
-        blendRatio = 0.2 + (localY / fadeZone) * 0.65;
+        // 0 ~ fadeZone 사이: 0.2 → DRAPE_MAX_BLEND 그라데이션
+        blendRatio = 0.2 + (localY / fadeZone) * (DRAPE_MAX_BLEND - 0.2);
       }
 
       // 주름 효과 (밝기 미세 변화)
@@ -261,8 +277,8 @@ function analyzeColorOnCanvas(
   const { data } = imageData;
 
   const reflConfig = METAL_REFLECTANCE[metalType];
-  const drapeStartY = Math.floor(height * 0.65);
-  const fadeZone = Math.floor(height * 0.08);
+  const drapeStartY = Math.floor(height * DRAPE_START_RATIO);
+  const fadeZone = Math.floor(height * DRAPE_FADE_RATIO);
 
   // 노이즈 함수 (주름 효과)
   const getNoiseValue = (x: number, y: number): number => {
@@ -281,9 +297,9 @@ function analyzeColorOnCanvas(
       // === 1단계: 드레이프 색상 적용 (하단 35%, 얼굴 마스크 외부) ===
       if (y >= drapeStartY && faceMask[pixelIndex] === 0) {
         const localY = y - drapeStartY;
-        let blendRatio = 0.85;
+        let blendRatio = DRAPE_MAX_BLEND;
         if (localY < fadeZone) {
-          blendRatio = 0.2 + (localY / fadeZone) * 0.65;
+          blendRatio = 0.2 + (localY / fadeZone) * (DRAPE_MAX_BLEND - 0.2);
         }
         const noise = getNoiseValue(x, localY);
         const foldEffect = 1 + noise;
@@ -412,10 +428,55 @@ export async function analyzeFullPalette(
 }
 
 /**
- * 베스트 TOP N 색상 추출
+ * HEX 색상의 색상환 버킷(30°)을 반환. 무채색(채도 매우 낮음)은 -1.
+ * 베스트 컬러 다양성 확보용.
+ */
+function hueBucket(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  // 명도와 무관한 채도 근사(max-min)가 낮으면 무채색으로 취급
+  if (delta < 0.06) return -1;
+  let h: number;
+  if (max === r) h = ((g - b) / delta) % 6;
+  else if (max === g) h = (b - r) / delta + 2;
+  else h = (r - g) / delta + 4;
+  h *= 60;
+  if (h < 0) h += 360;
+  return Math.floor(h / 30); // 0~11
+}
+
+/**
+ * 베스트 TOP N 색상 추출 — 색상 계열 다양성 우선.
+ *
+ * 균일도 점수가 서로 동률(드레이프가 얼굴 영역을 직접 바꾸지 않는 경우 자주 발생)이면
+ * 정렬 순서가 팔레트 생성 순서와 같아, 같은 계열의 명도 변형(예: 코랄·코랄어두운1·2…)이
+ * TOP N을 독점해 "전부 같은 색"으로 보이는 문제가 있었다. 색상환 버킷으로 계열이 겹치지
+ * 않도록 먼저 채우고, 부족하면 나머지로 보충해 개수(min(topN, 전체))는 그대로 보장한다.
  */
 export function getBestColors(results: DrapeResult[], topN: number = 5): DrapeResult[] {
-  return results.slice(0, topN);
+  if (results.length === 0) return [];
+
+  const seenHues = new Set<number>();
+  const diverse: DrapeResult[] = [];
+  const leftover: DrapeResult[] = [];
+
+  for (const result of results) {
+    const bucket = hueBucket(result.color);
+    if (!seenHues.has(bucket) && diverse.length < topN) {
+      seenHues.add(bucket);
+      diverse.push(result);
+    } else {
+      leftover.push(result);
+    }
+  }
+
+  if (diverse.length >= topN) return diverse.slice(0, topN);
+  // 계열이 부족하면 나머지(동일 계열 변형 포함)로 보충
+  return [...diverse, ...leftover.slice(0, topN - diverse.length)];
 }
 
 /**

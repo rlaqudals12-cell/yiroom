@@ -142,17 +142,6 @@ describe('C-1 체형 분석 Mock', () => {
       expect(result.bmi).toBeUndefined();
       expect(result.bmiCategory).toBeUndefined();
     });
-
-    it('targetWeight는 선택적이다', () => {
-      const userInput: UserBodyInput = {
-        height: 170,
-        weight: 65,
-        targetWeight: 60,
-      };
-
-      const result = generateMockBodyAnalysis(userInput);
-      expect(result.userInput?.targetWeight).toBe(60);
-    });
   });
 
   describe('상수 데이터 검증', () => {

@@ -119,16 +119,30 @@ export function getStepSpec(
 
   switch (category) {
     case 'cleanser':
-      // 약산성 = 장벽 자극이 적은 세안. 건성은 세정 후에도 당기지 않는 촉촉한 제형.
+      // 약산성 = 장벽 자극이 적은 세안. 제형(폼/젤/크림)까지 피부 타입별로 안내 —
+      // "어떤 클렌저인지"가 컨설팅의 디테일 (창업자 피드백 2026-07-10).
       if (skinType === 'dry') {
         return {
-          specName: '촉촉한 약산성 클렌저',
-          specReason: '건조한 피부에는 세정 후에도 당기지 않는 약산성 제형이 잘 맞아요',
+          specName: '촉촉한 약산성 클렌저(크림·로션 제형)',
+          specReason: '건조한 피부에는 거품보다 크림·로션처럼 촉촉하게 닦이는 제형이 당김이 적어요',
+        };
+      }
+      if (skinType === 'oily') {
+        return {
+          specName: '약산성 젤 클렌저',
+          specReason:
+            '유분이 많은 피부에는 산뜻하게 헹궈지는 젤 제형이 잘 맞아요. 약산성이라 장벽 자극도 적어요',
+        };
+      }
+      if (skinType === 'sensitive') {
+        return {
+          specName: '무향 약산성 클렌저',
+          specReason: '향과 자극 성분을 뺀 순한 저포말 제형이 예민한 피부에 잘 맞아요',
         };
       }
       return {
-        specName: '약산성 클렌저',
-        specReason: '약산성 세안은 피부 장벽을 덜 자극해요',
+        specName: '약산성 폼 클렌저',
+        specReason: '폼·젤 제형 모두 무난해요. 약산성 세안은 피부 장벽을 덜 자극해요',
       };
 
     case 'toner':

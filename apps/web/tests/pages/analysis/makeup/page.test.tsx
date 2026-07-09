@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import * as React from 'react';
 
 // 분석 단계 타입
-type AnalysisStep = 'guide' | 'upload' | 'known-input' | 'loading' | 'result';
+type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
 // 기존 분석 결과 타입
 interface ExistingAnalysis {
@@ -108,8 +108,6 @@ function MakeupAnalysisPage({
         return '정확한 분석을 위한 촬영 가이드';
       case 'upload':
         return '얼굴 사진을 선택해주세요';
-      case 'known-input':
-        return '피부 타입을 선택해주세요';
       case 'loading':
         return 'AI가 분석 중이에요...';
       case 'result':
@@ -162,9 +160,6 @@ function MakeupAnalysisPage({
           <button onClick={() => setStep('upload')} data-testid="go-upload-btn">
             사진 선택하기
           </button>
-          <button onClick={() => setStep('known-input')} data-testid="skip-to-known-btn">
-            알고 있어요
-          </button>
         </div>
       )}
 
@@ -201,35 +196,6 @@ function MakeupAnalysisPage({
           <button onClick={() => setStep('guide')} data-testid="back-to-guide-btn">
             가이드로 돌아가기
           </button>
-        </div>
-      )}
-
-      {/* known-input 단계 */}
-      {step === 'known-input' && (
-        <div data-testid="known-input-step">
-          <h3>피부 톤을 선택해주세요</h3>
-          <button
-            onClick={() => {
-              /* 선택 로직 */
-            }}
-          >
-            웜톤
-          </button>
-          <button
-            onClick={() => {
-              /* 선택 로직 */
-            }}
-          >
-            쿨톤
-          </button>
-          <button
-            onClick={() => {
-              /* 선택 로직 */
-            }}
-          >
-            뉴트럴
-          </button>
-          <button onClick={() => setStep('guide')}>뒤로</button>
         </div>
       )}
 
@@ -329,6 +295,12 @@ describe('MakeupAnalysisPage', () => {
       render(<MakeupAnalysisPage />);
       expect(screen.getByTestId('subtitle')).toHaveTextContent('정확한 분석을 위한 촬영 가이드');
     });
+
+    // 자가입력 우회 경로 제거 회귀 방지: 가이드에 "알고 있어요" 건너뛰기 버튼이 없어야 함
+    it('자가입력 우회(skip) 버튼이 더 이상 렌더되지 않는다', () => {
+      render(<MakeupAnalysisPage />);
+      expect(screen.queryByTestId('skip-to-known-btn')).not.toBeInTheDocument();
+    });
   });
 
   describe('기존 분석 결과 배너', () => {
@@ -369,30 +341,6 @@ describe('MakeupAnalysisPage', () => {
       render(<MakeupAnalysisPage />);
       fireEvent.click(screen.getByTestId('go-upload-btn'));
       expect(screen.getByTestId('subtitle')).toHaveTextContent('얼굴 사진을 선택해주세요');
-    });
-  });
-
-  describe('단계 전환: guide → known-input', () => {
-    it('"알고 있어요" 클릭 시 known-input 단계', () => {
-      render(<MakeupAnalysisPage />);
-      fireEvent.click(screen.getByTestId('skip-to-known-btn'));
-      expect(screen.getByTestId('known-input-step')).toBeInTheDocument();
-      expect(screen.queryByTestId('guide-step')).not.toBeInTheDocument();
-    });
-
-    it('서브타이틀 변경', () => {
-      render(<MakeupAnalysisPage />);
-      fireEvent.click(screen.getByTestId('skip-to-known-btn'));
-      expect(screen.getByTestId('subtitle')).toHaveTextContent('피부 타입을 선택해주세요');
-    });
-
-    it('뒤로 버튼으로 guide 복귀', () => {
-      render(<MakeupAnalysisPage />);
-      fireEvent.click(screen.getByTestId('skip-to-known-btn'));
-      expect(screen.getByTestId('known-input-step')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByText('뒤로'));
-      expect(screen.getByTestId('guide-step')).toBeInTheDocument();
     });
   });
 

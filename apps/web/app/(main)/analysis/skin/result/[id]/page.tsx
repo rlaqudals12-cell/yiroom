@@ -63,11 +63,7 @@ const SkinConsultantCTA = dynamic(
 );
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  VisualAnalysisTab,
-  DrapingSimulationTab,
-  SynergyInline,
-} from '@/components/analysis/visual';
+import { VisualAnalysisTab, SynergyInline } from '@/components/analysis/visual';
 import { Palette, Camera, MessageCircle } from 'lucide-react';
 import SkinAnalysisEvidenceReport, {
   type SkinAnalysisEvidence,
@@ -100,7 +96,6 @@ import {
 } from '@/components/analysis/skin/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
-import { SkinConsultationChat } from '@/components/skin-consultation';
 import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
@@ -108,7 +103,6 @@ import { TopActionsCard, type TopAction } from '@/components/analysis/TopActions
 import { buildSkinTopActions } from '@/components/analysis/skin/skinTopActions';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { ResultPageInsights } from '@/components/insights';
-import type { SkinAnalysisSummary } from '@/types/skin-consultation';
 import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
@@ -349,7 +343,9 @@ interface DbSkinAnalysis {
 }
 
 // 탭 목록 — URL ?tab= 동기화 + 스와이프 전환 공용 (뒤로가기 시 탭 유지)
-const RESULT_TABS = ['basic', 'evidence', 'visual', 'draping', 'consultation'] as const;
+// 드레이핑 탭 제거(2026-07-10): 드레이핑은 퍼스널컬러(PC)의 것이라 피부 결과엔 가치 불명 +
+// PC 미완료 시 이미지 로드 실패 UX. 상담 탭은 물어보기(coach) 딥링크로 통폐합.
+const RESULT_TABS = ['basic', 'evidence', 'visual', 'consultation'] as const;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity -- result page render
 export default function SkinAnalysisResultPage() {
@@ -948,7 +944,7 @@ export default function SkinAnalysisResultPage() {
             <div ref={swipeContainerRef} {...swipeHandlers} className="touch-pan-y">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList
-                  className="grid w-full grid-cols-5 mb-4 sticky top-0 z-10 bg-muted"
+                  className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted"
                   aria-label={t('tabAriaLabel.skin')}
                 >
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
@@ -962,10 +958,6 @@ export default function SkinAnalysisResultPage() {
                   <TabsTrigger value="visual" className="gap-1 text-xs px-1">
                     <Eye className="w-3 h-3" />
                     시각화
-                  </TabsTrigger>
-                  <TabsTrigger value="draping" className="gap-1 text-xs px-1">
-                    <Palette className="w-3 h-3" />
-                    드레이핑
                   </TabsTrigger>
                   <TabsTrigger value="consultation" className="gap-1 text-xs px-1">
                     <MessageCircle className="w-3 h-3" />
@@ -1326,9 +1318,12 @@ export default function SkinAnalysisResultPage() {
 
                   {/* 얼굴 존 맵 (도식화) */}
                   <div className="flex flex-col items-center">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                      영역별 상태 (탭하여 상세 보기)
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      얼굴 부위별 피부 상태
                     </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      이마·볼·턱 등 부위를 탭하면 상세 상태를 볼 수 있어요
+                    </p>
                     <FaceZoneMap
                       zones={zoneStatuses}
                       showLabels
@@ -1362,66 +1357,33 @@ export default function SkinAnalysisResultPage() {
                   )}
                 </TabsContent>
 
-                {/* 드레이핑 시뮬레이션 탭 (PC-1 연동) */}
-                <TabsContent value="draping" className="mt-0 pb-40" data-testid="draping-tab">
-                  {pcImageUrl ? (
-                    <DrapingSimulationTab imageUrl={pcImageUrl} className="w-full" />
-                  ) : (
-                    <div className="p-6 bg-card rounded-xl border text-center">
-                      <Palette className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        퍼스널 컬러 분석을 먼저 완료하면
-                        <br />
-                        나에게 어울리는 색상을 미리 볼 수 있어요.
-                      </p>
-                      <Button variant="outline" asChild>
-                        <Link href="/analysis/personal-color">
-                          <Palette className="w-4 h-4 mr-2" />
-                          퍼스널 컬러 분석하기
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </TabsContent>
-
-                {/* AI 피부 상담 탭 (Phase D) */}
+                {/* 상담 탭 — 물어보기(coach)로 통폐합 (2026-07-10). 피부 전용 챗봇이
+                    코치와 중복이라, 내 분석 결과를 아는 코치로 딥링크한다. */}
                 <TabsContent
                   value="consultation"
                   className="mt-0 pb-40"
                   data-testid="consultation-tab"
                 >
-                  {/* 상담 인트로 카드 */}
-                  <div className="mb-4 rounded-lg border bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border-violet-200 dark:border-violet-800 p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
-                      <MessageCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  <div className="rounded-2xl border bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border-violet-200 dark:border-violet-800 p-5">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
+                        <MessageCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          피부 전문 상담은 물어보기에서
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          내 분석 결과를 알고 답해요 — 루틴·성분·고민을 편하게 물어보세요
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">AI 피부 상담</p>
-                      <p className="text-xs text-muted-foreground">
-                        분석 결과를 바탕으로 맞춤 조언을 받아보세요
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-[calc(100vh-340px)] min-h-[400px]">
-                    <SkinConsultationChat
-                      skinAnalysis={
-                        result
-                          ? ({
-                              skinType: getSkinTypeLabel(skinType),
-                              hydration:
-                                result.metrics.find((m) => m.id === 'hydration')?.value || 50,
-                              oiliness: result.metrics.find((m) => m.id === 'oil')?.value || 50,
-                              sensitivity:
-                                result.metrics.find((m) => m.id === 'sensitivity')?.value || 50,
-                              analyzedAt: result.analyzedAt,
-                            } as SkinAnalysisSummary)
-                          : null
-                      }
-                      onProductClick={(productId) => {
-                        // 제품 상세 라우트는 /products/[type]/[id] — 화장품은 cosmetic
-                        router.push(`/products/cosmetic/${productId}`);
-                      }}
+                    <SkinConsultantCTA
+                      skinType={skinType || undefined}
+                      concerns={result.metrics
+                        .filter((m) => m.status === 'warning')
+                        .map((m) => m.name)}
+                      showQuickQuestions
                     />
                   </div>
                 </TabsContent>

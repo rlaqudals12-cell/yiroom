@@ -115,8 +115,12 @@ function buildPrompt(summary: AxisSummary): string {
 3. 한국어 해요체, 따뜻하지만 과장 없는 톤.
 4. 의학/진단 표현 금지, "어울려요/좋아요/잘 맞아요" 같은 실용어 사용.
 5. 성공한 축만 활용. 실패한 축은 언급 금지.
-6. 사용자는 뷰티 초보자예요 — 영문 용어(normal, oval 등)와 전문용어를 그대로 쓰지 말고,
-   전문 표현(웨이브 체형 등)을 쓸 땐 "곡선이 부드러운"처럼 짧은 풀이를 곁들여주세요.
+6. 사용자는 뷰티 초보자예요 — 영문 용어(normal, oval 등)를 그대로 쓰지 말고, 전문 용어는
+   반드시 괄호로 짧은 풀이를 병기하세요. 풀이 없는 전문 용어 단독 사용은 금지예요.
+   예: "내추럴 실루엣" ❌ → "골격감이 자연스러운(내추럴) 체형" ✅ /
+   "듀이 마무리" ❌ → "듀이(촉촉한 광) 마무리" ✅ /
+   "웨이브 체형" ❌ → "곡선이 부드러운(웨이브) 체형" ✅ /
+   "쿨톤" 처럼 이미 널리 쓰는 말은 그대로 써도 돼요.
 
 📊 입력 (5축 성공 결과):
 ${lines.join('\n')}
@@ -168,7 +172,7 @@ function generateMockPersona(summary: AxisSummary): PersonaProfile {
     // 초보자 눈높이: 원시 영문 타입·"바이탈리티" 전문용어 노출 금지
     parts.push(`${skinTypeKo(summary.skin.type)} 피부 (피부 컨디션 점수 ${summary.skin.score}점)`);
     insights.push(
-      `피부 타입에 맞는 ${summary.skin.type === 'oily' ? '매트(보송한)' : '듀이(촉촉한)'} 마무리가 좋아요.`
+      `피부 타입에 맞는 ${summary.skin.type === 'oily' ? '매트(보송한)' : '듀이(촉촉한 광)'} 마무리가 좋아요.`
     );
   }
   if (summary.body) {

@@ -196,6 +196,22 @@ describe('composePersona', () => {
     expect(result?.usedFallback).toBe(true);
   });
 
+  it('Mock fallback은 전문 용어에 풀이를 병기한다 (듀이 → 듀이(촉촉한 광))', async () => {
+    // 2축 성공 + FORCE_MOCK → generateMockPersona 경로
+    process.env.FORCE_MOCK_AI = 'true';
+    const result = await composePersona({
+      ...allFailed(),
+      personalColor: pcSuccess,
+      skin: skinSuccess, // combination(비지성) → 듀이 마무리
+    });
+    expect(result?.usedFallback).toBe(true);
+    const text = [result?.oneLine, result?.narrative, ...(result?.keyInsights ?? [])].join(' ');
+    // 전문 용어에 괄호 풀이 병기
+    expect(text).toMatch(/듀이\(촉촉한 광\)/);
+    // 풀이 없는 영문 원시 용어 노출 금지
+    expect(text).not.toMatch(/combination|oval|dewy/i);
+  });
+
   it('keyInsights가 3개 초과면 3개로 잘림', async () => {
     mockIsAvailable.mockReturnValue(true);
     mockGenerateContent.mockResolvedValue({

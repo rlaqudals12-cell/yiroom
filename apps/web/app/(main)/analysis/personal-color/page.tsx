@@ -7,14 +7,7 @@ import { getDateLocale } from '@/lib/utils/date-format';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
-import { Clock, Palette, PenLine } from 'lucide-react';
-import {
-  type PersonalColorResult,
-  type SeasonType,
-  type PersonalColorSubtype,
-  generateSeasonPersonalColorResult,
-  PERSONAL_COLOR_SUBTYPES,
-} from '@/lib/mock/personal-color';
+import { Clock, Palette } from 'lucide-react';
 import type { ImageConsent } from '@/components/analysis/consent/types';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
@@ -22,30 +15,19 @@ import { measureContrastLevel } from './_components/measure-contrast';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
-import KnownPersonalColorInput from './_components/KnownPersonalColorInput';
 import MultiAnglePersonalColorCapture from './_components/MultiAnglePersonalColorCapture';
 import GalleryMultiAngleUpload from './_components/GalleryMultiAngleUpload';
 import AnalysisLoading from './_components/AnalysisLoading';
-import AnalysisResult from './_components/AnalysisResult';
 import type {
   MultiAngleImages,
   FaceAngle,
   ValidateFaceImageResponse,
 } from '@/types/visual-analysis';
 
-// 새 플로우: 조명가이드 → 다각도촬영 → 손목사진 → AI분석 → 결과
-// 또는: 갤러리 플로우 → 다각도 갤러리 업로드 → 손목사진 → AI분석 → 결과
-// 또는: 기존 퍼스널 컬러 입력 → 결과
+// 새 플로우: 조명가이드 → 다각도촬영 → 손목사진 → AI분석 → 결과 페이지 이동
+// 또는: 갤러리 플로우 → 다각도 갤러리 업로드 → 손목사진 → AI분석 → 결과 페이지 이동
 // 또는: 레거시 플로우 (단일 사진 업로드)
-type AnalysisStep =
-  | 'guide'
-  | 'multi-angle'
-  | 'gallery-upload'
-  | 'upload'
-  | 'wrist'
-  | 'loading'
-  | 'result'
-  | 'known-input';
+type AnalysisStep = 'guide' | 'multi-angle' | 'gallery-upload' | 'upload' | 'wrist' | 'loading';
 
 // 날짜 포맷 헬퍼 (i18n 사용 불가 — 컴포넌트 외부 함수이므로 t를 인자로 받음)
 function formatDate(
@@ -112,12 +94,8 @@ export default function PersonalColorPage() {
   const [step, setStep] = useState<AnalysisStep>('guide');
   const [faceImageFile, setFaceImageFile] = useState<File | null>(null);
   const [wristImageFile, setWristImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   // 다각도 촬영 이미지
   const [multiAngleImages, setMultiAngleImages] = useState<MultiAngleImages | null>(null);
-  const [result, setResult] = useState<PersonalColorResult | null>(null);
-  // 자가입력(시즌 직접 선택) 기반 결과 여부 — AI 분석 결과와 구분해 안내 표시
-  const [isSelfReported, setIsSelfReported] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // API 완료 상태 (로딩 프로그레스 동기화)
@@ -345,48 +323,9 @@ export default function PersonalColorPage() {
     setStep('guide');
   }, []);
 
-  // 기존 퍼스널 컬러 알고 있음 → 입력 화면으로
-  const handleSkipToKnownInput = useCallback(() => {
-    setStep('known-input');
-  }, []);
-
-  // 기존 퍼스널 컬러 입력 → 결과 생성
-  const handleKnownColorSelect = useCallback(
-    (seasonType: SeasonType, subtype?: PersonalColorSubtype) => {
-      // 선택한 시즌 기반으로 전체 데이터를 결정론적으로 구성
-      // (팔레트/립/스타일 등 모든 표시 데이터가 선택 시즌과 일치, 랜덤 요소 없음)
-      const seasonResult = generateSeasonPersonalColorResult(seasonType, 100);
-
-      // 서브타입 정보 찾기 (있으면 라벨/톤/깊이만 세분화)
-      const subtypeInfo = subtype ? PERSONAL_COLOR_SUBTYPES.find((s) => s.id === subtype) : null;
-
-      setResult({
-        ...seasonResult,
-        ...(subtypeInfo
-          ? {
-              seasonLabel: subtypeInfo.label,
-              tone: subtypeInfo.tone,
-              depth: subtypeInfo.depth,
-            }
-          : {}),
-      });
-      setIsSelfReported(true);
-      setStep('result');
-    },
-    []
-  );
-
-  // 기존 퍼스널 컬러 입력에서 돌아가기
-  const handleKnownInputBack = useCallback(() => {
-    setStep('guide');
-  }, []);
-
   // 얼굴 사진 선택 → 손목 사진으로 (레거시 플로우, 동의는 가이드에서 처리됨)
   const handleFacePhotoSelect = useCallback((file: File) => {
     setFaceImageFile(file);
-    // 미리보기 URL 생성
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
     setStep('wrist');
     setError(null);
   }, []);
@@ -519,25 +458,6 @@ export default function PersonalColorPage() {
     }
   }, [step, runAnalysis]);
 
-  // 다시 분석하기
-  const handleRetry = useCallback(() => {
-    // 이전 이미지 URL 정리
-    if (imageUrl) {
-      URL.revokeObjectURL(imageUrl);
-    }
-    setFaceImageFile(null);
-    setWristImageFile(null);
-    setMultiAngleImages(null);
-    setImageUrl(null);
-    setResult(null);
-    setIsSelfReported(false);
-    setStep('guide');
-    setError(null);
-    setCurrentSessionConsent(false); // 세션 동의 상태 초기화
-    setIsApiComplete(false);
-    analysisStartedRef.current = false;
-  }, [imageUrl]);
-
   // 단계별 서브타이틀
   const subtitle = useMemo(() => {
     // guide 단계에서는 에러를 별도 UI로 표시하므로 subtitle은 기본값 유지
@@ -553,12 +473,8 @@ export default function PersonalColorPage() {
         return t('pc.subtitle.upload');
       case 'wrist':
         return t('pc.subtitle.wrist');
-      case 'known-input':
-        return t('pc.subtitle.knownInput');
       case 'loading':
         return isAnalyzing ? t('subtitle.aiAnalyzing') : t('subtitle.aiAnalyzingDone');
-      case 'result':
-        return t('subtitle.analysisComplete');
     }
   }, [step, error, isAnalyzing]);
 
@@ -645,11 +561,7 @@ export default function PersonalColorPage() {
 
         {/* Step별 컴포넌트 렌더링 */}
         {step === 'guide' && (
-          <LightingGuide
-            onContinue={handleGuideComplete}
-            onSkip={handleSkipToKnownInput}
-            onGallery={handleGallerySelect}
-          />
+          <LightingGuide onContinue={handleGuideComplete} onGallery={handleGallerySelect} />
         )}
 
         {step === 'multi-angle' && (
@@ -673,33 +585,7 @@ export default function PersonalColorPage() {
           <WristPhotoUpload onPhotoSelect={handleWristPhotoSelect} onSkip={handleWristSkip} />
         )}
 
-        {step === 'known-input' && (
-          <KnownPersonalColorInput
-            onSelect={handleKnownColorSelect}
-            onBack={handleKnownInputBack}
-          />
-        )}
-
         {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
-
-        {step === 'result' && result && (
-          <>
-            {/* 자가입력 기반 안내 — AI 사진 분석이 아닌 사용자가 선택한 시즌 기준임을 명시 */}
-            {isSelfReported && (
-              <div
-                className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2"
-                data-testid="self-reported-notice"
-              >
-                <PenLine className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  직접 입력하신 퍼스널 컬러를 기준으로 구성한 가이드예요. 사진으로 분석하면 AI가
-                  피부톤을 직접 진단해드려요.
-                </p>
-              </div>
-            )}
-            <AnalysisResult result={result} onRetry={handleRetry} />
-          </>
-        )}
       </div>
     </div>
   );

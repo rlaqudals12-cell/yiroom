@@ -85,21 +85,25 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
 }));
 
 // Mock components
+// onSkip은 자가입력 우회 경로 제거로 폐기됨 — prop이 넘어오면 skip-button이 렌더되도록 두어,
+// 우회 경로가 재도입되면 아래 회귀 테스트가 실패하게 한다.
 vi.mock('@/app/(main)/analysis/personal-color/_components/LightingGuide', () => ({
   default: ({
     onContinue,
     onSkip,
   }: {
     onContinue: (consentToSaveImage: boolean) => void;
-    onSkip: () => void;
+    onSkip?: () => void;
   }) => (
     <div data-testid="lighting-guide">
       <button onClick={() => onContinue(false)} data-testid="continue-button">
         계속하기
       </button>
-      <button onClick={onSkip} data-testid="skip-button">
-        기존 퍼스널 컬러 입력
-      </button>
+      {onSkip && (
+        <button onClick={onSkip} data-testid="skip-button">
+          기존 퍼스널 컬러 입력
+        </button>
+      )}
     </div>
   ),
 }));
@@ -152,25 +156,6 @@ vi.mock('@/app/(main)/analysis/personal-color/_components/WristPhotoUpload', () 
       </button>
       <button onClick={onSkip} data-testid="wrist-skip">
         건너뛰기
-      </button>
-    </div>
-  ),
-}));
-
-vi.mock('@/app/(main)/analysis/personal-color/_components/KnownPersonalColorInput', () => ({
-  default: ({
-    onSelect,
-    onBack,
-  }: {
-    onSelect: (season: string, subtype?: string) => void;
-    onBack: () => void;
-  }) => (
-    <div data-testid="known-color-input">
-      <button onClick={() => onSelect('spring')} data-testid="select-spring">
-        봄 웜톤
-      </button>
-      <button onClick={onBack} data-testid="known-back">
-        뒤로
       </button>
     </div>
   ),
@@ -256,6 +241,17 @@ describe('PersonalColorPage', () => {
         expect(screen.getByText('pc.subtitle.guide')).toBeInTheDocument();
       });
     });
+
+    // 자가입력 우회 경로 제거 회귀 방지: 가이드에 "이미 알고 있어요" 건너뛰기 버튼이 없어야 함
+    it('자가입력 우회(skip) 버튼이 더 이상 렌더되지 않는다', async () => {
+      render(<PersonalColorPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTestId('skip-button')).not.toBeInTheDocument();
+    });
   });
 
   describe('정상 플로우: 다각도 촬영', () => {
@@ -336,47 +332,6 @@ describe('PersonalColorPage', () => {
     });
   });
 
-  describe('정상 플로우: 기존 퍼스널 컬러 입력', () => {
-    it('가이드에서 건너뛰기 → 퍼스널 컬러 입력 → 결과로 진행된다', async () => {
-      const user = userEvent.setup();
-      render(<PersonalColorPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      });
-
-      // 건너뛰기 클릭
-      await user.click(screen.getByTestId('skip-button'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('known-color-input')).toBeInTheDocument();
-      });
-
-      // 봄 웜톤 선택
-      await user.click(screen.getByTestId('select-spring'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
-      });
-    });
-
-    it('퍼스널 컬러 입력에서 뒤로가기가 가능하다', async () => {
-      const user = userEvent.setup();
-      render(<PersonalColorPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('known-back'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      });
-    });
-  });
-
   describe('취소/뒤로가기 동작', () => {
     it('다각도 촬영에서 취소하면 가이드로 돌아간다', async () => {
       const user = userEvent.setup();
@@ -388,30 +343,6 @@ describe('PersonalColorPage', () => {
 
       await user.click(screen.getByTestId('continue-button'));
       await user.click(screen.getByTestId('capture-cancel'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      });
-    });
-
-    it('결과 화면에서 다시 분석하기를 클릭하면 처음으로 돌아간다', async () => {
-      const user = userEvent.setup();
-      render(<PersonalColorPage />);
-
-      // 빠른 플로우: 기존 퍼스널 컬러 입력
-      await waitFor(() => {
-        expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-spring'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
-      });
-
-      // 다시 분석
-      await user.click(screen.getByTestId('retry-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('lighting-guide')).toBeInTheDocument();

@@ -85,11 +85,12 @@ export function TrendChart({
     const maxScore = Math.max(...recentData.map((d) => d.score), goalScore || 0);
     const range = Math.max(maxScore - minScore, 20); // 최소 20점 범위
 
+    // 폴리라인 좌표는 아래 데이터 포인트(circle)와 "정확히 같은 공식"이어야 선이 점을 지나감.
+    // (기존 chartHeight 기준 계산은 circle의 height 기준과 어긋나 선이 점을 안 지나던 버그)
     const points = recentData
       .map((d, i) => {
-        const x = padding + (i / Math.max(recentData.length - 1, 1)) * (chartWidth - padding * 2);
-        const y =
-          chartHeight - padding - ((d.score - minScore) / range) * (chartHeight - padding * 2);
+        const x = padding + (i / Math.max(recentData.length - 1, 1)) * (280 - padding * 2);
+        const y = height - 40 - ((d.score - minScore) / range) * (height - 60);
         return `${x},${y}`;
       })
       .join(' ');
@@ -114,14 +115,22 @@ export function TrendChart({
 
   // 트렌드 아이콘/색상/텍스트
   const TrendIcon = selectByKey(trend, { up: TrendingUp, down: TrendingDown }, Minus)!;
-  const trendColor = selectByKey(trend, {
-    up: 'text-emerald-500',
-    down: 'text-red-500',
-  }, 'text-gray-500')!;
-  const trendText = selectByKey(trend, {
-    up: '상승 중',
-    down: '하락 중',
-  }, '유지 중')!;
+  const trendColor = selectByKey(
+    trend,
+    {
+      up: 'text-emerald-500',
+      down: 'text-red-500',
+    },
+    'text-gray-500'
+  )!;
+  const trendText = selectByKey(
+    trend,
+    {
+      up: '상승 중',
+      down: '하락 중',
+    },
+    '유지 중'
+  )!;
 
   if (recentData.length === 0) {
     return (
@@ -132,6 +141,24 @@ export function TrendChart({
         <div className="text-center text-muted-foreground py-8">
           <p className="text-sm">분석 기록이 없어요</p>
           <p className="text-xs mt-1">분석을 진행하면 변화 추이를 확인할 수 있어요</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 1개뿐이면 선을 그릴 수 없음 — 외로운 점 대신 안내 문구 표시
+  if (recentData.length === 1) {
+    return (
+      <div
+        className={cn('p-4 rounded-xl border bg-card', className)}
+        data-testid="trend-chart-single"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium">{METRIC_LABELS[metric]} 변화</span>
+        </div>
+        <div className="text-center text-muted-foreground py-6">
+          <p className="text-2xl font-bold text-foreground">{recentData[0].score}점</p>
+          <p className="text-xs mt-2">다음 분석부터 변화를 보여드려요</p>
         </div>
       </div>
     );

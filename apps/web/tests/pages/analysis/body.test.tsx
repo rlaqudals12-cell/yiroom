@@ -74,6 +74,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => ({
     get: mockSearchParamsGet,
   }),
+  usePathname: () => '/analysis/body',
 }));
 
 // Mock Clerk
@@ -113,15 +114,19 @@ vi.mock('@/hooks/useShare', () => ({
 }));
 
 // Mock components
+// onSkip은 자가입력 우회 경로 제거로 폐기됨 — prop이 넘어오면 skip-button이 렌더되도록 두어,
+// 우회 경로가 재도입되면 아래 회귀 테스트가 실패하게 한다.
 vi.mock('@/app/(main)/analysis/body/_components/BodyPhotographyGuide', () => ({
-  default: ({ onContinue, onSkip }: { onContinue: () => void; onSkip: () => void }) => (
+  default: ({ onContinue, onSkip }: { onContinue: () => void; onSkip?: () => void }) => (
     <div data-testid="body-photography-guide">
       <button onClick={onContinue} data-testid="continue-button">
         계속하기
       </button>
-      <button onClick={onSkip} data-testid="skip-button">
-        기존 체형 입력
-      </button>
+      {onSkip && (
+        <button onClick={onSkip} data-testid="skip-button">
+          기존 체형 입력
+        </button>
+      )}
     </div>
   ),
 }));
@@ -190,19 +195,6 @@ vi.mock('@/components/analysis/camera', () => ({
       </button>
       <button onClick={onCancel} data-testid="multi-angle-cancel">
         취소
-      </button>
-    </div>
-  ),
-}));
-
-vi.mock('@/app/(main)/analysis/body/_components/KnownBodyTypeInput', () => ({
-  default: ({ onSelect, onBack }: { onSelect: (bodyType: string) => void; onBack: () => void }) => (
-    <div data-testid="known-type-input">
-      <button onClick={() => onSelect('S')} data-testid="select-s-type">
-        스트레이트형
-      </button>
-      <button onClick={onBack} data-testid="known-back">
-        뒤로
       </button>
     </div>
   ),
@@ -281,6 +273,17 @@ describe('BodyAnalysisPage', () => {
         expect(screen.getByText('정확한 분석을 위한 촬영 가이드')).toBeInTheDocument();
       });
     });
+
+    // 자가입력 우회 경로 제거 회귀 방지: 가이드에 "이미 알고 있어요" 건너뛰기 버튼이 없어야 함
+    it('자가입력 우회(skip) 버튼이 더 이상 렌더되지 않는다', async () => {
+      render(<BodyAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTestId('skip-button')).not.toBeInTheDocument();
+    });
   });
 
   describe('정상 플로우: 가이드 → 입력 → 다각도촬영 → 분석', () => {
@@ -323,64 +326,38 @@ describe('BodyAnalysisPage', () => {
     });
   });
 
-  describe('정상 플로우: 기존 체형 타입 입력', () => {
-    it('가이드에서 건너뛰기 → 체형 타입 입력 → 결과로 진행된다', async () => {
-      const user = userEvent.setup();
-      render(<BodyAnalysisPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
-      });
-
-      // 건너뛰기 클릭
-      await user.click(screen.getByTestId('skip-button'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('known-type-input')).toBeInTheDocument();
-      });
-      expect(screen.getByText('기존 체형 타입을 선택해주세요')).toBeInTheDocument();
-
-      // X형 선택
-      await user.click(screen.getByTestId('select-s-type'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
-      });
-    });
-
-    it('체형 타입 입력에서 뒤로가기가 가능하다', async () => {
-      const user = userEvent.setup();
-      render(<BodyAnalysisPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('known-back'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
-      });
-    });
-  });
-
   describe('취소/뒤로가기 동작', () => {
     it('결과 화면에서 다시 분석하기를 클릭하면 처음으로 돌아간다', async () => {
+      // 사진 분석 경로로 결과 도달 후 재분석
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            bodyType: 'S',
+            bodyTypeLabel: '스트레이트형',
+            analyzedAt: new Date().toISOString(),
+          },
+          data: { id: 'body-retry-1' },
+        }),
+      });
+
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
-      // 빠른 플로우: 기존 체형 타입 입력
       await waitFor(() => {
         expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-s-type'));
+      await user.click(screen.getByTestId('continue-button'));
+      await user.click(screen.getByTestId('form-submit'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
-      await waitFor(() => {
-        expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // 다시 분석
       await user.click(screen.getByTestId('retry-button'));
@@ -484,6 +461,18 @@ describe('BodyAnalysisPage', () => {
 
   describe('축하 효과', () => {
     it('분석 완료 시 Confetti가 표시된다', async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            bodyType: 'S',
+            bodyTypeLabel: '스트레이트형',
+            analyzedAt: new Date().toISOString(),
+          },
+          data: { id: 'body-confetti-1' },
+        }),
+      });
+
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
@@ -491,17 +480,33 @@ describe('BodyAnalysisPage', () => {
         expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-s-type'));
+      await user.click(screen.getByTestId('continue-button'));
+      await user.click(screen.getByTestId('form-submit'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
-      await waitFor(() => {
-        expect(screen.getByTestId('confetti')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('confetti')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
   describe('공유 기능', () => {
     it('결과 화면에서 공유 버튼이 표시된다', async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          result: {
+            bodyType: 'S',
+            bodyTypeLabel: '스트레이트형',
+            analyzedAt: new Date().toISOString(),
+          },
+          data: { id: 'body-share-1' },
+        }),
+      });
+
       const user = userEvent.setup();
       render(<BodyAnalysisPage />);
 
@@ -509,12 +514,16 @@ describe('BodyAnalysisPage', () => {
         expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('skip-button'));
-      await user.click(screen.getByTestId('select-s-type'));
+      await user.click(screen.getByTestId('continue-button'));
+      await user.click(screen.getByTestId('form-submit'));
+      await user.click(screen.getByTestId('multi-angle-complete'));
 
-      await waitFor(() => {
-        expect(screen.getByTestId('share-button')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('share-button')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
@@ -611,6 +620,44 @@ describe('BodyAnalysisPage - API 통합', () => {
         expect(screen.getByTestId('analysis-result')).toBeInTheDocument();
       },
       { timeout: 3000 }
+    );
+  });
+
+  it('분석 완료 후 전체 결과 보기 딥링크 버튼이 노출된다 (#7)', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        result: {
+          bodyType: 'S',
+          bodyTypeLabel: '스트레이트형',
+          analyzedAt: new Date().toISOString(),
+        },
+        data: { id: 'body-analysis-123' },
+      }),
+    });
+
+    const user = userEvent.setup();
+    render(<BodyAnalysisPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('body-photography-guide')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('continue-button'));
+    await user.click(screen.getByTestId('form-submit'));
+    await user.click(screen.getByTestId('multi-angle-complete'));
+
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('view-full-result')).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    // 결과 페이지 딥링크 href 확인
+    expect(screen.getByTestId('view-full-result')).toHaveAttribute(
+      'href',
+      '/analysis/body/result/body-analysis-123'
     );
   });
 

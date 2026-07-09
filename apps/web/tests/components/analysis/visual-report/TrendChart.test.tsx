@@ -75,6 +75,54 @@ describe('TrendChart', () => {
   });
 
   // ============================================
+  // 데이터 개수별 분기 (2026-07-10 피드백: 1개면 점만 → 안내 문구)
+  // ============================================
+
+  describe('데이터 개수별 분기', () => {
+    it('데이터가 1개면 안내 문구를 표시하고 선/차트를 그리지 않음', () => {
+      const { container } = render(
+        <TrendChart data={[{ date: new Date('2026-01-01'), score: 72 }]} metric="overall" />
+      );
+      expect(screen.getByTestId('trend-chart-single')).toBeInTheDocument();
+      expect(screen.getByText('다음 분석부터 변화를 보여드려요')).toBeInTheDocument();
+      expect(screen.getByText('72점')).toBeInTheDocument();
+      // 외로운 점(차트 SVG/circle)을 그리지 않음
+      expect(container.querySelector('polyline')).toBeNull();
+      expect(container.querySelector('circle')).toBeNull();
+    });
+
+    it('데이터가 2개면 선(polyline)을 그림', () => {
+      const twoPoints = [
+        { date: new Date('2026-01-01'), score: 60 },
+        { date: new Date('2026-01-08'), score: 78 },
+      ];
+      const { container } = render(<TrendChart data={twoPoints} metric="overall" />);
+      const polyline = container.querySelector('polyline');
+      expect(polyline).not.toBeNull();
+      // 점 2개(각 2 circle) 연결 — 좌표쌍 2개
+      const points = polyline?.getAttribute('points') ?? '';
+      expect(points.trim().split(/\s+/).length).toBe(2);
+    });
+
+    it('선(polyline)이 데이터 포인트(circle)와 같은 y좌표를 지남', () => {
+      const twoPoints = [
+        { date: new Date('2026-01-01'), score: 60 },
+        { date: new Date('2026-01-08'), score: 78 },
+      ];
+      const { container } = render(
+        <TrendChart data={twoPoints} metric="overall" showGoal={false} />
+      );
+      const polyline = container.querySelector('polyline');
+      const points = (polyline?.getAttribute('points') ?? '').trim().split(/\s+/);
+      // 첫 데이터 포인트 circle(외곽 r=5)의 y와 폴리라인 첫 좌표 y가 일치해야 선이 점을 지남
+      const firstOuterCircle = container.querySelector('circle');
+      const circleY = Number(firstOuterCircle?.getAttribute('cy'));
+      const polyY = Number(points[0].split(',')[1]);
+      expect(polyY).toBeCloseTo(circleY, 1);
+    });
+  });
+
+  // ============================================
   // 트렌드 표시 테스트
   // ============================================
 

@@ -480,7 +480,7 @@ describe('generateRoutine — specName 부착 (U2)', () => {
     const toner = routine.find((s) => s.category === 'toner');
     const cream = routine.find((s) => s.category === 'cream');
     const sun = routine.find((s) => s.category === 'sunscreen');
-    expect(cleanser?.specName).toBe('촉촉한 약산성 클렌저');
+    expect(cleanser?.specName).toBe('촉촉한 약산성 클렌저(크림·로션 제형)');
     expect(toner?.specName).toBe('보습 토너');
     expect(cream?.specName).toBe('세라마이드 크림');
     expect(sun?.specName).toBe('SPF50+ PA+++');
@@ -518,7 +518,7 @@ describe('generateRoutine — specName 부착 (U2)', () => {
     const oilCleanser = routine.find((s) => s.name.includes('오일') && s.category === 'cleanser');
     const foamCleanser = routine.find((s) => s.name.includes('폼') && s.category === 'cleanser');
     expect(oilCleanser?.specName).toBeUndefined(); // 원 명칭 유지
-    expect(foamCleanser?.specName).toBe('약산성 클렌저'); // 폼은 약산성으로
+    expect(foamCleanser?.specName).toBe('약산성 젤 클렌저'); // 지성 = 젤 제형 안내
   });
 
   it('대응 없는 카테고리(에센스 등)엔 specName을 붙이지 않는다', () => {

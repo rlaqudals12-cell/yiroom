@@ -1149,7 +1149,6 @@
       "selectOtherPhoto": "다른 사진 선택",
       "startAnalysis": "분석 시작",
       "analyzing": "분석 중...",
-      "alreadyKnow": "이미 알고 있어요",
       "backToGuide": "← 가이드로 돌아가기",
       "back": "← 뒤로",
       "viewResult": "결과 보기",
@@ -1173,8 +1172,7 @@
         "multiAngle": "정확한 진단을 위해 여러 각도로 촬영해요",
         "galleryUpload": "갤러리에서 사진을 선택해주세요",
         "upload": "얼굴 사진을 촬영해주세요",
-        "wrist": "손목 사진을 촬영해주세요",
-        "knownInput": "기존 퍼스널 컬러를 선택해주세요"
+        "wrist": "손목 사진을 촬영해주세요"
       }
     },
     "skin": {
@@ -1198,31 +1196,30 @@
         "guide": "정확한 분석을 위한 촬영 가이드",
         "input": "나에게 어울리는 스타일이 궁금하신가요?",
         "multiAngle": "정면, 좌측면, 우측면, 후면 사진을 촬영해주세요",
-        "upload": "전신 사진을 업로드해주세요",
-        "knownType": "기존 체형 타입을 선택해주세요"
+        "upload": "전신 사진을 업로드해주세요"
       }
     },
     "hair": {
       "title": "헤어 분석",
       "guideTitle": "촬영 가이드",
+      "guideSinglePhoto": "한 장이면 충분해요 — 두피가 보이는 가르마 사진이 가장 정확해요",
       "guideTip1": "밝은 자연광 아래에서 촬영해주세요",
       "guideTip2": "두피가 보이도록 가르마 부분을 촬영해주세요",
-      "guideTip3": "모발 전체가 잘 보이는 사진도 좋아요",
+      "guideTip3": "가르마와 함께 모발 전체가 보이면 더 정확해요",
       "guideAvoid": "젖은 머리나 스타일링 제품 사용 후 촬영은 피해주세요",
       "photoSelectAria": "헤어 분석용 사진 선택",
       "startAnalysisAria": "헤어 분석 시작",
-      "selectHairType": "모발 타입을 선택해주세요",
-      "selectConcerns": "주요 고민을 선택해주세요 (여러 개 선택 가능)",
       "aiAnalyzingHair": "AI가 헤어를 분석하고 있어요",
       "resultSummary": "분석 요약",
       "metricScores": "항목별 점수",
       "scorePoints": "{score}점",
       "recommendedIngredients": "추천 성분",
+      "cautionIngredients": "주의 성분 (피하면 좋아요)",
+      "scalpConcernTitle": "두피 고민이 있다면",
       "careTips": "케어 팁",
       "subtitle": {
         "guide": "정확한 분석을 위한 촬영 가이드",
-        "upload": "헤어/두피 사진을 선택해주세요",
-        "knownInput": "헤어 타입을 선택해주세요"
+        "upload": "헤어/두피 사진을 선택해주세요"
       }
     },
     "makeup": {
@@ -1234,8 +1231,7 @@
       "aiAnalyzingFace": "AI가 얼굴을 분석하고 있어요",
       "subtitle": {
         "guide": "정확한 분석을 위한 촬영 가이드",
-        "upload": "얼굴 사진을 선택해주세요",
-        "knownInput": "피부 타입을 선택해주세요"
+        "upload": "얼굴 사진을 선택해주세요"
       }
     },
     "oral": {

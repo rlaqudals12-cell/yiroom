@@ -33,7 +33,6 @@ export interface StyleRecommendation {
 export interface UserBodyInput {
   height: number; // cm
   weight: number; // kg
-  targetWeight?: number; // kg (선택)
 }
 
 /**
@@ -596,6 +595,17 @@ export const BODY_TYPES_3: Record<BodyType3, BodyType3Info> = {
     selfCheckTip:
       "오버사이즈 옷이나 맨투맨을 입으면 '멋있다'는 말을 듣나요? 내추럴일 확률이 높아요!",
   },
+};
+
+/**
+ * 체형 타입 짧은 풀이 — 라벨 단독 노출 지점(아바타 캡션, 히어로 등)에 상시 병기.
+ * "내추럴", "스트레이트" 같은 생소한 용어를 처음 보는 사용자를 위한 한 조각 설명.
+ * (긴 문장은 simpleExplanation, 여기는 라벨 옆에 붙일 짧은 구절)
+ */
+export const BODY_TYPE_SHORT_GLOSS: Record<BodyType3, string> = {
+  S: '상체가 탄탄한 타입',
+  W: '곡선이 부드러운 타입',
+  N: '골격감이 자연스러운 타입',
 };
 
 // 초보자 친화 체형 스타일 팁 (Hybrid 데이터용)

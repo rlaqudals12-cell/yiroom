@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { User, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-// CDN URL for face-api.js models
-const MODELS_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+import { loadFaceApiModels } from './loadFaceApiModels';
 
 /**
  * 피부 분석 지표 타입 (경쟁사 스타일)
@@ -145,10 +143,8 @@ export function PhotoMetricOverlayV2({
   useEffect(() => {
     const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-        ]);
+        // 타임아웃 포함 — CDN 지연/차단 시 무한 로딩 대신 실패로 떨어져 수치 배지만 표시
+        await loadFaceApiModels();
         setModelsLoaded(true);
       } catch (err) {
         console.error('[PhotoMetricOverlayV2] Model load error:', err);

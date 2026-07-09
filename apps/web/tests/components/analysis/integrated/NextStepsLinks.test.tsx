@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 
 vi.mock('lucide-react', () => ({
   ChevronRight: () => null,
+  RefreshCw: () => null,
   Palette: () => null,
   Sparkles: () => null,
   Shirt: () => null,
@@ -18,8 +19,18 @@ vi.mock('lucide-react', () => ({
 }));
 
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
+  default: ({
+    children,
+    href,
+    ...rest
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
   ),
 }));
 
@@ -72,7 +83,8 @@ describe('NextStepsLinks', () => {
 
   it('최신 개별 결과가 없으면 분석 시작 경로로 폴백', () => {
     render(<NextStepsLinks axesCompleted={['hair']} />);
-    const link = screen.getByRole('link');
+    // 카드(심화 보기) 링크는 testid로 특정 (재분석 보조 링크와 구분)
+    const link = screen.getByTestId('next-step-hair');
     expect(link).toHaveAttribute('href', '/analysis/hair');
   });
 
@@ -81,12 +93,35 @@ describe('NextStepsLinks', () => {
       analyses: [{ type: 'personal-color', id: 'abc123' }],
     });
     render(<NextStepsLinks axesCompleted={['personal_color']} />);
-    const link = screen.getByRole('link');
+    const link = screen.getByTestId('next-step-personal_color');
     expect(link).toHaveAttribute('href', '/analysis/personal-color/result/abc123');
   });
 
   it('"심화 보기" CTA 문구 표시', () => {
     render(<NextStepsLinks axesCompleted={['makeup']} />);
     expect(screen.getByText('심화 보기')).toBeInTheDocument();
+  });
+
+  it('각 축에 "다시 분석" 재분석 링크(forceNew) 표시 — 선택 재분석 진입', () => {
+    render(<NextStepsLinks axesCompleted={['skin']} />);
+    const reanalyze = screen.getByTestId('next-step-reanalyze-skin');
+    expect(reanalyze).toHaveAttribute('href', '/analysis/skin?forceNew=true');
+    expect(reanalyze).toHaveTextContent('다시 분석');
+  });
+
+  it('재분석 링크는 최신 결과 유무와 무관하게 분석 시작 경로를 가리킴', () => {
+    mockAnalyses.mockReturnValue({
+      analyses: [{ type: 'personal-color', id: 'abc123' }],
+    });
+    render(<NextStepsLinks axesCompleted={['personal_color']} />);
+    // 심화(딥링크)는 결과 페이지, 재분석은 forceNew 시작 경로 — 서로 다른 링크
+    expect(screen.getByTestId('next-step-personal_color')).toHaveAttribute(
+      'href',
+      '/analysis/personal-color/result/abc123'
+    );
+    expect(screen.getByTestId('next-step-reanalyze-personal_color')).toHaveAttribute(
+      'href',
+      '/analysis/personal-color?forceNew=true'
+    );
   });
 });

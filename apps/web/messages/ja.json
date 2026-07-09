@@ -1149,7 +1149,6 @@
       "selectOtherPhoto": "別の写真を選択",
       "startAnalysis": "分析開始",
       "analyzing": "分析中...",
-      "alreadyKnow": "すでに知っています",
       "backToGuide": "← ガイドに戻る",
       "back": "← 戻る",
       "viewResult": "結果を見る",
@@ -1173,8 +1172,7 @@
         "multiAngle": "正確な診断のため複数の角度で撮影します",
         "galleryUpload": "ギャラリーから写真を選んでください",
         "upload": "顔写真を撮影してください",
-        "wrist": "手首の写真を撮影してください",
-        "knownInput": "既存のパーソナルカラーを選んでください"
+        "wrist": "手首の写真を撮影してください"
       }
     },
     "skin": {
@@ -1198,31 +1196,30 @@
         "guide": "正確な分析のための撮影ガイド",
         "input": "似合うスタイルが気になりますか？",
         "multiAngle": "正面、左側面、右側面、背面の写真を撮影してください",
-        "upload": "全身写真をアップロードしてください",
-        "knownType": "既存の体型タイプを選んでください"
+        "upload": "全身写真をアップロードしてください"
       }
     },
     "hair": {
       "title": "ヘア分析",
       "guideTitle": "撮影ガイド",
+      "guideSinglePhoto": "1枚で十分です — 頭皮が見える分け目の写真が最も正確です",
       "guideTip1": "明るい自然光の下で撮影してください",
       "guideTip2": "頭皮が見えるように分け目部分を撮影してください",
-      "guideTip3": "髪全体が見える写真も良いです",
+      "guideTip3": "分け目と一緒に髪全体が見えるとより正確です",
       "guideAvoid": "濡れた髪やスタイリング剤使用後の撮影は避けてください",
       "photoSelectAria": "ヘア分析用の写真を選択",
       "startAnalysisAria": "ヘア分析を開始",
-      "selectHairType": "髪質タイプを選んでください",
-      "selectConcerns": "主な悩みを選んでください（複数選択可）",
       "aiAnalyzingHair": "AIがヘアを分析しています",
       "resultSummary": "分析サマリー",
       "metricScores": "項目別スコア",
       "scorePoints": "{score}点",
       "recommendedIngredients": "おすすめ成分",
+      "cautionIngredients": "注意すべき成分",
+      "scalpConcernTitle": "頭皮の悩みがある場合",
       "careTips": "ケアのヒント",
       "subtitle": {
         "guide": "正確な分析のための撮影ガイド",
-        "upload": "ヘア/頭皮の写真を選んでください",
-        "knownInput": "ヘアタイプを選んでください"
+        "upload": "ヘア/頭皮の写真を選んでください"
       }
     },
     "makeup": {
@@ -1234,8 +1231,7 @@
       "aiAnalyzingFace": "AIが顔を分析しています",
       "subtitle": {
         "guide": "正確な分析のための撮影ガイド",
-        "upload": "顔の写真を選んでください",
-        "knownInput": "肌タイプを選んでください"
+        "upload": "顔の写真を選んでください"
       }
     },
     "oral": {

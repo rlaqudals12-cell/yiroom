@@ -24,6 +24,7 @@ import {
   type BodyAnalysisResult,
   type BodyType3,
   BODY_TYPES_3,
+  BODY_TYPE_SHORT_GLOSS,
   getBodyTypeColor,
   getBodyTypeBgColor,
   getBodyType3Color,
@@ -75,7 +76,6 @@ export default function AnalysisResult({
     analyzedAt,
     userInput,
     bmi,
-    bmiCategory,
     personalColorSeason,
     colorRecommendations,
     colorTips,
@@ -140,6 +140,15 @@ export default function AnalysisResult({
             </span>
           </div>
           {is3Type && <p className="text-sm text-muted-foreground mt-1">({typeInfo3.labelEn})</p>}
+          {/* 라벨 짧은 풀이 상시 병기 — "내추럴" 같은 생소한 용어를 처음 보는 사용자용 */}
+          {is3Type && (
+            <p
+              className="mt-1 text-sm font-medium text-foreground/70"
+              data-testid="body-type-gloss"
+            >
+              {typeInfo3.label} — {BODY_TYPE_SHORT_GLOSS[type3]}
+            </p>
+          )}
           <p className="mt-2 text-muted-foreground">{bodyTypeDescription}</p>
 
           {/* 초보자용 한 줄 설명 */}
@@ -308,33 +317,17 @@ export default function AnalysisResult({
                     <p className="text-xl font-bold text-foreground">
                       <CountUp end={bmi || 0} decimals={1} duration={1200} />
                     </p>
-                    <p
-                      className={`text-xs ${mapToClass(
-                        bmiCategory,
-                        {
-                          정상: 'text-green-500',
-                          저체중: 'text-blue-500',
-                        },
-                        'text-orange-500'
-                      )}`}
-                    >
-                      {bmiCategory}
-                    </p>
+                    {/* BMI는 참고 수치 — 비만/과체중 낙인 라벨 없이 근육량 안내만 */}
+                    <p className="text-xs text-muted-foreground">참고 수치</p>
                   </div>
                 </div>
-                {userInput.targetWeight && (
-                  <div className="mt-4 pt-4 border-t text-center">
-                    <p className="text-sm text-muted-foreground">
-                      목표 몸무게:{' '}
-                      <span className="font-medium text-foreground">
-                        {userInput.targetWeight}kg
-                      </span>
-                      <span className="ml-2 text-purple-500">
-                        ({userInput.weight > userInput.targetWeight ? '-' : '+'}
-                        {Math.abs(userInput.weight - userInput.targetWeight).toFixed(1)}kg)
-                      </span>
-                    </p>
-                  </div>
+                {bmi != null && (
+                  <p
+                    className="mt-3 text-center text-xs text-muted-foreground"
+                    data-testid="bmi-caveat"
+                  >
+                    BMI는 근육량에 따라 실제와 다를 수 있어요
+                  </p>
                 )}
               </section>
             </FadeInUp>

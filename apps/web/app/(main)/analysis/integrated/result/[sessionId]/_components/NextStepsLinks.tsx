@@ -13,7 +13,7 @@
  */
 
 import Link from 'next/link';
-import { ChevronRight, Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
+import { ChevronRight, RefreshCw, Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
@@ -107,10 +107,14 @@ export function NextStepsLinks({
           const latest = latestByType.get(step.analysisType);
           const href = latest ? `/analysis/${latest.type}/result/${latest.id}` : step.fallbackHref;
           return (
-            <li key={step.axis}>
+            // 링크 중첩(a > a) 방지: 카드 링크(심화 보기)와 재분석 링크를 li 안의 형제로 둔다
+            <li
+              key={step.axis}
+              className="overflow-hidden rounded-2xl border border-zinc-800 bg-neutral-900 transition-colors hover:border-pink-500/40"
+            >
               <Link
                 href={href}
-                className="group flex items-center gap-3 rounded-2xl border border-zinc-800 bg-neutral-900 p-4 transition-colors hover:border-pink-500/40 hover:bg-neutral-900/60"
+                className="group flex items-center gap-3 p-4 transition-colors hover:bg-neutral-900/60"
                 data-testid={`next-step-${step.axis}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
@@ -124,6 +128,15 @@ export function NextStepsLinks({
                   심화 보기
                   <ChevronRight className="h-4 w-4" />
                 </span>
+              </Link>
+              {/* 선택 재분석 진입 — 이 축만 새로 촬영해 다시 분석 (forceNew=기존 결과 자동진입 방지) */}
+              <Link
+                href={`${step.fallbackHref}?forceNew=true`}
+                className="flex items-center justify-center gap-1 border-t border-zinc-800 px-4 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-neutral-900/60 hover:text-pink-400"
+                data-testid={`next-step-reanalyze-${step.axis}`}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                다시 분석
               </Link>
             </li>
           );

@@ -59,3 +59,21 @@ export type {
   MakeupStyleId,
   MakeupConcernId,
 } from '@/lib/mock/makeup-analysis';
+
+// =============================================================================
+// 초보자 가이던스 (용어 풀이 · 상황별 팁 · 보유 화장품 감지)
+// =============================================================================
+
+export {
+  MAKEUP_TERM_GLOSSARY,
+  extractGlossaryTerms,
+  buildSituationalTips,
+  detectMakeupShelfCategory,
+} from './guidance';
+
+export type {
+  MakeupShelfCategory,
+  MakeupTipGroup,
+  SituationalMakeupTips,
+  GlossaryHit,
+} from './guidance';

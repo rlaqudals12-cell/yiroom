@@ -151,6 +151,26 @@ function getMetricStatus(value: number): 'good' | 'normal' | 'warning' {
   return 'warning';
 }
 
+/**
+ * 베이스 팁 (공용, 결정론) — 무엇으로 하는지 도구/제품 종류를 명시한다.
+ *
+ * 왜: "프라이머로 모공을 채우세요"처럼 '무엇으로'가 빠지면 초보자가 실행하기 어렵다.
+ * 고민별로 구체적 제품 종류를 병기한다.
+ */
+function buildBaseTips(concerns: MakeupConcernId[]): string[] {
+  return [
+    concerns.includes('large-pores')
+      ? '실리콘 베이스 포어 프라이머로 모공을 먼저 메워주세요'
+      : '피부결 정돈용 프라이머를 얇게 바른 뒤 파운데이션을 발라주세요',
+    concerns.includes('oily-tzone')
+      ? '피지 컨트롤 페이스 파우더로 T존 유분기를 잡아주세요'
+      : '수분 크림이나 글로우 베이스로 촉촉하게 마무리하세요',
+    concerns.includes('dark-circles')
+      ? '오렌지빛 컨실러를 눈 밑에 삼각형으로 발라 다크서클을 커버하세요'
+      : '얇게 베이스를 발라 피부결을 살리세요',
+  ];
+}
+
 // 언더톤 라벨 (Mock 생성/자가입력 프리셋 공용)
 const UNDERTONE_LABEL_MAP: Record<UndertoneId, string> = {
   warm: '웜톤',
@@ -419,17 +439,7 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
   const makeupTips = [
     {
       category: '베이스',
-      tips: [
-        concerns.includes('large-pores')
-          ? '프라이머로 모공을 먼저 메워주세요'
-          : '피부결에 맞게 파운데이션을 발라주세요',
-        concerns.includes('oily-tzone')
-          ? 'T존은 파우더로 유분기를 잡아주세요'
-          : '전체적으로 촉촉하게 마무리하세요',
-        concerns.includes('dark-circles')
-          ? '컨실러를 삼각형으로 발라 다크서클을 커버하세요'
-          : '얇게 베이스를 발라 피부결을 살리세요',
-      ],
+      tips: buildBaseTips(concerns),
     },
     {
       category: '아이 메이크업',
@@ -568,17 +578,7 @@ export function generateKnownUndertoneResult(
   const makeupTips = [
     {
       category: '베이스',
-      tips: [
-        concerns.includes('large-pores')
-          ? '프라이머로 모공을 먼저 메워주세요'
-          : '피부결에 맞게 파운데이션을 발라주세요',
-        concerns.includes('oily-tzone')
-          ? 'T존은 파우더로 유분기를 잡아주세요'
-          : '전체적으로 촉촉하게 마무리하세요',
-        concerns.includes('dark-circles')
-          ? '컨실러를 삼각형으로 발라 다크서클을 커버하세요'
-          : '얇게 베이스를 발라 피부결을 살리세요',
-      ],
+      tips: buildBaseTips(concerns),
     },
     {
       category: '아이 메이크업',

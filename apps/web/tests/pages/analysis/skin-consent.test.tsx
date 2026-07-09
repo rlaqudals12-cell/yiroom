@@ -189,10 +189,6 @@ vi.mock('@/app/(main)/analysis/skin/_components/MultiAngleSkinCapture', () => ({
   ),
 }));
 
-vi.mock('@/app/(main)/analysis/skin/_components/KnownSkinTypeInput', () => ({
-  default: () => <div data-testid="known-skin-type-input" />,
-}));
-
 vi.mock('@/app/(main)/analysis/skin/_components/AnalysisLoading', () => ({
   default: ({ isApiComplete }: { isApiComplete?: boolean }) => {
     return <div data-testid="analysis-loading">{isApiComplete ? '완료' : '분석 중...'}</div>;

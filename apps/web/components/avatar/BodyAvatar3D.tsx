@@ -59,6 +59,10 @@ export default function BodyAvatar3D({ params, previous, onRenderFailed }: BodyA
     }
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 필름 톤매핑 + sRGB 출력 — 밝기 뭉개짐 없이 부드러운 계조 (렌더 품질 소개선)
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -66,11 +70,21 @@ export default function BodyAvatar3D({ params, previous, onRenderFailed }: BodyA
     camera.position.set(0, 1.05, 3.4);
     camera.lookAt(0, 0.92, 0);
 
-    // 조명 — 부드러운 스튜디오 톤 (스타일라이즈드)
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x64748b, 1.6));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    keyLight.position.set(2, 3, 4);
+    // 조명 — 3점 조명 스튜디오 톤: 상단 환경광 + 키 + 채움 + 뒤쪽 림
+    // (스타일라이즈드 메시라 그림자 없이 형태만 또렷하게 읽히도록)
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x64748b, 1.1));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    keyLight.position.set(2.4, 3, 4);
     scene.add(keyLight);
+    // 채움광 — 반대편 그늘을 살짝 들어올려 실루엣 가장자리 부드럽게
+    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.55);
+    fillLight.position.set(-3, 1.2, 2);
+    scene.add(fillLight);
+    // 림광 — 뒤쪽에서 윤곽을 강조해 배경과 분리
+    const rimLight = new THREE.DirectionalLight(0xede9fe, 0.7);
+    rimLight.position.set(-1, 2.5, -3);
+    scene.add(rimLight);
 
     // 아바타 그룹 (회전 대상)
     const group = new THREE.Group();
@@ -81,8 +95,11 @@ export default function BodyAvatar3D({ params, previous, onRenderFailed }: BodyA
     const bodyGeometry = toBufferGeometry(params);
     const bodyMaterial = new THREE.MeshStandardMaterial({
       color: AVATAR_COLOR,
-      roughness: 0.62,
-      metalness: 0.05,
+      roughness: 0.48,
+      metalness: 0.08,
+      // 은은한 자체발광으로 어두운 배경/다크모드에서도 형태가 죽지 않게
+      emissive: AVATAR_COLOR,
+      emissiveIntensity: 0.06,
     });
     group.add(new THREE.Mesh(bodyGeometry, bodyMaterial));
     disposables.push(bodyGeometry, bodyMaterial);

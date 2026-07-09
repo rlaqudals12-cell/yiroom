@@ -13,14 +13,12 @@ interface MakeupGuideProps {
   existingAnalysis: ExistingAnalysis | null;
   checkingExisting: boolean;
   onStartUpload: () => void;
-  onSkipToKnownInput: () => void;
 }
 
 export function MakeupGuide({
   existingAnalysis,
   checkingExisting,
   onStartUpload,
-  onSkipToKnownInput,
 }: MakeupGuideProps) {
   return (
     <div className="space-y-6">
@@ -60,24 +58,14 @@ export function MakeupGuide({
         </ul>
       </div>
 
-      <div className="flex gap-3">
-        <Button
-          onClick={onStartUpload}
-          className="flex-1 bg-pink-500 hover:bg-pink-600"
-          data-testid="makeup-upload-button"
-          aria-label="사진으로 메이크업 분석 시작"
-        >
-          사진 선택하기
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onSkipToKnownInput}
-          data-testid="makeup-known-input-button"
-          aria-label="내 피부 타입을 이미 알고 있어요"
-        >
-          알고 있어요
-        </Button>
-      </div>
+      <Button
+        onClick={onStartUpload}
+        className="w-full bg-pink-500 hover:bg-pink-600"
+        data-testid="makeup-upload-button"
+        aria-label="사진으로 메이크업 분석 시작"
+      >
+        사진 선택하기
+      </Button>
     </div>
   );
 }

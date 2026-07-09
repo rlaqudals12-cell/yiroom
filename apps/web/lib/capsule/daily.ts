@@ -50,6 +50,47 @@ const DAILY_EXCLUDED_DOMAINS: ReadonlySet<string> = new Set(['personal-color', '
 const DAILY_MAX_ITEMS: Record<string, number> = { fashion: 1, hair: 2, body: 2 };
 const DAILY_MAX_ITEMS_DEFAULT = 3;
 
+// 캡슐 엔진 버전 — 루틴 조립 로직/스펙명이 바뀌면 이 값을 올려 옛 캐시를 무효화한다.
+// 배포 후 사용자가 어제 캐시된 옛 루틴(스펙명 없는 등)을 계속 보는 문제를 막는다.
+// 저장 위치: 별도 컬럼이 없으므로 items JSONB의 각 아이템에 engineVersion으로 실어 보낸다
+// (마이그레이션 금지 — DailyItem에 optional 필드로 캐스팅, 렌더링엔 영향 없음).
+export const CAPSULE_ENGINE_VERSION = 'v2-2026-07-10';
+
+/** items JSONB에 엔진 버전을 실어 나르기 위한 캐스팅 타입 (별도 컬럼 없이 캐시 무효화) */
+type VersionedItem = DailyItem & { engineVersion?: string };
+
+/**
+ * 캐시된 캡슐이 현재 엔진 버전과 다른가(=스테일).
+ * - 아이템이 없으면 무효화 대상 아님(빈 캡슐 재생성 루프 방지) → false
+ * - 첫 아이템의 engineVersion이 현재 버전과 다르면 스테일 → true
+ * (옛 캐시는 engineVersion이 없어 undefined ≠ 현재버전 → 재생성)
+ */
+export function isCapsuleStale(capsule: DailyCapsule): boolean {
+  if (capsule.items.length === 0) return false;
+  const version = (capsule.items[0] as VersionedItem).engineVersion;
+  return version !== CAPSULE_ENGINE_VERSION;
+}
+
+/** 저장 직전 각 아이템에 현재 엔진 버전을 스탬프 */
+function stampEngineVersion(items: DailyItem[]): void {
+  for (const item of items) {
+    (item as VersionedItem).engineVersion = CAPSULE_ENGINE_VERSION;
+  }
+}
+
+/**
+ * 신선한 캐시면 그대로 반환, 스테일(옛 엔진 버전)이면 삭제하고 null(재생성 신호).
+ * (skinEveningFocus는 비영속 파생 필드 — 생성일 응답에만 부착, 캐시 read엔 없을 수 있음)
+ */
+async function resolveFreshCache(userId: string, date: string): Promise<DailyCapsule | null> {
+  const cached = await getCachedDailyCapsule(userId, date);
+  if (!cached) return null;
+  if (!isCapsuleStale(cached)) return cached;
+  // 스테일 → 삭제 후 재생성 (사용자가 옛 루틴을 계속 보는 문제 해소)
+  await deleteStaleCapsule(userId, date);
+  return null;
+}
+
 // 도메인 → 모듈코드 매핑
 const DOMAIN_TO_MODULE: Record<string, ModuleCode> = {
   skin: 'S',
@@ -79,12 +120,10 @@ const DOMAIN_TO_MODULE: Record<string, ModuleCode> = {
  * 6. Assemble → daily_capsules 저장
  */
 export async function generateDailyCapsule(userId: string): Promise<DailyCapsule> {
-  // 캐시 확인 — (userId, date) 기준
+  // 캐시 확인 — (userId, date) 기준. 신선하면 즉시 반환, 스테일이면 삭제 후 재생성.
   const today = new Date().toISOString().split('T')[0];
-  const cached = await getCachedDailyCapsule(userId, today);
-  // 캐시 히트는 추가 DB 없이 즉시 반환 (skinEveningFocus는 비영속 파생 필드 —
-  // 생성일 응답에만 부착, 캐시 read엔 없을 수 있음: optional 하위호환).
-  if (cached) return cached;
+  const fresh = await resolveFreshCache(userId, today);
+  if (fresh) return fresh;
 
   // Step 1: BeautyProfile 로드
   const profile = await getBeautyProfile(userId);
@@ -193,6 +232,9 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
   // 예상 소요 시간 계산 (도메인당 기본 5분)
   const estimatedMinutes = calculateEstimatedMinutes(filteredItems);
+
+  // 엔진 버전 스탬프 — items JSONB에 실어 저장(캐시 무효화용, 별도 컬럼 없음)
+  stampEngineVersion(filteredItems);
 
   // Step 6: Assemble + 저장
   const daily = await saveDailyCapsule({
@@ -370,6 +412,22 @@ async function getCachedDailyCapsule(userId: string, date: string): Promise<Dail
   if (!data) return null;
 
   return mapRowToDailyCapsule(data);
+}
+
+/**
+ * 스테일(옛 엔진 버전) 캐시 삭제 — 재생성 전 호출.
+ * UNIQUE(userId, date) 제약 때문에 지우지 않으면 saveDailyCapsule이 23505로 옛 행을 반환한다.
+ */
+async function deleteStaleCapsule(userId: string, date: string): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase
+    .from('daily_capsules')
+    .delete()
+    .eq('clerk_user_id', userId)
+    .eq('date', date);
+  if (error) {
+    console.error('[Daily] 스테일 캡슐 삭제 실패 (재생성 계속):', error);
+  }
 }
 
 interface SaveInput {

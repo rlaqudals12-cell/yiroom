@@ -9,12 +9,11 @@ import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
 interface LightingGuideProps {
   onContinue: (consentToSaveImage: boolean) => void;
-  onSkip?: () => void;
   /** 갤러리에서 선택 핸들러 */
   onGallery?: (consentToSaveImage: boolean) => void;
 }
 
-export default function LightingGuide({ onContinue, onSkip, onGallery }: LightingGuideProps) {
+export default function LightingGuide({ onContinue, onGallery }: LightingGuideProps) {
   // 기본값: 체크됨 (드레이핑 기능 활성화)
   const [consentToSaveImage, setConsentToSaveImage] = useState(true);
 
@@ -234,15 +233,6 @@ export default function LightingGuide({ onContinue, onSkip, onGallery }: Lightin
             <ImageIcon className="w-5 h-5" />
             갤러리에서 선택
           </Button>
-        )}
-
-        {onSkip && (
-          <button
-            onClick={onSkip}
-            className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors py-2"
-          >
-            이미 퍼스널 컬러를 알고 있어요
-          </button>
         )}
       </div>
     </div>

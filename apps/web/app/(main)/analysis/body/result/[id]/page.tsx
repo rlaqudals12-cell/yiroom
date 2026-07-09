@@ -36,7 +36,6 @@ import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 import { VisualReportCard } from '@/components/analysis/visual-report';
-import { Palette } from 'lucide-react';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import type { BodyRowForAvatar } from '@/lib/avatar';
@@ -78,11 +77,6 @@ const BodyStylingTab = dynamic(
   () => import('@/components/analysis/visual').then((mod) => ({ default: mod.BodyStylingTab })),
   { ssr: false }
 );
-const DrapingSimulationTab = dynamic(
-  () =>
-    import('@/components/analysis/visual').then((mod) => ({ default: mod.DrapingSimulationTab })),
-  { ssr: false }
-);
 const BodyAnalysisEvidenceReport = dynamic(
   () => import('@/components/analysis/BodyAnalysisEvidenceReport'),
   { ssr: false }
@@ -93,7 +87,8 @@ const ConsultantCTA = dynamic(
 );
 
 // 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
-const RESULT_TABS = ['basic', 'evidence', 'styling', 'draping'] as const;
+// 드레이핑 탭 제거(W4): PC 이미지 의존·가치 불명확 → 스타일 탭으로 흡수
+const RESULT_TABS = ['basic', 'evidence', 'styling'] as const;
 
 export default function BodyAnalysisResultPage() {
   const t = useTranslations('analysis');
@@ -116,11 +111,11 @@ export default function BodyAnalysisResultPage() {
   const [usedMock, setUsedMock] = useState(false);
   const [analyzedAt, setAnalyzedAt] = useState<string | null>(null);
   const { isExpert, toggleExpert } = useExpertMode();
-  // PC-1 연동: 드레이핑 시뮬레이션용 이미지 URL
-  const [pcImageUrl, setPcImageUrl] = useState<string | null>(null);
   // 3D 아바타 입력 (ADR-110): 현재 행 + 직전 행(비교 오버레이용)
   const [avatarRow, setAvatarRow] = useState<BodyRowForAvatar | null>(null);
   const [prevAvatarRow, setPrevAvatarRow] = useState<BodyRowForAvatar | null>(null);
+  // 재분석 결과 변동 안내 — 직전 판정과 체형 타입이 다를 때만 노출 (재현성 커뮤니케이션)
+  const [prevBodyType, setPrevBodyType] = useState<string | null>(null);
   const fetchedRef = useRef(false);
 
   const analysisId = params.id as string;
@@ -202,6 +197,8 @@ export default function BodyAnalysisResultPage() {
         .maybeSingle();
       if (prevData) {
         setPrevAvatarRow(prevData as BodyRowForAvatar);
+        // 직전 체형 타입 저장 — 현재와 다르면 재현성 안내 노출 (#8)
+        setPrevBodyType((prevData as { body_type?: string }).body_type ?? null);
       }
 
       // 분석 근거 데이터 추출 (새 구조에서)
@@ -223,18 +220,6 @@ export default function BodyAnalysisResultPage() {
         if (styleRecs.usedMock) {
           setUsedMock(true);
         }
-      }
-
-      // PC-1 (퍼스널 컬러) 결과 조회 - 드레이핑 시뮬레이션용
-      const { data: pcData } = await supabase
-        .from('personal_color_assessments')
-        .select('face_image_url')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (pcData?.face_image_url) {
-        setPcImageUrl(pcData.face_image_url);
       }
 
       // 새 분석인 경우에만 축하 효과 표시 (세션당 1회)
@@ -447,11 +432,23 @@ export default function BodyAnalysisResultPage() {
             </div>
           )}
 
+          {/* 재분석 결과 변동 안내 — 직전 판정과 타입이 다를 때만 (재현성 커뮤니케이션, #8) */}
+          {result && prevBodyType && prevBodyType !== result.bodyType && (
+            <div
+              data-testid="body-type-changed-notice"
+              role="note"
+              className="mb-6 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-700 dark:text-amber-300"
+            >
+              지난 분석과 판정이 달라졌어요. 사진 각도·의류에 따라 판정이 달라질 수 있어요. 같은
+              조건으로 찍으면 같은 결과가 나와요.
+            </div>
+          )}
+
           {/* 탭 기반 결과 */}
           {result && (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList
-                className="grid w-full grid-cols-4 mb-4 sticky top-0 z-10 bg-muted"
+                className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted"
                 aria-label={t('tabAriaLabel.body')}
               >
                 <TabsTrigger
@@ -477,14 +474,6 @@ export default function BodyAnalysisResultPage() {
                 >
                   <Shirt className="w-4 h-4" aria-hidden="true" />
                   스타일
-                </TabsTrigger>
-                <TabsTrigger
-                  value="draping"
-                  className="gap-1 text-xs"
-                  aria-label="드레이핑 시뮬레이션 보기"
-                >
-                  <Palette className="w-4 h-4" aria-hidden="true" />
-                  드레이핑
                 </TabsTrigger>
               </TabsList>
 
@@ -609,29 +598,6 @@ export default function BodyAnalysisResultPage() {
                   measurements={result.measurements}
                   personalColorSeason={result.personalColorSeason}
                 />
-              </TabsContent>
-
-              {/* 드레이핑 시뮬레이션 탭 (PC-1 연동) */}
-              <TabsContent value="draping" className="mt-0" data-testid="draping-tab">
-                {pcImageUrl ? (
-                  <DrapingSimulationTab imageUrl={pcImageUrl} className="w-full" />
-                ) : (
-                  <div className="p-6 bg-card rounded-xl border text-center">
-                    <Palette className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">드레이핑 시뮬레이션</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      퍼스널 컬러 분석을 먼저 완료하면
-                      <br />
-                      나에게 어울리는 색상을 미리 볼 수 있어요.
-                    </p>
-                    <Button variant="outline" asChild>
-                      <Link href="/analysis/personal-color">
-                        <Palette className="w-4 h-4 mr-2" />
-                        퍼스널 컬러 분석하기
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </TabsContent>
             </Tabs>
           )}

@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, Ruler, Scale, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 
 export interface UserBodyInput {
   height: number;
   weight: number;
-  targetWeight?: number;
   gender?: GenderType;
 }
 
@@ -27,7 +25,6 @@ export default function InputForm({ onSubmit }: InputFormProps) {
   } = useUserProfile();
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
-  const [targetWeight, setTargetWeight] = useState<string>('');
   const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
   const [isGenderSaving, setIsGenderSaving] = useState(false);
   const [errors, setErrors] = useState<{ height?: string; weight?: string; gender?: string }>({});
@@ -91,7 +88,6 @@ export default function InputForm({ onSubmit }: InputFormProps) {
     onSubmit({
       height: heightNum,
       weight: weightNum,
-      targetWeight: targetWeight ? Number(targetWeight) : undefined,
       gender: selectedGender || undefined,
     });
   };
@@ -209,40 +205,14 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             </p>
           )}
         </div>
-
-        {/* 목표 몸무게 입력 (선택) */}
-        <div>
-          <label
-            htmlFor="targetWeight"
-            className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2"
-          >
-            <Scale className="w-4 h-4" />
-            목표 몸무게 (kg) <span className="text-muted-foreground">(선택)</span>
-          </label>
-          <input
-            id="targetWeight"
-            type="number"
-            inputMode="decimal"
-            placeholder="예: 50"
-            value={targetWeight}
-            onChange={(e) => setTargetWeight(e.target.value)}
-            className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-module-body"
-          />
-        </div>
       </div>
 
-      {/* BMI 미리보기 */}
+      {/* BMI 미리보기 — 참고 수치만, 비만/과체중 낙인 라벨 없음 */}
       {bmi && (
         <div className="bg-module-body-light rounded-lg p-4">
           <p className="text-sm text-module-body-dark font-medium">BMI 미리보기</p>
           <p className="text-2xl font-bold text-module-body">{bmi}</p>
-          <p className="text-xs text-module-body mt-1">
-            {classifyByRange(Number(bmi), [
-              { max: 18.5, result: '저체중' },
-              { max: 23, result: '정상' },
-              { max: 25, result: '과체중' },
-            ], '비만')}
-          </p>
+          <p className="text-xs text-module-body mt-1">근육량에 따라 실제와 다를 수 있어요</p>
         </div>
       )}
 

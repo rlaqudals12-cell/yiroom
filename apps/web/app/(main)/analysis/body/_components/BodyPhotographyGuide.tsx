@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 
 interface BodyPhotographyGuideProps {
   onContinue: () => void;
-  onSkip?: () => void;
 }
 
-export default function BodyPhotographyGuide({ onContinue, onSkip }: BodyPhotographyGuideProps) {
+export default function BodyPhotographyGuide({ onContinue }: BodyPhotographyGuideProps) {
   return (
     <div data-testid="body-photography-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더 */}
@@ -115,15 +114,6 @@ export default function BodyPhotographyGuide({ onContinue, onSkip }: BodyPhotogr
         >
           촬영하기
         </Button>
-
-        {onSkip && (
-          <button
-            onClick={onSkip}
-            className="w-full text-center text-sm text-muted-foreground hover:text-blue-600 transition-colors py-2"
-          >
-            이미 체형 타입을 알고 있어요
-          </button>
-        )}
       </div>
     </div>
   );

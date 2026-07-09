@@ -55,6 +55,8 @@ import {
   type HairThicknessId,
   type ScalpTypeId,
   type HairConcernId,
+  getCautionIngredients,
+  getScalpConcernNotice,
   HAIR_TYPES,
   HAIR_THICKNESS,
   SCALP_TYPES,
@@ -514,6 +516,44 @@ export default function HairAnalysisResultPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 주의 성분 — 두피 타입별 피하면 좋은 성분 */}
+                <div
+                  className="bg-card rounded-xl p-6 shadow-sm"
+                  data-testid="hair-caution-ingredients"
+                >
+                  <h3 className="font-semibold mb-3">주의 성분 (피하면 좋아요)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {getCautionIngredients(result.scalpType).map((ingredient, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300 rounded-full text-sm"
+                      >
+                        {ingredient}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 두피 고민 안내 — 진단이 아닌 "전문의 상담 권유" 형태 */}
+                {(() => {
+                  const notice = getScalpConcernNotice(result.concerns);
+                  if (!notice) return null;
+                  return (
+                    <div
+                      className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5"
+                      role="note"
+                      data-testid="hair-scalp-concern-notice"
+                    >
+                      <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 text-sm">
+                        두피 고민이 있다면
+                      </h3>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                        {notice}
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {/* 관리 방법 */}
                 {result.careTips.length > 0 && (

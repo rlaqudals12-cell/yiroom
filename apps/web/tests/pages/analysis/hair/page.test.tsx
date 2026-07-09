@@ -72,6 +72,42 @@ global.URL.revokeObjectURL = vi.fn();
 
 import HairAnalysisPage from '@/app/(main)/analysis/hair/page';
 
+// 사진 업로드 → 분석 API 성공 → 결과 단계로 도달하는 공용 헬퍼
+// (자가입력 우회 경로 제거로, 결과 단계는 사진 분석 경로로만 도달 가능)
+async function reachResultViaPhoto(user: ReturnType<typeof userEvent.setup>) {
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        result: {
+          overallScore: 82,
+          hairType: 'wavy',
+          hairTypeLabel: '웨이브',
+          hairThicknessLabel: '보통',
+          scalpType: 'normal',
+          scalpTypeLabel: '중성 두피',
+          concerns: [],
+          insight: '건강한 모발이에요',
+          metrics: [{ id: 'hydration', label: '수분도', value: 80, status: 'good' }],
+          recommendedIngredients: ['케라틴'],
+          careTips: ['관리 잘 하고 계세요'],
+          analyzedAt: new Date().toISOString(),
+        },
+        data: { id: 'photo-result-1' },
+      }),
+  });
+
+  await user.click(screen.getByText('action.selectPhoto'));
+  const fileInput = screen.getByLabelText('hair.photoSelectAria');
+  const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+  await fireEvent.change(fileInput, { target: { files: [file] } });
+  await user.click(screen.getByLabelText('hair.startAnalysisAria'));
+
+  await waitFor(() => {
+    expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
+  });
+}
+
 describe('HairAnalysisPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -154,11 +190,22 @@ describe('HairAnalysisPage', () => {
       });
     });
 
-    it('이미 알고 있어요 버튼이 표시된다', async () => {
+    // 자가입력 우회 경로 제거 회귀 방지: "가이드 건너뛰기" 버튼이 없어야 함
+    it('가이드 건너뛰기(skip) 버튼이 더 이상 렌더되지 않는다', async () => {
       render(<HairAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('action.alreadyKnow')).toBeInTheDocument();
+        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('hair.skipGuide')).not.toBeInTheDocument();
+    });
+
+    it('한 장이면 충분 안내가 표시된다', async () => {
+      render(<HairAnalysisPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('hair-single-photo-notice')).toBeInTheDocument();
       });
     });
 
@@ -174,21 +221,6 @@ describe('HairAnalysisPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('hair.subtitle.upload')).toBeInTheDocument();
-      });
-    });
-
-    it('이미 알고 있어요 버튼 클릭 시 알고있는 타입 입력 단계로 전환된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('action.alreadyKnow')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('hair.subtitle.knownInput')).toBeInTheDocument();
       });
     });
   });
@@ -306,103 +338,6 @@ describe('HairAnalysisPage', () => {
   });
 
   // ===========================================================================
-  // 알고있는 타입 입력 단계
-  // ===========================================================================
-  describe('알고있는 타입 입력 단계', () => {
-    it('모발 타입 선택 UI가 표시된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('hair.selectHairType')).toBeInTheDocument();
-      });
-    });
-
-    it('4가지 모발 타입이 모두 표시된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('직모')).toBeInTheDocument();
-        expect(screen.getByText('웨이브')).toBeInTheDocument();
-        expect(screen.getByText('곱슬')).toBeInTheDocument();
-        expect(screen.getByText('강한 곱슬')).toBeInTheDocument();
-      });
-    });
-
-    it('고민 선택 UI가 표시된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
-      });
-    });
-
-    it('결과 보기 버튼이 타입 미선택 시 비활성화된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        const resultButton = screen.getByText('action.viewResult');
-        expect(resultButton.closest('button')).toBeDisabled();
-      });
-    });
-
-    it('모발 타입 선택 후 결과 보기 버튼이 활성화된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('직모'));
-
-      await waitFor(() => {
-        const resultButton = screen.getByText('action.viewResult');
-        expect(resultButton.closest('button')).not.toBeDisabled();
-      });
-    });
-
-    it('뒤로 버튼 클릭 시 가이드 단계로 돌아간다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('action.back')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('action.back'));
-
-      await waitFor(() => {
-        // 가이드 단계 복귀 확인: 사진 선택하기 버튼 존재
-        expect(screen.getByText('action.selectPhoto')).toBeInTheDocument();
-      });
-    });
-
-    it('타입 선택 + 결과 보기 클릭 시 결과 단계로 전환된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('웨이브'));
-      await user.click(screen.getByText('action.viewResult'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
-      });
-    });
-  });
-
-  // ===========================================================================
   // 에러 상태
   // ===========================================================================
   describe('에러 상태', () => {
@@ -440,27 +375,21 @@ describe('HairAnalysisPage', () => {
   // ===========================================================================
   // 결과 단계
   // ===========================================================================
-  describe('결과 단계 (알고있는 타입 경로)', () => {
+  describe('결과 단계 (사진 분석 경로)', () => {
     it('종합 점수가 표시된다', async () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
-      });
+      expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
     });
 
     it('다시 분석하기 버튼이 표시된다', async () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
       await waitFor(() => {
         expect(screen.getByText('action.reAnalyze')).toBeInTheDocument();
@@ -471,9 +400,7 @@ describe('HairAnalysisPage', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('직모'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
       await waitFor(() => {
         expect(screen.getByText('action.reAnalyze')).toBeInTheDocument();
@@ -595,47 +522,6 @@ describe('HairAnalysisPage 엣지 케이스', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('고민 다중 선택', () => {
-    it('고민을 여러 개 선택할 수 있다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
-      });
-
-      // 여러 고민 선택
-      await user.click(screen.getByText(/탈모/));
-      await user.click(screen.getByText(/비듬/));
-      await user.click(screen.getByText(/푸석함/));
-
-      // 선택 상태 확인 (CSS 클래스 변경)
-      const hairlossBtn = screen.getByText(/탈모/).closest('button');
-      expect(hairlossBtn).toHaveClass('bg-amber-500');
-    });
-
-    it('선택된 고민을 다시 클릭하면 해제된다', async () => {
-      const user = userEvent.setup();
-      render(<HairAnalysisPage />);
-
-      await user.click(screen.getByText('action.alreadyKnow'));
-
-      await waitFor(() => {
-        expect(screen.getByText('hair.selectConcerns')).toBeInTheDocument();
-      });
-
-      // 선택 후 해제
-      await user.click(screen.getByText(/탈모/));
-      const btn = screen.getByText(/탈모/).closest('button');
-      expect(btn).toHaveClass('bg-amber-500');
-
-      await user.click(screen.getByText(/탈모/));
-      expect(btn).toHaveClass('bg-muted');
-    });
   });
 
   describe('이미지 선택 후 프리뷰', () => {
@@ -799,52 +685,36 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
-      await waitFor(() => {
-        expect(screen.getByText('hair.resultSummary')).toBeInTheDocument();
-      });
+      expect(screen.getByText('hair.resultSummary')).toBeInTheDocument();
     });
 
     it('항목별 점수 섹션이 표시된다', async () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
-      await waitFor(() => {
-        expect(screen.getByText('hair.metricScores')).toBeInTheDocument();
-      });
+      expect(screen.getByText('hair.metricScores')).toBeInTheDocument();
     });
 
     it('추천 성분 섹션이 표시된다', async () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
-      await waitFor(() => {
-        expect(screen.getByText('hair.recommendedIngredients')).toBeInTheDocument();
-      });
+      expect(screen.getByText('hair.recommendedIngredients')).toBeInTheDocument();
     });
 
     it('케어 팁 섹션이 표시된다', async () => {
       const user = userEvent.setup();
       render(<HairAnalysisPage />);
 
-      await user.click(screen.getByText('action.alreadyKnow'));
-      await user.click(screen.getByText('곱슬'));
-      await user.click(screen.getByText('action.viewResult'));
+      await reachResultViaPhoto(user);
 
-      await waitFor(() => {
-        expect(screen.getByText('hair.careTips')).toBeInTheDocument();
-      });
+      expect(screen.getByText('hair.careTips')).toBeInTheDocument();
     });
   });
 });

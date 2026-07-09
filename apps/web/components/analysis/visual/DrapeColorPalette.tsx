@@ -42,6 +42,16 @@ const BASE_COLORS = {
 type Season = keyof typeof BASE_COLORS;
 
 /**
+ * 시즌 웜/쿨에 따른 추천 금속(액세서리 톤).
+ * 색채학 통설: 웜 언더톤(봄·가을) → 골드, 쿨 언더톤(여름·겨울) → 실버.
+ * userSeason이 없으면 추천 없음(null).
+ */
+export function getRecommendedMetal(season?: Season): MetalType | null {
+  if (!season) return null;
+  return season === 'spring' || season === 'autumn' ? 'gold' : 'silver';
+}
+
+/**
  * 명도/채도 변형으로 확장 색상 생성
  * - 어두운 변형 + 밝은 변형 모두 생성 (음수 factor 방지)
  */
@@ -131,6 +141,8 @@ interface DrapeColorPaletteProps {
   onMetalTypeChange: (type: MetalType) => void;
   /** 사용자 퍼스널컬러 시즌 (기본 필터로 사용) */
   userSeason?: Season;
+  /** 사용자 진단 서브톤 라벨 (예: "여름 쿨 뮤트") — 강조 표시용 */
+  userSubtypeLabel?: string;
   /** 분석 중 여부 */
   isAnalyzing?: boolean;
   /** 추가 클래스 */
@@ -149,12 +161,19 @@ export default function DrapeColorPalette({
   metalType,
   onMetalTypeChange,
   userSeason,
+  userSubtypeLabel,
   isAnalyzing = false,
   className,
 }: DrapeColorPaletteProps) {
   const t = useTranslations('visualAnalysisUI');
   // 사용자 시즌이 있으면 해당 시즌만 기본 표시 (32색), 없으면 전체 (128색)
   const [activeSeasonFilter, setActiveSeasonFilter] = useState<Season | 'all'>(userSeason || 'all');
+  // 웜/쿨에 따른 추천 금속 — 즉각적인 의미 있는 피드백 제공
+  const recommendedMetal = getRecommendedMetal(userSeason);
+  const recommendedMetalLabel = recommendedMetal === 'gold' ? '골드' : '실버';
+  const metalCaption = recommendedMetal
+    ? `내 톤에는 ${recommendedMetalLabel} 액세서리가 잘 어울려요. 선택한 금속은 미리보기 탭에서 얼굴 반사광으로 비교돼요.`
+    : '선택한 금속은 미리보기 탭에서 얼굴 반사광으로 비교돼요.';
 
   // 색상 팔레트 생성
   const colors = useMemo(() => {
@@ -182,27 +201,54 @@ export default function DrapeColorPalette({
 
   return (
     <div className={cn('space-y-4', className)} data-testid="drape-color-palette">
-      {/* 금속 테스트 버튼 */}
-      <div className="flex gap-2">
-        <Button
-          variant={metalType === 'silver' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onMetalTypeChange('silver')}
-          disabled={isAnalyzing}
-          className="flex-1 min-h-[44px]"
-        >
-          Silver
-        </Button>
-        <Button
-          variant={metalType === 'gold' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onMetalTypeChange('gold')}
-          disabled={isAnalyzing}
-          className="flex-1 min-h-[44px]"
-        >
-          Gold
-        </Button>
+      {/* 금속(액세서리 톤) 테스트 버튼 */}
+      <div className="space-y-1.5" data-testid="metal-test">
+        <div className="flex gap-2">
+          <Button
+            variant={metalType === 'silver' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onMetalTypeChange('silver')}
+            disabled={isAnalyzing}
+            className="flex-1 min-h-[44px]"
+          >
+            실버
+            {recommendedMetal === 'silver' && (
+              <span
+                className="ml-1.5 text-[10px] font-semibold text-primary"
+                data-testid="metal-recommended"
+              >
+                ★ 추천
+              </span>
+            )}
+          </Button>
+          <Button
+            variant={metalType === 'gold' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onMetalTypeChange('gold')}
+            disabled={isAnalyzing}
+            className="flex-1 min-h-[44px]"
+          >
+            골드
+            {recommendedMetal === 'gold' && (
+              <span
+                className="ml-1.5 text-[10px] font-semibold text-primary"
+                data-testid="metal-recommended"
+              >
+                ★ 추천
+              </span>
+            )}
+          </Button>
+        </div>
+        {/* 컨트롤 목적 명확화 — 미리보기 탭에서 얼굴 반사광으로 반영됨 (죽은 컨트롤 아님) */}
+        <p className="text-[11px] text-muted-foreground leading-snug">{metalCaption}</p>
       </div>
+
+      {/* 내 진단 서브톤 강조 — 팔레트는 4계절 기준(12톤 세분 데이터 없음), 진단 서브톤은 명시 */}
+      {userSubtypeLabel && (
+        <p className="text-xs text-muted-foreground" data-testid="user-subtype-label">
+          내 진단: <span className="font-semibold text-foreground">{userSubtypeLabel}</span>
+        </p>
+      )}
 
       {/* 시즌 필터 (64/128색 또는 사용자 시즌이 있을 때) */}
       {(deviceCapability.drapeColors > 16 || userSeason) && (

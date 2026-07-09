@@ -16,6 +16,11 @@ import { Layers } from 'lucide-react';
 import { AnonymousBodyTemplate } from '@/components/analysis/overlay/anonymous/AnonymousBodyTemplate';
 import { deriveAvatarParams } from '@/lib/avatar';
 import type { AvatarBodyType, BodyRowForAvatar } from '@/lib/avatar';
+import { BODY_TYPE_SHORT_GLOSS } from '@/lib/mock/body-analysis';
+import type { BodyType3 } from '@/lib/mock/body-analysis';
+
+/** 아바타가 무엇을 표현하는지 정직하게 알리는 캡션 (실물 아님을 명시) */
+const AVATAR_CAPTION = '내 비율로 만든 체형 실루엣이에요 (실제 모습이 아닌 비율 표현)';
 
 const BodyAvatar3D = dynamic(() => import('./BodyAvatar3D'), {
   ssr: false,
@@ -43,19 +48,25 @@ export function BodyAvatarSection({ row, previousRow, label, bodyType }: BodyAva
     [previousRow]
   );
 
+  // 라벨 짧은 풀이 — "내추럴" 등 생소한 용어를 처음 보는 사용자용 (S/W/N만 정의)
+  const gloss = BODY_TYPE_SHORT_GLOSS[bodyType as BodyType3];
+
   // 데이터 없음 / WebGL 실패 → 기존 2D 실루엣 (ADR-097 시각 언어 유지)
   if (!params || webglFailed) {
     return (
-      <div data-testid="body-avatar-section" className="flex justify-center">
+      <div data-testid="body-avatar-section" className="flex flex-col items-center gap-2">
         <AnonymousBodyTemplate bodyType={bodyType}>
           {label && (
             <div className="absolute inset-0 flex items-center justify-center">
               <p className="text-sm font-semibold text-foreground bg-background/80 rounded-lg px-3 py-2">
-                {label}
+                {gloss ? `${label} — ${gloss}` : label}
               </p>
             </div>
           )}
         </AnonymousBodyTemplate>
+        <p className="text-[11px] text-muted-foreground text-center max-w-[240px]">
+          {AVATAR_CAPTION}
+        </p>
       </div>
     );
   }
@@ -71,9 +82,17 @@ export function BodyAvatarSection({ row, previousRow, label, bodyType }: BodyAva
         />
       </div>
       <div className="flex items-center gap-2">
-        {label && <p className="text-sm font-semibold text-foreground">{label}</p>}
+        {label && (
+          <p className="text-sm font-semibold text-foreground">
+            {gloss ? `${label} — ${gloss}` : label}
+          </p>
+        )}
         <p className="text-[11px] text-muted-foreground">드래그로 돌려보세요</p>
       </div>
+      {/* 아바타가 무엇인지 정직하게 — 실물이 아닌 비율 표현 */}
+      <p className="text-[11px] text-muted-foreground text-center max-w-[240px]">
+        {AVATAR_CAPTION}
+      </p>
       {/* 직전 분석이 있을 때만 비교 토글 — "숫자보다 변화" (원리 §1.5) */}
       {previousParams && (
         <button
@@ -88,7 +107,7 @@ export function BodyAvatarSection({ row, previousRow, label, bodyType }: BodyAva
           }`}
         >
           <Layers className="w-3 h-3" aria-hidden="true" />
-          {showCompare ? '직전 실루엣 표시 중' : '직전과 비교'}
+          {showCompare ? '지난 분석의 실루엣이에요' : '지난 분석과 비교'}
         </button>
       )}
     </div>

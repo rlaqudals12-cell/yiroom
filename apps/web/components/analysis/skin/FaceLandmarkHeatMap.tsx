@@ -7,9 +7,7 @@ import { cn } from '@/lib/utils';
 import { User, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
-
-// CDN URL for face-api.js models
-const MODELS_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+import { loadFaceApiModels } from './loadFaceApiModels';
 
 /**
  * 얼굴 영역 타입 (피부 분석용)
@@ -105,6 +103,9 @@ export function FaceLandmarkHeatMap({
     faceapi.FaceLandmarks68
   > | null>(null);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  // 재시도 토큰 — 값이 바뀌면 모델 로드/얼굴 감지 이펙트가 다시 실행됨
+  // (모델 로드 실패 후엔 modelsLoaded/imageUrl 의존성이 안 바뀌어 재시도가 무동작이던 버그 수정)
+  const [retryToken, setRetryToken] = useState(0);
 
   // 점수 맵 생성
   const scoreMap = useMemo(() => {
@@ -115,28 +116,27 @@ export function FaceLandmarkHeatMap({
 
   // 모델 로드
   useEffect(() => {
+    if (modelsLoaded) return;
+
     const loadModels = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // 필요한 모델만 로드 (face landmark detection)
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-        ]);
+        // 필요한 모델만 로드 (face landmark detection) — 타임아웃 포함(무한 로딩 방지)
+        await loadFaceApiModels();
 
         setModelsLoaded(true);
       } catch (err) {
         console.error('[FaceLandmarkHeatMap] Model loading error:', err);
         setError(t('faceLandmarkHeatMap4'));
+        // 무한 로딩 방지 — isLoading을 내려야 에러 오버레이(error && !isLoading)가 보임
+        setIsLoading(false);
       }
     };
 
-    if (!modelsLoaded) {
-      loadModels();
-    }
-  }, [modelsLoaded, t]);
+    loadModels();
+  }, [modelsLoaded, retryToken, t]);
 
   // 이미지 로드 및 얼굴 감지
   useEffect(() => {
@@ -175,7 +175,7 @@ export function FaceLandmarkHeatMap({
     };
 
     detectFace();
-  }, [modelsLoaded, imageUrl, t]);
+  }, [modelsLoaded, imageUrl, retryToken, t]);
 
   // 캔버스에 히트맵 그리기
   useEffect(() => {
@@ -296,18 +296,12 @@ export function FaceLandmarkHeatMap({
     }
   }, [detection, imageDimensions, showHeatMap, showLandmarks, scoreMap, selectedZone]);
 
-  // 재시도 핸들러
+  // 재시도 핸들러 — retryToken을 올려 모델 로드(실패 시)와 얼굴 감지 이펙트를 다시 실행
   const handleRetry = () => {
     setError(null);
     setIsLoading(true);
     setDetection(null);
-    // 이미지 다시 로드 트리거
-    const newUrl = imageUrl.includes('?')
-      ? `${imageUrl}&retry=${Date.now()}`
-      : `${imageUrl}?retry=${Date.now()}`;
-    if (imageRef.current) {
-      imageRef.current.src = newUrl;
-    }
+    setRetryToken((n) => n + 1);
   };
 
   // 영역 중심점 계산 (라벨 표시용)
