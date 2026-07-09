@@ -12,6 +12,40 @@ export {
 // 피부 고민 파생 (단일 정본 — ADR-117)
 export { deriveConcernsFromScores, CONCERN_THRESHOLD } from './concerns';
 
+// 피부 목표 (사용자 선택 축 — ADR-117 루틴 v2)
+export {
+  SKIN_GOALS,
+  SKIN_GOAL_IDS,
+  GOAL_TO_CONCERN,
+  getSkinGoalLabel,
+  mergeGoalsIntoConcerns,
+} from './skin-goals';
+export type { SkinGoalId } from './skin-goals';
+
+// 활성 성분 카테고리 (보유 제품 → 활성 탐지)
+export {
+  ACTIVE_INGREDIENT_CATEGORIES,
+  detectItemActives,
+  detectOwnedActives,
+} from './active-categories';
+export type { ActiveCategory } from './active-categories';
+
+// 단계 계획 (장벽 회복 → 목표 케어)
+export { deriveCarePhase } from './care-phase';
+export type { CarePhase } from './care-phase';
+
+// 스킨 사이클링 (주간 야간 주기)
+export { composeWeeklyCycle, getEveningCycle, CYCLE_LABELS } from './cycling';
+export type { CyclingFocus, EveningCycle, WeeklyCycle } from './cycling';
+
+// 캡슐 화장대 (중복 자산 지적)
+export { findRedundantProducts } from './capsule-vanity';
+export type { RedundancyNote } from './capsule-vanity';
+
+// 소진 예측 어댑터 (PAO 기반)
+export { estimateShelfDepletion } from './shelf-depletion';
+export type { ShelfDepletion } from './shelf-depletion';
+
 // 상관관계 분석
 export {
   calculatePearson,

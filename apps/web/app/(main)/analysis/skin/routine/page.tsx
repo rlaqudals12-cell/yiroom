@@ -28,6 +28,20 @@ import { formatDuration, calculateEstimatedTime } from '@/lib/mock/skincare-rout
 import type { TimeOfDay, RoutineStep, ProductCategory } from '@/types/skincare-routine';
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
 import type { ShelfItem } from '@/lib/scan/product-shelf';
+// ADR-117 루틴 v2 — 목표 칩·단계 계획·저녁 포커스·중복 안내 (S1 엔진 계약 브리지 소비)
+import {
+  deriveCarePhase,
+  getEveningCycle,
+  composeWeeklyCycle,
+  detectOwnedActives,
+  findRedundantProducts,
+  goalsToConcerns,
+} from '@/components/skincare/routine-v2-contract';
+import { useSkinGoals } from '@/components/skincare/useSkinGoals';
+import { SkinGoalChips } from '@/components/skincare/SkinGoalChips';
+import { CarePhaseCard } from '@/components/skincare/CarePhaseCard';
+import { EveningFocusPanel } from '@/components/skincare/EveningFocusPanel';
+import { ShelfRedundancyNotice } from '@/components/skincare/ShelfRedundancyNotice';
 
 // ADR-117: enrichRoutineWithProducts는 R1이 shelf 인자(4번째)를 신설 중.
 // 시그니처 배포 전에도 shelf를 전달할 수 있도록 로컬 타입으로 브리지(배포 후에도 호환).
@@ -94,6 +108,22 @@ export default function SkincareRoutinePage() {
   const [personalizationNote, setPersonalizationNote] = useState('');
   // 내 화장대(제품함) 보유 제품 — 루틴 배치·궁합 안내에 사용. 실패 시 빈 배열(카탈로그 폴백).
   const [shelfItems, setShelfItems] = useState<ShelfItem[]>([]);
+  // 내 피부 목표 — 선택 시 concerns에 반영해 루틴 재계산 (엔진 미배포 시 칩 미노출)
+  const { goals: skinGoals, selected: selectedGoals, toggle: toggleGoal } = useSkinGoals();
+
+  // 피부 지표 점수 맵 (단계 계획·저녁 사이클 입력)
+  const skinScores = useMemo<Record<string, number>>(() => {
+    const empty: Record<string, number> = {};
+    if (!skinData) return empty;
+    return {
+      hydration: skinData.hydration,
+      oil_level: skinData.oil_level,
+      pores: skinData.pores,
+      pigmentation: skinData.pigmentation,
+      wrinkles: skinData.wrinkles,
+      sensitivity: skinData.sensitivity,
+    };
+  }, [skinData]);
 
   // 피부 분석 데이터 가져오기
   useEffect(() => {
@@ -158,8 +188,11 @@ export default function SkincareRoutinePage() {
     if (!skinData) return;
 
     const skinType = skinData.skin_type || 'normal';
-    // 실측 지표에서 고민 파생 (DB에 concerns 컬럼 없음)
-    const concerns = deriveConcernsFromMetrics(skinData);
+    // 실측 지표에서 고민 파생 (DB에 concerns 컬럼 없음) + 선택한 목표를 union (결정론적 정렬)
+    const derived = deriveConcernsFromMetrics(skinData);
+    const concerns = Array.from(
+      new Set<SkinConcernId>([...derived, ...goalsToConcerns(selectedGoals)])
+    ).sort();
 
     // 아침 루틴 생성
     const morningResult = generateRoutine({
@@ -190,7 +223,7 @@ export default function SkincareRoutinePage() {
     enrich(eveningResult.routine, skinType, concerns, shelfItems)
       .then((enriched) => setEveningSteps(enriched))
       .catch((err) => console.error('[Routine] Evening products error:', err));
-  }, [skinData, shelfItems]);
+  }, [skinData, shelfItems, selectedGoals]);
 
   // 현재 활성 루틴
   const currentSteps = useMemo(
@@ -211,6 +244,29 @@ export default function SkincareRoutinePage() {
     const skinType = (skinData.skin_type || 'normal') as SkinTypeId;
     return generateRoutineFromShelf(shelfItems, skinType, activeTime);
   }, [ownedCount, shelfItems, skinData, activeTime]);
+
+  // ADR-117: 단계 계획(barrier/goal) — 지표 + 선택 목표로 파생 (엔진 미배포 시 message 빈값 → 미노출)
+  const carePhase = useMemo(
+    () => (skinData ? deriveCarePhase(skinScores, selectedGoals) : null),
+    [skinData, skinScores, selectedGoals]
+  );
+
+  // 화장대 활성 성분 보유 집합 — 저녁 사이클/폴백 분기용
+  const ownedActives = useMemo(() => detectOwnedActives(shelfItems), [shelfItems]);
+
+  // 오늘 저녁 포커스 + 주간 사이클 — 단계·민감도·보유 활성 기준
+  const eveningFocus = useMemo(() => {
+    if (!skinData) return null;
+    const phaseId = carePhase?.phase ?? 'goal';
+    const sensitivity = skinData.sensitivity;
+    return {
+      cycle: getEveningCycle(new Date(), ownedActives, sensitivity, phaseId),
+      weekly: composeWeeklyCycle(ownedActives, sensitivity, phaseId),
+    };
+  }, [skinData, ownedActives, carePhase]);
+
+  // 화장대 중복 제품 안내 (같은 카테고리 다수 보유)
+  const redundantProducts = useMemo(() => findRedundantProducts(shelfItems), [shelfItems]);
 
   // 제품 클릭 핸들러
   const handleProductClick = useCallback((product: { affiliateUrl: string }) => {
@@ -296,6 +352,12 @@ export default function SkincareRoutinePage() {
           </div>
         )}
 
+        {/* 내 피부 목표 칩 (ADR-117) — 선택 시 루틴 재계산 */}
+        <SkinGoalChips goals={skinGoals} selected={selectedGoals} onToggle={toggleGoal} />
+
+        {/* 단계 계획 카드 (ADR-117) */}
+        {carePhase && <CarePhaseCard phase={carePhase} />}
+
         {/* 내 화장대 궁합 — 보유 제품 2개 이상일 때만 노출 */}
         {shelfSync && (
           <section
@@ -307,6 +369,9 @@ export default function SkincareRoutinePage() {
               <Package className="h-5 w-5 text-primary" aria-hidden="true" />
               <h2 className="text-base font-semibold text-foreground">내 화장대 궁합</h2>
             </div>
+
+            {/* 중복 안내 (ADR-117) — 같은 카테고리 다수 보유 시 */}
+            <ShelfRedundancyNotice items={redundantProducts} />
 
             {/* 성분 충돌 — 사실 인용 톤 경고 */}
             {shelfSync.conflicts.length > 0 && (
@@ -380,10 +445,11 @@ export default function SkincareRoutinePage() {
               </div>
             )}
 
-            {/* 충돌/시너지/빈 단계가 모두 없을 때 — 잘 갖춰졌다는 긍정 신호 */}
+            {/* 충돌/시너지/빈 단계/중복이 모두 없을 때 — 잘 갖춰졌다는 긍정 신호 */}
             {shelfSync.conflicts.length === 0 &&
               shelfSync.synergies.length === 0 &&
-              shelfSync.missingCategories.length === 0 && (
+              shelfSync.missingCategories.length === 0 &&
+              redundantProducts.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   보유 제품으로 {getTimeOfDayLabel(activeTime)} 필수 단계가 잘 갖춰져 있어요.
                 </p>
@@ -399,6 +465,15 @@ export default function SkincareRoutinePage() {
           eveningStepCount={eveningSteps.length}
           className="mb-6"
         />
+
+        {/* 오늘 저녁 포커스 + 주간 사이클 (ADR-117) — 저녁 탭에서만 */}
+        {activeTime === 'evening' && eveningFocus && (
+          <EveningFocusPanel
+            eveningCycle={eveningFocus.cycle}
+            weeklyCycle={eveningFocus.weekly}
+            hasOwnedActives={ownedActives.size > 0}
+          />
+        )}
 
         {/* 타임라인 (수평 스크롤) */}
         <div className="mb-6 -mx-4 bg-card py-3 border-y border-border/50">

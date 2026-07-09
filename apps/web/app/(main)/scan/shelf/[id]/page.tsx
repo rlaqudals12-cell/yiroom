@@ -40,6 +40,7 @@ import {
 import { cn } from '@/lib/utils';
 import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { ShelfItem, ShelfStatus } from '@/lib/scan/product-shelf';
+import { ShelfDepletionField } from '@/components/skincare/ShelfDepletionField';
 
 const STATUS_LABELS: Record<ShelfStatus, string> = {
   owned: '보유 중',
@@ -290,6 +291,9 @@ export default function ShelfDetailPage() {
               )}
           </>
         )}
+
+        {/* 개봉일 + 소진 예상 (ADR-117) */}
+        <ShelfDepletionField item={item} />
 
         {/* 스캔 정보 */}
         <Card>

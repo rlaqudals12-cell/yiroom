@@ -5,6 +5,10 @@
  * @see docs/adr/ADR-071-cross-module-scoring.md
  */
 
+// 루틴 v2(ADR-117) 타입은 lib/skincare가 정본 — 여기선 타입만 참조(런타임 의존 없음)
+import type { SkinGoalId } from '@/lib/skincare/skin-goals';
+import type { EveningCycle } from '@/lib/skincare/cycling';
+
 // =============================================================================
 // 모듈 코드 (9개 분석 모듈)
 // =============================================================================
@@ -57,6 +61,11 @@ export interface SkinProfileData {
   recommendedIngredients?: string[];
   /** 파운데이션 진단 (foundation_recommendation) — 예: "쿨톤 베이지 계열" */
   foundation?: string;
+  /**
+   * 사용자가 직접 고른 피부 목표 (ADR-117 루틴 v2). 분석 파생 concerns와 별도 키 —
+   * PATCH /api/user/skin-goals로 저장. 루틴 개인화에서 파생 concerns보다 우선 병합.
+   */
+  userGoals?: SkinGoalId[];
 }
 
 /** 체형 분석 요약 */
@@ -258,6 +267,11 @@ export interface DailyCapsule {
   status: DailyCapsuleStatus;
   completedAt: string | null;
   createdAt: string;
+  /**
+   * 오늘 저녁 스킨 사이클링 주기 (ADR-117 루틴 v2) — 파생 필드(비영속).
+   * generateDailyCapsule가 조립 시 부착. 캐시 read에는 없을 수 있음(optional, 하위호환).
+   */
+  skinEveningFocus?: EveningCycle;
 }
 
 /** 아이템 실행 시간대 — 사용자 멘탈 모델(아침 루틴/저녁 루틴)에 맞춘 그룹핑용 */

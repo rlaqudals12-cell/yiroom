@@ -18,8 +18,13 @@ import {
   applyConditionalModifications,
   getHydrationLabel,
   deriveConcernsFromScores,
+  deriveCarePhase,
+  getEveningCycle,
+  detectOwnedActives,
+  mergeGoalsIntoConcerns,
 } from '@/lib/skincare';
-import type { TodaySkinCondition } from '@/lib/skincare';
+import type { TodaySkinCondition, EveningCycle, ActiveCategory, SkinGoalId } from '@/lib/skincare';
+import { getShelfItems } from '@/lib/scan/product-shelf';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 import { getBeautyProfile } from './profile';
@@ -77,6 +82,8 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   // 캐시 확인 — (userId, date) 기준
   const today = new Date().toISOString().split('T')[0];
   const cached = await getCachedDailyCapsule(userId, today);
+  // 캐시 히트는 추가 DB 없이 즉시 반환 (skinEveningFocus는 비영속 파생 필드 —
+  // 생성일 응답에만 부착, 캐시 read엔 없을 수 있음: optional 하위호환).
   if (cached) return cached;
 
   // Step 1: BeautyProfile 로드
@@ -84,6 +91,9 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   if (!profile) {
     return createEmptyDailyCapsule(userId, today);
   }
+
+  // 오늘 저녁 주기 파생 (스킨 루틴·응답에 반영). 단계 계획은 buildSkinRoutineItems가 파생.
+  const eveningFocus = await computeEveningFocus(profile, userId);
 
   // Step 2: 컨텍스트 수집
   const context = await collectContext(userId);
@@ -97,7 +107,7 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
   // 피부 루틴 = 정본 루틴 엔진(lib/skincare)에서 파생 — 아침/저녁 필수 스텝 + 피부타입 개인화.
   // 먼저 push해야 아침 그룹에서 스킨케어 → 메이크업 → 코디 순서가 됨 (정렬은 timeOfDay만 봄).
-  dailyItems.push(...buildSkinRoutineItems(profile));
+  dailyItems.push(...buildSkinRoutineItems(profile, { eveningFocus }));
 
   for (const engine of domains) {
     // 제외 사유는 DAILY_EXCLUDED_DOMAINS 정의 주석 참조 (PC = 행동 없음, skin = 루틴 엔진 파생)
@@ -193,7 +203,57 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
     estimatedMinutes,
   });
 
+  // 파생 필드 부착 (비영속 — DB 컬럼 없음). undefined면 optional 필드로 남음.
+  daily.skinEveningFocus = eveningFocus;
+
   return daily;
+}
+
+/**
+ * 저녁 그룹 노트에 붙일 사이클링 안내 문구 — 저녁 + 주기 정보 있을 때만.
+ * 회복의 날엔 강한 활성 쉬어가기 안내(진정 팁). 그 외엔 오늘 주기 라벨만.
+ */
+function buildCycleSuffix(
+  timeOfDay: 'morning' | 'evening',
+  eveningFocus: EveningCycle | undefined
+): string {
+  if (timeOfDay !== 'evening' || !eveningFocus) return '';
+  const restNote =
+    eveningFocus.focus === 'recovery'
+      ? ' — 진정·보습에 집중하고 강한 활성(레티노이드·산)은 쉬어가요'
+      : '';
+  return ` · 오늘 저녁은 ${eveningFocus.label}${restNote}`;
+}
+
+/**
+ * 보유 제품에서 활성 성분 카테고리 탐지 (사이클링 입력).
+ * shelf 조회는 v1 배선(getShelfItems, owned) 재사용. 실패 시 빈 세트 폴백.
+ */
+async function loadOwnedActives(userId: string): Promise<Set<ActiveCategory>> {
+  try {
+    const supabase = createServiceRoleClient();
+    const { items } = await getShelfItems(supabase, userId, { status: 'owned', limit: 200 });
+    return detectOwnedActives(items);
+  } catch (e) {
+    console.error('[Daily] 보유 활성 성분 조회 실패 (빈 세트 폴백):', e);
+    return new Set();
+  }
+}
+
+/**
+ * 오늘 저녁 스킨 사이클링 주기 파생.
+ * 피부 분석이 없으면 undefined (지어내지 않음). 민감 정보 없으면 100(비민감) 취급.
+ */
+async function computeEveningFocus(
+  profile: { skin?: { type?: string; scores?: Record<string, number>; userGoals?: SkinGoalId[] } },
+  userId: string
+): Promise<EveningCycle | undefined> {
+  if (!profile.skin?.type) return undefined;
+  const scores = profile.skin.scores ?? {};
+  const carePhase = deriveCarePhase(scores, profile.skin.userGoals ?? []);
+  const owned = await loadOwnedActives(userId);
+  const sensitivity = typeof scores.sensitivity === 'number' ? scores.sensitivity : 100;
+  return getEveningCycle(new Date(), owned, sensitivity, carePhase);
 }
 
 /**
@@ -384,14 +444,18 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
  * minimize의 카테고리 dedup이 아침·저녁의 같은 카테고리 스텝(클렌저·토너)을 잘못 제거함.
  * generateRoutine은 피부타입별 단계 가감 + 스텝별 purpose(이유)까지 제공하는 단일 소스.
  */
-function buildSkinRoutineItems(profile: {
-  skin?: {
-    type?: string;
-    concerns?: string[];
-    scores?: Record<string, number>;
-    recommendedIngredients?: string[];
-  };
-}): DailyItem[] {
+function buildSkinRoutineItems(
+  profile: {
+    skin?: {
+      type?: string;
+      concerns?: string[];
+      scores?: Record<string, number>;
+      recommendedIngredients?: string[];
+      userGoals?: SkinGoalId[];
+    };
+  },
+  opts?: { eveningFocus?: EveningCycle }
+): DailyItem[] {
   // 피부 분석이 없는 사용자는 피부 루틴 없음 (다른 축은 정상 생성)
   if (!profile.skin?.type) return [];
 
@@ -411,7 +475,12 @@ function buildSkinRoutineItems(profile: {
   const scores = profile.skin.scores ?? {};
   const condition = deriveSkinCondition(scores);
   // 목표 반영: 지표에서 고민을 정본 함수로 파생해 개인화(성분 팁)에 반영 (ADR-117 — 루틴 페이지와 단일화)
-  const concerns = deriveConcernsFromScores(scores);
+  const derivedConcerns = deriveConcernsFromScores(scores);
+  const userGoals = profile.skin.userGoals ?? [];
+  const carePhase = deriveCarePhase(scores, userGoals);
+  const isBarrier = carePhase.phase === 'barrier';
+  // 장벽 회복 단계에선 목표 활성을 유보(파생 concern만) — 문구로 안내. 목표 단계에선 목표 우선 병합.
+  const concerns = isBarrier ? derivedConcerns : mergeGoalsIntoConcerns(derivedConcerns, userGoals);
 
   const items: DailyItem[] = [];
   for (const timeOfDay of ['morning', 'evening'] as const) {
@@ -430,7 +499,10 @@ function buildSkinRoutineItems(profile: {
       condition.hydration === 'normal'
         ? ''
         : ` · 최근 분석 기준 ${getHydrationLabel(condition.hydration)} 상태를 반영했어요`;
-    const groupNote = `${personalizationNote}${conditionSuffix}`;
+    // 장벽 회복 단계: 목표 케어 유보 안내 (아침 그룹에 1회). 저녁: 오늘 사이클링 주기 표시.
+    const phaseSuffix = isBarrier && timeOfDay === 'morning' ? ` · ${carePhase.message}` : '';
+    const cycleSuffix = buildCycleSuffix(timeOfDay, opts?.eveningFocus);
+    const groupNote = `${personalizationNote}${conditionSuffix}${phaseSuffix}${cycleSuffix}`;
 
     // 솔루션: 정본 루틴의 사용 팁("어떻게") + 보습 스텝엔 내 추천 성분("어떤 것으로")
     const ingredients = profile.skin.recommendedIngredients ?? [];

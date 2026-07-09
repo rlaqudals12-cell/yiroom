@@ -45,6 +45,11 @@ type SolutionProductWithSource = DailySolutionProduct & {
   shelfItemId?: string;
 };
 
+// ADR-117 계약: 캡슐에 오늘 저녁 포커스가 붙는다(S1 구현 중). 배포 전에도 안전 소비.
+type CapsuleWithEveningFocus = DailyCapsule & {
+  skinEveningFocus?: { focus: string; label: string; reason: string };
+};
+
 // 아이템에 붙은 실제 제품 칩 — 보유(shelf)면 배지, 없으면(catalog) 구매 연결.
 function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactElement {
   if (sp.source === 'shelf') {
@@ -269,6 +274,8 @@ export default function HomeDailyCapsuleWidget() {
   const checkedCount = capsule.items.filter((i) => i.isChecked).length;
   const totalCount = capsule.items.length;
   const progress = Math.round((checkedCount / totalCount) * 100);
+  // ADR-117: 오늘 저녁 포커스(배지 1줄) — 있을 때만, 과하지 않게
+  const eveningFocus = (capsule as CapsuleWithEveningFocus).skinEveningFocus;
 
   return (
     <div
@@ -299,6 +306,17 @@ export default function HomeDailyCapsuleWidget() {
           style={{ width: `${progress}%` }}
         />
       </div>
+
+      {/* 오늘 저녁 포커스 배지 (ADR-117) — 위젯에서는 1줄만 */}
+      {eveningFocus?.label && (
+        <div
+          className="mb-3 flex items-center gap-1.5 rounded-lg bg-indigo-500/10 px-3 py-1.5 text-xs text-indigo-700 dark:text-indigo-300"
+          data-testid="capsule-evening-focus"
+        >
+          <span aria-hidden="true">🌙</span>
+          <span className="font-medium">오늘 저녁: {eveningFocus.label}</span>
+        </div>
+      )}
 
       {/* 아이템 리스트 (최대 5개 표시) */}
       <div className="space-y-1.5">
