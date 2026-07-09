@@ -126,10 +126,18 @@ describe('DailyBriefing', () => {
     expect(screen.queryByTestId('briefing-my-colors')).not.toBeInTheDocument();
   });
 
-  it('베스트 컬러가 있으면 오늘의 스타일에 배색 블록(상의·하의·포인트) 3개를 렌더한다', () => {
+  it('베스트 컬러가 있으면 오늘의 스타일에 배색 블록(상의·하의·신발·가방·포인트) 5개를 렌더한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
-    expect(screen.getAllByTestId('briefing-outfit-block')).toHaveLength(3);
+    expect(screen.getAllByTestId('briefing-outfit-block')).toHaveLength(5);
+  });
+
+  it('각 배색 블록에 색 이름을 표시한다(상의=원본, 파생=계열명)', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const names = screen.getAllByTestId('briefing-outfit-name');
+    expect(names).toHaveLength(5);
+    // 상의는 진단된 원본 이름 중 하나(코랄/골드/오렌지), 파생 블록엔 '계열' 표기가 존재
+    expect(names.some((n) => /계열/.test(n.textContent ?? ''))).toBe(true);
   });
 
   it('베스트 컬러가 없으면 배색 블록 없이 오늘의 스타일 카드만 렌더한다', () => {
@@ -149,5 +157,13 @@ describe('DailyBriefing', () => {
     const names = screen.getAllByTestId('briefing-color-name');
     expect(names).toHaveLength(3);
     expect(names[0]).toHaveTextContent('코랄');
+  });
+
+  it('스와치 이름은 잘림(truncate)이 아니라 온전히 읽히게 렌더한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const name = screen.getAllByTestId('briefing-color-name')[0];
+    // truncate(한 줄 말줄임) 대신 2줄 허용(line-clamp-2)로 가독 확보
+    expect(name.className).not.toContain('truncate');
+    expect(name.className).toContain('line-clamp-2');
   });
 });

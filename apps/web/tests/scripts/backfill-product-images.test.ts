@@ -20,6 +20,8 @@ import {
   isUsableImageUrl,
   hasBrandMatch,
   buildSearchQuery,
+  buildFallbackSearchQuery,
+  stripVariantCode,
   buildImagePatch,
   chooseImage,
   summarizeDecisions,
@@ -171,6 +173,51 @@ describe('buildSearchQuery / buildImagePatch', () => {
   });
 });
 
+// ── 색상코드 제거 / 2차(폴백) 검색어 ────────────────────────────────────────────
+
+describe('stripVariantCode', () => {
+  it('# 색상코드부터 끝까지 절단 (#RD01)', () => {
+    expect(stripVariantCode('디어달리아 립틴트 #RD01')).toBe('디어달리아 립틴트');
+  });
+
+  it('# 색상코드 + 셰이드명 절단 (#09 리치코지)', () => {
+    expect(stripVariantCode('클리오 킬커버 쿠션 #09 리치코지')).toBe('클리오 킬커버 쿠션');
+  });
+
+  it('끝의 호수 숫자 + 셰이드명 절단 (06 피그인러브)', () => {
+    expect(stripVariantCode('쥬시 래스팅 틴트 06 피그인러브')).toBe('쥬시 래스팅 틴트');
+  });
+
+  it('"NN호" 표기 절단', () => {
+    expect(stripVariantCode('파운데이션 23호')).toBe('파운데이션');
+  });
+
+  it('괄호 옵션 제거', () => {
+    expect(stripVariantCode('수분 크림 (리필)')).toBe('수분 크림');
+  });
+
+  it('셰이드 표기가 없으면 원명 유지 (정규화만)', () => {
+    expect(stripVariantCode('히알루론 수분 크림')).toBe('히알루론 수분 크림');
+  });
+
+  it('문자열이 아니면 빈 문자열', () => {
+    expect(stripVariantCode(null as unknown as string)).toBe('');
+  });
+});
+
+describe('buildFallbackSearchQuery', () => {
+  it('2차 검색어 = "브랜드 베이스명" (색상코드 제거)', () => {
+    expect(
+      buildFallbackSearchQuery({ brand: '롬앤', name: '쥬시 래스팅 틴트 06 피그인러브' })
+    ).toBe('롬앤 쥬시 래스팅 틴트');
+  });
+
+  it('셰이드 표기가 없으면 1차 검색어와 동일 (CLI가 2차 시도 생략)', () => {
+    const row = { brand: '토리든', name: '다이브인 세럼' };
+    expect(buildFallbackSearchQuery(row)).toBe(buildSearchQuery(row));
+  });
+});
+
 // ── chooseImage 매칭 판정 ─────────────────────────────────────────────────────
 
 describe('chooseImage', () => {
@@ -263,6 +310,50 @@ describe('chooseImage', () => {
     const right = makeItem();
     const decision = chooseImage(row, [wrongBrand, right]);
     expect(decision.status).toBe('matched');
+  });
+
+  it('기본 매칭은 via=primary (미지정)', () => {
+    const decision = chooseImage(makeRow(), [makeItem()]);
+    expect(decision.status).toBe('matched');
+    if (decision.status === 'matched') expect(decision.via ?? 'primary').toBe('primary');
+  });
+});
+
+// ── 2차(폴백) 매칭: 베이스명 기준 판정 ──────────────────────────────────────────
+
+describe('chooseImage — 2차(폴백) 베이스명 매칭', () => {
+  it('원명 검색은 미매칭이나, 베이스명 재검색 결과에서 같은 라인 대표 이미지를 채택', () => {
+    // CLI처럼 1차/2차는 서로 다른 검색 결과를 받는다 (셰이드 포함 검색이 어긋난 케이스)
+    const row = makeRow({ brand: '롬앤', name: '쥬시 래스팅 틴트 06 피그인러브' });
+    // 1차(원명) 검색: 셰이드 토큰 때문에 엉뚱한 결과 → 유사도 낮음
+    const primaryItems = [
+      makeItem({ title: '롬앤 글래스팅 워터 틴트 발삼', brand: '롬앤', maker: '롬앤' }),
+    ];
+    // 2차(베이스명) 검색: 같은 라인 대표 상품 반환
+    const fallbackItems = [
+      makeItem({ title: '롬앤 쥬시 래스팅 틴트', brand: '롬앤', maker: '롬앤' }),
+    ];
+
+    const primary = chooseImage(row, primaryItems);
+    const fallback = chooseImage(row, fallbackItems, {
+      matchName: stripVariantCode(row.name),
+      via: 'fallback',
+    });
+
+    expect(primary.status).toBe('unmatched');
+    expect(fallback.status).toBe('matched');
+    if (fallback.status === 'matched') expect(fallback.via).toBe('fallback');
+  });
+
+  it('베이스명 시도에도 브랜드 가드는 동일 적용 — 완전 다른 제품은 막는다', () => {
+    // 베이스명 일부가 겹쳐도 브랜드가 다르고 고신뢰(0.8) 미만 → 채택 안 함
+    const row = makeRow({ brand: '롬앤', name: '쥬시 래스팅 틴트 06 피그인러브' });
+    const fallbackItems = [makeItem({ title: '에뛰드 쥬시 밤', brand: '에뛰드', maker: '에뛰드' })];
+    const fallback = chooseImage(row, fallbackItems, {
+      matchName: stripVariantCode(row.name),
+      via: 'fallback',
+    });
+    expect(fallback.status).toBe('unmatched');
   });
 });
 

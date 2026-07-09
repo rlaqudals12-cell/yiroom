@@ -63,6 +63,22 @@ describe('RoutineStepItem', () => {
     expect(screen.getByText('클렌저')).toBeInTheDocument();
   });
 
+  // U2: 상태 기반 성분 스펙명 우선 + 왜 한 줄
+  it('specName이 있으면 일반 명칭 대신 스펙명을 제목으로 표시하고 specReason을 렌더한다', () => {
+    const stepWithSpec: RoutineStep = {
+      ...baseStep,
+      specName: '약산성 클렌저',
+      specReason: '약산성 세안은 피부 장벽을 덜 자극해요',
+    };
+    render(<RoutineStepItem step={stepWithSpec} />);
+    expect(screen.getByText('약산성 클렌저')).toBeInTheDocument();
+    // 일반 명칭("클렌저")은 스펙명으로 대체됨
+    expect(screen.queryByText('클렌저')).not.toBeInTheDocument();
+    expect(screen.getByTestId('routine-step-spec-reason')).toHaveTextContent(
+      '약산성 세안은 피부 장벽을 덜 자극해요'
+    );
+  });
+
   it('displays step purpose', () => {
     render(<RoutineStepItem step={baseStep} />);
     expect(screen.getByText('피지와 노폐물 제거')).toBeInTheDocument();

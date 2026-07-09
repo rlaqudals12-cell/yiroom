@@ -325,9 +325,10 @@ export default function HomeDailyCapsuleWidget() {
           const depth = moduleDepths[item.moduleCode] ?? 'full';
           // ADR-117: 아이템에 붙은 실제 제품 — 보유(shelf) 제품이면 "내 ○○" 배지,
           // 없으면(catalog) "맞는 제품 보기" 구매 연결. source가 없으면(구 데이터) 미표시.
-          // depth 게이팅 관례 유지: 솔루션과 동일하게 full일 때만 노출.
+          // U2: 제품 칩은 depth 무관 항상 노출 — 제품은 "행동"이라 내재화 수준과 무관하게
+          // 필요하다(reason/solution 텍스트 게이팅은 유지).
           const sp = item.solutionProduct as SolutionProductWithSource | undefined;
-          const showProduct = depth === 'full' && sp != null && sp.source != null;
+          const showProduct = sp != null && sp.source != null;
 
           return (
             <div key={item.id} className="rounded-lg">

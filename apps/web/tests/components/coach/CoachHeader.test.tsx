@@ -8,10 +8,11 @@ import { render, screen } from '@testing-library/react';
 import { CoachHeader } from '@/components/coach/CoachHeader';
 
 describe('CoachHeader (ADR-114)', () => {
-  it('제목과 부제가 전속 팀 화법이다', () => {
+  it('제목은 사용자 말("무엇이든 물어보세요"), 부제가 전속 팀 설명 역할을 한다', () => {
     render(<CoachHeader />);
 
-    expect(screen.getByText('전속 팀에게 물어보기')).toBeInTheDocument();
+    expect(screen.getByText('무엇이든 물어보세요')).toBeInTheDocument();
+    // 부제(팀 설명)는 유지 — 전속 팀 프레이밍은 부제가 담당
     expect(
       screen.getByText('당신을 아는 스타일리스트·컨설턴트·피부 관리사가 답해요')
     ).toBeInTheDocument();

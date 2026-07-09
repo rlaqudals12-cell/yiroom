@@ -13,13 +13,36 @@ const palette = [
 ];
 
 describe('composeDailyOutfit', () => {
-  it('상의·하의·포인트 3색을 순서대로 반환한다', () => {
+  it('상의·하의·신발·가방·포인트 5블록을 순서대로 반환한다', () => {
     const out = composeDailyOutfit(palette, new Date('2026-07-08'));
     expect(out).not.toBeNull();
-    expect(out!.colors).toHaveLength(3);
-    expect(out!.colors.map((c) => c.role)).toEqual(['상의', '하의', '포인트']);
-    // 상의는 베스트 컬러 중 하나(그대로), 나머지는 유효 hex
+    expect(out!.colors).toHaveLength(5);
+    expect(out!.colors.map((c) => c.role)).toEqual(['상의', '하의', '신발', '가방', '포인트']);
+    // 모든 블록이 유효 hex + 비어있지 않은 이름을 가진다
     expect(out!.colors.every((c) => /^#[0-9a-fA-F]{3,8}$/.test(c.hex))).toBe(true);
+    expect(out!.colors.every((c) => c.name.length > 0)).toBe(true);
+  });
+
+  it('상의 이름은 진단된 원본 이름을 그대로 쓴다(지어내지 않음)', () => {
+    // 2026-07-08 시드로 상의 색이 팔레트 중 하나로 결정 → 그 원본 이름이 상의 name
+    const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
+    const top = out.colors[0];
+    const original = palette.find((p) => p.hex === top.hex);
+    expect(top.name).toBe(original!.name);
+  });
+
+  it('파생색(하의·가방·포인트)은 "계열" 표기로 정직하게 이름 짓는다', () => {
+    const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
+    for (const role of ['하의', '가방', '포인트'] as const) {
+      const block = out.colors.find((c) => c.role === role)!;
+      expect(block.name).toContain('계열');
+    }
+  });
+
+  it('신발은 중립색(차콜/아이보리 뉴트럴)으로 배색을 받쳐준다', () => {
+    const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
+    const shoes = out.colors.find((c) => c.role === '신발')!;
+    expect(['차콜', '아이보리']).toContain(shoes.name);
   });
 
   it('같은 날짜+같은 팔레트면 항상 같은 조합(결정론)', () => {

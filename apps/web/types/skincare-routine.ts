@@ -48,6 +48,13 @@ export interface RoutineStep {
   tips: string[]; // 사용 팁
   recommendedProducts?: AffiliateProduct[];
   isOptional: boolean;
+  /**
+   * 상태 기반 성분 스펙명 (U2) — 일반 명칭("클렌저")을 구체화("약산성 클렌저").
+   * getStepSpec으로 파생. 세팅되면 표면이 name 대신 이 값을 우선 표시(하위호환).
+   */
+  specName?: string;
+  /** specName이 왜 잘 맞는지 한 줄 (담백한 톤) */
+  specReason?: string;
   // 조건부 루틴 확장 필드
   conditionalBadge?: string; // "건조할 때 2회" 등 조건부 뱃지
   shelfProductId?: string; // 제품함 연동 시 제품 ID
@@ -95,6 +102,11 @@ export interface RoutineGenerationInput {
   concerns: SkinConcernId[];
   timeOfDay: TimeOfDay;
   includeOptional?: boolean;
+  /**
+   * 케어 단계 (U2) — 'barrier'면 세럼·크림 스펙을 진정·보습으로 강제.
+   * 미전달 시 목표 케어 기준으로 스펙 파생.
+   */
+  carePhase?: 'barrier' | 'goal';
 }
 
 /** 루틴 생성 결과 */

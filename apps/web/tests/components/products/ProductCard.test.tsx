@@ -141,6 +141,24 @@ describe('ProductCard', () => {
 
       expect(screen.queryByText(/적합도 \d+점/)).not.toBeInTheDocument();
     });
+
+    it('배지가 이미지 오버레이가 아닌 정보 영역에 표시된다 (제품명 비겹침)', () => {
+      render(<ProductCard product={mockCosmeticProduct} matchScore={80} />);
+
+      const badge = screen.getByTestId('product-match-badge');
+      const img = screen.getByAltText('테스트 세럼');
+      // 배지는 이미지 컨테이너 안에 겹쳐 있지 않다 (오버레이 → 정보 행 이동)
+      expect(img.parentElement?.contains(badge)).toBe(false);
+    });
+
+    it('배지와 제품명이 같은 정보 영역에 있어 서로 가리지 않는다', () => {
+      render(<ProductCard product={mockCosmeticProduct} matchScore={80} />);
+
+      const badge = screen.getByTestId('product-match-badge');
+      const name = screen.getByText('테스트 세럼');
+      // 배지의 부모(CardContent)가 제품명을 포함 — 둘 다 정보 영역, 겹침 없음
+      expect(badge.parentElement?.contains(name)).toBe(true);
+    });
   });
 
   describe('매칭 이유 칩', () => {

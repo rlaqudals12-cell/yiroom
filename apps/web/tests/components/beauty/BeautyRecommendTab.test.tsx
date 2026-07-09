@@ -279,4 +279,34 @@ describe('BeautyRecommendTab', () => {
     analysisButton.click();
     expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
   });
+
+  describe('피부타입 자동 선택 안내', () => {
+    it('분석 결과가 있으면 피부타입을 자동 선택하고 근거를 한 줄로 안내한다', async () => {
+      renderTab(); // hasAnalysis=true, userSkinType='dry'
+
+      const hint = await screen.findByTestId('beauty-skin-type-hint');
+      expect(hint).toHaveTextContent('분석 결과상 건성이에요');
+      // 자동 선택된 칩(건성)이 눌린 상태
+      expect(screen.getByTestId('beauty-chip-skin-dry')).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('사용자가 피부타입을 직접 바꾸면 안내가 "직접 선택하셨어요"로 바뀐다', async () => {
+      const user = userEvent.setup();
+      renderTab();
+      // 초기 자동 선택 안내 확인
+      expect(await screen.findByText('분석 결과상 건성이에요')).toBeInTheDocument();
+
+      await user.click(screen.getByTestId('beauty-chip-skin-oily'));
+
+      expect(await screen.findByText('직접 선택하셨어요')).toBeInTheDocument();
+      expect(screen.queryByText('분석 결과상 건성이에요')).not.toBeInTheDocument();
+    });
+
+    it('분석 결과가 없으면 자동 선택 안내를 표시하지 않는다 (순수 수동 선택)', async () => {
+      renderTab({ hasAnalysis: false });
+      await screen.findByText('히알루론 수분 크림');
+
+      expect(screen.queryByTestId('beauty-skin-type-hint')).not.toBeInTheDocument();
+    });
+  });
 });

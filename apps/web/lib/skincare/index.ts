@@ -26,6 +26,10 @@ export type { SkinGoalId } from './skin-goals';
 export { STEP_HOWTO, getStepHowTo, HAND_WASH_PRESTEP } from './step-howto';
 export type { StepHowTo, StepHowToKey } from './step-howto';
 
+// 상태 기반 성분 스펙 (일반 명칭 → 구체화 — U2)
+export { getStepSpec } from './step-spec';
+export type { StepSpec, CarePhaseId } from './step-spec';
+
 // 활성 성분 카테고리 (보유 제품 → 활성 탐지)
 export {
   ACTIVE_INGREDIENT_CATEGORIES,

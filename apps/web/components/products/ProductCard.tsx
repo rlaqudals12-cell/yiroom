@@ -111,20 +111,23 @@ export function ProductCard({
               className="bg-background/90 backdrop-blur-sm hover:bg-background shadow-sm hover:shadow-md"
             />
           </div>
-
-          {/* 매칭도 배지 */}
-          {matchScore !== undefined && matchScore > 0 && (
-            <Badge
-              variant="secondary"
-              className="absolute right-2 top-2 bg-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-105"
-            >
-              적합도 {matchScore}점
-            </Badge>
-          )}
         </div>
 
         {/* 정보 영역 */}
         <CardContent className="p-3 transition-colors duration-300 group-hover:bg-muted/30">
+          {/* 적합도 — 이미지 위 오버레이가 아니라 정보 영역 상단 독립 행.
+              좁은 그리드(4열)에서도 제품명·이미지를 가리지 않는다 (배지 비겹침). */}
+          {matchScore !== undefined && matchScore > 0 && (
+            <div className="mb-1.5" data-testid="product-match-badge">
+              <Badge
+                variant="secondary"
+                className="bg-primary text-primary-foreground px-2 py-0.5 text-[11px] font-semibold transition-transform duration-300 group-hover:scale-105"
+              >
+                적합도 {matchScore}점
+              </Badge>
+            </div>
+          )}
+
           {/* 브랜드 */}
           <p className="text-xs text-muted-foreground truncate">{product.brand}</p>
 

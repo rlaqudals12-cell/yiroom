@@ -489,6 +489,7 @@ function buildSkinRoutineItems(
       concerns,
       timeOfDay,
       includeOptional: false, // 데일리 체크리스트는 필수 스텝만 (선택 스텝은 결과 페이지 영역)
+      carePhase: carePhase.phase, // U2: 장벽 단계면 세럼·크림 스펙을 진정·보습으로
     });
 
     // 지표 기반 조정 — 수분/유분/민감도에 따라 스텝 반복·강조·생략 (예: "토너 (2회)")
@@ -520,7 +521,8 @@ function buildSkinRoutineItems(
       items.push({
         id: `skin-${timeOfDay}-${step.order}-${step.category}`,
         moduleCode: 'S',
-        name: step.name,
+        // U2: 상태 기반 성분 스펙명이 있으면 우선("약산성 클렌저"), 없으면 일반 명칭
+        name: step.specName ?? step.name,
         reason: step.purpose,
         compatibilityScore: 0,
         isChecked: false,

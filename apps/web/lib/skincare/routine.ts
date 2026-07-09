@@ -24,6 +24,7 @@ import {
 } from '@/lib/mock/skincare-routine';
 import { getRecommendedProductsBySkin } from '@/lib/affiliate/products';
 import { detectProductCategory } from './shelf-routine-sync';
+import { getStepSpec } from './step-spec';
 
 // ================================================
 // 루틴 생성 함수
@@ -36,7 +37,7 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
   // includeOptional 기본값 = false — 체크리스트 표면(/beauty 케어 탭·캡슐 데일리)이 같은
   // "필수 스텝" 루틴을 보도록 정합화 (2026-07-08 사용자 피드백: 두 화면 루틴이 서로 달랐음).
   // 선택 스텝까지 보여주는 심화 페이지(analysis/skin/routine)는 명시적으로 true를 전달한다.
-  const { skinType, concerns, timeOfDay, includeOptional = false } = input;
+  const { skinType, concerns, timeOfDay, includeOptional = false, carePhase } = input;
 
   // 기본 템플릿 선택
   const baseSteps =
@@ -88,6 +89,14 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
   adjustedSteps = adjustedSteps
     .sort((a, b) => getCategoryOrder(a.category) - getCategoryOrder(b.category))
     .map((step, index) => ({ ...step, order: index + 1 }));
+
+  // 5.5 상태 기반 성분 스펙 부착 (U2) — 일반 명칭을 구체화.
+  // 더블클렌징 1단계 "오일 클렌저"는 스펙(약산성) 대상이 아니라 원 명칭 유지.
+  adjustedSteps = adjustedSteps.map((step) => {
+    if (step.category === 'cleanser' && step.name.includes('오일')) return step;
+    const spec = getStepSpec(step.category, skinType, concerns, carePhase);
+    return spec ? { ...step, specName: spec.specName, specReason: spec.specReason } : step;
+  });
 
   // 6. 소요 시간 계산
   const estimatedTime = calculateEstimatedTime(adjustedSteps);

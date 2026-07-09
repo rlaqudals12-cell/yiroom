@@ -38,11 +38,11 @@ describe('composeDailyOutfit — 퍼스널 대비 반영', () => {
     );
   });
 
-  it('대비 미지정 → 기존 동작 유지(하위호환, 3색 반환)', () => {
+  it('대비 미지정 → 기존 동작 유지(상의·하의는 앞 2블록, 5블록 반환)', () => {
     const outfit = composeDailyOutfit(BEST, FIXED_DATE);
     expect(outfit).not.toBeNull();
-    expect(outfit!.colors).toHaveLength(3);
-    expect(outfit!.colors.map((c) => c.role)).toEqual(['상의', '하의', '포인트']);
+    expect(outfit!.colors).toHaveLength(5);
+    expect(outfit!.colors.map((c) => c.role)).toEqual(['상의', '하의', '신발', '가방', '포인트']);
   });
 
   it('결정론 — 같은 입력은 같은 조합', () => {

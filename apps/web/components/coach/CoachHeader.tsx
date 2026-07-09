@@ -25,7 +25,7 @@ export function CoachHeader({ contextSummary, leftAction }: CoachHeaderProps) {
         {/* 코치 정보 */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-foreground">전속 팀에게 물어보기</h2>
+            <h2 className="font-semibold text-foreground">무엇이든 물어보세요</h2>
             <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
               AI
             </Badge>

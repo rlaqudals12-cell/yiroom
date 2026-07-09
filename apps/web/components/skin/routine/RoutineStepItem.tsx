@@ -74,7 +74,8 @@ const RoutineStepItem = memo(function RoutineStepItem({
         {/* 정보 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-foreground">{step.name}</h3>
+            {/* U2: 상태 기반 성분 스펙명 우선("약산성 클렌저"), 없으면 일반 명칭 */}
+            <h3 className="font-medium text-foreground">{step.specName ?? step.name}</h3>
             {ownedProduct && (
               <Badge
                 variant="secondary"
@@ -92,6 +93,12 @@ const RoutineStepItem = memo(function RoutineStepItem({
             )}
           </div>
           <p className="text-sm text-muted-foreground truncate">{step.purpose}</p>
+          {/* U2: 이 스펙이 왜 잘 맞는지 한 줄 (담백한 톤) */}
+          {step.specReason && (
+            <p className="text-xs text-primary/80 truncate" data-testid="routine-step-spec-reason">
+              {step.specReason}
+            </p>
+          )}
         </div>
 
         {/* 소요 시간 */}

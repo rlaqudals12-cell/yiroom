@@ -42,9 +42,19 @@ export interface NaverShopItem {
   productType?: string;
 }
 
+/** 매칭이 1차(원명) 검색인지 2차(색상코드 제거 베이스명) 검색인지 */
+export type MatchAttempt = 'primary' | 'fallback';
+
 /** 한 제품에 대한 백필 판정 결과 */
 export type BackfillDecision =
-  | { status: 'matched'; imageUrl: string; score: number; matchedTitle: string }
+  | {
+      status: 'matched';
+      imageUrl: string;
+      score: number;
+      matchedTitle: string;
+      /** 어느 시도에서 매칭됐는지 (미지정 시 primary) */
+      via?: MatchAttempt;
+    }
   | { status: 'unmatched'; reason: string; bestScore: number; bestTitle: string | null }
   | { status: 'skip'; reason: string };
 
@@ -78,6 +88,34 @@ export function normalize(raw: unknown): string {
 /** 포함 비교용 키: 정규화 후 모든 공백 제거 (브랜드 포함 판정) */
 export function matchKey(raw: unknown): string {
   return normalize(raw).replace(/\s+/g, '');
+}
+
+/**
+ * 색상코드/호수/괄호 옵션을 제거한 "베이스 제품명" (2차 검색용).
+ *
+ * 왜: 색조 카탈로그 미매칭의 주 패턴이 제품명 끝의 셰이드 표기다
+ *   ("립틴트 #RD01", "쿠션 #09 리치코지", "틴트 06 피그인러브").
+ *   네이버 검색은 이 셰이드 토큰 때문에 결과가 어긋난다 —
+ *   제거한 제품 라인명으로 재검색하면 같은 라인의 대표 이미지를 찾을 수 있다.
+ *
+ * 절차(보수적):
+ *   1) 괄호/대괄호 옵션 제거: (리필), [23호] 등
+ *   2) '#' 등장 지점부터 끝까지 절단: "#RD01", "#09 리치코지"
+ *   3) 남은 "호수 숫자(+셰이드명)"부터 끝까지 절단: " 06 피그인러브" → 제거
+ *
+ * 원명에 셰이드 표기가 없으면 정규화만 거친 원명을 그대로 반환한다.
+ */
+export function stripVariantCode(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  let s = stripHtml(raw);
+  // 1) 괄호/대괄호/전각괄호 옵션 제거 (최대 40자 내 짝)
+  s = s.replace(/[([{【][^)\]}】]{0,40}[)\]}】]/g, ' ');
+  // 2) 색상코드부터 끝까지 절단 (#RD01, #09 리치코지)
+  const hashIdx = s.indexOf('#');
+  if (hashIdx >= 0) s = s.slice(0, hashIdx);
+  // 3) 끝에 붙은 호수 숫자(+이후 셰이드명)부터 절단 ("틴트 06 피그인러브" → "틴트")
+  s = s.replace(/\s+\d{1,3}호?(?:\s+.*)?$/u, ' ');
+  return s.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -139,12 +177,28 @@ export function buildSearchQuery(row: Pick<ProductRow, 'name' | 'brand'>): strin
   return `${(row.brand ?? '').trim()} ${row.name}`.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * 2차(폴백) 검색어 = "브랜드 베이스제품명" (색상코드/호수 제거).
+ * 원명에 셰이드 표기가 없어 1차와 동일하면 CLI가 2차 시도를 건너뛴다.
+ */
+export function buildFallbackSearchQuery(row: Pick<ProductRow, 'name' | 'brand'>): string {
+  return `${(row.brand ?? '').trim()} ${stripVariantCode(row.name)}`.replace(/\s+/g, ' ').trim();
+}
+
 /** 업데이트 페이로드 — image_url만. 다른 컬럼은 절대 만들지 않는다 */
 export function buildImagePatch(imageUrl: string): { image_url: string } {
   return { image_url: imageUrl };
 }
 
 // ── 매칭 판정 ────────────────────────────────────────────────────────────────────
+
+/** chooseImage 옵션 — 2차(폴백) 시도 시 베이스명 기준으로 유사도/판정 */
+export interface ChooseImageOptions {
+  /** 유사도 계산에 쓸 이름 (미지정 시 row.name). 2차 시도에서 베이스명 주입 */
+  matchName?: string;
+  /** 이 판정이 어느 시도인지 (matched 결과에 기록, 미지정 시 primary) */
+  via?: MatchAttempt;
+}
 
 /**
  * 제품 행 + 검색 결과 목록 → 백필 판정.
@@ -155,11 +209,23 @@ export function buildImagePatch(imageUrl: string): { image_url: string } {
  *     채택 조건: 유사도 ≥ HIGH_CONFIDENCE (브랜드 무관) 또는
  *               (브랜드 일치 && 유사도 ≥ MIN_SIMILARITY).
  *  3) 채택 실패 시 unmatched — 사유는 최고 후보 기준(브랜드 불일치 / 유사도 낮음).
+ *
+ * 2차(폴백) 시도: `opts.matchName`에 색상코드를 제거한 베이스명을 넣으면
+ *   유사도·판정을 베이스명 기준으로 계산한다. 브랜드 일치 가드는 원 브랜드로
+ *   동일하게 적용되므로 "다른 색이어도 같은 라인"만 통과하고 완전 다른 제품은 막힌다.
  */
-export function chooseImage(row: ProductRow, items: NaverShopItem[]): BackfillDecision {
+export function chooseImage(
+  row: ProductRow,
+  items: NaverShopItem[],
+  opts: ChooseImageOptions = {}
+): BackfillDecision {
   if (!needsBackfill(row)) {
     return { status: 'skip', reason: '이미 이미지 있음' };
   }
+
+  // 유사도 기준 이름 — 2차 시도면 베이스명, 아니면 원명 (브랜드 가드는 항상 원 브랜드)
+  const matchName = opts.matchName ?? row.name;
+  const via: MatchAttempt = opts.via ?? 'primary';
 
   let best: { score: number; title: string | null; brandOk: boolean } = {
     score: -1,
@@ -173,12 +239,12 @@ export function chooseImage(row: ProductRow, items: NaverShopItem[]): BackfillDe
     if (!isUsableImageUrl(item.image)) continue;
 
     const title = stripHtml(item.title);
-    const score = similarity(row.name, title);
+    const score = similarity(matchName, title);
     const brandOk = hasBrandMatch(row.brand, item);
 
     const accept = score >= HIGH_CONFIDENCE_SIMILARITY || (brandOk && score >= MIN_SIMILARITY);
     if (accept) {
-      return { status: 'matched', imageUrl: item.image, score, matchedTitle: title };
+      return { status: 'matched', imageUrl: item.image, score, matchedTitle: title, via };
     }
 
     if (score > best.score) best = { score, title, brandOk };

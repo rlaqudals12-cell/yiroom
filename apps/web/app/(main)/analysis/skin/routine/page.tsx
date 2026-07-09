@@ -194,12 +194,16 @@ export default function SkincareRoutinePage() {
       new Set<SkinConcernId>([...derived, ...goalsToConcerns(selectedGoals)])
     ).sort();
 
+    // U2: 케어 단계 — 장벽 회복 단계면 세럼·크림 스펙을 진정·보습으로 강제
+    const phase = deriveCarePhase(skinScores, selectedGoals).phase;
+
     // 아침 루틴 생성
     const morningResult = generateRoutine({
       skinType,
       concerns,
       timeOfDay: 'morning',
       includeOptional: true,
+      carePhase: phase,
     });
 
     // 저녁 루틴 생성
@@ -208,6 +212,7 @@ export default function SkincareRoutinePage() {
       concerns,
       timeOfDay: 'evening',
       includeOptional: true,
+      carePhase: phase,
     });
 
     setMorningSteps(morningResult.routine);
@@ -223,7 +228,7 @@ export default function SkincareRoutinePage() {
     enrich(eveningResult.routine, skinType, concerns, shelfItems)
       .then((enriched) => setEveningSteps(enriched))
       .catch((err) => console.error('[Routine] Evening products error:', err));
-  }, [skinData, shelfItems, selectedGoals]);
+  }, [skinData, shelfItems, selectedGoals, skinScores]);
 
   // 현재 활성 루틴
   const currentSteps = useMemo(

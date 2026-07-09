@@ -273,6 +273,8 @@ export function BeautyRecommendTab({
   const [subCategory, setSubCategory] = useState<string | null>(initialSubCategory);
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [showSortSheet, setShowSortSheet] = useState(false);
+  // 피부타입을 사용자가 직접 바꿨는지 여부 — 분석 자동 선택과 수동 선택을 구분해 안내 문구를 바꾼다
+  const [skinTypeManuallyChanged, setSkinTypeManuallyChanged] = useState(false);
   // 매칭 필터는 기본 OFF — 기본 상태에서는 제품이 보여야 한다 (0개 화면 방지)
   const [matchFilterOn, setMatchFilterOn] = useState(false);
   // 매칭 필터 ON인데 임계 이상 제품이 0개라 자동 완화된 상태 (안내 표시용)
@@ -289,11 +291,14 @@ export function BeautyRecommendTab({
   const [productsError, setProductsError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // 훅에서 분석 결과 로드 시 필터 상태 동기화
+  // 훅에서 분석 결과 로드 시 필터 상태 동기화 —
+  // 분석 결과가 있으면 피부타입 필터를 자동 선택하고 "분석 자동 선택" 상태로 되돌린다
+  // (이후 사용자가 직접 바꾸면 아래 toggleSkinType에서 수동 상태로 전환)
   useEffect(() => {
     if (hasAnalysis) {
       if (userSkinType) {
         setSelectedSkinTypes([userSkinType]);
+        setSkinTypeManuallyChanged(false);
       }
       if (userSkinConcerns.length > 0) {
         setSelectedConcerns(userSkinConcerns);
@@ -502,6 +507,8 @@ export function BeautyRecommendTab({
   };
 
   const toggleSkinType = (type: SkinType): void => {
+    // 사용자가 직접 조정 — 안내 문구를 "직접 선택하셨어요"로 전환
+    setSkinTypeManuallyChanged(true);
     setSelectedSkinTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
@@ -555,6 +562,18 @@ export function BeautyRecommendTab({
             );
           })}
         </div>
+        {/* 분석 결과가 있으면 피부타입을 자동 선택하고 근거를 한 줄로 안내 (수동 변경 가능) */}
+        {hasAnalysis && (
+          <p
+            className="text-xs text-muted-foreground mt-2"
+            role="status"
+            data-testid="beauty-skin-type-hint"
+          >
+            {skinTypeManuallyChanged
+              ? '직접 선택하셨어요'
+              : `분석 결과상 ${skinTypes.find((t) => t.id === userSkinType)?.label ?? ''}이에요`}
+          </p>
+        )}
       </section>
 
       {/* 피부고민 필터 — B2: min-h-[44px] */}

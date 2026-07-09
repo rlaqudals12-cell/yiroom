@@ -201,9 +201,13 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
             href={`/analysis/personal-color/result/${pcEntry.id}`}
             className="flex items-center gap-3 rounded-2xl border border-pink-200/50 dark:border-pink-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-pink-300 dark:hover:border-pink-800"
           >
-            <div className="flex flex-1 items-center gap-3">
-              {bestColors.slice(0, 5).map((c, i) => (
-                <div key={`${c.hex}-${i}`} className="flex min-w-0 flex-col items-center gap-1">
+            {/* 4개까지만 표시해 폭을 확보 — 이름이 잘리지 않고 읽히는 것이 우선 */}
+            <div className="flex flex-1 items-start gap-2">
+              {bestColors.slice(0, 4).map((c, i) => (
+                <div
+                  key={`${c.hex}-${i}`}
+                  className="flex flex-1 min-w-0 flex-col items-center gap-1"
+                >
                   <span
                     className="h-9 w-9 rounded-full border border-white/70 dark:border-slate-700 shadow-sm"
                     style={{ backgroundColor: c.hex }}
@@ -211,10 +215,10 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                     aria-label={c.name || c.hex}
                     data-testid="briefing-color-swatch"
                   />
-                  {/* 색 이름 표시 — '오늘의 스타일' role 라벨과 동일한 text-[10px] 패턴 */}
+                  {/* 색 이름 — 잘림(truncate) 대신 2줄까지 허용(break-keep)해 어떤 색인지 읽히게 */}
                   {c.name && (
                     <span
-                      className="max-w-[3.5rem] truncate text-[10px] text-muted-foreground"
+                      className="w-full text-center text-[10px] leading-tight text-muted-foreground break-keep line-clamp-2"
                       data-testid="briefing-color-name"
                     >
                       {c.name}
@@ -235,30 +239,37 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <HomeDailyCapsuleWidget />
       </section>
 
-      {/* ② 오늘의 스타일 — 내 베스트 컬러 기반 오늘의 배색(상의·하의·포인트) + 날씨 팁 */}
+      {/* ② 오늘의 스타일 — 내 베스트 컬러 기반 오늘의 배색(상의·하의·신발·가방·포인트) + 날씨 팁 */}
       <section aria-label="오늘의 스타일" data-testid="briefing-style">
         <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 스타일</h3>
         <Link
           href="/closet/recommend"
           className="block rounded-2xl border border-blue-200/50 dark:border-blue-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-blue-300 dark:hover:border-blue-800"
         >
-          {/* 오늘의 배색 조합 (베스트 컬러가 있을 때만 — 결정론) */}
+          {/* 오늘의 배색 조합 (베스트 컬러가 있을 때만 — 결정론). 색 이름 함께 표기 */}
           {dailyOutfit && (
             <div
-              className="mb-3 flex items-center gap-4"
+              className="mb-3 flex items-start gap-2"
               data-testid="briefing-outfit-palette"
               aria-label={`오늘의 배색: ${dailyOutfit.baseName} 기반`}
             >
               {dailyOutfit.colors.map((c) => (
-                <div key={c.role} className="flex flex-col items-center gap-1">
+                <div key={c.role} className="flex flex-1 min-w-0 flex-col items-center gap-1">
                   <span
-                    className="h-11 w-11 rounded-xl border border-white/70 dark:border-slate-700 shadow-sm"
+                    className="h-10 w-10 rounded-xl border border-white/70 dark:border-slate-700 shadow-sm"
                     style={{ backgroundColor: c.hex }}
-                    title={`${c.role} ${c.hex.toUpperCase()}`}
-                    aria-label={`${c.role} ${c.hex.toUpperCase()}`}
+                    title={`${c.role} · ${c.name}`}
+                    aria-label={`${c.role} ${c.name}`}
                     data-testid="briefing-outfit-block"
                   />
-                  <span className="text-[10px] text-muted-foreground">{c.role}</span>
+                  <span className="text-[10px] font-medium text-foreground/80">{c.role}</span>
+                  {/* 색 이름 — 파생색은 계열명, 지어내지 않음(2줄까지 허용) */}
+                  <span
+                    className="w-full text-center text-[9px] leading-tight text-muted-foreground break-keep line-clamp-2"
+                    data-testid="briefing-outfit-name"
+                  >
+                    {c.name}
+                  </span>
                 </div>
               ))}
             </div>
@@ -326,8 +337,8 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="전속 팀에게 물어보기…"
-            aria-label="전속 뷰티팀에게 물어보기"
+            placeholder="무엇이든 물어보세요 — 피부·옷·헤어"
+            aria-label="무엇이든 물어보세요"
             data-testid="briefing-ask-input"
             className="w-full rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 py-3 pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-pink-400"
           />

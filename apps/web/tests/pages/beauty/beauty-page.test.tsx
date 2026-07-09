@@ -3,7 +3,7 @@
  * WS-3에서 3탭이었으나 데모 폴리시(d8479120, 2026-06-16)에서 트렌드 탭 제거 → 2탭
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -15,11 +15,13 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock useUserMatching
+// personalColor는 테스트마다 바꿔 검증할 수 있도록 가변(mock 접두사 = vitest 호이스팅 허용)
+let mockPersonalColor = '봄 라이트';
 vi.mock('@/hooks/useUserMatching', () => ({
   useUserMatching: () => ({
     skinType: 'combination',
     skinConcerns: ['hydration', 'pore'],
-    personalColor: '봄 라이트',
+    personalColor: mockPersonalColor,
     hasAnalysis: true,
     getMatchedProducts: vi.fn().mockReturnValue([]),
   }),
@@ -61,9 +63,21 @@ vi.mock('@/components/animations', () => ({
 import BeautyPage from '@/app/(main)/beauty/page';
 
 describe('BeautyPage 2탭 구조', () => {
+  beforeEach(() => {
+    mockPersonalColor = '봄 라이트';
+  });
+
   it('data-testid="beauty-page"가 존재한다', () => {
     render(<BeautyPage />);
     expect(screen.getByTestId('beauty-page')).toBeInTheDocument();
+  });
+
+  it('영문 시즌(Summer)을 한국어(여름 쿨톤)로 표시한다 (영문 라벨 누수 방지)', () => {
+    mockPersonalColor = 'Summer';
+    render(<BeautyPage />);
+
+    expect(screen.getByText('여름 쿨톤')).toBeInTheDocument();
+    expect(screen.queryByText('Summer')).not.toBeInTheDocument();
   });
 
   it('2개 탭 트리거가 렌더링된다 (트렌드 탭은 데모 폴리시에서 제거됨)', () => {

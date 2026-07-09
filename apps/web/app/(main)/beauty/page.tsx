@@ -11,6 +11,8 @@ import { useUserMatching } from '@/hooks/useUserMatching';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { generateRoutine } from '@/lib/skincare';
+// 원시 영문 시즌(Summer 등) → 한국어("여름 쿨톤") 공용 라벨 헬퍼 (영문 라벨 누수 방지)
+import { seasonKo } from '@/lib/analysis/integrated';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 import BeautyCareTab from '@/components/beauty/BeautyCareTab';
@@ -93,9 +95,12 @@ function toRoutineItems(steps: RoutineStep[], timing: 'morning' | 'evening'): Ro
   return steps.map((step) => ({
     order: step.order,
     category: step.category,
-    note: step.purpose,
+    // U2: 스펙 이유가 있으면 부제로(왜 이 성분인지), 없으면 스텝 목적
+    note: step.specReason ?? step.purpose,
     timing,
     duration: step.duration,
+    // U2: 상태 기반 성분 스펙명 — SkincareRoutineCard가 제목으로 우선 표시
+    ...(step.specName ? { specName: step.specName } : {}),
   }));
 }
 
@@ -281,7 +286,7 @@ export default function BeautyPage() {
                   <p className="font-medium text-foreground">내 피부</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Palette className="w-3.5 h-3.5 text-rose-500" aria-hidden="true" />
-                    <span className="text-sm text-muted-foreground">{personalColor}</span>
+                    <span className="text-sm text-muted-foreground">{seasonKo(personalColor)}</span>
                   </div>
                 </div>
               </div>

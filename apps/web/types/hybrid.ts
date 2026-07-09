@@ -124,6 +124,11 @@ export interface RoutineItem {
   note?: string;
   timing?: 'morning' | 'evening' | 'both';
   duration?: string;
+  /**
+   * 상태 기반 성분 스펙명 (U2) — 루틴 엔진 스텝의 specName 전달.
+   * 있으면 카테고리 라벨 대신 이 값을 제목으로 표시("약산성 클렌저").
+   */
+  specName?: string;
 }
 
 // 사용자 루틴

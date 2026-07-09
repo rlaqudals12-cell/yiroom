@@ -468,6 +468,71 @@ describe('deriveConcernsFromScores', () => {
   });
 });
 
+// ── U2: 상태 기반 성분 스펙 부착 ──────────────────────────────────────────
+describe('generateRoutine — specName 부착 (U2)', () => {
+  it('클렌저/토너/크림/선크림에 피부타입 기반 specName을 붙인다 (건성)', () => {
+    const { routine } = generateRoutine({
+      skinType: 'dry',
+      concerns: [],
+      timeOfDay: 'morning',
+    });
+    const cleanser = routine.find((s) => s.category === 'cleanser');
+    const toner = routine.find((s) => s.category === 'toner');
+    const cream = routine.find((s) => s.category === 'cream');
+    const sun = routine.find((s) => s.category === 'sunscreen');
+    expect(cleanser?.specName).toBe('촉촉한 약산성 클렌저');
+    expect(toner?.specName).toBe('보습 토너');
+    expect(cream?.specName).toBe('세라마이드 크림');
+    expect(sun?.specName).toBe('SPF50+ PA+++');
+    // 왜 한 줄도 함께
+    expect(cleanser?.specReason).toBeTruthy();
+  });
+
+  it('세럼은 고민(concerns) 기반으로 구체화된다', () => {
+    const { routine } = generateRoutine({
+      skinType: 'normal',
+      concerns: ['wrinkles'],
+      timeOfDay: 'evening',
+    });
+    const serum = routine.find((s) => s.category === 'serum');
+    expect(serum?.specName).toBe('레티놀 세럼(저녁)');
+  });
+
+  it('barrier 단계면 세럼을 진정·보습으로 강제한다 (목표 무시)', () => {
+    const { routine } = generateRoutine({
+      skinType: 'normal',
+      concerns: ['pigmentation'],
+      timeOfDay: 'evening',
+      carePhase: 'barrier',
+    });
+    const serum = routine.find((s) => s.category === 'serum');
+    expect(serum?.specName).toBe('히알루론산 세럼');
+  });
+
+  it('더블클렌징 1단계 "오일 클렌저"는 약산성 스펙으로 바꾸지 않는다', () => {
+    const { routine } = generateRoutine({
+      skinType: 'oily',
+      concerns: [],
+      timeOfDay: 'evening',
+    });
+    const oilCleanser = routine.find((s) => s.name.includes('오일') && s.category === 'cleanser');
+    const foamCleanser = routine.find((s) => s.name.includes('폼') && s.category === 'cleanser');
+    expect(oilCleanser?.specName).toBeUndefined(); // 원 명칭 유지
+    expect(foamCleanser?.specName).toBe('약산성 클렌저'); // 폼은 약산성으로
+  });
+
+  it('대응 없는 카테고리(에센스 등)엔 specName을 붙이지 않는다', () => {
+    const { routine } = generateRoutine({
+      skinType: 'normal',
+      concerns: [],
+      timeOfDay: 'morning',
+      includeOptional: true,
+    });
+    const essence = routine.find((s) => s.category === 'essence');
+    expect(essence?.specName).toBeUndefined();
+  });
+});
+
 // ── ADR-117: 법적 표현 안전 (처방·치료 금지) ──────────────────────────────
 describe('법적 표현 안전', () => {
   it('루틴 개인화 문구에 의약품 클레임 단어(처방·치료)가 없다', () => {

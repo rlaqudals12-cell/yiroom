@@ -38,6 +38,8 @@ import {
   chooseImage,
   needsBackfill,
   buildSearchQuery,
+  buildFallbackSearchQuery,
+  stripVariantCode,
   buildImagePatch,
   summarizeDecisions,
   SUPPORTED_TABLES,
@@ -155,20 +157,40 @@ async function main(): Promise<void> {
     return;
   }
 
-  // 2. 검색 + 매칭 판정
+  // 2. 검색 + 매칭 판정 (1차: 원명, 2차: 색상코드 제거 베이스명)
   const decisions: Array<{ row: ProductRow; decision: BackfillDecision }> = [];
   for (let i = 0; i < targets.length; i++) {
     const row = targets[i];
-    const items = await searchNaver(buildSearchQuery(row));
-    decisions.push({ row, decision: chooseImage(row, items) });
+    const primaryQuery = buildSearchQuery(row);
+    let decision = chooseImage(row, await searchNaver(primaryQuery));
+
+    // 1차 미매칭 + 색상코드/호수가 있어 베이스 검색어가 달라지면 → 2차(베이스명) 시도.
+    // 유사도·판정은 베이스명 기준, 브랜드 가드는 동일 → "다른 색이어도 같은 라인"만 통과.
+    if (decision.status === 'unmatched') {
+      const fallbackQuery = buildFallbackSearchQuery(row);
+      if (fallbackQuery && fallbackQuery !== primaryQuery) {
+        await new Promise((r) => setTimeout(r, RATE_LIMIT_MS));
+        const fbDecision = chooseImage(row, await searchNaver(fallbackQuery), {
+          matchName: stripVariantCode(row.name),
+          via: 'fallback',
+        });
+        if (fbDecision.status === 'matched') decision = fbDecision;
+      }
+    }
+
+    decisions.push({ row, decision });
     process.stdout.write(`  진행 ${i + 1}/${targets.length}\r`);
     await new Promise((r) => setTimeout(r, RATE_LIMIT_MS));
   }
   console.log('');
 
   const summary = summarizeDecisions(decisions.map((d) => d.decision));
+  // 2차 시도(베이스명 재검색)로 채운 건수 분리 리포트
+  const matchedViaFallback = decisions.filter(
+    (d) => d.decision.status === 'matched' && d.decision.via === 'fallback'
+  ).length;
   console.log(
-    `\n판정: 매칭 ${summary.matched}건 · 미매칭 ${summary.unmatched}건 · 스킵 ${summary.skipped}건`
+    `\n판정: 매칭 ${summary.matched}건 (2차 시도 매칭 ${matchedViaFallback}건) · 미매칭 ${summary.unmatched}건 · 스킵 ${summary.skipped}건`
   );
 
   const matched = decisions.filter((d) => d.decision.status === 'matched');

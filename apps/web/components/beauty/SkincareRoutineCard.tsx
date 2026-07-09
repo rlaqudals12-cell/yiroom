@@ -132,7 +132,8 @@ export function SkincareRoutineCard({
 
                     {/* 정보 — 제품명 > 스텝 설명(note) > 미설정 순으로 표시 */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{categoryInfo.label}</p>
+                      {/* U2: 상태 기반 성분 스펙명 우선("약산성 클렌저"), 없으면 카테고리 라벨 */}
+                      <p className="font-medium text-sm">{step.specName || categoryInfo.label}</p>
                       {(() => {
                         const subtitle = step.productName || step.note;
                         return subtitle ? (
