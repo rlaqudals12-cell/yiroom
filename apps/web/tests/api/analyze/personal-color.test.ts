@@ -510,6 +510,55 @@ describe('POST /api/analyze/personal-color', () => {
     });
   });
 
+  describe('퍼스널 대비 실측 (ADR-116)', () => {
+    it('클라이언트 실측 contrastLevel이 image_analysis에 저장된다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: MOCK_BASE64,
+          useMock: true,
+          contrastLevel: 'high',
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockSupabase.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          image_analysis: expect.objectContaining({ contrastLevel: 'high' }),
+        })
+      );
+    });
+
+    it('contrastLevel이 없으면 image_analysis에 필드를 넣지 않는다 (추측 금지)', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(
+        createMockPostRequest({
+          imageBase64: MOCK_BASE64,
+          useMock: true,
+        })
+      );
+
+      const insertArg = mockSupabase.insert.mock.calls[0][0] as {
+        image_analysis: Record<string, unknown>;
+      };
+      expect(insertArg.image_analysis).not.toHaveProperty('contrastLevel');
+    });
+
+    it('잘못된 contrastLevel enum 값은 400을 반환한다 (zod 검증)', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: MOCK_BASE64,
+          useMock: true,
+          contrastLevel: 'extreme',
+        })
+      );
+
+      expect(response.status).toBe(400);
+    });
+  });
+
   describe('응답 형식', () => {
     it('성공 응답에 필수 필드가 포함된다', async () => {
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });

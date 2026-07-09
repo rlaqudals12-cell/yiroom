@@ -13,6 +13,8 @@ import { useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { Sparkles } from 'lucide-react';
 import { measureBodyClient } from '@/lib/analysis/body-v2';
+import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
+import { measureContrastLevel } from '../personal-color/_components/measure-contrast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
@@ -36,6 +38,8 @@ const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const router = useRouter();
   const { analysisCount } = useAnalysisStatus();
+  // 퍼스널 대비 실측용 MediaPipe 랜드마커 (ADR-116) — 미가용 시 detect가 null → 대비 생략
+  const { detect: detectFaceLandmarks } = useFaceLandmarker();
   // 온보딩에서 저장된 성별을 추천 맞춤 기본값으로 재사용 (neutral은 미선택으로 취급)
   const savedGender = useGender();
 
@@ -87,6 +91,11 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         }
       }
 
+      // 퍼스널 대비 실측 (ADR-116, PC 축) — 얼굴 셀카에서 피부·모발 L* 격차를 측정.
+      // measuredBody와 동일 패턴: MediaPipe 미가용/얼굴 미감지면 null → 필드 생략(서버는 미저장).
+      const measuredContrastLevel =
+        (await measureContrastLevel(detectFaceLandmarks, faceImage)) ?? undefined;
+
       const res = await fetch('/api/analyze/integrated', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,6 +103,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
           faceImageBase64: faceImage,
           bodyImageBase64: bodyImage ?? undefined,
           measuredBody,
+          measuredContrastLevel,
           questionnaire: questionnaire ?? {},
           options: { locale: 'ko' },
           // 선택 재분석: 일부 축만 고르면 그 축만 재실행, 나머지는 프로필 최신값 유지 (ADR-109)
@@ -132,7 +142,15 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       setError('네트워크 오류가 발생했어요.');
       setIsSubmitting(false);
     }
-  }, [faceImage, bodyImage, questionnaire, selectedAxes, isPartialUpdate, router]);
+  }, [
+    faceImage,
+    bodyImage,
+    questionnaire,
+    selectedAxes,
+    isPartialUpdate,
+    router,
+    detectFaceLandmarks,
+  ]);
 
   if (isSubmitting) {
     return (

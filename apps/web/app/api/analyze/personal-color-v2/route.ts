@@ -13,6 +13,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import {
@@ -48,7 +49,6 @@ import {
   addXp,
   type BadgeAwardResult,
 } from '@/lib/gamification';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -96,6 +96,15 @@ export async function POST(req: NextRequest) {
       return validationError('이미지 또는 피부색 정보가 필요합니다.');
     }
 
+    // 퍼스널 대비 실측값 (ADR-116) — 클라이언트가 피부·모발 L* 격차를 측정해 전달.
+    // ⚠️ 클라이언트 산출값을 신뢰한다: 표시용 힌트이지 보안 자산이 아니므로 수용(v2: 서버 재검증 여지).
+    // 잘못된 값/미측정은 무시(undefined) — 있을 때만 detailedAnalysis에 실어 저장 경로로 흘린다.
+    const measuredContrast = z
+      .enum(['low', 'medium', 'high'])
+      .optional()
+      .catch(undefined)
+      .parse(body?.contrastLevel);
+
     // CIE 풀 파이프라인 (CIE-1 품질 + CIE-3 AWB + CIE-4 조명)
     let pipelineMeta: PipelineMetadata | undefined;
     if (imageBase64 && !FORCE_MOCK && !useMock && !skipQualityCheck) {
@@ -138,7 +147,8 @@ export async function POST(req: NextRequest) {
             palette,
             detailedAnalysis: {
               skinToneLab: skinLab,
-              contrastLevel: 'medium',
+              // contrastLevel(퍼스널 대비)은 모발-피부 명도 실측값 — 클라이언트 실측이 있을 때만 채운다(ADR-116)
+              ...(measuredContrast ? { contrastLevel: measuredContrast } : {}),
               saturationLevel: 'medium',
               valueLevel: 'medium',
             },
@@ -175,11 +185,9 @@ export async function POST(req: NextRequest) {
               palette,
               detailedAnalysis: {
                 skinToneLab: skinLab,
-                contrastLevel: selectByKey(
-                  geminiResult.data.brightnessLevel,
-                  { light: 'high' as const, dark: 'low' as const },
-                  'medium' as const
-                )!,
+                // contrastLevel(퍼스널 대비)은 모발-피부 명도 실측값 — VLM 밝기 추정으로
+                // 지어내지 않고, 클라이언트 모발 샘플러 실측이 전달됐을 때만 채운다(ADR-116 결정 2).
+                ...(measuredContrast ? { contrastLevel: measuredContrast } : {}),
                 saturationLevel: mapSaturationLevel(geminiResult.data.saturationLevel),
                 valueLevel: mapBrightnessToValueLevel(geminiResult.data.brightnessLevel),
               },
@@ -243,6 +251,10 @@ export async function POST(req: NextRequest) {
             subtype: result.classification.subtype,
             skinLab: result.detailedAnalysis?.skinToneLab || result.classification.measuredLab,
             palette: result.palette,
+            // 퍼스널 대비(ADR-116) — 실측값이 있을 때만 저장(없으면 필드 자체 생략)
+            ...(result.detailedAnalysis?.contrastLevel
+              ? { contrastLevel: result.detailedAnalysis.contrastLevel }
+              : {}),
           },
           best_colors: result.palette.mainColors || [],
           worst_colors: result.palette.avoidColors || [],

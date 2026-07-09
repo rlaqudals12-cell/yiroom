@@ -14,9 +14,13 @@
  * @see lib/color/harmony.ts
  */
 
+import { hexToLab, labToHex } from '@/lib/color';
 import { analogous, complementary } from './harmony';
 
 export type OutfitRole = '상의' | '하의' | '포인트';
+
+/** 퍼스널 대비 레벨 (ADR-116) — 배색 명도 격차 조절용 */
+export type OutfitContrast = 'low' | 'medium' | 'high';
 
 export interface OutfitColor {
   hex: string;
@@ -44,15 +48,28 @@ function dateSeed(date: Date): number {
 }
 
 /**
+ * 명도만 이동한 변형색 — 상·하의 명도 격차(대비) 조절용.
+ * 밝은 base는 어둡게, 어두운 base는 밝게 밀어 자연스러운 방향으로 격차를 만든다.
+ */
+function shiftLightness(hex: string, delta: number): string {
+  const lab = hexToLab(hex);
+  const nextL = Math.max(0, Math.min(100, lab.L + delta));
+  return labToHex({ L: nextL, a: lab.a, b: lab.b });
+}
+
+/**
  * 오늘의 배색 조합 생성 — 순수 함수.
  * 유효한 베스트 컬러가 없으면 null(호출부에서 섹션 생략 — 정직성 가드).
  *
  * @param bestColors 진단된 베스트 컬러(hex 팔레트)
  * @param date 기준 날짜(기본 오늘) — 테스트에서 고정 주입
+ * @param contrast 퍼스널 대비(ADR-116, 선택) — high면 상·하의 명도 격차를 키우고,
+ *   low면 인접 명도(톤온톤)로 좁힌다. 미지정/medium이면 기존 동작(유사색) 유지(하위호환).
  */
 export function composeDailyOutfit(
   bestColors: ReadonlyArray<{ name?: string; hex?: string }>,
-  date: Date = new Date()
+  date: Date = new Date(),
+  contrast?: OutfitContrast
 ): DailyOutfitPalette | null {
   const valid = bestColors.filter((c) => isHex(c?.hex));
   if (valid.length === 0) return null;
@@ -61,9 +78,21 @@ export function composeDailyOutfit(
   const base = valid[seed % valid.length];
   const baseHex = base.hex as string;
 
-  // 유사색 2개(-spread, +spread) 중 날짜로 하나 선택 → 하의
-  const neighbors = analogous(baseHex, 30);
-  const bottomHex = neighbors[seed % neighbors.length];
+  // 하의 명도: 대비 수준에 따라 조절 (기본 = 유사색 — 하위호환)
+  let bottomHex: string;
+  if (contrast === 'high') {
+    // 명암 격차 큰 조합: 밝은 base는 어둡게, 어두운 base는 밝게
+    const baseL = hexToLab(baseHex).L;
+    bottomHex = shiftLightness(baseHex, baseL > 50 ? -35 : 35);
+  } else if (contrast === 'low') {
+    // 톤온톤: 인접 명도(작은 격차)로 좁혀 얼굴이 묻히지 않게
+    const baseL = hexToLab(baseHex).L;
+    bottomHex = shiftLightness(baseHex, baseL > 50 ? -8 : 8);
+  } else {
+    // 유사색 2개(-spread, +spread) 중 날짜로 하나 선택
+    const neighbors = analogous(baseHex, 30);
+    bottomHex = neighbors[seed % neighbors.length];
+  }
   // 보색 → 포인트
   const pointHex = complementary(baseHex);
 

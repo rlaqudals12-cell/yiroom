@@ -27,6 +27,7 @@
 | [rag-retrieval.md](rag-retrieval.md)                           | RAG 검색                                        | RAG-OPT-1~4, EMB-1~4, VDB-1~4                | **1.0 (신규)**   |
 | [nutrition-science.md](nutrition-science.md)                   | 영양학                                          | N-1, COMBO-SKIN-NUTRITION                    | 1.0              |
 | [ingredient-safety-timeline.md](ingredient-safety-timeline.md) | 성분 안전 판정·효과 타임라인 (제품 스캔 적합도) | ADR-112, 2026-07 스캔 리서치                 | 1.0 (신규)       |
+| [personal-contrast.md](personal-contrast.md)                   | 퍼스널 대비 — 피부·모발 명도 격차 (강도 축)     | ADR-116, 2026-07 대비 리서치                 | 1.0 (신규)       |
 | [exercise-physiology.md](exercise-physiology.md)               | 운동생리학                                      | W-1, COMBO-BODY-EXERCISE                     | 1.0              |
 | [cross-domain-synergy.md](cross-domain-synergy.md)             | 크로스 도메인 시너지                            | COMBO-1~10                                   | 1.0              |
 | ~~[oral-health.md](oral-health.md)~~                           | ~~구강 건강~~ — **폐기 (ADR-098, 2026-04-22)**  | ~~OH-1-BUNDLE~~                              | 1.0 (SUPERSEDED) |

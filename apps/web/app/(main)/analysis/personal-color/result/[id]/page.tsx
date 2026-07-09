@@ -112,6 +112,8 @@ interface DbPersonalColorAssessment {
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
     usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
+    // 퍼스널 대비(모발-피부 명도 실측, ADR-116) — 실측값이 있을 때만 저장됨
+    contrastLevel?: 'low' | 'medium' | 'high';
   } | null;
   face_image_url?: string; // DB 컬럼명과 일치
   created_at: string;
@@ -119,6 +121,23 @@ interface DbPersonalColorAssessment {
 
 // 신뢰도 기준값 (이 미만이면 재분석 권장)
 const LOW_CONFIDENCE_THRESHOLD = 70;
+
+// 퍼스널 대비(ADR-116) 안내 문구 — 초보자 풀이 병기("얼굴의 밝고 어두움 차이").
+// 판정 보조 1줄(접힌 섹션 아님) · 실측값이 있을 때만 노출.
+const CONTRAST_COPY: Record<'low' | 'medium' | 'high', { label: string; line: string }> = {
+  low: {
+    label: '낮은 대비',
+    line: '얼굴의 밝고 어두움 차이(대비)가 낮은 편이에요 — 톤온톤·인접 명도 배색이 잘 어울려요.',
+  },
+  medium: {
+    label: '중간 대비',
+    line: '얼굴의 밝고 어두움 차이(대비)가 중간이에요 — 배색 강도를 자유롭게 조절해도 잘 받아요.',
+  },
+  high: {
+    label: '높은 대비',
+    line: '얼굴의 밝고 어두움 차이(대비)가 높은 편이에요 — 명확한 명암 배색·진한 발색이 잘 어울려요.',
+  },
+};
 
 // 시즌별 톤/깊이 결정
 function getSeasonToneDepth(seasonType: SeasonType): { tone: ToneType; depth: DepthType } {
@@ -266,6 +285,8 @@ export default function PersonalColorResultPage() {
   const [showEducation, setShowEducation] = useState(false);
   // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
   const [usedMock, setUsedMock] = useState(false);
+  // 퍼스널 대비(모발-피부 명도 실측, ADR-116) — 실측값이 있을 때만 표시
+  const [contrastLevel, setContrastLevel] = useState<'low' | 'medium' | 'high' | null>(null);
   const { isExpert, toggleExpert } = useExpertMode();
   const fetchedRef = useRef(false);
 
@@ -342,6 +363,10 @@ export default function PersonalColorResultPage() {
       if (dbData.image_analysis?.usedMock) {
         setUsedMock(true);
       }
+      // 퍼스널 대비 실측값 (있을 때만 — 없으면 미표시, 추측 없음)
+      if (dbData.image_analysis?.contrastLevel) {
+        setContrastLevel(dbData.image_analysis.contrastLevel);
+      }
     } catch (err) {
       console.error('[PC-1] Fetch error:', err);
 
@@ -364,6 +389,9 @@ export default function PersonalColorResultPage() {
             }
             if (dbData.image_analysis?.usedMock) {
               setUsedMock(true);
+            }
+            if (dbData.image_analysis?.contrastLevel) {
+              setContrastLevel(dbData.image_analysis.contrastLevel);
             }
             // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
@@ -607,6 +635,24 @@ export default function PersonalColorResultPage() {
                 evidence={analysisEvidence}
                 onTabChange={setActiveTab}
               />
+
+              {/* 퍼스널 대비 실측 안내 — 판정 보조 1줄(접힘 아님), 실측값 있을 때만 (ADR-116) */}
+              {contrastLevel && (
+                <div
+                  className="mt-4 flex items-start gap-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/20 p-3.5"
+                  data-testid="pc-contrast-note"
+                >
+                  <GitCompareArrows className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {CONTRAST_COPY[contrastLevel].label}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                      {CONTRAST_COPY[contrastLevel].line}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (접힘 — 결론 먼저) */}
               {result.bestColors.length > 0 && (

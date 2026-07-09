@@ -52,6 +52,13 @@ export interface ActionPlan {
 
 const HORIZON_ORDER: ActionHorizon[] = ['now', 'this_week', 'this_month'];
 
+/** 퍼스널 대비(ADR-116) 실측값이 있으면 립 발색 강도 한 줄 (없으면 빈 문자열 — 무변경) */
+function contrastLipNote(level: 'low' | 'medium' | 'high' | undefined): string {
+  if (level === 'high') return ' 대비가 높아 진한 발색도 잘 받아요.';
+  if (level === 'low') return ' 대비가 낮아 은은한 발색(MLBB)이 더 자연스러워요.';
+  return '';
+}
+
 /** PC 성공 시 액션 후보. 우선순위: now > this_week */
 function pcActions(data: PersonalColorAxisData, gender: RecommendationGender): ActionItem[] {
   const warm = data.undertone?.toLowerCase() === 'warm';
@@ -59,6 +66,8 @@ function pcActions(data: PersonalColorAxisData, gender: RecommendationGender): A
   // 립틴트는 화장 습관이 있는 여성/미상(neutral)에게만.
   // 원시 영문값(season='Autumn', undertone='Warm')을 한국어로 — 사용자 대면 문구 영문 누수 방지
   const seasonLabel = seasonKo(data.season);
+  // 퍼스널 대비(ADR-116) 실측값이 있으면 립 발색 강도 한 줄 덧붙임 (없으면 무변경)
+  const contrastNote = contrastLipNote(data.contrastLevel);
   const now: ActionItem =
     gender === 'male'
       ? {
@@ -71,7 +80,7 @@ function pcActions(data: PersonalColorAxisData, gender: RecommendationGender): A
           horizon: 'now',
           axis: 'personal_color',
           title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
-          why: `${seasonLabel}에 혈색이 가장 잘 살아나요.`,
+          why: `${seasonLabel}에 혈색이 가장 잘 살아나요.${contrastNote}`,
         };
   return [
     now,

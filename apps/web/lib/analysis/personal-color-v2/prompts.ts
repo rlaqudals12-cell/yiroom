@@ -154,9 +154,8 @@ export function generateAnalysisPrompt(options?: {
     ? `
 6. 머리카락 색상 Lab 추정 (선택)
 7. 눈 색상 Lab 추정 (선택)
-8. 대비 레벨 판정 (low/medium/high)
-9. 채도 레벨 판정 (muted/medium/bright)
-10. 명도 레벨 판정 (light/medium/deep)`
+8. 채도 레벨 판정 (muted/medium/bright)
+9. 명도 레벨 판정 (light/medium/deep)`
     : '';
 
   const outputFormat = `
@@ -184,7 +183,6 @@ export function generateAnalysisPrompt(options?: {
   "detailedAnalysis": {
     "hairColorLab": { "L": 28, "a": 3, "b": 8 },
     "eyeColorLab": { "L": 32, "a": 2, "b": 5 },
-    "contrastLevel": "medium",
     "saturationLevel": "medium",
     "valueLevel": "medium"
   }`

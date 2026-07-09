@@ -107,7 +107,9 @@ describe('generateAnalysisPrompt', () => {
 
       expect(prompt).toContain('머리카락 색상');
       expect(prompt).toContain('눈 색상');
-      expect(prompt).toContain('대비 레벨');
+      // 대비 레벨(퍼스널 대비)은 모발-피부 명도 실측값 — VLM 출력에서 제거됨(ADR-116)
+      expect(prompt).not.toContain('대비 레벨');
+      expect(prompt).not.toContain('contrastLevel');
       expect(prompt).toContain('채도 레벨');
       expect(prompt).toContain('명도 레벨');
       expect(prompt).toContain('detailedAnalysis');

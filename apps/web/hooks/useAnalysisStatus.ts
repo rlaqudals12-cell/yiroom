@@ -50,6 +50,8 @@ export interface AnalysisSummary {
   undertone?: string; // M-1
   // PC-1 베스트 컬러(진단된 hex 팔레트) — 홈 브리핑/프로필 카드 시각화용 (V1 시각 자산 노출)
   bestColors?: Array<{ name: string; hex: string }>;
+  // PC 퍼스널 대비(모발-피부 명도 실측, ADR-116) — 실측값이 있을 때만. 배색/브리핑 강도 조절용.
+  contrastLevel?: 'low' | 'medium' | 'high';
 }
 
 // DB best_colors(JSONB 배열) 항목 하나를 {name,hex}로 정규화 (AI 원본 {name,hex}, 방어적으로 color 폴백)
@@ -69,14 +71,23 @@ function normalizeBestColors(raw: unknown): Array<{ name: string; hex: string }>
   return raw.map(normalizeColorItem).filter((c): c is { name: string; hex: string } => c !== null);
 }
 
+// image_analysis JSONB에서 실측 대비 레벨만 안전 추출 (없거나 무효면 undefined — 추측 없음)
+function extractContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = (raw as { contrastLevel?: unknown }).contrastLevel;
+  return value === 'low' || value === 'medium' || value === 'high' ? value : undefined;
+}
+
 // PC 분석 요약 조립 — best_colors 정규화 포함 (fetchAnalyses 복잡도 분리)
 function buildPersonalColorSummary(row: {
   id: string;
   season: string;
   created_at: string;
   best_colors: unknown;
+  image_analysis?: unknown;
 }): AnalysisSummary {
   const bestColors = normalizeBestColors(row.best_colors);
+  const contrastLevel = extractContrastLevel(row.image_analysis);
   return {
     id: row.id,
     type: 'personal-color',
@@ -84,6 +95,7 @@ function buildPersonalColorSummary(row: {
     summary: getSeasonLabel(row.season),
     seasonType: row.season,
     ...(bestColors.length > 0 ? { bestColors } : {}),
+    ...(contrastLevel ? { contrastLevel } : {}),
   };
 }
 
@@ -206,7 +218,7 @@ export function useAnalysisStatus(): AnalysisStatus {
         const [pcResult, skinResult, bodyResult, hairResult, makeupResult] = await Promise.all([
           supabase
             .from('personal_color_assessments')
-            .select('id, season, created_at, best_colors')
+            .select('id, season, created_at, best_colors, image_analysis')
             .order('created_at', { ascending: false })
             .limit(1),
           supabase

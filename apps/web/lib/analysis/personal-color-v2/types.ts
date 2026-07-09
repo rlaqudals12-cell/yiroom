@@ -113,8 +113,11 @@ export interface PersonalColorV2Result {
     hairColorLab?: LabColor;
     /** 눈 색상 Lab */
     eyeColorLab?: LabColor;
-    /** 색상 대비 레벨 */
-    contrastLevel: 'low' | 'medium' | 'high';
+    /**
+     * 퍼스널 대비 레벨 (모발-피부 명도 격차 실측 — ADR-116).
+     * 실측 신뢰도 미달(모발 샘플 수·분산) 시 생략(undefined) — 추측하지 않는다.
+     */
+    contrastLevel?: 'low' | 'medium' | 'high';
     /** 채도 특성 */
     saturationLevel: 'muted' | 'medium' | 'bright';
     /** 명도 특성 */

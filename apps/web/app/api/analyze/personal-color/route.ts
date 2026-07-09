@@ -44,6 +44,11 @@ const personalColorSchema = z.object({
   rightImageBase64: base64ImageSchema.optional(),
   useMock: z.boolean().optional().default(false),
   saveImage: z.boolean().optional().default(false),
+  // 퍼스널 대비 실측값 (ADR-116) — 클라이언트가 피부·모발 L* 격차를 측정해 전달.
+  // ⚠️ 클라이언트 산출값을 신뢰한다: 이 값은 결과 표시용 힌트(코디 대비 카피 등)이지
+  //    권한/과금 등 보안 자산이 아니므로 수용 가능. v2에서 서버 픽셀 재검증 여지(SDD 후속).
+  //    실측 실패 시 클라이언트가 필드를 생략하므로 optional — 없으면 저장도 생략(추측 금지).
+  contrastLevel: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 /**
@@ -103,6 +108,7 @@ export async function POST(req: NextRequest) {
       rightImageBase64,
       useMock,
       saveImage,
+      contrastLevel,
     } = parsed.data;
 
     // 이미지 입력 검증: 다각도 또는 단일 이미지 필요
@@ -442,6 +448,8 @@ export async function POST(req: NextRequest) {
             styleDescription: result.styleDescription,
             analysisEvidence: aiResult.analysisEvidence || null,
             imageQuality: aiResult.imageQuality || null,
+            // 퍼스널 대비 실측값(ADR-116) — 클라이언트 실측이 있을 때만 저장(없으면 필드 생략)
+            ...(contrastLevel ? { contrastLevel } : {}),
             // Mock 폴백 여부 저장 — 재방문 시 MockDataNotice 표시 + 개인화 라벨 정직성 판단용
             usedMock,
             multiAngle: hasMultiAngle
@@ -562,6 +570,8 @@ export async function POST(req: NextRequest) {
             styleDescription: result.styleDescription,
             analysisEvidence: aiResult.analysisEvidence || null,
             imageQuality: aiResult.imageQuality || null,
+            // 퍼스널 대비 실측값(ADR-116) — 있을 때만 저장 (DB 실패 합성 응답에도 보존)
+            ...(contrastLevel ? { contrastLevel } : {}),
             usedMock: true,
           },
           season_scores: {

@@ -114,8 +114,8 @@ const mockPersonalColorResult = {
   classification: mockClassification,
   palette: mockPalette,
   detailedAnalysis: {
+    // contrastLevel(퍼스널 대비)은 모발 실측값 — 미측정 시 생략(ADR-116)
     skinToneLab: { L: 65, a: 12, b: 15 },
-    contrastLevel: 'medium' as const,
     saturationLevel: 'medium' as const,
     valueLevel: 'medium' as const,
   },

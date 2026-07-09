@@ -395,25 +395,23 @@ describe('generateMockResult', () => {
       expect(result.detailedAnalysis?.skinToneLab).toBeDefined();
       expect(result.detailedAnalysis?.hairColorLab).toBeDefined();
       expect(result.detailedAnalysis?.eyeColorLab).toBeDefined();
-      expect(result.detailedAnalysis?.contrastLevel).toBeDefined();
       expect(result.detailedAnalysis?.saturationLevel).toBeDefined();
       expect(result.detailedAnalysis?.valueLevel).toBeDefined();
     });
 
-    it('detailedAnalysis의 contrastLevel이 subtype과 연관된다', () => {
-      // deep/bright subtype → high contrast
+    it('detailedAnalysis에 contrastLevel을 지어내지 않는다 (ADR-116)', () => {
+      // 퍼스널 대비는 모발-피부 명도 실측값 — Mock 폴백 경로에서는 생략(추측 금지).
       const deepResult = generateMockResult({
         preferredTone: 'deep-autumn',
         includeDetailedAnalysis: true,
       });
-      expect(deepResult.detailedAnalysis?.contrastLevel).toBe('high');
+      expect(deepResult.detailedAnalysis?.contrastLevel).toBeUndefined();
 
-      // light/muted subtype → low contrast
       const lightResult = generateMockResult({
         preferredTone: 'light-spring',
         includeDetailedAnalysis: true,
       });
-      expect(lightResult.detailedAnalysis?.contrastLevel).toBe('low');
+      expect(lightResult.detailedAnalysis?.contrastLevel).toBeUndefined();
     });
 
     it('detailedAnalysis의 saturationLevel이 subtype과 연관된다', () => {

@@ -17,6 +17,8 @@ import {
 } from '@/lib/mock/personal-color';
 import type { ImageConsent } from '@/components/analysis/consent/types';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
+import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
+import { measureContrastLevel } from './_components/measure-contrast';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
 import WristPhotoUpload from './_components/WristPhotoUpload';
@@ -74,6 +76,16 @@ function getSeasonLabel(season: string, t: (key: string) => string): string {
   return map[key] || season;
 }
 
+// 분석에 쓰일 정면 얼굴 이미지(data URL) 확보 — 다각도=정면, 레거시=단일 파일
+async function resolvePrimaryFaceBase64(
+  multiAngleImages: MultiAngleImages | null,
+  faceImageFile: File | null
+): Promise<string | null> {
+  if (multiAngleImages) return multiAngleImages.frontImageBase64;
+  if (faceImageFile) return compressFileToBase64(faceImageFile);
+  return null;
+}
+
 // 기존 분석 결과 타입
 interface ExistingAnalysis {
   id: string;
@@ -93,6 +105,8 @@ export default function PersonalColorPage() {
   const forceNew = searchParams.get('forceNew') === 'true';
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
+  // 퍼스널 대비 실측용 MediaPipe 랜드마커 (ADR-116) — 미가용 시 detect가 null 반환 → 대비 생략
+  const { detect: detectFaceLandmarks } = useFaceLandmarker();
   const [existingAnalysis, setExistingAnalysis] = useState<ExistingAnalysis | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [step, setStep] = useState<AnalysisStep>('guide');
@@ -419,6 +433,18 @@ export default function PersonalColorPage() {
       // currentSessionConsent: 현재 세션에서 체크박스로 동의한 경우
       // existingConsent: 이전에 이미 동의한 경우
       const saveImage = currentSessionConsent || !!existingConsent?.consent_given;
+
+      // 분석에 쓰일 정면 얼굴 이미지(data URL) 확보
+      const primaryFaceBase64 = await resolvePrimaryFaceBase64(multiAngleImages, faceImageFile);
+
+      if (!primaryFaceBase64) {
+        throw new Error('No image available');
+      }
+
+      // 퍼스널 대비 실측 (ADR-116) — 클라이언트에서 피부·모발 L* 격차를 측정한다.
+      // MediaPipe 미가용/얼굴 미감지면 null → 요청에서 필드 생략(지어내지 않고, 분석은 계속).
+      const contrastLevel = await measureContrastLevel(detectFaceLandmarks, primaryFaceBase64);
+
       if (hasMultiAngle && multiAngleImages) {
         // 다각도 분석 요청
         requestBody = {
@@ -427,17 +453,16 @@ export default function PersonalColorPage() {
           rightImageBase64: multiAngleImages.rightImageBase64,
           wristImageBase64,
           saveImage,
-        };
-      } else if (faceImageFile) {
-        // 레거시 단일 이미지 요청
-        const faceImageBase64 = await compressFileToBase64(faceImageFile);
-        requestBody = {
-          imageBase64: faceImageBase64,
-          wristImageBase64,
-          saveImage,
+          ...(contrastLevel ? { contrastLevel } : {}),
         };
       } else {
-        throw new Error('No image available');
+        // 레거시 단일 이미지 요청
+        requestBody = {
+          imageBase64: primaryFaceBase64,
+          wristImageBase64,
+          saveImage,
+          ...(contrastLevel ? { contrastLevel } : {}),
+        };
       }
 
       const response = await fetch('/api/analyze/personal-color', {
@@ -483,6 +508,8 @@ export default function PersonalColorPage() {
     router,
     existingConsent,
     currentSessionConsent,
+    detectFaceLandmarks,
+    t,
   ]);
 
   // 로딩 단계 진입 시 즉시 API 호출 시작

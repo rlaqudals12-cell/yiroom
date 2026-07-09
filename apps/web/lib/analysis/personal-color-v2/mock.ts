@@ -210,9 +210,7 @@ function generateMockLab(tone: TwelveTone): LabColor {
  * @param selectedTone - 선택된 톤
  * @returns 톤별 점수
  */
-function generateMockToneScores(
-  selectedTone: TwelveTone
-): Record<TwelveTone, number> {
+function generateMockToneScores(selectedTone: TwelveTone): Record<TwelveTone, number> {
   const tones = Object.keys(TWELVE_TONE_REFERENCE_LAB) as TwelveTone[];
   const scores: Partial<Record<TwelveTone, number>> = {};
 
@@ -268,12 +266,16 @@ export function generateMockClassification(options?: {
   const season = parts[1] as 'spring' | 'summer' | 'autumn' | 'winter';
 
   // 언더톤 결정: 시즌별 매핑
-  const undertone = selectByKey(season, {
-    spring: 'warm' as const,
-    autumn: 'warm' as const,
-    summer: 'cool' as const,
-    winter: 'cool' as const,
-  }, 'neutral' as const)!;
+  const undertone = selectByKey(
+    season,
+    {
+      spring: 'warm' as const,
+      autumn: 'warm' as const,
+      summer: 'cool' as const,
+      winter: 'cool' as const,
+    },
+    'neutral' as const
+  )!;
 
   return {
     tone,
@@ -314,11 +316,15 @@ export function generateMockResult(options?: {
     palette,
     stylingRecommendations: {
       clothing: palette.mainColors.slice(0, 4),
-      metals: selectByKey(classification.undertone, {
-        warm: ['gold', 'rose-gold'],
-        cool: ['silver'],
-        neutral: ['gold', 'silver'],
-      }, ['gold', 'silver'])!,
+      metals: selectByKey(
+        classification.undertone,
+        {
+          warm: ['gold', 'rose-gold'],
+          cool: ['silver'],
+          neutral: ['gold', 'silver'],
+        },
+        ['gold', 'silver']
+      )!,
       jewelry: palette.accentColors.slice(0, 2),
     },
     analyzedAt: new Date().toISOString(),
@@ -339,27 +345,30 @@ export function generateMockResult(options?: {
         a: 1 + Math.random() * 3,
         b: 3 + Math.random() * 7,
       },
-      contrastLevel: selectByKey(classification.subtype, {
-        deep: 'high' as const,
-        bright: 'high' as const,
-        light: 'low' as const,
-        muted: 'low' as const,
-        true: 'medium' as const,
-      }, 'medium' as const)!,
-      saturationLevel: selectByKey(classification.subtype, {
-        bright: 'bright' as const,
-        muted: 'muted' as const,
-        light: 'medium' as const,
-        deep: 'medium' as const,
-        true: 'medium' as const,
-      }, 'medium' as const)!,
-      valueLevel: selectByKey(classification.subtype, {
-        light: 'light' as const,
-        deep: 'deep' as const,
-        bright: 'medium' as const,
-        muted: 'medium' as const,
-        true: 'medium' as const,
-      }, 'medium' as const)!,
+      // contrastLevel(퍼스널 대비)은 모발-피부 명도 실측값 — Mock 폴백에서는 지어내지 않고
+      // 생략한다(ADR-116 결정 2, FORCE_MOCK_AI 경로). 서브타입으로 추정하던 하드코딩 제거.
+      saturationLevel: selectByKey(
+        classification.subtype,
+        {
+          bright: 'bright' as const,
+          muted: 'muted' as const,
+          light: 'medium' as const,
+          deep: 'medium' as const,
+          true: 'medium' as const,
+        },
+        'medium' as const
+      )!,
+      valueLevel: selectByKey(
+        classification.subtype,
+        {
+          light: 'light' as const,
+          deep: 'deep' as const,
+          bright: 'medium' as const,
+          muted: 'medium' as const,
+          true: 'medium' as const,
+        },
+        'medium' as const
+      )!,
     };
   }
 

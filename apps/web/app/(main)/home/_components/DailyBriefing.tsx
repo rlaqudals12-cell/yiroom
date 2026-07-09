@@ -104,8 +104,12 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   // 나의 컬러: 최신 퍼스널컬러의 베스트 팔레트(진단된 hex) — 있을 때만 시각화
   const pcEntry = analyses.find((a) => a.type === 'personal-color');
   const bestColors = useMemo(() => pcEntry?.bestColors ?? [], [pcEntry]);
-  // 오늘의 배색(상의·하의·포인트) — 베스트 컬러 기반 결정론(같은 날 같은 조합)
-  const dailyOutfit = useMemo(() => composeDailyOutfit(bestColors), [bestColors]);
+  // 오늘의 배색(상의·하의·포인트) — 베스트 컬러 기반 결정론(같은 날 같은 조합).
+  // 퍼스널 대비(ADR-116)가 실측돼 있으면 명도 격차를 반영(없으면 기존 동작 — 하위호환).
+  const dailyOutfit = useMemo(
+    () => composeDailyOutfit(bestColors, undefined, pcEntry?.contrastLevel),
+    [bestColors, pcEntry?.contrastLevel]
+  );
 
   // 피부 추이 + 경과일
   const skinEntry = analyses.find((a) => a.type === 'skin');

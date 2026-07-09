@@ -58,6 +58,15 @@ vi.mock('@clerk/nextjs', () => ({
   }),
 }));
 
+// 퍼스널 대비 실측(ADR-116)은 jsdom에서 Image.onload가 발화하지 않아 목 처리 —
+// 실측 로직 자체는 contrast-measure.test.ts에서 합성 픽셀로 검증됨
+vi.mock('@/app/(main)/analysis/personal-color/_components/measure-contrast', () => ({
+  measureContrastLevel: vi.fn().mockResolvedValue(null),
+}));
+vi.mock('@/hooks/useFaceLandmarker', () => ({
+  useFaceLandmarker: () => ({ detect: vi.fn().mockResolvedValue(null), isReady: false }),
+}));
+
 // Mock 이미지 압축 유틸리티
 vi.mock('@/lib/utils/image-compression', () => ({
   compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),

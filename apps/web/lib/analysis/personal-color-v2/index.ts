@@ -128,3 +128,19 @@ export {
 export { sampleZoneLab, sampleAllZonesLab } from './zone-sampler';
 
 export type { ColorZoneType, ZoneLabSample, ZoneLabSamplingResult } from './zone-sampler';
+
+// ============================================
+// 퍼스널 대비 실측 (ADR-116)
+// ============================================
+
+export {
+  sampleHairLab,
+  computePersonalContrast,
+  CONTRAST_THRESHOLDS,
+  HAIR_SAMPLER_CONFIG,
+} from './hair-sampler';
+
+export type { ContrastLevel, HairLabSample } from './hair-sampler';
+
+// 피부·모발 실측 → 대비 산출 오케스트레이터 (순수 함수)
+export { deriveContrastFromPixels } from './contrast-measure';

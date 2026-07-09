@@ -157,6 +157,9 @@ export async function runPersonalColorAxis(
           source: 'integrated',
           tone: classification.tone,
           subtype: classification.subtype,
+          // 퍼스널 대비 실측값(ADR-116) — 클라이언트 실측이 전달됐을 때만 저장(없으면 생략).
+          // 단독 PC 경로(image_analysis.contrastLevel)와 동일 키 → 결과/홈 소비 코드 재사용.
+          ...(input.measuredContrastLevel ? { contrastLevel: input.measuredContrastLevel } : {}),
           usedFallback,
         },
         best_colors: mainColors,
@@ -182,6 +185,8 @@ export async function runPersonalColorAxis(
         undertone: classification.undertone,
         confidence: classification.confidence,
         palette: mainColors,
+        // 액션 플랜(립 발색 강도)·홈 배색이 소비 — 실측이 있을 때만(ADR-116)
+        ...(input.measuredContrastLevel ? { contrastLevel: input.measuredContrastLevel } : {}),
       },
     };
   } catch (error) {

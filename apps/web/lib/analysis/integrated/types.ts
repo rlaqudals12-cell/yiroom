@@ -99,6 +99,13 @@ export const integratedAnalysisInputSchema = z.object({
     })
     .optional(),
 
+  /**
+   * PC 축 퍼스널 대비 실측값 (선택, ADR-116) — 얼굴 셀카를 클라이언트 MediaPipe+샘플러로
+   * 측정한 피부·모발 L* 격차. measuredBody와 동일 패턴: 서버엔 픽셀·랜드마크가 없으므로
+   * 클라이언트 실측을 신뢰(표시용 힌트, 보안 자산 아님). 미측정 시 생략(추측 금지).
+   */
+  measuredContrastLevel: z.enum(['low', 'medium', 'high']).optional(),
+
   /** 축별 자가입력 */
   questionnaire: z
     .object({
@@ -193,6 +200,8 @@ export interface PersonalColorAxisData {
   undertone: string;
   confidence: number;
   palette?: string[];
+  /** 퍼스널 대비(모발-피부 명도 실측, ADR-116) — 실측값이 있을 때만. 표현 강도 조절용. */
+  contrastLevel?: 'low' | 'medium' | 'high';
   [key: string]: unknown;
 }
 
