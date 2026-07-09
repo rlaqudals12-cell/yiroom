@@ -218,8 +218,11 @@ export interface DrapeSimulatorProps {
   deviceCapability: DeviceCapability;
   /** 금속 타입 (골드/실버) */
   metalType: MetalType;
-  /** 분석 완료 콜백 */
-  onAnalysisComplete?: (results: DrapeResult[]) => void;
+  /**
+   * 진단 정본 베스트 컬러 (순위·측정이 아니라 PC 결과의 추천 후보).
+   * 시뮬레이터는 판정하지 않고, 이 후보를 스와치로 제시해 직접 대보게 한다.
+   */
+  diagnosisBestColors?: Array<{ hex: string; name: string }>;
   /** 추가 클래스 */
   className?: string;
 }

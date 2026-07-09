@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { DrapeResult, MetalType } from '@/types/visual-analysis';
+import type { MetalType } from '@/types/visual-analysis';
 import {
   analyzeDeviceCapability,
   extractFaceLandmarks,
@@ -10,12 +10,8 @@ import {
   preloadFaceMesh,
   generateSynergyInsight,
   generateSynergyFromGeminiResult,
-  applyInsightToDraping,
 } from '@/lib/analysis';
-import {
-  generateMockPigmentAnalysis,
-  generateMockDrapingResults,
-} from '@/lib/mock/visual-analysis';
+import { generateMockPigmentAnalysis } from '@/lib/mock/visual-analysis';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import DrapeColorPalette from './DrapeColorPalette';
 import DrapeSimulator from './DrapeSimulator';
@@ -35,6 +31,8 @@ interface DrapingSimulationTabProps {
   userSeason?: Season;
   /** 사용자 진단 서브톤 라벨 (예: "여름 쿨 뮤트") */
   userSubtypeLabel?: string;
+  /** 진단 정본 베스트 컬러 (PC 결과의 bestColors — 시뮬레이터 후보 스와치용) */
+  bestColors?: Array<{ hex: string; name: string }>;
   /** 피부 분석 ID (시너지 연동용) */
   skinAnalysisId?: string;
   /** 추가 클래스 */
@@ -54,6 +52,7 @@ export default function DrapingSimulationTab({
   imageUrl,
   userSeason,
   userSubtypeLabel,
+  bestColors,
   skinAnalysisId,
   className,
 }: DrapingSimulationTabProps) {
@@ -162,20 +161,6 @@ export default function DrapingSimulationTab({
     }
   }, [imageUrl, loadImage, deviceCapability.tier, skinAnalysisId, supabase, t]);
 
-  /**
-   * 드레이프 분석 완료 핸들러
-   */
-  const handleAnalysisComplete = useCallback(
-    (results: DrapeResult[]) => {
-      // 시너지 적용
-      if (synergyInsight && results.length > 0) {
-        const mockDraping = generateMockDrapingResults();
-        applyInsightToDraping(mockDraping, synergyInsight);
-      }
-    },
-    [synergyInsight]
-  );
-
   // 컴포넌트 마운트 시 초기화
   useEffect(() => {
     if (imageUrl && state === 'idle') {
@@ -258,7 +243,7 @@ export default function DrapingSimulationTab({
                 faceMask={faceMask}
                 deviceCapability={deviceCapability}
                 metalType={metalType}
-                onAnalysisComplete={handleAnalysisComplete}
+                diagnosisBestColors={bestColors}
                 skinInsight={synergyInsight?.message}
                 externalSelectedColor={selectedColor}
               />

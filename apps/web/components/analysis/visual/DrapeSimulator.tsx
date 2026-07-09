@@ -1,10 +1,8 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import type { DrapeSimulatorProps, DrapeResult, MetalType } from '@/types/visual-analysis';
+import type { DrapeSimulatorProps, MetalType } from '@/types/visual-analysis';
 import {
-  analyzeFullPalette,
-  getBestColors,
   applyDrapeColor,
   applyMetalReflectance,
   createOptimizedContext,
@@ -13,38 +11,41 @@ import {
   releaseCanvas,
 } from '@/lib/analysis';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { selectByCondition } from '@/lib/utils/conditional-helpers';
 import { getKoreanColorName } from '@/lib/utils/color-names';
 import { useTranslations } from 'next-intl';
 
+type SlotId = 'A' | 'B';
+
 /**
- * PC-1+ 드레이프 시뮬레이터
- * - 실시간 드레이프 미리보기
- * - 전체 팔레트 분석
- * - 베스트 컬러 추천
+ * PC-1+ 드레이프 시뮬레이터 — "직접 대보는" 체험 도구
+ *
+ * 이전의 "베스트 컬러 TOP 5 / 어울림 N위 / 별점 / 베스트 vs 워스트"는 측정 신호가 없는
+ * 지어낸 순위였다(드레이프 색은 얼굴 밖에만 칠해지고 반사광은 색과 무관 → 모든 색 동률).
+ * 이제 시뮬레이터는 어울림을 판정하지 않는다:
+ * - 추천 후보 = 진단 정본(diagnosisBestColors, PC 결과의 bestColors)을 스와치로 제시
+ * - A·B 두 색을 사용자가 직접 골라 좌우로 나란히 비교
  */
 export default function DrapeSimulator({
   image,
   faceMask,
-  deviceCapability,
   metalType,
-  onAnalysisComplete,
-  skinInsight,
+  diagnosisBestColors,
   externalSelectedColor,
+  skinInsight,
   className,
 }: DrapeSimulatorProps & { skinInsight?: string; externalSelectedColor?: string | null }) {
   const t = useTranslations('visualAnalysisUI');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [bestResults, setBestResults] = useState<DrapeResult[]>([]);
-  const [worstResults, setWorstResults] = useState<DrapeResult[]>([]);
+  const [slotA, setSlotA] = useState<string | null>(null);
+  const [slotB, setSlotB] = useState<string | null>(null);
+  const [activeSlot, setActiveSlot] = useState<SlotId>('A');
+  // 팔레트 탭 선택은 externalSelectedColor로 흘러온다. 슬롯 자동 채움이
+  // activeSlot 변화로 중복 발동하지 않도록 마지막 적용 색을 기록한다.
+  const lastExternalRef = useRef<string | null>(null);
 
   /**
-   * 단일 색상 미리보기
+   * 단일 색상 미리보기 (메인 캔버스)
    */
   const previewDrape = useCallback(
     (color: string) => {
@@ -54,7 +55,6 @@ export default function DrapeSimulator({
       const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
       if (!ctx) return;
 
-      // 캔버스 크기 설정 (제한된 크기 사용)
       const { width, height } = getConstrainedCanvasSize(
         image.naturalWidth || image.width,
         image.naturalHeight || image.height
@@ -62,16 +62,9 @@ export default function DrapeSimulator({
       canvas.width = width;
       canvas.height = height;
 
-      // 원본 이미지 그리기 (리사이징 적용)
       ctx.drawImage(image, 0, 0, width, height);
-
-      // 드레이프 색상 적용
       applyDrapeColor(ctx, color, faceMask, canvas.height);
-
-      // 금속 반사광 적용
       applyMetalReflectance(ctx, faceMask, metalType);
-
-      // 비네팅 효과 (가장자리 부드럽게 어둡게)
       applyVignette(ctx, width, height, 0.3);
 
       setSelectedColor(color);
@@ -80,62 +73,35 @@ export default function DrapeSimulator({
   );
 
   /**
-   * 전체 팔레트 분석
+   * 색 선택 = 메인 미리보기 + 현재 활성 슬롯에 담고 다음 슬롯으로 전환.
+   * 판정이 아니라 "담기" 동작이다.
    */
-  const runFullAnalysis = useCallback(async () => {
-    if (!image || isAnalyzing) return;
-
-    setIsAnalyzing(true);
-    setAnalysisProgress(0);
-
-    try {
-      // 색상 팔레트 생성
-      const colors = generateColorPalette(deviceCapability.drapeColors);
-
-      // 전체 분석 실행
-      const results = await analyzeFullPalette(image, faceMask, colors, metalType, (progress) =>
-        setAnalysisProgress(progress)
-      );
-
-      // 베스트 5 저장
-      const best = getBestColors(results, 5);
-      setBestResults(best);
-
-      // 워스트 5 저장 (가장 어울리지 않는 색상)
-      const worst = results.slice(-5).reverse();
-      setWorstResults(worst);
-
-      // 완료 콜백
-      if (onAnalysisComplete) {
-        onAnalysisComplete(results);
+  const handlePick = useCallback(
+    (color: string) => {
+      previewDrape(color);
+      if (activeSlot === 'A') {
+        setSlotA(color);
+        setActiveSlot('B');
+      } else {
+        setSlotB(color);
+        setActiveSlot('A');
       }
+    },
+    [previewDrape, activeSlot]
+  );
 
-      // 베스트 1 미리보기
-      if (best.length > 0) {
-        previewDrape(best[0].color);
-      }
-    } catch (error) {
-      console.error('[DrapeSimulator] 분석 오류:', error);
-    } finally {
-      setIsAnalyzing(false);
-      setAnalysisProgress(0);
-    }
-  }, [
-    image,
-    faceMask,
-    metalType,
-    deviceCapability.drapeColors,
-    isAnalyzing,
-    onAnalysisComplete,
-    previewDrape,
-  ]);
-
-  // 외부 색상 변경 시 미리보기 자동 적용
+  // 팔레트 탭에서 고른 색 → 활성 슬롯에 담기 (같은 색 재적용 방지 가드)
   useEffect(() => {
-    if (externalSelectedColor && image && faceMask) {
-      previewDrape(externalSelectedColor);
+    if (
+      externalSelectedColor &&
+      externalSelectedColor !== lastExternalRef.current &&
+      image &&
+      faceMask
+    ) {
+      lastExternalRef.current = externalSelectedColor;
+      handlePick(externalSelectedColor);
     }
-  }, [externalSelectedColor, image, faceMask, previewDrape]);
+  }, [externalSelectedColor, image, faceMask, handlePick]);
 
   // 컴포넌트 언마운트 시 캔버스 정리
   useEffect(() => {
@@ -155,7 +121,6 @@ export default function DrapeSimulator({
     const ctx = createOptimizedContext(canvas);
     if (!ctx) return;
 
-    // 캔버스 크기 설정 (제한된 크기 사용)
     const { width, height } = getConstrainedCanvasSize(
       image.naturalWidth || image.width,
       image.naturalHeight || image.height
@@ -163,302 +128,243 @@ export default function DrapeSimulator({
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(image, 0, 0, width, height);
-
-    // 비네팅 효과 (가장자리 부드럽게 어둡게)
     applyVignette(ctx, width, height, 0.3);
   }, [image]);
 
   return (
     <div className={cn('space-y-3', className)} data-testid="drape-simulator">
-      {/* 1. 이미지 - 높이 제한으로 버튼 항상 보이도록 */}
+      {/* 1. 메인 미리보기 — 선택한 색을 얼굴 아래에 대본 모습 */}
       <div className="relative w-full aspect-[3/4] max-h-[25vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
         <canvas
           ref={canvasRef}
           className="max-w-full max-h-full object-contain"
           aria-label={t('drapeSimulator0')}
         />
-
-        {/* 분석 진행률 오버레이 */}
-        {isAnalyzing && (
-          <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-4">
-            <p className="text-sm font-medium">{t('drapeSimulator1')}</p>
-            <Progress value={analysisProgress} className="w-3/4" />
-            <p className="text-xs text-muted-foreground">{analysisProgress}%</p>
-          </div>
-        )}
       </div>
 
-      {/* 2. 분석 전 안내 (결과 없을 때) */}
-      {bestResults.length === 0 && !isAnalyzing && (
-        <div className="p-3 bg-muted/50 rounded-lg text-center space-y-1">
-          <p className="text-sm font-medium">{t('drapeSimulator2')}</p>
-          <p className="text-xs text-muted-foreground">
-            아래 버튼을 누르면 다양한 색상을 비교 분석해서, 가장 어울리는 색을 찾아드려요.
-          </p>
-        </div>
+      {/* 2. 안내 — 판정이 아니라 직접 대보는 체험임을 명확히 */}
+      <div className="p-3 bg-muted/50 rounded-lg text-center space-y-1">
+        <p className="text-sm font-medium">직접 대보며 비교해보세요</p>
+        <p className="text-xs text-muted-foreground">
+          색을 고르면 얼굴 아래에 대본 모습을 보여줘요. 두 색을 A·B 슬롯에 담아 나란히 비교할 수
+          있어요.
+        </p>
+      </div>
+
+      {/* 피부 분석 기반 시너지 노트 (있을 때만) */}
+      {skinInsight && (
+        <p className="text-xs text-muted-foreground text-center" data-testid="drape-skin-note">
+          {skinInsight}
+        </p>
       )}
 
-      {/* 3. 베스트 컬러 결과 (분석 완료 시 - 이미지 바로 아래) */}
-      {bestResults.length > 0 && (
-        <BestColorsSection
-          results={bestResults}
+      {/* 3. 진단 정본 베스트 컬러 후보 (없으면 미노출 — 지어내지 않음) */}
+      {diagnosisBestColors && diagnosisBestColors.length > 0 && (
+        <DiagnosisColorsSection
+          colors={diagnosisBestColors}
           selectedColor={selectedColor}
-          onColorSelect={previewDrape}
-          skinInsight={skinInsight}
+          onPick={handlePick}
         />
       )}
 
-      {/* 4. 베스트 vs 워스트 비교 (분석 완료 시) */}
-      {bestResults.length > 0 && worstResults.length > 0 && (
-        <ComparisonSection
-          bestColor={bestResults[0].color}
-          worstColor={worstResults[0].color}
-          image={image}
-          faceMask={faceMask}
-          metalType={metalType}
-        />
-      )}
-
-      {/* 5. 분석 버튼 */}
-      <Button onClick={runFullAnalysis} disabled={isAnalyzing || !image} className="w-full">
-        {isAnalyzing
-          ? '분석 중...'
-          : selectByCondition(bestResults.length > 0, t('drapeSimulator3'), t('drapeSimulator4'))}
-      </Button>
+      {/* 4. A·B 직접 비교 */}
+      <ABCompareSection
+        slotA={slotA}
+        slotB={slotB}
+        activeSlot={activeSlot}
+        onSelectSlot={setActiveSlot}
+        image={image}
+        faceMask={faceMask}
+        metalType={metalType}
+      />
     </div>
   );
 }
 
 /**
- * 베스트 컬러 섹션
+ * 진단 정본 베스트 컬러 후보 스와치
+ * - 순위·별점 없음. 진단이 추천한 색을 "탭해서 대보는" 후보로만 제시한다.
  */
-function BestColorsSection({
-  results,
+function DiagnosisColorsSection({
+  colors,
   selectedColor,
-  onColorSelect,
-  skinInsight,
+  onPick,
 }: {
-  results: DrapeResult[];
+  colors: Array<{ hex: string; name: string }>;
   selectedColor: string | null;
-  onColorSelect: (color: string) => void;
-  skinInsight?: string;
+  onPick: (color: string) => void;
 }) {
-  const selectedIndex = results.findIndex((r) => r.color === selectedColor);
-  const rank = selectedIndex >= 0 ? selectedIndex + 1 : 0;
-
   return (
-    <div className="space-y-2" data-testid="best-colors-section">
-      <h4 className="text-sm font-medium">베스트 컬러 TOP 5</h4>
-      {skinInsight && <p className="text-xs text-muted-foreground">{skinInsight}</p>}
-      <div className="flex gap-2">
-        {results.map((result, index) => (
+    <div className="space-y-2" data-testid="diagnosis-best-colors">
+      <h4 className="text-sm font-medium">내 진단 베스트 컬러</h4>
+      <p className="text-xs text-muted-foreground">
+        진단에서 추천된 색이에요. 탭하면 대볼 수 있어요.
+      </p>
+      <div className="flex gap-2 flex-wrap">
+        {colors.map((color) => (
           <button
-            key={result.color}
-            onClick={() => onColorSelect(result.color)}
+            key={color.hex}
+            onClick={() => onPick(color.hex)}
             className={cn(
-              'relative w-12 h-12 rounded-lg border-2 transition-all',
+              'w-12 h-12 rounded-lg border-2 transition-all',
               'hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary',
-              selectedColor === result.color
+              selectedColor === color.hex
                 ? 'border-primary ring-2 ring-primary'
                 : 'border-transparent'
             )}
-            style={{ backgroundColor: result.color }}
-            aria-label={`${index + 1}위 컬러 선택`}
-          >
-            <span className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-              {index + 1}
-            </span>
-          </button>
+            style={{ backgroundColor: color.hex }}
+            title={color.name}
+            aria-label={`${color.name} 대보기`}
+          />
         ))}
       </div>
-
-      {/* 선택된 색상 상세 */}
-      {selectedColor && rank > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-          <div className="w-10 h-10 rounded border" style={{ backgroundColor: selectedColor }} />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{getKoreanColorName(selectedColor)}</p>
-            <p className="text-xs text-muted-foreground">
-              어울림 {rank}위 {renderStars(rank)}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
 /**
- * 베스트 vs 워스트 비교 섹션
- * 캔버스로 두 색상을 나란히 렌더링하여 차이를 직관적으로 보여줌
+ * A·B 나란히 비교 섹션
+ * - 자동 판정/순위 없이, 사용자가 담을 슬롯을 고르고 색을 넣어 좌우로 비교한다.
  */
-function ComparisonSection({
-  bestColor,
-  worstColor,
+function ABCompareSection({
+  slotA,
+  slotB,
+  activeSlot,
+  onSelectSlot,
   image,
   faceMask,
   metalType,
 }: {
-  bestColor: string;
-  worstColor: string;
+  slotA: string | null;
+  slotB: string | null;
+  activeSlot: SlotId;
+  onSelectSlot: (slot: SlotId) => void;
   image: HTMLImageElement;
   faceMask: Uint8Array;
   metalType: MetalType;
 }) {
-  const bestCanvasRef = useRef<HTMLCanvasElement>(null);
-  const worstCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  // 비교 캔버스에 드레이프 렌더링
-  const renderToCanvas = useCallback(
-    (canvas: HTMLCanvasElement | null, color: string) => {
-      if (!canvas || !image) return;
-
-      const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
-      if (!ctx) return;
-
-      const { width, height } = getConstrainedCanvasSize(
-        image.naturalWidth || image.width,
-        image.naturalHeight || image.height
-      );
-      canvas.width = width;
-      canvas.height = height;
-
-      ctx.drawImage(image, 0, 0, width, height);
-      applyDrapeColor(ctx, color, faceMask, canvas.height);
-      applyMetalReflectance(ctx, faceMask, metalType);
-      applyVignette(ctx, width, height, 0.3);
-    },
-    [image, faceMask, metalType]
-  );
-
-  useEffect(() => {
-    renderToCanvas(bestCanvasRef.current, bestColor);
-    renderToCanvas(worstCanvasRef.current, worstColor);
-  }, [bestColor, worstColor, renderToCanvas]);
-
-  // 언마운트 시 캔버스 정리
-  useEffect(() => {
-    const bestCanvas = bestCanvasRef.current;
-    const worstCanvas = worstCanvasRef.current;
-    return () => {
-      if (bestCanvas) releaseCanvas(bestCanvas);
-      if (worstCanvas) releaseCanvas(worstCanvas);
-    };
-  }, []);
-
   return (
-    <div className="space-y-2" data-testid="comparison-section">
-      <h4 className="text-sm font-medium">어울리는 색 vs 덜 어울리는 색</h4>
+    <div className="space-y-2" data-testid="ab-compare-section">
+      <h4 className="text-sm font-medium">A·B 나란히 비교</h4>
+      <p className="text-xs text-muted-foreground">
+        담을 슬롯(A·B)을 고른 뒤 색을 선택하면 좌우로 비교돼요.
+      </p>
       <div className="grid grid-cols-2 gap-3">
-        {/* 베스트 1위 */}
-        <div className="space-y-1.5">
-          <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-            <canvas
-              ref={bestCanvasRef}
-              className="max-w-full max-h-full object-contain"
-              aria-label="가장 어울리는 컬러 미리보기"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="w-5 h-5 rounded border flex-shrink-0"
-              style={{ backgroundColor: bestColor }}
-            />
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-green-600 dark:text-green-400 truncate">
-                {getKoreanColorName(bestColor)}
-              </p>
-              <p className="text-[10px] text-muted-foreground">가장 어울려요</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 워스트 1위 */}
-        <div className="space-y-1.5">
-          <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-            <canvas
-              ref={worstCanvasRef}
-              className="max-w-full max-h-full object-contain"
-              aria-label="덜 어울리는 컬러 미리보기"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="w-5 h-5 rounded border flex-shrink-0"
-              style={{ backgroundColor: worstColor }}
-            />
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-red-500 dark:text-red-400 truncate">
-                {getKoreanColorName(worstColor)}
-              </p>
-              <p className="text-[10px] text-muted-foreground">덜 어울려요</p>
-            </div>
-          </div>
-        </div>
+        <SlotColumn
+          label="A"
+          color={slotA}
+          active={activeSlot === 'A'}
+          onSelect={() => onSelectSlot('A')}
+          image={image}
+          faceMask={faceMask}
+          metalType={metalType}
+        />
+        <SlotColumn
+          label="B"
+          color={slotB}
+          active={activeSlot === 'B'}
+          onSelect={() => onSelectSlot('B')}
+          image={image}
+          faceMask={faceMask}
+          metalType={metalType}
+        />
       </div>
     </div>
   );
 }
 
-// 순위에 따른 별점 표시 (1위=5개, 5위=1개)
-function renderStars(rank: number): string {
-  const filled = Math.max(1, 6 - rank);
-  return '★'.repeat(filled) + '☆'.repeat(5 - filled);
-}
-
-// getKoreanColorName은 @/lib/utils/color-names에서 import
-
 /**
- * 색상 팔레트 생성
+ * 개별 슬롯 (A 또는 B) — 담긴 색을 캔버스에 렌더
  */
-function generateColorPalette(count: 16 | 64 | 128): string[] {
-  const baseColors = [
-    // Spring
-    '#FF7F50',
-    '#FFCBA4',
-    '#FA8072',
-    '#FFFFF0',
-    // Summer
-    '#E6E6FA',
-    '#FF007F',
-    '#87CEEB',
-    '#98FF98',
-    // Autumn
-    '#E2725B',
-    '#808000',
-    '#FFDB58',
-    '#800020',
-    // Winter
-    '#FF00FF',
-    '#4169E1',
-    '#50C878',
-    '#000000',
-  ];
+function SlotColumn({
+  label,
+  color,
+  active,
+  onSelect,
+  image,
+  faceMask,
+  metalType,
+}: {
+  label: SlotId;
+  color: string | null;
+  active: boolean;
+  onSelect: () => void;
+  image: HTMLImageElement;
+  faceMask: Uint8Array;
+  metalType: MetalType;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  if (count === 16) return baseColors;
+  const renderToCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !image || !color) return;
 
-  // 확장 색상 생성
-  const extended: string[] = [];
-  const variations = count / 16;
+    const ctx = createOptimizedContext(canvas, { willReadFrequently: true });
+    if (!ctx) return;
 
-  baseColors.forEach((hex) => {
-    extended.push(hex);
-    for (let i = 1; i < variations; i++) {
-      const factor = 1 - i * (0.6 / variations);
-      extended.push(adjustBrightness(hex, factor));
-    }
-  });
+    const { width, height } = getConstrainedCanvasSize(
+      image.naturalWidth || image.width,
+      image.naturalHeight || image.height
+    );
+    canvas.width = width;
+    canvas.height = height;
 
-  return extended.slice(0, count);
-}
+    ctx.drawImage(image, 0, 0, width, height);
+    applyDrapeColor(ctx, color, faceMask, canvas.height);
+    applyMetalReflectance(ctx, faceMask, metalType);
+    applyVignette(ctx, width, height, 0.3);
+  }, [image, faceMask, metalType, color]);
 
-/**
- * 밝기 조정
- */
-function adjustBrightness(hex: string, factor: number): string {
-  const r = Math.round(Math.min(255, parseInt(hex.slice(1, 3), 16) * factor));
-  const g = Math.round(Math.min(255, parseInt(hex.slice(3, 5), 16) * factor));
-  const b = Math.round(Math.min(255, parseInt(hex.slice(5, 7), 16) * factor));
+  useEffect(() => {
+    if (color) renderToCanvas();
+  }, [color, renderToCanvas]);
 
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+  // 언마운트 시 캔버스 정리
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    return () => {
+      if (canvas) releaseCanvas(canvas);
+    };
+  }, []);
+
+  return (
+    <div className="space-y-1.5">
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={active}
+        data-testid={`slot-${label}-select`}
+        className={cn(
+          'w-full text-xs font-medium rounded-md py-1.5 border transition-colors',
+          active
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border text-muted-foreground hover:border-primary/50'
+        )}
+      >
+        {label} 슬롯{active ? ' (담는 중)' : ''}
+      </button>
+
+      <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+        {color ? (
+          <canvas
+            ref={canvasRef}
+            className="max-w-full max-h-full object-contain"
+            aria-label={`${label} 슬롯 미리보기`}
+          />
+        ) : (
+          <p className="text-[11px] text-muted-foreground px-2 text-center">색을 선택하세요</p>
+        )}
+      </div>
+
+      {color && (
+        <div className="flex items-center gap-2">
+          <div
+            className="w-5 h-5 rounded border flex-shrink-0"
+            style={{ backgroundColor: color }}
+          />
+          <p className="text-xs text-foreground truncate">{getKoreanColorName(color)}</p>
+        </div>
+      )}
+    </div>
+  );
 }

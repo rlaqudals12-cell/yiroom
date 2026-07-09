@@ -771,6 +771,7 @@ export default function PersonalColorResultPage() {
                   imageUrl={imageUrl}
                   userSeason={result.seasonType}
                   userSubtypeLabel={result.undertoneLabel}
+                  bestColors={result.bestColors}
                   className="w-full"
                 />
               )}

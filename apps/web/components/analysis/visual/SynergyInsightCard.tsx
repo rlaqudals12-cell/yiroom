@@ -71,17 +71,15 @@ export default function SynergyInsightCard({
             <h4 className="text-xs font-medium text-muted-foreground">
               {t('synergyInsightCard3')}
             </h4>
+            {/* 순위·별점 없이 추천 색 스와치만 (측정 순위는 지어낸 수치라 제거) */}
             <div className="flex gap-2">
-              {bestColors.slice(0, 5).map((result, index) => (
+              {bestColors.slice(0, 5).map((result) => (
                 <div key={result.color} className="relative">
                   <div
                     className="w-8 h-8 rounded-md border shadow-sm"
                     style={{ backgroundColor: result.color }}
-                    title={`${index + 1}위: ${result.color}`}
+                    title={result.color}
                   />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
-                    {index + 1}
-                  </span>
                 </div>
               ))}
             </div>

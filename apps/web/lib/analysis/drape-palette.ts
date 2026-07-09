@@ -571,7 +571,7 @@ export function analyzeWithSeason(
 
 /**
  * 전체 팔레트로 피부톤 분석 후 시즌 추천
- * (광학적 분석 - drape-reflectance의 analyzeFullPalette와 구분)
+ * (색채 이론 기반 광학적 분석 — 픽셀 균일도 순위와 무관)
  */
 export function analyzeFullPaletteOptical(skin: SkinToneCharacteristics): {
   recommendedSeason: DrapeSeason;
@@ -620,9 +620,7 @@ function calculateSeasonAverage(results: DrapeInteractionResult[], season: strin
 /**
  * 시즌별 팔레트 반환
  */
-export function getSeasonPalette(
-  season: DrapeSeason
-): DrapeOpticalProperties[] {
+export function getSeasonPalette(season: DrapeSeason): DrapeOpticalProperties[] {
   switch (season) {
     case 'spring':
       return SPRING_PALETTE;
@@ -793,7 +791,7 @@ export function toSimpleDrapeColor(drape: DrapeOpticalProperties): DrapeColor {
 }
 
 /**
- * 팔레트를 HEX 배열로 변환 (기존 analyzeFullPalette 호환용)
+ * 팔레트를 HEX 배열로 변환
  */
 export function paletteToHexArray(palette: DrapeOpticalProperties[]): string[] {
   return palette.map((d) => d.hex);
