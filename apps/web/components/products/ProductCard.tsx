@@ -118,7 +118,7 @@ export function ProductCard({
               variant="secondary"
               className="absolute right-2 top-2 bg-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-105"
             >
-              {matchScore}% 매칭
+              적합도 {matchScore}점
             </Badge>
           )}
         </div>

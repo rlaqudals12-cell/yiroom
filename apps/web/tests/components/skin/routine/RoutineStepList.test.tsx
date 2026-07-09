@@ -116,4 +116,17 @@ describe('RoutineStepList', () => {
     const list = screen.getByTestId('routine-step-list');
     expect(list.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(0);
   });
+
+  // T1: 루틴 목록 최상단 0단계 손 씻기 고정 행
+  it('스텝이 있으면 최상단에 0단계 손 씻기 행을 표시한다', () => {
+    render(<RoutineStepList steps={mockSteps} />);
+    const handWash = screen.getByTestId('routine-handwash-step');
+    expect(handWash).toBeInTheDocument();
+    expect(handWash.textContent).toContain('손 씻기');
+  });
+
+  it('빈 상태에서는 손 씻기 행을 표시하지 않는다', () => {
+    render(<RoutineStepList steps={[]} />);
+    expect(screen.queryByTestId('routine-handwash-step')).not.toBeInTheDocument();
+  });
 });

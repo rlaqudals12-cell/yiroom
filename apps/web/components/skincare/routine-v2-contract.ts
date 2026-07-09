@@ -17,7 +17,14 @@ import type { SkinConcernId } from '@/lib/mock/skin-analysis';
 // 계약 타입 (S1 정본 승격 예정)
 // =============================================================================
 
-export type SkinGoalId = 'brightening' | 'wrinkle' | 'acne' | 'hydration' | 'sebum' | 'soothing';
+export type SkinGoalId =
+  | 'brightening'
+  | 'wrinkle'
+  | 'acne'
+  | 'hydration'
+  | 'sebum'
+  | 'soothing'
+  | 'bodyAcne';
 
 export interface SkinGoal {
   id: SkinGoalId;
@@ -177,6 +184,8 @@ const GOAL_TO_CONCERN: Record<SkinGoalId, SkinConcernId> = {
   hydration: 'dryness',
   sebum: 'excess_oil',
   soothing: 'sensitivity',
+  // 바디 트러블 전용 축이 없어 acne로 대응(lib/skincare GOAL_TO_CONCERN와 동기화).
+  bodyAcne: 'acne',
 };
 
 /** 선택 목표를 대응 피부 고민으로 변환 (중복 없는 순서는 호출부 union에서 정렬) */

@@ -2,10 +2,12 @@
 
 import { memo, useState } from 'react';
 import Image from 'next/image';
-import { ChevronDown, ChevronUp, Clock, Lightbulb, ShoppingBag } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Lightbulb, ShoppingBag, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
+import { getStepHowTo } from '@/lib/skincare/step-howto';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import type { RoutineStep, RoutineStepItemProps } from '@/types/skincare-routine';
 import { useTranslations } from 'next-intl';
 
@@ -33,9 +35,12 @@ const RoutineStepItem = memo(function RoutineStepItem({
     }
   ).ownedProduct;
 
+  // 초보자용 사용법(적당량·바르는 법·흡수 대기) — 카테고리별 상수 조회 (T1)
+  const howTo = getStepHowTo(step.category);
+
   const hasProducts = step.recommendedProducts && step.recommendedProducts.length > 0;
   const hasTips = step.tips && step.tips.length > 0;
-  const hasExpandableContent = hasTips || (showProducts && hasProducts);
+  const hasExpandableContent = Boolean(howTo) || hasTips || (showProducts && hasProducts);
 
   return (
     <div
@@ -112,6 +117,44 @@ const RoutineStepItem = memo(function RoutineStepItem({
       {/* 확장 영역 */}
       {isExpanded && hasExpandableContent && (
         <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
+          {/* 초보자용 사용법 — "어떻게 하나요?" 접이식 (적당량·방법·흡수 대기) */}
+          {howTo && (
+            <ProgressiveDisclosure
+              title="어떻게 하나요?"
+              icon={<HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />}
+            >
+              <div className="space-y-2 text-sm" data-testid="step-howto">
+                <div className="flex gap-2">
+                  <span className="w-14 flex-shrink-0 font-medium text-foreground">적당량</span>
+                  <span className="text-muted-foreground">{howTo.amount}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="w-14 flex-shrink-0 font-medium text-foreground">방법</span>
+                  <span className="text-muted-foreground">{howTo.method}</span>
+                </div>
+                {howTo.waitTime && (
+                  <div className="flex gap-2">
+                    <span className="w-14 flex-shrink-0 font-medium text-foreground">흡수</span>
+                    <span className="text-muted-foreground">{howTo.waitTime}</span>
+                  </div>
+                )}
+                {howTo.tips && howTo.tips.length > 0 && (
+                  <ul className="space-y-1 pt-1">
+                    {howTo.tips.map((tip, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 text-xs text-muted-foreground"
+                      >
+                        <span className="mt-1 text-primary">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </ProgressiveDisclosure>
+          )}
+
           {/* 팁 */}
           {hasTips && (
             <div className="space-y-2">

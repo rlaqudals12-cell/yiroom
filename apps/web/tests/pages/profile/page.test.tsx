@@ -344,6 +344,34 @@ describe('ProfilePage', () => {
       });
     });
 
+    // 운영 요소 가시성 — 약관·정책 섹션 도달 경로 (창업자 지적 대응)
+    it('이용약관 링크가 /terms를 가리킨다', async () => {
+      render(<ProfilePage />);
+
+      await vi.waitFor(() => {
+        const link = screen.getByRole('link', { name: '이용약관' });
+        expect(link).toHaveAttribute('href', '/terms');
+      });
+    });
+
+    it('개인정보처리방침 링크가 /privacy를 가리킨다', async () => {
+      render(<ProfilePage />);
+
+      await vi.waitFor(() => {
+        const link = screen.getByRole('link', { name: '개인정보처리방침' });
+        expect(link).toHaveAttribute('href', '/privacy');
+      });
+    });
+
+    it('개인정보·동의 관리 링크가 /settings/privacy를 가리킨다 (동의 철회 도달 경로)', async () => {
+      render(<ProfilePage />);
+
+      await vi.waitFor(() => {
+        const link = screen.getByRole('link', { name: '개인정보·동의 관리' });
+        expect(link).toHaveAttribute('href', '/settings/privacy');
+      });
+    });
+
     it('리더보드 섹션을 표시한다', async () => {
       render(<ProfilePage />);
 

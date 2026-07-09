@@ -126,20 +126,20 @@ describe('ProductCard', () => {
     it('매칭도가 있으면 배지 표시', () => {
       render(<ProductCard product={mockCosmeticProduct} matchScore={85} />);
 
-      // "XX% 매칭" 형식으로 표시됨
-      expect(screen.getByText('85% 매칭')).toBeInTheDocument();
+      // 스캔과 동일 용어 "적합도 N점"으로 표시됨 (T2 용어 통일)
+      expect(screen.getByText('적합도 85점')).toBeInTheDocument();
     });
 
     it('매칭도가 없으면 배지 미표시', () => {
       render(<ProductCard product={mockCosmeticProduct} />);
 
-      expect(screen.queryByText(/% 매칭/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/적합도 \d+점/)).not.toBeInTheDocument();
     });
 
     it('매칭도가 0이면 배지 미표시', () => {
       render(<ProductCard product={mockCosmeticProduct} matchScore={0} />);
 
-      expect(screen.queryByText(/% 매칭/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/적합도 \d+점/)).not.toBeInTheDocument();
     });
   });
 

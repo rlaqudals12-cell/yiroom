@@ -176,4 +176,33 @@ describe('RoutineStepItem', () => {
     render(<RoutineStepItem step={baseStep} />);
     expect(screen.queryByTestId('routine-owned-badge')).not.toBeInTheDocument();
   });
+
+  // T1: 초보자용 "어떻게 하나요?" 접이식 사용법
+  it('스텝을 펼친 뒤 "어떻게 하나요?"를 열면 적당량·방법이 렌더된다', () => {
+    render(<RoutineStepItem step={baseStep} />);
+
+    // 접힌 상태에서는 사용법 내용이 보이지 않음
+    expect(screen.queryByTestId('step-howto')).not.toBeInTheDocument();
+
+    // 1) 스텝 아이템 확장
+    fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
+    // 2) "어떻게 하나요?" 접이식 열기
+    fireEvent.click(screen.getByText('어떻게 하나요?'));
+
+    const howTo = screen.getByTestId('step-howto');
+    expect(howTo).toBeInTheDocument();
+    // 클렌저 적당량("동전")·미온수 방법이 나온다
+    expect(howTo.textContent).toContain('동전');
+    expect(howTo.textContent).toContain('미온수');
+  });
+
+  it('팁·제품이 없어도 사용법(how-to)이 있으면 확장 가능하다', () => {
+    const stepNoTips: RoutineStep = { ...baseStep, tips: [] };
+    render(<RoutineStepItem step={stepNoTips} />);
+
+    // 사용법 때문에 확장 버튼이 존재
+    fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
+    fireEvent.click(screen.getByText('어떻게 하나요?'));
+    expect(screen.getByTestId('step-howto')).toBeInTheDocument();
+  });
 });

@@ -22,6 +22,10 @@ export {
 } from './skin-goals';
 export type { SkinGoalId } from './skin-goals';
 
+// 스텝별 사용법 (루틴 초보자 how-to — T1)
+export { STEP_HOWTO, getStepHowTo, HAND_WASH_PRESTEP } from './step-howto';
+export type { StepHowTo, StepHowToKey } from './step-howto';
+
 // 활성 성분 카테고리 (보유 제품 → 활성 탐지)
 export {
   ACTIVE_INGREDIENT_CATEGORIES,

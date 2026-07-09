@@ -13,7 +13,14 @@
 import type { SkinConcernId } from '@/lib/mock/skin-analysis';
 
 /** 사용자 선택 피부 목표 ID */
-export type SkinGoalId = 'brightening' | 'wrinkle' | 'acne' | 'hydration' | 'sebum' | 'soothing';
+export type SkinGoalId =
+  | 'brightening'
+  | 'wrinkle'
+  | 'acne'
+  | 'hydration'
+  | 'sebum'
+  | 'soothing'
+  | 'bodyAcne';
 
 /** zod enum·순회용 — SkinGoalId와 동기화 유지 */
 export const SKIN_GOAL_IDS = [
@@ -23,6 +30,7 @@ export const SKIN_GOAL_IDS = [
   'hydration',
   'sebum',
   'soothing',
+  'bodyAcne',
 ] as const;
 
 /** 목표 선택 UI 정본 (id ↔ 표시 라벨). 라벨은 기능성화장품 인정 범위 내 톤 관리 표현 */
@@ -33,6 +41,7 @@ export const SKIN_GOALS: Array<{ id: SkinGoalId; label: string }> = [
   { id: 'hydration', label: '수분' },
   { id: 'sebum', label: '모공·피지' },
   { id: 'soothing', label: '진정' },
+  { id: 'bodyAcne', label: '바디 트러블(등드름)' },
 ];
 
 /** 목표 라벨 조회 (없는 id는 undefined) */
@@ -52,6 +61,8 @@ export const GOAL_TO_CONCERN: Record<SkinGoalId, SkinConcernId> = {
   hydration: 'dryness',
   sebum: 'excess_oil',
   soothing: 'sensitivity',
+  // 바디 트러블 전용 SkinConcernId 축은 아직 없어 acne로 대응(추후 바디 전용 축 도입 시 분리).
+  bodyAcne: 'acne',
 };
 
 /**

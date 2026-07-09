@@ -15,7 +15,14 @@ import type { SkinConcernId } from '@/lib/mock/skin-analysis';
 describe('SKIN_GOALS 정본', () => {
   it('should keep SKIN_GOALS와 SKIN_GOAL_IDS 동기화', () => {
     expect(SKIN_GOALS.map((g) => g.id).sort()).toEqual([...SKIN_GOAL_IDS].sort());
-    expect(SKIN_GOALS).toHaveLength(6);
+    expect(SKIN_GOALS).toHaveLength(7);
+  });
+
+  it('should 바디 트러블(bodyAcne) 목표 포함 + acne concern 매핑', () => {
+    expect(SKIN_GOAL_IDS).toContain('bodyAcne');
+    expect(getSkinGoalLabel('bodyAcne')).toBe('바디 트러블(등드름)');
+    // 바디 전용 concern 축이 없어 acne로 대응
+    expect(GOAL_TO_CONCERN.bodyAcne).toBe('acne');
   });
 
   it('should 모든 목표에 라벨 존재', () => {

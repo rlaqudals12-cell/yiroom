@@ -37,6 +37,8 @@ import {
   BarChart3,
   ShoppingBag,
   Box,
+  FileText,
+  Shield,
 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
@@ -727,8 +729,47 @@ export default function ProfilePage() {
           </section>
         </FadeInUp>
 
-        {/* 설정/도움말 링크들 (항상 표시) */}
+        {/* 약관·정책 — 법적 고지 및 개인정보/동의 관리 도달 경로 (운영 요소 가시성 확보) */}
         <FadeInUp delay={4}>
+          <section className="bg-card overflow-hidden rounded-2xl border">
+            <div className="px-4 pt-4 pb-1 text-xs font-medium text-muted-foreground">
+              약관·정책
+            </div>
+            <Link
+              href="/terms"
+              className="hover:bg-muted/50 flex items-center justify-between border-b p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-gray-500" />
+                <span>이용약관</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+            <Link
+              href="/privacy"
+              className="hover:bg-muted/50 flex items-center justify-between border-b p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-gray-500" />
+                <span>개인정보처리방침</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+            <Link
+              href="/settings/privacy"
+              className="hover:bg-muted/50 flex items-center justify-between p-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-gray-500" />
+                <span>개인정보·동의 관리</span>
+              </div>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+            </Link>
+          </section>
+        </FadeInUp>
+
+        {/* 설정/도움말 링크들 (항상 표시) */}
+        <FadeInUp delay={5}>
           <section className="bg-card overflow-hidden rounded-2xl border">
             <Link
               href="/profile/settings"

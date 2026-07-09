@@ -13,6 +13,7 @@
 import Link from 'next/link';
 import { ChevronRight, Sparkles, Brush, Droplet, Shirt, Scissors, ShoppingBag } from 'lucide-react';
 import type { Curation, CurationCategory, CurationProduct } from '@/lib/analysis/integrated';
+import { rankByMatchScore, getRankBadge, buildRankReasonLine } from '@/lib/products';
 
 export interface CurationCardProps {
   curation: Curation;
@@ -77,11 +78,12 @@ export function CurationCard({
           </p>
         </div>
 
-        {/* 실제 제품 3개 (지갑 여는 "너를 위한 이 세트") */}
+        {/* 실제 제품 3개 (지갑 여는 "너를 위한 이 세트") — BEST 순위 배지 + 적합도 */}
         {hasProducts && (
-          <ul className="space-y-2" data-testid="curation-products">
-            {products.map((p) => {
+          <ol className="space-y-2" data-testid="curation-products">
+            {rankByMatchScore(products).map((p, idx) => {
               const price = formatPrice(p.priceKrw);
+              const badge = getRankBadge(idx);
               return (
                 <li key={p.id}>
                   <Link
@@ -90,7 +92,18 @@ export function CurationCard({
                     data-testid="curation-product-item"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
-                      <ShoppingBag className="h-4 w-4 text-rose-300" aria-hidden="true" />
+                      {badge ? (
+                        <span
+                          className="text-lg"
+                          role="img"
+                          aria-label={badge.label}
+                          data-testid="curation-rank-badge"
+                        >
+                          {badge.emoji}
+                        </span>
+                      ) : (
+                        <ShoppingBag className="h-4 w-4 text-rose-300" aria-hidden="true" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1 space-y-0.5">
                       <div className="flex items-baseline justify-between gap-2">
@@ -103,6 +116,12 @@ export function CurationCard({
                       </div>
                       <p className="text-xs text-zinc-500">{p.brand}</p>
                       <p className="text-xs text-zinc-400">{p.reason}</p>
+                      <p
+                        className="text-[11px] font-medium text-pink-200/90"
+                        data-testid="curation-rank-reason"
+                      >
+                        {buildRankReasonLine(p.matchScore)}
+                      </p>
                     </div>
                     <ChevronRight
                       className="h-3.5 w-3.5 shrink-0 text-pink-300 group-hover:text-pink-200"
@@ -112,7 +131,7 @@ export function CurationCard({
                 </li>
               );
             })}
-          </ul>
+          </ol>
         )}
 
         {/* 큐레이션 아이템 (링크) */}

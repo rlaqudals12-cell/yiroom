@@ -674,6 +674,13 @@ export default function SettingsPage() {
         return (
           <FadeInUp>
             <div className="space-y-3">
+              {/* 개인정보·동의 관리 — 이미지 저장·마케팅 동의 및 철회, 약관 동의 내역 (/settings/privacy) */}
+              <SettingItem
+                icon={Shield}
+                label="개인정보·동의 관리"
+                description="이미지 저장·마케팅 동의 및 철회, 약관 동의 내역"
+                onClick={() => router.push('/settings/privacy')}
+              />
               <DataExportButton />
               <SettingItem
                 icon={Trash2}

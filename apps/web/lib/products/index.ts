@@ -105,6 +105,18 @@ export { calculateMatchScore, addMatchInfo, addMatchInfoToProducts } from './mat
 export type { UserProfile, MatchResult } from './matching';
 
 // ================================================
+// 추천 순위 표현 (Ranking — BEST 1/2/3 배지·이유·비교)
+// ================================================
+export {
+  RANK_BADGES,
+  getRankBadge,
+  rankByMatchScore,
+  buildRankReasonLine,
+  buildRankComparisonLine,
+} from './product-ranking';
+export type { RankBadge } from './product-ranking';
+
+// ================================================
 // 어필리에이트 서비스 (Affiliate)
 // ================================================
 export {

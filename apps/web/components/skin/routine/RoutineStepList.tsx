@@ -1,8 +1,10 @@
 'use client';
 
 import { memo } from 'react';
+import { Droplets } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RoutineStepItem from './RoutineStepItem';
+import { HAND_WASH_PRESTEP } from '@/lib/skincare/step-howto';
 import type { RoutineStepListProps } from '@/types/skincare-routine';
 import { useTranslations } from 'next-intl';
 
@@ -34,6 +36,21 @@ const RoutineStepList = memo(function RoutineStepList({
 
   return (
     <div className={cn('space-y-3', className)} data-testid="routine-step-list">
+      {/* 0단계 손 씻기 — 초보자용 고정 안내 행 (체크 불요, 아이콘 + 한 줄) */}
+      <div
+        className="flex items-center gap-3 rounded-xl border border-dashed border-border/60 bg-muted/30 p-3"
+        data-testid="routine-handwash-step"
+      >
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+          0
+        </div>
+        <Droplets className="h-4 w-4 flex-shrink-0 text-sky-500" aria-hidden="true" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">{HAND_WASH_PRESTEP.label}</p>
+          <p className="truncate text-xs text-muted-foreground">{HAND_WASH_PRESTEP.note}</p>
+        </div>
+      </div>
+
       {sortedSteps.map((step, index) => (
         <div key={`${step.category}-${step.order}`} className="relative">
           {/* 연결선 (마지막 아이템 제외) */}

@@ -355,6 +355,21 @@ export default function SkincareRoutinePage() {
         {/* 내 피부 목표 칩 (ADR-117) — 선택 시 루틴 재계산 */}
         <SkinGoalChips goals={skinGoals} selected={selectedGoals} onToggle={toggleGoal} />
 
+        {/* 바디 트러블 목표 선택 시 — 스캔으로 바디 제품 적합도 확인 안내 (1줄) */}
+        {selectedGoals.includes('bodyAcne') && (
+          <Link
+            href="/scan"
+            className="mb-6 -mt-3 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-primary/5 p-3 text-sm transition-colors hover:bg-primary/10"
+            data-testid="body-acne-scan-notice"
+          >
+            <span className="text-foreground">바디 제품도 스캔으로 적합도를 확인할 수 있어요</span>
+            <span className="flex flex-shrink-0 items-center gap-0.5 font-medium text-primary">
+              스캔하기
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </span>
+          </Link>
+        )}
+
         {/* 단계 계획 카드 (ADR-117) */}
         {carePhase && <CarePhaseCard phase={carePhase} />}
 

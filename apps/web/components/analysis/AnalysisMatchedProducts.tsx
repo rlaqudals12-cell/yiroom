@@ -6,6 +6,12 @@ import { ShoppingBag, ChevronRight } from 'lucide-react';
 
 import { ProductCard } from '@/components/products/ProductCard';
 import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
+import {
+  rankByMatchScore,
+  getRankBadge,
+  buildRankReasonLine,
+  buildRankComparisonLine,
+} from '@/lib/products';
 import type { AnyProduct } from '@/types/product';
 
 /**
@@ -160,19 +166,70 @@ export function AnalysisMatchedProducts({
 
   const category = ANALYSIS_CATEGORY_MAP[analysisType] ?? 'cosmetic';
 
+  // 적합도 내림차순 안정 정렬(동률이면 원래 순서 유지) 후 상위 3개 = BEST 순위
+  const ranked = rankByMatchScore(products);
+  const best = ranked.slice(0, 3);
+  const rest = ranked.slice(3);
+  // BEST 1 vs 2 비교 — matchReasons 차집합, 차이 없으면 null(지어내지 않음)
+  const comparison =
+    best.length >= 2 ? buildRankComparisonLine(best[0].matchReasons, best[1].matchReasons) : null;
+
   return (
     <div data-testid="matched-products-section">
       <SectionHeader analysisType={analysisType} />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {products.map(({ product, matchScore, matchReasons }) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            matchScore={matchScore}
-            matchReasons={matchReasons}
-          />
-        ))}
-      </div>
+
+      {/* BEST 순위 (상위 3개) — 메달 배지 + "왜 이 순위인지" 한 줄 */}
+      <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3" data-testid="matched-products-ranked">
+        {best.map((mp, idx) => {
+          const badge = getRankBadge(idx);
+          return (
+            <li key={mp.product.id} className="flex flex-col" data-testid="ranked-product">
+              {badge && (
+                <div
+                  className="mb-1.5 flex items-center gap-1 text-xs font-bold text-pink-400"
+                  data-testid="rank-badge"
+                >
+                  <span aria-hidden="true">{badge.emoji}</span>
+                  <span>{badge.label}</span>
+                </div>
+              )}
+              {/* 점수는 아래 이유 줄에서 "적합도 N점"으로 표기 → 카드 배지 중복 생략 */}
+              <ProductCard product={mp.product} matchReasons={mp.matchReasons} />
+              <p
+                className="mt-1.5 text-[11px] leading-snug text-zinc-400"
+                data-testid="rank-reason"
+              >
+                {buildRankReasonLine(mp.matchScore, mp.matchReasons)}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+
+      {/* BEST 1 vs 2 비교 한 줄 (고유 강점 차이가 있을 때만) */}
+      {comparison && (
+        <p className="mt-2 text-xs text-zinc-500" data-testid="rank-comparison">
+          {comparison}
+        </p>
+      )}
+
+      {/* 나머지 제품 — 기존 그리드 표시 */}
+      {rest.length > 0 && (
+        <div
+          className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
+          data-testid="matched-products-rest"
+        >
+          {rest.map(({ product, matchScore, matchReasons }) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              matchScore={matchScore}
+              matchReasons={matchReasons}
+            />
+          ))}
+        </div>
+      )}
+
       <div className="mt-3 text-center">
         <Link
           href={`/products?category=${category}&sort=match`}
