@@ -6,7 +6,7 @@
  * @see docs/specs/SDD-MOBILE-INTEGRATED.md §4
  */
 
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -73,6 +73,10 @@ const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const { colors } = useTheme();
   const { getToken } = useAuth();
+
+  // 가입=첫 미팅(ADR-114): 가입 직후 진입 시 강제하지 않고 건너뛰기 경로 제공
+  const { onboarding } = useLocalSearchParams<{ onboarding?: string }>();
+  const isOnboarding = onboarding === '1';
 
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [bodyImage, setBodyImage] = useState<string | null>(null);
@@ -407,6 +411,21 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           <Text style={styles.submitButtonText}>내 정체성 알아보기</Text>
         </Pressable>
 
+        {/* 가입 직후 진입 시 이탈 경로 — 분석 강제 금지 */}
+        {isOnboarding && (
+          <Pressable
+            onPress={() => router.replace('/(tabs)')}
+            style={styles.skipButton}
+            testID="onboarding-skip-button"
+            accessibilityLabel="나중에 할래요"
+            accessibilityHint="분석을 건너뛰고 홈으로 이동합니다"
+          >
+            <Text style={[styles.skipButtonText, { color: colors.mutedForeground }]}>
+              나중에 할래요
+            </Text>
+          </Pressable>
+        )}
+
         <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
           분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
         </Text>
@@ -566,6 +585,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: typography.size.base,
     fontWeight: '700',
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  skipButtonText: {
+    fontSize: typography.size.sm,
+    textDecorationLine: 'underline',
   },
   disclaimer: {
     fontSize: 11,

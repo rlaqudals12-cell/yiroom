@@ -177,8 +177,8 @@ const mockUseFriendStats = jest.fn(() => ({
 }));
 
 jest.mock('../../../lib/social/useFriends', () => ({
-  useFriends: (...args: unknown[]) => mockUseFriends(...args),
-  useFriendStats: (...args: unknown[]) => mockUseFriendStats(...args),
+  useFriends: (...args: unknown[]) => (mockUseFriends as jest.Mock)(...args),
+  useFriendStats: (...args: unknown[]) => (mockUseFriendStats as jest.Mock)(...args),
 }));
 
 import FriendsScreen from '../../../app/(social)/friends/index';

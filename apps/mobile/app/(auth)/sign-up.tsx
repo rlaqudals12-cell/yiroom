@@ -88,8 +88,8 @@ export default function SignUpScreen() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        // 신규 회원은 온보딩으로 이동
-        router.replace('/(onboarding)/step1');
+        // 가입=첫 미팅(ADR-114): 신규 회원은 통합분석으로 이동 (웹 ?onboarding=1과 동일 의도)
+        router.replace('/(analysis)/integrated?onboarding=1');
       }
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };

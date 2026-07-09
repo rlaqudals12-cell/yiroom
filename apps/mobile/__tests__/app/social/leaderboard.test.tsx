@@ -94,9 +94,9 @@ const mockUseMyRanking = jest.fn(() => ({
 }));
 
 jest.mock('../../../lib/social/useLeaderboard', () => ({
-  useLeaderboard: (...args: unknown[]) => mockUseLeaderboard(...args),
-  useFriendsLeaderboard: (...args: unknown[]) => mockUseFriendsLeaderboard(...args),
-  useMyRanking: (...args: unknown[]) => mockUseMyRanking(...args),
+  useLeaderboard: (...args: unknown[]) => (mockUseLeaderboard as jest.Mock)(...args),
+  useFriendsLeaderboard: (...args: unknown[]) => (mockUseFriendsLeaderboard as jest.Mock)(...args),
+  useMyRanking: (...args: unknown[]) => (mockUseMyRanking as jest.Mock)(...args),
 }));
 
 jest.mock('../../../lib/social', () => ({

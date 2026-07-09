@@ -323,6 +323,13 @@ describe('NotificationSettings 타입', () => {
       streakWarning: true,
       socialNotifications: true,
       achievementNotifications: true,
+      personalizedTriggers: {
+        streakReminder: true,
+        reanalysisDue: true,
+        seasonalTip: true,
+        morningRoutine: true,
+        eveningRecap: true,
+      },
     };
 
     expect(settings.enabled).toBe(true);
@@ -343,23 +350,15 @@ describe('DEFAULT_NOTIFICATION_SETTINGS', () => {
 
   it('기본 시간 설정이 유효해야 함', () => {
     expect(DEFAULT_NOTIFICATION_SETTINGS.workoutReminderTime).toBe('09:00');
-    expect(DEFAULT_NOTIFICATION_SETTINGS.mealReminderTimes.breakfast).toBe(
-      '08:30'
-    );
+    expect(DEFAULT_NOTIFICATION_SETTINGS.mealReminderTimes.breakfast).toBe('08:30');
     expect(DEFAULT_NOTIFICATION_SETTINGS.mealReminderTimes.lunch).toBe('12:30');
-    expect(DEFAULT_NOTIFICATION_SETTINGS.mealReminderTimes.dinner).toBe(
-      '18:30'
-    );
+    expect(DEFAULT_NOTIFICATION_SETTINGS.mealReminderTimes.dinner).toBe('18:30');
   });
 
   it('기본 물 알림 간격이 유효해야 함', () => {
     expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminderInterval).toBe(2);
-    expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminderInterval).toBeGreaterThan(
-      0
-    );
-    expect(
-      DEFAULT_NOTIFICATION_SETTINGS.waterReminderInterval
-    ).toBeLessThanOrEqual(4);
+    expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminderInterval).toBeGreaterThan(0);
+    expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminderInterval).toBeLessThanOrEqual(4);
   });
 });
 
@@ -421,10 +420,7 @@ describe('알림 액션 라우트', () => {
   });
 
   it('영양 관련 알림은 nutrition 탭으로 이동해야 함', () => {
-    const nutritionTypes: NotificationType[] = [
-      'nutrition_reminder',
-      'water_reminder',
-    ];
+    const nutritionTypes: NotificationType[] = ['nutrition_reminder', 'water_reminder'];
 
     nutritionTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;
@@ -433,10 +429,7 @@ describe('알림 액션 라우트', () => {
   });
 
   it('소셜 관련 알림은 social 라우트로 이동해야 함', () => {
-    const socialTypes: NotificationType[] = [
-      'friend_request',
-      'friend_accepted',
-    ];
+    const socialTypes: NotificationType[] = ['friend_request', 'friend_accepted'];
 
     socialTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;
@@ -445,11 +438,7 @@ describe('알림 액션 라우트', () => {
   });
 
   it('성취 관련 알림은 profile 탭으로 이동해야 함', () => {
-    const achievementTypes: NotificationType[] = [
-      'level_up',
-      'badge_earned',
-      'wellness_score',
-    ];
+    const achievementTypes: NotificationType[] = ['level_up', 'badge_earned', 'wellness_score'];
 
     achievementTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;

@@ -8,10 +8,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -175,9 +172,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -214,6 +209,13 @@ describe('NotificationsSettingsScreen', () => {
         streakWarning: true,
         socialNotifications: true,
         achievementNotifications: true,
+        personalizedTriggers: {
+          streakReminder: true,
+          reanalysisDue: true,
+          seasonalTip: true,
+          morningRoutine: true,
+          eveningRecap: true,
+        },
       },
       isLoading: false,
       isSyncing: false,

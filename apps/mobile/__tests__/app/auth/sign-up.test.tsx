@@ -8,10 +8,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -141,9 +138,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -245,66 +240,42 @@ describe('SignUpScreen', () => {
       const { getByTestId } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.press(getByTestId('signup-submit-button'));
-      expect(alertSpy).toHaveBeenCalledWith(
-        '알림',
-        '이메일과 비밀번호를 입력해주세요.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('알림', '이메일과 비밀번호를 입력해주세요.');
     });
 
     it('비밀번호 불일치 시 알림을 표시한다', () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
-      const { getByTestId, getByPlaceholderText } = renderWithTheme(
-        <SignUpScreen />
-      );
+      const { getByTestId, getByPlaceholderText } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
-      fireEvent.changeText(
-        getByPlaceholderText('비밀번호를 다시 입력하세요'),
-        'different456'
-      );
+      fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'different456');
       fireEvent.press(getByTestId('signup-submit-button'));
 
-      expect(alertSpy).toHaveBeenCalledWith(
-        '알림',
-        '비밀번호가 일치하지 않습니다.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('알림', '비밀번호가 일치하지 않습니다.');
     });
 
     it('비밀번호 8자 미만 시 알림을 표시한다', () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
-      const { getByTestId, getByPlaceholderText } = renderWithTheme(
-        <SignUpScreen />
-      );
+      const { getByTestId, getByPlaceholderText } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'short');
-      fireEvent.changeText(
-        getByPlaceholderText('비밀번호를 다시 입력하세요'),
-        'short'
-      );
+      fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'short');
       fireEvent.press(getByTestId('signup-submit-button'));
 
-      expect(alertSpy).toHaveBeenCalledWith(
-        '알림',
-        '비밀번호는 8자 이상이어야 합니다.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('알림', '비밀번호는 8자 이상이어야 합니다.');
     });
 
     it('회원가입 성공 시 이메일 인증 화면으로 전환된다', async () => {
       mockSignUpCreate.mockResolvedValueOnce({});
       mockPrepareEmailVerification.mockResolvedValueOnce({});
 
-      const { getByTestId, getByPlaceholderText, getByText } = renderWithTheme(
-        <SignUpScreen />
-      );
+      const { getByTestId, getByPlaceholderText, getByText } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
-      fireEvent.changeText(
-        getByPlaceholderText('비밀번호를 다시 입력하세요'),
-        'password123'
-      );
+      fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
@@ -326,23 +297,15 @@ describe('SignUpScreen', () => {
         errors: [{ message: '이미 사용 중인 이메일입니다.' }],
       });
 
-      const { getByTestId, getByPlaceholderText } = renderWithTheme(
-        <SignUpScreen />
-      );
+      const { getByTestId, getByPlaceholderText } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.changeText(getByTestId('signup-email-input'), 'exist@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
-      fireEvent.changeText(
-        getByPlaceholderText('비밀번호를 다시 입력하세요'),
-        'password123'
-      );
+      fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          '회원가입 실패',
-          '이미 사용 중인 이메일입니다.'
-        );
+        expect(alertSpy).toHaveBeenCalledWith('회원가입 실패', '이미 사용 중인 이메일입니다.');
       });
     });
 
@@ -350,23 +313,15 @@ describe('SignUpScreen', () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       mockSignUpCreate.mockRejectedValueOnce(new Error('Network error'));
 
-      const { getByTestId, getByPlaceholderText } = renderWithTheme(
-        <SignUpScreen />
-      );
+      const { getByTestId, getByPlaceholderText } = renderWithTheme(<SignUpScreen />);
 
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
-      fireEvent.changeText(
-        getByPlaceholderText('비밀번호를 다시 입력하세요'),
-        'password123'
-      );
+      fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          '회원가입 실패',
-          '회원가입에 실패했습니다.'
-        );
+        expect(alertSpy).toHaveBeenCalledWith('회원가입 실패', '회원가입에 실패했습니다.');
       });
     });
   });
@@ -378,14 +333,8 @@ describe('SignUpScreen', () => {
 
       const result = renderWithTheme(<SignUpScreen />);
 
-      fireEvent.changeText(
-        result.getByTestId('signup-email-input'),
-        'test@example.com'
-      );
-      fireEvent.changeText(
-        result.getByTestId('signup-password-input'),
-        'password123'
-      );
+      fireEvent.changeText(result.getByTestId('signup-email-input'), 'test@example.com');
+      fireEvent.changeText(result.getByTestId('signup-password-input'), 'password123');
       fireEvent.changeText(
         result.getByPlaceholderText('비밀번호를 다시 입력하세요'),
         'password123'
@@ -411,9 +360,7 @@ describe('SignUpScreen', () => {
 
     it('이메일 안내 문구를 표시한다', async () => {
       const { getByText } = await renderVerificationScreen();
-      expect(
-        getByText('test@example.com로 전송된 인증 코드를 입력해주세요')
-      ).toBeTruthy();
+      expect(getByText('test@example.com로 전송된 인증 코드를 입력해주세요')).toBeTruthy();
     });
 
     it('인증 코드 미입력 시 알림을 표시한다', async () => {
@@ -422,20 +369,16 @@ describe('SignUpScreen', () => {
 
       fireEvent.press(getByText('인증 완료'));
 
-      expect(alertSpy).toHaveBeenCalledWith(
-        '알림',
-        '인증 코드를 입력해주세요.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('알림', '인증 코드를 입력해주세요.');
     });
 
-    it('인증 성공 시 온보딩으로 이동한다', async () => {
+    it('인증 성공 시 통합분석(첫 미팅)으로 이동한다', async () => {
       mockAttemptEmailVerification.mockResolvedValueOnce({
         status: 'complete',
         createdSessionId: 'session_new',
       });
 
-      const { getByPlaceholderText, getByText } =
-        await renderVerificationScreen();
+      const { getByPlaceholderText, getByText } = await renderVerificationScreen();
 
       fireEvent.changeText(getByPlaceholderText('6자리 코드 입력'), '123456');
       fireEvent.press(getByText('인증 완료'));
@@ -447,7 +390,8 @@ describe('SignUpScreen', () => {
         expect(mockSetActive).toHaveBeenCalledWith({
           session: 'session_new',
         });
-        expect(mockReplace).toHaveBeenCalledWith('/(onboarding)/step1');
+        // 가입=첫 미팅(ADR-114): 3단계 온보딩 대신 통합분석으로, 스킵 가능 컨텍스트 전달
+        expect(mockReplace).toHaveBeenCalledWith('/(analysis)/integrated?onboarding=1');
       });
     });
 
@@ -457,27 +401,20 @@ describe('SignUpScreen', () => {
         errors: [{ message: '잘못된 인증 코드입니다.' }],
       });
 
-      const { getByPlaceholderText, getByText } =
-        await renderVerificationScreen();
+      const { getByPlaceholderText, getByText } = await renderVerificationScreen();
 
       fireEvent.changeText(getByPlaceholderText('6자리 코드 입력'), '000000');
       fireEvent.press(getByText('인증 완료'));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          '인증 실패',
-          '잘못된 인증 코드입니다.'
-        );
+        expect(alertSpy).toHaveBeenCalledWith('인증 실패', '잘못된 인증 코드입니다.');
       });
     });
   });
 
   describe('다크 모드', () => {
     it('다크 모드에서 정상적으로 렌더링된다', () => {
-      const { getByTestId, getAllByText } = renderWithTheme(
-        <SignUpScreen />,
-        true
-      );
+      const { getByTestId, getAllByText } = renderWithTheme(<SignUpScreen />, true);
 
       expect(getByTestId('auth-signup-screen')).toBeTruthy();
       expect(getAllByText('회원가입').length).toBeGreaterThanOrEqual(1);

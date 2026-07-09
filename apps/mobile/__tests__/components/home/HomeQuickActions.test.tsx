@@ -92,7 +92,7 @@ describe('HomeQuickActions', () => {
       <HomeQuickActions {...defaultProps} />
     );
 
-    expect(getByText('AI 코치에게 물어보세요')).toBeTruthy();
+    expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
     expect(getByText('운동, 영양, 뷰티 궁금한 것 무엇이든')).toBeTruthy();
   });
 
@@ -113,7 +113,7 @@ describe('HomeQuickActions', () => {
     );
 
     // AI 코치 카드의 텍스트를 포함하는 Pressable을 찾아 클릭
-    fireEvent.press(getByText('AI 코치에게 물어보세요'));
+    fireEvent.press(getByText('궁금한 것을 물어보세요'));
     expect(onCoachPress).toHaveBeenCalledTimes(1);
   });
 
@@ -165,7 +165,7 @@ describe('HomeQuickActions', () => {
       />
     );
 
-    expect(getByText('AI 코치에게 물어보세요')).toBeTruthy();
+    expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
     expect(queryByText('퍼스널 컬러')).toBeNull();
   });
 
@@ -176,7 +176,7 @@ describe('HomeQuickActions', () => {
     );
 
     expect(getByTestId('home-quick-actions')).toBeTruthy();
-    expect(getByText('AI 코치에게 물어보세요')).toBeTruthy();
+    expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
     expect(getByText('퍼스널 컬러')).toBeTruthy();
   });
 });

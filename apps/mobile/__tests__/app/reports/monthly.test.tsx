@@ -159,7 +159,7 @@ const mockUseMonthlyReport = jest.fn(() => ({
 }));
 
 jest.mock('../../../hooks/useMonthlyReport', () => ({
-  useMonthlyReport: (...args: unknown[]) => mockUseMonthlyReport(...args),
+  useMonthlyReport: (...args: unknown[]) => (mockUseMonthlyReport as jest.Mock)(...args),
 }));
 
 import MonthlyReportScreen from '../../../app/(reports)/monthly';

@@ -37,7 +37,6 @@ interface HomeQuickActionsProps {
   analysisHistory?: AnalysisHistory;
   onActionPress: (route: string) => void;
   onCoachPress: () => void;
-  onChatPress?: () => void;
 }
 
 // 퀵 액션 아이콘 메타 — 그라디언트 + 이모지 (웹 gradient icon square 대응)
@@ -76,9 +75,12 @@ function getActionStatus(
 /** 정렬 우선순위: 미완료 > 재분석 추천 > 최근 완료 */
 function getStatusPriority(s: ActionStatus): number {
   switch (s) {
-    case 'not-started': return 0;
-    case 'reanalysis-recommended': return 1;
-    case 'completed': return 2;
+    case 'not-started':
+      return 0;
+    case 'reanalysis-recommended':
+      return 1;
+    case 'completed':
+      return 2;
   }
 }
 
@@ -87,7 +89,6 @@ export function HomeQuickActions({
   analysisHistory,
   onActionPress,
   onCoachPress,
-  onChatPress,
 }: HomeQuickActionsProps): React.JSX.Element {
   const {
     colors,
@@ -123,15 +124,12 @@ export function HomeQuickActions({
     onCoachPress();
   };
 
-  const handleChatPress = (): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onChatPress?.();
-  };
-
   return (
     <View testID="home-quick-actions">
       {/* AI Coach 카드 — 그라디언트 배경 + 글로우 섀도 */}
-      <Animated.View entering={shouldAnimate ? FadeInUp.delay(200).duration(TIMING.normal) : undefined}>
+      <Animated.View
+        entering={shouldAnimate ? FadeInUp.delay(200).duration(TIMING.normal) : undefined}
+      >
         <Pressable
           style={({ pressed }) => [
             {
@@ -182,61 +180,10 @@ export function HomeQuickActions({
         </Pressable>
       </Animated.View>
 
-      {/* AI 채팅 카드 */}
-      {onChatPress && (
-        <Animated.View entering={shouldAnimate ? FadeInUp.delay(250).duration(TIMING.normal) : undefined}>
-          <Pressable
-            style={({ pressed }) => [
-              {
-                opacity: pressed ? 0.9 : 1,
-                marginBottom: spacing.lg,
-                borderRadius: radii.xl + 4,
-              },
-              isDark
-                ? {}
-                : (Platform.select({
-                    ios: {
-                      shadowColor: brand.primary,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.15,
-                      shadowRadius: 12,
-                    },
-                    android: { elevation: 3 },
-                  }) ?? {}),
-            ]}
-            onPress={handleChatPress}
-            accessibilityRole="button"
-            accessibilityLabel="뷰티 상담"
-            accessibilityHint="뷰티, 웰니스에 대해 자유롭게 대화할 수 있어요"
-          >
-            <View
-              style={{
-                borderRadius: radii.xl + 4,
-                padding: spacing.md,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <View style={[styles.coachIcon, { backgroundColor: `${brand.primary}15` }]}>
-                <Text style={{ fontSize: 22 }}>💬</Text>
-              </View>
-              <View style={styles.coachContent}>
-                <Text style={[styles.coachTitle, { color: colors.foreground }]}>뷰티 상담</Text>
-                <Text style={[styles.coachSubtitle, { color: colors.mutedForeground }]}>
-                  뷰티, 웰니스, 라이프스타일 자유 대화
-                </Text>
-              </View>
-              <Text style={[styles.coachArrow, { color: colors.mutedForeground }]}>›</Text>
-            </View>
-          </Pressable>
-        </Animated.View>
-      )}
-
       {/* 퀵 액션 */}
-      <Animated.View entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.normal) : undefined}>
+      <Animated.View
+        entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.normal) : undefined}
+      >
         <SectionHeader title="빠른 시작" style={{ marginBottom: spacing.smx }} />
         <View style={[styles.actionsRow, { gap: spacing.smx }]}>
           {sortedActions.map((action, index) => {
@@ -295,9 +242,19 @@ export function HomeQuickActions({
                         colors={[brand.primary, '#A855F7']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={{ borderRadius: radii.full, paddingHorizontal: 6, paddingVertical: 2 }}
+                        style={{
+                          borderRadius: radii.full,
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                        }}
                       >
-                        <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: typography.weight.bold }}>
+                        <Text
+                          style={{
+                            fontSize: 8,
+                            color: '#FFFFFF',
+                            fontWeight: typography.weight.bold,
+                          }}
+                        >
                           NEW
                         </Text>
                       </LinearGradient>
@@ -307,12 +264,22 @@ export function HomeQuickActions({
                   {actionStatus === 'reanalysis-recommended' && (
                     <View
                       style={{
-                        position: 'absolute', top: spacing.xs, right: spacing.xs,
-                        backgroundColor: '#F97316', borderRadius: radii.full,
-                        paddingHorizontal: 5, paddingVertical: 2,
+                        position: 'absolute',
+                        top: spacing.xs,
+                        right: spacing.xs,
+                        backgroundColor: '#F97316',
+                        borderRadius: radii.full,
+                        paddingHorizontal: 5,
+                        paddingVertical: 2,
                       }}
                     >
-                      <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: typography.weight.bold }}>
+                      <Text
+                        style={{
+                          fontSize: 8,
+                          color: '#FFFFFF',
+                          fontWeight: typography.weight.bold,
+                        }}
+                      >
                         재분석
                       </Text>
                     </View>
@@ -321,12 +288,24 @@ export function HomeQuickActions({
                   {actionStatus === 'completed' && (
                     <View
                       style={{
-                        position: 'absolute', top: spacing.xs, right: spacing.xs,
-                        backgroundColor: status.success, borderRadius: radii.full,
-                        width: 18, height: 18, alignItems: 'center', justifyContent: 'center',
+                        position: 'absolute',
+                        top: spacing.xs,
+                        right: spacing.xs,
+                        backgroundColor: status.success,
+                        borderRadius: radii.full,
+                        width: 18,
+                        height: 18,
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 10, color: colors.overlayForeground, fontWeight: typography.weight.bold }}>
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: colors.overlayForeground,
+                          fontWeight: typography.weight.bold,
+                        }}
+                      >
                         ✓
                       </Text>
                     </View>
@@ -345,17 +324,24 @@ export function HomeQuickActions({
                   <Text
                     style={{
                       fontSize: typography.size.xs - 1,
-                      color: actionStatus === 'not-started' ? brand.primary
-                        : actionStatus === 'reanalysis-recommended' ? '#F97316'
-                        : colors.mutedForeground,
+                      color:
+                        actionStatus === 'not-started'
+                          ? brand.primary
+                          : actionStatus === 'reanalysis-recommended'
+                            ? '#F97316'
+                            : colors.mutedForeground,
                       textAlign: 'center',
-                      fontWeight: actionStatus === 'not-started' ? typography.weight.semibold : undefined,
+                      fontWeight:
+                        actionStatus === 'not-started' ? typography.weight.semibold : undefined,
                     }}
                   >
-                    {actionStatus === 'not-started' ? '시작하기'
-                      : actionStatus === 'reanalysis-recommended' ? daysSinceAnalysis + '일 전'
-                      : daysSinceAnalysis !== null ? daysSinceAnalysis + '일 전 완료'
-                      : '완료됨'}
+                    {actionStatus === 'not-started'
+                      ? '시작하기'
+                      : actionStatus === 'reanalysis-recommended'
+                        ? daysSinceAnalysis + '일 전'
+                        : daysSinceAnalysis !== null
+                          ? daysSinceAnalysis + '일 전 완료'
+                          : '완료됨'}
                   </Text>
                 </View>
               </AnimatedCard>

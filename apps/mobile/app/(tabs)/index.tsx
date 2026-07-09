@@ -53,14 +53,9 @@ export default function HomeScreen(): React.JSX.Element {
   const router = useRouter();
   const { user, isLoaded } = useUser();
 
-  // 온보딩 체크
-  const { isCompleted: onboardingCompleted, isLoading: onboardingLoading } = useOnboardingCheck();
-
-  useEffect(() => {
-    if (!onboardingLoading && !onboardingCompleted) {
-      router.replace('/(onboarding)/step1');
-    }
-  }, [onboardingLoading, onboardingCompleted, router]);
+  // 첫 진입 로딩 가드 — 가입=첫 미팅(통합분석)으로 이동하므로 온보딩 강제 진입은 없음(ADR-114).
+  // onboardingLoading은 초기 AsyncStorage 읽기 동안 스켈레톤을 노출하는 용도로만 유지.
+  const { isLoading: onboardingLoading } = useOnboardingCheck();
 
   // Daily Capsule 훅
   const daily = useDailyCapsule();
@@ -519,7 +514,6 @@ export default function HomeScreen(): React.JSX.Element {
         analysisHistory={analysisHistory}
         onActionPress={(route) => router.push(route as never)}
         onCoachPress={() => router.push('/(coach)')}
-        onChatPress={() => router.push('/(chat)')}
       />
 
       {/* Daily Capsule 위젯 */}

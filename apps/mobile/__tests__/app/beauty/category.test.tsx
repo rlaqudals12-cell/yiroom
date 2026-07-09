@@ -60,7 +60,7 @@ const mockUseAffiliateProducts = jest.fn(() => ({
 }));
 
 jest.mock('../../../lib/affiliate/useAffiliateProducts', () => ({
-  useAffiliateProducts: (...args: unknown[]) => mockUseAffiliateProducts(...args),
+  useAffiliateProducts: (...args: unknown[]) => (mockUseAffiliateProducts as jest.Mock)(...args),
 }));
 
 import BeautyCategoryScreen from '../../../app/beauty/category/[slug]';
