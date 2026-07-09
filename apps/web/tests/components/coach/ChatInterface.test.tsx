@@ -36,4 +36,18 @@ describe('ChatInterface 기본 화면 (ADR-114)', () => {
     expect(chip).toHaveAttribute('href', '/scan');
     expect(chip).toHaveTextContent('이 제품 나한테 맞을까요?');
   });
+
+  it('빈 대화 첫 화면에 인사 카드와 퀵질문 카드 그리드를 표시한다', () => {
+    render(<ChatInterface userContext={null} onSendMessage={noop} />);
+
+    expect(screen.getByTestId('coach-empty-state')).toBeInTheDocument();
+    // 상황형 질문은 아이콘 카드 2×2 그리드로 렌더
+    expect(screen.getByTestId('coach-quick-cards')).toBeInTheDocument();
+  });
+
+  it('사진 첨부 기능을 안내하는 문구를 표시한다', () => {
+    render(<ChatInterface userContext={null} onSendMessage={noop} />);
+
+    expect(screen.getByTestId('coach-photo-hint')).toHaveTextContent('사진을 보내면');
+  });
 });

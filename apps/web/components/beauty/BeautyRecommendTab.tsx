@@ -173,9 +173,13 @@ const subCategories: Record<MainCategory, SubCategoryDef[]> = {
   ],
 };
 
-// 매칭 필터 임계값 — 현 매칭 점수 분포(스킨케어 상한 ~77+α, 메이크업 ~100)에서
-// 90은 사실상 도달 불가라 80으로 설정. 0개면 자동 완화 + 안내 (아래 fetch 로직 참조)
-const MATCH_FILTER_THRESHOLD = 80;
+// 매칭 필터 임계값 — 매칭 점수 분포: 스킨케어 실질 상한 ~77
+// (기본20 + 피부타입30 + 가격15 + 브랜드12. 프로필에 고민 태그가 없어 concern 가점 30은 미발생),
+// 메이크업은 ~100.
+// 이전 80은 스킨케어 상한(77)보다 높아 "80%+"가 구조적으로 도달 불가 →
+// 토글이 늘 자동 완화로 빠져 사실상 무의미했다(창업자 "0개" 재현 경로).
+// 도달 가능한 70(상한 이하)으로 정합. 그래도 임계 이상이 0개면 자동 완화 + 안내 (아래 fetch 로직 참조).
+const MATCH_FILTER_THRESHOLD = 70;
 
 // 정렬 옵션
 // 평점/리뷰수는 DB에 대부분 null이라 정렬 축으로 쓰면 순서가 사실상 무의미 —
@@ -708,10 +712,11 @@ export function BeautyRecommendTab({
             className="flex items-center gap-2"
             role="switch"
             aria-checked={matchFilterOn}
-            aria-label={`${MATCH_FILTER_THRESHOLD}% 이상 매칭 제품만 표시`}
+            aria-label="적합도 높은 제품만 표시"
             data-testid="beauty-match-toggle"
           >
-            <span className="text-sm text-muted-foreground">{MATCH_FILTER_THRESHOLD}%+ 매칭</span>
+            {/* 라벨은 특정 %(도달 불가한 "80%+")를 약속하지 않고 실제 의미만 전달 (정직) */}
+            <span className="text-sm text-muted-foreground">적합도 높은 것만</span>
             <div
               className={cn(
                 'w-10 h-6 rounded-full transition-colors relative',
@@ -801,7 +806,7 @@ export function BeautyRecommendTab({
             role="status"
             data-testid="beauty-match-relaxed-notice"
           >
-            {MATCH_FILTER_THRESHOLD}% 이상 매칭 제품이 없어 매칭률이 높은 순서로 모두 보여드려요
+            조건에 꼭 맞는 제품이 적어 적합도 높은 순으로 모두 보여드려요
           </p>
         )}
 

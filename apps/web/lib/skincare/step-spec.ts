@@ -35,19 +35,23 @@ export interface StepSpec {
 const SERUM_BY_CONCERN: Partial<Record<SkinConcernId, StepSpec>> = {
   pigmentation: {
     specName: '비타민C 세럼(아침)/나이아신아마이드',
-    specReason: '기미·잡티 톤 관리에 자주 쓰이는 성분이에요',
+    specReason:
+      '기미·잡티 톤 관리에 자주 쓰이는 성분이에요. 비타민C는 보통 10~20% 농도를 쓰는데, 제품 표기를 확인하세요',
   },
   dullness: {
     specName: '비타민C 세럼(아침)',
-    specReason: '칙칙한 피부 톤 관리에 도움을 주는 성분이에요',
+    specReason:
+      '칙칙한 피부 톤 관리에 도움을 주는 성분이에요. 비타민C는 보통 10~20% 농도예요 — 제품 표기를 확인하세요',
   },
   wrinkles: {
     specName: '레티놀 세럼(저녁)',
-    specReason: '탄력 관리에 도움을 주는 성분이라 저녁에 써요',
+    specReason:
+      '탄력 관리에 도움을 주는 성분이라 저녁에 써요. 레티놀은 0.1~0.3% 저농도부터 시작하는 게 좋아요 — 제품 표기를 확인하세요',
   },
   fine_lines: {
     specName: '레티놀 세럼(저녁)',
-    specReason: '잔주름 관리에 자주 쓰이는 성분이라 저녁에 써요',
+    specReason:
+      '잔주름 관리에 자주 쓰이는 성분이라 저녁에 써요. 레티놀은 0.1~0.3%부터 시작해요 — 제품 표기를 확인하세요',
   },
   dryness: {
     specName: '히알루론산 세럼',
@@ -170,7 +174,11 @@ export function getStepSpec(
           specReason: '자극이 적은 무기자차가 예민한 피부에 잘 맞아요',
         };
       }
-      return { specName: 'SPF50+ PA+++', specReason: '자외선 차단은 광노화 예방의 기본이에요' };
+      return {
+        specName: 'SPF50+ PA+++',
+        specReason:
+          'SPF50+는 자외선 차단력, PA+++는 노화를 부르는 자외선(UVA) 차단 정도를 뜻해요. 자외선 차단은 광노화 예방의 기본이에요',
+      };
 
     // essence·mask·eye_cream·oil·spot_treatment = 상태 기반 성분 구체화 대상 아님 (기본 명칭)
     default:

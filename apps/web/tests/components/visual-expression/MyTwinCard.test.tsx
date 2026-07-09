@@ -70,4 +70,15 @@ describe('MyTwinCard', () => {
     await waitFor(() => expect(screen.getByTestId('create-twin-cta')).toBeInTheDocument());
     expect(screen.queryByTestId('twin-approved')).toBeNull();
   });
+
+  it('사용자 대면 라벨은 "트윈"이 아니라 "내 AI 아바타"를 쓴다', async () => {
+    mockTwinGet({}, false);
+
+    render(<MyTwinCard />);
+
+    // 섹션 제목 + 만들기 CTA 모두 "AI 아바타" 표현
+    await waitFor(() => expect(screen.getByTestId('create-twin-cta')).toBeInTheDocument());
+    expect(screen.getByRole('heading', { name: '내 AI 아바타' })).toBeInTheDocument();
+    expect(screen.getByTestId('create-twin-cta')).toHaveTextContent('내 AI 아바타 만들기');
+  });
 });

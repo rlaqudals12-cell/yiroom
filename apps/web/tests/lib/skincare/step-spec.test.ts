@@ -100,6 +100,25 @@ describe('getStepSpec — 선크림', () => {
     expect(getStepSpec('sunscreen', 'normal', [])?.specName).toBe('SPF50+ PA+++');
     expect(getStepSpec('sunscreen', 'dry', [])?.specName).toBe('SPF50+ PA+++');
   });
+  it('SPF50+/PA+++ 의미 풀이(UVA 차단)를 specReason에 담는다', () => {
+    const reason = getStepSpec('sunscreen', 'normal', [])?.specReason ?? '';
+    expect(reason).toContain('SPF50+');
+    expect(reason).toContain('PA+++');
+    expect(reason).toContain('UVA');
+  });
+});
+
+describe('getStepSpec — 세럼 성분 농도 가이드', () => {
+  it('비타민C 세럼은 농도 범위(10~20%)와 제품 표기 확인 안내를 담는다', () => {
+    const reason = getStepSpec('serum', 'normal', ['pigmentation'])?.specReason ?? '';
+    expect(reason).toContain('10~20%');
+    expect(reason).toContain('제품 표기');
+  });
+  it('레티놀 세럼은 저농도 시작(0.1~0.3%)과 제품 표기 확인 안내를 담는다', () => {
+    const reason = getStepSpec('serum', 'normal', ['wrinkles'])?.specReason ?? '';
+    expect(reason).toContain('0.1~0.3%');
+    expect(reason).toContain('제품 표기');
+  });
 });
 
 describe('getStepSpec — barrier 단계 강제(진정·보습)', () => {

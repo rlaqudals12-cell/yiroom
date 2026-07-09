@@ -40,7 +40,7 @@ export function MyTwinCard() {
         toast.error('삭제에 실패했어요. 잠시 후 다시 시도해 주세요.');
         return;
       }
-      toast.success('트윈을 삭제했어요.');
+      toast.success('AI 아바타를 삭제했어요.');
       await refetch();
     } catch {
       toast.error('네트워크 오류가 발생했어요.');
@@ -60,7 +60,7 @@ export function MyTwinCard() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={approvedTwin.imageUrl}
-              alt="내 트윈"
+              alt="내 AI 아바타"
               className="max-h-[280px] w-full object-contain"
             />
             <span
@@ -71,7 +71,7 @@ export function MyTwinCard() {
             </span>
           </div>
           <p className="text-center text-xs text-muted-foreground">
-            옷장 아이템에서 &lsquo;내 트윈에게 입혀보기&rsquo;로 스타일을 입혀볼 수 있어요.
+            옷장 아이템에서 &lsquo;내 AI 아바타에게 입혀보기&rsquo;로 스타일을 입혀볼 수 있어요.
           </p>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -81,15 +81,14 @@ export function MyTwinCard() {
                 className="w-full text-destructive"
                 data-testid="twin-delete-button"
               >
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                트윈 삭제
+                <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />내 AI 아바타 삭제
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>트윈을 삭제할까요?</AlertDialogTitle>
+                <AlertDialogTitle>내 AI 아바타를 삭제할까요?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  트윈 이미지가 완전히 지워져요. 이 작업은 되돌릴 수 없어요.
+                  AI 아바타 이미지가 완전히 지워져요. 이 작업은 되돌릴 수 없어요.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -110,14 +109,14 @@ export function MyTwinCard() {
     return (
       <div className="space-y-3" data-testid="twin-empty">
         <p className="text-sm text-muted-foreground">
-          나를 닮은 모습으로 만들어, 옷과 스타일을 입혀볼 수 있어요.
+          나를 닮은 AI 아바타를 만들어, 옷과 스타일을 입혀볼 수 있어요.
         </p>
         <Button
           className="w-full"
           onClick={() => setStudioOpen(true)}
           data-testid="create-twin-cta"
         >
-          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />내 트윈 만들기
+          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />내 AI 아바타 만들기
         </Button>
       </div>
     );
@@ -127,7 +126,7 @@ export function MyTwinCard() {
     <section data-testid="my-twin-card" className="bg-card rounded-2xl border p-4">
       <div className="mb-3 flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-purple-500" aria-hidden="true" />
-        <h3 className="font-semibold">내 트윈</h3>
+        <h3 className="font-semibold">내 AI 아바타</h3>
       </div>
       {renderBody()}
       <TwinStudio open={studioOpen} onOpenChange={setStudioOpen} onApproved={refetch} />

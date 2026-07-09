@@ -15,3 +15,12 @@ export { evaluateColorCombination, colorNameToHex } from './color-combination';
 
 // 코디 추천
 export { recommendOutfit, adjustForOccasion } from './outfitRecommender';
+
+// 선호 스타일 + 표면 분기 헬퍼
+export {
+  STYLE_PREFERENCE_OPTIONS,
+  shouldShowMeasurementBanner,
+  getMatchedItemsEmptyState,
+  type StylePreferenceOption,
+  type MatchedItemsEmptyState,
+} from './style-preferences';

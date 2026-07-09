@@ -3,7 +3,19 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, ChevronDown, ImagePlus, X, ScanLine } from 'lucide-react';
+import {
+  Send,
+  Loader2,
+  ChevronDown,
+  ImagePlus,
+  X,
+  ScanLine,
+  Shirt,
+  Scissors,
+  Brush,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -28,6 +40,14 @@ interface ChatInterfaceProps {
   /** 진입 시 선택할 카테고리 (?category= 배선) */
   initialCategory?: keyof typeof QUICK_QUESTIONS_BY_CATEGORY;
 }
+
+// 기본(general) 화면 상황형 질문 → 아이콘 매핑. 질문 텍스트는 QUICK_QUESTIONS_BY_CATEGORY.general
+// 정본과 동일해야 하며, 여기서는 카드 아이콘만 부여한다(누락 시 Sparkles 폴백).
+const GENERAL_QUESTION_ICONS: Record<string, LucideIcon> = {
+  '오늘 뭐 입을까요?': Shirt,
+  '머리 어떻게 자를까요?': Scissors,
+  '오늘 화장 어떻게 할까요?': Brush,
+};
 
 // 이미지 전송 전 클라이언트 리사이즈 (긴 변 1024px, JPEG 80%)
 async function fileToResizedDataUrl(file: File): Promise<string> {
@@ -319,203 +339,249 @@ export function ChatInterface({
         }
       />
 
-      {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* 초기 인사 */}
-        {messages.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-6">
-              {t('greeting')}
-              <br />
-              {t('greetingSubtitle')}
-            </p>
+      {/* 메시지 영역 — 데스크톱에서 가운데 정렬(넓은 화면 흩어짐 방지) */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="mx-auto w-full max-w-2xl space-y-4">
+          {/* 초기 인사 (빈 대화) — 리치 카드 + 상황형 퀵질문 그리드 */}
+          {messages.length === 0 && (
+            <div className="py-6" data-testid="coach-empty-state">
+              {/* 인사 카드 */}
+              <div className="mb-5 rounded-2xl border border-border/60 bg-gradient-to-br from-pink-50 to-purple-50 p-5 text-center dark:from-pink-950/30 dark:to-purple-950/30">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-500">
+                  <span className="text-sm font-bold text-white">AI</span>
+                </div>
+                <p className="font-semibold text-foreground">{t('greeting')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('greetingSubtitle')}</p>
+              </div>
 
-            {/* 카테고리 탭 */}
-            <div className="flex justify-center flex-wrap gap-2 mb-4 px-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => setActiveCategory(cat.key)}
-                  className={cn(
-                    'px-3 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1',
-                    activeCategory === cat.key
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
+              {/* 상황형 퀵질문 — general은 아이콘 카드 2×2, 그 외 카테고리는 칩 목록 */}
+              {activeCategory === 'general' ? (
+                <div className="grid grid-cols-2 gap-2.5" data-testid="coach-quick-cards">
+                  {QUICK_QUESTIONS_BY_CATEGORY.general.map((question) => {
+                    const Icon = GENERAL_QUESTION_ICONS[question] ?? Sparkles;
+                    return (
+                      <button
+                        key={question}
+                        onClick={() => handleQuickQuestion(question)}
+                        disabled={loading}
+                        className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
+                      >
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Icon className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <span className="text-sm font-medium">{question}</span>
+                      </button>
+                    );
+                  })}
+                  {/* ADR-114: "이 제품 나한테 맞을까요?"는 채팅 대신 스캔(사진 판정 정본)으로 분기 */}
+                  <Link
+                    href="/scan"
+                    className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    data-testid="coach-scan-chip"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <ScanLine className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span className="text-sm font-medium">이 제품 나한테 맞을까요?</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-2">
+                  <QuickQuestions
+                    questions={QUICK_QUESTIONS_BY_CATEGORY[activeCategory]}
+                    onSelect={handleQuickQuestion}
+                    disabled={loading}
+                  />
+                </div>
+              )}
+
+              {/* 사진 첨부 안내 — 하단 입력창의 사진 기능 표면화 */}
+              <p
+                className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"
+                data-testid="coach-photo-hint"
+              >
+                <ImagePlus className="h-3.5 w-3.5" aria-hidden="true" />
+                사진을 보내면 나에게 어울리는지 판정해드려요
+              </p>
+
+              {/* 카테고리 탭 (부차 위계 — 주제별로 더 물어보기) */}
+              <div className="mt-5 flex flex-wrap justify-center gap-2 px-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.key}
+                    onClick={() => setActiveCategory(cat.key)}
+                    className={cn(
+                      'flex items-center gap-1 rounded-full px-3 py-1.5 text-sm transition-colors',
+                      activeCategory === cat.key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80'
+                    )}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* 빠른 질문 */}
-            <div className="max-w-md mx-auto flex flex-wrap justify-center gap-2">
+          {/* 대화 내역 */}
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+
+          {/* 스트리밍 메시지 표시 */}
+          {streamingContent && (
+            <div className="flex gap-2 items-start">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-bold">AI</span>
+              </div>
+              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
+                <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 로딩 인디케이터 (스트리밍 중이 아닐 때만) */}
+          {loading && !streamingContent && (
+            <div className="flex gap-2 items-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              </div>
+              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5">
+                <p className="text-sm text-muted-foreground">{t('thinking')}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 추천 질문 */}
+          {!loading && suggestedQuestions.length > 0 && messages.length > 0 && (
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground mb-2">{t('suggestedQuestions')}</p>
+              <QuickQuestions
+                questions={suggestedQuestions}
+                onSelect={handleQuickQuestion}
+                variant="compact"
+              />
+            </div>
+          )}
+
+          {/* 빠른 질문 토글 (대화 중) */}
+          {messages.length > 0 && (
+            <button
+              onClick={() => setShowQuickQuestions(!showQuickQuestions)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mx-auto"
+            >
+              <ChevronDown
+                className={cn('h-4 w-4 transition-transform', showQuickQuestions && 'rotate-180')}
+              />
+              {showQuickQuestions ? t('quickQuestionsHide') : t('quickQuestionsShow')}
+            </button>
+          )}
+
+          {showQuickQuestions && messages.length > 0 && (
+            <div className="pt-2 border-t">
+              <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.key}
+                    onClick={() => setActiveCategory(cat.key)}
+                    className={cn(
+                      'px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors flex items-center gap-1',
+                      activeCategory === cat.key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80'
+                    )}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
               <QuickQuestions
                 questions={QUICK_QUESTIONS_BY_CATEGORY[activeCategory]}
                 onSelect={handleQuickQuestion}
                 disabled={loading}
+                variant="compact"
               />
-              {/* ADR-114: "이 제품 나한테 맞을까요?"는 채팅 대신 스캔(사진 판정 정본)으로 분기 */}
-              {activeCategory === 'general' && (
-                <Link
-                  href="/scan"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-muted/50 hover:bg-primary/10 hover:text-primary rounded-full border border-border hover:border-primary/30 transition-colors"
-                  data-testid="coach-scan-chip"
-                >
-                  <ScanLine className="h-4 w-4" aria-hidden="true" />이 제품 나한테 맞을까요?
-                </Link>
-              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 대화 내역 */}
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
-
-        {/* 스트리밍 메시지 표시 */}
-        {streamingContent && (
-          <div className="flex gap-2 items-start">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs font-bold">AI</span>
-            </div>
-            <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
-              <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
-            </div>
-          </div>
-        )}
-
-        {/* 로딩 인디케이터 (스트리밍 중이 아닐 때만) */}
-        {loading && !streamingContent && (
-          <div className="flex gap-2 items-center">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
-              <Loader2 className="w-4 h-4 text-white animate-spin" />
-            </div>
-            <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5">
-              <p className="text-sm text-muted-foreground">{t('thinking')}</p>
-            </div>
-          </div>
-        )}
-
-        {/* 추천 질문 */}
-        {!loading && suggestedQuestions.length > 0 && messages.length > 0 && (
-          <div className="pt-2">
-            <p className="text-xs text-muted-foreground mb-2">{t('suggestedQuestions')}</p>
-            <QuickQuestions
-              questions={suggestedQuestions}
-              onSelect={handleQuickQuestion}
-              variant="compact"
-            />
-          </div>
-        )}
-
-        {/* 빠른 질문 토글 (대화 중) */}
-        {messages.length > 0 && (
-          <button
-            onClick={() => setShowQuickQuestions(!showQuickQuestions)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mx-auto"
-          >
-            <ChevronDown
-              className={cn('h-4 w-4 transition-transform', showQuickQuestions && 'rotate-180')}
-            />
-            {showQuickQuestions ? t('quickQuestionsHide') : t('quickQuestionsShow')}
-          </button>
-        )}
-
-        {showQuickQuestions && messages.length > 0 && (
-          <div className="pt-2 border-t">
-            <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => setActiveCategory(cat.key)}
-                  className={cn(
-                    'px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors flex items-center gap-1',
-                    activeCategory === cat.key
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-            <QuickQuestions
-              questions={QUICK_QUESTIONS_BY_CATEGORY[activeCategory]}
-              onSelect={handleQuickQuestion}
-              disabled={loading}
-              variant="compact"
-            />
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* 입력 영역 */}
+      {/* 입력 영역 — 메시지 영역과 동일 폭으로 가운데 정렬 */}
       <div className="border-t p-4 bg-background">
-        {/* 첨부 이미지 미리보기 */}
-        {pendingImage && (
-          <div className="flex items-center gap-2 mb-2">
-            {/* eslint-disable-next-line @next/next/no-img-element -- dataURL 미리보기 */}
-            <img
-              src={pendingImage}
-              alt="첨부 예정"
-              className="h-14 w-14 rounded-lg object-cover border"
+        <div className="mx-auto w-full max-w-2xl">
+          {/* 첨부 이미지 미리보기 */}
+          {pendingImage && (
+            <div className="flex items-center gap-2 mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element -- dataURL 미리보기 */}
+              <img
+                src={pendingImage}
+                alt="첨부 예정"
+                className="h-14 w-14 rounded-lg object-cover border"
+              />
+              <span className="text-xs text-muted-foreground flex-1">
+                사진과 함께 질문해요 — 비워두면 &quot;어울릴까요?&quot;로 물어볼게요
+              </span>
+              <button
+                type="button"
+                onClick={() => setPendingImage(null)}
+                className="p-1 rounded-full bg-muted"
+                aria-label="첨부 취소"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = '';
+                if (!file) return;
+                try {
+                  setPendingImage(await fileToResizedDataUrl(file));
+                } catch {
+                  /* 손상 파일 무시 */
+                }
+              }}
             />
-            <span className="text-xs text-muted-foreground flex-1">
-              사진과 함께 질문해요 — 비워두면 &quot;어울릴까요?&quot;로 물어볼게요
-            </span>
-            <button
+            <Button
               type="button"
-              onClick={() => setPendingImage(null)}
-              className="p-1 rounded-full bg-muted"
-              aria-label="첨부 취소"
+              variant="outline"
+              size="icon"
+              disabled={loading}
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="사진 첨부 — 이 옷 어울릴지 물어보기"
             >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (!file) return;
-              try {
-                setPendingImage(await fileToResizedDataUrl(file));
-              } catch {
-                /* 손상 파일 무시 */
-              }
-            }}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading}
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="사진 첨부 — 이 옷 어울릴지 물어보기"
-          >
-            <ImagePlus className="h-4 w-4" />
-          </Button>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={pendingImage ? '이 사진에 대해 물어보세요' : t('inputPlaceholder')}
-            disabled={loading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={loading || (!input.trim() && !pendingImage)} size="icon">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground text-center mt-2">{t('disclaimer')}</p>
+              <ImagePlus className="h-4 w-4" />
+            </Button>
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={pendingImage ? '이 사진에 대해 물어보세요' : t('inputPlaceholder')}
+              disabled={loading}
+              className="flex-1"
+            />
+            <Button
+              type="submit"
+              disabled={loading || (!input.trim() && !pendingImage)}
+              size="icon"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+          <p className="text-xs text-muted-foreground text-center mt-2">{t('disclaimer')}</p>
+        </div>
       </div>
     </div>
   );

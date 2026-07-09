@@ -95,15 +95,15 @@ export function TwinTryonButton({ twinId, garmentImageUrl, className }: TwinTryo
         onClick={() => setOpen(true)}
         data-testid="twin-tryon-button"
       >
-        <Shirt className="mr-2 h-4 w-4" aria-hidden="true" />내 트윈에게 입혀보기
+        <Shirt className="mr-2 h-4 w-4" aria-hidden="true" />내 AI 아바타에게 입혀보기
       </Button>
       <DialogContent className="max-w-md" data-testid="twin-tryon-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Shirt className="h-5 w-5" aria-hidden="true" />내 트윈에게 입혀보기
+            <Shirt className="h-5 w-5" aria-hidden="true" />내 AI 아바타에게 입혀보기
           </DialogTitle>
           <DialogDescription>
-            내 트윈에게 이 옷을 입힌 모습을 만들어봐요. 실제 사이즈가 아닌 참고용 이미지예요.
+            내 AI 아바타에게 이 옷을 입힌 모습을 만들어봐요. 실제 사이즈가 아닌 참고용 이미지예요.
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +113,7 @@ export function TwinTryonButton({ twinId, garmentImageUrl, className }: TwinTryo
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={resultUrl}
-                alt="트윈 착장 결과"
+                alt="AI 아바타 착장 결과"
                 className="max-h-[380px] w-full object-contain"
               />
               <span
@@ -126,7 +126,7 @@ export function TwinTryonButton({ twinId, garmentImageUrl, className }: TwinTryo
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-sm text-muted-foreground">
               <Shirt className="h-6 w-6" aria-hidden="true" />
-              <p>내 트윈에게 이 옷을 입혀볼게요.</p>
+              <p>내 AI 아바타에게 이 옷을 입혀볼게요.</p>
             </div>
           )}
 

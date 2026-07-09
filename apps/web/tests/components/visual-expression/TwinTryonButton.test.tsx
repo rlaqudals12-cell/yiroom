@@ -36,6 +36,12 @@ describe('TwinTryonButton', () => {
     await waitFor(() => expect(screen.getByTestId('ai-generated-label')).toBeInTheDocument());
   });
 
+  it('버튼 라벨은 "내 AI 아바타에게 입혀보기"를 쓴다', () => {
+    render(<TwinTryonButton twinId="twin-1" garmentImageUrl="https://x/g.jpg" />);
+
+    expect(screen.getByTestId('twin-tryon-button')).toHaveTextContent('내 AI 아바타에게 입혀보기');
+  });
+
   it('429(상한) 응답 시 결과를 노출하지 않고 안내한다', async () => {
     vi.stubGlobal(
       'fetch',

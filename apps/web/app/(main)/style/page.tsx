@@ -10,7 +10,9 @@ import { getBodyShapeLabel } from '@/lib/body';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilter';
+import { StylePreferenceChips } from '@/components/style/StylePreferenceChips';
 import { OutfitRoutineCard, type OutfitItem } from '@/components/style/OutfitRoutineCard';
+import { shouldShowMeasurementBanner, getMatchedItemsEmptyState } from '@/lib/style';
 import type { FavoriteItem } from '@/types/hybrid';
 import {
   suggestOutfitFromCloset,
@@ -68,6 +70,8 @@ export default function StylePage() {
   const [bodyType, setBodyType] = useState<string | null>(null);
   const [personalColor, setPersonalColor] = useState<string | null>(null);
   const [height, setHeight] = useState<string | null>(null);
+  // 체형 분석에 이미 저장된 키(숫자) — 신체정보 배너 중복 판단용 (One Canon)
+  const [bodyHeightCm, setBodyHeightCm] = useState<number | null>(null);
   const [feature, setFeature] = useState<string | null>(null);
 
   // 코디 매칭용 원본 코드값 (라벨과 별도 — closetMatcher 계약)
@@ -118,6 +122,7 @@ export default function StylePage() {
       setRawBodyType(bodyData.body_type as BodyType3);
     }
     setHeight(bodyData.height ? `${bodyData.height}cm` : null);
+    setBodyHeightCm(bodyData.height ?? null);
     const concerns = bodyData.concerns as string[] | null;
     setFeature(concerns?.[0] || null);
   };
@@ -274,21 +279,21 @@ export default function StylePage() {
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">스타일 - 체형 맞춤 코디 추천</h1>
 
-      {/* 키/몸무게 미입력 안내 배너 */}
-      {hasMeasurements === false && (
+      {/* 키/몸무게 미입력 안내 배너 — 어떤 소스에도 키가 없을 때만 표시 (중복 입력 방지) */}
+      {shouldShowMeasurementBanner(hasMeasurements, bodyHeightCm) && (
         <FadeInUp>
           <div className="mx-4 mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
             <p className="font-medium text-amber-900 dark:text-amber-200 mb-1">
               키/몸무게를 입력하면 더 정확한 추천을 받을 수 있어요
             </p>
             <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
-              체형 맞춤 코디와 핏 추천을 위해 기본 정보가 필요해요
+              체형 분석을 하면 자동으로 채워져요. 직접 입력하거나 수정하려면 내 정보에서 관리하세요.
             </p>
             <button
-              onClick={() => router.push('/style/onboarding')}
+              onClick={() => router.push('/profile/my-info')}
               className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              정보 입력하기
+              내 정보에서 입력하기
             </button>
           </div>
         </FadeInUp>
@@ -442,15 +447,16 @@ export default function StylePage() {
         </nav>
       </FadeInUp>
 
-      {/* 소재 즐겨찾기 필터 (하이브리드 UX) */}
+      {/* 소재 즐겨찾기 필터 + 선호 스타일 (하이브리드 UX) */}
       <FadeInUp delay={4}>
-        <section className="px-4 py-3 border-b" aria-label="소재 필터">
+        <section className="px-4 py-3 border-b space-y-3" aria-label="소재·스타일 필터">
           <MaterialFavoriteFilter
             favorites={favoriteMaterials}
             avoids={avoidMaterials}
             onFavoritesChange={setFavoriteMaterials}
             onAvoidsChange={setAvoidMaterials}
           />
+          <StylePreferenceChips />
         </section>
       </FadeInUp>
 
@@ -530,14 +536,22 @@ export default function StylePage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 bg-card rounded-xl border">
-                <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  {hasAnalysis
-                    ? '맞춤 아이템을 준비하고 있어요'
-                    : '체형 분석 후 맞춤 추천을 받아보세요'}
-                </p>
-              </div>
+              (() => {
+                // 패션 상품 DB가 없어 쇼핑 매칭 아이템은 미제공 — 실제 동작하는 경로로 안내
+                const emptyState = getMatchedItemsEmptyState(hasAnalysis, closetItems.length > 0);
+                return (
+                  <div className="text-center py-8 bg-card rounded-xl border px-4">
+                    <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">{emptyState.message}</p>
+                    <button
+                      onClick={() => router.push(emptyState.ctaHref)}
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                    >
+                      {emptyState.ctaLabel}
+                    </button>
+                  </div>
+                );
+              })()
             )}
           </section>
         </FadeInUp>

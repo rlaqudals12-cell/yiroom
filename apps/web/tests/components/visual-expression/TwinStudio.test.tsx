@@ -108,6 +108,14 @@ describe('TwinStudio', () => {
     expect(String((patchCall?.[1] as RequestInit).body)).toContain('approve');
   });
 
+  it('사용자 대면 라벨은 "트윈"이 아니라 "AI 아바타"를 쓴다', () => {
+    render(<TwinStudio open onOpenChange={() => {}} />);
+
+    // 안내(intro) 화면: 상한 고지 문구가 "AI 아바타" 표현
+    expect(screen.getByText(/AI 아바타 만들기는 하루에 5번/)).toBeInTheDocument();
+    expect(screen.queryByText(/트윈을 만들 수 없어요/)).toBeNull();
+  });
+
   it('429(일 상한) 응답 시 안내 문구를 노출한다', async () => {
     vi.stubGlobal(
       'fetch',

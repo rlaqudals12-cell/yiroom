@@ -50,6 +50,12 @@ describe('STEP_HOWTO', () => {
     expect(STEP_HOWTO.sunscreen.waitTime).toContain('덧발라');
   });
 
+  it('should 클렌저 팁에 약산성 pH 4.5~6.5 풀이를 담는다', () => {
+    const tipsText = (STEP_HOWTO.cleanser.tips ?? []).join(' ');
+    expect(tipsText).toContain('약산성');
+    expect(tipsText).toContain('pH 4.5~6.5');
+  });
+
   it('should 금지 문구(치료·처방 등)를 포함하지 않는다', () => {
     for (const key of Object.keys(STEP_HOWTO) as StepHowToKey[]) {
       const howTo = STEP_HOWTO[key];

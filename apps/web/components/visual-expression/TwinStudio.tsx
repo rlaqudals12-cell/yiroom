@@ -92,19 +92,19 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
       });
       if (res.status === 429) {
         const d = await res.json().catch(() => ({}));
-        setErrorMsg(d.error ?? '오늘은 트윈을 더 만들 수 없어요. 내일 다시 시도해 주세요.');
+        setErrorMsg(d.error ?? '오늘은 AI 아바타를 더 만들 수 없어요. 내일 다시 시도해 주세요.');
         setPhase('error');
         return;
       }
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setErrorMsg(d.error ?? '지금은 트윈을 만들 수 없어요. 잠시 후 다시 시도해 주세요.');
+        setErrorMsg(d.error ?? '지금은 AI 아바타를 만들 수 없어요. 잠시 후 다시 시도해 주세요.');
         setPhase('error');
         return;
       }
       const rec = parseTwinRecord(await res.json().catch(() => null));
       if (!rec) {
-        setErrorMsg('지금은 트윈을 만들 수 없어요. 잠시 후 다시 시도해 주세요.');
+        setErrorMsg('지금은 AI 아바타를 만들 수 없어요. 잠시 후 다시 시도해 주세요.');
         setPhase('error');
         return;
       }
@@ -129,7 +129,7 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
         toast.error('승인에 실패했어요. 잠시 후 다시 시도해 주세요.');
         return;
       }
-      toast.success('내 트윈이 만들어졌어요.');
+      toast.success('내 AI 아바타가 만들어졌어요.');
       onApproved?.();
       handleOpenChange(false);
     } catch {
@@ -162,16 +162,17 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
         <div className="flex items-start gap-2.5">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" aria-hidden="true" />
           <p>
-            <strong>본인 사진만 사용해 주세요.</strong> 다른 사람의 사진으로 트윈을 만들 수 없어요.
+            <strong>본인 사진만 사용해 주세요.</strong> 다른 사람의 사진으로 AI 아바타를 만들 수
+            없어요.
           </p>
         </div>
         <div className="flex items-start gap-2.5">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-purple-500" aria-hidden="true" />
-          <p>사진은 Google AI로 전송돼 트윈을 만드는 데 사용돼요.</p>
+          <p>사진은 Google AI로 전송돼 AI 아바타를 만드는 데 사용돼요.</p>
         </div>
         <div className="flex items-start gap-2.5">
           <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <p>트윈 만들기는 하루에 5번까지 할 수 있어요.</p>
+          <p>AI 아바타 만들기는 하루에 5번까지 할 수 있어요.</p>
         </div>
       </div>
       <Button
@@ -254,8 +255,7 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
         disabled={!faceImage}
         data-testid="twin-generate-button"
       >
-        <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
-        트윈 만들기
+        <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />내 AI 아바타 만들기
       </Button>
     </div>
   );
@@ -266,7 +266,7 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
       data-testid="twin-generating"
     >
       <Loader2 className="h-8 w-8 animate-spin text-purple-500" aria-hidden="true" />
-      <p className="font-medium">트윈을 만들고 있어요</p>
+      <p className="font-medium">AI 아바타를 만들고 있어요</p>
       <p className="text-sm text-muted-foreground">
         20~40초 정도 걸려요. 창을 닫지 말고 잠시만 기다려 주세요.
       </p>
@@ -280,7 +280,7 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={twin.imageUrl}
-            alt="생성된 내 트윈"
+            alt="생성된 내 AI 아바타"
             className="max-h-[380px] w-full object-contain"
           />
           <span
@@ -373,10 +373,10 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
       <DialogContent className="max-w-md" data-testid="twin-studio">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" aria-hidden="true" />내 트윈 만들기
+            <Sparkles className="h-5 w-5" aria-hidden="true" />내 AI 아바타 만들기
           </DialogTitle>
           <DialogDescription>
-            나를 닮은 모습을 만들어, 옷과 스타일을 입혀볼 수 있어요.
+            나를 닮은 AI 아바타를 만들어, 옷과 스타일을 입혀볼 수 있어요.
           </DialogDescription>
         </DialogHeader>
 

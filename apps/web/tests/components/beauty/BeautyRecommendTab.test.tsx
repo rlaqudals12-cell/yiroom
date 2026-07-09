@@ -6,7 +6,12 @@
  * 추천 0개 수리(2026-07-08):
  * - 카테고리/서브카테고리를 DB 실값(category=serum 등)으로 매핑
  * - skin_types/concerns 미태깅(null) 제품을 배제하지 않는 or-null 필터
- * - 매칭 필터 기본 OFF + 임계(80) 미달 시 자동 완화 안내
+ * - 매칭 필터 기본 OFF + 임계 미달 시 자동 완화 안내
+ *
+ * 매칭 필터 0개 근본 수리(창업자 스크린샷, 복합성+보습·토글 ON에서 0개):
+ * - 임계를 스킨케어 점수 상한(~77)보다 높은 80 → 도달 가능한 70으로 정합
+ * - 토글 라벨을 도달 불가한 "80%+ 매칭" → "적합도 높은 것만"으로 (정직)
+ * - 완화 안내 문구에서 특정 % 숫자 제거
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -107,7 +112,7 @@ import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 const mockGetMatchedProducts = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
   products.map((product) => ({ product, matchScore: 92, matchReasons: [] }));
 
-// 낮은 매칭 점수 엔진 — 임계(80) 미달 시나리오 (스킨케어 점수 상한 ~77 재현)
+// 낮은 매칭 점수 엔진 — 임계(70) 미달 시나리오 (스킨케어 실질 상한 아래 현실 점수 재현)
 const mockLowMatchProducts = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
   products.map((product) => ({ product, matchScore: 65, matchReasons: [] }));
 
@@ -207,7 +212,7 @@ describe('BeautyRecommendTab', () => {
     ).toBe(true);
   });
 
-  it('매칭 필터 ON + 임계(80) 미달이면 자동 완화 안내와 함께 전체를 보여준다', async () => {
+  it('매칭 필터 ON + 임계(70) 미달이면 자동 완화 안내와 함께 전체를 보여준다', async () => {
     const user = userEvent.setup();
     renderTab({ getMatchedProducts: mockLowMatchProducts });
     await screen.findByText('히알루론 수분 크림');
@@ -229,6 +234,88 @@ describe('BeautyRecommendTab', () => {
     await screen.findByText('히알루론 수분 크림');
 
     expect(screen.queryByTestId('beauty-match-relaxed-notice')).not.toBeInTheDocument();
+  });
+
+  describe('매칭 필터 0개 근본 수리 (창업자: 복합성+보습, 토글 ON에서 0개)', () => {
+    // 스킨케어 실질 상한(~77) 아래 현실 점수 — 프로필 고민 태그 부재로 대부분 여기 위치
+    const mockRealisticSkincare = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
+      products.map((product) => ({ product, matchScore: 55, matchReasons: [] }));
+
+    it('복합성+보습 + 토글 ON에서 임계 미달이어도 0개가 아니라 완화 안내 + 전체를 보여준다', async () => {
+      const user = userEvent.setup();
+      renderTab({ userSkinType: 'combination', getMatchedProducts: mockRealisticSkincare });
+      await screen.findByText('히알루론 수분 크림');
+
+      // 복합성 자동 선택 + 보습 기본 선택 (창업자 스크린샷 조합)
+      expect(screen.getByTestId('beauty-chip-skin-combination')).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByTestId('beauty-chip-concern-hydration')).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+
+      await user.click(screen.getByTestId('beauty-match-toggle'));
+
+      // 0개로 숨기지 않고 완화 안내 + 전체(3개) 표시
+      expect(await screen.findByTestId('beauty-match-relaxed-notice')).toBeInTheDocument();
+      expect(screen.getByText('3개 제품')).toBeInTheDocument();
+      expect(screen.queryByText('아직 딱 맞는 제품을 찾지 못했어요')).not.toBeInTheDocument();
+    });
+
+    it('토글 기본값은 OFF (기본 화면에서 제품이 보임)', async () => {
+      renderTab({ userSkinType: 'combination' });
+      await screen.findByText('히알루론 수분 크림');
+      expect(screen.getByTestId('beauty-match-toggle')).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('토글 라벨은 도달 불가한 특정 %("80%+")를 약속하지 않는다', async () => {
+      renderTab();
+      await screen.findByText('히알루론 수분 크림');
+      expect(screen.getByText('적합도 높은 것만')).toBeInTheDocument();
+      expect(screen.queryByText(/80%\+/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/80%\s*매칭/)).not.toBeInTheDocument();
+    });
+
+    it('완화 안내 문구가 특정 퍼센트 숫자를 하드코딩하지 않는다', async () => {
+      const user = userEvent.setup();
+      renderTab({ getMatchedProducts: mockRealisticSkincare });
+      await screen.findByText('히알루론 수분 크림');
+      await user.click(screen.getByTestId('beauty-match-toggle'));
+
+      const notice = await screen.findByTestId('beauty-match-relaxed-notice');
+      expect(notice).toHaveTextContent(
+        '조건에 꼭 맞는 제품이 적어 적합도 높은 순으로 모두 보여드려요'
+      );
+      expect(notice.textContent ?? '').not.toMatch(/\d+%/);
+    });
+
+    it('임계(70) 도달 제품이 있으면 완화 없이 필터가 실제 동작한다 (80은 도달 불가였음)', async () => {
+      // 70 정확히 도달 — 완화되지 않고 필터 통과 (이전 임계 80에서는 스킨케어가 도달 불가였다)
+      const atThreshold = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
+        products.map((product) => ({ product, matchScore: 70, matchReasons: [] }));
+      const user = userEvent.setup();
+      renderTab({ getMatchedProducts: atThreshold });
+      await screen.findByText('히알루론 수분 크림');
+
+      await user.click(screen.getByTestId('beauty-match-toggle'));
+      await screen.findByText('히알루론 수분 크림');
+      expect(screen.queryByTestId('beauty-match-relaxed-notice')).not.toBeInTheDocument();
+    });
+
+    it('피부고민(보습) 필터도 미태깅(null) 제품을 배제하지 않는다 (concerns or-null)', async () => {
+      renderTab();
+      await screen.findByText('히알루론 수분 크림');
+      // 미태깅 concern 제품(prod-3)도 렌더링
+      expect(screen.getByText('비타민C 세럼')).toBeInTheDocument();
+      const orCalls = queryCalls.filter((c) => c.method === 'or');
+      expect(
+        orCalls.some(
+          (c) => typeof c.args[0] === 'string' && (c.args[0] as string).includes('concerns.is.null')
+        )
+      ).toBe(true);
+    });
   });
 
   it('하드코딩 TOP5 랭킹 섹션이 존재하지 않는다 (가짜 랭킹 제거)', async () => {
