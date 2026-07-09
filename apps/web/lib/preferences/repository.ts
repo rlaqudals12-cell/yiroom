@@ -14,6 +14,13 @@ import {
   toUserPreference,
 } from '@/types/preferences';
 
+/**
+ * 도메인 선호/기피 항목 테이블.
+ * prod의 쇼핑 설정 'user_preferences'(1행/유저)와 스키마가 충돌하므로 전용 테이블로 분리.
+ * @see supabase/migrations/20260710_user_preference_items.sql
+ */
+const PREFERENCE_ITEMS_TABLE = 'user_preference_items';
+
 // =============================================================================
 // 조회 함수
 // =============================================================================
@@ -32,7 +39,7 @@ export async function getUserPreferences(
   }
 ): Promise<UserPreference[]> {
   let query = supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .select('*')
     .eq('clerk_user_id', clerkUserId)
     .order('priority', { ascending: false })
@@ -71,7 +78,11 @@ export async function getPreferenceById(
   supabase: SupabaseClient,
   id: string
 ): Promise<UserPreference | null> {
-  const { data, error } = await supabase.from('user_preferences').select('*').eq('id', id).single();
+  const { data, error } = await supabase
+    .from(PREFERENCE_ITEMS_TABLE)
+    .select('*')
+    .eq('id', id)
+    .single();
 
   if (error || !data) {
     return null;
@@ -89,7 +100,7 @@ export async function getAvoidedItemNames(
   domain: PreferenceDomain
 ): Promise<string[]> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .select('item_name')
     .eq('clerk_user_id', clerkUserId)
     .eq('domain', domain)
@@ -111,7 +122,7 @@ export async function getCriticalAvoids(
   domain?: PreferenceDomain
 ): Promise<UserPreference[]> {
   let query = supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .select('*')
     .eq('clerk_user_id', clerkUserId)
     .eq('is_favorite', false)
@@ -139,7 +150,7 @@ export async function getPreferenceSummary(
   clerkUserId: string
 ): Promise<Record<PreferenceDomain, { favorites: number; avoids: number }>> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .select('domain, is_favorite')
     .eq('clerk_user_id', clerkUserId);
 
@@ -187,7 +198,7 @@ export async function addPreference(
   preference: Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<UserPreference | null> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .insert({
       clerk_user_id: preference.clerkUserId,
       domain: preference.domain,
@@ -222,7 +233,7 @@ export async function updatePreference(
   updates: Partial<Pick<UserPreference, 'avoidLevel' | 'avoidReason' | 'avoidNote' | 'priority'>>
 ): Promise<UserPreference | null> {
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .update({
       ...(updates.avoidLevel !== undefined && { avoid_level: updates.avoidLevel }),
       ...(updates.avoidReason !== undefined && { avoid_reason: updates.avoidReason }),
@@ -245,7 +256,7 @@ export async function updatePreference(
  * 선호/기피 항목 삭제
  */
 export async function removePreference(supabase: SupabaseClient, id: string): Promise<boolean> {
-  const { error } = await supabase.from('user_preferences').delete().eq('id', id);
+  const { error } = await supabase.from(PREFERENCE_ITEMS_TABLE).delete().eq('id', id);
 
   if (error) {
     console.error('[Preferences] Failed to remove preference:', error);
@@ -264,7 +275,7 @@ export async function clearPreferencesByDomain(
   domain: PreferenceDomain
 ): Promise<boolean> {
   const { error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .delete()
     .eq('clerk_user_id', clerkUserId)
     .eq('domain', domain);
@@ -292,7 +303,7 @@ export async function preferenceExists(
   itemName: string
 ): Promise<boolean> {
   const { count, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .select('id', { count: 'exact', head: true })
     .eq('clerk_user_id', clerkUserId)
     .eq('domain', domain)
@@ -337,7 +348,7 @@ export async function upsertPreferences(
   }));
 
   const { data, error } = await supabase
-    .from('user_preferences')
+    .from(PREFERENCE_ITEMS_TABLE)
     .upsert(rows, {
       onConflict: 'clerk_user_id,domain,item_type,item_name',
       ignoreDuplicates: false,

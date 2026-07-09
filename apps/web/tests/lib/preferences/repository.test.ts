@@ -116,7 +116,9 @@ describe('Preferences Repository', () => {
 
       const result = await getUserPreferences(mockSupabase, 'user_123', { domain: 'nutrition' });
 
-      expect(mockSupabase.from).toHaveBeenCalledWith('user_preferences');
+      // 쇼핑 설정 user_preferences가 아니라 전용 테이블을 조회해야 함 (2026-07-10 분리)
+      expect(mockSupabase.from).toHaveBeenCalledWith('user_preference_items');
+      expect(mockSupabase.from).not.toHaveBeenCalledWith('user_preferences');
       expect(domainEq).toHaveBeenCalledWith('domain', 'nutrition');
       expect(result).toHaveLength(1);
       expect(result[0].itemName).toBe('땅콩');
@@ -278,6 +280,7 @@ describe('Preferences Repository', () => {
         avoidReason: 'allergy',
       });
 
+      expect(mockSupabase.from).toHaveBeenCalledWith('user_preference_items');
       expect(result).not.toBeNull();
       expect(result?.itemName).toBe('땅콩');
     });

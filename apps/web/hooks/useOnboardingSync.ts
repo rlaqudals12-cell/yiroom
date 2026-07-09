@@ -23,7 +23,7 @@ interface OnboardingAllergyData {
 }
 
 /**
- * 온보딩 데이터를 Supabase user_preferences 테이블에 동기화
+ * 온보딩 데이터를 Supabase user_preference_items 테이블에 동기화
  */
 export function useOnboardingSync(): void {
   const { user, isSignedIn } = useUser();
@@ -47,7 +47,8 @@ export function useOnboardingSync(): void {
         const data: OnboardingAllergyData = JSON.parse(rawData);
         if (!data.allergies?.length && !data.dislikedFoods?.length) return;
 
-        // user_preferences 테이블에 upsert
+        // 도메인 선호/기피 = 전용 테이블 user_preference_items (쇼핑 설정 user_preferences와 분리)
+        // avoid_level/avoid_reason은 유효 enum(AvoidLevel/AvoidReason)만 사용한다.
         const preferences = [
           // 알레르기 항목
           ...data.allergies.map((allergy) => ({
@@ -56,10 +57,10 @@ export function useOnboardingSync(): void {
             item_type: 'food' as const,
             item_name: allergy,
             is_favorite: false,
-            avoid_level: 'critical' as const,
+            avoid_level: 'cannot' as const,
             avoid_reason: 'allergy',
-            priority: 100,
-            source: 'onboarding',
+            priority: 5,
+            source: 'user',
           })),
           // 기피 음식 항목
           ...data.dislikedFoods.map((food) => ({
@@ -68,17 +69,17 @@ export function useOnboardingSync(): void {
             item_type: 'food' as const,
             item_name: food,
             is_favorite: false,
-            avoid_level: 'prefer_not' as const,
-            avoid_reason: 'dislike',
-            priority: 50,
-            source: 'onboarding',
+            avoid_level: 'dislike' as const,
+            avoid_reason: 'taste',
+            priority: 3,
+            source: 'user',
           })),
         ];
 
         if (preferences.length === 0) return;
 
-        const { error } = await supabase.from('user_preferences').upsert(preferences, {
-          onConflict: 'clerk_user_id,domain,item_name',
+        const { error } = await supabase.from('user_preference_items').upsert(preferences, {
+          onConflict: 'clerk_user_id,domain,item_type,item_name',
           ignoreDuplicates: true,
         });
 

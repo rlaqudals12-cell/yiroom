@@ -73,8 +73,10 @@ export function useUserPreferences(
         throw new Error(`Failed to fetch preferences: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      setPreferences(data.preferences || []);
+      // API 응답 형식: { success, data: UserPreference[], count } — 과거엔 data.preferences를
+      // 읽어(존재하지 않는 키) 항상 빈 배열이 됐다. data.data를 방어적으로 파싱한다.
+      const json = await response.json();
+      setPreferences(Array.isArray(json.data) ? json.data : []);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
       console.error('[useUserPreferences] Fetch error:', error);
@@ -118,10 +120,15 @@ export function useUserPreferences(
           throw new Error(`Failed to add preference: ${response.statusText}`);
         }
 
-        const newPreference = await response.json();
+        // POST 라우트는 { success, data } 래퍼를 반환 — data만 항목으로 사용한다
+        // (과거엔 래퍼 전체를 상태에 넣어 id/domain 없는 유령 객체가 들어갔다).
+        const json = await response.json();
+        const newPreference = (json?.data ?? null) as UserPreference | null;
 
         // 로컬 상태 업데이트
-        setPreferences((prev) => [newPreference, ...prev]);
+        if (newPreference) {
+          setPreferences((prev) => [newPreference, ...prev]);
+        }
 
         return newPreference;
       } catch (err) {
@@ -153,10 +160,14 @@ export function useUserPreferences(
           throw new Error(`Failed to update preference: ${response.statusText}`);
         }
 
-        const updatedPreference = await response.json();
+        // PATCH 라우트도 { success, data } 래퍼를 반환 — data만 항목으로 사용한다.
+        const json = await response.json();
+        const updatedPreference = (json?.data ?? null) as UserPreference | null;
 
         // 로컬 상태 업데이트
-        setPreferences((prev) => prev.map((p) => (p.id === id ? updatedPreference : p)));
+        if (updatedPreference) {
+          setPreferences((prev) => prev.map((p) => (p.id === id ? updatedPreference : p)));
+        }
 
         return updatedPreference;
       } catch (err) {

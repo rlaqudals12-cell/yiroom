@@ -2559,6 +2559,64 @@ CREATE INDEX idx_review_ai_cache_expires ON product_review_ai_cache(expires_at);
 
 ---
 
-**버전**: v7.3 (쿠폰/프로모션 + 리뷰 AI 캐시 추가)
-**최종 업데이트**: 2026년 3월 16일
+## 61. user_preference_items 테이블 (도메인 선호/기피)
+
+도메인별 선호/기피 항목(N행/유저). 화장품 성분·패션 스타일·음식/알레르겐·운동 부위·색상 등을
+`domain` + `item_type`으로 분류해 저장한다.
+
+> ⚠️ **`user_preferences`(쇼핑 설정, 1행/유저)와는 별개 테이블**이다.
+> 과거 `lib/preferences/repository.ts`가 `user_preferences` 테이블명을 재사용해
+> prod의 쇼핑 설정 스키마와 충돌 → GET 빈배열·POST 실패가 발생했다. 이를 분리해 해소.
+
+### SQL 생성문
+
+```sql
+CREATE TABLE IF NOT EXISTS user_preference_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  domain TEXT NOT NULL,        -- beauty | style | nutrition | workout | color
+  item_type TEXT NOT NULL,     -- ingredient | material | fashion_style | food | allergen ...
+  item_id TEXT,
+  item_name TEXT NOT NULL,
+  item_name_en TEXT,
+  is_favorite BOOLEAN NOT NULL DEFAULT true,
+  avoid_level TEXT,            -- dislike | avoid | cannot | danger
+  avoid_reason TEXT,
+  avoid_note TEXT,
+  priority INTEGER NOT NULL DEFAULT 3,
+  source TEXT NOT NULL DEFAULT 'user',   -- user | analysis | recommendation
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT user_preference_items_unique UNIQUE (clerk_user_id, domain, item_type, item_name)
+);
+
+CREATE INDEX idx_user_preference_items_user_domain
+  ON user_preference_items(clerk_user_id, domain);
+
+-- RLS (prod 구패턴 auth.jwt()->>'sub')
+ALTER TABLE user_preference_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "pref_items_select_own" ON user_preference_items
+  FOR SELECT USING (clerk_user_id = auth.jwt() ->> 'sub');
+-- INSERT/UPDATE/DELETE 정책 동일 패턴
+```
+
+### 필드 설명
+
+| 필드        | 타입    | 설명                                          |
+| ----------- | ------- | --------------------------------------------- |
+| domain      | TEXT    | beauty/style/nutrition/workout/color          |
+| item_type   | TEXT    | ingredient/material/fashion_style/allergen 등 |
+| item_name   | TEXT    | 한글명 (unique 키 구성)                       |
+| is_favorite | BOOLEAN | true=선호, false=기피                         |
+| avoid_level | TEXT    | dislike/avoid/cannot/danger (기피 시)         |
+| priority    | INTEGER | 1-5 (기본 3)                                  |
+| source      | TEXT    | user/analysis/recommendation                  |
+
+> 마이그레이션: `supabase/migrations/20260710_user_preference_items.sql`
+> 소비: `lib/preferences/repository.ts`, `/api/preferences*`, `useUserPreferences`
+
+---
+
+**버전**: v7.4 (user_preference_items 분리 — 쇼핑 설정 user_preferences와 충돌 해소)
+**최종 업데이트**: 2026년 7월 10일
 **상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 동기화 완료 ✅

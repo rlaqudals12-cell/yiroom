@@ -41,9 +41,30 @@ const DEFAULT_PROFILE: UserProfileData = {
 };
 
 /**
+ * 정본 테이블 (2026-07-10 유령 컬럼 수리):
+ * - 성별   → users.gender
+ * - 키/몸무게 → user_body_measurements(height, weight), 없으면 body_analyses 최신 행 폴백
+ * - 알레르기 → nutrition_settings.allergies
+ *
+ * 과거엔 users에서 존재하지 않는 height_cm/weight_kg/allergies를 함께 select 해
+ * 쿼리 전체가 실패 → 성별 포함 프로필 읽기가 전멸했다(성별을 매번 다시 물음).
+ */
+const USERS_TABLE = 'users';
+const MEASUREMENTS_TABLE = 'user_body_measurements';
+const BODY_ANALYSES_TABLE = 'body_analyses';
+const NUTRITION_SETTINGS_TABLE = 'nutrition_settings';
+
+// NUMERIC/텍스트 혼재 방어 — 숫자로 정규화
+function toNumberOrNull(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value));
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
  * 사용자 프로필 정보 관리 훅
- * - 성별, 키, 몸무게, 알러지 정보 관리
- * - user_preferences 테이블과 연동
+ * - 성별, 키, 몸무게, 알러지 정보 관리 (각 정본 테이블 연동)
+ * - 반환 shape은 유지하고 내부 데이터 소스만 정본으로 교체
  */
 export function useUserProfile(): UseUserProfileResult {
   const { user, isLoaded } = useUser();
@@ -53,7 +74,7 @@ export function useUserProfile(): UseUserProfileResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // 프로필 정보 조회
+  // 프로필 정보 조회 — 정본 테이블 3곳을 병렬 조회 (한 곳 실패가 전체를 막지 않음)
   const fetchProfile = useCallback(async () => {
     if (!isLoaded || !user) {
       setIsLoading(false);
@@ -64,24 +85,46 @@ export function useUserProfile(): UseUserProfileResult {
       setIsLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('user_preferences')
-        .select('gender, height_cm, weight_kg, allergies')
-        .eq('clerk_user_id', user.id)
-        .maybeSingle();
+      const [genderRes, measureRes, allergyRes] = await Promise.all([
+        // 성별: users에서 gender만 (유령 컬럼 제거)
+        supabase.from(USERS_TABLE).select('gender').eq('clerk_user_id', user.id).maybeSingle(),
+        // 키/몸무게: 정본 = user_body_measurements
+        supabase
+          .from(MEASUREMENTS_TABLE)
+          .select('height, weight')
+          .eq('clerk_user_id', user.id)
+          .maybeSingle(),
+        // 알레르기: nutrition_settings
+        supabase
+          .from(NUTRITION_SETTINGS_TABLE)
+          .select('allergies')
+          .eq('clerk_user_id', user.id)
+          .maybeSingle(),
+      ]);
 
-      if (fetchError) {
-        throw new Error(`Failed to fetch profile: ${fetchError.message}`);
+      let heightCm = toNumberOrNull(measureRes.data?.height);
+      let weightKg = toNumberOrNull(measureRes.data?.weight);
+
+      // 폴백: 측정값이 없으면 body_analyses 최신 행 사용 (중복 입력 요구 방지 — One Canon)
+      if (heightCm === null || weightKg === null) {
+        const { data: bodyData } = await supabase
+          .from(BODY_ANALYSES_TABLE)
+          .select('height, weight')
+          .eq('clerk_user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (heightCm === null) heightCm = toNumberOrNull(bodyData?.height);
+        if (weightKg === null) weightKg = toNumberOrNull(bodyData?.weight);
       }
 
-      if (data) {
-        setProfile({
-          gender: data.gender as GenderType | null,
-          heightCm: data.height_cm,
-          weightKg: data.weight_kg ? parseFloat(data.weight_kg) : null,
-          allergies: data.allergies || [],
-        });
-      }
+      setProfile({
+        gender: (genderRes.data?.gender as GenderType | null) ?? null,
+        heightCm,
+        weightKg,
+        allergies: Array.isArray(allergyRes.data?.allergies) ? allergyRes.data.allergies : [],
+      });
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
       console.error('[useUserProfile] Fetch error:', error);
@@ -96,119 +139,171 @@ export function useUserProfile(): UseUserProfileResult {
     fetchProfile();
   }, [fetchProfile]);
 
-  // 프로필 업데이트 공통 함수
-  const updateProfileData = useCallback(
-    async (updates: Record<string, unknown>): Promise<boolean> => {
+  // 성별 업데이트 → users.gender
+  const updateGender = useCallback(
+    async (gender: GenderType): Promise<boolean> => {
       if (!user) return false;
-
       try {
         setError(null);
-
         const { error: updateError } = await supabase
-          .from('user_preferences')
-          .update(updates)
+          .from(USERS_TABLE)
+          .update({ gender })
           .eq('clerk_user_id', user.id);
 
         if (updateError) {
-          throw new Error(`Failed to update profile: ${updateError.message}`);
+          throw new Error(`Failed to update gender: ${updateError.message}`);
         }
 
-        // 로컬 상태 업데이트
-        await fetchProfile();
+        setProfile((prev) => ({ ...prev, gender }));
         return true;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
-        console.error('[useUserProfile] Update error:', error);
+        console.error('[useUserProfile] updateGender error:', error);
         setError(error);
         return false;
       }
     },
-    [user, supabase, fetchProfile]
+    [user, supabase]
   );
 
-  // 성별 업데이트
-  const updateGender = useCallback(
-    async (gender: GenderType): Promise<boolean> => {
-      const success = await updateProfileData({ gender });
-      if (success) {
-        setProfile((prev) => ({ ...prev, gender }));
+  // 키/몸무게 upsert → user_body_measurements (부분 갱신, 기존 값 보존)
+  const upsertMeasurements = useCallback(
+    async (fields: { height?: number; weight?: number }): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        setError(null);
+        const { error: upsertError } = await supabase.from(MEASUREMENTS_TABLE).upsert(
+          {
+            clerk_user_id: user.id,
+            ...(fields.height !== undefined && { height: fields.height }),
+            ...(fields.weight !== undefined && { weight: fields.weight }),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'clerk_user_id' }
+        );
+
+        if (upsertError) {
+          throw new Error(`Failed to update measurements: ${upsertError.message}`);
+        }
+        return true;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        console.error('[useUserProfile] upsertMeasurements error:', error);
+        setError(error);
+        return false;
       }
-      return success;
     },
-    [updateProfileData]
+    [user, supabase]
   );
 
   // 키 업데이트
   const updateHeight = useCallback(
     async (heightCm: number): Promise<boolean> => {
-      const success = await updateProfileData({ height_cm: heightCm });
+      const success = await upsertMeasurements({ height: heightCm });
       if (success) {
         setProfile((prev) => ({ ...prev, heightCm }));
       }
       return success;
     },
-    [updateProfileData]
+    [upsertMeasurements]
   );
 
   // 몸무게 업데이트
   const updateWeight = useCallback(
     async (weightKg: number): Promise<boolean> => {
-      const success = await updateProfileData({ weight_kg: weightKg });
+      const success = await upsertMeasurements({ weight: weightKg });
       if (success) {
         setProfile((prev) => ({ ...prev, weightKg }));
       }
       return success;
     },
-    [updateProfileData]
+    [upsertMeasurements]
   );
 
   // 키와 몸무게 동시 업데이트
   const updatePhysicalInfo = useCallback(
     async (heightCm: number, weightKg: number): Promise<boolean> => {
-      const success = await updateProfileData({ height_cm: heightCm, weight_kg: weightKg });
+      const success = await upsertMeasurements({ height: heightCm, weight: weightKg });
       if (success) {
         setProfile((prev) => ({ ...prev, heightCm, weightKg }));
       }
       return success;
     },
-    [updateProfileData]
+    [upsertMeasurements]
   );
 
-  // 알러지 업데이트
+  // 알레르기 업데이트 → nutrition_settings.allergies
+  // nutrition_settings.goal은 NOT NULL이라 단순 upsert(부분)가 신규 행 INSERT에서 실패한다.
+  // 따라서 UPDATE 우선 → 행이 없으면 중립 목표('health')로 최소 INSERT.
+  // (N-1 UI는 숨김 상태라 이 행 생성이 사용자에게 노출되지 않음.)
   const updateAllergies = useCallback(
     async (allergies: string[]): Promise<boolean> => {
-      const success = await updateProfileData({ allergies });
-      if (success) {
+      if (!user) return false;
+      try {
+        setError(null);
+
+        const { data: updated, error: updateError } = await supabase
+          .from(NUTRITION_SETTINGS_TABLE)
+          .update({ allergies })
+          .eq('clerk_user_id', user.id)
+          .select('clerk_user_id');
+
+        if (updateError) {
+          throw new Error(`Failed to update allergies: ${updateError.message}`);
+        }
+
+        // 기존 nutrition_settings 행이 없으면 최소 필드로 생성
+        if (!updated || updated.length === 0) {
+          const { error: insertError } = await supabase.from(NUTRITION_SETTINGS_TABLE).insert({
+            clerk_user_id: user.id,
+            goal: 'health',
+            allergies,
+          });
+
+          if (insertError) {
+            throw new Error(`Failed to create nutrition settings: ${insertError.message}`);
+          }
+        }
+
         setProfile((prev) => ({ ...prev, allergies }));
+        return true;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        console.error('[useUserProfile] updateAllergies error:', error);
+        setError(error);
+        return false;
       }
-      return success;
     },
-    [updateProfileData]
+    [user, supabase]
   );
 
-  // 전체 프로필 업데이트
+  // 전체 프로필 업데이트 — 각 필드를 정본 테이블로 라우팅
   const updateProfile = useCallback(
     async (updates: Partial<UserProfileData>): Promise<boolean> => {
-      const dbUpdates: Record<string, unknown> = {};
+      const results: boolean[] = [];
 
-      if (updates.gender !== undefined) {
-        dbUpdates.gender = updates.gender;
+      if (updates.gender !== undefined && updates.gender !== null) {
+        results.push(await updateGender(updates.gender));
       }
-      if (updates.heightCm !== undefined) {
-        dbUpdates.height_cm = updates.heightCm;
+
+      if (updates.heightCm !== undefined && updates.weightKg !== undefined) {
+        if (updates.heightCm !== null && updates.weightKg !== null) {
+          results.push(await updatePhysicalInfo(updates.heightCm, updates.weightKg));
+        }
+      } else if (updates.heightCm !== undefined && updates.heightCm !== null) {
+        results.push(await updateHeight(updates.heightCm));
+      } else if (updates.weightKg !== undefined && updates.weightKg !== null) {
+        results.push(await updateWeight(updates.weightKg));
       }
-      if (updates.weightKg !== undefined) {
-        dbUpdates.weight_kg = updates.weightKg;
-      }
+
       if (updates.allergies !== undefined) {
-        dbUpdates.allergies = updates.allergies;
+        results.push(await updateAllergies(updates.allergies));
       }
 
-      if (Object.keys(dbUpdates).length === 0) return true;
-
-      return updateProfileData(dbUpdates);
+      if (results.length === 0) return true;
+      return results.every(Boolean);
     },
-    [updateProfileData]
+    [updateGender, updateHeight, updateWeight, updatePhysicalInfo, updateAllergies]
   );
 
   return {

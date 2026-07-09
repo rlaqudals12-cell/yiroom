@@ -1,5 +1,8 @@
 /**
  * useUserPreferences 훅 테스트
+ *
+ * 회귀 방지 초점: GET/POST/PATCH 응답의 { success, data } 래퍼를 정확히 언랩하는지.
+ * (과거 버그: GET은 data.preferences를 읽어 항상 [], POST/PATCH는 래퍼 전체를 상태에 주입.)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -50,6 +53,16 @@ const mockAvoidPreference: UserPreference = {
   updatedAt: '2024-01-01T00:00:00Z',
 };
 
+// API 표준 응답 래퍼 헬퍼
+const listResponse = (data: UserPreference[]) => ({
+  ok: true,
+  json: async () => ({ success: true, data, count: data.length }),
+});
+const itemResponse = (data: UserPreference) => ({
+  ok: true,
+  json: async () => ({ success: true, data }),
+});
+
 describe('useUserPreferences', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -59,14 +72,10 @@ describe('useUserPreferences', () => {
     } as any);
   });
 
-  it('초기 로드 시 선호/기피 목록 조회', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        preferences: [mockPreference, mockAvoidPreference],
-        count: 2,
-      }),
-    });
+  it('초기 로드 시 { data } 래퍼를 언랩해 목록을 채운다', async () => {
+    (global.fetch as any).mockResolvedValueOnce(
+      listResponse([mockPreference, mockAvoidPreference])
+    );
 
     const { result } = renderHook(() => useUserPreferences());
 
@@ -81,16 +90,27 @@ describe('useUserPreferences', () => {
     // 선호/기피 목록 확인
     expect(result.current.preferences).toHaveLength(2);
     expect(result.current.preferences[0].itemName).toBe('히알루론산');
+    expect(result.current.preferences[0].id).toBe('pref_1');
+  });
+
+  it('data가 배열이 아니면 빈 배열로 방어한다', async () => {
+    // 과거 버그 형태({ preferences: [...] })가 오면 data가 undefined → []
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, preferences: [mockPreference] }),
+    });
+
+    const { result } = renderHook(() => useUserPreferences());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.preferences).toHaveLength(0);
   });
 
   it('도메인 필터링으로 조회', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        preferences: [mockPreference],
-        count: 1,
-      }),
-    });
+    (global.fetch as any).mockResolvedValueOnce(listResponse([mockPreference]));
 
     const { result } = renderHook(() => useUserPreferences({ domain: 'beauty' }));
 
@@ -102,21 +122,10 @@ describe('useUserPreferences', () => {
     expect(global.fetch).toHaveBeenCalledWith('/api/preferences?domain=beauty');
   });
 
-  it('선호/기피 항목 추가', async () => {
+  it('선호/기피 항목 추가 — 응답의 data만 상태에 넣는다(래퍼 미포함)', async () => {
     (global.fetch as any)
-      // 초기 로드
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          preferences: [mockPreference],
-          count: 1,
-        }),
-      })
-      // 추가 요청
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockAvoidPreference,
-      });
+      .mockResolvedValueOnce(listResponse([mockPreference]))
+      .mockResolvedValueOnce(itemResponse(mockAvoidPreference));
 
     const { result } = renderHook(() => useUserPreferences());
 
@@ -140,29 +149,18 @@ describe('useUserPreferences', () => {
       });
     });
 
-    // 추가된 항목 확인
+    // 반환값 = 언랩된 항목 (success 래퍼가 아님)
     expect(newPreference).toEqual(mockAvoidPreference);
+    expect((newPreference as unknown as { success?: boolean })?.success).toBeUndefined();
+    // 상태에도 항목만 들어감
     expect(result.current.preferences).toHaveLength(2);
+    expect(result.current.preferences[0].id).toBe('pref_2');
   });
 
-  it('선호/기피 항목 수정', async () => {
+  it('선호/기피 항목 수정 — data.avoidLevel을 언랩', async () => {
     (global.fetch as any)
-      // 초기 로드
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          preferences: [mockAvoidPreference],
-          count: 1,
-        }),
-      })
-      // 수정 요청
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          ...mockAvoidPreference,
-          avoidLevel: 'avoid',
-        }),
-      });
+      .mockResolvedValueOnce(listResponse([mockAvoidPreference]))
+      .mockResolvedValueOnce(itemResponse({ ...mockAvoidPreference, avoidLevel: 'avoid' }));
 
     const { result } = renderHook(() => useUserPreferences());
 
@@ -181,18 +179,12 @@ describe('useUserPreferences', () => {
     // 수정된 항목 확인
     expect(updatedPref).toBeDefined();
     expect((updatedPref as any)?.avoidLevel).toBe('avoid');
+    expect(result.current.preferences[0].avoidLevel).toBe('avoid');
   });
 
   it('선호/기피 항목 삭제', async () => {
     (global.fetch as any)
-      // 초기 로드
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          preferences: [mockPreference, mockAvoidPreference],
-          count: 2,
-        }),
-      })
+      .mockResolvedValueOnce(listResponse([mockPreference, mockAvoidPreference]))
       // 삭제 요청
       .mockResolvedValueOnce({
         ok: true,
@@ -217,13 +209,9 @@ describe('useUserPreferences', () => {
   });
 
   it('도메인별 선호/기피 조회', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        preferences: [mockPreference, mockAvoidPreference],
-        count: 2,
-      }),
-    });
+    (global.fetch as any).mockResolvedValueOnce(
+      listResponse([mockPreference, mockAvoidPreference])
+    );
 
     const { result } = renderHook(() => useUserPreferences());
 
@@ -242,13 +230,9 @@ describe('useUserPreferences', () => {
   });
 
   it('좋아하는 항목 조회', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        preferences: [mockPreference, mockAvoidPreference],
-        count: 2,
-      }),
-    });
+    (global.fetch as any).mockResolvedValueOnce(
+      listResponse([mockPreference, mockAvoidPreference])
+    );
 
     const { result } = renderHook(() => useUserPreferences());
 
@@ -263,13 +247,9 @@ describe('useUserPreferences', () => {
   });
 
   it('기피 항목 조회', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        preferences: [mockPreference, mockAvoidPreference],
-        count: 2,
-      }),
-    });
+    (global.fetch as any).mockResolvedValueOnce(
+      listResponse([mockPreference, mockAvoidPreference])
+    );
 
     const { result } = renderHook(() => useUserPreferences());
 
