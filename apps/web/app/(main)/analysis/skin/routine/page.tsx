@@ -4,7 +4,17 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, Sparkles, AlertCircle, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Sparkles,
+  AlertCircle,
+  ExternalLink,
+  Package,
+  ShieldAlert,
+  Heart,
+  ChevronRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoutineStepList, RoutineToggle, RoutineTimeline } from '@/components/skin/routine';
 import {
@@ -13,9 +23,35 @@ import {
   getTimeOfDayLabel,
   enrichRoutineWithProducts,
 } from '@/lib/skincare/routine';
+import { generateRoutineFromShelf } from '@/lib/skincare';
 import { formatDuration, calculateEstimatedTime } from '@/lib/mock/skincare-routine';
-import type { TimeOfDay, RoutineStep } from '@/types/skincare-routine';
+import type { TimeOfDay, RoutineStep, ProductCategory } from '@/types/skincare-routine';
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
+import type { ShelfItem } from '@/lib/scan/product-shelf';
+
+// ADR-117: enrichRoutineWithProducts는 R1이 shelf 인자(4번째)를 신설 중.
+// 시그니처 배포 전에도 shelf를 전달할 수 있도록 로컬 타입으로 브리지(배포 후에도 호환).
+type EnrichWithShelfFn = (
+  steps: RoutineStep[],
+  skinType: SkinTypeId,
+  concerns: SkinConcernId[],
+  shelfItems?: ShelfItem[]
+) => Promise<RoutineStep[]>;
+
+// 화장대 궁합 안내용 카테고리 한글 라벨
+const CATEGORY_LABELS: Record<ProductCategory, string> = {
+  cleanser: '클렌저',
+  toner: '토너',
+  essence: '에센스',
+  serum: '세럼',
+  ampoule: '앰플',
+  cream: '크림',
+  sunscreen: '선크림',
+  mask: '마스크',
+  eye_cream: '아이크림',
+  oil: '페이스오일',
+  spot_treatment: '스팟 트리트먼트',
+};
 
 // 피부 분석 결과 타입 (skin_analyses 실존 컬럼만 — concerns 컬럼은 존재하지 않음)
 interface SkinAnalysisData {
@@ -56,6 +92,8 @@ export default function SkincareRoutinePage() {
   const [morningSteps, setMorningSteps] = useState<RoutineStep[]>([]);
   const [eveningSteps, setEveningSteps] = useState<RoutineStep[]>([]);
   const [personalizationNote, setPersonalizationNote] = useState('');
+  // 내 화장대(제품함) 보유 제품 — 루틴 배치·궁합 안내에 사용. 실패 시 빈 배열(카탈로그 폴백).
+  const [shelfItems, setShelfItems] = useState<ShelfItem[]>([]);
 
   // 피부 분석 데이터 가져오기
   useEffect(() => {
@@ -93,6 +131,28 @@ export default function SkincareRoutinePage() {
     fetchSkinAnalysis();
   }, [isLoaded, isSignedIn, supabase]);
 
+  // 내 화장대(보유 제품) 1회 조회 — ShelfList와 동일한 /api/scan/shelf 패턴.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    let cancelled = false;
+    async function loadShelf() {
+      try {
+        const res = await fetch('/api/scan/shelf?status=owned&limit=100');
+        if (!res.ok) return; // 비로그인/오류 시 조용히 카탈로그 폴백
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data.items)) {
+          setShelfItems(data.items as ShelfItem[]);
+        }
+      } catch {
+        /* 조회 실패 — shelf 미사용, 카탈로그 추천으로 폴백 */
+      }
+    }
+    loadShelf();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn]);
+
   // 루틴 생성
   useEffect(() => {
     if (!skinData) return;
@@ -121,15 +181,16 @@ export default function SkincareRoutinePage() {
     setEveningSteps(eveningResult.routine);
     setPersonalizationNote(morningResult.personalizationNote);
 
-    // 어필리에이트 제품 연동 (비동기)
-    enrichRoutineWithProducts(morningResult.routine, skinType, concerns)
+    // 제품 연동 (비동기) — shelf 우선(보유 제품 배치), 없으면 카탈로그 추천.
+    const enrich = enrichRoutineWithProducts as EnrichWithShelfFn;
+    enrich(morningResult.routine, skinType, concerns, shelfItems)
       .then((enriched) => setMorningSteps(enriched))
       .catch((err) => console.error('[Routine] Morning products error:', err));
 
-    enrichRoutineWithProducts(eveningResult.routine, skinType, concerns)
+    enrich(eveningResult.routine, skinType, concerns, shelfItems)
       .then((enriched) => setEveningSteps(enriched))
       .catch((err) => console.error('[Routine] Evening products error:', err));
-  }, [skinData]);
+  }, [skinData, shelfItems]);
 
   // 현재 활성 루틴
   const currentSteps = useMemo(
@@ -138,6 +199,18 @@ export default function SkincareRoutinePage() {
   );
 
   const currentEstimatedTime = useMemo(() => calculateEstimatedTime(currentSteps), [currentSteps]);
+
+  // 내 화장대 궁합 — 보유 제품 2개 이상일 때만(1개 이하면 지어내지 않고 미렌더).
+  // 현재 시간대(아침/저녁) 기준으로 성분 궁합·빈 필수 단계를 계산.
+  const ownedCount = useMemo(
+    () => shelfItems.filter((i) => i.status === 'owned').length,
+    [shelfItems]
+  );
+  const shelfSync = useMemo(() => {
+    if (ownedCount < 2 || !skinData) return null;
+    const skinType = (skinData.skin_type || 'normal') as SkinTypeId;
+    return generateRoutineFromShelf(shelfItems, skinType, activeTime);
+  }, [ownedCount, shelfItems, skinData, activeTime]);
 
   // 제품 클릭 핸들러
   const handleProductClick = useCallback((product: { affiliateUrl: string }) => {
@@ -221,6 +294,101 @@ export default function SkincareRoutinePage() {
             <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
             <p className="text-sm text-foreground">{personalizationNote}</p>
           </div>
+        )}
+
+        {/* 내 화장대 궁합 — 보유 제품 2개 이상일 때만 노출 */}
+        {shelfSync && (
+          <section
+            className="mb-6 rounded-xl border border-primary/10 bg-card p-4"
+            data-testid="shelf-compatibility"
+            aria-label="내 화장대 궁합"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" aria-hidden="true" />
+              <h2 className="text-base font-semibold text-foreground">내 화장대 궁합</h2>
+            </div>
+
+            {/* 성분 충돌 — 사실 인용 톤 경고 */}
+            {shelfSync.conflicts.length > 0 && (
+              <div className="mb-3 space-y-2" data-testid="shelf-conflicts">
+                {shelfSync.conflicts.map((c, i) => (
+                  <div
+                    key={`conflict-${i}`}
+                    className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30"
+                  >
+                    <ShieldAlert
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                      aria-hidden="true"
+                    />
+                    <div className="text-sm">
+                      <p className="font-medium text-amber-800 dark:text-amber-200">
+                        {c.ingredients[0]} · {c.ingredients[1]} 함께 쓸 때 참고하세요
+                      </p>
+                      <p className="text-xs text-muted-foreground">{c.reason}</p>
+                      <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+                        {c.recommendation}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 성분 시너지 */}
+            {shelfSync.synergies.length > 0 && (
+              <div className="mb-3 space-y-2" data-testid="shelf-synergies">
+                {shelfSync.synergies.map((s, i) => (
+                  <div
+                    key={`synergy-${i}`}
+                    className="flex items-start gap-2 rounded-lg bg-emerald-50 p-3 dark:bg-emerald-950/30"
+                  >
+                    <Heart
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400"
+                      aria-hidden="true"
+                    />
+                    <div className="text-sm">
+                      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                        {s.ingredients[0]} · {s.ingredients[1]} 함께 쓰면 좋아요
+                      </p>
+                      <p className="text-xs text-muted-foreground">{s.reason}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 빈 필수 단계 — 맞는 제품 보기 안내 */}
+            {shelfSync.missingCategories.length > 0 && (
+              <div className="space-y-1.5" data-testid="shelf-missing">
+                {shelfSync.missingCategories.map((cat) => (
+                  <Link
+                    key={cat}
+                    href="/beauty"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 p-3 text-sm transition-colors hover:bg-muted"
+                    data-testid="shelf-missing-item"
+                  >
+                    <span className="text-foreground">
+                      {getTimeOfDayLabel(activeTime)} 필수 단계 중 {CATEGORY_LABELS[cat]}이(가)
+                      화장대에 없어요
+                    </span>
+                    <span className="flex flex-shrink-0 items-center gap-0.5 font-medium text-primary">
+                      맞는 제품 보기
+                      <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* 충돌/시너지/빈 단계가 모두 없을 때 — 잘 갖춰졌다는 긍정 신호 */}
+            {shelfSync.conflicts.length === 0 &&
+              shelfSync.synergies.length === 0 &&
+              shelfSync.missingCategories.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  보유 제품으로 {getTimeOfDayLabel(activeTime)} 필수 단계가 잘 갖춰져 있어요.
+                </p>
+              )}
+          </section>
         )}
 
         {/* 아침/저녁 토글 */}

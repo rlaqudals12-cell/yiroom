@@ -20,6 +20,7 @@ import { FadeInUp } from '@/components/animations';
 import type { CosmeticProduct, SkinType } from '@/types/product';
 import { IngredientAnalysisSection } from '@/components/products/ingredients';
 import { WishlistButton } from '@/components/products/WishlistButton';
+import { AddToShelfButton } from '@/components/beauty/AddToShelfButton';
 
 /**
  * 뷰티 제품 상세 페이지 - UX 리스트럭처링
@@ -217,6 +218,14 @@ export default function BeautyProductDetailPage() {
           </button>
           <h1 className="text-base font-medium truncate max-w-[200px]">{displayProduct.name}</h1>
           <div className="flex items-center gap-2">
+            {/* 스캔 외 등록 경로 — 카탈로그 제품을 바로 내 제품함에 담아 맞춤 루틴에 반영 (ADR-117) */}
+            <AddToShelfButton
+              productId={productId}
+              productName={product.name}
+              productBrand={product.brand}
+              productImageUrl={product.imageUrl}
+              keyIngredients={product.keyIngredients}
+            />
             {/* 로컬 state만 토글하던 가짜 하트 → 실제 위시리스트 연동 (user_wishlists) */}
             <WishlistButton productType="cosmetic" productId={productId} variant="icon" />
             <button

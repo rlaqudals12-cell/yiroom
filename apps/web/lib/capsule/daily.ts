@@ -13,7 +13,12 @@ import type {
   ModuleCode,
 } from '@/types/capsule';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import { generateRoutine, applyConditionalModifications, getHydrationLabel } from '@/lib/skincare';
+import {
+  generateRoutine,
+  applyConditionalModifications,
+  getHydrationLabel,
+  deriveConcernsFromScores,
+} from '@/lib/skincare';
 import type { TodaySkinCondition } from '@/lib/skincare';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
@@ -403,14 +408,16 @@ function buildSkinRoutineItems(profile: {
 
   // 최근 분석 지표 → 오늘 상태 추정 (conditional-routine 입력).
   // 정직성: 실시간이 아니라 "최근 분석 기준"임 — groupNote 문구에 명시.
-  const condition = deriveSkinCondition(profile.skin.scores ?? {});
+  const scores = profile.skin.scores ?? {};
+  const condition = deriveSkinCondition(scores);
+  // 목표 반영: 지표에서 고민을 정본 함수로 파생해 개인화(성분 팁)에 반영 (ADR-117 — 루틴 페이지와 단일화)
+  const concerns = deriveConcernsFromScores(scores);
 
   const items: DailyItem[] = [];
   for (const timeOfDay of ['morning', 'evening'] as const) {
     const { routine, personalizationNote } = generateRoutine({
       skinType,
-      // concerns는 SkinConcernId 계약 — 프로필 문자열이 계약과 다를 수 있어 미전달(팁만 줄어듦)
-      concerns: [],
+      concerns,
       timeOfDay,
       includeOptional: false, // 데일리 체크리스트는 필수 스텝만 (선택 스텝은 결과 페이지 영역)
     });

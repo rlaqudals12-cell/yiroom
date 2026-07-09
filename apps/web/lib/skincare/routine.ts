@@ -13,6 +13,7 @@ import type {
   TimeOfDay,
 } from '@/types/skincare-routine';
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
+import type { ShelfItem } from '@/lib/scan/product-shelf';
 import {
   MORNING_ROUTINE_STEPS,
   EVENING_ROUTINE_STEPS,
@@ -22,6 +23,7 @@ import {
   formatDuration,
 } from '@/lib/mock/skincare-routine';
 import { getRecommendedProductsBySkin } from '@/lib/affiliate/products';
+import { detectProductCategory } from './shelf-routine-sync';
 
 // ================================================
 // 루틴 생성 함수
@@ -216,16 +218,67 @@ function productMatchesKeywords(
 // ================================================
 
 /**
- * 루틴 단계에 어필리에이트 제품 추천 연동
+ * 스텝 카테고리 정규화 — 앰플은 세럼과 같은 슬롯으로 취급 (감지 카테고리 정합)
+ */
+function normalizeRoutineCategory(category: ProductCategory): ProductCategory {
+  return category === 'ampoule' ? 'serum' : category;
+}
+
+/**
+ * 보유 제품(owned)을 감지 카테고리별로 그룹핑.
+ * detectProductCategory가 unknown이면 제외 — 지어내지 않는다 (ADR-117).
+ */
+function groupShelfByCategory(shelfItems: ShelfItem[]): Map<ProductCategory, ShelfItem[]> {
+  const map = new Map<ProductCategory, ShelfItem[]>();
+  for (const item of shelfItems) {
+    if (item.status !== 'owned') continue;
+    const detected = detectProductCategory(item);
+    if (!detected) continue;
+    const key = normalizeRoutineCategory(detected);
+    const list = map.get(key);
+    if (list) list.push(item);
+    else map.set(key, [item]);
+  }
+  return map;
+}
+
+/**
+ * 루틴 단계에 제품 연결 — shelf-우선 (ADR-117)
+ *
+ * 1) 내 제품함(shelfItems) 보유 제품이 스텝 카테고리와 맞으면 `ownedProduct` 세팅
+ *    (스텝 순서대로 중복 없이, 결정론적)
+ * 2) 그 위에 어필리에이트 추천을 채운다 — 보유가 없는(빈) 스텝의 recommendedProducts가
+ *    결손 채움 = 구매 연결이 된다. shelfItems 미전달 시 기존과 동일하게 추천만 채운다.
  */
 export async function enrichRoutineWithProducts(
   steps: RoutineStep[],
   skinType: SkinTypeId,
-  concerns: SkinConcernId[]
+  concerns: SkinConcernId[],
+  shelfItems?: ShelfItem[]
 ): Promise<RoutineStep[]> {
-  // 각 단계에 대해 제품 추천 가져오기
+  // 1. shelf-우선 배치 (동기·결정론) — 스텝 인덱스별 보유 제품 매핑
+  const ownedByStep = new Map<number, { shelfItemId: string; name: string; brand?: string }>();
+  if (shelfItems?.length) {
+    const shelfByCategory = groupShelfByCategory(shelfItems);
+    const usedShelf = new Set<string>();
+    steps.forEach((step, index) => {
+      const candidates = shelfByCategory.get(normalizeRoutineCategory(step.category));
+      const pick = candidates?.find((c) => !usedShelf.has(c.id));
+      if (pick) {
+        usedShelf.add(pick.id);
+        ownedByStep.set(index, {
+          shelfItemId: pick.id,
+          name: pick.productName,
+          ...(pick.productBrand ? { brand: pick.productBrand } : {}),
+        });
+      }
+    });
+  }
+
+  // 2. 각 단계에 어필리에이트 제품 추천 가져오기 (빈 슬롯 = 구매 연결)
   const enrichedSteps = await Promise.all(
-    steps.map(async (step) => {
+    steps.map(async (step, index) => {
+      const owned = ownedByStep.get(index);
       try {
         const products = await getRecommendedProductsBySkin(
           skinType,
@@ -242,10 +295,11 @@ export async function enrichRoutineWithProducts(
         return {
           ...step,
           recommendedProducts: matchedProducts.slice(0, 3),
+          ...(owned ? { ownedProduct: owned } : {}),
         };
       } catch (error) {
         console.error(`[Skincare] Error fetching products for ${step.category}:`, error);
-        return step;
+        return owned ? { ...step, ownedProduct: owned } : step;
       }
     })
   );

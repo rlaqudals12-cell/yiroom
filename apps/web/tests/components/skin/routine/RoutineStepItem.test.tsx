@@ -160,4 +160,20 @@ describe('RoutineStepItem', () => {
     render(<RoutineStepItem step={baseStep} className="custom-class" />);
     expect(screen.getByTestId('routine-step-item')).toHaveClass('custom-class');
   });
+
+  // ADR-117: 내 화장대 보유 제품으로 채워진 스텝
+  it('ownedProduct가 있으면 "보유중" 배지를 표시한다', () => {
+    const stepWithOwned = Object.assign({}, baseStep, {
+      ownedProduct: { shelfItemId: 'sh1', name: '수분 토너', brand: '브랜드A' },
+    }) as RoutineStep;
+
+    render(<RoutineStepItem step={stepWithOwned} />);
+    expect(screen.getByTestId('routine-owned-badge')).toBeInTheDocument();
+    expect(screen.getByText('보유중')).toBeInTheDocument();
+  });
+
+  it('ownedProduct가 없으면 "보유중" 배지를 표시하지 않는다', () => {
+    render(<RoutineStepItem step={baseStep} />);
+    expect(screen.queryByTestId('routine-owned-badge')).not.toBeInTheDocument();
+  });
 });

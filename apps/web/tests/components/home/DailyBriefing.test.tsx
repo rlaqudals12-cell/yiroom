@@ -137,4 +137,17 @@ describe('DailyBriefing', () => {
     expect(screen.getByTestId('briefing-style')).toBeInTheDocument();
     expect(screen.queryByTestId('briefing-outfit-palette')).not.toBeInTheDocument();
   });
+
+  // ADR-117 수리: 라벨 정정 + 색 이름 표시
+  it('"나의 퍼스널컬러" 라벨을 렌더한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    expect(screen.getByText('나의 퍼스널컬러')).toBeInTheDocument();
+  });
+
+  it('베스트 컬러 이름을 스와치 아래에 표시한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const names = screen.getAllByTestId('briefing-color-name');
+    expect(names).toHaveLength(3);
+    expect(names[0]).toHaveTextContent('코랄');
+  });
 });

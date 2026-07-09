@@ -8,7 +8,7 @@
  * - 내재화 수준에 따라 reason 표시 깊이 조절
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactElement } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -29,7 +29,7 @@ import {
   Shirt,
   Activity,
 } from 'lucide-react';
-import type { DailyCapsule, DailyItem, ModuleCode } from '@/types/capsule';
+import type { DailyCapsule, DailyItem, DailySolutionProduct, ModuleCode } from '@/types/capsule';
 import type { ExplanationDepth } from '@/lib/connection-awareness';
 import {
   exposeConnection,
@@ -37,6 +37,49 @@ import {
   getExplanationDepth,
   capsuleItemToExposeRequest,
 } from '@/lib/connection-awareness';
+
+// ADR-117 계약: solutionProduct에 source/shelfItemId 확장 필드가 붙는다(R1 구현 중).
+// 타입 배포 전에도 안전하게 소비하기 위한 로컬 확장 — 실제 타입 승격 후에도 호환.
+type SolutionProductWithSource = DailySolutionProduct & {
+  source?: 'shelf' | 'catalog';
+  shelfItemId?: string;
+};
+
+// 아이템에 붙은 실제 제품 칩 — 보유(shelf)면 배지, 없으면(catalog) 구매 연결.
+function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactElement {
+  if (sp.source === 'shelf') {
+    return (
+      <span
+        className="ml-11 mb-1 inline-flex max-w-[calc(100%-3rem)] items-center gap-1 truncate rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
+        data-testid="capsule-owned-chip"
+        title={`내 ${sp.name}`}
+      >
+        🧴 내 {sp.name}
+      </span>
+    );
+  }
+  // catalog: 제품 id가 있으면 상세 링크, 없으면 링크 없는 안내 칩
+  if (sp.id) {
+    return (
+      <Link
+        href={`/beauty/${sp.id}`}
+        className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-500/25 transition-colors"
+        data-testid="capsule-catalog-chip"
+      >
+        맞는 제품 보기
+        <ChevronRight className="w-3 h-3" />
+      </Link>
+    );
+  }
+  return (
+    <span
+      className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-600 dark:text-violet-400"
+      data-testid="capsule-catalog-chip"
+    >
+      맞는 제품 보기
+    </span>
+  );
+}
 
 // 모듈별 아이콘 매핑
 const MODULE_ICONS: Record<ModuleCode, typeof Sparkles> = {
@@ -262,47 +305,55 @@ export default function HomeDailyCapsuleWidget() {
         {capsule.items.slice(0, 5).map((item) => {
           const Icon = MODULE_ICONS[item.moduleCode] || Sparkles;
           const depth = moduleDepths[item.moduleCode] ?? 'full';
+          // ADR-117: 아이템에 붙은 실제 제품 — 보유(shelf) 제품이면 "내 ○○" 배지,
+          // 없으면(catalog) "맞는 제품 보기" 구매 연결. source가 없으면(구 데이터) 미표시.
+          // depth 게이팅 관례 유지: 솔루션과 동일하게 full일 때만 노출.
+          const sp = item.solutionProduct as SolutionProductWithSource | undefined;
+          const showProduct = depth === 'full' && sp != null && sp.source != null;
 
           return (
-            <button
-              key={item.id}
-              onClick={() => handleCheck(item)}
-              className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
-            >
-              {item.isChecked ? (
-                <CheckCircle2 className="w-4.5 h-4.5 text-violet-500 shrink-0" />
-              ) : (
-                <Circle className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" />
-              )}
-              <Icon className="w-4 h-4 text-violet-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span
-                  className={`text-sm block truncate ${
-                    item.isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
-                  }`}
-                >
-                  {item.name}
-                </span>
-                {/* reason 표시 — 내재화 수준에 따라 분기 */}
-                {depth === 'full' && item.reason && (
-                  <span className="text-[11px] text-muted-foreground truncate block">
-                    {item.reason}
-                  </span>
+            <div key={item.id} className="rounded-lg">
+              <button
+                onClick={() => handleCheck(item)}
+                className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
+              >
+                {item.isChecked ? (
+                  <CheckCircle2 className="w-4.5 h-4.5 text-violet-500 shrink-0" />
+                ) : (
+                  <Circle className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" />
                 )}
-                {depth === 'brief' && item.reason && (
-                  <span className="text-[10px] text-muted-foreground/70 truncate block">
-                    {item.reason}
+                <Icon className="w-4 h-4 text-violet-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span
+                    className={`text-sm block truncate ${
+                      item.isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
+                    }`}
+                  >
+                    {item.name}
                   </span>
-                )}
-                {/* 실행 가이드("어떤 것으로/어떻게") — 엔진이 이미 생성하지만 위젯에서 숨겨져 있었음 */}
-                {depth === 'full' && item.solution && (
-                  <span className="text-[11px] text-violet-500/90 dark:text-violet-400/90 truncate block">
-                    {item.solution}
-                  </span>
-                )}
-                {/* minimal/none: reason 생략 — 사용자가 이미 이해함 */}
-              </div>
-            </button>
+                  {/* reason 표시 — 내재화 수준에 따라 분기 */}
+                  {depth === 'full' && item.reason && (
+                    <span className="text-[11px] text-muted-foreground truncate block">
+                      {item.reason}
+                    </span>
+                  )}
+                  {depth === 'brief' && item.reason && (
+                    <span className="text-[10px] text-muted-foreground/70 truncate block">
+                      {item.reason}
+                    </span>
+                  )}
+                  {/* 실행 가이드("어떤 것으로/어떻게") — 엔진이 이미 생성하지만 위젯에서 숨겨져 있었음 */}
+                  {depth === 'full' && item.solution && (
+                    <span className="text-[11px] text-violet-500/90 dark:text-violet-400/90 truncate block">
+                      {item.solution}
+                    </span>
+                  )}
+                  {/* minimal/none: reason 생략 — 사용자가 이미 이해함 */}
+                </div>
+              </button>
+              {/* 실제 제품 연결 — 버튼(체크 토글) 밖에 두어 링크/버튼 중첩 방지 */}
+              {showProduct && <CapsuleProductChip sp={sp!} />}
+            </div>
           );
         })}
       </div>

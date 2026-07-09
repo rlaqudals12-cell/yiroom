@@ -6,7 +6,7 @@ import { ChevronDown, ChevronUp, Clock, Lightbulb, ShoppingBag } from 'lucide-re
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
-import type { RoutineStepItemProps } from '@/types/skincare-routine';
+import type { RoutineStep, RoutineStepItemProps } from '@/types/skincare-routine';
 import { useTranslations } from 'next-intl';
 
 /**
@@ -24,6 +24,14 @@ const RoutineStepItem = memo(function RoutineStepItem({
   const t = useTranslations('skinUI');
   const [isExpanded, setIsExpanded] = useState(false);
   const categoryInfo = getCategoryInfo(step.category);
+
+  // ADR-117: 이 단계가 내 화장대(제품함)의 보유 제품으로 채워졌으면 "보유중" 표시.
+  // R1이 enrichRoutineWithProducts로 주입하는 확장 필드 — 배포 전에도 안전하게 소비.
+  const ownedProduct = (
+    step as RoutineStep & {
+      ownedProduct?: { shelfItemId: string; name: string; brand?: string };
+    }
+  ).ownedProduct;
 
   const hasProducts = step.recommendedProducts && step.recommendedProducts.length > 0;
   const hasTips = step.tips && step.tips.length > 0;
@@ -62,6 +70,16 @@ const RoutineStepItem = memo(function RoutineStepItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-foreground">{step.name}</h3>
+            {ownedProduct && (
+              <Badge
+                variant="secondary"
+                className="border-transparent bg-emerald-100 text-xs text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                title={`내 ${ownedProduct.name}`}
+                data-testid="routine-owned-badge"
+              >
+                보유중
+              </Badge>
+            )}
             {step.isOptional && (
               <Badge variant="outline" className="text-xs">
                 선택

@@ -195,22 +195,32 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
       {/* 1-b) 나의 컬러 — 진단된 베스트 팔레트 스와치 (PC 분석 있을 때만) */}
       {pcEntry && bestColors.length > 0 && (
-        <section aria-label="나의 컬러" data-testid="briefing-my-colors">
-          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">나의 컬러</h3>
+        <section aria-label="나의 퍼스널컬러" data-testid="briefing-my-colors">
+          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">나의 퍼스널컬러</h3>
           <Link
             href={`/analysis/personal-color/result/${pcEntry.id}`}
             className="flex items-center gap-3 rounded-2xl border border-pink-200/50 dark:border-pink-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-pink-300 dark:hover:border-pink-800"
           >
-            <div className="flex flex-1 items-center gap-2">
+            <div className="flex flex-1 items-center gap-3">
               {bestColors.slice(0, 5).map((c, i) => (
-                <span
-                  key={`${c.hex}-${i}`}
-                  className="h-9 w-9 rounded-full border border-white/70 dark:border-slate-700 shadow-sm"
-                  style={{ backgroundColor: c.hex }}
-                  title={c.name || c.hex}
-                  aria-label={c.name || c.hex}
-                  data-testid="briefing-color-swatch"
-                />
+                <div key={`${c.hex}-${i}`} className="flex min-w-0 flex-col items-center gap-1">
+                  <span
+                    className="h-9 w-9 rounded-full border border-white/70 dark:border-slate-700 shadow-sm"
+                    style={{ backgroundColor: c.hex }}
+                    title={c.name || c.hex}
+                    aria-label={c.name || c.hex}
+                    data-testid="briefing-color-swatch"
+                  />
+                  {/* 색 이름 표시 — '오늘의 스타일' role 라벨과 동일한 text-[10px] 패턴 */}
+                  {c.name && (
+                    <span
+                      className="max-w-[3.5rem] truncate text-[10px] text-muted-foreground"
+                      data-testid="briefing-color-name"
+                    >
+                      {c.name}
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />

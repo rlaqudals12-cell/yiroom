@@ -51,6 +51,11 @@ export interface RoutineStep {
   // 조건부 루틴 확장 필드
   conditionalBadge?: string; // "건조할 때 2회" 등 조건부 뱃지
   shelfProductId?: string; // 제품함 연동 시 제품 ID
+  /**
+   * 내 제품함 보유 제품 (shelf-우선 배치, ADR-117). 세팅되면 이 스텝은 "내 ○○"로 표시하고,
+   * 비어 있으면 recommendedProducts가 결손 스텝의 구매 연결이 된다.
+   */
+  ownedProduct?: { shelfItemId: string; name: string; brand?: string };
 }
 
 /** 시간대 */

@@ -9,6 +9,9 @@ export {
   getTimeOfDayEmoji,
 } from './routine';
 
+// 피부 고민 파생 (단일 정본 — ADR-117)
+export { deriveConcernsFromScores, CONCERN_THRESHOLD } from './concerns';
+
 // 상관관계 분석
 export {
   calculatePearson,

@@ -14,6 +14,8 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { getShelfItems, type ShelfItem } from '@/lib/scan/product-shelf';
+import { detectProductCategory } from '@/lib/skincare';
 import type { DailyItem, DailySolutionProduct, BeautyProfile } from '@/types/capsule';
 
 /** 아이템별 제품 검색 조건 */
@@ -131,18 +133,82 @@ function toDbSeason(season: string | undefined): string | undefined {
   return ['Spring', 'Summer', 'Autumn', 'Winter'].includes(s) ? s : undefined;
 }
 
+/** 스킨 스텝 카테고리 정규화 — 앰플=세럼 슬롯 (감지 카테고리 정합) */
+function normalizeSkinCategory(category: string): string {
+  return category === 'ampoule' ? 'serum' : category;
+}
+
+/**
+ * 내 제품함(owned)을 감지 카테고리별로 그룹핑 (ADR-117 shelf-우선).
+ * detectProductCategory는 스킨케어 카테고리만 감지 → 실질적으로 S 모듈에 적용.
+ * unknown 카테고리는 제외(지어내지 않음). 조회 실패 시 빈 맵 → 카탈로그 폴백.
+ */
+async function loadShelfByCategory(userId: string): Promise<Map<string, ShelfItem[]>> {
+  const map = new Map<string, ShelfItem[]>();
+  try {
+    const supabase = createServiceRoleClient();
+    const { items } = await getShelfItems(supabase, userId, { status: 'owned', limit: 200 });
+    for (const item of items) {
+      const detected = detectProductCategory(item);
+      if (!detected) continue;
+      const key = normalizeSkinCategory(detected);
+      const list = map.get(key);
+      if (list) list.push(item);
+      else map.set(key, [item]);
+    }
+  } catch (e) {
+    console.error('[SolutionProducts] 제품함 조회 실패 (카탈로그 폴백):', e);
+    return new Map();
+  }
+  return map;
+}
+
+/**
+ * shelf-우선 배치 (in-place) — 내 보유 제품을 스킨 스텝에 먼저 붙인다 (ADR-117).
+ * detectProductCategory가 스킨케어 카테고리만 감지하므로 S 모듈에 한정. 중복 배치 방지.
+ */
+async function attachShelfProducts(items: DailyItem[], userId: string): Promise<void> {
+  const hasSkinSteps = items.some((i) => i.moduleCode === 'S' && i.category);
+  if (!hasSkinSteps) return;
+
+  const shelfByCategory = await loadShelfByCategory(userId);
+  if (shelfByCategory.size === 0) return;
+
+  const usedShelf = new Set<string>();
+  for (const item of items) {
+    if (item.moduleCode !== 'S' || !item.category) continue;
+    const candidates = shelfByCategory.get(normalizeSkinCategory(item.category));
+    const pick = candidates?.find((c) => !usedShelf.has(c.id));
+    if (!pick) continue;
+    usedShelf.add(pick.id);
+    item.solutionProduct = {
+      id: pick.id,
+      name: pick.productName,
+      brand: pick.productBrand ?? '',
+      ...(pick.productImageUrl ? { imageUrl: pick.productImageUrl } : {}),
+      source: 'shelf',
+      shelfItemId: pick.id,
+    };
+  }
+}
+
 /**
  * 데일리 아이템들에 실제 제품 부착 (in-place)
  *
- * 후보 풀을 카테고리 일괄 1쿼리로 가져온 뒤 아이템별로:
- * 프로필 적합(피부타입/시즌/모발) > 평점 순으로 선별. 아이템 간 중복 제품 방지.
+ * shelf-우선 (ADR-117): 내 제품함에 스텝 카테고리와 맞는 보유 제품이 있으면 그것을 배치
+ * (`source:'shelf'`). 없으면 카탈로그 후보 풀에서 프로필 적합(피부타입/시즌/모발) > 평점 순
+ * 선별(`source:'catalog'` = 빈 슬롯 구매 연결). 아이템 간 중복 제품 방지.
  */
 export async function attachSolutionProducts(
   items: DailyItem[],
   profile: BeautyProfile
 ): Promise<void> {
+  // 0단계: shelf-우선 — 내 보유 제품을 먼저 배치 (그 위에 카탈로그로 빈 슬롯 채움)
+  await attachShelfProducts(items, profile.userId);
+
   const specs = new Map<string, ProductSpec>();
   for (const item of items) {
+    if (item.solutionProduct) continue; // 이미 내 제품 배치됨 — 카탈로그 스킵
     const spec = specForItem(item);
     if (spec) specs.set(item.id, spec);
   }
@@ -171,6 +237,7 @@ export async function attachSolutionProducts(
   const used = new Set<string>();
 
   for (const item of items) {
+    if (item.solutionProduct) continue; // shelf 배치된 아이템은 카탈로그 대상 아님
     const spec = specs.get(item.id);
     if (!spec) continue;
 
@@ -223,6 +290,7 @@ export async function attachSolutionProducts(
         brand: best.brand,
         ...(best.price_krw != null ? { priceKrw: best.price_krw } : {}),
         ...(best.image_url ? { imageUrl: best.image_url } : {}),
+        source: 'catalog',
       };
       item.solutionProduct = product;
     }

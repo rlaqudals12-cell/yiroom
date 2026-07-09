@@ -1,18 +1,49 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// 어필리에이트 추천은 결정론 유지를 위해 mock (빈 추천 = 결손 슬롯)
+vi.mock('@/lib/affiliate/products', () => ({
+  getRecommendedProductsBySkin: vi.fn(async () => []),
+}));
+
 import {
   generateRoutine,
+  enrichRoutineWithProducts,
   getSkinTypeLabel,
   getTimeOfDayLabel,
   getTimeOfDayEmoji,
   calculateEstimatedTime,
   formatDuration,
 } from '@/lib/skincare/routine';
+import { deriveConcernsFromScores } from '@/lib/skincare/concerns';
 import {
   MORNING_ROUTINE_STEPS,
   EVENING_ROUTINE_STEPS,
   SKIN_TYPE_MODIFIERS,
 } from '@/lib/mock/skincare-routine';
-import type { SkinTypeId } from '@/lib/mock/skin-analysis';
+import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
+import type { RoutineStep } from '@/types/skincare-routine';
+import type { ShelfItem } from '@/lib/scan/product-shelf';
+
+// 루틴 스텝 헬퍼
+function makeStep(category: RoutineStep['category'], name: string): RoutineStep {
+  return { order: 1, category, name, purpose: '', tips: [], isOptional: false };
+}
+
+// 제품함 아이템 헬퍼
+function makeShelfItem(overrides: Partial<ShelfItem> = {}): ShelfItem {
+  return {
+    id: 'shelf-1',
+    clerkUserId: 'u',
+    productName: '제품',
+    productIngredients: [],
+    scannedAt: new Date(),
+    scanMethod: 'manual',
+    status: 'owned',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 
 describe('generateRoutine', () => {
   it('generates morning routine with base steps', () => {
@@ -350,5 +381,103 @@ describe('SKIN_TYPE_MODIFIERS', () => {
   it('sensitive skin removes irritating categories', () => {
     expect(SKIN_TYPE_MODIFIERS.sensitive.removeCategories).toContain('ampoule');
     expect(SKIN_TYPE_MODIFIERS.sensitive.removeCategories).toContain('spot_treatment');
+  });
+});
+
+// ── ADR-117: enrichRoutineWithProducts shelf-우선 ──────────────────────────
+describe('enrichRoutineWithProducts (shelf-우선)', () => {
+  const steps: RoutineStep[] = [makeStep('toner', '토너'), makeStep('cream', '크림')];
+
+  it('보유 제품이 스텝 카테고리와 맞으면 ownedProduct를 세팅한다', async () => {
+    const shelfItems = [
+      makeShelfItem({ id: 's-toner', productName: '수분 토너', productBrand: '내브랜드' }),
+    ];
+
+    const result = await enrichRoutineWithProducts(steps, 'normal', [], shelfItems);
+
+    const tonerStep = result.find((s) => s.category === 'toner');
+    expect(tonerStep?.ownedProduct).toEqual({
+      shelfItemId: 's-toner',
+      name: '수분 토너',
+      brand: '내브랜드',
+    });
+    // 크림은 보유 없음 → 빈 슬롯(recommendedProducts가 구매 연결)
+    const creamStep = result.find((s) => s.category === 'cream');
+    expect(creamStep?.ownedProduct).toBeUndefined();
+    expect(creamStep?.recommendedProducts).toEqual([]);
+  });
+
+  it('shelfItems 미전달 시 기존과 동일 — ownedProduct 없음', async () => {
+    const result = await enrichRoutineWithProducts(steps, 'normal', []);
+    expect(result.every((s) => s.ownedProduct === undefined)).toBe(true);
+  });
+
+  it('감지 불가(unknown) 보유 제품은 배치하지 않는다', async () => {
+    const shelfItems = [
+      makeShelfItem({ id: 's-x', productName: '정체불명 제품', productBrand: '' }),
+    ];
+    const result = await enrichRoutineWithProducts(steps, 'normal', [], shelfItems);
+    expect(result.every((s) => s.ownedProduct === undefined)).toBe(true);
+  });
+
+  it('보유 제품이 owned 상태가 아니면 배치하지 않는다', async () => {
+    const shelfItems = [makeShelfItem({ id: 's-w', productName: '수분 토너', status: 'wishlist' })];
+    const result = await enrichRoutineWithProducts(steps, 'normal', [], shelfItems);
+    expect(result.every((s) => s.ownedProduct === undefined)).toBe(true);
+  });
+});
+
+// ── ADR-117: 피부 고민 파생 정본 ──────────────────────────────────────────
+describe('deriveConcernsFromScores', () => {
+  it('임계(≤40) 이하 지표에 대응하는 고민을 파생한다', () => {
+    const concerns = deriveConcernsFromScores({
+      hydration: 35,
+      oil_level: 60,
+      pores: 40,
+      pigmentation: 80,
+      wrinkles: 90,
+      sensitivity: 30,
+    });
+    expect(concerns).toEqual(['dryness', 'pores', 'sensitivity']);
+  });
+
+  it('지표가 없으면 빈 배열', () => {
+    expect(deriveConcernsFromScores({})).toEqual([]);
+  });
+
+  it('루틴 페이지 파생 로직과 동등하다 (동일 임계·매핑·순서)', () => {
+    const data = {
+      hydration: 20,
+      oil_level: 30,
+      pores: 55,
+      pigmentation: 38,
+      wrinkles: 42,
+      sensitivity: 41,
+    };
+    // 페이지 deriveConcernsFromMetrics 재현
+    const T = 40;
+    const expected: SkinConcernId[] = [];
+    if (data.hydration <= T) expected.push('dryness');
+    if (data.oil_level <= T) expected.push('excess_oil');
+    if (data.pores <= T) expected.push('pores');
+    if (data.pigmentation <= T) expected.push('pigmentation');
+    if (data.wrinkles <= T) expected.push('wrinkles');
+    if (data.sensitivity <= T) expected.push('sensitivity');
+
+    expect(deriveConcernsFromScores(data)).toEqual(expected);
+  });
+});
+
+// ── ADR-117: 법적 표현 안전 (처방·치료 금지) ──────────────────────────────
+describe('법적 표현 안전', () => {
+  it('루틴 개인화 문구에 의약품 클레임 단어(처방·치료)가 없다', () => {
+    const note = generateRoutine({
+      skinType: 'sensitive',
+      concerns: ['acne', 'redness'],
+      timeOfDay: 'evening',
+    }).personalizationNote;
+
+    expect(note).not.toContain('처방');
+    expect(note).not.toContain('치료');
   });
 });

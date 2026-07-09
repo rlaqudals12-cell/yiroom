@@ -299,6 +299,14 @@ export interface DailySolutionProduct {
   brand: string;
   priceKrw?: number;
   imageUrl?: string;
+  /**
+   * 제품 출처 (ADR-117) — 'shelf'는 내 제품함 보유 제품(그것을 배치),
+   * 'catalog'는 보유가 없어 카탈로그에서 추천한 제품(빈 슬롯 = 구매 연결).
+   * 하위호환: 없으면 'catalog'로 간주.
+   */
+  source?: 'shelf' | 'catalog';
+  /** source가 'shelf'일 때 user_product_shelf 아이템 ID */
+  shelfItemId?: string;
 }
 
 // =============================================================================

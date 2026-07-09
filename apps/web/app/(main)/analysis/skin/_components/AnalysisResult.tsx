@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { formatDateTime } from '@/lib/utils/date-format';
 import { classifyByRange, mapToClass, selectByKey } from '@/lib/utils/conditional-helpers';
@@ -46,7 +46,9 @@ import {
 } from '@/lib/mock/skin-analysis';
 import Link from 'next/link';
 import { recommendMasks, MASK_TYPES } from '@/lib/skincare/mask-recommendation';
-import { generateRoutine } from '@/lib/skincare';
+import { generateRoutine, detectProductCategory } from '@/lib/skincare';
+import type { ProductCategory } from '@/types/skincare-routine';
+import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { FadeInUp, CountUp } from '@/components/animations';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { SkinEvidenceSummary } from '@/components/analysis/EvidenceSummary';
@@ -237,6 +239,33 @@ export default function AnalysisResult({
       }),
     };
   }, [skinType, metrics]);
+
+  // ADR-117: 내 화장대 보유 제품 카테고리 — 데일리 루틴 스텝에 "내 제품 있음" 점 표시용.
+  // 1회 조회, 비로그인/실패 시 빈 세트(무표시). 과하지 않게 작은 점만.
+  const [ownedCats, setOwnedCats] = useState<Set<ProductCategory>>(new Set());
+  useEffect(() => {
+    let cancelled = false;
+    async function loadShelf() {
+      try {
+        const res = await fetch('/api/scan/shelf?status=owned&limit=100');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.items)) return;
+        const cats = new Set<ProductCategory>();
+        for (const item of data.items as ShelfItem[]) {
+          const cat = detectProductCategory(item);
+          if (cat) cats.add(cat);
+        }
+        if (!cancelled) setOwnedCats(cats);
+      } catch {
+        /* 조회 실패 — 무표시 */
+      }
+    }
+    loadShelf();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // PhotoMetricOverlay용 메트릭 변환 (경쟁사 스타일 8개 지표)
   const photoMetrics = useMemo((): MetricScore[] => {
@@ -429,7 +458,17 @@ export default function AnalysisResult({
                       {i + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{step.name}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {step.name}
+                        {ownedCats.has(step.category) && (
+                          <span
+                            className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle"
+                            title="내 제품 있음"
+                            aria-label="내 제품 있음"
+                            data-testid="skin-routine-owned-dot"
+                          />
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground">{step.purpose}</p>
                     </div>
                   </li>
@@ -452,7 +491,17 @@ export default function AnalysisResult({
                       {i + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{step.name}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {step.name}
+                        {ownedCats.has(step.category) && (
+                          <span
+                            className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle"
+                            title="내 제품 있음"
+                            aria-label="내 제품 있음"
+                            data-testid="skin-routine-owned-dot"
+                          />
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground">{step.purpose}</p>
                     </div>
                   </li>
