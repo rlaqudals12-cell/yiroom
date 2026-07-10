@@ -29,6 +29,10 @@ export type { AnalysisResultButtonsProps } from './AnalysisResultButtons';
 export { ResultLayout } from './ResultLayout';
 export type { ResultLayoutProps } from './ResultLayout';
 
+// 결론 카드 (ADR-111 표현 원칙 1: 결론 먼저)
+export { TopActionsCard } from './TopActionsCard';
+export type { TopActionsCardProps } from './TopActionsCard';
+
 // 색상 시각화 컴포넌트
 export { ColorSwatch } from './ColorSwatch';
 export type { ColorSwatchProps } from './ColorSwatch';

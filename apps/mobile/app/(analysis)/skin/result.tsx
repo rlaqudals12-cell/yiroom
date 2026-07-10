@@ -22,13 +22,15 @@ import {
   AnalysisErrorState,
   ResultLayout,
   FaceZoneMap,
+  TopActionsCard,
   useAnalysisStyles,
 } from '@/components/analysis';
 import type { FaceZone } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveSkinResult } from '@/lib/analysis';
+import { saveSkinResult, buildSkinTopActions } from '@/lib/analysis';
 import { TIMING, usePulseGlow } from '@/lib/animations';
 import {
   analyzeSkin as analyzeWithGemini,
@@ -281,9 +283,20 @@ export default function SkinResultScreen() {
     </View>
   );
 
-  // --- 요약 탭 ---
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const topActions = buildSkinTopActions({
+    tips: typeData.tips,
+    recommendedIngredients: ingredients.good,
+    avoidIngredients: ingredients.avoid,
+  });
+
+  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
   const summaryTab = (
     <View style={localStyles.tabContent}>
+      {/* ① 그래서, 이렇게 하세요 */}
+      <TopActionsCard actions={topActions} />
+
+      {/* ② 시그니처 — 피부 타입 설명 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GradientCard variant="skin" style={localStyles.descCard}>
           <Text style={[localStyles.descText, { color: colors.foreground }]}>
@@ -292,15 +305,23 @@ export default function SkinResultScreen() {
         </GradientCard>
       </Animated.View>
 
-      {/* 핵심 지표 3개 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>핵심 지표</Text>
-        <View style={localStyles.metricsGap}>
-          <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />
-          <MetricBar label="탄력" value={metrics.elasticity} delta={delta?.elasticity} />
-          <MetricBar label="민감도" value={metrics.sensitivity} delta={delta?.sensitivity} />
-        </View>
-      </Animated.View>
+      {/* ③ 핵심 지표 — 접기 (정보 삭제 아님, 접기만) */}
+      <ProgressiveDisclosure
+        expandLabel="핵심 지표 자세히 보기"
+        collapseLabel="접기"
+        summary={
+          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
+            수분 {metrics.moisture} · 탄력 {metrics.elasticity} · 민감 {metrics.sensitivity}
+          </Text>
+        }
+        detail={
+          <View style={localStyles.metricsGap}>
+            <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />
+            <MetricBar label="탄력" value={metrics.elasticity} delta={delta?.elasticity} />
+            <MetricBar label="민감도" value={metrics.sensitivity} delta={delta?.sensitivity} />
+          </View>
+        }
+      />
     </View>
   );
 
@@ -450,6 +471,9 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
+  },
+  discloseSummary: {
+    fontSize: typography.size.sm,
   },
   metricsGap: {
     gap: 14,

@@ -18,12 +18,14 @@ import {
   AnalysisErrorState,
   ResultLayout,
   MetricBar,
+  TopActionsCard,
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveHairResult } from '@/lib/analysis';
+import { saveHairResult, buildHairTopActions } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
   analyzeHair as analyzeWithGemini,
@@ -159,21 +161,21 @@ export default function HairResultScreen() {
     </View>
   );
 
-  // --- 요약 탭 ---
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const topActions = buildHairTopActions({
+    careRoutine: result.careRoutine,
+    recommendedStyles: result.recommendedStyles,
+  });
+
+  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
   const summaryTab = (
     <View style={localStyles.tabContent}>
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>모발 점수</Text>
-        <View style={localStyles.metricsGap}>
-          <MetricBar label="윤기" value={result.scores.shine} />
-          <MetricBar label="탄력" value={result.scores.elasticity} />
-          <MetricBar label="밀도" value={result.scores.density} />
-          <MetricBar label="두피 건강" value={result.scores.scalpHealth} />
-        </View>
-      </Animated.View>
+      {/* ① 그래서, 이렇게 하세요 */}
+      <TopActionsCard actions={topActions} />
 
+      {/* ② 시그니처 — 주요 고민 */}
       {result.mainConcerns.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주요 고민</Text>
           <GradientCard variant="hair" style={localStyles.tipsCard}>
             {result.mainConcerns.map((concern, i) => (
@@ -185,6 +187,25 @@ export default function HairResultScreen() {
           </GradientCard>
         </Animated.View>
       )}
+
+      {/* ③ 모발 점수 — 접기 (정보 삭제 아님, 접기만) */}
+      <ProgressiveDisclosure
+        expandLabel="모발 점수 자세히 보기"
+        collapseLabel="접기"
+        summary={
+          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
+            종합 {avgScore}점 · 윤기·탄력·밀도·두피
+          </Text>
+        }
+        detail={
+          <View style={localStyles.metricsGap}>
+            <MetricBar label="윤기" value={result.scores.shine} />
+            <MetricBar label="탄력" value={result.scores.elasticity} />
+            <MetricBar label="밀도" value={result.scores.density} />
+            <MetricBar label="두피 건강" value={result.scores.scalpHealth} />
+          </View>
+        }
+      />
     </View>
   );
 
@@ -324,6 +345,9 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
+  },
+  discloseSummary: {
+    fontSize: typography.size.sm,
   },
   metricsGap: {
     gap: 14,

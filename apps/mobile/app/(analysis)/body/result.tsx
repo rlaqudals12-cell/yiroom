@@ -19,6 +19,7 @@ import {
   AnalysisErrorState,
   ResultLayout,
   MetricBar,
+  TopActionsCard,
   useAnalysisStyles,
 } from '@/components/analysis';
 import {
@@ -28,8 +29,9 @@ import {
 } from '@/components/analysis/body';
 import { BarChart, type BarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveBodyResult } from '@/lib/analysis';
+import { saveBodyResult, buildBodyTopActions } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
   analyzeBody as analyzeWithGemini,
@@ -284,9 +286,19 @@ export default function BodyResultScreen() {
     </View>
   );
 
-  // --- 요약 탭 ---
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const topActions = buildBodyTopActions({
+    recommendations: typeData.recommendations,
+    avoidItems: typeData.avoidItems,
+  });
+
+  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
   const summaryTab = (
     <View style={localStyles.tabContent}>
+      {/* ① 그래서, 이렇게 하세요 */}
+      <TopActionsCard actions={topActions} />
+
+      {/* ② 시그니처 — 체형 설명 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GradientCard variant="body" style={localStyles.descCard}>
           <Text style={[localStyles.descText, { color: colors.foreground }]}>
@@ -295,27 +307,38 @@ export default function BodyResultScreen() {
         </GradientCard>
       </Animated.View>
 
-      {/* BMI 게이지 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>BMI 지수</Text>
-        <MetricBar label={`${bmi.toFixed(1)} (${bmiStatus.label})`} value={bmiNormalized} />
-        <Text style={[localStyles.bmiGuide, { color: colors.mutedForeground }]}>
-          정상 범위: 18.5 ~ 22.9
-        </Text>
-      </Animated.View>
-
-      {/* 운동 팁 미리보기 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>운동 팁</Text>
-        <GradientCard variant="body" style={localStyles.tipsCard}>
-          {typeData.exerciseTips.map((tip, index) => (
-            <View key={index} style={localStyles.tipItem}>
-              <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-              <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
+      {/* ③ BMI + 운동 팁 — 접기 (정보 삭제 아님, 접기만) */}
+      <ProgressiveDisclosure
+        expandLabel="BMI·운동 팁 자세히 보기"
+        collapseLabel="접기"
+        summary={
+          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
+            BMI {bmi.toFixed(1)} ({bmiStatus.label}) · 운동 팁 {typeData.exerciseTips.length}개
+          </Text>
+        }
+        detail={
+          <View style={localStyles.discloseBody}>
+            <View>
+              <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>BMI 지수</Text>
+              <MetricBar label={`${bmi.toFixed(1)} (${bmiStatus.label})`} value={bmiNormalized} />
+              <Text style={[localStyles.bmiGuide, { color: colors.mutedForeground }]}>
+                정상 범위: 18.5 ~ 22.9
+              </Text>
             </View>
-          ))}
-        </GradientCard>
-      </Animated.View>
+            <View>
+              <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>운동 팁</Text>
+              <GradientCard variant="body" style={localStyles.tipsCard}>
+                {typeData.exerciseTips.map((tip, index) => (
+                  <View key={index} style={localStyles.tipItem}>
+                    <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                    <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
+                  </View>
+                ))}
+              </GradientCard>
+            </View>
+          </View>
+        }
+      />
     </View>
   );
 
@@ -478,6 +501,12 @@ const localStyles = StyleSheet.create({
   bmiGuide: {
     fontSize: typography.size.xs,
     marginTop: 6,
+  },
+  discloseSummary: {
+    fontSize: typography.size.sm,
+  },
+  discloseBody: {
+    gap: spacing.mlg,
   },
   chartContainer: {
     alignItems: 'center',

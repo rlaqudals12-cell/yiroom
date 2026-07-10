@@ -19,12 +19,14 @@ import {
   ResultLayout,
   MetricBar,
   ColorPalette,
+  TopActionsCard,
   useAnalysisStyles,
 } from '@/components/analysis';
 import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveMakeupResult } from '@/lib/analysis';
+import { saveMakeupResult, buildMakeupTopActions } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
   analyzeMakeup as analyzeWithGemini,
@@ -174,29 +176,47 @@ export default function MakeupResultScreen() {
     </View>
   );
 
-  // --- 요약 탭 ---
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const topActions = buildMakeupTopActions({
+    bestColors: result.bestColors,
+    lip: result.recommendations.lip,
+    eye: result.recommendations.eye,
+  });
+
+  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
   const summaryTab = (
     <View style={localStyles.tabContent}>
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          메이크업 밸런스
-        </Text>
-        <View style={localStyles.metricsGap}>
-          <MetricBar label="스킨톤" value={result.scores.skinTone} />
-          <MetricBar label="아이 밸런스" value={result.scores.eyeBalance} />
-          <MetricBar label="립 밸런스" value={result.scores.lipBalance} />
-          <MetricBar label="종합" value={result.scores.overall} />
-        </View>
-      </Animated.View>
+      {/* ① 그래서, 이렇게 하세요 */}
+      <TopActionsCard actions={topActions} />
 
+      {/* ② 시그니처 — 추천 컬러 팔레트 */}
       {result.bestColors.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
             추천 컬러 팔레트
           </Text>
           <ColorPalette colors={colorItems} columns={4} animated testID="makeup-best-colors" />
         </Animated.View>
       )}
+
+      {/* ③ 메이크업 밸런스 — 접기 (정보 삭제 아님, 접기만) */}
+      <ProgressiveDisclosure
+        expandLabel="메이크업 밸런스 자세히 보기"
+        collapseLabel="접기"
+        summary={
+          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
+            스킨톤·아이·립·종합 밸런스
+          </Text>
+        }
+        detail={
+          <View style={localStyles.metricsGap}>
+            <MetricBar label="스킨톤" value={result.scores.skinTone} />
+            <MetricBar label="아이 밸런스" value={result.scores.eyeBalance} />
+            <MetricBar label="립 밸런스" value={result.scores.lipBalance} />
+            <MetricBar label="종합" value={result.scores.overall} />
+          </View>
+        }
+      />
     </View>
   );
 
@@ -334,6 +354,9 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
     marginBottom: spacing.smx,
+  },
+  discloseSummary: {
+    fontSize: typography.size.sm,
   },
   metricsGap: {
     gap: 14,

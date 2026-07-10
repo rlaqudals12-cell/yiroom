@@ -22,11 +22,17 @@ import {
   ColorHarmonyGuide,
   MetricBar,
   DrapingPreview,
+  TopActionsCard,
   useAnalysisStyles,
 } from '@/components/analysis';
 import { AIBadge } from '@/components/common/AIBadge';
+import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { savePersonalColorResult } from '@/lib/analysis';
+import {
+  savePersonalColorResult,
+  buildPersonalColorTopActions,
+  type TopAction,
+} from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
   analyzePersonalColor as analyzeWithGemini,
@@ -203,6 +209,13 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 
   const season = SEASON_DATA[result.season];
 
+  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const topActions = buildPersonalColorTopActions({
+    bestColors: season.bestColors,
+    toneLabel: season.name,
+    stylingTips: season.stylingTips,
+  });
+
   // 웜/쿨 분석 점수 (confidence 기반)
   const warmScore =
     season.tone === 'warm'
@@ -245,7 +258,9 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
             />
           </>
         }
-        summaryTab={<SummaryTab season={season} accent={accent} colors={colors} />}
+        summaryTab={
+          <SummaryTab season={season} accent={accent} colors={colors} topActions={topActions} />
+        }
         detailTab={
           <DetailTab
             warmScore={warmScore}
@@ -297,8 +312,13 @@ interface TabProps {
   colors: ReturnType<typeof useTheme>['colors'];
 }
 
-/** 요약 탭: 대표 팔레트 + 같은 타입 연예인 */
-function SummaryTab({ season, accent, colors }: TabProps): React.JSX.Element {
+/** 요약 탭 (결론 먼저: 액션 → 시그니처 팔레트 → 배색·연예인은 접기) */
+function SummaryTab({
+  season,
+  accent,
+  colors,
+  topActions,
+}: TabProps & { topActions: TopAction[] }): React.JSX.Element {
   const { isDark } = useTheme();
   const bestColorItems = season.bestColors.map((hex, i) => ({
     color: hex,
@@ -307,6 +327,10 @@ function SummaryTab({ season, accent, colors }: TabProps): React.JSX.Element {
 
   return (
     <View style={localStyles.tabContent}>
+      {/* ① 그래서, 이렇게 하세요 */}
+      <TopActionsCard actions={topActions} />
+
+      {/* ② 시그니처 — 추천 컬러 팔레트 */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
         <GradientCard variant="personalColor" style={localStyles.sectionCard}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
@@ -316,37 +340,47 @@ function SummaryTab({ season, accent, colors }: TabProps): React.JSX.Element {
         </GradientCard>
       </Animated.View>
 
-      {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (ADR-105, 웹과 동일) */}
-      {season.bestColors.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-          <ColorHarmonyGuide
-            baseHex={season.bestColors[0]}
-            style={localStyles.sectionCard}
-            testID="pc-color-harmony-guide"
-          />
-        </Animated.View>
-      )}
-
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            같은 타입의 연예인
+      {/* ③ 배색 가이드 + 같은 타입 연예인 — 접기 (정보 삭제 아님, 접기만) */}
+      <ProgressiveDisclosure
+        expandLabel="배색 가이드·닮은꼴 더 보기"
+        collapseLabel="접기"
+        summary={
+          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
+            배색 가이드와 같은 타입 연예인
           </Text>
-          <View style={localStyles.tagRow}>
-            {season.celebrities.map((name, i) => (
-              <View
-                key={i}
-                style={[
-                  localStyles.tag,
-                  { backgroundColor: isDark ? `${accent.dark}20` : `${accent.light}30` },
-                ]}
-              >
-                <Text style={[localStyles.tagText, { color: accent.base }]}>{name}</Text>
+        }
+        detail={
+          <View style={localStyles.discloseBody}>
+            {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (ADR-105, 웹과 동일) */}
+            {season.bestColors.length > 0 && (
+              <ColorHarmonyGuide
+                baseHex={season.bestColors[0]}
+                style={localStyles.sectionCard}
+                testID="pc-color-harmony-guide"
+              />
+            )}
+
+            <GradientCard variant="personalColor" style={localStyles.sectionCard}>
+              <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+                같은 타입의 연예인
+              </Text>
+              <View style={localStyles.tagRow}>
+                {season.celebrities.map((name, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      localStyles.tag,
+                      { backgroundColor: isDark ? `${accent.dark}20` : `${accent.light}30` },
+                    ]}
+                  >
+                    <Text style={[localStyles.tagText, { color: accent.base }]}>{name}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </GradientCard>
           </View>
-        </GradientCard>
-      </Animated.View>
+        }
+      />
     </View>
   );
 }
@@ -545,6 +579,12 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.sm,
     lineHeight: 20,
     marginBottom: spacing.smx,
+  },
+  discloseSummary: {
+    fontSize: typography.size.sm,
+  },
+  discloseBody: {
+    gap: spacing.md,
   },
   tagRow: {
     flexDirection: 'row',
