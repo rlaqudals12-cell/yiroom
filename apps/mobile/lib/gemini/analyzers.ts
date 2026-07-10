@@ -14,6 +14,13 @@ import {
   generateMockOralHealthResult,
   generateMockPostureResult,
 } from './mocks';
+import {
+  buildPersonalColorPrompt,
+  SKIN_ANALYSIS_PROMPT,
+  buildBodyPrompt,
+  HAIR_ANALYSIS_PROMPT,
+  MAKEUP_ANALYSIS_PROMPT,
+} from './prompts';
 import type {
   PersonalColorAnalysisResult,
   SkinAnalysisResult,
@@ -44,21 +51,7 @@ export async function analyzePersonalColor(
     return { result: generateMockPersonalColorResult(questionAnswers), usedFallback: true };
   }
 
-  const prompt = `
-당신은 퍼스널 컬러 전문가입니다. 제공된 얼굴 이미지와 문진 결과를 분석하여 퍼스널 컬러를 진단해주세요.
-
-문진 결과:
-${Object.entries(questionAnswers)
-  .map(([q, a]) => `질문 ${q}: ${a}`)
-  .join('\n')}
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "season": "spring" | "summer" | "autumn" | "winter",
-  "confidence": 0.0-1.0,
-  "description": "진단 설명"
-}
-`;
+  const prompt = buildPersonalColorPrompt(questionAnswers);
 
   try {
     await incrementRateLimit();
@@ -92,25 +85,7 @@ export async function analyzeSkin(
     return { result: generateMockSkinResult(), usedFallback: true };
   }
 
-  const prompt = `
-당신은 피부과 전문의입니다. 제공된 얼굴 이미지를 분석하여 피부 상태를 진단해주세요.
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "skinType": "dry" | "oily" | "combination" | "sensitive" | "normal",
-  "metrics": {
-    "moisture": 0-100,
-    "oil": 0-100,
-    "pores": 0-100,
-    "wrinkles": 0-100,
-    "pigmentation": 0-100,
-    "sensitivity": 0-100,
-    "elasticity": 0-100
-  },
-  "concerns": ["주요 고민 항목"],
-  "recommendations": ["추천 사항"]
-}
-`;
+  const prompt = SKIN_ANALYSIS_PROMPT;
 
   try {
     await incrementRateLimit();
@@ -138,25 +113,7 @@ export async function analyzeBody(
 
   const bmi = weight / (height / 100) ** 2;
 
-  const prompt = `
-당신은 스타일리스트입니다. 제공된 전신 이미지와 신체 정보를 분석하여 체형을 진단해주세요.
-
-신체 정보:
-- 키: ${height}cm
-- 체중: ${weight}kg
-- BMI: ${bmi.toFixed(1)}
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "bodyType": "rectangle" | "triangle" | "inverted_triangle" | "hourglass" | "oval" | "athletic" | "petite" | "tall",
-  "proportions": {
-    "shoulderHipRatio": 0.0-2.0,
-    "waistHipRatio": 0.0-2.0
-  },
-  "recommendations": ["추천 스타일"],
-  "avoidItems": ["피해야 할 스타일"]
-}
-`;
+  const prompt = buildBodyPrompt(height, weight, bmi);
 
   try {
     await incrementRateLimit();
@@ -306,26 +263,7 @@ export async function analyzeHair(
     return { result: generateMockHairResult(), usedFallback: true };
   }
 
-  const prompt = `당신은 헤어 전문 트리콜로지스트입니다. 제공된 헤어 이미지를 분석해주세요.
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "texture": "straight" | "wavy" | "curly" | "coily",
-  "thickness": "fine" | "medium" | "thick",
-  "scalpCondition": "dry" | "oily" | "normal" | "sensitive",
-  "damageLevel": 0-100,
-  "scores": {
-    "shine": 0-100,
-    "elasticity": 0-100,
-    "density": 0-100,
-    "scalpHealth": 0-100
-  },
-  "mainConcerns": ["주요 고민"],
-  "careRoutine": ["케어 루틴 추천"],
-  "recommendedStyles": ["추천 헤어스타일"]
-}
-
-한국어로 응답하세요.`;
+  const prompt = HAIR_ANALYSIS_PROMPT;
 
   try {
     await incrementRateLimit();
@@ -349,31 +287,7 @@ export async function analyzeMakeup(
     return { result: generateMockMakeupResult(), usedFallback: true };
   }
 
-  const prompt = `당신은 메이크업 아티스트입니다. 제공된 얼굴 이미지를 분석하여 맞춤 메이크업을 추천해주세요.
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "faceShape": "oval" | "round" | "square" | "heart" | "oblong" | "diamond",
-  "undertone": "warm" | "cool" | "neutral",
-  "eyeShape": "monolid" | "double" | "hooded" | "round" | "almond",
-  "lipShape": "full" | "thin" | "wide" | "bow",
-  "scores": {
-    "skinTone": 0-100,
-    "eyeBalance": 0-100,
-    "lipBalance": 0-100,
-    "overall": 0-100
-  },
-  "recommendations": {
-    "base": "베이스 추천",
-    "eye": "아이 메이크업 추천",
-    "lip": "립 추천",
-    "blush": "블러셔 추천",
-    "contour": "컨투어링 추천"
-  },
-  "bestColors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"]
-}
-
-한국어로 응답하세요.`;
+  const prompt = MAKEUP_ANALYSIS_PROMPT;
 
   try {
     await incrementRateLimit();
