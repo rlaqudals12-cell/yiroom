@@ -32,3 +32,18 @@ export type {
   BriefingOutfitColor,
   BriefingTimeSlot,
 } from './briefing';
+
+// 오늘의 맞춤 루틴 HTTP 클라이언트 (웹 API 재사용) — ADR-118
+export { fetchDailyRoutine, RoutineApiError } from './routine';
+export type {
+  DailyRoutineResult,
+  DailyRoutineData,
+  RoutineStepData,
+  StepHowToData,
+  CarePhaseData,
+  GoalData,
+  EveningFocusData,
+  WeeklyCycleDay,
+  CarePhaseId,
+  CyclingFocus,
+} from './routine';

@@ -12,6 +12,14 @@ export {
 // 피부 고민 파생 (단일 정본 — ADR-117)
 export { deriveConcernsFromScores, CONCERN_THRESHOLD } from './concerns';
 
+// 오늘의 맞춤 루틴 조립 정본 (웹 페이지 + /api/routine/daily 공유 — ADR-118)
+export { assembleDailyRoutine } from './daily-routine';
+export type {
+  DailyRoutineInput,
+  DailyRoutineResult,
+  DailyRoutineEveningFocus,
+} from './daily-routine';
+
 // 피부 목표 (사용자 선택 축 — ADR-117 루틴 v2)
 export {
   SKIN_GOALS,

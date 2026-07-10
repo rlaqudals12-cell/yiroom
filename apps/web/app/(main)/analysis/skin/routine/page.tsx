@@ -17,16 +17,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoutineStepList, RoutineToggle, RoutineTimeline } from '@/components/skin/routine';
-import {
-  generateRoutine,
-  getSkinTypeLabel,
-  getTimeOfDayLabel,
-  enrichRoutineWithProducts,
-} from '@/lib/skincare/routine';
-import { generateRoutineFromShelf } from '@/lib/skincare';
+import { getSkinTypeLabel, getTimeOfDayLabel } from '@/lib/skincare/routine';
+import { generateRoutineFromShelf, assembleDailyRoutine } from '@/lib/skincare';
 import { formatDuration, calculateEstimatedTime } from '@/lib/mock/skincare-routine';
 import type { TimeOfDay, RoutineStep, ProductCategory } from '@/types/skincare-routine';
-import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
+import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import type { ShelfItem } from '@/lib/scan/product-shelf';
 // ADR-117 루틴 v2 — 목표 칩·단계 계획·저녁 포커스·중복 안내 (S1 엔진 계약 브리지 소비)
 import {
@@ -35,22 +30,12 @@ import {
   composeWeeklyCycle,
   detectOwnedActives,
   findRedundantProducts,
-  goalsToConcerns,
 } from '@/components/skincare/routine-v2-contract';
 import { useSkinGoals } from '@/components/skincare/useSkinGoals';
 import { SkinGoalChips } from '@/components/skincare/SkinGoalChips';
 import { CarePhaseCard } from '@/components/skincare/CarePhaseCard';
 import { EveningFocusPanel } from '@/components/skincare/EveningFocusPanel';
 import { ShelfRedundancyNotice } from '@/components/skincare/ShelfRedundancyNotice';
-
-// ADR-117: enrichRoutineWithProducts는 R1이 shelf 인자(4번째)를 신설 중.
-// 시그니처 배포 전에도 shelf를 전달할 수 있도록 로컬 타입으로 브리지(배포 후에도 호환).
-type EnrichWithShelfFn = (
-  steps: RoutineStep[],
-  skinType: SkinTypeId,
-  concerns: SkinConcernId[],
-  shelfItems?: ShelfItem[]
-) => Promise<RoutineStep[]>;
 
 // 화장대 궁합 안내용 카테고리 한글 라벨
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
@@ -78,19 +63,6 @@ interface SkinAnalysisData {
   wrinkles: number;
   sensitivity: number;
   created_at: string;
-}
-
-// 지표 점수 → 피부 고민 파생 (41 미만 = 케어 필요, 결과 페이지 warning 기준과 동일)
-function deriveConcernsFromMetrics(data: SkinAnalysisData): SkinConcernId[] {
-  const CONCERN_THRESHOLD = 40;
-  const concerns: SkinConcernId[] = [];
-  if (data.hydration <= CONCERN_THRESHOLD) concerns.push('dryness');
-  if (data.oil_level <= CONCERN_THRESHOLD) concerns.push('excess_oil');
-  if (data.pores <= CONCERN_THRESHOLD) concerns.push('pores');
-  if (data.pigmentation <= CONCERN_THRESHOLD) concerns.push('pigmentation');
-  if (data.wrinkles <= CONCERN_THRESHOLD) concerns.push('wrinkles');
-  if (data.sensitivity <= CONCERN_THRESHOLD) concerns.push('sensitivity');
-  return concerns;
 }
 
 export default function SkincareRoutinePage() {
@@ -183,51 +155,30 @@ export default function SkincareRoutinePage() {
     };
   }, [isLoaded, isSignedIn]);
 
-  // 루틴 생성
+  // 루틴 생성 — 조립 정본(assembleDailyRoutine)에 위임. 페이지·API가 동일 결과를 쓴다(ADR-118).
+  // 고민 파생 + 케어 단계 + shelf-우선 제품 배치가 한 곳에서 처리된다.
   useEffect(() => {
     if (!skinData) return;
+    let cancelled = false;
 
-    const skinType = skinData.skin_type || 'normal';
-    // 실측 지표에서 고민 파생 (DB에 concerns 컬럼 없음) + 선택한 목표를 union (결정론적 정렬)
-    const derived = deriveConcernsFromMetrics(skinData);
-    const concerns = Array.from(
-      new Set<SkinConcernId>([...derived, ...goalsToConcerns(selectedGoals)])
-    ).sort();
-
-    // U2: 케어 단계 — 장벽 회복 단계면 세럼·크림 스펙을 진정·보습으로 강제
-    const phase = deriveCarePhase(skinScores, selectedGoals).phase;
-
-    // 아침 루틴 생성
-    const morningResult = generateRoutine({
+    const skinType = (skinData.skin_type || 'normal') as SkinTypeId;
+    assembleDailyRoutine({
       skinType,
-      concerns,
-      timeOfDay: 'morning',
-      includeOptional: true,
-      carePhase: phase,
-    });
+      scores: skinScores,
+      goals: selectedGoals,
+      shelfItems,
+    })
+      .then((result) => {
+        if (cancelled) return;
+        setMorningSteps(result.morning);
+        setEveningSteps(result.evening);
+        setPersonalizationNote(result.personalizationNote);
+      })
+      .catch((err) => console.error('[Routine] assemble error:', err));
 
-    // 저녁 루틴 생성
-    const eveningResult = generateRoutine({
-      skinType,
-      concerns,
-      timeOfDay: 'evening',
-      includeOptional: true,
-      carePhase: phase,
-    });
-
-    setMorningSteps(morningResult.routine);
-    setEveningSteps(eveningResult.routine);
-    setPersonalizationNote(morningResult.personalizationNote);
-
-    // 제품 연동 (비동기) — shelf 우선(보유 제품 배치), 없으면 카탈로그 추천.
-    const enrich = enrichRoutineWithProducts as EnrichWithShelfFn;
-    enrich(morningResult.routine, skinType, concerns, shelfItems)
-      .then((enriched) => setMorningSteps(enriched))
-      .catch((err) => console.error('[Routine] Morning products error:', err));
-
-    enrich(eveningResult.routine, skinType, concerns, shelfItems)
-      .then((enriched) => setEveningSteps(enriched))
-      .catch((err) => console.error('[Routine] Evening products error:', err));
+    return () => {
+      cancelled = true;
+    };
   }, [skinData, shelfItems, selectedGoals, skinScores]);
 
   // 현재 활성 루틴
