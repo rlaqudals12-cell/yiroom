@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -69,9 +66,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -107,6 +102,11 @@ describe('BeautyTab', () => {
     it('추천 제품 섹션이 표시된다', () => {
       const { getByTestId } = renderWithTheme(<BeautyTab />);
       expect(getByTestId('product-section')).toBeTruthy();
+    });
+
+    it('성분 스캔 진입 메뉴가 표시된다', () => {
+      const { getByTestId } = renderWithTheme(<BeautyTab />);
+      expect(getByTestId('menu-scan')).toBeTruthy();
     });
 
     it('메뉴 카드의 설명 텍스트가 표시된다', () => {

@@ -46,6 +46,7 @@ function ThemedStack() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         <Stack.Screen name="(analysis)" options={{ headerShown: false }} />
+        <Stack.Screen name="(scan)" options={{ headerShown: false }} />
         <Stack.Screen name="(challenges)" options={{ headerShown: false }} />
         <Stack.Screen name="(closet)" options={{ headerShown: false }} />
         <Stack.Screen name="(chat)" options={{ headerShown: false }} />

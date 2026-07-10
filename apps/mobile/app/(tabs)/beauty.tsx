@@ -3,7 +3,15 @@
  * 피부 프로필 + 필터 + 제품 피드 + 분석 모듈 네비게이션
  */
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Palette, Droplets, Calendar, Scissors, Brush, Sparkles } from 'lucide-react-native';
+import {
+  Palette,
+  Droplets,
+  Calendar,
+  Scissors,
+  Brush,
+  Sparkles,
+  ScanLine,
+} from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -393,6 +401,17 @@ export default function BeautyTab(): React.JSX.Element {
               description="얼굴형과 톤에 맞는 메이크업 스타일을 찾아보세요"
               onPress={() => router.push('/(analysis)/makeup')}
               testID="menu-makeup"
+            />
+          </Animated.View>
+
+          <Animated.View entering={staggeredEntry(5)}>
+            <MenuCard
+              icon={<ScanLine size={20} color={moduleColors.skin.dark} />}
+              iconBg={moduleColors.skin.light + ICON_BG_OPACITY}
+              title="성분 스캔"
+              description="제품 성분표를 찍으면 나와의 적합도를 알려드려요"
+              onPress={() => router.push('/(scan)')}
+              testID="menu-scan"
             />
           </Animated.View>
         </GlassCard>
