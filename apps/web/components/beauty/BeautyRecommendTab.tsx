@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
 import type { FavoriteItem, AgeGroup } from '@/types/hybrid';
 import type { MatchReason, AnyProduct, ProductWithMatch } from '@/types/product';
@@ -907,12 +908,14 @@ export function BeautyRecommendTab({
                   data-testid={`beauty-product-${product.id}`}
                 >
                   <div className="w-full aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-xl mb-3 relative overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    {/* 로드 실패·이미지 부재 시 💄 폴백 (unoptimized: 기존 raw img와 동일한 네트워크 동작) */}
+                    <ImageWithFallback
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      fallback={<span className="text-3xl">💄</span>}
+                      className="object-cover"
                       loading="lazy"
+                      unoptimized
                     />
                     {hasAnalysis && (
                       <div

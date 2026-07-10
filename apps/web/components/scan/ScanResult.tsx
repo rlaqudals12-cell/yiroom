@@ -7,8 +7,8 @@
  * - 성분 분석 (추후 구현)
  */
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import {
   Package,
   Sparkles,
@@ -81,19 +81,17 @@ export function ScanResult({
     <div data-testid="scan-result" className={cn('space-y-4', className)}>
       {/* 제품 헤더 */}
       <div className="flex gap-4 p-4 bg-card rounded-xl border">
-        {/* 제품 이미지 */}
+        {/* 제품 이미지 — 부재·로드 실패 시 Package 폴백 (OBF 등 외부 이미지 실패 대비) */}
         <div className="shrink-0 w-24 h-24 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              width={96}
-              height={96}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <Package className="w-10 h-10 text-muted-foreground" />
-          )}
+          <ImageWithFallback
+            src={product.imageUrl}
+            alt={product.name}
+            fallback={<Package className="w-10 h-10 text-muted-foreground" />}
+            fill={false}
+            width={96}
+            height={96}
+            className="object-cover w-full h-full"
+          />
         </div>
 
         {/* 제품 정보 */}

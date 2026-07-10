@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
-import Image from 'next/image';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import {
   ArrowLeft,
   Package,
@@ -181,18 +181,13 @@ export default function ShelfDetailPage() {
         {/* 제품 기본 정보 */}
         <div className="flex gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-            {item.productImageUrl ? (
-              <Image
-                src={item.productImageUrl}
-                alt={item.productName}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <Package className="h-10 w-10 text-muted-foreground" />
-              </div>
-            )}
+            <ImageWithFallback
+              src={item.productImageUrl}
+              alt={item.productName}
+              fallback={<Package className="h-10 w-10 text-muted-foreground" />}
+              className="object-cover"
+              sizes="96px"
+            />
           </div>
           <div className="flex flex-col justify-center">
             <h1 className="text-xl font-semibold">{item.productName}</h1>

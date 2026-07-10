@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Search, X, Clock, Sparkles, SearchX } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useUrlTab } from '@/hooks/useUrlTab';
@@ -612,13 +613,15 @@ export default function SearchPage() {
                         onClick={() => router.push(`/beauty/${product.id}`)}
                         className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
                       >
-                        <div className="w-full aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                        <div className="relative w-full aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
+                          {/* 로드 실패·이미지 부재 시 💄 폴백 */}
+                          <ImageWithFallback
                             src={product.imageUrl}
                             alt={product.name}
-                            className="w-full h-full object-cover"
+                            fallback={<span className="text-3xl">💄</span>}
+                            className="object-cover"
                             loading="lazy"
+                            unoptimized
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">{product.brand}</p>

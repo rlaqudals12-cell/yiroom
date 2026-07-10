@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Pill, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { getRecommendedSupplements } from '@/lib/products/repositories/supplement';
 import type { SupplementProduct, SupplementBenefit } from '@/types/product';
 import { useTranslations } from 'next-intl';
@@ -35,19 +35,15 @@ function SupplementItem({ supplement }: { supplement: SupplementProduct }) {
       className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border/50 hover:border-green-200 transition-colors"
       data-testid="supplement-item"
     >
-      {/* 이미지 또는 기본 아이콘 */}
+      {/* 이미지 또는 기본 아이콘 (부재·로드 실패 공통 폴백) */}
       <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
-        {supplement.imageUrl ? (
-          <Image
-            src={supplement.imageUrl}
-            alt={supplement.name}
-            fill
-            className="object-cover"
-            sizes="64px"
-          />
-        ) : (
-          <Pill className="w-6 h-6 text-muted-foreground" />
-        )}
+        <ImageWithFallback
+          src={supplement.imageUrl}
+          alt={supplement.name}
+          fallback={<Pill className="w-6 h-6 text-muted-foreground" />}
+          className="object-cover"
+          sizes="64px"
+        />
       </div>
 
       {/* 정보 */}

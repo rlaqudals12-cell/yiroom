@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Dumbbell, ChevronDown, ChevronUp, Star, ExternalLink, Loader2 } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { getRecommendedEquipment } from '@/lib/products/repositories/equipment';
 import type { WorkoutEquipment, TargetMuscle, SkillLevel, UseLocation } from '@/types/product';
 import { useTranslations } from 'next-intl';
@@ -27,19 +27,15 @@ function EquipmentItem({ equipment }: { equipment: WorkoutEquipment }) {
       className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border/50 hover:border-indigo-200 transition-colors"
       data-testid="equipment-item"
     >
-      {/* 이미지 또는 기본 아이콘 */}
+      {/* 이미지 또는 기본 아이콘 (부재·로드 실패 공통 폴백) */}
       <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
-        {equipment.imageUrl ? (
-          <Image
-            src={equipment.imageUrl}
-            alt={equipment.name}
-            fill
-            className="object-cover"
-            sizes="64px"
-          />
-        ) : (
-          <Dumbbell className="w-6 h-6 text-muted-foreground" />
-        )}
+        <ImageWithFallback
+          src={equipment.imageUrl}
+          alt={equipment.name}
+          fallback={<Dumbbell className="w-6 h-6 text-muted-foreground" />}
+          className="object-cover"
+          sizes="64px"
+        />
       </div>
 
       {/* 정보 */}

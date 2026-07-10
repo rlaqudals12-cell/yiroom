@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -22,6 +21,7 @@ import type { CosmeticProduct, SkinType } from '@/types/product';
 import { IngredientAnalysisSection } from '@/components/products/ingredients';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { AddToShelfButton } from '@/components/beauty/AddToShelfButton';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 
 /**
  * 뷰티 제품 상세 페이지 - UX 리스트럭처링
@@ -249,22 +249,18 @@ export default function BeautyProductDetailPage() {
 
       {/* 본문 */}
       <div className="px-4 py-4 space-y-6">
-        {/* 제품 이미지 — 실제 이미지가 있으면 표시, 없으면 이모지 폴백
-            (기존엔 항상 💄 이모지만 렌더돼 실이미지가 있어도 보이지 않았다) */}
+        {/* 제품 이미지 — 있으면 표시, 없거나 로드 실패 시 이모지 폴백
+            (onError 폴백 부재로 로드 실패 시 다크 bg-muted가 검은 박스로 노출되던 문제 수리) */}
         <FadeInUp>
           <div className="w-full aspect-square bg-muted rounded-2xl overflow-hidden relative flex items-center justify-center">
-            {displayProduct.images[0] ? (
-              <Image
-                src={displayProduct.images[0]}
-                alt={displayProduct.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 512px"
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <span className="text-4xl">💄</span>
-            )}
+            <ImageWithFallback
+              src={displayProduct.images[0]}
+              alt={displayProduct.name}
+              fallback={<span className="text-4xl">💄</span>}
+              sizes="(max-width: 768px) 100vw, 512px"
+              className="object-cover"
+              priority
+            />
           </div>
         </FadeInUp>
 

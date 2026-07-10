@@ -1,17 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { X, GitCompare, Package, Star } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useProductCompareStore, type CompareItem } from '@/lib/stores/productCompareStore';
 import { productTypeToPath } from '@/lib/products';
 import { trackCustomEvent } from '@/lib/analytics';
@@ -98,9 +93,7 @@ function CompareTable({
     <table className="w-full min-w-[640px] border-collapse">
       <thead>
         <tr>
-          <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
-            항목
-          </th>
+          <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">항목</th>
           {items.map((item) => (
             <th key={item.productId} className="p-2 text-center">
               <div className="relative">
@@ -116,18 +109,13 @@ function CompareTable({
                   className="block"
                 >
                   <div className="relative mx-auto h-24 w-24 overflow-hidden rounded-lg bg-muted">
-                    {item.imageUrl ? (
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Package className="h-8 w-8 text-muted-foreground/30" />
-                      </div>
-                    )}
+                    <ImageWithFallback
+                      src={item.imageUrl}
+                      alt={item.name}
+                      fallback={<Package className="h-8 w-8 text-muted-foreground/30" />}
+                      className="object-cover"
+                      sizes="96px"
+                    />
                   </div>
                 </Link>
               </div>
@@ -264,9 +252,7 @@ function CompareRow({
 }) {
   return (
     <tr className={cn(highlight && 'bg-muted/50')}>
-      <td className="p-2 text-sm font-medium text-muted-foreground border-r">
-        {label}
-      </td>
+      <td className="p-2 text-sm font-medium text-muted-foreground border-r">{label}</td>
       {children}
     </tr>
   );

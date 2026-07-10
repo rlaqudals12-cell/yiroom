@@ -10,6 +10,7 @@
 'use client';
 
 import { ScanBarcode, ShieldCheck, ShieldAlert, Info } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import type { BarcodeFood } from '@/types/nutrition';
 import { getSourceLabel, calculateNutrition } from '@/lib/nutrition';
@@ -71,19 +72,16 @@ export default function FoodCard({
         )}
         data-testid="food-card-compact"
       >
-        {/* 이미지 */}
-        {food.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {/* 이미지 — 부재·로드 실패 시 바코드 아이콘 폴백 */}
+        <div className="relative w-12 h-12 rounded-md bg-muted overflow-hidden flex items-center justify-center flex-shrink-0">
+          <ImageWithFallback
             src={food.imageUrl}
             alt={food.name}
-            className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+            fallback={<ScanBarcode className="w-5 h-5 text-muted-foreground" />}
+            className="object-cover"
+            unoptimized
           />
-        ) : (
-          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
-            <ScanBarcode className="w-5 h-5 text-muted-foreground" />
-          </div>
-        )}
+        </div>
 
         {/* 정보 */}
         <div className="flex-1 min-w-0">
@@ -117,19 +115,16 @@ export default function FoodCard({
     >
       {/* 헤더: 이미지 + 기본 정보 */}
       <div className="flex items-start gap-4">
-        {/* 이미지 */}
-        {food.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {/* 이미지 — 부재·로드 실패 시 바코드 아이콘 폴백 */}
+        <div className="relative w-20 h-20 rounded-lg bg-muted overflow-hidden flex items-center justify-center flex-shrink-0">
+          <ImageWithFallback
             src={food.imageUrl}
             alt={food.name}
-            className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+            fallback={<ScanBarcode className="w-8 h-8 text-muted-foreground" />}
+            className="object-cover"
+            unoptimized
           />
-        ) : (
-          <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-            <ScanBarcode className="w-8 h-8 text-muted-foreground" />
-          </div>
-        )}
+        </div>
 
         {/* 기본 정보 */}
         <div className="flex-1 min-w-0">

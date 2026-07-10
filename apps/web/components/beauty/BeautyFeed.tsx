@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 
 /**
  * 피드 아이템 타입 (올리브영 셔터 스타일)
@@ -423,12 +424,14 @@ export function BeautyFeed({ className, limit }: BeautyFeedProps) {
                       onClick={() => router.push(`/beauty/${product.id}`)}
                       className="flex items-center gap-2 px-3 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors shrink-0"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-muted overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative w-10 h-10 rounded-lg bg-muted overflow-hidden">
+                        {/* 로드 실패·이미지 부재 시 💄 폴백 (기존엔 무조건 렌더 → 깨진 아이콘) */}
+                        <ImageWithFallback
                           src={product.imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          fallback={<span className="text-base">💄</span>}
+                          className="object-cover"
+                          unoptimized
                         />
                       </div>
                       <div className="text-left">

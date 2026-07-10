@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { Heart, Package, Sparkles, Pill, Dumbbell, Leaf, Loader2, Trash2 } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { getUserWishlist, removeFromWishlist } from '@/lib/wishlist';
 import { useUrlTab } from '@/hooks/useUrlTab';
@@ -288,20 +288,18 @@ function WishlistGrid({ items, products, onRemove, removingIds, formatPrice }: W
               {/* enum(workout_equipment 등) 원시값이 아닌 라우트 경로(equipment/healthfood)로 변환 */}
               <Link href={`/products/${productTypeToPath(item.productType)}/${item.productId}`}>
                 <div className="flex gap-4">
-                  {/* 제품 이미지 */}
+                  {/* 제품 이미지 — 로드 실패 시에도 Package 폴백 */}
                   <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover rounded-lg"
-                        unoptimized
-                      />
-                    ) : (
-                      <Package className="h-8 w-8 text-muted-foreground" />
-                    )}
+                    <ImageWithFallback
+                      src={product.imageUrl}
+                      alt={product.name}
+                      fallback={<Package className="h-8 w-8 text-muted-foreground" />}
+                      fill={false}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover rounded-lg"
+                      unoptimized
+                    />
                   </div>
 
                   {/* 제품 정보 */}

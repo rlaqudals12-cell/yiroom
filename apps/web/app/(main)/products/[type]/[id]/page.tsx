@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { getDateLocale } from '@/lib/utils/date-format';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Star, Package } from 'lucide-react';
 
@@ -12,6 +11,7 @@ import { WishlistButton } from '@/components/products/WishlistButton';
 import { PurchaseButton } from '@/components/products/PurchaseButton';
 import { CompareButton } from '@/components/products/CompareButton';
 import { ProductViewTracker } from '@/components/products/ProductViewTracker';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { ReviewSection } from '@/components/products/reviews';
 import { ProductQASection } from '@/components/products/ProductQASection';
 import { ProductCouponSection } from '@/components/products/ProductCouponSection';
@@ -171,13 +171,15 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
       {/* 제품 이미지 */}
       <div className="relative aspect-square bg-muted max-w-md mx-auto">
-        {product.imageUrl ? (
-          <Image src={product.imageUrl} alt={product.name} fill className="object-cover" priority />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Package className="h-24 w-24 text-muted-foreground/30" />
-          </div>
-        )}
+        {/* 로드 실패 시에도 빈 검은 박스 대신 Package 폴백 (sizes 누락도 함께 보강) */}
+        <ImageWithFallback
+          src={product.imageUrl}
+          alt={product.name}
+          fallback={<Package className="h-24 w-24 text-muted-foreground/30" />}
+          className="object-cover"
+          sizes="(max-width: 448px) 100vw, 448px"
+          priority
+        />
         <Badge className="absolute left-3 top-3 bg-primary/90">
           {getProductTypeLabel(productType)}
         </Badge>

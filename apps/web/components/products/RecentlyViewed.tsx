@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Clock, Package, X } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -96,19 +96,13 @@ function RecentlyViewedCard({
 
       <Link href={href}>
         <div className="relative aspect-square bg-muted">
-          {item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              fill
-              className="object-cover"
-              sizes="128px"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <Package className="h-8 w-8 text-muted-foreground/30" />
-            </div>
-          )}
+          <ImageWithFallback
+            src={item.imageUrl}
+            alt={item.name}
+            fallback={<Package className="h-8 w-8 text-muted-foreground/30" />}
+            className="object-cover"
+            sizes="128px"
+          />
         </div>
 
         <CardContent className="p-2">

@@ -8,11 +8,11 @@
  */
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Heart, Calendar, Tag, Shirt, Palette, Trash2, Edit2, TrendingUp } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,7 +119,14 @@ export function ItemDetailSheet({
         <div data-testid="item-detail-sheet" className="flex flex-col h-full overflow-auto pb-24">
           {/* 이미지 */}
           <div className="relative aspect-square max-h-[300px] mx-auto w-full bg-muted rounded-xl overflow-hidden">
-            <Image src={item.imageUrl} alt={item.name} fill className="object-contain" />
+            {/* 기존엔 null 체크 없이 무조건 렌더 — 부재·로드 실패 시 폴백 (ItemCard 관례) */}
+            <ImageWithFallback
+              src={item.imageUrl}
+              alt={item.name}
+              fallback={<span className="text-sm text-muted-foreground">이미지 없음</span>}
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 300px"
+            />
 
             {/* 즐겨찾기 버튼 */}
             <button

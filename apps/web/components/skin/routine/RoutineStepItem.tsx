@@ -1,8 +1,8 @@
 'use client';
 
 import { memo, useState } from 'react';
-import Image from 'next/image';
 import { ChevronDown, ChevronUp, Clock, Lightbulb, ShoppingBag, HelpCircle } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
@@ -199,11 +199,12 @@ const RoutineStepItem = memo(function RoutineStepItem({
                     data-testid="product-recommendation-item"
                   >
                     {product.thumbnailUrl && (
-                      <div className="w-10 h-10 relative rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
+                      <div className="w-10 h-10 relative rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                        {/* 로드 실패 시 🧴 폴백 (빈 박스 방지) */}
+                        <ImageWithFallback
                           src={product.thumbnailUrl}
                           alt={product.name}
-                          fill
+                          fallback={<span className="text-base">🧴</span>}
                           className="object-cover"
                           sizes="40px"
                         />

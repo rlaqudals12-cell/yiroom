@@ -188,8 +188,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // 제품 상세 → 뷰티 상세
+      // 주의: /products/qa, /products/recommended는 실존 라우트 —
+      // 단순 :id 패턴이 이들을 /beauty/qa 등 죽은 경로로 삼켰다(308).
+      // 네거티브 룩어헤드로 실존 하위 라우트는 제외한다.
       {
-        source: '/products/:id',
+        source: '/products/:id((?!qa$|recommended$)[^/]+)',
         destination: '/beauty/:id',
         permanent: true,
       },
@@ -222,6 +225,10 @@ const nextConfig: NextConfig = {
       // (BEST 카드·루틴 제품 칩·상세 이미지). 네이버는 핫링크 차단이 없어 URL 자체는 정상.
       { hostname: 'shopping-phinf.pstatic.net' },
       { hostname: '**.pstatic.net' },
+      // Open Beauty/Food Facts — 바코드 스캔 제품 이미지 (ScanResult, scan/shelf 상세).
+      // 미등록 상태라 스캔 제품의 next/image 최적화 요청이 400으로 거부되고 있었다.
+      { hostname: '**.openbeautyfacts.org' },
+      { hostname: '**.openfoodfacts.org' },
     ],
     // 이미지 포맷 최적화 (WebP, AVIF)
     formats: ['image/avif', 'image/webp'],

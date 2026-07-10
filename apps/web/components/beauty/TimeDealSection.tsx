@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Timer, Zap, Star, ChevronRight, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 /**
@@ -204,12 +205,14 @@ export function TimeDealSection({ className }: TimeDealSectionProps) {
               >
                 {/* 제품 이미지 */}
                 <div className="relative w-full aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  {/* 로드 실패·이미지 부재 시 💄 폴백 */}
+                  <ImageWithFallback
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fallback={<span className="text-3xl">💄</span>}
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    unoptimized
                   />
                   {/* 할인율 배지 */}
                   <div className="absolute top-2 left-2 px-2 py-0.5 bg-rose-500 text-white text-xs font-bold rounded-full">

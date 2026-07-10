@@ -1,8 +1,8 @@
 'use client';
 
 import { memo } from 'react';
-import Image from 'next/image';
 import { ExternalLink, Star } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
 import type { ProductRecommendationProps } from '@/types/skincare-routine';
@@ -51,22 +51,16 @@ const ProductRecommendation = memo(function ProductRecommendation({
             className="w-full flex items-start gap-3 p-3 rounded-xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-sm transition-all text-left"
             data-testid="product-recommendation-card"
           >
-            {/* 이미지 */}
-            {product.thumbnailUrl ? (
-              <div className="w-16 h-16 relative rounded-lg overflow-hidden flex-shrink-0">
-                <Image
-                  src={product.thumbnailUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
-              </div>
-            ) : (
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">{categoryInfo.emoji}</span>
-              </div>
-            )}
+            {/* 이미지 — 부재·로드 실패 시 카테고리 이모지 폴백 */}
+            <div className="w-16 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+              <ImageWithFallback
+                src={product.thumbnailUrl}
+                alt={product.name}
+                fallback={<span className="text-2xl">{categoryInfo.emoji}</span>}
+                className="object-cover"
+                sizes="64px"
+              />
+            </div>
 
             {/* 정보 */}
             <div className="flex-1 min-w-0">

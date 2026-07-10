@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CompareButton } from '@/components/products/CompareButton';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import type { AnyProduct } from '@/types/product';
 import { getProductType, productTypeToPath } from '@/lib/products';
@@ -85,12 +85,16 @@ export function ProductCard({
         role="article"
         aria-label={`${product.name} 상세`}
       >
-        {/* 이미지 영역 */}
+        {/* 이미지 영역 — 로드 실패 시 브랜드 이니셜 타일 폴백 (placehold.co 관례의 로컬 버전) */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          <Image
+          <ImageWithFallback
             src={imageUrl}
             alt={product.name}
-            fill
+            fallback={
+              <span className="text-2xl font-semibold text-muted-foreground/60">
+                {product.brand.slice(0, 3)}
+              </span>
+            }
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
             priority={priority}

@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-import { TrendingUp, TrendingDown, Minus, Sparkles, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Sparkles, Star, Package } from 'lucide-react';
+import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -45,12 +45,15 @@ export interface RankingCardProps {
 }
 
 // variant별 색상 테마
-const variantStyles: Record<RankingVariant, {
-  gradient: string;
-  icon: string;
-  rankBg: string;
-  hoverBg: string;
-}> = {
+const variantStyles: Record<
+  RankingVariant,
+  {
+    gradient: string;
+    icon: string;
+    rankBg: string;
+    hoverBg: string;
+  }
+> = {
   beauty: {
     gradient: 'from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30',
     icon: 'text-pink-500',
@@ -101,9 +104,7 @@ export function RankingCard({
             </button>
           )}
         </div>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -160,13 +161,13 @@ function RankingItemRow({ item, variant, onClick }: RankingItemRowProps) {
           {item.rank}
         </div>
 
-        {/* 이미지 */}
+        {/* 이미지 — 로드 실패 시 Package 폴백 (빈 검은 박스 방지) */}
         {item.imageUrl && (
           <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-            <Image
+            <ImageWithFallback
               src={item.imageUrl}
               alt={item.title}
-              fill
+              fallback={<Package className="h-5 w-5 text-muted-foreground/40" />}
               className="object-cover"
               sizes="48px"
             />
@@ -242,9 +243,7 @@ function RankChangeIndicator({ change, amount }: RankChangeIndicatorProps) {
       );
     case 'same':
     default:
-      return (
-        <Minus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-      );
+      return <Minus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />;
   }
 }
 
