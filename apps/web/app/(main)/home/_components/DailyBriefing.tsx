@@ -29,8 +29,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
-import { composeBriefing } from '@/lib/briefing';
-import { composeDailyOutfit } from '@/lib/color/daily-outfit';
+import { assembleBriefing } from '@/lib/briefing';
 import { generateInsights, analysisToDataBundle } from '@/lib/insights';
 import {
   getCurrentWeather,
@@ -39,12 +38,6 @@ import {
 } from '@/lib/weather';
 import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 import { IntegratedSessionPromptCard } from './IntegratedSessionPromptCard';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function daysSince(date: Date): number {
-  return Math.max(0, Math.floor((Date.now() - date.getTime()) / DAY_MS));
-}
 
 /**
  * 환경 조언 로드 — EnvironmentAdviceCard와 동일한 30분 sessionStorage 캐시 재사용.
@@ -101,40 +94,24 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   // 실이름만 — '회원' 같은 placeholder는 넘기지 않음(이름 없으면 생략형)
   const userName = user?.firstName || user?.username || undefined;
 
-  // 나의 컬러: 최신 퍼스널컬러의 베스트 팔레트(진단된 hex) — 있을 때만 시각화
-  const pcEntry = analyses.find((a) => a.type === 'personal-color');
-  const bestColors = useMemo(() => pcEntry?.bestColors ?? [], [pcEntry]);
-  // 오늘의 배색(상의·하의·포인트) — 베스트 컬러 기반 결정론(같은 날 같은 조합).
-  // 퍼스널 대비(ADR-116)가 실측돼 있으면 명도 격차를 반영(없으면 기존 동작 — 하위호환).
-  const dailyOutfit = useMemo(
-    () => composeDailyOutfit(bestColors, undefined, pcEntry?.contrastLevel),
-    [bestColors, pcEntry?.contrastLevel]
-  );
-
-  // 피부 추이 + 경과일
-  const skinEntry = analyses.find((a) => a.type === 'skin');
-  const lastAnalysisDaysAgo =
-    analyses.length > 0 ? Math.min(...analyses.map((a) => daysSince(a.createdAt))) : null;
-
-  const briefing = useMemo(
+  // 브리핑 문장 + 나의 컬러 스와치 + 오늘의 배색 — 공유 정본(assembleBriefing)에서 조립.
+  // 같은 로직을 /api/briefing(모바일)이 재사용 → 문장·배색 조립은 이 함수 1곳(ADR-118).
+  const payload = useMemo(
     () =>
-      composeBriefing({
+      assembleBriefing(analyses, {
         userName,
-        skinTrend:
-          skinEntry?.skinTrend != null
-            ? {
-                direction: skinEntry.skinTrend,
-                delta: skinEntry.skinDelta ?? 0,
-                daysSinceLast: daysSince(skinEntry.createdAt),
-              }
-            : null,
-        lastAnalysisDaysAgo,
-        // 날씨 팁: 피부용 첫 문장(패션 팁은 아래 "오늘의 스타일"에서 별도 사용 — 중복 방지)
-        weatherTip: env?.skin?.[0] ?? null,
-        hasIntegratedSession: analyses.length > 0,
+        weatherSkinTip: env?.skin?.[0] ?? null,
+        weatherFashionTip: env?.fashion?.[0] ?? null,
       }),
-    [userName, skinEntry, lastAnalysisDaysAgo, env, analyses.length]
+    [analyses, userName, env]
   );
+
+  const { briefing, myColors } = payload;
+  const dailyOutfit = payload.todayStyle.outfit;
+  const fashionTip = payload.todayStyle.fashionTip;
+
+  // 내 상태 섹션용(브리핑 조립과 별개) — 피부 추이 칩에 사용
+  const skinEntry = analyses.find((a) => a.type === 'skin');
 
   // 내 상태 — 상위 인사이트 1개 흡수
   const topInsight = useMemo(() => {
@@ -146,8 +123,6 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     });
     return insights[0] ?? null;
   }, [analyses]);
-
-  const fashionTip = env?.fashion?.[0];
 
   function handleAsk(e: React.FormEvent): void {
     e.preventDefault();
@@ -194,16 +169,16 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
       </section>
 
       {/* 1-b) 나의 컬러 — 진단된 베스트 팔레트 스와치 (PC 분석 있을 때만) */}
-      {pcEntry && bestColors.length > 0 && (
+      {myColors && (
         <section aria-label="나의 퍼스널컬러" data-testid="briefing-my-colors">
           <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">나의 퍼스널컬러</h3>
           <Link
-            href={`/analysis/personal-color/result/${pcEntry.id}`}
+            href={`/analysis/personal-color/result/${myColors.analysisId}`}
             className="flex items-center gap-3 rounded-2xl border border-pink-200/50 dark:border-pink-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-pink-300 dark:hover:border-pink-800"
           >
             {/* 4개까지만 표시해 폭을 확보 — 이름이 잘리지 않고 읽히는 것이 우선 */}
             <div className="flex flex-1 items-start gap-2">
-              {bestColors.slice(0, 4).map((c, i) => (
+              {myColors.colors.slice(0, 4).map((c, i) => (
                 <div
                   key={`${c.hex}-${i}`}
                   className="flex flex-1 min-w-0 flex-col items-center gap-1"

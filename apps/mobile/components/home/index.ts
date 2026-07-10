@@ -11,3 +11,4 @@ export { CrossModuleInsight } from './CrossModuleInsight';
 export { InternalizationWidget } from './InternalizationWidget';
 export { ActiveInsightCard } from './ActiveInsightCard';
 export { ProfileCardGrid } from './ProfileCardGrid';
+export { HomeBriefing } from './HomeBriefing';

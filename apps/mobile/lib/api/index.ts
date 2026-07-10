@@ -19,3 +19,16 @@ export type {
   HairQuestionnaire,
   BodyQuestionnaire,
 } from './integrated';
+
+// 아침 브리핑 HTTP 클라이언트 (웹 API 재사용) — ADR-118
+export { fetchBriefing, BriefingApiError } from './briefing';
+export type {
+  BriefingResult,
+  BriefingData,
+  BriefingSentences,
+  BriefingSwatch,
+  BriefingMyColors,
+  BriefingTodayStyle,
+  BriefingOutfitColor,
+  BriefingTimeSlot,
+} from './briefing';

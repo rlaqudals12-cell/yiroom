@@ -21,6 +21,7 @@ import {
   CrossModuleInsight,
   InternalizationWidget,
   ProfileCardGrid,
+  HomeBriefing,
 } from '../../components/home';
 import {
   GradientCard,
@@ -319,6 +320,10 @@ export default function HomeScreen(): React.JSX.Element {
       onRefresh={handleRefresh}
     >
       <HomeHeader userName={userName} isLoaded={isLoaded} />
+
+      {/* ADR-114/118: 전속 뷰티팀의 아침 메시지(브리핑 레터). 웹 /api/briefing 정본 재사용.
+          신규 유저(분석 0건)면 스스로 숨겨 기존 첫 분석 유도가 노출된다. */}
+      <HomeBriefing />
 
       {/* ADR-109 프로필 중심: 최상단 "채워지는 5축 정체성 프로필". ON이면 아래 3-State 히어로는 중복 억제 */}
       {FEATURE_FLAGS.PROFILE_HOME && (

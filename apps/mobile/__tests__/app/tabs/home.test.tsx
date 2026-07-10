@@ -116,6 +116,7 @@ jest.mock('../../../components/home', () => {
     CrossModuleInsight: () => <View testID="cross-module-insight" />,
     InternalizationWidget: () => <View testID="internalization-widget" />,
     ProfileCardGrid: () => <View testID="profile-card-grid" />,
+    HomeBriefing: () => <View testID="home-briefing" />,
   };
 });
 
@@ -320,6 +321,11 @@ describe('HomeScreen', () => {
     it('퀵 액션 섹션이 표시된다', () => {
       const { getByTestId } = renderWithTheme(<HomeScreen />);
       expect(getByTestId('home-quick-actions')).toBeTruthy();
+    });
+
+    it('브리핑 섹션(HomeBriefing)이 마운트된다', () => {
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+      expect(getByTestId('home-briefing')).toBeTruthy();
     });
 
     it('오늘의 요약 StatCard가 표시된다', () => {

@@ -57,6 +57,9 @@ export {
 // 교차 모듈 인사이트
 export { useCrossModuleInsights, type CrossModuleInsight } from './useCrossModuleInsights';
 
+// 아침 브리핑 (ADR-118)
+export { useBriefing, type UseBriefingResult } from './useBriefing';
+
 // 리포트
 export { useWeeklyReport } from './useWeeklyReport';
 export { useMonthlyReport } from './useMonthlyReport';

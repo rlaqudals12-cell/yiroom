@@ -23,15 +23,17 @@ import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
+  /** 홈 브리핑 물어보기에서 넘어온 질문 — 입력창에 미리 채움(자동 전송은 안 함) */
+  initialInput?: string;
 }
 
-export function ChatInterface({ initialSessionId }: ChatInterfaceProps) {
+export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceProps) {
   const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
 
   const { messages, isLoading, error, suggestedQuestions, sendMessage, loadSession } = useCoach();
 
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialInput ?? '');
   const [activeCategory, setActiveCategory] = useState<QuestionCategory>('general');
   const flatListRef = useRef<FlatList>(null);
   const sessionLoaded = useRef(false);
