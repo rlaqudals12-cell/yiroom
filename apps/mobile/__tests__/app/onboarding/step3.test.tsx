@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -177,7 +174,9 @@ beforeEach(() => {
   };
 });
 
-describe('OnboardingStep3 (웰니스 목표 + 신체정보)', () => {
+// ADR-098: WELLNESS_PHASE2=false 이므로 Step3은 웰니스 목표 카드/요약 카드를 숨기고
+// 신장/체중(선택) 신체정보만 수집한다. (건강 목표 UI는 게이팅으로 숨김)
+describe('OnboardingStep3 (신체정보 입력)', () => {
   describe('렌더링', () => {
     it('testID="onboarding-step3" 컨테이너가 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
@@ -186,85 +185,72 @@ describe('OnboardingStep3 (웰니스 목표 + 신체정보)', () => {
 
     it('헤더 타이틀이 표시된다', () => {
       const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('건강 목표도 설정해볼까요?')).toBeTruthy();
+      expect(getByText('신체 정보도 알려주세요')).toBeTruthy();
     });
 
     it('부제목에 선택 사항 안내가 표시된다', () => {
       const { getByText } = renderWithTheme(<OnboardingStep3 />);
       expect(getByText(/건너뛰어도 괜찮아요/)).toBeTruthy();
     });
-  });
 
-  describe('웰니스 목표 선택', () => {
-    it('5개 목표 카드가 모두 렌더링된다', () => {
+    it('진행 표시 바가 3/3 단계로 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByTestId('goal-weight_loss')).toBeTruthy();
-      expect(getByTestId('goal-muscle_gain')).toBeTruthy();
-      expect(getByTestId('goal-health_maintenance')).toBeTruthy();
-      expect(getByTestId('goal-stress_relief')).toBeTruthy();
-      expect(getByTestId('goal-better_sleep')).toBeTruthy();
-    });
-
-    it('목표 라벨이 한국어로 표시된다', () => {
-      const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('체중 감량')).toBeTruthy();
-      expect(getByText('근육 증가')).toBeTruthy();
-      expect(getByText('건강 유지')).toBeTruthy();
-      expect(getByText('스트레스 해소')).toBeTruthy();
-      expect(getByText('수면 개선')).toBeTruthy();
-    });
-
-    it('목표 카드 클릭 시 toggleGoal이 호출된다', () => {
-      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
-
-      fireEvent.press(getByTestId('goal-weight_loss'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('weight_loss');
-    });
-
-    it('다른 목표 카드 클릭 시 해당 값으로 toggleGoal이 호출된다', () => {
-      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
-
-      fireEvent.press(getByTestId('goal-muscle_gain'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('muscle_gain');
-
-      fireEvent.press(getByTestId('goal-better_sleep'));
-      expect(mockToggleGoal).toHaveBeenCalledWith('better_sleep');
+      expect(getByTestId('step-progress')).toBeTruthy();
     });
   });
 
-  describe('선택 상태 표시', () => {
-    it('선택된 목표에 체크마크 아이콘이 표시된다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: ['weight_loss', 'muscle_gain'],
-      };
+  describe('웰니스 목표 숨김 (WELLNESS_PHASE2=false)', () => {
+    it('목표 카드가 렌더링되지 않는다', () => {
+      const { queryByTestId } = renderWithTheme(<OnboardingStep3 />);
+      expect(queryByTestId('goal-weight_loss')).toBeNull();
+      expect(queryByTestId('goal-muscle_gain')).toBeNull();
+      expect(queryByTestId('goal-better_sleep')).toBeNull();
+    });
 
-      const { getAllByTestId } = renderWithTheme(<OnboardingStep3 />);
-      const checkmarks = getAllByTestId('icon-Check');
-      // 요약 카드의 Check 아이콘 1개 + 선택된 목표 2개 = 3개
-      expect(checkmarks.length).toBeGreaterThanOrEqual(2);
+    it('목표 라벨이 표시되지 않는다', () => {
+      const { queryByText } = renderWithTheme(<OnboardingStep3 />);
+      expect(queryByText('체중 감량')).toBeNull();
+      expect(queryByText('수면 개선')).toBeNull();
+    });
+
+    it('입력 요약 카드가 표시되지 않는다', () => {
+      const { queryByText } = renderWithTheme(<OnboardingStep3 />);
+      expect(queryByText('입력 요약')).toBeNull();
     });
   });
 
-  describe('요약 카드', () => {
-    it('입력 요약 제목이 표시된다', () => {
+  describe('신장/체중 입력', () => {
+    it('신장/체중 섹션 제목이 표시된다', () => {
       const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('입력 요약')).toBeTruthy();
+      expect(getByText('신장 / 체중 (선택)')).toBeTruthy();
     });
 
-    it('선택한 관심 분석이 요약에 표시된다', () => {
-      const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('피부 분석, 퍼스널컬러')).toBeTruthy();
+    it('키/체중 입력 필드가 렌더링된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
+      expect(getByTestId('height-input')).toBeTruthy();
+      expect(getByTestId('weight-input')).toBeTruthy();
     });
 
-    it('선택한 목표가 요약에 표시된다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: ['weight_loss', 'muscle_gain'],
-      };
+    it('키 입력 시 setBasicInfo가 height와 함께 호출된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
 
-      const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(getByText('체중 감량, 근육 증가')).toBeTruthy();
+      fireEvent.changeText(getByTestId('height-input'), '175');
+      expect(mockSetBasicInfo).toHaveBeenCalledWith({ height: 175 });
+    });
+
+    it('체중 입력 시 setBasicInfo가 weight와 함께 호출된다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
+
+      fireEvent.changeText(getByTestId('weight-input'), '68');
+      expect(mockSetBasicInfo).toHaveBeenCalledWith({ weight: 68 });
+    });
+
+    it('범위 밖 값 입력 시 setBasicInfo가 호출되지 않는다', () => {
+      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
+
+      // 0은 유효 범위(0 < h < 300) 밖
+      fireEvent.changeText(getByTestId('height-input'), '0');
+      expect(mockSetBasicInfo).not.toHaveBeenCalled();
     });
   });
 
@@ -279,25 +265,6 @@ describe('OnboardingStep3 (웰니스 목표 + 신체정보)', () => {
       expect(getByTestId('complete-button')).toBeTruthy();
     });
 
-    it('미니 백 버튼 클릭 시 prevStep이 호출된다', () => {
-      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
-
-      fireEvent.press(getByTestId('mini-back-button'));
-      expect(mockPrevStep).toHaveBeenCalledTimes(1);
-    });
-
-    it('Step 3은 선택 사항이므로 시작하기 버튼이 항상 활성화된다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: [],
-      };
-
-      const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
-      const completeButton = getByTestId('complete-button');
-      // complete-button은 Pressable이므로 disabled prop 대신 항상 활성화
-      expect(completeButton).toBeTruthy();
-    });
-
     it('건너뛰기 버튼 클릭 시 completeOnboarding이 호출된다', () => {
       const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
 
@@ -306,11 +273,6 @@ describe('OnboardingStep3 (웰니스 목표 + 신체정보)', () => {
     });
 
     it('시작하기 버튼 클릭 시 completeOnboarding이 호출된다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: ['health_maintenance'],
-      };
-
       const { getByTestId } = renderWithTheme(<OnboardingStep3 />);
 
       fireEvent.press(getByTestId('complete-button'));
@@ -322,33 +284,7 @@ describe('OnboardingStep3 (웰니스 목표 + 신체정보)', () => {
     it('다크 모드에서 정상 렌더링된다', () => {
       const { getByTestId, getByText } = renderWithTheme(<OnboardingStep3 />, true);
       expect(getByTestId('onboarding-step3')).toBeTruthy();
-      expect(getByText('건강 목표도 설정해볼까요?')).toBeTruthy();
-    });
-  });
-
-  describe('엣지 케이스', () => {
-    it('목표 5개 모두 선택된 요약이 표시된다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: ['weight_loss', 'muscle_gain', 'health_maintenance', 'stress_relief', 'better_sleep'],
-      };
-
-      const { getByText } = renderWithTheme(<OnboardingStep3 />);
-      expect(
-        getByText('체중 감량, 근육 증가, 건강 유지, 스트레스 해소, 수면 개선')
-      ).toBeTruthy();
-    });
-
-    it('목표가 없으면 건강 목표 요약 행이 표시되지 않는다', () => {
-      mockOnboardingData = {
-        ...mockOnboardingData,
-        goals: [],
-      };
-
-      const { queryByText } = renderWithTheme(<OnboardingStep3 />);
-      // 건강 목표 값이 없으므로 쉼표 구분 요약 텍스트가 없어야 함
-      // (개별 라벨은 카드에 표시되므로 요약 조합 텍스트로 확인)
-      expect(queryByText('체중 감량, 근육 증가')).toBeNull();
+      expect(getByText('신체 정보도 알려주세요')).toBeTruthy();
     });
   });
 });

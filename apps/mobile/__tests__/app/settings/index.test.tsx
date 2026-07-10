@@ -246,9 +246,10 @@ describe('SettingsScreen', () => {
   describe('엣지 케이스', () => {
     it('각 설정 항목에 화살표(>)가 표시된다', () => {
       const { getAllByText } = renderWithTheme(<SettingsScreen />);
-      // 10개 설정 항목 모두에 화살표 존재 (내 정보 수정, 개인정보 설정, 알림, 목표, 위젯, 이용약관, 개인정보 처리방침, FAQ, 피드백, 계정 관리)
+      // WELLNESS_PHASE2=false 이므로 "목표 설정"은 숨김 → 9개 항목에 화살표 존재
+      // (내 정보 수정, 개인정보 설정, 알림 설정, 위젯 설정, 이용약관, 개인정보 처리방침, 도움말/FAQ, 피드백, 계정 관리)
       const arrows = getAllByText('\u203A'); // '>'
-      expect(arrows.length).toBe(10);
+      expect(arrows.length).toBe(9);
     });
   });
 });
