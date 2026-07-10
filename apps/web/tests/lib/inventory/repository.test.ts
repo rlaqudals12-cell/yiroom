@@ -236,6 +236,36 @@ describe('createInventoryItem', () => {
     expect(result.name).toBe('흰색 셔츠');
   });
 
+  // 저장 정본 테이블은 user_inventory — prod 부재로 옷장 저장이 전멸했던 근본
+  // (마이그레이션 20260711_user_inventory_closet.sql로 신설). 테이블명이 바뀌면 회귀.
+  it('옷장 저장은 user_inventory 테이블에 코드 컬럼 전집으로 insert 한다', async () => {
+    terminalResult = { data: createItemDB(), error: null };
+
+    await createInventoryItem('user-1', {
+      category: 'closet',
+      subCategory: 'top',
+      name: '베이지 트렌치코트',
+      imageUrl: 'https://cdn/img.png',
+      brand: 'ZARA',
+      tags: ['데일리'],
+      metadata: { color: ['베이지'], season: ['spring'], occasion: [], pattern: 'solid' },
+    });
+
+    // 테이블명 단언 (유령 배선 재발 방지)
+    expect(mockChain.from).toHaveBeenCalledWith('user_inventory');
+
+    // insert 페이로드 = DB 컬럼(snake_case) 정합 — 마이그레이션 스키마와 1:1
+    const payload = mockChain.insert.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.clerk_user_id).toBe('user-1');
+    expect(payload.category).toBe('closet');
+    expect(payload.sub_category).toBe('top');
+    expect(payload.name).toBe('베이지 트렌치코트');
+    expect(payload.image_url).toBe('https://cdn/img.png');
+    expect(payload.brand).toBe('ZARA');
+    expect(payload.tags).toEqual(['데일리']);
+    expect(payload.metadata).toMatchObject({ color: ['베이지'], season: ['spring'] });
+  });
+
   it('에러 발생 시 throw 한다', async () => {
     terminalResult = { data: null, error: { message: 'Insert error' } };
 

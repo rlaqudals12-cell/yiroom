@@ -217,6 +217,11 @@ const nextConfig: NextConfig = {
       { hostname: 'images.unsplash.com' },
       // 플레이스홀더 이미지 (제품 이미지 없을 때)
       { hostname: 'placehold.co' },
+      // 네이버 쇼핑 CDN — cosmetic_products.image_url 정본 (백필 2,739건 전부 이 호스트).
+      // 미등록 시 next/image 최적화 요청이 400으로 거부돼 제품 카드가 alt 텍스트만 표시됐다
+      // (BEST 카드·루틴 제품 칩·상세 이미지). 네이버는 핫링크 차단이 없어 URL 자체는 정상.
+      { hostname: 'shopping-phinf.pstatic.net' },
+      { hostname: '**.pstatic.net' },
     ],
     // 이미지 포맷 최적화 (WebP, AVIF)
     formats: ['image/avif', 'image/webp'],

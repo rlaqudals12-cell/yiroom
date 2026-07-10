@@ -52,6 +52,28 @@ const skinConcerns: { id: SkinConcern; label: string; icon: React.ReactNode }[] 
   { id: 'elasticity', label: '탄력', icon: <Flame className="w-3.5 h-3.5" /> },
 ];
 
+// UI 고민 칩 → cosmetic_products.concerns DB 실값 집합 (2026-07-10 prod 실쿼리 검증).
+//
+// 근본 문제: 스킨케어 제품은 concerns가 100% 태깅돼 있어(null 0건) `concerns.is.null` 탈출구가
+// 스킨케어에선 절대 적용되지 않는다. 그런데 기존 쿼리는 UI id 1개("soothing")만 그대로 매칭해
+// DB의 동의어·변형(redness/atopy/barrier 등)을 놓쳐 여러 고민이 near-0로 붕괴했다
+// (soothing 4개·wrinkle 12개 등). 점수 조작이 아니라 어휘 매핑 정합으로 도달 가능하게 만든다.
+// ⚠️ 값은 전부 DB concern vocab에 실재하는 것만 — 유령 값 금지(오버랩 시 무의미 매칭 방지).
+const CONCERN_DB_SYNONYMS: Record<SkinConcern, string[]> = {
+  hydration: ['hydration', 'barrier', 'barrier_repair'],
+  whitening: ['whitening', 'tone-up', 'dark_circles', 'dark-circle'],
+  pore: ['pore', 'blackhead', 'sebum', 'oil-control'],
+  soothing: ['soothing', 'redness', 'atopy', 'barrier', 'barrier_repair'],
+  acne: ['acne', 'acne-scar', 'blemish', 'sebum', 'blackhead'],
+  wrinkle: ['wrinkle', 'wrinkles', 'aging', 'anti-aging', 'firming'],
+  elasticity: ['elasticity', 'firming', 'anti-aging'],
+};
+
+/** 선택된 UI 고민들을 DB concern 실값 집합으로 확장 (중복 제거) — 쿼리 필터용 */
+export function expandConcernsToDbValues(concerns: SkinConcern[]): string[] {
+  return [...new Set(concerns.flatMap((c) => CONCERN_DB_SYNONYMS[c] ?? [c]))];
+}
+
 // 대분류 카테고리
 // DB(cosmetic_products)의 category 컬럼은 이미 세분류 값(serum/toner/moisturizer/...)이라
 // 대분류는 "DB category 값의 집합"으로 매핑한다 (실DB 값 검증 2026-07-08).
@@ -353,7 +375,9 @@ export function BeautyRecommendTab({
         }
 
         if (selectedConcerns.length > 0) {
-          query = query.or(`concerns.ov.{${selectedConcerns.join(',')}},concerns.is.null`);
+          // UI 고민 id를 DB concern 동의어 집합으로 확장 (near-0 붕괴 방지 — 어휘 매핑 정합)
+          const dbConcerns = expandConcernsToDbValues(selectedConcerns);
+          query = query.or(`concerns.ov.{${dbConcerns.join(',')}},concerns.is.null`);
         }
 
         // 딥링크 톤→시즌 필터: 태깅된 시즌이 겹치거나(개인색 매칭) 미태깅(null)이면 통과.

@@ -19,8 +19,8 @@ vi.mock('@/lib/scan/product-shelf', () => ({
 vi.mock('@/lib/capsule', () => ({
   getBeautyProfile: vi.fn().mockResolvedValue({ skin: { userGoals: [] } }),
 }));
-vi.mock('@/lib/affiliate/products', () => ({
-  getRecommendedProductsBySkin: vi.fn().mockResolvedValue([]),
+vi.mock('@/lib/skincare/routine-products', () => ({
+  getRoutineProductsByCategory: vi.fn().mockResolvedValue([]),
 }));
 
 // skin_analyses 조회용 Supabase mock — .select().order().limit().single()

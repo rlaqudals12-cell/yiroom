@@ -123,6 +123,10 @@
     59. user_coupons                # 사용자 쿠폰 (2026-03-16)
     60. product_review_ai_cache     # AI 리뷰 분석 캐시 (2026-03-16)
 
+  인벤토리/옷장 (내 옷장·화장대·냉장고 등):
+    61. user_inventory              # 통합 인벤토리 (closet/beauty/equipment/supplement/pantry) — 옷장 저장 정본 (2026-07-11 prod gap-apply)
+    62. saved_outfits               # 저장된 코디 (의류 조합)
+
 관계도:
   users (1) ━━━━━ (N) personal_color_assessments
   users (1) ━━━━━ (N) skin_analyses
@@ -2617,6 +2621,48 @@ CREATE POLICY "pref_items_select_own" ON user_preference_items
 
 ---
 
-**버전**: v7.4 (user_preference_items 분리 — 쇼핑 설정 user_preferences와 충돌 해소)
-**최종 업데이트**: 2026년 7월 10일
-**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 동기화 완료 ✅
+## user_inventory 테이블 (통합 인벤토리 — 옷장 저장 정본)
+
+> **배경**: 웹 옷장 "옷 추가하기"·"옷 한 번에 등록하기" 저장 전멸 근본 수리 (2026-07-11).
+> 저장 경로 = `POST /api/inventory` → `createInventoryItem` → **INSERT user_inventory**,
+> 이미지 = `POST /api/inventory/upload` → Storage 버킷 **`inventory-images`**.
+> prod에 테이블·버킷이 부재하여 업로드/insert가 항상 실패했다. 웹·모바일 모두 이 테이블을 읽는다.
+
+### SQL 생성문 (핵심)
+
+```sql
+CREATE TABLE IF NOT EXISTS user_inventory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('closet','beauty','equipment','supplement','pantry')),
+  sub_category TEXT,
+  name TEXT NOT NULL,
+  image_url TEXT,             -- 업로드 publicUrl (nullable — 방어적)
+  original_image_url TEXT,
+  brand TEXT,
+  tags TEXT[] DEFAULT '{}',
+  is_favorite BOOLEAN DEFAULT FALSE,
+  use_count INTEGER DEFAULT 0,
+  last_used_at TIMESTAMPTZ,
+  expiry_date DATE,
+  metadata JSONB DEFAULT '{}',  -- closet: {color:[],season:[],occasion:[],pattern}
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- RLS (prod 구패턴 auth.jwt()->>'sub'): select/insert/update/delete 본인만 (4정책)
+-- Storage 버킷 'inventory-images' (public), 경로 ${userId}/${category}/${itemId}_${type}.png
+```
+
+### 관련 테이블 · 소비
+
+- `saved_outfits` — 저장된 코디(의류 조합). item_ids UUID[] 로 user_inventory 참조.
+- 소비: `lib/inventory/repository.ts`, `/api/inventory*`, 웹 `app/(main)/closet/*`, 모바일 `app/(inventory)/*`·`useHasClosetItems`·코치 RAG(냉장고/패션).
+
+> 마이그레이션: `supabase/migrations/20260711_user_inventory_closet.sql` (멱등 gap-apply, 버킷 포함)
+> ⚠️ 모바일 `app/(inventory)/shelf.tsx`는 `status`·`expires_at` 컬럼을 select(사전 드리프트, 스키마 미정의) — 별도 모바일 버그(옷장 저장과 무관, 본 마이그레이션 범위 밖).
+
+---
+
+**버전**: v7.5 (user_inventory + inventory-images 버킷 신설 — 옷장 저장 전멸 근본 수리)
+**최종 업데이트**: 2026년 7월 11일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 완료 ✅

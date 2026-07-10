@@ -22,7 +22,7 @@ import {
   calculateEstimatedTime,
   formatDuration,
 } from '@/lib/mock/skincare-routine';
-import { getRecommendedProductsBySkin } from '@/lib/affiliate/products';
+import { getRoutineProductsByCategory } from './routine-products';
 import { detectProductCategory } from './shelf-routine-sync';
 import { getStepSpec } from './step-spec';
 
@@ -209,19 +209,6 @@ function generatePersonalizationNote(
   return note;
 }
 
-// 제품이 키워드 목록 중 하나와 매칭되는지 확인
-function productMatchesKeywords(
-  product: { name?: string; category?: string; keywords?: string[] },
-  keywords: string[]
-): boolean {
-  return keywords.some(
-    (keyword) =>
-      product.name?.toLowerCase().includes(keyword) ||
-      product.category?.toLowerCase().includes(keyword) ||
-      product.keywords?.some((k) => k.toLowerCase().includes(keyword))
-  );
-}
-
 // ================================================
 // 제품 연동 함수
 // ================================================
@@ -284,26 +271,22 @@ export async function enrichRoutineWithProducts(
     });
   }
 
-  // 2. 각 단계에 어필리에이트 제품 추천 가져오기 (빈 슬롯 = 구매 연결)
+  // 2. 각 단계에 실제 제품 추천 가져오기 (빈 슬롯 = 구매 연결).
+  //    정본 = cosmetic_products(카테고리 컬럼으로 직접 조회). affiliate_products가 비어 있어
+  //    루틴 추천이 전멸하던 문제를 해소 — 스텝 카테고리별로 실제품·이미지를 붙인다.
   const enrichedSteps = await Promise.all(
     steps.map(async (step, index) => {
       const owned = ownedByStep.get(index);
       try {
-        const products = await getRecommendedProductsBySkin(
+        const products = await getRoutineProductsByCategory(
+          step.category,
           skinType,
           concerns,
-          3 // 각 카테고리당 최대 3개
+          3 // 각 스텝당 최대 3개
         );
-
-        // 카테고리에 맞는 제품만 필터링 (키워드 기반)
-        const categoryKeywords = getCategoryKeywords(step.category);
-        const matchedProducts = products.filter((product) =>
-          productMatchesKeywords(product, categoryKeywords)
-        );
-
         return {
           ...step,
-          recommendedProducts: matchedProducts.slice(0, 3),
+          recommendedProducts: products,
           ...(owned ? { ownedProduct: owned } : {}),
         };
       } catch (error) {
@@ -314,26 +297,6 @@ export async function enrichRoutineWithProducts(
   );
 
   return enrichedSteps;
-}
-
-/**
- * 카테고리별 검색 키워드
- */
-function getCategoryKeywords(category: ProductCategory): string[] {
-  const keywords: Record<ProductCategory, string[]> = {
-    cleanser: ['cleanser', '클렌저', 'wash', '폼', 'foam', '젤'],
-    toner: ['toner', '토너', '화장수', 'lotion', 'skin'],
-    essence: ['essence', '에센스'],
-    serum: ['serum', '세럼', 'ampoule', '앰플'],
-    ampoule: ['ampoule', '앰플', 'concentrate'],
-    cream: ['cream', '크림', 'moisturizer', '보습'],
-    sunscreen: ['sunscreen', '선크림', 'spf', 'uv', 'sun'],
-    mask: ['mask', '마스크', 'sheet', 'pack'],
-    eye_cream: ['eye', '아이', '눈가'],
-    oil: ['oil', '오일', 'facial oil'],
-    spot_treatment: ['spot', 'acne', 'blemish', '트러블'],
-  };
-  return keywords[category] ?? [];
 }
 
 // ================================================

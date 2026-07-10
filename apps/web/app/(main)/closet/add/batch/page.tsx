@@ -72,6 +72,9 @@ export default function BatchAddClothingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<BatchItem[]>([]);
   const [saving, setSaving] = useState(false);
+  // 선택했으나 지원하지 않는 형식·손상 등으로 건너뛴 파일 안내
+  // (조용히 버리면 "사진 골랐는데 아무 반응 없음"으로 오해되던 버그)
+  const [intakeNotice, setIntakeNotice] = useState<string | null>(null);
 
   const updateItem = useCallback((id: string, patch: Partial<BatchItem>) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
@@ -81,24 +84,41 @@ export default function BatchAddClothingPage() {
   const handleFiles = useCallback(
     async (files: FileList | null) => {
       if (!files?.length) return;
+      setIntakeNotice(null);
 
+      const selectedCount = files.length;
+      let rejectedFormat = 0;
       const accepted: Array<{ id: string; file: File }> = [];
       for (const file of Array.from(files)) {
         const check = validateImageFile(file);
         if (check.valid) accepted.push({ id: crypto.randomUUID(), file });
+        else rejectedFormat += 1;
       }
-      if (accepted.length === 0) return;
 
-      // 미리보기 즉시 생성
+      // 미리보기 즉시 생성 (디코딩 실패 파일은 건너뛰되 개수를 집계해 안내)
       const prepared: BatchItem[] = [];
+      let failedDecode = 0;
       for (const { id, file } of accepted) {
         try {
           const resized = await resizeImage(file, 800, 800);
           const previewUrl = await blobToDataUrl(resized);
           prepared.push({ id, previewUrl, status: 'classifying', name: '', category: 'top' });
         } catch {
-          /* 손상 파일 — 건너뜀 */
+          failedDecode += 1;
         }
+      }
+
+      const skipped = rejectedFormat + failedDecode;
+      if (prepared.length === 0) {
+        // 전부 실패 — 조용히 끝내지 않고 이유를 명확히 표면화
+        setIntakeNotice(
+          `사진 ${selectedCount}장을 열지 못했어요. JPG·PNG·WebP 형식의 이미지인지 확인해주세요. ` +
+            `(아이폰 HEIC 사진은 '가장 호환성 높게' 설정으로 촬영하거나 JPG로 변환해 올려주세요.)`
+        );
+        return;
+      }
+      if (skipped > 0) {
+        setIntakeNotice(`${skipped}장은 지원하지 않는 형식이거나 열 수 없어 건너뛰었어요.`);
       }
       setItems((prev) => [...prev, ...prepared]);
 
@@ -231,6 +251,18 @@ export default function BatchAddClothingPage() {
           </span>
           <span className="text-[11px]">일괄 등록은 배경 제거 없이 원본으로 저장돼요</span>
         </button>
+
+        {/* 파일 인테이크 안내 (전부/일부 건너뜀) */}
+        {intakeNotice && (
+          <div
+            data-testid="batch-intake-notice"
+            role="status"
+            className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{intakeNotice}</span>
+          </div>
+        )}
 
         {/* 아이템 그리드 */}
         {items.length > 0 && (

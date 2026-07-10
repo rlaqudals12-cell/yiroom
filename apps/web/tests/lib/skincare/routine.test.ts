@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// 어필리에이트 추천은 결정론 유지를 위해 mock (빈 추천 = 결손 슬롯)
-vi.mock('@/lib/affiliate/products', () => ({
-  getRecommendedProductsBySkin: vi.fn(async () => []),
+// 제품 추천(cosmetic_products 조회)은 결정론 유지를 위해 mock (빈 추천 = 결손 슬롯)
+vi.mock('@/lib/skincare/routine-products', () => ({
+  getRoutineProductsByCategory: vi.fn(async () => []),
 }));
 
 import {

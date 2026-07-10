@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -248,10 +249,22 @@ export default function BeautyProductDetailPage() {
 
       {/* 본문 */}
       <div className="px-4 py-4 space-y-6">
-        {/* 제품 이미지 */}
+        {/* 제품 이미지 — 실제 이미지가 있으면 표시, 없으면 이모지 폴백
+            (기존엔 항상 💄 이모지만 렌더돼 실이미지가 있어도 보이지 않았다) */}
         <FadeInUp>
-          <div className="w-full aspect-square bg-muted rounded-2xl flex items-center justify-center">
-            <span className="text-4xl">💄</span>
+          <div className="w-full aspect-square bg-muted rounded-2xl overflow-hidden relative flex items-center justify-center">
+            {displayProduct.images[0] ? (
+              <Image
+                src={displayProduct.images[0]}
+                alt={displayProduct.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 512px"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <span className="text-4xl">💄</span>
+            )}
           </div>
         </FadeInUp>
 

@@ -7,8 +7,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/affiliate/products', () => ({
-  getRecommendedProductsBySkin: vi.fn().mockResolvedValue([]),
+vi.mock('@/lib/skincare/routine-products', () => ({
+  getRoutineProductsByCategory: vi.fn().mockResolvedValue([]),
 }));
 
 import { assembleDailyRoutine } from '@/lib/skincare';
