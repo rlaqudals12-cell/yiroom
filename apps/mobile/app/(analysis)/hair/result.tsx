@@ -25,7 +25,12 @@ import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveHairResult, buildHairTopActions } from '@/lib/analysis';
+import {
+  saveHairResult,
+  buildHairTopActions,
+  getHairCautionIngredients,
+  getScalpConcernNotice,
+} from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
   analyzeHair as analyzeWithGemini,
@@ -232,6 +237,10 @@ export default function HairResultScreen() {
     </View>
   );
 
+  // 두피 타입별 주의 성분 + 의료 상담 필요 고민 안내 (웹 W2 포팅)
+  const cautionIngredients = getHairCautionIngredients(result.scalpCondition);
+  const scalpConcernNotice = getScalpConcernNotice(result.mainConcerns);
+
   // --- 추천 탭 ---
   const recommendTab = (
     <View style={localStyles.tabContent}>
@@ -268,6 +277,36 @@ export default function HairResultScreen() {
                 <Text style={[localStyles.tagText, { color: accent.base }]}>{style}</Text>
               </View>
             ))}
+          </View>
+        </Animated.View>
+      )}
+
+      {/* 주의 성분 — 추천만으로는 "무엇을 피할지" 모른다 (웹 W2 포팅) */}
+      {cautionIngredients.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
+          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+            주의 성분 (피하면 좋아요)
+          </Text>
+          <GradientCard variant="hair" style={localStyles.tipsCard}>
+            {cautionIngredients.map((ingredient, i) => (
+              <View key={i} style={localStyles.tipItem}>
+                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+                  {ingredient}
+                </Text>
+              </View>
+            ))}
+          </GradientCard>
+        </Animated.View>
+      )}
+
+      {/* 두피 고민 안내 — 진단이 아닌 "전문의 상담 권유"만 (경계 준수) */}
+      {scalpConcernNotice && (
+        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
+          <View style={[localStyles.noticeCard, { borderColor: colors.border }]}>
+            <Text style={[localStyles.noticeText, { color: colors.mutedForeground }]}>
+              {scalpConcernNotice}
+            </Text>
           </View>
         </Animated.View>
       )}
@@ -391,5 +430,14 @@ const localStyles = StyleSheet.create({
   tagText: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
+  },
+  noticeCard: {
+    borderWidth: 1,
+    borderRadius: radii.lg,
+    padding: spacing.md,
+  },
+  noticeText: {
+    fontSize: typography.size.sm,
+    lineHeight: 20,
   },
 });

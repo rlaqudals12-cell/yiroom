@@ -9,10 +9,10 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export interface AnalysisResultButtonsProps {
-  /** 주 버튼 텍스트 */
-  primaryText: string;
-  /** 주 버튼 클릭 핸들러 */
-  onPrimaryPress: () => void;
+  /** 주 버튼 텍스트 (없으면 주 버튼 미표시) */
+  primaryText?: string;
+  /** 주 버튼 클릭 핸들러 (없으면 주 버튼 미표시) */
+  onPrimaryPress?: () => void;
   /** 홈 이동 핸들러 */
   onGoHome: () => void;
   /** 재분석 핸들러 */
@@ -32,15 +32,18 @@ export function AnalysisResultButtons({
 
   return (
     <View style={styles.buttons} testID={testID}>
-      <Pressable
-        style={[styles.primaryButton, { backgroundColor: brand.primary }]}
-        onPress={onPrimaryPress}
-        testID={`${testID}-primary`}
-      >
-        <Text style={[styles.primaryButtonText, { color: brand.primaryForeground }]}>
-          {primaryText}
-        </Text>
-      </Pressable>
+      {/* 주 버튼은 텍스트+핸들러가 모두 있을 때만 표시 (오펀 축은 주 액션 없이 홈/재분석만) */}
+      {primaryText && onPrimaryPress && (
+        <Pressable
+          style={[styles.primaryButton, { backgroundColor: brand.primary }]}
+          onPress={onPrimaryPress}
+          testID={`${testID}-primary`}
+        >
+          <Text style={[styles.primaryButtonText, { color: brand.primaryForeground }]}>
+            {primaryText}
+          </Text>
+        </Pressable>
+      )}
       <Pressable
         style={[styles.secondaryButton, { borderColor: colors.border }]}
         onPress={onGoHome}

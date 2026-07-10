@@ -191,6 +191,46 @@ describe('ProfileScreen', () => {
     });
   });
 
+  // 라벨맵 전집 + 대소문자 정규화 회귀 방지
+  describe('라벨 정규화 (body_type/season 전집 매핑)', () => {
+    const base = {
+      analyses: [],
+      personalColor: null,
+      skinAnalysis: null,
+      bodyAnalysis: null,
+      isLoading: false,
+      refetch: jest.fn(),
+    };
+    function mockAnalyses(over: Record<string, unknown>) {
+      const { useUserAnalyses } = require('../../../hooks/useUserAnalyses');
+      useUserAnalyses.mockReturnValueOnce({ ...base, ...over });
+    }
+
+    it('PascalCase BodyType(Oval/Diamond/Athletic)도 한국어로 매핑된다', () => {
+      mockAnalyses({ bodyAnalysis: { bodyType: 'Oval' } });
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('타원형')).toBeTruthy();
+    });
+
+    it('InvertedTriangle(대문자)도 역삼각형으로 매핑된다', () => {
+      mockAnalyses({ bodyAnalysis: { bodyType: 'InvertedTriangle' } });
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('역삼각형')).toBeTruthy();
+    });
+
+    it('대문자 시즌(Winter)도 겨울로 매핑된다', () => {
+      mockAnalyses({ personalColor: { season: 'Winter' } });
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('겨울')).toBeTruthy();
+    });
+
+    it('미지의 체형 값은 원시 영문 대신 —로 표시된다 (지어내지 않음)', () => {
+      mockAnalyses({ bodyAnalysis: { bodyType: 'zzz_unknown' } });
+      const { queryByText } = renderWithTheme(<ProfileScreen />);
+      expect(queryByText('zzz_unknown')).toBeNull();
+    });
+  });
+
   // ADR-098: W/N 기록 섹션은 WELLNESS_PHASE2=false 동안 숨김
   describe('기록 섹션 (WELLNESS_PHASE2 게이팅)', () => {
     it('기록 섹션이 숨겨진다', () => {

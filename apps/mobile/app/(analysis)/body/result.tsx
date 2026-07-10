@@ -42,6 +42,10 @@ import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { typography, radii, spacing } from '@/lib/theme';
 
+// BMI는 참고 수치일 뿐 — 근육량 등에 따라 실제 체성분과 다를 수 있어
+// '과체중/비만' 같은 낙인 라벨 대신 숫자만 "참고 수치"로 제시한다. (웹 W4 정합)
+const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
+
 /**
  * BodyType(8분류) → StylingBodyType(3분류) 매핑.
  *
@@ -136,7 +140,7 @@ const BODY_TYPE_DATA: Record<
 };
 
 export default function BodyResultScreen() {
-  const { module, colors, status, isDark } = useAnalysisStyles();
+  const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.body;
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
@@ -240,15 +244,6 @@ export default function BodyResultScreen() {
 
   const typeData = BODY_TYPE_DATA[bodyType];
 
-  // BMI 상태
-  const getBmiStatus = (bmiVal: number) => {
-    if (bmiVal < 18.5) return { label: '저체중', color: status.info };
-    if (bmiVal < 23) return { label: '정상', color: status.success };
-    if (bmiVal < 25) return { label: '과체중', color: status.warning };
-    return { label: '비만', color: status.error };
-  };
-  const bmiStatus = getBmiStatus(bmi);
-
   // BMI 바 값 (0-40 범위를 0-100으로 정규화)
   const bmiNormalized = Math.min(100, Math.round((bmi / 40) * 100));
 
@@ -275,14 +270,17 @@ export default function BodyResultScreen() {
       <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
       <View style={localStyles.bmiRow}>
         <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>
-        <Text style={[localStyles.bmiNumber, { color: bmiStatus.color }]}>{bmi.toFixed(1)}</Text>
-        <View style={[localStyles.bmiBadge, { backgroundColor: bmiStatus.color }]}>
-          <Text style={[localStyles.bmiBadgeText, { color: colors.card }]}>{bmiStatus.label}</Text>
+        <Text style={[localStyles.bmiNumber, { color: colors.foreground }]}>{bmi.toFixed(1)}</Text>
+        <View style={[localStyles.bmiBadge, { backgroundColor: colors.muted }]}>
+          <Text style={[localStyles.bmiBadgeText, { color: colors.mutedForeground }]}>
+            참고 수치
+          </Text>
         </View>
       </View>
       <Text style={[localStyles.bodyInfo, { color: colors.mutedForeground }]}>
         키 {height}cm / 체중 {weight}kg
       </Text>
+      <Text style={[localStyles.bmiCaveat, { color: colors.mutedForeground }]}>{BMI_CAVEAT}</Text>
     </View>
   );
 
@@ -313,16 +311,16 @@ export default function BodyResultScreen() {
         collapseLabel="접기"
         summary={
           <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
-            BMI {bmi.toFixed(1)} ({bmiStatus.label}) · 운동 팁 {typeData.exerciseTips.length}개
+            BMI {bmi.toFixed(1)} (참고 수치) · 운동 팁 {typeData.exerciseTips.length}개
           </Text>
         }
         detail={
           <View style={localStyles.discloseBody}>
             <View>
               <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>BMI 지수</Text>
-              <MetricBar label={`${bmi.toFixed(1)} (${bmiStatus.label})`} value={bmiNormalized} />
+              <MetricBar label={`${bmi.toFixed(1)} (참고 수치)`} value={bmiNormalized} />
               <Text style={[localStyles.bmiGuide, { color: colors.mutedForeground }]}>
-                정상 범위: 18.5 ~ 22.9
+                일반 참고 범위: 18.5 ~ 22.9 · {BMI_CAVEAT}
               </Text>
             </View>
             <View>
@@ -378,10 +376,13 @@ export default function BodyResultScreen() {
           </View>
           <View style={localStyles.bmiDetailRow}>
             <Text style={[localStyles.bmiDetailLabel, { color: colors.mutedForeground }]}>BMI</Text>
-            <Text style={[localStyles.bmiDetailValue, { color: bmiStatus.color }]}>
-              {bmi.toFixed(1)} ({bmiStatus.label})
+            <Text style={[localStyles.bmiDetailValue, { color: colors.foreground }]}>
+              {bmi.toFixed(1)} (참고 수치)
             </Text>
           </View>
+          <Text style={[localStyles.bmiCaveat, { color: colors.mutedForeground }]}>
+            {BMI_CAVEAT}
+          </Text>
         </GradientCard>
       </Animated.View>
     </View>
@@ -475,6 +476,11 @@ const localStyles = StyleSheet.create({
   },
   bodyInfo: {
     fontSize: typography.size.sm,
+  },
+  bmiCaveat: {
+    fontSize: typography.size.xs,
+    marginTop: 4,
+    textAlign: 'center',
   },
   bodyImage: {
     width: 120,

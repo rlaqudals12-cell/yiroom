@@ -26,18 +26,12 @@ const BODY_TYPE_DATA: Record<
     name: '직사각형 체형',
     description:
       '어깨, 허리, 엉덩이 너비가 비슷한 체형입니다. 허리 라인을 강조하는 스타일이 잘 어울려요.',
-    recommendations: [
-      '벨트로 허리 강조',
-      'A라인 스커트',
-      '페플럼 탑',
-      '랩 원피스',
-    ],
+    recommendations: ['벨트로 허리 강조', 'A라인 스커트', '페플럼 탑', '랩 원피스'],
     avoidItems: ['일자 실루엣', '박시한 상의'],
   },
   Triangle: {
     name: '삼각형 체형',
-    description:
-      '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description: '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
@@ -57,49 +51,37 @@ const BODY_TYPE_DATA: Record<
   },
   Oval: {
     name: '타원형 체형',
-    description:
-      '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
+    description: '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
     recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
     avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
   },
   Diamond: {
     name: '다이아몬드 체형',
-    description:
-      '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
+    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
     recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
     avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
   },
   Pear: {
     name: '배 체형',
-    description:
-      '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
+    description: '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
     recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
     avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
   },
   Athletic: {
     name: '운동선수 체형',
-    description:
-      '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
+    description: '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
     recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
     avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
   },
 };
 
 // ============================================================
-// BMI 상태 판정 함수 (result.tsx에서 추출)
+// BMI 정직 표기 상수 (result.tsx에서 추출) — 웹 W4 정합
+// '과체중/비만' 낙인 라벨을 제거하고 숫자는 "참고 수치"로만 제시한다.
 // ============================================================
 
-interface BmiStatus {
-  label: string;
-  color: string;
-}
-
-function getBmiStatus(bmiValue: number): BmiStatus {
-  if (bmiValue < 18.5) return { label: '저체중', color: '#3b82f6' };
-  if (bmiValue < 23) return { label: '정상', color: '#22c55e' };
-  if (bmiValue < 25) return { label: '과체중', color: '#eab308' };
-  return { label: '비만', color: '#ef4444' };
-}
+const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
+const BMI_REFERENCE_LABEL = '참고 수치';
 
 // ============================================================
 // 체형 타입 매핑 (result.tsx에서 추출)
@@ -124,49 +106,22 @@ function mapBodyType(geminiType: string): BodyType {
 // BMI 계산 및 상태 테스트
 // ============================================================
 
-describe('C-1 체형 분석 - BMI 계산', () => {
-  describe('getBmiStatus', () => {
-    it('BMI 18.5 미만은 저체중이어야 한다', () => {
-      expect(getBmiStatus(15).label).toBe('저체중');
-      expect(getBmiStatus(17).label).toBe('저체중');
-      expect(getBmiStatus(18.4).label).toBe('저체중');
+describe('C-1 체형 분석 - BMI 정직 표기 (낙인 제거, 웹 W4)', () => {
+  it("BMI 표기에 '과체중'·'비만' 낙인 라벨이 없어야 한다", () => {
+    const displayed = [BMI_REFERENCE_LABEL, BMI_CAVEAT];
+    displayed.forEach((text) => {
+      expect(text).not.toContain('과체중');
+      expect(text).not.toContain('비만');
+      expect(text).not.toContain('저체중');
     });
+  });
 
-    it('BMI 18.5-22.9는 정상이어야 한다', () => {
-      expect(getBmiStatus(18.5).label).toBe('정상');
-      expect(getBmiStatus(20).label).toBe('정상');
-      expect(getBmiStatus(22.9).label).toBe('정상');
-    });
+  it("BMI는 '참고 수치'로만 제시된다", () => {
+    expect(BMI_REFERENCE_LABEL).toBe('참고 수치');
+  });
 
-    it('BMI 23-24.9는 과체중이어야 한다', () => {
-      expect(getBmiStatus(23).label).toBe('과체중');
-      expect(getBmiStatus(24).label).toBe('과체중');
-      expect(getBmiStatus(24.9).label).toBe('과체중');
-    });
-
-    it('BMI 25 이상은 비만이어야 한다', () => {
-      expect(getBmiStatus(25).label).toBe('비만');
-      expect(getBmiStatus(30).label).toBe('비만');
-      expect(getBmiStatus(40).label).toBe('비만');
-    });
-
-    it('각 상태는 고유한 색상을 가져야 한다', () => {
-      const colors = [
-        getBmiStatus(15).color,
-        getBmiStatus(20).color,
-        getBmiStatus(24).color,
-        getBmiStatus(30).color,
-      ];
-      const uniqueColors = new Set(colors);
-      expect(uniqueColors.size).toBe(4);
-    });
-
-    it('색상은 유효한 hex 값이어야 한다', () => {
-      const hexRegex = /^#[0-9A-Fa-f]{6}$/;
-      [15, 20, 24, 30].forEach((bmi) => {
-        expect(getBmiStatus(bmi).color).toMatch(hexRegex);
-      });
-    });
+  it('BMI 캐비앳으로 근육량 편차를 안내한다', () => {
+    expect(BMI_CAVEAT).toContain('근육량');
   });
 });
 
@@ -284,13 +239,9 @@ describe('C-1 체형 분석 - 데이터 일관성', () => {
 // ============================================================
 
 describe('C-1 체형 분석 - 접근성', () => {
-  it('BMI 상태 라벨은 사용자에게 이해 가능해야 한다', () => {
-    const validLabels = ['저체중', '정상', '과체중', '비만'];
-
-    [15, 20, 24, 30].forEach((bmi) => {
-      const status = getBmiStatus(bmi);
-      expect(validLabels).toContain(status.label);
-    });
+  it('BMI 표기는 낙인 없이 이해 가능해야 한다', () => {
+    // '참고 수치' + 캐비앳만 노출 — 판정성 라벨(비만 등) 없음
+    expect(`${BMI_REFERENCE_LABEL} · ${BMI_CAVEAT}`).not.toMatch(/과체중|비만|저체중/);
   });
 
   it('체형 설명은 스타일 추천 이유를 포함해야 한다', () => {

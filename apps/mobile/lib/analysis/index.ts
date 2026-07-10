@@ -18,3 +18,6 @@ export {
   buildMakeupTopActions,
 } from './top-actions';
 export type { TopAction, TopActionSwatch } from './top-actions';
+
+// 헤어 두피 주의 성분 + 고민 안내 (웹 hair-analysis.ts 포팅)
+export { getHairCautionIngredients, getScalpConcernNotice } from './hair-guidance';

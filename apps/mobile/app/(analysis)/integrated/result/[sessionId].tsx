@@ -32,6 +32,7 @@ import {
 } from '@/lib/integrated/action-plan';
 import { composeCrossInsights, type CrossInsights } from '@/lib/integrated/cross-insights';
 import { composeCuration, type Curation, type CurationItem } from '@/lib/integrated/curation';
+import { ALL_STEPS } from '@/lib/integrated/next-steps';
 
 // ============================================
 // 축 라벨 매핑 (UI 표시용)
@@ -482,46 +483,6 @@ function PartialSuccessBanner({
 // ============================================
 // 다음 단계 링크
 // ============================================
-
-interface NextStep {
-  axis: AxisCode;
-  label: string;
-  description: string;
-  href: string;
-}
-
-const ALL_STEPS: NextStep[] = [
-  {
-    axis: 'personal_color',
-    label: '내 색 기반 화장품 보기',
-    description: '어울리는 립·아이섀도 추천',
-    href: '/(tabs)/records',
-  },
-  {
-    axis: 'skin',
-    label: '피부 타입 맞춤 추천',
-    description: '스킨케어 루틴',
-    href: '/(tabs)/records',
-  },
-  {
-    axis: 'body',
-    label: '체형별 코디 가이드',
-    description: '옷장 조합',
-    href: '/(tabs)/records',
-  },
-  {
-    axis: 'hair',
-    label: '헤어스타일 추천 자세히',
-    description: '얼굴형 기반 컷',
-    href: '/(analysis)/hair',
-  },
-  {
-    axis: 'makeup',
-    label: '메이크업 튜토리얼',
-    description: '단계별 가이드',
-    href: '/(analysis)/makeup',
-  },
-];
 
 interface NextStepsLinksProps {
   axesCompleted: AxisCode[];

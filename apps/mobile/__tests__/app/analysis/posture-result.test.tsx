@@ -22,11 +22,7 @@ jest.mock('lucide-react-native', () => {
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
-  const createChainable = (): unknown =>
-    new Proxy(
-      {},
-      { get: () => createChainable }
-    );
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
@@ -105,9 +101,7 @@ const mockPostureResult = {
     hipAlignment: 82,
   },
   issues: ['거북목 경향이 있어요'],
-  exercises: [
-    { name: '턱 당기기', description: '턱을 뒤로 당기세요', duration: '30초 x 3세트' },
-  ],
+  exercises: [{ name: '턱 당기기', description: '턱을 뒤로 당기세요', duration: '30초 x 3세트' }],
   dailyTips: ['모니터 높이를 눈높이로 맞추세요'],
 };
 
@@ -126,24 +120,12 @@ jest.mock('../../../lib/monitoring/sentry', () => ({
 jest.mock('../../../components/analysis', () => {
   const { View, Text } = require('react-native');
   return {
-    AnalysisLoadingState: ({
-      message,
-      testID,
-    }: {
-      message: string;
-      testID?: string;
-    }) => (
+    AnalysisLoadingState: ({ message, testID }: { message: string; testID?: string }) => (
       <View testID={testID}>
         <Text>{message}</Text>
       </View>
     ),
-    AnalysisErrorState: ({
-      message,
-      testID,
-    }: {
-      message: string;
-      testID?: string;
-    }) => (
+    AnalysisErrorState: ({ message, testID }: { message: string; testID?: string }) => (
       <View testID={testID}>
         <Text>{message}</Text>
       </View>
@@ -151,9 +133,14 @@ jest.mock('../../../components/analysis', () => {
     AnalysisTrustBadge: ({ testID }: { testID?: string; [key: string]: unknown }) => (
       <View testID={testID} />
     ),
-    AnalysisResultButtons: ({ testID }: { testID?: string; [key: string]: unknown }) => (
-      <View testID={testID} />
-    ),
+    AnalysisResultButtons: ({
+      testID,
+      primaryText,
+    }: {
+      testID?: string;
+      primaryText?: string;
+      [key: string]: unknown;
+    }) => <View testID={testID}>{primaryText ? <Text>{primaryText}</Text> : null}</View>,
     MetricBar: ({ label, value }: { label: string; value: number }) => (
       <View>
         <Text>
@@ -202,13 +189,9 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View {...props}>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
     CelebrationEffect: ({
       visible,
       onComplete,
@@ -255,5 +238,18 @@ describe('PostureResultScreen', () => {
     const { findByTestId } = renderWithTheme(<PostureResultScreen />);
     const errorState = await findByTestId('posture-error');
     expect(errorState).toBeTruthy();
+  });
+
+  // 회귀 방지: posture는 오펀(숨김 웰니스 축) — 존재하지 않는 운동 탭 CTA가 없어야 한다
+  it('운동 탭 CTA(교정 운동 시작하기)가 노출되지 않는다', async () => {
+    const { findByTestId, queryByText } = renderWithTheme(<PostureResultScreen />);
+    await findByTestId('analysis-posture-result-screen');
+    expect(queryByText(/교정 운동 시작/)).toBeNull();
+  });
+
+  it('존재하지 않는 /(tabs)/workout 라우트로 이동하지 않는다', async () => {
+    const { findByTestId } = renderWithTheme(<PostureResultScreen />);
+    await findByTestId('analysis-posture-result-screen');
+    expect(mockRouter.push).not.toHaveBeenCalledWith('/(tabs)/workout');
   });
 });

@@ -27,6 +27,8 @@ import { useTheme, spacing, radii, borderGlow } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
 
 // 영어 raw 값 → 한국어 라벨 매핑
+// DB에 저장되는 값의 표기(대소문자·스네이크케이스)가 저장 경로마다 달라
+// (모바일=PascalCase BodyType, 웹/레거시=snake_case 등) 소문자 정규화 후 매핑한다.
 const SEASON_LABELS: Record<string, string> = {
   spring: '봄',
   summer: '여름',
@@ -40,13 +42,25 @@ const SKIN_TYPE_LABELS: Record<string, string> = {
   normal: '중성',
   sensitive: '민감성',
 };
+// body_type 값 전집: 모바일 BodyType 8종(소문자) + 레거시 변형(snake/apple)
 const BODY_TYPE_LABELS: Record<string, string> = {
-  hourglass: '모래시계형',
   rectangle: '직사각형',
-  pear: '배형',
-  apple: '사과형',
+  triangle: '삼각형',
+  invertedtriangle: '역삼각형',
   inverted_triangle: '역삼각형',
+  hourglass: '모래시계형',
+  pear: '서양배형',
+  oval: '타원형',
+  diamond: '다이아몬드형',
+  athletic: '운동형',
+  apple: '사과형',
 };
+
+// 라벨 조회: 소문자 정규화 후 매핑. 미지 값은 원시 영문 노출 대신 '—'(지어내지 않음).
+function toKoreanLabel(map: Record<string, string>, raw?: string | null): string | undefined {
+  if (!raw) return undefined;
+  return map[raw.toLowerCase()] ?? '—';
+}
 
 export default function ProfileScreen(): React.JSX.Element {
   const { colors, brand, spacing, typography, isDark } = useTheme();
@@ -344,9 +358,7 @@ export default function ProfileScreen(): React.JSX.Element {
             title="퍼스널 컬러"
             completed={!!personalColor}
             subtitle={
-              personalColor?.season
-                ? SEASON_LABELS[personalColor.season] || personalColor.season
-                : undefined
+              personalColor?.season ? toKoreanLabel(SEASON_LABELS, personalColor.season) : undefined
             }
             onPress={() => router.push('/(analysis)/personal-color')}
           />
@@ -362,7 +374,7 @@ export default function ProfileScreen(): React.JSX.Element {
             completed={!!skinAnalysis}
             subtitle={
               skinAnalysis?.skinType
-                ? SKIN_TYPE_LABELS[skinAnalysis.skinType] || skinAnalysis.skinType
+                ? toKoreanLabel(SKIN_TYPE_LABELS, skinAnalysis.skinType)
                 : undefined
             }
             onPress={() => router.push('/(analysis)/skin')}
@@ -379,7 +391,7 @@ export default function ProfileScreen(): React.JSX.Element {
             completed={!!bodyAnalysis}
             subtitle={
               bodyAnalysis?.bodyType
-                ? BODY_TYPE_LABELS[bodyAnalysis.bodyType] || bodyAnalysis.bodyType
+                ? toKoreanLabel(BODY_TYPE_LABELS, bodyAnalysis.bodyType)
                 : undefined
             }
             onPress={() => router.push('/(analysis)/body')}

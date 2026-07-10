@@ -1,7 +1,6 @@
 /**
  * Posture 자세 분석 - 결과 화면
  */
-import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
@@ -83,10 +82,6 @@ export default function PostureResultScreen() {
 
   const handleRetry = () => router.replace('/(analysis)/posture');
   const handleGoHome = () => router.replace('/(tabs)');
-  const handleWorkoutRecommendation = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/(tabs)/workout');
-  };
 
   if (isLoading) {
     return <AnalysisLoadingState message="자세를 분석 중이에요..." testID="posture-loading" />;
@@ -213,9 +208,8 @@ export default function PostureResultScreen() {
           </Animated.View>
         )}
 
+        {/* 자세 분석은 오펀(숨김 웰니스 축) — 존재하지 않는 운동 탭 CTA 제거, 홈/재분석만 */}
         <AnalysisResultButtons
-          primaryText="🏋️ 교정 운동 시작하기"
-          onPrimaryPress={handleWorkoutRecommendation}
           onGoHome={handleGoHome}
           onRetry={handleRetry}
           testID="posture-result-buttons"
