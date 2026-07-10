@@ -22,6 +22,7 @@ import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 import { PhotoReuseSelector } from '@/components/analysis/skin/PhotoReuseSelector';
 import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis';
+import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 
 // 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과
@@ -383,6 +384,8 @@ export default function SkinAnalysisPage() {
         } catch {
           // sessionStorage 실패 무시 (시크릿 모드 등)
         }
+        // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+        invalidateAnalysisCache();
         router.push(`/analysis/skin/result/${data.data.id}`);
         return;
       }

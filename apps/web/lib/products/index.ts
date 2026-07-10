@@ -122,6 +122,9 @@ export type { RankBadge } from './product-ranking';
 export {
   trackAffiliateClick,
   openAffiliateLink,
+  tagCoupangAffiliateUrl,
+  buildAffiliateRedirectUrl,
+  sanitizeCoupangSubId,
   getAffiliateStats,
   getProductClickCount,
   getTodayClickCount,

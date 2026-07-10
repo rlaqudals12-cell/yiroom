@@ -1,11 +1,14 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import { ExternalLink, ShoppingCart } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { openAffiliateLink } from '@/lib/products/affiliate';
+import { toAffiliateProductType } from '@/types/affiliate';
 import type {
   ProductType,
   AnyProduct,
@@ -143,7 +146,7 @@ function CosmeticTabs({ product }: { product: CosmeticProduct }) {
       </TabsContent>
 
       <TabsContent value="purchase" className="space-y-4">
-        <PurchaseTab product={product} />
+        <PurchaseTab product={product} productType="cosmetic" />
       </TabsContent>
     </Tabs>
   );
@@ -252,7 +255,7 @@ function SupplementTabs({ product }: { product: SupplementProduct }) {
       </TabsContent>
 
       <TabsContent value="purchase" className="space-y-4">
-        <PurchaseTab product={product} />
+        <PurchaseTab product={product} productType="supplement" />
       </TabsContent>
     </Tabs>
   );
@@ -434,7 +437,7 @@ function EquipmentTabs({ product }: { product: WorkoutEquipment }) {
       </TabsContent>
 
       <TabsContent value="purchase" className="space-y-4">
-        <PurchaseTab product={product} />
+        <PurchaseTab product={product} productType="workout_equipment" />
       </TabsContent>
     </Tabs>
   );
@@ -619,7 +622,7 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
       </TabsContent>
 
       <TabsContent value="purchase" className="space-y-4">
-        <PurchaseTab product={product} />
+        <PurchaseTab product={product} productType="health_food" />
       </TabsContent>
     </Tabs>
   );
@@ -627,12 +630,16 @@ function HealthFoodTabs({ product }: { product: HealthFood }) {
 
 /**
  * 구매 탭 (공통)
+ * 생 <a> 직행 대신 어필리에이트 게이트웨이(openAffiliateLink) 경유 —
+ * 클릭 트래킹 기록 + 쿠팡 링크 클릭 시점 파트너스 태깅(수수료 귀속).
+ * 어필리에이트 링크 우선 (PurchaseButton과 동일한 정본 우선순위).
  */
-function PurchaseTab({ product }: { product: AnyProduct }) {
+function PurchaseTab({ product, productType }: { product: AnyProduct; productType: ProductType }) {
   const t = useTranslations('productsUI');
+  const { userId } = useAuth();
   const purchaseUrl = 'purchaseUrl' in product ? product.purchaseUrl : undefined;
   const affiliateUrl = 'affiliateUrl' in product ? product.affiliateUrl : undefined;
-  const finalUrl = purchaseUrl || affiliateUrl;
+  const finalUrl = affiliateUrl || purchaseUrl;
 
   if (!finalUrl) {
     return (
@@ -642,22 +649,27 @@ function PurchaseTab({ product }: { product: AnyProduct }) {
     );
   }
 
+  const handleOpen = () => {
+    openAffiliateLink(
+      finalUrl,
+      toAffiliateProductType(productType),
+      product.id,
+      userId ?? undefined
+    );
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col gap-3">
-            <Button asChild size="lg" className="w-full">
-              <a href={finalUrl} target="_blank" rel="noopener noreferrer">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                구매하기
-              </a>
+            <Button size="lg" className="w-full" onClick={handleOpen}>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              구매하기
             </Button>
-            <Button variant="outline" asChild className="w-full">
-              <a href={finalUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                상세 페이지 보기
-              </a>
+            <Button variant="outline" className="w-full" onClick={handleOpen}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              상세 페이지 보기
             </Button>
           </div>
         </CardContent>

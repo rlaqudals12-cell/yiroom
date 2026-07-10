@@ -18,7 +18,8 @@ interface TimeDealProduct {
   salePrice: number;
   discountRate: number;
   imageUrl: string;
-  rating: number;
+  /** 실측 평점 (없으면 null — 별점 UI 미렌더, 기본값 폴백 금지) */
+  rating: number | null;
   reviews: number;
   stock: number;
   soldCount: number;
@@ -81,13 +82,13 @@ export function TimeDealSection({ className }: TimeDealSectionProps) {
   useEffect(() => {
     async function loadTimeDeals() {
       try {
-        // 평점 높고 리뷰 많은 제품 4개 조회
+        // 평점 높고 리뷰 많은 제품 4개 조회 (rating 대부분 null — nulls last로 정렬 무너짐 방지)
         const { data, error } = await supabase
           .from('cosmetic_products')
           .select('id, name, brand, price_krw, rating, review_count, image_url')
           .eq('is_active', true)
-          .order('rating', { ascending: false })
-          .order('review_count', { ascending: false })
+          .order('rating', { ascending: false, nullsFirst: false })
+          .order('review_count', { ascending: false, nullsFirst: false })
           .limit(4);
 
         if (error) {
@@ -114,7 +115,8 @@ export function TimeDealSection({ className }: TimeDealSectionProps) {
             salePrice,
             discountRate,
             imageUrl: getProductImageUrl(product.image_url, product.brand),
-            rating: product.rating ?? 4.5,
+            // 평점 없는 제품에 가짜 기본값(4.5)을 채우지 않는다 — null이면 미표시 (정직 원칙)
+            rating: product.rating ?? null,
             reviews: product.review_count ?? 0,
             stock,
             soldCount,
@@ -233,14 +235,19 @@ export function TimeDealSection({ className }: TimeDealSectionProps) {
                     {product.name}
                   </p>
 
-                  {/* 평점 */}
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
-                    <span className="text-xs font-medium">{product.rating}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({product.reviews.toLocaleString()})
-                    </span>
-                  </div>
+                  {/* 평점은 실데이터가 있을 때만 표시 (null → 별점 UI 자체 미렌더) */}
+                  {product.rating != null && product.reviews > 0 && (
+                    <div className="flex items-center gap-1 mt-1.5">
+                      <Star
+                        className="w-3 h-3 fill-yellow-400 text-yellow-400"
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs font-medium">{product.rating}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({product.reviews.toLocaleString()})
+                      </span>
+                    </div>
+                  )}
 
                   {/* 가격 */}
                   <div className="mt-2">

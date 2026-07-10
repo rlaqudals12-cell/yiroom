@@ -45,6 +45,8 @@ export default function ClosetRecommendPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // 조회 실패 여부 — 빈 옷장(정상 0개)과 오류를 구분한다 (오류를 "옷장이 비어있어요"로 위장 금지)
+  const [fetchError, setFetchError] = useState(false);
 
   // 사용자 프로필 (실제 앱에서는 DB에서 가져옴)
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
@@ -154,8 +156,10 @@ export default function ClosetRecommendPage() {
       }));
 
       setItems(clientItems);
+      setFetchError(false);
     } catch (error) {
       console.error('[Recommend] Fetch error:', error);
+      setFetchError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -272,6 +276,38 @@ export default function ClosetRecommendPage() {
               <Skeleton key={i} className="aspect-square rounded-xl" />
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 조회 오류 — 빈 옷장(정상 0개)과 구분해 정직하게 표시 + 재시도 경로 제공
+  if (fetchError) {
+    return (
+      <div data-testid="closet-recommend-page" className="pb-20">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">오늘의 코디</h1>
+          </div>
+        </div>
+        <div
+          className="flex flex-col items-center justify-center px-4 py-16 text-center"
+          data-testid="closet-error-state"
+        >
+          <span className="text-6xl mb-4">⚠️</span>
+          <h2 className="text-lg font-semibold mb-2">옷장을 불러오지 못했어요</h2>
+          <p className="text-muted-foreground mb-6">
+            일시적인 문제일 수 있어요.
+            <br />
+            잠시 후 다시 시도해주세요
+          </p>
+          <Button onClick={handleRefresh} disabled={refreshing} data-testid="closet-error-retry">
+            <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+            다시 시도
+          </Button>
         </div>
       </div>
     );

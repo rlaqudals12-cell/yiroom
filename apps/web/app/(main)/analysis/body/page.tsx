@@ -17,6 +17,7 @@ import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 import { MultiAngleBodyCapture, type MultiAngleBodyImages } from '@/components/analysis/camera';
+import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 
 // 흐름: guide → input → multi-angle → loading → result
 type AnalysisStep = 'guide' | 'input' | 'multi-angle' | 'loading' | 'result';
@@ -167,6 +168,8 @@ export default function BodyAnalysisPage() {
         /* sessionStorage 실패 무시 */
       }
 
+      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+      invalidateAnalysisCache();
       setStep('result');
       // 분석 완료 시 축하 효과
       setShowConfetti(true);

@@ -41,6 +41,12 @@ export interface CoachChatRequest {
   chatHistory?: CoachMessage[];
   /** 첨부 이미지 (dataURL/base64) — 있으면 멀티모달 판정 모드 */
   imageBase64?: string;
+  /**
+   * Clerk 사용자 ID — 옷장 RAG 등 개인 데이터 검색용.
+   * 반드시 서버에서 auth()로 주입한다 (클라이언트 요청 본문 신뢰 금지).
+   * 없으면 개인 옷장 검색을 건너뛴다 (기존 요청 계약 하위호환).
+   */
+  userId?: string;
 }
 
 /**
@@ -543,14 +549,16 @@ function formatChatHistory(history: CoachMessage[]): string {
 // 도메인별 RAG 컨텍스트 라우팅
 async function resolveRagContext(
   message: string,
-  userContext: UserContext | null
+  userContext: UserContext | null,
+  userId?: string
 ): Promise<string> {
   if (isPersonalColorQuestion(message)) {
     const colorMatch = await searchByPersonalColor(userContext, message);
     return formatPersonalColorForPrompt(colorMatch);
   }
   if (isFashionQuestion(message)) {
-    const fashionResult = await searchFashionItems(userContext, message);
+    // userId가 있어야 옷장(user_inventory) 실검색 — 없으면 일반 팁만 (지어내지 않음)
+    const fashionResult = await searchFashionItems(userContext, message, userId);
     return formatFashionForPrompt(fashionResult);
   }
   if (isNutritionQuestion(message)) {
@@ -584,7 +592,7 @@ async function resolveRagContext(
  * AI 코치 응답 생성
  */
 export async function generateCoachResponse(request: CoachChatRequest): Promise<CoachChatResponse> {
-  const { message, userContext, chatHistory } = request;
+  const { message, userContext, chatHistory, userId } = request;
 
   // 위기 상황 감지 — 즉시 전문 상담 안내
   if (detectCrisis(message)) {
@@ -613,7 +621,7 @@ export async function generateCoachResponse(request: CoachChatRequest): Promise<
     const historySection = formatChatHistory(chatHistory || []);
 
     // RAG: 도메인별 RAG 검색
-    const ragContext = await resolveRagContext(message, userContext);
+    const ragContext = await resolveRagContext(message, userContext, userId);
 
     const fullPrompt = `${systemPrompt}${historySection}${ragContext}
 
@@ -766,7 +774,7 @@ function generateSuggestedQuestions(
 export async function* generateCoachResponseStream(
   request: CoachChatRequest
 ): AsyncGenerator<string, void, unknown> {
-  const { message, userContext, chatHistory, imageBase64 } = request;
+  const { message, userContext, chatHistory, imageBase64, userId } = request;
 
   // 위기 상황 감지 — 즉시 전문 상담 안내
   if (detectCrisis(message)) {
@@ -787,7 +795,7 @@ export async function* generateCoachResponseStream(
     const historySection = formatChatHistory(chatHistory || []);
 
     // RAG: 도메인별 RAG 검색
-    const ragContext = await resolveRagContext(message, userContext);
+    const ragContext = await resolveRagContext(message, userContext, userId);
 
     const fullPrompt = `${systemPrompt}${historySection}${ragContext}
 

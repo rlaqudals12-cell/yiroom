@@ -6,6 +6,7 @@ import { useClerk } from '@clerk/nextjs';
 import { Calendar, AlertCircle, Loader2, LogOut } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { isValidBirthDate, MINIMUM_AGE } from '@/lib/age-verification';
+import { readReturnToFromLocation } from '@/lib/navigation';
 
 /**
  * 프로필 완성 페이지 - 생년월일 필수 입력
@@ -64,8 +65,9 @@ export default function CompleteProfilePage() {
         return;
       }
 
-      // 성공 - 홈으로 이동
-      router.push('/home');
+      // 성공 — returnTo 체인: 가드가 보존한 원 목적지로 복귀 (내부 경로만 허용, 기본 /home)
+      // 무조건 /home push는 가입=첫 미팅 퍼널(통합분석 온보딩)을 끊었음 (ADR-114)
+      router.push(readReturnToFromLocation() ?? '/home');
     } catch (err) {
       console.error('Failed to save birthdate:', err);
       setError(t('serverError'));

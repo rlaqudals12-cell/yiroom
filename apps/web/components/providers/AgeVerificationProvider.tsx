@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useAuth } from '@clerk/nextjs';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { withReturnTo, currentDestination } from '@/lib/navigation';
 
 interface AgeVerificationContextType {
   isVerified: boolean;
@@ -95,8 +96,10 @@ export function AgeVerificationProvider({ children }: Props) {
         setHasBirthDate(hasBd);
 
         // 생년월일 미입력
+        // 원 목적지(pathname+search)를 returnTo로 보존 — 입력 완료 후 복귀
+        // (가입=첫 미팅 퍼널: /analysis/integrated?onboarding=1 도달 보장, ADR-114)
         if (!hasBd) {
-          router.push('/complete-profile');
+          router.push(withReturnTo('/complete-profile', currentDestination(pathname)));
           return;
         }
 

@@ -99,7 +99,7 @@ export async function getHealthFoods(filter?: HealthFoodFilter, limit = 50): Pro
     query = query.overlaps('target_users', filter.targetUsers);
   }
 
-  const { data, error } = await query.order('rating', { ascending: false });
+  const { data, error } = await query.order('rating', { ascending: false, nullsFirst: false });
 
   if (error) {
     productLogger.error('건강식품 조회 실패:', error);
@@ -144,7 +144,7 @@ export async function getRecommendedHealthFoods(
     .from('health_foods')
     .select('*')
     .eq('is_active', true)
-    .order('rating', { ascending: false })
+    .order('rating', { ascending: false, nullsFirst: false })
     .limit(20);
 
   if (benefits && benefits.length > 0) {

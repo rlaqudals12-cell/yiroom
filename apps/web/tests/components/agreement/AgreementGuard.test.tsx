@@ -92,7 +92,7 @@ describe('AgreementGuard', () => {
     }
   });
 
-  it('동의 정보가 없으면 /agreement로 리다이렉트한다', async () => {
+  it('동의 정보가 없으면 /agreement로 리다이렉트하며 원 목적지를 returnTo로 보존한다', async () => {
     mockMaybeSingle.mockResolvedValue({
       data: null,
       error: null,
@@ -101,7 +101,9 @@ describe('AgreementGuard', () => {
     render(<AgreementGuard />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/agreement');
+      expect(mockReplace).toHaveBeenCalledWith(
+        `/agreement?returnTo=${encodeURIComponent('/dashboard')}`
+      );
     });
   });
 
@@ -117,8 +119,31 @@ describe('AgreementGuard', () => {
     render(<AgreementGuard />);
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/agreement');
+      expect(mockReplace).toHaveBeenCalledWith(
+        `/agreement?returnTo=${encodeURIComponent('/dashboard')}`
+      );
     });
+  });
+
+  it('쿼리 파라미터까지 returnTo에 보존한다 (가입=첫 미팅 퍼널)', async () => {
+    // 가입 직후 forceRedirectUrl 목적지 시뮬레이션
+    mockPathname = '/analysis/integrated';
+    window.history.replaceState({}, '', '/analysis/integrated?onboarding=1');
+
+    mockMaybeSingle.mockResolvedValue({
+      data: null,
+      error: null,
+    });
+
+    render(<AgreementGuard />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        `/agreement?returnTo=${encodeURIComponent('/analysis/integrated?onboarding=1')}`
+      );
+    });
+
+    window.history.replaceState({}, '', '/');
   });
 
   it('모든 필수 동의가 완료되면 리다이렉트하지 않는다', async () => {

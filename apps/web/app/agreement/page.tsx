@@ -15,6 +15,7 @@ import {
 import { AITransparencyNotice } from '@/components/common/AIBadge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { readReturnToFromLocation } from '@/lib/navigation';
 
 type AgreementState = Record<AgreementItem['id'], boolean>;
 type Gender = 'male' | 'female';
@@ -105,7 +106,9 @@ export default function AgreementPage() {
       }
 
       toast.success('환영합니다!');
-      router.push('/dashboard');
+      // returnTo 체인: 가드가 보존한 원 목적지로 복귀 (내부 경로만 허용, 기본 /dashboard)
+      // 신규 가입자는 /analysis/integrated?onboarding=1로 돌아가 첫 미팅(통합분석)을 이어간다
+      router.push(readReturnToFromLocation() ?? '/dashboard');
     } catch (err) {
       console.error('[Agreement] Submit error:', err);
       toast.error('오류가 발생했어요. 다시 시도해주세요.');

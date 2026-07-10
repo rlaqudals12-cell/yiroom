@@ -4,8 +4,10 @@
  * GenderProvider - K-1 성별 중립화
  * @description 앱 전체에서 사용자 성별 선호도를 관리하는 Context
  *
- * 저장 위치:
- * - 로그인 사용자: Supabase user_profiles 테이블
+ * 저장 위치 (2026-07-11 유령 배선 수리):
+ * - 성별 정본: users.gender (X1에서 정리 — 존재하지 않는 user_profiles 테이블을
+ *   조회하던 유령 배선으로 전 사용자 gender가 'neutral' 고정이었다)
+ * - 스타일 선호: localStorage (DB 컬럼 없음 — 클라이언트 취향값)
  * - 비로그인 사용자: localStorage
  */
 
@@ -84,51 +86,55 @@ export function GenderProvider({ children }: GenderProviderProps) {
     }
   }, []);
 
-  // Supabase에서 로드
+  // Supabase에서 로드 — 정본은 users.gender (user_profiles 테이블은 존재하지 않음)
   const loadFromSupabase = useCallback(async (): Promise<UserGenderProfile | null> => {
     if (!user?.id) return null;
 
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
-        .select('gender_preference, style_preference')
-        .single();
+        .from('users')
+        .select('gender')
+        .eq('clerk_user_id', user.id)
+        .maybeSingle();
 
       if (error) {
-        // PGRST116 = no rows returned, 이 경우 null 반환
-        if (error.code !== 'PGRST116') {
-          console.error('[GenderProvider] Supabase load error:', error?.code, error?.message);
-        }
+        console.error('[GenderProvider] Supabase load error:', error?.code, error?.message);
         return null;
       }
 
-      if (data?.gender_preference) {
-        return {
-          gender: data.gender_preference as GenderPreference,
-          stylePreference: (data.style_preference as StylePreference) || 'unisex',
-        };
-      }
+      const dbGender = data?.gender as string | null | undefined;
+      if (!dbGender) return null;
+
+      // DB 제약은 male/female/other/neutral — 콘텐츠 적응 관점에서
+      // male/female 외 값('other' 포함)은 중립 렌더링(전체 노출)이 올바른 동작
+      const gender: GenderPreference =
+        dbGender === 'male' || dbGender === 'female' ? dbGender : 'neutral';
+
+      // 스타일 선호는 localStorage 정본 — 성별이 같을 때만 로컬 값 유지, 다르면 파생 기본값
+      const local = loadFromStorage();
+      const stylePreference: StylePreference =
+        local && local.gender === gender
+          ? local.stylePreference
+          : createDefaultGenderProfile(gender).stylePreference;
+
+      return { gender, stylePreference };
     } catch (error) {
       console.error('[GenderProvider] Failed to load from Supabase:', error);
     }
 
     return null;
-  }, [supabase, user?.id]);
+  }, [supabase, user?.id, loadFromStorage]);
 
-  // Supabase에 저장
+  // Supabase에 저장 — users.gender만 갱신 (행 생성은 Clerk 웹훅 소관이므로 UPDATE만)
   const saveToSupabase = useCallback(
     async (profile: UserGenderProfile) => {
       if (!user?.id) return;
 
       try {
-        const { error } = await supabase.from('user_profiles').upsert(
-          {
-            gender_preference: profile.gender,
-            style_preference: profile.stylePreference,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'clerk_user_id' }
-        );
+        const { error } = await supabase
+          .from('users')
+          .update({ gender: profile.gender })
+          .eq('clerk_user_id', user.id);
 
         if (error) {
           console.error('[GenderProvider] Supabase save error:', error);

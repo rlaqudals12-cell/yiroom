@@ -11,6 +11,7 @@ import { Clock, Palette } from 'lucide-react';
 import type { ImageConsent } from '@/components/analysis/consent/types';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
+import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 import { measureContrastLevel } from './_components/measure-contrast';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
@@ -428,6 +429,8 @@ export default function PersonalColorPage() {
         /* sessionStorage 실패 무시 */
       }
 
+      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+      invalidateAnalysisCache();
       // 결과 페이지로 리다이렉트 (DB에서 analysisEvidence 포함한 전체 데이터 조회)
       router.push(`/analysis/personal-color/result/${data.data.id}`);
     } catch (err) {

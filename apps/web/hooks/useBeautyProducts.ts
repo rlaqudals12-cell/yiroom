@@ -28,15 +28,8 @@ interface UseBeautyProductsResult {
   refresh: () => Promise<void>;
 }
 
-export function useBeautyProducts(
-  options: UseBeautyProductsOptions = {}
-): UseBeautyProductsResult {
-  const {
-    category,
-    minMatchRate = 0,
-    sortBy = 'match',
-    limit = 20,
-  } = options;
+export function useBeautyProducts(options: UseBeautyProductsOptions = {}): UseBeautyProductsResult {
+  const { category, minMatchRate = 0, sortBy = 'match', limit = 20 } = options;
 
   const supabase = useClerkSupabaseClient();
   const { getMatchedProducts, filterByMatchRate, isLoading: profileLoading } = useUserMatching();
@@ -65,13 +58,14 @@ export function useBeautyProducts(
           query = query.eq('category', category);
         }
 
-        // DB 정렬 (매칭률 제외)
+        // DB 정렬 (매칭률 제외) — rating/review_count는 대부분 null이라 nulls last로
+        // 정렬 무너짐(null이 최상단 점유) 방지
         switch (sortBy) {
           case 'rating':
-            query = query.order('rating', { ascending: false });
+            query = query.order('rating', { ascending: false, nullsFirst: false });
             break;
           case 'review':
-            query = query.order('review_count', { ascending: false });
+            query = query.order('review_count', { ascending: false, nullsFirst: false });
             break;
           case 'price_low':
             query = query.order('price_krw', { ascending: true });
@@ -80,7 +74,7 @@ export function useBeautyProducts(
             query = query.order('price_krw', { ascending: false });
             break;
           default:
-            query = query.order('rating', { ascending: false });
+            query = query.order('rating', { ascending: false, nullsFirst: false });
         }
 
         const { data, error: queryError } = await query;
@@ -116,7 +110,17 @@ export function useBeautyProducts(
         setIsLoading(false);
       }
     },
-    [supabase, category, sortBy, limit, offset, profileLoading, getMatchedProducts, filterByMatchRate, minMatchRate]
+    [
+      supabase,
+      category,
+      sortBy,
+      limit,
+      offset,
+      profileLoading,
+      getMatchedProducts,
+      filterByMatchRate,
+      minMatchRate,
+    ]
   );
 
   // 초기 로드

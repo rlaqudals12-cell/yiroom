@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { openAffiliateLink } from '@/lib/products/affiliate';
 
 // ===== API 응답 계약 (GET /api/capsule/[domain] — capsule-repository Capsule<T>) =====
 // items는 {id, item: <도메인 아이템>, profileFitScore, ...} 래퍼 구조.
@@ -58,6 +59,8 @@ interface CapsuleItem {
   category?: string;
   score?: number;
   productUrl?: string;
+  /** 클릭 트래킹용 실제품 ID (cosmetic_products) */
+  productId?: string;
 }
 
 interface Capsule {
@@ -136,6 +139,7 @@ function mapApiItem(raw: ApiCapsuleItem, idx: number): CapsuleItem {
         ? raw.profileFitScore
         : undefined,
     productUrl: product?.purchaseUrl,
+    productId: product?.id,
   };
 }
 
@@ -400,58 +404,62 @@ export default function DomainCapsulePage(): React.ReactElement {
           </div>
 
           <div className="space-y-2">
-            {items.map((item, idx) => (
-              <Card key={item.id ?? idx} className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: `${meta.color}20`,
-                          color: meta.color,
-                        }}
-                      >
-                        #{idx + 1}
-                      </span>
-                      {item.category && (
-                        <span className="text-xs text-muted-foreground">{item.category}</span>
+            {items.map((item, idx) => {
+              const productUrl = item.productUrl;
+              const trackedProductId = item.productId;
+              return (
+                <Card key={item.id ?? idx} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${meta.color}20`,
+                            color: meta.color,
+                          }}
+                        >
+                          #{idx + 1}
+                        </span>
+                        {item.category && (
+                          <span className="text-xs text-muted-foreground">{item.category}</span>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium">{item.label}</p>
+                      {item.reason && (
+                        <p className="text-xs text-muted-foreground mt-1">{item.reason}</p>
+                      )}
+                      {item.score != null && (
+                        <div className="flex items-center gap-1 mt-1.5">
+                          <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, item.score)}%`,
+                                backgroundColor: meta.color,
+                              }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground">{item.score}점</span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm font-medium">{item.label}</p>
-                    {item.reason && (
-                      <p className="text-xs text-muted-foreground mt-1">{item.reason}</p>
-                    )}
-                    {item.score != null && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${Math.min(100, item.score)}%`,
-                              backgroundColor: meta.color,
-                            }}
-                          />
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{item.score}점</span>
-                      </div>
+
+                    {/* 제품 링크 (있으면) — 생 <a> 대신 게이트웨이 경유 (트래킹 + 쿠팡 태깅) */}
+                    {productUrl && trackedProductId && (
+                      <button
+                        type="button"
+                        onClick={() => openAffiliateLink(productUrl, 'cosmetic', trackedProductId)}
+                        aria-label={`${item.label} 구매 페이지 열기`}
+                        className="flex-shrink-0 ml-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      </button>
                     )}
                   </div>
-
-                  {/* 제품 링크 (있으면) */}
-                  {item.productUrl && (
-                    <a
-                      href={item.productUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-shrink-0 ml-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </a>
-                  )}
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
 
           {/* 마지막 업데이트 시각 */}

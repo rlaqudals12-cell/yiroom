@@ -28,6 +28,9 @@ export function mapSupplementRow(row: SupplementProductRow): SupplementProduct {
     totalServings: row.total_servings ?? undefined,
     imageUrl: row.image_url ?? undefined,
     purchaseUrl: row.purchase_url ?? undefined,
+    // equipment/healthfood와 달리 누락돼 있던 매핑 — 어필리에이트 링크가 UI까지 흐르지 않던 원인
+    affiliateUrl: row.affiliate_url ?? undefined,
+    affiliateCommission: row.affiliate_commission ?? undefined,
     rating: row.rating ?? undefined,
     reviewCount: row.review_count ?? undefined,
     warnings: row.warnings ?? undefined,
@@ -72,7 +75,7 @@ export async function getSupplementProducts(
     query = query.overlaps('target_concerns', filter.targetConcerns);
   }
 
-  const { data, error } = await query.order('rating', { ascending: false });
+  const { data, error } = await query.order('rating', { ascending: false, nullsFirst: false });
 
   if (error) {
     productLogger.error('영양제 조회 실패:', error);
@@ -115,7 +118,7 @@ export async function getRecommendedSupplements(
     .from('supplement_products')
     .select('*')
     .eq('is_active', true)
-    .order('rating', { ascending: false })
+    .order('rating', { ascending: false, nullsFirst: false })
     .limit(20);
 
   if (concerns && concerns.length > 0) {

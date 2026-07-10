@@ -41,8 +41,7 @@ interface CosmeticSeedProduct {
   undertones?: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
-  rating: number;
-  review_count: number;
+  // rating/review_count 없음 — 시드에 실측 평점 소스가 없어 지어내지 않는다 (정직 원칙)
 }
 
 interface SupplementSeedProduct {
@@ -58,8 +57,7 @@ interface SupplementSeedProduct {
   total_servings: number;
   image_url: string | null;
   purchase_url: string | null;
-  rating: number;
-  review_count: number;
+  // rating/review_count 없음 — 실측 평점 소스가 없어 지어내지 않는다 (정직 원칙)
   warnings: string[];
 }
 
@@ -91,8 +89,7 @@ async function seedCosmeticProducts() {
       undertones: p.undertones ?? [],
       image_url: p.image_url,
       purchase_url: p.purchase_url,
-      rating: p.rating,
-      review_count: p.review_count,
+      // rating/review_count는 삽입하지 않음 — 실측 없음 = null 유지 (지어내지 않는다)
       is_active: true,
     }))
   );
@@ -127,8 +124,7 @@ async function seedSupplementProducts() {
       price_krw: p.price_krw,
       image_url: p.image_url,
       purchase_url: p.purchase_url,
-      rating: p.rating,
-      review_count: p.review_count,
+      // rating/review_count는 삽입하지 않음 — 실측 없음 = null 유지 (지어내지 않는다)
       is_active: true,
     }))
   );

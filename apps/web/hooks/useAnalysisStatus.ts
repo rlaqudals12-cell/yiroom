@@ -21,6 +21,8 @@ interface CacheEntry {
 const analysisCache = new Map<string, CacheEntry>();
 
 // 분석 완료 후 캐시 무효화 (홈 State 즉시 전환용)
+// 소비처: 통합분석·개별 5축 분석의 완료 경로 — 완료 직후 호출해야 홈/[나] 탭이
+// 5분 캐시로 이전 상태("분석 0개" 등)를 보여주지 않는다.
 export function invalidateAnalysisCache(userId?: string): void {
   if (userId) {
     analysisCache.delete(userId);
@@ -97,6 +99,107 @@ function buildPersonalColorSummary(row: {
     ...(bestColors.length > 0 ? { bestColors } : {}),
     ...(contrastLevel ? { contrastLevel } : {}),
   };
+}
+
+// 5축 병렬 조회 결과에서 첫 쿼리 오류를 찾는다 — postgrest는 실패 시 throw 대신
+// { data: null, error }를 반환하므로 catch로는 감지되지 않는다.
+function firstQueryError(results: Array<{ error: unknown }>): unknown {
+  return results.find((r) => r.error)?.error ?? null;
+}
+
+// 5축 조회 행 타입 (select 필드와 1:1)
+interface SkinRow {
+  id: string;
+  overall_score: number;
+  created_at: string;
+}
+interface BodyRow {
+  id: string;
+  body_type: string;
+  created_at: string;
+}
+interface HairRow {
+  id: string;
+  hair_type: string;
+  overall_score: number;
+  created_at: string;
+}
+interface MakeupRow {
+  id: string;
+  undertone: string;
+  overall_score: number;
+  created_at: string;
+}
+
+// 5축 조회 결과 → AnalysisSummary 배열 조립 (순수 함수 — fetchAnalyses 복잡도 분리)
+function buildAnalysisSummaries(queries: {
+  pcResult: { data: Parameters<typeof buildPersonalColorSummary>[0][] | null };
+  skinResult: { data: SkinRow[] | null };
+  bodyResult: { data: BodyRow[] | null };
+  hairResult: { data: HairRow[] | null };
+  makeupResult: { data: MakeupRow[] | null };
+}): AnalysisSummary[] {
+  const { pcResult, skinResult, bodyResult, hairResult, makeupResult } = queries;
+  const results: AnalysisSummary[] = [];
+
+  // 퍼스널 컬러
+  if (pcResult.data && pcResult.data.length > 0) {
+    results.push(buildPersonalColorSummary(pcResult.data[0]));
+  }
+
+  // 피부 분석 (직전 대비 추이 포함 — "오늘의 컨디션")
+  if (skinResult.data && skinResult.data.length > 0) {
+    const latestScore = skinResult.data[0].overall_score;
+    const trend =
+      skinResult.data.length > 1
+        ? computeSkinTrend(latestScore, skinResult.data[1].overall_score)
+        : null;
+    results.push({
+      id: skinResult.data[0].id,
+      type: 'skin',
+      createdAt: new Date(skinResult.data[0].created_at),
+      summary: `${latestScore}점`,
+      skinScore: latestScore,
+      ...(trend ? { skinDelta: trend.delta, skinTrend: trend.trend } : {}),
+    });
+  }
+
+  // 체형 분석
+  if (bodyResult.data && bodyResult.data.length > 0) {
+    results.push({
+      id: bodyResult.data[0].id,
+      type: 'body',
+      createdAt: new Date(bodyResult.data[0].created_at),
+      summary: getBodyTypeLabel(bodyResult.data[0].body_type),
+      bodyType: bodyResult.data[0].body_type,
+    });
+  }
+
+  // 헤어 분석
+  if (hairResult.data && hairResult.data.length > 0) {
+    results.push({
+      id: hairResult.data[0].id,
+      type: 'hair',
+      createdAt: new Date(hairResult.data[0].created_at),
+      summary: `${getHairTypeLabel(hairResult.data[0].hair_type)} · ${hairResult.data[0].overall_score}점`,
+      hairScore: hairResult.data[0].overall_score,
+      hairType: hairResult.data[0].hair_type,
+    });
+  }
+
+  // 메이크업 분석
+  if (makeupResult.data && makeupResult.data.length > 0) {
+    results.push({
+      id: makeupResult.data[0].id,
+      type: 'makeup',
+      createdAt: new Date(makeupResult.data[0].created_at),
+      summary: `${getUndertoneLabel(makeupResult.data[0].undertone)} · ${makeupResult.data[0].overall_score}점`,
+      makeupScore: makeupResult.data[0].overall_score,
+      undertone: makeupResult.data[0].undertone,
+    });
+  }
+
+  return results;
 }
 
 // 분석 상태 반환 타입
@@ -179,6 +282,9 @@ export function useAnalysisStatus(): AnalysisStatus {
   const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  // refetch가 실제 재조회를 트리거하는 키 — fetch는 useEffect 안에만 있으므로
+  // 캐시 삭제만으로는 재조회가 일어나지 않는다(영구 스켈레톤 방지).
+  const [reloadKey, setReloadKey] = useState(0);
   const fetchingRef = useRef(false);
 
   // 캐시 유효성 검사
@@ -243,66 +349,30 @@ export function useAnalysisStatus(): AnalysisStatus {
             .limit(1),
         ]);
 
-        const results: AnalysisSummary[] = [];
-
-        // 퍼스널 컬러
-        if (pcResult.data && pcResult.data.length > 0) {
-          results.push(buildPersonalColorSummary(pcResult.data[0]));
+        // 오류를 "분석 0개"로 위장하지 않는다 — 각 쿼리의 error를 직접 검사.
+        // 오류 시: 캐시 기록 금지 + hasError로 정직한 오류 상태(홈 에러 UI + 재시도).
+        const queryError = firstQueryError([
+          pcResult,
+          skinResult,
+          bodyResult,
+          hairResult,
+          makeupResult,
+        ]);
+        if (queryError) {
+          console.error('[useAnalysisStatus] Failed to fetch analyses:', queryError);
+          setHasError(true);
+          return;
         }
 
-        // 피부 분석 (직전 대비 추이 포함 — "오늘의 컨디션")
-        if (skinResult.data && skinResult.data.length > 0) {
-          const latestScore = skinResult.data[0].overall_score;
-          const trend =
-            skinResult.data.length > 1
-              ? computeSkinTrend(latestScore, skinResult.data[1].overall_score)
-              : null;
-          results.push({
-            id: skinResult.data[0].id,
-            type: 'skin',
-            createdAt: new Date(skinResult.data[0].created_at),
-            summary: `${latestScore}점`,
-            skinScore: latestScore,
-            ...(trend ? { skinDelta: trend.delta, skinTrend: trend.trend } : {}),
-          });
-        }
+        const results = buildAnalysisSummaries({
+          pcResult,
+          skinResult,
+          bodyResult,
+          hairResult,
+          makeupResult,
+        });
 
-        // 체형 분석
-        if (bodyResult.data && bodyResult.data.length > 0) {
-          results.push({
-            id: bodyResult.data[0].id,
-            type: 'body',
-            createdAt: new Date(bodyResult.data[0].created_at),
-            summary: getBodyTypeLabel(bodyResult.data[0].body_type),
-            bodyType: bodyResult.data[0].body_type,
-          });
-        }
-
-        // 헤어 분석
-        if (hairResult.data && hairResult.data.length > 0) {
-          results.push({
-            id: hairResult.data[0].id,
-            type: 'hair',
-            createdAt: new Date(hairResult.data[0].created_at),
-            summary: `${getHairTypeLabel(hairResult.data[0].hair_type)} · ${hairResult.data[0].overall_score}점`,
-            hairScore: hairResult.data[0].overall_score,
-            hairType: hairResult.data[0].hair_type,
-          });
-        }
-
-        // 메이크업 분석
-        if (makeupResult.data && makeupResult.data.length > 0) {
-          results.push({
-            id: makeupResult.data[0].id,
-            type: 'makeup',
-            createdAt: new Date(makeupResult.data[0].created_at),
-            summary: `${getUndertoneLabel(makeupResult.data[0].undertone)} · ${makeupResult.data[0].overall_score}점`,
-            makeupScore: makeupResult.data[0].overall_score,
-            undertone: makeupResult.data[0].undertone,
-          });
-        }
-
-        // 캐시 저장
+        // 캐시 저장 (성공 시에만 — 오류는 위에서 return하므로 캐시에 기록되지 않는다)
         setCachedData(user.id, results);
         setAnalyses(results);
       } catch (error) {
@@ -317,7 +387,8 @@ export function useAnalysisStatus(): AnalysisStatus {
     if (isUserLoaded) {
       fetchAnalyses();
     }
-  }, [user?.id, isUserLoaded, supabase, getCachedData, setCachedData]);
+    // reloadKey: refetch()가 캐시 삭제 후 실제 재조회를 트리거하기 위한 deps
+  }, [user?.id, isUserLoaded, supabase, getCachedData, setCachedData, reloadKey]);
 
   // 페이지 포커스 복귀 시 캐시 무효화 (분석 완료 후 홈 복귀 대응)
   useEffect(() => {
@@ -327,6 +398,8 @@ export function useAnalysisStatus(): AnalysisStatus {
         if (cached && Date.now() - cached.timestamp > 30 * 1000) {
           analysisCache.delete(user.id);
           fetchingRef.current = false;
+          // 캐시 삭제만으로는 마운트된 컴포넌트가 갱신되지 않음 — 실제 재조회 트리거
+          setReloadKey((k) => k + 1);
         }
       }
     }
@@ -335,13 +408,14 @@ export function useAnalysisStatus(): AnalysisStatus {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id]);
 
-  // 재시도 함수
+  // 재시도 함수 — 캐시 삭제 + reloadKey 증가로 useEffect가 실제 재조회를 수행
   const refetch = useCallback(() => {
     if (user?.id) {
       analysisCache.delete(user.id);
       fetchingRef.current = false;
       setIsLoading(true);
       setHasError(false);
+      setReloadKey((k) => k + 1);
     }
   }, [user?.id]);
 

@@ -17,6 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
+import { openAffiliateLink } from '@/lib/products/affiliate';
 import type { CosmeticProduct, SkinType } from '@/types/product';
 import { IngredientAnalysisSection } from '@/components/products/ingredients';
 import { WishlistButton } from '@/components/products/WishlistButton';
@@ -39,7 +40,8 @@ const defaultProduct = {
   name: '',
   brand: '',
   price: 0,
-  rating: 0,
+  // 평점 없음 = null — 0점 폴백 금지 (별점 UI 미렌더)
+  rating: null as number | null,
   reviewCount: 0,
   qnaCount: 0,
   images: [] as string[],
@@ -92,6 +94,7 @@ export default function BeautyProductDetailPage() {
             personalColorSeasons: data.personal_color_seasons ?? undefined,
             imageUrl: data.image_url ?? undefined,
             purchaseUrl: data.purchase_url ?? undefined,
+            affiliateUrl: data.affiliate_url ?? undefined,
             rating: data.rating ?? undefined,
             reviewCount: data.review_count ?? undefined,
             isActive: data.is_active,
@@ -166,7 +169,8 @@ export default function BeautyProductDetailPage() {
       name: product.name,
       brand: product.brand,
       price: product.priceKrw ?? 0,
-      rating: product.rating ?? 0,
+      // 평점 없는 제품에 0점 기본값을 채우지 않는다 — null이면 미표시 (정직 원칙)
+      rating: product.rating ?? null,
       reviewCount: product.reviewCount ?? 0,
       qnaCount: 0,
       images: product.imageUrl ? [product.imageUrl] : [],
@@ -270,8 +274,8 @@ export default function BeautyProductDetailPage() {
             <p className="text-sm text-muted-foreground">{displayProduct.brand}</p>
             <h2 className="text-xl font-bold text-foreground mt-1">{displayProduct.name}</h2>
             <div className="flex items-center gap-3 mt-2">
-              {/* 평점은 리뷰가 있을 때만 — 데이터 없는 제품의 "★ 0 (0개 리뷰)" 노출 방지 */}
-              {displayProduct.reviewCount > 0 && (
+              {/* 평점은 실측 평점+리뷰가 모두 있을 때만 — "★ 0"·"★ null" 노출 방지 */}
+              {displayProduct.rating != null && displayProduct.reviewCount > 0 && (
                 <>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -364,19 +368,29 @@ export default function BeautyProductDetailPage() {
               </p>
             </div>
           )}
-          <a
-            href={`https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=${encodeURIComponent(
-              displayProduct.name
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* 구매 CTA — 제품 DB에 실제 구매 링크가 있으면 그 링크로(어필리에이트 우선),
+              없으면 올리브영 검색 폴백. 두 경우 모두 클릭 트래킹 게이트웨이 경유
+              (쿠팡 링크는 클릭 시점에 파트너스 태깅 — 수수료 귀속). */}
+          <button
+            type="button"
+            onClick={() => {
+              const buyUrl =
+                product.affiliateUrl ||
+                product.purchaseUrl ||
+                `https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=${encodeURIComponent(
+                  displayProduct.name
+                )}`;
+              openAffiliateLink(buyUrl, 'cosmetic', product.id, user?.id ?? undefined);
+            }}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <ShoppingCart className="w-5 h-5" />
-            {/* 검색 링크임을 정직하게 — 상세 페이지가 아니라 올리브영 검색 결과로 이동 */}
-            올리브영에서 최저가 확인
+            {/* 링크 정체를 정직하게 — 실제 판매 페이지 vs 올리브영 검색 결과 */}
+            {product.affiliateUrl || product.purchaseUrl
+              ? '구매 페이지로 이동'
+              : '올리브영에서 최저가 확인'}
             <ExternalLink className="w-4 h-4" />
-          </a>
+          </button>
         </div>
       </div>
     </div>

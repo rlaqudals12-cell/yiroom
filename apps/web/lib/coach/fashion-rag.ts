@@ -34,6 +34,11 @@ export interface FashionItem {
 /** 패션 검색 결과 */
 export interface FashionSearchResult {
   hasClosetItems: boolean;
+  /**
+   * 옷장을 실제 조회해 결과가 확정됐는지 (userId 제공 + 쿼리 성공).
+   * 조회 오류 시 false — 옷장이 "비었다"고 단정하지 않는다 (정직성).
+   */
+  closetChecked?: boolean;
   recommendations: OutfitRecommendation[];
   generalTips: string[];
 }
@@ -153,6 +158,9 @@ export async function searchFashionItems(
 
       if (error) {
         coachLogger.error('[FashionRAG] DB query error:', error);
+      } else {
+        // 쿼리 성공 = 옷장 상태 확정 (0개여도 "비어있음"이 사실)
+        result.closetChecked = true;
       }
 
       if (closetItems && closetItems.length > 0) {
@@ -279,14 +287,23 @@ function generateStylingTips(
 /** RAG 결과를 프롬프트용 문자열로 변환 */
 export function formatFashionForPrompt(result: FashionSearchResult): string {
   if (result.recommendations.length === 0 || !result.recommendations[0].items.length) {
+    let context = '';
+
+    // 옷장을 실제 확인했는데 비어있으면 — 정직한 안내를 코치가 전하도록 지시
+    // (조회 실패/미조회 시에는 비었다고 말하지 않는다)
+    if (result.closetChecked && !result.hasClosetItems) {
+      context +=
+        '\n\n## 옷장 상태 (실제 조회 결과)\n' +
+        '사용자의 옷장에 등록된 아이템이 없어요. 답변에 "옷장을 등록하면 내 옷 기준으로 답해드려요"라는 안내를 자연스럽게 포함하고, 등록된 옷이 있는 것처럼 지어내지 마세요.\n';
+    }
+
     if (result.generalTips.length > 0) {
-      let context = '\n\n## 스타일링 팁\n';
+      context += '\n\n## 스타일링 팁\n';
       result.generalTips.forEach((tip) => {
         context += `- ${tip}\n`;
       });
-      return context;
     }
-    return '';
+    return context;
   }
 
   let context = '\n\n## 옷장 기반 코디 추천\n';

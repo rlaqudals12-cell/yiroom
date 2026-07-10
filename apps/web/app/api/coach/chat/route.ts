@@ -72,6 +72,8 @@ export async function POST(req: NextRequest) {
         message,
         userContext,
         chatHistory: chatHistory as CoachMessage[] | undefined,
+        // 옷장 RAG용 — auth()에서 파생 (클라이언트 본문 신뢰 금지)
+        userId,
       }),
       isSkinQuestion ? searchSkinProducts(userContext, message, 3) : Promise.resolve([]),
     ]);

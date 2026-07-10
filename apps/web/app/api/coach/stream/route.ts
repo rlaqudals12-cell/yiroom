@@ -117,6 +117,8 @@ export async function POST(req: Request) {
             userContext,
             chatHistory: chatHistory as CoachMessage[] | undefined,
             imageBase64,
+            // 옷장 RAG용 — auth()에서 파생 (클라이언트 본문 신뢰 금지)
+            userId,
           });
 
           // 청크별 전송 + 전체 텍스트 축적 (환각 필터용)

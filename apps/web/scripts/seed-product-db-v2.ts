@@ -39,8 +39,7 @@ interface WorkoutEquipmentSeed {
   exercise_types?: string[];
   skill_level?: string;
   use_location?: string;
-  rating?: number;
-  review_count?: number;
+  // rating/review_count 없음 — 실측 평점 소스가 없어 지어내지 않는다 (정직 원칙)
   features?: string[];
   pros?: string[];
   cons?: string[];
@@ -74,11 +73,8 @@ interface HealthFoodSeed {
   benefits?: string[];
   best_time?: string;
   target_users?: string[];
-  rating?: number;
-  review_count?: number;
+  // rating/review_count/taste_rating/mixability_rating 없음 — 실측 없음 = 지어내지 않는다
   features?: string[];
-  taste_rating?: number;
-  mixability_rating?: number;
 }
 
 // 운동 기구 시드 데이터 삽입
@@ -98,34 +94,31 @@ async function seedWorkoutEquipment(): Promise<number> {
   let successCount = 0;
 
   for (const item of data.workout_equipment) {
-    const { error } = await supabase
-      .from('workout_equipment')
-      .upsert(
-        {
-          name: item.name,
-          brand: item.brand,
-          category: item.category,
-          subcategory: item.subcategory,
-          price_krw: item.price_krw,
-          price_range: item.price_range,
-          weight_kg: item.weight_kg,
-          weight_range: item.weight_range,
-          material: item.material,
-          size: item.size,
-          color_options: item.color_options,
-          target_muscles: item.target_muscles,
-          exercise_types: item.exercise_types,
-          skill_level: item.skill_level,
-          use_location: item.use_location,
-          rating: item.rating,
-          review_count: item.review_count,
-          features: item.features,
-          pros: item.pros,
-          cons: item.cons,
-          is_active: true,
-        },
-        { onConflict: 'name,brand' }
-      );
+    const { error } = await supabase.from('workout_equipment').upsert(
+      {
+        name: item.name,
+        brand: item.brand,
+        category: item.category,
+        subcategory: item.subcategory,
+        price_krw: item.price_krw,
+        price_range: item.price_range,
+        weight_kg: item.weight_kg,
+        weight_range: item.weight_range,
+        material: item.material,
+        size: item.size,
+        color_options: item.color_options,
+        target_muscles: item.target_muscles,
+        exercise_types: item.exercise_types,
+        skill_level: item.skill_level,
+        use_location: item.use_location,
+        // rating/review_count 미삽입 — 실측 없음 = null 유지 (지어내지 않는다)
+        features: item.features,
+        pros: item.pros,
+        cons: item.cons,
+        is_active: true,
+      },
+      { onConflict: 'name,brand' }
+    );
 
     if (error) {
       console.error(`  ❌ ${item.name}: ${error.message}`);
@@ -155,41 +148,36 @@ async function seedHealthFoods(): Promise<number> {
   let successCount = 0;
 
   for (const item of data.health_foods) {
-    const { error } = await supabase
-      .from('health_foods')
-      .upsert(
-        {
-          name: item.name,
-          brand: item.brand,
-          category: item.category,
-          subcategory: item.subcategory,
-          price_krw: item.price_krw,
-          price_per_serving: item.price_per_serving,
-          serving_size: item.serving_size,
-          servings_per_container: item.servings_per_container,
-          calories_per_serving: item.calories_per_serving,
-          protein_g: item.protein_g,
-          carbs_g: item.carbs_g,
-          sugar_g: item.sugar_g,
-          fat_g: item.fat_g,
-          fiber_g: item.fiber_g,
-          sodium_mg: item.sodium_mg,
-          additional_nutrients: item.additional_nutrients,
-          flavor_options: item.flavor_options,
-          dietary_info: item.dietary_info,
-          allergens: item.allergens,
-          benefits: item.benefits,
-          best_time: item.best_time,
-          target_users: item.target_users,
-          rating: item.rating,
-          review_count: item.review_count,
-          features: item.features,
-          taste_rating: item.taste_rating,
-          mixability_rating: item.mixability_rating,
-          is_active: true,
-        },
-        { onConflict: 'name,brand' }
-      );
+    const { error } = await supabase.from('health_foods').upsert(
+      {
+        name: item.name,
+        brand: item.brand,
+        category: item.category,
+        subcategory: item.subcategory,
+        price_krw: item.price_krw,
+        price_per_serving: item.price_per_serving,
+        serving_size: item.serving_size,
+        servings_per_container: item.servings_per_container,
+        calories_per_serving: item.calories_per_serving,
+        protein_g: item.protein_g,
+        carbs_g: item.carbs_g,
+        sugar_g: item.sugar_g,
+        fat_g: item.fat_g,
+        fiber_g: item.fiber_g,
+        sodium_mg: item.sodium_mg,
+        additional_nutrients: item.additional_nutrients,
+        flavor_options: item.flavor_options,
+        dietary_info: item.dietary_info,
+        allergens: item.allergens,
+        benefits: item.benefits,
+        best_time: item.best_time,
+        target_users: item.target_users,
+        // rating/review_count/taste_rating/mixability_rating 미삽입 — 실측 없음 (지어내지 않는다)
+        features: item.features,
+        is_active: true,
+      },
+      { onConflict: 'name,brand' }
+    );
 
     if (error) {
       console.error(`  ❌ ${item.name}: ${error.message}`);

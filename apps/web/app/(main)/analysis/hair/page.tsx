@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
+import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
@@ -145,6 +146,8 @@ export default function HairAnalysisPage() {
         /* sessionStorage 실패 무시 */
       }
 
+      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+      invalidateAnalysisCache();
       setStep('result');
     } catch (err) {
       console.error('[H-1] Analysis error:', err);

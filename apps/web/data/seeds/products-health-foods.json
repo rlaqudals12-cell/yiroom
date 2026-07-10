@@ -11,8 +11,8 @@
       "servings_per_container": 40,
       "calories_per_serving": 103,
       "protein_g": 21,
-      "carbs_g": 1.0,
-      "sugar_g": 1.0,
+      "carbs_g": 1,
+      "sugar_g": 1,
       "fat_g": 1.9,
       "sodium_mg": 50,
       "flavor_options": ["밀크초콜릿", "바닐라", "딸기", "쿠키앤크림", "초코바나나"],
@@ -21,11 +21,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.5,
-      "review_count": 12500,
-      "features": ["1회분 21g 단백질", "빠른 흡수", "다양한 맛"],
-      "taste_rating": 4.3,
-      "mixability_rating": 4.4
+      "features": ["1회분 21g 단백질", "빠른 흡수", "다양한 맛"]
     },
     {
       "name": "옵티멈 뉴트리션 골드스탠다드 웨이",
@@ -38,9 +34,9 @@
       "servings_per_container": 30,
       "calories_per_serving": 120,
       "protein_g": 24,
-      "carbs_g": 3.0,
-      "sugar_g": 1.0,
-      "fat_g": 1.0,
+      "carbs_g": 3,
+      "sugar_g": 1,
+      "fat_g": 1,
       "sodium_mg": 130,
       "flavor_options": ["더블리치초콜릿", "바닐라아이스크림", "딸기바나나", "모카카푸치노"],
       "dietary_info": ["gluten_free"],
@@ -48,11 +44,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.8,
-      "review_count": 25000,
-      "features": ["WPI 주원료", "빠른 흡수", "BCAA 5.5g 포함"],
-      "taste_rating": 4.7,
-      "mixability_rating": 4.8
+      "features": ["WPI 주원료", "빠른 흡수", "BCAA 5.5g 포함"]
     },
     {
       "name": "BSN 시엔타 매스",
@@ -74,11 +66,7 @@
       "benefits": ["muscle_gain", "energy"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain"],
-      "rating": 4.4,
-      "review_count": 5600,
-      "features": ["고칼로리", "복합 단백질", "체중 증가"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.0
+      "features": ["고칼로리", "복합 단백질", "체중 증가"]
     },
     {
       "name": "가든오브라이프 로우 오가닉 프로틴",
@@ -91,10 +79,10 @@
       "servings_per_container": 20,
       "calories_per_serving": 110,
       "protein_g": 22,
-      "carbs_g": 2.0,
+      "carbs_g": 2,
       "sugar_g": 0,
       "fat_g": 1.5,
-      "fiber_g": 2.0,
+      "fiber_g": 2,
       "sodium_mg": 190,
       "flavor_options": ["바닐라", "초콜릿", "무맛"],
       "dietary_info": ["vegan", "organic", "gluten_free", "non_gmo"],
@@ -102,11 +90,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.6,
-      "review_count": 3400,
-      "features": ["유기농 인증", "프로바이오틱스 포함", "식물성"],
-      "taste_rating": 4.0,
-      "mixability_rating": 4.2
+      "features": ["유기농 인증", "프로바이오틱스 포함", "식물성"]
     },
     {
       "name": "퀘스트 프로틴 바 - 초콜릿 칩 쿠키도우",
@@ -129,10 +113,7 @@
       "benefits": ["muscle_gain", "energy"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain", "weight_loss"],
-      "rating": 4.5,
-      "review_count": 8900,
-      "features": ["고단백", "저당", "식이섬유 풍부"],
-      "taste_rating": 4.6
+      "features": ["고단백", "저당", "식이섬유 풍부"]
     },
     {
       "name": "밀프렙 닭가슴살 도시락",
@@ -155,8 +136,6 @@
       "benefits": ["muscle_gain", "weight_loss"],
       "best_time": "anytime",
       "target_users": ["muscle_gain", "weight_loss", "athletes"],
-      "rating": 4.3,
-      "review_count": 2100,
       "features": ["조리 완료", "고단백 저탄수", "간편식"]
     },
     {
@@ -174,20 +153,28 @@
       "fat_g": 0,
       "sodium_mg": 10,
       "additional_nutrients": [
-        {"name": "L-류신", "amount": 3000, "unit": "mg"},
-        {"name": "L-이소류신", "amount": 1500, "unit": "mg"},
-        {"name": "L-발린", "amount": 1500, "unit": "mg"}
+        {
+          "name": "L-류신",
+          "amount": 3000,
+          "unit": "mg"
+        },
+        {
+          "name": "L-이소류신",
+          "amount": 1500,
+          "unit": "mg"
+        },
+        {
+          "name": "L-발린",
+          "amount": 1500,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["청포도", "레몬라임", "체리"],
       "dietary_info": ["sugar_free", "vegan"],
       "benefits": ["recovery", "endurance", "muscle_gain"],
       "best_time": "pre_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.4,
-      "review_count": 1890,
-      "features": ["2:1:1 비율", "인스턴트 용해", "무칼로리"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.5
+      "features": ["2:1:1 비율", "인스턴트 용해", "무칼로리"]
     },
     {
       "name": "머슬테크 셀텍 크레아틴",
@@ -203,17 +190,18 @@
       "sugar_g": 0,
       "fat_g": 0,
       "additional_nutrients": [
-        {"name": "크레아틴 모노하이드레이트", "amount": 5000, "unit": "mg"}
+        {
+          "name": "크레아틴 모노하이드레이트",
+          "amount": 5000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛", "그레이프"],
       "dietary_info": ["sugar_free", "vegan"],
       "benefits": ["muscle_gain", "energy"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.7,
-      "review_count": 4500,
-      "features": ["순수 크레아틴", "근력 향상", "인증된 원료"],
-      "mixability_rating": 4.8
+      "features": ["순수 크레아틴", "근력 향상", "인증된 원료"]
     },
     {
       "name": "C4 오리지널 프리워크아웃",
@@ -229,9 +217,21 @@
       "sugar_g": 0,
       "fat_g": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 150, "unit": "mg"},
-        {"name": "베타알라닌", "amount": 1600, "unit": "mg"},
-        {"name": "크레아틴 니트레이트", "amount": 1000, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 150,
+          "unit": "mg"
+        },
+        {
+          "name": "베타알라닌",
+          "amount": 1600,
+          "unit": "mg"
+        },
+        {
+          "name": "크레아틴 니트레이트",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["워터멜론", "체리라임에이드", "프루트펀치", "블루라즈"],
       "dietary_info": ["sugar_free"],
@@ -239,11 +239,7 @@
       "benefits": ["energy", "focus", "endurance"],
       "best_time": "pre_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 15000,
-      "features": ["집중력 향상", "에너지 부스트", "No 크래시"],
-      "taste_rating": 4.4,
-      "mixability_rating": 4.6
+      "features": ["집중력 향상", "에너지 부스트", "No 크래시"]
     },
     {
       "name": "팻 버너 CLA 1000",
@@ -257,14 +253,16 @@
       "calories_per_serving": 10,
       "fat_g": 1,
       "additional_nutrients": [
-        {"name": "CLA", "amount": 1000, "unit": "mg"}
+        {
+          "name": "CLA",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["gluten_free"],
       "benefits": ["weight_loss"],
       "best_time": "anytime",
       "target_users": ["weight_loss"],
-      "rating": 4.1,
-      "review_count": 2300,
       "features": ["체지방 감소", "천연 유래", "무자극"]
     },
     {
@@ -279,16 +277,22 @@
       "carbs_g": 0,
       "sugar_g": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 140, "unit": "mg"},
-        {"name": "타우린", "amount": 1000, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 140,
+          "unit": "mg"
+        },
+        {
+          "name": "타우린",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["울트라 화이트", "울트라 블루"],
       "dietary_info": ["sugar_free"],
       "benefits": ["energy", "focus"],
       "best_time": "pre_workout",
       "target_users": ["general", "athletes"],
-      "rating": 4.3,
-      "review_count": 8900,
       "features": ["제로 칼로리", "시트러스 맛", "장시간 에너지"]
     },
     {
@@ -304,15 +308,21 @@
       "sugar_g": 25,
       "sodium_mg": 245,
       "additional_nutrients": [
-        {"name": "칼륨", "amount": 100, "unit": "mg"},
-        {"name": "마그네슘", "amount": 5, "unit": "mg"}
+        {
+          "name": "칼륨",
+          "amount": 100,
+          "unit": "mg"
+        },
+        {
+          "name": "마그네슘",
+          "amount": 5,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["오리지널"],
       "benefits": ["hydration", "recovery"],
       "best_time": "post_workout",
       "target_users": ["general", "athletes"],
-      "rating": 4.6,
-      "review_count": 15000,
       "features": ["전해질 보충", "빠른 흡수", "운동 후 수분 보충"]
     },
     {
@@ -336,8 +346,6 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 3200,
       "features": ["무첨가", "건강한 지방", "휴대 용이"]
     },
     {
@@ -357,10 +365,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 1200,
-      "features": ["항산화제 풍부", "유기농", "스무디에 적합"],
-      "taste_rating": 4.0
+      "features": ["항산화제 풍부", "유기농", "스무디에 적합"]
     },
     {
       "name": "스피룰리나 정제 1000정",
@@ -375,15 +380,23 @@
       "protein_g": 2,
       "carbs_g": 1,
       "additional_nutrients": [
-        {"name": "철분", "amount": 5, "unit": "mg", "daily_value_percent": 28},
-        {"name": "비타민B12", "amount": 4, "unit": "mcg", "daily_value_percent": 160}
+        {
+          "name": "철분",
+          "amount": 5,
+          "unit": "mg",
+          "daily_value_percent": 28
+        },
+        {
+          "name": "비타민B12",
+          "amount": 4,
+          "unit": "mcg",
+          "daily_value_percent": 160
+        }
       ],
       "dietary_info": ["vegan", "organic", "gluten_free"],
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.6,
-      "review_count": 890,
       "features": ["고단백 조류", "철분 보충", "면역력 지원"]
     },
     {
@@ -399,7 +412,11 @@
       "protein_g": 9,
       "carbs_g": 0,
       "additional_nutrients": [
-        {"name": "콜라겐", "amount": 10000, "unit": "mg"}
+        {
+          "name": "콜라겐",
+          "amount": 10000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["gluten_free"],
@@ -407,10 +424,7 @@
       "benefits": ["recovery"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.7,
-      "review_count": 5600,
-      "features": ["피부 탄력", "관절 건강", "무맛"],
-      "mixability_rating": 4.8
+      "features": ["피부 탄력", "관절 건강", "무맛"]
     },
     {
       "name": "MCT 오일 파우더",
@@ -425,17 +439,18 @@
       "fat_g": 7,
       "carbs_g": 1,
       "additional_nutrients": [
-        {"name": "MCT", "amount": 7000, "unit": "mg"}
+        {
+          "name": "MCT",
+          "amount": 7000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛", "바닐라"],
       "dietary_info": ["keto", "vegan", "gluten_free"],
       "benefits": ["energy", "focus"],
       "best_time": "morning",
       "target_users": ["weight_loss"],
-      "rating": 4.4,
-      "review_count": 2100,
-      "features": ["케토 친화", "지속적 에너지", "커피와 궁합"],
-      "mixability_rating": 4.5
+      "features": ["케토 친화", "지속적 에너지", "커피와 궁합"]
     },
     {
       "name": "글루타민 파우더",
@@ -448,17 +463,18 @@
       "calories_per_serving": 20,
       "protein_g": 5,
       "additional_nutrients": [
-        {"name": "L-글루타민", "amount": 5000, "unit": "mg"}
+        {
+          "name": "L-글루타민",
+          "amount": 5000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery", "muscle_gain"],
       "best_time": "post_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 3400,
-      "features": ["근육 회복", "면역력 지원", "순수 L-글루타민"],
-      "mixability_rating": 4.6
+      "features": ["근육 회복", "면역력 지원", "순수 L-글루타민"]
     },
     {
       "name": "카제인 프로틴 슬로우 릴리즈",
@@ -481,11 +497,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain"],
-      "rating": 4.6,
-      "review_count": 2800,
-      "features": ["느린 흡수", "취침 전 적합", "7시간 서방"],
-      "taste_rating": 4.3,
-      "mixability_rating": 4.2
+      "features": ["느린 흡수", "취침 전 적합", "7시간 서방"]
     },
     {
       "name": "일렉트로라이트 파우더",
@@ -501,19 +513,23 @@
       "sugar_g": 0,
       "sodium_mg": 1000,
       "additional_nutrients": [
-        {"name": "칼륨", "amount": 200, "unit": "mg"},
-        {"name": "마그네슘", "amount": 60, "unit": "mg"}
+        {
+          "name": "칼륨",
+          "amount": 200,
+          "unit": "mg"
+        },
+        {
+          "name": "마그네슘",
+          "amount": 60,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["시트러스솔트", "라즈베리솔트", "무맛"],
       "dietary_info": ["keto", "sugar_free", "vegan", "gluten_free"],
       "benefits": ["hydration", "recovery", "energy"],
       "best_time": "anytime",
       "target_users": ["athletes", "general"],
-      "rating": 4.8,
-      "review_count": 8500,
-      "features": ["설탕 무첨가", "고나트륨", "케토 친화"],
-      "taste_rating": 4.5,
-      "mixability_rating": 4.9
+      "features": ["설탕 무첨가", "고나트륨", "케토 친화"]
     },
     {
       "name": "아이솔레이트 웨이 프로틴",
@@ -536,11 +552,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "weight_loss"],
-      "rating": 4.7,
-      "review_count": 8900,
-      "features": ["WPI 90%", "저탄수", "빠른 흡수"],
-      "taste_rating": 4.5,
-      "mixability_rating": 4.7
+      "features": ["WPI 90%", "저탄수", "빠른 흡수"]
     },
     {
       "name": "하이드로 웨이 제로",
@@ -563,11 +575,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.8,
-      "review_count": 4500,
-      "features": ["가수분해 단백질", "최고 흡수율", "프리미엄"],
-      "taste_rating": 4.4,
-      "mixability_rating": 4.9
+      "features": ["가수분해 단백질", "최고 흡수율", "프리미엄"]
     },
     {
       "name": "소이 프로틴 아이솔레이트",
@@ -590,11 +598,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.3,
-      "review_count": 2100,
-      "features": ["식물성", "저렴함", "무맛 가능"],
-      "taste_rating": 3.8,
-      "mixability_rating": 4.2
+      "features": ["식물성", "저렴함", "무맛 가능"]
     },
     {
       "name": "피 프로틴 파우더",
@@ -617,11 +621,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.4,
-      "review_count": 1800,
-      "features": ["완두콩 분리단백", "근육 합성", "저알러지"],
-      "taste_rating": 4.0,
-      "mixability_rating": 4.3
+      "features": ["완두콩 분리단백", "근육 합성", "저알러지"]
     },
     {
       "name": "캐서스 프로 멀티블렌드",
@@ -644,11 +644,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "anytime",
       "target_users": ["muscle_gain"],
-      "rating": 4.6,
-      "review_count": 3200,
-      "features": ["복합 단백질", "6시간 서방", "다목적"],
-      "taste_rating": 4.5,
-      "mixability_rating": 4.4
+      "features": ["복합 단백질", "6시간 서방", "다목적"]
     },
     {
       "name": "식스스타 프로 뉴트리션 웨이",
@@ -671,11 +667,7 @@
       "benefits": ["muscle_gain"],
       "best_time": "post_workout",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.2,
-      "review_count": 5600,
-      "features": ["가성비", "대용량", "입문용"],
-      "taste_rating": 4.0,
-      "mixability_rating": 4.1
+      "features": ["가성비", "대용량", "입문용"]
     },
     {
       "name": "원 프로틴 바",
@@ -698,10 +690,7 @@
       "benefits": ["muscle_gain", "energy"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.6,
-      "review_count": 7800,
-      "features": ["고단백", "저당", "부드러운 식감"],
-      "taste_rating": 4.7
+      "features": ["고단백", "저당", "부드러운 식감"]
     },
     {
       "name": "로우 프로틴 바",
@@ -724,10 +713,7 @@
       "benefits": ["energy", "weight_loss"],
       "best_time": "anytime",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.3,
-      "review_count": 4500,
-      "features": ["저칼로리", "식이섬유", "다이어트"],
-      "taste_rating": 4.2
+      "features": ["저칼로리", "식이섬유", "다이어트"]
     },
     {
       "name": "닥터유 단백질바",
@@ -747,10 +733,7 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 12000,
-      "features": ["편의점 구매", "가성비", "국산"],
-      "taste_rating": 4.5
+      "features": ["편의점 구매", "가성비", "국산"]
     },
     {
       "name": "프로틴쉐이크 드링크",
@@ -771,8 +754,6 @@
       "benefits": ["energy", "muscle_gain"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 3400,
       "features": ["커피 함유", "간편함", "리얼 에스프레소"]
     },
     {
@@ -789,18 +770,18 @@
       "sugar_g": 0,
       "fat_g": 0,
       "additional_nutrients": [
-        {"name": "EAA 복합", "amount": 10000, "unit": "mg"}
+        {
+          "name": "EAA 복합",
+          "amount": 10000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["망고", "레몬라임", "블루라즈"],
       "dietary_info": ["sugar_free", "vegan"],
       "benefits": ["recovery", "muscle_gain"],
       "best_time": "intra_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 2100,
-      "features": ["9종 필수아미노산", "근합성 촉진", "무칼로리"],
-      "taste_rating": 4.3,
-      "mixability_rating": 4.6
+      "features": ["9종 필수아미노산", "근합성 촉진", "무칼로리"]
     },
     {
       "name": "HMB 1000",
@@ -812,14 +793,16 @@
       "servings_per_container": 30,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "HMB", "amount": 1000, "unit": "mg"}
+        {
+          "name": "HMB",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery", "muscle_gain"],
       "best_time": "post_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.4,
-      "review_count": 1560,
       "features": ["근손실 방지", "회복 촉진", "류신 대사물"]
     },
     {
@@ -833,17 +816,18 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "L-시트룰린", "amount": 3000, "unit": "mg"}
+        {
+          "name": "L-시트룰린",
+          "amount": 3000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["endurance", "energy"],
       "best_time": "pre_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.6,
-      "review_count": 2800,
-      "features": ["혈류 개선", "펌핑 강화", "지구력"],
-      "mixability_rating": 4.8
+      "features": ["혈류 개선", "펌핑 강화", "지구력"]
     },
     {
       "name": "베타알라닌 파우더",
@@ -856,17 +840,18 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "베타알라닌", "amount": 3200, "unit": "mg"}
+        {
+          "name": "베타알라닌",
+          "amount": 3200,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["endurance"],
       "best_time": "pre_workout",
       "target_users": ["athletes"],
-      "rating": 4.5,
-      "review_count": 1890,
-      "features": ["지구력 향상", "카르노신 합성", "순수 원료"],
-      "mixability_rating": 4.7
+      "features": ["지구력 향상", "카르노신 합성", "순수 원료"]
     },
     {
       "name": "트랜스파란트 프리워크아웃",
@@ -880,20 +865,28 @@
       "carbs_g": 1,
       "sugar_g": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 200, "unit": "mg"},
-        {"name": "시트룰린", "amount": 6000, "unit": "mg"},
-        {"name": "베타알라닌", "amount": 3200, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 200,
+          "unit": "mg"
+        },
+        {
+          "name": "시트룰린",
+          "amount": 6000,
+          "unit": "mg"
+        },
+        {
+          "name": "베타알라닌",
+          "amount": 3200,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["블루라즈", "사워그레이프", "체리라임에이드"],
       "dietary_info": ["sugar_free", "gluten_free"],
       "benefits": ["energy", "focus", "endurance"],
       "best_time": "pre_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.7,
-      "review_count": 6700,
-      "features": ["풀도즈", "투명 성분표", "프리미엄"],
-      "taste_rating": 4.5,
-      "mixability_rating": 4.6
+      "features": ["풀도즈", "투명 성분표", "프리미엄"]
     },
     {
       "name": "스팀프리 프리워크아웃",
@@ -908,19 +901,23 @@
       "carbs_g": 0,
       "sugar_g": 0,
       "additional_nutrients": [
-        {"name": "시트룰린", "amount": 4000, "unit": "mg"},
-        {"name": "베타알라닌", "amount": 3200, "unit": "mg"}
+        {
+          "name": "시트룰린",
+          "amount": 4000,
+          "unit": "mg"
+        },
+        {
+          "name": "베타알라닌",
+          "amount": 3200,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["워터로그", "레몬라임"],
       "dietary_info": ["sugar_free", "caffeine_free"],
       "benefits": ["endurance", "focus"],
       "best_time": "pre_workout",
       "target_users": ["general", "athletes"],
-      "rating": 4.4,
-      "review_count": 2300,
-      "features": ["무카페인", "야간 운동용", "민감자용"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.5
+      "features": ["무카페인", "야간 운동용", "민감자용"]
     },
     {
       "name": "L-카르니틴 액상",
@@ -933,17 +930,18 @@
       "servings_per_container": 30,
       "calories_per_serving": 5,
       "additional_nutrients": [
-        {"name": "L-카르니틴", "amount": 3000, "unit": "mg"}
+        {
+          "name": "L-카르니틴",
+          "amount": 3000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["레몬", "베리", "오렌지"],
       "dietary_info": ["sugar_free", "vegan"],
       "benefits": ["weight_loss", "energy"],
       "best_time": "pre_workout",
       "target_users": ["weight_loss"],
-      "rating": 4.3,
-      "review_count": 3400,
-      "features": ["지방 연소", "액상 흡수", "간편함"],
-      "taste_rating": 4.0
+      "features": ["지방 연소", "액상 흡수", "간편함"]
     },
     {
       "name": "가르시니아 캄보지아",
@@ -956,14 +954,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "HCA", "amount": 1000, "unit": "mg"}
+        {
+          "name": "HCA",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["weight_loss"],
       "best_time": "before_meal",
       "target_users": ["weight_loss"],
-      "rating": 4.1,
-      "review_count": 5600,
       "features": ["식욕 억제", "천연 성분", "HCA 60%"]
     },
     {
@@ -977,14 +977,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "EGCG", "amount": 400, "unit": "mg"}
+        {
+          "name": "EGCG",
+          "amount": 400,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["weight_loss", "energy"],
       "best_time": "morning",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.4,
-      "review_count": 2800,
       "features": ["대사 촉진", "항산화", "천연 카페인"]
     },
     {
@@ -999,14 +1001,16 @@
       "calories_per_serving": 5,
       "fiber_g": 2,
       "additional_nutrients": [
-        {"name": "글루코만난", "amount": 1330, "unit": "mg"}
+        {
+          "name": "글루코만난",
+          "amount": 1330,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["weight_loss"],
       "best_time": "before_meal",
       "target_users": ["weight_loss"],
-      "rating": 4.2,
-      "review_count": 3900,
       "features": ["포만감", "식이섬유", "저칼로리"]
     },
     {
@@ -1022,15 +1026,17 @@
       "sugar_g": 0,
       "sodium_mg": 270,
       "additional_nutrients": [
-        {"name": "칼륨", "amount": 75, "unit": "mg"}
+        {
+          "name": "칼륨",
+          "amount": 75,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["글레이셔프리즈", "오렌지", "그레이프"],
       "dietary_info": ["sugar_free"],
       "benefits": ["hydration"],
       "best_time": "anytime",
       "target_users": ["athletes", "general"],
-      "rating": 4.3,
-      "review_count": 6700,
       "features": ["무설탕", "전해질", "운동 중 적합"]
     },
     {
@@ -1045,15 +1051,21 @@
       "carbs_g": 0,
       "sugar_g": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 80, "unit": "mg"},
-        {"name": "타우린", "amount": 1000, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 80,
+          "unit": "mg"
+        },
+        {
+          "name": "타우린",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["sugar_free"],
       "benefits": ["energy", "focus"],
       "best_time": "pre_workout",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 15000,
       "features": ["무설탕", "에너지 부스트", "집중력"]
     },
     {
@@ -1068,15 +1080,21 @@
       "carbs_g": 0,
       "sugar_g": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 130, "unit": "mg"},
-        {"name": "타우린", "amount": 1000, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 130,
+          "unit": "mg"
+        },
+        {
+          "name": "타우린",
+          "amount": 1000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["sugar_free"],
       "benefits": ["energy", "focus"],
       "best_time": "pre_workout",
       "target_users": ["general"],
-      "rating": 4.2,
-      "review_count": 8900,
       "features": ["무설탕", "가성비", "국산"]
     },
     {
@@ -1089,14 +1107,16 @@
       "servings_per_container": 100,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "카페인", "amount": 200, "unit": "mg"}
+        {
+          "name": "카페인",
+          "amount": 200,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["energy", "focus"],
       "best_time": "pre_workout",
       "target_users": ["athletes", "general"],
-      "rating": 4.5,
-      "review_count": 4500,
       "features": ["순수 카페인", "저렴함", "정확한 용량"]
     },
     {
@@ -1113,18 +1133,23 @@
       "protein_g": 0,
       "fat_g": 0,
       "additional_nutrients": [
-        {"name": "말토덱스트린", "amount": 25000, "unit": "mg"},
-        {"name": "사이클릭 덱스트린", "amount": 25000, "unit": "mg"}
+        {
+          "name": "말토덱스트린",
+          "amount": 25000,
+          "unit": "mg"
+        },
+        {
+          "name": "사이클릭 덱스트린",
+          "amount": 25000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["energy", "recovery"],
       "best_time": "intra_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.4,
-      "review_count": 1200,
-      "features": ["고분자 탄수화물", "빠른 에너지", "무맛"],
-      "mixability_rating": 4.9
+      "features": ["고분자 탄수화물", "빠른 에너지", "무맛"]
     },
     {
       "name": "덱스트로스 파우더",
@@ -1144,10 +1169,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain"],
-      "rating": 4.3,
-      "review_count": 890,
-      "features": ["단순당", "인슐린 스파이크", "저렴함"],
-      "mixability_rating": 4.8
+      "features": ["단순당", "인슐린 스파이크", "저렴함"]
     },
     {
       "name": "귀리 파우더",
@@ -1169,11 +1191,7 @@
       "benefits": ["energy"],
       "best_time": "morning",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 2300,
-      "features": ["복합 탄수화물", "식이섬유", "쉐이크 첨가"],
-      "taste_rating": 4.0,
-      "mixability_rating": 4.4
+      "features": ["복합 탄수화물", "식이섬유", "쉐이크 첨가"]
     },
     {
       "name": "피넛버터 파우더 PB2",
@@ -1196,11 +1214,7 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.6,
-      "review_count": 5600,
-      "features": ["저지방", "고단백", "쉐이크 첨가"],
-      "taste_rating": 4.5,
-      "mixability_rating": 4.7
+      "features": ["저지방", "고단백", "쉐이크 첨가"]
     },
     {
       "name": "아몬드버터 무가당",
@@ -1224,8 +1238,6 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.7,
-      "review_count": 3400,
       "features": ["무설탕", "건강한 지방", "비타민E"]
     },
     {
@@ -1249,10 +1261,7 @@
       "benefits": ["energy", "muscle_gain"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 6700,
-      "features": ["부드러운 식감", "고단백", "디저트 대용"],
-      "taste_rating": 4.7
+      "features": ["부드러운 식감", "고단백", "디저트 대용"]
     },
     {
       "name": "프로틴 칩스 사워크림",
@@ -1275,10 +1284,7 @@
       "benefits": ["muscle_gain"],
       "best_time": "anytime",
       "target_users": ["weight_loss", "muscle_gain"],
-      "rating": 4.3,
-      "review_count": 4500,
-      "features": ["고단백", "저탄수", "스낵 대체"],
-      "taste_rating": 4.1
+      "features": ["고단백", "저탄수", "스낵 대체"]
     },
     {
       "name": "육포 프로틴",
@@ -1299,8 +1305,6 @@
       "benefits": ["muscle_gain"],
       "best_time": "anytime",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.4,
-      "review_count": 8900,
       "features": ["고단백", "저지방", "휴대용"]
     },
     {
@@ -1324,8 +1328,6 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "anytime",
       "target_users": ["general", "weight_loss"],
-      "rating": 4.6,
-      "review_count": 12000,
       "features": ["고단백", "무지방", "프로바이오틱스"]
     },
     {
@@ -1349,8 +1351,6 @@
       "benefits": ["muscle_gain"],
       "best_time": "post_workout",
       "target_users": ["general", "muscle_gain"],
-      "rating": 4.3,
-      "review_count": 5600,
       "features": ["편의점 구매", "국산", "간편함"]
     },
     {
@@ -1367,14 +1367,16 @@
       "sugar_g": 11,
       "sodium_mg": 25,
       "additional_nutrients": [
-        {"name": "칼륨", "amount": 470, "unit": "mg"}
+        {
+          "name": "칼륨",
+          "amount": 470,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free", "non_gmo"],
       "benefits": ["hydration", "recovery"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 7800,
       "features": ["천연 전해질", "칼륨 풍부", "무첨가"]
     },
     {
@@ -1395,8 +1397,6 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 2100,
       "features": ["저온착즙", "케일+시금치", "해독"]
     },
     {
@@ -1417,11 +1417,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general", "athletes"],
-      "rating": 4.7,
-      "review_count": 15000,
-      "features": ["75가지 성분", "프리미엄", "종합 영양"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.5
+      "features": ["75가지 성분", "프리미엄", "종합 영양"]
     },
     {
       "name": "슈퍼그린스 파우더",
@@ -1441,11 +1437,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 6700,
-      "features": ["유기농 인증", "프로바이오틱스", "알칼리성"],
-      "taste_rating": 3.8,
-      "mixability_rating": 4.3
+      "features": ["유기농 인증", "프로바이오틱스", "알칼리성"]
     },
     {
       "name": "차가버섯 분말",
@@ -1463,10 +1455,7 @@
       "benefits": ["recovery", "energy"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 1890,
-      "features": ["면역력 강화", "항산화", "시베리아산"],
-      "mixability_rating": 4.2
+      "features": ["면역력 강화", "항산화", "시베리아산"]
     },
     {
       "name": "라이언스메인 버섯 캡슐",
@@ -1482,8 +1471,6 @@
       "benefits": ["focus", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.6,
-      "review_count": 4500,
       "features": ["인지력 향상", "신경 건강", "유기농"]
     },
     {
@@ -1502,11 +1489,7 @@
       "benefits": ["energy", "endurance"],
       "best_time": "morning",
       "target_users": ["general", "athletes"],
-      "rating": 4.4,
-      "review_count": 2800,
-      "features": ["페루산", "에너지 부스트", "호르몬 균형"],
-      "taste_rating": 3.5,
-      "mixability_rating": 4.4
+      "features": ["페루산", "에너지 부스트", "호르몬 균형"]
     },
     {
       "name": "아슈와간다 KSM-66",
@@ -1519,14 +1502,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "아슈와간다 추출물", "amount": 600, "unit": "mg"}
+        {
+          "name": "아슈와간다 추출물",
+          "amount": 600,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery", "focus"],
       "best_time": "evening",
       "target_users": ["general", "athletes"],
-      "rating": 4.6,
-      "review_count": 8900,
       "features": ["스트레스 완화", "코르티솔 조절", "수면 개선"]
     },
     {
@@ -1542,14 +1527,16 @@
       "fat_g": 14,
       "carbs_g": 0,
       "additional_nutrients": [
-        {"name": "C8 MCT", "amount": 14000, "unit": "mg"}
+        {
+          "name": "C8 MCT",
+          "amount": 14000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["keto", "vegan", "gluten_free"],
       "benefits": ["energy", "focus"],
       "best_time": "morning",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.7,
-      "review_count": 5600,
       "features": ["순수 C8", "케톤 생성", "버터커피용"]
     },
     {
@@ -1564,7 +1551,11 @@
       "calories_per_serving": 40,
       "protein_g": 10,
       "additional_nutrients": [
-        {"name": "콜라겐 타입 I,II,III,V,X", "amount": 10000, "unit": "mg"}
+        {
+          "name": "콜라겐 타입 I,II,III,V,X",
+          "amount": 10000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["무맛"],
       "dietary_info": ["gluten_free"],
@@ -1572,10 +1563,7 @@
       "benefits": ["recovery"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.6,
-      "review_count": 7800,
-      "features": ["5가지 타입", "관절+피부", "무맛"],
-      "mixability_rating": 4.7
+      "features": ["5가지 타입", "관절+피부", "무맛"]
     },
     {
       "name": "오메가3 트리플 스트렝스",
@@ -1589,16 +1577,22 @@
       "calories_per_serving": 20,
       "fat_g": 2,
       "additional_nutrients": [
-        {"name": "EPA", "amount": 425, "unit": "mg"},
-        {"name": "DHA", "amount": 325, "unit": "mg"}
+        {
+          "name": "EPA",
+          "amount": 425,
+          "unit": "mg"
+        },
+        {
+          "name": "DHA",
+          "amount": 325,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["gluten_free"],
       "allergens": ["생선"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general", "athletes"],
-      "rating": 4.8,
-      "review_count": 12000,
       "features": ["고농축", "무비린내", "노르웨이산"]
     },
     {
@@ -1612,15 +1606,21 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "커큐민", "amount": 500, "unit": "mg"},
-        {"name": "바이오페린", "amount": 5, "unit": "mg"}
+        {
+          "name": "커큐민",
+          "amount": 500,
+          "unit": "mg"
+        },
+        {
+          "name": "바이오페린",
+          "amount": 5,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general", "athletes"],
-      "rating": 4.5,
-      "review_count": 6700,
       "features": ["흡수율 향상", "관절 건강", "항염"]
     },
     {
@@ -1634,16 +1634,26 @@
       "servings_per_container": 60,
       "calories_per_serving": 5,
       "additional_nutrients": [
-        {"name": "글루코사민", "amount": 1500, "unit": "mg"},
-        {"name": "콘드로이틴", "amount": 800, "unit": "mg"},
-        {"name": "MSM", "amount": 750, "unit": "mg"}
+        {
+          "name": "글루코사민",
+          "amount": 1500,
+          "unit": "mg"
+        },
+        {
+          "name": "콘드로이틴",
+          "amount": 800,
+          "unit": "mg"
+        },
+        {
+          "name": "MSM",
+          "amount": 750,
+          "unit": "mg"
+        }
       ],
       "allergens": ["갑각류"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general", "athletes"],
-      "rating": 4.4,
-      "review_count": 9800,
       "features": ["3중 관절 케어", "연골 보호", "유연성"]
     },
     {
@@ -1657,16 +1667,26 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "아연", "amount": 30, "unit": "mg"},
-        {"name": "마그네슘", "amount": 450, "unit": "mg"},
-        {"name": "비타민B6", "amount": 10.5, "unit": "mg"}
+        {
+          "name": "아연",
+          "amount": 30,
+          "unit": "mg"
+        },
+        {
+          "name": "마그네슘",
+          "amount": 450,
+          "unit": "mg"
+        },
+        {
+          "name": "비타민B6",
+          "amount": 10.5,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "evening",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.5,
-      "review_count": 3400,
       "features": ["수면 질 향상", "테스토스테론", "회복 촉진"]
     },
     {
@@ -1680,14 +1700,16 @@
       "servings_per_container": 100,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "멜라토닌", "amount": 3, "unit": "mg"}
+        {
+          "name": "멜라토닌",
+          "amount": 3,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "evening",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 15000,
       "features": ["빠른 수면 유도", "시차 적응", "저렴함"]
     },
     {
@@ -1701,14 +1723,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "GABA", "amount": 750, "unit": "mg"}
+        {
+          "name": "GABA",
+          "amount": 750,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery", "focus"],
       "best_time": "evening",
       "target_users": ["general"],
-      "rating": 4.3,
-      "review_count": 2800,
       "features": ["스트레스 완화", "이완 촉진", "불안 감소"]
     },
     {
@@ -1721,14 +1745,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "L-테아닌", "amount": 200, "unit": "mg"}
+        {
+          "name": "L-테아닌",
+          "amount": 200,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["focus", "recovery"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 4500,
       "features": ["집중력 향상", "카페인과 시너지", "스트레스 완화"]
     },
     {
@@ -1741,14 +1767,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "알파 GPC", "amount": 300, "unit": "mg"}
+        {
+          "name": "알파 GPC",
+          "amount": 300,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["focus"],
       "best_time": "morning",
       "target_users": ["general", "athletes"],
-      "rating": 4.4,
-      "review_count": 2100,
       "features": ["인지력 향상", "콜린 공급", "근신경 연결"]
     },
     {
@@ -1773,8 +1801,6 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "anytime",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.5,
-      "review_count": 1800,
       "features": ["오메가3 풍부", "조리 완료", "고품질 단백질"]
     },
     {
@@ -1797,8 +1823,6 @@
       "benefits": ["muscle_gain"],
       "best_time": "anytime",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.6,
-      "review_count": 2300,
       "features": ["고단백", "풀코스 대용", "프리미엄"]
     },
     {
@@ -1817,7 +1841,11 @@
       "fat_g": 5,
       "fiber_g": 5,
       "additional_nutrients": [
-        {"name": "비타민 27종", "amount": 100, "unit": "%DV"}
+        {
+          "name": "비타민 27종",
+          "amount": 100,
+          "unit": "%DV"
+        }
       ],
       "flavor_options": ["바닐라", "초콜릿", "곡물", "딸기"],
       "dietary_info": ["gluten_free"],
@@ -1825,11 +1853,7 @@
       "benefits": ["weight_loss", "energy"],
       "best_time": "anytime",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.4,
-      "review_count": 8900,
-      "features": ["완전 영양", "간편식", "포만감"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.5
+      "features": ["완전 영양", "간편식", "포만감"]
     },
     {
       "name": "소일런트 드링크",
@@ -1851,8 +1875,6 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.3,
-      "review_count": 5600,
       "features": ["완전 영양", "비건", "RTD"]
     },
     {
@@ -1871,18 +1893,18 @@
       "fat_g": 13,
       "fiber_g": 7,
       "additional_nutrients": [
-        {"name": "비타민/미네랄 27종", "amount": 100, "unit": "%DV"}
+        {
+          "name": "비타민/미네랄 27종",
+          "amount": 100,
+          "unit": "%DV"
+        }
       ],
       "flavor_options": ["바닐라", "초콜릿", "베리", "커피"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 7800,
-      "features": ["완전 영양", "식물성", "영국산"],
-      "taste_rating": 4.0,
-      "mixability_rating": 4.4
+      "features": ["완전 영양", "식물성", "영국산"]
     },
     {
       "name": "피쉬오일 소프트젤",
@@ -1896,16 +1918,22 @@
       "calories_per_serving": 10,
       "fat_g": 1,
       "additional_nutrients": [
-        {"name": "EPA", "amount": 180, "unit": "mg"},
-        {"name": "DHA", "amount": 120, "unit": "mg"}
+        {
+          "name": "EPA",
+          "amount": 180,
+          "unit": "mg"
+        },
+        {
+          "name": "DHA",
+          "amount": 120,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["gluten_free"],
       "allergens": ["생선"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 25000,
       "features": ["가성비", "대용량", "코스트코"]
     },
     {
@@ -1918,14 +1946,16 @@
       "servings_per_container": 200,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "비타민D3", "amount": 5000, "unit": "IU"}
+        {
+          "name": "비타민D3",
+          "amount": 5000,
+          "unit": "IU"
+        }
       ],
       "dietary_info": ["gluten_free"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general", "athletes"],
-      "rating": 4.7,
-      "review_count": 18000,
       "features": ["고용량", "면역력", "뼈 건강"]
     },
     {
@@ -1938,14 +1968,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "마그네슘", "amount": 200, "unit": "mg"}
+        {
+          "name": "마그네슘",
+          "amount": 200,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "evening",
       "target_users": ["general", "athletes"],
-      "rating": 4.6,
-      "review_count": 8900,
       "features": ["고흡수율", "근경련 방지", "수면 개선"]
     },
     {
@@ -1958,14 +1990,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "아연", "amount": 50, "unit": "mg"}
+        {
+          "name": "아연",
+          "amount": 50,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general", "athletes"],
-      "rating": 4.5,
-      "review_count": 5600,
       "features": ["면역력 강화", "테스토스테론", "피부 건강"]
     },
     {
@@ -1978,14 +2012,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "철분", "amount": 25, "unit": "mg"}
+        {
+          "name": "철분",
+          "amount": 25,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["energy"],
       "best_time": "with_meal",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 3400,
       "features": ["위장 편안", "고흡수율", "빈혈 예방"]
     },
     {
@@ -1998,16 +2034,26 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "비타민B1", "amount": 100, "unit": "mg"},
-        {"name": "비타민B6", "amount": 50, "unit": "mg"},
-        {"name": "비타민B12", "amount": 1000, "unit": "mcg"}
+        {
+          "name": "비타민B1",
+          "amount": 100,
+          "unit": "mg"
+        },
+        {
+          "name": "비타민B6",
+          "amount": 50,
+          "unit": "mg"
+        },
+        {
+          "name": "비타민B12",
+          "amount": 1000,
+          "unit": "mcg"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["energy", "focus"],
       "best_time": "morning",
       "target_users": ["general", "athletes"],
-      "rating": 4.6,
-      "review_count": 7800,
       "features": ["에너지 대사", "신경 건강", "8종 B군"]
     },
     {
@@ -2024,16 +2070,22 @@
       "sugar_g": 1,
       "sodium_mg": 360,
       "additional_nutrients": [
-        {"name": "칼륨", "amount": 100, "unit": "mg"},
-        {"name": "마그네슘", "amount": 25, "unit": "mg"}
+        {
+          "name": "칼륨",
+          "amount": 100,
+          "unit": "mg"
+        },
+        {
+          "name": "마그네슘",
+          "amount": 25,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["레몬라임", "트로피칼", "베리"],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["hydration"],
       "best_time": "anytime",
       "target_users": ["athletes", "general"],
-      "rating": 4.5,
-      "review_count": 5600,
       "features": ["휴대용", "발포정", "물에 녹임"]
     },
     {
@@ -2050,17 +2102,18 @@
       "carbs_g": 5,
       "sugar_g": 3,
       "additional_nutrients": [
-        {"name": "EAA", "amount": 5000, "unit": "mg"}
+        {
+          "name": "EAA",
+          "amount": 5000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["포도", "청사과", "피치"],
       "dietary_info": ["gluten_free"],
       "benefits": ["recovery", "muscle_gain"],
       "best_time": "post_workout",
       "target_users": ["athletes", "muscle_gain"],
-      "rating": 4.3,
-      "review_count": 2100,
-      "features": ["젤리 타입", "간편함", "맛있음"],
-      "taste_rating": 4.5
+      "features": ["젤리 타입", "간편함", "맛있음"]
     },
     {
       "name": "프로틴 아이스크림 파인트",
@@ -2083,10 +2136,7 @@
       "benefits": ["weight_loss"],
       "best_time": "anytime",
       "target_users": ["weight_loss", "general"],
-      "rating": 4.4,
-      "review_count": 12000,
-      "features": ["저칼로리", "고단백", "디저트 대용"],
-      "taste_rating": 4.3
+      "features": ["저칼로리", "고단백", "디저트 대용"]
     },
     {
       "name": "프로틴 팬케이크 믹스",
@@ -2109,11 +2159,7 @@
       "benefits": ["muscle_gain"],
       "best_time": "morning",
       "target_users": ["muscle_gain", "general"],
-      "rating": 4.5,
-      "review_count": 6700,
-      "features": ["간편 조리", "고단백", "맛있는 아침"],
-      "taste_rating": 4.4,
-      "mixability_rating": 4.3
+      "features": ["간편 조리", "고단백", "맛있는 아침"]
     },
     {
       "name": "프로틴 오트밀",
@@ -2135,8 +2181,6 @@
       "benefits": ["energy"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.3,
-      "review_count": 4500,
       "features": ["간편 조리", "고단백", "든든한 아침"]
     },
     {
@@ -2160,10 +2204,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain"],
-      "rating": 4.4,
-      "review_count": 2300,
-      "features": ["유청 알러지 대안", "완전 단백질", "무지방"],
-      "mixability_rating": 4.2
+      "features": ["유청 알러지 대안", "완전 단백질", "무지방"]
     },
     {
       "name": "비프 프로틴 아이솔레이트",
@@ -2181,18 +2222,18 @@
       "fat_g": 0,
       "sodium_mg": 200,
       "additional_nutrients": [
-        {"name": "크레아틴", "amount": 20, "unit": "mg"}
+        {
+          "name": "크레아틴",
+          "amount": 20,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["초콜릿", "바닐라카라멜"],
       "dietary_info": ["lactose_free"],
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.5,
-      "review_count": 3400,
-      "features": ["유청 대안", "크레아틴 함유", "파레오"],
-      "taste_rating": 4.2,
-      "mixability_rating": 4.4
+      "features": ["유청 대안", "크레아틴 함유", "파레오"]
     },
     {
       "name": "하이드로 빌더",
@@ -2210,8 +2251,16 @@
       "fat_g": 1,
       "sodium_mg": 220,
       "additional_nutrients": [
-        {"name": "BCAA", "amount": 6800, "unit": "mg"},
-        {"name": "글루타민", "amount": 5000, "unit": "mg"}
+        {
+          "name": "BCAA",
+          "amount": 6800,
+          "unit": "mg"
+        },
+        {
+          "name": "글루타민",
+          "amount": 5000,
+          "unit": "mg"
+        }
       ],
       "flavor_options": ["초콜릿", "바닐라"],
       "dietary_info": ["gluten_free"],
@@ -2219,11 +2268,7 @@
       "benefits": ["muscle_gain", "recovery"],
       "best_time": "post_workout",
       "target_users": ["muscle_gain", "athletes"],
-      "rating": 4.6,
-      "review_count": 5600,
-      "features": ["가수분해 유청", "빠른 흡수", "프리미엄"],
-      "taste_rating": 4.4,
-      "mixability_rating": 4.7
+      "features": ["가수분해 유청", "빠른 흡수", "프리미엄"]
     },
     {
       "name": "아사이볼 파우더",
@@ -2243,10 +2288,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 3400,
-      "features": ["항산화 폭탄", "브라질산", "스무디볼용"],
-      "taste_rating": 4.3
+      "features": ["항산화 폭탄", "브라질산", "스무디볼용"]
     },
     {
       "name": "고지베리 분말",
@@ -2266,10 +2308,7 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.3,
-      "review_count": 1890,
-      "features": ["비타민C 풍부", "눈 건강", "면역력"],
-      "taste_rating": 4.0
+      "features": ["비타민C 풍부", "눈 건강", "면역력"]
     },
     {
       "name": "MCT 오일 C8",
@@ -2286,8 +2325,6 @@
       "benefits": ["energy", "focus"],
       "best_time": "morning",
       "target_users": ["weight_loss", "athletes"],
-      "rating": 4.6,
-      "review_count": 8500,
       "features": ["순수 C8", "빠른 에너지", "케토 친화적"]
     },
     {
@@ -2306,8 +2343,6 @@
       "benefits": ["recovery"],
       "best_time": "anytime",
       "target_users": ["general"],
-      "rating": 4.7,
-      "review_count": 12000,
       "features": ["피부 탄력", "관절 건강", "무취 무미"]
     },
     {
@@ -2327,8 +2362,6 @@
       "benefits": ["energy", "recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.4,
-      "review_count": 7800,
       "features": ["7종 녹색채소", "프로바이오틱스", "알칼리화"]
     },
     {
@@ -2347,8 +2380,6 @@
       "benefits": ["recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 5600,
       "features": ["아카시아 화이버", "장 건강", "무맛"]
     },
     {
@@ -2366,8 +2397,6 @@
       "benefits": ["energy"],
       "best_time": "anytime",
       "target_users": ["general", "weight_loss"],
-      "rating": 4.6,
-      "review_count": 9200,
       "features": ["콜드프레스", "요리용", "MCT 함유"]
     },
     {
@@ -2381,14 +2410,16 @@
       "servings_per_container": 60,
       "calories_per_serving": 0,
       "additional_nutrients": [
-        {"name": "생균수", "amount": 50, "unit": "B CFU"}
+        {
+          "name": "생균수",
+          "amount": 50,
+          "unit": "B CFU"
+        }
       ],
       "dietary_info": ["vegan", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "morning",
       "target_users": ["general"],
-      "rating": 4.7,
-      "review_count": 11000,
       "features": ["16종 균주", "냉장 불필요", "장까지 도달"]
     },
     {
@@ -2403,15 +2434,21 @@
       "calories_per_serving": 130,
       "fat_g": 14,
       "additional_nutrients": [
-        {"name": "오메가3", "amount": 7000, "unit": "mg"},
-        {"name": "오메가6", "amount": 5000, "unit": "mg"}
+        {
+          "name": "오메가3",
+          "amount": 7000,
+          "unit": "mg"
+        },
+        {
+          "name": "오메가6",
+          "amount": 5000,
+          "unit": "mg"
+        }
       ],
       "dietary_info": ["vegan", "organic", "gluten_free"],
       "benefits": ["recovery"],
       "best_time": "with_meal",
       "target_users": ["general"],
-      "rating": 4.5,
-      "review_count": 2800,
       "features": ["식물성 오메가", "페루산", "고함량"]
     }
   ]

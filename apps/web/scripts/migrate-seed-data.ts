@@ -21,8 +21,7 @@ interface SeedProduct {
   personal_color_seasons: string[] | null;
   image_url: string | null;
   purchase_url: string | null;
-  rating: number;
-  review_count: number;
+  // rating/review_count 없음 — 시드에서 제거됨 (실측 없는 값을 지어내지 않는다)
   // 신규 필드
   hair_types?: string[] | null;
   scalp_types?: string[] | null;

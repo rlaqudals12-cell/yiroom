@@ -13,6 +13,7 @@ import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import { Button } from '@/components/ui/button';
 import { MakeupGuide } from './_components/MakeupGuide';
 import { MakeupAnalysisResultView } from './_components/MakeupAnalysisResultView';
+import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
@@ -145,6 +146,8 @@ export default function MakeupAnalysisPage() {
         /* sessionStorage 실패 무시 */
       }
 
+      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+      invalidateAnalysisCache();
       setStep('result');
     } catch (err) {
       console.error('[M-1] Analysis error:', err);

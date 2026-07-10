@@ -43,8 +43,7 @@ export async function POST(request: Request) {
         personal_color_seasons: product.personal_color_seasons,
         image_url: product.image_url,
         purchase_url: product.purchase_url,
-        rating: product.rating,
-        review_count: product.review_count,
+        // rating/review_count 미삽입 — 시드에 실측 평점 소스가 없다 (지어내지 않는다)
         is_active: true,
       });
 
@@ -68,8 +67,7 @@ export async function POST(request: Request) {
         price_krw: product.price_krw,
         image_url: product.image_url,
         purchase_url: product.purchase_url,
-        rating: product.rating,
-        review_count: product.review_count,
+        // rating/review_count 미삽입 — 시드에 실측 평점 소스가 없다 (지어내지 않는다)
         is_active: true,
       });
 

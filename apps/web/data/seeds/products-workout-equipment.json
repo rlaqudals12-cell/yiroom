@@ -14,8 +14,6 @@
       "exercise_types": ["strength"],
       "skill_level": "beginner",
       "use_location": "home",
-      "rating": 4.5,
-      "review_count": 1250,
       "features": ["미끄럼 방지 코팅", "바닥 보호", "컬러별 무게 구분"],
       "pros": ["초보자 친화적", "다양한 무게", "보관 용이"],
       "cons": ["고중량 없음", "코팅 마모 가능"]
@@ -35,8 +33,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.7,
-      "review_count": 890,
       "features": ["15단계 무게 조절", "원터치 조절", "인체공학 그립"],
       "pros": ["공간 절약", "빠른 무게 변경", "다목적"],
       "cons": ["가격대 있음", "복잡한 메커니즘"]
@@ -55,8 +51,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.8,
-      "review_count": 345,
       "features": ["올림픽 규격 50mm", "텍스처 널링", "회전 슬리브"],
       "pros": ["내구성 좋음", "균형감 우수", "전문가용"],
       "cons": ["공간 필요", "무거움"]
@@ -75,8 +69,6 @@
       "exercise_types": ["strength", "cardio"],
       "skill_level": "intermediate",
       "use_location": "all",
-      "rating": 4.6,
-      "review_count": 567,
       "features": ["넓은 핸들", "평평한 바닥", "파우더 코팅"],
       "pros": ["전신 운동", "유산소+근력", "공간 효율적"],
       "cons": ["기술 필요", "손목 부담"]
@@ -94,8 +86,6 @@
       "exercise_types": ["strength", "flexibility"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.4,
-      "review_count": 2340,
       "features": ["5단계 강도", "미끄럼 방지", "휴대용 파우치"],
       "pros": ["휴대성", "다용도", "저렴함"],
       "cons": ["수명 한계", "고강도 한계"]
@@ -113,8 +103,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.3,
-      "review_count": 1890,
       "features": ["3가지 그립", "도어프레임 장착", "최대 136kg"],
       "pros": ["설치 간편", "다양한 그립", "공간 절약"],
       "cons": ["문틀 제한", "흔들림 가능"]
@@ -133,8 +121,6 @@
       "exercise_types": ["flexibility", "balance"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.9,
-      "review_count": 2100,
       "features": ["고밀도 쿠션", "평생 보증", "친환경"],
       "pros": ["내구성 최고", "그립감 우수", "두께 적당"],
       "cons": ["가격 높음", "무거움"]
@@ -153,8 +139,6 @@
       "exercise_types": ["flexibility"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.7,
-      "review_count": 3200,
       "features": ["멀티 존 디자인", "고밀도 코어", "경량"],
       "pros": ["근막 이완", "내구성", "휴대 가능"],
       "cons": ["처음엔 아픔", "특정 부위 어려움"]
@@ -172,8 +156,6 @@
       "exercise_types": ["cardio", "plyometric"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.5,
-      "review_count": 1560,
       "features": ["볼베어링", "길이 조절", "더블언더 최적화"],
       "pros": ["빠른 회전", "내구성", "가벼움"],
       "cons": ["바닥 손상", "초보자 어려움"]
@@ -190,8 +172,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.4,
-      "review_count": 890,
       "features": ["와이드 휠", "쿠션 그립", "무릎 패드 포함"],
       "pros": ["코어 강화", "휴대 용이", "저렴함"],
       "cons": ["초보자 어려움", "허리 부담"]
@@ -209,8 +189,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.6,
-      "review_count": 567,
       "features": ["7단계 조절", "접이식", "최대 300kg"],
       "pros": ["다각도 운동", "안정적", "공간 효율"],
       "cons": ["무게감", "조립 필요"]
@@ -229,8 +207,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.8,
-      "review_count": 234,
       "features": ["풀업바 포함", "안전 캐처", "최대 450kg"],
       "pros": ["안정성", "다목적", "홈짐 완성"],
       "cons": ["공간 필요", "고가"]
@@ -249,8 +225,6 @@
       "exercise_types": ["cardio"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.7,
-      "review_count": 456,
       "features": ["iFit 호환", "경사 조절", "쿠션 데크"],
       "pros": ["조용함", "인터랙티브", "접이식"],
       "cons": ["고가", "공간 필요"]
@@ -269,8 +243,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "gym",
-      "rating": 4.5,
-      "review_count": 780,
       "features": ["손목 지지대", "오픈 핑거", "통기성"],
       "pros": ["그립 향상", "손 보호", "편안함"],
       "cons": ["사이즈 선택 중요", "세탁 어려움"]
@@ -288,8 +260,6 @@
       "exercise_types": ["cardio", "strength"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.8,
-      "review_count": 1230,
       "features": ["AMOLED 디스플레이", "GPS", "수면 분석", "HRV"],
       "pros": ["정확한 측정", "배터리 좋음", "운동 추적"],
       "cons": ["고가", "학습 필요"]
@@ -307,8 +277,6 @@
       "exercise_types": ["cardio"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.4,
-      "review_count": 2340,
       "features": ["심박수", "수면 추적", "스트레스 관리"],
       "pros": ["가벼움", "사용 편리", "앱 연동"],
       "cons": ["GPS 없음", "화면 작음"]
@@ -326,8 +294,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.6,
-      "review_count": 890,
       "features": ["60cm 길이", "패딩 손목", "더블 스티치"],
       "pros": ["그립력 향상", "손목 보호", "가성비"],
       "cons": ["의존성 우려", "사용법 학습"]
@@ -346,8 +312,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.7,
-      "review_count": 456,
       "features": ["10mm 두께", "싱글 프롱", "IPF 규격"],
       "pros": ["코어 안정", "내구성", "전문가용"],
       "cons": ["적응 필요", "무거움"]
@@ -366,8 +330,6 @@
       "exercise_types": ["balance"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.3,
-      "review_count": 340,
       "features": ["논슬립 표면", "조절식 난이도", "코어 강화"],
       "pros": ["밸런스 향상", "재활 운동", "재미있음"],
       "cons": ["익숙해지기 어려움", "부상 위험"]
@@ -385,8 +347,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.4,
-      "review_count": 670,
       "features": ["인체공학 각도", "미끄럼 방지", "손목 보호"],
       "pros": ["가동범위 증가", "손목 부담 감소", "저렴함"],
       "cons": ["고정 각도", "수납 불편"]
@@ -405,8 +365,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.8,
-      "review_count": 2340,
       "features": ["15단계 무게 조절", "다이얼 방식", "빠른 전환"],
       "pros": ["공간 절약", "직관적 조절", "내구성"],
       "cons": ["고가", "크기가 큼"]
@@ -425,8 +383,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.6,
-      "review_count": 890,
       "features": ["6각 디자인", "바닥 미끄럼 방지", "내구성 고무"],
       "pros": ["구르지 않음", "층간 소음 방지", "전문가용"],
       "cons": ["공간 필요", "무게별 구매"]
@@ -445,8 +401,6 @@
       "exercise_types": ["strength", "cardio"],
       "skill_level": "beginner",
       "use_location": "home",
-      "rating": 4.5,
-      "review_count": 1230,
       "features": ["넓은 핸들", "소프트 코팅", "바닥 보호"],
       "pros": ["초보자 친화", "디자인 예쁨", "안전함"],
       "cons": ["고중량 없음", "코팅 벗겨짐"]
@@ -465,8 +419,6 @@
       "exercise_types": ["strength", "cardio"],
       "skill_level": "advanced",
       "use_location": "gym",
-      "rating": 4.9,
-      "review_count": 345,
       "features": ["33mm 핸들", "국제 규격", "무게별 색상"],
       "pros": ["전문가용", "일관된 크기", "대회 규격"],
       "cons": ["고가", "초보 부적합"]
@@ -484,8 +436,6 @@
       "exercise_types": ["strength", "flexibility", "rehabilitation"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.7,
-      "review_count": 2100,
       "features": ["루프 디자인", "5단계 강도", "재활 운동"],
       "pros": ["다용도", "휴대성", "재활 적합"],
       "cons": ["라텍스 알레르기", "마모됨"]
@@ -503,8 +453,6 @@
       "exercise_types": ["strength", "activation"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.3,
-      "review_count": 3400,
       "features": ["4단계 강도", "힙 활성화", "컴팩트"],
       "pros": ["가성비", "휴대 편리", "웜업 최적"],
       "cons": ["수명 짧음", "말림 현상"]
@@ -524,8 +472,6 @@
       "exercise_types": ["flexibility", "balance"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.6,
-      "review_count": 1560,
       "features": ["두꺼운 쿠션", "관절 보호", "독일 제조"],
       "pros": ["푹신함", "무릎 보호", "내구성"],
       "cons": ["무거움", "휴대 불편"]
@@ -544,8 +490,6 @@
       "exercise_types": ["flexibility", "balance"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.7,
-      "review_count": 890,
       "features": ["친환경", "안정적 지지", "그립감 우수"],
       "pros": ["친환경 소재", "미끄럼 방지", "견고함"],
       "cons": ["무거움", "물에 약함"]
@@ -564,8 +508,6 @@
       "exercise_types": ["flexibility"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.5,
-      "review_count": 1200,
       "features": ["D링 버클", "내구성 면", "다용도"],
       "pros": ["길이 조절", "부드러움", "저렴함"],
       "cons": ["세탁 필요", "버클 녹 가능"]
@@ -583,8 +525,6 @@
       "exercise_types": ["recovery"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.8,
-      "review_count": 4500,
       "features": ["5개 헤드", "3단계 속도", "조용함"],
       "pros": ["전문가급", "배터리 좋음", "정숙성"],
       "cons": ["고가", "무게감"]
@@ -602,8 +542,6 @@
       "exercise_types": ["recovery"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.6,
-      "review_count": 3200,
       "features": ["휴대용", "3개 헤드", "USB-C 충전"],
       "pros": ["컴팩트", "휴대성", "가성비"],
       "cons": ["파워 약함", "배터리 짧음"]
@@ -621,8 +559,6 @@
       "exercise_types": ["recovery"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.5,
-      "review_count": 1890,
       "features": ["2개 세트", "고밀도", "정밀 마사지"],
       "pros": ["휴대 편리", "저렴함", "효과적"],
       "cons": ["처음 아픔", "기술 필요"]
@@ -639,8 +575,6 @@
       "exercise_types": ["strength", "balance"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.7,
-      "review_count": 2340,
       "features": ["도어 앵커 포함", "무게 조절", "전신 운동"],
       "pros": ["다양한 운동", "공간 효율", "이동식"],
       "cons": ["설치 필요", "기술 요구"]
@@ -657,8 +591,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.4,
-      "review_count": 780,
       "features": ["접이식", "저항 조절", "100개 운동"],
       "pros": ["휴대성", "다양성", "관절 친화"],
       "cons": ["밴드 교체 필요", "강도 한계"]
@@ -677,8 +609,6 @@
       "exercise_types": ["strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.6,
-      "review_count": 567,
       "features": ["W형 그립", "표준 규격", "손목 보호"],
       "pros": ["손목 부담 감소", "이두 집중", "가성비"],
       "cons": ["플레이트 별매", "보관 공간"]
@@ -697,8 +627,6 @@
       "exercise_types": ["cardio", "balance"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.4,
-      "review_count": 1560,
       "features": ["접이식", "손잡이 포함", "최대 100kg"],
       "pros": ["층간 소음 적음", "재미있음", "유산소"],
       "cons": ["공간 필요", "천장 높이"]
@@ -717,8 +645,6 @@
       "exercise_types": ["cardio", "strength"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.9,
-      "review_count": 890,
       "features": ["PM5 모니터", "분리 보관", "공기 저항"],
       "pros": ["전신 운동", "저충격", "정확한 측정"],
       "cons": ["고가", "공간 필요"]
@@ -737,8 +663,6 @@
       "exercise_types": ["cardio"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.8,
-      "review_count": 456,
       "features": ["마그네틱 저항", "블루투스", "M 시리즈"],
       "pros": ["조용함", "내구성", "전문가급"],
       "cons": ["고가", "무거움"]
@@ -757,8 +681,6 @@
       "exercise_types": ["cardio", "hiit"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.7,
-      "review_count": 670,
       "features": ["팬 저항", "LCD 모니터", "무제한 저항"],
       "pros": ["전신 운동", "HIIT 최적", "내구성"],
       "cons": ["소음", "가격"]
@@ -777,8 +699,6 @@
       "exercise_types": ["cardio"],
       "skill_level": "all",
       "use_location": "home",
-      "rating": 4.3,
-      "review_count": 2100,
       "features": ["LCD 카운터", "저항 조절", "컴팩트"],
       "pros": ["공간 절약", "저렴함", "조용함"],
       "cons": ["운동 강도 한계", "내구성"]
@@ -796,8 +716,6 @@
       "exercise_types": ["strength", "cardio"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.7,
-      "review_count": 234,
       "features": ["양방향", "플레이트 추가", "다목적"],
       "pros": ["전신 운동", "기능적", "내구성"],
       "cons": ["공간 필요", "바닥 손상"]
@@ -816,8 +734,6 @@
       "exercise_types": ["plyometric", "cardio"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.5,
-      "review_count": 560,
       "features": ["3가지 높이", "견고함", "미끄럼 방지"],
       "pros": ["다양한 높이", "내구성", "안정적"],
       "cons": ["무거움", "모서리 부상"]
@@ -836,8 +752,6 @@
       "exercise_types": ["cardio", "strength"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.6,
-      "review_count": 345,
       "features": ["내구성 강함", "그립 좋음", "방수"],
       "pros": ["전신 운동", "심폐 강화", "내구성"],
       "cons": ["공간 필요", "앵커 필요"]
@@ -856,8 +770,6 @@
       "exercise_types": ["strength", "cardio"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.5,
-      "review_count": 456,
       "features": ["부드러운 표면", "36cm 직경", "그립 우수"],
       "pros": ["안전함", "기능성 운동", "내구성"],
       "cons": ["벽 필요", "소음"]
@@ -876,8 +788,6 @@
       "exercise_types": ["strength", "cardio", "plyometric"],
       "skill_level": "intermediate",
       "use_location": "gym",
-      "rating": 4.4,
-      "review_count": 567,
       "features": ["무반동", "텍스처 그립", "내충격"],
       "pros": ["스트레스 해소", "전신 폭발력", "내구성"],
       "cons": ["바닥 소음", "공간 필요"]
@@ -896,8 +806,6 @@
       "exercise_types": ["strength", "balance"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.6,
-      "review_count": 340,
       "features": ["원목 그립", "견고함", "다목적"],
       "pros": ["손목 보호", "안정적", "심미성"],
       "cons": ["휴대 불편", "가격"]
@@ -916,8 +824,6 @@
       "exercise_types": ["strength"],
       "skill_level": "intermediate",
       "use_location": "home",
-      "rating": 4.5,
-      "review_count": 670,
       "features": ["멀티그립", "접이식", "최대 150kg"],
       "pros": ["다목적", "안정적", "공간 효율"],
       "cons": ["조립 필요", "무게감"]
@@ -935,8 +841,6 @@
       "exercise_types": ["strength", "balance"],
       "skill_level": "advanced",
       "use_location": "gym",
-      "rating": 4.8,
-      "review_count": 456,
       "features": ["FIG 규격", "조절 스트랩", "넘버링"],
       "pros": ["그립감 최고", "내구성", "전문가용"],
       "cons": ["설치 필요", "난이도 높음"]
@@ -954,8 +858,6 @@
       "exercise_types": ["cardio", "strength"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.6,
-      "review_count": 5600,
       "features": ["GPS", "심박수", "낙상 감지", "워크아웃 추적"],
       "pros": ["iOS 연동", "다양한 앱", "세련된 디자인"],
       "cons": ["안드로이드 불가", "배터리"]
@@ -973,8 +875,6 @@
       "exercise_types": ["recovery"],
       "skill_level": "all",
       "use_location": "all",
-      "rating": 4.7,
-      "review_count": 3200,
       "features": ["6단 강도", "4종 헤드", "2400rpm", "저소음"],
       "pros": ["근막 이완", "회복 촉진", "휴대 편리"],
       "cons": ["가격", "충전 필요"]

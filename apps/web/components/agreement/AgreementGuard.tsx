@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { withReturnTo, currentDestination } from '@/lib/navigation';
 
 // 동의 체크 제외 경로
 const EXCLUDED_PATHS = [
@@ -53,8 +54,10 @@ export function AgreementGuard() {
         }
 
         // 동의 정보가 없거나 필수 동의가 false인 경우
+        // 원 목적지(pathname+search)를 returnTo로 보존 — 동의 완료 후 복귀
+        // (가입=첫 미팅 퍼널: /analysis/integrated?onboarding=1 도달 보장, ADR-114)
         if (!data || !data.terms_agreed || !data.privacy_agreed) {
-          router.replace('/agreement');
+          router.replace(withReturnTo('/agreement', currentDestination(pathname)));
         }
       } catch (err) {
         console.error('[AgreementGuard] Exception:', err);

@@ -122,6 +122,15 @@ describe('Fashion RAG', () => {
       expect(result).toBeDefined();
       expect(result.hasClosetItems).toBe(true);
       expect(result.recommendations.length).toBeGreaterThan(0);
+      // 쿼리 성공 = 옷장 상태 확정
+      expect(result.closetChecked).toBe(true);
+    });
+
+    it('userId가 없으면 옷장을 조회하지 않는다 (closetChecked 미설정)', async () => {
+      const result = await searchFashionItems(null, '오늘 코디');
+
+      expect(result.hasClosetItems).toBe(false);
+      expect(result.closetChecked).toBeUndefined();
     });
 
     it('퍼스널 컬러 기반 매칭 점수가 계산된다', async () => {
@@ -153,6 +162,37 @@ describe('Fashion RAG', () => {
   });
 
   describe('formatFashionForPrompt', () => {
+    it('옷장을 실제 확인했는데 비어있으면 정직한 등록 안내를 포함한다', () => {
+      const result = formatFashionForPrompt({
+        hasClosetItems: false,
+        closetChecked: true,
+        recommendations: [
+          {
+            items: [],
+            occasion: 'casual',
+            reason: '옷장에 등록된 아이템이 없어요',
+            tips: [],
+          },
+        ],
+        generalTips: ['편안한 핏이 좋아요'],
+      });
+
+      expect(result).toContain('옷장을 등록하면 내 옷 기준으로 답해드려요');
+      // 지어내기 금지 지시가 프롬프트에 고정되어야 함
+      expect(result).toContain('지어내지 마세요');
+    });
+
+    it('옷장을 조회하지 않았으면(비로그인/오류) 비었다고 단정하지 않는다', () => {
+      const result = formatFashionForPrompt({
+        hasClosetItems: false,
+        recommendations: [],
+        generalTips: ['다양한 스타일을 시도해보세요!'],
+      });
+
+      expect(result).not.toContain('옷장을 등록하면');
+      expect(result).toContain('스타일링 팁');
+    });
+
     it('추천이 없으면 일반 팁을 반환한다', () => {
       const result = formatFashionForPrompt({
         hasClosetItems: false,

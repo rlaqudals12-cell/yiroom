@@ -184,6 +184,24 @@ describe('Cosmetic Repository', () => {
       const result = mapCosmeticRow(mockCosmeticRow);
       expect(result.personalColorSeasons).toEqual(['Spring', 'Summer']);
     });
+
+    // 재발 방지(2026-07 수수료 귀속 감사): affiliate_url 매핑 누락으로
+    // 어필리에이트 링크가 UI까지 흐르지 않던 비대칭(equipment/healthfood만 매핑) 고정
+    it('affiliate_url/affiliate_commission을 매핑해야 함 (null이면 undefined)', () => {
+      const withAffiliate: CosmeticProductRow = {
+        ...mockCosmeticRow,
+        affiliate_url: 'https://www.coupang.com/vp/products/123?lptag=AF1075777',
+        affiliate_commission: 3.5,
+      };
+
+      const mapped = mapCosmeticRow(withAffiliate);
+      expect(mapped.affiliateUrl).toBe('https://www.coupang.com/vp/products/123?lptag=AF1075777');
+      expect(mapped.affiliateCommission).toBe(3.5);
+
+      const mappedNull = mapCosmeticRow(mockCosmeticRow); // affiliate_url: null
+      expect(mappedNull.affiliateUrl).toBeUndefined();
+      expect(mappedNull.affiliateCommission).toBeUndefined();
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -329,14 +347,17 @@ describe('Cosmetic Repository', () => {
       expect(mockChain.limit).toHaveBeenCalledWith(50);
     });
 
-    it('rating 내림차순으로 정렬해야 함', async () => {
+    it('rating 내림차순 + nulls last로 정렬해야 함 (평점 없는 행이 상단 점유 금지 — 재발 방지)', async () => {
       const mockChain = createChainMock();
       mockChain.order = vi.fn().mockResolvedValue({ data: [], error: null });
       vi.mocked(supabase.from).mockReturnValue(mockChain as any);
 
       await getCosmeticProducts();
 
-      expect(mockChain.order).toHaveBeenCalledWith('rating', { ascending: false });
+      expect(mockChain.order).toHaveBeenCalledWith('rating', {
+        ascending: false,
+        nullsFirst: false,
+      });
     });
 
     it('DB 에러 시 빈 배열을 반환해야 함', async () => {
@@ -475,14 +496,17 @@ describe('Cosmetic Repository', () => {
       expect(mockChain.contains).toHaveBeenCalledWith('personal_color_seasons', ['Spring']);
     });
 
-    it('rating 내림차순 정렬 + 20개 제한이어야 함', async () => {
+    it('rating 내림차순(nulls last) 정렬 + 20개 제한이어야 함', async () => {
       const mockChain = createChainMock();
       mockChain.limit = vi.fn().mockResolvedValue({ data: [], error: null });
       vi.mocked(supabase.from).mockReturnValue(mockChain as any);
 
       await getRecommendedCosmetics('oily');
 
-      expect(mockChain.order).toHaveBeenCalledWith('rating', { ascending: false });
+      expect(mockChain.order).toHaveBeenCalledWith('rating', {
+        ascending: false,
+        nullsFirst: false,
+      });
       expect(mockChain.limit).toHaveBeenCalledWith(20);
     });
 

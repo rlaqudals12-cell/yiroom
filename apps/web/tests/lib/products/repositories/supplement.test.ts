@@ -138,6 +138,24 @@ describe('Supplement Repository', () => {
       expect(result.rating).toBeUndefined();
       expect(result.warnings).toBeUndefined();
     });
+
+    // 재발 방지(2026-07 수수료 귀속 감사): affiliate_url 매핑 누락으로
+    // 어필리에이트 링크가 UI까지 흐르지 않던 비대칭(equipment/healthfood만 매핑) 고정
+    it('affiliate_url/affiliate_commission을 매핑해야 함 (null이면 undefined)', () => {
+      const withAffiliate: SupplementProductRow = {
+        ...mockSupplementRow,
+        affiliate_url: 'https://www.coupang.com/vp/products/456?lptag=AF1075777',
+        affiliate_commission: 5,
+      };
+
+      const mapped = mapSupplementRow(withAffiliate);
+      expect(mapped.affiliateUrl).toBe('https://www.coupang.com/vp/products/456?lptag=AF1075777');
+      expect(mapped.affiliateCommission).toBe(5);
+
+      const mappedNull = mapSupplementRow(mockSupplementRow); // affiliate_url: null
+      expect(mappedNull.affiliateUrl).toBeUndefined();
+      expect(mappedNull.affiliateCommission).toBeUndefined();
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -420,11 +438,7 @@ describe('Supplement Repository', () => {
       const mockChain = {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({
-            data: [
-              { brand: '정관장' },
-              { brand: '뉴트리데이' },
-              { brand: '유한양행' },
-            ],
+            data: [{ brand: '정관장' }, { brand: '뉴트리데이' }, { brand: '유한양행' }],
             error: null,
           }),
         }),

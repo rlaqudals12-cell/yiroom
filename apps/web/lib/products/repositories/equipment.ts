@@ -96,7 +96,7 @@ export async function getWorkoutEquipment(
     query = query.overlaps('exercise_types', filter.exerciseTypes);
   }
 
-  const { data, error } = await query.order('rating', { ascending: false });
+  const { data, error } = await query.order('rating', { ascending: false, nullsFirst: false });
 
   if (error) {
     productLogger.error('운동 기구 조회 실패:', error);
@@ -143,7 +143,7 @@ export async function getRecommendedEquipment(
     .from('workout_equipment')
     .select('*')
     .eq('is_active', true)
-    .order('rating', { ascending: false })
+    .order('rating', { ascending: false, nullsFirst: false })
     .limit(20);
 
   if (targetMuscles && targetMuscles.length > 0) {

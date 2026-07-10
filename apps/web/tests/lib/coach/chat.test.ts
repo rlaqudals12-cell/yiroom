@@ -83,6 +83,10 @@ vi.mock('@/lib/coach/fashion-rag', () => ({
   formatFashionForPrompt: vi.fn().mockReturnValue(''),
 }));
 
+// 패션 RAG mock 참조 (userId 배선 검증용)
+import { searchFashionItems as _searchFashionItems } from '@/lib/coach/fashion-rag';
+const mockSearchFashionItems = vi.mocked(_searchFashionItems);
+
 vi.mock('@/lib/coach/nutrition-rag', () => ({
   searchNutritionItems: vi.fn().mockResolvedValue(null),
   formatNutritionForPrompt: vi.fn().mockReturnValue(''),
@@ -858,6 +862,70 @@ describe('lib/coach/chat', () => {
       expect(hasCalorieQuestion).toBe(true);
 
       mockIsGeminiAvailable.mockReturnValue(false);
+    });
+  });
+
+  // =========================================================================
+  // 옷장 RAG userId 배선 (재발 방지)
+  // =========================================================================
+  describe('옷장 RAG userId 배선 (재발 방지)', () => {
+    // 과거 CoachChatRequest에 userId가 없어 searchFashionItems가 옷장을 못 봤다
+    // ("내 옷장에서 데이트룩" 질문이 일반론 답변으로 위장되던 유령 배선)
+    afterEach(() => {
+      mockIsGeminiAvailable.mockReturnValue(false);
+    });
+
+    it('패션 질문 시 userId가 searchFashionItems 3번째 인자로 전달된다', async () => {
+      mockIsGeminiAvailable.mockReturnValue(true);
+      mockGenerateContent.mockResolvedValue({
+        text: '데이트룩 추천이에요.',
+      } as never);
+
+      await generateCoachResponse({
+        message: '내 옷장에서 데이트룩 추천해줘',
+        userContext: null,
+        userId: 'user_abc',
+      });
+
+      expect(mockSearchFashionItems).toHaveBeenCalledWith(
+        null,
+        '내 옷장에서 데이트룩 추천해줘',
+        'user_abc'
+      );
+    });
+
+    it('스트리밍 경로에서도 userId가 searchFashionItems로 전달된다', async () => {
+      mockIsGeminiAvailable.mockReturnValue(true);
+      async function* mockStream(): AsyncGenerator<string> {
+        yield '코디 추천이에요.';
+      }
+      mockGenerateContentStream.mockReturnValue(mockStream());
+
+      const chunks: string[] = [];
+      for await (const chunk of generateCoachResponseStream({
+        message: '옷장 코디 추천해줘',
+        userContext: null,
+        userId: 'user_abc',
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks.join('').length).toBeGreaterThan(0);
+      expect(mockSearchFashionItems).toHaveBeenCalledWith(null, '옷장 코디 추천해줘', 'user_abc');
+    });
+
+    it('userId 없이 호출하면 undefined가 전달된다 (하위호환)', async () => {
+      mockIsGeminiAvailable.mockReturnValue(true);
+      mockGenerateContent.mockResolvedValue({
+        text: '일반 코디 팁이에요.',
+      } as never);
+
+      await generateCoachResponse({
+        message: '오늘 코디 추천해줘',
+        userContext: null,
+      });
+
+      expect(mockSearchFashionItems).toHaveBeenCalledWith(null, '오늘 코디 추천해줘', undefined);
     });
   });
 

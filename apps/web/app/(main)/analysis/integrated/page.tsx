@@ -17,7 +17,7 @@ import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
 import { measureContrastLevel } from '../personal-color/_components/measure-contrast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
+import { useAnalysisStatus, invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 import { useGender } from '@/components/providers/gender-provider';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { ImageUploadSection } from './_components/ImageUploadSection';
@@ -136,6 +136,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         axisCount: isPartialUpdate ? selectedAxes.length : 5,
       });
 
+      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (신규 사용자가 "분석 0개"로 남지 않도록)
+      invalidateAnalysisCache();
       router.push(`/analysis/integrated/result/${sessionId}`);
     } catch (err) {
       console.error('[IntegratedInput] submit error:', err);

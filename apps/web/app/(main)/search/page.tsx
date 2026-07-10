@@ -249,7 +249,8 @@ export default function SearchPage() {
           .or(
             `name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%,key_ingredients.cs.{${searchQuery}}`
           )
-          .order('rating', { ascending: false })
+          // rating 대부분 null — nulls last로 정렬 무너짐 방지
+          .order('rating', { ascending: false, nullsFirst: false })
           .limit(6);
 
         const beautyResults: SearchProduct[] = (cosmeticData || []).map((row) => ({
