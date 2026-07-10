@@ -194,10 +194,18 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
 
   return (
     <div className="px-4 py-6 pb-24">
-      <h1 className="text-2xl font-bold text-foreground mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-2">
         위시리스트
         <span className="text-pink-500 text-lg font-normal ml-2">{wishlists.length}개</span>
       </h1>
+      {/* 찜 vs 제품함 혼동 방지 — 역할 안내 (창업자 피드백 2026-07-11) */}
+      <p className="text-sm text-muted-foreground mb-6">
+        사고 싶은 제품을 모아두는 곳이에요. 이미 쓰고 있는 제품은{' '}
+        <Link href="/scan/shelf" className="text-pink-500 underline underline-offset-2">
+          내 제품함
+        </Link>
+        에 담으면 맞춤 루틴에 반영돼요.
+      </p>
 
       {/* 성분 상호작용 경고 배너 */}
       <InteractionSummaryBanner

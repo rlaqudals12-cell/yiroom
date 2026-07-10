@@ -173,7 +173,11 @@ export async function openAffiliateLink(
   // 새 탭에서 링크 열기 — 쿠팡 링크는 클릭 시점에 파트너스 태깅(수수료 귀속)
   if (typeof window !== 'undefined') {
     const finalUrl = buildAffiliateRedirectUrl(affiliateUrl, sourcePage);
-    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+    // 팝업 차단 시 window.open이 null 반환 → 버튼이 조용히 무반응이 됨. 현재 탭으로 폴백
+    const opened = window.open(finalUrl, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      window.location.href = finalUrl;
+    }
   }
 }
 
