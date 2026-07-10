@@ -33,6 +33,22 @@ export type {
   BriefingTimeSlot,
 } from './briefing';
 
+// AI 트윈(내 AI 아바타) HTTP 클라이언트 (웹 API 재사용) — ADR-115 / ADR-118
+export {
+  fetchMyTwin,
+  generateTwin,
+  setTwinStatus,
+  deleteTwin,
+  composeOnTwin,
+  parseTwinRecord,
+  approvedOnly,
+  subscribeTwinChanged,
+  notifyTwinChanged,
+  TwinApiError,
+  TWIN_BUDGET_EXCEEDED,
+} from './twin';
+export type { TwinStatus, TwinRecord, TwinGenerateInput, TwinComposeOutput } from './twin';
+
 // 오늘의 맞춤 루틴 HTTP 클라이언트 (웹 API 재사용) — ADR-118
 export { fetchDailyRoutine, RoutineApiError } from './routine';
 export type {

@@ -32,17 +32,36 @@ const patchSchema = z.object({
   action: z.enum(['approve', 'reject']),
 });
 
+/** 모바일 크로스 오리진 허용(ADR-103/ADR-118) — 이 라우트만 개방, 인증은 Bearer JWT가 담당 */
+const CORS_HEADERS: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'PATCH, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-yiroom-client',
+  'Access-Control-Max-Age': '86400',
+};
+
+function withCors(response: NextResponse): NextResponse {
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const { userId } = await auth();
-    if (!userId) return unauthorizedError();
+    if (!userId) return withCors(unauthorizedError());
 
     const { id } = await context.params;
 
     const body = await req.json().catch(() => null);
     const parsed = patchSchema.safeParse(body);
     if (!parsed.success) {
-      return validationError('입력값이 올바르지 않아요', parsed.error.issues[0]?.message);
+      return withCors(validationError('입력값이 올바르지 않아요', parsed.error.issues[0]?.message));
     }
 
     const twin =
@@ -50,30 +69,30 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
         ? await approveTwin(userId, id)
         : await rejectTwin(userId, id);
 
-    return NextResponse.json(twin);
+    return withCors(NextResponse.json(twin));
   } catch (error) {
     if (error instanceof TwinNotFoundError) {
-      return notFoundError(error.message);
+      return withCors(notFoundError(error.message));
     }
     console.error('[API] PATCH /api/visual/twin/[id] error:', error);
-    return internalError('트윈 상태 변경 중 오류가 발생했어요');
+    return withCors(internalError('트윈 상태 변경 중 오류가 발생했어요'));
   }
 }
 
 export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const { userId } = await auth();
-    if (!userId) return unauthorizedError();
+    if (!userId) return withCors(unauthorizedError());
 
     const { id } = await context.params;
 
     await deleteTwin(userId, id);
-    return NextResponse.json({ success: true });
+    return withCors(NextResponse.json({ success: true }));
   } catch (error) {
     if (error instanceof TwinNotFoundError) {
-      return notFoundError(error.message);
+      return withCors(notFoundError(error.message));
     }
     console.error('[API] DELETE /api/visual/twin/[id] error:', error);
-    return internalError('트윈 삭제 중 오류가 발생했어요');
+    return withCors(internalError('트윈 삭제 중 오류가 발생했어요'));
   }
 }

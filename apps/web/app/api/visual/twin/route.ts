@@ -18,6 +18,25 @@ import { unauthorizedError, validationError, internalError } from '@/lib/api/err
 // 나노바나나 이미지 생성은 수 초~수십 초 — 함수 제한 방지
 export const maxDuration = 60;
 
+/** 모바일 크로스 오리진 허용(ADR-103/ADR-118) — 이 라우트만 개방, 인증은 Bearer JWT가 담당 */
+const CORS_HEADERS: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-yiroom-client',
+  'Access-Control-Max-Age': '86400',
+};
+
+function withCors(response: NextResponse): NextResponse {
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 const imageSchema = z
   .string()
   .min(100, '이미지 데이터가 너무 짧아요')
@@ -39,38 +58,40 @@ const createSchema = z.object({
 export async function GET() {
   try {
     const { userId } = await auth();
-    if (!userId) return unauthorizedError();
+    if (!userId) return withCors(unauthorizedError());
 
     const twin = await getMyTwin(userId);
-    return NextResponse.json({ twin });
+    return withCors(NextResponse.json({ twin }));
   } catch (error) {
     console.error('[API] GET /api/visual/twin error:', error);
-    return internalError('트윈을 불러오는 중 오류가 발생했어요');
+    return withCors(internalError('트윈을 불러오는 중 오류가 발생했어요'));
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return unauthorizedError();
+    if (!userId) return withCors(unauthorizedError());
 
     const body = await req.json().catch(() => null);
     const parsed = createSchema.safeParse(body);
     if (!parsed.success) {
-      return validationError('입력값이 올바르지 않아요', parsed.error.issues[0]?.message);
+      return withCors(validationError('입력값이 올바르지 않아요', parsed.error.issues[0]?.message));
     }
 
     // 비용 가드 (보정+착장+트윈 합산 일 5회)
     const budget = checkAndConsumeBudget(userId);
     if (!budget.allowed) {
-      return NextResponse.json(
-        {
-          error: '오늘의 AI 이미지 생성 횟수를 모두 사용했어요. 내일 다시 시도해 주세요.',
-          code: 'VISUAL_BUDGET_EXCEEDED',
-          remaining: 0,
-          limit: budget.limit,
-        },
-        { status: 429 }
+      return withCors(
+        NextResponse.json(
+          {
+            error: '오늘의 AI 이미지 생성 횟수를 모두 사용했어요. 내일 다시 시도해 주세요.',
+            code: 'VISUAL_BUDGET_EXCEEDED',
+            remaining: 0,
+            limit: budget.limit,
+          },
+          { status: 429 }
+        )
       );
     }
 
@@ -80,13 +101,13 @@ export async function POST(req: NextRequest) {
       bodyConstraint: parsed.data.bodyConstraint,
     });
 
-    return NextResponse.json(twin);
+    return withCors(NextResponse.json(twin));
   } catch (error) {
     if (error instanceof TwinGenerationError) {
       // 가짜 트윈 금지 — 정직한 실패
-      return internalError(error.message);
+      return withCors(internalError(error.message));
     }
     console.error('[API] POST /api/visual/twin error:', error);
-    return internalError('트윈 생성 중 오류가 발생했어요');
+    return withCors(internalError('트윈 생성 중 오류가 발생했어요'));
   }
 }

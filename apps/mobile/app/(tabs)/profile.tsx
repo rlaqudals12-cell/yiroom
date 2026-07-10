@@ -14,7 +14,12 @@ import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import { AnalysisTimeline } from '../../components/analysis';
-import { WellnessScoreRing, LevelBadge, AchievementGrid } from '../../components/profile';
+import {
+  WellnessScoreRing,
+  LevelBadge,
+  AchievementGrid,
+  MyTwinCard,
+} from '../../components/profile';
 import { GlassCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
@@ -381,6 +386,13 @@ export default function ProfileScreen(): React.JSX.Element {
           />
         </GlassCard>
       </Animated.View>
+
+      {/* 내 AI 아바타 (ADR-115) — 로그인 시에만, 승인된 트윈만 표시 */}
+      {isSignedIn && (
+        <Animated.View entering={staggeredEntry(1)} style={{ marginBottom: spacing.lg }}>
+          <MyTwinCard />
+        </Animated.View>
+      )}
 
       {/* 기록 — ADR-098: W/N 기록 섹션은 WELLNESS_PHASE2에 게이팅 (Phase 2 보류) */}
       {FEATURE_FLAGS.WELLNESS_PHASE2 && (

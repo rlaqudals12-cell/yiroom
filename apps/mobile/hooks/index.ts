@@ -60,6 +60,9 @@ export { useCrossModuleInsights, type CrossModuleInsight } from './useCrossModul
 // 아침 브리핑 (ADR-118)
 export { useBriefing, type UseBriefingResult } from './useBriefing';
 
+// 내 AI 아바타(트윈) (ADR-115 / ADR-118)
+export { useMyTwin, type UseMyTwinResult } from './useMyTwin';
+
 // 오늘의 맞춤 루틴 (ADR-118)
 export { useDailyRoutine, type UseDailyRoutineResult } from './useDailyRoutine';
 

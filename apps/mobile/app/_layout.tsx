@@ -56,6 +56,7 @@ function ThemedStack() {
         <Stack.Screen name="(reports)" options={{ headerShown: false }} />
         <Stack.Screen name="(social)" options={{ headerShown: false }} />
         <Stack.Screen name="(workout)" options={{ headerShown: false }} />
+        <Stack.Screen name="(twin)" options={{ headerShown: false }} />
         <Stack.Screen name="products" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
         <Stack.Screen

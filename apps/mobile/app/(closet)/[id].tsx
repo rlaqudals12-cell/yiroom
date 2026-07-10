@@ -11,6 +11,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { SkeletonCard } from '@/components/ui/SkeletonLoader';
+import { TwinTryonButton } from '@/components/visual-expression';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
@@ -258,6 +259,14 @@ export default function ItemDetailScreen() {
           </GlassCard>
         </Animated.View>
       )}
+      {/* 내 AI 아바타에게 입혀보기 (ADR-115) — 승인된 트윈 + 이미지 URL 있을 때만 노출 */}
+      <Animated.View
+        entering={FadeInUp.delay(440).duration(TIMING.normal)}
+        style={{ marginHorizontal: spacing.md, marginTop: spacing.md }}
+      >
+        <TwinTryonButton garmentImageUrl={item.imageUrl} />
+      </Animated.View>
+
       {/* 하단 액션 버튼 */}
       <View
         style={[styles.actionBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}
