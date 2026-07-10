@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Image as ImageIcon, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
+import { prepareUploadBlob } from '@/lib/image/upload-downscale';
 import type { PostType } from '@/lib/feed/types';
 
 /**
@@ -93,7 +94,8 @@ export default function CreatePostPage() {
       const mediaUrls: string[] = [];
       for (const image of images) {
         const formData = new FormData();
-        formData.append('file', image);
+        // Vercel 본문 제한(4.5MB) 대응 — 전송 전 축소
+        formData.append('file', await prepareUploadBlob(image));
         formData.append('bucket', 'feed-images');
 
         // 이미지 업로드 API 호출 (기존 인벤토리 업로드 API 재사용)

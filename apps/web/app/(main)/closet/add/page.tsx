@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ItemUploader, type UploadResult } from '@/components/inventory';
+import { prepareUploadBlob, uploadErrorMessage } from '@/lib/image/upload-downscale';
 import {
   ClothingCategory,
   CLOTHING_SUB_CATEGORIES,
@@ -123,17 +124,10 @@ export default function AddClothingPage() {
       // 먼저 이미지를 Storage에 업로드
       const itemId = crypto.randomUUID();
 
-      // 이미지 업로드
+      // 이미지 업로드 — 원본 해상도 PNG는 Vercel 본문 제한(4.5MB)에 걸려
+      // 라우트 도달 전 413이 나므로 전송 전에 축소한다(2026-07-11 실증 수리)
       const formData = new FormData();
-
-      // base64 to blob
-      const base64 = uploadResult.processedUrl.split(',')[1];
-      const binary = atob(base64);
-      const array = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        array[i] = binary.charCodeAt(i);
-      }
-      const blob = new Blob([array], { type: 'image/png' });
+      const blob = await prepareUploadBlob(uploadResult.processedUrl);
 
       formData.append('file', blob, 'image.png');
       formData.append('category', 'closet');
@@ -146,7 +140,7 @@ export default function AddClothingPage() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Image upload failed');
+        throw new Error(uploadErrorMessage(uploadResponse.status));
       }
 
       const { url: imageUrl } = await uploadResponse.json();
@@ -181,7 +175,10 @@ export default function AddClothingPage() {
       router.push('/closet');
     } catch (error) {
       console.error('[AddClothing] Error:', error);
-      alert('저장 중 오류가 발생했습니다.');
+      // 원인별 정직한 안내(413 용량 초과 등) — 일반 문구로 뭉개지 않는다
+      alert(
+        error instanceof Error && error.message ? error.message : '저장 중 오류가 발생했습니다.'
+      );
     } finally {
       setSaving(false);
     }

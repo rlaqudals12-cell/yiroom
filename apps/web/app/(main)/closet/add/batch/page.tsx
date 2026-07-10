@@ -26,9 +26,9 @@ import {
   resizeImage,
   validateImageFile,
   blobToDataUrl,
-  dataUrlToBlob,
   type ClothingClassificationResult,
 } from '@/lib/inventory/imageProcessing';
+import { prepareUploadBlob, uploadErrorMessage } from '@/lib/image/upload-downscale';
 import type { ClothingCategory } from '@/types/inventory';
 
 const CATEGORY_LABELS: Record<ClothingCategory, string> = {
@@ -161,7 +161,8 @@ export default function BatchAddClothingPage() {
         try {
           const itemId = crypto.randomUUID();
           const formData = new FormData();
-          formData.append('file', dataUrlToBlob(item.previewUrl), 'image.png');
+          // Vercel 본문 제한(4.5MB) 대응 — 전송 전 축소 (2026-07-11 실증 수리)
+          formData.append('file', await prepareUploadBlob(item.previewUrl), 'image.png');
           formData.append('category', 'closet');
           formData.append('itemId', itemId);
           formData.append('type', 'processed');
@@ -170,7 +171,7 @@ export default function BatchAddClothingPage() {
             method: 'POST',
             body: formData,
           });
-          if (!uploadRes.ok) throw new Error('이미지 업로드 실패');
+          if (!uploadRes.ok) throw new Error(uploadErrorMessage(uploadRes.status));
           const { url: imageUrl } = await uploadRes.json();
 
           const c = item.classification;
