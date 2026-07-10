@@ -16,7 +16,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Sparkles, Upload, Check, RefreshCw, X, ShieldAlert } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ import {
   TwinApiError,
   type TwinRecord,
 } from '@/lib/api/twin';
+import { downscaleToDataUrl } from '@/lib/image/downscale';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 type Phase = 'intro' | 'upload' | 'generating' | 'review' | 'error';
@@ -54,6 +55,14 @@ export default function TwinStudioScreen(): React.JSX.Element {
   const [errorMsg, setErrorMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // 언마운트 후 setState 방지 가드 (생성/승인이 화면 이탈 후 완료될 수 있음)
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const pickImage = async (kind: 'face' | 'body'): Promise<void> => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -64,14 +73,13 @@ export default function TwinStudioScreen(): React.JSX.Element {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.7,
-        base64: true,
         allowsEditing: true,
         aspect: kind === 'face' ? [1, 1] : [3, 4],
       });
-      if (result.canceled || !result.assets[0]?.base64) return;
-      const asset = result.assets[0];
-      const mime = asset.mimeType ?? 'image/jpeg';
-      const dataUrl = `data:${mime};base64,${asset.base64}`;
+      if (result.canceled || !result.assets[0]?.uri) return;
+      // 전송 전 1024px 다운스케일 → data URL (원본 수 MB base64 전송 방지)
+      const dataUrl = await downscaleToDataUrl(result.assets[0].uri);
+      if (!mountedRef.current) return;
       if (kind === 'face') setFaceImage(dataUrl);
       else setBodyImage(dataUrl);
     } catch {
@@ -79,15 +87,20 @@ export default function TwinStudioScreen(): React.JSX.Element {
     }
   };
 
-  // 승인 전 트윈 정리(다시 만들기/그만두기) — 실패해도 흐름 진행
-  const rejectCurrent = async (): Promise<void> => {
-    if (!twin) return;
+  // 승인 전 트윈을 id로 정리 — 실패해도 흐름 진행(예산/노출 방지용 best-effort)
+  const rejectTwinById = async (id: string): Promise<void> => {
     try {
       const token = await getToken();
-      if (token) await setTwinStatus(twin.id, 'reject', token);
+      if (token) await setTwinStatus(id, 'reject', token);
     } catch {
       /* 정리 실패는 무시 — 사용자 흐름 우선 */
     }
+  };
+
+  // 승인 전 트윈 정리(다시 만들기/그만두기)
+  const rejectCurrent = async (): Promise<void> => {
+    if (!twin) return;
+    await rejectTwinById(twin.id);
   };
 
   const generate = async (): Promise<void> => {
@@ -97,6 +110,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
     try {
       const token = await getToken();
       if (!token) {
+        if (!mountedRef.current) return;
         setErrorMsg('로그인 세션이 만료됐어요. 다시 로그인해 주세요.');
         setPhase('error');
         return;
@@ -105,9 +119,16 @@ export default function TwinStudioScreen(): React.JSX.Element {
         { faceImageBase64: faceImage, bodyImageBase64: bodyImage ?? undefined },
         token
       );
+      // 생성 중 화면을 벗어났다면: 승인 못 하는 pending 트윈이 서버에 남아 예산만 소모 →
+      // 방금 만든 트윈을 정리(reject)하고 종료
+      if (!mountedRef.current) {
+        void rejectTwinById(rec.id);
+        return;
+      }
       setTwin(rec);
       setPhase('review');
     } catch (e) {
+      if (!mountedRef.current) return;
       setErrorMsg(
         e instanceof TwinApiError
           ? e.message
@@ -134,7 +155,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
     } catch (e) {
       Alert.alert('오류', e instanceof TwinApiError ? e.message : '승인에 실패했어요.');
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   };
 
@@ -142,6 +163,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
   const regenerate = async (): Promise<void> => {
     setBusy(true);
     await rejectCurrent();
+    if (!mountedRef.current) return;
     setTwin(null);
     setBusy(false);
     await generate();
@@ -151,7 +173,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
   const discard = async (): Promise<void> => {
     setBusy(true);
     await rejectCurrent();
-    setBusy(false);
+    if (mountedRef.current) setBusy(false);
     router.back();
   };
 

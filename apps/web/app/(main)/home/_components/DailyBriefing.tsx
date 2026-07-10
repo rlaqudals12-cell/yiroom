@@ -29,7 +29,11 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
-import { assembleBriefing } from '@/lib/briefing';
+import {
+  assembleBriefing,
+  type BriefingCapsulePriority,
+  type BriefingRecentProduct,
+} from '@/lib/briefing';
 import { generateInsights, analysisToDataBundle } from '@/lib/insights';
 import {
   getCurrentWeather,
@@ -81,6 +85,76 @@ function useEnvironmentAdvice(): EnvironmentAdvice | null {
   return advice;
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** "기억한다" 화법 입력(제품함 후속 + 오늘 캡슐 우선) */
+interface BriefingMemory {
+  recentProduct: BriefingRecentProduct | null;
+  capsulePriority: BriefingCapsulePriority | null;
+}
+
+/** 최근 담은 소유 제품 1건 — 기존 제품함 API 재사용. 실패/없음이면 null(미주입) */
+async function loadRecentProduct(): Promise<BriefingRecentProduct | null> {
+  try {
+    const res = await fetch('/api/scan/shelf?status=owned&limit=1');
+    if (!res.ok) return null;
+    const json = await res.json();
+    const item = Array.isArray(json?.items) ? json.items[0] : null;
+    if (!item?.productName) return null;
+    const scannedAt = item.scannedAt ? new Date(item.scannedAt) : null;
+    const addedDaysAgo =
+      scannedAt && !Number.isNaN(scannedAt.getTime())
+        ? Math.max(0, Math.floor((Date.now() - scannedAt.getTime()) / DAY_MS))
+        : null;
+    return { name: item.productName, addedDaysAgo };
+  } catch {
+    return null;
+  }
+}
+
+/** 오늘 캡슐 우선 항목 1건 — GET(캐시 조회, 생성 부작용 없음). 없거나 실패면 null(미주입) */
+async function loadCapsulePriority(): Promise<BriefingCapsulePriority | null> {
+  try {
+    const res = await fetch('/api/capsule/daily');
+    if (!res.ok) return null;
+    const json = await res.json();
+    const first = json?.data?.items?.[0];
+    if (!first?.name) return null;
+    return { name: first.name, reason: first.reason ?? null };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * "기억한다" 화법 입력 로드 — 모바일 /api/briefing과 정합(두 소비처가 같은 화법을 낸다).
+ * 데이터 없으면 미주입(assembleBriefing의 정직성 가드 그대로).
+ */
+function useBriefingMemory(hasUser: boolean): BriefingMemory {
+  const [memory, setMemory] = useState<BriefingMemory>({
+    recentProduct: null,
+    capsulePriority: null,
+  });
+
+  useEffect(() => {
+    if (!hasUser) return;
+    let cancelled = false;
+    async function load(): Promise<void> {
+      const [recentProduct, capsulePriority] = await Promise.all([
+        loadRecentProduct(),
+        loadCapsulePriority(),
+      ]);
+      if (!cancelled) setMemory({ recentProduct, capsulePriority });
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasUser]);
+
+  return memory;
+}
+
 interface DailyBriefingProps {
   analyses: AnalysisSummary[];
 }
@@ -89,6 +163,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   const { user } = useUser();
   const router = useRouter();
   const env = useEnvironmentAdvice();
+  const memory = useBriefingMemory(!!user);
   const [question, setQuestion] = useState('');
 
   // 실이름만 — '회원' 같은 placeholder는 넘기지 않음(이름 없으면 생략형)
@@ -102,8 +177,11 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         userName,
         weatherSkinTip: env?.skin?.[0] ?? null,
         weatherFashionTip: env?.fashion?.[0] ?? null,
+        // "기억한다" 화법(제품함 후속·오늘 캡슐 우선) — 모바일 /api/briefing과 정합
+        recentProduct: memory.recentProduct,
+        capsulePriority: memory.capsulePriority,
       }),
-    [analyses, userName, env]
+    [analyses, userName, env, memory]
   );
 
   const { briefing, myColors } = payload;

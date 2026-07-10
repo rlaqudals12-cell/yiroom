@@ -28,6 +28,10 @@ export async function loadFaceApiModels(
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
   ]);
 
+  // 타임아웃이 race를 이겨 load가 버려질 때, 뒤늦은 reject가 unhandled rejection으로
+  // 새지 않도록 꼬리 캐치를 단다. race에는 원본 load를 넘기므로 실제 로드 실패는 그대로 전파된다.
+  void load.catch(() => {});
+
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error('FACE_API_MODEL_TIMEOUT')), timeoutMs);

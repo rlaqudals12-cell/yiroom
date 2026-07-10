@@ -17,12 +17,22 @@ import { useUser } from '@clerk/clerk-expo';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera as CameraIcon, ImageUp, ScanLine, AlertTriangle, X } from 'lucide-react-native';
-import { useCallback, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+  Alert,
+  Linking,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScanVerdict } from '@/components/scan';
 import { ScreenContainer } from '@/components/ui';
+import { downscaleToBase64 } from '@/lib/image/downscale';
 import { analyzeIngredientImage, type OcrResult } from '@/lib/scan/ingredient-ocr';
 import { buildScanVerdict, fetchScanUserAnalysis, type ScanVerdictData } from '@/lib/scan/verdict';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -44,12 +54,21 @@ export default function ScanScreen(): React.JSX.Element {
 
   const userId = user?.id;
 
+  // 언마운트 후 setState 방지 가드 (비동기 핸들러가 화면 이탈 후 완료될 수 있음)
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // OCR → 판정 파이프라인. 성분을 못 읽으면 정직 안내(지어내지 않음).
   const runAnalysis = useCallback(
     async (base64: string) => {
       setPhase('analyzing');
       try {
         const ocrResult = await analyzeIngredientImage(base64);
+        if (!mountedRef.current) return;
 
         // 추출 실패 또는 성분 0개 → 정직하게 재촬영 안내 (모의 성분으로 판정하지 않음)
         if (!ocrResult.success || ocrResult.ingredients.length === 0) {
@@ -71,12 +90,14 @@ export default function ScanScreen(): React.JSX.Element {
           userAnalysis,
           supabase,
         });
+        if (!mountedRef.current) return;
 
         setOcr(ocrResult);
         setVerdict(v);
         setPhase('result');
       } catch (e) {
         console.error('[scan] 판정 실패:', e);
+        if (!mountedRef.current) return;
         setOcr(null);
         setPhase('error');
       }
@@ -84,43 +105,63 @@ export default function ScanScreen(): React.JSX.Element {
     [supabase, userId]
   );
 
-  // 카메라 열기 (권한 확인 후)
+  // 카메라 열기 (권한 확인 후). 영구 거부 시 설정 앱으로 안내.
   const openCamera = useCallback(async () => {
     if (!permission?.granted) {
       const res = await requestPermission();
-      if (!res.granted) return;
+      if (!res.granted) {
+        // 영구 거부(다시 물어볼 수 없음) → 시스템 설정으로 유도
+        if (!res.canAskAgain) {
+          Alert.alert(
+            '카메라 권한이 필요해요',
+            '성분표를 촬영하려면 설정에서 카메라 권한을 허용해 주세요.',
+            [
+              { text: '취소', style: 'cancel' },
+              { text: '설정 열기', onPress: () => void Linking.openSettings() },
+            ]
+          );
+        }
+        return;
+      }
     }
     setPhase('camera');
   }, [permission?.granted, requestPermission]);
 
-  // 카메라 촬영
+  // 카메라 촬영 (전송 전 1024px 다운스케일)
   const takePicture = useCallback(async () => {
     if (!cameraRef.current || capturing) return;
     setCapturing(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: true });
-      if (photo?.base64) {
-        await runAnalysis(photo.base64);
-      } else {
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
+      if (photo?.uri) {
+        const base64 = await downscaleToBase64(photo.uri);
+        if (!mountedRef.current) return;
+        if (base64) {
+          await runAnalysis(base64);
+        } else {
+          setPhase('error');
+        }
+      } else if (mountedRef.current) {
         setPhase('error');
       }
     } catch (e) {
       console.error('[scan] 촬영 실패:', e);
-      setPhase('error');
+      if (mountedRef.current) setPhase('error');
     } finally {
-      setCapturing(false);
+      if (mountedRef.current) setCapturing(false);
     }
   }, [capturing, runAnalysis]);
 
-  // 갤러리에서 선택
+  // 갤러리에서 선택 (전송 전 1024px 다운스케일)
   const pickFromGallery = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.8,
-      base64: true,
     });
-    if (!result.canceled && result.assets[0]?.base64) {
-      await runAnalysis(result.assets[0].base64);
+    if (!result.canceled && result.assets[0]?.uri) {
+      const base64 = await downscaleToBase64(result.assets[0].uri);
+      if (!mountedRef.current) return;
+      if (base64) await runAnalysis(base64);
     }
   }, [runAnalysis]);
 

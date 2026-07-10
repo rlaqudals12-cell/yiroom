@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
+import { useNotificationResponse } from '../lib/notifications/useNotifications';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
 import { appLogger } from '../lib/utils/logger';
 
@@ -24,6 +25,9 @@ LogBox.ignoreLogs([
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
 function ThemedStack() {
   const { colors, isDark } = useTheme();
+
+  // 알림 탭 → 딥링크(data.route로 이동). 아침 브리핑 등 로컬 알림 탭을 [오늘] 탭으로 연결.
+  useNotificationResponse();
 
   return (
     <>

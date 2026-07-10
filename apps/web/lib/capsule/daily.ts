@@ -440,29 +440,32 @@ interface SaveInput {
 
 /**
  * Daily Capsule DB 저장
+ *
+ * upsert(onConflict: clerk_user_id,date)로 저장한다. 예전 insert + 23505 폴백은
+ * 스테일 삭제(deleteStaleCapsule)가 실패한 경우 옛 행을 그대로 반환해, 사용자가
+ * 갱신된 엔진 루틴을 못 보고 스테일 캡슐을 무한 반환받던 버그가 있었다.
+ * upsert는 충돌 시 옛 행을 새 items로 덮어써 이 문제를 원천 차단한다.
  */
 async function saveDailyCapsule(input: SaveInput): Promise<DailyCapsule> {
   const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
     .from('daily_capsules')
-    .insert({
-      clerk_user_id: input.userId,
-      date: input.date,
-      items: input.items,
-      total_ccs: input.totalCcs,
-      estimated_minutes: input.estimatedMinutes,
-      status: 'pending',
-    })
+    .upsert(
+      {
+        clerk_user_id: input.userId,
+        date: input.date,
+        items: input.items,
+        total_ccs: input.totalCcs,
+        estimated_minutes: input.estimatedMinutes,
+        status: 'pending',
+      },
+      { onConflict: 'clerk_user_id,date' }
+    )
     .select()
     .single();
 
   if (error || !data) {
-    // UNIQUE 제약 위반 시 기존 데이터 반환
-    if (error?.code === '23505') {
-      const cached = await getCachedDailyCapsule(input.userId, input.date);
-      if (cached) return cached;
-    }
     throw new Error(`Daily Capsule 저장 실패: ${error?.message}`);
   }
 

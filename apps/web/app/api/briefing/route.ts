@@ -18,9 +18,20 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { computeSkinTrend } from '@yiroom/shared';
-import { assembleBriefing } from '@/lib/briefing';
+import {
+  assembleBriefing,
+  type BriefingCapsulePriority,
+  type BriefingRecentProduct,
+} from '@/lib/briefing';
 import { unauthorizedError, internalError } from '@/lib/api/error-response';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { getShelfItems } from '@/lib/scan/product-shelf';
+import { getTodayDailyCapsule } from '@/lib/capsule';
+import {
+  getCurrentHourInTimezone,
+  getDateKeyInTimezone,
+  DEFAULT_TIMEZONE,
+} from '@/lib/utils/timezone';
 import { getCurrentWeather, generateEnvironmentAdvice } from '@/lib/weather';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 
@@ -168,10 +179,45 @@ async function collectAnalyses(supabase: Supabase): Promise<AnalysisSummary[]> {
   return results;
 }
 
-/** YYYY-MM-DD (로컬 = Asia/Seoul 서버) */
-function toDateKey(now: Date): string {
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** 경과일 — 실제 now(UTC) 대비. 음수는 0으로 절삭 */
+function daysSince(date: Date, now: Date): number {
+  return Math.max(0, Math.floor((now.getTime() - date.getTime()) / DAY_MS));
+}
+
+/**
+ * 최근 제품함에 담은 소유 제품 1건 → "기억한다" 화법(제품함 후속) 입력.
+ * 실패/없음이면 null(지어내지 않음 — assembleBriefing이 미주입).
+ */
+async function collectRecentProduct(
+  supabase: Supabase,
+  userId: string,
+  now: Date
+): Promise<BriefingRecentProduct | null> {
+  try {
+    const { items } = await getShelfItems(supabase, userId, { status: 'owned', limit: 1 });
+    const latest = items[0];
+    if (!latest?.productName) return null;
+    return { name: latest.productName, addedDaysAgo: daysSince(latest.scannedAt, now) };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 오늘 캡슐의 우선 항목 1건 → 조언 입력. 캐시된 오늘 캡슐만 읽는다(생성 부작용 없음).
+ * 없거나 실패면 null(미주입).
+ */
+async function collectCapsulePriority(userId: string): Promise<BriefingCapsulePriority | null> {
+  try {
+    const capsule = await getTodayDailyCapsule(userId);
+    const first = capsule?.items?.[0];
+    if (!first?.name) return null;
+    return { name: first.name, reason: first.reason ?? null };
+  } catch {
+    return null;
+  }
 }
 
 export async function OPTIONS(): Promise<NextResponse> {
@@ -228,18 +274,32 @@ export async function GET(): Promise<NextResponse> {
       /* 날씨 조회 실패 — 팁 없이 진행 */
     }
 
+    // 시각/날짜는 서울 기준(Vercel UTC 서버에서 인사·날짜가 어긋나지 않도록).
+    // now(실제 UTC)는 "경과 시간" 계산용, hour는 인사 시간대용으로 분리한다.
     const now = new Date();
+    const hour = getCurrentHourInTimezone(DEFAULT_TIMEZONE);
+    const date = getDateKeyInTimezone(DEFAULT_TIMEZONE);
+
+    // "기억한다" 화법 입력 — 제품함 후속 + 오늘 캡슐 우선(둘 다 없으면 미주입, 정직성 가드)
+    const [recentProduct, capsulePriority] = await Promise.all([
+      collectRecentProduct(supabase, userId, now),
+      collectCapsulePriority(userId),
+    ]);
+
     const payload = assembleBriefing(analyses, {
       userName,
       now,
+      hour,
       weatherSkinTip,
       weatherFashionTip,
+      recentProduct,
+      capsulePriority,
     });
 
     return withCors(
       NextResponse.json({
         success: true,
-        data: { date: toDateKey(now), ...payload },
+        data: { date, ...payload },
       })
     );
   } catch (error) {

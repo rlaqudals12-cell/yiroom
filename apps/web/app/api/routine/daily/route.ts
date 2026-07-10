@@ -29,6 +29,7 @@ import { getShelfItems } from '@/lib/scan/product-shelf';
 import { getBeautyProfile } from '@/lib/capsule';
 import { unauthorizedError, internalError } from '@/lib/api/error-response';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { getZonedNow, DEFAULT_TIMEZONE } from '@/lib/utils/timezone';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 
 /** 모바일 크로스 오리진 허용(ADR-103) — 이 라우트만 개방, 인증은 Bearer JWT가 담당 */
@@ -121,7 +122,7 @@ function toStepDTO(step: RoutineStep): RoutineStepDTO {
   };
 }
 
-/** YYYY-MM-DD (로컬 = Asia/Seoul 서버) */
+/** YYYY-MM-DD — 입력 now의 로컬 게터 기준(호출부는 서울 벽시계 Date를 넘긴다) */
 function toDateKey(now: Date): string {
   const pad = (n: number): string => String(n).padStart(2, '0');
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
@@ -157,7 +158,8 @@ export async function GET(): Promise<NextResponse> {
       return withCors(unauthorizedError());
     }
 
-    const now = new Date();
+    // 서울 벽시계 기준 — Vercel UTC 서버에서 날짜·요일(스킨 사이클링)이 어긋나지 않도록.
+    const now = getZonedNow(DEFAULT_TIMEZONE);
     const date = toDateKey(now);
     const supabase = createClerkSupabaseClient();
 

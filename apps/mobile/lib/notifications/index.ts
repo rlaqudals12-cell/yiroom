@@ -77,3 +77,21 @@ export {
   deactivatePushToken,
   getActivePushTokens,
 } from './api';
+
+// 아침 브리핑 로컬 알림 (ADR-114/118)
+export {
+  type MorningBriefingSettings,
+  DEFAULT_MORNING_BRIEFING_SETTINGS,
+  MORNING_BRIEFING_ROUTE,
+  MORNING_BRIEFING_TITLE,
+  MORNING_BRIEFING_BODY,
+  formatBriefingTime,
+  loadMorningBriefingSettings,
+  saveMorningBriefingSettings,
+  scheduleMorningBriefing,
+  cancelMorningBriefing,
+  hasSeenBriefingProposal,
+  markBriefingProposalSeen,
+} from './morning-briefing';
+
+export { type UseMorningBriefingResult, useMorningBriefing } from './useMorningBriefing';

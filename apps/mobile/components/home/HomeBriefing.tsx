@@ -14,11 +14,21 @@
  * @see apps/web/app/(main)/home/_components/DailyBriefing.tsx
  */
 import { useRouter } from 'expo-router';
-import { ArrowRight, ChevronRight, Shirt, Sparkles, WifiOff } from 'lucide-react-native';
+import { ArrowRight, Bell, ChevronRight, Shirt, Sparkles, WifiOff } from 'lucide-react-native';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View, type ViewStyle } from 'react-native';
+import {
+  Alert,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import { useBriefing } from '../../hooks/useBriefing';
+import { useMorningBriefing } from '../../lib/notifications/useMorningBriefing';
 import { useTheme } from '../../lib/theme';
 
 export interface HomeBriefingProps {
@@ -35,6 +45,9 @@ export function HomeBriefing({
   const { data, stale, isLoading } = useBriefing();
   const [question, setQuestion] = useState('');
 
+  // 아침 브리핑 로컬 알림 — 첫 브리핑 조회 후 "매일 아침 알려드릴까요?" 1회 제안
+  const morningBriefing = useMorningBriefing();
+
   // 로딩 중이거나, 브리핑이 없거나(에러·캐시 없음), 신규 유저(분석 0건)면
   // 브리핑 섹션을 숨긴다 — 홈의 기존 퀵액션/첫 분석 유도가 그대로 노출된다.
   if (isLoading || !data || !data.hasAnalyses) return null;
@@ -47,6 +60,21 @@ export function HomeBriefing({
     router.push(
       q ? ({ pathname: '/(tabs)/ask', params: { q } } as never) : ('/(tabs)/ask' as never)
     );
+  }
+
+  async function handleAcceptBriefing(): Promise<void> {
+    const granted = await morningBriefing.acceptProposal();
+    // 권한 거부 시 정직 안내 + 설정 앱 안내
+    if (!granted) {
+      Alert.alert(
+        '알림 권한 필요',
+        '매일 아침 알림을 받으려면 알림 권한이 필요해요. 설정에서 알림을 허용해 주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '설정 열기', onPress: () => Linking.openSettings() },
+        ]
+      );
+    }
   }
 
   return (
@@ -320,6 +348,88 @@ export function HomeBriefing({
           <ArrowRight size={20} color="#FFFFFF" strokeWidth={2} />
         </Pressable>
       </View>
+
+      {/* 5) 아침 브리핑 알림 1회 제안 — 강제 없이 자연스럽게(수락 시 ON) */}
+      {morningBriefing.shouldShowProposal && (
+        <View
+          style={[
+            styles.proposal,
+            {
+              backgroundColor: isDark ? 'rgba(236,72,153,0.1)' : '#FDF2F8',
+              borderColor: isDark ? 'rgba(236,72,153,0.25)' : '#FBD5E6',
+              borderRadius: radii.xl,
+              padding: spacing.md,
+              marginTop: spacing.smx,
+            },
+          ]}
+          testID="home-briefing-proposal"
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+            <View style={[styles.proposalIcon, { backgroundColor: brand.primary }]}>
+              <Bell size={14} color="#FFFFFF" strokeWidth={2} />
+            </View>
+            <Text
+              style={{
+                flex: 1,
+                color: colors.foreground,
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
+              매일 아침 브리핑을 알려드릴까요?
+            </Text>
+          </View>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.xs,
+              marginTop: spacing.xs,
+            }}
+          >
+            오전 7:30에 오늘의 브리핑이 준비되면 알림을 보내드려요. 시각은 설정에서 바꿀 수 있어요.
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: spacing.xs,
+              marginTop: spacing.smx,
+            }}
+          >
+            <Pressable
+              onPress={() => morningBriefing.dismissProposal()}
+              accessibilityRole="button"
+              accessibilityLabel="다음에"
+              testID="home-briefing-proposal-dismiss"
+              style={({ pressed }) => [styles.proposalBtn, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
+                다음에
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleAcceptBriefing}
+              accessibilityRole="button"
+              accessibilityLabel="네, 좋아요"
+              testID="home-briefing-proposal-accept"
+              style={({ pressed }) => [
+                styles.proposalBtn,
+                { backgroundColor: brand.primary, opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.semibold,
+                }}
+              >
+                네, 좋아요
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -378,5 +488,20 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  proposal: {
+    borderWidth: 1,
+  },
+  proposalIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  proposalBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
 });

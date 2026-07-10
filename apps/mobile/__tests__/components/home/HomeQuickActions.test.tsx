@@ -11,10 +11,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 // lucide-react-native는 react-native-svg 의존성으로 Platform.OS 문제 발생 — barrel import 경유 시 필요
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
-  return new Proxy(
-    {},
-    { get: (_target, name) => (name === '__esModule' ? true : View) }
-  );
+  return new Proxy({}, { get: (_target, name) => (name === '__esModule' ? true : View) });
 });
 
 // useAdaptiveAnimation mock
@@ -64,16 +61,32 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
 const mockActions = [
-  { title: '퍼스널 컬러', subtitle: '나에게 맞는 색상', color: '#F472B6', route: '/analysis/personal-color', completed: false },
-  { title: '피부 분석', subtitle: '피부 타입 분석', color: '#60A5FA', route: '/analysis/skin', completed: false },
-  { title: '체형 분석', subtitle: '체형 스타일링', color: '#A78BFA', route: '/analysis/body', completed: false },
+  {
+    title: '퍼스널 컬러',
+    subtitle: '나에게 맞는 색상',
+    color: '#F472B6',
+    route: '/analysis/personal-color',
+    completed: false,
+  },
+  {
+    title: '피부 분석',
+    subtitle: '피부 타입 분석',
+    color: '#60A5FA',
+    route: '/analysis/skin',
+    completed: false,
+  },
+  {
+    title: '체형 분석',
+    subtitle: '체형 스타일링',
+    color: '#A78BFA',
+    route: '/analysis/body',
+    completed: false,
+  },
 ];
 
 describe('HomeQuickActions', () => {
@@ -81,6 +94,7 @@ describe('HomeQuickActions', () => {
     actions: mockActions,
     onActionPress: jest.fn(),
     onCoachPress: jest.fn(),
+    onScanPress: jest.fn(),
   };
 
   beforeEach(() => {
@@ -88,18 +102,14 @@ describe('HomeQuickActions', () => {
   });
 
   it('AI 코치 카드 텍스트를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
     expect(getByText('운동, 영양, 뷰티 궁금한 것 무엇이든')).toBeTruthy();
   });
 
   it('퀵 액션 title을 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     expect(getByText('퍼스널 컬러')).toBeTruthy();
     expect(getByText('피부 분석')).toBeTruthy();
@@ -131,9 +141,7 @@ describe('HomeQuickActions', () => {
   });
 
   it('히스토리 없는 액션에 "시작하기" 상태가 표시되어야 한다', () => {
-    const { getAllByText } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
+    const { getAllByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     // 히스토리 없으면 모든 액션이 "시작하기" 상태
     const startTexts = getAllByText('시작하기');
@@ -141,17 +149,13 @@ describe('HomeQuickActions', () => {
   });
 
   it('testID="home-quick-actions"가 존재해야 한다', () => {
-    const { getByTestId } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
+    const { getByTestId } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     expect(getByTestId('home-quick-actions')).toBeTruthy();
   });
 
   it('"빠른 시작" 섹션 헤더를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeQuickActions {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     expect(getByText('빠른 시작')).toBeTruthy();
   });
@@ -162,11 +166,24 @@ describe('HomeQuickActions', () => {
         actions={[]}
         onActionPress={jest.fn()}
         onCoachPress={jest.fn()}
+        onScanPress={jest.fn()}
       />
     );
 
     expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
     expect(queryByText('퍼스널 컬러')).toBeNull();
+  });
+
+  it('성분 스캔 카드를 렌더링하고 클릭 시 onScanPress를 호출해야 한다', () => {
+    const onScanPress = jest.fn();
+    const { getByTestId, getByText } = renderWithTheme(
+      <HomeQuickActions {...defaultProps} onScanPress={onScanPress} />
+    );
+
+    expect(getByText('성분 스캔')).toBeTruthy();
+    const scan = getByTestId('home-quick-scan');
+    fireEvent.press(scan);
+    expect(onScanPress).toHaveBeenCalledTimes(1);
   });
 
   it('다크 모드에서도 정상 렌더링되어야 한다', () => {

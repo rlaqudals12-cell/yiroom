@@ -8,10 +8,7 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -95,9 +92,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -171,7 +166,9 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
   // ---------------------------------------------------------------
   describe('프로필 공개 토글', () => {
     it('프로필 공개 토글이 표시된다', () => {
-      const { getAllByText, getByText, getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      const { getAllByText, getByText, getByLabelText } = renderWithTheme(
+        <PrivacySettingsScreen />
+      );
       // "프로필 공개"는 섹션 제목과 토글 라벨 양쪽에 존재
       expect(getAllByText('프로필 공개').length).toBeGreaterThanOrEqual(2);
       expect(getByText('다른 사용자가 내 프로필을 볼 수 있어요')).toBeTruthy();
@@ -262,7 +259,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
   describe('안내 텍스트', () => {
     it('개인정보 안내 텍스트가 표시된다', () => {
       const { getByText } = renderWithTheme(<PrivacySettingsScreen />);
-      expect(getByText(/안전하게 암호화되어 저장됩니다/)).toBeTruthy();
+      expect(getByText(/안전하게 암호화되어 저장돼요/)).toBeTruthy();
     });
   });
 

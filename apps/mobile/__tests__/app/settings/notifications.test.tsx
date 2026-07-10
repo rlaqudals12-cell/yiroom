@@ -128,6 +128,26 @@ jest.mock('../../../lib/notifications/useNotifications', () => ({
   })),
 }));
 
+// 아침 브리핑 훅 mock (웰니스 마스터 토글과 독립 — 로딩·전이 제어)
+const mockBriefingEnable = jest.fn().mockResolvedValue(true);
+const mockBriefingDisable = jest.fn().mockResolvedValue(undefined);
+const mockBriefingSetTime = jest.fn().mockResolvedValue(undefined);
+
+let mockBriefingState = {
+  settings: { enabled: false, hour: 7, minute: 30 },
+  isLoading: false,
+  enable: mockBriefingEnable,
+  disable: mockBriefingDisable,
+  setTime: mockBriefingSetTime,
+  shouldShowProposal: false,
+  acceptProposal: jest.fn(),
+  dismissProposal: jest.fn(),
+};
+
+jest.mock('../../../lib/notifications/useMorningBriefing', () => ({
+  useMorningBriefing: jest.fn(() => mockBriefingState),
+}));
+
 // react-native-safe-area-context mock
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
@@ -224,6 +244,50 @@ describe('NotificationsSettingsScreen', () => {
       applySettings: mockApplySettings,
       syncFromServer: jest.fn(),
     };
+
+    mockBriefingState = {
+      settings: { enabled: false, hour: 7, minute: 30 },
+      isLoading: false,
+      enable: mockBriefingEnable,
+      disable: mockBriefingDisable,
+      setTime: mockBriefingSetTime,
+      shouldShowProposal: false,
+      acceptProposal: jest.fn(),
+      dismissProposal: jest.fn(),
+    };
+  });
+
+  describe('아침 브리핑 (ADR-114/118)', () => {
+    it('아침 브리핑 토글을 항상 표시한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<NotificationsSettingsScreen />);
+      expect(getByTestId('briefing-toggle')).toBeTruthy();
+      expect(getByText('아침 브리핑 알림')).toBeTruthy();
+    });
+
+    it('토글 ON 시 enable을 호출한다', () => {
+      const { getByTestId } = renderWithTheme(<NotificationsSettingsScreen />);
+      fireEvent(getByTestId('briefing-toggle'), 'valueChange', true);
+      expect(mockBriefingEnable).toHaveBeenCalledTimes(1);
+    });
+
+    it('켜져 있으면 시각 프리셋을 표시하고 선택 시 setTime을 호출한다', () => {
+      mockBriefingState = {
+        ...mockBriefingState,
+        settings: { enabled: true, hour: 7, minute: 30 },
+      };
+
+      const { getByTestId } = renderWithTheme(<NotificationsSettingsScreen />);
+      const preset = getByTestId('briefing-time-8-0');
+      expect(preset).toBeTruthy();
+
+      fireEvent.press(preset);
+      expect(mockBriefingSetTime).toHaveBeenCalledWith(8, 0);
+    });
+
+    it('꺼져 있으면 시각 프리셋을 표시하지 않는다', () => {
+      const { queryByTestId } = renderWithTheme(<NotificationsSettingsScreen />);
+      expect(queryByTestId('briefing-time-7-30')).toBeNull();
+    });
   });
 
   describe('기본 렌더링', () => {

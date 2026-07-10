@@ -4,6 +4,7 @@
  */
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ScanLine } from 'lucide-react-native';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -37,6 +38,8 @@ interface HomeQuickActionsProps {
   analysisHistory?: AnalysisHistory;
   onActionPress: (route: string) => void;
   onCoachPress: () => void;
+  /** 성분 스캔 진입 — "결정의 순간" 액션 (ADR-114) */
+  onScanPress: () => void;
 }
 
 // 퀵 액션 아이콘 메타 — 그라디언트 + 이모지 (웹 gradient icon square 대응)
@@ -89,6 +92,7 @@ export function HomeQuickActions({
   analysisHistory,
   onActionPress,
   onCoachPress,
+  onScanPress,
 }: HomeQuickActionsProps): React.JSX.Element {
   const {
     colors,
@@ -122,6 +126,11 @@ export function HomeQuickActions({
   const handleCoachPress = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onCoachPress();
+  };
+
+  const handleScanPress = (): void => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onScanPress();
   };
 
   return (
@@ -177,6 +186,57 @@ export function HomeQuickActions({
             </View>
             <Text style={[styles.coachArrow, { color: `${colors.overlayForeground}CC` }]}>›</Text>
           </GradientBackground>
+        </Pressable>
+      </Animated.View>
+
+      {/* 성분 스캔 — "결정의 순간" 액션. 분석 5축 카드와 구분되게 상단 고정(ADR-114) */}
+      <Animated.View
+        entering={shouldAnimate ? FadeInUp.delay(250).duration(TIMING.normal) : undefined}
+      >
+        <Pressable
+          onPress={handleScanPress}
+          accessibilityRole="button"
+          accessibilityLabel="성분 스캔"
+          accessibilityHint="제품 성분표를 찍어 나와의 적합도를 확인해요"
+          testID="home-quick-scan"
+          style={({ pressed }) => [
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: colors.card,
+              borderRadius: radii.xl + 4,
+              borderWidth: 1,
+              borderColor: colors.border,
+              padding: spacing.md,
+              marginBottom: spacing.lg,
+              opacity: pressed ? 0.9 : 1,
+            },
+          ]}
+        >
+          <View style={[styles.scanIcon, { backgroundColor: `${moduleColors.skin.base}20` }]}>
+            <ScanLine size={22} color={moduleColors.skin.dark} strokeWidth={2} />
+          </View>
+          <View style={{ flex: 1, marginLeft: spacing.smx }}>
+            <Text
+              style={{
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+                color: colors.foreground,
+              }}
+            >
+              성분 스캔
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.size.xs,
+                color: colors.mutedForeground,
+                marginTop: spacing.xxs,
+              }}
+            >
+              제품 성분표를 찍으면 나와의 적합도를 알려드려요
+            </Text>
+          </View>
+          <Text style={{ color: colors.mutedForeground, fontSize: 28, fontWeight: '300' }}>›</Text>
         </Pressable>
       </Animated.View>
 
@@ -376,6 +436,13 @@ const styles = StyleSheet.create({
   coachArrow: {
     fontSize: 28,
     fontWeight: '300',
+  },
+  scanIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionsRow: {
     flexDirection: 'row',

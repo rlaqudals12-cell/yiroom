@@ -11,7 +11,7 @@
 
 export { beautifyForShare, BEAUTIFY_PROMPT, BEAUTIFY_MODEL } from './internal/beautify';
 export { isTryonAvailable, generateTryon } from './internal/tryon';
-export { checkAndConsumeBudget, DAILY_LIMIT } from './internal/budget';
+export { checkAndConsumeBudget, refundBudget, DAILY_LIMIT } from './internal/budget';
 
 export type {
   BeautifyInput,

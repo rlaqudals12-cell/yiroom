@@ -63,6 +63,11 @@ export interface BriefingCapsulePriority {
 export interface BriefingInput {
   userName?: string | null;
   now?: Date;
+  /**
+   * 인사/맺음말 톤을 정할 시각(0~23). 서버(UTC) 라우트가 사용자 타임존 기준 시(hour)를 주입한다.
+   * 미지정 시 now.getHours()(브라우저 로컬) 사용 — 웹 홈은 그대로 로컬 시각을 쓴다.
+   */
+  hour?: number;
   skinTrend?: BriefingSkinTrend | null;
   recentProduct?: BriefingRecentProduct | null;
   /** 아무 축이든 마지막 분석 경과일(관찰 fallback) */
@@ -195,7 +200,8 @@ function composeAdvice(input: BriefingInput): string[] {
  */
 export function composeBriefing(input: BriefingInput = {}): Briefing {
   const now = input.now ?? new Date();
-  const slot = getTimeSlot(now.getHours());
+  // 서버(UTC)에선 now.getHours()가 UTC 시라 인사가 어긋난다 → 라우트가 주입한 hour 우선.
+  const slot = getTimeSlot(input.hour ?? now.getHours());
   const name = normalizeName(input.userName);
 
   const observation = composeObservation(input);

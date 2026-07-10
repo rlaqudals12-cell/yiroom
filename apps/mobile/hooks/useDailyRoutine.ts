@@ -6,7 +6,7 @@
  * 오프라인이면 마지막 루틴을 stale로 노출한다(fetchDailyRoutine 내부 캐시 폴백).
  */
 import { useAuth } from '@clerk/clerk-expo';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { fetchDailyRoutine, type DailyRoutineData } from '../lib/api/routine';
 
@@ -27,6 +27,11 @@ export function useDailyRoutine(): UseDailyRoutineResult {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // getToken 참조가 불안정하면 로드 이펙트가 매 렌더 재실행돼 무한 refetch가 된다.
+  // 최신 getToken을 ref로 잡아 이펙트 deps에서 제외한다(lib/capsule/hooks 관례와 정렬).
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
   const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
 
   useEffect(() => {
@@ -36,7 +41,7 @@ export function useDailyRoutine(): UseDailyRoutineResult {
       setIsLoading(true);
       setError(null);
       try {
-        const token = await getToken();
+        const token = await getTokenRef.current();
         if (!token) {
           if (!cancelled) {
             setData(null);
@@ -63,7 +68,7 @@ export function useDailyRoutine(): UseDailyRoutineResult {
     return () => {
       cancelled = true;
     };
-  }, [getToken, reloadKey]);
+  }, [reloadKey]);
 
   return { data, stale, isLoading, error, refetch };
 }

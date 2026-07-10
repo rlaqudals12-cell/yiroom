@@ -2,19 +2,38 @@
  * Gemini API 클라이언트
  * API 호출, 지수 백오프 재시도, 이미지 변환 담당
  */
+import { extractJsonFromCodeBlock } from '../utils/json-extract';
 import { geminiLogger } from '../utils/logger';
 
 // Gemini API 설정
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
-const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-// 분석 타임아웃 (3초)
-const ANALYSIS_TIMEOUT = 3000;
+// 기본 모델 — 웹 기본(gemini-3.5-flash)과 정합. 구모델(gemini-1.5-flash)은 폐기 트랙이라 제거.
+// 오버라이드: EXPO_PUBLIC_GEMINI_MODEL
+const DEFAULT_MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL || 'gemini-3.5-flash';
+
+// 모델별 generateContent 엔드포인트
+function geminiEndpoint(model: string): string {
+  return `${GEMINI_API_BASE}/${model}:generateContent`;
+}
+
+// 분석 타임아웃 (30초)
+// 비전 입력 + 긴 Level 2 프롬프트는 3초를 상시 초과해 전 시도가 abort → Mock으로 조용히 강등됐다.
+// 웹 관례(피부 실측 3~19초)와 정합하도록 30초로 상향.
+const ANALYSIS_TIMEOUT = 30000;
 
 // 재시도 설정
-const MAX_RETRIES = 2;
+// 타임아웃이 30초로 커진 만큼 총 소요를 억제하려 재시도는 1회로 축소(최악 ~60초 + 백오프).
+// 2회였을 때는 최악 ~90초+로 사용자가 체감상 무한 대기.
+const MAX_RETRIES = 1;
 const RETRY_BASE_DELAY = 1000;
+
+// 로그·에러 메시지에 남길 원문 일부(진단용, 과도한 로그 방지 위해 절단)
+function responseSnippet(text: string): string {
+  const trimmed = text.trim();
+  return trimmed.length > 200 ? `${trimmed.slice(0, 200)}…` : trimmed;
+}
 
 // 429, 400, 403은 재시도해도 동일 결과 → 즉시 실패
 function isRetryableStatus(status: number): boolean {
@@ -51,6 +70,7 @@ function backoffDelay(retryCount: number): Promise<void> {
 export async function callGeminiAPI(
   prompt: string,
   imageBase64?: string,
+  model: string = DEFAULT_MODEL,
   retryCount = 0
 ): Promise<string> {
   if (!GEMINI_API_KEY) {
@@ -74,7 +94,7 @@ export async function callGeminiAPI(
   const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT);
 
   try {
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`${geminiEndpoint(model)}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +134,7 @@ export async function callGeminiAPI(
       const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
       geminiLogger.warn(`API retry ${retryCount + 1}/${MAX_RETRIES} (${delay}ms 대기)`);
       await backoffDelay(retryCount);
-      return callGeminiAPI(prompt, imageBase64, retryCount + 1);
+      return callGeminiAPI(prompt, imageBase64, model, retryCount + 1);
     }
 
     throw error;
@@ -192,7 +212,7 @@ export async function generateContent(params: GeminiCallParams): Promise<GeminiR
     }
   }
 
-  const text = await callGeminiAPI(prompt, imageBase64 ?? params.imageBase64);
+  const text = await callGeminiAPI(prompt, imageBase64 ?? params.imageBase64, params.model);
   return { text };
 }
 
@@ -209,17 +229,19 @@ export function validateGeminiConfig(): boolean {
 
 /**
  * Gemini JSON 응답 파싱 (웹 호환)
- * ```json 마커 제거 후 JSON.parse
+ *
+ * Gemini가 ```json 코드 펜스로 감싸거나 앞뒤에 산문을 붙여도 첫 JSON 객체를 추출해 파싱한다.
+ * (기존 replace 방식은 산문이 섞이면 실패 → 분석기가 조용히 Mock으로 강등되던 원인)
+ * 실패 시 원문 일부를 담은 에러를 throw해 호출부 로그에서 진단할 수 있게 한다.
  */
 export function parseJsonResponse<T>(text: string): T {
-  const cleanText = text
-    .replace(/```json\s*/g, '')
-    .replace(/```/g, '')
-    .trim();
-
+  const jsonStr = extractJsonFromCodeBlock(text);
+  if (!jsonStr) {
+    throw new Error(`Gemini 응답에서 JSON을 찾지 못함: ${responseSnippet(text)}`);
+  }
   try {
-    return JSON.parse(cleanText) as T;
+    return JSON.parse(jsonStr) as T;
   } catch {
-    throw new Error('Failed to parse Gemini response as JSON');
+    throw new Error(`Gemini JSON 파싱 실패: ${responseSnippet(text)}`);
   }
 }

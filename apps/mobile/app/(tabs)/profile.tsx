@@ -457,7 +457,9 @@ export default function ProfileScreen(): React.JSX.Element {
         <GlassCard intensity={20} style={{ padding: 0, overflow: 'hidden' }}>
           <MenuItem
             title="알림 설정"
-            subtitle={FEATURE_FLAGS.WELLNESS_PHASE2 ? '물, 운동, 식사 알림' : '분석 리마인더 알림'}
+            subtitle={
+              FEATURE_FLAGS.WELLNESS_PHASE2 ? '아침 브리핑, 물·운동·식사 알림' : '아침 브리핑 알림'
+            }
             onPress={() => router.push('/settings/notifications')}
           />
           <View

@@ -7,7 +7,7 @@
  * 웹 서버 — 이 훅은 fetch·상태 관리만 담당한다.
  */
 import { useAuth } from '@clerk/clerk-expo';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { fetchMyTwin, approvedOnly, subscribeTwinChanged, type TwinRecord } from '../lib/api/twin';
 
@@ -26,6 +26,11 @@ export function useMyTwin(): UseMyTwinResult {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // getToken 참조가 불안정하면 로드 이펙트가 매 렌더 재실행돼 무한 refetch가 된다.
+  // 최신 getToken을 ref로 잡아 이펙트 deps에서 제외한다(lib/capsule/hooks 관례와 정렬).
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
   const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
 
   // 스튜디오 승인/삭제 등 외부 변경 알림 시 재조회 (리마운트 없이 최신 반영)
@@ -38,7 +43,7 @@ export function useMyTwin(): UseMyTwinResult {
       setIsLoading(true);
       setError(null);
       try {
-        const token = await getToken();
+        const token = await getTokenRef.current();
         if (!token) {
           if (!cancelled) {
             setApprovedTwin(null);
@@ -63,7 +68,7 @@ export function useMyTwin(): UseMyTwinResult {
     return () => {
       cancelled = true;
     };
-  }, [getToken, reloadKey]);
+  }, [reloadKey]);
 
   return { approvedTwin, isLoading, error, refetch };
 }

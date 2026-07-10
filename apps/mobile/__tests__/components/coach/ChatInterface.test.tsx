@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -99,6 +96,17 @@ jest.mock('../../../lib/offline', () => ({
   useNetworkStatus: () => mockUseNetworkStatus(),
 }));
 
+// expo-router mock — 스캔 버튼 라우팅 검증용(안정적인 push 참조)
+const mockRouterPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    push: mockRouterPush,
+    replace: jest.fn(),
+    back: jest.fn(),
+    navigate: jest.fn(),
+  }),
+}));
+
 // logger mock
 jest.mock('../../../lib/utils/logger', () => ({
   createLogger: jest.fn(() => ({
@@ -152,9 +160,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -219,9 +225,7 @@ describe('ChatInterface', () => {
 
     it('안내 문구를 표시한다', () => {
       const { getByText } = renderWithTheme(<ChatInterface />);
-      expect(
-        getByText('운동, 영양, 피부 관리에 대해 물어보세요!')
-      ).toBeTruthy();
+      expect(getByText('운동, 영양, 피부 관리에 대해 물어보세요!')).toBeTruthy();
     });
 
     it('메시지 입력 필드를 표시한다', () => {
@@ -239,6 +243,37 @@ describe('ChatInterface', () => {
     it('chat-interface testID가 존재한다', () => {
       const { getByTestId } = renderWithTheme(<ChatInterface />);
       expect(getByTestId('chat-interface')).toBeTruthy();
+    });
+  });
+
+  describe('성분 스캔 진입 (ADR-114)', () => {
+    it('입력창 옆 스캔 버튼을 렌더링한다', () => {
+      const { getByTestId } = renderWithTheme(<ChatInterface />);
+      expect(getByTestId('chat-scan-button')).toBeTruthy();
+    });
+
+    it('스캔 버튼 클릭 시 /(scan)으로 이동한다', () => {
+      const { getByTestId } = renderWithTheme(<ChatInterface />);
+      fireEvent.press(getByTestId('chat-scan-button'));
+      expect(mockRouterPush).toHaveBeenCalledWith('/(scan)');
+    });
+
+    it('메시지가 있을 때도 스캔 버튼이 접근 가능하다', () => {
+      (useCoach as jest.Mock).mockReturnValue({
+        messages: [createMessage({ id: 'u1', role: 'user', content: '안녕' })],
+        isLoading: false,
+        error: null,
+        suggestedQuestions: [],
+        sessions: [],
+        currentSessionId: null,
+        sendMessage: mockSendMessage,
+        clearMessages: mockClearMessages,
+        loadSession: jest.fn(),
+        startNewSession: jest.fn(),
+      });
+
+      const { getByTestId } = renderWithTheme(<ChatInterface />);
+      expect(getByTestId('chat-scan-button')).toBeTruthy();
     });
   });
 
@@ -350,9 +385,7 @@ describe('ChatInterface', () => {
 
       const { getByText } = renderWithTheme(<ChatInterface />);
       expect(getByText('오늘 운동 추천해줘')).toBeTruthy();
-      expect(
-        getByText('오늘은 가벼운 유산소 운동을 추천해요!')
-      ).toBeTruthy();
+      expect(getByText('오늘은 가벼운 유산소 운동을 추천해요!')).toBeTruthy();
     });
 
     it('메시지가 있으면 빠른 질문 영역 대신 메시지 목록을 표시한다', () => {
@@ -414,14 +447,9 @@ describe('ChatInterface', () => {
 
   describe('전송 기능', () => {
     it('메시지 입력 후 전송 버튼 클릭 시 sendMessage를 호출한다', () => {
-      const { getByPlaceholderText, getByText } = renderWithTheme(
-        <ChatInterface />
-      );
+      const { getByPlaceholderText, getByText } = renderWithTheme(<ChatInterface />);
 
-      fireEvent.changeText(
-        getByPlaceholderText('무엇이든 물어보세요...'),
-        '운동 추천해줘'
-      );
+      fireEvent.changeText(getByPlaceholderText('무엇이든 물어보세요...'), '운동 추천해줘');
       fireEvent.press(getByText('전송'));
 
       expect(mockSendMessage).toHaveBeenCalled();
@@ -436,14 +464,9 @@ describe('ChatInterface', () => {
     });
 
     it('공백만 입력 시 전송해도 sendMessage가 호출되지 않는다', () => {
-      const { getByPlaceholderText, getByText } = renderWithTheme(
-        <ChatInterface />
-      );
+      const { getByPlaceholderText, getByText } = renderWithTheme(<ChatInterface />);
 
-      fireEvent.changeText(
-        getByPlaceholderText('무엇이든 물어보세요...'),
-        '   '
-      );
+      fireEvent.changeText(getByPlaceholderText('무엇이든 물어보세요...'), '   ');
 
       fireEvent.press(getByText('전송'));
       expect(mockSendMessage).not.toHaveBeenCalled();
@@ -489,14 +512,9 @@ describe('ChatInterface', () => {
         startNewSession: jest.fn(),
       });
 
-      const { getByPlaceholderText, getByText } = renderWithTheme(
-        <ChatInterface />
-      );
+      const { getByPlaceholderText, getByText } = renderWithTheme(<ChatInterface />);
 
-      fireEvent.changeText(
-        getByPlaceholderText('무엇이든 물어보세요...'),
-        '테스트'
-      );
+      fireEvent.changeText(getByPlaceholderText('무엇이든 물어보세요...'), '테스트');
 
       fireEvent.press(getByText('전송'));
       // handleSend에서 isLoading이 true면 early return
@@ -520,9 +538,7 @@ describe('ChatInterface', () => {
       });
 
       const { getByText } = renderWithTheme(<ChatInterface />);
-      expect(
-        getByText('메시지 전송에 실패했어요. 다시 시도해주세요.')
-      ).toBeTruthy();
+      expect(getByText('메시지 전송에 실패했어요. 다시 시도해주세요.')).toBeTruthy();
     });
   });
 
@@ -536,16 +552,12 @@ describe('ChatInterface', () => {
       });
 
       const { getByText } = renderWithTheme(<ChatInterface />);
-      expect(
-        getByText('오프라인 모드 - 기본 응답만 제공됩니다')
-      ).toBeTruthy();
+      expect(getByText('오프라인 모드 - 기본 응답만 제공됩니다')).toBeTruthy();
     });
 
     it('온라인일 때 오프라인 배너를 표시하지 않는다', () => {
       const { queryByText } = renderWithTheme(<ChatInterface />);
-      expect(
-        queryByText('오프라인 모드 - 기본 응답만 제공됩니다')
-      ).toBeNull();
+      expect(queryByText('오프라인 모드 - 기본 응답만 제공됩니다')).toBeNull();
     });
   });
 

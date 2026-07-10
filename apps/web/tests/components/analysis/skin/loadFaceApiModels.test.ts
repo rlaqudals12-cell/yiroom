@@ -40,4 +40,25 @@ describe('loadFaceApiModels', () => {
     loadFromUri.mockReturnValue(new Promise<void>(() => {}));
     await expect(loadFaceApiModels(20)).rejects.toThrow('FACE_API_MODEL_TIMEOUT');
   });
+
+  it('타임아웃이 이긴 뒤 늦게 load가 실패해도 unhandled rejection을 만들지 않는다', async () => {
+    const rejections: unknown[] = [];
+    const onUnhandled = (reason: unknown): void => {
+      rejections.push(reason);
+    };
+    process.on('unhandledRejection', onUnhandled);
+
+    // 타임아웃(20ms) 뒤에 뒤늦게 reject되는 load(버려진 Promise)
+    loadFromUri.mockReturnValue(
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('late CDN fail')), 60))
+    );
+
+    await expect(loadFaceApiModels(20)).rejects.toThrow('FACE_API_MODEL_TIMEOUT');
+
+    // 늦은 reject가 실제로 발생할 시간을 준 뒤 unhandledRejection이 없었는지 확인
+    await new Promise((r) => setTimeout(r, 120));
+    process.off('unhandledRejection', onUnhandled);
+
+    expect(rejections).toHaveLength(0);
+  });
 });

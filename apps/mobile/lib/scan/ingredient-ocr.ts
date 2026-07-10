@@ -73,8 +73,9 @@ export async function analyzeIngredientImage(imageBase64: string): Promise<OcrRe
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
+    // 모델은 client 기본값(EXPO_PUBLIC_GEMINI_MODEL || gemini-3.5-flash)을 사용 —
+    // 개별 모델 하드코딩 제거(구모델 고정 방지, 웹 기본과 정합)
     const result = await generateContent({
-      model: 'gemini-2.0-flash',
       contents: [imagePart, { text: INGREDIENT_OCR_PROMPT }],
     });
 

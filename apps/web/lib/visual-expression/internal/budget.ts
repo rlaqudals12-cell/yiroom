@@ -62,6 +62,21 @@ export function checkAndConsumeBudget(userId: string): BudgetResult {
   };
 }
 
+/**
+ * 소비 1회 환불 — 생성이 실패했을 때 호출한다(실패한 시도는 상한에 계산하지 않음).
+ *
+ * 상한 확인은 반드시 비싼 생성 호출 "전"에 이뤄져야 초과 시 생성을 건너뛸 수 있으므로,
+ * 선(先)소비 구조를 유지하고 실패 경로에서만 되돌린다. 인메모리·단일 인스턴스라 경합 없음.
+ * 카운트를 1 내리되 음수로 가지 않으며, 리셋 이후(엔트리 없음)면 무시한다.
+ */
+export function refundBudget(userId: string): void {
+  const key = `visual:${userId}`;
+  const entry = store.get(key);
+  if (!entry) return;
+  entry.count = Math.max(0, entry.count - 1);
+  store.set(key, entry);
+}
+
 /** 테스트 전용 — 카운터 초기화 @internal */
 export function _resetBudget(): void {
   store.clear();

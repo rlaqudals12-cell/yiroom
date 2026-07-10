@@ -4,10 +4,12 @@
  * 질문 제출 시 /coach?q= 로 이동한다.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 const pushMock = vi.fn();
+// "기억한다" 화법 입력은 fetch(제품함·캡슐 API)로 로드 — 기본은 빈 응답(미주입)
+const fetchMock = vi.fn();
 
 vi.mock('@clerk/nextjs', () => ({
   useUser: () => ({ user: { id: 'u1', firstName: '지민', username: null } }),
@@ -65,6 +67,14 @@ const analysesWithColors = [
 describe('DailyBriefing', () => {
   beforeEach(() => {
     pushMock.mockClear();
+    fetchMock.mockReset();
+    // 기본: 제품함/캡슐 비어 있음 → 화법 미주입(기존 렌더 단언에 영향 없음)
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('브리핑 레터와 인사말을 렌더한다', () => {
@@ -165,5 +175,36 @@ describe('DailyBriefing', () => {
     // truncate(한 줄 말줄임) 대신 2줄 허용(line-clamp-2)로 가독 확보
     expect(name.className).not.toContain('truncate');
     expect(name.className).toContain('line-clamp-2');
+  });
+
+  // ADR-114 화법 4요소 "기억한다" — 제품함 후속·오늘 캡슐 우선을 브리핑에 반영(모바일 정합)
+  it('제품함·오늘 캡슐 데이터가 있으면 "기억한다" 화법을 반영한다', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      const u = String(url);
+      if (u.includes('/api/scan/shelf')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            items: [{ productName: '수분 앰플', scannedAt: new Date().toISOString() }],
+          }),
+        });
+      }
+      if (u.includes('/api/capsule/daily')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            data: { items: [{ name: '약산성 클렌저', reason: '장벽 회복 중' }] },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    // 피부 추이 없는 분석(관찰 우선순위상 제품함 후속이 관찰로 노출)
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    // 제품함 후속(관찰) + 캡슐 우선(조언)이 화법에 등장
+    expect(await screen.findByText(/수분 앰플/)).toBeInTheDocument();
+    expect(await screen.findByText(/약산성 클렌저/)).toBeInTheDocument();
   });
 });

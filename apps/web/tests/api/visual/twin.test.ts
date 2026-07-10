@@ -13,11 +13,12 @@ vi.mock('@/lib/visual-expression/twin', () => ({
 }));
 vi.mock('@/lib/visual-expression', () => ({
   checkAndConsumeBudget: vi.fn(),
+  refundBudget: vi.fn(),
 }));
 
 import { GET, POST } from '@/app/api/visual/twin/route';
 import { generateTwin, getMyTwin, TwinGenerationError } from '@/lib/visual-expression/twin';
-import { checkAndConsumeBudget } from '@/lib/visual-expression';
+import { checkAndConsumeBudget, refundBudget } from '@/lib/visual-expression';
 
 const VALID_FACE = 'data:image/jpeg;base64,' + 'A'.repeat(200);
 
@@ -44,7 +45,7 @@ describe('POST /api/visual/twin', () => {
     expect(generateTwin).not.toHaveBeenCalled();
   });
 
-  it('인증 + 정상 입력이면 pending 트윈을 반환한다', async () => {
+  it('인증 + 정상 입력이면 pending 트윈을 반환한다(성공 시 환불 없음)', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
     const res = await POST(makeReq({ faceImageBase64: VALID_FACE }));
     const data = await res.json();
@@ -52,6 +53,8 @@ describe('POST /api/visual/twin', () => {
     expect(data.status).toBe('pending');
     expect(data.aiGenerated).toBe(true);
     expect(generateTwin).toHaveBeenCalledOnce();
+    // 성공 경로에서는 예산을 되돌리지 않는다
+    expect(refundBudget).not.toHaveBeenCalled();
   });
 
   it('셀카가 이미지 형식이 아니면 400을 반환한다', async () => {
@@ -71,13 +74,22 @@ describe('POST /api/visual/twin', () => {
     expect(generateTwin).not.toHaveBeenCalled();
   });
 
-  it('생성 실패(TwinGenerationError) 시 정직하게 500을 반환한다(가짜 트윈 금지)', async () => {
+  it('생성 실패(TwinGenerationError) 시 정직하게 500을 반환하고 예산을 환불한다', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
     vi.mocked(generateTwin).mockRejectedValue(
       new TwinGenerationError('지금은 트윈을 만들 수 없어요')
     );
     const res = await POST(makeReq({ faceImageBase64: VALID_FACE }));
     expect(res.status).toBe(500);
+    // 실패한 시도는 일 5회 상한에 계산하지 않도록 소비분을 되돌린다
+    expect(refundBudget).toHaveBeenCalledWith('user-1');
+  });
+
+  it('상한 초과로 생성을 건너뛴 경우엔 환불하지 않는다', async () => {
+    vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
+    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    await POST(makeReq({ faceImageBase64: VALID_FACE }));
+    expect(refundBudget).not.toHaveBeenCalled();
   });
 });
 

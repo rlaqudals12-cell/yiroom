@@ -33,8 +33,18 @@ vi.mock('@/lib/weather', () => ({
   generateEnvironmentAdvice: vi.fn(),
 }));
 
+// 제품함/캡슐 — "기억한다" 화법 입력. 기본은 비어 있음(미주입)
+vi.mock('@/lib/scan/product-shelf', () => ({
+  getShelfItems: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+}));
+vi.mock('@/lib/capsule', () => ({
+  getTodayDailyCapsule: vi.fn().mockResolvedValue(null),
+}));
+
 import { GET, OPTIONS } from '@/app/api/briefing/route';
 import { auth, currentUser } from '@clerk/nextjs/server';
+import { getShelfItems } from '@/lib/scan/product-shelf';
+import { getTodayDailyCapsule } from '@/lib/capsule';
 
 // collectAnalyses의 5개 limit 호출 순서: pc → skin → body → hair → makeup
 function queueAnalyses(opts: {
@@ -119,6 +129,65 @@ describe('GET /api/briefing', () => {
     expect(body.data.todayStyle.outfit).toBeNull();
     // 인사/맺음말은 프레이밍이라 분석 없어도 존재
     expect(body.data.briefing.greeting).toContain('지민');
+  });
+
+  it('제품함·오늘 캡슐 데이터가 있으면 "기억한다" 화법을 반영한다', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-3',
+          season: 'summer',
+          created_at: new Date().toISOString(),
+          best_colors: [],
+          image_analysis: {},
+        },
+      ],
+      // skin 없음 → 관찰 우선순위상 제품함 후속이 관찰로 노출
+    });
+    vi.mocked(getShelfItems).mockResolvedValueOnce({
+      items: [{ productName: '수분 앰플', scannedAt: new Date() }] as never,
+      total: 1,
+    });
+    vi.mocked(getTodayDailyCapsule).mockResolvedValueOnce({
+      id: 'cap-1',
+      items: [
+        {
+          id: 'i1',
+          moduleCode: 'S',
+          name: '약산성 클렌저',
+          reason: '장벽 회복 중',
+          compatibilityScore: 0,
+          isChecked: false,
+        },
+      ],
+    } as never);
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    // 제품함 후속(관찰) + 캡슐 우선(조언)이 화법에 반영된다
+    expect(body.data.briefing.observation).toContain('수분 앰플');
+    expect(body.data.briefing.advice.some((l: string) => l.includes('약산성 클렌저'))).toBe(true);
+  });
+
+  it('제품함·캡슐이 비어 있으면 화법에 주입하지 않는다(정직성 가드)', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-4',
+          season: 'summer',
+          created_at: new Date().toISOString(),
+          best_colors: [],
+          image_analysis: {},
+        },
+      ],
+    });
+    // getShelfItems/getTodayDailyCapsule은 기본값(빈/null) → 관찰 없음·조언 빈 배열
+    const res = await GET();
+    const body = await res.json();
+    expect(body.data.briefing.observation).toBeUndefined();
+    expect(body.data.briefing.advice).toEqual([]);
   });
 
   it('모바일 크로스 오리진 CORS 헤더를 포함한다', async () => {

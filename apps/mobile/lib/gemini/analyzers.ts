@@ -3,7 +3,7 @@
  * 각 도메인별 분석 로직 + Rate Limit + Fallback 처리
  */
 
-import { callGeminiAPI } from './client';
+import { callGeminiAPI, parseJsonResponse } from './client';
 import {
   generateMockPersonalColorResult,
   generateMockSkinResult,
@@ -56,7 +56,11 @@ export async function analyzePersonalColor(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    const result = JSON.parse(response);
+    const result = parseJsonResponse<{
+      season: PersonalColorAnalysisResult['season'];
+      confidence: number;
+      description: string;
+    }>(response);
 
     return {
       result: {
@@ -90,7 +94,7 @@ export async function analyzeSkin(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    return { result: JSON.parse(response), usedFallback: false };
+    return { result: parseJsonResponse<SkinAnalysisResult>(response), usedFallback: false };
   } catch (error) {
     geminiLogger.error('S-1 analysis error, falling back to mock:', error);
     return { result: generateMockSkinResult(), usedFallback: true };
@@ -118,7 +122,7 @@ export async function analyzeBody(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    const result = JSON.parse(response);
+    const result = parseJsonResponse<Omit<BodyAnalysisResult, 'bmi'>>(response);
 
     return {
       result: {
@@ -181,20 +185,19 @@ export async function analyzeFood(
     await incrementRateLimit();
     const response = await callGeminiAPI(FOOD_ANALYSIS_PROMPT, imageBase64);
 
-    // JSON 파싱 — 코드 블록 마크다운 제거
-    let cleanResponse = response.trim();
-    if (cleanResponse.startsWith('```json')) {
-      cleanResponse = cleanResponse.slice(7);
-    }
-    if (cleanResponse.startsWith('```')) {
-      cleanResponse = cleanResponse.slice(3);
-    }
-    if (cleanResponse.endsWith('```')) {
-      cleanResponse = cleanResponse.slice(0, -3);
-    }
-    cleanResponse = cleanResponse.trim();
-
-    const parsed = JSON.parse(cleanResponse);
+    // JSON 파싱 — 코드 펜스·산문 허용(parseJsonResponse가 첫 JSON 객체 추출)
+    const parsed = parseJsonResponse<{
+      foods?: {
+        name: string;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        trafficLight: TrafficLight;
+        confidence: number;
+      }[];
+      insight?: string;
+    }>(response);
 
     const foods = (parsed.foods || []).map(
       (
@@ -268,7 +271,7 @@ export async function analyzeHair(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    return { result: JSON.parse(response), usedFallback: false };
+    return { result: parseJsonResponse<HairAnalysisResult>(response), usedFallback: false };
   } catch (error) {
     geminiLogger.error('H-1 analysis error, falling back to mock:', error);
     return { result: generateMockHairResult(), usedFallback: true };
@@ -292,7 +295,7 @@ export async function analyzeMakeup(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    return { result: JSON.parse(response), usedFallback: false };
+    return { result: parseJsonResponse<MakeupAnalysisResult>(response), usedFallback: false };
   } catch (error) {
     geminiLogger.error('M-1 analysis error, falling back to mock:', error);
     return { result: generateMockMakeupResult(), usedFallback: true };
@@ -334,7 +337,7 @@ export async function analyzeOralHealth(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    return { result: JSON.parse(response), usedFallback: false };
+    return { result: parseJsonResponse<OralHealthAnalysisResult>(response), usedFallback: false };
   } catch (error) {
     geminiLogger.error('OH-1 analysis error, falling back to mock:', error);
     return { result: generateMockOralHealthResult(), usedFallback: true };
@@ -377,7 +380,7 @@ export async function analyzePosture(
   try {
     await incrementRateLimit();
     const response = await callGeminiAPI(prompt, imageBase64);
-    return { result: JSON.parse(response), usedFallback: false };
+    return { result: parseJsonResponse<PostureAnalysisResult>(response), usedFallback: false };
   } catch (error) {
     geminiLogger.error('Posture analysis error, falling back to mock:', error);
     return { result: generateMockPostureResult(), usedFallback: true };

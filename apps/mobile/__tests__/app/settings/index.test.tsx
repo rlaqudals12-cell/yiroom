@@ -8,10 +8,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -72,9 +69,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -106,8 +101,9 @@ describe('SettingsScreen', () => {
     it('섹션 타이틀들을 표시한다', () => {
       const { getAllByText } = renderWithTheme(<SettingsScreen />);
 
-      // "위젯"은 섹션 제목과 "위젯 설정" 항목에 모두 포함되므로 getAllByText 사용
-      expect(getAllByText(/알림 및 목표/i).length).toBeGreaterThanOrEqual(1);
+      // ADR-098: WELLNESS_PHASE2=false 이므로 섹션 제목은 "알림 및 목표"가 아닌 "알림"
+      // "알림"은 섹션 제목과 "알림 설정" 항목에 모두 포함되므로 getAllByText 사용
+      expect(getAllByText(/알림/i).length).toBeGreaterThanOrEqual(1);
       expect(getAllByText(/위젯/i).length).toBeGreaterThanOrEqual(1);
       expect(getAllByText(/앱 정보/i).length).toBeGreaterThanOrEqual(1);
     });
@@ -127,13 +123,15 @@ describe('SettingsScreen', () => {
     it('알림 설정 항목을 표시한다', () => {
       const { getByText } = renderWithTheme(<SettingsScreen />);
       expect(getByText('알림 설정')).toBeTruthy();
-      expect(getByText('물, 운동, 식사 알림')).toBeTruthy();
+      // ADR-098: WELLNESS_PHASE2=false 이므로 서브타이틀은 "분석 리마인더 알림"
+      expect(getByText('분석 리마인더 알림')).toBeTruthy();
     });
 
-    it('목표 설정 항목을 표시한다', () => {
-      const { getByText } = renderWithTheme(<SettingsScreen />);
-      expect(getByText('목표 설정')).toBeTruthy();
-      expect(getByText('일일 물, 칼로리 목표')).toBeTruthy();
+    it('WELLNESS_PHASE2=false이므로 목표 설정 항목이 표시되지 않는다', () => {
+      const { queryByText } = renderWithTheme(<SettingsScreen />);
+      // 웰니스 목표 설정은 WELLNESS_PHASE2 게이팅으로 숨김 (ADR-098)
+      expect(queryByText('목표 설정')).toBeNull();
+      expect(queryByText('일일 물, 칼로리 목표')).toBeNull();
     });
 
     it('위젯 설정 항목을 표시한다', () => {
@@ -169,14 +167,6 @@ describe('SettingsScreen', () => {
 
       expect(Haptics.selectionAsync).toHaveBeenCalled();
       expect(router.push).toHaveBeenCalledWith('/settings/notifications');
-    });
-
-    it('목표 설정 클릭 시 /settings/goals로 이동한다', () => {
-      const { getByText } = renderWithTheme(<SettingsScreen />);
-      fireEvent.press(getByText('목표 설정'));
-
-      expect(Haptics.selectionAsync).toHaveBeenCalled();
-      expect(router.push).toHaveBeenCalledWith('/settings/goals');
     });
 
     it('위젯 설정 클릭 시 /settings/widgets로 이동한다', () => {
@@ -249,7 +239,7 @@ describe('SettingsScreen', () => {
       const { getByText } = renderWithTheme(<SettingsScreen />, true);
       expect(getByText('이룸')).toBeTruthy();
       expect(getByText('알림 설정')).toBeTruthy();
-      expect(getByText('목표 설정')).toBeTruthy();
+      expect(getByText('위젯 설정')).toBeTruthy();
     });
   });
 

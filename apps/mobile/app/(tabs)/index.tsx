@@ -519,6 +519,7 @@ export default function HomeScreen(): React.JSX.Element {
         analysisHistory={analysisHistory}
         onActionPress={(route) => router.push(route as never)}
         onCoachPress={() => router.push('/(coach)')}
+        onScanPress={() => router.push('/(scan)' as never)}
       />
 
       {/* Daily Capsule 위젯 */}

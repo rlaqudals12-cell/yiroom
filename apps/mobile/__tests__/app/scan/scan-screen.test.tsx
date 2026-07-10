@@ -60,6 +60,13 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: (...args: unknown[]) => mockLaunchLibrary(...args),
 }));
 
+// 전송 전 다운스케일 — 원본 대신 축소된 base64로 파이프라인이 흐르는지 검증
+const mockManipulate = jest.fn(async () => ({ uri: 'file://out.jpg', base64: 'SCALED64' }));
+jest.mock('expo-image-manipulator', () => ({
+  manipulateAsync: (...args: unknown[]) => mockManipulate(...args),
+  SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
+}));
+
 // ── clerk / supabase ─────────────────────────────────────
 jest.mock('@clerk/clerk-expo', () => ({
   useUser: () => ({ user: { id: 'user_1' } }),
@@ -137,6 +144,7 @@ describe('ScanScreen (성분 스캔)', () => {
     mockLaunchLibrary.mockReset();
     mockAnalyzeIngredientImage.mockReset();
     mockBuildScanVerdict.mockReset();
+    mockManipulate.mockClear();
   });
 
   afterAll(() => {
@@ -164,7 +172,13 @@ describe('ScanScreen (성분 스캔)', () => {
     await waitFor(() => expect(getByTestId('scan-verdict')).toBeTruthy());
     // 프로필 있으면 적합도 히어로가 나온다
     expect(getByTestId('scan-verdict-hero')).toBeTruthy();
-    expect(mockAnalyzeIngredientImage).toHaveBeenCalledWith('AAAA');
+    // 원본 base64가 아니라 1024px 다운스케일된 base64로 OCR을 호출한다
+    expect(mockManipulate).toHaveBeenCalledWith(
+      'file://x.jpg',
+      [{ resize: { width: 1024 } }],
+      expect.objectContaining({ base64: true })
+    );
+    expect(mockAnalyzeIngredientImage).toHaveBeenCalledWith('SCALED64');
   });
 
   it('OCR가 성분을 못 읽으면 정직 안내 + 재시도를 보여준다 (지어내지 않음)', async () => {

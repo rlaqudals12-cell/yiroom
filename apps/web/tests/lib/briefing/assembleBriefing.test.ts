@@ -72,4 +72,29 @@ describe('assembleBriefing', () => {
     expect(p.todayStyle.fashionTip).toBe('가벼운 아우터');
     expect(p.briefing.advice).toContain('SPF50 선크림 필수');
   });
+
+  it('제품함 후속·오늘 캡슐 우선을 화법으로 전달한다 ("기억한다" 배선)', () => {
+    // 피부 추이가 없어야 제품함 후속이 관찰로 노출된다(관찰 우선순위)
+    const p = assembleBriefing([pc()], {
+      now: MORNING,
+      recentProduct: { name: '수분 앰플', addedDaysAgo: 3 },
+      capsulePriority: { name: '약산성 클렌저', reason: '장벽 회복 중' },
+    });
+    expect(p.briefing.observation).toContain('수분 앰플');
+    expect(p.briefing.advice.some((line) => line.includes('약산성 클렌저'))).toBe(true);
+  });
+
+  it('제품함·캡슐 데이터가 없으면 주입하지 않는다(정직성 가드)', () => {
+    const p = assembleBriefing([pc()], { now: MORNING });
+    // recentProduct/capsulePriority 미주입 → 관찰 없음(오래된 분석도 아님), 조언 빈 배열
+    expect(p.briefing.observation).toBeUndefined();
+    expect(p.briefing.advice).toEqual([]);
+  });
+
+  it('hour(사용자 타임존 시)를 주입하면 now.getHours() 대신 시간대를 결정한다', () => {
+    // now는 아침(09시)이지만 hour=23(밤)을 주입 → 밤 시간대로 인사
+    const p = assembleBriefing([], { now: MORNING, hour: 23 });
+    expect(p.timeSlot).toBe('night');
+    expect(p.briefing.greeting).toContain('고생');
+  });
 });

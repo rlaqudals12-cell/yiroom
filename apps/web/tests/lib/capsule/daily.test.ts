@@ -92,7 +92,7 @@ describe('Daily Capsule', () => {
           }),
         }),
       }),
-      insert: vi.fn().mockReturnValue({
+      upsert: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({
             data: {
@@ -163,7 +163,7 @@ describe('Daily Capsule', () => {
                 }),
               }),
             }),
-            insert: vi.fn().mockReturnValue({
+            upsert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({
                   data: {
@@ -223,7 +223,7 @@ describe('Daily Capsule', () => {
       vi.mocked(getBeautyProfile).mockResolvedValue(createProfile());
       expect(getDomainCount()).toBe(0);
 
-      const insertSpy = vi.fn().mockReturnValue({
+      const upsertSpy = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({
             data: {
@@ -252,7 +252,7 @@ describe('Daily Capsule', () => {
                 }),
               }),
             }),
-            insert: insertSpy,
+            upsert: upsertSpy,
           };
         }
         if (table === 'cross_domain_rules') {
@@ -274,8 +274,8 @@ describe('Daily Capsule', () => {
       // 자동 등록되어 9개 도메인이 채워짐
       expect(getDomainCount()).toBeGreaterThan(0);
       // 저장 시 실제 도메인 curate 결과가 비어 있지 않아야 함 (빈 캡슐 아님)
-      expect(insertSpy).toHaveBeenCalledTimes(1);
-      const savedPayload = insertSpy.mock.calls[0][0] as { items: unknown[] };
+      expect(upsertSpy).toHaveBeenCalledTimes(1);
+      const savedPayload = upsertSpy.mock.calls[0][0] as { items: unknown[] };
       expect(savedPayload.items.length).toBeGreaterThan(0);
     });
 
@@ -303,7 +303,7 @@ describe('Daily Capsule', () => {
         makeup: { preferences: {}, skillLevel: 'beginner' },
       });
 
-      const insertSpy = vi.fn().mockReturnValue({
+      const upsertSpy = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({
             data: {
@@ -332,7 +332,7 @@ describe('Daily Capsule', () => {
                 }),
               }),
             }),
-            insert: insertSpy,
+            upsert: upsertSpy,
           };
         }
         if (table === 'cross_domain_rules') {
@@ -351,8 +351,8 @@ describe('Daily Capsule', () => {
 
       await generateDailyCapsule('user_test');
 
-      expect(insertSpy).toHaveBeenCalledTimes(1);
-      const items = (insertSpy.mock.calls[0][0] as { items: DailyItem[] }).items;
+      expect(upsertSpy).toHaveBeenCalledTimes(1);
+      const items = (upsertSpy.mock.calls[0][0] as { items: DailyItem[] }).items;
       expect(items.length).toBeGreaterThan(0);
 
       // ① 저녁 스킨케어에 세럼 포함 (저녁 상식 루틴 = 클렌징→토너→세럼→크림)
@@ -471,7 +471,7 @@ describe('Daily Capsule', () => {
               }),
             }),
             delete: deleteSpy,
-            insert: vi.fn().mockReturnValue({
+            upsert: vi.fn().mockReturnValue({
               select: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({
                   data: {
@@ -511,6 +511,93 @@ describe('Daily Capsule', () => {
       expect(deleteSpy).toHaveBeenCalledTimes(1);
       expect(getBeautyProfile).toHaveBeenCalled();
       expect(result.id).toBe('daily-regenerated');
+    });
+
+    it('스테일 삭제가 실패해도 upsert로 최신 캡슐을 반환한다 (무한 스테일 반환 방지)', async () => {
+      vi.mocked(getBeautyProfile).mockResolvedValue(createProfile());
+
+      const staleData = {
+        id: 'daily-stale',
+        clerk_user_id: 'user_test',
+        date: '2026-03-04',
+        items: [
+          {
+            id: 'stale-item',
+            moduleCode: 'S',
+            name: 'Old routine',
+            reason: '옛 루틴',
+            compatibilityScore: 90,
+            isChecked: false,
+            engineVersion: 'v1-old',
+          },
+        ],
+        total_ccs: 90,
+        estimated_minutes: 10,
+        status: 'pending',
+        completed_at: null,
+        created_at: new Date().toISOString(),
+      };
+
+      // 삭제가 실패(error 반환)해도 upsert가 옛 행을 덮어써 최신 캡슐이 반환돼야 한다.
+      const failingDelete = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: { message: 'delete failed' } }),
+        }),
+      });
+      const upsertSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'daily-upserted-fresh',
+              clerk_user_id: 'user_test',
+              date: '2026-03-04',
+              items: [],
+              total_ccs: 0,
+              estimated_minutes: 0,
+              status: 'pending',
+              completed_at: null,
+              created_at: new Date().toISOString(),
+            },
+            error: null,
+          }),
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'daily_capsules') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: staleData, error: null }),
+                }),
+              }),
+            }),
+            delete: failingDelete,
+            upsert: upsertSpy,
+          };
+        }
+        if (table === 'cross_domain_rules') {
+          return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      const result = await generateDailyCapsule('user_test');
+
+      // 삭제 실패에도 upsert가 호출되고, 스테일이 아닌 갱신 캡슐이 반환된다
+      expect(upsertSpy).toHaveBeenCalledTimes(1);
+      expect(upsertSpy.mock.calls[0][1]).toEqual({ onConflict: 'clerk_user_id,date' });
+      expect(result.id).toBe('daily-upserted-fresh');
+      expect(result.id).not.toBe('daily-stale');
     });
   });
 

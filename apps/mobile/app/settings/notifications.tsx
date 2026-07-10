@@ -13,17 +13,29 @@ import {
   Pressable,
   Alert,
   Platform,
+  Linking,
   ActivityIndicator,
 } from 'react-native';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { ScreenContainer, GlassCard } from '../../components/ui';
+import { formatBriefingTime } from '../../lib/notifications/morning-briefing';
+import { useMorningBriefing } from '../../lib/notifications/useMorningBriefing';
 import {
   useNotificationPermission,
   useNotificationSettings,
   useNotificationScheduler,
 } from '../../lib/notifications/useNotifications';
+
+// 아침 브리핑 알림 시각 프리셋 (native time picker 의존성 없이 칩 선택 — 기존 간격 칩 패턴 재사용)
+const BRIEFING_TIME_PRESETS: { hour: number; minute: number }[] = [
+  { hour: 6, minute: 30 },
+  { hour: 7, minute: 0 },
+  { hour: 7, minute: 30 },
+  { hour: 8, minute: 0 },
+  { hour: 8, minute: 30 },
+];
 
 export default function NotificationsSettingsScreen() {
   const { colors, status, module: mod } = useTheme();
@@ -40,6 +52,9 @@ export default function NotificationsSettingsScreen() {
     applySettings,
   } = useNotificationSettings();
   const { sendNow } = useNotificationScheduler();
+
+  // 아침 브리핑 — 웰니스 마스터 토글과 독립(이룸 핵심 알림)
+  const briefing = useMorningBriefing();
 
   const [testSent, setTestSent] = useState(false);
 
@@ -87,7 +102,32 @@ export default function NotificationsSettingsScreen() {
     setTimeout(() => setTestSent(false), 3000);
   };
 
-  if (permissionLoading || settingsLoading) {
+  const handleBriefingToggle = async (value: boolean) => {
+    Haptics.selectionAsync();
+    if (value) {
+      // 최초 ON 시도 시에만 권한 요청 — 거부되면 정직 안내 + 설정 앱 안내
+      const granted = await briefing.enable();
+      if (!granted) {
+        Alert.alert(
+          '알림 권한 필요',
+          '아침 브리핑을 받으려면 알림 권한이 필요해요. 설정에서 알림을 허용해 주세요.',
+          [
+            { text: '취소', style: 'cancel' },
+            { text: '설정 열기', onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+    } else {
+      await briefing.disable();
+    }
+  };
+
+  const handleBriefingTime = async (hour: number, minute: number) => {
+    Haptics.selectionAsync();
+    await briefing.setTime(hour, minute);
+  };
+
+  if (permissionLoading || settingsLoading || briefing.isLoading) {
     return (
       <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="profile">
         <View style={styles.loadingContainer}>
@@ -103,6 +143,80 @@ export default function NotificationsSettingsScreen() {
       edges={['bottom']}
       backgroundGradient="profile"
     >
+      {/* 아침 브리핑 (ADR-114/118) — 웰니스 마스터 토글과 독립. 이룸의 핵심 알림 */}
+      <View style={styles.section}>
+        <Text
+          accessibilityRole="header"
+          style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+        >
+          아침 브리핑
+        </Text>
+        <GlassCard shadowSize="md">
+          <View style={styles.settingsRow}>
+            <View style={styles.settingsRowContent}>
+              <Text style={styles.settingsIcon}>☀️</Text>
+              <View style={styles.settingsTextContent}>
+                <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                  아침 브리핑 알림
+                </Text>
+                <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                  매일 아침 오늘의 브리핑을 알려드려요
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={briefing.settings.enabled}
+              onValueChange={handleBriefingToggle}
+              trackColor={{ false: colors.border, true: mod.body.dark }}
+              thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+              accessibilityLabel="아침 브리핑 알림"
+              accessibilityRole="switch"
+              testID="briefing-toggle"
+            />
+          </View>
+
+          {briefing.settings.enabled && (
+            <View style={[styles.intervalSelector, { borderTopColor: colors.border }]}>
+              <Text style={[styles.intervalLabel, { color: colors.mutedForeground }]}>
+                알림 시각
+              </Text>
+              <View style={styles.intervalOptions}>
+                {BRIEFING_TIME_PRESETS.map(({ hour, minute }) => {
+                  const selected =
+                    briefing.settings.hour === hour && briefing.settings.minute === minute;
+                  const label = formatBriefingTime(hour, minute);
+                  return (
+                    <Pressable
+                      key={label}
+                      style={[
+                        styles.intervalOption,
+                        { backgroundColor: colors.muted },
+                        selected && { backgroundColor: mod.body.dark },
+                      ]}
+                      onPress={() => handleBriefingTime(hour, minute)}
+                      accessibilityRole="radio"
+                      accessibilityLabel={`${label} 알림`}
+                      accessibilityState={{ selected }}
+                      testID={`briefing-time-${hour}-${minute}`}
+                    >
+                      <Text
+                        style={[
+                          styles.intervalOptionText,
+                          { color: colors.mutedForeground },
+                          selected && { color: colors.card },
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+        </GlassCard>
+      </View>
+
       {/* 권한 안내 */}
       {hasPermission === false && (
         <Pressable

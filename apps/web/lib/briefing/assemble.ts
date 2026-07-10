@@ -11,7 +11,14 @@
 
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { composeDailyOutfit, type DailyOutfitPalette } from '@/lib/color/daily-outfit';
-import { composeBriefing, getTimeSlot, type Briefing, type TimeSlot } from './compose';
+import {
+  composeBriefing,
+  getTimeSlot,
+  type Briefing,
+  type BriefingCapsulePriority,
+  type BriefingRecentProduct,
+  type TimeSlot,
+} from './compose';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -25,10 +32,19 @@ export interface BriefingAssembleContext {
   userName?: string | null;
   /** 기준 시각(테스트/서버에서 고정 주입). 미지정 시 현재 시각 */
   now?: Date;
+  /**
+   * 사용자 타임존 기준 시(0~23). 서버(UTC) 라우트가 주입해 인사/시간대가 어긋나지 않게 한다.
+   * 미지정 시 now.getHours()(브라우저 로컬) 사용 — 웹 홈은 로컬 시각 그대로.
+   */
+  hour?: number;
   /** 날씨 피부 팁(첫 문장) — EnvironmentAdvice.skin[0] */
   weatherSkinTip?: string | null;
   /** 날씨 패션 팁(첫 문장) — EnvironmentAdvice.fashion[0] */
   weatherFashionTip?: string | null;
+  /** 최근 제품함에 담은 아이템(있을 때만 — "기억한다" 화법, 없으면 미주입) */
+  recentProduct?: BriefingRecentProduct | null;
+  /** 오늘 캡슐의 우선 항목 1개(있을 때만 — 조언에 반영, 없으면 미주입) */
+  capsulePriority?: BriefingCapsulePriority | null;
 }
 
 /** 나의 퍼스널컬러 스와치 — PC 분석에 베스트 컬러가 있을 때만 */
@@ -80,6 +96,7 @@ export function assembleBriefing(
   const briefing = composeBriefing({
     userName: ctx.userName ?? undefined,
     now,
+    hour: ctx.hour,
     skinTrend:
       skinEntry?.skinTrend != null
         ? {
@@ -91,11 +108,14 @@ export function assembleBriefing(
     lastAnalysisDaysAgo,
     // 날씨 피부 팁만 브리핑 조언에 흡수(패션 팁은 "오늘의 스타일"에서 별도 사용 — 중복 방지)
     weatherTip: ctx.weatherSkinTip ?? null,
+    // "기억한다" 화법 — 제품함 후속(관찰) + 오늘 캡슐 우선(조언). 없으면 미주입(정직성 가드).
+    recentProduct: ctx.recentProduct ?? null,
+    capsulePriority: ctx.capsulePriority ?? null,
     hasIntegratedSession: analyses.length > 0,
   });
 
   return {
-    timeSlot: getTimeSlot(now.getHours()),
+    timeSlot: getTimeSlot(ctx.hour ?? now.getHours()),
     briefing,
     myColors:
       pcEntry && bestColors.length > 0 ? { analysisId: pcEntry.id, colors: bestColors } : null,

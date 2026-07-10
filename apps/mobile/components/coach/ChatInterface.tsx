@@ -3,6 +3,8 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { ScanLine } from 'lucide-react-native';
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
@@ -30,6 +32,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceProps) {
   const { colors, brand, status, typography } = useTheme();
   const { isConnected } = useNetworkStatus();
+  const router = useRouter();
 
   const { messages, isLoading, error, suggestedQuestions, sendMessage, loadSession } = useCoach();
 
@@ -72,6 +75,12 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
   const handleCategoryChange = (category: QuestionCategory) => {
     Haptics.selectionAsync();
     setActiveCategory(category);
+  };
+
+  // "결정의 순간" — 성분 스캔으로 바로 이동(뷰티 탭 진입점과 동일 라벨·라우트)
+  const handleScan = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/(scan)' as never);
   };
 
   const categories: { key: QuestionCategory; label: string }[] = [
@@ -235,6 +244,17 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
           { backgroundColor: colors.card, borderTopColor: colors.border },
         ]}
       >
+        {/* 성분 스캔 — 입력창 옆 1탭 진입(ADR-114 물어보기+스캔 칩) */}
+        <Pressable
+          style={[styles.scanButton, { backgroundColor: colors.muted }]}
+          onPress={handleScan}
+          accessibilityRole="button"
+          accessibilityLabel="성분 스캔"
+          accessibilityHint="제품 성분표를 찍어 나와의 적합도를 확인해요"
+          testID="chat-scan-button"
+        >
+          <ScanLine size={20} color={brand.primary} strokeWidth={2} />
+        </Pressable>
         <TextInput
           style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
           placeholder="무엇이든 물어보세요..."
@@ -397,6 +417,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.smd,
     fontSize: 15,
     maxHeight: 100,
+  },
+  scanButton: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.circle,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButton: {
     paddingHorizontal: 18,

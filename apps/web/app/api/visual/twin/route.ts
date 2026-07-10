@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { generateTwin, getMyTwin, TwinGenerationError } from '@/lib/visual-expression/twin';
-import { checkAndConsumeBudget } from '@/lib/visual-expression';
+import { checkAndConsumeBudget, refundBudget } from '@/lib/visual-expression';
 import { unauthorizedError, validationError, internalError } from '@/lib/api/error-response';
 
 // 나노바나나 이미지 생성은 수 초~수십 초 — 함수 제한 방지
@@ -95,11 +95,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const twin = await generateTwin(userId, {
-      faceImageBase64: parsed.data.faceImageBase64,
-      bodyImageBase64: parsed.data.bodyImageBase64,
-      bodyConstraint: parsed.data.bodyConstraint,
-    });
+    let twin;
+    try {
+      twin = await generateTwin(userId, {
+        faceImageBase64: parsed.data.faceImageBase64,
+        bodyImageBase64: parsed.data.bodyImageBase64,
+        bodyConstraint: parsed.data.bodyConstraint,
+      });
+    } catch (error) {
+      // 생성 실패 → 미리 소비한 예산 환불(실패한 시도는 일 5회 상한에 계산하지 않음).
+      // 정직한 오류 응답은 아래 바깥 catch가 담당.
+      refundBudget(userId);
+      throw error;
+    }
 
     return withCors(NextResponse.json(twin));
   } catch (error) {
