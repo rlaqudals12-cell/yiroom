@@ -272,6 +272,11 @@ export interface DailyCapsule {
    * generateDailyCapsule가 조립 시 부착. 캐시 read에는 없을 수 있음(optional, 하위호환).
    */
   skinEveningFocus?: EveningCycle;
+  /**
+   * 어제 대비 저녁 포커스 변화 문구 (G4 일변화 체감) — 파생 필드(비영속).
+   * 어제와 같으면 없음(지어내지 않음). skinEveningFocus와 함께 조립 시에만 부착.
+   */
+  skinEveningChange?: string;
 }
 
 /** 아이템 실행 시간대 — 사용자 멘탈 모델(아침 루틴/저녁 루틴)에 맞춘 그룹핑용 */

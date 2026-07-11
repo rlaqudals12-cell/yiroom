@@ -13,7 +13,7 @@ import {
 } from '@/lib/products';
 import { addMatchInfoToProducts } from '@/lib/products/matching';
 import type { UserProfile } from '@/lib/products/matching';
-import type { SkinType, SkinConcern, PersonalColorSeason } from '@/types/product';
+import type { SkinType, PersonalColorSeason } from '@/types/product';
 import { ProductCard } from '@/components/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,8 +37,12 @@ export default async function RecommendedProductsPage() {
   const [skinAnalysis, personalColorAssessment, workoutAnalysis, nutritionSettings] =
     await Promise.all([
       supabase
+        // skin_analyses에는 피부 고민 컬럼이 없다(유령 컬럼). 존재하지 않는 컬럼을
+        // select하면 쿼리가 통째로 에러 → skinAnalysis.data가 null이 되어, 피부
+        // 분석을 마친 사용자에게도 "분석하면 추천해드려요" 잠금 카드가 떴다
+        // (= 스킨케어 추천이 구조적으로 항상 0). 실재 컬럼 skin_type만 조회한다 (2026-07-11).
         .from('skin_analyses')
-        .select('skin_type, top_concerns')
+        .select('skin_type')
         .eq('clerk_user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -69,14 +73,13 @@ export default async function RecommendedProductsPage() {
   // 사용자 프로필 구성
   const userProfile: UserProfile = {
     skinType: skinAnalysis.data?.skin_type as SkinType | undefined,
-    skinConcerns: skinAnalysis.data?.top_concerns as SkinConcern[] | undefined,
+    // skin_analyses에 고민(concerns) 컬럼이 없어 실데이터가 없다 — 지어내지 않고 미지정.
+    skinConcerns: undefined,
     personalColorSeason: personalColorAssessment.data?.season as PersonalColorSeason | undefined,
     workoutGoals: workoutAnalysis.data?.workout_type
       ? [workoutAnalysis.data.workout_type]
       : undefined,
-    nutritionGoals: nutritionSettings.data?.goal
-      ? [nutritionSettings.data.goal]
-      : undefined,
+    nutritionGoals: nutritionSettings.data?.goal ? [nutritionSettings.data.goal] : undefined,
   };
 
   const hasSkinAnalysis = !!skinAnalysis.data;
@@ -91,9 +94,7 @@ export default async function RecommendedProductsPage() {
           <Sparkles className="h-6 w-6 text-primary" />
           맞춤 추천
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          내 분석 결과를 기반으로 추천된 제품이에요
-        </p>
+        <p className="mt-2 text-muted-foreground">내 분석 결과를 기반으로 추천된 제품이에요</p>
       </header>
 
       <div className="space-y-10">
@@ -179,14 +180,11 @@ async function SkincareSection({ userProfile }: { userProfile: UserProfile }) {
     undefined // 스킨케어에는 퍼스널컬러 안 씀
   );
 
-  const withMatch = addMatchInfoToProducts(products, userProfile);
+  // "스킨케어" 섹션에 메이크업이 섞이지 않도록 색조 제외 (제목-내용 정합)
+  const skincare = products.filter((p) => p.category !== 'makeup');
+  const withMatch = addMatchInfoToProducts(skincare, userProfile);
 
-  return (
-    <RecommendationSection
-      title="내 피부에 맞는 스킨케어"
-      products={withMatch.slice(0, 6)}
-    />
-  );
+  return <RecommendationSection title="내 피부에 맞는 스킨케어" products={withMatch.slice(0, 6)} />;
 }
 
 /** 메이크업 추천 섹션 */
@@ -216,12 +214,7 @@ async function SupplementSection({ userProfile }: { userProfile: UserProfile }) 
 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
-  return (
-    <RecommendationSection
-      title="운동 목표에 맞는 영양제"
-      products={withMatch.slice(0, 6)}
-    />
-  );
+  return <RecommendationSection title="운동 목표에 맞는 영양제" products={withMatch.slice(0, 6)} />;
 }
 
 /** 운동 기구 추천 섹션 */
@@ -234,12 +227,7 @@ async function EquipmentSection({ userProfile }: { userProfile: UserProfile }) {
 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
-  return (
-    <RecommendationSection
-      title="운동 루틴에 필요한 기구"
-      products={withMatch.slice(0, 6)}
-    />
-  );
+  return <RecommendationSection title="운동 루틴에 필요한 기구" products={withMatch.slice(0, 6)} />;
 }
 
 /** 건강식품 추천 섹션 */
@@ -249,10 +237,7 @@ async function HealthFoodSection({ userProfile }: { userProfile: UserProfile }) 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
   return (
-    <RecommendationSection
-      title="식단 목표에 맞는 건강식품"
-      products={withMatch.slice(0, 6)}
-    />
+    <RecommendationSection title="식단 목표에 맞는 건강식품" products={withMatch.slice(0, 6)} />
   );
 }
 

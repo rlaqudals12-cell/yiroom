@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const pushMock = vi.fn();
 // "기억한다" 화법 입력은 fetch(제품함·캡슐 API)로 로드 — 기본은 빈 응답(미주입)
@@ -206,5 +206,98 @@ describe('DailyBriefing', () => {
     // 제품함 후속(관찰) + 캡슐 우선(조언)이 화법에 등장
     expect(await screen.findByText(/수분 앰플/)).toBeInTheDocument();
     expect(await screen.findByText(/약산성 클렌저/)).toBeInTheDocument();
+  });
+
+  // 폐루프 v1(고객 노트) — 미응답 후속 질문에 응답 버튼을 달고, 답하면 rating을 저장한다
+  it('제품함 후속(미응답)이면 응답 버튼을 렌더하고, "잘 맞아요"면 rating을 저장한다', async () => {
+    const putCalls: Array<{ url: string; body: { rating?: number } }> = [];
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes('/api/scan/shelf/') && init?.method === 'PUT') {
+        putCalls.push({ url: u, body: JSON.parse(String(init.body)) });
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }
+      if (u.includes('/api/scan/shelf')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            items: [
+              { id: 'shelf-77', productName: '수분 앰플', scannedAt: new Date().toISOString() },
+            ],
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    // 후속 질문 + 응답 버튼 등장
+    expect(await screen.findByTestId('shelf-feedback-actions')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('shelf-feedback-positive'));
+
+    // 낙관적 "기억해둘게요" 확인 + 버튼 사라짐
+    expect(await screen.findByTestId('shelf-feedback-ack')).toBeInTheDocument();
+    expect(screen.queryByTestId('shelf-feedback-actions')).not.toBeInTheDocument();
+
+    // 기존 rating 경로(PUT)로 긍정 값 저장
+    await waitFor(() => expect(putCalls).toHaveLength(1));
+    expect(putCalls[0].url).toContain('/api/scan/shelf/shelf-77');
+    expect(putCalls[0].body.rating).toBe(5);
+  });
+
+  it('"글쎄요"면 부정 rating을 저장한다', async () => {
+    const putCalls: Array<{ body: { rating?: number } }> = [];
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes('/api/scan/shelf/') && init?.method === 'PUT') {
+        putCalls.push({ body: JSON.parse(String(init.body)) });
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }
+      if (u.includes('/api/scan/shelf')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            items: [
+              { id: 'shelf-88', productName: '수분 앰플', scannedAt: new Date().toISOString() },
+            ],
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    fireEvent.click(await screen.findByTestId('shelf-feedback-negative'));
+    await waitFor(() => expect(putCalls).toHaveLength(1));
+    expect(putCalls[0].body.rating).toBe(2);
+  });
+
+  it('제품함 후속에 이전 응답(rating)이 있으면 회고만 하고 버튼을 렌더하지 않는다', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      const u = String(url);
+      if (u.includes('/api/scan/shelf')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                id: 'shelf-9',
+                productName: '수분 앰플',
+                rating: 5,
+                scannedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    // 회고 문장(긍정)만 노출, 응답 버튼은 없음
+    expect(await screen.findByText(/잘 맞는다고/)).toBeInTheDocument();
+    expect(screen.queryByTestId('shelf-feedback-actions')).not.toBeInTheDocument();
   });
 });

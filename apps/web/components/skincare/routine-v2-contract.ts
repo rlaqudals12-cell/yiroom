@@ -51,6 +51,13 @@ export interface WeeklyCycle {
   days: WeeklyCycleDay[];
 }
 
+/** 어제 대비 오늘 저녁 포커스 변화 (같으면 null — G4 일변화 체감) */
+export interface CycleChange {
+  today: EveningFocus;
+  yesterday: EveningFocus;
+  message: string;
+}
+
 /** 케어 단계 — barrier(장벽 회복 우선) / goal(목표 집중) */
 export type CarePhaseId = 'barrier' | 'goal';
 
@@ -93,6 +100,12 @@ interface SkincareRoutineV2Contract {
     sensitivityScore: number,
     carePhase: CarePhase
   ) => WeeklyCycle;
+  getCycleChange: (
+    date: Date,
+    ownedActives: Set<string>,
+    sensitivityScore: number,
+    carePhase: CarePhase
+  ) => CycleChange | null;
   deriveCarePhase: (scores: Record<string, number>, userGoals: SkinGoalId[]) => CarePhase;
   detectOwnedActives: (shelfItems: ShelfItem[]) => Set<string>;
   findRedundantProducts: (shelfItems: ShelfItem[]) => RedundantProduct[];
@@ -144,6 +157,19 @@ export function composeWeeklyCycle(
     engine.composeWeeklyCycle?.(ownedActives, sensitivityScore, toCarePhaseObject(carePhase)) ?? {
       days: [],
     }
+  );
+}
+
+/** 어제 대비 오늘 저녁 포커스 변화 (엔진 미배포 시 null — 변화 없다고 취급, 지어내지 않음) */
+export function getCycleChange(
+  date: Date,
+  ownedActives: Set<string>,
+  sensitivityScore: number,
+  carePhase: CarePhaseId
+): CycleChange | null {
+  return (
+    engine.getCycleChange?.(date, ownedActives, sensitivityScore, toCarePhaseObject(carePhase)) ??
+    null
   );
 }
 

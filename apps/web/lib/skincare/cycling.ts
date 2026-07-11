@@ -125,3 +125,40 @@ export function getEveningCycle(
     reason: CYCLE_REASONS[day.focus],
   };
 }
+
+/** 어제 대비 오늘 저녁 포커스 변화 (같으면 null) */
+export interface CycleChange {
+  today: CyclingFocus;
+  yesterday: CyclingFocus;
+  /** "어제(회복의 날)와 달라졌어요" — 오늘 라벨은 배지가 이미 보여주므로 어제만 짚는다 */
+  message: string;
+}
+
+/**
+ * 어제 대비 오늘 저녁 포커스가 달라졌는지 파생 (G4 일변화 체감).
+ *
+ * 사이클링은 요일 고정 배정이라 결정론적이다 — 어제 날짜의 포커스와 비교해
+ * 달라졌으면 변화를 반환하고, 같으면 null(지어내지 않음 — 변화 없는데 있다고 하지 않는다).
+ *
+ * @param date 오늘 날짜 (getDay로 요일 판정)
+ * @param ownedActives 보유 활성
+ * @param sensitivityScore 민감 지표
+ * @param carePhase 케어 단계
+ */
+export function getCycleChange(
+  date: Date,
+  ownedActives: Set<ActiveCategory>,
+  sensitivityScore: number,
+  carePhase: CarePhase
+): CycleChange | null {
+  const todayCycle = getEveningCycle(date, ownedActives, sensitivityScore, carePhase);
+  const yesterday = new Date(date);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayCycle = getEveningCycle(yesterday, ownedActives, sensitivityScore, carePhase);
+  if (todayCycle.focus === yesterdayCycle.focus) return null;
+  return {
+    today: todayCycle.focus,
+    yesterday: yesterdayCycle.focus,
+    message: `어제(${CYCLE_LABELS[yesterdayCycle.focus]})와 달라졌어요`,
+  };
+}

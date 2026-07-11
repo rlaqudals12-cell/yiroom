@@ -10,7 +10,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { composeBriefing, getTimeSlot, TONE_GUIDE } from '@/lib/briefing';
+import {
+  composeBriefing,
+  getTimeSlot,
+  TONE_GUIDE,
+  ratingToFeedback,
+  SHELF_FEEDBACK_RATING,
+} from '@/lib/briefing';
 
 // 특정 시각의 Date 생성 헬퍼 (로컬 시간 기준)
 function at(hour: number): Date {
@@ -129,6 +135,109 @@ describe('composeBriefing — 관찰 우선순위 및 근거 수치', () => {
   it('최근에 분석했으면(임계 미만) 경과 관찰을 생략한다', () => {
     const b = composeBriefing({ now: at(9), lastAnalysisDaysAgo: 1 });
     expect(b.observation).toBeUndefined();
+  });
+});
+
+describe('제품함 후속 폐루프 v1 — rating ↔ 응답 매핑', () => {
+  it('rating 4~5는 긍정, 1~3은 부정, 그 외(null·NaN·범위밖)는 미응답으로 해석한다', () => {
+    expect(ratingToFeedback(5)).toBe('positive');
+    expect(ratingToFeedback(4)).toBe('positive');
+    expect(ratingToFeedback(3)).toBe('negative');
+    expect(ratingToFeedback(2)).toBe('negative');
+    expect(ratingToFeedback(1)).toBe('negative');
+    expect(ratingToFeedback(null)).toBeNull();
+    expect(ratingToFeedback(undefined)).toBeNull();
+    expect(ratingToFeedback(0)).toBeNull();
+    expect(ratingToFeedback(NaN)).toBeNull();
+  });
+
+  // 재발 방지: 저장 값이 DB 제약(rating INTEGER CHECK 1..5)을 벗어나면 응답이 통째로 유실된다
+  it('저장에 쓰는 rating 값은 DB 제약(1~5) 안이고, 매핑과 왕복 일치한다', () => {
+    expect(SHELF_FEEDBACK_RATING.positive).toBeGreaterThanOrEqual(1);
+    expect(SHELF_FEEDBACK_RATING.positive).toBeLessThanOrEqual(5);
+    expect(SHELF_FEEDBACK_RATING.negative).toBeGreaterThanOrEqual(1);
+    expect(SHELF_FEEDBACK_RATING.negative).toBeLessThanOrEqual(5);
+    expect(Number.isInteger(SHELF_FEEDBACK_RATING.positive)).toBe(true);
+    expect(Number.isInteger(SHELF_FEEDBACK_RATING.negative)).toBe(true);
+    // 저장한 값을 다시 해석하면 같은 응답으로 돌아와야 한다(왕복 무결)
+    expect(ratingToFeedback(SHELF_FEEDBACK_RATING.positive)).toBe('positive');
+    expect(ratingToFeedback(SHELF_FEEDBACK_RATING.negative)).toBe('negative');
+  });
+});
+
+describe('제품함 후속 폐루프 v1 — 관찰 분기(미응답 질문 / 긍정·부정 회고)', () => {
+  it('미응답이고 shelfItemId가 있으면 다시 묻고, 응답 버튼용 후속 정보를 낸다', () => {
+    const b = composeBriefing({
+      now: at(9),
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1' },
+    });
+    expect(b.observation).toContain('수분 앰플');
+    expect(b.observation).toContain('잘 맞고 있어요?');
+    // 재발 방지: 후속 질문은 반드시 "답할 수단"(shelfFollowup)을 동반한다(죽은 질문 금지)
+    expect(b.shelfFollowup).toEqual({ shelfItemId: 'shelf-1', productName: '수분 앰플' });
+  });
+
+  it('미응답이어도 shelfItemId가 없으면 후속 정보를 내지 않는다(하위호환)', () => {
+    const b = composeBriefing({ now: at(9), recentProduct: { name: '수분 앰플' } });
+    expect(b.observation).toContain('잘 맞고 있어요?');
+    expect(b.shelfFollowup).toBeUndefined();
+  });
+
+  it('긍정 응답이면 그 답을 기억해 회고하고, 후속 질문(버튼)은 내지 않는다', () => {
+    const b = composeBriefing({
+      now: at(9),
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1', feedback: 'positive' },
+    });
+    expect(b.observation).toContain('수분 앰플');
+    expect(b.observation).toContain('잘 맞는다고');
+    expect(b.observation).toContain('루틴');
+    expect(b.observation).not.toContain('잘 맞고 있어요?'); // 재질문 아님
+    expect(b.shelfFollowup).toBeUndefined();
+  });
+
+  it('부정 응답이고 대안이 없으면 정직한 재탐색 안내를 낸다(제품명 지어내지 않음)', () => {
+    const b = composeBriefing({
+      now: at(9),
+      recentProduct: {
+        name: '수분 앰플',
+        shelfItemId: 'shelf-1',
+        feedback: 'negative',
+        feedbackDaysAgo: 3,
+      },
+    });
+    expect(b.observation).toContain('수분 앰플');
+    expect(b.observation).toContain('잘 안 맞는다고');
+    expect(b.observation).toContain('다른 제품');
+    expect(b.observation).toContain('3일 전'); // 근거 경과일
+    // 재발 방지: 3일 전 응답을 "어제"라 말하지 않는다(정직성)
+    expect(b.observation).not.toContain('어제');
+    expect(b.shelfFollowup).toBeUndefined();
+  });
+
+  it('부정 응답이고 대안이 주입되면 대안을 함께 제시한다', () => {
+    const b = composeBriefing({
+      now: at(9),
+      recentProduct: {
+        name: '수분 앰플',
+        feedback: 'negative',
+        feedbackDaysAgo: 1,
+        alternativeName: '세라마이드 크림',
+      },
+    });
+    expect(b.observation).toContain('어제'); // feedbackDaysAgo 1 → 어제
+    expect(b.observation).toContain('대신 세라마이드 크림');
+    expect(b.shelfFollowup).toBeUndefined();
+  });
+
+  it('피부 추이가 있으면 제품함 응답보다 우선하고, 후속 질문(버튼)도 내지 않는다', () => {
+    const b = composeBriefing({
+      now: at(9),
+      skinTrend: { direction: 'up', delta: 2, daysSinceLast: 1 },
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1' },
+    });
+    expect(b.observation).toContain('피부');
+    expect(b.observation).not.toContain('수분 앰플');
+    expect(b.shelfFollowup).toBeUndefined();
   });
 });
 

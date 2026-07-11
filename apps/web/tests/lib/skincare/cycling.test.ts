@@ -3,7 +3,12 @@
  * @see lib/skincare/cycling.ts
  */
 import { describe, it, expect } from 'vitest';
-import { composeWeeklyCycle, getEveningCycle, CYCLE_LABELS } from '@/lib/skincare/cycling';
+import {
+  composeWeeklyCycle,
+  getEveningCycle,
+  getCycleChange,
+  CYCLE_LABELS,
+} from '@/lib/skincare/cycling';
 import type { ActiveCategory } from '@/lib/skincare/active-categories';
 import type { CarePhase } from '@/lib/skincare/care-phase';
 
@@ -104,5 +109,48 @@ describe('getEveningCycle', () => {
         expect(cycle.reason).not.toMatch(/치료|처방/);
       }
     }
+  });
+});
+
+describe('getCycleChange (G4 일변화 체감)', () => {
+  it('should 어제와 포커스가 다르면 변화 반환 (어제 라벨 명시)', () => {
+    const owned = actives('retinoid'); // 월(dow1)=레티노이드, 일(dow0)=회복
+    const monday = new Date('2026-07-13T20:00:00'); // 월요일 (어제=일요일=회복)
+    const change = getCycleChange(monday, owned, 80, GOAL_PHASE);
+    expect(change).not.toBeNull();
+    expect(change?.today).toBe('retinoid');
+    expect(change?.yesterday).toBe('recovery');
+    expect(change?.message).toContain(CYCLE_LABELS.recovery);
+  });
+
+  it('should 어제와 포커스가 같으면 null (지어내지 않음)', () => {
+    // 활성 미보유 → 매일 회복의 날 = 변화 없음
+    for (let dow = 0; dow < 7; dow++) {
+      const date = new Date(2026, 6, 12 + dow);
+      expect(getCycleChange(date, new Set(), 80, GOAL_PHASE)).toBeNull();
+    }
+  });
+
+  it('should 장벽 회복 단계 → 매일 회복이라 변화 없음(null)', () => {
+    const owned = actives('retinoid', 'exfoliantAHA');
+    const change = getCycleChange(new Date('2026-07-13T20:00:00'), owned, 80, BARRIER_PHASE);
+    expect(change).toBeNull();
+  });
+
+  it("should 변화 문구에 '치료·처방' 없음", () => {
+    const owned = actives('retinoid', 'exfoliantAHA', 'exfoliantBHA');
+    for (let dow = 0; dow < 7; dow++) {
+      const date = new Date(2026, 6, 12 + dow);
+      const change = getCycleChange(date, owned, 80, GOAL_PHASE);
+      if (change) expect(change.message).not.toMatch(/치료|처방/);
+    }
+  });
+
+  it('should 결정론적 (같은 입력 → 같은 출력)', () => {
+    const owned = actives('retinoid', 'exfoliantBHA');
+    const date = new Date('2026-07-13T20:00:00');
+    expect(getCycleChange(date, owned, 60, GOAL_PHASE)).toEqual(
+      getCycleChange(date, owned, 60, GOAL_PHASE)
+    );
   });
 });

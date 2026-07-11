@@ -20,6 +20,7 @@ import { NextResponse } from 'next/server';
 import { computeSkinTrend } from '@yiroom/shared';
 import {
   assembleBriefing,
+  ratingToFeedback,
   type BriefingCapsulePriority,
   type BriefingRecentProduct,
 } from '@/lib/briefing';
@@ -188,7 +189,8 @@ function daysSince(date: Date, now: Date): number {
 
 /**
  * 최근 제품함에 담은 소유 제품 1건 → "기억한다" 화법(제품함 후속) 입력.
- * 실패/없음이면 null(지어내지 않음 — assembleBriefing이 미주입).
+ * 이전 응답(rating)이 있으면 그 답을 실어 보내 폐루프 회고가 되게 한다 — 지어내지 않음.
+ * 실패/없음이면 null(assembleBriefing이 미주입).
  */
 async function collectRecentProduct(
   supabase: Supabase,
@@ -199,7 +201,15 @@ async function collectRecentProduct(
     const { items } = await getShelfItems(supabase, userId, { status: 'owned', limit: 1 });
     const latest = items[0];
     if (!latest?.productName) return null;
-    return { name: latest.productName, addedDaysAgo: daysSince(latest.scannedAt, now) };
+    // rating(1~5) → 응답 해석. 응답이 있을 때만 "언제 답했는지"를 updated_at 기준으로 산정.
+    const feedback = ratingToFeedback(latest.rating);
+    return {
+      shelfItemId: latest.id,
+      name: latest.productName,
+      addedDaysAgo: daysSince(latest.scannedAt, now),
+      feedback,
+      feedbackDaysAgo: feedback ? daysSince(latest.updatedAt, now) : null,
+    };
   } catch {
     return null;
   }

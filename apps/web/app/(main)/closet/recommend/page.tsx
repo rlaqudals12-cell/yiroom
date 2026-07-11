@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, RefreshCw, Thermometer, Sparkles, ChevronRight } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Thermometer, Sparkles, ChevronRight, Images } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,27 @@ import type { PersonalColorSeason } from '@/lib/color-recommendations';
 import { getBodyShapeLabel } from '@/lib/body';
 import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
 import { assessOutfitHarmony } from '@/lib/inventory/color-bridge';
-import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
+import { BEST_COLORS, LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
+import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
+import { composeDailyOutfit } from '@/lib/color/daily-outfit';
+
+/** PC image_analysis JSONB에서 실측 대비 레벨만 안전 추출(없으면 undefined — 추측 없음). */
+function readContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const v = (raw as { contrastLevel?: unknown }).contrastLevel;
+  return v === 'low' || v === 'medium' || v === 'high' ? v : undefined;
+}
+
+/** 통합 큐레이션 맥락(source·session)을 옷장 등록 경로에 이어붙인다(맥락 유지). */
+function withIntegratedContext(
+  base: string,
+  isFromIntegrated: boolean,
+  sessionId: string | null
+): string {
+  if (!isFromIntegrated) return base;
+  const session = sessionId ? `&session=${sessionId}` : '';
+  return `${base}?source=integrated${session}`;
+}
 
 export default function ClosetRecommendPage() {
   const router = useRouter();
@@ -51,6 +71,10 @@ export default function ClosetRecommendPage() {
   // 사용자 프로필 (실제 앱에서는 DB에서 가져옴)
   const [personalColor, setPersonalColor] = useState<PersonalColorSeason | null>(null);
   const [bodyType, setBodyType] = useState<BodyType3 | null>(null);
+  // 콜드스타트(빈 옷장) 진단 제안용 — PC 베스트 컬러(개인 팔레트)·퍼스널 대비.
+  // 브리핑 '오늘의 배색'과 동일 소스라 옷장이 비어도 같은 배색을 이어서 보여준다.
+  const [pcBestColors, setPcBestColors] = useState<Array<{ name?: string; hex?: string }>>([]);
+  const [pcContrast, setPcContrast] = useState<'low' | 'medium' | 'high' | undefined>(undefined);
 
   // 날씨 — Open-Meteo 실연동(키 불필요). ADR-098의 WEATHER 게이팅은 "독립 날씨
   // 위젯 = 퍼널 비기여"가 근거였고, 코디 실행에 쓰는 TPO는 그 근거 밖 (로드맵 승인).
@@ -67,10 +91,10 @@ export default function ClosetRecommendPage() {
       if (!supabase) return;
 
       try {
-        // 퍼스널컬러 조회
+        // 퍼스널컬러 조회 — 시즌 + 진단된 베스트 컬러(개인 팔레트) + 대비 레벨
         const { data: colorData } = await supabase
           .from('personal_color_assessments')
-          .select('season')
+          .select('season, best_colors, image_analysis')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -78,6 +102,14 @@ export default function ClosetRecommendPage() {
         if (colorData?.season) {
           setPersonalColor(colorData.season as PersonalColorSeason);
         }
+        // 빈 옷장 콜드스타트 배색에 사용 — 실제 옷이 아니라 색 가이드용(브리핑과 동일 소스)
+        const rawBest = (colorData as { best_colors?: unknown } | null)?.best_colors;
+        setPcBestColors(
+          Array.isArray(rawBest) ? (rawBest as Array<{ name?: string; hex?: string }>) : []
+        );
+        setPcContrast(
+          readContrastLevel((colorData as { image_analysis?: unknown } | null)?.image_analysis)
+        );
 
         // 체형 조회
         const { data: bodyData } = await supabase
@@ -203,6 +235,21 @@ export default function ClosetRecommendPage() {
     return getRecommendationSummary(items, { personalColor, bodyType });
   }, [items, personalColor, bodyType]);
 
+  // 빈 옷장 콜드스타트 — 진단 기반 코디 "방향"(실제 옷을 지어내지 않고 색·역할·스타일 가이드만).
+  // 오늘의 배색: DB 베스트 컬러 우선, 없으면 진단 시즌의 추천 팔레트(Hybrid). 둘 다 없으면 null(정직성).
+  const coldStartOutfit = useMemo(() => {
+    const fromDiagnosed = composeDailyOutfit(pcBestColors, new Date(), pcContrast);
+    if (fromDiagnosed) return fromDiagnosed;
+    if (personalColor) {
+      const seasonPalette = BEST_COLORS[personalColor.toLowerCase() as SeasonType] ?? [];
+      return composeDailyOutfit(seasonPalette, new Date(), pcContrast);
+    }
+    return null;
+  }, [pcBestColors, pcContrast, personalColor]);
+
+  // 체형 스타일 가이드(진단된 체형이 있을 때만) — 기존 체형 결과와 동일 데이터
+  const coldStartBody = bodyType ? BODY_TYPES_3[bodyType] : null;
+
   // 새로고침
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -313,13 +360,19 @@ export default function ClosetRecommendPage() {
     );
   }
 
-  // 빈 옷장 — 통합 분석 큐레이션 맥락 유지
+  // 빈 옷장 — 옷을 일일이 넣지 않아도 진단(컬러·체형)으로 코디 "방향"을 제안한다.
+  // 실제 옷을 지어내지 않고 색·역할·스타일 가이드만 보여주고, 그 아래에 일괄 등록을 우선 안내.
   if (items.length === 0) {
-    const addHref = isFromIntegrated
-      ? `/closet/add?source=integrated${curationSessionId ? `&session=${curationSessionId}` : ''}`
-      : '/closet/add';
+    const addHref = withIntegratedContext('/closet/add', isFromIntegrated, curationSessionId);
+    const batchHref = withIntegratedContext(
+      '/closet/add/batch',
+      isFromIntegrated,
+      curationSessionId
+    );
+    const hasDiagnosis = coldStartOutfit !== null || coldStartBody !== null;
+
     return (
-      <div data-testid="closet-recommend-page" className="pb-20">
+      <div data-testid="closet-recommend-page" className="pb-24">
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
           <div className="flex items-center gap-3 px-4 py-3">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -328,32 +381,143 @@ export default function ClosetRecommendPage() {
             <h1 className="text-lg font-semibold">오늘의 코디</h1>
           </div>
         </div>
-        <div
-          className="flex flex-col items-center justify-center px-4 py-16 text-center"
-          data-testid="closet-empty-state"
-        >
-          <span className="text-6xl mb-4">👗</span>
-          <h2 className="text-lg font-semibold mb-2">
-            {isFromIntegrated ? '옷장을 먼저 등록해주세요' : '옷장이 비어있어요'}
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            {isFromIntegrated ? (
-              <>
-                분석한 체형과 컬러에 맞춰
-                <br />
-                가지고 있는 옷으로 코디를 제안할게요
-              </>
-            ) : (
-              <>
-                옷장에 아이템을 추가하면
-                <br />
-                맞춤 코디를 추천해드려요
-              </>
-            )}
-          </p>
-          <Button onClick={() => router.push(addHref)} data-testid="closet-empty-cta">
-            {isFromIntegrated ? '먼저 옷장 등록하기' : '옷 추가하기'}
-          </Button>
+
+        <div className="px-4 py-5 space-y-5" data-testid="closet-empty-state">
+          {hasDiagnosis ? (
+            <div className="space-y-5" data-testid="coldstart-suggestions">
+              {/* 안내 — 진단 기반 "방향" 제안이며 실제 옷이 아님을 명확히 */}
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <div className="mb-1 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <h2 className="text-sm font-semibold">옷장은 비었지만, 이렇게 입어보세요</h2>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  아직 등록한 옷이 없어서, 분석한 컬러와 체형으로 오늘의 코디 방향을 제안해드릴게요.
+                  실제 옷이 아니라 색·스타일 가이드예요.
+                </p>
+              </div>
+
+              {/* 오늘의 배색 — PC 베스트 컬러 기반(색·역할만, 특정 옷 미발명) */}
+              {coldStartOutfit && (
+                <Card data-testid="coldstart-outfit-palette">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">🎨 이런 색 조합으로 입어보세요</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-start gap-2">
+                      {coldStartOutfit.colors.map((c) => (
+                        <div
+                          key={c.role}
+                          data-testid="coldstart-outfit-block"
+                          className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                        >
+                          <span
+                            className="h-11 w-11 rounded-xl border border-white/70 shadow-sm dark:border-slate-700"
+                            style={{ backgroundColor: c.hex }}
+                            title={`${c.role} · ${c.name}`}
+                            aria-label={`${c.role} ${c.name}`}
+                          />
+                          <span className="text-[11px] font-medium text-foreground/80">
+                            {c.role}
+                          </span>
+                          <span className="line-clamp-2 w-full break-keep text-center text-[10px] leading-tight text-muted-foreground">
+                            {c.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p
+                      className="mt-3 text-[11px] text-muted-foreground"
+                      data-testid="coldstart-outfit-caption"
+                    >
+                      내 베스트 컬러({coldStartOutfit.baseName})로 짠 배색이에요. 파생색은 색 계열로
+                      표기했어요.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 체형 스타일 가이드 — 체형에 맞는 스타일 방향(품목 예시는 가이드, 소유 옷 아님) */}
+              {coldStartBody && (
+                <Card data-testid="coldstart-body-tips">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">
+                      {coldStartBody.emoji} {coldStartBody.label} 체형 스타일 가이드
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      {coldStartBody.characteristics}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {coldStartBody.keywords.map((k) => (
+                        <span
+                          key={k}
+                          className="rounded-full bg-muted px-2.5 py-1 text-xs text-foreground/80"
+                        >
+                          {k}
+                        </span>
+                      ))}
+                    </div>
+                    <ul className="space-y-1.5">
+                      {coldStartBody.recommendations.slice(0, 4).map((rec, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary">•</span>
+                          <span>
+                            <span className="font-medium">{rec.item}</span>{' '}
+                            <span className="text-muted-foreground">— {rec.reason}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <span className="mb-4 text-6xl">👗</span>
+              <h2 className="mb-2 text-lg font-semibold">
+                {isFromIntegrated ? '옷장을 먼저 등록해주세요' : '옷장이 비어있어요'}
+              </h2>
+              <p className="text-muted-foreground">
+                분석을 먼저 하면 컬러·체형에 맞춰 코디 방향을 제안해드려요.
+              </p>
+              <Link
+                href="/analysis/integrated"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                분석하고 맞춤 추천 받기
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          )}
+
+          {/* 내 옷으로 받으려면 — 한 벌씩이 아니라 사진 여러 장 일괄 등록을 우선 안내 */}
+          <Card data-testid="closet-register-cta">
+            <CardContent className="p-4">
+              <h3 className="mb-1 text-sm font-semibold">내 옷으로 코디를 받으려면</h3>
+              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                한 벌씩 넣지 않아도 돼요. 옷 사진을 여러 장 한 번에 올리면 AI가 자동으로 분류해요.
+              </p>
+              <Button
+                className="w-full"
+                onClick={() => router.push(batchHref)}
+                data-testid="closet-empty-cta"
+              >
+                <Images className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                사진 여러 장 한 번에 등록
+              </Button>
+              <button
+                onClick={() => router.push(addHref)}
+                data-testid="closet-empty-single-cta"
+                className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              >
+                한 벌씩 등록할래요
+              </button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

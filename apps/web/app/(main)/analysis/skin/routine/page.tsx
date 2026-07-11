@@ -18,7 +18,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { RoutineStepList, RoutineToggle, RoutineTimeline } from '@/components/skin/routine';
 import { getSkinTypeLabel, getTimeOfDayLabel } from '@/lib/skincare/routine';
-import { generateRoutineFromShelf, assembleDailyRoutine } from '@/lib/skincare';
+import {
+  generateRoutineFromShelf,
+  assembleDailyRoutine,
+  suggestRoutineReplacements,
+} from '@/lib/skincare';
 import { formatDuration, calculateEstimatedTime } from '@/lib/mock/skincare-routine';
 import type { TimeOfDay, RoutineStep, ProductCategory } from '@/types/skincare-routine';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
@@ -27,6 +31,7 @@ import type { ShelfItem } from '@/lib/scan/product-shelf';
 import {
   deriveCarePhase,
   getEveningCycle,
+  getCycleChange,
   composeWeeklyCycle,
   detectOwnedActives,
   findRedundantProducts,
@@ -35,6 +40,9 @@ import { useSkinGoals } from '@/components/skincare/useSkinGoals';
 import { SkinGoalChips } from '@/components/skincare/SkinGoalChips';
 import { CarePhaseCard } from '@/components/skincare/CarePhaseCard';
 import { EveningFocusPanel } from '@/components/skincare/EveningFocusPanel';
+import { TodayFocusBadge } from '@/components/skincare/TodayFocusBadge';
+import { ReanalysisNotice } from '@/components/skincare/ReanalysisNotice';
+import { RoutineReplacementNotice } from '@/components/skincare/RoutineReplacementNotice';
 import { ShelfRedundancyNotice } from '@/components/skincare/ShelfRedundancyNotice';
 
 // 화장대 궁합 안내용 카테고리 한글 라벨
@@ -221,8 +229,22 @@ export default function SkincareRoutinePage() {
     };
   }, [skinData, ownedActives, carePhase]);
 
+  // 어제 대비 오늘 저녁 포커스 변화 (G4 일변화 체감) — 같으면 null(미표시)
+  const cycleChange = useMemo(() => {
+    if (!skinData) return null;
+    const phaseId = carePhase?.phase ?? 'goal';
+    return getCycleChange(new Date(), ownedActives, skinData.sensitivity, phaseId);
+  }, [skinData, ownedActives, carePhase]);
+
   // 화장대 중복 제품 안내 (같은 카테고리 다수 보유)
   const redundantProducts = useMemo(() => findRedundantProducts(shelfItems), [shelfItems]);
+
+  // 다 쓴 뒤 교체 제안 (G4 폐루프 v1) — 현재 탭 루틴에 배치된 적합도 낮은 보유 제품.
+  // 점수 없는 미스캔 제품·충분히 잘 맞는 제품은 제외(지어내지 않음, lib에서 판단).
+  const replacements = useMemo(
+    () => suggestRoutineReplacements(currentSteps, shelfItems),
+    [currentSteps, shelfItems]
+  );
 
   // 제품 클릭 핸들러
   const handleProductClick = useCallback((product: { affiliateUrl: string }) => {
@@ -299,6 +321,19 @@ export default function SkincareRoutinePage() {
             )}
           </div>
         </header>
+
+        {/* 재분석 주기 안내 (G4) — 분석이 7일 넘게 지났을 때만 */}
+        {skinData && (
+          <ReanalysisNotice
+            analyzedAt={new Date(skinData.created_at)}
+            onReanalyze={handleGoToAnalysis}
+          />
+        )}
+
+        {/* 오늘의 저녁 포커스 배지 (G4 일변화 체감) — 상단 승격, 아침/저녁 탭 무관 */}
+        {eveningFocus && (
+          <TodayFocusBadge eveningCycle={eveningFocus.cycle} cycleChange={cycleChange} />
+        )}
 
         {/* 개인화 노트 */}
         {personalizationNote && (
@@ -427,6 +462,9 @@ export default function SkincareRoutinePage() {
               )}
           </section>
         )}
+
+        {/* 다 쓴 뒤 교체 제안 (G4) — 루틴에 배치된 적합도 낮은 보유 제품 (없으면 미노출) */}
+        <RoutineReplacementNotice replacements={replacements} />
 
         {/* 아침/저녁 토글 */}
         <RoutineToggle

@@ -100,7 +100,7 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
     expect(screen.queryByTestId('rank-comparison')).not.toBeInTheDocument();
   });
 
-  it('4개 이상이면 상위 3개는 순위, 나머지는 기존 그리드로 표시한다', async () => {
+  it('4개면 상위 3개만 순위로 노출하고 남는 1개는 고아 카드로 떨구지 않는다', async () => {
     mockFetchProducts([
       { product: makeCosmetic('p1', '세럼A'), matchScore: 95, matchReasons: ['건성'] },
       { product: makeCosmetic('p2', '세럼B'), matchScore: 90, matchReasons: ['여름 쿨톤'] },
@@ -112,10 +112,44 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
 
     await screen.findByTestId('matched-products-ranked');
     expect(screen.getAllByTestId('rank-badge')).toHaveLength(3);
-    const rest = screen.getByTestId('matched-products-rest');
-    expect(rest).toBeInTheDocument();
-    // 4번째 제품(적합도 60점)은 그리드에 "적합도 60점" 배지로 표시
+    // 남는 1개는 별도 그리드(고아)로 렌더하지 않는다 — "맞춤 제품 더 보기"로 정리
+    expect(screen.queryByTestId('matched-products-rest')).not.toBeInTheDocument();
+  });
+
+  it('나머지가 2개 이상이면 BEST와 동일한 열 그리드(sm:grid-cols-3)로 카드 폭을 통일한다', async () => {
+    mockFetchProducts([
+      { product: makeCosmetic('p1', '세럼A'), matchScore: 95, matchReasons: ['건성'] },
+      { product: makeCosmetic('p2', '세럼B'), matchScore: 90, matchReasons: ['여름 쿨톤'] },
+      { product: makeCosmetic('p3', '세럼C'), matchScore: 85, matchReasons: ['저자극'] },
+      { product: makeCosmetic('p4', '세럼D'), matchScore: 60, matchReasons: ['지성'] },
+      { product: makeCosmetic('p5', '세럼E'), matchScore: 55, matchReasons: ['복합성'] },
+    ]);
+
+    render(<AnalysisMatchedProducts analysisType="skin" maxProducts={5} />);
+
+    const rest = await screen.findByTestId('matched-products-rest');
+    // BEST 그리드와 동일한 3열 → 카드 폭 일치(4열이던 크기 어긋남 회귀 방지)
+    expect(rest.className).toContain('sm:grid-cols-3');
     expect(rest).toHaveTextContent('적합도 60점');
+    expect(rest).toHaveTextContent('적합도 55점');
+  });
+
+  it('BEST 그리드는 3열 균등, 이유 줄은 최소 높이를 예약해 첫 카드만 커 보이는 어긋남을 막는다', async () => {
+    mockFetchProducts([
+      { product: makeCosmetic('p1', '세럼A'), matchScore: 92, matchReasons: ['여름 쿨톤', '건성'] },
+      { product: makeCosmetic('p2', '세럼B'), matchScore: 88, matchReasons: ['저자극'] },
+      { product: makeCosmetic('p3', '세럼C'), matchScore: 80, matchReasons: ['건성'] },
+    ]);
+
+    render(<AnalysisMatchedProducts analysisType="skin" />);
+
+    const ranked = await screen.findByTestId('matched-products-ranked');
+    // 3열 균등 그리드 → BEST 1·2·3 카드 폭 일치
+    expect(ranked.className).toContain('sm:grid-cols-3');
+    // 이유 줄 높이 예약 → 줄 수 차이로 셀 높이가 어긋나지 않음
+    const reasons = screen.getAllByTestId('rank-reason');
+    expect(reasons).toHaveLength(3);
+    reasons.forEach((r) => expect(r.className).toContain('min-h-'));
   });
 
   it('제품이 없으면 안내 폴백을 표시한다', async () => {

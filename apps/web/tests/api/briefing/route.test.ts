@@ -171,6 +171,70 @@ describe('GET /api/briefing', () => {
     expect(body.data.briefing.advice.some((l: string) => l.includes('약산성 클렌저'))).toBe(true);
   });
 
+  it('제품함 후속에 이전 응답(rating)이 있으면 회고 문장으로 반영한다(폐루프 v1, 모바일 정합)', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-5',
+          season: 'summer',
+          created_at: new Date().toISOString(),
+          best_colors: [],
+          image_analysis: {},
+        },
+      ],
+      // skin 없음 → 제품함 후속이 관찰로 노출
+    });
+    // rating 5 = 긍정 → 회고("잘 맞는다고 하셨던 …")로 조립되어야 한다
+    vi.mocked(getShelfItems).mockResolvedValueOnce({
+      items: [
+        {
+          id: 'shelf-5',
+          productName: '수분 앰플',
+          rating: 5,
+          scannedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ] as never,
+      total: 1,
+    });
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(body.data.briefing.observation).toContain('수분 앰플');
+    expect(body.data.briefing.observation).toContain('잘 맞는다고');
+    // 응답이 있으면 재질문(버튼용 후속)은 내지 않는다
+    expect(body.data.briefing.shelfFollowup).toBeUndefined();
+  });
+
+  it('제품함 후속이 미응답이면 응답 버튼용 후속(shelfFollowup)을 페이로드에 싣는다(폐루프 v1)', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-6',
+          season: 'summer',
+          created_at: new Date().toISOString(),
+          best_colors: [],
+          image_analysis: {},
+        },
+      ],
+    });
+    // rating 없음 = 미응답 → 다시 질문 + shelfFollowup 동반
+    vi.mocked(getShelfItems).mockResolvedValueOnce({
+      items: [{ id: 'shelf-6', productName: '수분 앰플', scannedAt: new Date() }] as never,
+      total: 1,
+    });
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(body.data.briefing.observation).toContain('잘 맞고 있어요?');
+    expect(body.data.briefing.shelfFollowup).toEqual({
+      shelfItemId: 'shelf-6',
+      productName: '수분 앰플',
+    });
+  });
+
   it('제품함·캡슐이 비어 있으면 화법에 주입하지 않는다(정직성 가드)', async () => {
     queueAnalyses({
       pc: [

@@ -9,11 +9,14 @@ export {
   composeBriefing,
   getTimeSlot,
   TONE_GUIDE,
+  SHELF_FEEDBACK_RATING,
+  ratingToFeedback,
   type Briefing,
   type BriefingInput,
   type BriefingSkinTrend,
   type BriefingRecentProduct,
   type BriefingCapsulePriority,
+  type ShelfFeedback,
   type TimeSlot,
 } from './compose';
 

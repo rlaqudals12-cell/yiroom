@@ -142,8 +142,9 @@ export function AnalysisMatchedProducts({
     return (
       <div data-testid="matched-products-loading">
         <SectionHeader analysisType={analysisType} />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: maxProducts }).map((_, i) => (
+        {/* 로드 후 BEST 3열 그리드와 동일 레이아웃 → 스켈레톤↔결과 전환 시 레이아웃 시프트 방지 */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Array.from({ length: Math.min(maxProducts, 3) }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
         </div>
@@ -195,8 +196,9 @@ export function AnalysisMatchedProducts({
               )}
               {/* 점수는 아래 이유 줄에서 "적합도 N점"으로 표기 → 카드 배지 중복 생략 */}
               <ProductCard product={mp.product} matchReasons={mp.matchReasons} />
+              {/* 이유 줄은 최소 2줄 높이를 예약 — BEST 1만 줄 수가 많아 첫 카드가 커 보이는 어긋남 방지 */}
               <p
-                className="mt-1.5 text-[11px] leading-snug text-zinc-400"
+                className="mt-1.5 min-h-[2rem] text-[11px] leading-snug text-zinc-400"
                 data-testid="rank-reason"
               >
                 {buildRankReasonLine(mp.matchScore, mp.matchReasons)}
@@ -213,10 +215,13 @@ export function AnalysisMatchedProducts({
         </p>
       )}
 
-      {/* 나머지 제품 — 기존 그리드 표시 */}
-      {rest.length > 0 && (
+      {/* 나머지 제품 — BEST 그리드와 동일한 열 수(sm:grid-cols-3)로 카드 폭 통일.
+          단, 1개만 남으면 홀로 뚝 떨어져(고아) 보이므로 별도 블록으로 렌더하지 않고
+          아래 "맞춤 제품 더 보기"로 정리한다.
+          (실사용은 maxProducts=4 → best 3 + rest 1 → 이 경우 항상 BEST 3개만 노출) */}
+      {rest.length >= 2 && (
         <div
-          className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
+          className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3"
           data-testid="matched-products-rest"
         >
           {rest.map(({ product, matchScore, matchReasons }) => (

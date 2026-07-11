@@ -31,8 +31,11 @@ import {
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import {
   assembleBriefing,
+  ratingToFeedback,
+  SHELF_FEEDBACK_RATING,
   type BriefingCapsulePriority,
   type BriefingRecentProduct,
+  type ShelfFeedback,
 } from '@/lib/briefing';
 import { generateInsights, analysisToDataBundle } from '@/lib/insights';
 import {
@@ -93,7 +96,18 @@ interface BriefingMemory {
   capsulePriority: BriefingCapsulePriority | null;
 }
 
-/** 최근 담은 소유 제품 1건 — 기존 제품함 API 재사용. 실패/없음이면 null(미주입) */
+/** ISO 문자열 → 경과일(무효면 null) */
+function daysAgoOrNull(iso: unknown): number | null {
+  if (typeof iso !== 'string') return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / DAY_MS));
+}
+
+/**
+ * 최근 담은 소유 제품 1건 — 기존 제품함 API 재사용. 실패/없음이면 null(미주입).
+ * 이전 응답(rating)이 있으면 함께 실어 폐루프 회고가 되게 한다(고객 노트 v1).
+ */
 async function loadRecentProduct(): Promise<BriefingRecentProduct | null> {
   try {
     const res = await fetch('/api/scan/shelf?status=owned&limit=1');
@@ -101,12 +115,15 @@ async function loadRecentProduct(): Promise<BriefingRecentProduct | null> {
     const json = await res.json();
     const item = Array.isArray(json?.items) ? json.items[0] : null;
     if (!item?.productName) return null;
-    const scannedAt = item.scannedAt ? new Date(item.scannedAt) : null;
-    const addedDaysAgo =
-      scannedAt && !Number.isNaN(scannedAt.getTime())
-        ? Math.max(0, Math.floor((Date.now() - scannedAt.getTime()) / DAY_MS))
-        : null;
-    return { name: item.productName, addedDaysAgo };
+    // rating(1~5) → 응답 해석. 응답이 있을 때만 "언제 답했는지"를 updatedAt 기준으로.
+    const feedback = ratingToFeedback(item.rating);
+    return {
+      shelfItemId: typeof item.id === 'string' ? item.id : null,
+      name: item.productName,
+      addedDaysAgo: daysAgoOrNull(item.scannedAt),
+      feedback,
+      feedbackDaysAgo: feedback ? daysAgoOrNull(item.updatedAt) : null,
+    };
   } catch {
     return null;
   }
@@ -165,6 +182,8 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   const env = useEnvironmentAdvice();
   const memory = useBriefingMemory(!!user);
   const [question, setQuestion] = useState('');
+  // 제품함 후속 응답을 이 세션에서 이미 보냈는지 — 낙관적 "기억해둘게요" 표시용
+  const [shelfFeedbackSaved, setShelfFeedbackSaved] = useState(false);
 
   // 실이름만 — '회원' 같은 placeholder는 넘기지 않음(이름 없으면 생략형)
   const userName = user?.firstName || user?.username || undefined;
@@ -187,6 +206,8 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   const { briefing, myColors } = payload;
   const dailyOutfit = payload.todayStyle.outfit;
   const fashionTip = payload.todayStyle.fashionTip;
+  // 응답 대기 중인 제품함 후속(미응답 질문일 때만 존재) — 로컬 const라 클로저에서 좁힘이 유지된다
+  const shelfFollowup = briefing.shelfFollowup;
 
   // 내 상태 섹션용(브리핑 조립과 별개) — 피부 추이 칩에 사용
   const skinEntry = analyses.find((a) => a.type === 'skin');
@@ -206,6 +227,21 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     e.preventDefault();
     const q = question.trim();
     router.push(q ? `/coach?q=${encodeURIComponent(q)}` : '/coach');
+  }
+
+  // 제품함 후속 응답 저장 — 기존 rating 경로(PUT /api/scan/shelf/[id]) 재사용, 새 테이블 없음.
+  // 낙관적으로 "기억해둘게요"를 즉시 표시하고, 저장 실패해도 흐름을 막지 않는다(다음 로드에서 재질문).
+  async function handleShelfFeedback(shelfItemId: string, feedback: ShelfFeedback): Promise<void> {
+    setShelfFeedbackSaved(true);
+    try {
+      await fetch(`/api/scan/shelf/${shelfItemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: SHELF_FEEDBACK_RATING[feedback] }),
+      });
+    } catch {
+      /* 저장 실패 — 사용자 흐름은 유지, 다음 브리핑 로드 시 다시 질문한다 */
+    }
   }
 
   return (
@@ -228,6 +264,36 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         {briefing.observation && (
           <p className="mt-2 text-sm text-foreground/90 leading-relaxed">{briefing.observation}</p>
         )}
+
+        {/* 제품함 후속 응답 — 폐루프 v1(고객 노트). 답하면 rating 저장 → 다음 브리핑이 기억한다 */}
+        {shelfFollowup &&
+          (shelfFeedbackSaved ? (
+            <p
+              className="mt-2 text-xs font-medium text-pink-600 dark:text-pink-300"
+              data-testid="shelf-feedback-ack"
+            >
+              기억해둘게요.
+            </p>
+          ) : (
+            <div className="mt-2.5 flex flex-wrap gap-2" data-testid="shelf-feedback-actions">
+              <button
+                type="button"
+                data-testid="shelf-feedback-positive"
+                onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'positive')}
+                className="rounded-full border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/30 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+              >
+                잘 맞아요
+              </button>
+              <button
+                type="button"
+                data-testid="shelf-feedback-negative"
+                onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'negative')}
+                className="rounded-full border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800/60 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/60"
+              >
+                글쎄요
+              </button>
+            </div>
+          ))}
 
         {briefing.advice.length > 0 && (
           <ul className="mt-3 space-y-1.5">

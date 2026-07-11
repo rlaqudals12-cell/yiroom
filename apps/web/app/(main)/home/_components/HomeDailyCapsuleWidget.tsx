@@ -46,9 +46,14 @@ type SolutionProductWithSource = DailySolutionProduct & {
 };
 
 // ADR-117 계약: 캡슐에 오늘 저녁 포커스가 붙는다(S1 구현 중). 배포 전에도 안전 소비.
+// G4: 어제 대비 변화 문구(skinEveningChange)도 함께 붙는다(달라졌을 때만).
 type CapsuleWithEveningFocus = DailyCapsule & {
   skinEveningFocus?: { focus: string; label: string; reason: string };
+  skinEveningChange?: string;
 };
+
+// G4 일변화 체감 — 오늘 요일 (저녁 포커스 배지에 표기)
+const DOW_KO = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
 // 아이템에 붙은 실제 제품 칩 — 보유(shelf)면 배지, 없으면(catalog) 구매 연결.
 function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactElement {
@@ -276,6 +281,9 @@ export default function HomeDailyCapsuleWidget() {
   const progress = Math.round((checkedCount / totalCount) * 100);
   // ADR-117: 오늘 저녁 포커스(배지 1줄) — 있을 때만, 과하지 않게
   const eveningFocus = (capsule as CapsuleWithEveningFocus).skinEveningFocus;
+  // G4: 어제 대비 변화 문구 + 오늘 요일 (일변화 체감)
+  const eveningChange = (capsule as CapsuleWithEveningFocus).skinEveningChange;
+  const todayDow = DOW_KO[new Date().getDay()] ?? '';
 
   return (
     <div
@@ -307,14 +315,26 @@ export default function HomeDailyCapsuleWidget() {
         />
       </div>
 
-      {/* 오늘 저녁 포커스 배지 (ADR-117) — 위젯에서는 1줄만 */}
+      {/* 오늘 저녁 포커스 배지 (ADR-117) + 요일·어제 대비 변화 (G4 일변화 체감) */}
       {eveningFocus?.label && (
         <div
-          className="mb-3 flex items-center gap-1.5 rounded-lg bg-indigo-500/10 px-3 py-1.5 text-xs text-indigo-700 dark:text-indigo-300"
+          className="mb-3 rounded-lg bg-indigo-500/10 px-3 py-1.5 text-xs text-indigo-700 dark:text-indigo-300"
           data-testid="capsule-evening-focus"
         >
-          <span aria-hidden="true">🌙</span>
-          <span className="font-medium">오늘 저녁: {eveningFocus.label}</span>
+          <div className="flex items-center gap-1.5">
+            <span aria-hidden="true">🌙</span>
+            <span className="font-medium">
+              {todayDow ? `${todayDow} · ` : ''}오늘 저녁: {eveningFocus.label}
+            </span>
+          </div>
+          {eveningChange && (
+            <span
+              className="mt-0.5 block text-[11px] text-indigo-600/80 dark:text-indigo-300/80"
+              data-testid="capsule-evening-change"
+            >
+              {eveningChange}
+            </span>
+          )}
         </div>
       )}
 

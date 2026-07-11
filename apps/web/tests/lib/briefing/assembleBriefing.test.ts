@@ -84,6 +84,26 @@ describe('assembleBriefing', () => {
     expect(p.briefing.advice.some((line) => line.includes('약산성 클렌저'))).toBe(true);
   });
 
+  it('제품함 후속에 이전 응답(긍정)이 있으면 회고 문장으로 조립한다(폐루프 v1)', () => {
+    const p = assembleBriefing([pc()], {
+      now: MORNING,
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1', feedback: 'positive' },
+    });
+    expect(p.briefing.observation).toContain('수분 앰플');
+    expect(p.briefing.observation).toContain('잘 맞는다고');
+    // 응답이 있으면 재질문(버튼) 없음
+    expect(p.briefing.shelfFollowup).toBeUndefined();
+  });
+
+  it('제품함 후속이 미응답이면 응답 버튼용 후속 정보를 페이로드에 싣는다(폐루프 v1)', () => {
+    const p = assembleBriefing([pc()], {
+      now: MORNING,
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1' },
+    });
+    expect(p.briefing.observation).toContain('잘 맞고 있어요?');
+    expect(p.briefing.shelfFollowup).toEqual({ shelfItemId: 'shelf-1', productName: '수분 앰플' });
+  });
+
   it('제품함·캡슐 데이터가 없으면 주입하지 않는다(정직성 가드)', () => {
     const p = assembleBriefing([pc()], { now: MORNING });
     // recentProduct/capsulePriority 미주입 → 관찰 없음(오래된 분석도 아님), 조언 빈 배열

@@ -20,10 +20,17 @@ import {
   deriveConcernsFromScores,
   deriveCarePhase,
   getEveningCycle,
+  getCycleChange,
   detectOwnedActives,
   mergeGoalsIntoConcerns,
 } from '@/lib/skincare';
-import type { TodaySkinCondition, EveningCycle, ActiveCategory, SkinGoalId } from '@/lib/skincare';
+import type {
+  TodaySkinCondition,
+  EveningCycle,
+  CycleChange,
+  ActiveCategory,
+  SkinGoalId,
+} from '@/lib/skincare';
 import { getShelfItems } from '@/lib/scan/product-shelf';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
@@ -132,7 +139,9 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   }
 
   // 오늘 저녁 주기 파생 (스킨 루틴·응답에 반영). 단계 계획은 buildSkinRoutineItems가 파생.
-  const eveningFocus = await computeEveningFocus(profile, userId);
+  const eveningFocusResult = await computeEveningFocus(profile, userId);
+  const eveningFocus = eveningFocusResult?.cycle;
+  const eveningChange = eveningFocusResult?.change ?? null;
 
   // Step 2: 컨텍스트 수집
   const context = await collectContext(userId);
@@ -247,6 +256,8 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
   // 파생 필드 부착 (비영속 — DB 컬럼 없음). undefined면 optional 필드로 남음.
   daily.skinEveningFocus = eveningFocus;
+  // 어제 대비 변화 (G4) — 달라졌을 때만 값 존재(같으면 undefined, 지어내지 않음)
+  daily.skinEveningChange = eveningChange?.message;
 
   return daily;
 }
@@ -283,19 +294,23 @@ async function loadOwnedActives(userId: string): Promise<Set<ActiveCategory>> {
 }
 
 /**
- * 오늘 저녁 스킨 사이클링 주기 파생.
+ * 오늘 저녁 스킨 사이클링 주기 + 어제 대비 변화 파생 (G4 일변화 체감).
  * 피부 분석이 없으면 undefined (지어내지 않음). 민감 정보 없으면 100(비민감) 취급.
  */
 async function computeEveningFocus(
   profile: { skin?: { type?: string; scores?: Record<string, number>; userGoals?: SkinGoalId[] } },
   userId: string
-): Promise<EveningCycle | undefined> {
+): Promise<{ cycle: EveningCycle; change: CycleChange | null } | undefined> {
   if (!profile.skin?.type) return undefined;
   const scores = profile.skin.scores ?? {};
   const carePhase = deriveCarePhase(scores, profile.skin.userGoals ?? []);
   const owned = await loadOwnedActives(userId);
   const sensitivity = typeof scores.sensitivity === 'number' ? scores.sensitivity : 100;
-  return getEveningCycle(new Date(), owned, sensitivity, carePhase);
+  const now = new Date();
+  return {
+    cycle: getEveningCycle(now, owned, sensitivity, carePhase),
+    change: getCycleChange(now, owned, sensitivity, carePhase),
+  };
 }
 
 /**

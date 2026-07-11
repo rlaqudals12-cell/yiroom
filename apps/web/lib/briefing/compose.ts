@@ -47,10 +47,52 @@ export interface BriefingSkinTrend {
   daysSinceLast?: number | null;
 }
 
+/**
+ * 제품함 후속 응답 — "지난번 담아둔 ○○, 잘 맞고 있어요?"에 대한 사용자의 답.
+ * 'positive' = "잘 맞아요", 'negative' = "글쎄요".
+ */
+export type ShelfFeedback = 'positive' | 'negative';
+
+/**
+ * 제품함 후속 응답을 기존 rating(1~5, user_product_shelf) 값 체계 위에 얹은 2択 매핑.
+ * 새 컬럼/테이블 없이 rating을 그대로 재사용한다 — "잘 맞아요"=높은 별점, "글쎄요"=낮은 별점.
+ * (DB 제약: rating INTEGER CHECK (1..5) — 두 값 모두 이 범위 안에 있어야 저장된다.)
+ */
+export const SHELF_FEEDBACK_RATING: Record<ShelfFeedback, number> = {
+  positive: 5,
+  negative: 2,
+} as const;
+
+/**
+ * 저장된 rating(1~5) → 브리핑 후속 응답으로 해석.
+ * 4점 이상=긍정, 1~3점=부정, 그 외(null·NaN·범위밖)=미응답(지어내지 않음).
+ */
+export function ratingToFeedback(rating?: number | null): ShelfFeedback | null {
+  if (typeof rating !== 'number' || Number.isNaN(rating)) return null;
+  if (rating >= 4) return 'positive';
+  if (rating >= 1) return 'negative';
+  return null;
+}
+
 /** 최근 제품함에 담은 아이템 */
 export interface BriefingRecentProduct {
   name: string;
   addedDaysAgo?: number | null;
+  /**
+   * 제품함 아이템 id — 응답 저장(PUT /api/scan/shelf/[id]) 대상.
+   * 문장 조립엔 쓰이지 않지만, 미응답 후속 질문에 응답 버튼을 달 때 필요하다(shelfFollowup).
+   */
+  shelfItemId?: string | null;
+  /** 이 제품에 대한 사용자의 이전 응답(있으면 회고, 없으면 다시 질문). 지어내지 않음 */
+  feedback?: ShelfFeedback | null;
+  /** 응답을 남긴 지 경과일(응답이 있을 때만 — 회고 문장의 "언제 대비") */
+  feedbackDaysAgo?: number | null;
+  /**
+   * 부정 응답 시 제시할 대안 제품명(있을 때만).
+   * 대안 조회는 이 모듈이 하지 않는다 — 호출부가 기존 교체 제안 파이프라인에서 주입한다(중복 구현 금지).
+   * 없으면 정직한 안내("다른 제품을 찾아볼까요?")로 대체한다.
+   */
+  alternativeName?: string | null;
 }
 
 /** 오늘 캡슐의 우선 항목 1개 */
@@ -86,6 +128,13 @@ export interface Briefing {
   /** 0~2개(데이터 없으면 빈 배열) */
   advice: string[];
   closing: string;
+  /**
+   * 관찰이 "제품함 후속 질문(응답 대기)"일 때만 존재 — 폐루프 v1(고객 노트).
+   * 웹 홈은 이 정보로 응답 버튼(잘 맞아요/글쎄요)을 렌더해 rating을 저장한다.
+   * 이미 응답이 있으면(feedback) 관찰은 회고 문장이 되고 이 필드는 생략된다.
+   * 모바일은 아직 이 필드를 렌더하지 않는다(응답 버튼은 후속 배치, 계약은 하위호환).
+   */
+  shelfFollowup?: { shelfItemId: string; productName: string };
 }
 
 const GREETING_BY_SLOT: Record<TimeSlot, string> = {
@@ -151,25 +200,66 @@ function skinObservation(trend: BriefingSkinTrend): string {
   return `${when}보다 피부 컨디션에 큰 변화는 없어요 (±0점)`;
 }
 
+/** 관찰 결과 — 문장 + (응답 대기 후속 질문일 때만) 후속 정보 */
+interface ObservationResult {
+  text: string;
+  shelfFollowup?: { shelfItemId: string; productName: string };
+}
+
+/**
+ * 제품함 후속 관찰 — 폐루프 v1(고객 노트).
+ *  - 이전 응답이 있으면 그 답을 기억해 회고한다(긍정=오늘도 챙김 / 부정=대안·재탐색).
+ *  - 응답이 없으면 다시 묻고, 응답 버튼용 정보(shelfItemId)를 함께 낸다.
+ * 전부 실데이터 조건부 — 응답을 지어내지 않는다(feedback 없으면 회고 없음).
+ */
+function shelfObservation(product: BriefingRecentProduct): ObservationResult {
+  const feedback = product.feedback ?? null;
+
+  // 긍정 회고 — "잘 맞는다고 하셨던 ○○, 오늘도 루틴에 넣어뒀어요"
+  if (feedback === 'positive') {
+    return { text: `잘 맞는다고 하셨던 ${product.name}, 오늘도 루틴에 넣어뒀어요` };
+  }
+
+  // 부정 회고 — 언제 그랬는지(근거) + 대안(있으면) 또는 정직한 재탐색 안내
+  if (feedback === 'negative') {
+    const when = elapsedLabel(product.feedbackDaysAgo);
+    const alt = product.alternativeName?.trim();
+    return {
+      text: alt
+        ? `${when} ${product.name}가 잘 안 맞는다고 하셨죠. 대신 ${alt} 어때요?`
+        : `${when} ${product.name}가 잘 안 맞는다고 하셨죠. 다른 제품을 찾아볼까요?`,
+    };
+  }
+
+  // 미응답 — 다시 묻는다(기존 화법 유지). 응답 버튼을 달 수 있게 shelfItemId를 함께 낸다.
+  const result: ObservationResult = { text: `지난번 담아둔 ${product.name}, 잘 맞고 있어요?` };
+  if (product.shelfItemId) {
+    result.shelfFollowup = { shelfItemId: product.shelfItemId, productName: product.name };
+  }
+  return result;
+}
+
 /**
  * 관찰 문장 1개 선택 — 우선순위: 피부 추이 > 제품함 후속 > 최근 분석 경과.
  * 어떤 데이터도 없으면 undefined(생략).
  */
-function composeObservation(input: BriefingInput): string | undefined {
+function composeObservation(input: BriefingInput): ObservationResult | undefined {
   // 1순위: 피부 추이(오늘의 컨디션)
   if (input.skinTrend) {
-    return skinObservation(input.skinTrend);
+    return { text: skinObservation(input.skinTrend) };
   }
-  // 2순위: 제품함 후속(대상명 포함)
+  // 2순위: 제품함 후속(대상명 포함) — 응답 여부에 따라 회고/재질문
   if (input.recentProduct?.name) {
-    return `지난번 담아둔 ${input.recentProduct.name}, 잘 맞고 있어요?`;
+    return shelfObservation(input.recentProduct);
   }
   // 3순위: 오래된 분석만(며칠 이상 경과했을 때만 — 근거 수치 N일 동반)
   if (
     typeof input.lastAnalysisDaysAgo === 'number' &&
     input.lastAnalysisDaysAgo >= STALE_ANALYSIS_DAYS
   ) {
-    return `마지막으로 함께 살펴본 지 ${input.lastAnalysisDaysAgo}일 됐어요. 오늘 다시 볼까요?`;
+    return {
+      text: `마지막으로 함께 살펴본 지 ${input.lastAnalysisDaysAgo}일 됐어요. 오늘 다시 볼까요?`,
+    };
   }
   return undefined;
 }
@@ -211,7 +301,10 @@ export function composeBriefing(input: BriefingInput = {}): Briefing {
     closing: composeClosing(slot),
   };
   if (observation) {
-    briefing.observation = observation;
+    briefing.observation = observation.text;
+    if (observation.shelfFollowup) {
+      briefing.shelfFollowup = observation.shelfFollowup;
+    }
   }
   return briefing;
 }
