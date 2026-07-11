@@ -201,14 +201,16 @@ async function collectRecentProduct(
     const { items } = await getShelfItems(supabase, userId, { status: 'owned', limit: 1 });
     const latest = items[0];
     if (!latest?.productName) return null;
-    // rating(1~5) → 응답 해석. 응답이 있을 때만 "언제 답했는지"를 updated_at 기준으로 산정.
+    // rating(1~5) → 응답 해석.
+    // feedbackDaysAgo는 산정하지 않는다(null): updated_at은 피드백 전용 타임스탬프가 아니라
+    // 상태·메모·개봉일 등 어떤 수정에도 갱신되므로 "N일 전"이 부정확해진다 → 근거 수치를 뺀다(정직성).
     const feedback = ratingToFeedback(latest.rating);
     return {
       shelfItemId: latest.id,
       name: latest.productName,
       addedDaysAgo: daysSince(latest.scannedAt, now),
       feedback,
-      feedbackDaysAgo: feedback ? daysSince(latest.updatedAt, now) : null,
+      feedbackDaysAgo: null,
     };
   } catch {
     return null;

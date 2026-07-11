@@ -58,6 +58,30 @@ const STATUS_COLORS: Record<ShelfStatus, string> = {
   archived: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
 };
 
+/** JSON 문자열 → Date (무효면 undefined). ShelfItem 계약: 날짜 필드는 Date. */
+function toDate(value: unknown): Date | undefined {
+  if (value == null) return undefined;
+  const d = value instanceof Date ? value : new Date(value as string | number);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
+
+/**
+ * API 응답(JSON)의 날짜 문자열을 Date로 되살린다.
+ * ShelfItem 타입은 날짜를 Date로 약속하므로, 소비처(ShelfDepletionField의 소진 추정 등)가
+ * 문자열에 `.getTime()`을 호출해 크래시하지 않도록 경계에서 계약을 일치시킨다.
+ */
+function reviveShelfDates(raw: ShelfItem): ShelfItem {
+  return {
+    ...raw,
+    scannedAt: toDate(raw.scannedAt) ?? raw.scannedAt,
+    createdAt: toDate(raw.createdAt) ?? raw.createdAt,
+    updatedAt: toDate(raw.updatedAt) ?? raw.updatedAt,
+    purchasedAt: toDate(raw.purchasedAt),
+    openedAt: toDate(raw.openedAt),
+    expiresAt: toDate(raw.expiresAt),
+  };
+}
+
 export default function ShelfDetailPage() {
   const locale = useLocale();
   const router = useRouter();
@@ -84,8 +108,8 @@ export default function ShelfDetailPage() {
         return;
       }
 
-      const data = await response.json();
-      setItem(data);
+      const data = (await response.json()) as ShelfItem;
+      setItem(reviveShelfDates(data));
     } catch (err) {
       console.error('[ShelfDetail] Load error:', err);
       setError('제품 정보를 불러오는 중 오류가 발생했습니다.');

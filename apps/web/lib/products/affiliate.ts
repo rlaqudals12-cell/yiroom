@@ -170,14 +170,14 @@ export async function openAffiliateLink(
     affiliateLogger.error(' Track failed:', err);
   });
 
-  // 새 탭에서 링크 열기 — 쿠팡 링크는 클릭 시점에 파트너스 태깅(수수료 귀속)
+  // 새 탭에서 링크 열기 — 쿠팡 링크는 클릭 시점에 파트너스 태깅(수수료 귀속).
+  // ⚠️ noopener/noreferrer가 있으면 window.open은 새 탭이 정상 열려도 스펙상 null을
+  //    반환한다(전 브라우저). 따라서 반환값으로 성공/차단을 판별하면 안 된다
+  //    — 폴백으로 location.href를 쓰면 매 클릭 현재 탭이 이탈하는 이중 내비게이션 버그.
+  //    이 함수는 항상 클릭 핸들러(사용자 제스처) 안에서 호출되므로 새 탭은 정상 허용된다.
   if (typeof window !== 'undefined') {
     const finalUrl = buildAffiliateRedirectUrl(affiliateUrl, sourcePage);
-    // 팝업 차단 시 window.open이 null 반환 → 버튼이 조용히 무반응이 됨. 현재 탭으로 폴백
-    const opened = window.open(finalUrl, '_blank', 'noopener,noreferrer');
-    if (!opened) {
-      window.location.href = finalUrl;
-    }
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   }
 }
 

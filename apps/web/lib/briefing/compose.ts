@@ -215,9 +215,11 @@ interface ObservationResult {
 function shelfObservation(product: BriefingRecentProduct): ObservationResult {
   const feedback = product.feedback ?? null;
 
-  // 긍정 회고 — "잘 맞는다고 하셨던 ○○, 오늘도 루틴에 넣어뒀어요"
+  // 긍정 회고 — "잘 맞는다고 하셨던 ○○, 오늘도 계속 챙겨봐요"
+  // ⚠️ 정직성: 이 제품이 실제로 오늘 루틴에 배치됐는지는 여기서 알 수 없다(입력에 없음).
+  //    "루틴에 넣어뒀어요"는 검증 안 된 단정이므로 중립 권유로 완화한다(지어내기 금지).
   if (feedback === 'positive') {
-    return { text: `잘 맞는다고 하셨던 ${product.name}, 오늘도 루틴에 넣어뒀어요` };
+    return { text: `잘 맞는다고 하셨던 ${product.name}, 오늘도 계속 챙겨봐요` };
   }
 
   // 부정 회고 — 언제 그랬는지(근거) + 대안(있으면) 또는 정직한 재탐색 안내

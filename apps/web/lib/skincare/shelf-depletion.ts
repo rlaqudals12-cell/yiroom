@@ -47,6 +47,20 @@ const DEFAULT_PAO_MONTHS = 12;
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+/**
+ * Date | ISO 문자열 | 타임스탬프 → 유효한 Date. 무효(null·NaN)면 null.
+ *
+ * ShelfItem 타입은 날짜 필드가 Date라고 약속하지만, API 응답을 그대로 JSON.parse해
+ * 넘기는 소비처(예: 제품함 상세 `scan/shelf/[id]`)는 ISO 문자열을 담아 전달한다.
+ * 여기서 강제 변환·NaN 가드하여 문자열에 `.getTime()`을 호출하는 런타임 크래시를
+ * 원천 차단한다(ShelfItem-over-JSON 계약 불일치 방어).
+ */
+function toValidDate(value: Date | string | number | null | undefined): Date | null {
+  if (value == null) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 function daysBetween(from: Date, to: Date): number {
   return Math.ceil((to.getTime() - from.getTime()) / MS_PER_DAY);
 }
@@ -61,21 +75,23 @@ function daysBetween(from: Date, to: Date): number {
 export function estimateShelfDepletion(item: ShelfItem, now?: Date): ShelfDepletion | null {
   const today = now ?? new Date();
 
-  // 1) 명시적 만료일 — 가장 신뢰도 높음
-  if (item.expiresAt) {
+  // 1) 명시적 만료일 — 가장 신뢰도 높음 (문자열/무효 방어)
+  const expiresAt = toValidDate(item.expiresAt);
+  if (expiresAt) {
     return {
       shelfItemId: item.id,
       name: item.productName,
-      daysRemaining: daysBetween(today, item.expiresAt),
+      daysRemaining: daysBetween(today, expiresAt),
       confidence: 'high',
     };
   }
 
-  // 2) 개봉일 + 카테고리 표준 PAO 추정
-  if (item.openedAt) {
+  // 2) 개봉일 + 카테고리 표준 PAO 추정 (문자열/무효 방어)
+  const openedAt = toValidDate(item.openedAt);
+  if (openedAt) {
     const category = detectProductCategory(item);
     const months = category ? PAO_MONTHS_BY_CATEGORY[category] : DEFAULT_PAO_MONTHS;
-    const expiry = new Date(item.openedAt);
+    const expiry = new Date(openedAt);
     expiry.setMonth(expiry.getMonth() + months);
     return {
       shelfItemId: item.id,

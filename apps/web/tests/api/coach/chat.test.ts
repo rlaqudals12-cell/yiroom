@@ -321,6 +321,65 @@ describe('POST /api/coach/chat', () => {
     });
   });
 
+  // 스트리밍 route(app/api/coach/stream)와 동일한 환각/안전성 필터를 적용하는지 검증.
+  // 필터·면책 모듈은 mock하지 않으므로 실제 filterCoachResponse가 mock된 AI 출력에 적용된다.
+  describe('안전 필터 패리티 (T1-a)', () => {
+    it('의료 주장이 포함된 AI 응답을 정화한다 (치료 → 전문가 상담 권장)', async () => {
+      vi.mocked(generateCoachResponse).mockResolvedValue({
+        message: '이 성분으로 치료할 수 있어요. 꾸준히 발라보세요.',
+        suggestedQuestions: [],
+      });
+
+      const request = createMockRequest({ message: '트러블 어떻게 해요?' });
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(json.message).not.toContain('치료할 수');
+      expect(json.message).toContain('전문가 상담을 권장드려요');
+    });
+
+    it('절대적 효과 보장 표현을 정화한다 (100% 효과 → 도움이 될 수 있어요)', async () => {
+      vi.mocked(generateCoachResponse).mockResolvedValue({
+        message: '이 제품은 100% 효과가 있어요.',
+        suggestedQuestions: [],
+      });
+
+      const request = createMockRequest({ message: '크림 추천해줘' });
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(json.message).not.toContain('100% 효과');
+      expect(json.message).toContain('도움이 될 수 있어요');
+    });
+
+    it('면책 조항이 필요한 응답에 COACH_DISCLAIMER를 부착한다', async () => {
+      vi.mocked(generateCoachResponse).mockResolvedValue({
+        message: '이 영양제를 드시면 도움이 될 거예요.',
+        suggestedQuestions: [],
+      });
+
+      const request = createMockRequest({ message: '영양제 추천해줘' });
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(json.message).toContain('참고용');
+      expect(json.message).toContain('전문가 상담을 권장');
+    });
+
+    it('위반이 없는 일반 응답은 원문 그대로 통과한다', async () => {
+      vi.mocked(generateCoachResponse).mockResolvedValue({
+        message: '오늘 스쿼트 3세트 해보세요!',
+        suggestedQuestions: [],
+      });
+
+      const request = createMockRequest({ message: '운동 추천해줘' });
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(json.message).toBe('오늘 스쿼트 3세트 해보세요!');
+    });
+  });
+
   describe('사용자 컨텍스트', () => {
     it('getUserContext에 userId를 전달한다', async () => {
       const request = createMockRequest({ message: '안녕' });

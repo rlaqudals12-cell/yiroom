@@ -49,6 +49,15 @@ const GENERAL_QUESTION_ICONS: Record<string, LucideIcon> = {
   '오늘 화장 어떻게 할까요?': Brush,
 };
 
+// SSE 이벤트 페이로드 — 서버(app/api/coach/stream)가 보내는 4종 이벤트
+interface CoachStreamEvent {
+  type?: 'chunk' | 'replace' | 'done' | 'error';
+  content?: string;
+  message?: string;
+  suggestedQuestions?: string[];
+  sessionId?: string;
+}
+
 // 이미지 전송 전 클라이언트 리사이즈 (긴 변 1024px, JPEG 80%)
 async function fileToResizedDataUrl(file: File): Promise<string> {
   const img = await createImageBitmap(file);
@@ -144,37 +153,46 @@ export function ChatInterface({
           const lines = chunk.split('\n');
 
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
+            if (!line.startsWith('data: ')) continue;
 
-                if (data.type === 'chunk') {
-                  accumulatedContent += data.content;
-                  setStreamingContent(accumulatedContent);
-                } else if (data.type === 'done') {
-                  // 스트리밍 완료 - 최종 메시지 저장
-                  const assistantMessage: CoachMessage = {
-                    id: `assistant-${Date.now()}`,
-                    role: 'assistant',
-                    content: accumulatedContent,
-                    timestamp: new Date(),
-                  };
-                  setMessages((prev) => [...prev, assistantMessage]);
-                  setStreamingContent('');
+            // JSON.parse만 try로 감싼다 — 불완전한 청크는 무시하되,
+            // error 이벤트 처리(throw)는 catch 밖에서 실제로 전파되게 한다.
+            let data: CoachStreamEvent;
+            try {
+              data = JSON.parse(line.slice(6)) as CoachStreamEvent;
+            } catch {
+              // JSON 파싱 실패 시 무시 (불완전한 청크일 수 있음)
+              continue;
+            }
 
-                  if (data.suggestedQuestions) {
-                    setSuggestedQuestions(data.suggestedQuestions);
-                  }
-                  if (data.sessionId) {
-                    setSessionId(data.sessionId);
-                    sessionIdRef.current = data.sessionId;
-                  }
-                } else if (data.type === 'error') {
-                  throw new Error(data.message);
-                }
-              } catch {
-                // JSON 파싱 실패 시 무시 (불완전한 청크일 수 있음)
+            if (data.type === 'chunk') {
+              accumulatedContent += data.content ?? '';
+              setStreamingContent(accumulatedContent);
+            } else if (data.type === 'replace') {
+              // 서버 환각 필터가 정화본을 보냄 — 누적 원본을 교체(done 확정 전).
+              accumulatedContent = data.content ?? accumulatedContent;
+              setStreamingContent(accumulatedContent);
+            } else if (data.type === 'done') {
+              // 스트리밍 완료 - 최종 메시지 저장
+              const assistantMessage: CoachMessage = {
+                id: `assistant-${Date.now()}`,
+                role: 'assistant',
+                content: accumulatedContent,
+                timestamp: new Date(),
+              };
+              setMessages((prev) => [...prev, assistantMessage]);
+              setStreamingContent('');
+
+              if (data.suggestedQuestions) {
+                setSuggestedQuestions(data.suggestedQuestions);
               }
+              if (data.sessionId) {
+                setSessionId(data.sessionId);
+                sessionIdRef.current = data.sessionId;
+              }
+            } else if (data.type === 'error') {
+              // 서버 AI 실패 — 바깥 catch로 전파되어 handleSend가 에러 메시지를 표시
+              throw new Error(data.message);
             }
           }
         }

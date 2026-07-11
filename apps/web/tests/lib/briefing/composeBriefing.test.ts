@@ -190,7 +190,10 @@ describe('제품함 후속 폐루프 v1 — 관찰 분기(미응답 질문 / 긍
     });
     expect(b.observation).toContain('수분 앰플');
     expect(b.observation).toContain('잘 맞는다고');
-    expect(b.observation).toContain('루틴');
+    // 재발 방지(정직성): 오늘 루틴 배치 여부는 입력에 없어 알 수 없음 →
+    // "루틴에 넣어뒀어요" 같은 단정을 하지 않고 중립 권유로만 회고한다
+    expect(b.observation).not.toContain('루틴');
+    expect(b.observation).toContain('챙겨');
     expect(b.observation).not.toContain('잘 맞고 있어요?'); // 재질문 아님
     expect(b.shelfFollowup).toBeUndefined();
   });

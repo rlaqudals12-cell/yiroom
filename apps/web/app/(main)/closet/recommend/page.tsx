@@ -247,8 +247,10 @@ export default function ClosetRecommendPage() {
     return null;
   }, [pcBestColors, pcContrast, personalColor]);
 
-  // 체형 스타일 가이드(진단된 체형이 있을 때만) — 기존 체형 결과와 동일 데이터
-  const coldStartBody = bodyType ? BODY_TYPES_3[bodyType] : null;
+  // 체형 스타일 가이드(진단된 체형이 있을 때만) — 기존 체형 결과와 동일 데이터.
+  // body_analyses.body_type에는 레거시 taxonomy(8형 X/A/… 등 비 S/W/N)가 섞여 있어
+  // BODY_TYPES_3[bodyType] 조회가 undefined가 될 수 있다 → null로 정규화(빈 진단 카드 방지).
+  const coldStartBody = (bodyType && BODY_TYPES_3[bodyType]) ?? null;
 
   // 새로고침
   const handleRefresh = async () => {
@@ -369,7 +371,8 @@ export default function ClosetRecommendPage() {
       isFromIntegrated,
       curationSessionId
     );
-    const hasDiagnosis = coldStartOutfit !== null || coldStartBody !== null;
+    // 불리언 강제(!!): coldStartBody가 undefined여도(비 S/W/N) 빈 진단 카드를 띄우지 않는다.
+    const hasDiagnosis = !!coldStartOutfit || !!coldStartBody;
 
     return (
       <div data-testid="closet-recommend-page" className="pb-24">

@@ -4,6 +4,11 @@ import { generateCoachResponse, getUserContext, type CoachMessage } from '@/lib/
 import { searchSkinProducts } from '@/lib/coach/skin-rag';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
+import {
+  filterCoachResponse,
+  needsDisclaimer,
+  COACH_DISCLAIMER,
+} from '@/lib/coach/hallucination-filter';
 
 /**
  * AI 웰니스 코치 채팅 API
@@ -78,9 +83,18 @@ export async function POST(req: NextRequest) {
       isSkinQuestion ? searchSkinProducts(userContext, message, 3) : Promise.resolve([]),
     ]);
 
+    // 환각/안전성 필터링 — 스트리밍 route(app/api/coach/stream)와 동일 정책 미러링.
+    // 미정화 Gemini 출력(치료·100% 효과 등)이 그대로 노출되지 않도록 정화 + 면책 부착
+    // (원문 기준으로 판정: sanitize 후에도 트리거 키워드가 남으므로 무해).
+    const filterResult = filterCoachResponse(response.message);
+    let safeMessage = filterResult.isClean ? response.message : filterResult.sanitizedText;
+    if (needsDisclaimer(response.message)) {
+      safeMessage += `\n\n${COACH_DISCLAIMER}`;
+    }
+
     return NextResponse.json({
       success: true,
-      message: response.message,
+      message: safeMessage,
       suggestedQuestions: response.suggestedQuestions,
       products: products.length > 0 ? products : undefined,
     });

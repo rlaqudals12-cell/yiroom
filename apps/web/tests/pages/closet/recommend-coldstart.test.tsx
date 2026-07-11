@@ -115,6 +115,26 @@ describe('ClosetRecommendPage 콜드스타트(빈 옷장 진단 제안)', () => 
     expect(screen.getByTestId('closet-register-cta')).toBeInTheDocument();
   });
 
+  // 재발 방지: body_analyses.body_type에 레거시 taxonomy(비 S/W/N, 예: 8형 'X')가 저장돼 있고
+  // 컬러 진단이 없으면, 내용 없는 "이렇게 입어보세요"(빈 진단 카드)를 띄우지 않고
+  // 정직하게 분석 유도로 폴백해야 한다.
+  it('비 S/W/N body_type(레거시)만 있고 컬러가 없으면 빈 진단 카드를 띄우지 않는다', async () => {
+    state.body = { data: { body_type: 'X' }, error: null }; // BODY_TYPES_3에 없는 키
+
+    render(<ClosetRecommendPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('closet-empty-state')).toBeInTheDocument();
+    });
+    // 진단 제안 컨테이너/체형 가이드/배색 팔레트 어느 것도 렌더되지 않아야 함
+    expect(screen.queryByTestId('coldstart-suggestions')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('coldstart-body-tips')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('coldstart-outfit-palette')).not.toBeInTheDocument();
+    // 정직한 분석 유도 문구 + 등록 CTA
+    expect(screen.getByText('옷장이 비어있어요')).toBeInTheDocument();
+    expect(screen.getByTestId('closet-register-cta')).toBeInTheDocument();
+  });
+
   it('진단이 전혀 없으면 진단 제안 없이 분석 유도 + 등록 CTA만 보여준다', async () => {
     render(<ClosetRecommendPage />);
 
