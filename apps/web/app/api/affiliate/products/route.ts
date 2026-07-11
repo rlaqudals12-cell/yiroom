@@ -6,10 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getAffiliateProducts,
-  getAffiliateProductCount,
-} from '@/lib/affiliate/products';
+import { getAffiliateProducts, getAffiliateProductCount } from '@/lib/affiliate/products';
 import type {
   AffiliateProductFilter,
   AffiliateProductSortBy,
@@ -86,9 +83,12 @@ export async function GET(request: NextRequest) {
     // 정렬
     const sortBy = (searchParams.get('sortBy') || 'rating') as AffiliateProductSortBy;
 
-    // 페이징
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    // 페이징 — 익명 접근 가능 라우트이므로 페이지 크기 상한(50)을 강제해
+    // ?limit=100000 식 전체 카탈로그 스크레이핑을 차단한다
+    const requestedLimit = parseInt(searchParams.get('limit') || '20', 10);
+    const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? requestedLimit : 20, 1), 50);
+    const requestedOffset = parseInt(searchParams.get('offset') || '0', 10);
+    const offset = Math.max(Number.isFinite(requestedOffset) ? requestedOffset : 0, 0);
 
     // 제품 조회
     const [products, total] = await Promise.all([
@@ -107,9 +107,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Affiliate] 제품 조회 에러:', error);
-    return NextResponse.json(
-      { error: '제품 조회 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '제품 조회 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }

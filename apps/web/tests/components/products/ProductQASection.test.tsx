@@ -20,9 +20,9 @@ vi.mock('next-intl', async () => {
   };
 });
 
-// RAG 모킹
-vi.mock('@/lib/rag/product-qa', () => ({
-  askProductQuestion: vi.fn().mockResolvedValue({
+// RAG 모킹 — 클라이언트는 이제 product-qa-shared의 askProductQuestionClient(서버 라우트 호출)를 사용
+vi.mock('@/lib/rag/product-qa-shared', () => ({
+  askProductQuestionClient: vi.fn().mockResolvedValue({
     answer: '이 제품은 민감성 피부에 적합합니다.',
     confidence: 'high',
     relatedTopics: ['민감성 피부', '저자극'],

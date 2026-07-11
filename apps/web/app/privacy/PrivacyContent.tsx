@@ -192,6 +192,29 @@ function KoreanContent() {
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">개인정보의 국외 이전</p>
+          <p className="mt-2 text-sm">
+            AI 분석 서비스 제공을 위해 아래와 같이 개인정보가 국외로 이전됩니다 (개인정보보호법
+            제28조의8).
+          </p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>이전받는 자: Google LLC (Google Gemini API)</li>
+            <li>이전 국가: 미국 등 Google이 운영하는 데이터센터 소재국</li>
+            <li>이전 항목: 분석용 얼굴/체형/퍼스널컬러 이미지</li>
+            <li>이전 일시 및 방법: 분석 요청 시 암호화된 통신(HTTPS)으로 실시간 전송</li>
+            <li>이용 목적: AI 이미지 분석 처리</li>
+            <li>
+              보유·이용 기간: 실시간 처리 후 Gemini API 약관에 따라 모델 학습 목적으로 저장·이용되지
+              않음
+            </li>
+          </ul>
+          <p className="mt-2 text-sm">
+            또한 데이터 저장(Supabase) 및 회원 인증(Clerk) 제공업체의 인프라가 국외에 위치할 수
+            있으며, 서비스를 이용함으로써 이러한 국외 이전에 동의하게 됩니다. 회사는 이전받는 자와의
+            계약을 통해 개인정보가 안전하게 보호되도록 합니다.
+          </p>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
           <p className="font-medium">제휴 서비스 이용 시 안내</p>
           <p className="mt-2 text-sm">
             서비스 내 제품 추천 링크를 통해 외부 쇼핑몰(쿠팡 등)로 이동하는 경우, 해당 외부 서비스의
@@ -433,6 +456,35 @@ function EnglishContent() {
               Google Gemini API Terms of Service
             </a>
             .
+          </p>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">International Data Transfer</p>
+          <p className="mt-2 text-sm">
+            To provide AI analysis, personal data is transferred internationally as follows (PIPA
+            Art. 28-8; GDPR Art. 44&ndash;49):
+          </p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>Recipient: Google LLC (Google Gemini API)</li>
+            <li>
+              Destination: United States and other countries where Google operates data centers
+            </li>
+            <li>Data transferred: Facial/body/personal-color images for analysis</li>
+            <li>
+              Timing &amp; method: Transmitted in real time over encrypted connections (HTTPS) when
+              you request an analysis
+            </li>
+            <li>Purpose: AI image analysis processing</li>
+            <li>
+              Retention: Processed in real time; not stored for model training under the Gemini API
+              terms
+            </li>
+          </ul>
+          <p className="mt-2 text-sm">
+            In addition, our storage (Supabase) and authentication (Clerk) providers may host
+            infrastructure outside Korea or the EU. By using the service you consent to these
+            international transfers. The Company relies on contractual safeguards (e.g., data
+            processing agreements and standard contractual clauses) with these recipients.
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">

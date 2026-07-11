@@ -24,7 +24,8 @@ export function getRateLimitCategory(pathname: string): RateLimitCategory {
   if (/^\/api\/(analyze|gemini)/.test(pathname)) return 'analyze';
   if (/^\/api\/auth/.test(pathname)) return 'auth';
   if (/^\/api\/upload/.test(pathname)) return 'upload';
-  if (/^\/api\/(coach|chat)/.test(pathname)) return 'coach';
+  // 제품 Q&A는 Gemini 대화형이므로 coach 버킷(일일 한도 적용)으로 분류
+  if (/^\/api\/(coach|chat)/.test(pathname) || pathname === '/api/products/qa') return 'coach';
   if (/^\/api\/feedback/.test(pathname)) return 'feedback';
   if (/^\/api\/nutrition/.test(pathname)) return 'nutrition';
   if (/^\/api\/workout/.test(pathname)) return 'workout';
@@ -163,11 +164,7 @@ export function isRateLimitedPath(pathname: string): boolean {
   }
 
   // 제외 경로 (웹훅 등)
-  const excludedPaths = [
-    '/api/webhooks',
-    '/api/cron',
-    '/api/health',
-  ];
+  const excludedPaths = ['/api/webhooks', '/api/cron', '/api/health'];
 
   return !excludedPaths.some((excluded) => pathname.startsWith(excluded));
 }
@@ -184,10 +181,5 @@ export function extractIpAddress(request: Request): string {
   const realIp = headers.get('x-real-ip');
   const cfConnectingIp = headers.get('cf-connecting-ip');
 
-  return (
-    cfConnectingIp ||
-    forwardedFor?.split(',')[0]?.trim() ||
-    realIp ||
-    'unknown'
-  );
+  return cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
 }

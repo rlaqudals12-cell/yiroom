@@ -32,7 +32,8 @@ vi.mock('@/lib/utils/logger', () => ({
   },
 }));
 
-import { askProductQuestion, FAQ_TEMPLATES, type ProductQARequest } from '@/lib/rag/product-qa';
+import { askProductQuestion } from '@/lib/rag/product-qa';
+import { FAQ_TEMPLATES, type ProductQARequest } from '@/lib/rag/product-qa-shared';
 
 describe('lib/rag/product-qa', () => {
   const originalEnv = process.env;

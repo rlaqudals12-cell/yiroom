@@ -13,7 +13,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
+import {
+  askProductQuestionClient,
+  FAQ_TEMPLATES,
+  type ProductQAResponse,
+} from '@/lib/rag/product-qa-shared';
 import type { AnyProduct, ProductType } from '@/types/product';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { useTranslations } from 'next-intl';
@@ -50,7 +54,7 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
     setIsLoading(true);
 
     try {
-      const response: ProductQAResponse = await askProductQuestion({
+      const response: ProductQAResponse = await askProductQuestionClient({
         question,
         product,
         productType,

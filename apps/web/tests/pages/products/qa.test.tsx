@@ -14,9 +14,9 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-// RAG 모킹
-vi.mock('@/lib/rag/product-qa', () => ({
-  askProductQuestion: vi.fn().mockResolvedValue({
+// RAG 모킹 — 클라이언트는 이제 product-qa-shared의 askProductQuestionClient(서버 라우트 호출)를 사용
+vi.mock('@/lib/rag/product-qa-shared', () => ({
+  askProductQuestionClient: vi.fn().mockResolvedValue({
     answer: '특정 제품을 선택하면 더 정확한 답변을 드릴 수 있어요.',
     confidence: 'low',
   }),
@@ -27,10 +27,7 @@ vi.mock('@/lib/rag/product-qa', () => ({
       '아침/저녁 언제 사용하면 좋아요?',
       '얼마나 오래 사용해야 효과가 나타나요?',
     ],
-    supplement: [
-      '하루에 몇 알 먹어야 해요?',
-      '다른 영양제랑 같이 먹어도 돼요?',
-    ],
+    supplement: ['하루에 몇 알 먹어야 해요?', '다른 영양제랑 같이 먹어도 돼요?'],
     workout_equipment: [],
     health_food: [],
   },
@@ -85,7 +82,7 @@ describe('ProductQAPage', () => {
 
     // Send 버튼 찾기 (disabled 상태)
     const buttons = screen.getAllByRole('button');
-    const sendButton = buttons.find(btn => btn.querySelector('[data-testid="lucide-send"]'));
+    const sendButton = buttons.find((btn) => btn.querySelector('[data-testid="lucide-send"]'));
     expect(sendButton).toBeDisabled();
   });
 
@@ -96,7 +93,7 @@ describe('ProductQAPage', () => {
     fireEvent.change(input, { target: { value: '테스트 질문' } });
 
     const buttons = screen.getAllByRole('button');
-    const sendButton = buttons.find(btn => btn.querySelector('[data-testid="lucide-send"]'));
+    const sendButton = buttons.find((btn) => btn.querySelector('[data-testid="lucide-send"]'));
     expect(sendButton).not.toBeDisabled();
   });
 
@@ -117,7 +114,7 @@ describe('ProductQAPage', () => {
 
     // ArrowLeft 아이콘이 있는 버튼 클릭
     const buttons = screen.getAllByRole('button');
-    const backButton = buttons.find(btn => btn.querySelector('[data-testid="lucide-arrowleft"]'));
+    const backButton = buttons.find((btn) => btn.querySelector('[data-testid="lucide-arrowleft"]'));
 
     if (backButton) {
       fireEvent.click(backButton);
@@ -128,7 +125,9 @@ describe('ProductQAPage', () => {
   it('AI 안내 문구를 표시한다', () => {
     render(<ProductQAPage />);
 
-    expect(screen.getByText('AI 답변은 참고용이며, 정확한 정보는 제조사에 문의해주세요')).toBeInTheDocument();
+    expect(
+      screen.getByText('AI 답변은 참고용이며, 정확한 정보는 제조사에 문의해주세요')
+    ).toBeInTheDocument();
   });
 
   it('자주 묻는 질문 섹션을 표시한다', () => {

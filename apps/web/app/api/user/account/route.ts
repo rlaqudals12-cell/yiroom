@@ -28,7 +28,9 @@ const TABLES_TO_DELETE = [
   'personal_color_assessments',
   'nutrition_settings',
   'feedback',
-  'users', // 마지막에 삭제
+  'image_consents', // 생체 이미지 동의 기록 (BIPA/PIPA 파기의무)
+  'user_agreements', // 가입 동의 기록
+  'users', // 마지막에 삭제 (FK 제약)
 ];
 
 export async function DELETE(request: Request) {
@@ -82,10 +84,7 @@ export async function DELETE(request: Request) {
 
     for (const table of TABLES_TO_DELETE) {
       try {
-        const { error } = await supabase
-          .from(table)
-          .delete()
-          .eq('clerk_user_id', userId);
+        const { error } = await supabase.from(table).delete().eq('clerk_user_id', userId);
 
         if (error) {
           // 테이블이 없거나 컬럼이 없는 경우 무시
@@ -97,6 +96,27 @@ export async function DELETE(request: Request) {
       } catch (tableError) {
         console.error(`[ACCOUNT-DELETE] Error deleting from ${table}:`, tableError);
         deletionErrors.push(table);
+      }
+    }
+
+    // 4-2. 스토리지 얼굴/체형 이미지 완전 삭제 (GDPR Art.17 / BIPA 파기의무)
+    // DB만 지우면 생체 이미지가 스토리지에 고아로 남으므로 계정 삭제 시 직접 파기한다.
+    // (하드삭제 cron과 동일한 버킷/경로 규칙: {clerkUserId}/파일)
+    const storageBuckets = ['skin-images', 'body-images', 'personal-color-images', 'food-images'];
+    for (const bucket of storageBuckets) {
+      try {
+        const { data: files } = await supabase.storage.from(bucket).list(userId);
+        if (files && files.length > 0) {
+          const filePaths = files.map((f) => `${userId}/${f.name}`);
+          const { error: removeError } = await supabase.storage.from(bucket).remove(filePaths);
+          if (removeError) {
+            console.error(`[ACCOUNT-DELETE] Failed to remove files from ${bucket}:`, removeError);
+            deletionErrors.push(`storage:${bucket}`);
+          }
+        }
+      } catch (storageError) {
+        // 버킷이 없거나 이미 비어있음 — 무시
+        console.warn(`[ACCOUNT-DELETE] Storage cleanup skipped for ${bucket}:`, storageError);
       }
     }
 

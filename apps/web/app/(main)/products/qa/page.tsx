@@ -5,7 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send, Loader2, Bot, User, Sparkles, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { askProductQuestion, FAQ_TEMPLATES, type ProductQAResponse } from '@/lib/rag/product-qa';
+import {
+  askProductQuestionClient,
+  FAQ_TEMPLATES,
+  type ProductQAResponse,
+} from '@/lib/rag/product-qa-shared';
 import { getProductById } from '@/lib/products';
 import type { AnyProduct, ProductType } from '@/types/product';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
@@ -53,18 +57,24 @@ function ChatMessage({ message }: { message: Message }) {
             {/* 신뢰도 */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span
-                className={`w-2 h-2 rounded-full ${
-                  selectByKey(message.confidence, {
+                className={`w-2 h-2 rounded-full ${selectByKey(
+                  message.confidence,
+                  {
                     high: 'bg-green-500',
                     medium: 'bg-yellow-500',
-                  }, 'bg-red-500')
-                }`}
+                  },
+                  'bg-red-500'
+                )}`}
               />
               <span>
-                {selectByKey(message.confidence, {
-                  high: '높은 신뢰도',
-                  medium: '보통 신뢰도',
-                }, '낮은 신뢰도')}
+                {selectByKey(
+                  message.confidence,
+                  {
+                    high: '높은 신뢰도',
+                    medium: '보통 신뢰도',
+                  },
+                  '낮은 신뢰도'
+                )}
               </span>
             </div>
 
@@ -194,7 +204,7 @@ export default function ProductQAPage() {
         return;
       }
 
-      const response: ProductQAResponse = await askProductQuestion({
+      const response: ProductQAResponse = await askProductQuestionClient({
         question: text,
         product: selectedProduct,
         productType,

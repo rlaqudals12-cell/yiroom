@@ -1,7 +1,12 @@
 /**
- * 제품 Q&A RAG 시스템
- * @description 제품 관련 질문에 AI 기반 답변 제공
+ * 제품 Q&A RAG 시스템 (server-only)
+ * @description 제품 관련 질문에 AI 기반 답변 제공.
+ * 프롬프트 IP가 브라우저 번들에 새지 않도록 server-only로 잠근다.
+ * 클라이언트는 @/lib/rag/product-qa-shared의 askProductQuestionClient로 호출한다.
  */
+
+// 서버 전용 가드 — 클라이언트에서 import 시 빌드 에러로 프롬프트 노출을 원천 차단
+import 'server-only';
 
 import {
   generateContent,
@@ -13,6 +18,10 @@ import type { GeminiSafetySetting } from '@/lib/gemini/client';
 import { ragLogger } from '@/lib/utils/logger';
 import type { AnyProduct, ProductType, CosmeticProduct, SupplementProduct } from '@/types/product';
 import { extractJsonObject } from '@/lib/utils/json-extract';
+import type { ProductQARequest, ProductQAResponse } from './product-qa-shared';
+
+// 공용 타입 재노출 (기존 import 경로 호환)
+export type { ProductQARequest, ProductQAResponse } from './product-qa-shared';
 
 // =============================================================================
 // 상수 정의
@@ -43,24 +52,6 @@ const safetySettings: GeminiSafetySetting[] = [
     threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
   },
 ];
-
-export interface ProductQARequest {
-  question: string;
-  product: AnyProduct;
-  productType: ProductType;
-  userContext?: {
-    skinType?: string;
-    skinConcerns?: string[];
-    allergies?: string[];
-  };
-}
-
-export interface ProductQAResponse {
-  answer: string;
-  confidence: 'high' | 'medium' | 'low';
-  relatedTopics?: string[];
-  warning?: string;
-}
 
 /**
  * 제품 컨텍스트 생성
@@ -242,33 +233,3 @@ export async function askProductQuestion(request: ProductQARequest): Promise<Pro
   // 이론적으로 도달 불가능하지만 타입 안전성을 위해
   return generateMockQAResponse(request.question);
 }
-
-/**
- * 자주 묻는 질문 템플릿
- */
-export const FAQ_TEMPLATES: Record<ProductType, string[]> = {
-  cosmetic: [
-    '이 제품 민감성 피부에 괜찮아요?',
-    '다른 제품이랑 같이 써도 돼요?',
-    '아침/저녁 언제 사용하면 좋아요?',
-    '얼마나 오래 사용해야 효과가 나타나요?',
-  ],
-  supplement: [
-    '하루에 몇 알 먹어야 해요?',
-    '다른 영양제랑 같이 먹어도 돼요?',
-    '공복에 먹어도 괜찮아요?',
-    '얼마나 오래 복용해야 효과가 있어요?',
-  ],
-  workout_equipment: [
-    '초보자도 사용할 수 있나요?',
-    '어떤 운동에 효과적인가요?',
-    '하루에 얼마나 사용하면 좋아요?',
-    '주의해야 할 점이 있나요?',
-  ],
-  health_food: [
-    '하루에 얼마나 먹으면 좋아요?',
-    '다이어트에 도움이 되나요?',
-    '보관은 어떻게 해야 하나요?',
-    '어떤 사람에게 추천하나요?',
-  ],
-};
