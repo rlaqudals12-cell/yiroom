@@ -169,7 +169,7 @@ describe('MultiChannelProductCard', () => {
   it('법적 고지를 표시한다', () => {
     render(<MultiChannelProductCard productName="테스트 상품" channels={mockChannels} />);
 
-    expect(screen.getByText(/수수료가 지급됩니다/)).toBeInTheDocument();
+    expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
   });
 
   it('채널 수를 표시한다', () => {

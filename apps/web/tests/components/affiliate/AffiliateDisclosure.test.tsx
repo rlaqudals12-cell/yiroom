@@ -17,7 +17,7 @@ describe('AffiliateDisclosure', () => {
       render(<AffiliateDisclosure variant="inline" />);
 
       expect(screen.getByTestId('affiliate-disclosure')).toBeInTheDocument();
-      expect(screen.getByText(/수수료가 지급됩니다/)).toBeInTheDocument();
+      expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
     });
 
     it('기본값이 inline이다', () => {
@@ -37,7 +37,7 @@ describe('AffiliateDisclosure', () => {
     it('상세 설명을 표시할 수 있다', () => {
       render(<AffiliateDisclosure variant="banner" detailed={true} />);
 
-      expect(screen.getByText(/추가 비용이 발생하지 않습니다/)).toBeInTheDocument();
+      expect(screen.getByText(/추가 비용은 발생하지 않으며/)).toBeInTheDocument();
     });
   });
 
@@ -54,7 +54,7 @@ describe('AffiliateDisclosure', () => {
 
       const element = screen.getByTestId('affiliate-disclosure');
       expect(element).toHaveAttribute('title');
-      expect(element.getAttribute('title')).toContain('제휴 마케팅');
+      expect(element.getAttribute('title')).toContain('쿠팡 파트너스');
     });
   });
 
@@ -78,7 +78,7 @@ describe('AffiliatePageBanner', () => {
     render(<AffiliatePageBanner />);
 
     expect(screen.getByTestId('affiliate-disclosure')).toHaveClass('bg-amber-50');
-    expect(screen.getByText(/추가 비용이 발생하지 않습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/추가 비용은 발생하지 않으며/)).toBeInTheDocument();
   });
 });
 
@@ -87,7 +87,7 @@ describe('AffiliateCardDisclosure', () => {
     render(<AffiliateCardDisclosure />);
 
     expect(screen.getByTestId('affiliate-disclosure')).toBeInTheDocument();
-    expect(screen.getByText(/수수료가 지급됩니다/)).toBeInTheDocument();
+    expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
   });
 });
 

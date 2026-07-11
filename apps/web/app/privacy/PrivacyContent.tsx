@@ -144,7 +144,8 @@ function KoreanContent() {
             <strong>보유 기간:</strong> 삭제 요청 또는 회원 탈퇴 시까지 (요청 시 즉시 파기)
           </li>
           <li>
-            <strong>동의 방법:</strong> 분석 기능 사용 시 별도 동의 화면 제공
+            <strong>동의 방법:</strong> 가입 시 약관 동의 단계에서 별도의 필수 동의 항목으로 수집
+            (이미지 촬영 전 사전 동의)
           </li>
           <li>
             <strong>동의 철회:</strong> 설정 &gt; 개인정보 메뉴에서 언제든지 철회 가능
@@ -206,6 +207,10 @@ function KoreanContent() {
             <li>
               보유·이용 기간: 실시간 처리 후 Gemini API 약관에 따라 모델 학습 목적으로 저장·이용되지
               않음
+            </li>
+            <li>
+              이전 거부 방법 및 효과: 분석 기능을 이용하지 않거나 계정을 삭제하면 이전이 중단됩니다.
+              다만 이전을 거부하시면 AI 분석 서비스를 이용하실 수 없습니다.
             </li>
           </ul>
           <p className="mt-2 text-sm">
@@ -409,8 +414,8 @@ function EnglishContent() {
             immediately upon request)
           </li>
           <li>
-            <strong>Consent method:</strong> Separate consent screen provided when using analysis
-            features
+            <strong>Consent method:</strong> Collected as a separate, mandatory consent item during
+            sign-up, before any image is captured
           </li>
           <li>
             <strong>Withdrawal:</strong> Can be withdrawn anytime via Settings &gt; Privacy
@@ -478,6 +483,11 @@ function EnglishContent() {
             <li>
               Retention: Processed in real time; not stored for model training under the Gemini API
               terms
+            </li>
+            <li>
+              How to refuse &amp; effect: You may refuse the transfer by not using the analysis
+              features or by deleting your account. If you refuse, the AI analysis services cannot
+              be provided.
             </li>
           </ul>
           <p className="mt-2 text-sm">

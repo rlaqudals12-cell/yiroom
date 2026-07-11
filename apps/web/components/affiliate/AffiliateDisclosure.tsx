@@ -26,13 +26,14 @@ export interface AffiliateDisclosureProps {
 // 고지 문구
 // ============================================
 
-const SHORT_DISCLOSURE = '* 이 링크를 통해 구매 시 이룸에 수수료가 지급됩니다.';
+// 쿠팡 파트너스·공정위 표준 문구 충족: "쿠팡 파트너스 활동의 일환으로… 수수료를 제공받습니다"
+// ("등"으로 무신사·iHerb 등 타 제휴 커버, "제공받습니다"로 단정 — 모호표현 금지 규정 준수)
+const SHORT_DISCLOSURE =
+  '이 게시물은 쿠팡 파트너스 등 제휴 활동의 일환으로, 구매 시 이룸이 일정액의 수수료를 제공받습니다.';
 
 const DETAILED_DISCLOSURE = `
-이 페이지에는 제휴 마케팅 링크가 포함되어 있습니다.
-링크를 통해 구매하시면 이룸에 소정의 수수료가 지급되며,
-구매자에게 추가 비용이 발생하지 않습니다.
-저희는 직접 사용하거나 신뢰할 수 있는 제품만 추천드립니다.
+이 게시물은 쿠팡 파트너스 등 제휴 활동의 일환으로, 구매 시 이룸이 일정액의 수수료를 제공받습니다.
+구매자에게 추가 비용은 발생하지 않으며, 제품 추천은 이룸의 독립적인 판단에 기반합니다.
 `.trim();
 
 // ============================================
@@ -50,10 +51,7 @@ export function AffiliateDisclosure({
     case 'banner':
       return (
         <div
-          className={cn(
-            'bg-amber-50 border border-amber-200 rounded-lg p-3',
-            className
-          )}
+          className={cn('bg-amber-50 border border-amber-200 rounded-lg p-3', className)}
           data-testid="affiliate-disclosure"
         >
           <div className="flex items-start gap-2">
@@ -81,18 +79,14 @@ export function AffiliateDisclosure({
     case 'footer':
       return (
         <footer
-          className={cn(
-            'mt-8 pt-4 border-t text-center',
-            className
-          )}
+          className={cn('mt-8 pt-4 border-t text-center', className)}
           data-testid="affiliate-disclosure"
         >
-          <p className="text-xs text-muted-foreground">
-            {SHORT_DISCLOSURE}
-          </p>
+          <p className="text-xs text-muted-foreground">{SHORT_DISCLOSURE}</p>
           {detailed && (
             <p className="text-[10px] text-muted-foreground mt-1">
-              제품 추천은 이룸의 독립적인 판단에 기반하며, 제휴 관계가 추천에 영향을 미치지 않습니다.
+              제품 추천은 이룸의 독립적인 판단에 기반하며, 제휴 관계가 추천에 영향을 미치지
+              않습니다.
             </p>
           )}
         </footer>
@@ -102,10 +96,7 @@ export function AffiliateDisclosure({
     default:
       return (
         <p
-          className={cn(
-            'text-xs text-muted-foreground',
-            className
-          )}
+          className={cn('text-xs text-muted-foreground', className)}
           data-testid="affiliate-disclosure"
         >
           {text}
@@ -118,36 +109,19 @@ export function AffiliateDisclosure({
  * 페이지 레벨 어필리에이트 고지 (상단 배너)
  */
 export function AffiliatePageBanner({ className }: { className?: string }) {
-  return (
-    <AffiliateDisclosure
-      variant="banner"
-      detailed={true}
-      className={className}
-    />
-  );
+  return <AffiliateDisclosure variant="banner" detailed={true} className={className} />;
 }
 
 /**
  * 제품 카드용 인라인 고지
  */
 export function AffiliateCardDisclosure({ className }: { className?: string }) {
-  return (
-    <AffiliateDisclosure
-      variant="inline"
-      detailed={false}
-      className={className}
-    />
-  );
+  return <AffiliateDisclosure variant="inline" detailed={false} className={className} />;
 }
 
 /**
  * 툴팁 형태의 간단한 표시
  */
 export function AffiliateTooltip({ className }: { className?: string }) {
-  return (
-    <AffiliateDisclosure
-      variant="tooltip"
-      className={className}
-    />
-  );
+  return <AffiliateDisclosure variant="tooltip" className={className} />;
 }
