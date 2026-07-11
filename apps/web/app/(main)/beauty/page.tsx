@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { FlaskConical, Palette, Sparkles } from 'lucide-react';
+import { FlaskConical, Palette, Sparkles, ScanLine, ChevronRight } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -331,9 +332,11 @@ export default function BeautyPage() {
                   내 피부에 딱 맞는 제품을 찾아드려요
                 </p>
               </div>
-              {/* F2: Primary CTA — 프로필 섹션 1개만 */}
+              {/* F2: Primary CTA — 프로필 섹션 1개만.
+                  미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입(따로따로) 대신
+                  5축을 한 번에 캡처하는 정본 온보딩으로 보낸다. (배치 IA-3) */}
               <button
-                onClick={() => router.push('/analysis/skin')}
+                onClick={() => router.push('/analysis/integrated')}
                 className="bg-primary text-primary-foreground px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
               >
                 분석하기
@@ -342,6 +345,28 @@ export default function BeautyPage() {
           </section>
         </FadeInUp>
       )}
+
+      {/* 성분 스캔 진입 — "결정의 순간" 도구(→/scan). 제품 성분표를 찍어 나와의 적합도를 확인한다.
+          바코드/제품 검색과 구분해 "성분 스캔"으로 표기(ADR-114 스캔 정본). 추천·케어 어느 탭에서도
+          보이도록 탭 위에 고정해 능동적으로 찾기 쉽게 한다. */}
+      <div className="px-4 pt-4">
+        <Link
+          href="/scan"
+          data-testid="beauty-scan-entry"
+          className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ScanLine className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-foreground">성분 스캔</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              제품 성분표를 찍으면 나와의 적합도를 알려드려요
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </Link>
+      </div>
 
       {/* F1: 2탭 구조 — 추천/케어 (트렌드 탭은 ADR-098 게이팅으로 임시 숨김) */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

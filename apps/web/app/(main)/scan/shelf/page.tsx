@@ -6,6 +6,7 @@
  * - 상태별 필터링 지원
  */
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,14 @@ export default function ShelfPage() {
 
       {/* 메인 콘텐츠 */}
       <div className="container mx-auto px-4 py-6">
+        {/* 제품함 vs 찜 혼동 방지 — 위시리스트 페이지와 대칭 안내 (IA-2) */}
+        <p className="mb-5 text-sm text-muted-foreground">
+          지금 쓰고 있는 제품을 담아두는 곳이에요. 담으면 맞춤 루틴에 반영돼요. 사고 싶은 제품은{' '}
+          <Link href="/wishlist" className="text-primary underline underline-offset-2">
+            위시리스트
+          </Link>
+          에 담아 두세요.
+        </p>
         <ShelfList />
       </div>
     </div>

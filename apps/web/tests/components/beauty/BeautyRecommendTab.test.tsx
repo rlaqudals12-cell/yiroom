@@ -358,13 +358,15 @@ describe('BeautyRecommendTab', () => {
     expect(screen.getAllByText('92%').length).toBeGreaterThan(0);
   });
 
-  it('hasAnalysis=false일 때 분석 유도 버튼이 /analysis/skin으로 연결된다', async () => {
+  // 배치 IA-3: 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 금지(재발 방지)
+  it('hasAnalysis=false일 때 분석 유도 버튼이 /analysis/integrated로 연결된다', async () => {
     renderTab({ hasAnalysis: false });
     await screen.findByText('히알루론 수분 크림');
 
     const analysisButton = screen.getByText('분석하면 매칭률 확인');
     analysisButton.click();
-    expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/integrated');
+    expect(mockPush).not.toHaveBeenCalledWith('/analysis/skin');
   });
 
   describe('피부타입 자동 선택 안내', () => {

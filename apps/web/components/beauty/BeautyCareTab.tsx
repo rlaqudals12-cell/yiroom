@@ -51,7 +51,8 @@ export default function BeautyCareTab({
               피부 분석을 하면 나에게 맞는 루틴과 성분 정보를 받을 수 있어요
             </p>
             <button
-              onClick={() => router.push('/analysis/skin')}
+              // 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 대신 5축 정본 온보딩. (배치 IA-3)
+              onClick={() => router.push('/analysis/integrated')}
               className="bg-primary text-primary-foreground px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               피부 분석하기

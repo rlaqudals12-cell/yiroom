@@ -9,7 +9,7 @@ import { CompareButton } from '@/components/products/CompareButton';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
 import type { AnyProduct } from '@/types/product';
-import { getProductType, productTypeToPath } from '@/lib/products';
+import { getProductType, productDetailPath } from '@/lib/products';
 
 interface ProductCardProps {
   product: AnyProduct;
@@ -36,8 +36,8 @@ export function ProductCard({
   // 매칭 이유는 최대 2개까지만 (카드 공간 제약 + 인지 부담)
   const shownReasons = matchReasons?.slice(0, 2) ?? [];
   const productType = getProductType(product);
-  const typePath = productTypeToPath(productType);
-  const href = `/products/${typePath}/${product.id}`;
+  // One Canon: 화장품은 /beauty/[id], 그 외는 /products/[type]/[id]
+  const href = productDetailPath(productType, product.id);
 
   // 가격 포맷
   const price = 'priceKrw' in product ? product.priceKrw : undefined;

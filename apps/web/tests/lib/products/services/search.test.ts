@@ -29,6 +29,7 @@ import {
   getProductType,
   productTypeToPath,
   pathToProductType,
+  productDetailPath,
   searchProducts,
   getProductsByCategory,
   getProductById,
@@ -293,6 +294,29 @@ describe('lib/products/services/search', () => {
       expect(pathToProductType('unknown')).toBeNull();
       expect(pathToProductType('')).toBeNull();
       expect(pathToProductType('workout')).toBeNull();
+    });
+  });
+
+  // =========================================
+  // productDetailPath 테스트 (One Canon)
+  // =========================================
+
+  describe('productDetailPath', () => {
+    it('화장품(cosmetic) 상세 정본은 /beauty/[id]로 통일한다', () => {
+      // 화장품은 범용 상세(/products/cosmetic)가 아니라 뷰티팀 컨설턴트 뷰(/beauty)
+      expect(productDetailPath('cosmetic', 'abc-123')).toBe('/beauty/abc-123');
+    });
+
+    it('영양제는 /products/supplement/[id]', () => {
+      expect(productDetailPath('supplement', 'sup-1')).toBe('/products/supplement/sup-1');
+    });
+
+    it('운동기구는 /products/equipment/[id]', () => {
+      expect(productDetailPath('workout_equipment', 'eq-1')).toBe('/products/equipment/eq-1');
+    });
+
+    it('건강식품은 /products/healthfood/[id]', () => {
+      expect(productDetailPath('health_food', 'hf-1')).toBe('/products/healthfood/hf-1');
     });
   });
 

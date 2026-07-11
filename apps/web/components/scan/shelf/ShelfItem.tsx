@@ -25,9 +25,11 @@ interface ShelfItemProps {
   className?: string;
 }
 
+// 상태 라벨. 'wishlist' enum 값은 DB 저장값이라 유지하되, 사용자 대면 라벨은
+// '사보고 싶어요'로 — 별도 기능인 찜/위시리스트(user_wishlists)와의 문자 충돌 제거 (IA-2)
 const STATUS_LABELS: Record<ShelfStatus, string> = {
   owned: '보유 중',
-  wishlist: '위시리스트',
+  wishlist: '사보고 싶어요',
   used_up: '다 씀',
   archived: '보관함',
 };
@@ -149,7 +151,7 @@ export function ShelfItem({ item, onSelect, onStatusChange, onDelete, className 
           {item.status !== 'wishlist' && (
             <DropdownMenuItem onClick={() => handleStatusChange('wishlist')}>
               <Star className="mr-2 h-4 w-4" />
-              위시리스트에 추가
+              사보고 싶은 제품으로 변경
             </DropdownMenuItem>
           )}
           <DropdownMenuItem

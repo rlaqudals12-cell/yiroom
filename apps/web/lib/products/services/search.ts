@@ -231,3 +231,19 @@ export function pathToProductType(path: string): ProductType | null {
       return null;
   }
 }
+
+/**
+ * 제품 상세 페이지 정본 경로 (One Canon — 정보 유형별 정본 1곳)
+ *
+ * 화장품(cosmetic) 상세 정본 = `/beauty/[id]` (전속 뷰티팀 컨설턴트 뷰: 내 피부 적합도·성분·제품함·루틴).
+ * 그 외(영양제/운동기구/건강식품) = `/products/[type]/[id]` (범용 상세).
+ *
+ * 모든 제품 카드·목록·위젯 링크는 이 함수를 통해 상세 경로를 만든다.
+ * (같은 화장품이 두 상세로 갈라지는 분열을 원천 차단 — 저장 때 본 화면과 재진입 화면 일치)
+ */
+export function productDetailPath(type: ProductType, productId: string): string {
+  if (type === 'cosmetic') {
+    return `/beauty/${productId}`;
+  }
+  return `/products/${productTypeToPath(type)}/${productId}`;
+}

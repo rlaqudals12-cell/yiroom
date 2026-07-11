@@ -66,6 +66,7 @@ export {
   getProductById,
   productTypeToPath,
   pathToProductType,
+  productDetailPath,
 } from './services/search';
 
 // ================================================

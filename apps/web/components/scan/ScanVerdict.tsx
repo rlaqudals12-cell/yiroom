@@ -254,8 +254,9 @@ export function ScanVerdict({
           <p className="mt-1 text-sm text-muted-foreground">
             아래 성분 정보와 효과 안내는 지금도 볼 수 있어요
           </p>
+          {/* 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 대신 5축 정본 온보딩. (배치 IA-3) */}
           <Button asChild className="mt-4">
-            <Link href="/analysis/skin">피부 분석 시작하기</Link>
+            <Link href="/analysis/integrated">피부 분석 시작하기</Link>
           </Button>
         </section>
       )}

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useProductCompareStore, type CompareItem } from '@/lib/stores/productCompareStore';
-import { productTypeToPath } from '@/lib/products';
+import { productDetailPath } from '@/lib/products';
 import { trackCustomEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
@@ -104,10 +104,7 @@ function CompareTable({
                 >
                   <X className="h-3 w-3" />
                 </button>
-                <Link
-                  href={`/products/${productTypeToPath(item.productType)}/${item.productId}`}
-                  className="block"
-                >
+                <Link href={productDetailPath(item.productType, item.productId)} className="block">
                   <div className="relative mx-auto h-24 w-24 overflow-hidden rounded-lg bg-muted">
                     <ImageWithFallback
                       src={item.imageUrl}

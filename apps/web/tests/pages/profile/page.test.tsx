@@ -266,6 +266,16 @@ describe('ProfilePage', () => {
       });
     });
 
+    // 배치 IA-3: 사용자 대면 명칭은 "오늘의 루틴"으로 통일 — 내부 용어 "데일리 캡슐" 부재(재발 방지)
+    it('"오늘의 루틴" 링크를 표시하고 "데일리 캡슐" 표기는 없다', async () => {
+      render(<ProfilePage />);
+
+      await vi.waitFor(() => {
+        expect(screen.getByText('오늘의 루틴')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('데일리 캡슐')).not.toBeInTheDocument();
+    });
+
     // ADR-098: 웰니스 스코어는 W/N 기반 지표 — WELLNESS_PHASE2=false에서 숨김
     // (prod wellness_scores 0행·쓰기 경로 부재 확인, 2026-07-08 정직화)
     it('웰니스 스코어 링은 표시되지 않는다 (WELLNESS_PHASE2 게이팅)', async () => {

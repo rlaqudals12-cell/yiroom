@@ -42,9 +42,11 @@ import { classifyByRange, selectByKey } from '@/lib/utils/conditional-helpers';
 import type { ShelfItem, ShelfStatus } from '@/lib/scan/product-shelf';
 import { ShelfDepletionField } from '@/components/skincare/ShelfDepletionField';
 
+// 'wishlist' enum 값은 DB 저장값(유지). 사용자 대면 라벨만 '사보고 싶어요'로 —
+// 별도 기능인 찜/위시리스트(user_wishlists)와의 문자 충돌 제거 (IA-2)
 const STATUS_LABELS: Record<ShelfStatus, string> = {
   owned: '보유 중',
-  wishlist: '위시리스트',
+  wishlist: '사보고 싶어요',
   used_up: '다 씀',
   archived: '보관함',
 };

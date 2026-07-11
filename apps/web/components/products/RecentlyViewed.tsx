@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useRecentlyViewedStore, type RecentlyViewedItem } from '@/lib/stores/recentlyViewedStore';
-import { productTypeToPath } from '@/lib/products';
+import { productDetailPath } from '@/lib/products';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 
@@ -78,7 +78,8 @@ function RecentlyViewedCard({
   item: RecentlyViewedItem;
   onRemove: () => void;
 }) {
-  const href = `/products/${productTypeToPath(item.productType)}/${item.productId}`;
+  // One Canon: 화장품은 /beauty/[id], 그 외는 /products/[type]/[id]
+  const href = productDetailPath(item.productType, item.productId);
 
   return (
     <Card className="relative w-32 flex-shrink-0 overflow-hidden">

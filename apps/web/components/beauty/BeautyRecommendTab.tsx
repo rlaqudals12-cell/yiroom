@@ -759,7 +759,8 @@ export function BeautyRecommendTab({
           </button>
         ) : (
           <button
-            onClick={() => router.push('/analysis/skin')}
+            // 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 대신 5축 정본 온보딩. (배치 IA-3)
+            onClick={() => router.push('/analysis/integrated')}
             className="text-xs text-primary font-medium hover:underline"
           >
             분석하면 매칭률 확인

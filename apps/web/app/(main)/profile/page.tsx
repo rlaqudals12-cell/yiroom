@@ -722,7 +722,8 @@ export default function ProfilePage() {
             >
               <div className="flex items-center gap-3">
                 <Box className="h-5 w-5 text-gray-500" />
-                <span>데일리 캡슐</span>
+                {/* 사용자 대면 명칭은 "오늘의 루틴"으로 통일 — 경로/식별자(capsule)는 유지. (배치 IA-3) */}
+                <span>오늘의 루틴</span>
               </div>
               <ChevronRight className="text-muted-foreground h-4 w-4" />
             </Link>

@@ -12,7 +12,7 @@ import {
   getWorkoutEquipmentById,
   getHealthFoodById,
   checkProductInteractions,
-  productTypeToPath,
+  productDetailPath,
 } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -293,8 +293,9 @@ function WishlistGrid({ items, products, onRemove, removingIds, formatPrice }: W
         return (
           <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              {/* enum(workout_equipment 등) 원시값이 아닌 라우트 경로(equipment/healthfood)로 변환 */}
-              <Link href={`/products/${productTypeToPath(item.productType)}/${item.productId}`}>
+              {/* One Canon: 화장품은 /beauty/[id], 그 외는 /products/[type]/[id]
+                  (저장 때 본 화면과 재진입 화면 일치) */}
+              <Link href={productDetailPath(item.productType, item.productId)}>
                 <div className="flex gap-4">
                   {/* 제품 이미지 — 로드 실패 시에도 Package 폴백 */}
                   <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">

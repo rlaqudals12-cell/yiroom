@@ -203,11 +203,12 @@ describe('ProductCard', () => {
   });
 
   describe('링크', () => {
-    it('화장품 상세 페이지 링크', () => {
+    it('화장품 상세 페이지 링크 (One Canon: 화장품 정본 = /beauty)', () => {
       render(<ProductCard product={mockCosmeticProduct} />);
 
       const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/products/cosmetic/cosmetic-1');
+      // 화장품은 /products/cosmetic이 아니라 뷰티팀 컨설턴트 뷰(/beauty)로 통일
+      expect(link).toHaveAttribute('href', '/beauty/cosmetic-1');
     });
 
     it('영양제 상세 페이지 링크', () => {

@@ -142,8 +142,9 @@ export function ScanResult({
         <p className="mt-2 text-sm text-muted-foreground">
           성분표를 촬영하면 내 피부 기준으로 이 제품이 얼마나 맞는지 판정해드려요
         </p>
+        {/* 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 대신 5축 정본 온보딩. (배치 IA-3) */}
         <Link
-          href="/analysis/skin"
+          href="/analysis/integrated"
           className="mt-3 flex items-center gap-1 text-sm text-primary hover:underline"
         >
           피부 분석 시작하기

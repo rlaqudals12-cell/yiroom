@@ -119,12 +119,16 @@ describe('BeautyCareTab', () => {
     expect(screen.getByText('피부 분석하기')).toBeInTheDocument();
   });
 
-  it('CTA 클릭 시 /analysis/skin으로 이동한다', async () => {
+  // 배치 IA-3: 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 금지(재발 방지)
+  it('미분석 CTA 클릭 시 /analysis/integrated로 이동한다', async () => {
     const user = userEvent.setup();
     renderTab({ hasAnalysis: false, skinMetrics: null });
 
+    // 이 파일은 mockPush를 초기화하지 않으므로(누적) 클릭 직전에 비워 이 테스트 범위로 한정
+    mockPush.mockClear();
     await user.click(screen.getByText('피부 분석하기'));
-    expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/integrated');
+    expect(mockPush).not.toHaveBeenCalledWith('/analysis/skin');
   });
 
   it('주의 성분 확인 버튼이 최신 피부 분석 결과(성분 경고 표시 위치)로 딥링크된다', async () => {

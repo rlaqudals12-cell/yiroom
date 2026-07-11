@@ -114,6 +114,11 @@ describe('ScanVerdict', () => {
     expect(screen.queryByTestId('scan-verdict-hero')).not.toBeInTheDocument();
     expect(screen.getByTestId('scan-verdict-cta')).toBeInTheDocument();
     expect(screen.getByText('피부 분석을 하면 내 피부 기준으로 판정해드려요')).toBeInTheDocument();
+    // 배치 IA-3: 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축(/analysis/skin) 아님(재발 방지)
+    expect(screen.getByRole('link', { name: '피부 분석 시작하기' })).toHaveAttribute(
+      'href',
+      '/analysis/integrated'
+    );
     // 프로필 무관인 규제 정보는 여전히 표시
     expect(screen.getByTestId('scan-verdict-regulatory')).toBeInTheDocument();
   });

@@ -131,8 +131,11 @@ describe('ShelfList', () => {
       expect(screen.getByText('전체')).toBeInTheDocument();
       expect(screen.getByText('보유 중')).toBeInTheDocument();
       expect(screen.getByText('다 씀')).toBeInTheDocument();
-      expect(screen.getByText('위시리스트')).toBeInTheDocument();
+      // IA-2: 'wishlist' 상태 라벨은 '사보고 싶어요' — 필터 + 아이템 뱃지 양쪽에 노출
+      expect(screen.getAllByText('사보고 싶어요').length).toBeGreaterThan(0);
     });
+    // 재발 방지: 제품함 상태 라벨이 별도 기능(찜/위시리스트)과 문자 충돌하지 않아야 함
+    expect(screen.queryByText('위시리스트')).not.toBeInTheDocument();
   });
 
   it('아이템 클릭 시 상세 페이지 이동', async () => {

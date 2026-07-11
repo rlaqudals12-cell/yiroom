@@ -337,11 +337,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           />
         </div>
 
-        {/* Q&A 섹션 */}
-        <ProductQASection product={product} productType={productType} />
+        {/* 리뷰·문의 앵커 — /beauty 상세의 "리뷰·문의 보기"(#reviews) 딥링크 착지점 (One Canon) */}
+        <div id="reviews" className="space-y-6 scroll-mt-16">
+          {/* Q&A 섹션 */}
+          <ProductQASection product={product} productType={productType} />
 
-        {/* 리뷰 섹션 */}
-        <ReviewSection productType={toReviewProductType(productType)} productId={product.id} />
+          {/* 리뷰 섹션 */}
+          <ReviewSection productType={toReviewProductType(productType)} productId={product.id} />
+        </div>
       </div>
     </div>
   );

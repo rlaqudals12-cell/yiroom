@@ -311,7 +311,7 @@ export interface DailyItem {
   solutionProduct?: DailySolutionProduct;
 }
 
-/** 데일리 아이템에 붙는 실제 제품 카드 축약 — 상세는 /products/cosmetic/{id} */
+/** 데일리 아이템에 붙는 실제 제품 카드 축약 — 상세는 /beauty/{id} (화장품 정본, One Canon) */
 export interface DailySolutionProduct {
   id: string;
   name: string;

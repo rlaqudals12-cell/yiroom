@@ -421,7 +421,7 @@ export default function DailyCapsulePage(): React.ReactElement {
                                   {/* 솔루션 대응 실제 제품 — 체크 토글(button)과 분리된 링크 */}
                                   {item.solutionProduct && (
                                     <Link
-                                      href={`/products/cosmetic/${item.solutionProduct.id}`}
+                                      href={`/beauty/${item.solutionProduct.id}`}
                                       className="flex items-center gap-2 mb-2 ml-11 mr-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                     >
                                       <ShoppingBag className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />

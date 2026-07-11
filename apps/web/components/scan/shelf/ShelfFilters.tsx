@@ -14,10 +14,12 @@ interface ShelfFiltersProps {
   className?: string;
 }
 
+// 'wishlist' value는 DB 저장값(유지). 라벨만 '사보고 싶어요'로 —
+// 별도 기능인 찜/위시리스트와 문자 충돌 제거 (IA-2)
 const FILTER_OPTIONS: Array<{ value: ShelfStatus | 'all'; label: string }> = [
   { value: 'all', label: '전체' },
   { value: 'owned', label: '보유 중' },
-  { value: 'wishlist', label: '위시리스트' },
+  { value: 'wishlist', label: '사보고 싶어요' },
   { value: 'used_up', label: '다 씀' },
 ];
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
@@ -15,6 +16,7 @@ import {
   Sparkles,
   ExternalLink,
   Loader2,
+  ChevronRight,
 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { openAffiliateLink } from '@/lib/products/affiliate';
@@ -221,32 +223,51 @@ export default function BeautyProductDetailPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-base font-medium truncate max-w-[200px]">{displayProduct.name}</h1>
-          <div className="flex items-center gap-2">
+          <h1 className="text-base font-medium truncate max-w-[120px] sm:max-w-[200px]">
+            {displayProduct.name}
+          </h1>
+          {/* 아이콘만으로는 '제품함 담기'와 '찜(위시리스트)'을 초보가 구분하기 어려워
+              각 액션에 라벨을 병기한다 (IA-2). 라벨은 aria-hidden — 버튼 자체 aria-label로 스크린리더 커버 */}
+          <div className="flex items-center gap-1">
             {/* 스캔 외 등록 경로 — 카탈로그 제품을 바로 내 제품함에 담아 맞춤 루틴에 반영 (ADR-117) */}
-            <AddToShelfButton
-              productId={productId}
-              productName={product.name}
-              productBrand={product.brand}
-              productImageUrl={product.imageUrl}
-              keyIngredients={product.keyIngredients}
-            />
+            <div className="flex flex-col items-center gap-0.5">
+              <AddToShelfButton
+                productId={productId}
+                productName={product.name}
+                productBrand={product.brand}
+                productImageUrl={product.imageUrl}
+                keyIngredients={product.keyIngredients}
+              />
+              <span className="text-[10px] leading-none text-muted-foreground" aria-hidden="true">
+                제품함
+              </span>
+            </div>
             {/* 로컬 state만 토글하던 가짜 하트 → 실제 위시리스트 연동 (user_wishlists) */}
-            <WishlistButton productType="cosmetic" productId={productId} variant="icon" />
-            <button
-              onClick={() => {
-                const url = window.location.href;
-                if (navigator.share) {
-                  navigator.share({ title: displayProduct.name, url }).catch(() => {});
-                } else {
-                  navigator.clipboard?.writeText(url);
-                }
-              }}
-              className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
-              aria-label="공유"
-            >
-              <Share2 className="w-5 h-5" />
-            </button>
+            <div className="flex flex-col items-center gap-0.5">
+              <WishlistButton productType="cosmetic" productId={productId} variant="icon" />
+              <span className="text-[10px] leading-none text-muted-foreground" aria-hidden="true">
+                찜
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    navigator.share({ title: displayProduct.name, url }).catch(() => {});
+                  } else {
+                    navigator.clipboard?.writeText(url);
+                  }
+                }}
+                className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
+                aria-label="공유"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+              <span className="text-[10px] leading-none text-muted-foreground" aria-hidden="true">
+                공유
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -339,8 +360,10 @@ export default function BeautyProductDetailPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   피부 분석을 하면 이 제품이 내 피부에 얼마나 맞는지 매칭률로 볼 수 있어요.
                 </p>
+                {/* 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 피부 분석 단독 진입 대신
+                    5축 정본 온보딩으로 보낸다. (배치 IA-3) */}
                 <button
-                  onClick={() => router.push('/analysis/skin')}
+                  onClick={() => router.push('/analysis/integrated')}
                   className="inline-flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
                 >
                   <Sparkles className="w-4 h-4" /> 피부 분석하기
@@ -353,6 +376,23 @@ export default function BeautyProductDetailPage() {
         {/* 성분 분석 - 화해 스타일 (AI 요약 포함) */}
         <FadeInUp delay={3}>
           <IngredientAnalysisSection productId={productId} />
+        </FadeInUp>
+
+        {/* 리뷰·문의 접근 — 화장품 정본은 이 페이지(/beauty)이지만, 리뷰·Q&A는
+            범용 상세(/products/cosmetic)에 있어 딥링크로 접근성 보장 (One Canon, 후속 배치서 완전 통합) */}
+        <FadeInUp delay={4}>
+          <Link
+            href={`/products/cosmetic/${productId}#reviews`}
+            className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:bg-muted/50"
+            data-testid="beauty-detail-reviews-link"
+          >
+            <MessageSquare className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">리뷰·문의 보기</p>
+              <p className="text-xs text-muted-foreground">실사용 후기와 제품 Q&amp;A를 확인해요</p>
+            </div>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
         </FadeInUp>
       </div>
 

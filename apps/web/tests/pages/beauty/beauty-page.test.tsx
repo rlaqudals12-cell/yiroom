@@ -14,6 +14,15 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock next/link — 성분 스캔 진입점(<Link href="/scan">) 렌더 검증용
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 // Mock useUserMatching
 // personalColor는 테스트마다 바꿔 검증할 수 있도록 가변(mock 접두사 = vitest 호이스팅 허용)
 let mockPersonalColor = '봄 라이트';
@@ -107,6 +116,16 @@ describe('BeautyPage 2탭 구조', () => {
     render(<BeautyPage />);
     expect(screen.getByText('보습')).toBeInTheDocument();
     expect(screen.getByText('모공')).toBeInTheDocument();
+  });
+
+  it('성분 스캔 진입점이 렌더링되고 /scan으로 연결된다', () => {
+    render(<BeautyPage />);
+    const entry = screen.getByTestId('beauty-scan-entry');
+    expect(entry).toBeInTheDocument();
+    expect(entry).toHaveAttribute('href', '/scan');
+    // 바코드/제품 검색과 구분되는 "성분 스캔" 라벨 + 적합도 안내
+    expect(screen.getByText('성분 스캔')).toBeInTheDocument();
+    expect(screen.getByText('제품 성분표를 찍으면 나와의 적합도를 알려드려요')).toBeInTheDocument();
   });
 
   it('케어 탭 전환이 동작한다', async () => {
