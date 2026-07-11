@@ -99,15 +99,44 @@ export async function DELETE(request: Request) {
       }
     }
 
-    // 4-2. 스토리지 얼굴/체형 이미지 완전 삭제 (GDPR Art.17 / BIPA 파기의무)
-    // DB만 지우면 생체 이미지가 스토리지에 고아로 남으므로 계정 삭제 시 직접 파기한다.
-    // (하드삭제 cron과 동일한 버킷/경로 규칙: {clerkUserId}/파일)
-    const storageBuckets = ['skin-images', 'body-images', 'personal-color-images', 'food-images'];
+    // 4-2. 스토리지 사용자 이미지 완전 삭제 (GDPR Art.17 / BIPA·PIPA 파기의무)
+    // DB만 지우면 생체/개인 이미지가 스토리지에 고아로 남으므로 계정 삭제 시 직접 파기한다.
+    // ⚠️ 일부 버킷은 {userId}/{sessionId}/face.jpg 처럼 중첩 폴더라 단순 list+remove로는
+    //    폴더 안 파일이 안 지워진다 → 재귀 수집으로 모든 하위 파일을 파기한다.
+    //    생체 이미지 버킷(integrated-sessions=온보딩 얼굴·체형, twins=AI 아바타)이
+    //    누락되면 파기의무 위반이므로 사용자 소유 전 버킷을 포함한다.
+    const storageBuckets = [
+      'skin-images',
+      'body-images',
+      'personal-color-images',
+      'integrated-sessions', // 통합분석 얼굴·체형 캡처 (생체, 중첩 경로)
+      'twins', // AI 아바타 (얼굴 유래 생체)
+      'inventory-images', // 화장대·옷장 사진 (중첩 경로)
+      'feed-images', // 피드 업로드
+      'uploads', // 기타 업로드
+    ];
+
+    // {userId}/ 하위의 모든 파일 경로를 재귀 수집 (폴더는 id=null로 반환됨)
+    const collectUserFiles = async (bucket: string, prefix: string): Promise<string[]> => {
+      const { data, error } = await supabase.storage.from(bucket).list(prefix, { limit: 1000 });
+      if (error || !data || data.length === 0) return [];
+      const paths: string[] = [];
+      for (const entry of data) {
+        const entryPath = `${prefix}/${entry.name}`;
+        if (entry.id === null) {
+          // 폴더 — 재귀
+          paths.push(...(await collectUserFiles(bucket, entryPath)));
+        } else {
+          paths.push(entryPath);
+        }
+      }
+      return paths;
+    };
+
     for (const bucket of storageBuckets) {
       try {
-        const { data: files } = await supabase.storage.from(bucket).list(userId);
-        if (files && files.length > 0) {
-          const filePaths = files.map((f) => `${userId}/${f.name}`);
+        const filePaths = await collectUserFiles(bucket, userId);
+        if (filePaths.length > 0) {
           const { error: removeError } = await supabase.storage.from(bucket).remove(filePaths);
           if (removeError) {
             console.error(`[ACCOUNT-DELETE] Failed to remove files from ${bucket}:`, removeError);
