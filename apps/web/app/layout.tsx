@@ -10,6 +10,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import Navbar from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { StaleDeploymentBanner } from '@/components/StaleDeploymentBanner';
 import { PWAInstallPrompt, OrganizationJsonLd, WebApplicationJsonLd } from '@/components/common';
 import { SyncUserProvider } from '@/components/providers/sync-user-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
@@ -165,6 +166,7 @@ export default async function RootLayout({
         >
           <ThemeProvider defaultTheme="system">
             <I18nProvider locale={locale} messages={messages}>
+              <StaleDeploymentBanner />
               <OfflineBanner />
               <a
                 href="#main-content"
