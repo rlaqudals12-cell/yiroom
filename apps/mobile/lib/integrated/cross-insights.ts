@@ -10,6 +10,8 @@
  */
 
 import type { AxisData, IntegratedAnalysisResult } from '@/lib/api';
+// 소비자 눈높이 라벨 (원시 영문/코드 undertone·skinType·season·faceShape·bodyType → 한국어) — 웹 정본 미러
+import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo, bodyTypeKo } from './labels';
 
 export interface CrossInsight {
   id: string;
@@ -51,7 +53,8 @@ function getSkin(
 
 function getBody(r: IntegratedAnalysisResult['axes']['body']): { type: string } | null {
   if (!r.success) return null;
-  return { type: String((r.data as AxisData).bodyType ?? '') };
+  // 체형 코드/영문(W, hourglass 등) → 사용자 대면 표기('W(웨이브)'/'모래시계형'). 인사이트는 표시 전용.
+  return { type: bodyTypeKo((r.data as AxisData).bodyType) };
 }
 
 function getHair(r: IntegratedAnalysisResult['axes']['hair']): { faceShape: string } | null {
@@ -77,7 +80,8 @@ function pcXskin(pc: { undertone: string }, skin: { type: string }) {
   else if (skin.type.includes('combination')) finish = '세미매트 피니시';
   return {
     title: `${tone} × ${finish}`,
-    body: `${pc.undertone}톤 혈색에 ${skin.type} 피부가 만나면 ${tone} 계열 베이스 + ${finish}가 가장 자연스러워요.`,
+    // undertoneKo가 '웜톤'까지 포함하므로 뒤 '톤'을 붙이지 않는다. skin.type도 한국어로.
+    body: `${undertoneKo(pc.undertone)} 혈색에 ${skinTypeKo(skin.type)} 피부가 만나면 ${tone} 계열 베이스 + ${finish}가 가장 자연스러워요.`,
   };
 }
 
@@ -87,7 +91,8 @@ function pcXmakeup(pc: { undertone: string; season: string }) {
   const eye = warm ? '골드/브라운' : '실버/플럼';
   return {
     title: `${lip} 립 + ${eye} 섀도`,
-    body: `${pc.season} ${pc.undertone}톤 팔레트로 립은 ${lip}, 아이는 ${eye} 조합이 얼굴을 가장 또렷하게 살려요.`,
+    // seasonKo가 '봄 웜톤'까지 담으므로 season+undertone을 한 라벨로 대체 (원시 spring/warm 노출 제거)
+    body: `${seasonKo(pc.season)} 팔레트로 립은 ${lip}, 아이는 ${eye} 조합이 얼굴을 가장 또렷하게 살려요.`,
   };
 }
 
@@ -101,7 +106,8 @@ function bodyXhair(body: { type: string }, hair: { faceShape: string }) {
   else if (face.includes('oblong') || face.includes('long')) style = '가로 볼륨을 만드는 뱅';
   return {
     title: `${body.type} × ${style}`,
-    body: `${body.type} 실루엣과 ${hair.faceShape}형 얼굴의 균형은 ${style}이(가) 완성해요.`,
+    // 얼굴형 원시값(oval 등) 노출 금지 — faceShapeKo로 한국어화(매칭 실패 시 '내'로 폴백)
+    body: `${body.type} 실루엣과 ${faceShapeKo(hair.faceShape) || '내'} 얼굴형 균형은 ${style}이(가) 완성해요.`,
   };
 }
 
@@ -141,7 +147,8 @@ function pcXbody(pc: { undertone: string; season: string }, body: { type: string
   const topTone = warm ? '따뜻한 아이보리/카멜' : '쿨 그레이/네이비';
   return {
     title: `${topTone} × ${body.type} 핏`,
-    body: `${pc.season} ${pc.undertone}톤에 ${body.type} 체형은 ${topTone} 상의 + 핏 포인트를 살린 하의 조합이 안정적이에요.`,
+    // 원시 spring/warm 노출 제거 — seasonKo('봄 웜톤')로 대체
+    body: `${seasonKo(pc.season)}에 ${body.type} 체형은 ${topTone} 상의 + 핏 포인트를 살린 하의 조합이 안정적이에요.`,
   };
 }
 

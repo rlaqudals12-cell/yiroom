@@ -11,6 +11,8 @@
  */
 
 import type { AxisData, IntegratedAnalysisResult } from '@/lib/api';
+// 소비자 눈높이 라벨 (원시 영문/코드 season·skinType·bodyType → 한국어) — 웹 정본 미러
+import { seasonKo, skinTypeKo, bodyTypeKo } from './labels';
 
 export type CurationCategory = 'lip' | 'base' | 'skincare' | 'outfit' | 'hair';
 
@@ -105,7 +107,8 @@ export function composeCuration(
     items.push({
       category: 'lip',
       title: `${tone} 계열 립틴트`,
-      reason: `${pc.season ?? '당신'} ${pc.undertone ?? ''}톤 혈색을 가장 자연스럽게 살려요.`,
+      // 원시 season/undertone(spring·warm) 노출 금지 — seasonKo가 '봄 웜톤'까지 담음
+      reason: `${seasonKo(pc.season) || '당신의'} 혈색을 가장 자연스럽게 살려요.`,
       href: buildBeautyPath('lip', { tone: toneKey }, sessionId),
       cta: '립 보러가기',
     });
@@ -127,7 +130,8 @@ export function composeCuration(
       items.push({
         category: 'base',
         title: `${label} 베이스 메이크업`,
-        reason: `${skin.skinType ?? '당신'} 피부에 ${label} 피니시가 잘 맞아요.`,
+        // 원시 영문 피부타입(combination 등) 노출 금지 — skinTypeKo로 한국어화
+        reason: `${skinTypeKo(skin.skinType) || '당신'} 피부에 ${label} 피니시가 잘 맞아요.`,
         href: buildBeautyPath('base', { finish, tone: toneKey }, sessionId),
         cta: '베이스 보러가기',
       });
@@ -149,10 +153,12 @@ export function composeCuration(
       focus = '부위별 밸런스';
       query = 'combination';
     }
+    // 원시 영문 타입 노출 금지 + '바이탈리티' 전문용어 제거 — 웹과 동일하게 '컨디션 점수'로 순화
+    const skinTypeLabel = skinTypeKo(skin.skinType) || '내';
     items.push({
       category: 'skincare',
       title: `${focus} 스킨케어 루틴`,
-      reason: `${skin.skinType ?? '당신'} 피부 바이탈리티 ${skin.overallScore ?? 70}점에 맞춘 추천이에요.`,
+      reason: `${skinTypeLabel} 피부(컨디션 점수 ${skin.overallScore ?? 70}점)에 맞춘 추천이에요.`,
       href: buildBeautyPath('skincare', { focus: query }, sessionId),
       cta: '스킨케어 보러가기',
     });
@@ -160,7 +166,10 @@ export function composeCuration(
 
   // Outfit (체형)
   if (body) {
+    // href 쿼리 파라미터용 원값(recommend 화면이 파싱) — 표시용과 분리 유지
     const bodyType = String(body.bodyType ?? '');
+    // 체형 코드/영문(W, hourglass 등) 노출 금지 — bodyTypeKo로 'W(웨이브)'/'모래시계형' 병기
+    const bodyTypeLabel = bodyTypeKo(body.bodyType);
     const toneQuery = pc && String(pc.undertone ?? '').toLowerCase() === 'warm' ? 'warm' : 'cool';
 
     // 중첩 삼항 방지
@@ -168,7 +177,7 @@ export function composeCuration(
     if (pc) {
       toneLabel = toneQuery === 'warm' ? '따뜻한' : '시원한';
     }
-    const title = `${bodyType} 체형 × ${toneLabel || '나'} 톤 코디`;
+    const title = `${bodyTypeLabel} 체형 × ${toneLabel || '나'} 톤 코디`;
 
     if (hasClosetItems === false) {
       // 옷장이 비어있으면 옷 추가 화면으로 우회
@@ -184,7 +193,8 @@ export function composeCuration(
         cta: '먼저 옷장 등록하기',
       });
     } else {
-      const paletteDescription = pc ? `${pc.season} ${pc.undertone}톤` : '컬러 팔레트';
+      // 원시 spring/warm 노출 제거 — seasonKo('봄 웜톤')로 대체
+      const paletteDescription = pc ? seasonKo(pc.season) || '컬러 팔레트' : '컬러 팔레트';
       items.push({
         category: 'outfit',
         title,

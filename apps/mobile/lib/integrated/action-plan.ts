@@ -11,6 +11,8 @@
  */
 
 import type { AxisResult, AxisCode, AxisData, IntegratedAnalysisResult } from '@/lib/api';
+// 소비자 눈높이 라벨 (원시 영문/코드 season·tone·faceShape·bodyType → 한국어) — 웹 정본 미러
+import { seasonKo, toneKo, faceShapeKo, bodyTypeKo } from './labels';
 
 export type ActionHorizon = 'now' | 'this_week' | 'this_month';
 
@@ -28,21 +30,20 @@ export interface ActionPlan {
 const HORIZON_ORDER: ActionHorizon[] = ['now', 'this_week', 'this_month'];
 
 function pcActions(data: AxisData): ActionItem[] {
-  const undertone = String(data.undertone ?? '').toLowerCase();
-  const warm = undertone === 'warm';
-  const season = String(data.season ?? '');
-  const tone = String(data.tone ?? season);
+  const warm = String(data.undertone ?? '').toLowerCase() === 'warm';
   return [
     {
       horizon: 'now',
       axis: 'personal_color',
       title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
-      why: `${season} ${undertone}톤에 혈색이 가장 잘 살아나요.`,
+      // 원시 영문값(season='spring', undertone='warm') 노출 금지 — seasonKo가 '봄 웜톤'까지 담음
+      why: `${seasonKo(data.season)}에 혈색이 가장 잘 살아나요.`,
     },
     {
       horizon: 'this_week',
       axis: 'personal_color',
-      title: `${tone} 팔레트로 옷장 정리`,
+      // 12톤 원시값(true-spring 등) 노출 금지 — toneKo로 '트루 스프링'
+      title: `${toneKo(data.tone)} 팔레트로 옷장 정리`,
       why: '기존 옷 중 어울리는 3벌을 고르고 자주 입어보세요.',
     },
   ];
@@ -59,7 +60,8 @@ function skinActions(data: AxisData): ActionItem[] {
         horizon: 'this_week',
         axis: 'skin',
         title: 'T존 매트 파우더 루틴 시작',
-        why: '유분 조절로 피부 바이탈리티가 올라가요.',
+        // '바이탈리티' 전문용어 제거 — 웹과 동일하게 '컨디션 점수'로 순화
+        why: '유분 조절로 피부 컨디션 점수가 올라가요.',
       },
     ];
   }
@@ -98,13 +100,15 @@ function skinActions(data: AxisData): ActionItem[] {
       horizon: 'this_week',
       axis: 'skin',
       title: lowScore ? '기본 보습·자외선 차단 루틴 점검' : '현재 루틴 유지 + 주 1회 각질 관리',
-      why: lowScore ? '바이탈리티를 올리기 위한 기초부터.' : '좋은 상태를 유지하는 데 집중.',
+      // '바이탈리티' 전문용어 제거 — 웹과 동일하게 '피부 컨디션'으로 순화
+      why: lowScore ? '피부 컨디션을 올리기 위한 기초부터.' : '좋은 상태를 유지하는 데 집중.',
     },
   ];
 }
 
 function bodyActions(data: AxisData): ActionItem[] {
-  const type = String(data.bodyType ?? '');
+  // 체형 코드/영문(W, hourglass 등) 노출 금지 — bodyTypeKo로 'W(웨이브)'/'모래시계형' 병기
+  const type = bodyTypeKo(data.bodyType);
   return [
     {
       horizon: 'this_month',
@@ -116,12 +120,13 @@ function bodyActions(data: AxisData): ActionItem[] {
 }
 
 function hairActions(data: AxisData): ActionItem[] {
-  const shape = String(data.faceShape ?? 'oval');
+  // 얼굴형 원시값(oval 등) 노출 금지 — faceShapeKo로 '계란형'
+  const shapeKo = faceShapeKo(data.faceShape ?? 'oval');
   return [
     {
       horizon: 'this_month',
       axis: 'hair',
-      title: `${shape}형에 어울리는 컷 시도`,
+      title: `${shapeKo} 얼굴에 어울리는 컷 시도`,
       why: '얼굴선과 균형 있는 헤어라인이 인상을 바꿔요.',
     },
   ];

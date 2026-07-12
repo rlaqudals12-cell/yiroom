@@ -39,6 +39,13 @@ const bodySuccess: AxisResult<AxisData> = {
   data: { bodyType: 'hourglass' },
 };
 
+// 골격 브랜드 코드(W) — 에뮬 실측 "W 체형" 누출 지점 회귀 방지용
+const bodyWave: AxisResult<AxisData> = {
+  success: true,
+  usedFallback: false,
+  data: { bodyType: 'W' },
+};
+
 const failed: AxisResult<AxisData> = {
   success: false,
   error: { code: 'MISSING_INPUT', message: 'x', userMessage: 'x', retryable: true },
@@ -128,6 +135,39 @@ describe('composeCuration (모바일)', () => {
       SESSION_ID
     );
     expect(r.items.length).toBeLessThanOrEqual(3);
+  });
+
+  // ── 라벨 한국어화 (웹 표기 정본 미러) ──────────────────────────
+  it('체형 코드 W → 표기 "W(웨이브)" 병기 (원값 "W 체형" 노출 금지)', () => {
+    const r = composeCuration({ ...allFailed(), body: bodyWave }, SESSION_ID);
+    const outfit = r.items.find((i) => i.category === 'outfit');
+    expect(outfit?.title).toContain('W(웨이브)');
+    expect(outfit?.title).not.toContain('W 체형');
+  });
+
+  it('립 reason은 한국어 계절 라벨 — 원시 spring/warm 노출 금지', () => {
+    const r = composeCuration({ ...allFailed(), personalColor: pcWarm }, SESSION_ID);
+    const lip = r.items.find((i) => i.category === 'lip');
+    expect(lip?.reason).toContain('봄 웜톤');
+    expect(lip?.reason).not.toContain('spring');
+    expect(lip?.reason).not.toContain('warm');
+  });
+
+  it('베이스 reason은 한국어 피부타입 — 원시 dry 노출 금지', () => {
+    const r = composeCuration({ ...allFailed(), personalColor: pcCool, skin: skinDry }, SESSION_ID);
+    const base = r.items.find((i) => i.category === 'base');
+    expect(base?.reason).toContain('건성');
+    expect(base?.reason).not.toContain('dry');
+  });
+
+  it('스킨케어 reason은 "컨디션 점수" 표기 (바이탈리티 전문용어 제거) + 한국어 피부타입', () => {
+    // PC 실패 + S만 성공 → skincare 카드 경로
+    const r = composeCuration({ ...allFailed(), skin: skinOily }, SESSION_ID);
+    const skincare = r.items.find((i) => i.category === 'skincare');
+    expect(skincare?.reason).toContain('컨디션 점수');
+    expect(skincare?.reason).not.toContain('바이탈리티');
+    expect(skincare?.reason).toContain('지성');
+    expect(skincare?.reason).not.toContain('oily');
   });
 
   it('각 item에 필수 필드 존재', () => {
