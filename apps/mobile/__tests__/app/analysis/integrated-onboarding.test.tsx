@@ -37,6 +37,11 @@ jest.mock('@/lib/api', () => ({
   saveBirthdate: jest.fn().mockResolvedValue(undefined),
   evaluateBirthdateGate: jest.fn(() => ({ ok: true, needsSave: false })),
   BirthdateApiError: class BirthdateApiError extends Error {},
+  // 생체동의 게이트 대응 — 이미 동의됨으로 응답해 동의 섹션이 뜨지 않게 함.
+  fetchAgreementStatus: jest.fn().mockResolvedValue({ hasAgreed: true }),
+  saveAgreement: jest.fn().mockResolvedValue(undefined),
+  evaluateAgreementGate: jest.fn(() => ({ ok: true, needsSave: false })),
+  AgreementApiError: class AgreementApiError extends Error {},
 }));
 
 jest.mock('@/components/ui', () => {

@@ -32,6 +32,11 @@ import {
   saveBirthdate,
   evaluateBirthdateGate,
   BirthdateApiError,
+  fetchAgreementStatus,
+  saveAgreement,
+  evaluateAgreementGate,
+  AgreementApiError,
+  type AgreementGender,
   type AxisCode,
   type IntegratedAnalysisInput,
   type SkinQuestionnaire,
@@ -96,19 +101,43 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const [hasStoredBirthdate, setHasStoredBirthdate] = useState(false);
   const [birthdateChecked, setBirthdateChecked] = useState(false);
 
+  // 생체정보 동의 게이트(BIPA/PIPA §23) — 서버는 user_agreements.biometric_agreed 없으면 403.
+  // 웹은 /agreement 화면이 게이트하지만 모바일엔 없어 온보딩에서 필수 동의를 수집한다.
+  const [hasAgreed, setHasAgreed] = useState(false);
+  const [agreementChecked, setAgreementChecked] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeBiometric, setAgreeBiometric] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const [gender, setGender] = useState<AgreementGender | undefined>(undefined);
+
   useEffect(() => {
     let active = true;
     (async () => {
       try {
         const token = await getToken();
         if (!token) return;
-        const status = await fetchBirthdate(token);
-        if (active) setHasStoredBirthdate(status.hasBirthDate);
+        // 두 게이트(생년월일·동의)를 병렬 조회 — 각자 실패해도 수집 쪽으로 안전 폴백
+        const [birthdateResult, agreementResult] = await Promise.allSettled([
+          fetchBirthdate(token),
+          fetchAgreementStatus(token),
+        ]);
+        if (!active) return;
+        setHasStoredBirthdate(
+          birthdateResult.status === 'fulfilled' && birthdateResult.value.hasBirthDate
+        );
+        setHasAgreed(agreementResult.status === 'fulfilled' && agreementResult.value.hasAgreed);
       } catch {
         // 조회 실패 시 수집 쪽으로 안전하게 폴백 — 없으면 어차피 서버가 403이므로 입력을 받는다.
-        if (active) setHasStoredBirthdate(false);
+        if (active) {
+          setHasStoredBirthdate(false);
+          setHasAgreed(false);
+        }
       } finally {
-        if (active) setBirthdateChecked(true);
+        if (active) {
+          setBirthdateChecked(true);
+          setAgreementChecked(true);
+        }
       }
     })();
     return () => {
@@ -170,6 +199,17 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
       return;
     }
 
+    // 생체정보 동의 게이트 — 필수 3종 미체크·성별 미선택이면 분석을 호출하지 않는다(서버도 403).
+    const agreementGate = evaluateAgreementGate(
+      hasAgreed,
+      { terms: agreeTerms, privacy: agreePrivacy, biometric: agreeBiometric },
+      gender
+    );
+    if (!agreementGate.ok) {
+      setError(agreementGate.message);
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -184,6 +224,15 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
       // 생년월일 최초 저장 (성인·유효값만 게이트를 통과). 서버가 만 14세 미만이면 403으로 거부.
       if (birthdateGate.needsSave && birthdateGate.birthDate) {
         await saveBirthdate(birthdateGate.birthDate, token);
+      }
+
+      // 필수 동의 최초 저장 — 분석 라우트의 생체동의 게이트(403)를 통과시키는 선행 조건.
+      if (agreementGate.needsSave && agreementGate.gender) {
+        await saveAgreement(
+          { gender: agreementGate.gender, marketingAgreed: agreeMarketing },
+          token
+        );
+        setHasAgreed(true);
       }
 
       const input: IntegratedAnalysisInput = {
@@ -207,9 +256,9 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
         `/(analysis)/integrated/result/${result.sessionId}?payload=${encodeURIComponent(JSON.stringify(result))}` as never
       );
     } catch (e) {
-      // 서버 에러 봉투의 userMessage(연령 게이트 403 등)를 그대로 노출 — 일반 문구로 뭉개지 않는다.
+      // 서버 에러 봉투의 userMessage(연령·생체동의 게이트 403 등)를 그대로 노출 — 일반 문구로 뭉개지 않는다.
       const message =
-        e instanceof BirthdateApiError
+        e instanceof BirthdateApiError || e instanceof AgreementApiError
           ? e.message
           : e instanceof IntegratedApiError
             ? e.message
@@ -460,6 +509,95 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           </GlassCard>
         )}
 
+        {/* 서비스 이용 동의 (생체동의 게이트 — 서버에 동의가 저장돼 있지 않을 때만 노출) */}
+        {agreementChecked && !hasAgreed && (
+          <GlassCard style={styles.section} testID="agreement-section">
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              서비스 이용 동의 <Text style={styles.required}>*</Text>
+            </Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+              첫 분석 전에 필수 약관 동의가 필요해요
+            </Text>
+            <ConsentRow
+              checked={agreeTerms && agreePrivacy && agreeBiometric && agreeMarketing}
+              onToggle={() => {
+                const next = !(agreeTerms && agreePrivacy && agreeBiometric && agreeMarketing);
+                setAgreeTerms(next);
+                setAgreePrivacy(next);
+                setAgreeBiometric(next);
+                setAgreeMarketing(next);
+              }}
+              label="모두 동의 (선택 항목 포함)"
+              emphasized
+              testID="consent-all"
+            />
+            <ConsentRow
+              checked={agreeTerms}
+              onToggle={() => setAgreeTerms((v) => !v)}
+              label="[필수] 이용약관 동의"
+              onViewDetail={() => router.push('/terms' as never)}
+              testID="consent-terms"
+            />
+            <ConsentRow
+              checked={agreePrivacy}
+              onToggle={() => setAgreePrivacy((v) => !v)}
+              label="[필수] 개인정보 수집·이용 동의"
+              onViewDetail={() => router.push('/privacy-policy' as never)}
+              testID="consent-privacy"
+            />
+            <ConsentRow
+              checked={agreeBiometric}
+              onToggle={() => setAgreeBiometric((v) => !v)}
+              label="[필수] 생체정보(얼굴·체형 이미지) 수집·이용 동의"
+              description="AI 분석을 위해 이미지가 미국 Google(Gemini)로 전송돼요. 언제든 철회할 수 있어요."
+              onViewDetail={() => router.push('/privacy-policy' as never)}
+              testID="consent-biometric"
+            />
+            <ConsentRow
+              checked={agreeMarketing}
+              onToggle={() => setAgreeMarketing((v) => !v)}
+              label="[선택] 마케팅 정보 수신 동의"
+              testID="consent-marketing"
+            />
+
+            {/* 성별 — 맞춤 분석에 필요 (서버 계약상 동의 저장 시 필수) */}
+            <Text style={[styles.genderLabel, { color: colors.foreground }]}>
+              성별 <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={styles.chipGroup}>
+              {(
+                [
+                  { value: 'female', label: '여성' },
+                  { value: 'male', label: '남성' },
+                ] as Array<{ value: AgreementGender; label: string }>
+              ).map((opt) => {
+                const active = gender === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setGender(opt.value)}
+                    testID={`gender-${opt.value}`}
+                    accessibilityLabel={`성별 ${opt.label} ${active ? '선택됨' : '선택 안 됨'}`}
+                    style={[
+                      styles.chip,
+                      {
+                        borderColor: active ? '#EC4899' : colors.border,
+                        backgroundColor: active ? 'rgba(236,72,153,0.15)' : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.chipText, { color: active ? '#EC4899' : colors.foreground }]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </GlassCard>
+        )}
+
         {/* 에러 메시지 */}
         {error && (
           <View style={styles.errorBox}>
@@ -503,6 +641,78 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
         </Text>
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+// ============================================
+// 동의 체크 행 (생체동의 게이트)
+// ============================================
+
+interface ConsentRowProps {
+  checked: boolean;
+  onToggle: () => void;
+  label: string;
+  description?: string;
+  /** '모두 동의' 강조 행 여부 */
+  emphasized?: boolean;
+  onViewDetail?: () => void;
+  testID?: string;
+}
+
+function ConsentRow({
+  checked,
+  onToggle,
+  label,
+  description,
+  emphasized,
+  onViewDetail,
+  testID,
+}: ConsentRowProps): React.JSX.Element {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.consentRow, emphasized && styles.consentRowEmphasized]}>
+      <Pressable
+        onPress={onToggle}
+        testID={testID}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+        accessibilityLabel={label}
+        style={styles.consentToggle}
+      >
+        <View
+          style={[
+            styles.consentBox,
+            {
+              borderColor: checked ? '#EC4899' : colors.border,
+              backgroundColor: checked ? '#EC4899' : 'transparent',
+            },
+          ]}
+        >
+          {checked && <Text style={styles.consentCheckMark}>✓</Text>}
+        </View>
+        <View style={styles.consentLabelWrap}>
+          <Text
+            style={[
+              styles.consentLabel,
+              { color: colors.foreground },
+              emphasized && styles.consentLabelEmphasized,
+            ]}
+          >
+            {label}
+          </Text>
+          {description ? (
+            <Text style={[styles.consentDesc, { color: colors.mutedForeground }]}>
+              {description}
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
+      {onViewDetail ? (
+        <Pressable onPress={onViewDetail} accessibilityLabel={`${label} 내용 보기`} hitSlop={8}>
+          <Text style={[styles.consentDetailLink, { color: colors.mutedForeground }]}>보기</Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -645,6 +855,49 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: typography.size.base,
     marginTop: spacing.xs,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  consentRowEmphasized: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(148,163,184,0.25)',
+    marginBottom: 4,
+    paddingBottom: 12,
+  },
+  consentToggle: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    gap: spacing.sm,
+  },
+  consentBox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  consentCheckMark: { color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 16 },
+  consentLabelWrap: { flex: 1 },
+  consentLabel: { fontSize: typography.size.sm, fontWeight: '500' },
+  consentLabelEmphasized: { fontWeight: '700' },
+  consentDesc: { fontSize: 11, marginTop: 2, lineHeight: 15 },
+  consentDetailLink: {
+    fontSize: typography.size.sm,
+    textDecorationLine: 'underline',
+    paddingLeft: spacing.sm,
+  },
+  genderLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: '700',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
   errorBox: {
     backgroundColor: 'rgba(239,68,68,0.15)',

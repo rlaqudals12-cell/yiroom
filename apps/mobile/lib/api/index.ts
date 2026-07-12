@@ -16,6 +16,15 @@ export {
   BirthdateApiError,
 } from './birthdate';
 export type { BirthdateStatus, BirthdateGate } from './birthdate';
+
+// 약관·생체정보 동의 HTTP 클라이언트 (웹 API 재사용) — 생체동의 게이트(BIPA/PIPA §23) 대응
+export {
+  fetchAgreementStatus,
+  saveAgreement,
+  evaluateAgreementGate,
+  AgreementApiError,
+} from './agreement';
+export type { AgreementStatus, AgreementGate, AgreementChecks, AgreementGender } from './agreement';
 export type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,
