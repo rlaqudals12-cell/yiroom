@@ -59,7 +59,10 @@ const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
  *
  * 피부 분석(S-1/S-2): lite가 판정 5/5 동일 + 3~6초(3.5는 15~19초) + 1/6 가격 → lite.
  * 퍼스널컬러(PC): lite는 같은 사진에서 winter↔autumn 널뜀 + invalid JSON 생성 → 3.5 유지.
- * body/hair/makeup: 미검증 — 3.5 유지, 검증 후 확대.
+ * hair/makeup: 2026-07-12 A/B(scripts/model-ab-test.mts, 5회 반복) — lite가 3배 빠르고
+ *   에러 0이지만 판정 자체가 상이(모발 두께 fine↔medium, 눈꺼풀 monolid↔double).
+ *   전환 시 기존 사용자 판정이 바뀌어 재현성 약속 위반 → 3.5 유지.
+ * body: 미검증(전신 사진 픽스처 필요) — 3.5 유지, 검증 후 판단.
  */
 export const FAST_MODEL = process.env.GEMINI_MODEL_FAST || 'gemini-3.1-flash-lite';
 

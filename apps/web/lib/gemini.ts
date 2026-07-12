@@ -1533,7 +1533,8 @@ export async function analyzeSkinDetailed(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초) + 재시도 (최대 2회) 적용 - 12존은 분석량 많음
+    // 타임아웃 30초 + 재시도 (최대 2회) — 12존은 분석량이 많고 3.5-flash는 15~19초라
+    // 기존 5초는 항상 타임아웃→Mock 폴백이었음 (2026-07-06 마이그레이션 미조정, 07-12 발견)
     const result = await withRetry(
       () =>
         withTimeout(
@@ -1541,7 +1542,7 @@ export async function analyzeSkinDetailed(
             contents: [{ text: SKIN_ANALYSIS_DETAILED_PROMPT }, imagePart],
             config: geminiConfig,
           }),
-          5000,
+          30000,
           '[S-1 Detailed] Gemini timeout'
         ),
       2,
@@ -3811,7 +3812,8 @@ export async function analyzeHair(imageBase64: string): Promise<GeminiHairAnalys
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초) + 재시도 (최대 2회) 적용
+    // 타임아웃 30초 + 재시도 (최대 2회) — 3.5-flash 상세 분석은 15~19초라 기존 5초는
+    // 항상 타임아웃→Mock 폴백이었음 (2026-07-06 모델 마이그레이션 때 미조정, 07-12 A/B로 발견)
     const result = await withRetry(
       () =>
         withTimeout(
@@ -3819,7 +3821,7 @@ export async function analyzeHair(imageBase64: string): Promise<GeminiHairAnalys
             contents: [{ text: HAIR_ANALYSIS_PROMPT }, imagePart],
             config: geminiConfig,
           }),
-          5000,
+          30000,
           '[H-1] Hair analysis timeout'
         ),
       2,
@@ -4094,7 +4096,8 @@ export async function analyzeMakeup(imageBase64: string): Promise<GeminiMakeupAn
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초) + 재시도 (최대 2회) 적용
+    // 타임아웃 30초 + 재시도 (최대 2회) — 3.5-flash 상세 분석은 15~19초라 기존 5초는
+    // 항상 타임아웃→Mock 폴백이었음 (2026-07-06 모델 마이그레이션 때 미조정, 07-12 A/B로 발견)
     const result = await withRetry(
       () =>
         withTimeout(
@@ -4102,7 +4105,7 @@ export async function analyzeMakeup(imageBase64: string): Promise<GeminiMakeupAn
             contents: [{ text: MAKEUP_ANALYSIS_PROMPT }, imagePart],
             config: geminiConfig,
           }),
-          5000,
+          30000,
           '[M-1] Makeup analysis timeout'
         ),
       2,
