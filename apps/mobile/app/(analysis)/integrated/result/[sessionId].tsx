@@ -471,7 +471,13 @@ function PartialSuccessBanner({
         {failedLabels}
       </Text>
       <Pressable
-        onPress={() => router.replace('/(analysis)/integrated' as never)}
+        onPress={() =>
+          // 미완료 축만 재실행하도록 전달 — 온보딩(index)이 retryAxes로 mode:update를 켜고
+          // 직전 사진을 인메모리에서 복원해 처음부터 다시 하지 않게 한다(설계 복구).
+          router.replace(
+            `/(analysis)/integrated?retryAxes=${encodeURIComponent(axesFailed.join(','))}` as never
+          )
+        }
         style={styles.partialRetryButton}
       >
         <Text style={styles.partialRetryText}>다시 시도</Text>

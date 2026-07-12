@@ -190,4 +190,27 @@ describe('saveAgreement', () => {
       }
     );
   });
+
+  it('error가 객체인 예외 응답(Next 500 { error:{...} })이면 "[object Object]" 대신 일반 문구', async () => {
+    // 근본 회귀: 서버 flat 봉투가 아닌 예외 응답에서 error가 객체면 그대로 메시지로
+    // 승격돼 배너에 "[object Object]"가 노출됐다(에뮬 실측). 이제 일반 문구로 대체돼야 한다.
+    global.fetch = mockFetch({
+      ok: false,
+      status: 500,
+      body: { error: { message: 'Internal', code: 'X' } },
+    });
+
+    await expect(saveAgreement({ gender: 'female' }, 'token', 'http://test')).rejects.toMatchObject(
+      {
+        status: 500,
+        message: '동의 내용을 저장할 수 없어요.',
+        code: undefined,
+      }
+    );
+
+    // "[object Object]"가 절대 메시지로 새지 않아야 한다.
+    await expect(saveAgreement({ gender: 'female' }, 'token', 'http://test')).rejects.toThrow(
+      /^(?!.*\[object Object\]).*$/
+    );
+  });
 });

@@ -210,6 +210,27 @@ describe('saveBirthdate', () => {
       message: '올바른 생년월일 형식이 아닙니다. (YYYY-MM-DD)',
     });
   });
+
+  it('message가 객체인 예외 응답이면 "[object Object]" 대신 일반 문구', async () => {
+    // 근본 회귀: 예외 응답(Next 500 { message:{...} } 등)에서 message가 객체면
+    // 그대로 승격돼 "[object Object]"가 노출됐다. 이제 일반 문구로 대체돼야 한다.
+    global.fetch = mockFetch({
+      ok: false,
+      status: 500,
+      body: { success: false, message: { detail: 'boom' }, error: { code: 'X' } },
+    });
+
+    await expect(saveBirthdate('2000-06-15', 'token', 'http://test')).rejects.toMatchObject({
+      name: 'BirthdateApiError',
+      status: 500,
+      message: '생년월일을 저장할 수 없어요.',
+      code: undefined,
+    });
+
+    await expect(saveBirthdate('2000-06-15', 'token', 'http://test')).rejects.toThrow(
+      /^(?!.*\[object Object\]).*$/
+    );
+  });
 });
 
 describe('BirthdateApiError', () => {

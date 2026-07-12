@@ -20,6 +20,8 @@
 
 import { isValidBirthDate, parseBirthDate, isMinor, MINIMUM_AGE } from '@/lib/age-verification';
 
+import { toUserMessage } from './error-text';
+
 // ============================================
 // 1. 타입
 // ============================================
@@ -141,11 +143,13 @@ export async function fetchBirthdate(
 
   // 웹 응답: 성공 { success:true, data:{ birthDate, hasBirthDate } }
   //          실패 { success:false, error: <코드>, message: <사용자 메시지> }
+  // message·error는 계약상 문자열이나, 예외 응답(Next 500 { message:{...} } 등)에선
+  // 객체일 수 있어 unknown으로 받고 toUserMessage로 정규화한다.
   let json: {
     success?: boolean;
     data?: { birthDate?: string | null; hasBirthDate?: boolean };
-    error?: string;
-    message?: string;
+    error?: unknown;
+    message?: unknown;
   } = {};
   try {
     json = (await response.json()) as typeof json;
@@ -155,9 +159,9 @@ export async function fetchBirthdate(
 
   if (!response.ok || json.success !== true || !json.data) {
     throw new BirthdateApiError(
-      json.message ?? '생년월일을 불러올 수 없어요.',
+      toUserMessage(json.message, '생년월일을 불러올 수 없어요.'),
       response.status,
-      json.error
+      typeof json.error === 'string' ? json.error : undefined
     );
   }
 
@@ -197,7 +201,8 @@ export async function saveBirthdate(
     throw new BirthdateApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
   }
 
-  let json: { success?: boolean; error?: string; message?: string; isMinor?: boolean } = {};
+  // message·error는 계약상 문자열이나, 예외 응답에선 객체일 수 있어 unknown으로 받는다.
+  let json: { success?: boolean; error?: unknown; message?: unknown; isMinor?: boolean } = {};
   try {
     json = (await response.json()) as typeof json;
   } catch {
@@ -206,9 +211,9 @@ export async function saveBirthdate(
 
   if (!response.ok || json.success !== true) {
     throw new BirthdateApiError(
-      json.message ?? '생년월일을 저장할 수 없어요.',
+      toUserMessage(json.message, '생년월일을 저장할 수 없어요.'),
       response.status,
-      json.error,
+      typeof json.error === 'string' ? json.error : undefined,
       json.isMinor === true
     );
   }

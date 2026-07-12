@@ -21,6 +21,8 @@
  * @see docs/adr/ADR-119-legal-compliance-gates.md
  */
 
+import { toUserMessage } from './error-text';
+
 // ============================================
 // 1. 타입
 // ============================================
@@ -144,7 +146,8 @@ export async function fetchAgreementStatus(
   }
 
   // 웹 응답: { hasAgreed: boolean, agreement, requiresUpdate? } | { error }
-  let json: { hasAgreed?: boolean; error?: string } = {};
+  // error는 계약상 문자열이나, 예외 응답에선 객체일 수 있어 unknown으로 받는다.
+  let json: { hasAgreed?: boolean; error?: unknown } = {};
   try {
     json = (await response.json()) as typeof json;
   } catch {
@@ -152,7 +155,12 @@ export async function fetchAgreementStatus(
   }
 
   if (!response.ok) {
-    throw new AgreementApiError('동의 상태를 불러올 수 없어요.', response.status, json.error);
+    // 마운트 조회 실패는 Promise.allSettled로 삼켜지지만, code에도 객체가 새지 않도록 문자열만 통과.
+    throw new AgreementApiError(
+      '동의 상태를 불러올 수 없어요.',
+      response.status,
+      typeof json.error === 'string' ? json.error : undefined
+    );
   }
 
   return { hasAgreed: json.hasAgreed === true };
@@ -195,7 +203,8 @@ export async function saveAgreement(
     throw new AgreementApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
   }
 
-  let json: { success?: boolean; error?: string } = {};
+  // error는 계약상 문자열이나, 예외 응답에선 객체일 수 있어 unknown으로 받는다.
+  let json: { success?: boolean; error?: unknown } = {};
   try {
     json = (await response.json()) as typeof json;
   } catch {
@@ -203,10 +212,13 @@ export async function saveAgreement(
   }
 
   if (!response.ok || json.success !== true) {
+    // 왜: 서버가 flat 봉투가 아닌 예외 응답(Next 500 { error:{...} }, 게이트웨이 객체 등)을
+    // 주면 json.error가 객체일 수 있다. 객체를 메시지로 승격하면 "[object Object]"가
+    // 배너에 노출되므로(에뮬 실측) 문자열만 메시지로 쓴다.
     throw new AgreementApiError(
-      json.error ?? '동의 내용을 저장할 수 없어요.',
+      toUserMessage(json.error, '동의 내용을 저장할 수 없어요.'),
       response.status,
-      json.error
+      typeof json.error === 'string' ? json.error : undefined
     );
   }
 }

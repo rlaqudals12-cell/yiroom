@@ -9,7 +9,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,8 @@ import {
   type HairQuestionnaire,
   type BodyQuestionnaire,
 } from '@/lib/api';
+import { toUserMessage } from '@/lib/api/error-text';
+import { getLastSubmission, rememberSubmission } from '@/lib/integrated/last-submission';
 
 // ============================================
 // 자가입력 선택지
@@ -84,8 +86,23 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const { getToken } = useAuth();
 
   // 가입=첫 미팅(ADR-114): 가입 직후 진입 시 강제하지 않고 건너뛰기 경로 제공
-  const { onboarding } = useLocalSearchParams<{ onboarding?: string }>();
+  // retryAxes: 결과 화면 "다시 시도"에서 넘어온 미완료 축(콤마 구분) — 그 축만 재실행(mode:update)하는 재시도 컨텍스트.
+  const { onboarding, retryAxes } = useLocalSearchParams<{
+    onboarding?: string;
+    retryAxes?: string;
+  }>();
   const isOnboarding = onboarding === '1';
+
+  // 재시도 파라미터 파싱 — 유효한 축 코드만 통과(잘못된 값은 무시).
+  const retryAxisList = useMemo<AxisCode[]>(() => {
+    if (typeof retryAxes !== 'string' || retryAxes.trim() === '') return [];
+    const valid = new Set<string>(ALL_AXES);
+    return retryAxes
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s): s is AxisCode => valid.has(s));
+  }, [retryAxes]);
+  const isRetry = retryAxisList.length > 0;
 
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [bodyImage, setBodyImage] = useState<string | null>(null);
@@ -94,6 +111,8 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const [body, setBody] = useState<BodyQuestionnaire>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 재시도 재진입 시 직전 제출 사진을 인메모리 캐시에서 복원했는지 여부 (UI 표시용).
+  const [restoredFromCache, setRestoredFromCache] = useState(false);
 
   // 연령 확인 게이트(만 14세) — 서버는 users.birth_date 없으면 생체분석을 403으로 막는다.
   // 마운트 시 저장 여부를 조회해 이미 있으면 입력을 숨기고(중복 요구 금지), 없으면 입력을 받는다.
@@ -149,14 +168,34 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   // 일부 축만 고르면 update 모드 — 나머지 축은 기존 결과 유지(색·체형 안 흔들림).
   const { analyses } = useUserAnalyses();
   const isReturning = analyses.length > 0;
-  const [selectedAxes, setSelectedAxes] = useState<AxisCode[]>(ALL_AXES);
+  // 재시도로 들어오면 미완료 축만 선택된 채 시작한다(결과 화면의 "다시 시도" 설계 복구).
+  const [selectedAxes, setSelectedAxes] = useState<AxisCode[]>(() =>
+    retryAxisList.length > 0 ? retryAxisList : ALL_AXES
+  );
+  // 재시도(isRetry)도 부분 업데이트 대상 — 재방문 이력이 아직 DB에 없어도 미완료 축만 재실행한다.
   const isPartialUpdate =
-    isReturning && selectedAxes.length > 0 && selectedAxes.length < ALL_AXES.length;
+    (isReturning || isRetry) && selectedAxes.length > 0 && selectedAxes.length < ALL_AXES.length;
+  // 축 선택 UI 노출 조건 — 재방문자 또는 재시도 재진입.
+  const showAxisSelect = isReturning || isRetry;
   const toggleAxis = (code: AxisCode): void => {
     setSelectedAxes((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
   };
+
+  // 재시도 재진입은 새 마운트라 사진 상태가 비어 사용자가 처음부터 다시 골라야 했다(실측).
+  // 서버가 기존 세션 이미지를 재사용하지 못하므로(mode:update도 업로드 필수), 직전 제출 이미지를
+  // 인메모리 캐시에서만 복원한다(디스크 저장 금지 — BIPA/PIPA). 마운트 1회만 실행.
+  useEffect(() => {
+    if (!isRetry) return;
+    const last = getLastSubmission();
+    if (!last) return;
+    setFaceImage(last.faceImageBase64);
+    if (last.bodyImageBase64) setBodyImage(last.bodyImageBase64);
+    setRestoredFromCache(true);
+    // isRetry는 파라미터 기반으로 안정적 — 마운트 시 1회 복원 의도.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRetry]);
 
   const pickImage = async (setter: (v: string | null) => void, isFace: boolean) => {
     try {
@@ -177,6 +216,8 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
       const asset = result.assets[0];
       const mime = asset.mimeType ?? 'image/jpeg';
       setter(`data:${mime};base64,${asset.base64}`);
+      // 얼굴 사진을 새로 고르면 "이전 사진 사용" 표시를 해제(더 이상 복원본이 아님).
+      if (isFace) setRestoredFromCache(false);
     } catch {
       Alert.alert('이미지 선택 실패', '다른 사진을 선택해주세요.');
     }
@@ -248,6 +289,9 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
         ...(isPartialUpdate ? { mode: 'update' as const, axes: selectedAxes } : {}),
       };
 
+      // 재시도 재진입 시 사진 재선택을 없애기 위해 직전 제출 이미지를 인메모리로만 보관(디스크 금지).
+      rememberSubmission(faceImage, bodyImage ?? null);
+
       const result = await requestIntegratedAnalysis(input, token);
 
       // 왜: v1 MVP는 POST 응답을 결과 화면에 직접 전달 (재방문 조회는 Phase D.2)
@@ -265,7 +309,8 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
             : e instanceof Error
               ? e.message
               : '분석 요청에 실패했어요.';
-      setError(message);
+      // 최종 가드: 클라이언트가 이미 방어하지만, 비문자열·"[object Object]"가 새면 정직한 일반 문구로 대체.
+      setError(toUserMessage(message, '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.'));
       setIsSubmitting(false);
     }
   };
@@ -296,8 +341,8 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           </Text>
         </View>
 
-        {/* 선택 재분석 (재방문 사용자만, ADR-109 2A) */}
-        {isReturning && (
+        {/* 선택 재분석 (재방문 사용자 또는 재시도 재진입, ADR-109 2A) */}
+        {showAxisSelect && (
           <GlassCard style={styles.section} testID="axis-select-section">
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
               다시 분석할 축 선택
@@ -342,11 +387,23 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
             자연광에서 정면으로 찍은 사진이 좋아요
           </Text>
+          {restoredFromCache && faceImage && (
+            <Text
+              style={[styles.restoredNotice, { color: colors.mutedForeground }]}
+              testID="restored-photo-notice"
+            >
+              이전 사진을 불러왔어요. 바꾸려면 제거 후 새로 선택하세요.
+            </Text>
+          )}
           {faceImage ? (
             <View style={styles.imagePreview}>
               <Image source={{ uri: faceImage }} style={styles.imagePreviewImg} />
               <Pressable
-                onPress={() => setFaceImage(null)}
+                onPress={() => {
+                  setFaceImage(null);
+                  // 복원본을 제거하면 표시도 해제(재선택 유도).
+                  setRestoredFromCache(false);
+                }}
                 style={styles.removeButton}
                 accessibilityLabel="얼굴 사진 제거"
               >
@@ -787,6 +844,11 @@ const styles = StyleSheet.create({
   optional: {
     fontSize: typography.size.sm,
     fontWeight: '400',
+  },
+  restoredNotice: {
+    fontSize: typography.size.xs,
+    marginBottom: spacing.xs,
+    fontStyle: 'italic',
   },
   imagePreview: { position: 'relative' },
   imagePreviewImg: {
