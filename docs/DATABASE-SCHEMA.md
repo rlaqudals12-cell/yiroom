@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.3 (쿠폰/리뷰 AI 캐시 추가)
+# 🗄️ Database 스키마 v7.6 (생체동의 컬럼 — ADR-119)
 
-**버전**: v7.3 (쿠폰/프로모션 + 리뷰 AI 캐시 테이블 추가)
-**업데이트**: 2026년 3월 16일
+**버전**: v7.6 (user_agreements 생체동의 3컬럼 + 감사로그 730일 — 상세는 문서 말미)
+**업데이트**: 2026년 7월 12일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -2663,6 +2663,29 @@ CREATE TABLE IF NOT EXISTS user_inventory (
 
 ---
 
-**버전**: v7.5 (user_inventory + inventory-images 버킷 신설 — 옷장 저장 전멸 근본 수리)
-**최종 업데이트**: 2026년 7월 11일
-**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 완료 ✅
+## 🔐 user_agreements 생체동의 컬럼 (2026-07-12, ADR-119 — prod 적용 완료)
+
+가입 약관 동의 테이블에 생체정보(얼굴·체형 이미지) **수집·이용 별도 동의**(BIPA / 개인정보보호법 §23) 컬럼 3개 추가. 저장 동의(`image_consents`, 분석 유형별·선택)와 별개인 글로벌·필수 동의.
+
+```sql
+ALTER TABLE user_agreements
+  ADD COLUMN IF NOT EXISTS biometric_agreed BOOLEAN NOT NULL DEFAULT false, -- (필수) 생체 수집·이용 동의
+  ADD COLUMN IF NOT EXISTS biometric_agreed_at TIMESTAMPTZ,                 -- 동의 시각
+  ADD COLUMN IF NOT EXISTS biometric_version TEXT;                          -- 동의 문구 버전(변경 시 재동의)
+```
+
+- 소비: `lib/api/biometric-consent.ts`(`requireBiometricConsent` — 7개 분석 라우트 fail-closed 403), `app/api/agreement`(GET 필수검증·POST upsert), `AgreementGuard`.
+- 기존 행은 `false` → 재동의 유도. 기존 RLS 정책이 행 단위로 그대로 적용(별도 정책 불필요).
+
+> 마이그레이션: `supabase/migrations/20260712_biometric_consent.sql` — **2026-07-12 prod SQL Editor 수동 적용·검증 완료**
+
+### 감사로그 보존 정합 (2026-07-12)
+
+- `audit_logs`·`image_access_logs` 보존 = **730일**(안전성 확보조치 기준 §8, 민감정보 취급 시스템 2년). 앱 계층 정리는 `cron/cleanup-audit-logs`(hard-delete-users 크론에 병합 호출)로 실효.
+- DB 함수 `archive_old_audit_logs()` 90일→730일 정정: `supabase/migrations/20260712_audit_logs_retention_730d.sql` — **prod 수동 gap-apply 대기**(앱 계층이 이미 730일 처리라 비긴급).
+
+---
+
+**버전**: v7.6 (user_agreements 생체동의 3컬럼 — BIPA/PIPA §23, ADR-119 + 감사로그 730일 정합)
+**최종 업데이트**: 2026년 7월 12일
+**상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 + 법적 컴플라이언스 게이트 완료 ✅
