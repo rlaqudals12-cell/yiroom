@@ -4,7 +4,8 @@
  */
 import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -25,6 +26,7 @@ import { SizeRecommendation } from '../../components/products/SizeRecommendation
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { useAffiliateClick, identifyPartner } from '../../lib/affiliate';
 import { lookupIngredients } from '../../lib/ingredients/ewg-database';
+import { getCosmeticProductById } from '../../lib/products/repositories/cosmetic';
 import type { ClothingCategory } from '../../lib/smart-matching';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 import { shareLogger } from '../../lib/utils/logger';
@@ -39,7 +41,8 @@ interface ProductDetail {
   price: number;
   rating: number;
   reviewCount: number;
-  matchScore: number;
+  /** 사용자 분석 기반 매칭률 — 계산된 경우에만 표시 (지어내기 금지) */
+  matchScore?: number;
   description: string;
   ingredients: string[];
   benefits: string[];
@@ -50,114 +53,10 @@ interface ProductDetail {
   hasSize?: boolean;
 }
 
-// Mock 제품 상세 데이터
-const MOCK_PRODUCT_DETAIL: Record<string, ProductDetail> = {
-  '1': {
-    id: '1',
-    name: '수분 크림 리치',
-    brand: '아이오페',
-    brandId: 'iope',
-    category: '스킨케어',
-    price: 35000,
-    rating: 4.5,
-    reviewCount: 120,
-    matchScore: 92,
-    description:
-      '건조한 피부에 깊은 보습을 선사하는 고농축 수분 크림입니다. 히알루론산과 세라마이드가 피부 장벽을 강화하고 촉촉함을 오래 유지시켜줍니다.',
-    ingredients: ['히알루론산', '세라마이드', '판테놀', '나이아신아마이드', '알로에베라'],
-    benefits: ['24시간 보습 지속', '피부 장벽 강화', '건조함 완화', '촉촉한 피부결'],
-    howToUse: '세안 후 토너로 피부결을 정돈한 뒤, 적당량을 덜어 얼굴 전체에 부드럽게 펴 바릅니다.',
-    images: [],
-    purchaseUrl: 'https://example.com/product/1',
-    isFavorite: false,
-  },
-  '2': {
-    id: '2',
-    name: '톤업 선크림 SPF50+',
-    brand: '라운드랩',
-    brandId: 'roundlab',
-    category: '스킨케어',
-    price: 18000,
-    rating: 4.7,
-    reviewCount: 89,
-    matchScore: 88,
-    description:
-      '자연스러운 톤업 효과와 강력한 자외선 차단을 동시에. 가벼운 텍스처로 백탁 없이 산뜻하게 마무리됩니다.',
-    ingredients: ['징크옥사이드', '티타늄디옥사이드', '히알루론산', '녹차추출물'],
-    benefits: ['SPF50+ PA++++', '자연스러운 톤업', '무자극', '촉촉한 마무리'],
-    howToUse: '스킨케어 마지막 단계에서 적당량을 덜어 얼굴과 목에 고르게 펴 바릅니다.',
-    images: [],
-    purchaseUrl: 'https://example.com/product/2',
-    isFavorite: true,
-  },
-  '3': {
-    id: '3',
-    name: '코랄 립스틱',
-    brand: '롬앤',
-    brandId: 'romand',
-    category: '메이크업',
-    price: 12000,
-    rating: 4.8,
-    reviewCount: 256,
-    matchScore: 95,
-    description:
-      '봄 웜톤에 완벽하게 어울리는 코랄 컬러 립스틱. 부드러운 발림성과 선명한 발색력으로 화사한 입술을 연출합니다.',
-    ingredients: ['시어버터', '호호바오일', '비타민E'],
-    benefits: ['고발색', '촉촉한 사용감', '오래 지속', '부드러운 발림성'],
-    howToUse: '입술 중앙부터 바깥쪽으로 자연스럽게 펴 바릅니다.',
-    images: [],
-    purchaseUrl: 'https://example.com/product/3',
-    isFavorite: false,
-  },
-  // 의류 제품 (사이즈 추천 테스트용)
-  '4': {
-    id: '4',
-    name: '에어리즘 코튼 오버사이즈 티셔츠',
-    brand: '유니클로',
-    brandId: 'uniqlo',
-    category: '의류',
-    clothingCategory: 'top',
-    hasSize: true,
-    price: 19900,
-    rating: 4.6,
-    reviewCount: 342,
-    matchScore: 88,
-    description:
-      '에어리즘 기술로 땀을 빠르게 흡수하고 건조시키는 쾌적한 오버사이즈 티셔츠입니다. 면 혼방 소재로 자연스러운 착용감을 제공합니다.',
-    ingredients: ['면 60%', '폴리에스터 40%'],
-    benefits: ['빠른 건조', '땀 흡수', '편안한 핏', '통기성'],
-    howToUse: '세탁 시 30도 이하 찬물에서 중성세제로 세탁해주세요.',
-    images: [],
-    purchaseUrl: 'https://example.com/product/4',
-    isFavorite: false,
-  },
-  '5': {
-    id: '5',
-    name: '와이드핏 데님 팬츠',
-    brand: '무신사 스탠다드',
-    brandId: 'musinsa-standard',
-    category: '의류',
-    clothingCategory: 'bottom',
-    hasSize: true,
-    price: 49900,
-    rating: 4.4,
-    reviewCount: 187,
-    matchScore: 85,
-    description:
-      '트렌디한 와이드핏 실루엣의 데님 팬츠입니다. 적당한 두께감과 부드러운 촉감으로 사계절 착용 가능합니다.',
-    ingredients: ['면 98%', '스판덱스 2%'],
-    benefits: ['편안한 착용감', '와이드핏', '사계절 활용', '높은 허리'],
-    howToUse: '첫 세탁 시 단독 세탁을 권장합니다. 건조기 사용을 피해주세요.',
-    images: [],
-    purchaseUrl: 'https://example.com/product/5',
-    isFavorite: false,
-  },
-};
-
 // 탭 타입
 type TabType = 'info' | 'ingredients' | 'reviews';
 
-// Mock 리뷰 데이터
+// 리뷰 타입
 interface Review {
   id: string;
   userName: string;
@@ -166,33 +65,6 @@ interface Review {
   content: string;
   helpful: number;
 }
-
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: '1',
-    userName: '민**',
-    rating: 5,
-    date: '2025-12-20',
-    content: '정말 촉촉해요! 건조한 겨울에 필수템이에요.',
-    helpful: 12,
-  },
-  {
-    id: '2',
-    userName: '지**',
-    rating: 4,
-    date: '2025-12-18',
-    content: '발림성이 좋고 흡수도 빨라요.',
-    helpful: 8,
-  },
-  {
-    id: '3',
-    userName: '서**',
-    rating: 5,
-    date: '2025-12-15',
-    content: '피부가 훨씬 촉촉해졌어요. 재구매 의사 있습니다.',
-    helpful: 5,
-  },
-];
 
 export default function ProductDetailScreen() {
   const { colors, brand, status, typography, spacing, radii } = useTheme();
@@ -214,9 +86,10 @@ export default function ProductDetailScreen() {
     recommendationType: 'general',
   });
 
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
-  // 제품 상세 조회 (DB 우선, mock fallback)
+  // 제품 상세 조회 — cosmetic_products 실데이터만. 실패/부재 시 정직한 "찾을 수 없음" 상태.
+  // (과거: 비로그인·조회실패 시 지어낸 Mock 제품+가짜 리뷰로 폴백 → 정직성 위반이라 제거)
   const fetchProduct = useCallback(async () => {
     if (!id) {
       setIsLoading(false);
@@ -224,71 +97,60 @@ export default function ProductDetailScreen() {
     }
 
     try {
-      // DB에서 조회 시도 (UUID 형식인 경우)
-      if (id.includes('-') && user?.id) {
-        const { data: dbProduct } = await supabase
-          .from('cosmetic_products')
-          .select(
-            'id, name, brand, category, price_krw, rating, review_count, key_ingredients, purchase_url, image_url'
-          )
-          .eq('id', id)
-          .eq('is_active', true)
-          .single();
+      // anon 레포 함수 사용 — 목록과 동일 경로라 비로그인에서도 조회된다
+      const dbProduct = await getCosmeticProductById(id);
 
-        if (dbProduct) {
-          setProduct({
-            id: dbProduct.id,
-            name: dbProduct.name,
-            brand: dbProduct.brand,
-            brandId: dbProduct.brand.toLowerCase().replace(/\s/g, '-'),
-            category: dbProduct.category,
-            price: dbProduct.price_krw || 0,
-            rating: Number(dbProduct.rating) || 0,
-            reviewCount: dbProduct.review_count || 0,
-            matchScore: 85,
-            description: '',
-            ingredients: dbProduct.key_ingredients || [],
-            benefits: [],
-            howToUse: '',
-            images: dbProduct.image_url ? [dbProduct.image_url] : [],
-            purchaseUrl: dbProduct.purchase_url || '',
-            isFavorite: false,
-          });
-          setIsLoading(false);
+      if (!dbProduct) {
+        setProduct(null);
+        return;
+      }
 
-          // 리뷰도 DB에서 조회 시도
-          const { data: dbReviews } = await supabase
-            .from('product_reviews')
-            .select('id, user_name, rating, created_at, content, helpful_count')
-            .eq('product_id', id)
-            .order('created_at', { ascending: false })
-            .limit(10);
+      setProduct({
+        id: dbProduct.id,
+        name: dbProduct.name,
+        brand: dbProduct.brand ?? '',
+        brandId: (dbProduct.brand ?? '').toLowerCase().replace(/\s/g, '-'),
+        category: dbProduct.category ?? '',
+        price: dbProduct.priceKrw ?? 0,
+        rating: dbProduct.rating ?? 0,
+        reviewCount: dbProduct.reviewCount ?? 0,
+        // matchScore 미설정 — 사용자 분석 기반 계산이 없는 화면에서 매칭률을 지어내지 않는다
+        description: '',
+        ingredients: dbProduct.keyIngredients ?? [],
+        benefits: [],
+        howToUse: '',
+        images: dbProduct.imageUrl ? [dbProduct.imageUrl] : [],
+        purchaseUrl: dbProduct.purchaseUrl ?? '',
+        isFavorite: false,
+      });
 
-          if (dbReviews && dbReviews.length > 0) {
-            setReviews(
-              dbReviews.map((r) => ({
-                id: r.id,
-                userName: r.user_name || '익명',
-                rating: r.rating,
-                date: r.created_at?.split('T')[0] || '',
-                content: r.content || '',
-                helpful: r.helpful_count || 0,
-              }))
-            );
-          }
-          return;
-        }
+      // 리뷰는 DB에 있는 것만 — 없으면 빈 상태 (가짜 리뷰 금지)
+      const { data: dbReviews } = await supabase
+        .from('product_reviews')
+        .select('id, user_name, rating, created_at, content, helpful_count')
+        .eq('product_id', id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (dbReviews && dbReviews.length > 0) {
+        setReviews(
+          dbReviews.map((r) => ({
+            id: r.id,
+            userName: r.user_name || '익명',
+            rating: r.rating,
+            date: r.created_at?.split('T')[0] || '',
+            content: r.content || '',
+            helpful: r.helpful_count || 0,
+          }))
+        );
       }
     } catch {
-      // DB 조회 실패 시 mock fallback
+      // 조회 실패 → 아래 "제품을 찾을 수 없어요" 상태로 정직하게 표시
+      setProduct(null);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Mock fallback
-    const productData = MOCK_PRODUCT_DETAIL[id] || MOCK_PRODUCT_DETAIL['1'];
-    setProduct(productData);
-    setIsFavorite(productData.isFavorite);
-    setIsLoading(false);
-  }, [id, user?.id, supabase]);
+  }, [id, supabase]);
 
   useEffect(() => {
     fetchProduct();
@@ -364,11 +226,64 @@ export default function ProductDetailScreen() {
     return stars.join('');
   };
 
-  if (isLoading || !product) {
+  if (isLoading) {
     return (
       <ScreenContainer scrollable={false} edges={['bottom']} backgroundGradient="beauty">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={brand.primary} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // 조회 실패/부재 — 가짜 제품으로 대체하지 않고 정직하게 알린다
+  if (!product) {
+    return (
+      <ScreenContainer
+        testID="product-detail-not-found"
+        scrollable={false}
+        edges={['bottom']}
+        backgroundGradient="beauty"
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🔍</Text>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.semibold,
+              marginBottom: spacing.xs,
+            }}
+          >
+            제품을 찾을 수 없어요
+          </Text>
+          <Text
+            style={{
+              color: colors.mutedForeground,
+              fontSize: typography.size.sm,
+              textAlign: 'center',
+              marginBottom: spacing.md,
+            }}
+          >
+            제품이 삭제되었거나 일시적인 오류일 수 있어요.
+          </Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              paddingHorizontal: spacing.lg,
+              paddingVertical: spacing.sm,
+              borderRadius: radii.full,
+              backgroundColor: brand.primary,
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="이전 화면으로 돌아가기"
+          >
+            <Text
+              style={{ color: brand.primaryForeground, fontWeight: typography.weight.semibold }}
+            >
+              돌아가기
+            </Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -383,25 +298,23 @@ export default function ProductDetailScreen() {
       backgroundGradient="beauty"
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* 이미지 영역 */}
+        {/* 이미지 영역 — 실제 제품 이미지 우선, 없으면 이모지 폴백(지어내지 않는 정직 폴백) */}
         <View style={[styles.imageSection, { backgroundColor: colors.muted }]}>
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderEmoji}>
-              {product.category === '스킨케어'
-                ? '🧴'
-                : product.category === '메이크업'
-                  ? '💄'
-                  : product.category === '영양제'
-                    ? '💊'
-                    : '🏋️'}
-            </Text>
-          </View>
-          {/* 이미지 인디케이터 */}
-          <View style={styles.imageIndicator}>
-            <View style={[styles.indicatorDot, { backgroundColor: colors.card }]} />
-            <View style={[styles.indicatorDot, { backgroundColor: `${colors.card}80` }]} />
-            <View style={[styles.indicatorDot, { backgroundColor: `${colors.card}80` }]} />
-          </View>
+          {product.images.length > 0 ? (
+            <Image
+              source={{ uri: product.images[0] }}
+              style={styles.productImage}
+              contentFit="contain"
+              transition={150}
+              accessibilityLabel={`${product.name} 제품 이미지`}
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderEmoji}>
+                {product.category === '메이크업' || product.category === 'makeup' ? '💄' : '🧴'}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* 제품 정보 */}
@@ -409,14 +322,22 @@ export default function ProductDetailScreen() {
           <Text style={[styles.brand, { color: colors.mutedForeground }]}>{product.brand}</Text>
           <Text style={[styles.productName, { color: colors.foreground }]}>{product.name}</Text>
 
-          {/* 평점 */}
+          {/* 평점 — 실제 리뷰가 있을 때만 별점 표시 (0.0 지어내기 금지) */}
           <View style={styles.ratingRow}>
-            <Text style={[styles.ratingStars, { color: status.warning }]}>
-              {renderStars(product.rating)}
-            </Text>
-            <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
-              {product.rating.toFixed(1)} ({product.reviewCount}개 리뷰)
-            </Text>
+            {product.reviewCount > 0 && product.rating > 0 ? (
+              <>
+                <Text style={[styles.ratingStars, { color: status.warning }]}>
+                  {renderStars(product.rating)}
+                </Text>
+                <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                  {product.rating.toFixed(1)} ({product.reviewCount}개 리뷰)
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                아직 리뷰가 없어요
+              </Text>
+            )}
             <Text
               style={[
                 styles.categoryBadge,
@@ -432,28 +353,30 @@ export default function ProductDetailScreen() {
             {formatPrice(product.price)}
           </Text>
 
-          {/* 매칭 점수 */}
-          <Animated.View entering={FadeInUp.duration(TIMING.normal).delay(TIMING.fast)}>
-            <GlassCard shadowSize="md" style={styles.matchCard}>
-              <Text style={styles.matchIcon}>🎯</Text>
-              <View style={styles.matchInfo}>
-                <Text style={[styles.matchLabel, { color: colors.mutedForeground }]}>
-                  나와의 매칭
-                </Text>
-                <View style={[styles.matchBarContainer, { backgroundColor: colors.border }]}>
-                  <View
-                    style={[
-                      styles.matchBar,
-                      { width: `${product.matchScore}%`, backgroundColor: brand.primary },
-                    ]}
-                  />
+          {/* 매칭 점수 — 사용자 분석 기반으로 실제 계산된 경우에만 표시 (하드코딩 85% 지어내기 제거) */}
+          {product.matchScore !== undefined && (
+            <Animated.View entering={FadeInUp.duration(TIMING.normal).delay(TIMING.fast)}>
+              <GlassCard shadowSize="md" style={styles.matchCard}>
+                <Text style={styles.matchIcon}>🎯</Text>
+                <View style={styles.matchInfo}>
+                  <Text style={[styles.matchLabel, { color: colors.mutedForeground }]}>
+                    나와의 매칭
+                  </Text>
+                  <View style={[styles.matchBarContainer, { backgroundColor: colors.border }]}>
+                    <View
+                      style={[
+                        styles.matchBar,
+                        { width: `${product.matchScore}%`, backgroundColor: brand.primary },
+                      ]}
+                    />
+                  </View>
                 </View>
-              </View>
-              <Text style={[styles.matchScore, { color: brand.primaryForeground }]}>
-                {product.matchScore}%
-              </Text>
-            </GlassCard>
-          </Animated.View>
+                <Text style={[styles.matchScore, { color: brand.primaryForeground }]}>
+                  {product.matchScore}%
+                </Text>
+              </GlassCard>
+            </Animated.View>
+          )}
 
           {/* 사이즈 추천 (의류 제품만) */}
           {product.hasSize && product.clothingCategory && (
@@ -504,27 +427,46 @@ export default function ProductDetailScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'info' && (
             <>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>제품 설명</Text>
-              <Text style={[styles.description, { color: colors.mutedForeground }]}>
-                {product.description}
-              </Text>
+              {/* 카탈로그에 없는 정보는 빈 섹션 대신 정직하게 안내 */}
+              {product.description ? (
+                <>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>제품 설명</Text>
+                  <Text style={[styles.description, { color: colors.mutedForeground }]}>
+                    {product.description}
+                  </Text>
+                </>
+              ) : null}
 
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>효과</Text>
-              <View style={styles.benefitsList}>
-                {product.benefits.map((benefit, index) => (
-                  <View key={index} style={styles.benefitItem}>
-                    <Text style={[styles.benefitDot, { color: status.success }]}>✓</Text>
-                    <Text style={[styles.benefitText, { color: colors.mutedForeground }]}>
-                      {benefit}
-                    </Text>
+              {product.benefits.length > 0 ? (
+                <>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>효과</Text>
+                  <View style={styles.benefitsList}>
+                    {product.benefits.map((benefit, index) => (
+                      <View key={index} style={styles.benefitItem}>
+                        <Text style={[styles.benefitDot, { color: status.success }]}>✓</Text>
+                        <Text style={[styles.benefitText, { color: colors.mutedForeground }]}>
+                          {benefit}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
+                </>
+              ) : null}
 
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>사용 방법</Text>
-              <Text style={[styles.description, { color: colors.mutedForeground }]}>
-                {product.howToUse}
-              </Text>
+              {product.howToUse ? (
+                <>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>사용 방법</Text>
+                  <Text style={[styles.description, { color: colors.mutedForeground }]}>
+                    {product.howToUse}
+                  </Text>
+                </>
+              ) : null}
+
+              {!product.description && product.benefits.length === 0 && !product.howToUse && (
+                <Text style={[styles.description, { color: colors.mutedForeground }]}>
+                  상세 설명이 아직 준비되지 않았어요. 성분 탭에서 성분 정보를 확인할 수 있어요.
+                </Text>
+              )}
             </>
           )}
 
@@ -534,6 +476,11 @@ export default function ProductDetailScreen() {
 
           {activeTab === 'reviews' && (
             <>
+              {reviews.length === 0 && (
+                <Text style={[styles.description, { color: colors.mutedForeground }]}>
+                  아직 작성된 리뷰가 없어요.
+                </Text>
+              )}
               {reviews.map((review, index) => (
                 <Animated.View
                   key={review.id}
@@ -611,23 +558,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
   imagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderEmoji: {
     fontSize: 80,
-  },
-  imageIndicator: {
-    position: 'absolute',
-    bottom: spacing.md,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   infoSection: {
     padding: spacing.mlg,
