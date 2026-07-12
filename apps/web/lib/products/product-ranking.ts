@@ -38,6 +38,50 @@ export function rankByMatchScore<T extends { matchScore: number }>(items: readon
     .map(({ item }) => item);
 }
 
+/**
+ * 같은 세부 카테고리(subcategory)가 상위 노출을 독식하지 않도록 다양성을 확보한다.
+ * 점수 내림차순(이미 정렬된 입력)을 유지하되 키(subcategory)당 최대 `ceil(count/2)`개까지만
+ * 채우고, 캡 때문에 자리가 부족하면 남은 상위 점수로 보충한다(풀이 한 세분류뿐인 극단 케이스 대비).
+ *
+ * 배경(2026-07-12): 화장품 rating이 전 품목 null이라 매칭 풀의 사전정렬(rating)이 물리적 삽입순으로
+ * 붕괴 → personal-color 풀이 100% 립이 됐다(창업자 "퍼스널컬러 제품이 립뿐인가?" 재보고).
+ * 풀 정렬을 review_count로 교체해 다양하게 뽑은 뒤, 최종 노출도 이 함수로 한 세분류 도배를 막는다.
+ * 점수는 실측 그대로 노출 — 동점·근소차에서 다양성을 우선하는 표현 정책이며 점수 조작이 아니다.
+ *
+ * @param items 매칭 점수 내림차순으로 이미 정렬된 배열(원본 미변형)
+ * @param count 최종 노출 개수
+ * @param keyOf 다양성 기준 키 추출자 (예: 제품 subcategory)
+ */
+export function diversifyBySubcategory<T>(
+  items: readonly T[],
+  count: number,
+  keyOf: (item: T) => string
+): T[] {
+  if (count <= 0) return [];
+  const perKeyCap = Math.max(1, Math.ceil(count / 2)); // count=4 → 2 (BEST 3장에 동일 세분류 ≤2)
+  const picked: T[] = [];
+  const used = new Map<string, number>();
+
+  // 1차: 점수순을 훑되 세분류 캡을 넘지 않는 것만 채운다
+  for (const item of items) {
+    if (picked.length >= count) break;
+    const key = keyOf(item);
+    const n = used.get(key) ?? 0;
+    if (n < perKeyCap) {
+      picked.push(item);
+      used.set(key, n + 1);
+    }
+  }
+  // 2차: 캡으로 자리가 안 찼으면 남은 상위 점수로 채운다
+  if (picked.length < count) {
+    for (const item of items) {
+      if (picked.length >= count) break;
+      if (!picked.includes(item)) picked.push(item);
+    }
+  }
+  return picked;
+}
+
 /** 공백만 있는 이유를 제거하고 중복을 제거한 순서 보존 배열 */
 function cleanReasons(reasons?: readonly string[]): string[] {
   const seen = new Set<string>();

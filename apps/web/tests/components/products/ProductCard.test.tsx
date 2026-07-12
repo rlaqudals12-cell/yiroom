@@ -202,6 +202,23 @@ describe('ProductCard', () => {
     });
   });
 
+  describe('카드 내부 행 정렬 (BEST 트리오 어긋남 회귀 방지)', () => {
+    it('정보 영역은 flex 컬럼으로 채워진다 (가격 행 하단 정렬 기반)', () => {
+      render(<ProductCard product={mockCosmeticProduct} />);
+      // 브랜드 <p>의 부모 = CardContent — flex 컬럼으로 채워져야 가격 행을 하단 정렬할 수 있다
+      const cardContent = screen.getByText('테스트 브랜드').parentElement;
+      expect(cardContent?.className).toContain('flex-col');
+      expect(cardContent?.className).toContain('flex-1');
+    });
+
+    it('가격 행은 mt-auto 블록에 있어 카드 하단 기준으로 정렬된다', () => {
+      render(<ProductCard product={mockCosmeticProduct} />);
+      // 제품명 줄수·칩 개수가 카드마다 달라도 가격 행이 같은 높이에 오도록 하단에 붙인다
+      const priceWrapper = screen.getByText('₩35,000').parentElement;
+      expect(priceWrapper?.className).toContain('mt-auto');
+    });
+  });
+
   describe('링크', () => {
     it('화장품 상세 페이지 링크 (One Canon: 화장품 정본 = /beauty)', () => {
       render(<ProductCard product={mockCosmeticProduct} />);

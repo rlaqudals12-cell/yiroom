@@ -51,15 +51,32 @@ interface AnalysisMatchedProductsProps {
   maxProducts?: number;
 }
 
-// 분석 타입별 제품 카테고리 매핑
-const ANALYSIS_CATEGORY_MAP: Record<string, string> = {
-  skin: 'cosmetic',
-  'personal-color': 'cosmetic',
-  hair: 'cosmetic',
-  makeup: 'cosmetic',
-  nutrition: 'supplement',
-  workout: 'equipment',
-};
+/**
+ * "맞춤 제품 더 보기" 도착지.
+ *
+ * 근본 수리(2026-07-12): 기존 링크는 `/products?category=cosmetic&sort=match`였는데
+ *  - 'cosmetic'은 카테고리 값이 아니라 테이블명 개념 — 어떤 카테고리 컬럼에도 없어(실측: prod
+ *    `category='cosmetic'` → 0행) 카테고리 필터로 쓰이면 무조건 0개가 된다.
+ *  - `/products`는 `/beauty`로 308 영구 리다이렉트되며 의미 없는 파라미터는 사실상 유실됐다.
+ *  - `sort=match`도 수신 페이지가 읽지 않는 유령 파라미터였다.
+ * → 화장품 정본(/beauty)으로 직접 보내고, /beauty가 이해하는 `filter`로 대분류를 프리셋한다
+ *   (skin→스킨케어, personal-color·makeup→메이크업(색조)). null-tolerant 쿼리라 0개가 되지 않는다.
+ */
+function moreProductsHref(analysisType: string): string {
+  switch (analysisType) {
+    case 'skin':
+      return '/beauty?filter=skin';
+    case 'personal-color':
+    case 'makeup':
+      return '/beauty?filter=personal-color';
+    case 'hair':
+      // /beauty에 헤어 대분류가 없어 전체 화장품으로 — 최소한 0개가 되지 않는다
+      return '/beauty';
+    default:
+      // 영양/운동(숨김 모듈) — 이 섹션이 렌더될 일이 거의 없으나 안전한 폴백 유지
+      return '/products';
+  }
+}
 
 export function AnalysisMatchedProducts({
   analysisType,
@@ -166,7 +183,7 @@ export function AnalysisMatchedProducts({
     );
   }
 
-  const category = ANALYSIS_CATEGORY_MAP[analysisType] ?? 'cosmetic';
+  const moreHref = moreProductsHref(analysisType);
 
   // 적합도 내림차순 안정 정렬(동률이면 원래 순서 유지) 후 상위 3개 = BEST 순위
   const ranked = rankByMatchScore(products);
@@ -196,7 +213,9 @@ export function AnalysisMatchedProducts({
                 </div>
               )}
               {/* 점수는 아래 이유 줄에서 "적합도 N점"으로 표기 → 카드 배지 중복 생략 */}
-              <ProductCard product={mp.product} matchReasons={mp.matchReasons} />
+              {/* flex-1 — li(그리드 셀 stretch) 높이를 카드가 채워 3장 높이를 맞춘다.
+                  카드 내부는 가격 행이 mt-auto로 하단 정렬되어 세 카드의 가격 행이 같은 높이에 온다. */}
+              <ProductCard product={mp.product} matchReasons={mp.matchReasons} className="flex-1" />
               {/* 이유 줄은 최소 2줄 높이를 예약 — BEST 1만 줄 수가 많아 첫 카드가 커 보이는 어긋남 방지 */}
               <p
                 className="mt-1.5 min-h-[2rem] text-[11px] leading-snug text-zinc-400"
@@ -238,7 +257,7 @@ export function AnalysisMatchedProducts({
 
       <div className="mt-3 text-center">
         <Link
-          href={`/products?category=${category}&sort=match`}
+          href={moreHref}
           className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-pink-400 transition-colors"
         >
           맞춤 제품 더 보기

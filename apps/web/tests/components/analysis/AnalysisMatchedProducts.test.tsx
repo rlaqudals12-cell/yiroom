@@ -173,4 +173,37 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
     await screen.findByTestId('matched-products-ranked');
     expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
   });
+
+  describe('"맞춤 제품 더 보기" 도착지 (0개 페이지 회귀 방지)', () => {
+    // 근본 수리: 기존 `/products?category=cosmetic&sort=match`는 'cosmetic'이 카테고리 값이 아니라
+    // (prod 실측 category='cosmetic' → 0행) 어디서도 매칭되지 않았고, /products는 /beauty로
+    // 리다이렉트되며 파라미터가 유실됐다. 화장품 정본(/beauty)으로 filter 프리셋과 함께 보낸다.
+    async function moreLinkHref(analysisType: string): Promise<string | null> {
+      mockFetchProducts([
+        { product: makeCosmetic('p1', '제품A'), matchScore: 90, matchReasons: ['건성'] },
+      ]);
+      render(<AnalysisMatchedProducts analysisType={analysisType} />);
+      const link = await screen.findByText('맞춤 제품 더 보기');
+      return link.closest('a')?.getAttribute('href') ?? null;
+    }
+
+    it('피부 분석 → /beauty?filter=skin (스킨케어 프리셋)', async () => {
+      expect(await moreLinkHref('skin')).toBe('/beauty?filter=skin');
+    });
+
+    it('퍼스널컬러 → /beauty?filter=personal-color (메이크업 프리셋)', async () => {
+      expect(await moreLinkHref('personal-color')).toBe('/beauty?filter=personal-color');
+    });
+
+    it('메이크업 → /beauty?filter=personal-color (색조 프리셋)', async () => {
+      expect(await moreLinkHref('makeup')).toBe('/beauty?filter=personal-color');
+    });
+
+    it('더 이상 죽은 category=cosmetic 링크를 만들지 않는다 (0개 페이지 원인 제거)', async () => {
+      const href = await moreLinkHref('skin');
+      expect(href).not.toContain('category=cosmetic');
+      expect(href).not.toContain('sort=match');
+      expect(href?.startsWith('/beauty')).toBe(true);
+    });
+  });
 });

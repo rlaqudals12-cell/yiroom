@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { calculateMatchScore, type UserProfile } from '@/lib/products/matching';
+import { diversifyBySubcategory } from '@/lib/products';
 import {
   toCosmeticProduct,
   type CosmeticProductRow,
@@ -69,9 +70,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .from('cosmetic_products')
       .select('*')
       .eq('is_active', true)
-      // 매칭 후 상위 선별을 위해 넉넉히 조회 (평점순 사전 정렬로 풀 품질 확보)
-      .order('rating', { ascending: false, nullsFirst: false })
-      .limit(Math.max(limit * 10, 60));
+      // ⚠️ rating은 화장품 전 품목이 사실상 null이라 정렬축으로 쓰면 동률이 물리적(삽입) 순서로
+      // 붕괴 → personal-color 풀이 100% 립으로 collapse했다(실측: 상위 60이 전부 립, 창업자
+      // "퍼스널컬러 제품이 립뿐?" 재보고). review_count(실재 컬럼)로 정렬하고 id 보조정렬을 두어
+      // 결정적이면서 세분류가 고르게 섞인 풀을 뽑는다. 최종 노출 다양성은 아래 diversify가 보장.
+      .order('review_count', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: true })
+      .limit(Math.max(limit * 15, 90));
 
     if (categories) {
       query = query.in('category', categories);
@@ -84,7 +89,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: true, products: [] });
     }
 
-    const matched = (rows as CosmeticProductRow[])
+    const scored = (rows as CosmeticProductRow[])
       .map((row) => {
         const product = toCosmeticProduct(row);
         const result = calculateMatchScore(product, profile);
@@ -94,8 +99,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           matchReasons: result.reasons.filter((r) => r.matched).map((r) => r.label),
         };
       })
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, limit);
+      .sort((a, b) => b.matchScore - a.matchScore);
+
+    // 메이크업(퍼스널컬러 실행 레이어)은 색조 세분류가 립으로 쏠려 BEST가 립으로 도배되는
+    // 문제가 있어 최종 노출을 subcategory당 최대 절반으로 제한(다양성 확보). 스킨케어/헤어는
+    // 세분류(category)가 이미 다양해 기존 점수순 상위 노출을 유지한다(불필요한 재정렬 회피).
+    const isMakeup = categories?.length === 1 && categories[0] === 'makeup';
+    const matched = isMakeup
+      ? diversifyBySubcategory(
+          scored,
+          limit,
+          (m) => m.product.subcategory ?? m.product.category ?? 'etc'
+        )
+      : scored.slice(0, limit);
 
     return NextResponse.json({
       success: true,

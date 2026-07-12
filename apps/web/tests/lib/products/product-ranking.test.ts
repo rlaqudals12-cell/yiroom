@@ -6,6 +6,7 @@ import {
   rankByMatchScore,
   buildRankReasonLine,
   buildRankComparisonLine,
+  diversifyBySubcategory,
 } from '@/lib/products/product-ranking';
 
 describe('product-ranking', () => {
@@ -98,6 +99,63 @@ describe('product-ranking', () => {
     it('빈 배열/undefined면 null을 반환한다', () => {
       expect(buildRankComparisonLine([], [])).toBeNull();
       expect(buildRankComparisonLine(undefined, undefined)).toBeNull();
+    });
+  });
+
+  describe('diversifyBySubcategory (세분류 도배 방지 — 퍼스널컬러 "립뿐" 회귀 방지)', () => {
+    const key = (x: { sub: string }): string => x.sub;
+
+    it('점수순 립 도배 입력에서 BEST 3장에 동일 세분류가 2개를 넘지 않는다', () => {
+      // 실측 재현: 점수 내림차순이 전부 립인 경우
+      const ranked = [
+        { sub: 'lip', s: 67 },
+        { sub: 'lip', s: 55 },
+        { sub: 'lip', s: 55 },
+        { sub: 'blush', s: 55 },
+        { sub: 'eyeshadow', s: 47 },
+      ];
+      const out = diversifyBySubcategory(ranked, 4, key);
+      const top3 = out.slice(0, 3).filter((x) => x.sub === 'lip');
+      // count=4 → 세분류당 cap 2 → 상위 3장에 립 ≤ 2 (전원 립 방지)
+      expect(top3.length).toBeLessThanOrEqual(2);
+      // 서로 다른 세분류가 최소 2종 이상 노출된다
+      expect(new Set(out.map((x) => x.sub)).size).toBeGreaterThanOrEqual(2);
+    });
+
+    it('BEST 1(최고 점수)은 그대로 유지한다(적합도 1위 왜곡 금지)', () => {
+      const ranked = [
+        { sub: 'lip', s: 67 },
+        { sub: 'lip', s: 55 },
+        { sub: 'blush', s: 50 },
+        { sub: 'eyeshadow', s: 48 },
+      ];
+      const out = diversifyBySubcategory(ranked, 3, key);
+      expect(out[0]).toEqual({ sub: 'lip', s: 67 });
+    });
+
+    it('풀이 한 세분류뿐이면 캡을 완화해 count를 채운다(빈 결과 금지)', () => {
+      const ranked = [
+        { sub: 'lip', s: 60 },
+        { sub: 'lip', s: 55 },
+        { sub: 'lip', s: 50 },
+        { sub: 'lip', s: 45 },
+      ];
+      const out = diversifyBySubcategory(ranked, 4, key);
+      // 다른 세분류가 없으므로 4개를 그대로 채운다
+      expect(out).toHaveLength(4);
+      expect(out.map((x) => x.s)).toEqual([60, 55, 50, 45]);
+    });
+
+    it('count가 0 이하면 빈 배열을 반환한다', () => {
+      expect(diversifyBySubcategory([{ sub: 'lip', s: 1 }], 0, key)).toEqual([]);
+    });
+
+    it('입력이 count보다 적으면 있는 만큼만 반환한다', () => {
+      const ranked = [
+        { sub: 'lip', s: 60 },
+        { sub: 'eyeshadow', s: 55 },
+      ];
+      expect(diversifyBySubcategory(ranked, 4, key)).toHaveLength(2);
     });
   });
 });

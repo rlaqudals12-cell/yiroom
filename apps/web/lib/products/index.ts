@@ -114,6 +114,7 @@ export {
   rankByMatchScore,
   buildRankReasonLine,
   buildRankComparisonLine,
+  diversifyBySubcategory,
 } from './product-ranking';
 export type { RankBadge } from './product-ranking';
 

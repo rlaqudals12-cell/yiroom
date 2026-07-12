@@ -80,7 +80,7 @@ export function ProductCard({
   return (
     <Link href={href} className={cn('block', className)}>
       <Card
-        className="group h-full overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-primary/20"
+        className="group flex h-full flex-col overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 hover:border-primary/20"
         data-testid="product-card"
         role="article"
         aria-label={`${product.name} 상세`}
@@ -117,8 +117,9 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* 정보 영역 */}
-        <CardContent className="p-3 transition-colors duration-300 group-hover:bg-muted/30">
+        {/* 정보 영역 — flex 컬럼으로 채워, 평점·가격 행을 카드 하단 기준(mt-auto) 정렬한다.
+            제품명 줄수·칩 개수가 카드마다 달라도 3장의 가격 행이 같은 높이에 오게 하려는 목적. */}
+        <CardContent className="flex flex-1 flex-col p-3 transition-colors duration-300 group-hover:bg-muted/30">
           {/* 적합도 — 이미지 위 오버레이가 아니라 정보 영역 상단 독립 행.
               좁은 그리드(4열)에서도 제품명·이미지를 가리지 않는다 (배지 비겹침). */}
           {matchScore !== undefined && matchScore > 0 && (
@@ -154,29 +155,33 @@ export function ProductCard({
             </div>
           )}
 
-          {/* 평점 */}
-          {rating !== undefined && (
-            <div className="mt-2 flex items-center gap-1" aria-label={ratingAriaLabel}>
-              <Star
-                className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 transition-transform duration-300 group-hover:scale-110"
-                aria-hidden="true"
-              />
-              <span className="text-xs font-medium">{rating.toFixed(1)}</span>
-              {reviewCount !== undefined && reviewCount > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  ({reviewCount.toLocaleString('ko-KR')})
-                </span>
-              )}
-            </div>
-          )}
+          {/* 평점·가격 — 카드 하단 기준 정렬(mt-auto). 위 칩/제품명 줄 수가 달라도
+              3장의 가격 행(과 바로 위 평점 행)이 같은 높이에 오도록 하단에 붙인다. */}
+          <div className="mt-auto pt-2">
+            {/* 평점 */}
+            {rating !== undefined && (
+              <div className="flex items-center gap-1" aria-label={ratingAriaLabel}>
+                <Star
+                  className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 transition-transform duration-300 group-hover:scale-110"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{rating.toFixed(1)}</span>
+                {reviewCount !== undefined && reviewCount > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    ({reviewCount.toLocaleString('ko-KR')})
+                  </span>
+                )}
+              </div>
+            )}
 
-          {/* 가격 */}
-          <p
-            className="mt-2 text-sm font-semibold transition-colors duration-300 group-hover:text-primary"
-            aria-label={`가격 ${formattedPrice}`}
-          >
-            {formattedPrice}
-          </p>
+            {/* 가격 */}
+            <p
+              className="mt-1 text-sm font-semibold transition-colors duration-300 group-hover:text-primary"
+              aria-label={`가격 ${formattedPrice}`}
+            >
+              {formattedPrice}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </Link>
