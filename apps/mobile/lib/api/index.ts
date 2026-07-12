@@ -7,6 +7,15 @@ export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-lim
 
 // 통합 분석 HTTP 클라이언트 (웹 API 재사용) — ADR-102
 export { requestIntegratedAnalysis, IntegratedApiError } from './integrated';
+
+// 생년월일 조회·저장 HTTP 클라이언트 (웹 API 재사용) — 연령 확인 게이트(만 14세) 대응
+export {
+  fetchBirthdate,
+  saveBirthdate,
+  evaluateBirthdateGate,
+  BirthdateApiError,
+} from './birthdate';
+export type { BirthdateStatus, BirthdateGate } from './birthdate';
 export type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,

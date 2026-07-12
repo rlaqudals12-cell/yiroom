@@ -9,7 +9,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,10 @@ import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import {
   requestIntegratedAnalysis,
   IntegratedApiError,
+  fetchBirthdate,
+  saveBirthdate,
+  evaluateBirthdateGate,
+  BirthdateApiError,
   type AxisCode,
   type IntegratedAnalysisInput,
   type SkinQuestionnaire,
@@ -86,6 +90,32 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 연령 확인 게이트(만 14세) — 서버는 users.birth_date 없으면 생체분석을 403으로 막는다.
+  // 마운트 시 저장 여부를 조회해 이미 있으면 입력을 숨기고(중복 요구 금지), 없으면 입력을 받는다.
+  const [birthdate, setBirthdate] = useState('');
+  const [hasStoredBirthdate, setHasStoredBirthdate] = useState(false);
+  const [birthdateChecked, setBirthdateChecked] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const status = await fetchBirthdate(token);
+        if (active) setHasStoredBirthdate(status.hasBirthDate);
+      } catch {
+        // 조회 실패 시 수집 쪽으로 안전하게 폴백 — 없으면 어차피 서버가 403이므로 입력을 받는다.
+        if (active) setHasStoredBirthdate(false);
+      } finally {
+        if (active) setBirthdateChecked(true);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [getToken]);
+
   // 선택 재분석(2A): 분석 이력이 있는 재방문 사용자에게만 축 선택 노출.
   // 일부 축만 고르면 update 모드 — 나머지 축은 기존 결과 유지(색·체형 안 흔들림).
   const { analyses } = useUserAnalyses();
@@ -132,6 +162,14 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
       setError('얼굴 사진이 필요해요.');
       return;
     }
+
+    // 연령 확인 게이트 — 저장 안 됐으면 입력을 검증하고, 만 14세 미만이면 분석을 호출하지 않는다.
+    const birthdateGate = evaluateBirthdateGate(hasStoredBirthdate, birthdate);
+    if (!birthdateGate.ok) {
+      setError(birthdateGate.message);
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -141,6 +179,11 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
         setError('로그인 세션이 만료됐어요. 다시 로그인해주세요.');
         setIsSubmitting(false);
         return;
+      }
+
+      // 생년월일 최초 저장 (성인·유효값만 게이트를 통과). 서버가 만 14세 미만이면 403으로 거부.
+      if (birthdateGate.needsSave && birthdateGate.birthDate) {
+        await saveBirthdate(birthdateGate.birthDate, token);
       }
 
       const input: IntegratedAnalysisInput = {
@@ -164,12 +207,15 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
         `/(analysis)/integrated/result/${result.sessionId}?payload=${encodeURIComponent(JSON.stringify(result))}` as never
       );
     } catch (e) {
+      // 서버 에러 봉투의 userMessage(연령 게이트 403 등)를 그대로 노출 — 일반 문구로 뭉개지 않는다.
       const message =
-        e instanceof IntegratedApiError
+        e instanceof BirthdateApiError
           ? e.message
-          : e instanceof Error
+          : e instanceof IntegratedApiError
             ? e.message
-            : '분석 요청에 실패했어요.';
+            : e instanceof Error
+              ? e.message
+              : '분석 요청에 실패했어요.';
       setError(message);
       setIsSubmitting(false);
     }
@@ -388,6 +434,32 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
           </GlassCard>
         )}
 
+        {/* 생년월일 (연령 확인 게이트 — 서버에 저장돼 있지 않을 때만 노출) */}
+        {birthdateChecked && !hasStoredBirthdate && (
+          <GlassCard style={styles.section} testID="birthdate-section">
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              생년월일 <Text style={styles.required}>*</Text>
+            </Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+              만 14세 이상 확인을 위해 필요해요 (청소년보호법)
+            </Text>
+            <TextInput
+              value={birthdate}
+              onChangeText={setBirthdate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="number-pad"
+              maxLength={10}
+              accessibilityLabel="생년월일 입력"
+              testID="birthdate-input"
+              style={[
+                styles.birthdateInput,
+                { color: colors.foreground, borderColor: colors.border },
+              ]}
+            />
+          </GlassCard>
+        )}
+
         {/* 에러 메시지 */}
         {error && (
           <View style={styles.errorBox}>
@@ -565,6 +637,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 8,
     fontSize: typography.size.base,
+  },
+  birthdateInput: {
+    borderWidth: 1,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
+    fontSize: typography.size.base,
+    marginTop: spacing.xs,
   },
   errorBox: {
     backgroundColor: 'rgba(239,68,68,0.15)',

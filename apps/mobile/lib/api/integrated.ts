@@ -117,22 +117,48 @@ export class IntegratedApiError extends Error {
 // 3. HTTP 클라이언트
 // ============================================
 
-/** 웹 API의 표준 에러 응답 (error-response.ts 참조) */
-interface ApiErrorResponse {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    userMessage?: string;
-  };
-}
-
 interface ApiSuccessResponse {
   success: true;
   result: IntegratedAnalysisResult;
 }
 
-type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
+/**
+ * 웹 API 에러 응답에서 사용자 메시지·코드를 추출한다.
+ *
+ * 왜 두 형태를 모두 파싱하나 (근본 원인):
+ *   통합분석 라우트는 error-response.ts 헬퍼(forbiddenError 등)를 쓰는데, 이 헬퍼는
+ *   **플랫** 형태 { error: "<한국어 메시지>", code: "<코드>" }를 반환한다.
+ *   기존 코드는 **중첩** { error: { userMessage, message } }만 파싱해, 연령 게이트 403의
+ *   "만 14세 이상만..." 메시지를 잃고 일반 문구로 뭉갰다. 두 형태를 모두 지원한다.
+ */
+function extractApiError(json: unknown): { message?: string; code?: string } {
+  if (typeof json !== 'object' || json === null) return {};
+  const obj = json as Record<string, unknown>;
+  const err = obj.error;
+
+  // 플랫: error가 문자열 → 그 자체가 사용자 메시지, code는 형제 필드
+  if (typeof err === 'string') {
+    return { message: err, code: typeof obj.code === 'string' ? obj.code : undefined };
+  }
+
+  // 중첩(방어적): error가 객체 → userMessage 우선, 없으면 message
+  if (typeof err === 'object' && err !== null) {
+    const e = err as Record<string, unknown>;
+    const message =
+      (typeof e.userMessage === 'string' && e.userMessage) ||
+      (typeof e.message === 'string' ? e.message : undefined);
+    const code =
+      (typeof e.code === 'string' && e.code) ||
+      (typeof obj.code === 'string' ? obj.code : undefined);
+    return { message: message || undefined, code: code || undefined };
+  }
+
+  // error 필드가 없으면 최상위 message/code 시도
+  return {
+    message: typeof obj.message === 'string' ? obj.message : undefined,
+    code: typeof obj.code === 'string' ? obj.code : undefined,
+  };
+}
 
 /**
  * 통합 분석 요청.
@@ -173,20 +199,20 @@ export async function requestIntegratedAnalysis(
   }
 
   // 왜: JSON 파싱 실패해도 안전한 기본값 반환하도록 처리
-  let json: ApiResponse | Record<string, never>;
+  let json: unknown;
   try {
-    json = (await response.json()) as ApiResponse;
+    json = await response.json();
   } catch {
     json = {};
   }
 
-  if (!response.ok || !('success' in json) || json.success !== true) {
-    const errorObj = ('error' in json ? json.error : undefined) as
-      | ApiErrorResponse['error']
-      | undefined;
-    const message = errorObj?.userMessage ?? errorObj?.message ?? '분석 요청에 실패했어요.';
-    throw new IntegratedApiError(message, response.status, errorObj?.code);
+  const isSuccess =
+    typeof json === 'object' && json !== null && (json as Record<string, unknown>).success === true;
+
+  if (!response.ok || !isSuccess) {
+    const { message, code } = extractApiError(json);
+    throw new IntegratedApiError(message ?? '분석 요청에 실패했어요.', response.status, code);
   }
 
-  return json.result;
+  return (json as ApiSuccessResponse).result;
 }

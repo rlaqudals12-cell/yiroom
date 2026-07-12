@@ -32,6 +32,11 @@ jest.mock('@/hooks/useUserAnalyses', () => ({
 jest.mock('@/lib/api', () => ({
   requestIntegratedAnalysis: jest.fn(),
   IntegratedApiError: class IntegratedApiError extends Error {},
+  // 연령 게이트 대응 — 마운트 시 조회. 이미 저장됨으로 응답해 생년월일 입력이 뜨지 않게 함.
+  fetchBirthdate: jest.fn().mockResolvedValue({ birthDate: '2000-01-01', hasBirthDate: true }),
+  saveBirthdate: jest.fn().mockResolvedValue(undefined),
+  evaluateBirthdateGate: jest.fn(() => ({ ok: true, needsSave: false })),
+  BirthdateApiError: class BirthdateApiError extends Error {},
 }));
 
 jest.mock('@/components/ui', () => {

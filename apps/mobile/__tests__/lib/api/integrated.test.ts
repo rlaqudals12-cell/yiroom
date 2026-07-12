@@ -122,6 +122,30 @@ describe('requestIntegratedAnalysis', () => {
     });
   });
 
+  it('403 연령 게이트 — 플랫 에러 봉투({error:string,code})의 userMessage를 그대로 표면화', async () => {
+    // 웹 error-response.ts(forbiddenError)는 중첩이 아닌 플랫 형태를 반환한다.
+    // 기존 코드는 중첩만 파싱해 "만 14세..." 메시지를 잃고 일반 문구로 뭉갰다 (근본 버그).
+    global.fetch = mockFetch({
+      ok: false,
+      status: 403,
+      body: {
+        error:
+          '만 14세 이상만 이용할 수 있어요. 만 14세 미만은 법정대리인 동의가 필요해 생체정보 분석을 제공하지 않아요.',
+        code: 'FORBIDDEN',
+      },
+    });
+
+    await expect(
+      requestIntegratedAnalysis(validInput, 'token', 'http://test')
+    ).rejects.toMatchObject({
+      name: 'IntegratedApiError',
+      status: 403,
+      code: 'FORBIDDEN',
+      message:
+        '만 14세 이상만 이용할 수 있어요. 만 14세 미만은 법정대리인 동의가 필요해 생체정보 분석을 제공하지 않아요.',
+    });
+  });
+
   it('429 Rate Limit 에러', async () => {
     global.fetch = mockFetch({
       ok: false,
