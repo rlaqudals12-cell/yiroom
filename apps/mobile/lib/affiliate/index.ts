@@ -19,18 +19,9 @@ export type {
   DeeplinkResult,
 } from './types';
 
-// Products Repository
-export {
-  getAffiliateProducts,
-  getAffiliateProductById,
-  getAffiliateProductsByPartner,
-  getRecommendedProductsBySkin,
-  getRecommendedProductsByColor,
-  getRecommendedProductsByBodyType,
-  searchAffiliateProducts,
-  getPopularAffiliateProducts,
-  getProductsByCategory,
-} from './products';
+// Products Repository — 목록/추천은 cosmetic_products로 재배선됨.
+// searchAffiliateProducts만 검색 브리지용으로 보존.
+export { searchAffiliateProducts } from './products';
 
 // Clicks
 export { createAffiliateClick, getUserClickHistory } from './clicks';
@@ -40,16 +31,6 @@ export { createDeeplink, openAffiliateLink, trackAndOpenLink, identifyPartner } 
 
 // Hooks
 export { useAffiliateClick } from './useAffiliateClick';
-export {
-  useAffiliateProducts,
-  useAffiliateProduct,
-  useRecommendedProductsBySkin,
-  useRecommendedProductsByColor,
-  useRecommendedProductsByBodyType,
-  useProductSearch,
-  usePopularProducts,
-  useProductsByCategory,
-} from './useAffiliateProducts';
 
 // Utils
 export {

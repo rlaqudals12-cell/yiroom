@@ -118,6 +118,102 @@ export async function getCosmeticProducts(
 }
 
 /**
+ * 세분류(category) 배열로 화장품 목록 조회
+ *
+ * 왜: 모바일 대분류 필터(skincare/makeup/...)는 여러 세분류에 대응한다
+ * (예: skincare = cleanser,toner,serum,...). 대분류→세분류 매핑(category-map)을
+ * 거친 배열을 `.in()`으로 한 번에 조회한다.
+ * @param categories cosmetic_products.category 값 배열
+ * @param limit 최대 개수 (기본 50)
+ */
+export async function getCosmeticProductsByCategories(
+  categories: string[],
+  limit = 50
+): Promise<CosmeticProduct[]> {
+  // 빈 배열이면 필터 없이 전체 조회 (대분류 미선택/미매핑 상황)
+  if (categories.length === 0) {
+    return getCosmeticProducts(undefined, limit);
+  }
+
+  const { data, error } = await supabase
+    .from('cosmetic_products')
+    .select('*')
+    .eq('is_active', true)
+    .in('category', categories)
+    .order('rating', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    productLogger.error('화장품 카테고리 조회 실패:', error);
+    return [];
+  }
+
+  return (data as CosmeticProductRow[]).map(mapCosmeticRow);
+}
+
+/**
+ * 피부 타입 기반 화장품 추천 (분석 결과 → 제품)
+ *
+ * 왜: affiliate_products(0행)를 대체. cosmetic_products의 skin_types(dry/oily/...)와
+ * 사용자 피부 타입을 교집합(overlaps)으로 매칭하고, 고민(concerns)이 있으면 함께 좁힌다.
+ * @param skinType 사용자 피부 타입
+ * @param concerns 피부 고민(선택)
+ * @param limit 최대 개수 (기본 10)
+ */
+export async function getCosmeticsBySkinType(
+  skinType: SkinType,
+  concerns?: SkinConcern[],
+  limit = 10
+): Promise<CosmeticProduct[]> {
+  let query = supabase
+    .from('cosmetic_products')
+    .select('*')
+    .eq('is_active', true)
+    .overlaps('skin_types', [skinType]);
+
+  if (concerns && concerns.length > 0) {
+    query = query.overlaps('concerns', concerns);
+  }
+
+  const { data, error } = await query.order('rating', { ascending: false }).limit(limit);
+
+  if (error) {
+    productLogger.error('피부 타입 추천 조회 실패:', error);
+    return [];
+  }
+
+  return (data as CosmeticProductRow[]).map(mapCosmeticRow);
+}
+
+/**
+ * 퍼스널 컬러 시즌 기반 화장품 추천 (메이크업 등)
+ *
+ * 왜: cosmetic_products의 personal_color_seasons는 'Spring'|'Summer'|'Autumn'|'Winter'로
+ * 저장되므로, 시즌 값을 그대로 overlaps 매칭한다. 시즌 정규화는 호출부에서 수행.
+ * @param season 퍼스널 컬러 시즌
+ * @param limit 최대 개수 (기본 10)
+ */
+export async function getCosmeticsByPersonalColor(
+  season: PersonalColorSeason,
+  limit = 10
+): Promise<CosmeticProduct[]> {
+  const { data, error } = await supabase
+    .from('cosmetic_products')
+    .select('*')
+    .eq('is_active', true)
+    .overlaps('personal_color_seasons', [season])
+    .order('rating', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    productLogger.error('퍼스널 컬러 추천 조회 실패:', error);
+    return [];
+  }
+
+  return (data as CosmeticProductRow[]).map(mapCosmeticRow);
+}
+
+/**
  * 화장품 단일 조회
  * @param id 제품 ID
  */

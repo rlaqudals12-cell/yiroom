@@ -38,9 +38,10 @@ import {
   SkeletonCircle,
   SkeletonText,
 } from '../../components/ui';
+import { useBeautyProducts } from '../../hooks/useBeautyProducts';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
-import { useAffiliateProducts } from '../../lib/affiliate/useAffiliateProducts';
 import { staggeredEntry, TIMING } from '../../lib/animations';
+import { coarseCategoryOf } from '../../lib/products';
 import { useTheme, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
 
 // 통합 큐레이션 카테고리 → 모바일 뷰티 필터 키 매핑
@@ -67,15 +68,19 @@ export default function BeautyTab(): React.JSX.Element {
       ? CURATION_CATEGORY_MAP[params.category]
       : 'all';
 
-  // DB에서 제품 조회
+  // 필터 상태 (통합 큐레이션에서 category 파라미터로 진입 시 초기값 주입)
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedRating, setSelectedRating] = useState('all');
+
+  // DB에서 제품 조회 — cosmetic_products(prod 2,821행) 기반, 대분류→세분류 매핑
   const {
-    products: affiliateProducts,
+    products: cosmeticProducts,
     isLoading: productsLoading,
     refetch: refetchProducts,
-  } = useAffiliateProducts({
-    sortBy: 'rating',
-    limit: 30,
-  });
+  } = useBeautyProducts({ category: selectedCategory, limit: 30 });
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -87,13 +92,6 @@ export default function BeautyTab(): React.JSX.Element {
       setRefreshing(false);
     }
   }, [refetchAnalyses, refetchProducts]);
-
-  // 필터 상태 (통합 큐레이션에서 category 파라미터로 진입 시 초기값 주입)
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
-  const [selectedRating, setSelectedRating] = useState('all');
 
   // 필터 활성 여부 (초기화 버튼 표시 조건)
   const hasActiveFilters =
@@ -111,12 +109,12 @@ export default function BeautyTab(): React.JSX.Element {
     setSelectedRating('all');
   }, []);
 
-  // AffiliateProduct → BeautyProduct 변환 + 매칭률 계산
+  // CosmeticProduct → BeautyProduct 변환 + 매칭률 계산
   const sortedProducts = useMemo(() => {
     const userConcerns = skinAnalysis?.concerns ?? [];
-    return affiliateProducts
+    return cosmeticProducts
       .map((p): BeautyProduct => {
-        const productConcerns = (p.skinConcerns as string[] | undefined) ?? [];
+        const productConcerns: string[] = p.concerns ?? [];
         // 사용자 피부 고민 매칭률 (기본 60점 + 매칭 보너스 최대 40점)
         const matchCount = userConcerns.filter((c) => productConcerns.includes(c)).length;
         const matchRate =
@@ -133,14 +131,15 @@ export default function BeautyTab(): React.JSX.Element {
           imageUrl: p.imageUrl,
           matchRate,
           rating: p.rating ?? 0,
-          price: p.price,
-          category: p.category ?? 'skincare',
+          price: p.priceKrw,
+          // cosmetic 세분류(cleanser 등)를 UI 대분류(skincare 등)로 되돌려 클라 필터와 일치
+          category: coarseCategoryOf(p.category),
           concerns: productConcerns,
-          ingredients: (p.tags as string[] | undefined) ?? [],
+          ingredients: p.keyIngredients ?? [],
         };
       })
       .sort((a, b) => b.matchRate - a.matchRate);
-  }, [affiliateProducts, skinAnalysis?.concerns]);
+  }, [cosmeticProducts, skinAnalysis?.concerns]);
 
   const hasSkinData = skinAnalysis !== null;
 

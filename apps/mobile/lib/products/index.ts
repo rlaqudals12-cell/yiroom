@@ -8,6 +8,14 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+// ─── 대분류↔세분류 카테고리 매핑 (공개 API) ──────────
+export {
+  COARSE_TO_FINE_CATEGORIES,
+  fineCategoriesFor,
+  coarseCategoryOf,
+  type BeautyCoarseCategory,
+} from './category-map';
+
 // ─── 타입 ────────────────────────────────────────────
 
 export type ProductCategory = 'cosmetic' | 'supplement' | 'equipment' | 'health_food';

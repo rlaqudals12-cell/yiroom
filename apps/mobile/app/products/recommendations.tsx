@@ -17,28 +17,24 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { staggeredEntry, TIMING } from '@/lib/animations';
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import {
+  getCosmeticsBySkinType,
+  getCosmeticsByPersonalColor,
+} from '@/lib/products/repositories/cosmetic';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { GlassCard, ScreenContainer } from '../../components/ui';
-import {
-  getRecommendedProductsBySkin,
-  getRecommendedProductsByColor,
-  type AffiliateProduct,
-  type AffiliatePersonalColor,
-  type AffiliateSkinType,
-} from '../../lib/affiliate';
 import { productLogger } from '../../lib/utils/logger';
+import type { CosmeticProduct, PersonalColorSeason, SkinType } from '../../types/product';
 
 interface RecommendationSection {
   title: string;
   description: string;
-  products: (AffiliateProduct & { matchScore: number })[];
+  products: (CosmeticProduct & { matchScore: number })[];
 }
 
 export default function RecommendationsScreen(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand, status } = useTheme();
-  const supabase = useClerkSupabaseClient();
   const { personalColor, skinAnalysis, isLoading: analysisLoading } = useUserAnalyses();
 
   const [sections, setSections] = useState<RecommendationSection[]>([]);
@@ -49,11 +45,10 @@ export default function RecommendationsScreen(): React.JSX.Element {
     const result: RecommendationSection[] = [];
 
     try {
-      // 피부 기반 추천
+      // 피부 기반 추천 — cosmetic_products.skin_types 매칭
       if (skinAnalysis) {
-        const skinProducts = await getRecommendedProductsBySkin(
-          supabase,
-          skinAnalysis.skinType,
+        const skinProducts = await getCosmeticsBySkinType(
+          skinAnalysis.skinType as SkinType,
           undefined,
           10
         );
@@ -69,14 +64,10 @@ export default function RecommendationsScreen(): React.JSX.Element {
         }
       }
 
-      // 퍼스널컬러 기반 추천
+      // 퍼스널컬러 기반 추천 — cosmetic_products.personal_color_seasons 매칭
       if (personalColor) {
-        const colorProducts = await getRecommendedProductsByColor(
-          supabase,
-          personalColor.season,
-          undefined,
-          10
-        );
+        const season = normalizeSeason(personalColor.season);
+        const colorProducts = season ? await getCosmeticsByPersonalColor(season, 10) : [];
         if (colorProducts.length > 0) {
           result.push({
             title: '컬러 맞춤 추천',
@@ -95,7 +86,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
     }
 
     setSections(result);
-  }, [supabase, skinAnalysis, personalColor]);
+  }, [skinAnalysis, personalColor]);
 
   useEffect(() => {
     if (!analysisLoading) {
@@ -361,7 +352,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                   </View>
 
                   {/* 가격 */}
-                  {product.price != null && (
+                  {product.priceKrw != null && (
                     <Text
                       style={{
                         fontSize: typography.size.xs,
@@ -370,7 +361,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                         marginLeft: 36,
                       }}
                     >
-                      {product.price.toLocaleString()}원
+                      {product.priceKrw.toLocaleString()}원
                     </Text>
                   )}
                 </Pressable>
@@ -413,43 +404,44 @@ export default function RecommendationsScreen(): React.JSX.Element {
   );
 }
 
-// 제품-사용자 매칭 점수 계산
+// 시즌 문자열 정규화: 'spring'/'SPRING' → 'Spring' (cosmetic.personal_color_seasons 값 형식)
+function normalizeSeason(season: string): PersonalColorSeason | null {
+  const normalized = season.charAt(0).toUpperCase() + season.slice(1).toLowerCase();
+  return (['Spring', 'Summer', 'Autumn', 'Winter'] as const).includes(
+    normalized as PersonalColorSeason
+  )
+    ? (normalized as PersonalColorSeason)
+    : null;
+}
+
+// 제품-사용자 매칭 점수 계산 (cosmetic_products 필드 기반)
 function calculateProductMatchScore(
-  product: AffiliateProduct,
+  product: CosmeticProduct,
   userProfile: { skinType?: string; season?: string }
 ): number {
   let score = 55; // 기본 점수
 
-  // 피부 타입 매칭 (제품의 추천 피부 타입과 사용자 피부 타입 비교)
+  // 피부 타입 매칭 (cosmetic.skin_types)
   if (userProfile.skinType && product.skinTypes) {
-    const userSkin = userProfile.skinType as AffiliateSkinType;
-    if (product.skinTypes.includes(userSkin)) {
+    if (product.skinTypes.includes(userProfile.skinType as SkinType)) {
       score += 20;
     }
   }
 
-  // 퍼스널컬러 시즌 매칭 (제품의 personalColors와 사용자 시즌 비교)
-  if (userProfile.season && product.personalColors) {
-    const seasonLower = userProfile.season.toLowerCase();
-    // 시즌→personalColor 매핑 (spring→spring_warm 등)
-    const seasonMap: Record<string, string> = {
-      spring: 'spring_warm',
-      summer: 'summer_cool',
-      autumn: 'autumn_warm',
-      winter: 'winter_cool',
-    };
-    const targetColor = seasonMap[seasonLower];
-    if (targetColor && product.personalColors.includes(targetColor as AffiliatePersonalColor)) {
+  // 퍼스널컬러 시즌 매칭 (cosmetic.personal_color_seasons — 'Spring' 형식)
+  if (userProfile.season && product.personalColorSeasons) {
+    const target = normalizeSeason(userProfile.season);
+    if (target && product.personalColorSeasons.includes(target)) {
       score += 20;
-    } else if (product.personalColors.length === 0) {
+    } else if (product.personalColorSeasons.length === 0) {
       // 컬러 제한 없는 제품은 무난
       score += 10;
     }
   }
 
-  // 피부 고민 매칭
-  if (product.skinConcerns && product.skinConcerns.length > 0) {
-    score += Math.min(product.skinConcerns.length * 3, 12);
+  // 피부 고민 매칭 (cosmetic.concerns)
+  if (product.concerns && product.concerns.length > 0) {
+    score += Math.min(product.concerns.length * 3, 12);
   }
 
   // 평점 보너스

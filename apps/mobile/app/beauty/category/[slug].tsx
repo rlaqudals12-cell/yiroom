@@ -2,13 +2,14 @@
  * 뷰티 카테고리별 제품 그리드
  * 5개 카테고리(skincare/makeup/hair/body/suncare) + 매칭률 정렬
  */
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer, GlassCard } from '@/components/ui';
-import { useAffiliateProducts } from '@/lib/affiliate/useAffiliateProducts';
+import { useBeautyProducts } from '@/hooks/useBeautyProducts';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
@@ -34,9 +35,9 @@ export default function BeautyCategoryScreen() {
 
   const category = CATEGORIES[slug ?? ''] ?? { label: '카테고리', emoji: '💎' };
 
-  const { products, isLoading, refetch } = useAffiliateProducts({
-    filter: { category: slug ?? undefined },
-    sortBy: 'rating',
+  // cosmetic_products(실데이터) 기반 — slug(대분류) → 세분류 매핑으로 조회
+  const { products, isLoading, refetch } = useBeautyProducts({
+    category: slug ?? 'all',
     limit: 50,
   });
 
@@ -45,9 +46,9 @@ export default function BeautyCategoryScreen() {
     const sorted = [...products];
     switch (sortBy) {
       case 'price_low':
-        return sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        return sorted.sort((a, b) => (a.priceKrw ?? 0) - (b.priceKrw ?? 0));
       case 'price_high':
-        return sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+        return sorted.sort((a, b) => (b.priceKrw ?? 0) - (a.priceKrw ?? 0));
       case 'rating':
         return sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
       default:
@@ -130,16 +131,27 @@ export default function BeautyCategoryScreen() {
               { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
             ]}
           >
-            <View style={[styles.productImage, { backgroundColor: colors.muted }]}>
-              <Text style={{ fontSize: 28 }}>{category.emoji}</Text>
-            </View>
+            {/* 실제 제품 이미지 (없으면 카테고리 이모지 폴백 — 지어내지 않는 정직 폴백) */}
+            {item.imageUrl ? (
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.productImage}
+                contentFit="cover"
+                transition={200}
+                accessibilityLabel={`${item.name} 제품 이미지`}
+              />
+            ) : (
+              <View style={[styles.productImage, { backgroundColor: colors.muted }]}>
+                <Text style={{ fontSize: 28 }}>{category.emoji}</Text>
+              </View>
+            )}
             <View style={{ padding: spacing.sm }}>
               <Text numberOfLines={2} style={[styles.productName, { color: colors.foreground }]}>
                 {item.name}
               </Text>
-              {item.price != null && (
+              {item.priceKrw != null && (
                 <Text style={[styles.productPrice, { color: colors.foreground }]}>
-                  {item.price.toLocaleString()}원
+                  {item.priceKrw.toLocaleString()}원
                 </Text>
               )}
               {item.rating != null && (
@@ -196,6 +208,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   productImage: {
+    width: '100%',
     height: 120,
     alignItems: 'center',
     justifyContent: 'center',

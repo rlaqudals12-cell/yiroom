@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -45,22 +42,22 @@ jest.mock('react-native-safe-area-context', () => {
 // useLocalSearchParams mock
 const { useLocalSearchParams } = require('expo-router');
 
-// 어필리에이트 제품 mock
+// cosmetic_products 재배선 후: 화면은 useBeautyProducts(cosmetic 기반)를 소비한다
 const mockProducts = [
-  { id: 'p1', name: '수분 크림', price: 25000, rating: 4.5, category: 'skincare' },
-  { id: 'p2', name: '선크림 SPF50', price: 18000, rating: 4.8, category: 'skincare' },
-  { id: 'p3', name: '비타민 세럼', price: 32000, rating: 4.2, category: 'skincare' },
+  { id: 'p1', name: '수분 크림', priceKrw: 25000, rating: 4.5, category: 'moisturizer' },
+  { id: 'p2', name: '선크림 SPF50', priceKrw: 18000, rating: 4.8, category: 'sunscreen' },
+  { id: 'p3', name: '비타민 세럼', priceKrw: 32000, rating: 4.2, category: 'serum' },
 ];
 
-const mockUseAffiliateProducts = jest.fn(() => ({
+const mockUseBeautyProducts = jest.fn(() => ({
   products: mockProducts,
   isLoading: false,
   error: null,
   refetch: jest.fn(),
 }));
 
-jest.mock('../../../lib/affiliate/useAffiliateProducts', () => ({
-  useAffiliateProducts: (...args: unknown[]) => (mockUseAffiliateProducts as jest.Mock)(...args),
+jest.mock('../../../hooks/useBeautyProducts', () => ({
+  useBeautyProducts: (...args: unknown[]) => (mockUseBeautyProducts as jest.Mock)(...args),
 }));
 
 import BeautyCategoryScreen from '../../../app/beauty/category/[slug]';
@@ -92,9 +89,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -106,7 +101,7 @@ describe('BeautyCategoryScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useLocalSearchParams.mockReturnValue({ slug: 'skincare' });
-    mockUseAffiliateProducts.mockReturnValue({
+    mockUseBeautyProducts.mockReturnValue({
       products: mockProducts,
       isLoading: false,
       error: null,
@@ -143,7 +138,7 @@ describe('BeautyCategoryScreen', () => {
     });
 
     it('로딩 중일 때 안내 메시지가 표시된다', () => {
-      mockUseAffiliateProducts.mockReturnValue({
+      mockUseBeautyProducts.mockReturnValue({
         products: [],
         isLoading: true,
         error: null,
@@ -154,7 +149,7 @@ describe('BeautyCategoryScreen', () => {
     });
 
     it('제품이 없을 때 빈 상태 메시지가 표시된다', () => {
-      mockUseAffiliateProducts.mockReturnValue({
+      mockUseBeautyProducts.mockReturnValue({
         products: [],
         isLoading: false,
         error: null,
