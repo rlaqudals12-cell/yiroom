@@ -42,4 +42,13 @@ describe('Footer', () => {
     expect(disclosure).toHaveTextContent(/통신판매중개자/);
     expect(disclosure).toHaveTextContent(/통신판매의 당사자가 아니며/);
   });
+
+  it('운영자(사업자) 정보를 상시 노출한다 — 상호·대표자·사업자등록번호', () => {
+    render(<Footer />);
+
+    const businessInfo = screen.getByTestId('footer-business-info');
+    expect(businessInfo).toHaveTextContent(/상호: 이룸/);
+    expect(businessInfo).toHaveTextContent(/대표: 김병민/);
+    expect(businessInfo).toHaveTextContent(/489-31-01981/);
+  });
 });

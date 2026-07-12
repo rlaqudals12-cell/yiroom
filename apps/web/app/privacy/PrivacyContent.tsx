@@ -366,6 +366,7 @@ function KoreanContent() {
           <p>
             <strong>개인정보 보호책임자</strong>
           </p>
+          <p>성명: 김병민 (대표)</p>
           <p>이메일: privacy@yiroom.app</p>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
@@ -745,6 +746,7 @@ function EnglishContent() {
           <p>
             <strong>Data Protection Officer</strong>
           </p>
+          <p>Name: Kim Byeong-min (Representative)</p>
           <p>Email: privacy@yiroom.app</p>
         </div>
       </section>
