@@ -30,12 +30,15 @@ import {
   undertoneKo,
   skinTypeKo,
   faceShapeKo,
+  toneKo,
 } from '@/lib/analysis/integrated';
 import { getBodyShapeLabel } from '@/lib/body';
+import type { PersonaBadge } from '@/components/share/PersonaShareCard';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
 import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
 import { NextStepsLinks } from './_components/NextStepsLinks';
 import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
+import { PersonaShareSection } from './_components/PersonaShareSection';
 import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
@@ -219,6 +222,19 @@ export default async function IntegratedResultPage({
   // 실제 제품 3개(지갑 여는 세트)는 병렬로 매칭 — 없으면 링크 카드 폴백
   const pcData = axisResults.personalColor.success ? axisResults.personalColor.data : null;
   const skinData = axisResults.skin.success ? axisResults.skin.data : null;
+  const bodyData = axisResults.body.success ? axisResults.body.data : null;
+  const hairData = axisResults.hair.success ? axisResults.hair.data : null;
+
+  // 공유 카드 뱃지 — 성공한 축만, 한국어 라벨만 (실패 축을 지어내지 않는다)
+  const personaBadges: PersonaBadge[] = [
+    pcData && {
+      label: '퍼스널컬러',
+      value: toneKo(pcData.tone) || seasonKo(pcData.season),
+    },
+    skinData && { label: '피부', value: skinTypeKo(skinData.skinType) },
+    bodyData && { label: '체형', value: getBodyShapeLabel(bodyData.bodyType) },
+    hairData && { label: '얼굴형', value: faceShapeKo(hairData.faceShape) },
+  ].filter((b): b is PersonaBadge => Boolean(b && b.value));
   const [hasClosetItems, curationProducts] = await Promise.all([
     hasAnyClosetItems(),
     fetchCurationProducts({
@@ -263,6 +279,16 @@ export default async function IntegratedResultPage({
 
         {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 (상단 히어로) */}
         <PersonaNarrativeCard persona={session.persona} />
+
+        {/* 정체성 공유 카드 — "뽐내기" 정서(2026-07-12 인사이트): 페르소나를 자랑 가능한
+            이미지 배지로. 사진 미포함(생체정보), 성공 축 뱃지만 표시 */}
+        {session.persona?.oneLine && (
+          <PersonaShareSection
+            oneLine={session.persona.oneLine}
+            badges={personaBadges}
+            season={pcData?.season ?? null}
+          />
+        )}
 
         {/* ADR-104 체크리스트 #2: 다음 행동 3단계 */}
         <ActionPlanCard plan={actionPlan} />

@@ -6,3 +6,5 @@ export type { ShareCardData, ShareCardTheme, ShareCardFormat } from './AnalysisS
 export { ShareThemePicker } from './ShareThemePicker';
 export { PrintButton } from './PrintButton';
 export { ShareCardTemplate } from './ShareCardTemplate';
+export { PersonaShareCard } from './PersonaShareCard';
+export type { PersonaBadge } from './PersonaShareCard';
