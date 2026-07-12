@@ -6,6 +6,10 @@
  */
 
 import { cn } from '@/lib/utils';
+import { SHORT_DISCLOSURE, INTERMEDIARY_DISCLOSURE, DETAILED_DISCLOSURE } from './disclosure-text';
+
+// 문구는 서버/클라 공유를 위해 순수 모듈(disclosure-text)에 두고 재수출
+export { SHORT_DISCLOSURE, INTERMEDIARY_DISCLOSURE, DETAILED_DISCLOSURE };
 
 // ============================================
 // 타입 정의
@@ -21,20 +25,6 @@ export interface AffiliateDisclosureProps {
   /** 추가 클래스 */
   className?: string;
 }
-
-// ============================================
-// 고지 문구
-// ============================================
-
-// 쿠팡 파트너스·공정위 표준 문구 충족: "쿠팡 파트너스 활동의 일환으로… 수수료를 제공받습니다"
-// ("등"으로 무신사·iHerb 등 타 제휴 커버, "제공받습니다"로 단정 — 모호표현 금지 규정 준수)
-const SHORT_DISCLOSURE =
-  '이 게시물은 쿠팡 파트너스 등 제휴 활동의 일환으로, 구매 시 이룸이 일정액의 수수료를 제공받습니다.';
-
-const DETAILED_DISCLOSURE = `
-이 게시물은 쿠팡 파트너스 등 제휴 활동의 일환으로, 구매 시 이룸이 일정액의 수수료를 제공받습니다.
-구매자에게 추가 비용은 발생하지 않으며, 제품 추천은 이룸의 독립적인 판단에 기반합니다.
-`.trim();
 
 // ============================================
 // 컴포넌트
@@ -83,6 +73,8 @@ export function AffiliateDisclosure({
           data-testid="affiliate-disclosure"
         >
           <p className="text-xs text-muted-foreground">{SHORT_DISCLOSURE}</p>
+          {/* 통신판매중개자 지위 상시 고지 (전자상거래법 §20) */}
+          <p className="text-[10px] text-muted-foreground mt-1">{INTERMEDIARY_DISCLOSURE}</p>
           {detailed && (
             <p className="text-[10px] text-muted-foreground mt-1">
               제품 추천은 이룸의 독립적인 판단에 기반하며, 제휴 관계가 추천에 영향을 미치지

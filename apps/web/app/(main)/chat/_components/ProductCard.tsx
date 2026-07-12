@@ -7,6 +7,8 @@
 import { ShoppingBag, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AdBadge } from '@/components/primitives/badge-variants/AdBadge';
+import { AffiliateCardDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 import type { ProductRecommendation } from '@/types/chat';
 
 interface ProductCardProps {
@@ -14,10 +16,13 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  // 제휴 링크로 나가는 카드만 고지 대상 (내부 상세 이동은 제휴 아님)
+  const isAffiliate = Boolean(product.affiliateUrl);
+
   const handleClick = () => {
     // 제품 상세 페이지로 이동 또는 어필리에이트 링크
     if (product.affiliateUrl) {
-      window.open(product.affiliateUrl, '_blank');
+      window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = `/products/${product.productId}`;
     }
@@ -40,6 +45,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h4 className="font-medium text-sm truncate">{product.productName}</h4>
+              {/* 제휴 링크 카드는 '제휴' 뱃지로 광고성 명시 (공정위 추천보증 심사지침) */}
+              {isAffiliate && <AdBadge label="제휴" variant="subtle" size="xs" />}
               <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{product.reason}</p>
@@ -50,6 +57,9 @@ export function ProductCard({ product }: ProductCardProps) {
             보기
           </Button>
         </div>
+
+        {/* 제휴 고지 — 구매(제휴) 링크 인접 노출 (표시광고법·FTC §255.5) */}
+        {isAffiliate && <AffiliateCardDisclosure className="mt-2 text-[10px] leading-snug" />}
       </CardContent>
     </Card>
   );

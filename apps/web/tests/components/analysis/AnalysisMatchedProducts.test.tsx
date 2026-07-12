@@ -162,4 +162,15 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
     });
     expect(screen.queryByTestId('rank-badge')).not.toBeInTheDocument();
   });
+
+  it('추천 제품이 있으면 제휴 고지를 섹션 하단에 표시한다 (표시광고법·FTC §255.5)', async () => {
+    mockFetchProducts([
+      { product: makeCosmetic('p1', '세럼A'), matchScore: 92, matchReasons: ['건성'] },
+    ]);
+
+    render(<AnalysisMatchedProducts analysisType="skin" />);
+
+    await screen.findByTestId('matched-products-ranked');
+    expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
+  });
 });

@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { PurchaseButton } from '@/components/products/PurchaseButton';
 import { CompareButton } from '@/components/products/CompareButton';
+import { AffiliateCardDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 import { ProductViewTracker } from '@/components/products/ProductViewTracker';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { ReviewSection } from '@/components/products/reviews';
@@ -327,6 +328,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             affiliateUrl={(product as { affiliateUrl?: string }).affiliateUrl}
             className="w-full"
           />
+
+          {/* 제휴 고지 — 구매 CTA 인접 노출 (표시광고법·FTC §255.5).
+              실제 구매 링크가 있을 때만 — 링크 없으면 버튼이 비활성('준비 중')이므로 고지도 생략 */}
+          {((product as { affiliateUrl?: string }).affiliateUrl || product.purchaseUrl) && (
+            <AffiliateCardDisclosure className="text-center text-[11px]" />
+          )}
 
           <WishlistButton
             productType={productType}

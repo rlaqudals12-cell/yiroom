@@ -25,6 +25,7 @@ import { IngredientAnalysisSection } from '@/components/products/ingredients';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { AddToShelfButton } from '@/components/beauty/AddToShelfButton';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
+import { AffiliateCardDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 
 /**
  * 뷰티 제품 상세 페이지 - UX 리스트럭처링
@@ -398,6 +399,12 @@ export default function BeautyProductDetailPage() {
 
       {/* 하단 구매 바 — 가격(있으면) + 외부 구매처 검색 연결 (가짜 가격비교·리뷰는 실데이터 연동 전까지 비표시) */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
+        {/* 제휴 고지 — 구매 CTA 인접 노출 (표시광고법·FTC §255.5).
+            실제 수익화 링크(어필리에이트/구매)일 때만 노출 — 올리브영 검색 폴백은
+            수수료 귀속이 없으므로 잘못된 "수수료 수취" 고지를 피한다(정직 원칙, 전역 백스톱은 Footer). */}
+        {(product.affiliateUrl || product.purchaseUrl) && (
+          <AffiliateCardDisclosure className="mb-2 text-[10px] leading-snug" />
+        )}
         <div className="flex items-center gap-3">
           {/* 제품 DB에 price_krw가 있으면 노출 — "가격 정보 없음" 오해 방지 */}
           {displayProduct.price > 0 && (

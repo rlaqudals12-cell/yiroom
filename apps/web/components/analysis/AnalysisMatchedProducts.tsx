@@ -6,6 +6,7 @@ import { ShoppingBag, ChevronRight } from 'lucide-react';
 
 import { ProductCard } from '@/components/products/ProductCard';
 import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
+import { AffiliateCardDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 import {
   rankByMatchScore,
   getRankBadge,
@@ -244,6 +245,9 @@ export function AnalysisMatchedProducts({
           <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
+
+      {/* 제휴 고지 — 추천 제품이 제휴 링크로 수익화되므로 섹션 하단에 명시 (표시광고법·FTC §255.5) */}
+      <AffiliateCardDisclosure className="mt-3 text-center text-[10px] leading-snug text-zinc-500" />
     </div>
   );
 }

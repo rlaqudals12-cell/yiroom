@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { AffiliateCardDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 import { IngredientEWGBadge } from '@/components/products/ingredients';
 import type { GlobalProduct, ProductLookupSource } from '@/types/scan';
 import type { AffiliateLink } from '@/lib/scan/barcode-product-bridge';
@@ -241,6 +242,8 @@ export function ScanResult({
                   </a>
                 </Button>
               ))}
+              {/* 제휴 고지 — 구매 링크 인접 노출 (표시광고법·FTC §255.5) */}
+              <AffiliateCardDisclosure className="text-[10px] leading-snug" />
             </div>
           )}
         </div>

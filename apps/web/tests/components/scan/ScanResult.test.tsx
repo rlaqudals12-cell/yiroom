@@ -151,4 +151,23 @@ describe('ScanResult', () => {
 
     expect(screen.queryByText('EWG 참고 지표:')).not.toBeInTheDocument();
   });
+
+  it('어필리에이트 구매 링크가 있으면 제휴 고지를 노출한다 (표시광고법·FTC §255.5)', () => {
+    render(
+      <ScanResult
+        product={mockProduct}
+        source="internal_db"
+        confidence={95}
+        affiliateLinks={[{ partner: '쿠팡', url: 'https://coupang.com/p/1', price: 12000 }]}
+      />
+    );
+
+    expect(screen.getByText(/수수료를 제공받습니다/)).toBeInTheDocument();
+  });
+
+  it('구매 링크가 없으면 제휴 고지를 노출하지 않는다', () => {
+    render(<ScanResult product={mockProduct} source="internal_db" confidence={95} />);
+
+    expect(screen.queryByText(/수수료를 제공받습니다/)).not.toBeInTheDocument();
+  });
 });

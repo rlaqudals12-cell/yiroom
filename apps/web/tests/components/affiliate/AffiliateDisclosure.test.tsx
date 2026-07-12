@@ -70,6 +70,13 @@ describe('AffiliateDisclosure', () => {
 
       expect(screen.getByText(/독립적인 판단/)).toBeInTheDocument();
     });
+
+    it('통신판매중개자 지위 고지를 상시 표시한다 (전자상거래법 §20)', () => {
+      render(<AffiliateDisclosure variant="footer" />);
+
+      expect(screen.getByText(/통신판매중개자/)).toBeInTheDocument();
+      expect(screen.getByText(/통신판매의 당사자가 아니며/)).toBeInTheDocument();
+    });
   });
 });
 

@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AffiliateCardDisclosure } from './AffiliateDisclosure';
 import type { AffiliatePartnerName } from '@/types/affiliate';
 
 // ============================================
@@ -270,11 +271,9 @@ export function MultiChannelProductCard({
         })}
       </div>
 
-      {/* 법적 고지 */}
+      {/* 법적 고지 — 표준 컴포넌트로 정렬 (표시광고법·FTC §255.5 문구 통일) */}
       <div className="bg-muted/30 border-t px-4 py-2">
-        <p className="text-muted-foreground text-xs">
-          * 이 링크를 통해 구매하시면 이룸에 소정의 수수료가 지급됩니다.
-        </p>
+        <AffiliateCardDisclosure />
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { SHORT_DISCLOSURE, INTERMEDIARY_DISCLOSURE } from '@/components/affiliate/disclosure-text';
 
 /**
  * 푸터 컴포넌트
  * - 법적 페이지 링크 (이용약관, 개인정보처리방침, 오픈소스 라이선스)
+ * - 제휴 마케팅·통신판매중개자 지위 상시 고지 (백스톱)
  * - 앱 정보 및 저작권
  */
 export function Footer() {
@@ -34,6 +36,17 @@ export function Footer() {
             도움말
           </Link>
         </nav>
+
+        {/* 제휴·통신판매중개자 법적 고지 (백스톱)
+            개별 구매 표면에서 인라인 고지가 누락돼도 사이트 전역에서 항상 노출되도록 보장.
+            표시광고법·공정위 추천보증 심사지침·FTC §255.5 + 전자상거래법 §20 준수 */}
+        <div
+          className="mt-6 space-y-1 border-t border-zinc-800/60 pt-4 text-center text-[11px] leading-relaxed text-zinc-500"
+          data-testid="footer-affiliate-disclosure"
+        >
+          <p>{SHORT_DISCLOSURE}</p>
+          <p className="text-zinc-600">{INTERMEDIARY_DISCLOSURE}</p>
+        </div>
 
         {/* 저작권 */}
         <div className="mt-6 text-center text-xs text-zinc-500">
