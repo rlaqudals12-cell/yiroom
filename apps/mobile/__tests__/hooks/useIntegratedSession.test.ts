@@ -53,6 +53,13 @@ const initialResult: IntegratedAnalysisResult = {
     hair: { success: true, data: { id: 'hair-1' }, usedFallback: false },
     makeup: { success: true, data: { id: 'makeup-1' }, usedFallback: false },
   },
+  // 5축 모두 성공 → 나 프로필 존재 (persona는 성공 축 0개일 때만 null)
+  persona: {
+    oneLine: '따뜻하고 부드러운 인상의 당신',
+    narrative: '5축 분석을 종합한 나 프로필',
+    keyInsights: ['봄 웜톤', '복합성 피부'],
+    usedFallback: false,
+  },
   axesCompleted: ['personal_color', 'skin', 'body', 'hair', 'makeup'],
   axesFailed: [],
   usedFallback: [],

@@ -40,12 +40,21 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // 분석 결과 mock
-const mockUseUserAnalyses = jest.fn(() => ({
-  personalColor: { season: 'spring' },
-  skinAnalysis: { skinType: '복합성' },
-  bodyAnalysis: null,
-  isLoading: false,
-}));
+// 각 분석은 존재(객체)/미존재(null) 두 상태를 오가므로 유니온 타입 명시
+// (초기 팩토리 값만으로 추론하면 bodyAnalysis가 null로 좁혀져 존재 케이스 대입이 막힘)
+const mockUseUserAnalyses = jest.fn(
+  (): {
+    personalColor: { season: string } | null;
+    skinAnalysis: { skinType: string } | null;
+    bodyAnalysis: { bodyType: string } | null;
+    isLoading: boolean;
+  } => ({
+    personalColor: { season: 'spring' },
+    skinAnalysis: { skinType: '복합성' },
+    bodyAnalysis: null,
+    isLoading: false,
+  })
+);
 
 jest.mock('../../../hooks/useUserAnalyses', () => ({
   useUserAnalyses: () => mockUseUserAnalyses(),

@@ -24,6 +24,7 @@ import {
   typography,
 } from '../../../lib/theme/tokens';
 import type { CoachMessage } from '../../../lib/coach';
+import type { NetworkStatus } from '../../../lib/offline/types';
 
 // ============================================
 // Platform Mock (ChatInterface에서 Platform.OS 직접 참조)
@@ -85,12 +86,20 @@ jest.mock('../../../lib/coach/useCoach', () => ({
 }));
 
 // useNetworkStatus mock
-const mockUseNetworkStatus = jest.fn(() => ({
-  status: 'online' as const,
-  isConnected: true,
-  connectionType: 'wifi',
-  refresh: jest.fn(),
-}));
+// status는 online/offline/unknown, connectionType은 string|null을 오가므로 실제 타입 명시
+const mockUseNetworkStatus = jest.fn(
+  (): {
+    status: NetworkStatus;
+    isConnected: boolean;
+    connectionType: string | null;
+    refresh: () => Promise<void>;
+  } => ({
+    status: 'online',
+    isConnected: true,
+    connectionType: 'wifi',
+    refresh: jest.fn(),
+  })
+);
 
 jest.mock('../../../lib/offline', () => ({
   useNetworkStatus: () => mockUseNetworkStatus(),

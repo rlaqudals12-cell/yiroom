@@ -7,6 +7,7 @@
 import React from 'react';
 
 import { renderWithTheme } from '../../helpers/test-utils';
+import type { MonthlyReport } from '../../../lib/reports';
 
 // ============================================================
 // Mocks
@@ -14,16 +15,12 @@ import { renderWithTheme } from '../../helpers/test-utils';
 
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
-  return new Proxy(
-    {},
-    { get: () => (props: Record<string, unknown>) => <View {...props} /> }
-  );
+  return new Proxy({}, { get: () => (props: Record<string, unknown>) => <View {...props} /> });
 });
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
-  const createChainable = (): unknown =>
-    new Proxy({}, { get: () => createChainable });
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
@@ -84,13 +81,9 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View {...props}>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
     DataStateWrapper: ({
       children,
       isLoading,
@@ -100,18 +93,8 @@ jest.mock('../../../components/ui', () => {
       isLoading: boolean;
       isEmpty: boolean;
       [key: string]: unknown;
-    }) =>
-      isLoading || isEmpty ? (
-        <View testID="data-state-wrapper" />
-      ) : (
-        <View>{children}</View>
-      ),
-    SectionHeader: ({
-      title,
-    }: {
-      title: string;
-      [key: string]: unknown;
-    }) => (
+    }) => (isLoading || isEmpty ? <View testID="data-state-wrapper" /> : <View>{children}</View>),
+    SectionHeader: ({ title }: { title: string; [key: string]: unknown }) => (
       <View>
         <Text>{title}</Text>
       </View>
@@ -123,14 +106,7 @@ jest.mock('../../../components/ui', () => {
       children: React.ReactNode;
       [key: string]: unknown;
     }) => <View {...props}>{children}</View>,
-    StatCard: ({
-      label,
-      value,
-    }: {
-      label: string;
-      value: string;
-      [key: string]: unknown;
-    }) => (
+    StatCard: ({ label, value }: { label: string; value: string; [key: string]: unknown }) => (
       <View>
         <Text>{label}</Text>
         <Text>{value}</Text>
@@ -150,13 +126,21 @@ jest.mock('../../../lib/animations', () => ({
 }));
 
 // useMonthlyReport mock
+// report는 미존재(null)/존재(MonthlyReport)를 오가므로 실제 타입 기반 유니온 명시
 const mockRefetch = jest.fn();
-const mockUseMonthlyReport = jest.fn(() => ({
-  report: null,
-  isLoading: false,
-  error: null,
-  refetch: mockRefetch,
-}));
+const mockUseMonthlyReport = jest.fn(
+  (): {
+    report: MonthlyReport | null;
+    isLoading: boolean;
+    error: Error | null;
+    refetch: typeof mockRefetch;
+  } => ({
+    report: null,
+    isLoading: false,
+    error: null,
+    refetch: mockRefetch,
+  })
+);
 
 jest.mock('../../../hooks/useMonthlyReport', () => ({
   useMonthlyReport: (...args: unknown[]) => (mockUseMonthlyReport as jest.Mock)(...args),
@@ -194,11 +178,14 @@ describe('MonthlyReportScreen', () => {
     mockUseMonthlyReport.mockReturnValue({
       report: {
         month: '2026-03',
+        startDate: '2026-03-01',
+        endDate: '2026-03-31',
         workout: {
           totalSessions: 12,
           totalDuration: 720,
           totalCalories: 4500,
           bestStreak: 5,
+          averageSessionsPerWeek: 3,
         },
         nutrition: {
           averageCalories: 1800,
@@ -211,8 +198,11 @@ describe('MonthlyReportScreen', () => {
         weeklyTrends: [
           {
             weekLabel: '1주차',
+            startDate: '2026-03-01',
+            endDate: '2026-03-07',
             workoutSessions: 3,
             workoutCalories: 1200,
+            nutritionCalories: 1800,
             nutritionGoalRate: 80,
           },
         ],

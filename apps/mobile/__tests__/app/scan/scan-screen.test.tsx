@@ -61,7 +61,11 @@ jest.mock('expo-image-picker', () => ({
 }));
 
 // 전송 전 다운스케일 — 원본 대신 축소된 base64로 파이프라인이 흐르는지 검증
-const mockManipulate = jest.fn(async () => ({ uri: 'file://out.jpg', base64: 'SCALED64' }));
+// rest 파라미터로 선언해야 아래 (...args) 스프레드 전달이 타입 통과
+const mockManipulate = jest.fn(async (..._args: unknown[]) => ({
+  uri: 'file://out.jpg',
+  base64: 'SCALED64',
+}));
 jest.mock('expo-image-manipulator', () => ({
   manipulateAsync: (...args: unknown[]) => mockManipulate(...args),
   SaveFormat: { JPEG: 'jpeg', PNG: 'png' },

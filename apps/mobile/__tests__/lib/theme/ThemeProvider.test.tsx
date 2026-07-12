@@ -31,12 +31,18 @@ describe('ThemeProvider', () => {
       brand,
       module: moduleColors,
       status: statusColors,
+      grade: gradeColors,
+      nutrient: nutrientColors,
+      score: scoreColors,
+      trust: trustColors,
       spacing,
       radii,
       shadows,
       typography,
       isDark: false,
       colorScheme: null,
+      themeMode: 'system',
+      setThemeMode: () => {},
     };
 
     it('colors가 lightColors와 일치해야 한다', () => {
@@ -78,12 +84,18 @@ describe('ThemeProvider', () => {
       brand,
       module: moduleColors,
       status: statusColors,
+      grade: gradeColors,
+      nutrient: nutrientColors,
+      score: scoreColors,
+      trust: trustColors,
       spacing,
       radii,
       shadows,
       typography,
       isDark: true,
       colorScheme: 'dark',
+      themeMode: 'dark',
+      setThemeMode: () => {},
     };
 
     it('colors가 darkColors와 일치해야 한다', () => {
@@ -127,7 +139,9 @@ describe('ThemeProvider', () => {
     });
 
     it('colorScheme === "light"이면 lightColors 사용', () => {
-      const colorScheme = 'light';
+      // 런타임 colorScheme 문자열을 시뮬레이션. const가 'light' 리터럴로 좁혀지면
+      // === 'dark' 비교가 no-overlap(TS2367)으로 걸리므로 string으로 넓혀 명시한다.
+      const colorScheme: string = 'light';
       const isDark = colorScheme === 'dark';
       const colors = isDark ? darkColors : lightColors;
 

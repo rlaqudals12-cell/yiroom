@@ -51,9 +51,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -70,6 +68,13 @@ function createMockInventoryItem(overrides: Partial<InventoryItem> = {}): Invent
     name: '흰색 셔츠',
     imageUrl: 'https://example.com/shirt.jpg',
     originalImageUrl: null,
+    // InventoryItem 최상위 필수 필드 (브랜드/즐겨찾기 등은 metadata가 아닌 최상위로 승격됨)
+    brand: null,
+    tags: [],
+    isFavorite: false,
+    useCount: 0,
+    lastUsedAt: null,
+    expiryDate: null,
     metadata: {
       color: '화이트',
       pattern: 'solid',
@@ -81,15 +86,14 @@ function createMockInventoryItem(overrides: Partial<InventoryItem> = {}): Invent
       notes: null,
       isFavorite: false,
     },
-    createdAt: new Date('2026-02-20'),
-    updatedAt: new Date('2026-02-20'),
+    // InventoryItem.createdAt/updatedAt은 ISO 문자열 타입 (Date 아님)
+    createdAt: '2026-02-20T00:00:00.000Z',
+    updatedAt: '2026-02-20T00:00:00.000Z',
     ...overrides,
   };
 }
 
-function createMockRecommendation(
-  item: InventoryItem
-): ClosetRecommendation {
+function createMockRecommendation(item: InventoryItem): ClosetRecommendation {
   return {
     item,
     score: { total: 85, colorScore: 90, bodyTypeScore: 80, seasonScore: 85 },
@@ -99,8 +103,16 @@ function createMockRecommendation(
 
 function createMockOutfitSuggestion(): OutfitSuggestion {
   const top = createMockInventoryItem({ id: 'top-1', name: '흰색 셔츠', subCategory: 'top' });
-  const bottom = createMockInventoryItem({ id: 'bottom-1', name: '네이비 바지', subCategory: 'bottom' });
-  const outer = createMockInventoryItem({ id: 'outer-1', name: '베이지 자켓', subCategory: 'outer' });
+  const bottom = createMockInventoryItem({
+    id: 'bottom-1',
+    name: '네이비 바지',
+    subCategory: 'bottom',
+  });
+  const outer = createMockInventoryItem({
+    id: 'outer-1',
+    name: '베이지 자켓',
+    subCategory: 'outer',
+  });
   return {
     top: createMockRecommendation(top),
     bottom: createMockRecommendation(bottom),
@@ -124,52 +136,38 @@ describe('BodyProfileCard', () => {
   };
 
   it('체형 타입 한국어 라벨을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByText('모래시계형')).toBeTruthy();
   });
 
   it('BMI 값을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByText(/BMI 20.8/)).toBeTruthy();
   });
 
   it('키/몸무게 뱃지를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByText('170cm')).toBeTruthy();
     expect(getByText('60kg')).toBeTruthy();
   });
 
   it('BMI 라벨이 정상 범위를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByText('정상')).toBeTruthy();
   });
 
   it('BMI 라벨이 저체중을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...{ ...defaultProps, bmi: 17.5 }} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 17.5 }} />);
     expect(getByText('저체중')).toBeTruthy();
   });
 
   it('BMI 라벨이 과체중을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...{ ...defaultProps, bmi: 24.0 }} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 24.0 }} />);
     expect(getByText('과체중')).toBeTruthy();
   });
 
   it('BMI 라벨이 비만을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...{ ...defaultProps, bmi: 27.0 }} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 27.0 }} />);
     expect(getByText('비만')).toBeTruthy();
   });
 
@@ -181,9 +179,7 @@ describe('BodyProfileCard', () => {
   });
 
   it('날짜를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByText('2/20 분석')).toBeTruthy();
   });
 
@@ -195,17 +191,12 @@ describe('BodyProfileCard', () => {
   });
 
   it('다크모드에서 렌더링되어야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />,
-      true,
-    );
+    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />, true);
     expect(getByText('모래시계형')).toBeTruthy();
   });
 
   it('접근성 라벨이 설정되어야 한다', () => {
-    const { getByLabelText } = renderWithTheme(
-      <BodyProfileCard {...defaultProps} />
-    );
+    const { getByLabelText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
     expect(getByLabelText(/체형 프로필/)).toBeTruthy();
   });
 });
@@ -222,16 +213,12 @@ describe('ClosetPreviewStrip', () => {
   ];
 
   it('아이템 수를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <ClosetPreviewStrip items={mockItems} />
-    );
+    const { getByText } = renderWithTheme(<ClosetPreviewStrip items={mockItems} />);
     expect(getByText('3개 아이템')).toBeTruthy();
   });
 
   it('내 옷장 타이틀을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <ClosetPreviewStrip items={mockItems} />
-    );
+    const { getByText } = renderWithTheme(<ClosetPreviewStrip items={mockItems} />);
     expect(getByText('내 옷장')).toBeTruthy();
   });
 
@@ -247,9 +234,7 @@ describe('ClosetPreviewStrip', () => {
   });
 
   it('빈 배열일 때 안내 메시지를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <ClosetPreviewStrip items={[]} />
-    );
+    const { getByText } = renderWithTheme(<ClosetPreviewStrip items={[]} />);
     expect(getByText('옷장에 아이템을 추가해보세요')).toBeTruthy();
   });
 
@@ -268,17 +253,12 @@ describe('ClosetPreviewStrip', () => {
   });
 
   it('접근성 라벨이 아이템 수를 포함해야 한다', () => {
-    const { getByLabelText } = renderWithTheme(
-      <ClosetPreviewStrip items={mockItems} />
-    );
+    const { getByLabelText } = renderWithTheme(<ClosetPreviewStrip items={mockItems} />);
     expect(getByLabelText(/3개 아이템/)).toBeTruthy();
   });
 
   it('다크모드에서 렌더링되어야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <ClosetPreviewStrip items={mockItems} />,
-      true,
-    );
+    const { getByText } = renderWithTheme(<ClosetPreviewStrip items={mockItems} />, true);
     expect(getByText('내 옷장')).toBeTruthy();
   });
 });
@@ -291,23 +271,17 @@ describe('TodayOutfitSuggestion', () => {
   const suggestion = createMockOutfitSuggestion();
 
   it('오늘의 코디 타이틀을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(getByText('오늘의 코디')).toBeTruthy();
   });
 
   it('매칭률을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(getByText('매칭률 87%')).toBeTruthy();
   });
 
   it('슬롯 라벨을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(getByText('아우터')).toBeTruthy();
     expect(getByText('상의')).toBeTruthy();
     expect(getByText('하의')).toBeTruthy();
@@ -318,26 +292,20 @@ describe('TodayOutfitSuggestion', () => {
       ...suggestion,
       outer: undefined,
     };
-    const { queryByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={noOuter} />
-    );
+    const { queryByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={noOuter} />);
     expect(queryByText('아우터')).toBeNull();
     expect(queryByText('상의')).toBeTruthy();
     expect(queryByText('하의')).toBeTruthy();
   });
 
   it('첫 번째 팁을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(getByText('오늘 날씨에 딱 맞는 코디예요')).toBeTruthy();
   });
 
   it('팁이 없으면 팁 영역을 숨겨야 한다', () => {
     const noTips: OutfitSuggestion = { ...suggestion, tips: [] };
-    const { queryByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={noTips} />
-    );
+    const { queryByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={noTips} />);
     expect(queryByText('오늘 날씨에 딱 맞는 코디예요')).toBeNull();
   });
 
@@ -351,9 +319,7 @@ describe('TodayOutfitSuggestion', () => {
   });
 
   it('onPress가 없으면 더보기 버튼을 숨겨야 한다', () => {
-    const { queryByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { queryByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(queryByText('더보기')).toBeNull();
   });
 
@@ -365,17 +331,12 @@ describe('TodayOutfitSuggestion', () => {
   });
 
   it('접근성 라벨이 매칭률을 포함해야 한다', () => {
-    const { getByLabelText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />
-    );
+    const { getByLabelText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
     expect(getByLabelText(/매칭률 87%/)).toBeTruthy();
   });
 
   it('다크모드에서 렌더링되어야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <TodayOutfitSuggestion suggestion={suggestion} />,
-      true,
-    );
+    const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />, true);
     expect(getByText('오늘의 코디')).toBeTruthy();
   });
 });

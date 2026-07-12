@@ -5,6 +5,10 @@
 import { AnalyticsEventType, ErrorSeverity } from '../../lib/monitoring/types';
 
 describe('AnalyticsEventType', () => {
+  // AnalyticsEventType 정본(lib/monitoring/types.ts)에 실재하는 이벤트만 검증한다.
+  // 과거 목록에 있던 onboarding_step·onboarding_completed·feature_used·share_action·
+  // notification_opened는 정본 유니온에 없고, 프로덕션 코드(analytics.ts의 logEvent 호출부
+  // 및 앱 전체 grep)에서 실제로 방출하는 곳도 없어 제거함. (테스트가 stale, 유니온이 정본)
   const expectedTypes: AnalyticsEventType[] = [
     'screen_view',
     'workout_started',
@@ -15,13 +19,8 @@ describe('AnalyticsEventType', () => {
     'product_clicked',
     'analysis_started',
     'analysis_completed',
-    'onboarding_step',
-    'onboarding_completed',
     'error_occurred',
-    'feature_used',
-    'share_action',
     'notification_received',
-    'notification_opened',
   ];
 
   expectedTypes.forEach((type) => {
@@ -33,13 +32,7 @@ describe('AnalyticsEventType', () => {
 });
 
 describe('ErrorSeverity', () => {
-  const expectedSeverities: ErrorSeverity[] = [
-    'fatal',
-    'error',
-    'warning',
-    'info',
-    'debug',
-  ];
+  const expectedSeverities: ErrorSeverity[] = ['fatal', 'error', 'warning', 'info', 'debug'];
 
   expectedSeverities.forEach((severity) => {
     it(`"${severity}" 심각도가 유효해야 함`, () => {

@@ -9,37 +9,37 @@ import type { IntegratedAnalysisResult, AxisResult, AxisData } from '@/lib/api';
 
 const SESSION_ID = '7a3f1234-5678-4abc-def0-0123456789ab';
 
-const pcWarm: AxisResult = {
+const pcWarm: AxisResult<AxisData> = {
   success: true,
   usedFallback: false,
   data: { season: 'spring', tone: 'light-spring', undertone: 'warm', confidence: 88 },
 };
 
-const pcCool: AxisResult = {
+const pcCool: AxisResult<AxisData> = {
   success: true,
   usedFallback: false,
   data: { season: 'summer', tone: 'true-summer', undertone: 'cool', confidence: 85 },
 };
 
-const skinOily: AxisResult = {
+const skinOily: AxisResult<AxisData> = {
   success: true,
   usedFallback: false,
   data: { skinType: 'oily', overallScore: 70 },
 };
 
-const skinDry: AxisResult = {
+const skinDry: AxisResult<AxisData> = {
   success: true,
   usedFallback: false,
   data: { skinType: 'dry', overallScore: 72 },
 };
 
-const bodySuccess: AxisResult = {
+const bodySuccess: AxisResult<AxisData> = {
   success: true,
   usedFallback: false,
   data: { bodyType: 'hourglass' },
 };
 
-const failed: AxisResult = {
+const failed: AxisResult<AxisData> = {
   success: false,
   error: { code: 'MISSING_INPUT', message: 'x', userMessage: 'x', retryable: true },
 };

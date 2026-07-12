@@ -36,8 +36,10 @@ jest.mock('../../lib/connection-awareness', () => ({
 }));
 
 import { useConnectionExposure } from '../../hooks/useConnectionExposure';
+import type { ExposeRequest } from '../../lib/connection-awareness';
 
-const mockRequest = {
+// sourceModule은 ConnectionModule 리터럴 유니온이라 ExposeRequest로 명시 (string 추론 방지)
+const mockRequest: ExposeRequest = {
   connectionId: 'test::connection_1',
   sourceModule: 'skin',
   targetDomain: 'nutrition',

@@ -7,11 +7,14 @@
 import React from 'react';
 import { View } from 'react-native';
 import { render } from '@testing-library/react-native';
+import type { LucideIcon } from 'lucide-react-native';
 
 // Lucide 아이콘 대역 — icon prop으로 전달되어 렌더링 여부를 검증한다.
-function MockIcon(props: Record<string, unknown>) {
+// LucideIcon은 ForwardRefExoticComponent($$typeof 필요)라, 단순 함수 컴포넌트를
+// icon prop(LucideIcon 타입)에 넘기려면 캐스팅이 필요하다. (테스트 mock 한정)
+const MockIcon = function MockIcon(props: Record<string, unknown>) {
   return <View testID="hero-icon" {...props} />;
-}
+} as unknown as LucideIcon;
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {

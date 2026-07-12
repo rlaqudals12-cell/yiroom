@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -43,25 +40,42 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // 분석 결과 mock
-const mockUseUserAnalyses = jest.fn(() => ({
-  personalColor: null,
-  skinAnalysis: null,
-  bodyAnalysis: null,
-  isLoading: false,
-}));
+// 미존재(null)/존재(객체) 상태를 오가므로 유니온 타입 명시 (초기 null 추론 방지)
+const mockUseUserAnalyses = jest.fn(
+  (): {
+    personalColor: { season: string; tone: string; colorPalette: string[] } | null;
+    skinAnalysis: { skinType: string; overallScore: number; concerns: string[] } | null;
+    bodyAnalysis: { bodyType: string; height: number; weight: number; bmi: number } | null;
+    isLoading: boolean;
+  } => ({
+    personalColor: null,
+    skinAnalysis: null,
+    bodyAnalysis: null,
+    isLoading: false,
+  })
+);
 
 jest.mock('../../../hooks/useUserAnalyses', () => ({
   useUserAnalyses: () => mockUseUserAnalyses(),
 }));
 
 // 운동 데이터 mock
-const mockUseWorkoutData = jest.fn(() => ({
-  streak: { currentStreak: 0 },
-  todayWorkout: null,
-  weeklyLogs: [],
-  analysis: null,
-  isLoading: false,
-}));
+// analysis는 미존재(null)/존재(객체)를 오가므로 유니온 타입 명시
+const mockUseWorkoutData = jest.fn(
+  (): {
+    streak: { currentStreak: number };
+    todayWorkout: null;
+    weeklyLogs: unknown[];
+    analysis: { workoutType: string } | null;
+    isLoading: boolean;
+  } => ({
+    streak: { currentStreak: 0 },
+    todayWorkout: null,
+    weeklyLogs: [],
+    analysis: null,
+    isLoading: false,
+  })
+);
 
 jest.mock('../../../hooks/useWorkoutData', () => ({
   useWorkoutData: () => mockUseWorkoutData(),
@@ -70,13 +84,37 @@ jest.mock('../../../hooks/useWorkoutData', () => ({
 }));
 
 // 영양 데이터 mock
-const mockUseNutritionData = jest.fn(() => ({
-  todaySummary: null,
-  weeklyHistory: [],
-  settings: null,
-  streak: { currentStreak: 0 },
-  isLoading: false,
-}));
+// todaySummary/settings는 미존재(null)/존재(객체)를 오가므로 유니온 타입 명시
+const mockUseNutritionData = jest.fn(
+  (): {
+    todaySummary: {
+      totalCalories: number;
+      totalProtein: number;
+      totalCarbs: number;
+      totalFat: number;
+      waterIntake: number;
+      mealCount: number;
+      date: string;
+    } | null;
+    weeklyHistory: unknown[];
+    settings: {
+      dailyCalorieGoal: number;
+      proteinGoal: number;
+      carbsGoal: number;
+      fatGoal: number;
+      waterGoal: number;
+      mealCount: number;
+    } | null;
+    streak: { currentStreak: number };
+    isLoading: boolean;
+  } => ({
+    todaySummary: null,
+    weeklyHistory: [],
+    settings: null,
+    streak: { currentStreak: 0 },
+    isLoading: false,
+  })
+);
 
 jest.mock('../../../hooks/useNutritionData', () => ({
   useNutritionData: () => mockUseNutritionData(),
@@ -130,9 +168,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -289,9 +325,24 @@ describe('ReportsScreen', () => {
   describe('영양 데이터가 있을 때', () => {
     it('오늘 섭취 칼로리가 표시된다', () => {
       mockUseNutritionData.mockReturnValue({
-        todaySummary: { totalCalories: 1850, totalProtein: 80, totalCarbs: 200, totalFat: 60, waterIntake: 1500, mealCount: 3, date: '2026-02-21' },
+        todaySummary: {
+          totalCalories: 1850,
+          totalProtein: 80,
+          totalCarbs: 200,
+          totalFat: 60,
+          waterIntake: 1500,
+          mealCount: 3,
+          date: '2026-02-21',
+        },
         weeklyHistory: [],
-        settings: { dailyCalorieGoal: 2000, proteinGoal: 100, carbsGoal: 250, fatGoal: 70, waterGoal: 2000, mealCount: 3 },
+        settings: {
+          dailyCalorieGoal: 2000,
+          proteinGoal: 100,
+          carbsGoal: 250,
+          fatGoal: 70,
+          waterGoal: 2000,
+          mealCount: 3,
+        },
         streak: { currentStreak: 3 },
         isLoading: false,
       });
