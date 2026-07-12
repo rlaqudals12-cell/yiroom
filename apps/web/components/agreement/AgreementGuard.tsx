@@ -45,7 +45,7 @@ export function AgreementGuard() {
       try {
         const { data, error } = await supabase
           .from('user_agreements')
-          .select('terms_agreed, privacy_agreed')
+          .select('terms_agreed, privacy_agreed, biometric_agreed')
           .maybeSingle();
 
         if (error) {
@@ -53,10 +53,10 @@ export function AgreementGuard() {
           return;
         }
 
-        // 동의 정보가 없거나 필수 동의가 false인 경우
+        // 동의 정보가 없거나 필수 동의(약관·개인정보·생체정보)가 false인 경우
         // 원 목적지(pathname+search)를 returnTo로 보존 — 동의 완료 후 복귀
         // (가입=첫 미팅 퍼널: /analysis/integrated?onboarding=1 도달 보장, ADR-114)
-        if (!data || !data.terms_agreed || !data.privacy_agreed) {
+        if (!data || !data.terms_agreed || !data.privacy_agreed || !data.biometric_agreed) {
           router.replace(withReturnTo('/agreement', currentDestination(pathname)));
         }
       } catch (err) {

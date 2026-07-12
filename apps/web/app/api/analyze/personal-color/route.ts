@@ -10,6 +10,7 @@ import {
   dbError,
 } from '@/lib/api/error-response';
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
+import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import {
   analyzePersonalColor,
   type GeminiPersonalColorResult,
@@ -123,6 +124,10 @@ export async function POST(req: NextRequest) {
     // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
     const ageDenied = await requireAgeVerified(userId);
     if (ageDenied) return ageDenied;
+
+    // 생체정보 수집·이용 동의 게이트 (fail-closed) — BIPA/PIPA 제23조, 미동의 시 403
+    const bioDenied = await requireBiometricConsent(userId);
+    if (bioDenied) return bioDenied;
 
     // 분석용 이미지 입력 구성 (위에서 hasFrontImage || hasLegacyImage 검증 완료)
     const analysisInput: PersonalColorMultiAngleInput = {

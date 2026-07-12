@@ -4,6 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
   CURRENT_TERMS_VERSION,
   CURRENT_PRIVACY_VERSION,
+  CURRENT_BIOMETRIC_VERSION,
   mapDbAgreementToFrontend,
 } from '@/components/agreement';
 
@@ -39,8 +40,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch agreement' }, { status: 500 });
     }
 
-    // 동의 정보가 없거나 필수 동의가 false인 경우
-    if (!data || !data.terms_agreed || !data.privacy_agreed) {
+    // 동의 정보가 없거나 필수 동의(약관·개인정보·생체정보)가 false인 경우
+    if (!data || !data.terms_agreed || !data.privacy_agreed || !data.biometric_agreed) {
       return NextResponse.json({
         hasAgreed: false,
         agreement: null,
@@ -50,7 +51,8 @@ export async function GET() {
     // 약관 버전이 다른 경우 (재동의 필요)
     if (
       data.terms_version !== CURRENT_TERMS_VERSION ||
-      data.privacy_version !== CURRENT_PRIVACY_VERSION
+      data.privacy_version !== CURRENT_PRIVACY_VERSION ||
+      data.biometric_version !== CURRENT_BIOMETRIC_VERSION
     ) {
       return NextResponse.json({
         hasAgreed: false,
@@ -87,17 +89,19 @@ export async function POST(request: NextRequest) {
 
     // Body 파싱
     const body = await request.json();
-    const { termsAgreed, privacyAgreed, marketingAgreed, gender } = body as {
+    const { termsAgreed, privacyAgreed, marketingAgreed, biometricAgreed, gender } = body as {
       termsAgreed: boolean;
       privacyAgreed: boolean;
       marketingAgreed: boolean;
+      biometricAgreed: boolean;
       gender?: 'male' | 'female';
     };
 
-    // 필수 동의 검증
+    // 필수 동의 검증 (약관·개인정보·생체정보)
     const missingAgreements: string[] = [];
     if (!termsAgreed) missingAgreements.push('terms');
     if (!privacyAgreed) missingAgreements.push('privacy');
+    if (!biometricAgreed) missingAgreements.push('biometric');
 
     if (missingAgreements.length > 0) {
       return NextResponse.json(
@@ -130,12 +134,15 @@ export async function POST(request: NextRequest) {
           terms_agreed: true,
           privacy_agreed: true,
           marketing_agreed: marketingAgreed ?? false,
+          biometric_agreed: true,
           terms_version: CURRENT_TERMS_VERSION,
           privacy_version: CURRENT_PRIVACY_VERSION,
+          biometric_version: CURRENT_BIOMETRIC_VERSION,
           terms_agreed_at: now,
           privacy_agreed_at: now,
           marketing_agreed_at: marketingAgreed ? now : null,
           marketing_withdrawn_at: null,
+          biometric_agreed_at: now,
         },
         {
           onConflict: 'clerk_user_id',

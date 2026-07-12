@@ -37,6 +37,7 @@ export default function AgreementPage() {
   const [agreements, setAgreements] = useState<AgreementState>({
     terms: false,
     privacy: false,
+    biometric: false,
     marketing: false,
   });
 
@@ -64,6 +65,7 @@ export default function AgreementPage() {
     setAgreements({
       terms: checked,
       privacy: checked,
+      biometric: checked,
       marketing: checked,
     });
   }, []);
@@ -96,6 +98,7 @@ export default function AgreementPage() {
           termsAgreed: agreements.terms,
           privacyAgreed: agreements.privacy,
           marketingAgreed: agreements.marketing,
+          biometricAgreed: agreements.biometric,
           gender,
         }),
       });

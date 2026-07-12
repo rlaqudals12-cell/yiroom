@@ -115,8 +115,10 @@ describe('/api/agreement', () => {
           terms_agreed: true,
           privacy_agreed: true,
           marketing_agreed: false,
+          biometric_agreed: true,
           terms_version: '1.0',
           privacy_version: '1.0',
+          biometric_version: '1.0',
           terms_agreed_at: '2026-01-08T00:00:00Z',
           privacy_agreed_at: '2026-01-08T00:00:00Z',
           marketing_agreed_at: null,
@@ -146,8 +148,10 @@ describe('/api/agreement', () => {
           terms_agreed: true,
           privacy_agreed: true,
           marketing_agreed: false,
+          biometric_agreed: true,
           terms_version: '0.9', // 이전 버전
           privacy_version: '1.0',
+          biometric_version: '1.0',
           terms_agreed_at: '2025-01-08T00:00:00Z',
           privacy_agreed_at: '2025-01-08T00:00:00Z',
           marketing_agreed_at: null,
@@ -233,6 +237,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: false,
+          biometricAgreed: true,
           // gender 누락
         }),
       });
@@ -253,6 +258,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: false,
+          biometricAgreed: true,
           gender: 'invalid', // 유효하지 않은 성별
         }),
       });
@@ -291,6 +297,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: true,
+          biometricAgreed: true,
           gender: 'male',
         }),
       });
@@ -318,6 +325,7 @@ describe('/api/agreement', () => {
           termsAgreed: true,
           privacyAgreed: true,
           marketingAgreed: false,
+          biometricAgreed: true,
           gender: 'female',
         }),
       });

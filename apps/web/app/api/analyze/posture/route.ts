@@ -17,6 +17,7 @@ import {
   internalError,
 } from '@/lib/api/error-response';
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
+import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -69,6 +70,10 @@ export async function POST(req: NextRequest) {
     // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
     const ageDenied = await requireAgeVerified(userId);
     if (ageDenied) return ageDenied;
+
+    // 생체정보 수집·이용 동의 게이트 (fail-closed) — BIPA/PIPA 제23조, 미동의 시 403
+    const bioDenied = await requireBiometricConsent(userId);
+    if (bioDenied) return bioDenied;
 
     // 분석에 사용된 이미지 현황
     const imagesAnalyzed = {

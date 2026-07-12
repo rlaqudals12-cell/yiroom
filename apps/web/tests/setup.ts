@@ -304,6 +304,12 @@ vi.mock('@/lib/api/age-verification-gate', () => ({
   requireAgeVerified: vi.fn().mockResolvedValue(null),
 }));
 
+// Mock 생체정보 동의 게이트 — 테스트에서는 항상 동의 통과(null). fail-closed 실제 로직은
+// tests/api/agreement/route.test.ts 및 라우트 403 케이스에서 별도 검증한다.
+vi.mock('@/lib/api/biometric-consent', () => ({
+  requireBiometricConsent: vi.fn().mockResolvedValue(null),
+}));
+
 // Mock @clerk/nextjs/server (API Route 테스트용)
 // 개별 테스트에서 vi.mocked(auth).mockResolvedValue()로 오버라이드 가능
 vi.mock('@clerk/nextjs/server', () => ({

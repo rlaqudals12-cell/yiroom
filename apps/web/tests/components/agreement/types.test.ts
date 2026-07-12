@@ -13,8 +13,8 @@ import {
 } from '@/components/agreement/types';
 
 describe('AGREEMENT_ITEMS', () => {
-  it('3개의 동의 항목이 정의되어 있다', () => {
-    expect(AGREEMENT_ITEMS).toHaveLength(3);
+  it('4개의 동의 항목이 정의되어 있다', () => {
+    expect(AGREEMENT_ITEMS).toHaveLength(4);
   });
 
   it('이용약관 항목이 포함되어 있다', () => {
@@ -33,6 +33,14 @@ describe('AGREEMENT_ITEMS', () => {
     expect(privacy?.detailUrl).toBe('/privacy');
   });
 
+  it('생체정보 항목이 포함되어 있다', () => {
+    const biometric = AGREEMENT_ITEMS.find((item) => item.id === 'biometric');
+    expect(biometric).toBeDefined();
+    expect(biometric?.label).toBe('생체정보(얼굴·체형 이미지) 수집·이용 동의');
+    expect(biometric?.required).toBe(true);
+    expect(biometric?.detailUrl).toBe('/privacy');
+  });
+
   it('마케팅 항목이 포함되어 있다', () => {
     const marketing = AGREEMENT_ITEMS.find((item) => item.id === 'marketing');
     expect(marketing).toBeDefined();
@@ -48,11 +56,12 @@ describe('REQUIRED_AGREEMENT_IDS', () => {
   it('필수 동의 항목 ID가 올바르게 추출된다', () => {
     expect(REQUIRED_AGREEMENT_IDS).toContain('terms');
     expect(REQUIRED_AGREEMENT_IDS).toContain('privacy');
+    expect(REQUIRED_AGREEMENT_IDS).toContain('biometric');
     expect(REQUIRED_AGREEMENT_IDS).not.toContain('marketing');
   });
 
-  it('2개의 필수 항목이 있다', () => {
-    expect(REQUIRED_AGREEMENT_IDS).toHaveLength(2);
+  it('3개의 필수 항목이 있다', () => {
+    expect(REQUIRED_AGREEMENT_IDS).toHaveLength(3);
   });
 });
 
