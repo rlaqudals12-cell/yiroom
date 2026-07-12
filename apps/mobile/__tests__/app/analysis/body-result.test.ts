@@ -1,253 +1,64 @@
 /**
- * C-1 체형 분석 결과 화면 - 비즈니스 로직 테스트
+ * C-1 체형 분석 결과 화면 — 계약 테스트 (웹 API 정본, ADR-118)
  *
- * 테스트 대상:
- * - BMI 계산 및 상태 판정 로직
- * - 체형 타입 데이터 일관성
- * - 체형 타입 매핑 로직
+ * 고정하는 계약:
+ * - 결과 화면은 로컬 lib/gemini 분석·클라이언트 DB 저장을 쓰지 않는다
+ *   (과거: 클라이언트 키 부재 → 항상 Mock "샘플 결과" + 저장 실패 → 홈 5축 미반영)
+ * - 서버 3타입(S/W/N) 응답을 그대로 렌더 소스로 쓴다 (8타입 재분류 매핑 제거)
+ * - BMI 정직 표기 (참고 수치 + 근육량 캐비앳, 낙인 라벨 금지)
  */
+import fs from 'fs';
+import path from 'path';
 
-import type { BodyType } from '@yiroom/shared';
+const RESULT_SRC = fs.readFileSync(
+  path.join(__dirname, '../../../app/(analysis)/body/result.tsx'),
+  'utf8'
+);
 
-// ============================================================
-// 체형 타입 데이터 (result.tsx에서 추출)
-// ============================================================
-
-const BODY_TYPE_DATA: Record<
-  BodyType,
-  {
-    name: string;
-    description: string;
-    recommendations: string[];
-    avoidItems: string[];
-  }
-> = {
-  Rectangle: {
-    name: '직사각형 체형',
-    description:
-      '어깨, 허리, 엉덩이 너비가 비슷한 체형입니다. 허리 라인을 강조하는 스타일이 잘 어울려요.',
-    recommendations: ['벨트로 허리 강조', 'A라인 스커트', '페플럼 탑', '랩 원피스'],
-    avoidItems: ['일자 실루엣', '박시한 상의'],
-  },
-  Triangle: {
-    name: '삼각형 체형',
-    description: '엉덩이가 어깨보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
-    recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
-    avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
-  },
-  InvertedTriangle: {
-    name: '역삼각형 체형',
-    description:
-      '어깨가 엉덩이보다 넓은 체형입니다. 하체에 볼륨을 주고 어깨 라인은 심플하게 연출하세요.',
-    recommendations: ['V넥', '래글런 소매', '플레어 스커트', '와이드 팬츠'],
-    avoidItems: ['패드 있는 어깨', '보트넥', '호리존탈 스트라이프 상의'],
-  },
-  Hourglass: {
-    name: '모래시계 체형',
-    description:
-      '어깨와 엉덩이가 비슷하고 허리가 잘록한 체형입니다. 곡선을 살리는 스타일이 잘 어울려요.',
-    recommendations: ['허리 강조 원피스', '벨트', '바디컨 스타일', '랩 탑'],
-    avoidItems: ['박시한 옷', '오버사이즈', '일자 실루엣'],
-  },
-  Oval: {
-    name: '타원형 체형',
-    description: '복부가 가장 넓은 체형입니다. 세로 라인을 강조하고 편안한 실루엣을 선택하세요.',
-    recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
-    avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
-  },
-  Diamond: {
-    name: '다이아몬드 체형',
-    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형입니다. 상하체 균형을 맞추세요.',
-    recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
-    avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
-  },
-  Pear: {
-    name: '배 체형',
-    description: '하체가 상체보다 넓은 체형입니다. 상체를 강조하고 하체는 심플하게 연출하세요.',
-    recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
-    avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
-  },
-  Athletic: {
-    name: '운동선수 체형',
-    description: '탄탄하고 균형 잡힌 체형입니다. 다양한 스타일을 소화할 수 있어요.',
-    recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
-    avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
-  },
-};
-
-// ============================================================
-// BMI 정직 표기 상수 (result.tsx에서 추출) — 웹 W4 정합
-// '과체중/비만' 낙인 라벨을 제거하고 숫자는 "참고 수치"로만 제시한다.
-// ============================================================
-
-const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
-const BMI_REFERENCE_LABEL = '참고 수치';
-
-// ============================================================
-// 체형 타입 매핑 (result.tsx에서 추출)
-// ============================================================
-
-function mapBodyType(geminiType: string): BodyType {
-  const bodyTypeMap: Record<string, BodyType> = {
-    rectangle: 'Rectangle',
-    triangle: 'Triangle',
-    inverted_triangle: 'InvertedTriangle',
-    hourglass: 'Hourglass',
-    oval: 'Oval',
-    diamond: 'Diamond',
-    pear: 'Pear',
-    athletic: 'Athletic',
-  };
-
-  return bodyTypeMap[geminiType] || 'Rectangle';
-}
-
-// ============================================================
-// BMI 계산 및 상태 테스트
-// ============================================================
-
-describe('C-1 체형 분석 - BMI 정직 표기 (낙인 제거, 웹 W4)', () => {
-  it("BMI 표기에 '과체중'·'비만' 낙인 라벨이 없어야 한다", () => {
-    const displayed = [BMI_REFERENCE_LABEL, BMI_CAVEAT];
-    displayed.forEach((text) => {
-      expect(text).not.toContain('과체중');
-      expect(text).not.toContain('비만');
-      expect(text).not.toContain('저체중');
-    });
+describe('C-1 체형 결과 화면 — 웹 API 정본 배선', () => {
+  it('로컬 Gemini 분석 경로를 import하지 않는다 (스트랜딩 재발 방지)', () => {
+    expect(RESULT_SRC).not.toContain('analyzeBody as analyzeWithGemini');
+    expect(RESULT_SRC).not.toMatch(/analyzeWithGemini\(/);
   });
 
-  it("BMI는 '참고 수치'로만 제시된다", () => {
-    expect(BMI_REFERENCE_LABEL).toBe('참고 수치');
+  it('웹 API 클라이언트(requestBodyAnalysis)를 사용한다', () => {
+    expect(RESULT_SRC).toContain("from '@/lib/api/body'");
+    expect(RESULT_SRC).toContain('requestBodyAnalysis(');
   });
 
-  it('BMI 캐비앳으로 근육량 편차를 안내한다', () => {
-    expect(BMI_CAVEAT).toContain('근육량');
+  it('클라이언트 직접 DB 저장(saveBodyResult)이 없다 — 저장은 서버가 정본', () => {
+    expect(RESULT_SRC).not.toContain('saveBodyResult');
+    expect(RESULT_SRC).not.toContain('useClerkSupabaseClient');
+  });
+
+  it('8타입 재분류 매핑이 제거되었다 — 서버가 3타입(S/W/N)을 직접 반환', () => {
+    expect(RESULT_SRC).not.toContain('BODY_TYPE_TO_STYLING');
+    expect(RESULT_SRC).not.toContain("rectangle: 'Rectangle'");
+  });
+
+  it('폴백(usedMock) 여부를 신뢰 배지로 정직하게 표시한다', () => {
+    expect(RESULT_SRC).toContain("trustBadgeType={analysis.usedMock ? 'fallback' : 'ai'}");
+    expect(RESULT_SRC).toContain('usedFallback={analysis.usedMock}');
+  });
+
+  it('게이트·검증 에러는 서버 한국어 메시지를 그대로 보여준다', () => {
+    expect(RESULT_SRC).toContain('error instanceof BodyApiError ? error.message');
+    expect(RESULT_SRC).toContain('message={errorMessage}');
   });
 });
 
-// ============================================================
-// 체형 타입 매핑 테스트
-// ============================================================
+describe('C-1 체형 결과 화면 — BMI 정직 표기 (낙인 제거, 웹 W4)', () => {
+  // 주석은 낙인 라벨을 "금지 대상"으로 인용할 수 있으므로, 사용자에게 보이는
+  // 코드(주석 제거본)만 검사한다.
+  const DISPLAY_SRC = RESULT_SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 
-describe('C-1 체형 분석 - 타입 매핑', () => {
-  describe('mapBodyType', () => {
-    it('소문자 체형 타입이 PascalCase로 변환되어야 한다', () => {
-      expect(mapBodyType('rectangle')).toBe('Rectangle');
-      expect(mapBodyType('triangle')).toBe('Triangle');
-      expect(mapBodyType('hourglass')).toBe('Hourglass');
-    });
-
-    it('스네이크케이스 타입이 올바르게 변환되어야 한다', () => {
-      expect(mapBodyType('inverted_triangle')).toBe('InvertedTriangle');
-    });
-
-    it('모든 유효한 타입이 변환되어야 한다', () => {
-      const types = [
-        'rectangle',
-        'triangle',
-        'inverted_triangle',
-        'hourglass',
-        'oval',
-        'diamond',
-        'pear',
-        'athletic',
-      ];
-
-      types.forEach((type) => {
-        const result = mapBodyType(type);
-        expect(BODY_TYPE_DATA[result]).toBeDefined();
-      });
-    });
-
-    it('알 수 없는 타입은 Rectangle으로 기본값 처리되어야 한다', () => {
-      expect(mapBodyType('unknown')).toBe('Rectangle');
-      expect(mapBodyType('')).toBe('Rectangle');
-      expect(mapBodyType('RECTANGLE')).toBe('Rectangle');
-    });
-  });
-});
-
-// ============================================================
-// 체형 타입 데이터 일관성 테스트
-// ============================================================
-
-describe('C-1 체형 분석 - 데이터 일관성', () => {
-  describe('BODY_TYPE_DATA', () => {
-    it('모든 체형 타입이 정의되어 있어야 한다', () => {
-      const expectedTypes: BodyType[] = [
-        'Rectangle',
-        'Triangle',
-        'InvertedTriangle',
-        'Hourglass',
-        'Oval',
-        'Diamond',
-        'Pear',
-        'Athletic',
-      ];
-
-      expectedTypes.forEach((type) => {
-        expect(BODY_TYPE_DATA[type]).toBeDefined();
-      });
-    });
-
-    it('모든 체형 타입은 필수 필드를 가져야 한다', () => {
-      Object.values(BODY_TYPE_DATA).forEach((data) => {
-        expect(data.name).toBeDefined();
-        expect(typeof data.name).toBe('string');
-        expect(data.name.length).toBeGreaterThan(0);
-
-        expect(data.description).toBeDefined();
-        expect(typeof data.description).toBe('string');
-        expect(data.description.length).toBeGreaterThan(10);
-
-        expect(Array.isArray(data.recommendations)).toBe(true);
-        expect(data.recommendations.length).toBeGreaterThanOrEqual(2);
-
-        expect(Array.isArray(data.avoidItems)).toBe(true);
-        expect(data.avoidItems.length).toBeGreaterThanOrEqual(1);
-      });
-    });
-
-    it('모든 체형 타입 이름은 한국어여야 한다', () => {
-      const koreanRegex = /[\uAC00-\uD7AF]/;
-
-      Object.values(BODY_TYPE_DATA).forEach((data) => {
-        expect(data.name).toMatch(koreanRegex);
-      });
-    });
-
-    it('추천/비추천 스타일이 중복되지 않아야 한다', () => {
-      Object.entries(BODY_TYPE_DATA).forEach(([type, data]) => {
-        const recommendations = new Set(data.recommendations);
-        const avoidItems = new Set(data.avoidItems);
-
-        // 추천과 비추천에 같은 아이템이 없어야 함
-        data.recommendations.forEach((item) => {
-          expect(avoidItems.has(item)).toBe(false);
-        });
-
-        // 각 배열 내 중복 없어야 함
-        expect(recommendations.size).toBe(data.recommendations.length);
-        expect(avoidItems.size).toBe(data.avoidItems.length);
-      });
-    });
-  });
-});
-
-// ============================================================
-// 접근성 테스트
-// ============================================================
-
-describe('C-1 체형 분석 - 접근성', () => {
-  it('BMI 표기는 낙인 없이 이해 가능해야 한다', () => {
-    // '참고 수치' + 캐비앳만 노출 — 판정성 라벨(비만 등) 없음
-    expect(`${BMI_REFERENCE_LABEL} · ${BMI_CAVEAT}`).not.toMatch(/과체중|비만|저체중/);
+  it("BMI는 '참고 수치'로만 제시되고 낙인 라벨이 없다", () => {
+    expect(DISPLAY_SRC).toContain('참고 수치');
+    expect(DISPLAY_SRC).toContain('근육량');
+    expect(DISPLAY_SRC).not.toMatch(/과체중|비만|저체중/);
   });
 
-  it('체형 설명은 스타일 추천 이유를 포함해야 한다', () => {
-    Object.values(BODY_TYPE_DATA).forEach((data) => {
-      // 설명이 30자 이상이어야 충분한 정보 제공
-      expect(data.description.length).toBeGreaterThan(30);
-    });
+  it('의료적 판정 표현(진단/처방/치료)이 없다', () => {
+    expect(DISPLAY_SRC).not.toMatch(/진단|처방|치료/);
   });
 });

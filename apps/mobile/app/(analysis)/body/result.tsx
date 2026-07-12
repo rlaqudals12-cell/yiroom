@@ -1,16 +1,19 @@
 /**
- * C-1 체형 분석 — 결과 V2
+ * C-1 체형 분석 — 결과 V2 (웹 API 정본, ADR-118 thin client)
  *
  * ResultLayout 3탭 구조:
  *  요약: 체형 타입 + BMI 게이지 + 설명
- *  상세: 비율 BarChart + BMI 해석
+ *  상세: 추천 이유 + BMI 해석
  *  추천: 추천 스타일 + 피하면 좋은 스타일
+ *
+ * 분석·저장은 전부 웹 POST /api/analyze/body가 수행한다 (실 AI + body_analyses
+ * 저장 + 연령/생체 게이트). 이전의 로컬 lib/gemini 경로는 클라이언트에 키가 없어
+ * 항상 Mock 폴백 + 저장 실패였다 — 홈 5축 집계에 절대 반영되지 않던 근본 원인.
  */
-import { useUser } from '@clerk/clerk-expo';
-import type { BodyType, StylingBodyType } from '@yiroom/shared';
+import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -27,123 +30,26 @@ import {
   OutfitExamplesCard,
   ClosetPromptCard,
 } from '@/components/analysis/body';
-import { BarChart, type BarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveBodyResult, buildBodyTopActions } from '@/lib/analysis';
+import { buildBodyTopActions } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
-import {
-  analyzeBody as analyzeWithGemini,
-  imageToBase64,
-  type BodyAnalysisResult,
-} from '@/lib/gemini';
+import { requestBodyAnalysis, BodyApiError, type BodyAnalysisApiResult } from '@/lib/api/body';
+import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // BMI는 참고 수치일 뿐 — 근육량 등에 따라 실제 체성분과 다를 수 있어
 // '과체중/비만' 같은 낙인 라벨 대신 숫자만 "참고 수치"로 제시한다. (웹 W4 정합)
 const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
 
-/**
- * BodyType(8분류) → StylingBodyType(3분류) 매핑.
- *
- * 웹과 동일한 C-1 결과 3섹션 구조(ADR-098)를 Mobile에도 적용하기 위해
- * 기존 8타입 분석 결과를 S/W/N 3타입으로 재분류한다.
- *
- * - S (Straight): 직선적 실루엣 — Rectangle, Athletic, InvertedTriangle
- * - W (Wave): 곡선미 중심 — Hourglass, Pear, Triangle
- * - N (Natural): 프레임감 중심 — Oval, Diamond
- */
-const BODY_TYPE_TO_STYLING: Record<BodyType, StylingBodyType> = {
-  Rectangle: 'S',
-  Athletic: 'S',
-  InvertedTriangle: 'S',
-  Hourglass: 'W',
-  Pear: 'W',
-  Triangle: 'W',
-  Oval: 'N',
-  Diamond: 'N',
-};
-
-// 체형 타입 데이터
-const BODY_TYPE_DATA: Record<
-  BodyType,
-  {
-    name: string;
-    description: string;
-    recommendations: string[];
-    avoidItems: string[];
-    exerciseTips: string[];
-  }
-> = {
-  Rectangle: {
-    name: '직사각형 체형',
-    description:
-      '어깨, 허리, 엉덩이 너비가 비슷한 체형이에요. 허리 라인을 강조하면 실루엣이 더 예뻐 보여요.',
-    recommendations: ['벨트로 허리 강조', 'A라인 스커트', '페플럼 탑', '랩 원피스'],
-    avoidItems: ['일자 실루엣', '박시한 상의'],
-    exerciseTips: ['사이드 크런치로 허리 라인 만들기', '힙 쓰러스트로 하체 볼륨 키우기'],
-  },
-  Triangle: {
-    name: '삼각형 체형',
-    description:
-      '엉덩이가 어깨보다 넓은 체형이에요. 상체를 강조하면 균형 잡힌 실루엣을 연출할 수 있어요.',
-    recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
-    avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
-    exerciseTips: ['숄더 프레스로 어깨 라인 키우기', '푸쉬업으로 상체 탄탄하게'],
-  },
-  InvertedTriangle: {
-    name: '역삼각형 체형',
-    description: '어깨가 엉덩이보다 넓은 체형이에요. 하체에 볼륨을 주면 균형 잡힌 실루엣이 돼요.',
-    recommendations: ['V넥', '래글런 소매', '플레어 스커트', '와이드 팬츠'],
-    avoidItems: ['패드 있는 어깨', '보트넥', '가로 스트라이프 상의'],
-    exerciseTips: ['스쿼트로 하체 볼륨 키우기', '런지로 힙업 효과'],
-  },
-  Hourglass: {
-    name: '모래시계 체형',
-    description:
-      '어깨와 엉덩이가 비슷하고 허리가 잘록한 체형이에요. 곡선을 살리는 스타일이 잘 어울려요.',
-    recommendations: ['허리 강조 원피스', '벨트', '바디컨 스타일', '랩 탑'],
-    avoidItems: ['박시한 옷', '오버사이즈', '일자 실루엣'],
-    exerciseTips: ['전신 운동으로 밸런스 유지하기', '필라테스로 코어 강화'],
-  },
-  Oval: {
-    name: '타원형 체형',
-    description: '복부가 가장 넓은 체형이에요. 세로 라인을 강조하면 슬림해 보이는 효과가 있어요.',
-    recommendations: ['세로 스트라이프', 'V넥', 'A라인', '하이웨이스트'],
-    avoidItems: ['벨트 강조', '타이트한 복부', '가로 스트라이프'],
-    exerciseTips: ['유산소 운동으로 체지방 감소', '플랭크로 코어 강화'],
-  },
-  Diamond: {
-    name: '다이아몬드 체형',
-    description: '허리가 넓고 어깨와 엉덩이가 좁은 체형이에요. 상하체 균형을 맞추면 좋아요.',
-    recommendations: ['어깨 강조', '와이드 팬츠', 'A라인', '스트럭처드 재킷'],
-    avoidItems: ['타이트한 허리', '벨트 강조', '펜슬 스커트'],
-    exerciseTips: ['숄더 프레스로 어깨 라인 강조', '스쿼트로 하체 볼륨 키우기'],
-  },
-  Pear: {
-    name: '배 체형',
-    description: '하체가 상체보다 넓은 체형이에요. 상체를 강조하면 밸런스 있는 실루엣이 돼요.',
-    recommendations: ['보트넥', '퍼프 소매', 'A라인 스커트', '부츠컷 팬츠'],
-    avoidItems: ['스키니진', '밝은 색 하의', '힙 포켓 디테일'],
-    exerciseTips: ['상체 근력 운동으로 밸런스 맞추기', '힙 스트레칭으로 라인 정리'],
-  },
-  Athletic: {
-    name: '운동선수 체형',
-    description: '탄탄하고 균형 잡힌 체형이에요. 다양한 스타일을 소화할 수 있는 장점이 있어요.',
-    recommendations: ['핏된 옷', '스포티 룩', '캐주얼', '미니멀'],
-    avoidItems: ['과도한 레이어링', '너무 루즈한 핏'],
-    exerciseTips: ['현재 운동 루틴 유지', '유연성 운동 추가'],
-  },
-};
+const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
 export default function BodyResultScreen() {
-  const { module, colors, isDark } = useAnalysisStyles();
+  const { module, colors } = useAnalysisStyles();
   const accent = module.body;
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
     height: string;
@@ -153,16 +59,14 @@ export default function BodyResultScreen() {
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [bodyType, setBodyType] = useState<BodyType | null>(null);
-  const [bmi, setBmi] = useState<number | null>(null);
-  const [proportions, setProportions] = useState<BodyAnalysisResult['proportions'] | null>(null);
-  const [usedFallback, setUsedFallback] = useState(false);
+  const [analysis, setAnalysis] = useState<BodyAnalysisApiResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
   const analyzeBody = useCallback(async () => {
     setIsLoading(true);
-    setUsedFallback(false);
+    setAnalysis(null);
 
     try {
       let base64Data = imageBase64;
@@ -174,44 +78,34 @@ export default function BodyResultScreen() {
         throw new Error('이미지 데이터가 없습니다.');
       }
 
-      const heightNum = parseFloat(height);
-      const weightNum = parseFloat(weight);
-      const response = await analyzeWithGemini(base64Data, heightNum, weightNum);
-      const analysisResult = response.result;
-
-      setUsedFallback(response.usedFallback);
-
-      // BodyType 대소문자 매핑
-      const bodyTypeMap: Record<string, BodyType> = {
-        rectangle: 'Rectangle',
-        triangle: 'Triangle',
-        inverted_triangle: 'InvertedTriangle',
-        hourglass: 'Hourglass',
-        oval: 'Oval',
-        diamond: 'Diamond',
-        pear: 'Pear',
-        athletic: 'Athletic',
-      };
-
-      setBodyType(bodyTypeMap[analysisResult.bodyType] || 'Rectangle');
-      setBmi(analysisResult.bmi);
-      setProportions(analysisResult.proportions ?? null);
-      setShowCelebration(true);
-
-      // DB 저장 (실패해도 분석 결과는 표시)
-      if (user?.id) {
-        saveBodyResult(supabase, user.id, analysisResult, imageUri);
+      const token = await getToken();
+      if (!token) {
+        throw new BodyApiError('로그인이 필요해요. 다시 로그인해주세요.', 401, 'AUTH_ERROR');
       }
+
+      const result = await requestBodyAnalysis(
+        {
+          imageBase64: base64Data,
+          height: parseFloat(height),
+          weight: parseFloat(weight),
+        },
+        token
+      );
+
+      setAnalysis(result);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'body-result',
         tags: { module: 'C-1', action: 'analyze' },
       });
-      setBodyType(null);
+      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
+      setErrorMessage(error instanceof BodyApiError ? error.message : DEFAULT_ERROR_MESSAGE);
+      setAnalysis(null);
     } finally {
       setIsLoading(false);
     }
-  }, [height, weight, imageUri, imageBase64]);
+  }, [height, weight, imageUri, imageBase64, getToken]);
 
   useEffect(() => {
     analyzeBody();
@@ -231,10 +125,19 @@ export default function BodyResultScreen() {
     );
   }
 
-  if (!bodyType || bmi === null) {
+  // 서버 BMI 우선, 없으면 입력값에서 파생 (분석 실패와 무관한 산술값)
+  const heightNum = parseFloat(height);
+  const weightNum = parseFloat(weight);
+  const derivedBmi =
+    Number.isFinite(heightNum) && heightNum > 0 && Number.isFinite(weightNum)
+      ? weightNum / (heightNum / 100) ** 2
+      : null;
+  const bmi = analysis?.bmi ?? derivedBmi;
+
+  if (!analysis || bmi === null) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했어요. 다시 시도해 주세요."
+        message={errorMessage}
         onRetry={() => router.replace('/(analysis)/body')}
         onGoHome={() => router.replace('/(tabs)')}
         testID="body-analysis-error"
@@ -242,32 +145,16 @@ export default function BodyResultScreen() {
     );
   }
 
-  const typeData = BODY_TYPE_DATA[bodyType];
+  const recommendationItems = analysis.styleRecommendations.map((rec) => rec.item);
 
   // BMI 바 값 (0-40 범위를 0-100으로 정규화)
   const bmiNormalized = Math.min(100, Math.round((bmi / 40) * 100));
-
-  // 체형 비율 BarChart 데이터 (비율을 100분율 시각화)
-  const barData: BarDataItem[] = proportions
-    ? [
-        {
-          label: '어깨/엉덩이',
-          value: Math.round(proportions.shoulderHipRatio * 100),
-          maxValue: 150,
-        },
-        {
-          label: '허리/엉덩이',
-          value: Math.round(proportions.waistHipRatio * 100),
-          maxValue: 150,
-        },
-      ]
-    : [];
 
   // --- 헤더 콘텐츠 ---
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
-      <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
+      <Text style={[localStyles.typeName, { color: accent.base }]}>{analysis.bodyTypeLabel}</Text>
       <View style={localStyles.bmiRow}>
         <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>
         <Text style={[localStyles.bmiNumber, { color: colors.foreground }]}>{bmi.toFixed(1)}</Text>
@@ -284,10 +171,10 @@ export default function BodyResultScreen() {
     </View>
   );
 
-  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  // 결론 액션(ADR-111 표현 원칙 1) — 서버 분석 결과에서 규칙 조립 (새 fetch/AI 없음)
   const topActions = buildBodyTopActions({
-    recommendations: typeData.recommendations,
-    avoidItems: typeData.avoidItems,
+    recommendations: recommendationItems,
+    avoidItems: analysis.avoidStyles,
   });
 
   // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
@@ -300,18 +187,24 @@ export default function BodyResultScreen() {
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
         <GradientCard variant="body" style={localStyles.descCard}>
           <Text style={[localStyles.descText, { color: colors.foreground }]}>
-            {typeData.description}
+            {analysis.bodyTypeDescription || `${analysis.bodyTypeLabel} 골격이에요.`}
           </Text>
+          {analysis.insight ? (
+            <Text style={[localStyles.insightText, { color: colors.mutedForeground }]}>
+              {analysis.insight}
+            </Text>
+          ) : null}
         </GradientCard>
       </Animated.View>
 
-      {/* ③ BMI + 운동 팁 — 접기 (정보 삭제 아님, 접기만) */}
+      {/* ③ BMI + 체형 강점 — 접기 (정보 삭제 아님, 접기만) */}
       <ProgressiveDisclosure
-        expandLabel="BMI·운동 팁 자세히 보기"
+        expandLabel="BMI·체형 강점 자세히 보기"
         collapseLabel="접기"
         summary={
           <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
-            BMI {bmi.toFixed(1)} (참고 수치) · 운동 팁 {typeData.exerciseTips.length}개
+            BMI {bmi.toFixed(1)} (참고 수치)
+            {analysis.strengths.length > 0 ? ` · 체형 강점 ${analysis.strengths.length}개` : ''}
           </Text>
         }
         detail={
@@ -323,17 +216,23 @@ export default function BodyResultScreen() {
                 일반 참고 범위: 18.5 ~ 22.9 · {BMI_CAVEAT}
               </Text>
             </View>
-            <View>
-              <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>운동 팁</Text>
-              <GradientCard variant="body" style={localStyles.tipsCard}>
-                {typeData.exerciseTips.map((tip, index) => (
-                  <View key={index} style={localStyles.tipItem}>
-                    <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-                    <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
-                  </View>
-                ))}
-              </GradientCard>
-            </View>
+            {analysis.strengths.length > 0 && (
+              <View>
+                <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
+                  체형 강점
+                </Text>
+                <GradientCard variant="body" style={localStyles.tipsCard}>
+                  {analysis.strengths.map((strength, index) => (
+                    <View key={index} style={localStyles.tipItem}>
+                      <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                      <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+                        {strength}
+                      </Text>
+                    </View>
+                  ))}
+                </GradientCard>
+              </View>
+            )}
           </View>
         }
       />
@@ -343,16 +242,23 @@ export default function BodyResultScreen() {
   // --- 상세 탭 ---
   const detailTab = (
     <View style={localStyles.tabContent}>
-      {/* 체형 비율 차트 */}
-      {barData.length > 0 && (
-        <Animated.View
-          entering={FadeInUp.duration(TIMING.normal)}
-          style={localStyles.chartContainer}
-        >
+      {/* 추천 이유 — 서버 분석의 아이템별 근거 */}
+      {analysis.styleRecommendations.length > 0 && (
+        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            체형 비율 분석
+            추천 스타일과 이유
           </Text>
-          <BarChart data={barData} animated barColor={accent.base} />
+          <GradientCard variant="body" style={localStyles.tipsCard}>
+            {analysis.styleRecommendations.map((rec, index) => (
+              <View key={index} style={localStyles.tipItem}>
+                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
+                <Text style={[localStyles.tipText, { color: colors.foreground }]}>
+                  {rec.item}
+                  {rec.reason ? ` — ${rec.reason}` : ''}
+                </Text>
+              </View>
+            ))}
+          </GradientCard>
         </Animated.View>
       )}
 
@@ -389,17 +295,20 @@ export default function BodyResultScreen() {
   );
 
   // --- 추천 탭 — ADR-098 C-1 3섹션 구조 (원칙 + 코디 + 옷장 CTA) ---
-  const stylingBodyType: StylingBodyType | null = bodyType ? BODY_TYPE_TO_STYLING[bodyType] : null;
-  const recommendTab = stylingBodyType ? (
+  // 서버가 3타입(S/W/N)을 직접 반환하므로 8→3 재분류 매핑이 필요 없다
+  const recommendTab = (
     <View style={localStyles.tabContent}>
       {/* 섹션 1: 스타일링 원칙 (장기 기준, 쇼핑 시 판단 기준) */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <StylingPrinciplesCard bodyType={stylingBodyType} bodyTypeLabel={typeData.name} />
+        <StylingPrinciplesCard
+          bodyType={analysis.bodyType}
+          bodyTypeLabel={analysis.bodyTypeLabel}
+        />
       </Animated.View>
 
       {/* 섹션 2: 추천 코디 3세트 (단기 실행, 오늘 따라 입기) */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <OutfitExamplesCard bodyType={stylingBodyType} personalColorSeason={null} />
+        <OutfitExamplesCard bodyType={analysis.bodyType} personalColorSeason={null} />
       </Animated.View>
 
       {/* 섹션 3: 옷장 조합 CTA (무료 경로, Phase 1.5) */}
@@ -407,7 +316,7 @@ export default function BodyResultScreen() {
         <ClosetPromptCard />
       </Animated.View>
     </View>
-  ) : null;
+  );
 
   return (
     <>
@@ -430,8 +339,8 @@ export default function BodyResultScreen() {
         imageUri={imageUri}
         imageStyle={localStyles.bodyImage}
         headerContent={headerContent}
-        trustBadgeType={usedFallback ? 'fallback' : 'ai'}
-        usedFallback={usedFallback}
+        trustBadgeType={analysis.usedMock ? 'fallback' : 'ai'}
+        usedFallback={analysis.usedMock}
         summaryTab={summaryTab}
         detailTab={detailTab}
         recommendTab={recommendTab}
@@ -499,6 +408,11 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.sm,
     lineHeight: 22,
   },
+  insightText: {
+    fontSize: typography.size.xs,
+    lineHeight: 20,
+    marginTop: spacing.sm,
+  },
   sectionTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
@@ -513,9 +427,6 @@ const localStyles = StyleSheet.create({
   },
   discloseBody: {
     gap: spacing.mlg,
-  },
-  chartContainer: {
-    alignItems: 'center',
   },
   bmiDetailRow: {
     flexDirection: 'row',
@@ -547,19 +458,5 @@ const localStyles = StyleSheet.create({
     fontSize: typography.size.sm,
     lineHeight: 22,
     flex: 1,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  tag: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.circle,
-  },
-  tagText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
   },
 });
