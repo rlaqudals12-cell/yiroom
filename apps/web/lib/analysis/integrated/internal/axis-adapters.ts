@@ -75,6 +75,35 @@ function isMockMode(): boolean {
   return process.env.FORCE_MOCK_AI === 'true';
 }
 
+/**
+ * PC season/undertone을 DB 저장 규격(대문자 시작)으로 변환.
+ *
+ * 왜: prod `personal_color_assessments`의 CHECK 제약은 대문자 시작 값만 허용한다
+ * (season ∈ {Spring,Summer,Autumn,Winter}, undertone ∈ {Warm,Cool,Neutral}).
+ * 그런데 classifyTone·Mock은 소문자('spring'/'warm')를 낸다. 통합 경로는 이 변환이
+ * 누락돼 PC INSERT가 100% CHECK 위반(23514)으로 실패 → 세션이 늘 status='partial'이었다.
+ * (단독 `/api/analyze/personal-color-v2` route의 mapSeasonToDb/mapUndertoneToDb와 동일 계약.)
+ * 반환 AxisData는 소문자를 유지한다 — persona-composer가 소문자 season으로 톤을 판정하기 때문.
+ */
+function mapSeasonToDb(season: string): string {
+  const map: Record<string, string> = {
+    spring: 'Spring',
+    summer: 'Summer',
+    autumn: 'Autumn',
+    winter: 'Winter',
+  };
+  return map[season.toLowerCase()] ?? season;
+}
+
+function mapUndertoneToDb(undertone: string): string {
+  const map: Record<string, string> = {
+    warm: 'Warm',
+    cool: 'Cool',
+    neutral: 'Neutral',
+  };
+  return map[undertone.toLowerCase()] ?? undertone;
+}
+
 // ============================================
 // 1. PC-2 Adapter (Personal Color)
 // ============================================
@@ -149,8 +178,9 @@ export async function runPersonalColorAxis(
         session_id: sessionId,
         questionnaire_answers: {},
         face_image_url: sessionImageSentinel(sessionId, 'face'),
-        season: classification.season,
-        undertone: classification.undertone,
+        // DB CHECK 제약은 대문자 시작만 허용 → 저장 직전 변환 (반환 데이터는 소문자 유지)
+        season: mapSeasonToDb(classification.season),
+        undertone: mapUndertoneToDb(classification.undertone),
         confidence: classification.confidence,
         image_analysis: {
           version: 2,
@@ -476,6 +506,11 @@ export async function runHairAxis(
     }
 
     const supabase = createServiceRoleClient();
+    // hair_analyses 스키마 = 단독 `/api/analyze/hair` 계약과 동일:
+    //  - hair_type·hair_thickness·scalp_type는 NOT NULL (문진값 없으면 안전 기본값)
+    //  - `style_recommendations` 컬럼은 존재하지 않음 → 스타일 추천은 recommendations(jsonb)에 담는다.
+    // 왜: 과거엔 없는 컬럼(style_recommendations)을 넣고 NOT NULL scalp_type을 누락해
+    // 헤어 INSERT가 100% 실패(PGRST204/23502) → 헤어 축이 늘 partial이었다 (2026-07-12 수리).
     const { data, error } = await supabase
       .from('hair_analyses')
       .insert({
@@ -483,9 +518,15 @@ export async function runHairAxis(
         session_id: sessionId,
         image_url: sessionImageSentinel(sessionId, 'face'),
         face_shape: faceShape,
-        hair_type: input.questionnaire.hair.curlType ?? null,
-        hair_thickness: input.questionnaire.hair.density ?? null,
-        style_recommendations: styleRecommendations,
+        hair_type: input.questionnaire.hair.curlType ?? 'straight',
+        hair_thickness: input.questionnaire.hair.density ?? 'medium',
+        scalp_type: 'normal', // 통합 문진엔 두피 항목이 없음 — 중립 기본값
+        recommendations: {
+          version: 2,
+          source: 'integrated',
+          styleRecommendations,
+          usedFallback,
+        },
       })
       .select('id')
       .single();
