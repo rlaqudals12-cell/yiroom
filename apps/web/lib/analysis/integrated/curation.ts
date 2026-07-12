@@ -137,7 +137,8 @@ function buildBeautyCuration(
     items.push({
       category: 'base',
       title: `${finishLabel} 베이스 메이크업`,
-      reason: `${skin.skinType ?? '당신'} 피부에 ${finishLabel} 피니시가 잘 맞아요.`,
+      // 원시 영문 피부타입(combination 등) 노출 금지 — skinTypeKo로 한국어화
+      reason: `${skinTypeKo(skin.skinType) || '당신'} 피부에 ${finishLabel} 피니시가 잘 맞아요.`,
       href: buildBeautyUrl({ category: 'base', finish, tone: toneKey }, sessionId),
       cta: '베이스 보러가기',
     });

@@ -50,6 +50,9 @@ export {
   skinTypeKo,
   faceShapeKo,
   bodyDescKo,
+  toneKo,
+  finishKo,
+  coverageKo,
 } from './labels';
 
 // 실제 제품 인라인 매칭 타입 (함수는 server 전용 internal/product-matcher 직접 import)

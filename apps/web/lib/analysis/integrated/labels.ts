@@ -14,6 +14,10 @@
  * @see .claude/rules/quality-improvement-cycles.md — Cycle 2 "전문 용어 0개"
  */
 
+// PC-2 12톤 한국어 라벨은 personal-color-v2가 정본(SSOT) — 여기서 재정의하지 않고 재사용(이원화 금지).
+// types.ts는 순수 상수/타입만 담아 사이드이펙트가 없으므로 클라이언트 요약 카드에서 import 해도 안전.
+import { TWELVE_TONE_LABELS } from '@/lib/analysis/personal-color-v2/types';
+
 /** 계절 원시값(spring/Spring 등) → 한국어 "봄 웜톤" */
 const SEASON_KO: Record<string, string> = {
   spring: '봄 웜톤',
@@ -63,6 +67,21 @@ const BODY_DESC_KO: Record<string, string> = {
   내추럴: '골격감이 자연스러운 내추럴',
 };
 
+/** 메이크업 피니시 원시값 → 한국어 (기존 curation/베이스 카드 표기와 동일) */
+const FINISH_KO: Record<string, string> = {
+  dewy: '듀이',
+  satin: '사틴',
+  matte: '매트',
+  'semi-matte': '세미매트',
+};
+
+/** 베이스 커버력 원시값 → 한국어 */
+const COVERAGE_KO: Record<string, string> = {
+  light: '라이트',
+  medium: '미디엄',
+  full: '풀',
+};
+
 function mapKo(map: Record<string, string>, raw: string | null | undefined): string {
   if (!raw) return '';
   return map[raw.toLowerCase()] ?? raw;
@@ -97,4 +116,19 @@ export function faceShapeKo(raw: string | null | undefined): string {
 export function bodyDescKo(label: string | null | undefined): string {
   if (!label) return '';
   return BODY_DESC_KO[label] ?? label;
+}
+
+/** "트루 스프링" (12톤 원시값 true-spring 등 → 한국어). PC 결과 페이지와 동일 정본 표기. 매칭 실패 시 원본. */
+export function toneKo(raw: string | null | undefined): string {
+  return mapKo(TWELVE_TONE_LABELS, raw);
+}
+
+/** "세미매트" (메이크업 피니시 원시값 → 한국어). */
+export function finishKo(raw: string | null | undefined): string {
+  return mapKo(FINISH_KO, raw);
+}
+
+/** "미디엄" (베이스 커버력 원시값 → 한국어). */
+export function coverageKo(raw: string | null | undefined): string {
+  return mapKo(COVERAGE_KO, raw);
 }

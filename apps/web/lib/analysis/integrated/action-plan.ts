@@ -11,7 +11,7 @@
  */
 
 import { getBodyShapeLabel } from '@/lib/body';
-import { seasonKo, undertoneKo, faceShapeKo } from './labels';
+import { seasonKo, toneKo, faceShapeKo } from './labels';
 import type {
   AxisResult,
   AxisCode,
@@ -87,7 +87,7 @@ function pcActions(data: PersonalColorAxisData, gender: RecommendationGender): A
     {
       horizon: 'this_week',
       axis: 'personal_color',
-      title: `${undertoneKo(data.tone)} 팔레트로 옷장 정리`,
+      title: `${toneKo(data.tone)} 팔레트로 옷장 정리`,
       why: '기존 옷 중 어울리는 3벌을 고르고 자주 입어보세요.',
     },
   ];

@@ -12,6 +12,9 @@ import {
   skinTypeKo,
   faceShapeKo,
   bodyDescKo,
+  toneKo,
+  finishKo,
+  coverageKo,
 } from '@/lib/analysis/integrated/labels';
 
 describe('integrated/labels', () => {
@@ -44,6 +47,27 @@ describe('integrated/labels', () => {
 
   it('bodyDescKo: 골격 라벨 → 풀이 병기', () => {
     expect(bodyDescKo('웨이브')).toBe('곡선이 부드러운 웨이브');
+  });
+
+  it('toneKo: 12톤 원시값 → PC 결과 페이지와 동일한 한국어 정본 (true-spring이 아니라 트루 스프링)', () => {
+    expect(toneKo('true-spring')).toBe('트루 스프링');
+    expect(toneKo('light-spring')).toBe('라이트 스프링');
+    expect(toneKo('True-Summer')).toBe('트루 서머'); // 대소문자 무관
+    // 원시 영문값이 그대로 새어나오지 않는다
+    expect(toneKo('true-spring')).not.toMatch(/spring/i);
+  });
+
+  it('finishKo: 메이크업 피니시 원시값 → 한국어', () => {
+    expect(finishKo('semi-matte')).toBe('세미매트');
+    expect(finishKo('dewy')).toBe('듀이');
+    expect(finishKo('matte')).toBe('매트');
+    expect(finishKo('satin')).toBe('사틴');
+  });
+
+  it('coverageKo: 커버력 원시값 → 한국어', () => {
+    expect(coverageKo('medium')).toBe('미디엄');
+    expect(coverageKo('light')).toBe('라이트');
+    expect(coverageKo('full')).toBe('풀');
   });
 
   it('매칭 실패/빈값은 안전하게 처리 (원본 반환 또는 빈 문자열)', () => {

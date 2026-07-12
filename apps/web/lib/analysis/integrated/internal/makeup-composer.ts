@@ -16,6 +16,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { skinTypeKo, finishKo, coverageKo } from '../labels';
 import type { AxisResult, MakeupAxisData, PersonalColorAxisData, SkinAxisData } from '../types';
 
 /** PC 결과에서 립 팔레트 도출 */
@@ -46,7 +47,8 @@ function deriveBaseRecommendation(skin: SkinAxisData): {
   const finishType = pickFinishType(type);
   const coverageLevel = pickCoverageLevel(score);
 
-  const description = `${type} 피부에는 ${finishType} 피니시 + ${coverageLevel} 커버가 어울려요.`;
+  // 원시 영문값(combination/semi-matte/medium) 노출 금지 — 소비자 눈높이 한국어로 (모바일도 서버 저장값을 그대로 렌더)
+  const description = `${skinTypeKo(type)} 피부에는 ${finishKo(finishType)} 피니시 + ${coverageKo(coverageLevel)} 커버가 어울려요.`;
 
   return { finishType, coverageLevel, description };
 }
@@ -78,7 +80,7 @@ export function composeMakeupData(pc: PersonalColorAxisData, skin: SkinAxisData)
     lipPalette,
     eyeshadowPalette,
     tutorialSteps: [
-      `1. ${base.finishType} 피니시의 베이스 제품으로 시작 (커버 ${base.coverageLevel})`,
+      `1. ${finishKo(base.finishType)} 피니시의 베이스 제품으로 시작 (커버 ${coverageKo(base.coverageLevel)})`,
       `2. 립 컬러: ${lipPalette[0] ?? '#000'} (메인) / ${lipPalette[1] ?? '#000'} (보조)`,
       `3. 아이섀도: ${eyeshadowPalette[0] ?? '#000'} 기본 + ${eyeshadowPalette[1] ?? '#000'} 포인트`,
     ],

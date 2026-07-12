@@ -208,8 +208,10 @@ describe('composePersona', () => {
     const text = [result?.oneLine, result?.narrative, ...(result?.keyInsights ?? [])].join(' ');
     // 전문 용어에 괄호 풀이 병기
     expect(text).toMatch(/듀이\(촉촉한 광\)/);
-    // 풀이 없는 영문 원시 용어 노출 금지
-    expect(text).not.toMatch(/combination|oval|dewy/i);
+    // 12톤은 PC 결과 페이지와 동일한 한국어 정본 라벨로 (light-spring이 아니라 라이트 스프링)
+    expect(text).toContain('라이트 스프링');
+    // 풀이 없는 영문 원시 용어 노출 금지 (12톤 원시값 spring 포함)
+    expect(text).not.toMatch(/combination|oval|dewy|spring/i);
   });
 
   it('keyInsights가 3개 초과면 3개로 잘림', async () => {

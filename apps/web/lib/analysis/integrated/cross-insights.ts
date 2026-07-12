@@ -28,6 +28,8 @@ import type {
 // ADR-107: 얼굴형 기반 헤어스타일 추천기 — C×H 인사이트에 구체 컷·피할스타일 결합
 import { recommendHairstyles, getStylesToAvoid, type FaceShapeType } from '@/lib/analysis/hair';
 import { getBodyShapeLabel } from '@/lib/body';
+// 소비자 눈높이 라벨 (원시 영문 undertone/skinType/season/faceShape → 한국어)
+import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo } from './labels';
 
 const VALID_FACE_SHAPES: readonly string[] = [
   'oval',
@@ -126,7 +128,8 @@ function pcXskin(
 
   return {
     title: `${tone} × ${finish}`,
-    body: `${pc.undertone}톤 혈색에 ${skin.type} 피부가 만나면 ${tone} 계열 베이스 + ${finish}가 가장 자연스러워요.`,
+    // undertoneKo는 '웜톤'까지 포함하므로 뒤 '톤'을 붙이지 않는다. skin.type도 한국어로.
+    body: `${undertoneKo(pc.undertone)} 혈색에 ${skinTypeKo(skin.type)} 피부가 만나면 ${tone} 계열 베이스 + ${finish}가 가장 자연스러워요.`,
   };
 }
 
@@ -140,7 +143,8 @@ function pcXmakeup(pc: {
   const eyeAccent = warm ? '골드/브라운' : '실버/플럼';
   return {
     title: `${lipAccent} 립 + ${eyeAccent} 섀도`,
-    body: `${pc.season} ${pc.undertone}톤 팔레트로 립은 ${lipAccent}, 아이는 ${eyeAccent} 조합이 얼굴을 가장 또렷하게 살려요.`,
+    // seasonKo가 '봄 웜톤'까지 담으므로 season+undertone을 한 라벨로 대체 (원시 spring/warm 노출 제거)
+    body: `${seasonKo(pc.season)} 팔레트로 립은 ${lipAccent}, 아이는 ${eyeAccent} 조합이 얼굴을 가장 또렷하게 살려요.`,
   };
 }
 
@@ -172,7 +176,8 @@ function bodyXhair(
 
   return {
     title: `${body.type} × ${hairStyle}`,
-    body: `${body.type} 실루엣과 ${hair.faceShape || '내'} 얼굴형 균형은 ${hairStyle}이(가) 완성해요.${example}${avoid}`,
+    // 얼굴형 원시값(oval 등) 노출 금지 — faceShapeKo로 한국어화(매칭 실패 시 '내'로 폴백)
+    body: `${body.type} 실루엣과 ${faceShapeKo(hair.faceShape) || '내'} 얼굴형 균형은 ${hairStyle}이(가) 완성해요.${example}${avoid}`,
   };
 }
 
@@ -223,7 +228,8 @@ function pcXbody(
   const topTone = warm ? '따뜻한 아이보리/카멜' : '쿨 그레이/네이비';
   return {
     title: `${topTone} × ${body.type} 핏`,
-    body: `${pc.season} ${pc.undertone}톤에 ${body.type} 체형은 ${topTone} 상의 + 핏 포인트를 살린 하의 조합이 안정적이에요.`,
+    // 원시 spring/warm 노출 제거 — seasonKo('봄 웜톤')로 대체
+    body: `${seasonKo(pc.season)}에 ${body.type} 체형은 ${topTone} 상의 + 핏 포인트를 살린 하의 조합이 안정적이에요.`,
   };
 }
 

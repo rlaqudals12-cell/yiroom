@@ -17,7 +17,7 @@
 
 import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
 import { getBodyShapeLabel } from '@/lib/body';
-import { skinTypeKo, faceShapeKo, bodyDescKo } from '../labels';
+import { skinTypeKo, faceShapeKo, bodyDescKo, seasonKo, toneKo, undertoneKo } from '../labels';
 import type {
   AxisResult,
   PersonaProfile,
@@ -87,8 +87,9 @@ function successAxisCount(s: AxisSummary): number {
 function buildPrompt(summary: AxisSummary): string {
   const lines: string[] = [];
   if (summary.pc) {
+    // 원시 영문값(spring/true-spring/warm)을 프롬프트에 넣지 않는다 — AI가 그대로 되받아 누수하는 걸 방지.
     lines.push(
-      `- 퍼스널컬러: ${summary.pc.season} / ${summary.pc.tone} / ${summary.pc.undertone}톤`
+      `- 퍼스널컬러: ${seasonKo(summary.pc.season)} / ${toneKo(summary.pc.tone)} / ${undertoneKo(summary.pc.undertone)}`
     );
   }
   if (summary.skin) {
@@ -166,7 +167,8 @@ function generateMockPersona(summary: AxisSummary): PersonaProfile {
     parts.push(
       `${summary.pc.season === 'spring' || summary.pc.season === 'autumn' ? '따뜻한' : '시원한'} 빛이 어울리는 톤`
     );
-    insights.push(`${summary.pc.tone} 팔레트가 당신의 혈색을 살려요.`);
+    // 원시 12톤값(true-spring 등) 노출 금지 — PC 결과 페이지와 동일한 한국어 정본 라벨("트루 스프링")로
+    insights.push(`${toneKo(summary.pc.tone)} 팔레트가 당신의 혈색을 살려요.`);
   }
   if (summary.skin) {
     // 초보자 눈높이: 원시 영문 타입·"바이탈리티" 전문용어 노출 금지

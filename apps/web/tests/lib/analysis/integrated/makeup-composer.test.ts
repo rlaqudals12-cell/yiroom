@@ -51,23 +51,31 @@ const skinCombinationMid: SkinAxisData = {
 // ============================================
 
 describe('composeMakeupData — 순수 조합 로직', () => {
-  describe('베이스 추천 도출', () => {
-    it('건성 피부 + 높은 점수 → dewy + light 커버', () => {
+  describe('베이스 추천 도출 (소비자 눈높이 한국어 — 원시 영문 노출 금지)', () => {
+    it('건성 피부 + 높은 점수 → 듀이 + 라이트 커버', () => {
       const result = composeMakeupData(pcWarm, skinDryHigh);
-      expect(result.baseRecommendation).toContain('dewy');
-      expect(result.baseRecommendation).toContain('light');
+      expect(result.baseRecommendation).toContain('건성');
+      expect(result.baseRecommendation).toContain('듀이');
+      expect(result.baseRecommendation).toContain('라이트');
+      // 원시 영문값(dewy/light) 노출 금지
+      expect(result.baseRecommendation).not.toMatch(/dewy|light/i);
     });
 
-    it('지성 피부 + 낮은 점수 → matte + full 커버', () => {
+    it('지성 피부 + 낮은 점수 → 매트 + 풀 커버', () => {
       const result = composeMakeupData(pcCool, skinOilyLow);
-      expect(result.baseRecommendation).toContain('matte');
-      expect(result.baseRecommendation).toContain('full');
+      expect(result.baseRecommendation).toContain('지성');
+      expect(result.baseRecommendation).toContain('매트');
+      expect(result.baseRecommendation).toContain('풀');
+      expect(result.baseRecommendation).not.toMatch(/matte|full/i);
     });
 
-    it('복합성 피부 + 중간 점수 → semi-matte + medium', () => {
+    it('복합성 피부 + 중간 점수 → 세미매트 + 미디엄', () => {
       const result = composeMakeupData(pcWarm, skinCombinationMid);
-      expect(result.baseRecommendation).toContain('semi-matte');
-      expect(result.baseRecommendation).toContain('medium');
+      expect(result.baseRecommendation).toContain('복합성');
+      expect(result.baseRecommendation).toContain('세미매트');
+      expect(result.baseRecommendation).toContain('미디엄');
+      // 원시 영문값(combination/semi-matte/medium) 노출 금지
+      expect(result.baseRecommendation).not.toMatch(/combination|semi-matte|medium/i);
     });
   });
 
