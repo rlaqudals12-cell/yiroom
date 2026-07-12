@@ -30,7 +30,10 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   // 추가 인증(이메일 코드) 단계 상태 — Clerk dev 인스턴스는 새 기기/세션에서
   // 비밀번호 검증 후 email_code 확인을 추가로 요구할 수 있어, 그때만 코드 입력 UI로 전환한다.
+  // 이 확인이 1차 팩터(needs_first_factor)로 올 수도, 2차 팩터(needs_second_factor)로 올 수도
+  // 있어(실기 재현: 비밀번호 후 needs_second_factor + email_code) 어느 단계인지 기억해 둔다.
   const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationStage, setVerificationStage] = useState<'first' | 'second'>('first');
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,12 +74,29 @@ export default function SignInScreen() {
             strategy: 'email_code',
             emailAddressId: emailFactor.emailAddressId,
           });
+          setVerificationStage('first');
           setPendingVerification(true);
           return;
         }
       }
 
-      // 3) needs_second_factor / needs_new_password 등 앱이 아직 지원하지 않는 상태.
+      // 3) 비밀번호가 1차로 통과되고 이메일 코드가 "2차" 팩터로 요구되는 경우.
+      //    (실기 재현: dev 인스턴스 재로그인 시 needs_second_factor +
+      //    supportedSecondFactors=[email_code] — 1차만 처리하던 수리의 사각지대)
+      if (result.status === 'needs_second_factor') {
+        const emailSecondFactor = result.supportedSecondFactors?.find(
+          (factor) => factor.strategy === 'email_code'
+        );
+
+        if (emailSecondFactor) {
+          await signIn.prepareSecondFactor({ strategy: 'email_code' });
+          setVerificationStage('second');
+          setPendingVerification(true);
+          return;
+        }
+      }
+
+      // 4) needs_new_password 등 앱이 아직 지원하지 않는 상태.
       //    무반응(조용한 무시) 대신 정직하게 웹 로그인으로 안내한다.
       Alert.alert(
         '추가 인증 필요',
@@ -91,7 +111,7 @@ export default function SignInScreen() {
     }
   };
 
-  // 이메일 인증 코드 확인 — needs_first_factor(email_code) 후속 단계
+  // 이메일 인증 코드 확인 — needs_first_factor / needs_second_factor(email_code) 후속 단계
   const handleVerifyCode = async () => {
     if (!isLoaded) return;
 
@@ -102,10 +122,11 @@ export default function SignInScreen() {
 
     setIsLoading(true);
     try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: 'email_code',
-        code,
-      });
+      // 코드 발송을 트리거한 단계(1차/2차)에 맞는 attempt를 호출해야 한다
+      const result =
+        verificationStage === 'second'
+          ? await signIn.attemptSecondFactor({ strategy: 'email_code', code })
+          : await signIn.attemptFirstFactor({ strategy: 'email_code', code });
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });

@@ -57,9 +57,11 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
 // useSignIn mock 설정
 const mockSignInCreate = jest.fn();
 const mockSetActive = jest.fn();
-// 추가 인증(email_code) 단계 mock — needs_first_factor 흐름 검증용
+// 추가 인증(email_code) 단계 mock — needs_first_factor / needs_second_factor 흐름 검증용
 const mockPrepareFirstFactor = jest.fn();
 const mockAttemptFirstFactor = jest.fn();
+const mockPrepareSecondFactor = jest.fn();
+const mockAttemptSecondFactor = jest.fn();
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(() => ({
@@ -78,6 +80,8 @@ jest.mock('@clerk/clerk-expo', () => ({
       create: mockSignInCreate,
       prepareFirstFactor: mockPrepareFirstFactor,
       attemptFirstFactor: mockAttemptFirstFactor,
+      prepareSecondFactor: mockPrepareSecondFactor,
+      attemptSecondFactor: mockAttemptSecondFactor,
     },
     setActive: mockSetActive,
     isLoaded: true,
@@ -368,12 +372,13 @@ describe('SignInScreen', () => {
       });
     });
 
-    // (c) 미지원 status → 정직한 Alert (무반응 금지)
-    it('지원하지 않는 status(needs_second_factor) 시 웹 로그인 안내 알림을 표시한다', async () => {
+    // (c) needs_second_factor인데 email_code 2차 팩터가 없으면 → 정직한 Alert (무반응 금지)
+    it('needs_second_factor에 email_code 팩터가 없으면 웹 로그인 안내 알림을 표시한다', async () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       mockSignInCreate.mockResolvedValueOnce({
         status: 'needs_second_factor',
         supportedFirstFactors: null,
+        supportedSecondFactors: [{ strategy: 'totp' }],
       });
 
       const { getByTestId } = renderWithTheme(<SignInScreen />);
@@ -410,6 +415,76 @@ describe('SignInScreen', () => {
           '추가 인증 필요',
           '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
         );
+      });
+    });
+  });
+
+  describe('추가 인증 (needs_second_factor / email_code) — 실기 재현 케이스', () => {
+    // 비밀번호 1차 통과 후 Clerk가 이메일 코드를 "2차" 팩터로 요구하는 경우
+    // (dev 인스턴스 재로그인 실측: status=needs_second_factor + supportedSecondFactors=[email_code])
+    const SECOND_FACTOR_RESULT = {
+      status: 'needs_second_factor',
+      supportedFirstFactors: null,
+      supportedSecondFactors: [
+        {
+          strategy: 'email_code',
+          emailAddressId: 'eid_second',
+          safeIdentifier: 't***@example.com',
+          primary: true,
+        },
+      ],
+    };
+
+    it('needs_second_factor(email_code) 시 prepareSecondFactor 후 코드 입력 UI로 전환한다', async () => {
+      mockSignInCreate.mockResolvedValueOnce(SECOND_FACTOR_RESULT);
+      mockPrepareSecondFactor.mockResolvedValueOnce({ status: 'needs_second_factor' });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => {
+        expect(mockPrepareSecondFactor).toHaveBeenCalledWith({ strategy: 'email_code' });
+      });
+
+      await waitFor(() => {
+        expect(getByTestId('auth-signin-verify-screen')).toBeTruthy();
+        expect(getByTestId('signin-code-input')).toBeTruthy();
+      });
+
+      // 1차 팩터 경로를 잘못 타지 않았는지 고정
+      expect(mockPrepareFirstFactor).not.toHaveBeenCalled();
+    });
+
+    it('2차 코드 입력 후 attemptSecondFactor 완료 시 setActive 후 메인 탭으로 이동한다', async () => {
+      mockSignInCreate.mockResolvedValueOnce(SECOND_FACTOR_RESULT);
+      mockPrepareSecondFactor.mockResolvedValueOnce({ status: 'needs_second_factor' });
+      mockAttemptSecondFactor.mockResolvedValueOnce({
+        status: 'complete',
+        createdSessionId: 'session_2fa',
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      const codeInput = await waitFor(() => getByTestId('signin-code-input'));
+
+      fireEvent.changeText(codeInput, '424242');
+      fireEvent.press(getByTestId('signin-verify-button'));
+
+      await waitFor(() => {
+        expect(mockAttemptSecondFactor).toHaveBeenCalledWith({
+          strategy: 'email_code',
+          code: '424242',
+        });
+        expect(mockAttemptFirstFactor).not.toHaveBeenCalled();
+        expect(mockSetActive).toHaveBeenCalledWith({ session: 'session_2fa' });
+        expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
       });
     });
   });
