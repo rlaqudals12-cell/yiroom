@@ -130,7 +130,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
     it('분석 데이터 수집 동의 토글이 표시된다', () => {
       const { getByText, getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
       expect(getByText('분석 데이터 수집 동의')).toBeTruthy();
-      expect(getByText('서비스 개선을 위한 익명 데이터 수집')).toBeTruthy();
+      expect(getByText('서비스 개선을 위한 이용 기록 수집')).toBeTruthy();
       expect(getByLabelText('분석 데이터 수집 동의')).toBeTruthy();
     });
 

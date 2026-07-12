@@ -62,7 +62,7 @@ export function PrivacyContent() {
 function KoreanContent() {
   return (
     <>
-      <p className="text-muted-foreground">최종 업데이트: 2026년 2월 20일</p>
+      <p className="text-muted-foreground">최종 업데이트: 2026년 7월 12일</p>
 
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">1. 개인정보의 처리 목적</h2>
@@ -383,10 +383,11 @@ function KoreanContent() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">13. 개인정보처리방침의 변경</h2>
         <p>
-          이 개인정보처리방침은 2026년 2월 20일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
+          이 개인정보처리방침은 2026년 7월 12일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
           확인하실 수 있습니다.
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>2026년 2월 20일 ~ 2026년 7월 11일 적용 버전</li>
           <li>2026년 1월 8일 ~ 2026년 2월 19일 적용 버전</li>
           <li>2025년 1월 20일 ~ 2026년 1월 7일 적용 버전</li>
         </ul>
@@ -398,7 +399,7 @@ function KoreanContent() {
 function EnglishContent() {
   return (
     <>
-      <p className="text-muted-foreground">Last updated: February 20, 2026</p>
+      <p className="text-muted-foreground">Last updated: July 12, 2026</p>
 
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">1. Purpose of Processing Personal Data</h2>
@@ -754,10 +755,11 @@ function EnglishContent() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">13. Changes to This Policy</h2>
         <p>
-          This Privacy Policy is effective as of February 20, 2026. Previous versions are available
+          This Privacy Policy is effective as of July 12, 2026. Previous versions are available
           below:
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>Version effective February 20, 2026 &ndash; July 11, 2026</li>
           <li>Version effective January 8, 2026 &ndash; February 19, 2026</li>
           <li>Version effective January 20, 2025 &ndash; January 7, 2026</li>
         </ul>

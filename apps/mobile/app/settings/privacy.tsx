@@ -64,22 +64,72 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
       const [userRes, pcRes, skinRes, bodyRes, workoutRes, mealRes, waterRes, badgesRes] =
         await Promise.all([
           supabase.from('users').select('*').eq('clerk_user_id', userId).single(),
-          supabase.from('personal_color_assessments').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-          supabase.from('skin_analyses').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-          supabase.from('body_analyses').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-          supabase.from('workout_logs').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
-          supabase.from('meal_records').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
-          supabase.from('water_records').select('*').eq('clerk_user_id', userId).order('created_at', { ascending: false }),
+          supabase
+            .from('personal_color_assessments')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          supabase
+            .from('skin_analyses')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          supabase
+            .from('body_analyses')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single(),
+          supabase
+            .from('workout_logs')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('meal_records')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('water_records')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .order('created_at', { ascending: false }),
           supabase.from('user_badges').select('*').eq('clerk_user_id', userId),
         ]);
 
       const exportData = {
         exportedAt: new Date().toISOString(),
-        user: userRes.data ? { email: userRes.data.email, name: userRes.data.name, createdAt: userRes.data.created_at } : null,
+        user: userRes.data
+          ? {
+              email: userRes.data.email,
+              name: userRes.data.name,
+              createdAt: userRes.data.created_at,
+            }
+          : null,
         analyses: {
-          personalColor: pcRes.data ? { season: pcRes.data.season, subtype: pcRes.data.subtype, analyzedAt: pcRes.data.created_at } : null,
-          skin: skinRes.data ? { skinType: skinRes.data.skin_type, concerns: skinRes.data.concerns, analyzedAt: skinRes.data.created_at } : null,
-          body: bodyRes.data ? { bodyType: bodyRes.data.body_type, analyzedAt: bodyRes.data.created_at } : null,
+          personalColor: pcRes.data
+            ? {
+                season: pcRes.data.season,
+                subtype: pcRes.data.subtype,
+                analyzedAt: pcRes.data.created_at,
+              }
+            : null,
+          skin: skinRes.data
+            ? {
+                skinType: skinRes.data.skin_type,
+                concerns: skinRes.data.concerns,
+                analyzedAt: skinRes.data.created_at,
+              }
+            : null,
+          body: bodyRes.data
+            ? { bodyType: bodyRes.data.body_type, analyzedAt: bodyRes.data.created_at }
+            : null,
         },
         records: {
           workoutLogs: (workoutRes.data || []).length,
@@ -191,7 +241,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
                     분석 데이터 수집 동의
                   </Text>
                   <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                    서비스 개선을 위한 익명 데이터 수집
+                    서비스 개선을 위한 이용 기록 수집
                   </Text>
                 </View>
               </View>
