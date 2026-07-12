@@ -176,6 +176,21 @@ describe('BeautyRecommendTab', () => {
     expect(filterCalls.some((c) => c.args[0] === 'skin_types')).toBe(false);
   });
 
+  it('태그가 빈 배열({})인 제품도 배제하지 않는다 — 여름쿨톤×메이크업 0개 회귀 방지', async () => {
+    // prod 실측(2026-07-12): makeup 2,444개 중 personal_color_seasons가 빈 배열 2,073개·
+    // summer_cool 태깅 0개 → is.null 탈출구만으론 여름 쿨톤 사용자의 메이크업 탭이 전멸했다.
+    renderTab();
+    await screen.findByText('비타민C 세럼');
+
+    const orCalls = queryCalls.filter((c) => c.method === 'or');
+    // 배열 필터의 or 조건에 빈 배열 탈출구(eq.{})가 함께 들어가야 한다
+    expect(
+      orCalls.some(
+        (c) => typeof c.args[0] === 'string' && (c.args[0] as string).includes('skin_types.eq.{}')
+      )
+    ).toBe(true);
+  });
+
   it('스킨케어 > 세럼/앰플 선택 시 DB 실값(category=serum)으로 조회해 N>0개가 나온다', async () => {
     const user = userEvent.setup();
     renderTab();

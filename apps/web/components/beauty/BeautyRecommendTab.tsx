@@ -368,31 +368,34 @@ export function BeautyRecommendTab({
           }
         }
 
-        // 태그 배열 필터: 태그가 없는(null) 제품을 배제하지 않는다.
-        // DB의 87%(2,459/2,821)가 skin_types 미태깅이라 overlap 필터만 쓰면 사실상 전멸 —
-        // "모름"은 "불일치"가 아니므로 null은 통과시키고, 태깅된 불일치만 거른다 (정직 원칙)
+        // 태그 배열 필터: 태그가 없는 제품을 배제하지 않는다.
+        // "태그 없음"은 DB에 null뿐 아니라 **빈 배열 '{}'** 로도 저장돼 있다
+        // (prod 실측 2026-07-12: makeup 2,444개 중 personal_color_seasons가 빈 배열 2,073개·null 42개,
+        //  여름 쿨톤 태깅 0개 — null 탈출구만으론 여름 쿨톤 사용자의 메이크업 탭이 16→0개로 전멸).
+        // "모름"은 "불일치"가 아니므로 null과 빈 배열 모두 통과시키고, 태깅된 불일치만 거른다 (정직 원칙)
         if (selectedSkinTypes.length > 0) {
-          query = query.or(`skin_types.ov.{${selectedSkinTypes.join(',')}},skin_types.is.null`);
+          query = query.or(
+            `skin_types.ov.{${selectedSkinTypes.join(',')}},skin_types.is.null,skin_types.eq.{}`
+          );
         }
 
         if (selectedConcerns.length > 0) {
           // UI 고민 id를 DB concern 동의어 집합으로 확장 (near-0 붕괴 방지 — 어휘 매핑 정합)
           const dbConcerns = expandConcernsToDbValues(selectedConcerns);
-          query = query.or(`concerns.ov.{${dbConcerns.join(',')}},concerns.is.null`);
+          query = query.or(`concerns.ov.{${dbConcerns.join(',')}},concerns.is.null,concerns.eq.{}`);
         }
 
-        // 딥링크 톤→시즌 필터: 태깅된 시즌이 겹치거나(개인색 매칭) 미태깅(null)이면 통과.
-        // 87% 미태깅 현실상 null을 배제하면 전멸하므로 "모름"은 통과시킨다 (정직 원칙).
+        // 딥링크 톤→시즌 필터: 태깅된 시즌이 겹치거나(개인색 매칭) 미태깅(null·빈 배열)이면 통과.
         if (initialSeasons && initialSeasons.length > 0) {
           query = query.or(
-            `personal_color_seasons.ov.{${initialSeasons.join(',')}},personal_color_seasons.is.null`
+            `personal_color_seasons.ov.{${initialSeasons.join(',')}},personal_color_seasons.is.null,personal_color_seasons.eq.{}`
           );
         }
 
         if (selectedAgeGroups.length > 0) {
           const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
           query = query.or(
-            `target_age_groups.ov.{${dbAgeGroups.join(',')}},target_age_groups.is.null`
+            `target_age_groups.ov.{${dbAgeGroups.join(',')}},target_age_groups.is.null,target_age_groups.eq.{}`
           );
         }
 
