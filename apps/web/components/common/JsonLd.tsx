@@ -3,6 +3,9 @@
  * SEO 최적화를 위한 구조화 데이터 (Schema.org)
  */
 
+// 실서빙 도메인 기준 절대 URL — layout.tsx metadataBase와 동일 규칙 (하드코딩 금지, 2026-07 브랜드 감사)
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+
 interface OrganizationJsonLdProps {
   name?: string;
   url?: string;
@@ -16,8 +19,8 @@ interface OrganizationJsonLdProps {
  */
 export function OrganizationJsonLd({
   name = '이룸',
-  url = 'https://yiroom.app',
-  logo = 'https://yiroom.app/logo.png',
+  url = SITE_URL,
+  logo = `${SITE_URL}/logo.png`,
   description = '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 다섯 가지를 AI가 분석하고, 오늘 입을 옷까지 추천해주는 뷰티 플랫폼',
 }: OrganizationJsonLdProps) {
   const jsonLd = {
@@ -52,7 +55,7 @@ interface WebApplicationJsonLdProps {
  */
 export function WebApplicationJsonLd({
   name = '이룸',
-  url = 'https://yiroom.app',
+  url = SITE_URL,
   description = 'AI가 해석하는 다섯 가지 시각 정체성 — 퍼스널 컬러·피부·체형·헤어·메이크업',
   operatingSystem = 'All',
   applicationCategory = 'HealthApplication',

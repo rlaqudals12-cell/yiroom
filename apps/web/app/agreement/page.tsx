@@ -140,16 +140,17 @@ export default function AgreementPage() {
       {/* 헤더 영역 */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          {/* 로고 */}
+          {/* 로고 — 핑크 정본 아이콘 (logo.svg는 흰 스트로크라 라이트 모드에서 비가시, 2026-07 브랜드 감사) */}
           <div className="text-center mb-8">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="이룸"
               width={80}
               height={80}
               className="mx-auto mb-4"
               priority
             />
+
             <h1 className="text-2xl font-bold text-foreground">고객님 환영합니다!</h1>
             <p className="text-muted-foreground mt-2">맞춤 서비스를 위해 정보를 입력해주세요.</p>
           </div>
