@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { redactPii } from '@/lib/utils/redact-pii';
 import type { ConnectionStatus } from '@/lib/connection-awareness';
 
 /**
@@ -77,7 +78,8 @@ export async function POST(req: Request): Promise<NextResponse> {
       );
 
       if (upsertError) {
-        console.error('[CA-Stats Cron] Upsert error for', userId, upsertError);
+        // PII 보호: userId 마스킹 후 로깅
+        console.error('[CA-Stats Cron] Upsert error for', redactPii.userId(userId), upsertError);
         errorCount++;
       } else {
         upsertCount++;

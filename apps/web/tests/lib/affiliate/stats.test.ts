@@ -1,8 +1,23 @@
 /**
  * 어필리에이트 통계 유틸리티 테스트
+ *
+ * 조작된 랜덤 Mock은 제거됨 — clicks Repository를 모킹해 실데이터 집계 경로를 검증한다.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// clicks Repository 모킹 (실 DB 대신)
+vi.mock('@/lib/affiliate/clicks', () => ({
+  getAffiliateStatsSummary: vi.fn(),
+  getPartnerDailyStats: vi.fn(),
+  getTopClickedProducts: vi.fn(),
+}));
+
+import {
+  getAffiliateStatsSummary,
+  getPartnerDailyStats,
+  getTopClickedProducts,
+} from '@/lib/affiliate/clicks';
 import {
   getDashboardSummary,
   getPartnerRevenues,
@@ -11,55 +26,94 @@ import {
   getDateRange,
 } from '@/lib/affiliate/stats';
 
-describe('Affiliate Stats', () => {
+const ONE_DAY = [
+  {
+    date: '2025-01-01',
+    totalClicks: 100,
+    uniqueClicks: 80,
+    conversions: 5,
+    totalSalesKrw: 500000,
+    totalCommissionKrw: 25000,
+  },
+];
+
+describe('Affiliate Stats (실데이터 경로)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('getDashboardSummary', () => {
-    it('Mock 데이터로 대시보드 요약을 반환한다', async () => {
-      const summary = await getDashboardSummary('2025-01-01', '2025-01-07', true);
+    it('실데이터 요약을 반환한다', async () => {
+      vi.mocked(getAffiliateStatsSummary).mockResolvedValue({
+        totalClicks: 300,
+        totalConversions: 15,
+        totalSalesKrw: 1500000,
+        totalCommissionKrw: 75000,
+        conversionRate: 5,
+      });
 
-      expect(summary).toHaveProperty('period');
-      expect(summary).toHaveProperty('totalClicks');
-      expect(summary).toHaveProperty('totalConversions');
-      expect(summary).toHaveProperty('totalSalesKrw');
-      expect(summary).toHaveProperty('totalCommissionKrw');
-      expect(summary).toHaveProperty('conversionRate');
+      const summary = await getDashboardSummary('2025-01-01', '2025-01-07');
+
+      expect(summary.period).toEqual({ start: '2025-01-01', end: '2025-01-07' });
+      expect(summary.totalClicks).toBe(300);
+      expect(summary.totalCommissionKrw).toBe(75000);
       expect(summary).toHaveProperty('comparedToPrevious');
     });
 
-    it('기간 정보가 올바르게 설정된다', async () => {
-      const startDate = '2025-01-01';
-      const endDate = '2025-01-31';
-      const summary = await getDashboardSummary(startDate, endDate, true);
+    it('데이터가 없으면 0을 반환한다 (조작 없음)', async () => {
+      vi.mocked(getAffiliateStatsSummary).mockResolvedValue({
+        totalClicks: 0,
+        totalConversions: 0,
+        totalSalesKrw: 0,
+        totalCommissionKrw: 0,
+        conversionRate: 0,
+      });
 
-      expect(summary.period.start).toBe(startDate);
-      expect(summary.period.end).toBe(endDate);
+      const summary = await getDashboardSummary('2025-01-01', '2025-01-07');
+
+      expect(summary.totalClicks).toBe(0);
+      expect(summary.totalSalesKrw).toBe(0);
+      expect(summary.totalCommissionKrw).toBe(0);
+      expect(summary.conversionRate).toBe(0);
     });
 
-    it('전환율이 올바르게 계산된다', async () => {
-      const summary = await getDashboardSummary('2025-01-01', '2025-01-07', true);
+    it('기간 정보가 올바르게 설정된다', async () => {
+      vi.mocked(getAffiliateStatsSummary).mockResolvedValue({
+        totalClicks: 0,
+        totalConversions: 0,
+        totalSalesKrw: 0,
+        totalCommissionKrw: 0,
+        conversionRate: 0,
+      });
 
-      if (summary.totalClicks > 0) {
-        const expectedRate = (summary.totalConversions / summary.totalClicks) * 100;
-        expect(summary.conversionRate).toBeCloseTo(expectedRate, 1);
-      }
+      const summary = await getDashboardSummary('2025-01-01', '2025-01-31');
+
+      expect(summary.period.start).toBe('2025-01-01');
+      expect(summary.period.end).toBe('2025-01-31');
     });
   });
 
   describe('getPartnerRevenues', () => {
-    it('모든 파트너의 수익 통계를 반환한다', async () => {
-      const partners = await getPartnerRevenues('2025-01-01', '2025-01-07', true);
+    it('모든 파트너의 수익 통계를 집계한다', async () => {
+      vi.mocked(getPartnerDailyStats).mockResolvedValue(ONE_DAY);
 
-      expect(partners).toHaveLength(3);
-      expect(partners.map((p) => p.partnerId)).toContain('coupang');
-      expect(partners.map((p) => p.partnerId)).toContain('iherb');
-      expect(partners.map((p) => p.partnerId)).toContain('musinsa');
+      const partners = await getPartnerRevenues('2025-01-01', '2025-01-07');
+
+      // coupang, iherb, musinsa, oliveyoung
+      expect(partners).toHaveLength(4);
+      const coupang = partners.find((p) => p.partnerId === 'coupang');
+      expect(coupang?.partnerName).toBe('쿠팡');
+      expect(coupang?.clicks).toBe(100);
+      expect(coupang?.conversions).toBe(5);
+      expect(coupang?.salesKrw).toBe(500000);
+      expect(coupang?.commissionKrw).toBe(25000);
+      expect(coupang?.conversionRate).toBeCloseTo(5, 1);
     });
 
     it('각 파트너 통계에 필수 필드가 있다', async () => {
-      const partners = await getPartnerRevenues('2025-01-01', '2025-01-07', true);
+      vi.mocked(getPartnerDailyStats).mockResolvedValue([]);
+
+      const partners = await getPartnerRevenues('2025-01-01', '2025-01-07');
 
       partners.forEach((partner) => {
         expect(partner).toHaveProperty('partnerId');
@@ -71,36 +125,43 @@ describe('Affiliate Stats', () => {
         expect(partner).toHaveProperty('conversionRate');
       });
     });
-
-    it('파트너별 한국어 이름이 설정된다', async () => {
-      const partners = await getPartnerRevenues('2025-01-01', '2025-01-07', true);
-
-      const coupang = partners.find((p) => p.partnerId === 'coupang');
-      expect(coupang?.partnerName).toBe('쿠팡');
-
-      const iherb = partners.find((p) => p.partnerId === 'iherb');
-      expect(iherb?.partnerName).toBe('iHerb');
-
-      const musinsa = partners.find((p) => p.partnerId === 'musinsa');
-      expect(musinsa?.partnerName).toBe('무신사');
-    });
   });
 
   describe('getDailyRevenueTrend', () => {
-    it('일별 트렌드 데이터를 반환한다', async () => {
-      const trend = await getDailyRevenueTrend('2025-01-01', '2025-01-07', true);
+    it('파트너별 일별 통계를 날짜로 합산한다', async () => {
+      vi.mocked(getPartnerDailyStats).mockResolvedValue(ONE_DAY);
 
-      expect(trend.length).toBeGreaterThan(0);
-      trend.forEach((day) => {
-        expect(day).toHaveProperty('date');
-        expect(day).toHaveProperty('clicks');
-        expect(day).toHaveProperty('conversions');
-        expect(day).toHaveProperty('commissionKrw');
-      });
+      const trend = await getDailyRevenueTrend('2025-01-01', '2025-01-07');
+
+      // 3개 파트너(coupang/iherb/musinsa)가 같은 날짜를 합산 → 1개 항목
+      expect(trend).toHaveLength(1);
+      expect(trend[0].date).toBe('2025-01-01');
+      expect(trend[0].clicks).toBe(300); // 100 × 3
+      expect(trend[0].conversions).toBe(15); // 5 × 3
+      expect(trend[0].commissionKrw).toBe(75000); // 25000 × 3
     });
 
     it('날짜순으로 정렬된다', async () => {
-      const trend = await getDailyRevenueTrend('2025-01-01', '2025-01-07', true);
+      vi.mocked(getPartnerDailyStats).mockResolvedValue([
+        {
+          date: '2025-01-03',
+          totalClicks: 10,
+          uniqueClicks: 8,
+          conversions: 1,
+          totalSalesKrw: 1000,
+          totalCommissionKrw: 50,
+        },
+        {
+          date: '2025-01-01',
+          totalClicks: 10,
+          uniqueClicks: 8,
+          conversions: 1,
+          totalSalesKrw: 1000,
+          totalCommissionKrw: 50,
+        },
+      ]);
+
+      const trend = await getDailyRevenueTrend('2025-01-01', '2025-01-07');
 
       for (let i = 1; i < trend.length; i++) {
         expect(trend[i].date >= trend[i - 1].date).toBe(true);
@@ -109,10 +170,15 @@ describe('Affiliate Stats', () => {
   });
 
   describe('getTopProducts', () => {
-    it('인기 제품 목록을 반환한다', async () => {
-      const products = await getTopProducts(10, true);
+    it('클릭 기준 인기 제품을 매핑한다', async () => {
+      vi.mocked(getTopClickedProducts).mockResolvedValue([
+        { productId: 'prod-1', clicks: 40 },
+        { productId: 'prod-2', clicks: 20 },
+      ]);
 
-      expect(products.length).toBeLessThanOrEqual(10);
+      const products = await getTopProducts(10);
+
+      expect(products).toHaveLength(2);
       products.forEach((product) => {
         expect(product).toHaveProperty('productId');
         expect(product).toHaveProperty('productName');
@@ -121,14 +187,16 @@ describe('Affiliate Stats', () => {
         expect(product).toHaveProperty('conversions');
         expect(product).toHaveProperty('commissionKrw');
       });
+      expect(products[0].productId).toBe('prod-1');
+      expect(products[0].clicks).toBe(40);
     });
 
-    it('limit에 따라 결과 수를 제한한다', async () => {
-      const products5 = await getTopProducts(5, true);
-      expect(products5.length).toBeLessThanOrEqual(5);
+    it('데이터가 없으면 빈 배열을 반환한다', async () => {
+      vi.mocked(getTopClickedProducts).mockResolvedValue([]);
 
-      const products3 = await getTopProducts(3, true);
-      expect(products3.length).toBeLessThanOrEqual(3);
+      const products = await getTopProducts(10);
+
+      expect(products).toEqual([]);
     });
   });
 

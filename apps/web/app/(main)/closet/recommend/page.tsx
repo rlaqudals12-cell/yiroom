@@ -9,7 +9,15 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, RefreshCw, Thermometer, Sparkles, ChevronRight, Images } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Thermometer,
+  Sparkles,
+  ChevronRight,
+  Images,
+  MapPin,
+} from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,6 +89,11 @@ export default function ClosetRecommendPage() {
   // 실패 시 계절 추정으로 폴백하고 "추정"임을 표시한다 (정직성).
   const [temp, setTemp] = useState<number>(15);
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  // 위치 사용 상태 — 위치정보보호법: 브라우저 권한 프롬프트만으로는 부족하다.
+  // 앱 내 명시적 동의(버튼) 후에만 좌표를 날씨 조회에 '일시' 사용하고, 좌표는 저장하지 않는다.
+  const [locationStatus, setLocationStatus] = useState<
+    'idle' | 'loading' | 'active' | 'unavailable'
+  >('idle');
 
   // 상황(TPO) 선택 — null = 상황 무관
   const [occasion, setOccasion] = useState<Occasion | null>(null);
@@ -130,7 +143,28 @@ export default function ClosetRecommendPage() {
     fetchProfile();
   }, [supabase]);
 
-  // 실시간 날씨 조회 — 실패하면 계절 추정 온도 유지
+  // 위치 기반 날씨 로드 — 앱 내 명시적 동의 이후에만 호출한다.
+  // getWeatherWithGeolocation()이 내부에서 브라우저 권한 프롬프트를 띄운다(좌표는 조회에만 쓰고 저장 안 함).
+  const loadWeatherFromLocation = useCallback(async () => {
+    setLocationStatus('loading');
+    try {
+      const data = await getWeatherWithGeolocation();
+      if (data) {
+        setWeather(data);
+        setTemp(data.temp);
+        setLocationStatus('active');
+      } else {
+        // 권한 거부/실패 → 계절 추정 온도 유지
+        setLocationStatus('unavailable');
+      }
+    } catch {
+      setLocationStatus('unavailable');
+    }
+  }, []);
+
+  // 실시간 날씨 조회 — 계절 추정으로 시작. 위치는 사용자가 '앱 내'에서 동의해야만 사용한다.
+  // 위치정보보호법: 페이지 로드만으로 위치를 요청하지 않는다(과거엔 마운트에서 자동 요청했음).
+  // 단, 이전에 앱 내 동의한 사용자는 다시 묻지 않고 자동 반영한다(좌표 미저장, 동의 플래그만 저장).
   useEffect(() => {
     // 폴백 기본값: 월 기반 계절 추정
     const month = new Date().getMonth();
@@ -139,21 +173,20 @@ export default function ClosetRecommendPage() {
     else if (month >= 8 && month <= 10) setTemp(18);
     else setTemp(3);
 
-    let cancelled = false;
-    getWeatherWithGeolocation()
-      .then((data) => {
-        if (!cancelled && data) {
-          setWeather(data);
-          setTemp(data.temp);
-        }
-      })
-      .catch(() => {
-        /* 폴백 유지 */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (typeof window !== 'undefined' && localStorage.getItem('location_consent') === 'granted') {
+      void loadWeatherFromLocation();
+    }
+  }, [loadWeatherFromLocation]);
+
+  // 위치 사용 동의 — 명시적 사용자 액션. 동의 플래그만 저장하고 좌표는 저장하지 않는다.
+  const handleUseLocation = useCallback(() => {
+    try {
+      localStorage.setItem('location_consent', 'granted');
+    } catch {
+      /* 스토리지 비활성(사생활 모드 등) — 이번 세션에만 위치 사용 */
+    }
+    void loadWeatherFromLocation();
+  }, [loadWeatherFromLocation]);
 
   // 옷장 아이템 조회
   const fetchItems = useCallback(async () => {
@@ -562,6 +595,36 @@ export default function ClosetRecommendPage() {
                 <span>{temp}°C</span>
               </div>
             </div>
+
+            {/* 위치 사용 동의 — 위치정보보호법: 브라우저 권한만으로는 부족, 앱 내 목적 고지·명시적 동의 필요.
+                위치가 반영되기 전(동의 전/실패)에만 노출한다. 좌표는 저장하지 않는다. */}
+            {locationStatus !== 'active' && (
+              <div
+                className="mb-3 rounded-lg border border-dashed border-border bg-muted/30 p-2.5"
+                data-testid="location-consent"
+              >
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  날씨 기반 코디 추천을 위해 현재 위치를 일시적으로 사용해요. 저장하지 않아요.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 h-8 text-xs"
+                  onClick={handleUseLocation}
+                  disabled={locationStatus === 'loading'}
+                  data-testid="location-consent-button"
+                >
+                  <MapPin className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                  {locationStatus === 'loading' ? '위치 확인 중...' : '현재 위치로 날씨 반영하기'}
+                </Button>
+                {locationStatus === 'unavailable' && (
+                  <p className="mt-1.5 text-[11px] text-muted-foreground">
+                    위치를 사용할 수 없어 계절 기준으로 추정했어요.
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
               {personalColor && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">

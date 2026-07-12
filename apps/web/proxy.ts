@@ -119,9 +119,20 @@ const isPublicRoute = createRouteMatcher([
   '/demo(.*)',
   // API 웹훅 (외부 서비스 콜백)
   '/api/webhooks(.*)',
-  '/api/affiliate/(.*)',
-  // Health check (통합 + 하위 라우트)
-  '/api/health(.*)',
+  // 어필리에이트 — 공개(익명/외부)로 열려야 하는 라우트만 명시.
+  // stats(관리자 매출 지표)·*/sync(관리자)는 제외해 인증 뒤로 둔다.
+  '/api/affiliate/conversion', // 외부 전환 웹훅 (서명 검증으로 자체 보호)
+  '/api/affiliate/products', // 익명 카탈로그 열람
+  '/api/affiliate/click', // 클릭 트래킹 (비로그인 포함)
+  '/api/affiliate/deeplink', // 딥링크 생성
+  '/api/affiliate/coupang/search',
+  '/api/affiliate/iherb/search',
+  '/api/affiliate/musinsa/search',
+  // Health check — 가동 확인용 공개 라우트만 명시.
+  // db-schema(내부 스키마 노출)는 라우트 내부에서 CRON_SECRET/관리자로 자체 보호.
+  '/api/health',
+  '/api/health/clerk',
+  '/api/health/db-schema',
   // 스타일 리포트 공개 공유 (토큰 링크 — 비로그인 열람)
   '/share(.*)',
   // OG 이미지 — 크롤러(카카오/X 등)가 비로그인으로 가져감.

@@ -36,29 +36,42 @@ interface ConversionWebhookBody {
   signature?: string;
 }
 
-/** 파트너별 Secret Key 환경변수 */
-const WEBHOOK_SECRETS: Record<string, string | undefined> = {
-  iherb: process.env.IHERB_WEBHOOK_SECRET,
-  coupang: process.env.COUPANG_WEBHOOK_SECRET,
-  musinsa: process.env.MUSINSA_WEBHOOK_SECRET,
+/** 파트너별 Secret Key 환경변수 이름 (값은 요청 시점에 읽는다) */
+const WEBHOOK_SECRET_ENV: Record<string, string> = {
+  iherb: 'IHERB_WEBHOOK_SECRET',
+  coupang: 'COUPANG_WEBHOOK_SECRET',
+  musinsa: 'MUSINSA_WEBHOOK_SECRET',
 };
 
 /**
  * 서명 검증 (HMAC-SHA256)
  * @description 파트너사에서 전송한 서명을 검증하여 요청의 유효성 확인
+ *
+ * fail-closed 원칙: 시크릿이 설정되지 않았거나 서명이 일치하지 않으면 거부한다.
+ * (예전 구현은 시크릿 미설정 시 true를 반환해 검증을 사실상 무력화했음 —
+ *  누구나 위조 전환을 주입해 뱃지·매출 통계를 조작할 수 있었다.)
  */
 function verifySignature(partner: string, payload: string, signature: string): boolean {
-  const secret = WEBHOOK_SECRETS[partner];
+  // 요청 시점에 env를 읽는다 (모듈 로드 시점 캡처 시 런타임 변경이 반영되지 않음)
+  const envKey = WEBHOOK_SECRET_ENV[partner];
+  const secret = envKey ? process.env[envKey] : undefined;
 
-  // Secret이 없으면 검증 스킵 (개발/테스트 환경)
+  // 시크릿 미설정 = 검증 불가 → 거부 (fail-closed)
   if (!secret) {
-    console.warn(`[Conversion] ${partner} webhook secret 미설정, 서명 검증 스킵`);
-    return true;
+    console.error(`[Conversion] ${partner} webhook secret 미설정 — 서명 검증 불가로 거부`);
+    return false;
   }
 
   const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+  // timingSafeEqual은 길이가 다르면 예외를 던지므로 먼저 길이를 비교한다
+  const sigBuf = Buffer.from(signature);
+  const expBuf = Buffer.from(expectedSignature);
+  if (sigBuf.length !== expBuf.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(sigBuf, expBuf);
 }
 
 /**
@@ -109,16 +122,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or missing partner' }, { status: 400 });
     }
 
-    // 서명 검증
-    if (body.signature) {
-      // 서명 필드 제외한 페이로드로 검증
-      const { signature, ...payloadWithoutSignature } = body;
-      const payloadString = JSON.stringify(payloadWithoutSignature);
+    // 서명 검증 (필수) — 서명이 없으면 거부한다.
+    // 예전에는 signature 필드를 생략하면 검증 자체를 건너뛸 수 있어(우회),
+    // 위조 전환 웹훅을 무제한 주입할 수 있었다.
+    if (!body.signature) {
+      console.error(`[Conversion] ${partner} 서명 누락 — 요청 거부`);
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    }
 
-      if (!verifySignature(partner, payloadString, signature)) {
-        console.error(`[Conversion] ${partner} 서명 검증 실패`);
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    // 서명 필드 제외한 페이로드로 검증
+    const { signature, ...payloadWithoutSignature } = body;
+    const payloadString = JSON.stringify(payloadWithoutSignature);
+
+    if (!verifySignature(partner, payloadString, signature)) {
+      console.error(`[Conversion] ${partner} 서명 검증 실패`);
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     // 클릭 ID 추출
@@ -292,12 +310,12 @@ export async function GET() {
     requiredFields: {
       partner: 'string (iherb | coupang | musinsa)',
       subId: 'string (클릭 ID)',
+      signature: 'string (HMAC-SHA256, 필수)',
     },
     optionalFields: {
       orderId: 'string',
       orderAmount: 'number',
       commission: 'number',
-      signature: 'string (HMAC-SHA256)',
     },
     status: 'active',
   });

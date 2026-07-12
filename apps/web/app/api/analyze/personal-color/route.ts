@@ -9,6 +9,7 @@ import {
   internalError,
   dbError,
 } from '@/lib/api/error-response';
+import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import {
   analyzePersonalColor,
   type GeminiPersonalColorResult,
@@ -118,6 +119,10 @@ export async function POST(req: NextRequest) {
     if (!hasFrontImage && !hasLegacyImage) {
       return validationError('이미지가 필요합니다.');
     }
+
+    // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
+    const ageDenied = await requireAgeVerified(userId);
+    if (ageDenied) return ageDenied;
 
     // 분석용 이미지 입력 구성 (위에서 hasFrontImage || hasLegacyImage 검증 완료)
     const analysisInput: PersonalColorMultiAngleInput = {

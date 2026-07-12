@@ -82,14 +82,15 @@ export async function GET(
     const supabase = createClerkSupabaseClient();
     const result = await analyzeProductReviews(supabase, productId, productType);
 
-    // 4. 리뷰 부족 시
+    // 4. 리뷰 부족 또는 AI 미가용 시 — 조작된 폴백 없이 정직하게 미제공
     if (!result) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'INSUFFICIENT_REVIEWS',
-            userMessage: '리뷰가 5개 이상이어야 AI 분석이 가능해요.',
+            code: 'ANALYSIS_UNAVAILABLE',
+            userMessage:
+              '지금은 AI 리뷰 분석을 제공할 수 없어요. 리뷰가 5개 이상 모이면 분석해 드려요.',
           },
         },
         { status: 422 }

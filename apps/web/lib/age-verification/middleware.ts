@@ -1,6 +1,9 @@
 /**
  * 연령 검증 미들웨어 유틸리티
  * proxy.ts에서 사용
+ *
+ * ⚠️ 현재 미사용(dead) + fail-open(에러 시 isMinor:false). 생체분석의 실제 서버 연령 강제는
+ *    fail-closed 라우트 게이트 lib/api/age-verification-gate.ts(requireAgeVerified)로 이동함.
  */
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { isMinor } from './index';

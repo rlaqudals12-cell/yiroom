@@ -12,6 +12,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendPushToSubscription, isVapidConfigured } from '@/lib/push/server';
 import { generateUserInsights } from '@/lib/insights';
 import { NOTIFICATION_TEMPLATES } from '@/lib/notifications/templates';
+import { redactPii } from '@/lib/utils/redact-pii';
 import type { PushSubscriptionRow, PushSendResult } from '@/lib/push/types';
 
 // Vercel Cron 인증 검증 (push-reminders 패턴 동일)
@@ -147,7 +148,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           ...pushResults.filter((r) => r.error === 'SUBSCRIPTION_EXPIRED').map((r) => r.endpoint)
         );
       } catch (userError) {
-        console.error(`[Cron Weekly] Error processing user ${userId}:`, userError);
+        // PII 보호: userId 마스킹 후 로깅
+        console.error(
+          `[Cron Weekly] Error processing user ${redactPii.userId(userId)}:`,
+          userError
+        );
         totalFailed += userSubs.length;
       }
     }

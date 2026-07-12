@@ -297,6 +297,13 @@ vi.mock('@/lib/supabase/clerk-client', () => ({
 // Clerk의 auth()가 내부적으로 사용하므로 테스트 환경에서 모킹 필요
 vi.mock('server-only', () => ({}));
 
+// Mock 연령 확인 게이트 (생체분석 라우트) — 테스트에서는 항상 연령 검증 통과(null)로 처리.
+// 라우트 테스트는 생년월일 셋업 없이 200을 기대하므로 전역 통과 처리하고,
+// fail-closed 실제 로직은 tests/lib/api/age-verification-gate.test.ts에서 별도 검증한다.
+vi.mock('@/lib/api/age-verification-gate', () => ({
+  requireAgeVerified: vi.fn().mockResolvedValue(null),
+}));
+
 // Mock @clerk/nextjs/server (API Route 테스트용)
 // 개별 테스트에서 vi.mocked(auth).mockResolvedValue()로 오버라이드 가능
 vi.mock('@clerk/nextjs/server', () => ({

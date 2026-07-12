@@ -3,6 +3,7 @@
  * - POST: 이미지에서 성분 추출
  */
 
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeIngredientImage, generateMockOcrResult } from '@/lib/scan/ingredient-ocr';
 
@@ -10,6 +11,12 @@ export const maxDuration = 30; // 30초 타임아웃
 
 export async function POST(request: NextRequest) {
   try {
+    // Gemini 비전 호출 비용 방어: 인증 사용자만 허용 (inventory/classify와 동일 패턴)
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { image, useMock } = body as { image?: string; useMock?: boolean };
 

@@ -11,6 +11,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { getUserPreferences, addPreference } from '@/lib/preferences';
+import { redactPii } from '@/lib/utils/redact-pii';
 import type {
   UserPreference,
   PreferenceDomain,
@@ -146,7 +147,8 @@ export async function POST(req: Request) {
     const result = await addPreference(supabase, preference);
 
     if (!result) {
-      console.error('[Preferences] Failed to add preference for user:', userId);
+      // PII 보호: userId 마스킹 후 로깅
+      console.error('[Preferences] Failed to add preference for user:', redactPii.userId(userId));
       return NextResponse.json(
         { success: false, error: 'Failed to add preference' },
         { status: 500 }

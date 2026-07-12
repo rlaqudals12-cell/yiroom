@@ -30,6 +30,44 @@ const VALID_OCCASIONS: ReadonlySet<string> = new Set([
   'travel',
 ]);
 
+/**
+ * SSRF 방지: 서버가 직접 fetch할 수 있는 이미지 URL 화이트리스트 검증.
+ *
+ * 인벤토리(옷장) 이미지는 Supabase Storage 비공개 버킷에만 저장되므로
+ * Supabase 호스트로만 제한한다. 이렇게 하지 않으면 사용자가 임의의 URL을
+ * 넘겨 서버가 내부망(localhost·사설 IP·클라우드 메타데이터 endpoint 등)이나
+ * 임의 외부 호스트로 요청하도록 유도할 수 있다(OWASP A10:2021 SSRF).
+ */
+export function isAllowedImageUrl(rawUrl: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+
+  // HTTPS만 허용 (http/data/file/gopher 등 차단)
+  if (parsed.protocol !== 'https:') return false;
+
+  const host = parsed.hostname.toLowerCase();
+
+  // Supabase Storage 도메인 (프로젝트별 서브도메인 포함)
+  if (host === 'supabase.co' || host.endsWith('.supabase.co')) return true;
+
+  // 환경변수로 지정된 Supabase 프로젝트 호스트 정확 매칭 (self-host 대비)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (supabaseUrl) {
+    try {
+      const configuredHost = new URL(supabaseUrl).hostname.toLowerCase();
+      if (host === configuredHost) return true;
+    } catch {
+      // 잘못된 env는 화이트리스트에 반영하지 않음
+    }
+  }
+
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -88,6 +126,10 @@ Only return the JSON object, no other text.`;
         imageData = imageBase64.replace(/^data:image\/\w+;base64,/, '');
         mimeType = 'image/png';
       } else {
+        // SSRF 방지: 화이트리스트(Supabase Storage) 도메인만 서버 fetch 허용
+        if (!isAllowedImageUrl(imageUrl)) {
+          return NextResponse.json({ error: '허용되지 않은 이미지 URL입니다.' }, { status: 400 });
+        }
         const imageResponse = await fetch(imageUrl);
         const imageBuffer = await imageResponse.arrayBuffer();
         imageData = Buffer.from(imageBuffer).toString('base64');

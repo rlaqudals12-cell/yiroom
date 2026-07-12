@@ -3,6 +3,7 @@
  * GET: 제품 성분 목록 및 분석 결과
  */
 
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import {
@@ -25,6 +26,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    }
+
+    // AI 요약(includeAI)은 Gemini 호출 비용이 들므로 인증 사용자만 허용.
+    // 성분 목록 자체는 공개/캐시 유지. 선택: 조용히 스킵 대신 401 반환 —
+    // 프로덕션 클라이언트 중 미인증으로 includeAI=true를 호출하는 곳이 없고
+    // (유일한 호출처인 e2e 스펙은 401을 허용), 익명 비용 남용 차단이 목적이기 때문.
+    if (includeAI) {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json(
+          { error: 'Unauthorized', code: 'AUTH_REQUIRED_FOR_AI' },
+          { status: 401 }
+        );
+      }
     }
 
     const supabase = createClerkSupabaseClient();

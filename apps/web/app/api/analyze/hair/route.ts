@@ -8,6 +8,7 @@ import {
   internalError,
   dbError,
 } from '@/lib/api/error-response';
+import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import {
   generateMockHairAnalysisResult,
   type HairAnalysisResult,
@@ -63,6 +64,10 @@ export async function POST(req: NextRequest) {
     if (!imageBase64) {
       return validationError('이미지가 필요합니다.');
     }
+
+    // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
+    const ageDenied = await requireAgeVerified(userId);
+    if (ageDenied) return ageDenied;
 
     // AI 분석 실행
     let result: HairAnalysisResult;

@@ -1,12 +1,13 @@
 /**
  * 어필리에이트 통계 유틸리티
- * @description 수익 대시보드용 통계 함수 + Mock 데이터
+ * @description 수익 대시보드용 통계 함수 (실데이터 전용)
+ *
+ * 조작된 랜덤 매출 Mock(generateMock*)은 제거됨 — 데이터가 없으면 0/빈 배열을
+ * 반환해 "아직 수익 없음"을 정직하게 노출한다.
  */
 
 import { getPartnerDailyStats, getAffiliateStatsSummary, getTopClickedProducts } from './clicks';
-import { COMMISSION_RATES } from './commission';
 import type { AffiliatePartnerName } from '@/types/affiliate';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 /** 파트너별 수익 통계 */
 export interface PartnerRevenue {
@@ -51,124 +52,15 @@ export interface TopProduct {
   commissionKrw: number;
 }
 
-// Mock 데이터 생성 함수들
-function generateMockDailyTrend(days: number): DailyRevenueTrend[] {
-  const trends: DailyRevenueTrend[] = [];
-  const today = new Date();
-
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-
-    // 주말은 트래픽 감소
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    const baseClicks = isWeekend ? 50 : 100;
-
-    const clicks = Math.floor(baseClicks + Math.random() * 50);
-    const conversions = Math.floor(clicks * (0.02 + Math.random() * 0.03));
-    const commissionKrw = conversions * (500 + Math.floor(Math.random() * 1000));
-
-    trends.push({
-      date: date.toISOString().split('T')[0],
-      clicks,
-      conversions,
-      commissionKrw,
-    });
-  }
-
-  return trends;
-}
-
-function generateMockPartnerRevenue(): PartnerRevenue[] {
-  const partners: { id: AffiliatePartnerName; name: string; baseClicks: number }[] = [
-    { id: 'coupang', name: '쿠팡', baseClicks: 500 },
-    { id: 'iherb', name: 'iHerb', baseClicks: 300 },
-    { id: 'musinsa', name: '무신사', baseClicks: 200 },
-  ];
-
-  return partners.map(({ id, name, baseClicks }) => {
-    const clicks = baseClicks + Math.floor(Math.random() * 200);
-    const conversionRate = 2 + Math.random() * 3;
-    const conversions = Math.floor(clicks * (conversionRate / 100));
-    const avgOrderValue = selectByKey(id, { coupang: 35000, iherb: 55000 }, 45000)!;
-    // 파트너별 대표 카테고리 커미션율 사용 (commission.ts 기준)
-    // 쿠팡: 스킨케어 중심 (7%), iHerb: 건강보충제 중심 (5%), 무신사: 패션 중심 (5%)
-    const commissionRatePercent = selectByKey(
-      id,
-      { coupang: COMMISSION_RATES.skincare, iherb: COMMISSION_RATES.supplement },
-      COMMISSION_RATES.fashion
-    )!;
-    const salesKrw = conversions * avgOrderValue;
-    const commissionKrw = Math.floor(salesKrw * (commissionRatePercent / 100));
-
-    return {
-      partnerId: id,
-      partnerName: name,
-      clicks,
-      conversions,
-      salesKrw,
-      commissionKrw,
-      conversionRate: parseFloat(conversionRate.toFixed(2)),
-    };
-  });
-}
-
-function generateMockTopProducts(): TopProduct[] {
-  const products = [
-    { name: '프리미엄 비타민C 1000mg', partner: 'iherb' as AffiliatePartnerName },
-    { name: '무신사 스탠다드 에센셜 반팔티', partner: 'musinsa' as AffiliatePartnerName },
-    { name: '닥터자르트 시카페어 크림', partner: 'coupang' as AffiliatePartnerName },
-    { name: '콜라겐 펩타이드 파우더', partner: 'iherb' as AffiliatePartnerName },
-    { name: '나이키 에어맥스 270', partner: 'musinsa' as AffiliatePartnerName },
-    { name: '아이소이 불가리안 로즈 세럼', partner: 'coupang' as AffiliatePartnerName },
-    { name: 'NOW Foods 오메가-3', partner: 'iherb' as AffiliatePartnerName },
-    { name: '디스커버리 다운 패딩', partner: 'musinsa' as AffiliatePartnerName },
-    { name: '라네즈 워터뱅크 크림', partner: 'coupang' as AffiliatePartnerName },
-    { name: 'California Gold 프로바이오틱스', partner: 'iherb' as AffiliatePartnerName },
-  ];
-
-  return products.map((p, idx) => ({
-    productId: `mock-product-${idx + 1}`,
-    productName: p.name,
-    partnerId: p.partner,
-    clicks: 100 - idx * 8 + Math.floor(Math.random() * 20),
-    conversions: Math.floor((10 - idx) * (1 + Math.random())),
-    commissionKrw: Math.floor((5000 - idx * 300) * (1 + Math.random() * 0.5)),
-  }));
-}
-
 /**
- * 대시보드 요약 통계 조회
+ * 대시보드 요약 통계 조회 (실데이터 전용 — 조작된 Mock 없음)
  * @param startDate YYYY-MM-DD
  * @param endDate YYYY-MM-DD
- * @param useMock Mock 데이터 사용 여부
  */
 export async function getDashboardSummary(
   startDate: string,
-  endDate: string,
-  useMock = true
+  endDate: string
 ): Promise<DashboardSummary> {
-  if (useMock) {
-    const partnerData = generateMockPartnerRevenue();
-    const totalClicks = partnerData.reduce((sum, p) => sum + p.clicks, 0);
-    const totalConversions = partnerData.reduce((sum, p) => sum + p.conversions, 0);
-    const totalSalesKrw = partnerData.reduce((sum, p) => sum + p.salesKrw, 0);
-    const totalCommissionKrw = partnerData.reduce((sum, p) => sum + p.commissionKrw, 0);
-
-    return {
-      period: { start: startDate, end: endDate },
-      totalClicks,
-      totalConversions,
-      totalSalesKrw,
-      totalCommissionKrw,
-      conversionRate: totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0,
-      comparedToPrevious: {
-        clicksChange: 12.5, // Mock: 전 기간 대비 +12.5%
-        commissionsChange: 8.3, // Mock: 전 기간 대비 +8.3%
-      },
-    };
-  }
-
   // 실제 DB 조회
   const stats = await getAffiliateStatsSummary(startDate, endDate);
 
@@ -219,13 +111,8 @@ export async function getDashboardSummary(
  */
 export async function getPartnerRevenues(
   startDate: string,
-  endDate: string,
-  useMock = true
+  endDate: string
 ): Promise<PartnerRevenue[]> {
-  if (useMock) {
-    return generateMockPartnerRevenue();
-  }
-
   const partners: AffiliatePartnerName[] = ['coupang', 'iherb', 'musinsa', 'oliveyoung'];
   const partnerNames: Record<AffiliatePartnerName, string> = {
     coupang: '쿠팡',
@@ -268,17 +155,8 @@ export async function getPartnerRevenues(
  */
 export async function getDailyRevenueTrend(
   startDate: string,
-  endDate: string,
-  useMock = true
+  endDate: string
 ): Promise<DailyRevenueTrend[]> {
-  if (useMock) {
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
-    const days =
-      Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    return generateMockDailyTrend(days);
-  }
-
   // 모든 파트너의 일별 통계 합산
   const partners: AffiliatePartnerName[] = ['coupang', 'iherb', 'musinsa'];
   const dailyMap = new Map<string, DailyRevenueTrend>();
@@ -309,11 +187,7 @@ export async function getDailyRevenueTrend(
 /**
  * 인기 제품 목록
  */
-export async function getTopProducts(limit = 10, useMock = true): Promise<TopProduct[]> {
-  if (useMock) {
-    return generateMockTopProducts().slice(0, limit);
-  }
-
+export async function getTopProducts(limit = 10): Promise<TopProduct[]> {
   const topClicked = await getTopClickedProducts(undefined, limit);
 
   // 실제 구현에서는 product 정보도 조인해야 함

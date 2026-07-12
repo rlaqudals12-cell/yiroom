@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { redactPii } from '@/lib/utils/redact-pii';
 
 /**
  * Storage Signed URL 생성 API
@@ -28,7 +29,10 @@ export async function POST(req: Request) {
     // 경로 형식: userId/timestamp_suffix.jpg
     const pathParts = path.split('/');
     if (pathParts[0] !== userId) {
-      console.warn(`[signed-url] Unauthorized access attempt: ${userId} tried to access ${path}`);
+      // PII 보호: userId와 생체 이미지 경로(첫 세그먼트 = 대상 userId) 마스킹 후 로깅
+      console.warn(
+        `[signed-url] Unauthorized access attempt: ${redactPii.userId(userId)} tried to access ${redactPii.userId(pathParts[0])}/${pathParts.slice(1).join('/')}`
+      );
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

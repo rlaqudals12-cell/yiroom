@@ -20,6 +20,7 @@ import {
   internalError,
   dbError,
 } from '@/lib/api/error-response';
+import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 
 // XP 보상 상수
@@ -96,6 +97,10 @@ export async function POST(req: NextRequest) {
     if (!primaryImage) {
       return validationError('이미지가 필요해요');
     }
+
+    // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
+    const ageDenied = await requireAgeVerified(userId);
+    if (ageDenied) return ageDenied;
 
     // 다각도 이미지 수 계산
     const imagesCount = [primaryImage, leftImageBase64, rightImageBase64].filter(Boolean).length;

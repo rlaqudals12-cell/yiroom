@@ -23,6 +23,7 @@ import {
   internalError,
   imageQualityError,
 } from '@/lib/api/error-response';
+import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { runFullPipeline } from '@/lib/api/image-pipeline';
 import {
   runIntegratedAnalysis,
@@ -77,6 +78,7 @@ export async function OPTIONS(): Promise<NextResponse> {
  * - 400 VALIDATION_ERROR
  * - 500 INTERNAL_ERROR
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     // 1. 인증
@@ -105,6 +107,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const message = firstIssue?.message ?? '입력값이 올바르지 않아요.';
       return withCors(validationError(message));
     }
+
+    // 3.4 연령 확인 게이트 (fail-closed) — 생체분석(품질 게이트·5축 분석) 전 만 14세 이상 서버 강제
+    const ageDenied = await requireAgeVerified(userId);
+    if (ageDenied) return withCors(ageDenied);
 
     // 3.5 CIE-1 품질 게이트 (2026-07-07, Phase 1-③)
     // 저품질 얼굴 사진은 5축 분석(~20초·5콜 과금) 전에 차단하고 재촬영을 요청한다.

@@ -27,6 +27,23 @@ describe('Rate Limiter', () => {
       expect(getRateLimitCategory('/api/gemini/analyze')).toBe('analyze');
     });
 
+    // Gemini 비전 호출 라우트 비용 방어 (2026-07 감사)
+    it('should return "analyze" for Gemini-backed ai/validate/scan/inventory-classify paths', () => {
+      expect(getRateLimitCategory('/api/ai/image-question')).toBe('analyze');
+      expect(getRateLimitCategory('/api/ai/weather-outfit')).toBe('analyze');
+      expect(getRateLimitCategory('/api/validate/face-image')).toBe('analyze');
+      expect(getRateLimitCategory('/api/scan/analyze')).toBe('analyze');
+      expect(getRateLimitCategory('/api/scan/ocr')).toBe('analyze');
+      expect(getRateLimitCategory('/api/scan/shelf')).toBe('analyze');
+      expect(getRateLimitCategory('/api/inventory/classify')).toBe('analyze');
+    });
+
+    it('should keep non-Gemini scan/inventory paths in "default"', () => {
+      // scan/history는 단순 DB 조회, inventory CRUD는 Gemini 미호출
+      expect(getRateLimitCategory('/api/scan/history')).toBe('default');
+      expect(getRateLimitCategory('/api/inventory/items')).toBe('default');
+    });
+
     it('should return "auth" for /api/auth/* paths', () => {
       expect(getRateLimitCategory('/api/auth/login')).toBe('auth');
       expect(getRateLimitCategory('/api/auth/register')).toBe('auth');

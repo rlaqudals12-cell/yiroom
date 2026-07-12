@@ -5,11 +5,12 @@
  * 누락된 컬럼이 있으면 해당 마이그레이션 파일명을 반환.
  *
  * @route GET /api/health/db-schema
- * @auth 불필요 (proxy.ts에서 공개 라우트)
+ * @auth CRON_SECRET(Bearer) 또는 관리자 — 내부 스키마·마이그레이션명이 노출되므로 보호
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { isAdmin } from '@/lib/admin/auth';
 import { POST_CREATION_COLUMNS, REQUIRED_TABLES } from '@/lib/db/expected-schema';
 import { selectByCondition } from '@/lib/utils/conditional-helpers';
 
@@ -29,7 +30,17 @@ interface SchemaCheckResult {
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
-export async function GET(): Promise<NextResponse<SchemaCheckResult>> {
+export async function GET(request: NextRequest): Promise<NextResponse<SchemaCheckResult>> {
+  // 인증: CRON_SECRET(Bearer) 또는 관리자.
+  // 미인증 호출은 전체 상태(ok/warning/error)만 받고, 내부 테이블·컬럼·
+  // 마이그레이션명 등 상세는 가린다. (통합 /api/health 집계가 서버-투-서버로
+  // 이 라우트를 무인증 호출하므로 상태 자체는 계속 노출해 집계가 정직하게 동작하되,
+  // 실제 민감 정보인 스키마 이름 목록만 인증된 호출에만 반환한다.)
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  const hasCronAuth = Boolean(cronSecret) && authHeader === `Bearer ${cronSecret}`;
+  const isAuthed = hasCronAuth || (await isAdmin());
+
   try {
     const supabase = createServiceRoleClient();
 
@@ -92,9 +103,10 @@ export async function GET(): Promise<NextResponse<SchemaCheckResult>> {
 
     // 3. 결과 조합
     const hasMissing = missingTables.length > 0 || missingColumns.length > 0;
-    const status = missingTables.length > 0
-      ? 'error'
-      : selectByCondition(missingColumns.length > 0, 'warning', 'ok');
+    const status =
+      missingTables.length > 0
+        ? 'error'
+        : selectByCondition(missingColumns.length > 0, 'warning', 'ok');
 
     const messageParts: string[] = [];
     if (missingTables.length > 0) {
@@ -103,6 +115,17 @@ export async function GET(): Promise<NextResponse<SchemaCheckResult>> {
     if (missingColumns.length > 0) {
       const migrations = [...new Set(missingColumns.map((c) => c.migration))];
       messageParts.push(`${migrations.length}개 마이그레이션 미적용`);
+    }
+
+    // 미인증 호출: 상세(테이블·컬럼·마이그레이션명)를 가리고 상태만 반환
+    if (!isAuthed) {
+      return NextResponse.json({
+        status,
+        missingTables: [],
+        missingColumns: [],
+        checkedAt: new Date().toISOString(),
+        message: hasMissing ? '스키마 점검 필요 (상세는 인증 필요)' : '스키마 정상',
+      });
     }
 
     return NextResponse.json({

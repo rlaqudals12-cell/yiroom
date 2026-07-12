@@ -21,7 +21,14 @@ import { getMinuteLimiter, getDailyLimiter, isUpstashAvailable } from './upstash
  */
 export function getRateLimitCategory(pathname: string): RateLimitCategory {
   // 정규식 매칭으로 카테고리 결정
-  if (/^\/api\/(analyze|gemini)/.test(pathname)) return 'analyze';
+  // ai/validate/scan/inventory-classify도 Gemini 비전 호출 라우트이므로 analyze 버킷으로 비용 방어
+  // (scan/history는 단순 DB 조회라 제외)
+  if (
+    /^\/api\/(analyze|gemini|ai|validate|scan\/(analyze|ocr|shelf)|inventory\/classify)/.test(
+      pathname
+    )
+  )
+    return 'analyze';
   if (/^\/api\/auth/.test(pathname)) return 'auth';
   if (/^\/api\/upload/.test(pathname)) return 'upload';
   // 제품 Q&A는 Gemini 대화형이므로 coach 버킷(일일 한도 적용)으로 분류
