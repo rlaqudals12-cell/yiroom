@@ -40,12 +40,6 @@ export const SkincareRoutineCardDynamic = dynamic(() => import('./SkincareRoutin
   loading: () => null,
 });
 
-// 타임딜 섹션 (화해/올리브영 스타일)
-export const TimeDealSectionDynamic = dynamic(() => import('./TimeDealSection'), {
-  ssr: false,
-  loading: () => null,
-});
-
 // SNS형 뷰티 피드 (올리브영 셔터 스타일)
 export const BeautyFeedDynamic = dynamic(() => import('./BeautyFeed'), {
   ssr: false,

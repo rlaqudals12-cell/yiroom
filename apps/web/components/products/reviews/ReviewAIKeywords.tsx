@@ -204,34 +204,8 @@ export function ReviewAIKeywords({ aiSummary, onKeywordClick, className }: Revie
   );
 }
 
-/**
- * Mock AI 요약 데이터 생성 (개발/테스트용)
- */
-export function generateMockAISummary(totalReviews: number): ReviewAISummary {
-  return {
-    positiveKeywords: [
-      { text: '촉촉함', count: 128, sentiment: 'positive' },
-      { text: '흡수력', count: 95, sentiment: 'positive' },
-      { text: '순한 성분', count: 82, sentiment: 'positive' },
-      { text: '가성비', count: 67, sentiment: 'positive' },
-      { text: '피부결 개선', count: 54, sentiment: 'positive' },
-    ],
-    negativeKeywords: [
-      { text: '끈적임', count: 23, sentiment: 'negative' },
-      { text: '향이 강함', count: 18, sentiment: 'negative' },
-      { text: '용량 적음', count: 12, sentiment: 'negative' },
-    ],
-    summary:
-      '대부분의 사용자가 촉촉한 보습력과 빠른 흡수력에 만족했으며, 민감한 피부에도 자극 없이 사용 가능하다는 평가가 많습니다.',
-    recommendPoints: [
-      '건성/민감성 피부에 특히 추천',
-      '아침 스킨케어 루틴에 적합',
-      '가벼운 텍스처로 여름에도 부담 없음',
-    ],
-    cautionPoints: ['지성 피부는 끈적일 수 있음', '향에 민감한 분은 테스트 권장'],
-    analyzedCount: totalReviews,
-    lastAnalyzedAt: new Date().toISOString(),
-  };
-}
+// 정직성(감사 B7): generateMockAISummary 제거 — 조작된 키워드 카운트(128·95…)와
+// "대부분의 사용자가 만족" 가짜 요약을 실제 AI 분석처럼 노출할 수 있는 복원 지뢰였다.
+// 호출처 0 확인 후 삭제(표시광고법 가짜 리뷰 규정). 실패 시 UI는 요약 섹션을 숨긴다.
 
 export default ReviewAIKeywords;

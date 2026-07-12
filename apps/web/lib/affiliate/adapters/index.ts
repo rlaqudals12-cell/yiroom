@@ -15,7 +15,6 @@ export type {
 
 // 어댑터 구현체
 export { CoupangPartnerAdapter, coupangAdapter } from './coupang';
-export { OliveYoungPartnerAdapter, oliveYoungAdapter } from './olive-young';
 
 // ================================================
 // 어댑터 레지스트리
@@ -24,12 +23,11 @@ export { OliveYoungPartnerAdapter, oliveYoungAdapter } from './olive-young';
 import type { PartnerAdapter } from './types';
 import type { AffiliatePartnerName } from '@/types/affiliate';
 import { coupangAdapter } from './coupang';
-import { oliveYoungAdapter } from './olive-young';
 
 /** 등록된 어댑터 목록 */
 const ADAPTER_REGISTRY: Partial<Record<AffiliatePartnerName, PartnerAdapter>> = {
   coupang: coupangAdapter,
-  oliveyoung: oliveYoungAdapter,
+  // [DEFERRED] 올리브영 어댑터: 공개 API 부재로 스크래핑 방식은 법적 리스크가 있어 제거됨
   // [DEFERRED] CJ Affiliate 어댑터 추가 (Phase 2)
   // [DEFERRED] Amazon Creators 어댑터 추가 (Phase 3)
 };

@@ -33,6 +33,7 @@ import {
 } from '@/lib/analysis/integrated';
 import { getBodyShapeLabel } from '@/lib/body';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
+import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
 import { NextStepsLinks } from './_components/NextStepsLinks';
 import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
 import { ActionPlanCard } from './_components/ActionPlanCard';
@@ -43,10 +44,14 @@ import { ShareReportButton } from './_components/ShareReportButton';
 /**
  * DB 레코드 → AxisResult 변환 (action-plan 입력용).
  * 레코드 null이면 실패 경로.
+ *
+ * usedFallback: 세션 used_fallback에 담긴 실제 Mock 대체 여부를 전달한다
+ * (과거 false 하드코딩은 통합 리포트가 축별 Mock을 숨기던 정직성 결함이었음).
  */
 function toAxisResult<T>(
   record: AxisDbRecord | null,
-  mapper: (r: AxisDbRecord) => T
+  mapper: (r: AxisDbRecord) => T,
+  usedFallback: boolean
 ): AxisResult<T> {
   if (!record) {
     return {
@@ -59,7 +64,7 @@ function toAxisResult<T>(
       },
     };
   }
-  return { success: true, usedFallback: false, data: mapper(record) };
+  return { success: true, usedFallback, data: mapper(record) };
 }
 
 function extractNested(record: AxisDbRecord, key: string, field: string): string {
@@ -151,6 +156,9 @@ export default async function IntegratedResultPage({
   const { session, axes } = data;
   const axesCompleted = (session.axes_completed ?? []) as AxisCode[];
   const axesFailed = (session.axes_failed ?? []) as AxisCode[];
+  // Mock Fallback으로 대체된 축 — 정직성 고지(AxisFallbackNotice)와 축별 usedFallback에 사용
+  const usedFallbackAxes = (session.used_fallback ?? []) as AxisCode[];
+  const usedFallbackSet = new Set<AxisCode>(usedFallbackAxes);
 
   // 성별/상황 — 추천 분기 전용 (분석 판정엔 영향 없음). questionnaire JSONB에 저장됨.
   const questionnaire = (session.questionnaire ?? {}) as Record<string, unknown>;
@@ -159,25 +167,45 @@ export default async function IntegratedResultPage({
 
   // 왜: action-plan + cross-insights가 같은 AxisResult 입력을 받음 → 변환 1회로 공유
   const axisResults = {
-    personalColor: toAxisResult<PersonalColorAxisData>(axes.personalColor, (r) => ({
-      season: String(r.season ?? ''),
-      tone: extractNested(r, 'image_analysis', 'tone') || String(r.season ?? ''),
-      undertone: String(r.undertone ?? ''),
-      confidence: Number(r.confidence ?? 0),
-    })),
-    skin: toAxisResult<SkinAxisData>(axes.skin, (r) => ({
-      skinType: String(r.skin_type ?? ''),
-      overallScore: Number(r.overall_score ?? 0),
-    })),
-    body: toAxisResult<BodyAxisData>(axes.body, (r) => ({
-      bodyType: String(r.body_type ?? ''),
-    })),
-    hair: toAxisResult<HairAxisData>(axes.hair, (r) => ({
-      faceShape: String(r.face_shape ?? ''),
-    })),
-    makeup: toAxisResult<MakeupAxisData>(axes.makeup, (r) => ({
-      baseRecommendation: extractNested(r, 'recommendations', 'baseRecommendation'),
-    })),
+    personalColor: toAxisResult<PersonalColorAxisData>(
+      axes.personalColor,
+      (r) => ({
+        season: String(r.season ?? ''),
+        tone: extractNested(r, 'image_analysis', 'tone') || String(r.season ?? ''),
+        undertone: String(r.undertone ?? ''),
+        confidence: Number(r.confidence ?? 0),
+      }),
+      usedFallbackSet.has('personal_color')
+    ),
+    skin: toAxisResult<SkinAxisData>(
+      axes.skin,
+      (r) => ({
+        skinType: String(r.skin_type ?? ''),
+        overallScore: Number(r.overall_score ?? 0),
+      }),
+      usedFallbackSet.has('skin')
+    ),
+    body: toAxisResult<BodyAxisData>(
+      axes.body,
+      (r) => ({
+        bodyType: String(r.body_type ?? ''),
+      }),
+      usedFallbackSet.has('body')
+    ),
+    hair: toAxisResult<HairAxisData>(
+      axes.hair,
+      (r) => ({
+        faceShape: String(r.face_shape ?? ''),
+      }),
+      usedFallbackSet.has('hair')
+    ),
+    makeup: toAxisResult<MakeupAxisData>(
+      axes.makeup,
+      (r) => ({
+        baseRecommendation: extractNested(r, 'recommendations', 'baseRecommendation'),
+      }),
+      usedFallbackSet.has('makeup')
+    ),
   };
 
   // ADR-104 체크리스트 #2: 결정론적 규칙 기반 액션 플랜 (성별/상황 분기)
@@ -229,6 +257,9 @@ export default async function IntegratedResultPage({
 
         {/* Partial Success 안내 */}
         <PartialSuccessBanner axesCompleted={axesCompleted} axesFailed={axesFailed} />
+
+        {/* 정직성: Mock Fallback으로 대체된 축을 샘플 결과로 명시 (감사 B7) */}
+        <AxisFallbackNotice usedFallback={usedFallbackAxes} />
 
         {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 (상단 히어로) */}
         <PersonaNarrativeCard persona={session.persona} />

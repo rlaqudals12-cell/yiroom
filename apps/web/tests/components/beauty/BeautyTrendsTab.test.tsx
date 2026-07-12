@@ -10,9 +10,6 @@ import { render, screen } from '@testing-library/react';
 vi.mock('@/components/animations', () => ({
   FadeInUp: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('@/components/beauty/TimeDealSection', () => ({
-  TimeDealSection: () => <div data-testid="time-deal-section">타임딜</div>,
-}));
 vi.mock('@/components/beauty/BeautyFeed', () => ({
   BeautyFeed: ({ limit }: { limit: number }) => (
     <div data-testid="beauty-feed" data-limit={limit}>
@@ -27,11 +24,6 @@ describe('BeautyTrendsTab', () => {
   it('data-testid="beauty-trends-tab"이 존재한다', () => {
     render(<BeautyTrendsTab />);
     expect(screen.getByTestId('beauty-trends-tab')).toBeInTheDocument();
-  });
-
-  it('TimeDealSection이 렌더링된다', () => {
-    render(<BeautyTrendsTab />);
-    expect(screen.getByTestId('time-deal-section')).toBeInTheDocument();
   });
 
   it('BeautyFeed가 limit=6으로 렌더링된다', () => {

@@ -154,6 +154,12 @@ describe('BeautyCareTab', () => {
     expect(screen.getByTestId('inner-beauty-supplements')).toBeInTheDocument();
   });
 
+  // 건강기능식품법·식품표시광고법 §8: 질병 예방·치료 오인 방지 고지 필수
+  it('이너뷰티 섹션에 건강기능식품 의약품 오인 방지 고지가 표시된다', () => {
+    renderTab({ hasAnalysis: false, skinMetrics: null });
+    expect(screen.getByText(/질병의 예방·치료를 위한 의약품이 아닙니다/)).toBeInTheDocument();
+  });
+
   it('주의 성분 알림 섹션이 표시된다', () => {
     renderTab({ hasAnalysis: false, skinMetrics: null });
     expect(screen.getByTestId('beauty-warnings')).toBeInTheDocument();

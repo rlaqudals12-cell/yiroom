@@ -24,19 +24,13 @@ export interface PriceResult {
 /**
  * 가격 출처
  */
-export type PriceSource =
-  | 'naver_shopping'
-  | 'coupang'
-  | 'oliveyoung'
-  | 'gmarket'
-  | 'manual'
-  | 'mock';
+export type PriceSource = 'naver_shopping' | 'coupang' | 'gmarket' | 'manual' | 'mock';
 
 /**
  * 제품 타입별 권장 가격 소스
  */
 export const PREFERRED_SOURCES_BY_TYPE: Record<string, PriceSource[]> = {
-  cosmetic: ['oliveyoung', 'naver_shopping', 'coupang'], // 화장품은 올리브영 우선
+  cosmetic: ['naver_shopping', 'coupang'], // 화장품은 네이버 쇼핑 우선
   supplement: ['naver_shopping', 'coupang'],
   workout_equipment: ['naver_shopping', 'coupang'],
   health_food: ['naver_shopping', 'coupang'],

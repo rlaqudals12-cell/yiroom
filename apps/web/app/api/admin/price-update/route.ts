@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
         body: {
           productType: 'optional - specific product type',
           limit: 'optional - max products per type (default: 50, max: 500)',
-          source: 'optional - price source (naver_shopping, coupang, oliveyoung, mock)',
+          source: 'optional - price source (naver_shopping, coupang, mock)',
         },
       },
     },

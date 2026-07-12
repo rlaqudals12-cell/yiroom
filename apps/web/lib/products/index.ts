@@ -155,7 +155,7 @@ export type { AIIngredientKeyword, AIIngredientSummary } from './services/ingred
 // ================================================
 // 리뷰 AI 분석 (Review AI Analysis)
 // ================================================
-export { analyzeProductReviews, generateMockReviewSummary } from './services/review-analysis';
+export { analyzeProductReviews } from './services/review-analysis';
 export type { ReviewAISummary, ReviewAIKeyword } from './services/review-analysis';
 
 // ================================================

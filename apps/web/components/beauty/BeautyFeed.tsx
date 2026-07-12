@@ -63,6 +63,8 @@ interface BeautyFeedProps {
 }
 
 // Mock 피드 데이터
+// 주의(의료법·정직성): 의료인(피부과전문의 등) 사칭 계정·가공된 전문가/인증 뱃지 mock 금지.
+// 복원 시에도 실제 검증된 사용자만 verified 처리하고, 의료 진단·용법 조언은 넣지 말 것.
 const MOCK_FEED_ITEMS: FeedItem[] = [
   {
     id: 'feed-1',
@@ -72,7 +74,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
       name: '뷰티덕후',
       avatar: 'https://placehold.co/40x40/fce7f3/fce7f3',
       skinType: '건성',
-      verified: true,
+      verified: false,
       followers: 12500,
     },
     content: {
@@ -105,7 +107,7 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
       name: '스킨케어마스터',
       avatar: 'https://placehold.co/40x40/dbeafe/dbeafe',
       skinType: '지성',
-      verified: true,
+      verified: false,
       followers: 45000,
     },
     content: {
@@ -133,27 +135,6 @@ const MOCK_FEED_ITEMS: FeedItem[] = [
     createdAt: '5시간 전',
     isLiked: true,
     isSaved: false,
-  },
-  {
-    id: 'feed-3',
-    type: 'tip',
-    user: {
-      id: 'u3',
-      name: '피부과전문의',
-      avatar: 'https://placehold.co/40x40/d1fae5/d1fae5',
-      skinType: '복합성',
-      verified: true,
-      followers: 128000,
-    },
-    content: {
-      text: '레티놀 사용 팁!\n1. 저농도부터 시작\n2. 밤에만 사용\n3. 선크림 필수\n4. 보습은 충분히\n5. 피부 적응 기간 필요\n\n초보자는 0.025%부터 시작하세요!',
-      images: ['https://placehold.co/400x400/fef3c7/fef3c7'],
-    },
-    stats: { likes: 1234, comments: 89, saves: 567 },
-    tags: ['레티놀', '안티에이징', '피부과팁'],
-    createdAt: '1일 전',
-    isLiked: false,
-    isSaved: true,
   },
 ];
 

@@ -7,7 +7,6 @@
  * 지원 소스:
  * - naver_shopping: 네이버 쇼핑 API
  * - coupang: 쿠팡 파트너스 API
- * - oliveyoung: 올리브영 (화장품 전용)
  * - mock: 테스트/개발용
  */
 
@@ -17,11 +16,6 @@ import { PREFERRED_SOURCES_BY_TYPE } from './types';
 import { fetchMockPrice } from './sources/mock';
 import { fetchNaverPrice, isNaverApiAvailable } from './sources/naver';
 import { fetchCoupangPrice, isCoupangApiAvailable } from './sources/coupang';
-import {
-  fetchOliveYoungPrice,
-  isOliveYoungEnabled,
-  supportsProductType as oliveyoungSupports,
-} from './sources/oliveyoung';
 
 /**
  * 가격 조회 (단일 제품)
@@ -44,7 +38,7 @@ export async function fetchPrice(
 
   for (const source of preferredSources) {
     // 소스가 사용 가능한지 확인
-    if (!isSourceAvailable(source, request.productType)) {
+    if (!isSourceAvailable(source)) {
       continue;
     }
 
@@ -75,9 +69,6 @@ async function fetchPriceFromSource(
     case 'coupang':
       return fetchCoupangPrice(request);
 
-    case 'oliveyoung':
-      return fetchOliveYoungPrice(request);
-
     case 'mock':
       return fetchMockPrice(request);
 
@@ -90,17 +81,13 @@ async function fetchPriceFromSource(
 /**
  * 소스가 사용 가능한지 확인
  */
-function isSourceAvailable(source: PriceSource, productType: string): boolean {
+function isSourceAvailable(source: PriceSource): boolean {
   switch (source) {
     case 'naver_shopping':
       return isNaverApiAvailable();
 
     case 'coupang':
       return isCoupangApiAvailable();
-
-    case 'oliveyoung':
-      // 올리브영은 화장품만 지원 + 활성화 여부
-      return isOliveYoungEnabled() && oliveyoungSupports(productType);
 
     case 'mock':
       return true;
@@ -159,7 +146,7 @@ export async function fetchPrices(
 /**
  * 사용 가능한 소스 목록 반환
  */
-export function getAvailableSources(productType?: string): PriceSource[] {
+export function getAvailableSources(_productType?: string): PriceSource[] {
   const sources: PriceSource[] = ['mock'];
 
   if (isNaverApiAvailable()) {
@@ -168,11 +155,6 @@ export function getAvailableSources(productType?: string): PriceSource[] {
 
   if (isCoupangApiAvailable()) {
     sources.unshift('coupang');
-  }
-
-  // 올리브영은 화장품인 경우만 추가
-  if (isOliveYoungEnabled() && (!productType || productType === 'cosmetic')) {
-    sources.unshift('oliveyoung');
   }
 
   return sources;

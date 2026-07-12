@@ -10,6 +10,7 @@ import {
   getTopSupplements,
   GOAL_SUPPLEMENTS,
   SKIN_CONCERN_SUPPLEMENTS,
+  BODY_TYPE_SUPPLEMENTS,
   type SkinConcern,
   type SupplementRecommendation,
 } from '@/lib/nutrition/supplementInsight';
@@ -251,6 +252,59 @@ describe('lib/nutrition/supplementInsight', () => {
 
       for (const supp of suppsWithCaution) {
         expect(supp.caution!.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 효능 표현 완화 (건강기능식품법·식품표시광고법 §8 준수)
+  // ---------------------------------------------------------------------------
+
+  describe('효능 표현 컴플라이언스', () => {
+    // 질병 예방·치료(의약품 오인)·미심사 기능성 표현은 reason에 없어야 한다
+    const FORBIDDEN_TERMS = [
+      '변비 예방',
+      '염증 감소',
+      '염증 완화',
+      '테스토스테론',
+      '멜라닌',
+      '미백',
+      '노화 방지',
+      '지방 연소',
+      '지방 산화',
+      '피지 조절',
+      '피지 분비 조절',
+      '주름 개선',
+      '피부 재생',
+      '심혈관',
+      '면역',
+      '두뇌 기능',
+    ];
+
+    // 세 소스의 모든 reason 수집
+    const allReasons: string[] = [];
+    for (const supps of Object.values(GOAL_SUPPLEMENTS)) {
+      allReasons.push(...supps.map((s) => s.reason));
+    }
+    for (const supps of Object.values(SKIN_CONCERN_SUPPLEMENTS)) {
+      allReasons.push(...supps.map((s) => s.reason));
+    }
+    for (const supps of Object.values(BODY_TYPE_SUPPLEMENTS)) {
+      allReasons.push(...supps.map((s) => s.reason));
+    }
+
+    it('어떤 reason도 질병예방·의약품·미심사 기능성 표현을 포함하지 않는다', () => {
+      for (const reason of allReasons) {
+        for (const term of FORBIDDEN_TERMS) {
+          expect(reason, `금지 표현 "${term}" 포함: "${reason}"`).not.toContain(term);
+        }
+      }
+    });
+
+    it('모든 reason이 비어 있지 않은 문자열이다', () => {
+      for (const reason of allReasons) {
+        expect(typeof reason).toBe('string');
+        expect(reason.length).toBeGreaterThan(0);
       }
     });
   });

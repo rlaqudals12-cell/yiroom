@@ -2,7 +2,10 @@
  * AI 리뷰 분석 서비스
  * @description Gemini AI를 사용한 제품 리뷰 분석 및 요약
  * @see ADR-092 리뷰 트리거 + 24시간 캐싱
- * @see ADR-007 Mock Fallback 전략
+ *
+ * 정직성 원칙: Gemini 실패 시 조작된 요약(Mock)을 만들지 않고 null을 반환한다.
+ * 가짜 키워드·요약을 "AI 리뷰 분석"으로 표시하는 것은 표시광고법(FTC 가짜 리뷰 규정)
+ * 리스크이며, prod 가짜 평점 소거와 동일한 원칙 적용 대상 (2026-07-12 감사).
  */
 
 import { generateContent, isGeminiAvailable } from '@/lib/gemini/client';
@@ -87,40 +90,6 @@ const reviewAIResponseSchema = z.object({
 });
 
 // =============================================================================
-// Mock Fallback (AI 실패 시)
-// =============================================================================
-
-/**
- * Mock 리뷰 요약 생성 (Fallback용)
- * @param reviewCount 리뷰 수
- */
-export function generateMockReviewSummary(reviewCount: number): ReviewAISummary {
-  return {
-    positiveKeywords: [
-      { text: '가성비', count: Math.ceil(reviewCount * 0.4), sentiment: 'positive' },
-      { text: '효과 좋음', count: Math.ceil(reviewCount * 0.35), sentiment: 'positive' },
-      { text: '순한 성분', count: Math.ceil(reviewCount * 0.3), sentiment: 'positive' },
-      { text: '빠른 배송', count: Math.ceil(reviewCount * 0.25), sentiment: 'positive' },
-      { text: '재구매 의사', count: Math.ceil(reviewCount * 0.2), sentiment: 'positive' },
-    ],
-    negativeKeywords: [
-      { text: '용량 적음', count: Math.ceil(reviewCount * 0.1), sentiment: 'negative' },
-      { text: '가격 인상', count: Math.ceil(reviewCount * 0.08), sentiment: 'negative' },
-    ],
-    summary:
-      '전반적으로 가성비가 좋고 효과에 만족한다는 의견이 많아요. 순한 성분으로 민감한 피부에도 사용 가능하다는 후기가 다수예요.',
-    pros: [
-      '가성비가 뛰어나다는 평가가 많아요',
-      '순한 성분으로 민감 피부에도 적합해요',
-      '효과가 빠르게 나타난다는 후기가 많아요',
-    ],
-    cons: ['용량이 적다는 의견이 있어요', '가격이 올랐다는 불만이 일부 있어요'],
-    overallSentiment: 'positive',
-    analyzedCount: reviewCount,
-  };
-}
-
-// =============================================================================
 // Gemini AI 분석
 // =============================================================================
 
@@ -167,20 +136,21 @@ async function callGeminiForReviewAnalysis(
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-      const response = await generateContent({
-        contents: prompt,
-        config: {
-          temperature: 0.2,
-          topP: 0.8,
-          topK: 40,
-          responseMimeType: 'application/json',
-        },
-      });
-
-      clearTimeout(timeoutId);
+      // Promise.race 타임아웃 — 기존 AbortController는 signal 미전달로 작동하지 않던 죽은 코드였음
+      const response = await Promise.race([
+        generateContent({
+          contents: prompt,
+          config: {
+            temperature: 0.2,
+            topP: 0.8,
+            topK: 40,
+            responseMimeType: 'application/json',
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`리뷰AI 타임아웃 (${TIMEOUT_MS}ms)`)), TIMEOUT_MS)
+        ),
+      ]);
 
       // JSON 파싱 및 Zod 검증
       const parsed = extractAndParseJson<unknown>(response.text);
@@ -332,13 +302,14 @@ export async function analyzeProductReviews(
     result = await callGeminiForReviewAnalysis(reviewData);
   }
 
-  // 4. Mock Fallback
+  // 4. Gemini 실패/미가용 시 정직하게 null 반환 — 조작된 Mock 요약을 실분석처럼
+  //    노출·캐시(24h 전 사용자 오염)하지 않는다 (UI는 null 시 섹션 숨김)
   if (!result) {
-    productLogger.info('리뷰AI Gemini 실패, Mock Fallback 사용:', productId);
-    result = generateMockReviewSummary(reviews.length);
+    productLogger.info('리뷰AI 분석 불가(Gemini 실패/미가용), 섹션 미표시:', productId);
+    return null;
   }
 
-  // 5. 캐시 저장 (비동기, 에러 무시)
+  // 5. 캐시 저장 (비동기, 에러 무시) — 실분석 결과만 캐시
   saveCacheAnalysis(productId, productType, result).catch(() => {
     // 캐시 저장 실패는 무시
   });

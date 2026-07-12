@@ -8,6 +8,7 @@
  * @see ADR-115, SDD-AI-TWIN §2
  */
 
+import { burnInAiLabelDataUrl, AI_GENERATED_LABEL } from '@/lib/visual-expression';
 import type { TwinComposeOutput, TwinGenerateInput, TwinLayer, TwinRecord } from '../types';
 import { TwinGenerationError, TwinNotApprovedError, TwinNotFoundError } from './errors';
 import {
@@ -87,5 +88,8 @@ export async function composeOnTwin(
     throw new TwinGenerationError('지금은 착장 이미지를 만들 수 없어요');
   }
 
-  return { imageUrl, aiGenerated: true };
+  // 다운로드/공유 파일에 "AI 생성" 가시 라벨을 픽셀로 번인(화면 배지는 DOM뿐)
+  const labeledUrl = await burnInAiLabelDataUrl(imageUrl, AI_GENERATED_LABEL);
+
+  return { imageUrl: labeledUrl, aiGenerated: true };
 }

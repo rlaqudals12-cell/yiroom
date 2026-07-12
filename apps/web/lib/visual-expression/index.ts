@@ -12,6 +12,12 @@
 export { beautifyForShare, BEAUTIFY_PROMPT, BEAUTIFY_MODEL } from './internal/beautify';
 export { isTryonAvailable, generateTryon } from './internal/tryon';
 export { checkAndConsumeBudget, refundBudget, DAILY_LIMIT } from './internal/budget';
+export {
+  burnInAiLabel,
+  burnInAiLabelDataUrl,
+  AI_GENERATED_LABEL,
+  AI_EDITED_LABEL,
+} from './internal/watermark';
 
 export type {
   BeautifyInput,

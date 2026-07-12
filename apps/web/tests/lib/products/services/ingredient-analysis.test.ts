@@ -101,37 +101,38 @@ describe('generateMockIngredientSummary', () => {
 
     expect(result).toBeDefined();
     expect(result.keywords).toContainEqual(expect.objectContaining({ label: '저자극' }));
-    expect(result.summary).toBe('기본적인 피부 케어에 적합한 제품입니다.');
+    expect(result.summary).toBe('기본적인 피부 케어에 두루 쓰이는 성분으로 구성된 제품이에요.');
     expect(result.recommendPoints).toBeDefined();
     expect(result.cautionPoints).toBeDefined();
     expect(result.skinTypeRecommendation).toBeDefined();
   });
 
-  it('보습 성분이 있으면 "보습력우수" 키워드를 생성한다', () => {
+  // 화장품법 §13: 효능 단정('보습력우수') 대신 성분 구성 사실('보습 성분')로 표기
+  it('보습 성분이 있으면 "보습 성분" 키워드를 생성한다', () => {
     const result = generateMockIngredientSummary([moisturizingIngredient]);
 
     expect(result.keywords).toContainEqual(
-      expect.objectContaining({ label: '보습력우수', score: 0.92 })
+      expect.objectContaining({ label: '보습 성분', score: 0.92 })
     );
     expect(result.summary).toContain('보습');
   });
 
-  it('미백 성분이 있으면 "톤업효과" 키워드를 생성한다', () => {
+  it('미백 성분이 있으면 "브라이트닝 성분" 키워드를 생성한다 (효능 단정 아님)', () => {
     const result = generateMockIngredientSummary([whiteningIngredient]);
 
-    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '톤업효과' }));
+    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '브라이트닝 성분' }));
   });
 
-  it('진정 성분이 있으면 "진정케어" 키워드를 생성한다', () => {
+  it('진정 성분이 있으면 "진정 성분" 키워드를 생성한다', () => {
     const result = generateMockIngredientSummary([soothingIngredient]);
 
-    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '진정케어' }));
+    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '진정 성분' }));
   });
 
-  it('항산화/주름 성분이 있으면 "안티에이징" 키워드를 생성한다', () => {
+  it('항산화/주름 성분이 있으면 "항산화 성분" 키워드를 생성한다 (안티에이징 단정 아님)', () => {
     const result = generateMockIngredientSummary([antioxidantIngredient]);
 
-    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '안티에이징' }));
+    expect(result.keywords).toContainEqual(expect.objectContaining({ label: '항산화 성분' }));
   });
 
   it('주의 성분이 없으면 "저자극" 키워드를 추가한다', () => {
@@ -237,19 +238,19 @@ describe('generateMockIngredientSummary', () => {
     expect(result.summary).toContain('보습');
   });
 
-  it('주의 성분이 없으면 요약에 "데일리 사용에 적합" 포함', () => {
+  it('주의 성분이 없으면 요약에 "자극 우려 성분은 확인되지 않았어요" 포함', () => {
     const result = generateMockIngredientSummary([moisturizingIngredient]);
 
-    expect(result.summary).toContain('데일리 사용에 적합');
+    expect(result.summary).toContain('자극 우려 성분은 확인되지 않았어요');
   });
 
-  it('주의 성분이 있으면 요약에 "민감성 피부는 주의" 포함', () => {
+  it('주의 성분이 있으면 요약에 "민감성 피부는 참고가 필요해요" 포함', () => {
     const result = generateMockIngredientSummary([moisturizingIngredient, cautionIngredient]);
 
-    expect(result.summary).toContain('민감성 피부는 주의');
+    expect(result.summary).toContain('민감성 피부는 참고가 필요해요');
   });
 
-  it('보습+미백+진정+항산화 복합 요약을 생성한다', () => {
+  it('보습+브라이트닝+진정+항산화 복합 요약을 생성한다 (성분 구성 사실 서술)', () => {
     const result = generateMockIngredientSummary([
       moisturizingIngredient,
       whiteningIngredient,
@@ -258,9 +259,11 @@ describe('generateMockIngredientSummary', () => {
     ]);
 
     expect(result.summary).toContain('보습');
-    expect(result.summary).toContain('미백');
+    expect(result.summary).toContain('브라이트닝');
     expect(result.summary).toContain('진정');
-    expect(result.summary).toContain('안티에이징');
+    expect(result.summary).toContain('항산화');
+    // 효능 단정('효과가 기대') 문구는 없어야 한다
+    expect(result.summary).not.toContain('효과가 기대');
   });
 
   it('relatedIngredients에 최대 3개 성분명이 포함된다', () => {
@@ -272,10 +275,33 @@ describe('generateMockIngredientSummary', () => {
     ];
 
     const result = generateMockIngredientSummary(manyMoisturizers);
-    const moistKeyword = result.keywords.find((k) => k.label === '보습력우수');
+    const moistKeyword = result.keywords.find((k) => k.label === '보습 성분');
 
     expect(moistKeyword).toBeDefined();
     expect(moistKeyword!.relatedIngredients.length).toBeLessThanOrEqual(3);
+  });
+
+  // 화장품법 §13 준수 — 기능성화장품 심사 무관 고지 + 효능 단정 키워드 부재
+  it('결과에 기능성화장품 심사 무관 고지가 항상 포함된다', () => {
+    const result = generateMockIngredientSummary([whiteningIngredient, antioxidantIngredient]);
+
+    expect(result.disclaimer).toBeTruthy();
+    expect(result.disclaimer).toContain('기능성화장품 심사');
+  });
+
+  it('효능 단정 키워드(미백효과·안티에이징·톤업효과)를 생성하지 않는다', () => {
+    const result = generateMockIngredientSummary([
+      moisturizingIngredient,
+      whiteningIngredient,
+      soothingIngredient,
+      antioxidantIngredient,
+    ]);
+
+    const labels = result.keywords.map((k) => k.label);
+    expect(labels).not.toContain('미백효과');
+    expect(labels).not.toContain('안티에이징');
+    expect(labels).not.toContain('톤업효과');
+    expect(labels).not.toContain('보습력우수');
   });
 });
 
@@ -317,6 +343,22 @@ describe('analyzeIngredientsWithAI', () => {
 
     expect(result.keywords[0].label).toBe('AI보습');
     expect(result.summary).toBe('AI가 분석한 요약');
+  });
+
+  it('AI 성공 응답에도 서버가 기능성화장품 무관 고지를 강제 주입한다', async () => {
+    // AI가 disclaimer를 반환하지 않아도 서버에서 항상 채워야 함 (화장품법 §13)
+    const aiResponse = {
+      keywords: [{ label: '보습 성분', score: 0.9, relatedIngredients: [] }],
+      summary: '보습 계열 성분이 포함된 제형이에요.',
+      recommendPoints: [],
+      cautionPoints: [],
+      skinTypeRecommendation: { oily: 80, dry: 80, sensitive: 80, combination: 80, normal: 80 },
+    };
+    mockGenerateContent.mockResolvedValue({ text: JSON.stringify(aiResponse) });
+
+    const result = await analyzeIngredientsWithAI([moisturizingIngredient]);
+
+    expect(result.disclaimer).toContain('기능성화장품 심사');
   });
 
   it('Gemini 에러 시 재시도 후 Mock으로 fallback한다', async () => {
@@ -419,18 +461,18 @@ describe('통합 시나리오', () => {
 
     const result = generateMockIngredientSummary(ingredients);
 
-    expect(result.keywords.some((k) => k.label === '보습력우수')).toBe(true);
+    expect(result.keywords.some((k) => k.label === '보습 성분')).toBe(true);
     expect(result.keywords.some((k) => k.label === '저자극')).toBe(true);
     expect(result.skinTypeRecommendation.dry).toBeGreaterThanOrEqual(80);
   });
 
-  it('안티에이징+미백 에센스 분석', () => {
+  it('항산화+브라이트닝 에센스 분석', () => {
     const ingredients = [antioxidantIngredient, whiteningIngredient];
 
     const result = generateMockIngredientSummary(ingredients);
 
-    expect(result.keywords.some((k) => k.label === '안티에이징')).toBe(true);
-    expect(result.keywords.some((k) => k.label === '톤업효과')).toBe(true);
+    expect(result.keywords.some((k) => k.label === '항산화 성분')).toBe(true);
+    expect(result.keywords.some((k) => k.label === '브라이트닝 성분')).toBe(true);
   });
 
   it('주의 성분이 여러 개인 제품 분석', () => {

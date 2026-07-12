@@ -14,6 +14,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 import type { BeautifyInput, BeautifyOutput } from '../types';
+import { burnInAiLabelDataUrl, AI_EDITED_LABEL } from './watermark';
 
 // 분석 경로와 동일한 API 키를 재사용하되, 클라이언트 인스턴스는 분리
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -88,8 +89,13 @@ export async function beautifyForShare(
       const inline = part.inlineData;
       if (inline?.data) {
         const mimeType = inline.mimeType || 'image/png';
+        // 다운로드/공유 파일에 "AI 보정" 가시 라벨을 픽셀로 번인(화면 배지는 DOM뿐)
+        const labeled = await burnInAiLabelDataUrl(
+          `data:${mimeType};base64,${inline.data}`,
+          AI_EDITED_LABEL
+        );
         return {
-          imageBase64: `data:${mimeType};base64,${inline.data}`,
+          imageBase64: labeled,
           aiEdited: true,
           model: BEAUTIFY_MODEL,
         };

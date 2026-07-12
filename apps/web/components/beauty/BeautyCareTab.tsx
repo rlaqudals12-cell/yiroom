@@ -143,14 +143,19 @@ export default function BeautyCareTab({
               <Pill className="w-4 h-4 text-green-600" aria-hidden="true" />
             </div>
             이너뷰티 추천
-            <span className="text-xs text-muted-foreground">(피부 개선용)</span>
+            <span className="text-xs text-muted-foreground">(식품 정보)</span>
           </h2>
           <p className="text-sm text-muted-foreground">
-            콜라겐, 비타민, 오메가3로 피부 속부터 관리해 보는 건 어때요?
+            콜라겐, 비타민, 오메가3 같은 영양 성분에 관심이 있다면 참고해 보세요.
           </p>
           {/* supplement_products 실데이터(200개) 적재 완료(2026-07-08) → 실제품 연결.
               데이터가 없으면 컴포넌트가 아무것도 렌더링하지 않는다. */}
           <InnerBeautySupplements />
+          {/* 건강기능식품법·식품표시광고법 §8 대응 — 효능 단정 오인 방지 고지 */}
+          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+            ※ 건강기능식품은 질병의 예방·치료를 위한 의약품이 아닙니다. 위 정보는 일반적인 식품
+            정보이며, 섭취 전 개인 건강 상태에 따라 전문가와 상담하는 것을 권장해요.
+          </p>
         </section>
       </FadeInUp>
 

@@ -50,7 +50,21 @@ export interface AIIngredientSummary {
     combination: number;
     normal: number;
   };
+  /**
+   * 법적 고지 — 화장품법 §13 대응.
+   * 성분 분석은 성분의 일반적 특성에 기반한 참고 정보일 뿐,
+   * 기능성화장품 심사 결과나 제품의 효능·효과 보장이 아님을 명시한다.
+   */
+  disclaimer: string;
 }
+
+/**
+ * 성분 분석 고지 문구 (항상 결과에 포함).
+ * 미백·주름개선 등은 식약처 기능성화장품 심사를 거쳐야 표시할 수 있으므로,
+ * 여기서는 성분의 일반적 특성만 서술하고 효능 단정을 하지 않는다.
+ */
+const INGREDIENT_DISCLAIMER =
+  '성분의 일반적 특성을 바탕으로 한 참고 정보로, 기능성화장품 심사 결과나 제품의 효능·효과를 보장하지 않아요.';
 
 // =============================================================================
 // Mock 데이터 (AI Fallback)
@@ -86,9 +100,10 @@ export function generateMockIngredientSummary(
   // 키워드 생성
   const keywords: AIIngredientKeyword[] = [];
 
+  // 효능 단정(미백효과·안티에이징 등) 대신 '어떤 성분군이 들어 있는지' 사실만 표기 (화장품법 §13)
   if (hasMoisturizer) {
     keywords.push({
-      label: '보습력우수',
+      label: '보습 성분',
       score: 0.92,
       relatedIngredients: ingredients
         .filter((i) => i.functions.some((f) => f.includes('보습')))
@@ -99,7 +114,7 @@ export function generateMockIngredientSummary(
 
   if (hasWhitening) {
     keywords.push({
-      label: '톤업효과',
+      label: '브라이트닝 성분',
       score: 0.85,
       relatedIngredients: ingredients
         .filter((i) => i.functions.some((f) => f.includes('미백')))
@@ -110,7 +125,7 @@ export function generateMockIngredientSummary(
 
   if (hasSoothing) {
     keywords.push({
-      label: '진정케어',
+      label: '진정 성분',
       score: 0.88,
       relatedIngredients: ingredients
         .filter((i) => i.functions.some((f) => f.includes('진정')))
@@ -121,7 +136,7 @@ export function generateMockIngredientSummary(
 
   if (hasAntiaging) {
     keywords.push({
-      label: '안티에이징',
+      label: '항산화 성분',
       score: 0.82,
       relatedIngredients: ingredients
         .filter((i) => i.functions.some((f) => f.includes('항산화') || f.includes('주름')))
@@ -138,29 +153,29 @@ export function generateMockIngredientSummary(
     });
   }
 
-  // 요약 문장 생성
+  // 요약 문장 생성 — '효과가 기대된다'는 단정 대신 '어떤 성분군이 포함됐다'는 사실만 서술
   const summaryParts: string[] = [];
   if (hasMoisturizer) summaryParts.push('보습');
-  if (hasWhitening) summaryParts.push('미백');
+  if (hasWhitening) summaryParts.push('브라이트닝');
   if (hasSoothing) summaryParts.push('진정');
-  if (hasAntiaging) summaryParts.push('안티에이징');
+  if (hasAntiaging) summaryParts.push('항산화');
 
   const cautionSuffix =
     cautionCount === 0
-      ? '자극이 적어 데일리 사용에 적합합니다.'
-      : '일부 주의 성분이 있어 민감성 피부는 주의가 필요합니다.';
+      ? '자극 우려 성분은 확인되지 않았어요.'
+      : '일부 주의 성분이 있어 민감성 피부는 참고가 필요해요.';
   const summary =
     summaryParts.length > 0
-      ? `${summaryParts.join(', ')} 효과가 기대되는 제형으로, ${cautionSuffix}`
-      : '기본적인 피부 케어에 적합한 제품입니다.';
+      ? `${summaryParts.join(', ')} 계열 성분이 포함된 제형이에요. ${cautionSuffix}`
+      : '기본적인 피부 케어에 두루 쓰이는 성분으로 구성된 제품이에요.';
 
-  // 추천/주의 포인트
+  // 추천/주의 포인트 — 성분 구성 사실 위주 (효능 단정 금지)
   const recommendPoints: string[] = [];
   const cautionPoints: string[] = [];
 
-  if (hasMoisturizer) recommendPoints.push('히알루론산 등 보습 성분이 풍부해요');
-  if (hasWhitening) recommendPoints.push('나이아신아마이드로 톤업 기대!');
-  if (hasSoothing) recommendPoints.push('판테놀/센텔라로 진정 케어');
+  if (hasMoisturizer) recommendPoints.push('히알루론산 등 보습 성분이 함께 들어 있어요');
+  if (hasWhitening) recommendPoints.push('나이아신아마이드 등 브라이트닝 성분이 들어 있어요');
+  if (hasSoothing) recommendPoints.push('판테놀·센텔라 등 진정 성분이 들어 있어요');
   if (cautionCount === 0) recommendPoints.push('20가지 주의 성분 무첨가');
 
   if (cautionCount > 0) cautionPoints.push(`주의 성분 ${cautionCount}개 포함`);
@@ -198,6 +213,7 @@ export function generateMockIngredientSummary(
     recommendPoints: recommendPoints.slice(0, 3),
     cautionPoints: cautionPoints.slice(0, 3),
     skinTypeRecommendation,
+    disclaimer: INGREDIENT_DISCLAIMER,
   };
 }
 
@@ -205,20 +221,36 @@ export function generateMockIngredientSummary(
 // Gemini AI 분석
 // =============================================================================
 
+// 한국 화장품법 §13(부당한 표시·광고 금지) 대응:
+// 미백·주름개선 등 '효능·효과'는 식약처 기능성화장품 심사를 거쳐야 표시 가능하므로,
+// 프롬프트에서 효능 단정 키워드 생성을 금지하고 '성분의 일반적 특성' 사실 서술만 요청한다.
 const INGREDIENT_ANALYSIS_PROMPT = `
-You are a cosmetic formulation expert and dermatologist.
+You are a cosmetic ingredient information assistant. You describe the general,
+commonly-known characteristics of ingredients. You are NOT diagnosing skin or
+promising results.
 
-Analyze the following cosmetic ingredients list and provide:
+Analyze the following cosmetic ingredients list and provide FACTUAL, ingredient-based
+information only. Write everything in natural, polite Korean.
 
-1. Key feature keywords (max 5) in Korean:
-   - Examples: "피지발란스", "보습력우수", "저자극", "미백효과", "안티에이징", "진정케어"
+STRICT RULES (Korean Cosmetics Act §13):
+- Do NOT claim finished-product efficacy such as "미백효과", "안티에이징", "주름개선",
+  "탄력 개선", "노화 방지", or any medicinal/treatment effect.
+- Describe which KIND of ingredients are present (e.g. "보습 성분", "브라이트닝 성분",
+  "진정 성분", "항산화 성분"), NOT what result the product will achieve.
+- Do NOT use definitive expressions like "효과가 있다", "개선됩니다", "치료".
+- These are reference notes only, unrelated to functional-cosmetic (기능성화장품) review.
+
+Provide:
+
+1. Key ingredient-group keywords (max 5) in Korean, describing composition as fact:
+   - Examples: "보습 성분", "브라이트닝 성분", "진정 성분", "항산화 성분", "저자극", "피지 케어 성분"
    - Each keyword should have a confidence score (0-1)
 
 2. One-sentence summary in Korean (under 50 characters)
-   - Focus on main benefits and suitability
+   - Describe the ingredient composition factually, not a promised effect
 
 3. Recommendation points (max 3) in Korean
-   - Specific benefits of this ingredient combination
+   - Which notable ingredients are included (composition facts, not promised results)
 
 4. Caution points (max 3) in Korean if any concerning ingredients
    - Only include if there are actual concerns
@@ -299,6 +331,9 @@ export async function analyzeIngredientsWithAI(
       if (!parsed.keywords || !parsed.summary || !parsed.skinTypeRecommendation) {
         throw new Error('Missing required fields in response');
       }
+
+      // 고지 문구는 AI 응답을 신뢰하지 않고 서버에서 항상 강제 주입 (화장품법 §13)
+      parsed.disclaimer = INGREDIENT_DISCLAIMER;
 
       return parsed;
     } catch (error) {
