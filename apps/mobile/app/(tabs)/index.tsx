@@ -267,8 +267,9 @@ export default function HomeScreen(): React.JSX.Element {
     [personalColor, skinAnalysis, bodyAnalysis]
   );
 
-  // 시간대x요일 문맥 제안
+  // 시간대x요일 문맥 제안 — 식사/운동 기록(N-1·W-1 숨김 모듈) 기반이라 ADR-098 기준 WELLNESS_PHASE2에 게이팅
   const contextSuggestion = useMemo(() => {
+    if (!FEATURE_FLAGS.WELLNESS_PHASE2) return undefined;
     const now = new Date();
     const hasWorkout = workoutStreak?.lastWorkoutDate === now.toISOString().split('T')[0];
     const hasMeal = (todaySummary?.mealCount || 0) >= 1;

@@ -39,7 +39,8 @@ interface BodyProfileCardProps {
   bodyType: string;
   height: number;
   weight: number;
-  bmi: number;
+  // 키/몸무게에서 파생 — 둘 중 하나라도 없으면 undefined → BMI UI를 생략한다
+  bmi?: number;
   createdAt: Date;
   style?: ViewStyle;
   testID?: string;
@@ -57,15 +58,17 @@ export function BodyProfileCard({
   const { colors, spacing, radii, typography, module: moduleColors, shadows } = useTheme();
 
   const bodyLabel = BODY_TYPE_LABELS[bodyType] ?? bodyType;
-  const bmiLabel = getBmiLabel(bmi);
-  const bmiScore = bmiToScore(bmi);
+  // BMI 파생값이 없으면(키/몸무게 미입력) BMI 관련 UI를 통째로 생략
+  const bmiLabel = bmi != null ? getBmiLabel(bmi) : null;
+  const bmiScore = bmi != null ? bmiToScore(bmi) : null;
+  const bmiText = bmi != null ? bmi.toFixed(1) : null;
   const dateStr = `${createdAt.getMonth() + 1}/${createdAt.getDate()} 분석`;
 
   return (
     <Animated.View
       entering={FadeInUp.duration(TIMING.normal)}
       testID={testID}
-      accessibilityLabel={`체형 프로필: ${bodyLabel}, BMI ${bmi.toFixed(1)}`}
+      accessibilityLabel={`체형 프로필: ${bodyLabel}${bmiText ? `, BMI ${bmiText}` : ''}`}
       style={[
         styles.card,
         shadows.card,
@@ -99,20 +102,22 @@ export function BodyProfileCard({
         </View>
       </View>
 
-      {/* 중앙: ScoreGauge + 체형 */}
+      {/* 중앙: ScoreGauge + 체형 (BMI 파생값이 있을 때만 게이지 노출) */}
       <View style={[styles.scoreRow, { marginTop: spacing.md }]}>
-        <ScoreGauge
-          score={bmiScore}
-          max={100}
-          color={moduleColors.body.base}
-          label="BMI"
-          size={88}
-          strokeWidth={8}
-          formatValue={() => bmi.toFixed(1)}
-          animated
-          delay={200}
-          testID={testID ? `${testID}-gauge` : undefined}
-        />
+        {bmiScore != null && bmiText != null ? (
+          <ScoreGauge
+            score={bmiScore}
+            max={100}
+            color={moduleColors.body.base}
+            label="BMI"
+            size={88}
+            strokeWidth={8}
+            formatValue={() => bmiText}
+            animated
+            delay={200}
+            testID={testID ? `${testID}-gauge` : undefined}
+          />
+        ) : null}
         <View style={{ flex: 1, marginLeft: spacing.md }}>
           <Text
             style={{
@@ -123,15 +128,17 @@ export function BodyProfileCard({
           >
             {bodyLabel}
           </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.mutedForeground,
-              marginTop: spacing.xxs,
-            }}
-          >
-            BMI {bmi.toFixed(1)} ({bmiLabel})
-          </Text>
+          {bmiText != null ? (
+            <Text
+              style={{
+                fontSize: typography.size.sm,
+                color: colors.mutedForeground,
+                marginTop: spacing.xxs,
+              }}
+            >
+              BMI {bmiText} ({bmiLabel})
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -143,7 +150,7 @@ export function BodyProfileCard({
         <Badge variant="outline" style={{ marginRight: 6 }}>
           {`${weight}kg`}
         </Badge>
-        <Badge variant="outline">{bmiLabel}</Badge>
+        {bmiLabel ? <Badge variant="outline">{bmiLabel}</Badge> : null}
       </View>
     </Animated.View>
   );

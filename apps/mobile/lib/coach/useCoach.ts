@@ -82,9 +82,10 @@ export function useCoach(): UseCoachResult {
       };
     }
     if (makeupAnalysis) {
+      // 실재 컬럼(undertone·face_shape)만 주입 — 과거 makeupStyle·colorRecommendations는 존재하지 않는 컬럼이었음
       ctx.makeupAnalysis = {
-        undertone: makeupAnalysis.makeupStyle,
-        recommendedStyles: Object.keys(makeupAnalysis.colorRecommendations || {}),
+        undertone: makeupAnalysis.undertone,
+        faceShape: makeupAnalysis.faceShape,
       };
     }
     if (workoutStreak || workoutAnalysis) {

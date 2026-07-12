@@ -388,7 +388,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   ? BODY_TYPE_LABELS[bodyAnalysis.bodyType] || bodyAnalysis.bodyType
                   : '분석하기'}
               </Text>
-              {bodyAnalysis && (
+              {bodyAnalysis && bodyAnalysis.bmi != null && (
                 <View
                   style={{
                     backgroundColor: moduleColors.body.light + '30',
