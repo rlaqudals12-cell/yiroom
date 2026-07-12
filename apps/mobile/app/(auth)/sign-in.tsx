@@ -28,6 +28,10 @@ export default function SignInScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // 추가 인증(이메일 코드) 단계 상태 — Clerk dev 인스턴스는 새 기기/세션에서
+  // 비밀번호 검증 후 email_code 확인을 추가로 요구할 수 있어, 그때만 코드 입력 UI로 전환한다.
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
@@ -45,10 +49,39 @@ export default function SignInScreen() {
         password,
       });
 
+      // 1) 비밀번호만으로 인증 완료 — 바로 메인 탭 진입
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
         router.replace('/(tabs)');
+        return;
       }
+
+      // 2) 비밀번호는 맞지만 Clerk가 이메일 코드 확인을 추가로 요구하는 경우.
+      //    supportedFirstFactors에서 email_code 팩터를 찾아 코드를 발송하고,
+      //    코드 입력 화면으로 전환한다. (status가 complete가 아닐 때 무반응이던 버그의 근본 수리)
+      if (result.status === 'needs_first_factor') {
+        // find는 boolean predicate라 결과가 SignInFirstFactor로만 좁혀진다 →
+        // 아래 if에서 strategy를 재확인해 EmailCodeFactor(emailAddressId 보유)로 판별 유니온 narrowing.
+        const emailFactor = result.supportedFirstFactors?.find(
+          (factor) => factor.strategy === 'email_code'
+        );
+
+        if (emailFactor && emailFactor.strategy === 'email_code') {
+          await signIn.prepareFirstFactor({
+            strategy: 'email_code',
+            emailAddressId: emailFactor.emailAddressId,
+          });
+          setPendingVerification(true);
+          return;
+        }
+      }
+
+      // 3) needs_second_factor / needs_new_password 등 앱이 아직 지원하지 않는 상태.
+      //    무반응(조용한 무시) 대신 정직하게 웹 로그인으로 안내한다.
+      Alert.alert(
+        '추가 인증 필요',
+        '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+      );
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
       const errorMessage = clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
@@ -58,9 +91,105 @@ export default function SignInScreen() {
     }
   };
 
+  // 이메일 인증 코드 확인 — needs_first_factor(email_code) 후속 단계
+  const handleVerifyCode = async () => {
+    if (!isLoaded) return;
+
+    if (!code) {
+      Alert.alert('알림', '인증 코드를 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: 'email_code',
+        code,
+      });
+
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        router.replace('/(tabs)');
+        return;
+      }
+
+      // 코드는 맞았지만 여전히 추가 인증이 남은 경우 — 정직하게 웹 로그인 안내
+      Alert.alert(
+        '추가 인증 필요',
+        '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+      );
+    } catch (error: unknown) {
+      const clerkError = error as { errors?: { message: string }[] };
+      const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
+      Alert.alert('인증 실패', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignUp = () => {
     router.push('/(auth)/sign-up');
   };
+
+  // 이메일 인증 화면 (needs_first_factor 대응) — sign-up.tsx의 인증 단계 UI/스타일을 그대로 재사용
+  if (pendingVerification) {
+    return (
+      <KeyboardAvoidingView
+        testID="auth-signin-verify-screen"
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
+          <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
+            <Text style={[styles.title, { color: colors.foreground }]}>이메일 인증</Text>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+              {email}로 전송된 인증 코드를 입력해주세요
+            </Text>
+          </Animated.View>
+
+          <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
+            <GlassCard shadowSize="md" style={styles.card}>
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: colors.foreground }]}>인증 코드</Text>
+                <TextInput
+                  testID="signin-code-input"
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border,
+                      color: colors.foreground,
+                      backgroundColor: colors.muted,
+                    },
+                  ]}
+                  placeholder="6자리 코드 입력"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={code}
+                  onChangeText={setCode}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                />
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
+            <Pressable
+              testID="signin-verify-button"
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleVerifyCode}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={brand.primaryForeground} />
+              ) : (
+                <Text style={styles.buttonText}>인증 완료</Text>
+              )}
+            </Pressable>
+          </Animated.View>
+        </ScreenContainer>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView

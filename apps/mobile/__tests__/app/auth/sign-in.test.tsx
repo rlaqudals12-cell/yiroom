@@ -8,10 +8,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -60,6 +57,9 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
 // useSignIn mock 설정
 const mockSignInCreate = jest.fn();
 const mockSetActive = jest.fn();
+// 추가 인증(email_code) 단계 mock — needs_first_factor 흐름 검증용
+const mockPrepareFirstFactor = jest.fn();
+const mockAttemptFirstFactor = jest.fn();
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(() => ({
@@ -74,7 +74,11 @@ jest.mock('@clerk/clerk-expo', () => ({
     isSignedIn: false,
   })),
   useSignIn: jest.fn(() => ({
-    signIn: { create: mockSignInCreate },
+    signIn: {
+      create: mockSignInCreate,
+      prepareFirstFactor: mockPrepareFirstFactor,
+      attemptFirstFactor: mockAttemptFirstFactor,
+    },
     setActive: mockSetActive,
     isLoaded: true,
   })),
@@ -135,9 +139,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -234,10 +236,7 @@ describe('SignInScreen', () => {
       const { getByTestId } = renderWithTheme(<SignInScreen />);
 
       fireEvent.press(getByTestId('signin-submit-button'));
-      expect(alertSpy).toHaveBeenCalledWith(
-        '알림',
-        '이메일과 비밀번호를 입력해주세요.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('알림', '이메일과 비밀번호를 입력해주세요.');
     });
 
     it('로그인 성공 시 메인 탭으로 이동한다', async () => {
@@ -275,10 +274,7 @@ describe('SignInScreen', () => {
       fireEvent.press(getByTestId('signin-submit-button'));
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          '로그인 실패',
-          '잘못된 비밀번호입니다.'
-        );
+        expect(alertSpy).toHaveBeenCalledWith('로그인 실패', '잘못된 비밀번호입니다.');
       });
     });
 
@@ -293,9 +289,126 @@ describe('SignInScreen', () => {
       fireEvent.press(getByTestId('signin-submit-button'));
 
       await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith('로그인 실패', '로그인에 실패했습니다.');
+      });
+    });
+  });
+
+  describe('추가 인증 (needs_first_factor / email_code)', () => {
+    // (a) status='needs_first_factor' → prepareFirstFactor 호출 + 코드 입력 UI 노출
+    it('needs_first_factor(email_code) 시 인증 코드를 발송하고 코드 입력 UI로 전환한다', async () => {
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_first_factor',
+        supportedFirstFactors: [
+          {
+            strategy: 'email_code',
+            emailAddressId: 'eid_123',
+            safeIdentifier: 't***@example.com',
+          },
+        ],
+      });
+      mockPrepareFirstFactor.mockResolvedValueOnce({ status: 'needs_first_factor' });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => {
+        expect(mockPrepareFirstFactor).toHaveBeenCalledWith({
+          strategy: 'email_code',
+          emailAddressId: 'eid_123',
+        });
+      });
+
+      // 코드 입력 화면으로 전환되었는지 확인
+      await waitFor(() => {
+        expect(getByTestId('auth-signin-verify-screen')).toBeTruthy();
+        expect(getByTestId('signin-code-input')).toBeTruthy();
+      });
+    });
+
+    // (b) attemptFirstFactor complete → setActive + 메인 탭 이동
+    it('인증 코드 입력 후 attemptFirstFactor 완료 시 setActive 후 메인 탭으로 이동한다', async () => {
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_first_factor',
+        supportedFirstFactors: [
+          {
+            strategy: 'email_code',
+            emailAddressId: 'eid_123',
+            safeIdentifier: 't***@example.com',
+          },
+        ],
+      });
+      mockPrepareFirstFactor.mockResolvedValueOnce({ status: 'needs_first_factor' });
+      mockAttemptFirstFactor.mockResolvedValueOnce({
+        status: 'complete',
+        createdSessionId: 'session_456',
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      const codeInput = await waitFor(() => getByTestId('signin-code-input'));
+
+      fireEvent.changeText(codeInput, '123456');
+      fireEvent.press(getByTestId('signin-verify-button'));
+
+      await waitFor(() => {
+        expect(mockAttemptFirstFactor).toHaveBeenCalledWith({
+          strategy: 'email_code',
+          code: '123456',
+        });
+        expect(mockSetActive).toHaveBeenCalledWith({ session: 'session_456' });
+        expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+      });
+    });
+
+    // (c) 미지원 status → 정직한 Alert (무반응 금지)
+    it('지원하지 않는 status(needs_second_factor) 시 웹 로그인 안내 알림을 표시한다', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_second_factor',
+        supportedFirstFactors: null,
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => {
         expect(alertSpy).toHaveBeenCalledWith(
-          '로그인 실패',
-          '로그인에 실패했습니다.'
+          '추가 인증 필요',
+          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+        );
+      });
+    });
+
+    // needs_first_factor이지만 email_code 팩터가 없으면 무반응 대신 안내 (fall-through 경로)
+    it('needs_first_factor이지만 email_code 팩터가 없으면 웹 로그인 안내 알림을 표시한다', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_first_factor',
+        supportedFirstFactors: [{ strategy: 'reset_password_email_code' }],
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => {
+        expect(mockPrepareFirstFactor).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith(
+          '추가 인증 필요',
+          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
         );
       });
     });
@@ -303,10 +416,7 @@ describe('SignInScreen', () => {
 
   describe('다크 모드', () => {
     it('다크 모드에서 정상적으로 렌더링된다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SignInScreen />,
-        true
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SignInScreen />, true);
 
       expect(getByTestId('auth-signin-screen')).toBeTruthy();
       expect(getByText('이룸')).toBeTruthy();
