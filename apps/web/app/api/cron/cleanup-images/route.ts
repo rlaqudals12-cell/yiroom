@@ -20,16 +20,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { createLogger } from '@/lib/utils/logger';
 import { redactPii } from '@/lib/utils/redact-pii';
+import { purgeUserStorage } from '@/lib/api/storage-purge';
 
 const logger = createLogger('CleanupImages');
-
-// 분석 타입별 스토리지 버킷 매핑
-const ANALYSIS_STORAGE_BUCKETS = [
-  'skin-images',
-  'body-images',
-  'personal-color-images',
-  'food-images',
-] as const;
 
 // 관련 분석 테이블 (이미지 URL 컬럼 보유)
 const ANALYSIS_TABLES_WITH_IMAGES = [
@@ -102,44 +95,24 @@ async function logAudit(
 }
 
 /**
- * 사용자의 모든 버킷에서 이미지 삭제
+ * 사용자의 모든 버킷에서 이미지 삭제 (공유 유틸 위임: 재귀 수집 + 전체 버킷)
+ * integrated-sessions·twins 등 중첩 생체 버킷까지 파기해 파기의무를 충족한다.
  */
 async function deleteUserImages(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string
 ): Promise<number> {
-  let deletedCount = 0;
-
-  for (const bucketName of ANALYSIS_STORAGE_BUCKETS) {
-    try {
-      const { data: files, error: listError } = await supabase.storage
-        .from(bucketName)
-        .list(userId);
-
-      if (listError) {
-        logger.warn(`Storage list error for bucket ${bucketName}:`, listError.message);
-        continue;
-      }
-
-      if (files && files.length > 0) {
-        const filePaths = files.map((file) => `${userId}/${file.name}`);
-        const { error: deleteError } = await supabase.storage.from(bucketName).remove(filePaths);
-
-        if (deleteError) {
-          logger.error(`Storage delete error for bucket ${bucketName}:`, deleteError.message);
-        } else {
-          deletedCount += filePaths.length;
-          logger.info(
-            `Deleted ${filePaths.length} images from ${bucketName} for user ${redactPii.userId(userId)}`
-          );
-        }
-      }
-    } catch (error) {
-      logger.error(`Error processing bucket ${bucketName}:`, error);
-    }
+  const { deleted, failedBuckets } = await purgeUserStorage(supabase, userId);
+  if (failedBuckets.length > 0) {
+    logger.error(
+      `Storage purge partial failure for user ${redactPii.userId(userId)}:`,
+      failedBuckets.join(', ')
+    );
   }
-
-  return deletedCount;
+  if (deleted > 0) {
+    logger.info(`Deleted ${deleted} images for user ${redactPii.userId(userId)}`);
+  }
+  return deleted;
 }
 
 /**

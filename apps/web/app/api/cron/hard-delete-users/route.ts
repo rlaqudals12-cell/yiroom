@@ -27,6 +27,11 @@ import {
   type DeletionAuditAction,
 } from '@/types/gdpr';
 import { redactPii } from '@/lib/utils/redact-pii';
+import { purgeUserStorage } from '@/lib/api/storage-purge';
+// Vercel Hobby 크론 2개 상한 대응: 스케줄되지 않는 정리 크론들을 매일 도는 이 크론 말미에 병합 호출.
+import { GET as runCleanupAuditLogs } from '@/app/api/cron/cleanup-audit-logs/route';
+import { GET as runCleanupImages } from '@/app/api/cron/cleanup-images/route';
+import { GET as runCleanupConsents } from '@/app/api/cron/cleanup-consents/route';
 
 // Vercel Cron 인증 검증
 function validateCronAuth(request: NextRequest): boolean {
@@ -119,18 +124,14 @@ async function hardDeleteUser(
     }
 
     // 2. 스토리지 완전 삭제 (이미 soft delete에서 처리되었을 수 있음)
-    const storageBuckets = ['skin-images', 'body-images', 'personal-color-images', 'food-images'];
-    for (const bucket of storageBuckets) {
-      try {
-        const { data: files } = await supabase.storage.from(bucket).list(clerkUserId);
-        if (files && files.length > 0) {
-          const filePaths = files.map((f) => `${clerkUserId}/${f.name}`);
-          await supabase.storage.from(bucket).remove(filePaths);
-          console.info(`[GDPR-HARD-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
-        }
-      } catch {
-        // 버킷이 없거나 이미 삭제됨
-      }
+    //    공유 유틸로 재귀 수집 + 전체 버킷(integrated-sessions·twins 등) 파기.
+    //    생체 이미지 파기 실패는 파기의무상 감사에 남겨야 하므로 failedTables에 기록한다.
+    const purge = await purgeUserStorage(supabase, clerkUserId);
+    if (purge.deleted > 0) {
+      console.info(`[GDPR-HARD-DELETE] Deleted ${purge.deleted} storage files for user`);
+    }
+    if (purge.failedBuckets.length > 0) {
+      failedTables.push(...purge.failedBuckets);
     }
 
     // 3. users 테이블에서 완전 삭제
@@ -201,6 +202,40 @@ async function hardDeleteUser(
   }
 }
 
+/**
+ * 정리 크론 1개를 안전하게 실행한다.
+ * 각 정리 라우트는 자체 try/catch로 500까지 흡수하므로 여기서 예외가 튀지 않지만,
+ * 방어적으로 감싸 하드삭제 흐름이 정리 실패에 절대 영향받지 않도록 한다.
+ */
+async function safeCleanup(
+  name: string,
+  run: () => Promise<Response>
+): Promise<Record<string, unknown>> {
+  try {
+    const res = await run();
+    const body = (await res.json()) as Record<string, unknown>;
+    return { status: res.status, ...body };
+  } catch (error) {
+    console.error(`[GDPR-HARD-DELETE] Merged cleanup "${name}" failed:`, error);
+    return { error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
+ * 슬롯 0 정리 크론 병합 실행 (Vercel Hobby 크론 2개 상한 대응).
+ *
+ * cleanup-audit-logs(접속기록 730일)·cleanup-images(30일 미접속 익명화 + 탈퇴 완전삭제)
+ * ·cleanup-consents(생체 동의 만료)는 vercel.json 슬롯 부족으로 스케줄되지 않는다.
+ * 매일 도는 이 하드삭제 크론 말미에 병합 호출해 실효화한다.
+ */
+async function runMergedDailyCleanups(request: NextRequest): Promise<Record<string, unknown>> {
+  return {
+    auditLogs: await safeCleanup('audit-logs', () => runCleanupAuditLogs(request)),
+    images: await safeCleanup('images', () => runCleanupImages(request)),
+    consents: await safeCleanup('consents', () => runCleanupConsents(request)),
+  };
+}
+
 export async function GET(request: NextRequest) {
   // 인증 검증
   if (!validateCronAuth(request)) {
@@ -240,10 +275,13 @@ export async function GET(request: NextRequest) {
 
     if (!users || users.length === 0) {
       console.info('[GDPR-HARD-DELETE] No users pending hard delete');
+      // 하드삭제 대상이 없어도 병합 정리 크론은 매일 실행되어야 한다.
+      const cleanup = await runMergedDailyCleanups(request);
       return NextResponse.json({
         success: true,
         message: 'No users to process',
         processed: 0,
+        cleanup,
         completedAt: new Date().toISOString(),
       });
     }
@@ -283,12 +321,16 @@ export async function GET(request: NextRequest) {
 
     console.info('[GDPR-HARD-DELETE] Completed:', result);
 
+    // 슬롯 0 정리 크론 병합 실행 (하드삭제 성공 여부와 무관하게 항상 시도)
+    const cleanup = await runMergedDailyCleanups(request);
+
     return NextResponse.json({
       success: true,
       message: 'Hard delete completed',
       processed: result.processed,
       failed: result.failed,
       remaining: result.remaining,
+      cleanup,
       completedAt: new Date().toISOString(),
     });
   } catch (error) {

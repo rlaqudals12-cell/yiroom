@@ -26,12 +26,13 @@ vi.mock('@/lib/supabase/service-role', () => ({
 
 // Clerk mock
 vi.mock('@clerk/nextjs/server', () => ({
-  clerkClient: () => Promise.resolve({
-    users: {
-      updateUser: vi.fn().mockResolvedValue({}),
-      deleteUser: vi.fn().mockResolvedValue({}),
-    },
-  }),
+  clerkClient: () =>
+    Promise.resolve({
+      users: {
+        updateUser: vi.fn().mockResolvedValue({}),
+        deleteUser: vi.fn().mockResolvedValue({}),
+      },
+    }),
 }));
 
 // Push mock
@@ -344,6 +345,41 @@ describe('GDPR Deletion Cron APIs', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.processed).toBe(0);
+    });
+
+    it('슬롯 0 정리 크론(cleanup-*)을 병합 실행해 결과를 포함한다', async () => {
+      const { GET } = await import('@/app/api/cron/hard-delete-users/route');
+
+      // 하드삭제 대상 없음 — 이 경우에도 정리 크론은 매일 병합 실행되어야 한다.
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              lt: vi.fn().mockReturnValue({
+                not: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        // audit_logs.insert (하드삭제 완료 로그 + 정리 감사 로그)
+        return {
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          select: vi.fn(),
+        };
+      });
+
+      const request = new NextRequest('http://localhost:3000/api/cron/hard-delete-users');
+      const response = await GET(request);
+      const json = await response.json();
+
+      // 하드삭제 자체는 200/처리 0, 그리고 3개 정리 크론 결과가 cleanup에 병합됨
+      expect(response.status).toBe(200);
+      expect(json.cleanup).toBeDefined();
+      expect(json.cleanup.auditLogs).toBeDefined();
+      expect(json.cleanup.images).toBeDefined();
+      expect(json.cleanup.consents).toBeDefined();
     });
 
     it('사용자 hard delete를 처리한다', async () => {

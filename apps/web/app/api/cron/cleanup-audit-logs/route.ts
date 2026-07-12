@@ -11,7 +11,7 @@
  * }
  *
  * 삭제 기준:
- * - audit_logs: 90일 이상 경과
+ * - audit_logs: 730일(2년) 이상 경과 — 안전성 확보조치 기준 §8 접속기록 보관 의무
  * - image_access_logs: 30일 이상 경과
  */
 
@@ -23,7 +23,9 @@ import { logAuditEvent } from '@/lib/audit/logger';
 const logger = createLogger('CleanupAuditLogs');
 
 // 보관 기간 설정
-const AUDIT_LOGS_RETENTION_DAYS = 90;
+// 생체정보(민감정보) 처리 시스템은 접속기록을 2년 이상 보관해야 한다
+// (개인정보의 안전성 확보조치 기준 §8 접속기록의 보관 및 점검).
+const AUDIT_LOGS_RETENTION_DAYS = 730;
 const IMAGE_ACCESS_LOGS_RETENTION_DAYS = 30;
 
 interface CleanupResult {
@@ -156,7 +158,7 @@ export async function GET(request: NextRequest) {
       imageAccessLogs: { deleted: 0 },
     };
 
-    // 1. audit_logs 정리 (90일)
+    // 1. audit_logs 정리 (730일 = 2년, 접속기록 보관 의무)
     result.auditLogs = await cleanupAuditLogs(supabase);
 
     // 2. image_access_logs 정리 (30일)

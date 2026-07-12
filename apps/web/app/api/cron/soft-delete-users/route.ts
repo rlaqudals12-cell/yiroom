@@ -22,6 +22,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { GDPR_CONFIG, type CronJobResult, type DeletionAuditAction } from '@/types/gdpr';
 import { redactPii } from '@/lib/utils/redact-pii';
+import { purgeUserStorage } from '@/lib/api/storage-purge';
 
 // Vercel Cron 인증 검증
 function validateCronAuth(request: NextRequest): boolean {
@@ -84,7 +85,6 @@ function generateAnonymizedData(userId: string): Record<string, unknown> {
 /**
  * 사용자 데이터 익명화 (Soft Delete)
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- multi-table anonymization
 async function softDeleteUser(
   supabase: ReturnType<typeof createServiceRoleClient>,
   user: {
@@ -142,19 +142,13 @@ async function softDeleteUser(
       }
     }
 
-    // 3. 스토리지 이미지 삭제
-    const storageBuckets = ['skin-images', 'body-images', 'personal-color-images', 'food-images'];
-    for (const bucket of storageBuckets) {
-      try {
-        const { data: files } = await supabase.storage.from(bucket).list(clerkUserId);
-        if (files && files.length > 0) {
-          const filePaths = files.map((f) => `${clerkUserId}/${f.name}`);
-          await supabase.storage.from(bucket).remove(filePaths);
-          console.info(`[GDPR-SOFT-DELETE] Deleted ${filePaths.length} files from ${bucket}`);
-        }
-      } catch {
-        // 버킷이 없거나 파일이 없으면 무시
-      }
+    // 3. 스토리지 이미지 삭제 (공유 유틸: 재귀 수집 + 전체 버킷 integrated-sessions·twins 포함)
+    const purge = await purgeUserStorage(supabase, clerkUserId);
+    if (purge.deleted > 0) {
+      console.info(`[GDPR-SOFT-DELETE] Deleted ${purge.deleted} storage files for user`);
+    }
+    if (purge.failedBuckets.length > 0) {
+      console.warn('[GDPR-SOFT-DELETE] Some storage buckets failed to purge:', purge.failedBuckets);
     }
 
     // 4. 소셜 데이터 삭제 (친구, 피드 등)

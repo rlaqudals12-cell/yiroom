@@ -63,6 +63,8 @@ export const DELETION_TABLES = [
   'hair_analyses',
   'makeup_analyses',
   'posture_assessments',
+  'integrated_analysis_sessions', // 통합분석 온보딩 세션 (얼굴·체형 생체)
+  'user_twins', // AI 아바타/트윈 (얼굴 유래 생체)
   'workout_logs',
   'workout_sets',
   'meal_records',
@@ -76,6 +78,7 @@ export const DELETION_TABLES = [
   'post_comments',
   'product_reviews',
   'user_preferences',
+  'user_preference_items',
   'user_notification_settings',
   'user_push_tokens',
   'user_badges',
@@ -86,12 +89,13 @@ export const DELETION_TABLES = [
   'saved_outfits',
   'wishlist',
   'inventory_items',
+  'user_inventory', // 실제 옷장/화장대 인벤토리 테이블
   'user_agreements',
   'coach_chat_history',
   'daily_checkins',
 ] as const;
 
-export type DeletionTable = typeof DELETION_TABLES[number];
+export type DeletionTable = (typeof DELETION_TABLES)[number];
 
 /**
  * GDPR 삭제 설정

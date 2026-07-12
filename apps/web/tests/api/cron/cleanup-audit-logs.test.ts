@@ -108,7 +108,7 @@ describe('GET /api/cron/cleanup-audit-logs', () => {
 
       expect(json.success).toBe(true);
       expect(json.auditLogs.deleted).toBe(50);
-      expect(json.auditLogs.retentionDays).toBe(90);
+      expect(json.auditLogs.retentionDays).toBe(730);
       expect(json.imageAccessLogs.deleted).toBe(120);
       expect(json.imageAccessLogs.retentionDays).toBe(30);
       expect(json.completedAt).toBeDefined();
