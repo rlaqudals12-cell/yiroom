@@ -29,14 +29,14 @@ export function AgreementAllCheckbox({
         id="agreement-all"
         checked={indeterminate ? 'indeterminate' : checked}
         onCheckedChange={onChange}
-        aria-label="전체동의"
+        aria-label="전체 동의 (선택 항목·마케팅 수신 포함)"
         className="w-5 h-5"
       />
       <label
         htmlFor="agreement-all"
         className="text-base font-semibold cursor-pointer text-foreground"
       >
-        전체동의
+        전체 동의 (선택 항목·마케팅 수신 포함)
       </label>
     </div>
   );

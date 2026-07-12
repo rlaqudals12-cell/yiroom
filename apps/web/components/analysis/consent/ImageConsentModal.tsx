@@ -53,7 +53,7 @@ export function ImageConsentModal({
 
   // 저장 정보
   const storageInfo = [
-    { label: '저장 기간', value: '분석일로부터 1년' },
+    { label: '저장 기간', value: '동의일로부터 1년 (만료 시 자동 파기)' },
     { label: '저장 위치', value: '암호화된 클라우드 (한국 리전)' },
     { label: '삭제', value: '설정 > 개인정보에서 언제든 가능' },
   ];

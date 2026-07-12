@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { BeforeAfterViewer } from '@/components/common/BeforeAfterViewer';
+import { AITransparencyNotice } from '@/components/common/AIBadge';
 import {
   applyLipColor,
   applyBlush,
@@ -459,7 +460,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                   {isProcessing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      분석 중...
+                      적용 중...
                     </>
                   ) : (
                     '적용하기'
@@ -551,6 +552,9 @@ export default function VirtualTryOnPage(): React.JSX.Element {
             </CardContent>
           </Card>
         )}
+
+        {/* AI 투명성 고지 — 가상 적용 결과는 참고용 시뮬레이션 */}
+        <AITransparencyNotice compact />
       </div>
     </div>
   );

@@ -1155,6 +1155,9 @@ export default function SkinAnalysisResultPage() {
 
                   {/* AI 투명성 고지 */}
                   <AITransparencyNotice compact className="mt-8" />
+                  <p className="mt-2 text-center text-[11px] text-zinc-600">
+                    분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
+                  </p>
 
                   {/* FAB 여백 */}
                   <div className="pb-40" />

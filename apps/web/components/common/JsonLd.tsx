@@ -70,11 +70,7 @@ export function WebApplicationJsonLd({
       price: '0',
       priceCurrency: 'KRW',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '100',
-    },
+    // aggregateRating 제거: 실제 평점 데이터가 없는 상태의 자체 평점은 기만 광고 소지 (2026-07 법률 감사)
   };
 
   return (

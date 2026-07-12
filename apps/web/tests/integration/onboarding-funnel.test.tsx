@@ -107,7 +107,7 @@ describe('가입=첫 미팅 퍼널: returnTo 체인', () => {
 
     const step2 = render(<AgreementPage />);
     fireEvent.click(screen.getByTestId('gender-male'));
-    fireEvent.click(screen.getByLabelText('전체동의'));
+    fireEvent.click(screen.getByLabelText('전체 동의 (선택 항목·마케팅 수신 포함)'));
     fireEvent.click(screen.getByTestId('agreement-submit'));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalled());
@@ -190,7 +190,7 @@ describe('오픈 리다이렉트 방지 (재발 방지)', () => {
 
     const { unmount } = render(<AgreementPage />);
     fireEvent.click(screen.getByTestId('gender-female'));
-    fireEvent.click(screen.getByLabelText('전체동의'));
+    fireEvent.click(screen.getByLabelText('전체 동의 (선택 항목·마케팅 수신 포함)'));
     fireEvent.click(screen.getByTestId('agreement-submit'));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalled());
@@ -220,7 +220,7 @@ describe('기존 사용자 플로우 무영향', () => {
   it('약관 동의 완료 사용자는 리다이렉트되지 않는다', async () => {
     navigateTo('/dashboard');
     mockMaybeSingle.mockResolvedValue({
-      data: { terms_agreed: true, privacy_agreed: true },
+      data: { terms_agreed: true, privacy_agreed: true, biometric_agreed: true },
       error: null,
     });
 
@@ -265,7 +265,7 @@ describe('기존 사용자 플로우 무영향', () => {
 
     const { unmount } = render(<AgreementPage />);
     fireEvent.click(screen.getByTestId('gender-male'));
-    fireEvent.click(screen.getByLabelText('전체동의'));
+    fireEvent.click(screen.getByLabelText('전체 동의 (선택 항목·마케팅 수신 포함)'));
     fireEvent.click(screen.getByTestId('agreement-submit'));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalled());

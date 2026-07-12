@@ -70,7 +70,7 @@ describe('ImageConsentModal', () => {
       render(<ImageConsentModal {...defaultProps} />);
 
       expect(screen.getByText(/저장 기간:/)).toBeInTheDocument();
-      expect(screen.getByText(/분석일로부터 1년/)).toBeInTheDocument();
+      expect(screen.getByText(/동의일로부터 1년/)).toBeInTheDocument();
       expect(screen.getByText(/저장 위치:/)).toBeInTheDocument();
       expect(screen.getByText(/암호화된 클라우드/)).toBeInTheDocument();
     });

@@ -706,7 +706,7 @@
     "bodyScore": "Body Balance Score",
     "hairScore": "Hair Health Score",
     "makeupScore": "Makeup Analysis Score",
-    "defaultScore": "Diagnosis Confidence",
+    "defaultScore": "Analysis Confidence",
     "strengthsTitle": "My Strengths",
     "strengthsEmpty": "Analyzing...",
     "growthTitle": "Growth Potential",
@@ -950,7 +950,7 @@
       "makeup": "Makeup",
       "oralHealth": "Oral Health",
       "personalColorDesc": "Find colors that suit you",
-      "skinDesc": "AI skin condition diagnosis",
+      "skinDesc": "AI skin condition analysis",
       "bodyDesc": "Personalized style recommendations",
       "hairDesc": "Scalp/hair health check",
       "makeupDesc": "Your own beauty style",
@@ -1009,8 +1009,8 @@
     },
     "empty": {
       "noResults": "No analysis results yet",
-      "pcFirstDesc": "Start with Personal Color diagnosis for more accurate skin and body analysis recommendations",
-      "startPcDiagnosis": "Start Personal Color Diagnosis"
+      "pcFirstDesc": "Start with Personal Color analysis for more accurate skin and body analysis recommendations",
+      "startPcDiagnosis": "Start Personal Color Analysis"
     },
     "gamification": {
       "myGrowth": "My Growth",
@@ -1044,7 +1044,7 @@
     },
     "quickActions": {
       "sectionTitle": "Start Analysis",
-      "pcTitle": "Personal Color Diagnosis",
+      "pcTitle": "Personal Color Analysis",
       "pcDesc": "Find colors that suit you",
       "skinTitle": "Skin Analysis",
       "skinDesc": "Analyze your skin with AI",
@@ -1056,8 +1056,8 @@
       "makeupDesc": "Find makeup that suits you",
       "oralHealthTitle": "Oral Health Analysis",
       "oralHealthDesc": "Check your teeth and gum health",
-      "pcRequired": "PC diagnosis required",
-      "pcFirst": "PC diagnosis first",
+      "pcRequired": "PC analysis required",
+      "pcFirst": "PC analysis first",
       "start": "Start"
     },
     "summary": {
@@ -1163,12 +1163,12 @@
       "selectPhotoAria": "Please select a photo. Tap to select from gallery"
     },
     "pc": {
-      "title": "Personal Color Diagnosis",
-      "existingResult": "You have a previous diagnosis",
+      "title": "Personal Color Analysis",
+      "existingResult": "You have a previous analysis",
       "lowConfidence": "Low confidence",
       "lowConfidenceDesc": "The previous analysis had low confidence. We recommend re-analyzing for more accurate results.",
       "subtitle": {
-        "guide": "Photography guide for accurate diagnosis",
+        "guide": "Photography guide for accurate analysis",
         "multiAngle": "Take photos from multiple angles for accuracy",
         "galleryUpload": "Select photos from your gallery",
         "upload": "Take a face photo",
@@ -1461,7 +1461,7 @@
     "productDetailTabs41": "No purchase link available.",
     "productMatchCard0": "Sign in to check match rate",
     "productMatchCard1": "Analyze Skin",
-    "productMatchCard2": "Personal Color Diagnosis",
+    "productMatchCard2": "Personal Color Analysis",
     "productMatchCard3": "Match Rate",
     "productMatchCard4": "Based on my analysis",
     "productMatchCard5": "Match Analysis",

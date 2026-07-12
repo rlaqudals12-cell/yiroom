@@ -298,8 +298,8 @@ export default function PrivacySettingsPage() {
             <p>이룸은 개인정보보호법(PIPA)을 준수하여 사용자의 개인정보를 보호합니다.</p>
             <ul className="list-disc pl-4 space-y-1">
               <li>수집 목적: AI 피부 분석 및 맞춤 추천 제공</li>
-              <li>보관 기간: 동의일로부터 1년 (만료 시 자동 삭제)</li>
-              <li>제3자 제공: 없음 (분석 AI에만 전송)</li>
+              <li>보관 기간: 동의일로부터 1년 (만료 시 자동 파기)</li>
+              <li>국외 이전: AI 분석을 위해 이미지가 Google(Gemini, 미국)로 전송됩니다</li>
               <li>동의 철회: 언제든 설정에서 철회 가능</li>
             </ul>
             <Button variant="link" className="p-0 h-auto" asChild>

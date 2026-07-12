@@ -36,7 +36,11 @@ const licenseGroups = [
     icon: '🔄',
     libraries: [
       { name: 'Zustand', license: 'MIT', url: 'https://github.com/pmndrs/zustand' },
-      { name: 'React Hook Form', license: 'MIT', url: 'https://github.com/react-hook-form/react-hook-form' },
+      {
+        name: 'React Hook Form',
+        license: 'MIT',
+        url: 'https://github.com/react-hook-form/react-hook-form',
+      },
     ],
   },
   {
@@ -54,6 +58,12 @@ const licenseGroups = [
     libraries: [
       { name: 'Supabase', license: 'Apache 2.0', url: 'https://github.com/supabase/supabase' },
       { name: 'Clerk', license: 'Proprietary', url: 'https://clerk.com' },
+      {
+        name: '@vercel/analytics',
+        license: 'MPL-2.0',
+        url: 'https://www.mozilla.org/en-US/MPL/2.0/',
+      },
+      { name: '@vercel/og', license: 'MPL-2.0', url: 'https://www.mozilla.org/en-US/MPL/2.0/' },
     ],
   },
   {
@@ -62,7 +72,11 @@ const licenseGroups = [
     libraries: [
       { name: 'Vitest', license: 'MIT', url: 'https://github.com/vitest-dev/vitest' },
       { name: 'Playwright', license: 'Apache 2.0', url: 'https://github.com/microsoft/playwright' },
-      { name: 'Testing Library', license: 'MIT', url: 'https://github.com/testing-library/react-testing-library' },
+      {
+        name: 'Testing Library',
+        license: 'MIT',
+        url: 'https://github.com/testing-library/react-testing-library',
+      },
     ],
   },
 ];
@@ -85,17 +99,14 @@ export default function LicensesPage() {
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-muted-foreground mb-8">
-            이룸은 다음 오픈소스 라이브러리를 사용하여 만들어졌습니다.
-            각 라이브러리의 라이선스 조건을 준수합니다.
+            이룸은 다음 오픈소스 라이브러리를 사용하여 만들어졌습니다. 각 라이브러리의 라이선스
+            조건을 준수합니다.
           </p>
 
           {/* 라이선스 그룹 */}
           <div className="space-y-6 not-prose">
             {licenseGroups.map((group) => (
-              <div
-                key={group.category}
-                className="bg-card rounded-xl border p-4"
-              >
+              <div key={group.category} className="bg-card rounded-xl border p-4">
                 <h2 className="flex items-center gap-2 text-lg font-semibold mb-3">
                   <span>{group.icon}</span>
                   <span>{group.category}</span>
@@ -126,13 +137,12 @@ export default function LicensesPage() {
 
           {/* 추가 정보 */}
           <div className="mt-8 p-4 bg-muted/50 rounded-xl">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
-              라이선스 정보
-            </h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">라이선스 정보</h3>
             <p className="text-sm text-muted-foreground">
-              MIT 라이선스는 상업적 사용, 수정, 배포를 허용합니다.
-              Apache 2.0 라이선스는 특허권을 명시적으로 부여합니다.
-              ISC 라이선스는 MIT와 유사한 허용적 라이선스입니다.
+              MIT 라이선스는 상업적 사용, 수정, 배포를 허용합니다. Apache 2.0 라이선스는 특허권을
+              명시적으로 부여합니다. ISC 라이선스는 MIT와 유사한 허용적 라이선스입니다. MPL-2.0
+              라이선스는 파일 단위 카피레프트로, 해당 파일의 원본 및 변경분에 대해 동일 라이선스로
+              소스를 공개하도록 요구합니다.
             </p>
           </div>
 

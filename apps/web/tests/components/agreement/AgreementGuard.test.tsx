@@ -151,6 +151,7 @@ describe('AgreementGuard', () => {
       data: {
         terms_agreed: true,
         privacy_agreed: true,
+        biometric_agreed: true,
         marketing_agreed: false,
       },
       error: null,

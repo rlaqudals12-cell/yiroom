@@ -242,6 +242,9 @@ export function ProductQASection({ product, productType }: ProductQASectionProps
                 전송
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              AI 답변은 참고용이며, 정확한 정보는 제조사에 문의해주세요
+            </p>
           </div>
         </DialogContent>
       </Dialog>

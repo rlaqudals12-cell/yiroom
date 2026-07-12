@@ -87,10 +87,11 @@ function KoreanContent() {
         <p>회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
-            <strong>필수 항목:</strong> 이메일 주소, 비밀번호, 닉네임
+            <strong>필수 항목:</strong> 이메일 주소, 비밀번호, 닉네임, 생년월일(연령 확인 — 만 14세
+            이상 확인 목적), 성별(맞춤 분석 목적)
           </li>
           <li>
-            <strong>선택 항목:</strong> 프로필 사진, 키, 체중, 생년월일, 성별
+            <strong>선택 항목:</strong> 프로필 사진, 키, 체중
           </li>
           <li>
             <strong>서비스 이용 시 수집:</strong> 얼굴/체형 이미지, 운동 기록, 식단 기록, AI 코치
@@ -114,8 +115,8 @@ function KoreanContent() {
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>회원 정보: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
           <li>
-            분석 이미지: 분석·결과 확인을 위해 안전하게 보관되며, 요청 시 언제든 삭제 (회원 탈퇴 시
-            파기)
+            분석 이미지: 저장에 동의한 경우 동의일로부터 1년간 보관 후 자동 파기되며, 그 전에도 요청
+            시 언제든 삭제할 수 있습니다 (회원 탈퇴 시 파기)
           </li>
           <li>
             AI 코치 대화: 대화 이어보기 기능 제공을 위해 서버에 저장되며, 설정 또는 삭제 요청으로
@@ -223,8 +224,9 @@ function KoreanContent() {
           <p className="font-medium">제휴 서비스 이용 시 안내</p>
           <p className="mt-2 text-sm">
             서비스 내 제품 추천 링크를 통해 외부 쇼핑몰(쿠팡 등)로 이동하는 경우, 해당 외부 서비스의
-            개인정보처리방침이 적용됩니다. 이룸은 제휴 링크 클릭 여부만 익명으로 집계하며, 외부
-            서비스에서의 구매 정보는 수집하지 않습니다.
+            개인정보처리방침이 적용됩니다. 이룸은 제휴 링크 클릭 기록을 회원 식별자와 함께 서비스
+            내부에 저장하지만(추천 개선·전환 확인 목적), 외부 파트너에게 회원 식별 정보를 전달하지
+            않습니다. 외부 서비스에서의 구매 정보는 수집하지 않습니다.
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
@@ -233,7 +235,37 @@ function KoreanContent() {
             <li>Supabase: 데이터 저장 및 관리 (클라우드 데이터베이스)</li>
             <li>Google (Gemini API): AI 이미지 분석 처리</li>
             <li>Clerk: 회원 인증 및 계정 관리</li>
+            <li>Vercel: 서비스 호스팅 및 트래픽 통계</li>
+            <li>Tawk.to: 고객 상담 위젯 운영</li>
+            <li>Sentry: 오류 모니터링</li>
           </ul>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">쿠키 등 자동수집장치의 설치·운영 및 거부</p>
+          <p className="mt-2 text-sm">
+            회사는 서비스 제공을 위해 아래와 같은 쿠키 및 유사 기술을 사용합니다.
+          </p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>Clerk 로그인 세션 쿠키: 로그인 상태 유지 (필수)</li>
+            <li>Tawk.to 고객상담 위젯 쿠키: 상담 세션 유지</li>
+            <li>언어 설정 쿠키: 언어를 직접 선택한 경우 설정 저장</li>
+            <li>Vercel Analytics: 쿠키 없이 익명 방문 통계를 수집합니다</li>
+            <li>Sentry: 오류 모니터링 목적으로 브라우저·기기 등 기술 정보를 수집합니다</li>
+          </ul>
+          <p className="mt-2 text-sm">
+            거부 방법: 브라우저 설정에서 쿠키 저장을 차단하거나 삭제할 수 있습니다. 다만 필수 쿠키를
+            차단하면 로그인 등 일부 기능 이용이 제한될 수 있습니다.
+          </p>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">위치정보의 이용</p>
+          <p className="mt-2 text-sm">
+            코디 추천 및 날씨 기반 조언 시, 사용자가 브라우저에서 위치 접근을 명시적으로 허용한
+            경우에 한해 기기의 대략적인 위치(좌표)를 <strong>일시적으로</strong> 사용합니다. 이
+            위치정보는 별도로 저장되지 않으며, 날씨 조회(Open-Meteo)에만 이용됩니다. 브라우저
+            설정에서 위치 접근을 거부하거나 차단할 수 있으며, 이 경우 위치 기반 추천 기능만 제한되고
+            다른 기능은 정상적으로 이용하실 수 있습니다.
+          </p>
         </div>
       </section>
 
@@ -263,7 +295,59 @@ function KoreanContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">8. 계정 삭제</h2>
+        <h2 className="text-xl font-semibold mb-4">8. 자동화된 결정 및 프로파일링</h2>
+        <p>
+          회사는 사용자가 업로드한 이미지를 AI(Google Gemini)로 분석하여 퍼스널 컬러, 피부, 체형,
+          헤어, 메이크업 등 시각적 특성에 관한 프로파일과 맞춤 조언을 자동으로 생성합니다.
+        </p>
+        <ul className="list-disc pl-6 mt-2 space-y-2">
+          <li>
+            <strong>처리 기준:</strong> 이미지에서 추출한 색상·명암·형태 등 시각적 특징을 학술적
+            분석 기준(색채학·피부생리학 등)에 대입하여 결과를 산출합니다.
+          </li>
+          <li>
+            <strong>처리 절차:</strong> 이미지 전송, AI 특징 추출, 분석 기준 적용, 결과 표시의
+            순서로 처리되며, 결과에는 신뢰도가 함께 표시됩니다.
+          </li>
+          <li>
+            <strong>결과의 성격:</strong> 분석 결과는 참고용 미용 조언이며, 사용자의 권리·의무에
+            법적 효력을 미치는 결정이 아닙니다.
+          </li>
+          <li>
+            <strong>거부 및 설명 요구:</strong> 분석 기능을 이용하지 않음으로써 자동화된 처리를
+            거부할 수 있으며, 결과에 대한 설명 요구 또는 재분석·삭제 요청은 privacy@yiroom.app으로
+            하실 수 있습니다.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">9. 개인정보의 안전성 확보조치</h2>
+        <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다:</p>
+        <ul className="list-disc pl-6 mt-2 space-y-2">
+          <li>전송 구간 암호화: 모든 데이터는 HTTPS(TLS) 암호화 통신으로 전송됩니다.</li>
+          <li>저장 데이터 암호화: 이미지 및 개인정보는 암호화된 클라우드 스토리지에 저장됩니다.</li>
+          <li>
+            접근 권한 통제: 최소 권한 원칙에 따라 접근 권한을 부여·관리하며, 본인 데이터에만 접근할
+            수 있도록 행 수준 접근제어(RLS)를 적용합니다.
+          </li>
+          <li>
+            접속기록 보관·점검: 개인정보 처리 시스템의 접속 기록을 보관하고 위·변조를 방지합니다.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">10. 아동의 개인정보 보호</h2>
+        <p>
+          이룸은 만 14세 미만 아동을 대상으로 서비스를 제공하지 않으며, 가입 시 만 14세 이상임을
+          확인합니다. 만 14세 미만 아동의 개인정보가 수집된 사실을 인지한 경우, 회사는 지체 없이
+          해당 정보를 파기합니다.
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">11. 계정 삭제</h2>
         <p>사용자는 언제든지 자신의 계정과 관련 데이터를 삭제할 수 있습니다:</p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>설정 &gt; 계정 관리 &gt; 회원 탈퇴를 통해 직접 삭제</li>
@@ -273,7 +357,7 @@ function KoreanContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">9. 개인정보 보호책임자</h2>
+        <h2 className="text-xl font-semibold mb-4">12. 개인정보 보호책임자</h2>
         <p>
           회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의
           불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
@@ -296,7 +380,7 @@ function KoreanContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">10. 개인정보처리방침의 변경</h2>
+        <h2 className="text-xl font-semibold mb-4">13. 개인정보처리방침의 변경</h2>
         <p>
           이 개인정보처리방침은 2026년 2월 20일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
           확인하실 수 있습니다.
@@ -349,10 +433,11 @@ function EnglishContent() {
         <p>The Company collects the following personal data to provide its services:</p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
-            <strong>Required:</strong> Email address, password, nickname
+            <strong>Required:</strong> Email address, password, nickname, date of birth (for age
+            verification &mdash; 14 or older), gender (for personalized analysis)
           </li>
           <li>
-            <strong>Optional:</strong> Profile photo, height, weight, date of birth, gender
+            <strong>Optional:</strong> Profile photo, height, weight
           </li>
           <li>
             <strong>Collected during service use:</strong> Face/body images, workout records, diet
@@ -379,8 +464,9 @@ function EnglishContent() {
             Account information: Until account deletion (destroyed within 30 days of deletion)
           </li>
           <li>
-            Analysis images: Securely retained so you can review your analysis results; can be
-            deleted anytime upon request (destroyed upon account deletion)
+            Analysis images: When you consent to storage, retained for 1 year from the consent date
+            and then automatically destroyed; can be deleted earlier anytime upon request (destroyed
+            upon account deletion)
           </li>
           <li>
             AI coach conversations: Stored on our servers so you can resume previous conversations;
@@ -502,7 +588,9 @@ function EnglishContent() {
           <p className="mt-2 text-sm">
             When you click product recommendation links within the service, you will be redirected
             to external shopping platforms (e.g., Coupang). Their respective privacy policies apply.
-            Yiroom only collects anonymized click statistics and does not collect any purchase
+            Yiroom records affiliate link clicks together with your account identifier within the
+            service (to improve recommendations and confirm conversions), but does not pass any
+            personal identifiers to external partners. Yiroom does not collect any purchase
             information from external services.
           </p>
         </div>
@@ -512,7 +600,40 @@ function EnglishContent() {
             <li>Supabase: Data storage and management (cloud database)</li>
             <li>Google (Gemini API): AI image analysis processing</li>
             <li>Clerk: Member authentication and account management</li>
+            <li>Vercel: Service hosting and traffic analytics</li>
+            <li>Tawk.to: Customer support chat widget</li>
+            <li>Sentry: Error monitoring</li>
           </ul>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">Cookies and Automatic Collection</p>
+          <p className="mt-2 text-sm">
+            The Company uses cookies and similar technologies as follows:
+          </p>
+          <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
+            <li>Clerk login session cookies: Keep you signed in (essential)</li>
+            <li>Tawk.to support widget cookies: Maintain your support chat session</li>
+            <li>Language preference cookie: Stores your language choice when you select one</li>
+            <li>Vercel Analytics: Collects anonymous visit statistics without using cookies</li>
+            <li>
+              Sentry: Collects technical information (browser, device, etc.) for error monitoring
+            </li>
+          </ul>
+          <p className="mt-2 text-sm">
+            How to refuse: You can block or delete cookies in your browser settings. Blocking
+            essential cookies may limit features such as sign-in.
+          </p>
+        </div>
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="font-medium">Use of Location Data</p>
+          <p className="mt-2 text-sm">
+            For outfit recommendations and weather-based advice, we use your device&apos;s
+            approximate location (coordinates) <strong>temporarily</strong>, only when you
+            explicitly grant location access in your browser. This location data is not stored and
+            is used solely to look up weather (Open-Meteo). You can deny or block location access in
+            your browser settings; in that case only location-based recommendations are limited, and
+            all other features work normally.
+          </p>
         </div>
       </section>
 
@@ -540,7 +661,69 @@ function EnglishContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">8. Account Deletion</h2>
+        <h2 className="text-xl font-semibold mb-4">8. Automated Decision-Making and Profiling</h2>
+        <p>
+          The Company uses AI (Google Gemini) to analyze the images you upload and automatically
+          generate profiles and personalized advice about your visual characteristics&mdash;personal
+          color, skin, body type, hair, and makeup.
+        </p>
+        <ul className="list-disc pl-6 mt-2 space-y-2">
+          <li>
+            <strong>Basis of processing:</strong> Visual features such as color, contrast, and shape
+            are extracted from the image and evaluated against academic analysis criteria (e.g.,
+            color science and skin physiology).
+          </li>
+          <li>
+            <strong>Procedure:</strong> Image transmission, AI feature extraction, application of
+            analysis criteria, and presentation of results, with a confidence level shown alongside
+            each result.
+          </li>
+          <li>
+            <strong>Nature of results:</strong> Results are advisory beauty guidance and are not
+            decisions that produce legal or similarly significant effects on your rights or
+            obligations.
+          </li>
+          <li>
+            <strong>Right to object and to an explanation:</strong> You may object to automated
+            processing by not using the analysis features. To request an explanation of a result, a
+            re-analysis, or deletion, contact privacy@yiroom.app.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">9. Security Measures</h2>
+        <p>The Company implements the following measures to safeguard personal data:</p>
+        <ul className="list-disc pl-6 mt-2 space-y-2">
+          <li>
+            Encryption in transit: All data is transmitted over encrypted HTTPS (TLS) connections.
+          </li>
+          <li>
+            Encryption at rest: Images and personal data are stored in encrypted cloud storage.
+          </li>
+          <li>
+            Access control: Access is granted under the principle of least privilege, and row-level
+            security (RLS) ensures you can access only your own data.
+          </li>
+          <li>
+            Access logging: Access to systems that process personal data is logged and protected
+            against tampering.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">10. Children&apos;s Privacy</h2>
+        <p>
+          Yiroom is not directed to children under 13, and we do not knowingly collect personal
+          information from children under 13. If we become aware that we have collected personal
+          information from a child under 13, we will delete it without undue delay. (Under Korean
+          law, the service is limited to users aged 14 and older.)
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">11. Account Deletion</h2>
         <p>Users may delete their account and all associated data at any time through:</p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>Self-service deletion via Settings &gt; Account Management &gt; Delete Account</li>
@@ -553,7 +736,7 @@ function EnglishContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">9. Data Protection Officer</h2>
+        <h2 className="text-xl font-semibold mb-4">12. Data Protection Officer</h2>
         <p>
           The Company has designated a Data Protection Officer to oversee all personal data
           processing and to address complaints and remedies related to data protection.
@@ -567,7 +750,7 @@ function EnglishContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">10. Changes to This Policy</h2>
+        <h2 className="text-xl font-semibold mb-4">13. Changes to This Policy</h2>
         <p>
           This Privacy Policy is effective as of February 20, 2026. Previous versions are available
           below:

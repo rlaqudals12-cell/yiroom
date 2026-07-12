@@ -13,14 +13,14 @@ describe('AgreementAllCheckbox', () => {
       render(<AgreementAllCheckbox checked={false} onChange={vi.fn()} />);
 
       expect(screen.getByTestId('agreement-all')).toBeInTheDocument();
-      expect(screen.getByText('전체동의')).toBeInTheDocument();
+      expect(screen.getByText('전체 동의 (선택 항목·마케팅 수신 포함)')).toBeInTheDocument();
     });
 
     it('체크박스에 aria-label이 설정된다', () => {
       render(<AgreementAllCheckbox checked={false} onChange={vi.fn()} />);
 
       const checkbox = screen.getByRole('checkbox');
-      expect(checkbox).toHaveAttribute('aria-label', '전체동의');
+      expect(checkbox).toHaveAttribute('aria-label', '전체 동의 (선택 항목·마케팅 수신 포함)');
     });
   });
 
@@ -62,7 +62,7 @@ describe('AgreementAllCheckbox', () => {
       const handleChange = vi.fn();
       render(<AgreementAllCheckbox checked={false} onChange={handleChange} />);
 
-      const label = screen.getByText('전체동의');
+      const label = screen.getByText('전체 동의 (선택 항목·마케팅 수신 포함)');
       fireEvent.click(label);
 
       expect(handleChange).toHaveBeenCalledWith(true);
@@ -80,7 +80,7 @@ describe('AgreementAllCheckbox', () => {
     it('레이블이 굵은 글씨체로 표시된다', () => {
       render(<AgreementAllCheckbox checked={false} onChange={vi.fn()} />);
 
-      const label = screen.getByText('전체동의');
+      const label = screen.getByText('전체 동의 (선택 항목·마케팅 수신 포함)');
       expect(label).toHaveClass('font-semibold');
     });
 
