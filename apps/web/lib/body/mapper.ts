@@ -11,6 +11,7 @@
  * @module lib/body
  */
 
+import type { OutputLocale } from '@/lib/gemini/client';
 import type { BodyShape7 } from './types';
 
 /**
@@ -146,24 +147,96 @@ export const BODY_TYPE3_LABELS: Record<BodyType3, string> = {
 };
 
 /**
- * 모든 체형 표기를 한글 라벨로 변환 (결과/대시보드 표시용 공용 헬퍼).
+ * 체형 표기 → 사용자 언어 라벨 (i18n, 2026-07).
  *
- * 통합 분석은 body-v2 `BodyShapeType`(하이픈 5형: rectangle/inverted-triangle/triangle/oval/hourglass)을,
- * C-1 골격은 S/W/N을 저장한다. 두 taxonomy + 7형 + 레거시 표기를 모두 한글화한다.
- * 미상값은 원문 그대로 반환(영문 enum 노출 최소화는 호출부 책임), null/빈값은 '미분석'.
+ * S/W/N(골격) + 7형 + body-v2 5형 + 레거시 표기의 합집합을 4언어로 매핑.
+ * ko는 기존 라벨과 100% 동일(회귀 0). 기존 번역이 없어 신규 작성(자국어 자연 표기).
  */
-export function getBodyShapeLabel(value: unknown): string {
-  if (value == null || value === '') return '미분석';
-  const key = String(value);
-  const labels: Record<string, string> = {
-    ...BODY_TYPE3_LABELS, // 골격 S/W/N
-    ...BODY_SHAPE7_LABELS, // 7형 (invertedTriangle 등)
-    // body-v2 BodyShapeType (하이픈 5형)
+const BODY_SHAPE_LABELS_I18N: Record<OutputLocale, Record<string, string>> = {
+  ko: {
+    S: '스트레이트',
+    W: '웨이브',
+    N: '내추럴',
+    hourglass: '모래시계형',
+    pear: '배형',
+    invertedTriangle: '역삼각형',
+    apple: '사과형',
+    rectangle: '직사각형',
+    trapezoid: '사다리꼴형',
+    oval: '타원형',
     'inverted-triangle': '역삼각형',
     triangle: '삼각형',
-    // 레거시 표기 호환
     inverted_triangle: '역삼각형',
-  };
+  },
+  en: {
+    S: 'Straight',
+    W: 'Wave',
+    N: 'Natural',
+    hourglass: 'Hourglass',
+    pear: 'Pear',
+    invertedTriangle: 'Inverted Triangle',
+    apple: 'Apple',
+    rectangle: 'Rectangle',
+    trapezoid: 'Trapezoid',
+    oval: 'Oval',
+    'inverted-triangle': 'Inverted Triangle',
+    triangle: 'Triangle',
+    inverted_triangle: 'Inverted Triangle',
+  },
+  ja: {
+    S: 'ストレート',
+    W: 'ウェーブ',
+    N: 'ナチュラル',
+    hourglass: '砂時計型',
+    pear: '洋梨型',
+    invertedTriangle: '逆三角形',
+    apple: 'リンゴ型',
+    rectangle: '長方形',
+    trapezoid: '台形',
+    oval: '楕円形',
+    'inverted-triangle': '逆三角形',
+    triangle: '三角形',
+    inverted_triangle: '逆三角形',
+  },
+  zh: {
+    S: '直身型',
+    W: '波浪型',
+    N: '自然型',
+    hourglass: '沙漏型',
+    pear: '梨型',
+    invertedTriangle: '倒三角型',
+    apple: '苹果型',
+    rectangle: '矩形',
+    trapezoid: '梯形',
+    oval: '椭圆型',
+    'inverted-triangle': '倒三角型',
+    triangle: '三角型',
+    inverted_triangle: '倒三角型',
+  },
+};
+
+/** null/빈값 폴백 라벨 (언어별) */
+const BODY_SHAPE_UNANALYZED: Record<OutputLocale, string> = {
+  ko: '미분석',
+  en: 'Not analyzed',
+  ja: '未分析',
+  zh: '未分析',
+};
+
+/**
+ * 모든 체형 표기를 사용자 언어 라벨로 변환 (결과/대시보드 표시용 공용 헬퍼).
+ *
+ * 통합 분석은 body-v2 `BodyShapeType`(하이픈 5형: rectangle/inverted-triangle/triangle/oval/hourglass)을,
+ * C-1 골격은 S/W/N을 저장한다. 두 taxonomy + 7형 + 레거시 표기를 모두 라벨화한다.
+ * 미상값은 원문 그대로 반환(영문 enum 노출 최소화는 호출부 책임), null/빈값은 '미분석'(언어별).
+ * 기본값 'ko' → 라벨 미갱신 호출처는 기존과 100% 동일(회귀 0).
+ */
+export function getBodyShapeLabel(value: unknown, locale: OutputLocale = 'ko'): string {
+  const labels = BODY_SHAPE_LABELS_I18N[locale] ?? BODY_SHAPE_LABELS_I18N.ko;
+  if (value == null || value === '') {
+    return BODY_SHAPE_UNANALYZED[locale] ?? BODY_SHAPE_UNANALYZED.ko;
+  }
+  const key = String(value);
   return labels[key] ?? key;
 }
 

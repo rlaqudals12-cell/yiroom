@@ -34,6 +34,7 @@ import {
   toneKo,
 } from '@/lib/analysis/integrated';
 import { getBodyShapeLabel } from '@/lib/body';
+import type { OutputLocale } from '@/lib/gemini/client';
 import type { PersonaBadge } from '@/components/share/PersonaShareCard';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
 import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
@@ -86,20 +87,34 @@ function joinLabels(...parts: Array<string | false | 0 | null | undefined>): str
   return nonEmpty.length > 0 ? nonEmpty.join(' · ') : undefined;
 }
 
-function pcSummary(r: AxisDbRecord | null): string | undefined {
+/** "컨디션 82점" (피부 컨디션 점수 라벨, 언어별). */
+function conditionLabel(score: number, locale: OutputLocale): string {
+  switch (locale) {
+    case 'en':
+      return `Condition ${score}`;
+    case 'ja':
+      return `コンディション${score}点`;
+    case 'zh':
+      return `状态${score}分`;
+    default:
+      return `컨디션 ${score}점`;
+  }
+}
+
+function pcSummary(r: AxisDbRecord | null, locale: OutputLocale): string | undefined {
   if (!r) return undefined;
   return joinLabels(
-    r.season ? seasonKo(String(r.season)) : undefined,
-    r.undertone ? undertoneKo(String(r.undertone)) : undefined
+    r.season ? seasonKo(String(r.season), locale) : undefined,
+    r.undertone ? undertoneKo(String(r.undertone), locale) : undefined
   );
 }
 
-function skinSummary(r: AxisDbRecord | null): string | undefined {
+function skinSummary(r: AxisDbRecord | null, locale: OutputLocale): string | undefined {
   if (!r) return undefined;
   const score = Number(r.overall_score ?? 0);
   return joinLabels(
-    r.skin_type ? skinTypeKo(String(r.skin_type)) : undefined,
-    score > 0 ? `컨디션 ${score}점` : undefined
+    r.skin_type ? skinTypeKo(String(r.skin_type), locale) : undefined,
+    score > 0 ? conditionLabel(score, locale) : undefined
   );
 }
 
@@ -108,19 +123,22 @@ function skinSummary(r: AxisDbRecord | null): string | undefined {
  * 반드시 공용 라벨 헬퍼로 한국어화 — 원시 영문값(Autumn/combination) 노출 금지.
  * 세션에 담긴 축(DB 레코드 존재)만 요약을 만든다.
  */
-function buildAxisSummaries(axes: {
-  personalColor: AxisDbRecord | null;
-  skin: AxisDbRecord | null;
-  body: AxisDbRecord | null;
-  hair: AxisDbRecord | null;
-  makeup: AxisDbRecord | null;
-}): Partial<Record<AxisCode, string>> {
+function buildAxisSummaries(
+  axes: {
+    personalColor: AxisDbRecord | null;
+    skin: AxisDbRecord | null;
+    body: AxisDbRecord | null;
+    hair: AxisDbRecord | null;
+    makeup: AxisDbRecord | null;
+  },
+  locale: OutputLocale
+): Partial<Record<AxisCode, string>> {
   return {
-    personal_color: pcSummary(axes.personalColor),
-    skin: skinSummary(axes.skin),
-    body: axes.body?.body_type ? getBodyShapeLabel(axes.body.body_type) : undefined,
-    hair: axes.hair?.face_shape ? faceShapeKo(String(axes.hair.face_shape)) : undefined,
-    makeup: axes.makeup?.undertone ? undertoneKo(String(axes.makeup.undertone)) : undefined,
+    personal_color: pcSummary(axes.personalColor, locale),
+    skin: skinSummary(axes.skin, locale),
+    body: axes.body?.body_type ? getBodyShapeLabel(axes.body.body_type, locale) : undefined,
+    hair: axes.hair?.face_shape ? faceShapeKo(String(axes.hair.face_shape), locale) : undefined,
+    makeup: axes.makeup?.undertone ? undertoneKo(String(axes.makeup.undertone), locale) : undefined,
   };
 }
 
@@ -155,6 +173,12 @@ export default async function IntegratedResultPage({
   const t = await getTranslations('analysis.integratedResult');
   const locale = await getLocale();
   const dateLocale = DATE_LOCALE[locale] ?? 'ko-KR';
+  // 라벨 헬퍼용 로케일 (지원 4언어로 좁힘, 그 외는 ko 폴백)
+  const uiLocale: OutputLocale = (['ko', 'en', 'ja', 'zh'] as const).includes(
+    locale as OutputLocale
+  )
+    ? (locale as OutputLocale)
+    : 'ko';
 
   const { sessionId } = await params;
 
@@ -241,15 +265,16 @@ export default async function IntegratedResultPage({
   const bodyData = axisResults.body.success ? axisResults.body.data : null;
   const hairData = axisResults.hair.success ? axisResults.hair.data : null;
 
-  // 공유 카드 뱃지 — 성공한 축만, 한국어 라벨만 (실패 축을 지어내지 않는다)
+  // 공유 카드 뱃지 — 성공한 축만, 사용자 언어 라벨 (실패 축을 지어내지 않는다).
+  // 라벨(축 이름)은 기존 t('axes.*') 번역 재사용, 값은 라벨 헬퍼로 로케일화.
   const personaBadges: PersonaBadge[] = [
     pcData && {
-      label: '퍼스널컬러',
-      value: toneKo(pcData.tone) || seasonKo(pcData.season),
+      label: t('axes.personalColor'),
+      value: toneKo(pcData.tone, uiLocale) || seasonKo(pcData.season, uiLocale),
     },
-    skinData && { label: '피부', value: skinTypeKo(skinData.skinType) },
-    bodyData && { label: '체형', value: getBodyShapeLabel(bodyData.bodyType) },
-    hairData && { label: '얼굴형', value: faceShapeKo(hairData.faceShape) },
+    skinData && { label: t('axes.skin'), value: skinTypeKo(skinData.skinType, uiLocale) },
+    bodyData && { label: t('axes.body'), value: getBodyShapeLabel(bodyData.bodyType, uiLocale) },
+    hairData && { label: t('axes.hair'), value: faceShapeKo(hairData.faceShape, uiLocale) },
   ].filter((b): b is PersonaBadge => Boolean(b && b.value));
   const [hasClosetItems, curationProducts] = await Promise.all([
     hasAnyClosetItems(),
@@ -268,7 +293,7 @@ export default async function IntegratedResultPage({
   });
 
   // 축별 심화 링크 요약 (원시 영문값 노출 방지 — 공용 라벨 헬퍼 사용, 새 fetch 없음)
-  const axisSummaries = buildAxisSummaries(axes);
+  const axisSummaries = buildAxisSummaries(axes, uiLocale);
 
   return (
     <div

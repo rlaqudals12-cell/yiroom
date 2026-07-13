@@ -15,7 +15,13 @@
  * @internal — 외부 import 금지 (오케스트레이터 전용)
  */
 
-import { generateContent, isGeminiAvailable, parseJsonResponse } from '@/lib/gemini/client';
+import {
+  generateContent,
+  isGeminiAvailable,
+  parseJsonResponse,
+  outputLanguageDirective,
+  type OutputLocale,
+} from '@/lib/gemini/client';
 import { getBodyShapeLabel } from '@/lib/body';
 import { skinTypeKo, faceShapeKo, bodyDescKo, seasonKo, toneKo, undertoneKo } from '../labels';
 import type {
@@ -84,8 +90,45 @@ function successAxisCount(s: AxisSummary): number {
 // 2. Gemini 프롬프트
 // ============================================
 
-function buildPrompt(summary: AxisSummary): string {
+/**
+ * 언어별 글자수 재보정 스펙.
+ *
+ * 왜: 한/일/중은 글자당 정보밀도가 높고 영어는 같은 뜻에 ~2~2.5배 글자가 든다.
+ * ko 20자 지시를 그대로 en에 적용하면 문장이 잘려 반쪽 번역이 된다 → 언어별로 상·하한을 조정한다.
+ * `unit`은 프롬프트 지시문에 넣는 단위 표기(자/字/characters), `sliceCap`은 검증부 안전 캡.
+ */
+interface LocaleTextSpec {
+  oneLineMax: number;
+  narrativeMin: number;
+  narrativeMax: number;
+  unit: string;
+  sliceCap: number;
+}
+
+const LOCALE_TEXT_SPEC: Record<OutputLocale, LocaleTextSpec> = {
+  ko: { oneLineMax: 20, narrativeMin: 80, narrativeMax: 180, unit: '자', sliceCap: 40 },
+  ja: { oneLineMax: 20, narrativeMin: 80, narrativeMax: 180, unit: '字', sliceCap: 40 },
+  zh: { oneLineMax: 16, narrativeMin: 70, narrativeMax: 160, unit: '字', sliceCap: 40 },
+  en: { oneLineMax: 45, narrativeMin: 180, narrativeMax: 420, unit: 'characters', sliceCap: 90 },
+};
+
+/** 출력 톤 지시문 (언어별) — 따뜻하지만 과장 없는 톤. outputLanguageDirective와 함께 주입. */
+const TONE_DIRECTIVE: Record<OutputLocale, string> = {
+  ko: '따뜻하지만 과장 없는 톤으로 작성해주세요.',
+  en: 'Use a warm, natural tone without exaggeration.',
+  ja: '温かく自然な、誇張のないトーンで記述してください。',
+  zh: '用温暖自然、不夸张的语气书写。',
+};
+
+function specFor(locale: OutputLocale): LocaleTextSpec {
+  return LOCALE_TEXT_SPEC[locale] ?? LOCALE_TEXT_SPEC.ko;
+}
+
+function buildPrompt(summary: AxisSummary, locale: OutputLocale): string {
+  const spec = specFor(locale);
   const lines: string[] = [];
+  // 프롬프트 본문·입력 컨텍스트는 한국어 유지(도메인 전문성) — 출력 언어만 지시문으로 분리(기존 v2 패턴).
+  // 라벨도 ko 표기로 넣어 AI에게 안정적 컨텍스트를 주고, 출력은 outputLanguageDirective가 사용자 언어로 강제한다.
   if (summary.pc) {
     // 원시 영문값(spring/true-spring/warm)을 프롬프트에 넣지 않는다 — AI가 그대로 되받아 누수하는 걸 방지.
     lines.push(
@@ -107,21 +150,30 @@ function buildPrompt(summary: AxisSummary): string {
     lines.push(`- 메이크업 베이스: ${summary.makeup.base}`);
   }
 
-  return `당신은 이룸(Yiroom)의 "나 프로필" 내러티브 작가예요. 5축 분석 결과를 읽고,
-사용자를 **1명의 온전한 사람**으로 한 단락에 담아주세요.
-
-⚠️ 작성 원칙:
-1. 5축을 나열하지 말고 **하나의 인상**으로 엮어주세요.
-2. "당신은 ~" 또는 은유 표현 1개 포함 (예: "봄볕에 피는 꽃 같은 사람").
-3. 한국어 해요체, 따뜻하지만 과장 없는 톤.
-4. 의학/진단 표현 금지, "어울려요/좋아요/잘 맞아요" 같은 실용어 사용.
-5. 성공한 축만 활용. 실패한 축은 언급 금지.
-6. 사용자는 뷰티 초보자예요 — 영문 용어(normal, oval 등)를 그대로 쓰지 말고, 전문 용어는
+  // 영문 용어 회피 규칙은 ko 전용 — en/ja/zh에선 자국어 자연 표현이 정상이므로 이 규칙을 적용하지 않는다.
+  const beginnerRule =
+    locale === 'ko'
+      ? `6. 사용자는 뷰티 초보자예요 — 영문 용어(normal, oval 등)를 그대로 쓰지 말고, 전문 용어는
    반드시 괄호로 짧은 풀이를 병기하세요. 풀이 없는 전문 용어 단독 사용은 금지예요.
    예: "내추럴 실루엣" ❌ → "골격감이 자연스러운(내추럴) 체형" ✅ /
    "듀이 마무리" ❌ → "듀이(촉촉한 광) 마무리" ✅ /
    "웨이브 체형" ❌ → "곡선이 부드러운(웨이브) 체형" ✅ /
-   "쿨톤" 처럼 이미 널리 쓰는 말은 그대로 써도 돼요.
+   "쿨톤" 처럼 이미 널리 쓰는 말은 그대로 써도 돼요.`
+      : `6. 성공한 축을 사용자에게 친근한 표현으로 풀어주세요 (전문 용어 남발 금지).`;
+
+  return `당신은 이룸(Yiroom)의 "나 프로필" 내러티브 작가예요. 5축 분석 결과를 읽고,
+사용자를 **1명의 온전한 사람**으로 한 단락에 담아주세요.
+
+🌐 출력 언어: ${outputLanguageDirective(locale)} ${TONE_DIRECTIVE[locale] ?? TONE_DIRECTIVE.ko}
+(JSON 필드명은 영문 그대로, 값(텍스트)만 위 언어로 작성)
+
+⚠️ 작성 원칙:
+1. 5축을 나열하지 말고 **하나의 인상**으로 엮어주세요.
+2. "당신은 ~" 또는 은유 표현 1개 포함 (예: "봄볕에 피는 꽃 같은 사람").
+3. 위 출력 언어로, 따뜻하지만 과장 없는 톤.
+4. 의학/진단 표현 금지, "어울려요/좋아요/잘 맞아요" 같은 실용어 사용.
+5. 성공한 축만 활용. 실패한 축은 언급 금지.
+${beginnerRule}
 
 📊 입력 (5축 성공 결과):
 ${lines.join('\n')}
@@ -135,8 +187,8 @@ ${lines.join('\n')}
 다음 JSON 형식으로만 응답해주세요 (다른 텍스트 없이 JSON만):
 
 {
-  "oneLine": "은유 1개 한 문장 (최대 20자)",
-  "narrative": "2-4문장, 마침표로 끝. 총 80-180자.",
+  "oneLine": "은유 1개 한 문장 (최대 ${spec.oneLineMax}${spec.unit})",
+  "narrative": "2-4문장, 마침표로 끝. 총 ${spec.narrativeMin}-${spec.narrativeMax}${spec.unit}.",
   "keyInsights": [
     "조합 인사이트 1 (예: 봄 웜톤 × 건성 → 코랄 듀이 베이스가 잘 맞아요)",
     "조합 인사이트 2",
@@ -146,7 +198,7 @@ ${lines.join('\n')}
 
 ⚠️ 주의:
 - 실패 축을 추측해서 채우지 마세요.
-- oneLine이 20자를 넘으면 압축하세요.
+- oneLine이 ${spec.oneLineMax}${spec.unit}를 넘으면 압축하세요.
 - narrative가 없으면 안 돼요. 최소 2문장.
 - keyInsights는 정확히 3개.`;
 }
@@ -216,7 +268,7 @@ interface GeminiPersonaResponse {
   keyInsights: string[];
 }
 
-function validateResponse(raw: unknown): GeminiPersonaResponse | null {
+function validateResponse(raw: unknown, locale: OutputLocale): GeminiPersonaResponse | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const obj = raw as Record<string, unknown>;
   if (typeof obj.oneLine !== 'string' || !obj.oneLine.trim()) return null;
@@ -227,7 +279,8 @@ function validateResponse(raw: unknown): GeminiPersonaResponse | null {
   );
   if (insights.length === 0) return null;
   return {
-    oneLine: obj.oneLine.trim().slice(0, 40), // 20자 권장이지만 여유
+    // oneLine 안전 캡 — 권장 상한(oneLineMax)보다 여유를 둔 언어별 sliceCap (en은 글자수 밀도가 낮아 90)
+    oneLine: obj.oneLine.trim().slice(0, specFor(locale).sliceCap),
     narrative: obj.narrative.trim(),
     keyInsights: insights.slice(0, 3),
   };
@@ -254,8 +307,14 @@ export interface ComposePersonaInput {
  * - 성공 축 2개 이상: Gemini 시도 → 실패 시 Mock
  *
  * 타임아웃/에러 시 절대 throw 안 함 (orchestrator 보호).
+ *
+ * @param locale 출력 언어 (기본 'ko') — AI 내러티브를 사용자 언어로 생성. 기본값이라 회귀 0.
+ *   Mock fallback은 ko 고정(내러티브 템플릿) — AI 경로만 로케일화(범위 밖).
  */
-export async function composePersona(axes: ComposePersonaInput): Promise<PersonaProfile | null> {
+export async function composePersona(
+  axes: ComposePersonaInput,
+  locale: OutputLocale = 'ko'
+): Promise<PersonaProfile | null> {
   const summary = summarizeAxes(axes);
   const count = successAxisCount(summary);
 
@@ -273,7 +332,7 @@ export async function composePersona(axes: ComposePersonaInput): Promise<Persona
 
   // Gemini 호출
   try {
-    const prompt = buildPrompt(summary);
+    const prompt = buildPrompt(summary, locale);
     const response = await generateContent({
       contents: prompt,
       config: {
@@ -283,7 +342,7 @@ export async function composePersona(axes: ComposePersonaInput): Promise<Persona
     });
 
     const parsed = parseJsonResponse<unknown>(response.text);
-    const validated = validateResponse(parsed);
+    const validated = validateResponse(parsed, locale);
 
     if (!validated) {
       console.warn('[PersonaComposer] Gemini response validation failed, using mock');

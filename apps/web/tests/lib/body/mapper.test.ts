@@ -209,6 +209,20 @@ describe('getBodyShapeLabel', () => {
     expect(getBodyShapeLabel('')).toBe('미분석');
     expect(getBodyShapeLabel('unknown_shape')).toBe('unknown_shape');
   });
+
+  it('locale 파라미터: en/ja/zh 라벨 반환 (기본 ko 회귀 없음)', () => {
+    expect(getBodyShapeLabel('S', 'en')).toBe('Straight');
+    expect(getBodyShapeLabel('W', 'ja')).toBe('ウェーブ');
+    expect(getBodyShapeLabel('N', 'zh')).toBe('自然型');
+    expect(getBodyShapeLabel('rectangle', 'en')).toBe('Rectangle');
+    expect(getBodyShapeLabel('inverted-triangle', 'ja')).toBe('逆三角形');
+    expect(getBodyShapeLabel('hourglass', 'zh')).toBe('沙漏型');
+    // null/미상 폴백도 언어별
+    expect(getBodyShapeLabel(null, 'en')).toBe('Not analyzed');
+    expect(getBodyShapeLabel('unknown_shape', 'zh')).toBe('unknown_shape');
+    // 기본 ko 불변
+    expect(getBodyShapeLabel('S')).toBe('스트레이트');
+  });
 });
 
 describe('bodyShapeToType3 (ADR-108 저장 통일)', () => {

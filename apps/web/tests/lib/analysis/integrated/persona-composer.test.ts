@@ -16,6 +16,14 @@ vi.mock('@/lib/gemini/client', () => ({
   generateContent: (...args: unknown[]) => mockGenerateContent(...args),
   isGeminiAvailable: () => mockIsAvailable(),
   parseJsonResponse: (text: string) => mockParseJson(text),
+  // buildPrompt가 출력 언어 지시문 주입에 사용 — 실제 구현과 동일하게 언어별 한 줄 반환
+  outputLanguageDirective: (locale: string = 'ko') =>
+    ({
+      ko: '한국어로 자연스럽게 작성해주세요.',
+      en: 'Write naturally in English.',
+      ja: '自然な日本語で記述してください。',
+      zh: '请用自然的中文书写。',
+    })[locale] ?? '한국어로 자연스럽게 작성해주세요.',
 }));
 
 import { composePersona } from '@/lib/analysis/integrated/internal/persona-composer';
@@ -212,6 +220,35 @@ describe('composePersona', () => {
     expect(text).toContain('라이트 스프링');
     // 풀이 없는 영문 원시 용어 노출 금지 (12톤 원시값 spring 포함)
     expect(text).not.toMatch(/combination|oval|dewy|spring/i);
+  });
+
+  it('locale 전달 시 프롬프트에 해당 언어 지시문·언어별 글자수(en 45자) 주입', async () => {
+    mockIsAvailable.mockReturnValue(true);
+    mockGenerateContent.mockResolvedValue({
+      text: JSON.stringify({ oneLine: 'a', narrative: 'bcd', keyInsights: ['1', '2', '3'] }),
+    });
+    mockParseJson.mockImplementation((text: string) => JSON.parse(text));
+
+    await composePersona(allSuccess(), 'en');
+    const prompt = mockGenerateContent.mock.calls[0][0].contents as string;
+    expect(prompt).toContain('Write naturally in English.');
+    expect(prompt).toContain('최대 45characters'); // en 글자수 재보정
+    // en에는 ko 전용 "영문 용어 회피" 예시가 없어야 함
+    expect(prompt).not.toContain('골격감이 자연스러운(내추럴)');
+  });
+
+  it('locale 기본값 ko는 프롬프트 글자수·한국어 지시문 유지 (회귀 0)', async () => {
+    mockIsAvailable.mockReturnValue(true);
+    mockGenerateContent.mockResolvedValue({
+      text: JSON.stringify({ oneLine: 'a', narrative: 'bcd', keyInsights: ['1', '2', '3'] }),
+    });
+    mockParseJson.mockImplementation((text: string) => JSON.parse(text));
+
+    await composePersona(allSuccess());
+    const prompt = mockGenerateContent.mock.calls[0][0].contents as string;
+    expect(prompt).toContain('한국어로 자연스럽게 작성해주세요.');
+    expect(prompt).toContain('최대 20자');
+    expect(prompt).toContain('골격감이 자연스러운(내추럴)'); // ko 전용 규칙 유지
   });
 
   it('keyInsights가 3개 초과면 3개로 잘림', async () => {

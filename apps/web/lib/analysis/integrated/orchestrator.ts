@@ -202,13 +202,17 @@ export async function runIntegratedAnalysis(
 
     // 5. 나 프로필 합성 (ADR-104 체크리스트 #1) — finalize 전에 생성해서 DB에 함께 저장
     // 왜: Gemini 호출 실패해도 null로 반환되고, orchestrator는 계속 진행
-    const persona = await composePersona({
-      personalColor: pc,
-      skin,
-      body,
-      hair,
-      makeup,
-    });
+    const persona = await composePersona(
+      {
+        personalColor: pc,
+        skin,
+        body,
+        hair,
+        makeup,
+      },
+      // locale 전달 → AI 내러티브가 사용자 언어로 생성 (기본 'ko', 회귀 0)
+      input.options.locale
+    );
 
     // 6. 세션 finalize (persona 포함)
     try {

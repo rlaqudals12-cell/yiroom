@@ -70,6 +70,31 @@ describe('integrated/labels', () => {
     expect(coverageKo('full')).toBe('풀');
   });
 
+  it('locale 파라미터: en/ja/zh 라벨 반환 (기본 ko 회귀 없음)', () => {
+    // season
+    expect(seasonKo('spring', 'en')).toBe('Spring Warm');
+    expect(seasonKo('summer', 'ja')).toBe('夏クール');
+    expect(seasonKo('winter', 'zh')).toBe('冬冷色调');
+    expect(seasonKo('spring')).toBe('봄 웜톤'); // 기본 ko 불변
+    // undertone
+    expect(undertoneKo('warm', 'en')).toBe('Warm');
+    expect(undertoneKo('cool', 'ja')).toBe('クール');
+    expect(undertoneKo('neutral', 'zh')).toBe('中性色调');
+    // skin type
+    expect(skinTypeKo('combination', 'en')).toBe('Combination');
+    expect(skinTypeKo('normal', 'ja')).toBe('普通肌');
+    expect(skinTypeKo('sensitive', 'zh')).toBe('敏感性');
+    // face shape
+    expect(faceShapeKo('oval', 'en')).toBe('Oval');
+    expect(faceShapeKo('heart', 'ja')).toBe('ハート型');
+    expect(faceShapeKo('round', 'zh')).toBe('圆脸');
+    // 12톤
+    expect(toneKo('true-spring', 'en')).toBe('True Spring');
+    expect(toneKo('deep-autumn', 'ja')).toBe('ディープオータム');
+    expect(toneKo('bright-winter', 'zh')).toBe('亮冬型');
+    expect(toneKo('true-spring')).toBe('트루 스프링'); // 기본 ko(SSOT) 불변
+  });
+
   it('매칭 실패/빈값은 안전하게 처리 (원본 반환 또는 빈 문자열)', () => {
     expect(seasonKo(null)).toBe('');
     expect(seasonKo(undefined)).toBe('');
