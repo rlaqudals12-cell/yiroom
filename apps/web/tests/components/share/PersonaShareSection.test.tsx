@@ -39,7 +39,8 @@ describe('PersonaShareSection — 저장/공유 동작', () => {
       expect(mockCapture).toHaveBeenCalledTimes(1);
       expect(mockTrack).toHaveBeenCalledWith('persona_card_share', { method: 'download' });
     });
-    expect(screen.getByTestId('persona-share-message')).toHaveTextContent('자랑');
+    // i18n 배선 후 next-intl 목이 t(key)=>key 반환 → 성공 메시지는 키로 검증
+    expect(screen.getByTestId('persona-share-message')).toHaveTextContent('shareCard.saved');
   });
 
   it('캡처 실패 시 정직한 실패 안내를 보여준다 (조용한 무반응 금지)', async () => {
@@ -49,7 +50,7 @@ describe('PersonaShareSection — 저장/공유 동작', () => {
     fireEvent.click(screen.getByTestId('persona-share-download'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('persona-share-message')).toHaveTextContent('만들지 못했어요');
+      expect(screen.getByTestId('persona-share-message')).toHaveTextContent('shareCard.imageError');
     });
     expect(mockTrack).not.toHaveBeenCalled();
   });

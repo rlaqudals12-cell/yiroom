@@ -31,47 +31,57 @@ vi.mock('next/link', () => ({
 
 import { PartialSuccessBanner } from '@/app/(main)/analysis/integrated/result/[sessionId]/_components/PartialSuccessBanner';
 
+// i18n 배선 후 서버 컴포넌트는 async — next-intl 목이 t(key)=>key 반환하므로 키 문자열로 검증.
 describe('PartialSuccessBanner', () => {
-  it('axesFailed 비어있으면 렌더링 안 함', () => {
+  it('axesFailed 비어있으면 렌더링 안 함', async () => {
     const { container } = render(
-      <PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={[]} />
+      await PartialSuccessBanner({ axesCompleted: ['personal_color'], axesFailed: [] })
     );
     expect(container.querySelector('[data-testid="partial-success-banner"]')).toBeNull();
   });
 
-  it('실패 축이 있으면 배너 표시', () => {
+  it('실패 축이 있으면 배너 표시', async () => {
     render(
-      <PartialSuccessBanner
-        axesCompleted={['personal_color', 'skin']}
-        axesFailed={['body', 'hair']}
-      />
+      await PartialSuccessBanner({
+        axesCompleted: ['personal_color', 'skin'],
+        axesFailed: ['body', 'hair'],
+      })
     );
     expect(screen.getByTestId('partial-success-banner')).toBeInTheDocument();
-    expect(screen.getByText(/일부 분석이 완료되지 않았어요/)).toBeInTheDocument();
+    expect(screen.getByText('partialSuccess.title')).toBeInTheDocument();
   });
 
-  it('실패 축 이름이 한국어로 매핑됨', () => {
+  it('실패 축 이름이 i18n 키로 매핑됨', async () => {
     render(
-      <PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={['body', 'hair']} />
+      await PartialSuccessBanner({
+        axesCompleted: ['personal_color'],
+        axesFailed: ['body', 'hair'],
+      })
     );
-    expect(screen.getByText(/체형, 헤어/)).toBeInTheDocument();
+    expect(screen.getByText(/axes\.body, axes\.hair/)).toBeInTheDocument();
   });
 
-  it('성공 축이 함께 표시됨', () => {
+  it('성공 축이 함께 표시됨', async () => {
     render(
-      <PartialSuccessBanner axesCompleted={['personal_color', 'skin']} axesFailed={['body']} />
+      await PartialSuccessBanner({
+        axesCompleted: ['personal_color', 'skin'],
+        axesFailed: ['body'],
+      })
     );
-    expect(screen.getByText(/퍼스널컬러, 피부/)).toBeInTheDocument();
+    expect(screen.getByText(/axes\.personalColor, axes\.skin/)).toBeInTheDocument();
   });
 
-  it('실패한 축은 개별 분석으로 다시 시도 안내 문구 표시', () => {
-    render(<PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={['body']} />);
-    expect(screen.getByText(/실패한 축은 개별 분석으로 다시 시도해주세요/)).toBeInTheDocument();
+  it('실패한 축은 개별 분석으로 다시 시도 안내 문구(키) 표시', async () => {
+    render(await PartialSuccessBanner({ axesCompleted: ['personal_color'], axesFailed: ['body'] }));
+    expect(screen.getByText('partialSuccess.retryHint')).toBeInTheDocument();
   });
 
-  it('실패한 각 축이 개별 분석 경로(forceNew)로 딥링크됨 (통합 재실행 아님)', () => {
+  it('실패한 각 축이 개별 분석 경로(forceNew)로 딥링크됨 (통합 재실행 아님)', async () => {
     render(
-      <PartialSuccessBanner axesCompleted={['personal_color']} axesFailed={['body', 'hair']} />
+      await PartialSuccessBanner({
+        axesCompleted: ['personal_color'],
+        axesFailed: ['body', 'hair'],
+      })
     );
     const bodyLink = screen.getByTestId('partial-retry-body');
     const hairLink = screen.getByTestId('partial-retry-hair');
@@ -82,12 +92,12 @@ describe('PartialSuccessBanner', () => {
     expect(allLinks.every((l) => l.getAttribute('href') !== '/analysis/integrated')).toBe(true);
   });
 
-  it('실패 축 개수만큼 재시도 링크가 생성됨', () => {
+  it('실패 축 개수만큼 재시도 링크가 생성됨', async () => {
     render(
-      <PartialSuccessBanner
-        axesCompleted={['personal_color']}
-        axesFailed={['skin', 'body', 'makeup']}
-      />
+      await PartialSuccessBanner({
+        axesCompleted: ['personal_color'],
+        axesFailed: ['skin', 'body', 'makeup'],
+      })
     );
     expect(screen.getAllByRole('link')).toHaveLength(3);
   });

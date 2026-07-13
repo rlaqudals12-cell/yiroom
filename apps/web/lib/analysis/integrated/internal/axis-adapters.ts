@@ -247,7 +247,12 @@ export async function runSkinAxis(
     } else {
       // Level 3: 직전 분석 앵커 주입 (없으면 null → Level 2와 동일)
       const skinPrior = await getSkinPriorHint(clerkUserId);
-      const gemini = await analyzeSkinV2WithGemini(input.faceImageBase64, skinPrior);
+      // locale 전달 → concerns 등 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
+      const gemini = await analyzeSkinV2WithGemini(
+        input.faceImageBase64,
+        skinPrior,
+        input.options.locale
+      );
       result = gemini.result;
       usedFallback = gemini.usedFallback;
     }
@@ -394,7 +399,12 @@ export async function runBodyAxis(
       measurementSource = 'measured';
     } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
       const bodyPrior = await getBodyPriorHint(clerkUserId);
-      const gemini = await analyzeBodyWithGemini(input.bodyImageBase64, bodyPrior);
+      // locale 전달 → 스타일링 추천 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
+      const gemini = await analyzeBodyWithGemini(
+        input.bodyImageBase64,
+        bodyPrior,
+        input.options.locale
+      );
       if (gemini.data && !gemini.usedFallback) {
         bodyShape = gemini.data.bodyShape;
         shoulderToWaistRatio = gemini.data.estimatedRatios.shoulderToWaistRatio;
@@ -492,7 +502,12 @@ export async function runHairAxis(
 
     if (!isMockMode()) {
       const hairPrior = await getHairPriorHint(clerkUserId);
-      const gemini = await analyzeHairWithGemini(input.faceImageBase64, hairPrior);
+      // locale 전달 → 스타일 추천 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
+      const gemini = await analyzeHairWithGemini(
+        input.faceImageBase64,
+        hairPrior,
+        input.options.locale
+      );
       if (gemini.data && !gemini.usedFallback) {
         faceShape = gemini.data.faceShape;
         // Gemini 응답의 hairAnalysis.stylingTips 있으면 사용 (schema에 따라)

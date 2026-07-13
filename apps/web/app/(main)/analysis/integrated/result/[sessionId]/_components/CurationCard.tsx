@@ -10,6 +10,7 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1
  */
 
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { ChevronRight, Sparkles, Brush, Droplet, Shirt, Scissors, ShoppingBag } from 'lucide-react';
 import type { Curation, CurationCategory, CurationProduct } from '@/lib/analysis/integrated';
@@ -43,10 +44,11 @@ const CATEGORY_ICON: Record<
   hair: { icon: Scissors, accent: 'text-amber-300' },
 };
 
-export function CurationCard({
+export async function CurationCard({
   curation,
   products = [],
-}: CurationCardProps): React.JSX.Element | null {
+}: CurationCardProps): Promise<React.JSX.Element | null> {
+  const t = await getTranslations('analysis.integratedResult');
   const hasProducts = products.length > 0;
   // 실제 제품이 있으면 뷰티 링크 카드는 제품 블록으로 대체하고, 나머지(옷장/헤어)만 링크로 유지
   const linkItems = hasProducts
@@ -59,7 +61,7 @@ export function CurationCard({
     <section
       className="relative overflow-hidden rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-500/15 via-purple-500/10 to-transparent p-6"
       data-testid="curation-card"
-      aria-label="당신을 위한 세트"
+      aria-label={t('curation.ariaLabel')}
     >
       <div
         aria-hidden="true"
@@ -70,12 +72,10 @@ export function CurationCard({
         {/* 헤더 */}
         <div className="space-y-1">
           <p className="text-[11px] font-medium uppercase tracking-widest text-pink-300">
-            ✨ 당신을 위한 세트
+            ✨ {t('curation.eyebrow')}
           </p>
-          <h2 className="text-xl font-bold text-white md:text-2xl">내 프로필에 맞춰 골랐어요</h2>
-          <p className="text-xs text-zinc-400">
-            축들을 종합해 지금 바로 시도할 수 있는 것부터 순서대로
-          </p>
+          <h2 className="text-xl font-bold text-white md:text-2xl">{t('curation.heading')}</h2>
+          <p className="text-xs text-zinc-400">{t('curation.subtitle')}</p>
         </div>
 
         {/* 실제 제품 3개 (지갑 여는 "너를 위한 이 세트") — BEST 순위 배지 + 적합도 */}

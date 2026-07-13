@@ -198,5 +198,34 @@ export function parseJsonResponse<T>(text: string): T {
   }
 }
 
+// --- 출력 언어 로케일 (i18n) ---
+
+/**
+ * AI 결과 생성 언어. 통합 분석 입력 스키마(integratedAnalysisInputSchema.options.locale)와 동일 taxonomy.
+ */
+export type OutputLocale = 'ko' | 'en' | 'ja' | 'zh';
+
+/**
+ * 프롬프트 말미에 주입하는 "출력 언어 지시문".
+ *
+ * 왜: 프롬프트 본문은 한국어(도메인 전문성)로 유지하되, 사용자에게 노출되는 자유 텍스트
+ * (인사이트·추천·페르소나 등)만 사용자 언어로 생성되도록 분리한다. JSON 필드명·enum은
+ * 언어와 무관하게 영문 유지(파싱 규칙 보존) — 이 지시문은 "결과 텍스트" 언어만 강제한다.
+ *
+ * 기본값 'ko' → 기존 한국 사용자 동작 100% 불변(회귀 0).
+ *
+ * @param locale 출력 언어 (기본 'ko')
+ * @returns 해당 언어로 작성하라는 한 줄 지시문
+ */
+export function outputLanguageDirective(locale: OutputLocale = 'ko'): string {
+  const directives: Record<OutputLocale, string> = {
+    ko: '한국어로 자연스럽게 작성해주세요.',
+    en: 'Write naturally in English.',
+    ja: '自然な日本語で記述してください。',
+    zh: '请用自然的中文书写。',
+  };
+  return directives[locale] ?? directives.ko;
+}
+
 // re-export for convenience
 export { HarmCategory, HarmBlockThreshold };

@@ -10,6 +10,7 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1
  */
 
+import { getTranslations } from 'next-intl/server';
 import { Link2 } from 'lucide-react';
 import type { CrossInsights } from '@/lib/analysis/integrated';
 import { recLayerForInsight } from '@/lib/analysis/integrated';
@@ -53,13 +54,21 @@ const DEFAULT_THEME = {
   bullet: 'text-zinc-400',
 };
 
-export function CrossInsightsCard({ insights }: CrossInsightsCardProps): React.JSX.Element | null {
+export async function CrossInsightsCard({
+  insights,
+}: CrossInsightsCardProps): Promise<React.JSX.Element | null> {
   if (insights.items.length === 0) return null;
 
+  const t = await getTranslations('analysis.integratedResult');
+
   return (
-    <section className="space-y-3" data-testid="cross-insights-card" aria-label="축 조합 인사이트">
+    <section
+      className="space-y-3"
+      data-testid="cross-insights-card"
+      aria-label={t('crossInsights.ariaLabel')}
+    >
       <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-        축이 대화해요
+        {t('crossInsights.heading')}
       </h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {insights.items.map((item) => {
@@ -87,12 +96,14 @@ export function CrossInsightsCard({ insights }: CrossInsightsCardProps): React.J
                   }`}
                   title={
                     layer === 'condition'
-                      ? '오늘의 컨디션(피부)에 따라 바뀌어요'
-                      : '정체성 기반 — 거의 변하지 않아요'
+                      ? t('crossInsights.layerConditionTitle')
+                      : t('crossInsights.layerIdentityTitle')
                   }
                   data-testid={`cross-insight-layer-${item.id}`}
                 >
-                  {layer === 'condition' ? '오늘' : '고정'}
+                  {layer === 'condition'
+                    ? t('crossInsights.layerCondition')
+                    : t('crossInsights.layerIdentity')}
                 </span>
               </div>
               <p className="text-sm font-semibold text-white">{item.title}</p>

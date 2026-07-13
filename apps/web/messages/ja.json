@@ -502,6 +502,87 @@
     "shareDesc": {
       "personalColor": "Yiroomであなたのパーソナルカラーを見つけよう",
       "body": "YiroomでAI体型分析を受けよう"
+    },
+    "integratedResult": {
+      "meta": {
+        "title": "統合分析レポート",
+        "description": "セルフィー1枚で分析したパーソナルカラー・肌・体型・ヘア・メイクの統合レポート"
+      },
+      "footer": {
+        "reproducibility": "同じ写真なら同じ結果 — 同一写真を繰り返し分析し、判定が一致するか検証しました。",
+        "aiDisclaimer": "分析結果はAIが生成した参考情報であり、医学的診断に代わるものではありません。"
+      },
+      "axes": {
+        "personalColor": "パーソナルカラー",
+        "skin": "肌",
+        "body": "体型",
+        "hair": "ヘア",
+        "makeup": "メイク"
+      },
+      "actionPlan": {
+        "heading": "次のアクション",
+        "ariaLabel": "次のアクションの提案",
+        "horizon": {
+          "now": "今すぐ",
+          "thisWeek": "今週中に",
+          "thisMonth": "今月中に"
+        }
+      },
+      "fallback": {
+        "title": "一部の軸はサンプル結果です",
+        "bodyAfterLabels": "の軸はAI分析サービスを一時的に利用できず、サンプル（例）結果を表示しています。実際の分析結果ではないため、参考としてのみご覧ください。",
+        "retryHint": "しばらくしてから該当の軸を再分析すると、正確な結果が得られます。"
+      },
+      "crossInsights": {
+        "heading": "軸が対話しています",
+        "ariaLabel": "軸の組み合わせインサイト",
+        "layerCondition": "今日",
+        "layerIdentity": "固定",
+        "layerConditionTitle": "今日のコンディション（肌）によって変わります",
+        "layerIdentityTitle": "アイデンティティに基づき、ほとんど変わりません"
+      },
+      "curation": {
+        "ariaLabel": "あなたのためのセット",
+        "eyebrow": "あなたのためのセット",
+        "heading": "あなたのプロフィールに合わせて選びました",
+        "subtitle": "軸を総合し、今すぐ試せるものから順に"
+      },
+      "nextSteps": {
+        "heading": "各軸をさらに詳しく見る",
+        "summaryFallback": "結果を詳しく見る",
+        "deepDive": "詳しく見る",
+        "reanalyze": "再分析"
+      },
+      "partialSuccess": {
+        "title": "一部の分析が完了しませんでした",
+        "successLabel": "成功:",
+        "failedLabel": "未完了:",
+        "retryHint": "失敗した軸は個別分析で再度お試しください。",
+        "reanalyzeAxis": "{axis}を再分析"
+      },
+      "persona": {
+        "ariaLabel": "マイプロフィール",
+        "badge": "マイプロフィール",
+        "fallbackNote": "AI合成の代わりに要約で生成されたプロフィールです。"
+      },
+      "shareCard": {
+        "heading": "私のアイデンティティカード",
+        "subtitle": "保存してどこでも自慢しましょう — 写真は含まれません",
+        "downloadButton": "画像を保存",
+        "shareButton": "共有する",
+        "imageError": "カード画像を作成できませんでした。しばらくしてから再度お試しください。",
+        "saved": "カードを保存しました。どこでも自慢してください！",
+        "shareFailed": "共有に失敗しました。画像の保存をご利用ください。",
+        "shareTitle": "私のYiroomアイデンティティカード",
+        "shareText": "{oneLine} — Yiroomで私の5軸アイデンティティを見つけよう"
+      },
+      "shareReport": {
+        "shareTitle": "私のスタイルレポート | Yiroom",
+        "shareText": "AIが分析した私のパーソナルカラー・肌・体型スタイルレポート",
+        "copied": "リンクをコピーしました！",
+        "error": "もう一度お試しください",
+        "idle": "スタイルレポートを共有"
+      }
     }
   },
   "emptyState": {

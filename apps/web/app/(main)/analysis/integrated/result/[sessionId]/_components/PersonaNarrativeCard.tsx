@@ -10,6 +10,7 @@
  * @see lib/analysis/integrated/internal/persona-composer.ts
  */
 
+import { getTranslations } from 'next-intl/server';
 import { Sparkles } from 'lucide-react';
 import type { PersonaProfile } from '@/lib/analysis/integrated';
 
@@ -17,16 +18,18 @@ export interface PersonaNarrativeCardProps {
   persona: PersonaProfile | null;
 }
 
-export function PersonaNarrativeCard({
+export async function PersonaNarrativeCard({
   persona,
-}: PersonaNarrativeCardProps): React.JSX.Element | null {
+}: PersonaNarrativeCardProps): Promise<React.JSX.Element | null> {
   if (!persona) return null;
+
+  const t = await getTranslations('analysis.integratedResult');
 
   return (
     <section
       className="relative overflow-hidden rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-indigo-500/10 p-6 md:p-8"
       data-testid="persona-narrative-card"
-      aria-label="내 프로필"
+      aria-label={t('persona.ariaLabel')}
     >
       {/* 배경 글로우 */}
       <div
@@ -38,7 +41,7 @@ export function PersonaNarrativeCard({
         {/* 라벨 */}
         <div className="inline-flex items-center gap-1.5 rounded-full border border-pink-400/40 bg-pink-500/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-pink-300">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
-          <span>내 프로필</span>
+          <span>{t('persona.badge')}</span>
         </div>
 
         {/* 한 줄 페르소나 */}
@@ -65,9 +68,7 @@ export function PersonaNarrativeCard({
 
         {/* Fallback 표시 (투명하게) */}
         {persona.usedFallback && (
-          <p className="pt-2 text-[11px] text-zinc-500">
-            ⓘ AI 합성 대신 요약으로 생성된 프로필이에요.
-          </p>
+          <p className="pt-2 text-[11px] text-zinc-500">ⓘ {t('persona.fallbackNote')}</p>
         )}
       </div>
     </section>

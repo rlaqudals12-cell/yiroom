@@ -502,6 +502,87 @@
     "shareDesc": {
       "personalColor": "Discover your personal color on Yiroom",
       "body": "Get AI body type analysis on Yiroom"
+    },
+    "integratedResult": {
+      "meta": {
+        "title": "Integrated Analysis Report",
+        "description": "A combined report of your personal color, skin, body, hair, and makeup from a single selfie"
+      },
+      "footer": {
+        "reproducibility": "Same photo, same result — we re-ran the same photo repeatedly to verify the results stay consistent.",
+        "aiDisclaimer": "Results are AI-generated reference information and are not a substitute for medical diagnosis."
+      },
+      "axes": {
+        "personalColor": "Personal Color",
+        "skin": "Skin",
+        "body": "Body",
+        "hair": "Hair",
+        "makeup": "Makeup"
+      },
+      "actionPlan": {
+        "heading": "Next Steps",
+        "ariaLabel": "Recommended next steps",
+        "horizon": {
+          "now": "Right now",
+          "thisWeek": "This week",
+          "thisMonth": "This month"
+        }
+      },
+      "fallback": {
+        "title": "Some axes show sample results",
+        "bodyAfterLabels": "— AI analysis was temporarily unavailable, so sample (example) results are shown for these. They aren't real results, so please use them for reference only.",
+        "retryHint": "Try analyzing these axes again in a moment to get accurate results."
+      },
+      "crossInsights": {
+        "heading": "Your axes are talking",
+        "ariaLabel": "Cross-axis insights",
+        "layerCondition": "Today",
+        "layerIdentity": "Fixed",
+        "layerConditionTitle": "Changes with today's condition (skin)",
+        "layerIdentityTitle": "Identity-based — rarely changes"
+      },
+      "curation": {
+        "ariaLabel": "A set just for you",
+        "eyebrow": "A set just for you",
+        "heading": "Picked to match your profile",
+        "subtitle": "Combining your axes, starting with what you can try right now"
+      },
+      "nextSteps": {
+        "heading": "Explore each axis in depth",
+        "summaryFallback": "View details",
+        "deepDive": "Details",
+        "reanalyze": "Re-analyze"
+      },
+      "partialSuccess": {
+        "title": "Some analyses didn't finish",
+        "successLabel": "Done:",
+        "failedLabel": "Incomplete:",
+        "retryHint": "Please re-run the failed axes through their individual analyses.",
+        "reanalyzeAxis": "Re-analyze {axis}"
+      },
+      "persona": {
+        "ariaLabel": "My profile",
+        "badge": "My profile",
+        "fallbackNote": "This profile was generated from a summary instead of AI synthesis."
+      },
+      "shareCard": {
+        "heading": "My identity card",
+        "subtitle": "Save it and show it off anywhere — your photo is never included",
+        "downloadButton": "Save image",
+        "shareButton": "Share",
+        "imageError": "We couldn't create the card image. Please try again in a moment.",
+        "saved": "Card saved. Show it off anywhere!",
+        "shareFailed": "Sharing failed. Please use Save image instead.",
+        "shareTitle": "My Yiroom identity card",
+        "shareText": "{oneLine} — discover your 5-axis identity on Yiroom"
+      },
+      "shareReport": {
+        "shareTitle": "My Style Report | Yiroom",
+        "shareText": "My AI-analyzed personal color, skin, and body style report",
+        "copied": "Link copied!",
+        "error": "Please try again",
+        "idle": "Share style report"
+      }
     }
   },
   "emptyState": {

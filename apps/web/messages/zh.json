@@ -502,6 +502,87 @@
     "shareDesc": {
       "personalColor": "在Yiroom发现你的个人色彩",
       "body": "在Yiroom进行AI体型分析"
+    },
+    "integratedResult": {
+      "meta": {
+        "title": "综合分析报告",
+        "description": "通过一张自拍分析的个人色彩·肌肤·体型·发型·妆容综合报告"
+      },
+      "footer": {
+        "reproducibility": "同一张照片，结果一致 — 我们反复分析同一张照片，验证判定是否一致。",
+        "aiDisclaimer": "分析结果为AI生成的参考信息，不能替代医学诊断。"
+      },
+      "axes": {
+        "personalColor": "个人色彩",
+        "skin": "肌肤",
+        "body": "体型",
+        "hair": "发型",
+        "makeup": "妆容"
+      },
+      "actionPlan": {
+        "heading": "下一步行动",
+        "ariaLabel": "下一步行动建议",
+        "horizon": {
+          "now": "立即",
+          "thisWeek": "本周内",
+          "thisMonth": "本月内"
+        }
+      },
+      "fallback": {
+        "title": "部分维度为示例结果",
+        "bodyAfterLabels": "维度暂时无法使用AI分析服务，正显示示例（样例）结果。这并非真实分析结果，请仅作参考。",
+        "retryHint": "稍后重新分析相应维度即可获得准确结果。"
+      },
+      "crossInsights": {
+        "heading": "各维度在对话",
+        "ariaLabel": "维度组合洞察",
+        "layerCondition": "今日",
+        "layerIdentity": "固定",
+        "layerConditionTitle": "会随今日状态（肌肤）而变化",
+        "layerIdentityTitle": "基于身份特征 — 几乎不变"
+      },
+      "curation": {
+        "ariaLabel": "为你精选的套装",
+        "eyebrow": "为你精选的套装",
+        "heading": "根据你的画像精选",
+        "subtitle": "综合各维度，从你现在就能尝试的开始"
+      },
+      "nextSteps": {
+        "heading": "深入查看每个维度",
+        "summaryFallback": "查看详情",
+        "deepDive": "查看详情",
+        "reanalyze": "重新分析"
+      },
+      "partialSuccess": {
+        "title": "部分分析未完成",
+        "successLabel": "成功：",
+        "failedLabel": "未完成：",
+        "retryHint": "请通过各自的单项分析重新尝试失败的维度。",
+        "reanalyzeAxis": "重新分析{axis}"
+      },
+      "persona": {
+        "ariaLabel": "我的画像",
+        "badge": "我的画像",
+        "fallbackNote": "此画像由摘要生成，而非AI合成。"
+      },
+      "shareCard": {
+        "heading": "我的身份卡片",
+        "subtitle": "保存后随处炫耀吧 — 不包含照片",
+        "downloadButton": "保存图片",
+        "shareButton": "分享",
+        "imageError": "无法生成卡片图片。请稍后再试。",
+        "saved": "卡片已保存。随处炫耀吧！",
+        "shareFailed": "分享失败。请使用保存图片。",
+        "shareTitle": "我的Yiroom身份卡片",
+        "shareText": "{oneLine} — 在Yiroom发现我的五维身份"
+      },
+      "shareReport": {
+        "shareTitle": "我的风格报告 | Yiroom",
+        "shareText": "AI分析的我的个人色彩·肌肤·体型风格报告",
+        "copied": "链接已复制！",
+        "error": "请重试",
+        "idle": "分享风格报告"
+      }
     }
   },
   "emptyState": {

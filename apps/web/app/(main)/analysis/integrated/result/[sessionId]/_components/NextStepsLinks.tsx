@@ -13,14 +13,15 @@
  */
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ChevronRight, RefreshCw, Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
 interface NextStepItem {
   axis: AxisCode;
-  /** 축 이름 (행 제목) */
-  axisName: string;
+  /** 축 이름 i18n 키 (axes.*) */
+  axisNameKey: string;
   /** 개별 분석 타입 — 최신 결과 딥링크 + 폴백 시작 라우팅 */
   analysisType: AnalysisType;
   /** 최신 개별 결과가 없을 때 이동할 분석 시작 경로 */
@@ -32,7 +33,7 @@ interface NextStepItem {
 const ALL_STEPS: NextStepItem[] = [
   {
     axis: 'personal_color',
-    axisName: '퍼스널컬러',
+    axisNameKey: 'axes.personalColor',
     analysisType: 'personal-color',
     fallbackHref: '/analysis/personal-color',
     icon: Palette,
@@ -40,7 +41,7 @@ const ALL_STEPS: NextStepItem[] = [
   },
   {
     axis: 'skin',
-    axisName: '피부',
+    axisNameKey: 'axes.skin',
     analysisType: 'skin',
     fallbackHref: '/analysis/skin',
     icon: Sparkles,
@@ -48,7 +49,7 @@ const ALL_STEPS: NextStepItem[] = [
   },
   {
     axis: 'body',
-    axisName: '체형',
+    axisNameKey: 'axes.body',
     analysisType: 'body',
     fallbackHref: '/analysis/body',
     icon: Shirt,
@@ -56,7 +57,7 @@ const ALL_STEPS: NextStepItem[] = [
   },
   {
     axis: 'hair',
-    axisName: '헤어',
+    axisNameKey: 'axes.hair',
     analysisType: 'hair',
     fallbackHref: '/analysis/hair',
     icon: Scissors,
@@ -64,7 +65,7 @@ const ALL_STEPS: NextStepItem[] = [
   },
   {
     axis: 'makeup',
-    axisName: '메이크업',
+    axisNameKey: 'axes.makeup',
     analysisType: 'makeup',
     fallbackHref: '/analysis/makeup',
     icon: Brush,
@@ -85,6 +86,7 @@ export function NextStepsLinks({
   axesCompleted,
   axisSummaries,
 }: NextStepsLinksProps): React.JSX.Element | null {
+  const t = useTranslations('analysis.integratedResult');
   const completedSet = new Set(axesCompleted);
   const steps = ALL_STEPS.filter((s) => completedSet.has(s.axis));
 
@@ -97,7 +99,7 @@ export function NextStepsLinks({
   return (
     <section className="space-y-3" data-testid="next-steps-links">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-        각 축 더 깊이 보기
+        {t('nextSteps.heading')}
       </h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {steps.map((step) => {
@@ -121,11 +123,13 @@ export function NextStepsLinks({
                   <Icon className={`h-5 w-5 ${step.iconColor}`} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white">{step.axisName}</p>
-                  <p className="truncate text-xs text-zinc-400">{summary ?? '결과 자세히 보기'}</p>
+                  <p className="text-sm font-semibold text-white">{t(step.axisNameKey)}</p>
+                  <p className="truncate text-xs text-zinc-400">
+                    {summary ?? t('nextSteps.summaryFallback')}
+                  </p>
                 </div>
                 <span className="flex shrink-0 items-center gap-0.5 text-xs font-medium text-zinc-500 transition-colors group-hover:text-pink-400">
-                  심화 보기
+                  {t('nextSteps.deepDive')}
                   <ChevronRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -136,7 +140,7 @@ export function NextStepsLinks({
                 data-testid={`next-step-reanalyze-${step.axis}`}
               >
                 <RefreshCw className="h-3.5 w-3.5" />
-                다시 분석
+                {t('nextSteps.reanalyze')}
               </Link>
             </li>
           );

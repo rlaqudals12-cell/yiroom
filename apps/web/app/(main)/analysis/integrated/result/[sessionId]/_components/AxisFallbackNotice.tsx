@@ -10,15 +10,17 @@
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §4.3
  */
 
+import { getTranslations } from 'next-intl/server';
 import { AlertTriangle } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 
-const AXIS_LABELS: Record<AxisCode, string> = {
-  personal_color: '퍼스널컬러',
-  skin: '피부',
-  body: '체형',
-  hair: '헤어',
-  makeup: '메이크업',
+// AxisCode → i18n 축 라벨 키 (axes.*). 알 수 없는 코드는 키가 없어 걸러진다.
+const AXIS_LABEL_KEY: Record<AxisCode, string> = {
+  personal_color: 'axes.personalColor',
+  skin: 'axes.skin',
+  body: 'axes.body',
+  hair: 'axes.hair',
+  makeup: 'axes.makeup',
 };
 
 export interface AxisFallbackNoticeProps {
@@ -30,13 +32,15 @@ export interface AxisFallbackNoticeProps {
  * Mock Fallback 축이 하나라도 있으면 샘플 고지 배너를 표시한다.
  * (없으면 null — 정상 분석만 있으면 배너 미노출)
  */
-export function AxisFallbackNotice({
+export async function AxisFallbackNotice({
   usedFallback,
-}: AxisFallbackNoticeProps): React.JSX.Element | null {
-  // 왜: 알 수 없는 축 코드는 라벨이 없어 걸러낸다 ("undefined" 노출 방지)
+}: AxisFallbackNoticeProps): Promise<React.JSX.Element | null> {
+  const t = await getTranslations('analysis.integratedResult');
+  // 왜: 알 수 없는 축 코드는 라벨 키가 없어 걸러낸다 ("undefined" 노출 방지)
   const labels = usedFallback
-    .map((axis) => AXIS_LABELS[axis])
-    .filter((label): label is string => Boolean(label));
+    .map((axis) => AXIS_LABEL_KEY[axis])
+    .filter((key): key is string => Boolean(key))
+    .map((key) => t(key));
   if (labels.length === 0) return null;
 
   return (
@@ -48,15 +52,13 @@ export function AxisFallbackNotice({
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-100">일부 축은 샘플 결과예요</p>
+          <p className="text-sm font-semibold text-amber-100">{t('fallback.title')}</p>
+          {/* 축 라벨은 색상 강조 span으로 분리하고, 나머지 본문만 번역 (t.rich 미사용) */}
           <p className="text-xs text-amber-200/80">
-            <span className="text-amber-300">{labels.join(', ')}</span> 축은 AI 분석 서비스를
-            일시적으로 이용할 수 없어 샘플(예시) 결과를 표시하고 있어요. 실제 분석 결과가 아니므로
-            참고용으로만 봐주세요.
+            <span className="text-amber-300">{labels.join(', ')}</span>{' '}
+            {t('fallback.bodyAfterLabels')}
           </p>
-          <p className="pt-1 text-xs text-amber-200/80">
-            잠시 후 해당 축을 다시 분석하시면 정확한 결과를 받으실 수 있어요.
-          </p>
+          <p className="pt-1 text-xs text-amber-200/80">{t('fallback.retryHint')}</p>
         </div>
       </div>
     </div>

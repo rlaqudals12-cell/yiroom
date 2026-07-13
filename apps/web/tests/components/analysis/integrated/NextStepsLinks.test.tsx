@@ -52,20 +52,21 @@ describe('NextStepsLinks', () => {
     expect(container.querySelector('[data-testid="next-steps-links"]')).toBeNull();
   });
 
+  // next-intl 목이 t(key)=>key 반환 → 축 이름은 i18n 키(axes.*)로 검증
   it('완료된 축만 행 표시 (PC만 성공)', () => {
     render(<NextStepsLinks axesCompleted={['personal_color']} />);
-    expect(screen.getByText('퍼스널컬러')).toBeInTheDocument();
-    expect(screen.queryByText('피부')).toBeNull();
+    expect(screen.getByText('axes.personalColor')).toBeInTheDocument();
+    expect(screen.queryByText('axes.skin')).toBeNull();
   });
 
   it('여러 축 성공 시 여러 축 이름 표시', () => {
     render(<NextStepsLinks axesCompleted={['personal_color', 'skin', 'body']} />);
-    expect(screen.getByText('퍼스널컬러')).toBeInTheDocument();
-    expect(screen.getByText('피부')).toBeInTheDocument();
-    expect(screen.getByText('체형')).toBeInTheDocument();
+    expect(screen.getByText('axes.personalColor')).toBeInTheDocument();
+    expect(screen.getByText('axes.skin')).toBeInTheDocument();
+    expect(screen.getByText('axes.body')).toBeInTheDocument();
   });
 
-  it('핵심 결과 요약 1줄 표시 (한국어 라벨)', () => {
+  it('핵심 결과 요약 1줄 표시 (데이터 요약은 그대로 렌더)', () => {
     render(
       <NextStepsLinks
         axesCompleted={['personal_color', 'skin']}
@@ -78,7 +79,7 @@ describe('NextStepsLinks', () => {
 
   it('요약이 없으면 폴백 문구 표시', () => {
     render(<NextStepsLinks axesCompleted={['hair']} />);
-    expect(screen.getByText('결과 자세히 보기')).toBeInTheDocument();
+    expect(screen.getByText('nextSteps.summaryFallback')).toBeInTheDocument();
   });
 
   it('최신 개별 결과가 없으면 분석 시작 경로로 폴백', () => {
@@ -97,16 +98,16 @@ describe('NextStepsLinks', () => {
     expect(link).toHaveAttribute('href', '/analysis/personal-color/result/abc123');
   });
 
-  it('"심화 보기" CTA 문구 표시', () => {
+  it('"심화 보기" CTA 문구(키) 표시', () => {
     render(<NextStepsLinks axesCompleted={['makeup']} />);
-    expect(screen.getByText('심화 보기')).toBeInTheDocument();
+    expect(screen.getByText('nextSteps.deepDive')).toBeInTheDocument();
   });
 
   it('각 축에 "다시 분석" 재분석 링크(forceNew) 표시 — 선택 재분석 진입', () => {
     render(<NextStepsLinks axesCompleted={['skin']} />);
     const reanalyze = screen.getByTestId('next-step-reanalyze-skin');
     expect(reanalyze).toHaveAttribute('href', '/analysis/skin?forceNew=true');
-    expect(reanalyze).toHaveTextContent('다시 분석');
+    expect(reanalyze).toHaveTextContent('nextSteps.reanalyze');
   });
 
   it('재분석 링크는 최신 결과 유무와 무관하게 분석 시작 경로를 가리킴', () => {

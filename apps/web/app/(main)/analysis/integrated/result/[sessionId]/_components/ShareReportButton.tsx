@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Share2, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,6 +16,7 @@ interface ShareReportButtonProps {
 }
 
 export function ShareReportButton({ sessionId }: ShareReportButtonProps) {
+  const t = useTranslations('analysis.integratedResult');
   const [state, setState] = useState<'idle' | 'loading' | 'copied' | 'error'>('idle');
 
   const handleShare = async () => {
@@ -33,8 +35,8 @@ export function ShareReportButton({ sessionId }: ShareReportButtonProps) {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: '나의 스타일 리포트 | 이룸',
-            text: 'AI가 분석한 내 퍼스널컬러·피부·체형 스타일 리포트',
+            title: t('shareReport.shareTitle'),
+            text: t('shareReport.shareText'),
             url: data.url,
           });
           setState('idle');
@@ -71,10 +73,10 @@ export function ShareReportButton({ sessionId }: ShareReportButtonProps) {
         <Share2 className="w-4 h-4 mr-2" />
       )}
       {state === 'copied'
-        ? '링크 복사됨!'
+        ? t('shareReport.copied')
         : state === 'error'
-          ? '다시 시도해주세요'
-          : '스타일 리포트 공유하기'}
+          ? t('shareReport.error')
+          : t('shareReport.idle')}
     </Button>
   );
 }

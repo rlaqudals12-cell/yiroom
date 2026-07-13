@@ -12,7 +12,9 @@ import {
   isGeminiAvailable,
   formatImageForGemini,
   FAST_MODEL,
+  outputLanguageDirective,
 } from '@/lib/gemini/client';
+import type { OutputLocale } from '@/lib/gemini/client';
 import { z } from 'zod';
 import type {
   SkinZoneType,
@@ -299,7 +301,8 @@ function convertGeminiToSkinV2Result(geminiResponse: GeminiSkinV2Response): Skin
  */
 export async function analyzeSkinV2WithGemini(
   imageBase64: string,
-  priorHint?: string | null
+  priorHint?: string | null,
+  locale: OutputLocale = 'ko'
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -320,11 +323,16 @@ export async function analyzeSkinV2WithGemini(
             model: FAST_MODEL, // 피부 7존 = 구조화 추출 — lite 스키마 완전 준수·3~7초 (2026-07-07 A/B)
             contents: [
               {
+                // 결과 자유 텍스트(concerns 등)만 사용자 언어로 (JSON 필드·enum은 영문 유지 = 파싱 규칙 보존)
                 text: priorHint
                   ? `${SKIN_V2_PROMPT}
 
+${outputLanguageDirective(locale)}
+
 ${priorHint}`
-                  : SKIN_V2_PROMPT,
+                  : `${SKIN_V2_PROMPT}
+
+${outputLanguageDirective(locale)}`,
               },
               imagePart,
             ],
@@ -608,7 +616,8 @@ export type GeminiBodyV2Response = z.infer<typeof GeminiBodyV2ResponseSchema>;
  */
 export async function analyzeBodyWithGemini(
   imageBase64: string,
-  priorHint?: string | null
+  priorHint?: string | null,
+  locale: OutputLocale = 'ko'
 ): Promise<{ data: GeminiBodyV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -625,11 +634,16 @@ export async function analyzeBodyWithGemini(
           generateContent({
             contents: [
               {
+                // 결과 자유 텍스트(스타일링 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
                 text: priorHint
                   ? `${BODY_V2_PROMPT}
 
+${outputLanguageDirective(locale)}
+
 ${priorHint}`
-                  : BODY_V2_PROMPT,
+                  : `${BODY_V2_PROMPT}
+
+${outputLanguageDirective(locale)}`,
               },
               imagePart,
             ],
@@ -815,7 +829,8 @@ export type GeminiHairV2Response = z.infer<typeof GeminiHairV2ResponseSchema>;
  */
 export async function analyzeHairWithGemini(
   imageBase64: string,
-  priorHint?: string | null
+  priorHint?: string | null,
+  locale: OutputLocale = 'ko'
 ): Promise<{ data: GeminiHairV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -832,11 +847,16 @@ export async function analyzeHairWithGemini(
           generateContent({
             contents: [
               {
+                // 결과 자유 텍스트(스타일 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
                 text: priorHint
                   ? `${HAIR_V2_PROMPT}
 
+${outputLanguageDirective(locale)}
+
 ${priorHint}`
-                  : HAIR_V2_PROMPT,
+                  : `${HAIR_V2_PROMPT}
+
+${outputLanguageDirective(locale)}`,
               },
               imagePart,
             ],
@@ -1009,7 +1029,8 @@ export type GeminiOralHealthResponse = z.infer<typeof GeminiOralHealthResponseSc
  * @returns 구강건강 분석 결과 또는 null (실패 시)
  */
 export async function analyzeOralWithGemini(
-  imageBase64: string
+  imageBase64: string,
+  locale: OutputLocale = 'ko'
 ): Promise<{ data: GeminiOralHealthResponse | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -1024,7 +1045,11 @@ export async function analyzeOralWithGemini(
       () =>
         withTimeout(
           generateContent({
-            contents: [{ text: ORAL_HEALTH_PROMPT }, imagePart],
+            // 결과 자유 텍스트(권장 사항)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
+            contents: [
+              { text: `${ORAL_HEALTH_PROMPT}\n\n${outputLanguageDirective(locale)}` },
+              imagePart,
+            ],
             config: geminiV2Config,
           }),
           30000,

@@ -10,6 +10,7 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1
  */
 
+import { getTranslations } from 'next-intl/server';
 import { Clock, CalendarDays, CalendarRange } from 'lucide-react';
 import type { ActionPlan, ActionHorizon } from '@/lib/analysis/integrated';
 
@@ -17,36 +18,52 @@ export interface ActionPlanCardProps {
   plan: ActionPlan;
 }
 
+// 아이콘/색상은 정적 — 라벨은 시점별 i18n 키(horizon.*)로 분리
 const HORIZON_META: Record<
   ActionHorizon,
-  { label: string; icon: React.ComponentType<{ className?: string }>; accent: string; ring: string }
+  {
+    labelKey: string;
+    icon: React.ComponentType<{ className?: string }>;
+    accent: string;
+    ring: string;
+  }
 > = {
   now: {
-    label: '지금 바로',
+    labelKey: 'now',
     icon: Clock,
     accent: 'text-pink-300',
     ring: 'border-pink-500/30 bg-pink-500/5',
   },
   this_week: {
-    label: '이번 주 안에',
+    labelKey: 'thisWeek',
     icon: CalendarDays,
     accent: 'text-violet-300',
     ring: 'border-violet-500/30 bg-violet-500/5',
   },
   this_month: {
-    label: '이번 달 안에',
+    labelKey: 'thisMonth',
     icon: CalendarRange,
     accent: 'text-blue-300',
     ring: 'border-blue-500/30 bg-blue-500/5',
   },
 };
 
-export function ActionPlanCard({ plan }: ActionPlanCardProps): React.JSX.Element | null {
+export async function ActionPlanCard({
+  plan,
+}: ActionPlanCardProps): Promise<React.JSX.Element | null> {
   if (plan.items.length === 0) return null;
 
+  const t = await getTranslations('analysis.integratedResult');
+
   return (
-    <section className="space-y-3" data-testid="action-plan-card" aria-label="다음 행동 추천">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">다음 행동</h2>
+    <section
+      className="space-y-3"
+      data-testid="action-plan-card"
+      aria-label={t('actionPlan.ariaLabel')}
+    >
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        {t('actionPlan.heading')}
+      </h2>
       <ul className="space-y-2">
         {plan.items.map((item) => {
           const meta = HORIZON_META[item.horizon];
@@ -63,7 +80,7 @@ export function ActionPlanCard({ plan }: ActionPlanCardProps): React.JSX.Element
                 </div>
                 <div className="flex-1 space-y-1">
                   <p className={`text-[11px] font-medium uppercase tracking-wider ${meta.accent}`}>
-                    {meta.label}
+                    {t(`actionPlan.horizon.${meta.labelKey}`)}
                   </p>
                   <p className="text-sm font-semibold text-white">{item.title}</p>
                   <p className="text-xs text-zinc-400">{item.why}</p>

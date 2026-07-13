@@ -4,16 +4,18 @@
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §4.3
  */
 
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 
-const AXIS_LABELS: Record<AxisCode, string> = {
-  personal_color: '퍼스널컬러',
-  skin: '피부',
-  body: '체형',
-  hair: '헤어',
-  makeup: '메이크업',
+// AxisCode → i18n 축 라벨 키 (axes.*)
+const AXIS_LABEL_KEY: Record<AxisCode, string> = {
+  personal_color: 'axes.personalColor',
+  skin: 'axes.skin',
+  body: 'axes.body',
+  hair: 'axes.hair',
+  makeup: 'axes.makeup',
 };
 
 // 축별 개별 분석 시작 경로 — 실패한 축을 각각 다시 시도할 수 있게 딥링크한다.
@@ -31,14 +33,15 @@ export interface PartialSuccessBannerProps {
   axesFailed: AxisCode[];
 }
 
-export function PartialSuccessBanner({
+export async function PartialSuccessBanner({
   axesCompleted,
   axesFailed,
-}: PartialSuccessBannerProps): React.JSX.Element | null {
+}: PartialSuccessBannerProps): Promise<React.JSX.Element | null> {
   if (axesFailed.length === 0) return null;
 
-  const completedLabels = axesCompleted.map((c) => AXIS_LABELS[c]).join(', ');
-  const failedLabels = axesFailed.map((c) => AXIS_LABELS[c]).join(', ');
+  const t = await getTranslations('analysis.integratedResult');
+  const completedLabels = axesCompleted.map((c) => t(AXIS_LABEL_KEY[c])).join(', ');
+  const failedLabels = axesFailed.map((c) => t(AXIS_LABEL_KEY[c])).join(', ');
 
   return (
     <div
@@ -49,20 +52,19 @@ export function PartialSuccessBanner({
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-100">일부 분석이 완료되지 않았어요</p>
+          <p className="text-sm font-semibold text-amber-100">{t('partialSuccess.title')}</p>
           {completedLabels && (
             <p className="text-xs text-amber-200/80">
-              <span className="text-amber-300">성공:</span> {completedLabels}
+              <span className="text-amber-300">{t('partialSuccess.successLabel')}</span>{' '}
+              {completedLabels}
             </p>
           )}
           <p className="text-xs text-amber-200/80">
-            <span className="text-amber-300">미완료:</span> {failedLabels}
+            <span className="text-amber-300">{t('partialSuccess.failedLabel')}</span> {failedLabels}
           </p>
           {/* 정직한 대체: 통합 재실행(사진 재업로드)이 아니라, 실패한 축만 개별 분석으로
               다시 시도하도록 각 축을 딥링크한다. 세션 단위 부분 재시도 API는 없다. */}
-          <p className="pt-1 text-xs text-amber-200/80">
-            실패한 축은 개별 분석으로 다시 시도해주세요.
-          </p>
+          <p className="pt-1 text-xs text-amber-200/80">{t('partialSuccess.retryHint')}</p>
         </div>
       </div>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -74,7 +76,7 @@ export function PartialSuccessBanner({
             className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-500/40 px-3 text-xs font-medium text-amber-200 transition-colors hover:border-amber-400 hover:bg-amber-500/10"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            {AXIS_LABELS[axis]} 다시 분석
+            {t('partialSuccess.reanalyzeAxis', { axis: t(AXIS_LABEL_KEY[axis]) })}
           </Link>
         ))}
       </div>

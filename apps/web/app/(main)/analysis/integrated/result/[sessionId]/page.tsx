@@ -9,6 +9,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect, notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { hasAnyClosetItems } from '@/lib/analysis/integrated/internal/closet-check';
@@ -123,9 +124,20 @@ function buildAxisSummaries(axes: {
   };
 }
 
-export const metadata: Metadata = {
-  title: '통합 분석 리포트',
-  description: '셀카 한 장으로 분석한 퍼스널컬러·피부·체형·헤어·메이크업 통합 리포트',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('analysis.integratedResult');
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+  };
+}
+
+// locale → toLocaleString용 BCP47 (외국어 사용자에게 한국어 날짜 포맷 노출 방지)
+const DATE_LOCALE: Record<string, string> = {
+  ko: 'ko-KR',
+  en: 'en-US',
+  ja: 'ja-JP',
+  zh: 'zh-CN',
 };
 
 interface PageProps {
@@ -139,6 +151,10 @@ export default async function IntegratedResultPage({
   if (!userId) {
     redirect('/sign-in');
   }
+
+  const t = await getTranslations('analysis.integratedResult');
+  const locale = await getLocale();
+  const dateLocale = DATE_LOCALE[locale] ?? 'ko-KR';
 
   const { sessionId } = await params;
 
@@ -265,9 +281,9 @@ export default async function IntegratedResultPage({
           <p className="text-xs uppercase tracking-widest text-zinc-500">Yiroom Intelligence</p>
           {/* 왜 "리포트": 이 페이지는 세션 1회의 기록 — "내 정체성 5축 결과"는 프로필 전체를
               주장하는 제목이라 부분 세션에서 "완성 5/5인데 왜 3축이 없어?" 모순을 유발했음 */}
-          <h1 className="text-2xl font-bold text-white md:text-3xl">통합 분석 리포트</h1>
+          <h1 className="text-2xl font-bold text-white md:text-3xl">{t('meta.title')}</h1>
           <p className="text-xs text-zinc-400">
-            {new Date(session.created_at).toLocaleString('ko-KR')}
+            {new Date(session.created_at).toLocaleString(dateLocale)}
           </p>
         </header>
 
@@ -308,10 +324,8 @@ export default async function IntegratedResultPage({
         {/* 하단 안내 */}
         <div className="space-y-1 pt-4 text-center text-[11px] text-zinc-600">
           {/* 재현성 실측 — 과장 없이 "같은 입력 → 같은 판정"만 (퍼스널컬러·피부에서 검증) */}
-          <p className="text-zinc-500">
-            같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.
-          </p>
-          <p>분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.</p>
+          <p className="text-zinc-500">{t('footer.reproducibility')}</p>
+          <p>{t('footer.aiDisclaimer')}</p>
         </div>
       </div>
     </div>

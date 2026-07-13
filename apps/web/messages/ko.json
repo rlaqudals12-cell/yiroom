@@ -502,6 +502,87 @@
     "shareDesc": {
       "personalColor": "이룸에서 나만의 퍼스널 컬러를 알아보세요",
       "body": "이룸에서 AI 체형 분석 받아보세요"
+    },
+    "integratedResult": {
+      "meta": {
+        "title": "통합 분석 리포트",
+        "description": "셀카 한 장으로 분석한 퍼스널컬러·피부·체형·헤어·메이크업 통합 리포트"
+      },
+      "footer": {
+        "reproducibility": "같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.",
+        "aiDisclaimer": "분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요."
+      },
+      "axes": {
+        "personalColor": "퍼스널컬러",
+        "skin": "피부",
+        "body": "체형",
+        "hair": "헤어",
+        "makeup": "메이크업"
+      },
+      "actionPlan": {
+        "heading": "다음 행동",
+        "ariaLabel": "다음 행동 추천",
+        "horizon": {
+          "now": "지금 바로",
+          "thisWeek": "이번 주 안에",
+          "thisMonth": "이번 달 안에"
+        }
+      },
+      "fallback": {
+        "title": "일부 축은 샘플 결과예요",
+        "bodyAfterLabels": "축은 AI 분석 서비스를 일시적으로 이용할 수 없어 샘플(예시) 결과를 표시하고 있어요. 실제 분석 결과가 아니므로 참고용으로만 봐주세요.",
+        "retryHint": "잠시 후 해당 축을 다시 분석하시면 정확한 결과를 받으실 수 있어요."
+      },
+      "crossInsights": {
+        "heading": "축이 대화해요",
+        "ariaLabel": "축 조합 인사이트",
+        "layerCondition": "오늘",
+        "layerIdentity": "고정",
+        "layerConditionTitle": "오늘의 컨디션(피부)에 따라 바뀌어요",
+        "layerIdentityTitle": "정체성 기반 — 거의 변하지 않아요"
+      },
+      "curation": {
+        "ariaLabel": "당신을 위한 세트",
+        "eyebrow": "당신을 위한 세트",
+        "heading": "내 프로필에 맞춰 골랐어요",
+        "subtitle": "축들을 종합해 지금 바로 시도할 수 있는 것부터 순서대로"
+      },
+      "nextSteps": {
+        "heading": "각 축 더 깊이 보기",
+        "summaryFallback": "결과 자세히 보기",
+        "deepDive": "심화 보기",
+        "reanalyze": "다시 분석"
+      },
+      "partialSuccess": {
+        "title": "일부 분석이 완료되지 않았어요",
+        "successLabel": "성공:",
+        "failedLabel": "미완료:",
+        "retryHint": "실패한 축은 개별 분석으로 다시 시도해주세요.",
+        "reanalyzeAxis": "{axis} 다시 분석"
+      },
+      "persona": {
+        "ariaLabel": "내 프로필",
+        "badge": "내 프로필",
+        "fallbackNote": "AI 합성 대신 요약으로 생성된 프로필이에요."
+      },
+      "shareCard": {
+        "heading": "내 정체성 카드",
+        "subtitle": "저장해서 어디든 자랑해 보세요 — 사진은 담기지 않아요",
+        "downloadButton": "이미지 저장",
+        "shareButton": "공유하기",
+        "imageError": "카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요.",
+        "saved": "카드를 저장했어요. 어디든 자랑해 보세요!",
+        "shareFailed": "공유에 실패했어요. 이미지 저장을 이용해주세요.",
+        "shareTitle": "나의 이룸 정체성 카드",
+        "shareText": "{oneLine} — 이룸에서 나의 5축 정체성을 알아보세요"
+      },
+      "shareReport": {
+        "shareTitle": "나의 스타일 리포트 | 이룸",
+        "shareText": "AI가 분석한 내 퍼스널컬러·피부·체형 스타일 리포트",
+        "copied": "링크 복사됨!",
+        "error": "다시 시도해주세요",
+        "idle": "스타일 리포트 공유하기"
+      }
     }
   },
   "emptyState": {
