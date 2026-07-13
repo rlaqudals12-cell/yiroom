@@ -6,11 +6,11 @@
  *  상세: RadarChart 6축 + 전체 MetricBar + 변화량
  *  추천: 스킨케어 팁 + 추천/주의 성분
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 
@@ -30,13 +30,10 @@ import { RadarChart, type RadarDataItem } from '@/components/charts';
 import { AIBadge } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { saveSkinResult, buildSkinTopActions } from '@/lib/analysis';
+import { buildSkinTopActions } from '@/lib/analysis';
 import { TIMING, usePulseGlow } from '@/lib/animations';
-import {
-  analyzeSkin as analyzeWithGemini,
-  imageToBase64,
-  type SkinAnalysisResult,
-} from '@/lib/gemini';
+import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
+import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
 import {
   SKIN_TYPE_DATA,
@@ -116,7 +113,7 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
 export default function SkinResultScreen() {
   const { module, colors, status, isDark } = useAnalysisStyles();
   const accent = module.skin;
-  const { user } = useUser();
+  const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
@@ -131,13 +128,15 @@ export default function SkinResultScreen() {
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [errorMessage, setErrorMessage] =
+    useState<string>('분석에 실패했어요. 다시 시도해 주세요.');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
   // 높은 점수(>=70) 시 CircularProgress 펄스 글로우
   const pulseGlowStyle = usePulseGlow(accent.base, 0.2);
 
-  // 피부 분석 (lib/gemini 연동)
+  // 피부 분석 — 웹 POST /api/analyze/skin 정본 (실 AI + skin_analyses 저장 + 연령/생체 게이트)
   const analyzeSkin = useCallback(async () => {
     setIsLoading(true);
     setUsedFallback(false);
@@ -152,14 +151,18 @@ export default function SkinResultScreen() {
         throw new Error('이미지 데이터가 없습니다.');
       }
 
-      const response = await analyzeWithGemini(base64Data);
-      const analysisResult = response.result;
+      const token = await getToken();
+      if (!token) {
+        throw new SkinApiError('로그인이 필요해요. 다시 로그인해주세요.', 401, 'AUTH_ERROR');
+      }
 
-      setUsedFallback(response.usedFallback);
+      const analysisResult = await requestSkinAnalysis({ imageBase64: base64Data }, token);
+
+      setUsedFallback(analysisResult.usedMock);
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
 
-      // 종합 점수 (가중 평균)
+      // 종합 점수 (가중 평균) — 서버 저장과 별개로 화면 표시용 산출
       const score = Math.round(
         analysisResult.metrics.moisture * SCORE_WEIGHTS.moisture +
           analysisResult.metrics.elasticity * SCORE_WEIGHTS.elasticity +
@@ -171,20 +174,22 @@ export default function SkinResultScreen() {
       );
       setOverallScore(score);
 
-      // 이전 분석 결과 조회 → 변화량 계산 (DB에서)
+      // 이전 분석 대비 변화량 (저장은 서버가 이미 완료 — 방금 저장된 row는 제외하고 직전 것과 비교)
       let prevScore: number | null = null;
       let computedDelta: SkinMetricsDelta | null = null;
 
-      if (user?.id) {
+      if (userId) {
         try {
-          const { data: prevData } = await supabase
+          const { data: rows } = await supabase
             .from('skin_analyses')
             .select(
-              'overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity'
+              'id, overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity'
             )
             .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+            .limit(2);
+
+          // 방금 저장된 분석(analysisId)을 제외한 직전 분석
+          const prevData = (rows ?? []).find((r) => r.id !== analysisResult.analysisId) ?? null;
 
           if (prevData) {
             prevScore = prevData.overall_score;
@@ -202,9 +207,6 @@ export default function SkinResultScreen() {
         } catch {
           // 이전 분석 조회 실패 시 무시 (첫 분석이거나 DB 오류)
         }
-
-        // DB 저장 (이전 분석 조회 후 저장하여 자기 자신과 비교 방지)
-        saveSkinResult(supabase, user.id, analysisResult, score, imageUri);
       }
 
       setDelta(computedDelta);
@@ -215,13 +217,23 @@ export default function SkinResultScreen() {
         screen: 'skin-result',
         tags: { module: 'S-1', action: 'analyze' },
       });
+      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
+      setErrorMessage(
+        error instanceof SkinApiError ? error.message : '분석에 실패했어요. 다시 시도해 주세요.'
+      );
       setSkinType(null);
+      setMetrics(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64]);
+  }, [imageUri, imageBase64, getToken, userId, supabase]);
 
+  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken은 렌더마다 참조가 바뀌어
+  // 의존성 배열만으로는 effect가 무한 재발화 → 요청 폭풍. body/result.tsx와 동일 가드)
+  const hasStartedRef = useRef(false);
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
     analyzeSkin();
   }, [analyzeSkin]);
 
@@ -242,8 +254,9 @@ export default function SkinResultScreen() {
   if (!skinType || !metrics) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했어요. 다시 시도해 주세요."
+        message={errorMessage}
         onRetry={() => router.replace('/(analysis)/skin')}
+        onGoHome={() => router.replace('/(tabs)')}
         testID="skin-analysis-error"
       />
     );

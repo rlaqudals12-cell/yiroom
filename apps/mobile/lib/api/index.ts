@@ -8,6 +8,41 @@ export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-lim
 // 통합 분석 HTTP 클라이언트 (웹 API 재사용) — ADR-102
 export { requestIntegratedAnalysis, IntegratedApiError } from './integrated';
 
+// 단독 축 분석 HTTP 클라이언트 (웹 API 재사용 — ADR-118 thin client)
+// 체형(body) + 4축(피부·퍼스널컬러·헤어·메이크업). 실 AI·서버 저장·연령/생체 게이트 정본.
+export {
+  requestBodyAnalysis,
+  BodyApiError,
+  type BodyAnalysisApiResult,
+  type BodyAnalysisInput,
+  type BodyType3,
+  type BodyStyleRecommendation,
+} from './body';
+export {
+  requestSkinAnalysis,
+  SkinApiError,
+  type SkinAnalysisApiResult,
+  type SkinAnalysisInput,
+} from './skin';
+export {
+  requestPersonalColorAnalysis,
+  PersonalColorApiError,
+  type PersonalColorApiResult,
+  type PersonalColorAnalysisInput,
+} from './personalColor';
+export {
+  requestHairAnalysis,
+  HairApiError,
+  type HairAnalysisApiResult,
+  type HairAnalysisInput,
+} from './hair';
+export {
+  requestMakeupAnalysis,
+  MakeupApiError,
+  type MakeupAnalysisApiResult,
+  type MakeupAnalysisInput,
+} from './makeup';
+
 // 생년월일 조회·저장 HTTP 클라이언트 (웹 API 재사용) — 연령 확인 게이트(만 14세) 대응
 export {
   fetchBirthdate,

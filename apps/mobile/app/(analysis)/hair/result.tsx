@@ -6,10 +6,10 @@
  *  상세: RadarChart 4축 + 주요 고민
  *  추천: 케어 루틴 + 추천 헤어스타일
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -26,36 +26,31 @@ import { AIBadge } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import {
-  saveHairResult,
   buildHairTopActions,
   getHairCautionIngredients,
   getScalpConcernNotice,
 } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
-import {
-  analyzeHair as analyzeWithGemini,
-  imageToBase64,
-  type HairAnalysisResult,
-} from '@/lib/gemini';
+import { requestHairAnalysis, HairApiError, type HairAnalysisApiResult } from '@/lib/api/hair';
+import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { typography, radii, spacing } from '@/lib/theme';
 
 // 한국어 라벨 매핑
-const TEXTURE_LABELS: Record<HairAnalysisResult['texture'], string> = {
+const TEXTURE_LABELS: Record<HairAnalysisApiResult['texture'], string> = {
   straight: '직모',
   wavy: '웨이브',
   curly: '컬리',
   coily: '코일리',
 };
 
-const THICKNESS_LABELS: Record<HairAnalysisResult['thickness'], string> = {
+const THICKNESS_LABELS: Record<HairAnalysisApiResult['thickness'], string> = {
   fine: '가는 모발',
   medium: '보통 모발',
   thick: '굵은 모발',
 };
 
-const SCALP_LABELS: Record<HairAnalysisResult['scalpCondition'], string> = {
+const SCALP_LABELS: Record<HairAnalysisApiResult['scalpCondition'], string> = {
   dry: '건성 두피',
   oily: '지성 두피',
   normal: '정상 두피',
@@ -65,8 +60,7 @@ const SCALP_LABELS: Record<HairAnalysisResult['scalpCondition'], string> = {
 export default function HairResultScreen() {
   const { module, colors, isDark } = useAnalysisStyles();
   const accent = module.hair;
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
@@ -74,11 +68,14 @@ export default function HairResultScreen() {
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<HairAnalysisResult | null>(null);
+  const [result, setResult] = useState<HairAnalysisApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [errorMessage, setErrorMessage] =
+    useState<string>('분석에 실패했어요. 다시 시도해 주세요.');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
+  // 헤어 분석 — 웹 POST /api/analyze/hair 정본 (실 AI + hair_analyses 저장 + 연령/생체 게이트)
   const analyzeHair = useCallback(async () => {
     setIsLoading(true);
     setUsedFallback(false);
@@ -89,27 +86,35 @@ export default function HairResultScreen() {
       }
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
-      const response = await analyzeWithGemini(base64Data);
-      setUsedFallback(response.usedFallback);
-      setResult(response.result);
-      setShowCelebration(true);
-
-      // DB 저장 (실패해도 분석 결과는 표시)
-      if (user?.id) {
-        saveHairResult(supabase, user.id, response.result, imageUri);
+      const token = await getToken();
+      if (!token) {
+        throw new HairApiError('로그인이 필요해요. 다시 로그인해주세요.', 401, 'AUTH_ERROR');
       }
+
+      const response = await requestHairAnalysis({ imageBase64: base64Data }, token);
+      setUsedFallback(response.usedMock);
+      setResult(response);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'hair-result',
         tags: { module: 'H-1', action: 'analyze' },
       });
+      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
+      setErrorMessage(
+        error instanceof HairApiError ? error.message : '분석에 실패했어요. 다시 시도해 주세요.'
+      );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64]);
+  }, [imageUri, imageBase64, getToken]);
 
+  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken 참조 불안정 가드 — body/result.tsx 동일)
+  const hasStartedRef = useRef(false);
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
     analyzeHair();
   }, [analyzeHair]);
 
@@ -125,7 +130,7 @@ export default function HairResultScreen() {
   if (!result) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했어요. 다시 시도해 주세요."
+        message={errorMessage}
         onRetry={() => router.replace('/(analysis)/hair')}
         onGoHome={() => router.replace('/(tabs)')}
         testID="hair-error"

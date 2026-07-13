@@ -6,11 +6,11 @@
  *  상세: 웜/쿨 분석 + 피해야 할 색상
  *  추천: 스타일링 팁 + 메이크업 포인트
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -28,19 +28,15 @@ import {
 import { AIBadge } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import {
-  savePersonalColorResult,
-  buildPersonalColorTopActions,
-  type TopAction,
-} from '@/lib/analysis';
+import { buildPersonalColorTopActions, type TopAction } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
-  analyzePersonalColor as analyzeWithGemini,
-  imageToBase64,
-  type PersonalColorAnalysisResult,
-} from '@/lib/gemini';
+  requestPersonalColorAnalysis,
+  PersonalColorApiError,
+  type PersonalColorApiResult,
+} from '@/lib/api/personalColor';
+import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 // --- 정적 데이터 ---
@@ -125,21 +121,22 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   const { module } = useAnalysisStyles();
   const { colors, typography } = useTheme();
   const accent = module.personalColor;
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
-  const { imageUri, imageBase64, answers } = useLocalSearchParams<{
+  const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
-    answers: string;
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<PersonalColorAnalysisResult | null>(null);
+  const [result, setResult] = useState<PersonalColorApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('분석에 실패했어요.');
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
+  // 퍼스널 컬러 분석 — 웹 POST /api/analyze/personal-color 정본
+  // (실 AI + personal_color_assessments 저장 + 연령/생체 게이트)
   const analyzePersonalColor = useCallback(async () => {
     setIsLoading(true);
     setUsedFallback(false);
@@ -153,29 +150,40 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         throw new Error('이미지 데이터가 없습니다.');
       }
 
-      const parsedAnswers: Record<number, string> = JSON.parse(answers || '{}');
-      const response = await analyzeWithGemini(base64Data, parsedAnswers);
-
-      setUsedFallback(response.usedFallback);
-      setResult(response.result);
-      setShowCelebration(true);
-
-      // DB 저장 (실패해도 분석 결과는 표시)
-      if (user?.id) {
-        savePersonalColorResult(supabase, user.id, response.result, parsedAnswers, imageUri);
+      const token = await getToken();
+      if (!token) {
+        throw new PersonalColorApiError(
+          '로그인이 필요해요. 다시 로그인해주세요.',
+          401,
+          'AUTH_ERROR'
+        );
       }
+
+      const response = await requestPersonalColorAnalysis({ imageBase64: base64Data }, token);
+
+      setUsedFallback(response.usedMock);
+      setResult(response);
+      setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'personal-color-result',
         tags: { module: 'PC-1', action: 'analyze' },
       });
+      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
+      setErrorMessage(
+        error instanceof PersonalColorApiError ? error.message : '분석에 실패했어요.'
+      );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64, answers]);
+  }, [imageUri, imageBase64, getToken]);
 
+  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken 참조 불안정 가드 — body/result.tsx 동일)
+  const hasStartedRef = useRef(false);
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
     analyzePersonalColor();
   }, [analyzePersonalColor]);
 
@@ -199,7 +207,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
   if (!result) {
     return (
       <AnalysisErrorState
-        message="분석에 실패했어요."
+        message={errorMessage}
         onRetry={() => router.replace('/(analysis)/personal-color')}
         onGoHome={() => router.replace('/(tabs)')}
         testID="personal-color-error"
