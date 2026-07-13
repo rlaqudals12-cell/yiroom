@@ -21,6 +21,7 @@ export {
   trackEvent,
   flushEvents,
   trackPageView,
+  trackBriefingView,
   trackFeatureUse,
   trackAnalysisComplete,
   trackWorkoutStart,

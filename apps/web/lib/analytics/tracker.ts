@@ -105,6 +105,21 @@ export async function trackPageView(path: string, duration?: number): Promise<vo
 }
 
 /**
+ * 아침 브리핑(홈) 열람 트래킹 — 리텐션 계기판의 핵심 신호.
+ * 홈=브리핑 정본(ADR-114)이라, 이 이벤트의 (clerk_user_id, 날짜) distinct가 곧 DAU이며
+ * 가입 코호트 대비 D1/D7/D30 재방문율(습관 형성 여부 = 자산 가치)을 산출한다.
+ * @param homeState 홈 3-State(new/growing/active) — 리텐션을 상태별로 쪼개 볼 수 있게 기록.
+ */
+export async function trackBriefingView(homeState: string): Promise<void> {
+  await trackEvent({
+    eventType: 'page_view',
+    eventName: 'briefing_view',
+    eventData: { homeState },
+    pagePath: '/home',
+  });
+}
+
+/**
  * 기능 사용 트래킹
  */
 export async function trackFeatureUse(featureId: string, featureName: string): Promise<void> {

@@ -11,8 +11,10 @@
  * @see docs/specs/SDD-HOME-3STATE.md
  */
 
+import { useEffect, useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { trackBriefingView } from '@/lib/analytics';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 import { useOnboardingSync } from '@/hooks/useOnboardingSync';
 import HomeStateNew from './HomeStateNew';
@@ -46,6 +48,15 @@ export default function HomeStateRouter() {
   useOnboardingSync();
 
   const { isLoading, hasError, analysisCount, analyses, refetch } = useAnalysisStatus();
+
+  // 리텐션 계기판 신호 — 홈=브리핑 열람을 마운트당 1회 기록(코호트 D1/D7/D30 산출용).
+  // 상태 확정(로딩/에러 아님) 후에만 발화해 스켈레톤·오류를 DAU로 오집계하지 않는다.
+  const briefingLogged = useRef(false);
+  useEffect(() => {
+    if (isLoading || hasError || briefingLogged.current) return;
+    briefingLogged.current = true;
+    void trackBriefingView(getHomeState(analysisCount));
+  }, [isLoading, hasError, analysisCount]);
 
   if (isLoading) {
     return <HomeStateSkeleton />;
