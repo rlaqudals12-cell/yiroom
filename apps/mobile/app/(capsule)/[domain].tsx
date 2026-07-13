@@ -70,7 +70,10 @@ function DomainCapsuleScreen(): React.JSX.Element {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    // domain 변경 시에만 재조회. clerk-expo useAuth의 getToken은 렌더마다 새 참조라
+    // fetchData([domain, getToken]) 의존이면 setOverview(새 객체) 재렌더와 맞물려 무한 재조회 루프가 된다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domain]);
 
   const handleRotate = useCallback(async () => {
     if (!domain) return;

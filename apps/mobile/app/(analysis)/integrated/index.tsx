@@ -162,7 +162,10 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
     return () => {
       active = false;
     };
-  }, [getToken]);
+    // 마운트 1회 게이트 조회 의도. clerk-expo useAuth의 getToken은 렌더마다 새 참조라
+    // deps에 넣으면 폼 입력(키 입력·체크박스)마다 GET 2발이 재발사된다 (체형 11행 폭풍과 동일 계열).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 선택 재분석(2A): 분석 이력이 있는 재방문 사용자에게만 축 선택 노출.
   // 일부 축만 고르면 update 모드 — 나머지 축은 기존 결과 유지(색·체형 안 흔들림).

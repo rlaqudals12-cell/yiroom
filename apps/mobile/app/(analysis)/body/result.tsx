@@ -13,7 +13,7 @@
 import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -107,7 +107,13 @@ export default function BodyResultScreen() {
     }
   }, [height, weight, imageUri, imageBase64, getToken]);
 
+  // 분석은 화면 진입당 정확히 1회만 실행한다.
+  // clerk-expo의 getToken은 렌더마다 참조가 바뀌어 analyzeBody 의존성 배열만으로는
+  // effect가 무한 재발화한다 (실측: 체형 분석 요청 폭풍 → 서버 11행 중복 저장 + 429).
+  const hasStartedRef = useRef(false);
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
     analyzeBody();
   }, [analyzeBody]);
 
