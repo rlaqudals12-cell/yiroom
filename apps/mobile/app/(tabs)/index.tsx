@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Dumbbell, Apple, ShoppingBag, ChevronRight } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
 import { FEATURE_FLAGS } from '@yiroom/shared';
@@ -61,7 +61,13 @@ export default function HomeScreen(): React.JSX.Element {
   // Daily Capsule 훅
   const daily = useDailyCapsule();
 
+  // 홈 진입당 오늘 캡슐은 정확히 1회만 조회한다.
+  // clerk-expo의 getToken은 렌더마다 참조가 바뀌어 daily.fetchToday도 매 렌더 새 참조가 되고,
+  // deps [daily.fetchToday]만으로는 effect가 무한 재발화한다(체형 스톰과 동일 원인 → API 폭풍/429).
+  const hasFetchedTodayRef = useRef(false);
   useEffect(() => {
+    if (hasFetchedTodayRef.current) return;
+    hasFetchedTodayRef.current = true;
     daily.fetchToday();
   }, [daily.fetchToday]);
 

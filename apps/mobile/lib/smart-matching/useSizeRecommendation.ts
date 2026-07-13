@@ -4,7 +4,7 @@
  */
 
 import { useAuth } from '@clerk/clerk-expo';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { productLogger } from '../utils/logger';
 
@@ -50,6 +50,12 @@ export function useSizeRecommendation({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // clerk-expo getToken은 렌더마다 참조가 바뀐다. deps에 직접 넣으면 fetchRecommendation이
+  // 매 렌더 새 참조가 되고 로드 effect가 무한 재발화한다(사이즈 추천 API 스톰). ref로 고정해 제외한다.
+  // 실제 재조회 트리거(enabled·상품 파라미터)는 deps에 남겨 정당한 재실행을 보존한다.
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
   const fetchRecommendation = useCallback(async () => {
     if (!enabled || !isSignedIn || !brandId || !brandName || !category) {
       return;
@@ -59,7 +65,7 @@ export function useSizeRecommendation({
     setError(null);
 
     try {
-      const token = await getToken();
+      const token = await getTokenRef.current();
       if (!token) {
         setError('인증 토큰을 가져올 수 없습니다.');
         return;
@@ -79,7 +85,7 @@ export function useSizeRecommendation({
     } finally {
       setIsLoading(false);
     }
-  }, [enabled, isSignedIn, brandId, brandName, category, productId, getToken]);
+  }, [enabled, isSignedIn, brandId, brandName, category, productId]);
 
   useEffect(() => {
     fetchRecommendation();

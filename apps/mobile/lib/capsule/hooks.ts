@@ -42,6 +42,13 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
   const [error, setError] = useState<ApiError | null>(null);
   const mountedRef = useRef(true);
 
+  // clerk-expo useAuth().getToken은 렌더마다 새 참조 → getAuthToken/fetchToday deps에 들어가면
+  // 소비 effect가 매 렌더 재발화해 /api/capsule/daily를 초당 수 회 두들긴다(29K 스톰 = 공인 IP DDoS 플래그).
+  // ref로 고정해 getAuthToken을 안정화 → fetchToday/generate/checkItem이 안정 참조가 되어 스톰 근절.
+  // (useBriefing/useDailyRoutine/useMyTwin·useBeautyProfile과 동일 정본 패턴.)
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
   useEffect(() => {
     return () => {
       mountedRef.current = false;
@@ -49,9 +56,9 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
   }, []);
 
   const getAuthToken = useCallback(async (): Promise<string> => {
-    const token = await getToken({ template: 'supabase' });
+    const token = await getTokenRef.current({ template: 'supabase' });
     return token ?? '';
-  }, [getToken]);
+  }, []);
 
   const fetchToday = useCallback(async () => {
     setIsLoading(true);
@@ -163,6 +170,12 @@ export function useBeautyProfile(): UseBeautyProfileReturn {
   const [error, setError] = useState<ApiError | null>(null);
   const mountedRef = useRef(true);
 
+  // clerk-expo getToken은 렌더마다 참조가 바뀐다. ref로 최신값을 고정해 deps에서 제외하지 않으면
+  // refresh가 매 렌더 새 참조가 되고 아래 로드 effect가 무한 재발화한다(프로필 API 스톰 → 429/DDoS 차단).
+  // 관례: hooks/useBriefing.ts, lib/capsule/hooks 정렬.
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
   useEffect(() => {
     return () => {
       mountedRef.current = false;
@@ -173,7 +186,7 @@ export function useBeautyProfile(): UseBeautyProfileReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const token = await getToken({ template: 'supabase' });
+      const token = await getTokenRef.current({ template: 'supabase' });
       const result = await apiGetProfile(token ?? '');
       if (!mountedRef.current) return;
       if (result.error) {
@@ -188,7 +201,7 @@ export function useBeautyProfile(): UseBeautyProfileReturn {
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
-  }, [getToken]);
+  }, []);
 
   useEffect(() => {
     refresh();
