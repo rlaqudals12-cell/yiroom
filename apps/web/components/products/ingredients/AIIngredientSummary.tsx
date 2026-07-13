@@ -208,6 +208,14 @@ export function AIIngredientSummary({
           </button>
         </div>
       )}
+
+      {/* 화장품법 §13 고지 — 데이터에 항상 주입되나 표시 컴포넌트가 미렌더였음(B4 잔여).
+          기능성화장품 심사·효능 보장 오인 방지를 위해 카드 하단에 상시 노출. */}
+      {summary.disclaimer && (
+        <p className="px-4 py-2 text-[11px] leading-relaxed text-muted-foreground border-t border-violet-200/50 dark:border-violet-800/50">
+          {summary.disclaimer}
+        </p>
+      )}
     </div>
   );
 }
