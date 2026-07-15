@@ -26,7 +26,7 @@ function makeReq(body: unknown) {
 describe('POST /api/visual/beautify', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: true, remaining: 4, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
     vi.mocked(beautifyForShare).mockResolvedValue({
       imageBase64: 'data:image/png;base64,ZZZ',
       aiEdited: true,
@@ -58,7 +58,7 @@ describe('POST /api/visual/beautify', () => {
 
   it('상한 초과 시 429 + VISUAL_BUDGET_EXCEEDED를 반환한다', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: false, remaining: 0, limit: 5 });
     const res = await POST(makeReq({ imageBase64: VALID_IMAGE }));
     const data = await res.json();
     expect(res.status).toBe(429);

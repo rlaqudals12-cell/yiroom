@@ -66,6 +66,19 @@ function getRedisClient() {
   return redisClient;
 }
 
+/**
+ * Upstash Redis raw 클라이언트 (다른 일일 카운터가 재사용).
+ *
+ * 왜 export하나: 표현 레이어 비용 가드(`lib/visual-expression/internal/budget`)가
+ * 인스턴스 간 공유되는 원자적 카운터로 승격되려면(ADR-038 — 인메모리 Map은
+ * "프로덕션 부적합"으로 기각됨) 같은 Redis 연결을 재사용해야 한다. 별도 클라이언트를
+ * 새로 띄우는 중복(P4 위반) 대신 여기 lazy-init된 인스턴스를 공유한다.
+ * Upstash 미설정 시 null → 호출부가 인메모리 폴백을 선택.
+ */
+export function getUpstashRedisClient() {
+  return getRedisClient();
+}
+
 function getDailyRateLimiter() {
   if (!UPSTASH_ENABLED || !RedisRateLimit || !Redis) return null;
   if (!dailyRateLimiter) {

@@ -49,7 +49,7 @@ describe('GET /api/visual/tryon (availability)', () => {
 describe('POST /api/visual/tryon', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: true, remaining: 4, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
     vi.mocked(generateTryon).mockResolvedValue({
       imageUrl: 'https://cdn.fashn.ai/r.jpg',
       aiGenerated: true,
@@ -84,7 +84,7 @@ describe('POST /api/visual/tryon', () => {
   it('상한 초과 시 429를 반환한다', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
     vi.mocked(isTryonAvailable).mockReturnValue(true);
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: false, remaining: 0, limit: 5 });
     const res = await POST(makeReq(VALID_BODY));
     expect(res.status).toBe(429);
     expect(generateTryon).not.toHaveBeenCalled();

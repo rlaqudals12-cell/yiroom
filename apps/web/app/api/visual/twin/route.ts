@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 비용 가드 (보정+착장+트윈 합산 일 5회)
-    const budget = checkAndConsumeBudget(userId);
+    const budget = await checkAndConsumeBudget(userId);
     if (!budget.allowed) {
       return withCors(
         NextResponse.json(
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     } catch (error) {
       // 생성 실패 → 미리 소비한 예산 환불(실패한 시도는 일 5회 상한에 계산하지 않음).
       // 정직한 오류 응답은 아래 바깥 catch가 담당.
-      refundBudget(userId);
+      await refundBudget(userId);
       throw error;
     }
 

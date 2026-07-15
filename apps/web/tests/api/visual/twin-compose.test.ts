@@ -38,7 +38,7 @@ function makeReq(body: unknown) {
 describe('POST /api/visual/twin/compose', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: true, remaining: 4, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
     vi.mocked(composeOnTwin).mockResolvedValue({
       imageUrl: 'data:image/png;base64,OUT',
       aiGenerated: true,
@@ -72,7 +72,7 @@ describe('POST /api/visual/twin/compose', () => {
 
   it('상한 초과 시 429를 반환한다(예산 공유)', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: false, remaining: 0, limit: 5 });
     const res = await POST(makeReq(VALID_BODY));
     expect(res.status).toBe(429);
     expect(composeOnTwin).not.toHaveBeenCalled();

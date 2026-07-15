@@ -34,7 +34,7 @@ const PENDING = { id: 't-1', imageUrl: 'https://signed/t-1', status: 'pending', 
 describe('POST /api/visual/twin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: true, remaining: 4, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
     vi.mocked(generateTwin).mockResolvedValue(PENDING as never);
   });
 
@@ -66,7 +66,7 @@ describe('POST /api/visual/twin', () => {
 
   it('상한 초과 시 429 + VISUAL_BUDGET_EXCEEDED를 반환한다(예산 공유)', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: false, remaining: 0, limit: 5 });
     const res = await POST(makeReq({ faceImageBase64: VALID_FACE }));
     const data = await res.json();
     expect(res.status).toBe(429);
@@ -87,7 +87,7 @@ describe('POST /api/visual/twin', () => {
 
   it('상한 초과로 생성을 건너뛴 경우엔 환불하지 않는다', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
-    vi.mocked(checkAndConsumeBudget).mockReturnValue({ allowed: false, remaining: 0, limit: 5 });
+    vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: false, remaining: 0, limit: 5 });
     await POST(makeReq({ faceImageBase64: VALID_FACE }));
     expect(refundBudget).not.toHaveBeenCalled();
   });

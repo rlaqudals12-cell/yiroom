@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 비용 가드 (보정+착장 합산 일 5회)
-    const budget = checkAndConsumeBudget(userId);
+    const budget = await checkAndConsumeBudget(userId);
     if (!budget.allowed) {
       return NextResponse.json(
         {
