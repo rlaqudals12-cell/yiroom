@@ -16,7 +16,7 @@
  */
 
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { computeSkinTrend } from '@yiroom/shared';
 import {
   assembleBriefing,
@@ -26,6 +26,7 @@ import {
 } from '@/lib/briefing';
 import { unauthorizedError, internalError } from '@/lib/api/error-response';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getShelfItems } from '@/lib/scan/product-shelf';
 import { getTodayDailyCapsule } from '@/lib/capsule';
 import {
@@ -253,7 +254,44 @@ export async function OPTIONS(): Promise<NextResponse> {
  *
  * 에러: 401 UNAUTHORIZED / 500 INTERNAL_ERROR
  */
-export async function GET(): Promise<NextResponse> {
+/**
+ * 모바일 브리핑 열람 계측 — 리텐션 D30 신호 (briefing_view 등가).
+ *
+ * 왜 서버에서 남기나: 모바일 [오늘] 탭은 홈 마운트마다 이 API를 호출한다(useBriefing).
+ * 웹은 클라이언트 `trackBriefingView`가 이미 이 신호를 잡으므로, 중복 집계를 막기 위해
+ * `x-yiroom-client: mobile` 요청만 서버에서 계측한다(통합 분석 라우트와 동일 관례).
+ *
+ * ⚠️ 정본 싱크는 Supabase `analytics_events` — `@vercel/analytics`가 아니다. 리텐션
+ * 대시보드(`lib/analytics/stats`)가 이 테이블만 읽으므로, Vercel `track()`으로 보내면
+ * D30에 잡히지 않는다. 그리고 **D30은 소급 측정이 불가능**하다 — 계측 없이 앱을 출시하면
+ * 그 뒤 들어온 유저는 리텐션 곡선에 아예 존재하지 않게 된다(계기판 KILL 스위치).
+ *
+ * 계측 실패가 브리핑 응답을 깨서는 안 되므로 전부 방어적으로 무시한다(정직성보다 가용성 우선).
+ */
+async function trackMobileBriefingView(
+  clerkUserId: string,
+  date: string,
+  hasAnalyses: boolean
+): Promise<void> {
+  try {
+    const supabase = createServiceRoleClient();
+    await supabase.from('analytics_events').insert({
+      clerk_user_id: clerkUserId,
+      // 모바일엔 웹식 세션 개념이 없다 — 유저·일자로 파생(하루의 여러 열람을 한 세션으로 묶음).
+      // DAU/D30은 distinct(user, day)라 이 근사로 충분하다.
+      session_id: `mobile:${clerkUserId}:${date}`,
+      event_type: 'page_view',
+      event_name: 'briefing_view',
+      event_data: { platform: 'mobile', hasAnalyses },
+      page_path: '/home',
+      device_type: 'mobile',
+    });
+  } catch (err) {
+    console.warn('[API] briefing_view 계측 실패(무시):', err);
+  }
+}
+
+export async function GET(req?: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -307,6 +345,12 @@ export async function GET(): Promise<NextResponse> {
       recentProduct,
       capsulePriority,
     });
+
+    // 모바일 열람 계측 — 중복 방지 위해 x-yiroom-client로 게이팅. await로 응답 전에 마쳐
+    // 서버리스 함수 종료로 삽입이 유실되지 않게 한다(insert 1건이라 지연 무시 가능).
+    if (req?.headers.get('x-yiroom-client') === 'mobile') {
+      await trackMobileBriefingView(userId, date, payload.hasAnalyses);
+    }
 
     return withCors(
       NextResponse.json({

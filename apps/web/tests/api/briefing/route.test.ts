@@ -27,6 +27,23 @@ vi.mock('@/lib/supabase/server', () => ({
   createClerkSupabaseClient: () => mockSupabase,
 }));
 
+// Service-role — 모바일 briefing_view 계측(analytics_events insert) 캡처
+const mockAnalyticsInsert = vi.fn().mockResolvedValue({ error: null });
+vi.mock('@/lib/supabase/service-role', () => ({
+  createServiceRoleClient: () => ({
+    from: (table: string) => ({
+      insert: (payload: unknown) => mockAnalyticsInsert(table, payload),
+    }),
+  }),
+}));
+
+/** x-yiroom-client 헤더를 가진 최소 NextRequest 목 */
+function mobileReq(client = 'mobile'): Parameters<typeof GET>[0] {
+  return {
+    headers: { get: (k: string) => (k === 'x-yiroom-client' ? client : null) },
+  } as unknown as Parameters<typeof GET>[0];
+}
+
 // 날씨 — 조회 안 함(브리핑은 날씨 없이도 성립)
 vi.mock('@/lib/weather', () => ({
   getCurrentWeather: vi.fn().mockResolvedValue(null),
@@ -266,5 +283,54 @@ describe('GET /api/briefing', () => {
     expect(res.status).toBe(204);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(res.headers.get('Access-Control-Allow-Methods')).toContain('GET');
+  });
+
+  // 리텐션 D30 신호(briefing_view) — 소급 불가라 앱 출시 전 배선 필수
+  describe('모바일 briefing_view 계측', () => {
+    it('x-yiroom-client:mobile 요청은 analytics_events에 briefing_view를 남긴다', async () => {
+      queueAnalyses({
+        pc: [
+          {
+            id: 'pc-1',
+            season: 'spring',
+            created_at: new Date().toISOString(),
+            best_colors: [],
+            image_analysis: {},
+          },
+        ],
+      });
+      const res = await GET(mobileReq());
+      expect(res.status).toBe(200);
+
+      expect(mockAnalyticsInsert).toHaveBeenCalledTimes(1);
+      const [table, payload] = mockAnalyticsInsert.mock.calls[0];
+      expect(table).toBe('analytics_events');
+      // 정본 계약: event_name + clerk_user_id + created_at(자동)로 D30 산출
+      expect(payload).toMatchObject({
+        clerk_user_id: 'user-123',
+        event_type: 'page_view',
+        event_name: 'briefing_view',
+        page_path: '/home',
+        device_type: 'mobile',
+      });
+      expect(payload.event_data).toMatchObject({ platform: 'mobile', hasAnalyses: true });
+      // 세션은 유저·일자 파생 (DAU distinct에 무해)
+      expect(payload.session_id).toMatch(/^mobile:user-123:\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('웹 요청(헤더 없음)은 계측하지 않는다 — 클라이언트 track과 중복 방지', async () => {
+      queueAnalyses({});
+      await GET(); // 헤더 없는 웹 경로
+      expect(mockAnalyticsInsert).not.toHaveBeenCalled();
+    });
+
+    it('계측 실패해도 브리핑 응답은 200 (가용성 우선)', async () => {
+      mockAnalyticsInsert.mockRejectedValueOnce(new Error('db down'));
+      queueAnalyses({});
+      const res = await GET(mobileReq());
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
   });
 });
