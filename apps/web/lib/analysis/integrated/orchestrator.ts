@@ -14,6 +14,7 @@ import type {
   AxisCode,
   AxisResult,
   IntegratedAnalysisInput,
+  CaptureConditions,
   IntegratedAnalysisResult,
   SessionStatus,
   PersonalColorAxisData,
@@ -110,7 +111,8 @@ function determineStatus(
  */
 export async function runIntegratedAnalysis(
   input: IntegratedAnalysisInput,
-  clerkUserId: string
+  clerkUserId: string,
+  capture?: CaptureConditions
 ): Promise<IntegratedAnalysisResult> {
   // 왜: Storage 경로에 세션 ID가 필요하므로 업로드 전에 먼저 생성
   const sessionId = crypto.randomUUID();
@@ -149,10 +151,10 @@ export async function runIntegratedAnalysis(
     // 2. 선택 축만 병렬 실행 (제외 축은 SKIPPED 센티널 — DB 저장·집계 안 함)
     const [pcSettled, skinSettled, bodySettled, hairSettled] = await Promise.allSettled([
       selected.has('personal_color')
-        ? runPersonalColorAxis(sessionId, clerkUserId, input)
+        ? runPersonalColorAxis(sessionId, clerkUserId, input, capture)
         : Promise.resolve<AxisResult<PersonalColorAxisData>>(SKIPPED_AXIS),
       selected.has('skin')
-        ? runSkinAxis(sessionId, clerkUserId, input)
+        ? runSkinAxis(sessionId, clerkUserId, input, capture)
         : Promise.resolve<AxisResult<SkinAxisData>>(SKIPPED_AXIS),
       selected.has('body')
         ? runBodyAxis(sessionId, clerkUserId, input)

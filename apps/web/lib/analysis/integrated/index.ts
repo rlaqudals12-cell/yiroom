@@ -71,6 +71,7 @@ export {
 export type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,
+  CaptureConditions,
   AxisCode,
   AxisResult,
   AxisError,

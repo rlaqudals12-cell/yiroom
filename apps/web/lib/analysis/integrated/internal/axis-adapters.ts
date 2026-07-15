@@ -44,6 +44,7 @@ import type {
   BodyAxisData,
   HairAxisData,
   IntegratedAnalysisInput,
+  CaptureConditions,
 } from '../types';
 
 // ============================================
@@ -111,7 +112,8 @@ function mapUndertoneToDb(undertone: string): string {
 export async function runPersonalColorAxis(
   sessionId: string,
   clerkUserId: string,
-  input: IntegratedAnalysisInput
+  input: IntegratedAnalysisInput,
+  capture?: CaptureConditions
 ): Promise<AxisResult<PersonalColorAxisData>> {
   try {
     // Phase F.3 (ADR-104 #3): 실제 Gemini → Lab 분석. FORCE_MOCK_AI=true이거나 실패 시 Mock.
@@ -190,6 +192,9 @@ export async function runPersonalColorAxis(
           // 퍼스널 대비 실측값(ADR-116) — 클라이언트 실측이 전달됐을 때만 저장(없으면 생략).
           // 단독 PC 경로(image_analysis.contrastLevel)와 동일 키 → 결과/홈 소비 코드 재사용.
           ...(input.measuredContrastLevel ? { contrastLevel: input.measuredContrastLevel } : {}),
+          // 촬영 조건 — PC는 색 판정이라 조명(색온도)에 특히 민감하다.
+          // 세션 간 웜↔쿨 플립이 관측될 때 원인이 사진인지 모델인지 이 값 없이는 구분 불가.
+          ...(capture ? { capture } : {}),
           usedFallback,
         },
         best_colors: mainColors,
@@ -234,7 +239,8 @@ export async function runPersonalColorAxis(
 export async function runSkinAxis(
   sessionId: string,
   clerkUserId: string,
-  input: IntegratedAnalysisInput
+  input: IntegratedAnalysisInput,
+  capture?: CaptureConditions
 ): Promise<AxisResult<SkinAxisData>> {
   try {
     // Phase F.3: 실제 Gemini 우선, 실패 시 Mock
@@ -301,6 +307,11 @@ export async function runSkinAxis(
           selfReported: input.questionnaire.skin,
           primaryConcerns: result.primaryConcerns,
           zones: result.zoneAnalysis?.zones,
+          // 촬영 조건 — 피부 추이 비교의 전제. 조명·흐림이 다른 두 사진의 점수 차이를
+          // "개선/악화"로 표시하면 노이즈를 사실로 파는 셈이 된다(정직성 계약 위반).
+          // 단독 경로(`/api/analyze/skin`)가 recommendations.imageQuality에 남기는 것과
+          // 같은 층위 — 통합 경로에만 빠져 있어 주 진입점의 조건이 통째로 휘발하고 있었다.
+          ...(capture ? { capture } : {}),
           usedFallback,
           ...(enrichment?.recommendationExtras ?? {}),
         },

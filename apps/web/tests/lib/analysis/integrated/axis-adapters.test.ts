@@ -40,8 +40,10 @@ vi.mock('@/lib/supabase/service-role', () => ({
 // mock 모드에서 어댑터를 구동하면 Gemini/prior-context를 타지 않고 순수 Mock → INSERT 경로만 실행됨
 import {
   runPersonalColorAxis,
+  runSkinAxis,
   runHairAxis,
 } from '@/lib/analysis/integrated/internal/axis-adapters';
+import type { CaptureConditions } from '@/lib/analysis/integrated';
 
 // prod CHECK 제약이 허용하는 값 (실제 personal_color_assessments 제약과 동일)
 const ALLOWED_SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -123,6 +125,55 @@ describe('axis-adapters — DB 저장 규격 (스키마 계약)', () => {
       expect(insert!.payload).toHaveProperty('recommendations');
       const recs = insert!.payload.recommendations as Record<string, unknown>;
       expect(recs).toHaveProperty('styleRecommendations');
+    });
+  });
+
+  /**
+   * 촬영 조건 영속화 (2026-07-14).
+   *
+   * 배경: 통합 경로가 CIE-1 게이트를 돌려놓고 통과/차단 판정만 쓰고 결과를 버렸다.
+   * 촬영 조건은 사진이 남아 있어도 **소급 복구가 불가능**하다 — 저장하지 않은 회차는
+   * 영구히 "조건 미상"이 된다. 조건 없이 회차 간 점수를 비교하면 조명·흐림 노이즈를
+   * 개선/악화로 오독시키게 되어, 재현성·정직성 계약(ADR-007)을 정면으로 깬다.
+   */
+  describe('촬영 조건 영속화 — 소급 불가 값', () => {
+    const capture: CaptureConditions = {
+      qualityScore: 82,
+      sharpnessScore: 71,
+      sharpnessVerdict: 'accepted',
+      exposureVerdict: 'normal',
+      cctKelvin: 5200,
+      cctVerdict: 'neutral',
+      resolutionValid: true,
+      confidence: 0.86,
+      measuredAt: '2026-07-14T00:00:00.000Z',
+    };
+
+    it('피부: recommendations(jsonb)에 촬영 조건을 저장한다', async () => {
+      await runSkinAxis('sess-cap-1', 'clerk-1', baseInput(), capture);
+
+      const insert = capturedInserts.find((c) => c.table === 'skin_analyses');
+      expect(insert).toBeDefined();
+      const recs = insert!.payload.recommendations as Record<string, unknown>;
+      expect(recs.capture).toEqual(capture);
+    });
+
+    it('PC: image_analysis(jsonb)에 촬영 조건을 저장한다 (색 판정은 조명에 민감)', async () => {
+      await runPersonalColorAxis('sess-cap-2', 'clerk-1', baseInput(), capture);
+
+      const insert = capturedInserts.find((c) => c.table === 'personal_color_assessments');
+      expect(insert).toBeDefined();
+      const analysis = insert!.payload.image_analysis as Record<string, unknown>;
+      expect(analysis.capture).toEqual(capture);
+    });
+
+    it('촬영 조건이 없으면 키 자체를 넣지 않는다 (추측 금지 — 미측정과 "조건 좋음"은 다르다)', async () => {
+      await runSkinAxis('sess-cap-3', 'clerk-1', baseInput());
+
+      const insert = capturedInserts.find((c) => c.table === 'skin_analyses');
+      expect(insert).toBeDefined();
+      const recs = insert!.payload.recommendations as Record<string, unknown>;
+      expect(recs).not.toHaveProperty('capture');
     });
   });
 });

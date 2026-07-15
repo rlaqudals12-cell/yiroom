@@ -8,7 +8,7 @@
  * @see docs/adr/ADR-001-core-image-engine.md
  */
 
-import type { RGBImageData, CIE4Output, PipelineResult } from '@/lib/image-engine';
+import type { RGBImageData, CIE1Output, CIE4Output, PipelineResult } from '@/lib/image-engine';
 import { runCIEPipelineWithTimeout } from '@/lib/image-engine';
 import { validateImageForAnalysis, type ImageQualitySuccess } from './image-quality';
 
@@ -37,6 +37,15 @@ export interface FullPipelineSuccess {
   success: true;
   imageData: RGBImageData;
   pipeline: PipelineMetadata;
+  /**
+   * CIE-1 원시 판정 (선명도·노출·색온도·해상도).
+   *
+   * 왜 노출하는가: 지금까지 게이트 통과 여부만 쓰고 버렸으나, 촬영 조건은
+   * **소급 복구가 불가능한 값**이다. 같은 사람의 두 회차를 비교할 때 점수 변화가
+   * 실제 변화인지 조명·흐림 탓인지 구분하려면 촬영 시점의 조건이 함께 남아야 한다.
+   * (재현성 = 이룸의 신뢰 계약 — ADR-007·ADR-116)
+   */
+  cie1: CIE1Output;
   /** CIE-3 보정된 이미지 (있으면) */
   correctedImage?: RGBImageData;
   /** CIE-4 조명 분석 원본 */
@@ -143,6 +152,7 @@ export async function runFullPipeline(
       success: true,
       imageData,
       pipeline: basePipeline,
+      cie1: cie1Output,
     };
   }
 
@@ -167,6 +177,7 @@ export async function runFullPipeline(
       success: true,
       imageData,
       pipeline: basePipeline,
+      cie1: cie1Output,
     };
   }
 }
@@ -311,6 +322,7 @@ function buildSuccessResult(
       executedStages,
       processingTimeMs: Math.round(pipelineResult.totalProcessingTime),
     },
+    cie1: cie1Output,
   };
 
   // 보정 이미지 (있으면 첨부)

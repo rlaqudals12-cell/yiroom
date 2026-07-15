@@ -145,6 +145,46 @@ export type HairQuestionnaire = z.infer<typeof hairQuestionnaireSchema>;
 export type BodyQuestionnaire = z.infer<typeof bodyQuestionnaireSchema>;
 
 // ============================================
+// 2.5 촬영 조건 (서버 측정 — 클라이언트 입력 아님)
+// ============================================
+
+/**
+ * 촬영 조건 스냅샷 (CIE-1 객관 판정).
+ *
+ * 왜 저장하는가: **소급 복구가 불가능한 유일한 값**이기 때문이다.
+ * 같은 사용자의 두 회차 점수를 비교할 때, 변화가 실제 피부 변화인지
+ * 조명·흐림·색온도 탓인지 구분하려면 촬영 시점의 조건이 함께 남아야 한다.
+ * 조건 없이 추이를 보여주면 노이즈를 개선/악화로 오독시키는 기계가 된다.
+ *
+ * 클라이언트 입력 스키마(integratedAnalysisInputSchema)에 넣지 않는 이유:
+ * 이 값은 **서버가 게이트에서 직접 측정**한다. 클라이언트가 보낸 값을 신뢰하면
+ * 조건 위조가 가능해져 "정직한 신뢰도" 계약이 깨진다.
+ *
+ * @see docs/adr/ADR-007-mock-fallback-strategy.md (재현성·정직성)
+ * @see docs/specs/SDD-CIE-1-IMAGE-QUALITY.md
+ */
+export interface CaptureConditions {
+  /** CIE-1 종합 품질 점수 (0-100) */
+  qualityScore: number;
+  /** 선명도 점수 (Laplacian variance 기반) */
+  sharpnessScore: number;
+  /** 선명도 판정 */
+  sharpnessVerdict: string;
+  /** 노출 판정 (under/over/normal) */
+  exposureVerdict: string;
+  /** 색온도 (Kelvin) — 조명 종류 추정의 1차 신호 */
+  cctKelvin: number;
+  /** 색온도 판정 (too_warm/too_cool/neutral) */
+  cctVerdict: string;
+  /** 해상도 적합 여부 (검증 스킵 시 null) */
+  resolutionValid: boolean | null;
+  /** CIE-1 신뢰도 (0-1) */
+  confidence: number;
+  /** 측정 시각 (ISO) — 세션 시각과 별개로 조건 스냅샷 시점을 명시 */
+  measuredAt: string;
+}
+
+// ============================================
 // 3. 축별 에러 타입
 // ============================================
 

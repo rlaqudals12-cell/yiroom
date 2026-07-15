@@ -30,6 +30,7 @@ import {
   runIntegratedAnalysis,
   integratedAnalysisInputSchema,
   type IntegratedAnalysisResult,
+  type CaptureConditions,
 } from '@/lib/analysis/integrated';
 
 /**
@@ -121,6 +122,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 저품질 얼굴 사진은 5축 분석(~20초·5콜 과금) 전에 차단하고 재촬영을 요청한다.
     // V2 개별 라우트엔 이미 있던 게이트가 주 플로우인 통합에만 빠져 있었음 —
     // 게이트 없으면 194px 사진도 신뢰도 medium으로 통과(과신)하는 것을 실측 확인.
+    let capture: CaptureConditions | undefined;
+
     if (process.env.FORCE_MOCK_AI !== 'true' && parsed.data.faceImageBase64) {
       const gate = await runFullPipeline(parsed.data.faceImageBase64, {
         minScore: 40,
@@ -130,10 +133,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (!gate.success) {
         return withCors(imageQualityError(gate.error.userMessage, gate.error.message));
       }
+
+      // 게이트가 이미 측정한 촬영 조건을 축 저장까지 흘려보낸다.
+      // 지금까지는 통과/차단 판정에만 쓰고 버렸으나, 촬영 조건은 소급 복구가 불가능하다 —
+      // 사진이 남아 있어도 과거 회차의 조명·선명도를 되살릴 방법이 없으므로,
+      // 저장하지 않은 회차는 영구히 "조건 미상"으로 남는다. (신규 연산 0 — 이미 계산된 값)
+      capture = {
+        qualityScore: gate.cie1.overallScore,
+        sharpnessScore: gate.cie1.sharpness.score,
+        sharpnessVerdict: gate.cie1.sharpness.verdict,
+        exposureVerdict: gate.cie1.exposure.verdict,
+        cctKelvin: gate.cie1.colorTemperature.kelvin,
+        cctVerdict: gate.cie1.colorTemperature.verdict,
+        resolutionValid: gate.cie1.resolution?.isValid ?? null,
+        confidence: gate.cie1.confidence,
+        measuredAt: new Date().toISOString(),
+      };
     }
 
     // 4. 통합 분석 실행 (Partial/Failed도 정상 응답 경로)
-    const result: IntegratedAnalysisResult = await runIntegratedAnalysis(parsed.data, userId);
+    const result: IntegratedAnalysisResult = await runIntegratedAnalysis(
+      parsed.data,
+      userId,
+      capture
+    );
 
     // 4.5 모바일 앱 퍼널 계측 — 웹은 클라이언트 track()이 이미 잡으므로 모바일 요청만 서버 track (중복 방지).
     // 계측 실패가 분석 응답을 깨면 안 되므로 방어적으로 무시.
