@@ -9,6 +9,9 @@ export interface PersonaBadge {
   value: string;
 }
 
+/** 카드 비율 — 'square'(1:1, 피드/저장) | 'story'(9:16, 인스타 스토리) */
+export type PersonaCardFormat = 'square' | 'story';
+
 interface PersonaShareCardProps {
   /** 페르소나 한 줄 (예: "차분한 빛을 품은 사람") */
   oneLine: string;
@@ -16,6 +19,12 @@ interface PersonaShareCardProps {
   badges: PersonaBadge[];
   /** PC 시즌(spring/summer/autumn/winter) — 카드 배경 팔레트 결정 */
   season?: string | null;
+  /** 퍼스널컬러 베스트 컬러 hex 팔레트 — 결과의 시각적 정체성(있을 때만 스와치 렌더, 바이럴 훅) */
+  palette?: string[];
+  /** 카드 비율 — 'square'(기본) | 'story'(9:16 인스타 스토리) */
+  format?: PersonaCardFormat;
+  /** 하단 유입 CTA 문구 (로케일화된 값을 호출부에서 주입 — 카드 자체는 순수 프레젠테이션) */
+  ctaText?: string;
   className?: string;
 }
 
@@ -31,6 +40,12 @@ const SEASON_GRADIENT: Record<string, string> = {
 // PC 축이 없거나 시즌 미상이면 브랜드 그라데이션 (기존 ShareCardTemplate personal-color와 동일 계열)
 const DEFAULT_GRADIENT = 'from-pink-500 to-purple-600';
 
+// 포맷별 크기 — story는 9:16 인스타 스토리 비율. 캡처는 pixelRatio 2로 고해상 보장.
+const FORMAT: Record<PersonaCardFormat, { width: string; minH: string }> = {
+  square: { width: 'w-[400px]', minH: 'min-h-[500px]' },
+  story: { width: 'w-[360px]', minH: 'min-h-[640px]' },
+};
+
 /**
  * 페르소나 공유 카드 — "뽐내기" 정서용 정체성 배지.
  *
@@ -39,20 +54,26 @@ const DEFAULT_GRADIENT = 'from-pink-500 to-purple-600';
  * forwardRef: html-to-image 캡처 대상.
  */
 export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps>(
-  function PersonaShareCard({ oneLine, badges, season, className }, ref) {
+  function PersonaShareCard(
+    { oneLine, badges, season, palette = [], format = 'square', ctaText, className },
+    ref
+  ) {
     const gradient = (season && SEASON_GRADIENT[season]) || DEFAULT_GRADIENT;
+    const swatches = palette.slice(0, 6);
 
     return (
       <div
         ref={ref}
         className={cn(
-          'w-[400px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br shadow-xl',
+          'shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br shadow-xl',
+          FORMAT[format].width,
           gradient,
           className
         )}
         data-testid="persona-share-card"
+        data-format={format}
       >
-        <div className="flex min-h-[500px] flex-col px-8 py-9 text-white">
+        <div className={cn('flex flex-col px-8 py-9 text-white', FORMAT[format].minH)}>
           {/* 상단 브랜드 소제목 */}
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/80">
             Yiroom Identity
@@ -66,9 +87,23 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
             {oneLine}
           </h2>
 
+          {/* 퍼스널컬러 베스트 컬러 스와치 — 결과의 시각적 정체성(있을 때만) */}
+          {swatches.length > 0 && (
+            <div className="mt-6 flex gap-2" data-testid="persona-share-swatches">
+              {swatches.map((hex, i) => (
+                <span
+                  key={`${hex}-${i}`}
+                  className="h-8 w-8 rounded-full border border-white/40 shadow-sm"
+                  style={{ backgroundColor: hex }}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          )}
+
           {/* 축 뱃지 — 성공한 축만, 한국어 라벨 */}
           {badges.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-2" data-testid="persona-share-badges">
+            <div className="mt-6 flex flex-wrap gap-2" data-testid="persona-share-badges">
               {badges.map((b) => (
                 <span
                   key={b.label}
@@ -81,10 +116,10 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
             </div>
           )}
 
-          {/* 하단 워터마크 — 카드가 돌아다닐 때 유입 경로가 된다 */}
+          {/* 하단 워터마크 + 유입 CTA — 카드가 돌아다닐 때 신규 유입 경로가 된다 */}
           <div className="mt-auto pt-10">
-            <p className="text-sm font-semibold">이룸</p>
-            <p className="text-xs text-white/75">온전한 나를 찾는 여정 · yiroom.vercel.app</p>
+            {ctaText && <p className="text-sm font-semibold">{ctaText}</p>}
+            <p className="mt-1 text-xs text-white/75">이룸 · yiroom.app</p>
           </div>
         </div>
       </div>

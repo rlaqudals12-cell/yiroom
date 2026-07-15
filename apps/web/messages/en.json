@@ -574,7 +574,11 @@
         "saved": "Card saved. Show it off anywhere!",
         "shareFailed": "Sharing failed. Please use Save image instead.",
         "shareTitle": "My Yiroom identity card",
-        "shareText": "{oneLine} — discover your 5-axis identity on Yiroom"
+        "shareText": "{oneLine} — discover your 5-axis identity on Yiroom",
+        "cta": "Get your free analysis →",
+        "formatLabel": "Choose card ratio",
+        "formatSquare": "Square",
+        "formatStory": "Story (9:16)"
       },
       "shareReport": {
         "shareTitle": "My Style Report | Yiroom",

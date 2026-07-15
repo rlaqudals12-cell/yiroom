@@ -4,14 +4,37 @@ import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
 import { Download, Share2 } from 'lucide-react';
-import { PersonaShareCard, type PersonaBadge } from '@/components/share/PersonaShareCard';
+import {
+  PersonaShareCard,
+  type PersonaBadge,
+  type PersonaCardFormat,
+} from '@/components/share/PersonaShareCard';
 import { captureElementAsImage } from '@/lib/share/imageGenerator';
+import { cn } from '@/lib/utils';
 
 interface PersonaShareSectionProps {
   oneLine: string;
   badges: PersonaBadge[];
   season?: string | null;
+  /** 퍼스널컬러 베스트 컬러 hex 팔레트 — 카드 스와치용(성공 축·데이터 있을 때만) */
+  palette?: string[];
 }
+
+const CARD_FORMATS: readonly PersonaCardFormat[] = ['square', 'story'];
+
+/**
+ * 카드가 돌아다닐 때 "돌아올 길" — 공유의 유일한 존재 이유.
+ *
+ * 왜 필요한가: 이미지만 공유하면 클릭 가능한 링크가 없어 **공유 100건 = 유입 0건**이 된다
+ * (바이럴 루프 단절). 카드에 구운 워터마크는 텍스트라 클릭이 안 된다.
+ *
+ * url + text 양쪽에 싣는 이유: Web Share에 `files`가 동반되면 `url`을 무시하고 text만
+ * 전달하는 타깃이 실재한다. 링크가 중복 노출되는 손해보다 링크가 아예 없는 손해가 크다.
+ *
+ * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.app` — kakao/qr/metadata와 동일).
+ * `?ref=card`로 카드발 유입을 귀속한다.
+ */
+const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
 
 /**
  * 페르소나 공유 섹션 — 결과 페이지에서 "자랑 카드"를 바로 보여주고 저장/공유하게 한다.
@@ -25,12 +48,15 @@ export function PersonaShareSection({
   oneLine,
   badges,
   season,
+  palette = [],
 }: PersonaShareSectionProps): React.JSX.Element {
   const t = useTranslations('analysis.integratedResult');
   const cardRef = useRef<HTMLDivElement>(null);
   const [isBusy, setIsBusy] = useState(false);
   // 실패는 정직하게 알린다 — 조용한 무반응 금지
   const [message, setMessage] = useState<string | null>(null);
+  // 저장/공유 대상 카드 비율 — 정사각(피드) vs 9:16(인스타 스토리)
+  const [format, setFormat] = useState<PersonaCardFormat>('square');
 
   // navigator.share(files)를 지원하는 환경(주로 모바일 브라우저)에서만 공유 버튼 노출
   const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
@@ -81,7 +107,9 @@ export function PersonaShareSection({
       await navigator.share({
         files: [file],
         title: t('shareCard.shareTitle'),
-        text: t('shareCard.shareText', { oneLine }),
+        // 링크를 text에도 싣는다 — files 동반 시 url을 버리는 공유 타깃이 있어서(유입 0 방지)
+        text: `${t('shareCard.shareText', { oneLine })}\n${SHARE_LANDING_URL}`,
+        url: SHARE_LANDING_URL,
       });
       track('persona_card_share', { method: 'native' });
     } catch (err) {
@@ -102,9 +130,42 @@ export function PersonaShareSection({
       <h2 className="text-sm font-semibold text-white">{t('shareCard.heading')}</h2>
       <p className="mt-0.5 text-xs text-zinc-400">{t('shareCard.subtitle')}</p>
 
+      {/* 포맷 토글 — 인스타 스토리(9:16)는 세로 규격이라 피드(1:1)와 별도 제공 */}
+      <div
+        className="mt-4 flex justify-center gap-1.5"
+        role="group"
+        aria-label={t('shareCard.formatLabel')}
+        data-testid="persona-share-format-toggle"
+      >
+        {CARD_FORMATS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFormat(f)}
+            aria-pressed={format === f}
+            className={cn(
+              'rounded-full px-3.5 py-1 text-xs font-medium transition-colors',
+              format === f
+                ? 'bg-pink-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+            )}
+          >
+            {f === 'square' ? t('shareCard.formatSquare') : t('shareCard.formatStory')}
+          </button>
+        ))}
+      </div>
+
       {/* 카드 미리보기 — 좁은 화면에선 가로 스크롤 (카드 원본 크기 유지 = 캡처 품질 보장) */}
       <div className="mt-4 flex justify-center overflow-x-auto pb-1">
-        <PersonaShareCard ref={cardRef} oneLine={oneLine} badges={badges} season={season} />
+        <PersonaShareCard
+          ref={cardRef}
+          oneLine={oneLine}
+          badges={badges}
+          season={season}
+          palette={palette}
+          format={format}
+          ctaText={t('shareCard.cta')}
+        />
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">

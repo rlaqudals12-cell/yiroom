@@ -574,7 +574,11 @@
         "saved": "卡片已保存。随处炫耀吧！",
         "shareFailed": "分享失败。请使用保存图片。",
         "shareTitle": "我的Yiroom身份卡片",
-        "shareText": "{oneLine} — 在Yiroom发现我的五维身份"
+        "shareText": "{oneLine} — 在Yiroom发现我的五维身份",
+        "cta": "我也要免费分析 →",
+        "formatLabel": "选择卡片比例",
+        "formatSquare": "正方形",
+        "formatStory": "快拍(9:16)"
       },
       "shareReport": {
         "shareTitle": "我的风格报告 | Yiroom",

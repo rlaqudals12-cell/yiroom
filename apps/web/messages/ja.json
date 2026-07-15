@@ -574,7 +574,11 @@
         "saved": "カードを保存しました。どこでも自慢してください！",
         "shareFailed": "共有に失敗しました。画像の保存をご利用ください。",
         "shareTitle": "私のYiroomアイデンティティカード",
-        "shareText": "{oneLine} — Yiroomで私の5軸アイデンティティを見つけよう"
+        "shareText": "{oneLine} — Yiroomで私の5軸アイデンティティを見つけよう",
+        "cta": "私も無料で分析する →",
+        "formatLabel": "カード比率を選択",
+        "formatSquare": "正方形",
+        "formatStory": "ストーリー(9:16)"
       },
       "shareReport": {
         "shareTitle": "私のスタイルレポート | Yiroom",

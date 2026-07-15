@@ -574,7 +574,11 @@
         "saved": "카드를 저장했어요. 어디든 자랑해 보세요!",
         "shareFailed": "공유에 실패했어요. 이미지 저장을 이용해주세요.",
         "shareTitle": "나의 이룸 정체성 카드",
-        "shareText": "{oneLine} — 이룸에서 나의 5축 정체성을 알아보세요"
+        "shareText": "{oneLine} — 이룸에서 나의 5축 정체성을 알아보세요",
+        "cta": "나도 무료로 분석받기 →",
+        "formatLabel": "카드 비율 선택",
+        "formatSquare": "정사각형",
+        "formatStory": "스토리(9:16)"
       },
       "shareReport": {
         "shareTitle": "나의 스타일 리포트 | 이룸",

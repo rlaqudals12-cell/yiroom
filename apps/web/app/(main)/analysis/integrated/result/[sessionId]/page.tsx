@@ -81,6 +81,26 @@ function extractNested(record: AxisDbRecord, key: string, field: string): string
   return '';
 }
 
+/**
+ * best_colors JSONB(배열의 {hex|color}) → 유효한 hex 문자열만 (공유 카드 스와치용, 최대 6개).
+ * 퍼스널컬러 결과의 실제 색이 곧 카드의 시각적 정체성 — 바이럴 훅. AI 원본은 {name,hex},
+ * 방어적으로 {color} 폴백 (useAnalysisStatus.normalizeBestColors와 동일 규칙).
+ */
+function extractPaletteHexes(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const hexes: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'object' || item === null) continue;
+    const c = item as { hex?: unknown; color?: unknown };
+    let hex: string | null = null;
+    if (typeof c.hex === 'string') hex = c.hex;
+    else if (typeof c.color === 'string') hex = c.color;
+    if (hex && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) hexes.push(hex);
+    if (hexes.length >= 6) break;
+  }
+  return hexes;
+}
+
 /** 비어 있지 않은 라벨만 " · "로 이어붙임 (없으면 undefined) */
 function joinLabels(...parts: Array<string | false | 0 | null | undefined>): string | undefined {
   const nonEmpty = parts.filter((p): p is string => typeof p === 'string' && p.length > 0);
@@ -217,6 +237,7 @@ export default async function IntegratedResultPage({
         tone: extractNested(r, 'image_analysis', 'tone') || String(r.season ?? ''),
         undertone: String(r.undertone ?? ''),
         confidence: Number(r.confidence ?? 0),
+        palette: extractPaletteHexes(r.best_colors),
       }),
       usedFallbackSet.has('personal_color')
     ),
@@ -328,6 +349,7 @@ export default async function IntegratedResultPage({
             oneLine={session.persona.oneLine}
             badges={personaBadges}
             season={pcData?.season ?? null}
+            palette={pcData?.palette ?? []}
           />
         )}
 
