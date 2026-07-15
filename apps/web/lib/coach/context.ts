@@ -3,9 +3,11 @@
  * @description AI 코치가 맞춤 조언을 위해 사용하는 사용자 정보
  */
 
+import { isFeatureEnabled } from '@yiroom/shared';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
 import { calculateBiorhythm } from '@/lib/wellness/biorhythm';
+import { getShelfItems } from '@/lib/scan/product-shelf';
 import type { UserContext, SkinScores } from './types';
 
 // 타입은 types.ts에서 re-export
@@ -29,6 +31,16 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
     const weekAgoStr = weekAgo.toISOString().split('T')[0];
     const todayStr = today.toISOString().split('T')[0];
 
+    // W-1 운동·N-1 영양은 숨김 모듈(ADR-098, CLAUDE.md 하드룰). 코치는 뷰티 전속
+    // (스타일리스트 ≠ PT)이라 오프차터인 운동·영양 컨텍스트를 조회·주입하지 않는다.
+    // 뷰티 유저는 이 6개 테이블에 데이터가 없어 어차피 빈 조회였고(dead read), weeklySummary
+    // (#12·#13)는 프롬프트 빌더가 참조조차 안 하는 구조적 dead였다.
+    // 삭제가 아니라 플래그 게이팅 — WELLNESS_PHASE2 재활성 시 형제 뷰티 쿼리와 대칭 복원
+    // (하드룰: 재노출 대비 코드 유지). fashion RAG(옷장)는 뷰티라 별개로 항상 유지.
+    const wellnessEnabled = isFeatureEnabled('WELLNESS_PHASE2');
+    const emptySingle = Promise.resolve({ data: null, error: null });
+    const emptyCount = Promise.resolve({ count: null, data: null, error: null });
+
     // 병렬로 데이터 조회
     const [
       personalColorResult,
@@ -46,6 +58,7 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       weeklyNutritionResult,
       skinDiaryResult, // Phase D
       mentalHealthResult, // ADR-089: 바이오리듬
+      shelfResult, // 고객 노트: 보유 제품(제품함 owned)
     ] = await Promise.all([
       // 퍼스널 컬러
       supabase
@@ -92,69 +105,85 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .limit(1)
         .maybeSingle(),
 
-      // 운동 분석
-      supabase
-        .from('workout_analyses')
-        .select('workout_type, goal, frequency')
-        .eq('clerk_user_id', clerkUserId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      // 운동 분석 (WELLNESS_PHASE2 게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('workout_analyses')
+            .select('workout_type, goal, frequency')
+            .eq('clerk_user_id', clerkUserId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : emptySingle,
 
-      // 운동 스트릭
-      supabase
-        .from('workout_streaks')
-        .select('current_streak')
-        .eq('clerk_user_id', clerkUserId)
-        .maybeSingle(),
+      // 운동 스트릭 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('workout_streaks')
+            .select('current_streak')
+            .eq('clerk_user_id', clerkUserId)
+            .maybeSingle()
+        : emptySingle,
 
-      // 영양 설정
-      supabase
-        .from('nutrition_settings')
-        .select('goal, target_calories')
-        .eq('clerk_user_id', clerkUserId)
-        .maybeSingle(),
+      // 영양 설정 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('nutrition_settings')
+            .select('goal, target_calories')
+            .eq('clerk_user_id', clerkUserId)
+            .maybeSingle()
+        : emptySingle,
 
-      // 영양 스트릭
-      supabase
-        .from('nutrition_streaks')
-        .select('current_streak')
-        .eq('clerk_user_id', clerkUserId)
-        .maybeSingle(),
+      // 영양 스트릭 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('nutrition_streaks')
+            .select('current_streak')
+            .eq('clerk_user_id', clerkUserId)
+            .maybeSingle()
+        : emptySingle,
 
-      // 오늘 운동
-      supabase
-        .from('workout_logs')
-        .select('exercise_name, duration_minutes')
-        .eq('clerk_user_id', clerkUserId)
-        .gte('completed_at', todayStr)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      // 오늘 운동 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('workout_logs')
+            .select('exercise_name, duration_minutes')
+            .eq('clerk_user_id', clerkUserId)
+            .gte('completed_at', todayStr)
+            .order('completed_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : emptySingle,
 
-      // 오늘 영양
-      supabase
-        .from('daily_nutrition_summary')
-        .select('total_calories, water_ml')
-        .eq('clerk_user_id', clerkUserId)
-        .eq('date', todayStr)
-        .maybeSingle(),
+      // 오늘 영양 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('daily_nutrition_summary')
+            .select('total_calories, water_ml')
+            .eq('clerk_user_id', clerkUserId)
+            .eq('date', todayStr)
+            .maybeSingle()
+        : emptySingle,
 
-      // 주간 운동 횟수
-      supabase
-        .from('workout_logs')
-        .select('id', { count: 'exact', head: true })
-        .eq('clerk_user_id', clerkUserId)
-        .gte('workout_date', weekAgoStr)
-        .lte('workout_date', todayStr),
+      // 주간 운동 횟수 (게이팅 — count 쿼리)
+      wellnessEnabled
+        ? supabase
+            .from('workout_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('clerk_user_id', clerkUserId)
+            .gte('workout_date', weekAgoStr)
+            .lte('workout_date', todayStr)
+        : emptyCount,
 
-      // 주간 영양 평균
-      supabase
-        .from('daily_nutrition_summary')
-        .select('total_calories, protein_g, carbs_g, fat_g')
-        .eq('clerk_user_id', clerkUserId)
-        .gte('date', weekAgoStr)
-        .lte('date', todayStr),
+      // 주간 영양 평균 (게이팅)
+      wellnessEnabled
+        ? supabase
+            .from('daily_nutrition_summary')
+            .select('total_calories, protein_g, carbs_g, fat_g')
+            .eq('clerk_user_id', clerkUserId)
+            .gte('date', weekAgoStr)
+            .lte('date', todayStr)
+        : emptySingle,
 
       // Phase D: 피부 일기 최근 7일
       supabase
@@ -173,6 +202,12 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         .eq('clerk_user_id', clerkUserId)
         .eq('date', todayStr)
         .maybeSingle(),
+
+      // 고객 노트: 보유 제품 상위 5개(브리핑이 쓰는 getShelfItems 재사용).
+      // 조회 실패가 5축 컨텍스트 전체를 날리면 안 되므로 빈 결과로 격리.
+      getShelfItems(supabase, clerkUserId, { status: 'owned', limit: 5 }).catch(() => ({
+        items: [],
+      })),
     ]);
 
     // 퍼스널 컬러
@@ -374,6 +409,22 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
         cyclePhase: biorhythm.cyclePhase,
         topInsight: biorhythm.insights[0]?.message,
       };
+    }
+
+    // 고객 노트: 보유 제품 (owned-first 답변 근거). 비었으면 미주입(지어내지 않음).
+    const shelfItems = (shelfResult as { items?: Array<Record<string, unknown>> }).items ?? [];
+    if (shelfItems.length > 0) {
+      context.ownedProducts = shelfItems.map((item) => {
+        const owned: NonNullable<UserContext['ownedProducts']>[number] = {
+          name: String(item.productName ?? ''),
+        };
+        if (item.productBrand) owned.brand = String(item.productBrand);
+        if (typeof item.rating === 'number') owned.rating = item.rating;
+        if (typeof item.compatibilityScore === 'number') {
+          owned.compatibilityScore = item.compatibilityScore;
+        }
+        return owned;
+      });
     }
 
     // 컨텍스트가 비어있으면 null 반환

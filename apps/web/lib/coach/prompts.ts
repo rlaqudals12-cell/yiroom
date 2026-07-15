@@ -10,6 +10,8 @@ import type { UserContext } from './context';
  */
 export function buildCoachSystemPrompt(userContext: UserContext | null): string {
   const contextSection = userContext ? buildUserContextSection(userContext) : '';
+  // 제품함이 있을 때만 owned-first 규칙 주입 (없으면 규칙 자체가 무의미)
+  const ownedRules = userContext?.ownedProducts?.length ? buildOwnedProductRules() : '';
 
   return `당신은 이룸(Yiroom)의 AI 뷰티 코치입니다. 사용자의 퍼스널컬러·피부·체형·헤어·메이크업(시각 정체성 5축)과 스타일링에 대한 질문에 친절하고 전문적으로 답변합니다.
 
@@ -27,11 +29,34 @@ export function buildCoachSystemPrompt(userContext: UserContext | null): string 
 5. 이모지는 최소한으로 사용 (답변당 1-2개)
 
 ${contextSection}
-
+${ownedRules}
 ## 주의사항
 - 의료적 조언, 약물 복용 관련 질문은 "전문의와 상담하세요"로 안내
 - 극단적인 다이어트나 위험한 운동 방법은 권장하지 않음
 - 개인정보 보호를 위해 민감한 정보는 저장하지 않음
+`;
+}
+
+/**
+ * owned-first 규칙 — 코치가 "결정의 순간" 질문에 보유 제품을 먼저 고려하게 만든다.
+ *
+ * 왜 하드 규칙인가: 코치의 제품 추천 RAG는 전부 신제품(cosmetic_products) 우선이고
+ * 어필리에이트 수익도 신제품 클릭에서 나온다. 이 규칙 없이 제품함만 주입하면 모델이
+ * 다시 구매 쪽으로 당겨 "이미 가진 걸 또 사라"는 답을 내고, "안 사도 된다"고 말하지
+ * 못한다 — 그게 '추천 봇'과 '중립 AI 뷰티 애널리스트'(이룸의 해자)를 가르는 지점이다.
+ *
+ * 이중질문 방지: rating write(폐루프)는 브리핑에 단독 귀속. 코치는 read-only로 읽어
+ * 답만 한다. "잘 맞아요?"식 재질문 금지 — 사용자가 남긴 평가는 이미 아는 것으로 취급.
+ */
+function buildOwnedProductRules(): string {
+  return `
+## 보유 제품 우선 원칙 (중요)
+- 사용자가 이미 가진 제품(위 "제품함")을 항상 먼저 고려하세요.
+- 니즈를 커버하는 제품을 잘 맞게 쓰고 있으면, 새 제품을 권하지 말고 "지금 쓰시는 걸로 충분해요"라고 정직하게 답하세요. 억지로 사게 하지 않습니다.
+- "잘 안 맞는다"고 하신 제품이 있으면, 그 불만을 근거로 교체를 제안하세요.
+- 정말 빈 부분(가진 게 없는 카테고리)에만 새 제품을 추천하세요.
+- 이미 가진 제품을 새 제품처럼 다시 추천하지 마세요.
+- 사용자가 남긴 사용 평가는 이미 아는 것으로 취급하고, "잘 맞아요?"라고 되묻지 마세요. 대신 비교·대안·다음 단계로 답하세요.
 `;
 }
 
@@ -166,6 +191,22 @@ function buildUserContextSection(context: UserContext): string {
     }
     if (context.recentActivity.waterIntake !== undefined) {
       sections.push(`- 오늘 수분 섭취: ${context.recentActivity.waterIntake}ml`);
+    }
+  }
+
+  // 고객 노트: 보유 제품 (owned-first 답변의 근거)
+  if (context.ownedProducts?.length) {
+    sections.push('');
+    sections.push('## 고객이 지금 쓰는 제품 (제품함)');
+    for (const p of context.ownedProducts) {
+      const label = p.brand ? `${p.brand} ${p.name}` : p.name;
+      // 사용감(rating)이 있으면 명시 — 사용자가 남긴 평가를 코치가 기억한다는 신호
+      let note = '';
+      if (typeof p.rating === 'number') {
+        if (p.rating >= 4) note = ' (잘 맞는다고 하셨어요)';
+        else if (p.rating <= 3) note = ' (잘 안 맞는다고 하셨어요)';
+      }
+      sections.push(`- ${label}${note}`);
     }
   }
 

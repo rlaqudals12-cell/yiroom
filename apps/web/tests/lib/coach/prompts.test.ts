@@ -467,4 +467,46 @@ describe('lib/coach/prompts', () => {
       expect(fashionQuestions).toMatch(/코디|옷|스타일|패션/);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // 고객 노트: 보유 제품(제품함) + owned-first 규칙
+  // ---------------------------------------------------------------------------
+  describe('보유 제품(제품함) 주입', () => {
+    const contextWithShelf: UserContext = {
+      skinAnalysis: { skinType: '건성' },
+      ownedProducts: [
+        { name: '토너A', brand: '브랜드X', rating: 5 },
+        { name: '세럼B', rating: 2 },
+        { name: '크림C' },
+      ],
+    };
+
+    it('제품함 섹션에 보유 제품과 사용감을 표시한다', () => {
+      const prompt = buildCoachSystemPrompt(contextWithShelf);
+
+      expect(prompt).toContain('## 고객이 지금 쓰는 제품');
+      expect(prompt).toContain('브랜드X 토너A');
+      expect(prompt).toContain('잘 맞는다고 하셨어요'); // rating 5
+      expect(prompt).toContain('세럼B');
+      expect(prompt).toContain('잘 안 맞는다고 하셨어요'); // rating 2
+      expect(prompt).toContain('크림C'); // 평점 없어도 표시
+    });
+
+    it('제품함이 있으면 owned-first 규칙을 주입한다 (안 사도 된다고 말할 수 있게)', () => {
+      const prompt = buildCoachSystemPrompt(contextWithShelf);
+
+      expect(prompt).toContain('보유 제품 우선 원칙');
+      expect(prompt).toContain('충분해요'); // 억지 구매 방지
+      expect(prompt).toContain('빈 부분'); // 진짜 공백에만 신제품
+      // 이중질문 방지 — 코치는 재질문하지 않는다(rating write는 브리핑 소유)
+      expect(prompt).toContain('되묻지 마세요');
+    });
+
+    it('제품함이 없으면 owned-first 규칙을 주입하지 않는다 (무의미한 지시 방지)', () => {
+      const prompt = buildCoachSystemPrompt({ skinAnalysis: { skinType: '건성' } });
+
+      expect(prompt).not.toContain('보유 제품 우선 원칙');
+      expect(prompt).not.toContain('## 고객이 지금 쓰는 제품');
+    });
+  });
 });

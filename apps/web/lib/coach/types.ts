@@ -93,6 +93,15 @@ export interface UserContext {
     cyclePhase?: string;
     topInsight?: string;
   };
+  // 고객 노트 — 사용자가 실제 보유한 뷰티 제품(제품함 owned).
+  // 코치가 "결정의 순간" 질문(뭐 사지?/이거 맞아?/살까 말까?)에 owned-first로 답하는 근거.
+  // read-only: rating write(폐루프)는 브리핑에 단독 귀속(compose.ts) — 코치는 읽기만.
+  ownedProducts?: Array<{
+    name: string;
+    brand?: string;
+    rating?: number; // 브리핑 폐루프로 축적된 사용감(4~5=잘맞음, 1~3=글쎄요)
+    compatibilityScore?: number; // 스캔 시점 계산된 적합도
+  }>;
 }
 
 /**

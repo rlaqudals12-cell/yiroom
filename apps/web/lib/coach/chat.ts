@@ -3,6 +3,7 @@
  * @description Gemini 기반 맞춤 웰니스 조언 채팅 + RAG 연동
  */
 
+import { isFeatureEnabled } from '@yiroom/shared';
 import {
   generateContent,
   generateContentStream,
@@ -557,15 +558,19 @@ async function resolveRagContext(
     return formatPersonalColorForPrompt(colorMatch);
   }
   if (isFashionQuestion(message)) {
-    // userId가 있어야 옷장(user_inventory) 실검색 — 없으면 일반 팁만 (지어내지 않음)
+    // 옷장(user_inventory)은 뷰티 — WELLNESS_PHASE2와 무관하게 항상 유지.
+    // userId가 있어야 실검색 — 없으면 일반 팁만 (지어내지 않음)
     const fashionResult = await searchFashionItems(userContext, message, userId);
     return formatFashionForPrompt(fashionResult);
   }
-  if (isNutritionQuestion(message)) {
+  // W-1 운동·N-1 영양 RAG는 숨김 모듈(ADR-098). 뷰티 전속 코치라 오프차터 도메인
+  // 지식을 주입하지 않는다 — 게이팅 시 해당 질문은 아래 제품추천/빈 컨텍스트로 흐른다.
+  // 플래그 재활성 시 복원(하드룰: 코드 유지).
+  if (isFeatureEnabled('WELLNESS_PHASE2') && isNutritionQuestion(message)) {
     const nutritionResult = await searchNutritionItems(userContext, message);
     return formatNutritionForPrompt(nutritionResult);
   }
-  if (isWorkoutQuestion(message)) {
+  if (isFeatureEnabled('WELLNESS_PHASE2') && isWorkoutQuestion(message)) {
     const workoutResult = await searchWorkoutItems(userContext, message);
     return formatWorkoutForPrompt(workoutResult);
   }
