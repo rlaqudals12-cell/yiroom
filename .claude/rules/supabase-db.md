@@ -3,7 +3,6 @@ paths:
   - '**/supabase/**'
   - '**/db/**'
   - '**/*supabase*.ts'
-  - '**/lib/db*'
   - '**/migrations/**'
 ---
 
@@ -226,10 +225,10 @@ USING ((SELECT auth.get_user_id()) = clerk_user_id)
 
 ### USING vs WITH CHECK
 
-| 절            | 용도          | 적용 대상                |
-| ------------- | ------------- | ------------------------ |
-| **USING**     | 기존 행 필터링 | SELECT, UPDATE, DELETE |
-| **WITH CHECK** | 새/수정 행 검증 | INSERT, UPDATE          |
+| 절             | 용도            | 적용 대상              |
+| -------------- | --------------- | ---------------------- |
+| **USING**      | 기존 행 필터링  | SELECT, UPDATE, DELETE |
+| **WITH CHECK** | 새/수정 행 검증 | INSERT, UPDATE         |
 
 ```sql
 -- UPDATE는 두 가지 모두 필요
@@ -243,16 +242,16 @@ CREATE POLICY "update_own" ON data
 
 ### 테이블별 RLS 현황
 
-| 테이블 | RLS | 패턴 | 비고 |
-|--------|-----|------|------|
-| `skin_analyses` | ✅ | 개인 민감 | 본인만 |
-| `personal_color_assessments` | ✅ | 개인 민감 | 본인만 |
-| `body_analyses` | ✅ | 개인 민감 | 본인만 |
-| `workout_logs` | ✅ | 개인 민감 | 본인만 |
-| `friendships` | ✅ | 양방향 소셜 | 양쪽 접근 |
-| `cosmetic_products` | ✅ | 공개 읽기 | anon 포함 |
-| `audit_logs` | ✅ | 감사 로그 | 관리자만 조회 |
-| `user_badges` | ✅ | 개인 데이터 | 본인만 |
+| 테이블                       | RLS | 패턴        | 비고          |
+| ---------------------------- | --- | ----------- | ------------- |
+| `skin_analyses`              | ✅  | 개인 민감   | 본인만        |
+| `personal_color_assessments` | ✅  | 개인 민감   | 본인만        |
+| `body_analyses`              | ✅  | 개인 민감   | 본인만        |
+| `workout_logs`               | ✅  | 개인 민감   | 본인만        |
+| `friendships`                | ✅  | 양방향 소셜 | 양쪽 접근     |
+| `cosmetic_products`          | ✅  | 공개 읽기   | anon 포함     |
+| `audit_logs`                 | ✅  | 감사 로그   | 관리자만 조회 |
+| `user_badges`                | ✅  | 개인 데이터 | 본인만        |
 
 ---
 
@@ -277,13 +276,13 @@ WHERE tablename = 'skin_analyses';
 
 ### 흔한 실수
 
-| 실수 | 증상 | 해결 |
-|------|------|------|
-| RLS 미활성화 | 모든 데이터 노출 | `ENABLE ROW LEVEL SECURITY` |
-| `auth.uid()` 사용 | NULL 반환 | `auth.get_user_id()` 사용 |
-| SELECT 래핑 누락 | 느린 쿼리 | `(SELECT auth.get_user_id())` |
-| WITH CHECK 누락 | INSERT/UPDATE 실패 | FOR INSERT/UPDATE에 추가 |
-| service_role 정책 누락 | Cron 작업 실패 | service_role 정책 추가 |
+| 실수                   | 증상               | 해결                          |
+| ---------------------- | ------------------ | ----------------------------- |
+| RLS 미활성화           | 모든 데이터 노출   | `ENABLE ROW LEVEL SECURITY`   |
+| `auth.uid()` 사용      | NULL 반환          | `auth.get_user_id()` 사용     |
+| SELECT 래핑 누락       | 느린 쿼리          | `(SELECT auth.get_user_id())` |
+| WITH CHECK 누락        | INSERT/UPDATE 실패 | FOR INSERT/UPDATE에 추가      |
+| service_role 정책 누락 | Cron 작업 실패     | service_role 정책 추가        |
 
 ---
 

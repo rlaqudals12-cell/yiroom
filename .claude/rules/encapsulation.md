@@ -1,3 +1,8 @@
+---
+paths:
+  - '**/lib/**'
+---
+
 # 캡슐화 원리 (Encapsulation Principle)
 
 > 모듈 경계 정의 및 정보 은닉 규칙

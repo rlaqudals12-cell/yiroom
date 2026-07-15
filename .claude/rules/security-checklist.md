@@ -1,6 +1,6 @@
 # 보안 체크리스트
 
-> OWASP Top 10 및 이룸 프로젝트 특화 보안 규칙
+> OWASP Top 10 및 이룸 프로젝트 특화 보안 규칙 (v2.0: 코드 예시를 한 줄 규칙으로 압축 — 규칙 자체는 전부 보존)
 
 ## OWASP Top 10 체크리스트
 
@@ -12,13 +12,7 @@
 | NoSQL Injection   | JSONB 필드 검증                | `types/` 스키마 검증      |
 | Command Injection | 사용자 입력 sanitize           | `lib/utils/redact-pii.ts` |
 
-```typescript
-// 좋은 예: 파라미터화 쿼리
-const { data } = await supabase.from('users').select('*').eq('clerk_user_id', userId);
-
-// 나쁜 예: 문자열 연결
-const query = `SELECT * FROM users WHERE id = '${userId}'`; // 금지
-```
+- 쿼리는 항상 `.eq()` 등 파라미터화 — 문자열 연결 쿼리 금지.
 
 ### 2. Broken Authentication (A07:2021)
 
@@ -28,15 +22,7 @@ const query = `SELECT * FROM users WHERE id = '${userId}'`; // 금지
 | 비밀번호 정책 | Clerk 기본값 사용 | -          |
 | MFA           | Clerk 선택적      | 향후 도입  |
 
-**필수 검증**:
-
-```typescript
-// 모든 보호 라우트에서 auth 확인
-const { userId } = await auth();
-if (!userId) {
-  redirect('/sign-in');
-}
-```
+- 모든 보호 라우트: `const { userId } = await auth()` → 없으면 401/redirect.
 
 ### 3. Sensitive Data Exposure (A02:2021)
 
@@ -46,15 +32,7 @@ if (!userId) {
 | 저장 암호화 | Supabase 암호화 | 기본 활성화               |
 | 로깅 마스킹 | PII 필터링      | `lib/utils/redact-pii.ts` |
 
-**금지 패턴**:
-
-```typescript
-// 금지: 민감 정보 로깅
-console.log('User data:', userData);
-
-// 허용: 마스킹된 로깅
-console.log('User data:', sanitizeForLogging(userData));
-```
+- 민감 정보 원문 로깅 금지 — `sanitizeForLogging()` 마스킹 후에만.
 
 ### 4. Broken Access Control (A01:2021)
 
@@ -66,22 +44,8 @@ console.log('User data:', sanitizeForLogging(userData));
 
 ### 5. Security Misconfiguration (A05:2021)
 
-**환경변수 검증** (`scripts/check-env.js`):
-
-```javascript
-const REQUIRED_ENV = [
-  'GOOGLE_GENERATIVE_AI_API_KEY',
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'CLERK_SECRET_KEY',
-];
-```
-
-**금지 사항**:
-
-- `.env` 파일 커밋 금지
-- `NEXT_PUBLIC_` 접두사에 비밀키 금지
-- 하드코딩된 API 키 금지
+- 필수 환경변수 검증: `scripts/check-env.js` (GOOGLE_GENERATIVE_AI_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, CLERK_SECRET_KEY)
+- **금지**: `.env` 커밋 · `NEXT_PUBLIC_` 접두사에 비밀키 · 하드코딩된 API 키
 
 ### 6. XSS (A03:2021)
 
@@ -93,60 +57,19 @@ const REQUIRED_ENV = [
 
 ### 7. Insecure Deserialization (A08:2021)
 
-```typescript
-// JSON 파싱 시 스키마 검증 필수
-const schema = z.object({
-  userId: z.string(),
-  action: z.enum(['create', 'update', 'delete']),
-});
-
-const parsed = schema.safeParse(JSON.parse(rawInput));
-if (!parsed.success) {
-  throw new Error('Invalid input');
-}
-```
+- 외부 입력 JSON은 반드시 Zod `safeParse` 후 사용 — bare `JSON.parse` 결과 직접 사용 금지.
 
 ### 8. Components with Vulnerabilities (A06:2021)
 
-**정기 점검**:
-
-```bash
-# 매주 실행
-npm audit
-npm audit fix
-
-# 심각한 취약점 발견 시
-npm audit --audit-level=critical
-```
+- 매주 `npm audit` / 심각 취약점은 `npm audit --audit-level=critical`로 즉시 확인.
 
 ### 9. Insufficient Logging (A09:2021)
 
-**감사 로그 필수 항목**:
-
-- 로그인/로그아웃
-- 데이터 생성/수정/삭제
-- 권한 변경
-- 실패한 인증 시도
-
-```typescript
-await logAudit(supabase, 'user.data_access', {
-  userId: targetUserId,
-  accessType: 'read',
-  resource: 'personal_color_assessments',
-});
-```
+- 감사 로그 필수 항목: 로그인/로그아웃 · 데이터 생성/수정/삭제 · 권한 변경 · 실패한 인증 시도 — `logAudit(supabase, event, meta)` 사용.
 
 ### 10. SSRF (A10:2021)
 
-```typescript
-// 외부 URL 호출 시 화이트리스트 검증
-const ALLOWED_DOMAINS = ['storage.googleapis.com', 'supabase.co'];
-
-function validateUrl(url: string): boolean {
-  const parsed = new URL(url);
-  return ALLOWED_DOMAINS.some((d) => parsed.hostname.endsWith(d));
-}
-```
+- 외부 URL 호출 전 화이트리스트 검증 (`storage.googleapis.com`, `supabase.co` 등 허용 도메인만).
 
 ## 이룸 특화 보안 규칙
 
@@ -195,4 +118,4 @@ function validateUrl(url: string): boolean {
 
 ---
 
-**Version**: 1.0 | **Updated**: 2026-01-15
+**Version**: 2.0 | **Updated**: 2026-07-12 | 코드 예시 → 한 줄 규칙 압축 (규칙·표·체크리스트 전부 보존)

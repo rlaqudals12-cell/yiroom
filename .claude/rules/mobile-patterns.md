@@ -1,3 +1,8 @@
+---
+paths:
+  - 'apps/mobile/**'
+---
+
 # 모바일 패턴
 
 > Expo/React Native 개발 규칙 (apps/mobile)

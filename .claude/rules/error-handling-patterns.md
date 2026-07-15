@@ -1,3 +1,9 @@
+---
+paths:
+  - '**/*.ts'
+  - '**/*.tsx'
+---
+
 # 에러 처리 패턴
 
 > 이룸 프로젝트 표준 에러 처리 전략
@@ -110,6 +116,7 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
 > (타임아웃 3초, 재시도 2회, Mock 파일 구조, UI 신뢰도 표시)
 
 **핵심 패턴**: `analyzeWithFallback<T>(analyze, generateMock, options)`
+
 - 성공 시: `{ result, usedFallback: false }`
 - 실패 시: `{ result: mockResult, usedFallback: true }`
 

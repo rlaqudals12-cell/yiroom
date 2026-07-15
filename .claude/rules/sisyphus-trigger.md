@@ -1,3 +1,9 @@
+---
+paths:
+  - '.claude/commands/sisyphus.md'
+  - '.claude/agents/sisyphus-adaptive.md'
+---
+
 # 시지푸스 자동 트리거 규칙
 
 > 작업 복잡도에 따라 시지푸스 오케스트레이터 사용 여부를 결정
@@ -98,7 +104,7 @@
 | 51-70  | **Standard** | standard | code-quality + test-writer |
 | 71-100 | **Full**     | full     | 전체 에이전트 파이프라인   |
 
-**모델**: Opus 4.6 전용 (품질 일관성 보장)
+**모델**: Opus 4.8 전용 (품질 일관성 보장)
 **참조**: `.claude/lib/complexity-analyzer.md`에서 상세 점수 기준 확인
 
 ## 주의사항

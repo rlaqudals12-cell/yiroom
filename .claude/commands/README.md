@@ -1,6 +1,6 @@
 # 명령어 인덱스 (Commands Index)
 
-> **Version**: 1.3 | **Updated**: 2026-03-26
+> **Version**: 1.4 | **Updated**: 2026-07-12 | /claude-md-audit·/skill-audit 추가 (지침·스킬 점검 메타 명령어)
 
 > 이룸 프로젝트 슬래시 명령어 가이드
 
@@ -8,22 +8,24 @@
 
 ## 빠른 탐색
 
-| 명령어                               | 용도                  | 주요 작업                 |
-| ------------------------------------ | --------------------- | ------------------------- |
-| [/qplan](#qplan)                     | 빠른 계획 분석        | 계획 검토, 스펙 분석      |
-| [/qcode](#qcode)                     | 빠른 구현             | 코드 작성 + 테스트 + 검증 |
-| [/qcheck](#qcheck)                   | 빠른 품질 검사        | 변경사항 품질 확인        |
-| [/test](#test)                       | 테스트 실행           | 테스트 실행 및 결과 분석  |
-| [/review](#review)                   | 종합 코드 리뷰        | 코드 품질, 보안 검토      |
-| [/sisyphus](#sisyphus)               | 적응형 오케스트레이터 | 복잡한 작업 병렬 처리     |
-| [/create-feature](#create-feature)   | 새 기능 스캐폴딩      | SDD 템플릿 생성           |
-| [/ux-check](#ux-check)               | UX 체크리스트 점검    | UI 변경 시 자동 UX 검증   |
-| [/deploy-check](#deploy-check)       | 배포 전 체크          | 배포 전 필수 검증         |
-| [/standup](#standup)                 | 일일 현황 요약        | 개발 현황 및 계획         |
-| [/wrap-up](#wrap-up)                 | 세션 메모리 관리      | 세션 저장, 컨텍스트 유지  |
-| [/quality-improve](#quality-improve) | 모듈 품질 개선        | 3-Cycle 패턴 품질 개선    |
+| 명령어                               | 용도                      | 주요 작업                      |
+| ------------------------------------ | ------------------------- | ------------------------------ |
+| [/qplan](#qplan)                     | 빠른 계획 분석            | 계획 검토, 스펙 분석           |
+| [/qcode](#qcode)                     | 빠른 구현                 | 코드 작성 + 테스트 + 검증      |
+| [/qcheck](#qcheck)                   | 빠른 품질 검사            | 변경사항 품질 확인             |
+| [/test](#test)                       | 테스트 실행               | 테스트 실행 및 결과 분석       |
+| [/review](#review)                   | 종합 코드 리뷰            | 코드 품질, 보안 검토           |
+| [/sisyphus](#sisyphus)               | 적응형 오케스트레이터     | 복잡한 작업 병렬 처리          |
+| [/create-feature](#create-feature)   | 새 기능 스캐폴딩          | SDD 템플릿 생성                |
+| [/ux-check](#ux-check)               | UX 체크리스트 점검        | UI 변경 시 자동 UX 검증        |
+| [/deploy-check](#deploy-check)       | 배포 전 체크              | 배포 전 필수 검증              |
+| [/standup](#standup)                 | 일일 현황 요약            | 개발 현황 및 계획              |
+| [/wrap-up](#wrap-up)                 | 세션 메모리 관리          | 세션 저장, 컨텍스트 유지       |
+| [/quality-improve](#quality-improve) | 모듈 품질 개선            | 3-Cycle 패턴 품질 개선         |
+| /claude-md-audit                     | CLAUDE.md 점검·업그레이드 | 지침 자립화, 모델 간 품질 유지 |
+| /skill-audit                         | 스킬/규칙 점검·재구축     | 반복 작업 스킬화, 지침 정리    |
 
-**총 명령어**: 12개
+**총 명령어**: 14개
 
 ---
 
@@ -353,6 +355,48 @@
 **연동 에이전트**: yiroom-code-quality, yiroom-test-writer, korean-ux-writer
 
 **관련 규칙**: [quality-improvement-cycles.md](../rules/quality-improvement-cycles.md)
+
+---
+
+### /claude-md-audit
+
+> CLAUDE.md 점검 및 업그레이드
+
+**용도**:
+
+- CLAUDE.md가 실제 프로젝트(구조·커밋·작업 방식)와 맞는지 점검
+- 모호/모순/낡음/누락/암묵 항목 목록화 후 업그레이드
+- 다른(더 저렴한) 모델도 이 파일만 따라 동일 품질을 내도록 자립화
+
+**사용 예시**:
+
+```
+/claude-md-audit
+/claude-md-audit apps/mobile/CLAUDE.md
+```
+
+**하드 룰**: 최종 산출물은 개선된 CLAUDE.md와 변경 요약만. 다른 파일 미변경. 선호를 지어내지 않고 애매하면 질문.
+
+---
+
+### /skill-audit
+
+> 스킬/커맨드/규칙 점검 및 재구축
+
+**용도**:
+
+- 사용 패턴 연구(커밋·세션·메모리) → 반복 작업 식별
+- 기존 커맨드·규칙·에이전트 전수 판정 (유지/수정/병합/삭제 + 한 줄 이유)
+- 가장 반복되는 워크플로우를 재사용 스킬로 재작성 + 신규 2개 생성
+
+**사용 예시**:
+
+```
+/skill-audit
+/skill-audit .claude/rules/
+```
+
+**하드 룰**: 삭제 전 반드시 사용자 확인. always-on 지침 최소화(`paths:` 경로 스코프 활용).
 
 ---
 

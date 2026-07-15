@@ -1,3 +1,9 @@
+---
+paths:
+  - '**/lib/analysis/**'
+  - '**/lib/affiliate/**'
+---
+
 # OCP 적용 패턴 (Open-Closed Principle)
 
 > 확장에 열려 있고, 수정에 닫혀 있는 설계 원칙

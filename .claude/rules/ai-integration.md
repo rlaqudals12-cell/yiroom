@@ -1,6 +1,7 @@
 ---
 paths:
   - '**/gemini*'
+  - '**/lib/gemini/**'
   - '**/ai/**'
   - '**/analysis/**'
   - '**/mock/**'

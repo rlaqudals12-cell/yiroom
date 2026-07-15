@@ -1,3 +1,8 @@
+---
+paths:
+  - '**/app/api/**'
+---
+
 # API 설계 규칙
 
 > Next.js API 라우트 및 REST API 설계 표준

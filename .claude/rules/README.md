@@ -1,6 +1,11 @@
+---
+paths:
+  - '.claude/**'
+---
+
 # 규칙 인덱스 (Rules Index)
 
-> **Version**: 2.2 | **Updated**: 2026-03-26 | /ux-check v7.0 (70항목), performance-guidelines v1.2
+> **Version**: 3.0 | **Updated**: 2026-07-12 | 규칙 로딩 재구조화 — always-on 6개(제1원칙·code-style·design-contracts·doc-sync·git-workflow·security-checklist)만 매 세션 로딩, 나머지 22개는 `paths:` 프론트매터로 해당 파일 작업 시 자동 로딩
 
 > 이룸 프로젝트 코딩 규칙 및 표준 가이드
 
@@ -11,7 +16,7 @@
 | 카테고리                      | 파일 수 | 설명                                   |
 | ----------------------------- | ------- | -------------------------------------- |
 | [제1원칙](#1-제1원칙-최우선)  | 3개     | 모든 규칙의 기반                       |
-| [코드 스타일](#2-코드-스타일) | 5개     | 코딩 표준, 패턴                        |
+| [코드 스타일](#2-코드-스타일) | 6개     | 코딩 표준, 패턴, 설계 계약             |
 | [프레임워크](#3-프레임워크)   | 3개     | Next.js, React, Mobile                 |
 | [데이터](#4-데이터)           | 2개     | 마이그레이션, Mock Fallback            |
 | [AI/ML](#5-aiml)              | 4개     | AI 통합, 프롬프트, Hybrid              |
@@ -19,7 +24,7 @@
 | [운영](#7-운영)               | 5개     | Git, Feature Flags, 디버깅, 문서동기화 |
 | [설계 원칙](#8-설계-원칙)     | 1개     | OCP, 확장성                            |
 
-**총 규칙 파일**: 27개
+**총 규칙 파일**: 28개 — always-on 6개(제1원칙·code-style·design-contracts·doc-sync·git-workflow·security-checklist) + 경로 스코프 22개 (2026-07-12 재구조화)
 
 ---
 
@@ -37,13 +42,14 @@
 
 ## 2. 코드 스타일
 
-| 파일                                                       | 용도                                | 관련 원칙  |
-| ---------------------------------------------------------- | ----------------------------------- | ---------- |
-| [code-style.md](./code-style.md)                           | TypeScript, 네이밍, 주석 규칙       | P4: 단순화 |
-| [typescript-strict.md](./typescript-strict.md)             | TypeScript Strict 모드, 타입 안전성 | P4         |
-| [react-patterns.md](./react-patterns.md)                   | 컴포넌트, Hooks, 상태 관리          | P3, P4     |
-| [error-handling-patterns.md](./error-handling-patterns.md) | 3단계 폴백, 에러 분류               | P4         |
-| [api-design.md](./api-design.md)                           | REST API, 버전 관리, 응답 형식      | P3, P4     |
+| 파일                                                       | 용도                                           | 관련 원칙  |
+| ---------------------------------------------------------- | ---------------------------------------------- | ---------- |
+| [code-style.md](./code-style.md)                           | TypeScript, 네이밍, 주석 규칙                  | P4: 단순화 |
+| [design-contracts.md](./design-contracts.md)               | 설계 계약 (에러/API 봉투, AI 폴백) — always-on | P2, P4     |
+| [typescript-strict.md](./typescript-strict.md)             | TypeScript Strict 모드, 타입 안전성            | P4         |
+| [react-patterns.md](./react-patterns.md)                   | 컴포넌트, Hooks, 상태 관리                     | P3, P4     |
+| [error-handling-patterns.md](./error-handling-patterns.md) | 3단계 폴백, 에러 분류                          | P4         |
+| [api-design.md](./api-design.md)                           | REST API, 버전 관리, 응답 형식                 | P3, P4     |
 
 ---
 

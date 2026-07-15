@@ -1,3 +1,10 @@
+---
+paths:
+  - '**/lib/admin/**'
+  - '**/*feature-flag*'
+  - '**/*featureFlag*'
+---
+
 # 피처 플래그 규칙
 
 > 기능 ON/OFF 토글 시스템

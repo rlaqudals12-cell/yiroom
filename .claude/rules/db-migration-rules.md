@@ -1,3 +1,9 @@
+---
+paths:
+  - '**/supabase/migrations/**'
+  - '**/lib/supabase/**'
+---
+
 # DB 마이그레이션 규칙
 
 > Supabase 스키마 변경 및 마이그레이션 가이드

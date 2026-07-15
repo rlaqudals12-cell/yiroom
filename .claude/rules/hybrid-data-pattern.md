@@ -1,8 +1,7 @@
 ---
 paths:
   - '**/mock/**'
-  - '**/result/**'
-  - '**/lib/analysis/**'
+  - '**/*mock*.ts'
 ---
 
 # Hybrid 데이터 패턴

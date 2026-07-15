@@ -37,7 +37,7 @@ main                    # 프로덕션 (보호됨)
 
 <body>
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ```
 
 ### Types
@@ -150,88 +150,24 @@ Closes #123
 
 ---
 
-## 머지 전략
+## 머지/충돌 (프로젝트 규칙만)
 
-### Squash Merge (권장)
-
-```bash
-# 여러 커밋을 하나로 압축
-git merge --squash feature/xxx
-```
-
-- 깔끔한 main 히스토리
-- PR 단위로 추적 용이
-
-### Rebase Merge
-
-```bash
-# 선형 히스토리 유지
-git rebase main
-git merge --ff-only feature/xxx
-```
-
-- 커밋 히스토리 보존
-- 복잡한 기능에 적합
-
----
-
-## 충돌 해결
-
-### 기본 플로우
-
-```bash
-# 1. 최신 main 가져오기
-git fetch origin main
-
-# 2. rebase 시도
-git rebase origin/main
-
-# 3. 충돌 발생 시 해결
-# 파일 수정 후:
-git add <resolved-files>
-git rebase --continue
-
-# 4. 포기 시
-git rebase --abort
-```
-
-### 주의사항
-
-- 공유 브랜치에서 rebase 금지
-- 충돌 해결 후 반드시 테스트 실행
+- **Squash Merge 권장** (깔끔한 main 히스토리, PR 단위 추적).
+- **공유 브랜치에서 rebase 금지.** 충돌 해결 후 반드시 테스트 실행.
+- (머지·충돌·stash 등 일반 git 사용법은 표준 지식 — 여기 기록하지 않음)
 
 ---
 
 ## 금지 사항
 
-| 금지                       | 이유          |
-| -------------------------- | ------------- |
-| `.env` 파일 커밋           | 보안 위험     |
-| `--no-verify` 플래그       | 검증 우회     |
-| `git push --force` to main | 히스토리 손상 |
-| 대용량 바이너리 커밋       | 저장소 비대화 |
-| 민감 정보 하드코딩         | 보안 위험     |
-
----
-
-## 유용한 명령어
-
-```bash
-# 브랜치 정리
-git branch -d feature/xxx        # 로컬 삭제
-git push origin --delete feature/xxx  # 원격 삭제
-
-# 커밋 수정 (push 전)
-git commit --amend              # 마지막 커밋 수정
-git rebase -i HEAD~3            # 최근 3개 커밋 편집
-
-# 변경사항 임시 저장
-git stash
-git stash pop
-
-# 특정 커밋 체리픽
-git cherry-pick <commit-hash>
-```
+| 금지                       | 이유             |
+| -------------------------- | ---------------- |
+| `.env` 파일 커밋           | 보안 위험        |
+| `--no-verify` 플래그       | 검증 우회        |
+| `git push --force` to main | 히스토리 손상    |
+| 공유 브랜치 rebase         | 팀 히스토리 파손 |
+| 대용량 바이너리 커밋       | 저장소 비대화    |
+| 민감 정보 하드코딩         | 보안 위험        |
 
 ---
 
@@ -242,4 +178,4 @@ git cherry-pick <commit-hash>
 
 ---
 
-**Version**: 2.0 | **Updated**: 2026-01-19 | PR 템플릿, 리뷰 체크리스트 추가
+**Version**: 3.0 | **Updated**: 2026-07-12 | 트림 — 머지 전략/충돌 플로우/명령어 치트시트(표준 git 지식) 제거, 프로젝트 규칙만 유지

@@ -1,3 +1,8 @@
+---
+paths:
+  - '.claude/commands/quality-improve.md'
+---
+
 # 품질 개선 사이클 (Quality Improvement Cycles)
 
 > PC-1(89→100)에서 검증된 반복적 품질 개선 패턴

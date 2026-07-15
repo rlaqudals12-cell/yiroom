@@ -171,44 +171,8 @@ const MAX_RETRY = 3;
 
 ## AI 코드 리뷰 체크리스트
 
-### 보안 (OWASP Top 10)
-
-- [ ] SQL Injection: 직접 문자열 연결 없음
-- [ ] XSS: `dangerouslySetInnerHTML` 미사용
-- [ ] 인증: `auth.protect()` 확인
-- [ ] 민감 데이터: `NEXT_PUBLIC_` 아닌지 확인
-- [ ] Rate Limiting: 외부 API 제한 있는지
-
-### 아키텍처 일관성
-
-- [ ] Repository 패턴 (lib/api/, lib/products/)
-- [ ] Supabase 클라이언트 올바른 함수
-- [ ] 컴포넌트 위치 기존 구조 일치
-- [ ] 타입 정의 위치 올바름
-
-### 테스트
-
-- AI 생성 코드는 **반드시** 테스트 동반
-- 모든 새 함수에 최소 1개 테스트
-- 테스트 구조:
-  ```
-  tests/
-  ├── components/     # 컴포넌트 테스트
-  ├── lib/            # 유틸리티 테스트
-  ├── api/            # API 라우트 테스트
-  └── integration/    # 통합 테스트
-  ```
-
-### 에러 핸들링
-
-```typescript
-// 좋은 예
-const { data, error } = await supabase.from('users').select('*');
-if (error) {
-  console.error('[Module] Error:', error);
-  throw new Error('사용자 정보를 불러올 수 없습니다.');
-}
-```
+> 전체 체크리스트(보안 OWASP·아키텍처·테스트·에러 핸들링) → [ai-code-review.md](./ai-code-review.md) (`.ts/.tsx` 작업 시 자동 로딩). 테스트 구조 → [testing-patterns.md](./testing-patterns.md). 에러 봉투 → [design-contracts.md](./design-contracts.md).
+> 핵심만: AI 생성 코드는 **반드시 테스트 동반** + 모든 새 함수에 최소 1개 테스트.
 
 ---
 
@@ -227,106 +191,20 @@ if (error) {
 }
 ```
 
-### 공백 규칙
+### 공백/줄바꿈
 
-```typescript
-// ✅ 좋은 예: 연산자 주변 공백
-const total = price + tax;
-const isValid = count > 0 && count < 100;
-
-// ✅ 좋은 예: 콤마 뒤 공백
-const items = [a, b, c];
-function fn(a: string, b: number): void {}
-
-// ✅ 좋은 예: 중괄호 주변 공백
-import { useState } from 'react';
-const obj = { name: 'Kim', age: 30 };
-
-// ❌ 나쁜 예: 불필요한 공백
-const total = price + tax;
-const items = [a, b, c];
-```
-
-### 줄바꿈 규칙
-
-```typescript
-// ✅ 함수 인자가 3개 이상이면 줄바꿈
-function createUser(name: string, email: string, age: number, address: string): User {
-  // ...
-}
-
-// ✅ 체이닝이 길면 줄바꿈
-const result = items
-  .filter((item) => item.active)
-  .map((item) => item.name)
-  .sort();
-```
+> Prettier가 자동 적용한다 (PostToolUse 훅이 편집 시마다 실행). 수동 규칙 불필요 — 위 설정만 준수.
 
 ---
 
-## Tailwind CSS v4 규칙
+## 웹 전용 상세 규칙 (경로 스코프로 이관)
 
-> 이룸 프로젝트는 Tailwind CSS v4를 사용합니다.
-
-### `@theme inline` vs `:root`
-
-```css
-/* ✅ 허용: Tailwind 토큰 확장 (커스텀 색상 등) */
-@theme inline {
-  --color-primary: #6366f1;
-  --color-accent: #f59e0b;
-}
-
-/* ❌ 금지: @theme inline에 spacing/shadow 변수 정의 */
-/* Tailwind v4가 max-w-lg를 var(--spacing-lg)로 매핑하여 레이아웃 깨짐 */
-@theme inline {
-  --spacing-lg: 1.5rem; /* 금지! max-w-lg = 24px가 됨 */
-  --shadow-sm: 0 1px 2px; /* 금지! */
-}
-
-/* ✅ 허용: 커스텀 spacing/shadow는 :root에 정의 */
-:root {
-  --spacing-lg: 1.5rem;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-```
-
-### 핵심 규칙
-
-| 항목            | 규칙                                                 |
-| --------------- | ---------------------------------------------------- |
-| `@theme inline` | 색상, 폰트, 반지름 등 Tailwind 토큰 확장에만 사용    |
-| `--spacing-*`   | `:root`에만 정의 (Tailwind 내장 spacing과 충돌 방지) |
-| `--shadow-*`    | `:root`에만 정의                                     |
-| `max-w-lg` 등   | Tailwind 기본값 사용 (커스텀 오버라이드 금지)        |
-
-### 주의: 순환 참조 패턴
-
-```css
-/* ❌ 절대 금지: 순환 참조 */
-@theme inline {
-  --spacing-lg: var(--spacing-lg); /* 자기 자신 참조 → 0px */
-}
-```
+> `apps/web/**` 작업 시 자동 로딩되는 규칙으로 이동:
+>
+> - **Tailwind CSS v4** (`@theme inline` vs `:root`, spacing 충돌·순환 참조 금지) → [nextjs-conventions.md](./nextjs-conventions.md)
+> - **Dynamic Import** (뷰포트 밖 15KB+ 컴포넌트, Server Component `ssr: false` 금지) → [performance-guidelines.md](./performance-guidelines.md)
 
 ---
 
-## Dynamic Import 규칙
-
-```typescript
-// 스크롤 하단/조건부 컴포넌트: dynamic import 필수
-// 기준: 초기 뷰포트 밖 + 15KB 이상
-const HeavyComponent = dynamic(
-  () => import('@/components/Heavy').then((mod) => ({ default: mod.Heavy })),
-  { loading: () => null, ssr: false } // Client Component에서만 ssr: false
-);
-
-// Server Component (layout.tsx): ssr: false 금지
-import nextDynamic from 'next/dynamic';
-const LazyComponent = nextDynamic(() => import('./Lazy'), { loading: () => null });
-```
-
----
-
-**Version**: 2.2 | **Updated**: 2026-03-26 | Dynamic Import 규칙 추가
-**관련 규칙**: [typescript-strict.md](./typescript-strict.md), [performance-guidelines.md](./performance-guidelines.md)
+**Version**: 3.0 | **Updated**: 2026-07-12 | 트림 — AI 리뷰 체크리스트/Tailwind/Dynamic Import를 스코프 규칙으로 이관, 공백 규칙은 Prettier 위임
+**관련 규칙**: [typescript-strict.md](./typescript-strict.md), [performance-guidelines.md](./performance-guidelines.md), [design-contracts.md](./design-contracts.md)

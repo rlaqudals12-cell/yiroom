@@ -1,3 +1,9 @@
+---
+paths:
+  - '**/*.ts'
+  - '**/*.tsx'
+---
+
 # AI 코드 리뷰 규칙
 
 > Vibe Coding 리스크 방지 및 AI 생성 코드 품질 관리
@@ -68,7 +74,7 @@ if (error) {
 Claude Code가 생성한 코드는 커밋 메시지에 자동 포함:
 
 ```
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ```
 
 ### 수동 태그 (선택)

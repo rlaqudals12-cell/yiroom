@@ -1,3 +1,8 @@
+---
+paths:
+  - 'apps/web/**'
+---
+
 # 성능 가이드라인
 
 > Core Web Vitals 및 이룸 성능 최적화 규칙

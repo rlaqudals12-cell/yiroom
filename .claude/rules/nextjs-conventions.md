@@ -1,7 +1,6 @@
 ---
 paths:
   - 'apps/web/**'
-  - '**/app/**'
   - '**/proxy.ts'
 ---
 
@@ -244,6 +243,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 ---
 
+## Tailwind CSS v4 규칙
+
+> 이룸 프로젝트는 Tailwind CSS v4를 사용합니다. (code-style.md에서 이관)
+
+### `@theme inline` vs `:root`
+
+```css
+/* ✅ 허용: Tailwind 토큰 확장 (커스텀 색상 등) */
+@theme inline {
+  --color-primary: #6366f1;
+  --color-accent: #f59e0b;
+}
+
+/* ❌ 금지: @theme inline에 spacing/shadow 변수 정의 */
+/* Tailwind v4가 max-w-lg를 var(--spacing-lg)로 매핑하여 레이아웃 깨짐 */
+@theme inline {
+  --spacing-lg: 1.5rem; /* 금지! max-w-lg = 24px가 됨 */
+  --shadow-sm: 0 1px 2px; /* 금지! */
+}
+
+/* ✅ 허용: 커스텀 spacing/shadow는 :root에 정의 */
+:root {
+  --spacing-lg: 1.5rem;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+```
+
+### 핵심 규칙
+
+| 항목            | 규칙                                                 |
+| --------------- | ---------------------------------------------------- |
+| `@theme inline` | 색상, 폰트, 반지름 등 Tailwind 토큰 확장에만 사용    |
+| `--spacing-*`   | `:root`에만 정의 (Tailwind 내장 spacing과 충돌 방지) |
+| `--shadow-*`    | `:root`에만 정의                                     |
+| `max-w-lg` 등   | Tailwind 기본값 사용 (커스텀 오버라이드 금지)        |
+
+### 주의: 순환 참조 패턴
+
+```css
+/* ❌ 절대 금지: 순환 참조 */
+@theme inline {
+  --spacing-lg: var(--spacing-lg); /* 자기 자신 참조 → 0px */
+}
+```
+
+---
+
 ## 관련 문서
 
 - [api-design.md](./api-design.md) - API 라우트 설계
@@ -252,4 +298,4 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 ---
 
-**Version**: 2.0 | **Updated**: 2026-01-19 | Server Components, Data Fetching 추가
+**Version**: 2.1 | **Updated**: 2026-07-12 | Tailwind CSS v4 규칙 이관 (code-style.md에서)

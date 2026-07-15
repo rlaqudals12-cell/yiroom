@@ -1,8 +1,9 @@
 ---
 paths:
   - '**/gemini*'
+  - '**/lib/gemini/**'
   - '**/prompts/**'
-  - '**/lib/analysis/**'
+  - '**/*prompts*.ts'
 ---
 
 # 프롬프트 엔지니어링 규칙

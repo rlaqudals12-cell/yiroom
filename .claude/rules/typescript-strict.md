@@ -1,3 +1,9 @@
+---
+paths:
+  - '**/*.ts'
+  - '**/*.tsx'
+---
+
 # TypeScript Strict 모드 규칙
 
 > 이룸 프로젝트 TypeScript 타입 안전성 가이드

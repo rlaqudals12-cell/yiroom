@@ -1,3 +1,9 @@
+---
+paths:
+  - 'apps/web/proxy.ts'
+  - 'apps/web/next.config.*'
+---
+
 # 서버 디버깅 규칙
 
 > Next.js 16 개발 서버 문제 해결 가이드
