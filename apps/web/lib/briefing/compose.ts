@@ -35,6 +35,13 @@ export const TONE_GUIDE = {
 /** 관찰 fallback(최근 분석 경과)을 낼 최소 경과일 — 이보다 짧으면 "관찰할 변화"가 아님 */
 const STALE_ANALYSIS_DAYS = 3;
 
+/**
+ * 피부 추이가 "오래돼 고정된" 것으로 간주하는 경과일.
+ * skinTrend는 새 분석 전까지 값이 안 변해 매일 같은 문장이 반복된다 — 이보다 오래되면
+ * 1순위에서 강등해 제품함 회고·재촬영 권유로 순환시킨다(브리핑 신선도).
+ */
+const STALE_TREND_DAYS = 7;
+
 /** 조언 최대 개수 — 인지 부담 방지(한 번에 1~2개) */
 const MAX_ADVICE = 2;
 
@@ -241,20 +248,42 @@ function shelfObservation(product: BriefingRecentProduct): ObservationResult {
   return result;
 }
 
+/** 피부 추이가 오래돼 고정됐는지 — daysSinceLast 미상이면 fresh로 취급(방금 분석했을 수 있음) */
+function isStaleTrend(trend: BriefingSkinTrend): boolean {
+  return typeof trend.daysSinceLast === 'number' && trend.daysSinceLast > STALE_TREND_DAYS;
+}
+
 /**
- * 관찰 문장 1개 선택 — 우선순위: 피부 추이 > 제품함 후속 > 최근 분석 경과.
+ * 관찰 문장 1개 선택 (폐루프 우선 — 2026-07 신선도 개편).
+ *
+ * 우선순위: 제품함 미응답 후속 > fresh 피부 추이 > 제품함 회고 > 오래된 분석.
+ *
+ * 왜 미응답 후속이 최우선인가: "지난번 담아둔 ○○ 잘 맞아요?"는 고객 노트(=해자)를
+ * 여는 값진 상호작용이고, 답하면 사라져 매일 반복되지 않는다. 반면 skinTrend는 새 분석
+ * 전까지 값이 안 변해, 1순위로 두면 활성 유저가 매일 같은 문장만 보고 폐루프는 영영
+ * 가려진다(구 로직의 결함). 회고(이미 응답)와 stale 추이는 신선도가 낮아 뒤로 뺀다.
  * 어떤 데이터도 없으면 undefined(생략).
  */
 function composeObservation(input: BriefingInput): ObservationResult | undefined {
-  // 1순위: 피부 추이(오늘의 컨디션)
-  if (input.skinTrend) {
+  const product = input.recentProduct;
+  const hasUnansweredShelf = Boolean(product?.name && (product.feedback ?? null) === null);
+
+  // 1순위: 제품함 미응답 후속 — 폐루프를 여는 상호작용(답하면 사라져 반복 안 됨)
+  if (hasUnansweredShelf && product) {
+    return shelfObservation(product);
+  }
+
+  // 2순위: fresh 피부 추이(오늘의 컨디션). 오래돼 고정된 추이는 강등(매일 같은 문장 방지)
+  if (input.skinTrend && !isStaleTrend(input.skinTrend)) {
     return { text: skinObservation(input.skinTrend) };
   }
-  // 2순위: 제품함 후속(대상명 포함) — 응답 여부에 따라 회고/재질문
-  if (input.recentProduct?.name) {
-    return shelfObservation(input.recentProduct);
+
+  // 3순위: 제품함 회고(이미 응답한 것 — 긍정/부정 되돌아보기)
+  if (product?.name) {
+    return shelfObservation(product);
   }
-  // 3순위: 오래된 분석만(며칠 이상 경과했을 때만 — 근거 수치 N일 동반)
+
+  // 4순위: 오래된 분석만(며칠 이상 경과했을 때만 — 근거 수치 N일 동반)
   if (
     typeof input.lastAnalysisDaysAgo === 'number' &&
     input.lastAnalysisDaysAgo >= STALE_ANALYSIS_DAYS

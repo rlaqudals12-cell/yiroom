@@ -87,18 +87,44 @@ describe('composeBriefing — 정직성 가드(일반론 금지)', () => {
 });
 
 describe('composeBriefing — 관찰 우선순위 및 근거 수치', () => {
-  it('피부 추이가 있으면 최우선으로 관찰한다(근거 수치 +점 동반)', () => {
+  it('제품함에 이미 응답했으면(회고) fresh 피부 추이가 우선한다(근거 수치 +점 동반)', () => {
+    // 2026-07 신선도 개편: 미응답 후속만 최우선. 응답 완료(회고)면 fresh 추이가 앞선다.
     const b = composeBriefing({
       now: at(9),
       skinTrend: { direction: 'up', delta: 2, daysSinceLast: 1 },
-      recentProduct: { name: '토너' },
+      recentProduct: { name: '토너', feedback: 'positive' }, // 이미 응답 → 회고
       lastAnalysisDaysAgo: 10,
     });
     expect(b.observation).toContain('피부');
     expect(b.observation).toContain('+2점');
     expect(b.observation).toContain('어제'); // daysSinceLast 1 → 어제
-    // 제품/경과 관찰이 아닌 피부 관찰이어야 함
+    // 회고(응답 완료)는 fresh 추이보다 뒤 → 토너 회고가 아닌 피부 관찰
     expect(b.observation).not.toContain('토너');
+  });
+
+  it('제품함 미응답 후속은 피부 추이보다 우선한다 (폐루프 우선 — 해자=노트)', () => {
+    const b = composeBriefing({
+      now: at(9),
+      skinTrend: { direction: 'up', delta: 2, daysSinceLast: 1 },
+      recentProduct: { name: '토너', shelfItemId: 'shelf-1' }, // feedback 없음 = 미응답
+      lastAnalysisDaysAgo: 10,
+    });
+    // 미응답 폐루프가 1순위 → 토너 질문 + 응답 버튼
+    expect(b.observation).toContain('토너');
+    expect(b.observation).toContain('잘 맞고 있어요?');
+    expect(b.shelfFollowup?.shelfItemId).toBe('shelf-1');
+    expect(b.observation).not.toContain('피부'); // 추이는 강등
+  });
+
+  it('오래돼 고정된(stale) 피부 추이는 강등해 경과 관찰로 순환한다 (매일 같은 문장 방지)', () => {
+    const b = composeBriefing({
+      now: at(9),
+      skinTrend: { direction: 'up', delta: 2, daysSinceLast: 10 }, // 7일 초과 = stale
+      lastAnalysisDaysAgo: 10,
+    });
+    // stale 추이 강등 → 제품함도 없으니 경과 관찰(재촬영 권유)로
+    expect(b.observation).not.toContain('+2점');
+    expect(b.observation).toContain('10일');
   });
 
   it('하락 추이도 근거 수치(-점)를 동반한다', () => {
@@ -232,15 +258,17 @@ describe('제품함 후속 폐루프 v1 — 관찰 분기(미응답 질문 / 긍
     expect(b.shelfFollowup).toBeUndefined();
   });
 
-  it('피부 추이가 있으면 제품함 응답보다 우선하고, 후속 질문(버튼)도 내지 않는다', () => {
+  it('미응답 후속은 피부 추이보다 우선하고, 응답 버튼을 낸다 (폐루프 우선 개편)', () => {
+    // 2026-07: 미응답 후속(폐루프 진입점)이 최우선. 피부 추이는 fresh여도 그 다음.
     const b = composeBriefing({
       now: at(9),
       skinTrend: { direction: 'up', delta: 2, daysSinceLast: 1 },
-      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1' },
+      recentProduct: { name: '수분 앰플', shelfItemId: 'shelf-1' }, // 미응답
     });
-    expect(b.observation).toContain('피부');
-    expect(b.observation).not.toContain('수분 앰플');
-    expect(b.shelfFollowup).toBeUndefined();
+    expect(b.observation).toContain('수분 앰플');
+    expect(b.observation).toContain('잘 맞고 있어요?');
+    expect(b.shelfFollowup).toEqual({ shelfItemId: 'shelf-1', productName: '수분 앰플' });
+    expect(b.observation).not.toContain('피부'); // 추이는 다음 순위
   });
 });
 
