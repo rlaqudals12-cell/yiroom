@@ -602,6 +602,11 @@
         "shareText": "私のパーソナルカラードレーピング — Yiroomでチェック"
       },
       "reportCard": {
+        "avoidReasonLight": "暗く重い色は顔色を沈ませます",
+        "avoidReasonDeep": "薄くぼんやりした色は印象をぼかします",
+        "avoidReasonBright": "くすんだ色は持ち前の鮮明さを消します",
+        "avoidReasonMuted": "鮮やかな原色はやわらかな調和を圧倒します",
+        "avoidReasonDefault": "トーンの温度と合わず顔色を曇らせる色です",
         "bestUse": "服・ベースメイク",
         "accentUse": "リップ・ネイル・ポイント",
         "drapingLabel": "ドレーピング",

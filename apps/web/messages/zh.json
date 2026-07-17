@@ -602,6 +602,11 @@
         "shareText": "我的个人色彩垂布 — 到Yiroom看看你的"
       },
       "reportCard": {
+        "avoidReasonLight": "深重的颜色会压暗脸色",
+        "avoidReasonDeep": "浅淡模糊的颜色会冲淡气色",
+        "avoidReasonBright": "灰暗的颜色会削弱你的清晰感",
+        "avoidReasonMuted": "鲜艳的原色会盖过柔和的和谐感",
+        "avoidReasonDefault": "与你的色调相冲、令气色黯淡的颜色",
         "bestUse": "服装·底妆",
         "accentUse": "唇·美甲·点缀",
         "drapingLabel": "垂布试色",

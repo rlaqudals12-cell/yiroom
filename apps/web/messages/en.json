@@ -602,6 +602,11 @@
         "shareText": "My personal color draping — see yours on Yiroom"
       },
       "reportCard": {
+        "avoidReasonLight": "Dark, heavy colors weigh your face down",
+        "avoidReasonDeep": "Pale, washed-out colors blur your presence",
+        "avoidReasonBright": "Dull, faded colors kill your natural clarity",
+        "avoidReasonMuted": "Vivid primaries overpower your soft harmony",
+        "avoidReasonDefault": "These clash with your tone and dull your complexion",
         "bestUse": "Clothing · base makeup",
         "accentUse": "Lips · nails · accents",
         "drapingLabel": "Draping",

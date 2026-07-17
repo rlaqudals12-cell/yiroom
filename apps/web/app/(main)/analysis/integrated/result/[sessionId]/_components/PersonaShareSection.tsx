@@ -16,6 +16,7 @@ import {
   PersonaReportCard,
   type ReportRow,
   type ReportAction,
+  type ReportStyleChip,
 } from '@/components/share/PersonaReportCard';
 import { captureElementAsImage } from '@/lib/share/imageGenerator';
 import { cn } from '@/lib/utils';
@@ -34,8 +35,12 @@ export interface PersonaReportData {
   axisRows: ReportRow[];
   /** 피부 관리 포인트(저장된 관심사) */
   skinNote?: string;
-  /** 추천 헤어 스타일 이름(≤3) */
-  hairStyles?: string[];
+  /** 추천 헤어 스타일(이름 + 저장된 어울림 fit, ≤3) */
+  hairStyles?: ReportStyleChip[];
+  /** 계절 인장(점수 없는 타입 확정 스탬프) */
+  sealText?: string;
+  /** 피하면 좋은 색의 "왜" 한 줄(12톤 정의 파생) */
+  avoidNote?: string;
   /** 개선 포인트(결정론 액션 플랜) */
   actionItems?: ReportAction[];
   /** 전속 뷰티팀 총평(persona.narrative) */
@@ -297,6 +302,8 @@ export function PersonaShareSection({
             axisRows={report.axisRows}
             skinNote={report.skinNote}
             hairStyles={report.hairStyles}
+            sealText={report.sealText}
+            avoidNote={report.avoidNote}
             actionItems={report.actionItems}
             note={report.note}
             confidenceText={report.confidenceText}

@@ -40,7 +40,7 @@ import {
 import { getBodyShapeLabel } from '@/lib/body';
 import type { OutputLocale } from '@/lib/gemini/client';
 import type { PersonaBadge, PaletteColor } from '@/components/share/PersonaShareCard';
-import type { ReportRow } from '@/components/share/PersonaReportCard';
+import type { ReportRow, ReportStyleChip } from '@/components/share/PersonaReportCard';
 import { getCardPalette } from '@/lib/share/tone-palettes';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
@@ -143,22 +143,30 @@ function resolveCardPalettes(
   };
 }
 
-/** 추천 헤어 스타일 이름 — recommendations.styleRecommendations JSONB에서 방어적 추출(형태 보장 없음) */
-function extractHairStyleNames(record: AxisDbRecord | null): string[] {
+/**
+ * 추천 헤어 스타일 — recommendations.styleRecommendations JSONB에서 방어적 추출(형태 보장 없음).
+ * suitability(0~100)가 저장돼 있으면 fit으로 전달 — 어울림 도트는 저장된 값만(지어내지 않음).
+ */
+function extractHairStyles(record: AxisDbRecord | null): ReportStyleChip[] {
   const rec = record?.recommendations;
   if (typeof rec !== 'object' || rec === null) return [];
   const list = (rec as Record<string, unknown>).styleRecommendations;
   if (!Array.isArray(list)) return [];
   return list
-    .map((item) => {
-      if (typeof item === 'string') return item;
+    .map((item): ReportStyleChip | null => {
+      if (typeof item === 'string') return { name: item };
       if (typeof item === 'object' && item !== null) {
-        const name = (item as { name?: unknown }).name;
-        if (typeof name === 'string') return name;
+        const { name, suitability } = item as { name?: unknown; suitability?: unknown };
+        if (typeof name === 'string' && name.length > 0) {
+          return {
+            name,
+            ...(typeof suitability === 'number' && suitability > 0 ? { fit: suitability } : {}),
+          };
+        }
       }
-      return '';
+      return null;
     })
-    .filter((s) => s.length > 0)
+    .filter((s): s is ReportStyleChip => s !== null)
     .slice(0, 3);
 }
 
@@ -228,17 +236,47 @@ function subtypeAttrRows(subtype: string, l: ReportAttrLabels): ReportRow[] {
   const s = subtype.toLowerCase();
   const rows: ReportRow[] = [];
   if (s === 'light')
-    rows.push({ label: l.brightness, value: l.valueLight, spectrumPos: SPECTRUM_HIGH });
+    rows.push({
+      label: l.brightness,
+      value: l.valueLight,
+      spectrumPos: SPECTRUM_HIGH,
+      iconKey: 'brightness',
+    });
   else if (s === 'deep' || s === 'dark')
-    rows.push({ label: l.brightness, value: l.valueDeep, spectrumPos: SPECTRUM_LOW });
+    rows.push({
+      label: l.brightness,
+      value: l.valueDeep,
+      spectrumPos: SPECTRUM_LOW,
+      iconKey: 'brightness',
+    });
   else if (s === 'true')
-    rows.push({ label: l.brightness, value: l.valueBalanced, spectrumPos: SPECTRUM_MID });
+    rows.push({
+      label: l.brightness,
+      value: l.valueBalanced,
+      spectrumPos: SPECTRUM_MID,
+      iconKey: 'brightness',
+    });
   if (s === 'bright' || s === 'vivid')
-    rows.push({ label: l.saturation, value: l.valueVivid, spectrumPos: SPECTRUM_HIGH });
+    rows.push({
+      label: l.saturation,
+      value: l.valueVivid,
+      spectrumPos: SPECTRUM_HIGH,
+      iconKey: 'saturation',
+    });
   else if (s === 'muted' || s === 'soft')
-    rows.push({ label: l.saturation, value: l.valueSoft, spectrumPos: SPECTRUM_LOW });
+    rows.push({
+      label: l.saturation,
+      value: l.valueSoft,
+      spectrumPos: SPECTRUM_LOW,
+      iconKey: 'saturation',
+    });
   else if (s === 'true')
-    rows.push({ label: l.saturation, value: l.valueBalanced, spectrumPos: SPECTRUM_MID });
+    rows.push({
+      label: l.saturation,
+      value: l.valueBalanced,
+      spectrumPos: SPECTRUM_MID,
+      iconKey: 'saturation',
+    });
   return rows;
 }
 
@@ -248,17 +286,22 @@ function buildReportAttrs(
   subtype: string,
   contrast: string,
   locale: OutputLocale,
-  l: ReportAttrLabels
+  l: ReportAttrLabels,
+  // 계절 인장이 히어로에 있으면 표의 계절 행은 생략(중복 금지)
+  omitSeason = false
 ): ReportRow[] {
   if (!pcData) return [];
   const rows: ReportRow[] = [];
   const seasonLabel = pcData.season ? seasonKo(pcData.season, locale) : '';
-  if (seasonLabel) rows.push({ label: l.season, value: seasonLabel });
+  if (seasonLabel && !omitSeason)
+    rows.push({ label: l.season, value: seasonLabel, iconKey: 'season' });
   const toneLabel = pcData.tone ? toneKo(pcData.tone, locale) : '';
   // 톤이 계절 폴백(동일 문자열)이면 중복 행 생략
-  if (toneLabel && toneLabel !== seasonLabel) rows.push({ label: l.tone, value: toneLabel });
+  if (toneLabel && toneLabel !== seasonLabel)
+    rows.push({ label: l.tone, value: toneLabel, iconKey: 'tone' });
   const undertoneLabel = pcData.undertone ? undertoneKo(pcData.undertone, locale) : '';
-  if (undertoneLabel) rows.push({ label: l.undertone, value: undertoneLabel });
+  if (undertoneLabel)
+    rows.push({ label: l.undertone, value: undertoneLabel, iconKey: 'undertone' });
   rows.push(...subtypeAttrRows(subtype, l));
   // 대비감 — 클라이언트 실측(ADR-116)이 저장된 세션만 (없으면 행 생략)
   const contrastByLevel: Record<string, { value: string; pos: number }> = {
@@ -268,8 +311,36 @@ function buildReportAttrs(
   };
   const contrastEntry = contrastByLevel[contrast.toLowerCase()];
   if (contrastEntry)
-    rows.push({ label: l.contrast, value: contrastEntry.value, spectrumPos: contrastEntry.pos });
+    rows.push({
+      label: l.contrast,
+      value: contrastEntry.value,
+      spectrumPos: contrastEntry.pos,
+      iconKey: 'contrast',
+    });
   return rows;
+}
+
+/** 계절 인장 텍스트 — 히어로가 12톤명일 때만(계절 라벨과 다를 때). 점수 없는 타입 확정 스탬프 */
+function sealTextFor(
+  pcData: PersonalColorAxisData | null,
+  toneName: string | undefined,
+  locale: OutputLocale
+): string | undefined {
+  if (!pcData?.season) return undefined;
+  const seasonLabel = seasonKo(pcData.season, locale);
+  return seasonLabel && toneName !== seasonLabel ? seasonLabel : undefined;
+}
+
+/** "왜 피해요?" 한 줄 — 12톤 서브타입 정의에서 파생(계측 아님). 워스트 팔레트가 있을 때만 */
+function avoidNoteFor(
+  pcData: PersonalColorAxisData | null,
+  subtype: string,
+  hasWorst: boolean,
+  reasonBySubtype: Record<string, string>,
+  fallback: string
+): string | undefined {
+  if (!pcData || !hasWorst) return undefined;
+  return reasonBySubtype[subtype.toLowerCase()] ?? fallback;
 }
 
 /** "분석 신뢰도 N%" — 사람이 아닌 진단의 점수. 퍼컬 실측 성공 시에만(Mock 폴백이면 undefined) */
@@ -525,23 +596,46 @@ export default async function IntegratedResultPage({
     contrastMedium: t('reportCard.contrastMedium'),
     contrastHigh: t('reportCard.contrastHigh'),
   };
+  // 계절 인장 — 리포트당 1개 절제(패널 합의)
+  const reportSeal = sealTextFor(pcData, pcToneName, uiLocale);
+  const pcSubtype = axes.personalColor
+    ? extractNested(axes.personalColor, 'image_analysis', 'subtype')
+    : '';
   const reportAttrs = buildReportAttrs(
     pcData,
-    axes.personalColor ? extractNested(axes.personalColor, 'image_analysis', 'subtype') : '',
+    pcSubtype,
     axes.personalColor ? extractNested(axes.personalColor, 'image_analysis', 'contrastLevel') : '',
     uiLocale,
-    reportAttrLabels
+    reportAttrLabels,
+    Boolean(reportSeal)
   );
   // 5축 요약 행 — 퍼컬은 속성표·히어로가 담당(중복 금지), 나머지 성공 축만.
   // 헤어 축 값은 얼굴형 판정이므로 라벨도 "얼굴형" — "헤어=계란형"은 범주 오류(시뮬 2인 지적)
   const reportAxisRows: ReportRow[] = (
     [
-      [t('axes.skin'), axisSummaries.skin],
-      [t('axes.body'), axisSummaries.body],
-      [t('reportCard.faceShape'), axisSummaries.hair],
-      [t('axes.makeup'), axisSummaries.makeup],
+      ['skin', t('axes.skin'), axisSummaries.skin],
+      ['body', t('axes.body'), axisSummaries.body],
+      ['face', t('reportCard.faceShape'), axisSummaries.hair],
+      ['makeup', t('axes.makeup'), axisSummaries.makeup],
     ] as const
-  ).flatMap(([label, value]) => (value ? [{ label, value }] : []));
+  ).flatMap(([iconKey, label, value]) => (value ? [{ iconKey, label, value }] : []));
+  // "왜 피해요?" — 12톤 서브타입 정의에서 파생(계측 아님, 정의 서술)
+  const AVOID_REASON_BY_SUBTYPE: Record<string, string> = {
+    light: t('reportCard.avoidReasonLight'),
+    deep: t('reportCard.avoidReasonDeep'),
+    dark: t('reportCard.avoidReasonDeep'),
+    bright: t('reportCard.avoidReasonBright'),
+    vivid: t('reportCard.avoidReasonBright'),
+    muted: t('reportCard.avoidReasonMuted'),
+    soft: t('reportCard.avoidReasonMuted'),
+  };
+  const reportAvoidNote = avoidNoteFor(
+    pcData,
+    pcSubtype,
+    personaWorst.length > 0,
+    AVOID_REASON_BY_SUBTYPE,
+    t('reportCard.avoidReasonDefault')
+  );
   const reportData: PersonaReportData = {
     attrs: reportAttrs,
     checklist: session.persona?.keyInsights,
@@ -549,7 +643,9 @@ export default async function IntegratedResultPage({
     metals: personaMetals,
     axisRows: reportAxisRows,
     skinNote: extractSkinConcerns(axes.skin),
-    hairStyles: extractHairStyleNames(axes.hair),
+    hairStyles: extractHairStyles(axes.hair),
+    sealText: reportSeal,
+    avoidNote: reportAvoidNote,
     actionItems: actionPlan.items.map(({ title, why }) => ({ title, why })),
     note: session.persona?.narrative,
     confidenceText: confidenceLabelFor(pcData, usedFallbackSet.has('personal_color'), (value) =>

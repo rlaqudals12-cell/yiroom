@@ -6,11 +6,51 @@
    고정 hex로 둔다 (PersonaShareCard와 동일 관례). */
 
 import { forwardRef, useEffect, useRef } from 'react';
+import {
+  Leaf,
+  Palette,
+  Droplets,
+  Sun,
+  Blend,
+  Contrast,
+  Droplet,
+  PersonStanding,
+  Smile,
+  Brush,
+  type LucideIcon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
 import { applyDrapeColor } from '@/lib/analysis/drape-reflectance';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import type { PaletteColor } from '@/components/share/PersonaShareCard';
+
+/** 행 아이콘 키 — 라벨 문자열(로케일)이 아닌 의미 키로 아이콘을 고정한다 */
+export type ReportIconKey =
+  | 'season'
+  | 'tone'
+  | 'undertone'
+  | 'brightness'
+  | 'saturation'
+  | 'contrast'
+  | 'skin'
+  | 'body'
+  | 'face'
+  | 'makeup';
+
+// 라인아트 아이콘 앵커(정보 행 전용, muted 1색) — 장식 아이콘(Sparkles류)과 구분되는 기능 레이어
+const ROW_ICONS: Record<ReportIconKey, LucideIcon> = {
+  season: Leaf,
+  tone: Palette,
+  undertone: Droplets,
+  brightness: Sun,
+  saturation: Blend,
+  contrast: Contrast,
+  skin: Droplet,
+  body: PersonStanding,
+  face: Smile,
+  makeup: Brush,
+};
 
 /** 리포트 표의 한 행 — 라벨·값 모두 로케일 완료 문자열만 (원시 영문값 금지) */
 export interface ReportRow {
@@ -21,6 +61,14 @@ export interface ReportRow {
    * 숫자를 표기하지 않아 가짜 정밀도를 만들지 않는다(시뮬: "관공서 문서" 탈피 요청).
    */
   spectrumPos?: number;
+  /** 라인아트 아이콘 앵커(패널: 정보 행의 시각적 사건) */
+  iconKey?: ReportIconKey;
+}
+
+/** 추천 스타일 칩 — fit(어울림 0~100, 저장된 suitability)이 있으면 도트로 표시 */
+export interface ReportStyleChip {
+  name: string;
+  fit?: number;
 }
 
 /** 개선 포인트 한 항목 (composeActionPlan 산출) */
@@ -66,12 +114,16 @@ interface PersonaReportCardProps {
   metals?: PaletteColor[];
   /** 피하면 좋은 색 */
   worstPalette?: PaletteColor[];
-  /** 축 요약 행(피부·체형·헤어·메이크업, 성공 축만) */
+  /** 축 요약 행(피부·체형·헤어·메이크업, 성공 축만) — 2열 미니 카드로 렌더 */
   axisRows: ReportRow[];
-  /** 피부 관리 포인트(저장된 관심사) — 없으면 생략 */
+  /** 피부 관리 포인트(저장된 관심사) — 그리드의 4번째 카드로 합류 */
   skinNote?: string;
-  /** 추천 헤어 스타일 이름(고정 어휘 71종에서 추천된 것) — 없으면 생략 */
-  hairStyles?: string[];
+  /** 추천 헤어 스타일(고정 어휘 71종 + 저장된 어울림 fit) — 없으면 생략 */
+  hairStyles?: ReportStyleChip[];
+  /** 계절 인장(예: "여름 쿨톤") — 점수 없는 타입 확정 스탬프. 리포트당 1개 절제(패널 합의) */
+  sealText?: string;
+  /** 피하면 좋은 색의 "왜" 한 줄(12톤 정의 파생) — 컨설턴트: "손님은 '왜 피해요?'가 궁금하다" */
+  avoidNote?: string;
   /** 개선 포인트(결정론 액션 플랜, 최대 3) */
   actionItems?: ReportAction[];
   /** 전속 뷰티팀 총평(persona.narrative) — 손글씨 대신 세리프 이탤릭 */
@@ -141,6 +193,65 @@ function Eyebrow({ children }: { children: React.ReactNode }): React.JSX.Element
   return <p className="font-serif text-[11.5px] italic text-[#B6A9A1]">{children}</p>;
 }
 
+/** 행 아이콘 렌더 — muted 1색·얇은 획(기능 레이어) */
+function RowIcon({ iconKey }: { iconKey: ReportIconKey }): React.JSX.Element {
+  const Icon = ROW_ICONS[iconKey];
+  return (
+    <Icon size={12} strokeWidth={1.75} className="shrink-0 text-[#C9B8B1]" aria-hidden="true" />
+  );
+}
+
+/**
+ * 섹션 헤더 미니 썸네일 — 옵트인 사진의 다회 등장(패널: "페이지마다 내 얼굴 = 내 진단서 몰입").
+ * 얼굴 검출 없이 상단 중심 정사각 관습 크롭(셀피는 통상 얼굴이 상단부).
+ */
+function MiniThumb({ img }: { img: HTMLImageElement }): React.JSX.Element {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const out = 96; // 2.5x 캡처 감안 해상도
+    canvas.width = out;
+    canvas.height = out;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    const s = Math.min(w, h);
+    ctx.drawImage(img, (w - s) / 2, Math.max(0, (h - s) * 0.25), s, s, 0, 0, out, out);
+  }, [img]);
+  return (
+    <canvas
+      ref={ref}
+      className="ml-auto h-6 w-6 shrink-0 self-center rounded-full"
+      data-testid="report-mini-thumb"
+      aria-hidden="true"
+    />
+  );
+}
+
+/** 어울림 도트(●●●○) — 저장된 fit(0~100)의 순서형 표시. 사람 점수화 아님(스타일별 적합도) */
+function FitDots({ fit }: { fit: number }): React.JSX.Element {
+  const filled = Math.min(4, Math.max(1, Math.round(fit / 25)));
+  return (
+    <span
+      className="ml-1 flex items-center gap-[3px]"
+      aria-hidden="true"
+      data-testid="report-fit-dots"
+    >
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className={cn(
+            'h-[5px] w-[5px] rounded-full',
+            i < filled ? 'bg-[#C56A84]' : 'bg-[#EAD9D4]'
+          )}
+        />
+      ))}
+    </span>
+  );
+}
+
 /** 스펙트럼 미니 바 — 범주값의 위치만 점으로(눈금·숫자 없음 = 가짜 정밀도 금지) */
 function SpectrumBar({ pos }: { pos: number }): React.JSX.Element {
   const clamped = Math.min(1, Math.max(0, pos));
@@ -164,7 +275,8 @@ function RowTable({ rows, testId }: { rows: ReportRow[]; testId: string }): Reac
   return (
     <dl className="divide-y divide-[#F3E7E2]" data-testid={testId}>
       {rows.map((r) => (
-        <div key={r.label} className="flex items-baseline gap-4 py-[5px]">
+        <div key={r.label} className="flex items-center gap-1.5 py-[5px]">
+          {r.iconKey && <RowIcon iconKey={r.iconKey} />}
           <dt className="shrink-0 text-[12px] text-[#8C7F78]">{r.label}</dt>
           {typeof r.spectrumPos === 'number' && <SpectrumBar pos={r.spectrumPos} />}
           <dd
@@ -209,6 +321,8 @@ function SwatchChips({
 interface ReportSection {
   eyebrow: string;
   body: React.ReactNode;
+  /** 헤더 우측에 옵트인 사진 미니 썸네일(사진의 다회 등장 — 몰입 장치) */
+  thumb?: boolean;
 }
 
 /**
@@ -238,6 +352,8 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
       axisRows,
       skinNote,
       hairStyles = [],
+      sealText,
+      avoidNote,
       actionItems = [],
       note,
       confidenceText,
@@ -317,6 +433,7 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
     if (checks.length > 0) {
       sections.push({
         eyebrow: 'At a glance',
+        thumb: true,
         body: (
           <ul className="space-y-1.5" data-testid="report-checklist">
             {checks.map((line) => (
@@ -398,24 +515,35 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
               </div>
             )}
             {worst.length > 0 && (
-              <div className="flex items-center gap-2.5" data-testid="report-worst">
-                <p className="text-[11px] font-medium text-[#8C7F78]">{groupLabels.avoid}</p>
-                <span className="flex gap-1.5">
-                  {worst.map((c, i) => (
-                    <span
-                      key={`${c.hex}-${i}`}
-                      className="h-3.5 w-5 rounded-[4px]"
-                      // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제
-                      // (패널 5인 만장일치: 칩 축소+선 연화. 채도 조작 대신 팔레트 원본을 원단색으로 재큐레이션)
-                      style={{
-                        backgroundColor: c.hex,
-                        backgroundImage:
-                          'linear-gradient(135deg, transparent 46%, rgba(43,35,32,0.5) 46%, rgba(43,35,32,0.5) 54%, transparent 54%)',
-                      }}
-                      aria-hidden="true"
-                    />
-                  ))}
-                </span>
+              <div data-testid="report-worst">
+                <div className="flex items-center gap-2.5">
+                  <p className="text-[11px] font-medium text-[#8C7F78]">{groupLabels.avoid}</p>
+                  <span className="flex gap-1.5">
+                    {worst.map((c, i) => (
+                      <span
+                        key={`${c.hex}-${i}`}
+                        className="h-3.5 w-5 rounded-[4px]"
+                        // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제
+                        // (패널 5인 만장일치: 칩 축소+선 연화. 채도 조작 대신 팔레트 원본을 원단색으로 재큐레이션)
+                        style={{
+                          backgroundColor: c.hex,
+                          backgroundImage:
+                            'linear-gradient(135deg, transparent 46%, rgba(43,35,32,0.5) 46%, rgba(43,35,32,0.5) 54%, transparent 54%)',
+                        }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </span>
+                </div>
+                {/* "왜 피해요?" 한 줄 — 12톤 정의 파생(컨설턴트: 이유 없는 금지는 신뢰를 못 만든다) */}
+                {avoidNote && (
+                  <p
+                    className="mt-1 text-[10.5px] leading-snug text-[#9A8C86]"
+                    data-testid="report-avoid-note"
+                  >
+                    {avoidNote}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -424,23 +552,39 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
     }
 
     if (axisRows.length > 0 || skinNote || styles.length > 0) {
+      // 관리 포인트를 4번째 카드로 합류 — 2×2 그리드 완성(패널: "세로 리스트 → 매거진 카드")
+      const profileCards: ReportRow[] = [
+        ...axisRows,
+        ...(skinNote
+          ? [{ label: groupLabels.care, value: skinNote, iconKey: 'skin' as const }]
+          : []),
+      ];
       sections.push({
         eyebrow: 'Beauty profile',
+        thumb: true,
         body: (
           <div>
-            {axisRows.length > 0 && <RowTable rows={axisRows} testId="report-axes" />}
-            {skinNote && (
-              <p
-                className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[11.5px] leading-[1.5] text-[#8C7F78]"
-                data-testid="report-skin-note"
-              >
-                <span className="font-medium text-[#5C5049]">{groupLabels.care}</span>
-                <span>{skinNote}</span>
-              </p>
+            {profileCards.length > 0 && (
+              <div className="grid grid-cols-2 gap-2.5" data-testid="report-axes">
+                {profileCards.map((r) => (
+                  <div
+                    key={r.label}
+                    className="rounded-xl border border-[#F5EAE5] bg-[#FDFAF8] px-3 py-2.5"
+                  >
+                    <p className="flex items-center gap-1.5 text-[10.5px] text-[#8C7F78]">
+                      {r.iconKey && <RowIcon iconKey={r.iconKey} />}
+                      {r.label}
+                    </p>
+                    <p className="mt-0.5 break-keep text-[12.5px] font-medium leading-snug">
+                      {r.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
             {styles.length > 0 && (
               <div
-                className="mt-2 flex flex-wrap items-center gap-1.5"
+                className="mt-2.5 flex flex-wrap items-center gap-1.5"
                 data-testid="report-hair-styles"
               >
                 <span className="text-[11.5px] font-medium text-[#5C5049]">
@@ -448,10 +592,11 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
                 </span>
                 {styles.map((s) => (
                   <span
-                    key={s}
-                    className="rounded-full border border-[#EAD9D4] px-2.5 py-0.5 text-[11px] text-[#5C5049]"
+                    key={s.name}
+                    className="flex items-center rounded-full border border-[#EAD9D4] px-2.5 py-0.5 text-[11px] text-[#5C5049]"
                   >
-                    {s}
+                    {s.name}
+                    {typeof s.fit === 'number' && <FitDots fit={s.fit} />}
                   </span>
                 ))}
               </div>
@@ -465,9 +610,12 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
       sections.push({
         eyebrow: 'Action plan',
         body: (
-          <ol className="space-y-2.5" data-testid="report-actions">
+          <ol className="space-y-2" data-testid="report-actions">
             {actions.map((a, i) => (
-              <li key={a.title} className="flex items-start gap-2.5">
+              <li
+                key={a.title}
+                className="flex items-start gap-2.5 rounded-xl border border-[#F5EAE5] bg-[#FDFAF8] px-3.5 py-2.5"
+              >
                 {/* 액션 번호는 섹션 번호(로즈)보다 낮은 회조 — 러닝 넘버 시스템은 하나여야 함(에디토리얼 패널) */}
                 <span className="mt-[1px] shrink-0 font-serif text-[12px] italic tabular-nums text-[#B6A9A1]">
                   {String(i + 1).padStart(2, '0')}
@@ -529,18 +677,32 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
             )}
           </div>
 
-          {/* 히어로 — 진단명(자랑 라벨) + 은유 서브카피 */}
-          <h2
-            className="mt-5 whitespace-pre-wrap break-keep font-serif text-[27px] font-semibold leading-[1.25] tracking-tight"
-            data-testid="report-hero"
-          >
-            {toneName ?? oneLine}
-          </h2>
-          {toneName && (
-            <p className="mt-1.5 whitespace-pre-wrap break-keep text-[13px] leading-[1.55] text-[#8C7F78]">
-              {oneLine}
-            </p>
-          )}
+          {/* 히어로 — 진단명(자랑 라벨) + 은유 서브카피 + 계절 인장(점수 없는 타입 확정 스탬프) */}
+          <div className="mt-5 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2
+                className="whitespace-pre-wrap break-keep font-serif text-[27px] font-semibold leading-[1.25] tracking-tight"
+                data-testid="report-hero"
+              >
+                {toneName ?? oneLine}
+              </h2>
+              {toneName && (
+                <p className="mt-1.5 whitespace-pre-wrap break-keep text-[13px] leading-[1.55] text-[#8C7F78]">
+                  {oneLine}
+                </p>
+              )}
+            </div>
+            {sealText && (
+              <div
+                className="mt-1 flex h-[58px] w-[58px] shrink-0 rotate-3 items-center justify-center rounded-full border-[1.5px] border-[#C56A84]/60"
+                data-testid="report-seal"
+              >
+                <span className="break-keep px-1.5 text-center font-serif text-[10.5px] italic leading-[1.3] text-[#C56A84]">
+                  {sealText}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* 히어로 팔레트 스트립 — 풀블리드 색 필드(실제 톤카드 상단 띠 관습 — 컨설턴트 검증으로
               풀블리드·하드엣지 유지 확정). 아래 헤어라인 1px = "띠"가 아니라 "판"으로 지면에 앉힘 */}
@@ -568,6 +730,7 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <Eyebrow>{s.eyebrow}</Eyebrow>
+                {s.thumb && photoImg && <MiniThumb img={photoImg} />}
               </div>
               <div className="mt-2.5">{s.body}</div>
             </div>

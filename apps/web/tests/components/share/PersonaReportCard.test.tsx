@@ -100,13 +100,42 @@ describe('PersonaReportCard — 진단지 리포트 (채점표 없는 신뢰 장
         toneName="뮤티드 서머"
         attrs={[]}
         skinNote="수분 · 모공"
-        hairStyles={['레이어드 숏', '프렌치 보브']}
+        hairStyles={[{ name: '레이어드 숏', fit: 92 }, { name: '프렌치 보브' }]}
       />
     );
-    expect(screen.getByTestId('report-skin-note')).toHaveTextContent('수분 · 모공');
+    // 관리 포인트는 프로필 그리드의 카드로 합류
+    expect(screen.getByTestId('report-axes')).toHaveTextContent('수분 · 모공');
     const chips = screen.getByTestId('report-hair-styles');
     expect(chips).toHaveTextContent('레이어드 숏');
     expect(chips).toHaveTextContent('프렌치 보브');
+    // 어울림 도트는 저장된 fit이 있는 칩에만
+    expect(screen.getAllByTestId('report-fit-dots')).toHaveLength(1);
+  });
+
+  it('계절 인장은 sealText가 있을 때만 렌더된다 (점수 없는 타입 확정 스탬프)', () => {
+    const { rerender } = render(
+      <PersonaReportCard {...BASE} toneName="뮤티드 서머" attrs={[]} sealText="여름 쿨톤" />
+    );
+    expect(screen.getByTestId('report-seal')).toHaveTextContent('여름 쿨톤');
+
+    rerender(<PersonaReportCard {...BASE} toneName="뮤티드 서머" attrs={[]} />);
+    expect(screen.queryByTestId('report-seal')).toBeNull();
+  });
+
+  it('피하면 좋은 색에 "왜" 한 줄이 붙는다 (12톤 정의 파생)', () => {
+    render(
+      <PersonaReportCard
+        {...BASE}
+        toneName="뮤티드 서머"
+        attrs={[]}
+        palette={[{ hex: '#C79AA0', name: '더스티 로즈' }]}
+        worstPalette={[{ hex: '#E04A40' }]}
+        avoidNote="선명한 원색이 부드러운 조화를 눌러요"
+      />
+    );
+    expect(screen.getByTestId('report-avoid-note')).toHaveTextContent(
+      '선명한 원색이 부드러운 조화를 눌러요'
+    );
   });
 
   it('사진은 photoImg가 주어졌을 때만 캔버스 패널로 렌더된다 (옵트인 = 명시적 선택)', () => {

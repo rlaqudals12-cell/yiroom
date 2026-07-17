@@ -602,6 +602,11 @@
         "shareText": "내 퍼스널컬러 드레이핑 — 이룸에서 확인해보세요"
       },
       "reportCard": {
+        "avoidReasonLight": "어둡고 무거운 색이 얼굴을 가라앉혀요",
+        "avoidReasonDeep": "옅고 흐린 색이 또렷한 인상을 흐려요",
+        "avoidReasonBright": "탁하고 바랜 색이 맑은 선명함을 죽여요",
+        "avoidReasonMuted": "선명한 원색이 부드러운 조화를 눌러요",
+        "avoidReasonDefault": "톤의 온도와 어긋나 얼굴빛을 흐리는 색이에요",
         "bestUse": "옷·베이스 메이크업",
         "accentUse": "립·네일·포인트",
         "drapingLabel": "드레이핑",
