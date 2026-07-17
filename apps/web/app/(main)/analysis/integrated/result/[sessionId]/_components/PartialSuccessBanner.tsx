@@ -45,26 +45,30 @@ export async function PartialSuccessBanner({
 
   return (
     <div
-      className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4"
+      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
       data-testid="partial-success-banner"
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-100">{t('partialSuccess.title')}</p>
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            {t('partialSuccess.title')}
+          </p>
           {completedLabels && (
-            <p className="text-xs text-amber-200/80">
-              <span className="text-amber-300">{t('partialSuccess.successLabel')}</span>{' '}
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              <span className="font-medium">{t('partialSuccess.successLabel')}</span>{' '}
               {completedLabels}
             </p>
           )}
-          <p className="text-xs text-amber-200/80">
-            <span className="text-amber-300">{t('partialSuccess.failedLabel')}</span> {failedLabels}
+          <p className="text-xs text-amber-700 dark:text-amber-300">
+            <span className="font-medium">{t('partialSuccess.failedLabel')}</span> {failedLabels}
           </p>
           {/* 정직한 대체: 통합 재실행(사진 재업로드)이 아니라, 실패한 축만 개별 분석으로
               다시 시도하도록 각 축을 딥링크한다. 세션 단위 부분 재시도 API는 없다. */}
-          <p className="pt-1 text-xs text-amber-200/80">{t('partialSuccess.retryHint')}</p>
+          <p className="pt-1 text-xs text-amber-700 dark:text-amber-300">
+            {t('partialSuccess.retryHint')}
+          </p>
         </div>
       </div>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -73,7 +77,7 @@ export async function PartialSuccessBanner({
             key={axis}
             href={AXIS_ANALYSIS_HREF[axis]}
             data-testid={`partial-retry-${axis}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-500/40 px-3 text-xs font-medium text-amber-200 transition-colors hover:border-amber-400 hover:bg-amber-500/10"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 px-3 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/40"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             {t('partialSuccess.reanalyzeAxis', { axis: t(AXIS_LABEL_KEY[axis]) })}

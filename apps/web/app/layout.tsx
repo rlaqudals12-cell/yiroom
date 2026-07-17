@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { koKR, enUS } from '@clerk/localizations';
-import { Inter, Noto_Sans_KR } from 'next/font/google';
+import { Inter, Noto_Sans_KR, Noto_Serif_KR } from 'next/font/google';
 import { DynamicToaster } from '@/components/providers/DynamicToaster';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -44,6 +44,16 @@ const notoSansKR = Noto_Sans_KR({
   weight: ['400', '500', '700'],
   display: 'swap',
   preload: true,
+});
+
+// 에디토리얼 세리프(결과 리포트·공유카드 시그니처) — 없으면 font-serif가 기기별
+// 시스템 세리프로 폴백해 한글 품질이 들쭉날쭉해진다. 홈 크리티컬 패스 보호를 위해 preload 제외.
+const notoSerifKR = Noto_Serif_KR({
+  variable: '--font-noto-serif-kr',
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  display: 'swap',
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
@@ -161,7 +171,7 @@ export default async function RootLayout({
           )}
         </head>
         <body
-          className={`${inter.variable} ${notoSansKR.variable} antialiased bg-background text-foreground`}
+          className={`${inter.variable} ${notoSansKR.variable} ${notoSerifKR.variable} antialiased bg-background text-foreground`}
           style={{ fontFamily: 'Inter, "Noto Sans KR", system-ui, sans-serif' }}
         >
           <ThemeProvider defaultTheme="system">

@@ -8,6 +8,8 @@
   --color-foreground: var(--foreground);
   --font-sans: Inter, 'Noto Sans KR', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* 에디토리얼 세리프 — next/font(Noto Serif KR) 변수 참조. 미정의 시 한글이 시스템 세리프로 폴백 */
+  --font-serif: var(--font-noto-serif-kr), ui-serif, Georgia, serif;
 
   /* ========================================
      타이포그래피 시스템 (2026-01-19)
@@ -68,6 +70,14 @@
   --color-module-face: var(--module-face);
   --color-module-face-light: var(--module-face-light);
   --color-module-face-dark: var(--module-face-dark);
+  /* hair·makeup 매핑 — :root 값은 있었으나 @theme 미노출이라 text-module-hair 등이 미생성이었음
+     (2026-07-15 에디토리얼 리스킨: 결과 페이지 축색을 모듈 토큰으로 단일화하며 추가) */
+  --color-module-hair: var(--module-hair);
+  --color-module-hair-light: var(--module-hair-light);
+  --color-module-hair-dark: var(--module-hair-dark);
+  --color-module-makeup: var(--module-makeup);
+  --color-module-makeup-light: var(--module-makeup-light);
+  --color-module-makeup-dark: var(--module-makeup-dark);
 
   /* 전문성 색상 */
   --color-professional-primary: var(--professional-primary);

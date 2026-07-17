@@ -14,7 +14,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { ChevronRight, RefreshCw, Palette, Sparkles, Shirt, Scissors, Brush } from 'lucide-react';
+import { ChevronRight, RefreshCw, Palette, Droplet, Shirt, Scissors, Brush } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
 
@@ -30,6 +30,7 @@ interface NextStepItem {
   iconColor: string;
 }
 
+// 아이콘 색 = 축별 모듈 토큰(globals.css --color-module-*) — 축색 정본 단일화(에디토리얼 리스킨)
 const ALL_STEPS: NextStepItem[] = [
   {
     axis: 'personal_color',
@@ -37,15 +38,15 @@ const ALL_STEPS: NextStepItem[] = [
     analysisType: 'personal-color',
     fallbackHref: '/analysis/personal-color',
     icon: Palette,
-    iconColor: 'text-pink-400',
+    iconColor: 'text-module-personal-color',
   },
   {
     axis: 'skin',
     axisNameKey: 'axes.skin',
     analysisType: 'skin',
     fallbackHref: '/analysis/skin',
-    icon: Sparkles,
-    iconColor: 'text-amber-400',
+    icon: Droplet,
+    iconColor: 'text-module-skin',
   },
   {
     axis: 'body',
@@ -53,7 +54,7 @@ const ALL_STEPS: NextStepItem[] = [
     analysisType: 'body',
     fallbackHref: '/analysis/body',
     icon: Shirt,
-    iconColor: 'text-blue-400',
+    iconColor: 'text-module-body',
   },
   {
     axis: 'hair',
@@ -61,7 +62,7 @@ const ALL_STEPS: NextStepItem[] = [
     analysisType: 'hair',
     fallbackHref: '/analysis/hair',
     icon: Scissors,
-    iconColor: 'text-violet-400',
+    iconColor: 'text-module-hair',
   },
   {
     axis: 'makeup',
@@ -69,7 +70,7 @@ const ALL_STEPS: NextStepItem[] = [
     analysisType: 'makeup',
     fallbackHref: '/analysis/makeup',
     icon: Brush,
-    iconColor: 'text-rose-400',
+    iconColor: 'text-module-makeup',
   },
 ];
 
@@ -98,9 +99,7 @@ export function NextStepsLinks({
 
   return (
     <section className="space-y-3" data-testid="next-steps-links">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-        {t('nextSteps.heading')}
-      </h2>
+      <h2 className="text-sm font-semibold text-foreground">{t('nextSteps.heading')}</h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {steps.map((step) => {
           const Icon = step.icon;
@@ -112,23 +111,23 @@ export function NextStepsLinks({
             // 링크 중첩(a > a) 방지: 카드 링크(심화 보기)와 재분석 링크를 li 안의 형제로 둔다
             <li
               key={step.axis}
-              className="overflow-hidden rounded-2xl border border-zinc-800 bg-neutral-900 transition-colors hover:border-pink-500/40"
+              className="overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/40"
             >
               <Link
                 href={href}
-                className="group flex items-center gap-3 p-4 transition-colors hover:bg-neutral-900/60"
+                className="group flex items-center gap-3 p-4 transition-colors hover:bg-secondary/50"
                 data-testid={`next-step-${step.axis}`}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
                   <Icon className={`h-5 w-5 ${step.iconColor}`} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white">{t(step.axisNameKey)}</p>
-                  <p className="truncate text-xs text-zinc-400">
+                  <p className="text-sm font-semibold text-foreground">{t(step.axisNameKey)}</p>
+                  <p className="truncate text-xs text-muted-foreground">
                     {summary ?? t('nextSteps.summaryFallback')}
                   </p>
                 </div>
-                <span className="flex shrink-0 items-center gap-0.5 text-xs font-medium text-zinc-500 transition-colors group-hover:text-pink-400">
+                <span className="flex shrink-0 items-center gap-0.5 text-xs font-medium text-muted-foreground transition-colors group-hover:text-primary">
                   {t('nextSteps.deepDive')}
                   <ChevronRight className="h-4 w-4" />
                 </span>
@@ -136,7 +135,7 @@ export function NextStepsLinks({
               {/* 선택 재분석 진입 — 이 축만 새로 촬영해 다시 분석 (forceNew=기존 결과 자동진입 방지) */}
               <Link
                 href={`${step.fallbackHref}?forceNew=true`}
-                className="flex items-center justify-center gap-1 border-t border-zinc-800 px-4 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-neutral-900/60 hover:text-pink-400"
+                className="flex items-center justify-center gap-1 border-t px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-primary"
                 data-testid={`next-step-reanalyze-${step.axis}`}
               >
                 <RefreshCw className="h-3.5 w-3.5" />

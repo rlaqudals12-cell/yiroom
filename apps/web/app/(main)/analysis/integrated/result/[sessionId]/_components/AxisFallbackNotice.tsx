@@ -45,20 +45,23 @@ export async function AxisFallbackNotice({
 
   return (
     <div
-      className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4"
+      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
       data-testid="axis-fallback-notice"
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-100">{t('fallback.title')}</p>
-          {/* 축 라벨은 색상 강조 span으로 분리하고, 나머지 본문만 번역 (t.rich 미사용) */}
-          <p className="text-xs text-amber-200/80">
-            <span className="text-amber-300">{labels.join(', ')}</span>{' '}
-            {t('fallback.bodyAfterLabels')}
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            {t('fallback.title')}
           </p>
-          <p className="pt-1 text-xs text-amber-200/80">{t('fallback.retryHint')}</p>
+          {/* 축 라벨은 강조 span으로 분리하고, 나머지 본문만 번역 (t.rich 미사용) */}
+          <p className="text-xs text-amber-700 dark:text-amber-300">
+            <span className="font-medium">{labels.join(', ')}</span> {t('fallback.bodyAfterLabels')}
+          </p>
+          <p className="pt-1 text-xs text-amber-700 dark:text-amber-300">
+            {t('fallback.retryHint')}
+          </p>
         </div>
       </div>
     </div>
