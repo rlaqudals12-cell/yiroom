@@ -50,7 +50,7 @@ export const AGREEMENT_ITEMS: AgreementItem[] = [
     label: '생체정보(얼굴·체형 이미지) 수집·이용 동의',
     required: true,
     description:
-      'AI 뷰티 분석(피부·퍼스널컬러·체형·헤어·메이크업)을 위해 얼굴·체형 이미지를 수집·이용하며, 분석을 위해 미국의 Google(Gemini)로 전송됩니다. 삭제 요청·회원 탈퇴 시까지 보관하며 언제든 철회할 수 있습니다.',
+      'AI 뷰티 분석(피부·퍼스널컬러·체형·헤어·메이크업)을 위해 얼굴·체형 이미지를 수집·이용하며, 분석을 위해 미국의 Google(Gemini)로 전송됩니다. 삭제 요청·회원 탈퇴 시까지 보관하며 언제든 철회할 수 있습니다. 분석 사진으로 만드는 드레이핑 공유 카드는 내 기기에서만 생성되며 서버에 저장되지 않습니다.',
     detailUrl: '/privacy',
   },
   {
@@ -65,7 +65,8 @@ export const AGREEMENT_ITEMS: AgreementItem[] = [
 // 현재 약관 버전
 export const CURRENT_TERMS_VERSION = '1.0';
 export const CURRENT_PRIVACY_VERSION = '1.0';
-export const CURRENT_BIOMETRIC_VERSION = '1.0';
+// v1.1 (2026-07-16): 기기 내 드레이핑 공유 카드 문구 추가 — 버전 상향으로 기존 유저 재동의 자동 유도
+export const CURRENT_BIOMETRIC_VERSION = '1.1';
 
 // 필수 동의 항목 ID
 export const REQUIRED_AGREEMENT_IDS = AGREEMENT_ITEMS.filter((item) => item.required).map(

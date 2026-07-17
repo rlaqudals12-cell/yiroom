@@ -151,6 +151,11 @@ function KoreanContent() {
           <li>
             <strong>동의 철회:</strong> 설정 &gt; 개인정보 메뉴에서 언제든지 철회 가능
           </li>
+          <li>
+            <strong>기기 내 공유 이미지 생성:</strong> 이용자가 결과 화면에서 직접 선택한 경우에
+            한해, 분석 사진을 이용자 기기(브라우저) 안에서 공유용 이미지로 합성하며, 이 과정에서
+            이미지는 회사 서버로 전송·저장되지 않습니다.
+          </li>
         </ul>
         <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
           <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -507,6 +512,12 @@ function EnglishContent() {
           </li>
           <li>
             <strong>Withdrawal:</strong> Can be withdrawn anytime via Settings &gt; Privacy
+          </li>
+          <li>
+            <strong>On-device share images:</strong> Only when the user explicitly chooses on the
+            results screen, analysis photos are composited into a shareable image entirely on the
+            user&apos;s device (browser); during this process the image is never transmitted to or
+            stored on the Company&apos;s servers.
           </li>
         </ul>
         <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">

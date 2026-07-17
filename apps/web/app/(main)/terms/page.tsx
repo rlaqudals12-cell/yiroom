@@ -98,7 +98,7 @@ const TERMS_KO = [
     id: 'user-content',
     title: '제10조 (이용자 게시물 및 콘텐츠 관리)',
     content: `① 이용자가 서비스 내에 게시하거나 등록한 게시물(사진, 텍스트, 댓글, 후기, 평가 등, 이하 "게시물")에 대한 저작권은 이용자 본인에게 귀속됩니다.
-② 이용자는 회사가 서비스의 운영, 개선 및 홍보를 위하여 필요한 범위 내에서 게시물을 무상으로 사용(저장, 복제, 수정, 공개, 전시 등)할 수 있는 권리를 회사에 부여합니다. 다만, 회사는 이용자가 업로드한 얼굴·신체 이미지 등 생체정보를 홍보 목적으로 사용하지 않으며, 오직 분석 서비스 제공 목적으로만 이용합니다.
+② 이용자는 회사가 서비스의 운영, 개선 및 홍보를 위하여 필요한 범위 내에서 게시물을 무상으로 사용(저장, 복제, 수정, 공개, 전시 등)할 수 있는 권리를 회사에 부여합니다. 다만, 회사는 이용자가 업로드한 얼굴·신체 이미지 등 생체정보를 홍보 목적으로 사용하지 않으며, 오직 분석 서비스 제공 목적으로만 이용합니다. 이용자가 결과 화면에서 직접 생성하는 얼굴 포함 공유 이미지는 이용자 기기에서만 생성되고 회사 서버에 저장되지 않으며, 해당 이미지의 공유 여부·범위·상대방은 이용자가 스스로 결정합니다.
 ③ 이용자는 다음 각 호에 해당하는 게시물을 등록해서는 안 됩니다:
   1. 타인의 명예를 훼손하거나 권리를 침해하는 내용
   2. 음란, 폭력적이거나 공서양속에 반하는 내용
@@ -226,7 +226,7 @@ Users confirm that images uploaded for analysis are their own.`,
     id: 'user-content',
     title: '10. User Content and Moderation',
     content: `Copyright in content posted or submitted by Users within the Service (photos, text, comments, reviews, ratings, etc., "User Content") belongs to the User.
-The User grants the Company a royalty-free license to use (store, reproduce, modify, publish, and display) User Content to the extent necessary to operate, improve, and promote the Service. However, the Company does not use uploaded facial or body images or other biometric information for promotional purposes, and uses them solely to provide the analysis Service.
+The User grants the Company a royalty-free license to use (store, reproduce, modify, publish, and display) User Content to the extent necessary to operate, improve, and promote the Service. However, the Company does not use uploaded facial or body images or other biometric information for promotional purposes, and uses them solely to provide the analysis Service. Face-containing share images that Users create directly on the results screen are generated only on the User's device and are not stored on the Company's servers; whether, with whom, and to what extent to share such images is decided solely by the User.
 Users must not post User Content that:
   1. Defames others or infringes their rights
   2. Is obscene, violent, or contrary to public order and morals

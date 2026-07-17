@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { CURRENT_BIOMETRIC_VERSION } from '@/components/agreement/types';
 
 // Clerk auth 모킹
 const mockAuth = vi.fn();
@@ -118,7 +119,7 @@ describe('/api/agreement', () => {
           biometric_agreed: true,
           terms_version: '1.0',
           privacy_version: '1.0',
-          biometric_version: '1.0',
+          biometric_version: CURRENT_BIOMETRIC_VERSION,
           terms_agreed_at: '2026-01-08T00:00:00Z',
           privacy_agreed_at: '2026-01-08T00:00:00Z',
           marketing_agreed_at: null,
@@ -151,7 +152,7 @@ describe('/api/agreement', () => {
           biometric_agreed: true,
           terms_version: '0.9', // 이전 버전
           privacy_version: '1.0',
-          biometric_version: '1.0',
+          biometric_version: CURRENT_BIOMETRIC_VERSION,
           terms_agreed_at: '2025-01-08T00:00:00Z',
           privacy_agreed_at: '2025-01-08T00:00:00Z',
           marketing_agreed_at: null,
