@@ -13,6 +13,10 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { hasAnyClosetItems } from '@/lib/analysis/integrated/internal/closet-check';
+// internal 소비 관행(result-fetcher·closet-check와 동일) — 세션 얼굴 사진의 서명 URL 발급.
+// 참고: PC 단독 라우트는 `integrated://face/` 센티널에서 서명 실패하는 기존 결함이 있으나
+// 여기는 세션 레코드의 실제 버킷 경로를 직접 쓰므로 무관(별도 수정 항목).
+import { getSignedImageUrl } from '@/lib/analysis/integrated/internal/storage-uploader';
 import { fetchCurationProducts } from '@/lib/analysis/integrated/internal/product-matcher';
 import {
   composeActionPlan,
@@ -35,12 +39,17 @@ import {
 } from '@/lib/analysis/integrated';
 import { getBodyShapeLabel } from '@/lib/body';
 import type { OutputLocale } from '@/lib/gemini/client';
-import type { PersonaBadge } from '@/components/share/PersonaShareCard';
+import type { PersonaBadge, PaletteColor } from '@/components/share/PersonaShareCard';
+import type { ReportRow } from '@/components/share/PersonaReportCard';
+import { getCardPalette } from '@/lib/share/tone-palettes';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
 import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
 import { NextStepsLinks } from './_components/NextStepsLinks';
 import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
-import { PersonaShareSection } from './_components/PersonaShareSection';
+import { PersonaShareSection, type PersonaReportData } from './_components/PersonaShareSection';
+import { DrapingSectionDynamic } from './_components/DrapingSectionDynamic';
+import { DrapingShareSection } from './_components/DrapingShareSection';
 import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
@@ -82,23 +91,195 @@ function extractNested(record: AxisDbRecord, key: string, field: string): string
 }
 
 /**
- * best_colors JSONB(배열의 {hex|color}) → 유효한 hex 문자열만 (공유 카드 스와치용, 최대 6개).
- * 퍼스널컬러 결과의 실제 색이 곧 카드의 시각적 정체성 — 바이럴 훅. AI 원본은 {name,hex},
- * 방어적으로 {color} 폴백 (useAnalysisStatus.normalizeBestColors와 동일 규칙).
+ * best_colors JSONB → 유효한 색(hex + 색이름) 최대 6개.
+ * 두 저장 형태를 모두 수용: 단독 AI 경로 = {name,hex} 객체 / 통합 정적 경로 = hex 문자열 배열
+ * (문자열을 버리면 통합 세션 카드의 팔레트가 통째로 비는 배선 결함 — 2026-07-15 감사 발견).
+ * 방어적으로 {color} 폴백(useAnalysisStatus.normalizeBestColors 동일 규칙).
+ * 색이름은 있을 때만 담는다(없으면 카드가 색블록만 렌더 — 지어내지 않음).
  */
-function extractPaletteHexes(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  const hexes: string[] = [];
-  for (const item of raw) {
-    if (typeof item !== 'object' || item === null) continue;
-    const c = item as { hex?: unknown; color?: unknown };
-    let hex: string | null = null;
+function parsePaletteItem(item: unknown): PaletteColor | null {
+  let hex: string | null = null;
+  let name: string | undefined;
+  if (typeof item === 'string') {
+    hex = item;
+  } else if (typeof item === 'object' && item !== null) {
+    const c = item as { hex?: unknown; color?: unknown; name?: unknown };
     if (typeof c.hex === 'string') hex = c.hex;
     else if (typeof c.color === 'string') hex = c.color;
-    if (hex && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) hexes.push(hex);
-    if (hexes.length >= 6) break;
+    if (typeof c.name === 'string' && c.name) name = c.name;
   }
-  return hexes;
+  if (!hex || !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) return null;
+  return { hex, ...(name ? { name } : {}) };
+}
+
+function extractPalette(raw: unknown): PaletteColor[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map(parsePaletteItem)
+    .filter((c): c is PaletteColor => c !== null)
+    .slice(0, 6);
+}
+
+/**
+ * 공유카드/드레이핑 팔레트 해석 — 단독 AI 경로의 {hex,name}(개인 실측)이 이름까지 있으면
+ * 우선, 아니면(통합 정적 = hex 문자열·웹세이프 제네릭 색 = 카드 품질 미달) 진단 톤의
+ * 표준 큐레이션 팔레트로 대체(오프라인 진단 관습: 진단 톤 → 톤 표준 스와치 = 정직).
+ */
+function resolveCardPalettes(
+  record: AxisDbRecord | null,
+  pcData: PersonalColorAxisData | null,
+  locale: OutputLocale
+): { best: PaletteColor[]; avoid: PaletteColor[]; accent: PaletteColor[]; metals: PaletteColor[] } {
+  const stored = extractPalette(record?.best_colors);
+  const curated = pcData ? getCardPalette(pcData.tone || pcData.season, locale) : null;
+  const best =
+    stored.length >= 4 && stored.every((c) => !!c.name) ? stored : (curated?.best ?? stored);
+  // 포인트·금속은 개인 실측이 존재하지 않는 영역 — 항상 톤 표준 큐레이션(관습 파생)
+  return {
+    best,
+    avoid: curated?.avoid ?? [],
+    accent: curated?.accent ?? [],
+    metals: curated?.metals ?? [],
+  };
+}
+
+/** 추천 헤어 스타일 이름 — recommendations.styleRecommendations JSONB에서 방어적 추출(형태 보장 없음) */
+function extractHairStyleNames(record: AxisDbRecord | null): string[] {
+  const rec = record?.recommendations;
+  if (typeof rec !== 'object' || rec === null) return [];
+  const list = (rec as Record<string, unknown>).styleRecommendations;
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      if (typeof item === 'string') return item;
+      if (typeof item === 'object' && item !== null) {
+        const name = (item as { name?: unknown }).name;
+        if (typeof name === 'string') return name;
+      }
+      return '';
+    })
+    .filter((s) => s.length > 0)
+    .slice(0, 3);
+}
+
+/** 피부 관리 포인트 — 저장된 관심사(primaryConcerns)만 이어붙임(지어내지 않음) */
+function extractSkinConcerns(record: AxisDbRecord | null): string | undefined {
+  const rec = record?.recommendations;
+  if (typeof rec !== 'object' || rec === null) return undefined;
+  const list = (rec as Record<string, unknown>).primaryConcerns;
+  if (!Array.isArray(list)) return undefined;
+  const items = list.filter((x): x is string => typeof x === 'string' && x.length > 0).slice(0, 3);
+  return items.length > 0 ? items.join(' · ') : undefined;
+}
+
+/** 세션 얼굴 사진의 서명 URL(1h) — 경로 없으면/실패면 null(드레이핑 섹션 미렌더) */
+async function fetchFaceUrl(path: string | null): Promise<string | null> {
+  if (!path) return null;
+  return getSignedImageUrl(path, 3600);
+}
+
+/**
+ * 발급 번호 — 이 세션이 이룸의 몇 번째 통합 분석인지(실측 순번, 정직한 희소성).
+ * 왜 service-role: RLS 클라이언트는 본인 행만 세므로 전체 순번을 얻을 수 없다.
+ * 카운트만 반환(개인 데이터 노출 없음). 실패 시 null → 카드가 번호를 지어내지 않고 생략.
+ */
+async function fetchIssueNo(createdAt: string): Promise<number | null> {
+  try {
+    const svc = createServiceRoleClient();
+    const { count, error } = await svc
+      .from('integrated_analysis_sessions')
+      .select('id', { count: 'exact', head: true })
+      .lte('created_at', createdAt);
+    if (error || typeof count !== 'number' || count < 1) return null;
+    return count;
+  } catch {
+    return null;
+  }
+}
+
+/** 리포트 속성표 라벨 묶음 — 로케일 완료 문자열 (카드에는 원시 영문값 금지) */
+interface ReportAttrLabels {
+  season: string;
+  tone: string;
+  undertone: string;
+  brightness: string;
+  saturation: string;
+  contrast: string;
+  valueLight: string;
+  valueDeep: string;
+  valueVivid: string;
+  valueSoft: string;
+  valueBalanced: string;
+  contrastLow: string;
+  contrastMedium: string;
+  contrastHigh: string;
+}
+
+/**
+ * 명도·채도 파생 행 — 명시 측정값이 DB에 없어 12톤 서브타입의 **정의**에서만 파생한다
+ * (라이트=고명도·딥=저명도·브라이트=고채도·뮤트=저채도·트루=균형). 정의 밖이면 행 생략(지어내지 않음).
+ */
+// 스펙트럼 위치 — 범주값의 시각화 좌표(저=0.22/중=0.5/고=0.78). 숫자 미표기라 가짜 정밀도 없음
+const SPECTRUM_LOW = 0.22;
+const SPECTRUM_MID = 0.5;
+const SPECTRUM_HIGH = 0.78;
+
+function subtypeAttrRows(subtype: string, l: ReportAttrLabels): ReportRow[] {
+  const s = subtype.toLowerCase();
+  const rows: ReportRow[] = [];
+  if (s === 'light')
+    rows.push({ label: l.brightness, value: l.valueLight, spectrumPos: SPECTRUM_HIGH });
+  else if (s === 'deep' || s === 'dark')
+    rows.push({ label: l.brightness, value: l.valueDeep, spectrumPos: SPECTRUM_LOW });
+  else if (s === 'true')
+    rows.push({ label: l.brightness, value: l.valueBalanced, spectrumPos: SPECTRUM_MID });
+  if (s === 'bright' || s === 'vivid')
+    rows.push({ label: l.saturation, value: l.valueVivid, spectrumPos: SPECTRUM_HIGH });
+  else if (s === 'muted' || s === 'soft')
+    rows.push({ label: l.saturation, value: l.valueSoft, spectrumPos: SPECTRUM_LOW });
+  else if (s === 'true')
+    rows.push({ label: l.saturation, value: l.valueBalanced, spectrumPos: SPECTRUM_MID });
+  return rows;
+}
+
+/** 퍼스널컬러 속성표 — 점수(채점표) 대신 "왜 이 진단인가"의 분해. 실데이터 행만 담는다 */
+function buildReportAttrs(
+  pcData: PersonalColorAxisData | null,
+  subtype: string,
+  contrast: string,
+  locale: OutputLocale,
+  l: ReportAttrLabels
+): ReportRow[] {
+  if (!pcData) return [];
+  const rows: ReportRow[] = [];
+  const seasonLabel = pcData.season ? seasonKo(pcData.season, locale) : '';
+  if (seasonLabel) rows.push({ label: l.season, value: seasonLabel });
+  const toneLabel = pcData.tone ? toneKo(pcData.tone, locale) : '';
+  // 톤이 계절 폴백(동일 문자열)이면 중복 행 생략
+  if (toneLabel && toneLabel !== seasonLabel) rows.push({ label: l.tone, value: toneLabel });
+  const undertoneLabel = pcData.undertone ? undertoneKo(pcData.undertone, locale) : '';
+  if (undertoneLabel) rows.push({ label: l.undertone, value: undertoneLabel });
+  rows.push(...subtypeAttrRows(subtype, l));
+  // 대비감 — 클라이언트 실측(ADR-116)이 저장된 세션만 (없으면 행 생략)
+  const contrastByLevel: Record<string, { value: string; pos: number }> = {
+    low: { value: l.contrastLow, pos: SPECTRUM_LOW },
+    medium: { value: l.contrastMedium, pos: SPECTRUM_MID },
+    high: { value: l.contrastHigh, pos: SPECTRUM_HIGH },
+  };
+  const contrastEntry = contrastByLevel[contrast.toLowerCase()];
+  if (contrastEntry)
+    rows.push({ label: l.contrast, value: contrastEntry.value, spectrumPos: contrastEntry.pos });
+  return rows;
+}
+
+/** "분석 신뢰도 N%" — 사람이 아닌 진단의 점수. 퍼컬 실측 성공 시에만(Mock 폴백이면 undefined) */
+function confidenceLabelFor(
+  pcData: PersonalColorAxisData | null,
+  isFallback: boolean,
+  toLabel: (value: number) => string
+): string | undefined {
+  if (!pcData || isFallback || pcData.confidence <= 0) return undefined;
+  return toLabel(Math.round(pcData.confidence));
 }
 
 /** 비어 있지 않은 라벨만 " · "로 이어붙임 (없으면 undefined) */
@@ -237,7 +418,6 @@ export default async function IntegratedResultPage({
         tone: extractNested(r, 'image_analysis', 'tone') || String(r.season ?? ''),
         undertone: String(r.undertone ?? ''),
         confidence: Number(r.confidence ?? 0),
-        palette: extractPaletteHexes(r.best_colors),
       }),
       usedFallbackSet.has('personal_color')
     ),
@@ -286,18 +466,27 @@ export default async function IntegratedResultPage({
   const bodyData = axisResults.body.success ? axisResults.body.data : null;
   const hairData = axisResults.hair.success ? axisResults.hair.data : null;
 
-  // 공유 카드 뱃지 — 성공한 축만, 사용자 언어 라벨 (실패 축을 지어내지 않는다).
-  // 라벨(축 이름)은 기존 t('axes.*') 번역 재사용, 값은 라벨 헬퍼로 로케일화.
+  // 공유카드 히어로 = 진단명(퍼컬 문화의 자랑 라벨 — 문장이 아니라 라벨이 공유됨, 7/15 조사).
+  // 퍼컬 실패 시 undefined → 카드에서 은유(oneLine)가 히어로 자리를 유지.
+  const pcToneName = pcData
+    ? toneKo(pcData.tone, uiLocale) || seasonKo(pcData.season, uiLocale)
+    : undefined;
+
+  // 공유카드/드레이핑 팔레트 — 해석 규칙은 resolveCardPalettes 참조
+  const {
+    best: personaPalette,
+    avoid: personaWorst,
+    accent: personaAccents,
+    metals: personaMetals,
+  } = resolveCardPalettes(axes.personalColor, pcData, uiLocale);
+
+  // 서명 뱃지 — 퍼컬 외 성공 축만(퍼컬은 히어로가 담당, 중복 금지). 실패 축 지어내지 않음.
   const personaBadges: PersonaBadge[] = [
-    pcData && {
-      label: t('axes.personalColor'),
-      value: toneKo(pcData.tone, uiLocale) || seasonKo(pcData.season, uiLocale),
-    },
     skinData && { label: t('axes.skin'), value: skinTypeKo(skinData.skinType, uiLocale) },
     bodyData && { label: t('axes.body'), value: getBodyShapeLabel(bodyData.bodyType, uiLocale) },
     hairData && { label: t('axes.hair'), value: faceShapeKo(hairData.faceShape, uiLocale) },
   ].filter((b): b is PersonaBadge => Boolean(b && b.value));
-  const [hasClosetItems, curationProducts] = await Promise.all([
+  const [hasClosetItems, curationProducts, issueNo, faceImageUrl] = await Promise.all([
     hasAnyClosetItems(),
     fetchCurationProducts({
       skinType: skinData?.skinType,
@@ -305,6 +494,8 @@ export default async function IntegratedResultPage({
       undertone: pcData?.undertone,
       gender: gender ?? 'neutral',
     }),
+    fetchIssueNo(session.created_at),
+    fetchFaceUrl(session.face_image_url),
   ]);
   const curation = composeCuration({
     ...axisResults,
@@ -316,19 +507,71 @@ export default async function IntegratedResultPage({
   // 축별 심화 링크 요약 (원시 영문값 노출 방지 — 공용 라벨 헬퍼 사용, 새 fetch 없음)
   const axisSummaries = buildAxisSummaries(axes, uiLocale);
 
+  // 진단지 리포트(공유 3번째 포맷, 2026-07-16) — 채점표(종합점수·매력도·레이더) 없이
+  // 속성표 + 5축 요약 + 신뢰도 + 재현성으로 신뢰를 만든다(외모 점수화 금지 원칙).
+  const reportAttrLabels: ReportAttrLabels = {
+    season: t('reportCard.attrSeason'),
+    tone: t('reportCard.attrTone'),
+    undertone: t('reportCard.attrUndertone'),
+    brightness: t('reportCard.attrBrightness'),
+    saturation: t('reportCard.attrSaturation'),
+    contrast: t('reportCard.attrContrast'),
+    valueLight: t('reportCard.valueLight'),
+    valueDeep: t('reportCard.valueDeep'),
+    valueVivid: t('reportCard.valueVivid'),
+    valueSoft: t('reportCard.valueSoft'),
+    valueBalanced: t('reportCard.valueBalanced'),
+    contrastLow: t('reportCard.contrastLow'),
+    contrastMedium: t('reportCard.contrastMedium'),
+    contrastHigh: t('reportCard.contrastHigh'),
+  };
+  const reportAttrs = buildReportAttrs(
+    pcData,
+    axes.personalColor ? extractNested(axes.personalColor, 'image_analysis', 'subtype') : '',
+    axes.personalColor ? extractNested(axes.personalColor, 'image_analysis', 'contrastLevel') : '',
+    uiLocale,
+    reportAttrLabels
+  );
+  // 5축 요약 행 — 퍼컬은 속성표·히어로가 담당(중복 금지), 나머지 성공 축만.
+  // 헤어 축 값은 얼굴형 판정이므로 라벨도 "얼굴형" — "헤어=계란형"은 범주 오류(시뮬 2인 지적)
+  const reportAxisRows: ReportRow[] = (
+    [
+      [t('axes.skin'), axisSummaries.skin],
+      [t('axes.body'), axisSummaries.body],
+      [t('reportCard.faceShape'), axisSummaries.hair],
+      [t('axes.makeup'), axisSummaries.makeup],
+    ] as const
+  ).flatMap(([label, value]) => (value ? [{ label, value }] : []));
+  const reportData: PersonaReportData = {
+    attrs: reportAttrs,
+    checklist: session.persona?.keyInsights,
+    accents: personaAccents,
+    metals: personaMetals,
+    axisRows: reportAxisRows,
+    skinNote: extractSkinConcerns(axes.skin),
+    hairStyles: extractHairStyleNames(axes.hair),
+    actionItems: actionPlan.items.map(({ title, why }) => ({ title, why })),
+    note: session.persona?.narrative,
+    confidenceText: confidenceLabelFor(pcData, usedFallbackSet.has('personal_color'), (value) =>
+      t('reportCard.confidence', { value })
+    ),
+    reproducibilityText: t('reportCard.repro'),
+    dateText: new Date(session.created_at).toLocaleDateString(dateLocale),
+  };
+
   return (
     <div
-      className="min-h-[calc(100vh-80px)] bg-neutral-950 px-4 py-8"
+      className="min-h-[calc(100vh-80px)] bg-background px-4 py-8"
       data-testid="integrated-result-page"
     >
       <div className="mx-auto max-w-3xl space-y-6">
-        {/* 헤더 */}
+        {/* 헤더 — 에디토리얼 리스킨(2026-07-15): 다크 섬 해체, 공개 리포트 아이브로우 관례 통일 */}
         <header className="space-y-2 text-center">
-          <p className="text-xs uppercase tracking-widest text-zinc-500">Yiroom Intelligence</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">YIROOM REPORT</p>
           {/* 왜 "리포트": 이 페이지는 세션 1회의 기록 — "내 정체성 5축 결과"는 프로필 전체를
               주장하는 제목이라 부분 세션에서 "완성 5/5인데 왜 3축이 없어?" 모순을 유발했음 */}
-          <h1 className="text-2xl font-bold text-white md:text-3xl">{t('meta.title')}</h1>
-          <p className="text-xs text-zinc-400">
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">{t('meta.title')}</h1>
+          <p className="text-xs text-muted-foreground">
             {new Date(session.created_at).toLocaleString(dateLocale)}
           </p>
         </header>
@@ -347,9 +590,34 @@ export default async function IntegratedResultPage({
         {session.persona?.oneLine && (
           <PersonaShareSection
             oneLine={session.persona.oneLine}
+            toneName={pcToneName}
             badges={personaBadges}
-            season={pcData?.season ?? null}
-            palette={pcData?.palette ?? []}
+            palette={personaPalette}
+            worstPalette={personaWorst}
+            serialNo={issueNo}
+            report={reportData}
+            reportPhotoUrl={faceImageUrl}
+          />
+        )}
+
+        {/* 드레이핑 비교 — 내 사진 + 진단 베스트/워스트 색천(캔버스 합성, 기기 내 처리).
+            퍼컬 성공 + 사진이 있을 때만 (지어내지 않음) */}
+        {faceImageUrl && personaPalette.length > 0 && (
+          <DrapingSectionDynamic
+            imageUrl={faceImageUrl}
+            bestColors={personaPalette}
+            worstColors={personaWorst}
+          />
+        )}
+
+        {/* 얼굴 포함 드레이핑 카드 — 명시적 옵트인(기본 OFF)·기기 내 생성·서버 미저장.
+            디폴트 공유는 여전히 얼굴 없는 PersonaShareSection이 담당 */}
+        {faceImageUrl && personaPalette.length > 0 && (
+          <DrapingShareSection
+            imageUrl={faceImageUrl}
+            toneName={pcToneName}
+            bestColors={personaPalette}
+            serialNo={issueNo}
           />
         )}
 
@@ -369,9 +637,9 @@ export default async function IntegratedResultPage({
         <ShareReportButton sessionId={session.id} />
 
         {/* 하단 안내 */}
-        <div className="space-y-1 pt-4 text-center text-[11px] text-zinc-600">
+        <div className="space-y-1 pt-4 text-center text-[11px] text-muted-foreground">
           {/* 재현성 실측 — 과장 없이 "같은 입력 → 같은 판정"만 (퍼스널컬러·피부에서 검증) */}
-          <p className="text-zinc-500">{t('footer.reproducibility')}</p>
+          <p>{t('footer.reproducibility')}</p>
           <p>{t('footer.aiDisclaimer')}</p>
         </div>
       </div>

@@ -1,7 +1,13 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax --
+   공유카드는 html-to-image로 캡처돼 PNG로 배포되는 산출물이다. 뷰어 라이트/다크 테마와
+   무관하게 항상 같은 색이어야 하므로(테마 CSS 변수를 쓰면 다크 뷰어 캡처에서 카드가 깨짐)
+   브랜드 색(블러시 크림·잉크·로즈)을 의도적으로 고정 hex로 둔다. 테마 적용 대상이 아니다. */
+
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 
 /** 카드에 표시되는 축 뱃지 (한국어 라벨만 — 영문 원값 금지, 성공 축만 전달) */
 export interface PersonaBadge {
@@ -9,117 +15,261 @@ export interface PersonaBadge {
   value: string;
 }
 
+/** 퍼스널컬러 팔레트 색 하나 — 진단된 hex + (있으면) 색이름 */
+export interface PaletteColor {
+  hex: string;
+  /** 색이름(예: "더스티 로즈"). 없으면 색블록만 렌더(지어내지 않음) */
+  name?: string;
+}
+
 /** 카드 비율 — 'square'(1:1, 피드/저장) | 'story'(9:16, 인스타 스토리) */
 export type PersonaCardFormat = 'square' | 'story';
 
+/** 카드 마감 — 'matte'(기본) | 'foil'(포토카드 홀로 시머, 은은한 프리미엄 질감) */
+export type PersonaCardFinish = 'matte' | 'foil';
+
 interface PersonaShareCardProps {
-  /** 페르소나 한 줄 (예: "차분한 빛을 품은 사람") */
+  /** 페르소나 한 줄 은유(예: "차분한 빛을 품은 사람") — toneName이 있으면 서브카피로 강등 */
   oneLine: string;
-  /** 성공한 축의 한국어 요약 뱃지 (실패 축은 호출부에서 제외 — 정직성) */
+  /**
+   * 진단명(로케일 라벨, 예: "뮤티드 서머") — 카드의 시각적 1순위.
+   * 왜: 퍼컬 문화의 자랑 포인트는 문장이 아니라 톤 라벨(2026-07-15 조사 — 자랑 위계 1위).
+   * 없으면(퍼컬 실패) oneLine이 히어로 자리를 유지한다.
+   */
+  toneName?: string;
+  /** 퍼컬 외 성공 축의 값(피부·체형·헤어) — 서명 로우. 퍼컬은 toneName이 담당(중복 금지) */
   badges: PersonaBadge[];
-  /** PC 시즌(spring/summer/autumn/winter) — 카드 배경 팔레트 결정 */
-  season?: string | null;
-  /** 퍼스널컬러 베스트 컬러 hex 팔레트 — 결과의 시각적 정체성(있을 때만 스와치 렌더, 바이럴 훅) */
-  palette?: string[];
-  /** 카드 비율 — 'square'(기본) | 'story'(9:16 인스타 스토리) */
+  /** 베스트 컬러 팔레트 — 카드의 주인공(진단된/톤 표준 색, 못 베끼는 자산) */
+  palette?: PaletteColor[];
+  /** 피해야 할 색 — 오프라인 진단의 재미·전문성 신호(작은 소밴드) */
+  worstPalette?: PaletteColor[];
+  /** 발급 번호(실제 세션 순번) — 정직한 희소성. 없으면 미표기 */
+  serialNo?: number | null;
+  /** 초대 한 줄(로케일 값 주입, 예: "너의 계절은?") — 카드=테스트 초대장 루프 */
+  inviteText?: string;
   format?: PersonaCardFormat;
-  /** 하단 유입 CTA 문구 (로케일화된 값을 호출부에서 주입 — 카드 자체는 순수 프레젠테이션) */
-  ctaText?: string;
+  finish?: PersonaCardFinish;
   className?: string;
 }
 
-// 시즌별 그라데이션 — 퍼스널컬러 결과가 곧 카드의 색 정체성이 되도록.
-// 흰 텍스트 대비를 위해 중간 이상 명도의 진한 팔레트만 사용.
-const SEASON_GRADIENT: Record<string, string> = {
-  spring: 'from-orange-400 via-rose-400 to-pink-500',
-  summer: 'from-sky-400 via-indigo-400 to-purple-500',
-  autumn: 'from-amber-500 via-orange-600 to-rose-600',
-  winter: 'from-blue-600 via-indigo-600 to-fuchsia-600',
+// 포맷별 치수/여백 — story는 9:16이라 히어로·색밴드가 더 시원하게 숨 쉰다.
+const FORMAT: Record<
+  PersonaCardFormat,
+  {
+    width: string;
+    minH: string;
+    pad: string;
+    hero: string;
+    sub: string;
+    bandMt: string;
+    bandH: string;
+    name: string;
+  }
+> = {
+  square: {
+    width: 'w-[400px]',
+    minH: 'min-h-[420px]',
+    pad: 'px-7 pt-7 pb-5',
+    hero: 'mt-5 text-[30px]',
+    sub: 'mt-2 text-[14px]',
+    bandMt: 'mt-5',
+    bandH: 'h-[64px]',
+    name: 'pt-1.5 text-[9px]',
+  },
+  story: {
+    width: 'w-[360px]',
+    minH: 'min-h-[640px]',
+    pad: 'px-7 pt-9 pb-7',
+    hero: 'mt-8 text-[34px]',
+    sub: 'mt-3 text-[15px]',
+    bandMt: 'mt-9',
+    bandH: 'h-[96px]',
+    name: 'pt-2 text-[10px]',
+  },
 };
 
-// PC 축이 없거나 시즌 미상이면 브랜드 그라데이션 (기존 ShareCardTemplate personal-color와 동일 계열)
-const DEFAULT_GRADIENT = 'from-pink-500 to-purple-600';
-
-// 포맷별 크기 — story는 9:16 인스타 스토리 비율. 캡처는 pixelRatio 2로 고해상 보장.
-const FORMAT: Record<PersonaCardFormat, { width: string; minH: string }> = {
-  square: { width: 'w-[400px]', minH: 'min-h-[500px]' },
-  story: { width: 'w-[360px]', minH: 'min-h-[640px]' },
-};
+/** 헥사곤-Y 브랜드 마크 (인장) */
+function HexagonY({ size, className }: { size: number; className?: string }): React.JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 2l8.5 5v10L12 22 3.5 17V7z" />
+      <path d="M9.2 9.4l2.8 2.6 2.8-2.6M12 12v3.4" />
+    </svg>
+  );
+}
 
 /**
- * 페르소나 공유 카드 — "뽐내기" 정서용 정체성 배지.
+ * 페르소나 공유 카드 V2 — "뽐내기" 정체성 포토카드 (E+ 에디토리얼, 2026-07-15 확정).
+ *
+ * 디자인 원칙(→ memory design-taste-moat): 장식 그라데이션·반짝이·글래스 = 0.
+ * 위계 = ①진단명(자랑 라벨) ②은유 서브카피 ③베스트 팔레트(주인공) ④피해야 할 색(재미)
+ * ⑤서명·발급번호·초대(바이럴 루프). 블러시 크림 + 로즈 포인트 1색 = 여성 우선 뷰티 미감.
  *
  * 왜 사진이 없나: 생체정보(얼굴)는 공유 산출물에 절대 포함하지 않는다(BIPA/PIPA).
- * MBTI 카드처럼 텍스트+팔레트만으로 정체성을 표현해, 부담 없이 SNS에 올릴 수 있게 한다.
- * forwardRef: html-to-image 캡처 대상.
+ * forwardRef: html-to-image 캡처 대상. backdrop-filter는 캡처 미지원이라 금지.
  */
 export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps>(
   function PersonaShareCard(
-    { oneLine, badges, season, palette = [], format = 'square', ctaText, className },
+    {
+      oneLine,
+      toneName,
+      badges,
+      palette = [],
+      worstPalette = [],
+      serialNo,
+      inviteText,
+      format = 'square',
+      finish = 'matte',
+      className,
+    },
     ref
   ) {
-    const gradient = (season && SEASON_GRADIENT[season]) || DEFAULT_GRADIENT;
+    const fmt = FORMAT[format];
     const swatches = palette.slice(0, 6);
+    const worst = worstPalette.slice(0, 4);
+    // 이름은 전부 있을 때만 렌더 → 일부만 있으면 컬럼 높이가 들쭉날쭉해지므로 통일(정렬 유지)
+    const showNames = swatches.length > 0 && swatches.every((c) => !!c.name);
+    const facets = badges
+      .map((b) => b.value)
+      .filter(Boolean)
+      .join(' · ');
+    // 발급 번호 — 실제 순번만 표기(정직한 희소성). 6자리 패딩 = 한정판 인쇄 넘버 감성
+    const serial =
+      typeof serialNo === 'number' && serialNo > 0
+        ? `No.${String(serialNo).padStart(6, '0')}`
+        : null;
 
     return (
       <div
         ref={ref}
         className={cn(
-          'shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br shadow-xl',
-          FORMAT[format].width,
-          gradient,
+          'relative shrink-0 overflow-hidden rounded-3xl bg-[#FBF3F1] shadow-xl',
+          fmt.width,
           className
         )}
         data-testid="persona-share-card"
         data-format={format}
+        data-finish={finish}
       >
-        <div className={cn('flex flex-col px-8 py-9 text-white', FORMAT[format].minH)}>
-          {/* 상단 브랜드 소제목 */}
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/80">
-            Yiroom Identity
-          </p>
+        {/* 종이 질감 — 인쇄물 소유감. 캡처 PNG에도 구워짐(인라인 SVG, 외부 요청 0) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: PAPER_GRAIN_URI }}
+        />
 
-          {/* 페르소나 한 줄 — 카드의 주인공 */}
+        {/* 포토카드 홀로 시머(선택) — 대각 시어 하이라이트, 저채도·저불투명으로 절제.
+            blur/backdrop-filter 미사용(캡처 안전). 정지 이미지에서도 포일 인쇄 질감으로 읽힘 */}
+        {finish === 'foil' && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(115deg, transparent 18%, rgba(255,255,255,0.5) 30%, rgba(244,214,222,0.35) 38%, transparent 50%),' +
+                'linear-gradient(295deg, transparent 55%, rgba(226,214,244,0.28) 70%, transparent 85%)',
+            }}
+          />
+        )}
+
+        <div className={cn('relative flex flex-col text-[#2B2320]', fmt.minH, fmt.pad)}>
+          {/* 브랜드 로우 — 헥사곤-Y 인장 + 워드마크 + 우상단 발급번호(한정판 인쇄 넘버) */}
+          <div className="flex items-baseline gap-2">
+            <HexagonY size={16} className="self-center text-[#C56A84]" />
+            <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
+            {serial && (
+              <span
+                className="ml-auto font-serif text-[12.5px] italic tabular-nums text-[#C56A84]"
+                data-testid="persona-share-serial"
+              >
+                {serial}
+              </span>
+            )}
+          </div>
+
+          {/* 진단명 히어로 — 자랑의 본체. 퍼컬 실패 시 은유가 히어로 자리를 지킨다 */}
           <h2
-            className="mt-6 whitespace-pre-wrap break-keep text-[32px] font-bold leading-snug"
-            data-testid="persona-share-oneline"
+            className={cn(
+              'whitespace-pre-wrap break-keep font-bold leading-[1.25] tracking-tight',
+              fmt.hero
+            )}
+            data-testid="persona-share-hero"
           >
-            {oneLine}
+            {toneName ?? oneLine}
           </h2>
 
-          {/* 퍼스널컬러 베스트 컬러 스와치 — 결과의 시각적 정체성(있을 때만) */}
+          {/* 은유 서브카피 — 이룸 차별화(업계 표준 아님 → 라벨을 대체하지 않게 서브로) */}
+          {toneName && (
+            <p
+              className={cn(
+                'whitespace-pre-wrap break-keep leading-[1.55] text-[#8C7F78]',
+                fmt.sub
+              )}
+              data-testid="persona-share-oneline"
+            >
+              {oneLine}
+            </p>
+          )}
+
+          {/* 베스트 팔레트 — 카드의 주인공. 전면 밴드 + (있으면) 색이름 */}
           {swatches.length > 0 && (
-            <div className="mt-6 flex gap-2" data-testid="persona-share-swatches">
-              {swatches.map((hex, i) => (
-                <span
-                  key={`${hex}-${i}`}
-                  className="h-8 w-8 rounded-full border border-white/40 shadow-sm"
-                  style={{ backgroundColor: hex }}
-                  aria-hidden="true"
-                />
-              ))}
+            <div className={fmt.bandMt}>
+              <p className="font-serif text-[11px] italic text-[#B6A9A1]">Best colors</p>
+              <div className="-mx-7 mt-2 flex" data-testid="persona-share-swatches">
+                {swatches.map((c, i) => (
+                  <div key={`${c.hex}-${i}`} className="flex flex-1 flex-col">
+                    <span
+                      className={cn('block w-full', fmt.bandH)}
+                      style={{ backgroundColor: c.hex }}
+                      aria-hidden="true"
+                    />
+                    {showNames && (
+                      <span
+                        className={cn('block text-center tracking-tight text-[#8C7F78]', fmt.name)}
+                      >
+                        {c.name}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* 축 뱃지 — 성공한 축만, 한국어 라벨 */}
-          {badges.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2" data-testid="persona-share-badges">
-              {badges.map((b) => (
-                <span
-                  key={b.label}
-                  className="rounded-full bg-white/20 px-3.5 py-1.5 text-[13px] font-medium backdrop-blur-sm"
-                >
-                  <span className="text-white/75">{b.label}</span>
-                  <span className="ml-1.5 font-semibold">{b.value}</span>
-                </span>
-              ))}
+          {/* 피해야 할 색 — 오프라인 진단의 재미 포인트(작게, 병치 대비) */}
+          {worst.length > 0 && (
+            <div className="mt-4 flex items-center gap-2.5" data-testid="persona-share-worst">
+              <span className="font-serif text-[11px] italic text-[#B6A9A1]">Avoid</span>
+              <span className="flex gap-1.5">
+                {worst.map((c, i) => (
+                  <span
+                    key={`${c.hex}-${i}`}
+                    className="h-4 w-6 rounded-[4px]"
+                    style={{ backgroundColor: c.hex }}
+                    aria-hidden="true"
+                  />
+                ))}
+              </span>
             </div>
           )}
 
-          {/* 하단 워터마크 + 유입 CTA — 카드가 돌아다닐 때 신규 유입 경로가 된다 */}
-          <div className="mt-auto pt-10">
-            {ctaText && <p className="text-sm font-semibold">{ctaText}</p>}
-            <p className="mt-1 text-xs text-white/75">이룸 · yiroom.app</p>
+          {/* 서명 로우 — 성공 축 값(정직성) + 초대 한 줄(카드=테스트 초대장) + 도메인 */}
+          <div className="mt-auto flex items-center justify-between gap-3 pt-5 text-[11.5px] text-[#8C7F78]">
+            {facets ? <span className="truncate">{facets}</span> : <span />}
+            <span className="flex shrink-0 items-center gap-1.5">
+              <HexagonY size={13} className="text-[#C56A84]" />
+              {inviteText && <span data-testid="persona-share-invite">{inviteText}</span>}
+              <span className="font-medium text-[#2B2320]">yiroom.app</span>
+            </span>
           </div>
         </div>
       </div>

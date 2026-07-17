@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
 import { Download, Share2 } from 'lucide-react';
@@ -8,19 +8,68 @@ import {
   PersonaShareCard,
   type PersonaBadge,
   type PersonaCardFormat,
+  type PersonaCardFinish,
+  type PaletteColor,
 } from '@/components/share/PersonaShareCard';
+import { PhotocardTilt } from '@/components/share/PhotocardTilt';
+import {
+  PersonaReportCard,
+  type ReportRow,
+  type ReportAction,
+} from '@/components/share/PersonaReportCard';
 import { captureElementAsImage } from '@/lib/share/imageGenerator';
 import { cn } from '@/lib/utils';
 
-interface PersonaShareSectionProps {
-  oneLine: string;
-  badges: PersonaBadge[];
-  season?: string | null;
-  /** 퍼스널컬러 베스트 컬러 hex 팔레트 — 카드 스와치용(성공 축·데이터 있을 때만) */
-  palette?: string[];
+/** 리포트 포맷용 데이터(서버에서 로케일 완료 문자열로 조립) — 없으면 리포트 토글 미노출 */
+export interface PersonaReportData {
+  /** 퍼스널컬러 속성표(실데이터 행만) */
+  attrs: ReportRow[];
+  /** "분석 한눈에 보기" — persona.keyInsights */
+  checklist?: string[];
+  /** 포인트 컬러(톤 표준 큐레이션) */
+  accents?: PaletteColor[];
+  /** 액세서리 금속(웜=골드계/쿨=실버계) */
+  metals?: PaletteColor[];
+  /** 축 요약(퍼컬 제외 성공 축만) */
+  axisRows: ReportRow[];
+  /** 피부 관리 포인트(저장된 관심사) */
+  skinNote?: string;
+  /** 추천 헤어 스타일 이름(≤3) */
+  hairStyles?: string[];
+  /** 개선 포인트(결정론 액션 플랜) */
+  actionItems?: ReportAction[];
+  /** 전속 뷰티팀 총평(persona.narrative) */
+  note?: string;
+  /** "분석 신뢰도 87%" — 퍼컬 실측 성공 시에만 */
+  confidenceText?: string;
+  /** 재현성 한 줄 */
+  reproducibilityText: string;
+  /** 발급일(로케일 포맷) */
+  dateText: string;
 }
 
-const CARD_FORMATS: readonly PersonaCardFormat[] = ['square', 'story'];
+interface PersonaShareSectionProps {
+  oneLine: string;
+  /** 진단명(로케일 라벨) — 카드 히어로. 퍼컬 실패 시 undefined(은유가 히어로) */
+  toneName?: string;
+  /** 퍼컬 외 성공 축 값(피부·체형·헤어) — 퍼컬은 toneName이 담당(중복 금지) */
+  badges: PersonaBadge[];
+  /** 베스트 컬러 팔레트(hex + 색이름) — 카드의 주인공 */
+  palette?: PaletteColor[];
+  /** 피해야 할 색 — 소밴드(재미·전문성 신호) */
+  worstPalette?: PaletteColor[];
+  /** 발급 번호(실제 세션 순번) — 정직한 희소성 */
+  serialNo?: number | null;
+  /** 진단지 리포트 데이터 — 세 번째 포맷(세로 진단지 한 장, 2026-07-16 v1) */
+  report?: PersonaReportData;
+  /** 분석 사진 서명 URL — 리포트 사진 옵트인용(기본 무사진, 기기 내 캔버스 합성) */
+  reportPhotoUrl?: string | null;
+}
+
+/** 공유 포맷 — 카드 2종 + 진단지 리포트 */
+type ShareFormat = PersonaCardFormat | 'report';
+
+const CARD_FORMATS: readonly ShareFormat[] = ['square', 'story'];
 
 /**
  * 카드가 돌아다닐 때 "돌아올 길" — 공유의 유일한 존재 이유.
@@ -46,25 +95,53 @@ const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom
  */
 export function PersonaShareSection({
   oneLine,
+  toneName,
   badges,
-  season,
   palette = [],
+  worstPalette = [],
+  serialNo,
+  report,
+  reportPhotoUrl,
 }: PersonaShareSectionProps): React.JSX.Element {
   const t = useTranslations('analysis.integratedResult');
   const cardRef = useRef<HTMLDivElement>(null);
   const [isBusy, setIsBusy] = useState(false);
   // 실패는 정직하게 알린다 — 조용한 무반응 금지
   const [message, setMessage] = useState<string | null>(null);
-  // 저장/공유 대상 카드 비율 — 정사각(피드) vs 9:16(인스타 스토리)
-  const [format, setFormat] = useState<PersonaCardFormat>('square');
+  // 저장/공유 대상 — 정사각(피드) vs 9:16(스토리) vs 진단지 리포트(세로 한 장)
+  const [format, setFormat] = useState<ShareFormat>('square');
+  // 카드 마감 — 매트(기본) vs 포일(포토카드 홀로 시머). 리포트엔 미적용(진단지는 무광 지면)
+  const [finish, setFinish] = useState<PersonaCardFinish>('matte');
+  // 리포트 사진 옵트인 — 기본 OFF(얼굴 포함은 명시적 선택), 켜야만 이미지를 로드한다
+  const [photoOptIn, setPhotoOptIn] = useState(false);
+  const [photoImg, setPhotoImg] = useState<HTMLImageElement | null>(null);
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  useEffect(() => {
+    if (!photoOptIn || photoImg || !reportPhotoUrl) return;
+    const image = new Image();
+    image.crossOrigin = 'anonymous'; // 캔버스 taint 방지(캡처 안전)
+    image.onload = () => setPhotoImg(image);
+    image.onerror = () => setPhotoFailed(true);
+    image.src = reportPhotoUrl;
+  }, [photoOptIn, photoImg, reportPhotoUrl]);
+
+  const formats: readonly ShareFormat[] = report ? [...CARD_FORMATS, 'report'] : CARD_FORMATS;
+  const formatLabel = (f: ShareFormat): string => {
+    if (f === 'square') return t('shareCard.formatSquare');
+    if (f === 'story') return t('shareCard.formatStory');
+    return t('shareCard.formatReport');
+  };
 
   // navigator.share(files)를 지원하는 환경(주로 모바일 브라우저)에서만 공유 버튼 노출
   const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   const makeBlob = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
-    // 카드 자체가 그라데이션 배경을 가지므로 캡처 배경은 투명 — 라운드 코너 유지
-    return captureElementAsImage(cardRef.current, { backgroundColor: 'transparent' });
+    // 캡처 배경 투명(라운드 코너 밖) · 카드 scale 3 = 400px → 1200px(인스타 권장 1080px 충족).
+    // 리포트는 세로가 길어 scale 2.5 — 장변 4096px(구형 기기 캔버스 한계) 이하 안전권.
+    const scale = format === 'report' ? 2.5 : 3;
+    return captureElementAsImage(cardRef.current, { backgroundColor: 'transparent', scale });
   };
 
   const handleDownload = async (): Promise<void> => {
@@ -79,10 +156,10 @@ export function PersonaShareSection({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'yiroom-identity-card.png';
+      a.download = format === 'report' ? 'yiroom-identity-report.png' : 'yiroom-identity-card.png';
       a.click();
       URL.revokeObjectURL(url);
-      track('persona_card_share', { method: 'download' });
+      track('persona_card_share', { method: 'download', format });
       setMessage(t('shareCard.saved'));
     } finally {
       setIsBusy(false);
@@ -98,7 +175,11 @@ export function PersonaShareSection({
         setMessage(t('shareCard.imageError'));
         return;
       }
-      const file = new File([blob], 'yiroom-identity-card.png', { type: 'image/png' });
+      const file = new File(
+        [blob],
+        format === 'report' ? 'yiroom-identity-report.png' : 'yiroom-identity-card.png',
+        { type: 'image/png' }
+      );
       // 파일 공유 미지원 기기는 다운로드로 정직하게 폴백
       if (navigator.canShare && !navigator.canShare({ files: [file] })) {
         await handleDownload();
@@ -111,7 +192,7 @@ export function PersonaShareSection({
         text: `${t('shareCard.shareText', { oneLine })}\n${SHARE_LANDING_URL}`,
         url: SHARE_LANDING_URL,
       });
-      track('persona_card_share', { method: 'native' });
+      track('persona_card_share', { method: 'native', format });
     } catch (err) {
       // 사용자가 공유 시트를 닫은 경우(AbortError)는 실패가 아니다
       if (err instanceof Error && err.name !== 'AbortError') {
@@ -123,21 +204,18 @@ export function PersonaShareSection({
   };
 
   return (
-    <section
-      className="rounded-2xl border border-zinc-800 bg-neutral-900/50 p-5"
-      data-testid="persona-share-section"
-    >
-      <h2 className="text-sm font-semibold text-white">{t('shareCard.heading')}</h2>
-      <p className="mt-0.5 text-xs text-zinc-400">{t('shareCard.subtitle')}</p>
+    <section className="rounded-2xl border bg-card p-5" data-testid="persona-share-section">
+      <h2 className="text-sm font-semibold text-foreground">{t('shareCard.heading')}</h2>
+      <p className="mt-0.5 text-xs text-muted-foreground">{t('shareCard.subtitle')}</p>
 
-      {/* 포맷 토글 — 인스타 스토리(9:16)는 세로 규격이라 피드(1:1)와 별도 제공 */}
+      {/* 포맷 토글 — 피드(1:1) / 스토리(9:16) / 진단지 리포트(세로 한 장) */}
       <div
         className="mt-4 flex justify-center gap-1.5"
         role="group"
         aria-label={t('shareCard.formatLabel')}
         data-testid="persona-share-format-toggle"
       >
-        {CARD_FORMATS.map((f) => (
+        {formats.map((f) => (
           <button
             key={f}
             type="button"
@@ -146,26 +224,117 @@ export function PersonaShareSection({
             className={cn(
               'rounded-full px-3.5 py-1 text-xs font-medium transition-colors',
               format === f
-                ? 'bg-pink-600 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-muted-foreground hover:text-foreground'
             )}
           >
-            {f === 'square' ? t('shareCard.formatSquare') : t('shareCard.formatStory')}
+            {formatLabel(f)}
           </button>
         ))}
       </div>
 
+      {/* 마감 토글 — 포일(포토카드 홀로 시머)은 카드 포맷 전용. 진단지 리포트는 무광 지면 */}
+      {format !== 'report' && (
+        <div
+          className="mt-2 flex justify-center gap-1.5"
+          role="group"
+          aria-label={t('shareCard.finishLabel')}
+          data-testid="persona-share-finish-toggle"
+        >
+          {(['matte', 'foil'] as const).map((fn) => (
+            <button
+              key={fn}
+              type="button"
+              onClick={() => setFinish(fn)}
+              aria-pressed={finish === fn}
+              className={cn(
+                'rounded-full px-3 py-0.5 text-[11px] font-medium transition-colors',
+                finish === fn
+                  ? 'border border-primary/50 text-primary'
+                  : 'border border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {fn === 'matte' ? t('shareCard.finishMatte') : t('shareCard.finishFoil')}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 리포트 사진 옵트인 — 기본 무사진. 켜면 기기 내 캔버스로만 합성(서버 미저장) */}
+      {format === 'report' && report && reportPhotoUrl && (
+        <div className="mt-3">
+          <label className="flex cursor-pointer items-start gap-2">
+            <input
+              type="checkbox"
+              checked={photoOptIn}
+              onChange={(e) => setPhotoOptIn(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
+              data-testid="report-photo-optin"
+            />
+            <span className="text-xs text-foreground">{t('reportCard.photoOptIn')}</span>
+          </label>
+          <p className="mt-1.5 text-[11px] text-muted-foreground">{t('drapingCard.notice')}</p>
+          {photoOptIn && photoFailed && (
+            <p className="mt-1.5 text-[11px] text-muted-foreground">{t('draping.loadError')}</p>
+          )}
+        </div>
+      )}
+
       {/* 카드 미리보기 — 좁은 화면에선 가로 스크롤 (카드 원본 크기 유지 = 캡처 품질 보장) */}
       <div className="mt-4 flex justify-center overflow-x-auto pb-1">
-        <PersonaShareCard
-          ref={cardRef}
-          oneLine={oneLine}
-          badges={badges}
-          season={season}
-          palette={palette}
-          format={format}
-          ctaText={t('shareCard.cta')}
-        />
+        {format === 'report' && report ? (
+          <PersonaReportCard
+            ref={cardRef}
+            oneLine={oneLine}
+            toneName={toneName}
+            attrs={report.attrs}
+            photoImg={photoOptIn ? photoImg : null}
+            checklist={report.checklist}
+            palette={palette}
+            accents={report.accents}
+            metals={report.metals}
+            worstPalette={worstPalette}
+            axisRows={report.axisRows}
+            skinNote={report.skinNote}
+            hairStyles={report.hairStyles}
+            actionItems={report.actionItems}
+            note={report.note}
+            confidenceText={report.confidenceText}
+            confidenceHintText={t('reportCard.confidenceHint')}
+            reproducibilityText={report.reproducibilityText}
+            reproBadgeText={t('reportCard.reproBadge')}
+            dateText={report.dateText}
+            groupLabels={{
+              best: t('reportCard.bestLabel'),
+              accent: t('reportCard.accentLabel'),
+              metal: t('reportCard.metalLabel'),
+              avoid: t('reportCard.avoidLabel'),
+              styles: t('reportCard.stylesLabel'),
+              care: t('reportCard.careLabel'),
+              bestUse: t('reportCard.bestUse'),
+              accentUse: t('reportCard.accentUse'),
+              draping: t('reportCard.drapingLabel'),
+            }}
+            serialNo={serialNo}
+            inviteText={t('shareCard.invite')}
+          />
+        ) : (
+          // 틸트 = 실물 포토카드를 손에 든 감각(포인터 추적 3D) — 캡처 PNG에는 무영향
+          <PhotocardTilt>
+            <PersonaShareCard
+              ref={cardRef}
+              oneLine={oneLine}
+              toneName={toneName}
+              badges={badges}
+              palette={palette}
+              worstPalette={worstPalette}
+              serialNo={serialNo}
+              inviteText={t('shareCard.invite')}
+              format={format === 'report' ? 'square' : format}
+              finish={finish}
+            />
+          </PhotocardTilt>
+        )}
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -173,7 +342,7 @@ export function PersonaShareSection({
           type="button"
           onClick={handleDownload}
           disabled={isBusy}
-          className="inline-flex items-center gap-1.5 rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-500 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           data-testid="persona-share-download"
         >
           <Download className="h-4 w-4" aria-hidden="true" />
@@ -184,7 +353,7 @@ export function PersonaShareSection({
             type="button"
             onClick={handleNativeShare}
             disabled={isBusy}
-            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition-colors hover:border-pink-500 hover:text-pink-400 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
             data-testid="persona-share-native"
           >
             <Share2 className="h-4 w-4" aria-hidden="true" />
@@ -194,7 +363,10 @@ export function PersonaShareSection({
       </div>
 
       {message && (
-        <p className="mt-3 text-center text-xs text-zinc-400" data-testid="persona-share-message">
+        <p
+          className="mt-3 text-center text-xs text-muted-foreground"
+          data-testid="persona-share-message"
+        >
           {message}
         </p>
       )}
