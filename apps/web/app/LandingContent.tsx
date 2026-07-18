@@ -1,97 +1,88 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax --
+   랜딩은 진단지·공유카드와 같은 "지면"으로 크림 라이트 고정이다(프리미엄 뷰티 관습 —
+   이솝·설화수·탬버린즈 전부 라이트 전용). 테마 토글을 따르지 않으므로 고정 hex를 쓴다.
+   (카드 fixed-hex와 동일 관례 · 2026-07-18 레퍼런스 리서치 3갈래 수렴) */
+
+/**
+ * 랜딩 v2 — 타이포·여백-포워드 에디토리얼 (2026-07-18 레퍼런스 리서치 수렴안)
+ *
+ * 문법 출처: 이솝(텍스트-포워드 히어로·정물 부유) + 레어뷰티(인터랙티브 팔레트 스트립) +
+ * 탬버린즈(무채색 컨테이너, 색은 콘텐츠에서만) + 진단 퍼널 공통 골격(훅→신뢰 밴드→결과 미리보기→게이트).
+ * 무드 층 = 사진 0 정본: CSS 컬러필드 + 그레인 + 오버사이즈 세리프 + 진단 팔레트 파생색.
+ * 금지: 장식 그라데·글로우·글래스·Sparkles·인물 사진(스톡·생성형 모두 — 초상권/슬롭).
+ */
+
 import { useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Scissors,
-  Sparkles,
   Palette,
-  Wand2,
+  Brush,
   User,
-  Droplets,
-  Sun,
-  Shirt,
+  Droplet,
   Camera,
-  BarChart3,
+  Wand2,
+  FileText,
   ChevronRight,
 } from 'lucide-react';
-// ADR-098 정체성 재정의 v2 — 5축 모델(PC/S/C/H/M) 반영
-// 기존 workout 모듈은 WELLNESS_PHASE2 보류로 헤어 분석으로 교체
+import { PersonaShareCard } from '@/components/share/PersonaShareCard';
+import { PhotocardTilt } from '@/components/share/PhotocardTilt';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
+import { getCardPalette, type CardPalette } from '@/lib/share/tone-palettes';
+import type { OutputLocale } from '@/lib/gemini/client';
+
+// 지면 고정 팔레트 — 공유카드·리포트와 동일 계열(cream/ink/rose)
+const INK = 'text-[#2B2320]';
+const MUTED = 'text-[#8C7F78]';
+const SOFT = 'text-[#B6A9A1]';
+const CTA_SOLID =
+  'rounded-full bg-[#EC4899] font-semibold text-white transition-colors hover:bg-[#DB2777]';
+
+// ADR-098 5축 모델 — 축색은 아이콘에만, 카드 지면은 중립(색 산발 금지)
 const MODULE_META = [
   {
     id: 'personal-color',
     href: '/analysis/personal-color',
-    gradient: 'from-pink-400 to-rose-500',
     icon: Palette,
+    iconClass: 'text-module-personal-color',
   },
-  {
-    id: 'skin',
-    href: '/analysis/skin',
-    gradient: 'from-amber-400 to-orange-500',
-    icon: Sparkles,
-  },
-  {
-    id: 'body',
-    href: '/analysis/body',
-    gradient: 'from-blue-400 to-indigo-500',
-    icon: User,
-  },
-  {
-    id: 'hair',
-    href: '/analysis/hair',
-    gradient: 'from-violet-400 to-purple-500',
-    icon: Scissors,
-  },
-  {
-    id: 'makeup',
-    href: '/analysis/makeup',
-    gradient: 'from-fuchsia-400 to-pink-500',
-    icon: Wand2,
-  },
+  { id: 'skin', href: '/analysis/skin', icon: Droplet, iconClass: 'text-module-skin' },
+  { id: 'body', href: '/analysis/body', icon: User, iconClass: 'text-module-body' },
+  { id: 'hair', href: '/analysis/hair', icon: Scissors, iconClass: 'text-module-hair' },
+  { id: 'makeup', href: '/analysis/makeup', icon: Brush, iconClass: 'text-module-makeup' },
 ];
 
-// 1-3: 결과 미리보기 카드 아이콘 + 색상
-const PREVIEW_META = [
-  {
-    icon: Sun,
-    iconColor: 'text-pink-400',
-    colors: ['#F9A8D4', '#FBCFE8', '#F472B6', '#EC4899', '#DB2777'],
-    gradient: 'from-pink-500/20 to-rose-500/20',
-    border: 'border-pink-500/30',
-  },
-  {
-    icon: Droplets,
-    iconColor: 'text-amber-400',
-    colors: [],
-    gradient: 'from-amber-500/20 to-orange-500/20',
-    border: 'border-amber-500/30',
-    score: 78,
-  },
-  {
-    icon: Shirt,
-    iconColor: 'text-blue-400',
-    colors: [],
-    gradient: 'from-blue-500/20 to-indigo-500/20',
-    border: 'border-blue-500/30',
-  },
-  {
-    icon: Scissors,
-    iconColor: 'text-violet-400',
-    colors: [],
-    gradient: 'from-violet-500/20 to-purple-500/20',
-    border: 'border-violet-500/30',
-  },
-];
+// 12톤 스펙트럼 스트립 순서 — 웜(봄)→쿨(여름)→웜딥(가을)→쿨딥(겨울) 자연 흐름
+const SPECTRUM_TONES = [
+  'light-spring',
+  'true-spring',
+  'bright-spring',
+  'light-summer',
+  'true-summer',
+  'muted-summer',
+  'muted-autumn',
+  'true-autumn',
+  'deep-autumn',
+  'deep-winter',
+  'true-winter',
+  'bright-winter',
+] as const;
 
-// 2-4: 스크롤 fade-in 훅
-// observer를 lazy 초기화하여 ref 콜백 시점에 항상 사용 가능하게 함
+// 미리보기 = 실큐레이션 팔레트로 렌더한 진짜 발급 카드(i18n sampleNTone/Line과 인덱스 정합)
+const SAMPLE_TONES = ['true-spring', 'deep-winter', 'true-autumn'] as const;
+const SAMPLE_ROTATIONS = ['md:-rotate-1', 'md:rotate-[0.5deg]', 'md:rotate-1'] as const;
+
+const HOW_STEPS = [{ icon: Camera }, { icon: Wand2 }, { icon: FileText }] as const;
+
+// 스크롤 fade-in 훅 — observer를 lazy 초기화하여 ref 콜백 시점에 항상 사용 가능하게 함
 function useScrollReveal(): (node: HTMLElement | null) => void {
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // lazy 초기화 — ref 콜백이 호출되기 전에 observer 생성 보장
   const getObserver = useCallback((): IntersectionObserver => {
     if (!observerRef.current) {
       observerRef.current = new IntersectionObserver(
@@ -123,384 +114,315 @@ function useScrollReveal(): (node: HTMLElement | null) => void {
   return ref;
 }
 
+/** 지원 4로케일로 좁힘(그 외 ko) — 카드 팔레트 색이름 해석용 */
+function toOutputLocale(locale: string): OutputLocale {
+  return (['ko', 'en', 'ja', 'zh'] as const).includes(locale as OutputLocale)
+    ? (locale as OutputLocale)
+    : 'ko';
+}
+
 export function LandingContent(): React.JSX.Element {
   const t = useTranslations('landing');
+  const locale = toOutputLocale(useLocale());
   const observe = useScrollReveal();
 
+  const heroPalette = getCardPalette('muted-summer', locale);
+  const samplePalettes = SAMPLE_TONES.map((tone) => getCardPalette(tone, locale)).filter(
+    (p): p is CardPalette => p !== null
+  );
+  // 12톤 스펙트럼 — 각 톤의 대표색(베스트 1번). 장식이 아니라 실제 판정 기준 팔레트
+  const spectrum = SPECTRUM_TONES.flatMap((tone) => {
+    const p = getCardPalette(tone, locale);
+    return p ? [{ tone, color: p.best[0] }] : [];
+  });
+
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-neutral-950" data-testid="landing-page">
-      {/* 스크롤 애니메이션 CSS → globals.css로 분리 */}
-      <div className="w-full px-4 md:px-10 lg:px-40 py-5">
-        <div className="mx-auto max-w-[960px] w-full">
-          {/* 언어 전환은 설정 페이지 LocaleSwitcher에서 관리 */}
+    <div className={`min-h-[calc(100vh-80px)] bg-[#FDF9F7] ${INK}`} data-testid="landing-page">
+      {/* [0] 약속 배너 — 유료 게이트 경쟁 서비스 대비 이룸의 최강 훅을 최상단에 */}
+      <div className="border-b border-[#F0E3DE] bg-[#FBF3F1] px-4 py-2 text-center text-xs text-[#8C7F78]">
+        {t('promiseBanner')}
+      </div>
 
-          {/* 히어로 섹션 + 2-1: 비주얼 앵커 (우측 결과 카드 목업) */}
-          <div className="p-0 md:p-4">
-            <div className="relative min-h-[560px] md:rounded-2xl overflow-hidden bg-gradient-to-br from-[#0A0A0B] via-[#1A1A2E] to-[#16213E]">
-              <div className="absolute top-6 left-6 z-10 flex items-center gap-2 whitespace-nowrap">
-                <span className="text-xs tracking-[0.3em] text-zinc-400 uppercase whitespace-nowrap">
-                  Yiroom Intelligence
-                </span>
-                <span className="text-xs text-pink-400 font-medium whitespace-nowrap">
-                  IDENTITY
-                </span>
-              </div>
-              <div className="absolute top-6 right-6 flex gap-2 z-10">
-                <span className="px-3 py-1 bg-white/5 backdrop-blur-sm text-zinc-300 rounded-full text-xs font-medium border border-white/10">
-                  Beta
-                </span>
-              </div>
-
-              {/* 2-1: 비주얼 앵커 — 4축 시각 정체성 (ADR-098 PC/S/C/H) 2×2 그리드 */}
-              <div className="hidden md:grid grid-cols-2 gap-2.5 absolute top-1/2 right-6 -translate-y-1/2 z-[5]">
-                {/* 퍼스널컬러 미니 카드 */}
-                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
-                  <p className="text-[10px] text-pink-400 font-medium mb-1">Personal Color</p>
-                  <p className="text-white text-sm font-bold truncate">{t('miniCardSpringWarm')}</p>
-                  <div className="flex gap-1 mt-2">
-                    {['#F9A8D4', '#F472B6', '#EC4899', '#DB2777'].map((c) => (
-                      <div
-                        key={c}
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* 피부 점수 미니 카드 */}
-                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
-                  <p className="text-[10px] text-amber-400 font-medium mb-1">Skin Vitality</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-white">78</span>
-                    <span className="text-[10px] text-zinc-400">/100</span>
-                  </div>
-                  <div className="w-full h-1 bg-zinc-700 rounded-full mt-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
-                      style={{ width: '78%' }}
-                    />
-                  </div>
-                </div>
-                {/* 체형 미니 카드 */}
-                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
-                  <p className="text-[10px] text-blue-400 font-medium mb-1">Body Type</p>
-                  <p className="text-white text-sm font-bold truncate">{t('miniCardSType')}</p>
-                  <p className="text-zinc-400 text-[10px] mt-1 truncate">{t('miniCardWaistFit')}</p>
-                </div>
-                {/* 헤어 미니 카드 */}
-                <div className="w-[150px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-3 hover:bg-white/10 hover:border-white/20 transition-colors duration-300">
-                  <p className="text-[10px] text-violet-400 font-medium mb-1">Hair Style</p>
-                  <p className="text-white text-sm font-bold truncate">{t('miniCardHairLabel')}</p>
-                  <p className="text-zinc-400 text-[10px] mt-1 truncate">{t('miniCardHairDesc')}</p>
-                </div>
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:max-w-[60%]">
-                <h1
-                  style={{
-                    fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
-                    fontWeight: 900,
-                    lineHeight: 1.1,
-                    background: 'linear-gradient(to right, #f9a8d4, #e879f9, #a855f7)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
+      <div className="w-full px-4 py-5 md:px-10 lg:px-16">
+        <div className="mx-auto w-full max-w-[1080px]">
+          {/* [1] 히어로 — 크림 컬러필드+그레인 위 오버사이즈 세리프. 카드 = 이솝의 '정물' */}
+          <section className="relative -mx-4 mt-2 overflow-hidden rounded-3xl bg-[#FBF3F1] px-6 py-12 md:mx-0 md:px-12 md:py-16">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-[0.05]"
+              style={{ backgroundImage: PAPER_GRAIN_URI }}
+            />
+            <div className="relative grid items-center gap-10 md:grid-cols-[1fr_auto]">
+              <div className="min-w-0">
+                <p className="font-serif text-[13px] italic text-[#C56A84]">
+                  Identity Report · Beta
+                </p>
+                <h1 className="mt-5 whitespace-pre-line break-keep font-serif text-4xl font-semibold leading-[1.16] tracking-tight md:text-[56px]">
                   {t('heroTitle')}
                 </h1>
                 <p
-                  style={{
-                    color: '#d4d4d8',
-                    fontSize: '0.875rem',
-                    marginTop: '1rem',
-                    maxWidth: '28rem',
-                    lineHeight: 1.6,
-                    whiteSpace: 'pre-line',
-                  }}
+                  className={`mt-6 max-w-md whitespace-pre-line break-keep text-sm leading-relaxed ${MUTED}`}
                 >
                   {t('heroDesc')}
                 </p>
 
-                {/* 1-2: 소셜 프루프 */}
-                <p className="mt-3 text-xs text-zinc-500">✦ {t('socialProof')}</p>
-
-                {/* ADR-101: 통합 분석 플로우로 CTA 일원화 */}
-                <div className="mt-5 flex flex-wrap items-center gap-3">
+                <div className="mt-8 flex flex-wrap items-center gap-4">
                   <SignedOut>
                     <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
-                      <Button className="h-12 px-6 md:h-14 md:px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm md:text-base font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
-                        <Palette className="w-4 h-4 mr-2" />
+                      <Button className={`h-12 px-7 text-sm md:h-13 md:text-base ${CTA_SOLID}`}>
                         {t('startFree')}
                       </Button>
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
                     <Link href="/home">
-                      <Button className="h-12 px-6 md:h-14 md:px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm md:text-base font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
+                      <Button className={`h-12 px-7 text-sm md:h-13 md:text-base ${CTA_SOLID}`}>
                         {t('goToDashboard')}
                       </Button>
                     </Link>
                   </SignedIn>
-                  <Link href="/demo/personal-color">
-                    <Button
-                      variant="outline"
-                      className="h-12 px-6 md:h-14 md:px-8 rounded-xl border-zinc-600 bg-white/5 text-zinc-100 hover:bg-white/10 hover:border-pink-500/50 hover:text-pink-300 text-sm md:text-base font-medium transition-all duration-300"
-                    >
-                      {t('demoCtaButton')}
-                    </Button>
+                  {/* 보조는 버튼이 아닌 텍스트 링크(이솝 절제 관습) — 히어로 CTA는 사실상 1개 */}
+                  <Link
+                    href="/demo/personal-color"
+                    className="flex items-center gap-1 text-sm font-medium text-[#C56A84] transition-colors hover:text-[#A85870]"
+                  >
+                    {t('demoCtaButton')}
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
               </div>
+
+              {/* 진짜 발급 카드(실큐레이션 팔레트) — 이솝의 정물처럼 여백에 부유 + 포토카드 틸트 */}
+              {heroPalette && (
+                <div className="hidden justify-center md:flex">
+                  <PhotocardTilt>
+                    <PersonaShareCard
+                      oneLine={t('sample1Line')}
+                      toneName={t('sample1Tone')}
+                      badges={[]}
+                      palette={heroPalette.best}
+                      worstPalette={heroPalette.avoid}
+                      inviteText={t('sampleInvite')}
+                      format="square"
+                      className="shadow-xl md:rotate-1"
+                    />
+                  </PhotocardTilt>
+                </div>
+              )}
             </div>
+          </section>
+
+          {/* [2] 신뢰 밴드 — 사진·후기 자산 대신 정직한 사실 4개(진단 퍼널 공통 문법) */}
+          <div className="mx-auto mt-6 grid max-w-3xl grid-cols-1 gap-x-8 gap-y-2 px-2 sm:grid-cols-2">
+            {(['trust1', 'trust2', 'trust3', 'trust4'] as const).map((key) => (
+              <p key={key} className={`flex items-start gap-2 text-[13px] leading-snug ${MUTED}`}>
+                <svg
+                  width={12}
+                  height={12}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#C56A84"
+                  strokeWidth={2.5}
+                  className="mt-[3px] shrink-0"
+                  aria-hidden="true"
+                >
+                  <path d="M4 12.5l5 5L20 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t(key)}
+              </p>
+            ))}
           </div>
 
           {/* 모듈 태그 */}
-          <div className="flex gap-3 px-4 pt-6 pb-3 overflow-x-auto md:flex-wrap md:px-3 scrollbar-hide">
+          <div className="scrollbar-hide mt-10 flex gap-2.5 overflow-x-auto pb-3 md:flex-wrap md:justify-center">
             {MODULE_META.map((module, i) => (
               <div
                 key={module.id}
-                className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-neutral-900 border border-zinc-800 text-zinc-300 pl-4 pr-4 hover:border-pink-500/30 transition-colors"
+                className={`flex h-8 shrink-0 items-center gap-x-2 rounded-full border border-[#EAD9D4] bg-white/60 px-4 ${MUTED} transition-colors hover:border-[#C56A84]/50`}
               >
-                <module.icon className="w-4 h-4 text-pink-400" />
+                <module.icon className={`h-4 w-4 ${module.iconClass}`} />
                 <p className="text-sm font-medium leading-normal">{t(`module${i}Title`)}</p>
               </div>
             ))}
           </div>
 
+          {/* [3] ★인터랙티브 팔레트 스트립 — 레어뷰티 Shade Finder 문법. 색이 유일한 컬러 소스 */}
+          <section ref={observe} className="landing-reveal pt-12">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight md:text-3xl">
+              {t('paletteTitle')}
+            </h2>
+            <p className={`mt-1.5 text-sm ${MUTED}`}>{t('paletteNote')}</p>
+            <div
+              className="mt-5 flex h-24 overflow-hidden rounded-2xl md:h-28"
+              data-testid="landing-spectrum"
+            >
+              {spectrum.map((s) => (
+                <div
+                  key={s.tone}
+                  title={s.color.name}
+                  className="group relative flex-1 transition-all duration-300 hover:flex-[2.2]"
+                  style={{ backgroundColor: s.color.hex }}
+                >
+                  {/* 호버 시 색이름 — CSS만으로 인터랙션(JS 0) */}
+                  <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2B2320]/70 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {s.color.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-center">
+              <SignedOut>
+                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
+                  <Button className={`h-10 px-6 text-sm ${CTA_SOLID}`}>{t('paletteCta')}</Button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <Link href="/analysis/integrated">
+                  <Button className={`h-10 px-6 text-sm ${CTA_SOLID}`}>{t('paletteCta')}</Button>
+                </Link>
+              </SignedIn>
+            </div>
+          </section>
+
           {/* How it Works 3-Step */}
-          <div ref={observe} className="landing-reveal px-4 pt-8 pb-2">
-            <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-4">
+          <div ref={observe} className="landing-reveal pt-12">
+            <h2 className="pb-5 text-[22px] font-bold leading-tight tracking-[-0.015em]">
               {t('howItWorksTitle')}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { icon: Camera, gradient: 'from-rose-400 to-pink-500' },
-                { icon: Sparkles, gradient: 'from-violet-400 to-purple-500' },
-                { icon: BarChart3, gradient: 'from-blue-400 to-indigo-500' },
-              ].map((step, i) => (
-                <div key={i} className="relative flex flex-col items-center text-center">
-                  <div className="flex items-center gap-3 md:flex-col md:gap-0">
-                    {/* 숫자 배지 + 아이콘 */}
-                    <div className="relative">
-                      <div
-                        className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center`}
-                      >
-                        <step.icon className="w-7 h-7 text-white" />
-                      </div>
-                      <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white text-neutral-950 text-xs font-bold flex items-center justify-center">
-                        {i + 1}
-                      </span>
-                    </div>
-                    {/* 제목 + 설명 (모바일: 가로 배치) */}
-                    <div className="text-left md:text-center md:mt-3">
-                      <h3 className="text-white font-semibold text-sm">{t(`step${i}Title`)}</h3>
-                      <p className="text-zinc-400 text-xs mt-1 leading-relaxed">
-                        {t(`step${i}Desc`)}
-                      </p>
-                    </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {HOW_STEPS.map((step, i) => (
+                <div
+                  key={i}
+                  className="relative flex items-center gap-4 rounded-2xl border border-[#F0E3DE] bg-white/60 p-4 md:flex-col md:items-center md:gap-0 md:p-6 md:text-center"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FBF3F1]">
+                    <step.icon className="h-6 w-6 text-[#C56A84]" strokeWidth={1.75} />
                   </div>
-                  {/* 화살표 (md 이상, 마지막 제외) */}
+                  <div className="min-w-0 md:mt-3">
+                    <p className="font-serif text-[12px] italic tabular-nums text-[#C56A84]">
+                      {String(i + 1).padStart(2, '0')}
+                    </p>
+                    <h3 className="mt-0.5 text-sm font-semibold">{t(`step${i}Title`)}</h3>
+                    <p className={`mt-1 text-xs leading-relaxed ${MUTED}`}>{t(`step${i}Desc`)}</p>
+                  </div>
                   {i < 2 && (
-                    <ChevronRight className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
+                    <ChevronRight
+                      className={`absolute -right-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 md:block ${SOFT}`}
+                    />
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 웰니스 모듈 섹션 — 2-2: 강화된 설명 + 2-4: 스크롤 애니메이션 */}
-          <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-8">
+          {/* [4] 5축 프로파일 그리드 */}
+          <h2 className="pb-3 pt-12 text-[22px] font-bold leading-tight tracking-[-0.015em]">
             {t('modulesTitle')}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 p-4">
+          <div className="grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 md:grid-cols-5">
             {MODULE_META.map((module, i) => (
               <Link key={module.id} href={module.href} className="group h-full">
                 <div
                   ref={observe}
-                  className="landing-reveal relative h-full rounded-2xl bg-neutral-900 border-glow-pink p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/10"
+                  className="landing-reveal h-full rounded-2xl border border-[#F0E3DE] bg-white/60 p-4 transition-colors hover:border-[#C56A84]/50"
                   style={{ transitionDelay: `${i * 100}ms` }}
                 >
-                  <div
-                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${module.gradient} flex items-center justify-center mb-3`}
-                  >
-                    <module.icon className="w-7 h-7 text-white" />
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FBF3F1]">
+                    <module.icon className={`h-6 w-6 ${module.iconClass}`} strokeWidth={1.75} />
                   </div>
-                  <h3 className="text-white font-semibold mb-1">{t(`module${i}Title`)}</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed">{t(`module${i}Desc`)}</p>
+                  <h3 className="mb-1 font-semibold">{t(`module${i}Title`)}</h3>
+                  <p className={`text-sm leading-relaxed ${MUTED}`}>{t(`module${i}Desc`)}</p>
                 </div>
               </Link>
             ))}
           </div>
 
-          {/* ADR-101: 통합 분석 플로우로 CTA 일원화 */}
-          <div className="flex justify-center pt-4">
-            <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 max-w-[600px] justify-center">
-              <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
-                  <Button className="min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-11 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] grow transition-all duration-300 shadow-lg shadow-pink-500/20">
-                    <Palette className="w-4 h-4 mr-2" />
-                    {t('ctaStart')}
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
-                <Link href="/home" className="grow">
-                  <Button className="w-full min-w-[84px] max-w-[480px] overflow-hidden rounded-xl h-11 px-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all duration-300 shadow-lg shadow-pink-500/20">
-                    {t('ctaViewResults')}
-                  </Button>
-                </Link>
-              </SignedIn>
-            </div>
-          </div>
-
-          {/* 1-3: 결과 미리보기 섹션 — ADR-098 4축 정체성 (PC/S/C/H) */}
-          <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-8">
+          {/* [5] 결과물 미리보기 — 실카드 부유 + 게이트 카피(미리보기→가입 보상 프레이밍) */}
+          <h2 className="pb-1 pt-12 text-[22px] font-bold leading-tight tracking-[-0.015em]">
             {t('previewTitle')}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4">
-            {PREVIEW_META.map((meta, i) => {
-              const Icon = meta.icon;
-              return (
-                <div
-                  key={i}
-                  ref={observe}
-                  className={`landing-reveal rounded-2xl bg-neutral-900/50 backdrop-blur-sm border ${meta.border} p-6 hover:bg-neutral-900/80 transition-all duration-300`}
-                  style={{ transitionDelay: `${i * 120}ms` }}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg bg-gradient-to-br ${meta.gradient} flex items-center justify-center mb-4`}
-                  >
-                    <Icon className={`w-5 h-5 ${meta.iconColor}`} />
-                  </div>
-                  <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider mb-1">
-                    {t(`preview${i}Tag`)}
-                  </p>
-                  <h3 className="text-white text-lg font-bold mb-1">{t(`preview${i}Label`)}</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed">{t(`preview${i}Sub`)}</p>
-                  {/* 퍼스널컬러 팔레트 미리보기 */}
-                  {meta.colors.length > 0 && (
-                    <div className="flex gap-1.5 mt-3">
-                      {meta.colors.map((c) => (
-                        <div
-                          key={c}
-                          className="w-6 h-6 rounded-full border border-white/10"
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {/* 피부 점수 바 미리보기 */}
-                  {meta.score && (
-                    <div className="mt-3">
-                      <div className="w-full h-2 bg-zinc-700 rounded-full">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
-                          style={{ width: `${meta.score}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <p className={`text-sm ${MUTED}`}>{t('previewRealNote')}</p>
+          <div ref={observe} className="landing-reveal mt-6 flex snap-x gap-8 overflow-x-auto pb-4">
+            {samplePalettes.map((palette, i) => (
+              <div key={SAMPLE_TONES[i]} className={`shrink-0 snap-center ${SAMPLE_ROTATIONS[i]}`}>
+                <PersonaShareCard
+                  oneLine={t(`sample${i + 2}Line`)}
+                  toneName={t(`sample${i + 2}Tone`)}
+                  badges={[]}
+                  palette={palette.best}
+                  worstPalette={palette.avoid}
+                  inviteText={t('sampleInvite')}
+                  format="square"
+                />
+              </div>
+            ))}
           </div>
+          <p className={`mt-2 text-center text-[13px] ${MUTED}`}>{t('gateNote')}</p>
 
           {/* 데모 결과 링크 */}
-          <div className="flex justify-center px-4 pt-2 pb-4">
+          <div className="flex justify-center pb-4 pt-4">
             <Link
               href="/demo/personal-color"
-              className="text-sm text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1"
+              className="flex items-center gap-1 text-sm text-[#C56A84] transition-colors hover:text-[#A85870]"
             >
               {t('demoLink')}
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* 하단 CTA — 1-5: 퍼스널컬러 통일 */}
-          <section className="px-4 py-16" ref={observe}>
-            <div
-              className="landing-reveal"
-              style={{
-                maxWidth: '42rem',
-                margin: '0 auto',
-                textAlign: 'center',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.2em',
-                  color: '#71717a',
-                  textTransform: 'uppercase',
-                  marginBottom: '1rem',
-                }}
-              >
-                {t('bottomCtaLabel')}
-              </p>
-              <h2
-                style={{
-                  fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
-                  fontWeight: 700,
-                  color: '#ffffff',
-                  marginBottom: '1rem',
-                }}
-              >
+          {/* [6]+[7] 미션 타이포 선언 + CTA 마감 — 사진 0의 대형 세리프 선언(글로시에 문법).
+              ref와 landing-reveal은 반드시 같은 요소에(분리 시 가시화 클래스가 부모에 붙는 잠복 버그) */}
+          <section className="px-4 py-20">
+            <div ref={observe} className="landing-reveal mx-auto max-w-2xl text-center">
+              <p className="font-serif text-[13px] italic text-[#C56A84]">{t('bottomCtaLabel')}</p>
+              <h2 className="mt-4 break-keep font-serif text-3xl font-semibold leading-snug md:text-[40px]">
                 {t('bottomCtaTitle')}
               </h2>
-              <p
-                style={{
-                  color: '#a1a1aa',
-                  lineHeight: 1.6,
-                  marginBottom: '2rem',
-                  whiteSpace: 'pre-line',
-                }}
-              >
+              <p className={`mt-5 whitespace-pre-line break-keep leading-relaxed ${MUTED}`}>
                 {t('bottomCtaDesc')}
               </p>
-              <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
-                  <Button className="inline-flex items-center gap-2 h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
-                    <Sparkles className="w-5 h-5" />
-                    <span>{t('bottomCtaSignUp')}</span>
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
-                <Link href="/analysis/integrated">
-                  <Button className="inline-flex items-center gap-2 h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25 transition-all duration-300">
-                    <Sparkles className="w-5 h-5" />
-                    <span>{t('bottomCtaAnalysis')}</span>
-                  </Button>
-                </Link>
-              </SignedIn>
+              <div className="mt-9">
+                <SignedOut>
+                  <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
+                    <Button className={`h-13 px-9 text-base ${CTA_SOLID}`}>
+                      {t('bottomCtaSignUp')}
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <Link href="/analysis/integrated">
+                    <Button className={`h-13 px-9 text-base ${CTA_SOLID}`}>
+                      {t('bottomCtaAnalysis')}
+                    </Button>
+                  </Link>
+                </SignedIn>
+              </div>
             </div>
           </section>
         </div>
       </div>
 
-      {/* 푸터 + 1-4: 면책 고지 */}
-      <footer className="border-t border-zinc-800 bg-zinc-950" data-testid="footer">
+      {/* 푸터 + AI 면책 고지 */}
+      <footer className="border-t border-[#F0E3DE] bg-[#FBF3F1]" data-testid="footer">
         <div className="mx-auto max-w-[960px] px-4 py-8">
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400">
-            <Link href="/terms" className="hover:text-pink-400 transition-colors">
+          <div className={`flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm ${MUTED}`}>
+            <Link href="/terms" className="transition-colors hover:text-[#C56A84]">
               {t('footerTerms')}
             </Link>
-            <Link href="/privacy" className="hover:text-pink-400 transition-colors">
+            <Link href="/privacy" className="transition-colors hover:text-[#C56A84]">
               {t('footerPrivacy')}
             </Link>
-            <Link href="/licenses" className="hover:text-pink-400 transition-colors">
+            <Link href="/licenses" className="transition-colors hover:text-[#C56A84]">
               {t('footerLicenses')}
             </Link>
-            <Link href="/help/faq" className="hover:text-pink-400 transition-colors">
+            <Link href="/help/faq" className="transition-colors hover:text-[#C56A84]">
               {t('footerHelp')}
             </Link>
           </div>
-          {/* 1-4: AI 면책 고지 */}
-          <p className="mt-4 text-center text-[11px] text-zinc-600">{t('footerDisclaimer')}</p>
-          <div className="mt-4 text-center text-xs text-zinc-500">
+          <p className={`mt-4 text-center text-[11px] ${SOFT}`}>{t('footerDisclaimer')}</p>
+          <div className={`mt-4 text-center text-xs ${SOFT}`}>
             <p>© {new Date().getFullYear()} Yiroom. All rights reserved.</p>
-            <p className="mt-1 text-zinc-600">{t('footerSlogan')}</p>
+            <p className="mt-1">{t('footerSlogan')}</p>
           </div>
         </div>
       </footer>

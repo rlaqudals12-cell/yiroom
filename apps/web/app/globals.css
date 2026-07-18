@@ -209,7 +209,6 @@
      ======================================== */
   --gradient-primary: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
   --gradient-brand: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
-  --gradient-brand-extended: linear-gradient(135deg, #ec4899 0%, #e879f9 50%, #a855f7 100%);
   --gradient-workout: linear-gradient(135deg, var(--module-workout), var(--module-workout-dark));
   --gradient-nutrition: linear-gradient(
     135deg,
@@ -830,31 +829,8 @@
   background-clip: text;
 }
 
-/* YIROOM IDENTITY 확장 그라디언트 (핑크→보라) */
-.text-gradient-brand-extended {
-  background: var(--gradient-brand-extended);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ========================================
-   글로우 보더 유틸리티 (YIROOM IDENTITY)
-   ======================================== */
-
-.border-glow-pink {
-  border: 1px solid rgba(236, 72, 153, 0.3);
-  box-shadow:
-    0 0 20px rgba(236, 72, 153, 0.1),
-    inset 0 0 20px rgba(236, 72, 153, 0.05);
-}
-
-.border-glow-purple {
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow:
-    0 0 20px rgba(168, 85, 247, 0.1),
-    inset 0 0 20px rgba(168, 85, 247, 0.05);
-}
+/* (border-glow-pink/-purple·text-gradient-brand-extended는 2026-07-17 랜딩 리뉴얼로
+   사용처 0 확인 후 제거 — 글로우·핑크→보라 그라데는 AI-slop 신호라 재도입 금지) */
 
 /* ========================================
    단계 전환 애니메이션
