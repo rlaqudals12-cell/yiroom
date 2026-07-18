@@ -30,7 +30,7 @@ describe('POST /api/visual/beautify', () => {
     vi.mocked(beautifyForShare).mockResolvedValue({
       imageBase64: 'data:image/png;base64,ZZZ',
       aiEdited: true,
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-3.1-flash-lite-image',
     });
   });
 

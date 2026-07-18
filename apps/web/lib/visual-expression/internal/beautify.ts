@@ -19,8 +19,8 @@ import { burnInAiLabelDataUrl, AI_EDITED_LABEL } from './watermark';
 // 분석 경로와 동일한 API 키를 재사용하되, 클라이언트 인스턴스는 분리
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-// Gemini 2.5 Flash Image (Nano Banana) — identity 보존 편집에 특화
-export const BEAUTIFY_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
+// 나노바나나2 Lite — identity 보존 편집. 2.5-flash-image 2026-10-02 종료로 교체(7/18 스모크 통과)
+export const BEAUTIFY_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-lite-image';
 
 /**
  * 보정 프롬프트 (코드 상수 — 테스트로 고정)

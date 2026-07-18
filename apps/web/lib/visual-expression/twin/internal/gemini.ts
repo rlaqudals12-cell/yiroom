@@ -17,8 +17,10 @@ import type { TwinBodyConstraint, TwinGenerateInput } from '../types';
 
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-/** 나노바나나 이미지 모델 (identity 보존 편집/생성에 특화) */
-export const TWIN_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
+/** 나노바나나2 Lite 이미지 모델 (identity 보존 편집/생성).
+    2.5-flash-image가 2026-10-02 종료라 3.1 lite로 교체(7/18 스모크 통과 — 편집·한글·파서 호환,
+    원가 오히려 -14%). 품질 이슈 시 GEMINI_IMAGE_MODEL env로 gemini-3.1-flash-image 폴백 */
+export const TWIN_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-lite-image';
 
 /** 프롬프트 버전 — source_meta에 기록(재현성 추적) */
 export const TWIN_PROMPT_VERSION = 'twin-v1';

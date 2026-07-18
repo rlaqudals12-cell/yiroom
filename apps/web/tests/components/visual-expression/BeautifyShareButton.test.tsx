@@ -25,7 +25,7 @@ describe('BeautifyShareButton', () => {
         json: async () => ({
           imageBase64: 'data:image/png;base64,ZZZ',
           aiEdited: true,
-          model: 'gemini-2.5-flash-image',
+          model: 'gemini-3.1-flash-lite-image',
         }),
       })
     );
