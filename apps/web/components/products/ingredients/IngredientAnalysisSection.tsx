@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { FlaskConical, Info, HelpCircle } from 'lucide-react';
+import { FlaskConical, Info, HelpCircle, Camera } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import type { CosmeticIngredient, ProductIngredientAnalysis } from '@/types/ingredient';
 import {
@@ -124,12 +125,20 @@ export function IngredientAnalysisSection({
     return <IngredientAnalysisSectionSkeleton className={className} />;
   }
 
-  // 성분 데이터 없음
+  // 성분 데이터 없음 — 빈 상태를 막다른 길로 두지 않는다: 성분 스캔(기존 기능)으로 연결
   if (ingredients.length === 0) {
     return (
       <div className={cn('text-center py-12', className)}>
         <FlaskConical className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">{t('ingredientAnalysisSection0')}</p>
+        <Link
+          href="/scan"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+          data-testid="ingredient-empty-scan-cta"
+        >
+          <Camera className="h-4 w-4" aria-hidden="true" />
+          제품 성분표를 찍으면 바로 분석해드려요
+        </Link>
       </div>
     );
   }

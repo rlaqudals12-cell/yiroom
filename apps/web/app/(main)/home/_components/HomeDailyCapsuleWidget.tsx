@@ -349,6 +349,9 @@ export default function HomeDailyCapsuleWidget() {
           // 필요하다(reason/solution 텍스트 게이팅은 유지).
           const sp = item.solutionProduct as SolutionProductWithSource | undefined;
           const showProduct = sp != null && sp.source != null;
+          // 제품 카탈로그가 있는 축(피부·메이크업·헤어)인데 매칭 제품이 없으면 탐색 폴백 —
+          // 칩 유무가 들쭉날쭉해 "반쯤 만들다 만" 인상을 주던 문제(7/18 감사·페르소나 지적)
+          const showProductFallback = !showProduct && ['S', 'M', 'H'].includes(item.moduleCode);
 
           return (
             <div key={item.id} className="rounded-lg">
@@ -392,6 +395,15 @@ export default function HomeDailyCapsuleWidget() {
               </button>
               {/* 실제 제품 연결 — 버튼(체크 토글) 밖에 두어 링크/버튼 중첩 방지 */}
               {showProduct && <CapsuleProductChip sp={sp!} />}
+              {showProductFallback && (
+                <Link
+                  href="/beauty"
+                  className="ml-11 inline-block pb-1.5 text-[11px] text-muted-foreground transition-colors hover:text-primary"
+                  data-testid="capsule-product-fallback"
+                >
+                  이 단계에 맞는 제품 찾기 →
+                </Link>
+              )}
             </div>
           );
         })}

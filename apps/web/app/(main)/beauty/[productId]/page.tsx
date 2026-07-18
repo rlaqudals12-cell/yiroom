@@ -140,17 +140,39 @@ export default function BeautyProductDetailPage() {
     fetchSkinAnalysis();
   }, [isLoaded, user?.id, supabase]);
 
-  // 매칭률 계산
+  // 매칭률 계산 — 데이터가 실제로 있는 요소만 판정한다.
+  // 이전 버전은 base 50 + "주의 성분 없음 +10"이라, 성분 데이터가 아예 없는 제품(대다수)이
+  // 전부 60%를 받았다 — 데이터 부재가 점수로 둔갑(2026-07-18 감사·페르소나 딜브레이커 1위).
   const matchScore = useMemo(() => {
     if (!product || !userSkinTypeRaw) {
-      return { overall: 0, skinType: false, skinConcerns: false, ingredients: false };
+      return {
+        overall: 0,
+        skinType: false,
+        skinConcerns: false,
+        ingredients: false,
+        evaluable: false,
+      };
     }
 
-    const skinTypeMatch = product.skinTypes?.includes(userSkinTypeRaw) ?? false;
-    const hasGoodIngredients = (product.keyIngredients?.length ?? 0) > 0;
-    const hasNoCaution = (product.avoidIngredients?.length ?? 0) === 0;
+    const hasTypeData = (product.skinTypes?.length ?? 0) > 0;
+    const hasIngredientData =
+      (product.keyIngredients?.length ?? 0) > 0 || (product.avoidIngredients?.length ?? 0) > 0;
+    // 판정 근거가 하나도 없으면 숫자를 지어내지 않는다 → 매칭률 미표시
+    if (!hasTypeData && !hasIngredientData) {
+      return {
+        overall: 0,
+        skinType: false,
+        skinConcerns: false,
+        ingredients: false,
+        evaluable: false,
+      };
+    }
 
-    // 매칭률 계산 (피부 타입 50%, 성분 30%, 주의 성분 20%)
+    const skinTypeMatch = hasTypeData && (product.skinTypes?.includes(userSkinTypeRaw) ?? false);
+    const hasGoodIngredients = (product.keyIngredients?.length ?? 0) > 0;
+    // "주의 성분 없음" 가점은 성분 데이터가 존재할 때만 (부재 ≠ 안전)
+    const hasNoCaution = hasIngredientData && (product.avoidIngredients?.length ?? 0) === 0;
+
     let overall = 50;
     if (skinTypeMatch) overall += 30;
     if (hasGoodIngredients) overall += 10;
@@ -161,6 +183,7 @@ export default function BeautyProductDetailPage() {
       skinType: skinTypeMatch,
       skinConcerns: skinTypeMatch,
       ingredients: hasGoodIngredients && hasNoCaution,
+      evaluable: true,
     };
   }, [product, userSkinTypeRaw]);
 
@@ -327,7 +350,7 @@ export default function BeautyProductDetailPage() {
             <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
               <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />내 피부 매칭률
             </h3>
-            {userSkinTypeRaw ? (
+            {userSkinTypeRaw && matchScore.evaluable && (
               <>
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-1">
@@ -354,8 +377,27 @@ export default function BeautyProductDetailPage() {
                     </span>
                   )}
                 </div>
+                {/* 근거 표기 — 숫자가 무엇을 기준으로 나왔는지 명시(근거 없는 수치 = 낚시로 읽힘) */}
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  등록된 피부타입·성분 데이터 기준이에요 · 구매 전 참고용
+                </p>
               </>
-            ) : (
+            )}
+            {userSkinTypeRaw && !matchScore.evaluable && (
+              /* 제품에 판정 근거(피부타입·성분 데이터)가 없으면 숫자를 지어내지 않는다 */
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  이 제품은 아직 매칭에 쓸 데이터(피부타입·성분)가 부족해서 숫자로 말하지 않아요.
+                </p>
+                <button
+                  onClick={() => router.push('/scan')}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" /> 성분표 찍어서 바로 분석하기
+                </button>
+              </div>
+            )}
+            {!userSkinTypeRaw && (
               /* 피부 미분석 시: "매칭률 0%" 오해 방지 — 분석 CTA로 대체 */
               <div>
                 <p className="text-sm text-muted-foreground mb-3">

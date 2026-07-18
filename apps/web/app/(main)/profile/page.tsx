@@ -56,6 +56,7 @@ import {
 } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
 import { WellnessScoreRing, MyInfoSummaryCard, ProfileCardGrid } from '@/components/profile';
+import { IntegratedSessionPromptCard } from '@/app/(main)/home/_components/IntegratedSessionPromptCard';
 import { MyTwinCard } from '@/components/visual-expression';
 import { BeforeAfterSection } from '@/components/profile/BeforeAfterSection';
 import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
@@ -414,6 +415,12 @@ export default function ProfilePage() {
             {/* 내 분석 결과 = 홈과 동일한 정본 카드(5축 채워지는 프로필, ADR-111) */}
             <FadeInUp delay={2}>
               <ProfileCardGrid analyses={analyses} personaOneLine={personaOneLine} />
+            </FadeInUp>
+
+            {/* 내 정체성 카드·리포트 진입 — 재방문 발견성(7/18 감사: 통합 결과 진입점이
+                홈 브리핑 최하단 1개뿐이었음). 세션 유무 처리는 카드가 자체 담당 */}
+            <FadeInUp delay={2}>
+              <IntegratedSessionPromptCard />
             </FadeInUp>
 
             {/* Before/After 비교 */}

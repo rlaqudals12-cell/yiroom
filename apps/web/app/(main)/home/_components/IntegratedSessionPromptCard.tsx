@@ -59,8 +59,11 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
           <Check className="h-5 w-5 text-pink-400" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground">최신 통합 결과 보기</p>
-          <p className="text-xs text-muted-foreground">{contentText}언제든 다시 열어볼 수 있어요</p>
+          {/* "카드"를 라벨에 명시 — 공유카드 존재를 이 링크가 알리지 않으면 유저가 모름(7/18 감사) */}
+          <p className="text-sm font-semibold text-foreground">내 정체성 카드·리포트 보기</p>
+          <p className="text-xs text-muted-foreground">
+            {contentText}카드로 저장하고 공유할 수 있어요
+          </p>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </Link>

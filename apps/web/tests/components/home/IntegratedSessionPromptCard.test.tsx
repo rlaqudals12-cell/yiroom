@@ -67,14 +67,14 @@ describe('IntegratedSessionPromptCard', () => {
     expect(link).toHaveAttribute('href', '/analysis/integrated');
   });
 
-  it('세션 있으면 "최신 통합 결과 보기" 링크 표시', () => {
+  it('세션 있으면 "내 정체성 카드·리포트 보기" 링크 표시 (카드 존재를 라벨이 알림 — 7/18 발견성 감사)', () => {
     mockHookReturn.session = {
       id: '7a3f1234-5678-4abc-def0-0123456789ab',
       axes_completed: ['personal_color', 'skin', 'body'],
     };
     render(<IntegratedSessionPromptCard />);
     expect(screen.getByTestId('integrated-prompt-existing')).toBeInTheDocument();
-    expect(screen.getByText(/최신 통합 결과 보기/)).toBeInTheDocument();
+    expect(screen.getByText(/내 정체성 카드·리포트 보기/)).toBeInTheDocument();
     // "5축 중 N개 완료"(프로필 완성도와 모순) → "N개 축"(개발 용어) →
     // 담긴 분석을 구체적으로 나열 (2026-07-06, 사용자 용어 피드백)
     expect(screen.getByText(/퍼스널컬러·피부·체형 분석이 담겨 있어요/)).toBeInTheDocument();
