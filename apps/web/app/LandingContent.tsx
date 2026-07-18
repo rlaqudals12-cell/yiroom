@@ -138,11 +138,8 @@ export function LandingContent(): React.JSX.Element {
 
   return (
     <div className={`min-h-[calc(100vh-80px)] bg-[#FDF9F7] ${INK}`} data-testid="landing-page">
-      {/* [0] 약속 배너 — 유료 게이트 경쟁 서비스 대비 이룸의 최강 훅을 최상단에 */}
-      <div className="border-b border-[#F0E3DE] bg-[#FBF3F1] px-4 py-2 text-center text-xs text-[#8C7F78]">
-        {t('promiseBanner')}
-      </div>
-
+      {/* (약속 배너는 7/18 사용자 피드백으로 제거 — 신뢰 밴드의 "영원히 무료"와 중복이고
+          헤더 직하 얇은 띠는 시스템 공지처럼 읽힘. 무료 약속은 신뢰 밴드·CTA가 담당) */}
       <div className="w-full px-4 py-5 md:px-10 lg:px-16">
         <div className="mx-auto w-full max-w-[1080px]">
           {/* [1] 히어로 — 크림 컬러필드+그레인 위 오버사이즈 세리프. 카드 = 이솝의 '정물' */}
