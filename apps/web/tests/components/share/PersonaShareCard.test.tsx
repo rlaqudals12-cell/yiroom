@@ -95,6 +95,10 @@ describe('PersonaShareCard — V2 정체성 포토카드', () => {
     const worst = screen.getByTestId('persona-share-worst');
     expect(worst).toBeInTheDocument();
     expect(screen.getByText('Avoid')).toBeInTheDocument();
+    // 취소선 오버레이 — 진단지 리포트와 동일한 부정 표기(축소 썸네일에서 추천색 오독 방지)
+    const chips = worst.querySelectorAll<HTMLElement>(':scope > span:last-child > span');
+    expect(chips).toHaveLength(2);
+    expect(chips[0].style.backgroundImage).toContain('linear-gradient(135deg');
   });
 
   it('팔레트·워스트가 없으면 해당 영역을 렌더하지 않는다 (지어내기 금지)', () => {

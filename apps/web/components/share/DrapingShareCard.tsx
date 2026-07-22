@@ -38,6 +38,8 @@ export interface DrapingShareCardProps {
   serialNo?: number | null;
   /** 초대 한 줄(로케일 값 주입) */
   inviteText?: string;
+  /** 드레이핑 캡션 라벨(로케일 값, 예: "드레이핑") — 리포트 카드와 동일 i18n 키 재사용 */
+  drapeLabel?: string;
   className?: string;
 }
 
@@ -80,11 +82,13 @@ function HexagonY({ size, className }: { size: number; className?: string }): Re
 
 export const DrapingShareCard = forwardRef<HTMLDivElement, DrapingShareCardProps>(
   function DrapingShareCard(
-    { img, drapeHex, toneName, bestColors, serialNo, inviteText, className },
+    { img, drapeHex, toneName, bestColors, serialNo, inviteText, drapeLabel, className },
     ref
   ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const swatches = bestColors.slice(0, 6);
+    // 드레이프 색이름 — 베스트 팔레트에서 해석(못 찾으면 라벨만 표기, 지어내지 않음)
+    const drapeName = bestColors.find((c) => c.hex === drapeHex)?.name;
     const serial =
       typeof serialNo === 'number' && serialNo > 0
         ? `No.${String(serialNo).padStart(6, '0')}`
@@ -128,6 +132,23 @@ export const DrapingShareCard = forwardRef<HTMLDivElement, DrapingShareCardProps
             data-testid="draping-card-canvas"
             aria-label={toneName ?? 'draping'}
           />
+
+          {/* 드레이프 캡션 — 사진이 필터가 아니라 분석(내 진단 색을 입은 나)임을 명시.
+              리포트 카드의 report-photo-caption과 동일 문법(표면 간 정직성 일관) */}
+          {drapeLabel && (
+            <p
+              className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[#8C7F78]"
+              data-testid="draping-card-caption"
+            >
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: drapeHex }}
+                aria-hidden="true"
+              />
+              {drapeLabel}
+              {drapeName ? ` · ${drapeName}` : ''}
+            </p>
+          )}
 
           {/* 베스트 팔레트 미니 밴드 */}
           {swatches.length > 0 && (

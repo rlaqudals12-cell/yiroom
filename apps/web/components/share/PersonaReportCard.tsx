@@ -257,7 +257,7 @@ function SpectrumBar({ pos }: { pos: number }): React.JSX.Element {
   const clamped = Math.min(1, Math.max(0, pos));
   return (
     <span
-      className="relative ml-auto mr-2.5 h-[3px] w-20 shrink-0 self-center rounded-full bg-[#EAD9D4]"
+      className="relative ml-auto mr-2.5 h-[3px] w-16 shrink-0 self-center rounded-full bg-[#EAD9D4]"
       data-testid="report-spectrum"
       aria-hidden="true"
     >
@@ -282,7 +282,9 @@ function RowTable({ rows, testId }: { rows: ReportRow[]; testId: string }): Reac
           <dd
             className={cn(
               'text-right text-[13px] font-medium leading-snug tabular-nums',
-              typeof r.spectrumPos === 'number' ? 'shrink-0' : 'ml-auto'
+              // min-w: 값 글자폭이 스펙트럼 바 트랙 위치를 끌고 다니지 않게 공통 컬럼 고정
+              // (4언어 최장값 '부드러운 편' ≈68px 수용 — 바 w-16 축소와 세트, 사진 병치 252px 안전)
+              typeof r.spectrumPos === 'number' ? 'min-w-[72px] shrink-0' : 'ml-auto'
             )}
           >
             {r.value}

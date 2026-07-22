@@ -82,8 +82,10 @@ const FORMAT: Record<
     pad: 'px-7 pt-9 pb-7',
     hero: 'mt-8 text-[34px]',
     sub: 'mt-3 text-[15px]',
-    bandMt: 'mt-9',
-    bandH: 'h-[96px]',
+    // mt-auto: 9:16의 잉여 세로 공간을 푸터 mt-auto와 반씩 나눠 히어로 상단/팔레트 중하단의
+    // 포스터 3단 구도로 — 고정 mt-9는 하단 1/3이 통공백으로 남아 미완성으로 읽혔다(시각 감사 7/23)
+    bandMt: 'mt-auto pt-9',
+    bandH: 'h-[112px]',
     name: 'pt-2 text-[10px]',
   },
 };
@@ -196,6 +198,10 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
             )}
           </div>
 
+          {/* 퍼컬 실패(팔레트 無) 시 히어로를 광학 중앙으로 — 상단 붙박이 + 하단 통공백이
+              '깨진 렌더'로 읽히는 것을 막는다. 푸터 mt-auto와 잉여 공간을 균등 분배 */}
+          {swatches.length === 0 && <div aria-hidden="true" className="mt-auto" />}
+
           {/* 진단명 히어로 — 자랑의 본체. 퍼컬 실패 시 은유가 히어로 자리를 지킨다 */}
           <h2
             className={cn(
@@ -233,8 +239,13 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
                       aria-hidden="true"
                     />
                     {showNames && (
+                      // break-keep: '브라이트 에메랄드'류 긴 이름이 음절 중간("…에메랄"+"드")이 아닌
+                      // 어절 단위로 꺾이게 — 히어로·서브카피와 동일한 타이포 표준
                       <span
-                        className={cn('block text-center tracking-tight text-[#8C7F78]', fmt.name)}
+                        className={cn(
+                          'block break-keep text-center leading-tight tracking-tight text-[#8C7F78]',
+                          fmt.name
+                        )}
                       >
                         {c.name}
                       </span>
@@ -254,7 +265,13 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
                   <span
                     key={`${c.hex}-${i}`}
                     className="h-4 w-6 rounded-[4px]"
-                    style={{ backgroundColor: c.hex }}
+                    // 취소선 오버레이 — 진단지 리포트와 동일한 부정 표기(색 hex는 정직 유지).
+                    // 이탤릭 'Avoid' 라벨만으로는 축소 썸네일에서 추천색으로 오독된다
+                    style={{
+                      backgroundColor: c.hex,
+                      backgroundImage:
+                        'linear-gradient(135deg, transparent 46%, rgba(43,35,32,0.5) 46%, rgba(43,35,32,0.5) 54%, transparent 54%)',
+                    }}
                     aria-hidden="true"
                   />
                 ))}

@@ -76,6 +76,20 @@ describe('DrapingShareSection — 얼굴 포함 공유 옵트인', () => {
     expect(screen.getByTestId('draping-card-serial')).toHaveTextContent('No.000042');
   });
 
+  it('드레이프 캡션이 라벨 + 색이름으로 렌더된다 (사진=분석임을 명시, 리포트와 동일 문법)', async () => {
+    render(
+      <DrapingShareSection imageUrl="https://x/sig.jpg" toneName="뮤티드 서머" bestColors={BEST} />
+    );
+    fireEvent.click(screen.getByTestId('draping-share-optin'));
+    await waitFor(() => {
+      expect(screen.getByTestId('draping-card-caption')).toBeInTheDocument();
+    });
+    // 기본 드레이프 = 베스트 1번(더스티 로즈) — 라벨은 i18n 키, 이름은 팔레트에서 해석
+    expect(screen.getByTestId('draping-card-caption')).toHaveTextContent(
+      'reportCard.drapingLabel · 더스티 로즈'
+    );
+  });
+
   it('이미지 저장 클릭 시 캡처→계측이 일어난다', async () => {
     mockCapture.mockResolvedValue(new Blob(['png'], { type: 'image/png' }));
     render(<DrapingShareSection imageUrl="https://x/sig.jpg" bestColors={BEST} />);

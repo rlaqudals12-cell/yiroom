@@ -185,6 +185,7 @@ export function DrapingShareSection({
               bestColors={bestColors}
               serialNo={serialNo}
               inviteText={t('shareCard.invite')}
+              drapeLabel={t('reportCard.drapingLabel')}
             />
           </div>
 
