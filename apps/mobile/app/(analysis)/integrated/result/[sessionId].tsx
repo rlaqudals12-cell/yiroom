@@ -13,7 +13,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 
+import { ColorPalette } from '@/components/analysis';
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { extractPalette } from '@/lib/integrated/palette';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
 import { useHasClosetItems } from '@/hooks/useHasClosetItems';
@@ -134,6 +136,9 @@ export default function IntegratedResultScreen(): React.JSX.Element {
         {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 */}
         <PersonaNarrativeCard persona={result.persona} />
 
+        {/* 나만의 컬러 팔레트 — 서버 개인화 palette 배선 (있을 때만 렌더) */}
+        <MyPaletteCard axis={result.axes.personalColor} />
+
         {/* ADR-104 체크리스트 #2: 다음 행동 3단계 */}
         <ActionPlanSection plan={composeActionPlan(result.axes)} />
 
@@ -156,6 +161,33 @@ export default function IntegratedResultScreen(): React.JSX.Element {
         </Text>
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+// ============================================
+// 나만의 컬러 팔레트 카드
+// ============================================
+
+interface MyPaletteCardProps {
+  axis: IntegratedAnalysisResult['axes']['personalColor'];
+}
+
+/**
+ * 분석 직후 화면에서 개인화 팔레트를 바로 보여준다.
+ * 기존엔 서버 palette를 버리고 홈 브리핑에서만 노출됐다 (2026-07-16 감사 수리).
+ */
+function MyPaletteCard({ axis }: MyPaletteCardProps): React.JSX.Element | null {
+  const { colors } = useTheme();
+  const palette = extractPalette(axis);
+  if (palette.length === 0) return null;
+
+  return (
+    <GlassCard style={styles.summaryCard}>
+      <Text style={[styles.summaryHeader, { color: colors.mutedForeground }]}>
+        나만의 컬러 팔레트
+      </Text>
+      <ColorPalette colors={palette.map((color) => ({ color }))} testID="integrated-my-palette" />
+    </GlassCard>
   );
 }
 
@@ -216,9 +248,11 @@ function AxesSummaryCard({ axes }: AxesSummaryCardProps): React.JSX.Element {
 
 function pcSummary(data: AxisData | null): string {
   if (!data) return '분석 미완료';
-  const season = String(data.season ?? '-');
+  // 12톤(tone)이 있으면 4계절(season)보다 우선 표시 — 서버는 12톤을 주는데
+  // 기존 요약이 4계절로 다운그레이드해 보여줬다 (2026-07-16 감사)
+  const toneOrSeason = String(data.tone ?? data.season ?? '-');
   const undertone = String(data.undertone ?? '-');
-  return `${season} / ${undertone}`;
+  return `${toneOrSeason} / ${undertone}`;
 }
 
 function skinSummary(data: AxisData | null): string {
