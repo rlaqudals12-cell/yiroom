@@ -9,13 +9,17 @@
  * Phase E (재방문 지원): payload 없으면 Supabase에서 sessionId 기반 조회 (RLS 적용).
  */
 
+import { useAuth } from '@clerk/clerk-expo';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 
 import { ColorPalette } from '@/components/analysis';
+import { PersonaShareSection } from '@/components/share';
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { fetchIssueNo } from '@/lib/api';
 import { extractPalette } from '@/lib/integrated/palette';
+import { resolvePersonaCardData } from '@/lib/share/card-data';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
 import { useHasClosetItems } from '@/hooks/useHasClosetItems';
@@ -139,6 +143,9 @@ export default function IntegratedResultScreen(): React.JSX.Element {
         {/* 나만의 컬러 팔레트 — 서버 개인화 palette 배선 (있을 때만 렌더) */}
         <MyPaletteCard axis={result.axes.personalColor} />
 
+        {/* E+ 공유카드 — 자랑 카드 인라인 노출(웹 정본과 동일 위치: 페르소나+팔레트 직후) */}
+        <ShareCardBlock result={result} />
+
         {/* ADR-104 체크리스트 #2: 다음 행동 3단계 */}
         <ActionPlanSection plan={composeActionPlan(result.axes)} />
 
@@ -162,6 +169,45 @@ export default function IntegratedResultScreen(): React.JSX.Element {
       </ScrollView>
     </ScreenContainer>
   );
+}
+
+// ============================================
+// E+ 공유카드 블록
+// ============================================
+
+/**
+ * 공유카드 데이터 조립 + 발급번호 조회 후 섹션 렌더.
+ * persona가 없으면(성공 축 0) 카드를 만들 수 없어 미렌더.
+ * 발급번호는 웹 API 실측 순번 — 실패 시 조용히 생략(카드가 번호를 지어내지 않음).
+ */
+function ShareCardBlock({
+  result,
+}: {
+  result: IntegratedAnalysisResult;
+}): React.JSX.Element | null {
+  const { getToken } = useAuth();
+  const cardData = useMemo(() => resolvePersonaCardData(result), [result]);
+  const [serialNo, setSerialNo] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!cardData) return;
+    let cancelled = false;
+    (async () => {
+      // 토큰 획득 실패도 null로 흡수 — 발급번호는 생략(지어내지 않음), 카드 렌더는 유지
+      const token = await getToken().catch(() => null);
+      const issueNo = await fetchIssueNo(token, result.sessionId);
+      if (!cancelled) setSerialNo(issueNo);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // sessionId 변경 시에만 재조회. clerk-expo useAuth의 getToken은 렌더마다 새 참조라
+    // deps에 넣으면 setSerialNo 재렌더와 맞물려 중복 조회가 된다 (7/11 요청 폭풍 교훈).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardData, result.sessionId]);
+
+  if (!cardData) return null;
+  return <PersonaShareSection data={cardData} serialNo={serialNo} />;
 }
 
 // ============================================

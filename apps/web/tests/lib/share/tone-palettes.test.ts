@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getCardPalette } from '@/lib/share/tone-palettes';
+import {
+  getCardPalette,
+  toneHeroLabelKo,
+  TONE_LABELS_KO,
+  SEASON_LABELS_KO,
+} from '@/lib/share/tone-palettes';
+import { TWELVE_TONE_LABELS } from '@/lib/analysis/personal-color-v2/types';
+import { seasonKo } from '@/lib/analysis/integrated';
 
 const TWELVE_TONES = [
   'light-spring',
@@ -109,5 +116,25 @@ describe('getCardPalette — 공유카드 12톤 큐레이션 팔레트', () => {
     const winter = getCardPalette('winter', 'ko')!;
     expect(winter.accent).toHaveLength(3);
     expect(winter.metals.map((c) => c.name)).toEqual(['실버', '화이트 골드']);
+  });
+});
+
+describe('톤 라벨 드리프트 가드 — shared 복제본 = 웹 SSOT 동일성 강제', () => {
+  it('shared TONE_LABELS_KO는 웹 TWELVE_TONE_LABELS(SSOT)와 완전히 일치한다', () => {
+    // 모바일 카드는 shared 라벨을 쓰므로, 여기가 어긋나면 웹-모바일 표기가 갈라진다
+    expect(TONE_LABELS_KO).toEqual(TWELVE_TONE_LABELS);
+  });
+
+  it('shared SEASON_LABELS_KO는 웹 seasonKo(SSOT)와 일치한다', () => {
+    for (const season of ['spring', 'summer', 'autumn', 'winter']) {
+      expect(SEASON_LABELS_KO[season]).toBe(seasonKo(season, 'ko'));
+    }
+  });
+
+  it('toneHeroLabelKo: 12톤 우선 → 계절 폴백 → 미지 값은 null(원시 영문키 금지)', () => {
+    expect(toneHeroLabelKo('muted-summer', 'summer')).toBe('뮤티드 서머');
+    expect(toneHeroLabelKo(null, 'summer')).toBe('여름 쿨톤');
+    expect(toneHeroLabelKo('unknown', 'unknown')).toBeNull();
+    expect(toneHeroLabelKo(null, null)).toBeNull();
   });
 });

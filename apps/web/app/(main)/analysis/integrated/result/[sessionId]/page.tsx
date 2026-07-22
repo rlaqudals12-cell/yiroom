@@ -42,7 +42,7 @@ import type { OutputLocale } from '@/lib/gemini/client';
 import type { PersonaBadge, PaletteColor } from '@/components/share/PersonaShareCard';
 import type { ReportRow, ReportStyleChip } from '@/components/share/PersonaReportCard';
 import { getCardPalette } from '@/lib/share/tone-palettes';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { fetchIssueNo } from '@/lib/share/issue-no';
 import { PartialSuccessBanner } from './_components/PartialSuccessBanner';
 import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
 import { NextStepsLinks } from './_components/NextStepsLinks';
@@ -184,25 +184,6 @@ function extractSkinConcerns(record: AxisDbRecord | null): string | undefined {
 async function fetchFaceUrl(path: string | null): Promise<string | null> {
   if (!path) return null;
   return getSignedImageUrl(path, 3600);
-}
-
-/**
- * 발급 번호 — 이 세션이 이룸의 몇 번째 통합 분석인지(실측 순번, 정직한 희소성).
- * 왜 service-role: RLS 클라이언트는 본인 행만 세므로 전체 순번을 얻을 수 없다.
- * 카운트만 반환(개인 데이터 노출 없음). 실패 시 null → 카드가 번호를 지어내지 않고 생략.
- */
-async function fetchIssueNo(createdAt: string): Promise<number | null> {
-  try {
-    const svc = createServiceRoleClient();
-    const { count, error } = await svc
-      .from('integrated_analysis_sessions')
-      .select('id', { count: 'exact', head: true })
-      .lte('created_at', createdAt);
-    if (error || typeof count !== 'number' || count < 1) return null;
-    return count;
-  } catch {
-    return null;
-  }
 }
 
 /** 리포트 속성표 라벨 묶음 — 로케일 완료 문자열 (카드에는 원시 영문값 금지) */
