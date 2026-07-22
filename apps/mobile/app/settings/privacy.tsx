@@ -165,6 +165,13 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
           text: '삭제 요청',
           style: 'destructive',
           onPress: async () => {
+            // Clerk 사용자 id 없이는 삭제 요청을 기록할 수 없다 — 정직하게 실패
+            const clerkUserId = user?.id;
+            if (!clerkUserId) {
+              Alert.alert('오류', '로그인 정보를 확인할 수 없어요. 다시 로그인 후 시도해주세요.');
+              return;
+            }
+
             setIsDeleting(true);
             try {
               // Supabase에 삭제 요청 기록
@@ -172,23 +179,24 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
               const scheduledAt = new Date(now);
               scheduledAt.setDate(scheduledAt.getDate() + GRACE_PERIOD_DAYS);
 
-              const { error } = await supabase.rpc('request_account_deletion', {
-                grace_period_days: GRACE_PERIOD_DAYS,
-              });
+              // 왜 직접 UPDATE인가: request_account_deletion RPC는 저장소·prod에 정의가 없고,
+              // 이전 폴백은 supabase.auth.getUser()(Clerk 통합에선 항상 null)로
+              // 0행 업데이트가 에러 없이 통과해 "거짓 삭제 완료" 알림을 띄웠다 (2026-07-16 감사).
+              // .select()로 실제 갱신된 행을 확인해 0행이면 실패로 처리한다.
+              const { data: updated, error } = await supabase
+                .from('users')
+                .update({
+                  deletion_requested_at: now.toISOString(),
+                  deletion_scheduled_at: scheduledAt.toISOString(),
+                })
+                .eq('clerk_user_id', clerkUserId)
+                .select('clerk_user_id');
 
               if (error) {
-                // RPC가 없으면 직접 업데이트 시도
-                const { error: updateError } = await supabase
-                  .from('users')
-                  .update({
-                    deletion_requested_at: now.toISOString(),
-                    deletion_scheduled_at: scheduledAt.toISOString(),
-                  })
-                  .eq('clerk_user_id', (await supabase.auth.getUser()).data.user?.id ?? '');
-
-                if (updateError) {
-                  throw updateError;
-                }
+                throw error;
+              }
+              if (!updated || updated.length === 0) {
+                throw new Error(`deletion request updated 0 rows (clerk_user_id=${clerkUserId})`);
               }
 
               // 로그아웃 처리
@@ -209,7 +217,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
         },
       ]
     );
-  }, [supabase, signOut]);
+  }, [supabase, signOut, user?.id]);
 
   return (
     <>
