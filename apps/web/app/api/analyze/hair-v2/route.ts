@@ -206,7 +206,9 @@ export async function POST(req: NextRequest) {
           faceShapeAnalysis,
           hairColorAnalysis: {
             currentColor: undefined,
-            skinToneMatch: 75 + Math.floor(Math.random() * 15),
+            // 현재 헤어컬러 미측정 상태의 기본 적합도 — 랜덤 금지(재현성 계약).
+            // 퍼스널컬러 연계 추천이면 85, 시즌 미상이면 75 고정.
+            skinToneMatch: personalColorSeason ? 85 : 75,
             recommendedColors: colorRecommendations,
           },
           currentHairInfo: currentHair,
