@@ -2,8 +2,9 @@
  * 성분 스캔 화면 (ADR-112) — "나와의 적합도"
  *
  * @description
- *   제품 성분표를 촬영하거나 갤러리에서 선택 → 온디바이스 OCR(analyzeIngredientImage)로
+ *   제품 성분표를 촬영하거나 갤러리에서 선택 → 서버 OCR(웹 /api/scan/ocr, thin client)로
  *   전성분 추출 → buildScanVerdict 4레이어 조립 → ScanVerdict 렌더.
+ *   Gemini 키는 서버에만 있다 — APK 키 내장 금지 (2026-07-16 감사 수리).
  *
  *   정직성:
  *   - 성분표를 못 읽으면(추출 실패/성분 0개) 지어내지 않고 정직 안내 + 재시도를 보여준다.
@@ -13,7 +14,7 @@
  *
  *   인벤토리 바코드 스캔((inventory))과 별개 — 이 화면은 "성분표 → 적합도 컨설팅"이다.
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera as CameraIcon, ImageUp, ScanLine, AlertTriangle, X } from 'lucide-react-native';
@@ -32,8 +33,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScanVerdict } from '@/components/scan';
 import { ScreenContainer } from '@/components/ui';
+import { fetchIngredientOcr } from '@/lib/api/scan';
 import { downscaleToBase64 } from '@/lib/image/downscale';
-import { analyzeIngredientImage, type OcrResult } from '@/lib/scan/ingredient-ocr';
+import type { OcrResult } from '@/lib/scan/ingredient-ocr';
 import { buildScanVerdict, fetchScanUserAnalysis, type ScanVerdictData } from '@/lib/scan/verdict';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
@@ -43,6 +45,7 @@ type Phase = 'capture' | 'camera' | 'analyzing' | 'result' | 'error';
 export default function ScanScreen(): React.JSX.Element {
   const { colors, brand } = useTheme();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
@@ -67,7 +70,9 @@ export default function ScanScreen(): React.JSX.Element {
     async (base64: string) => {
       setPhase('analyzing');
       try {
-        const ocrResult = await analyzeIngredientImage(base64);
+        // 서버 OCR (Gemini 키는 서버에만 — thin client)
+        const token = await getToken();
+        const ocrResult = await fetchIngredientOcr(token, base64);
         if (!mountedRef.current) return;
 
         // 추출 실패 또는 성분 0개 → 정직하게 재촬영 안내 (모의 성분으로 판정하지 않음)
@@ -102,7 +107,7 @@ export default function ScanScreen(): React.JSX.Element {
         setPhase('error');
       }
     },
-    [supabase, userId]
+    [supabase, userId, getToken]
   );
 
   // 카메라 열기 (권한 확인 후). 영구 거부 시 설정 앱으로 안내.

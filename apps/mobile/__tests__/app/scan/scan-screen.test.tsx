@@ -74,15 +74,17 @@ jest.mock('expo-image-manipulator', () => ({
 // ── clerk / supabase ─────────────────────────────────────
 jest.mock('@clerk/clerk-expo', () => ({
   useUser: () => ({ user: { id: 'user_1' } }),
+  useAuth: () => ({ getToken: jest.fn(async () => 'clerk-token-test') }),
 }));
 jest.mock('../../../lib/supabase', () => ({
   useClerkSupabaseClient: () => ({}),
 }));
 
 // ── OCR / verdict 라이브러리 ─────────────────────────────
-const mockAnalyzeIngredientImage = jest.fn();
-jest.mock('../../../lib/scan/ingredient-ocr', () => ({
-  analyzeIngredientImage: (...args: unknown[]) => mockAnalyzeIngredientImage(...args),
+// 서버 OCR thin client(lib/api/scan)를 mock — 온디바이스 Gemini 직접 호출은 제거됨 (2026-07-16)
+const mockFetchIngredientOcr = jest.fn();
+jest.mock('../../../lib/api/scan', () => ({
+  fetchIngredientOcr: (...args: unknown[]) => mockFetchIngredientOcr(...args),
 }));
 
 const mockBuildScanVerdict = jest.fn();
@@ -146,7 +148,7 @@ const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 describe('ScanScreen (성분 스캔)', () => {
   beforeEach(() => {
     mockLaunchLibrary.mockReset();
-    mockAnalyzeIngredientImage.mockReset();
+    mockFetchIngredientOcr.mockReset();
     mockBuildScanVerdict.mockReset();
     mockManipulate.mockClear();
   });
@@ -167,7 +169,7 @@ describe('ScanScreen (성분 스캔)', () => {
       canceled: false,
       assets: [{ uri: 'file://x.jpg', base64: 'AAAA' }],
     });
-    mockAnalyzeIngredientImage.mockResolvedValue(OCR_SUCCESS);
+    mockFetchIngredientOcr.mockResolvedValue(OCR_SUCCESS);
     mockBuildScanVerdict.mockResolvedValue(verdictData(true));
 
     const { getByTestId } = renderScreen();
@@ -182,7 +184,8 @@ describe('ScanScreen (성분 스캔)', () => {
       [{ resize: { width: 1024 } }],
       expect.objectContaining({ base64: true })
     );
-    expect(mockAnalyzeIngredientImage).toHaveBeenCalledWith('SCALED64');
+    // Clerk 토큰 + 다운스케일 base64로 서버 OCR을 호출한다 (온디바이스 Gemini 아님)
+    expect(mockFetchIngredientOcr).toHaveBeenCalledWith('clerk-token-test', 'SCALED64');
   });
 
   it('OCR가 성분을 못 읽으면 정직 안내 + 재시도를 보여준다 (지어내지 않음)', async () => {
@@ -190,7 +193,7 @@ describe('ScanScreen (성분 스캔)', () => {
       canceled: false,
       assets: [{ uri: 'file://x.jpg', base64: 'AAAA' }],
     });
-    mockAnalyzeIngredientImage.mockResolvedValue({
+    mockFetchIngredientOcr.mockResolvedValue({
       success: false,
       ingredients: [],
       confidence: 'low',
@@ -213,7 +216,7 @@ describe('ScanScreen (성분 스캔)', () => {
       canceled: false,
       assets: [{ uri: 'file://x.jpg', base64: 'AAAA' }],
     });
-    mockAnalyzeIngredientImage.mockResolvedValue(OCR_SUCCESS);
+    mockFetchIngredientOcr.mockResolvedValue(OCR_SUCCESS);
     mockBuildScanVerdict.mockResolvedValue(verdictData(false));
 
     const { getByTestId, queryByTestId } = renderScreen();
