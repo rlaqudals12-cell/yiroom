@@ -285,63 +285,67 @@ export function PersonaShareSection({
         </div>
       )}
 
-      {/* 카드 미리보기 — 좁은 화면에선 가로 스크롤 (카드 원본 크기 유지 = 캡처 품질 보장) */}
-      <div className="mt-4 flex justify-center overflow-x-auto pb-1">
-        {format === 'report' && report ? (
-          <PersonaReportCard
-            ref={cardRef}
-            oneLine={oneLine}
-            toneName={toneName}
-            attrs={report.attrs}
-            photoImg={photoOptIn ? photoImg : null}
-            checklist={report.checklist}
-            palette={palette}
-            accents={report.accents}
-            metals={report.metals}
-            worstPalette={worstPalette}
-            axisRows={report.axisRows}
-            skinNote={report.skinNote}
-            hairStyles={report.hairStyles}
-            sealText={report.sealText}
-            avoidNote={report.avoidNote}
-            actionItems={report.actionItems}
-            note={report.note}
-            confidenceText={report.confidenceText}
-            confidenceHintText={t('reportCard.confidenceHint')}
-            reproducibilityText={report.reproducibilityText}
-            reproBadgeText={t('reportCard.reproBadge')}
-            dateText={report.dateText}
-            groupLabels={{
-              best: t('reportCard.bestLabel'),
-              accent: t('reportCard.accentLabel'),
-              metal: t('reportCard.metalLabel'),
-              avoid: t('reportCard.avoidLabel'),
-              styles: t('reportCard.stylesLabel'),
-              care: t('reportCard.careLabel'),
-              bestUse: t('reportCard.bestUse'),
-              accentUse: t('reportCard.accentUse'),
-              draping: t('reportCard.drapingLabel'),
-            }}
-            serialNo={serialNo}
-            inviteText={t('shareCard.invite')}
-          />
-        ) : (
-          // 틸트 = 실물 포토카드를 손에 든 감각(포인터 추적 3D) — 캡처 PNG에는 무영향
-          <PhotocardTilt>
-            <PersonaShareCard
+      {/* 카드 미리보기 — 좁은 화면에선 가로 스크롤 (카드 원본 크기 유지 = 캡처 품질 보장).
+          justify-center 금지: 센터 정렬 플렉스의 시작쪽 오버플로는 스크롤로 도달 불가라
+          390px 폰에서 카드 좌측이 영구 클리핑된다 — mx-auto가 공간 남을 때만 센터(QA 7/23) */}
+      <div className="mt-4 flex overflow-x-auto pb-1">
+        <div className="mx-auto shrink-0">
+          {format === 'report' && report ? (
+            <PersonaReportCard
               ref={cardRef}
               oneLine={oneLine}
               toneName={toneName}
-              badges={badges}
+              attrs={report.attrs}
+              photoImg={photoOptIn ? photoImg : null}
+              checklist={report.checklist}
               palette={palette}
+              accents={report.accents}
+              metals={report.metals}
               worstPalette={worstPalette}
+              axisRows={report.axisRows}
+              skinNote={report.skinNote}
+              hairStyles={report.hairStyles}
+              sealText={report.sealText}
+              avoidNote={report.avoidNote}
+              actionItems={report.actionItems}
+              note={report.note}
+              confidenceText={report.confidenceText}
+              confidenceHintText={t('reportCard.confidenceHint')}
+              reproducibilityText={report.reproducibilityText}
+              reproBadgeText={t('reportCard.reproBadge')}
+              dateText={report.dateText}
+              groupLabels={{
+                best: t('reportCard.bestLabel'),
+                accent: t('reportCard.accentLabel'),
+                metal: t('reportCard.metalLabel'),
+                avoid: t('reportCard.avoidLabel'),
+                styles: t('reportCard.stylesLabel'),
+                care: t('reportCard.careLabel'),
+                bestUse: t('reportCard.bestUse'),
+                accentUse: t('reportCard.accentUse'),
+                draping: t('reportCard.drapingLabel'),
+              }}
               serialNo={serialNo}
               inviteText={t('shareCard.invite')}
-              format={format === 'report' ? 'square' : format}
-              finish={finish}
             />
-          </PhotocardTilt>
-        )}
+          ) : (
+            // 틸트 = 실물 포토카드를 손에 든 감각(포인터 추적 3D) — 캡처 PNG에는 무영향
+            <PhotocardTilt>
+              <PersonaShareCard
+                ref={cardRef}
+                oneLine={oneLine}
+                toneName={toneName}
+                badges={badges}
+                palette={palette}
+                worstPalette={worstPalette}
+                serialNo={serialNo}
+                inviteText={t('shareCard.invite')}
+                format={format === 'report' ? 'square' : format}
+                finish={finish}
+              />
+            </PhotocardTilt>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">

@@ -149,12 +149,16 @@ export function LandingContent(): React.JSX.Element {
               className="pointer-events-none absolute inset-0 opacity-[0.05]"
               style={{ backgroundImage: PAPER_GRAIN_URI }}
             />
-            <div className="relative grid items-center gap-10 md:grid-cols-[1fr_auto]">
+            {/* 2컬럼 분할은 xl부터 — 카드(400px)가 옆에 붙는 구간에서 텍스트 컬럼이
+                '색·피부·체형·헤어' 어절 렌더폭(~492px@56px)보다 좁으면 break-keep이
+                어절 단위 세로 낙하한다. lg(1024~1279)도 컬럼 ~360px라 재발(QA 패널 실측 7/23)
+                — xl(1280+)은 컬럼 ~544px로 안전. 그 아래는 검증된 하단 스택 유지 */}
+            <div className="relative grid items-center gap-10 xl:grid-cols-[1fr_auto]">
               <div className="min-w-0">
                 <p className="font-serif text-[13px] italic text-[#C56A84]">
                   Identity Report · Beta
                 </p>
-                <h1 className="mt-5 whitespace-pre-line break-keep font-serif text-4xl font-semibold leading-[1.16] tracking-tight md:text-[56px]">
+                <h1 className="mt-5 whitespace-pre-line break-keep font-serif text-4xl font-semibold leading-[1.16] tracking-tight xl:text-[56px]">
                   {t('heroTitle')}
                 </h1>
                 <p

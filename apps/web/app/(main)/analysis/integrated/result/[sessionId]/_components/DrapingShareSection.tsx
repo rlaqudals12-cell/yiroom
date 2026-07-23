@@ -175,18 +175,21 @@ export function DrapingShareSection({
             </div>
           </div>
 
-          {/* 카드 미리보기 — 캡처 원본 크기 유지 */}
-          <div className="mt-4 flex justify-center overflow-x-auto pb-1">
-            <DrapingShareCard
-              ref={cardRef}
-              img={img}
-              drapeHex={drape.hex}
-              toneName={toneName}
-              bestColors={bestColors}
-              serialNo={serialNo}
-              inviteText={t('shareCard.invite')}
-              drapeLabel={t('reportCard.drapingLabel')}
-            />
+          {/* 카드 미리보기 — 캡처 원본 크기 유지. justify-center 금지: 센터 정렬 플렉스의
+              시작쪽 오버플로는 스크롤 도달 불가(좌측 영구 클리핑) — mx-auto 래퍼로 대체(QA 7/23) */}
+          <div className="mt-4 flex overflow-x-auto pb-1">
+            <div className="mx-auto shrink-0">
+              <DrapingShareCard
+                ref={cardRef}
+                img={img}
+                drapeHex={drape.hex}
+                toneName={toneName}
+                bestColors={bestColors}
+                serialNo={serialNo}
+                inviteText={t('shareCard.invite')}
+                drapeLabel={t('reportCard.drapingLabel')}
+              />
+            </div>
           </div>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
