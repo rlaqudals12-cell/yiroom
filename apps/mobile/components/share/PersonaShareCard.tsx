@@ -11,12 +11,13 @@
  * 화면 프리뷰는 섹션이 transform scale로 축소해 보여준다(레이아웃 크기 불변 = 캡처 무영향).
  * 색은 전부 고정 hex(테마 토큰 미사용) — 뷰어 테마와 무관하게 항상 같은 산출물(웹과 동일 관례).
  *
- * 웹과의 의도적 차이(캡처 산출물 무해 범위): 종이 그레인(SVG feTurbulence — RN 미지원)과
- * 포일 마감(CSS 그라데 오버레이)은 생략. 색·위계·타이포 구조는 동일.
+ * 종이 그레인: RN은 SVG feTurbulence 미지원이라(react-native-svg 실측) 웹 정본 SVG를
+ * PNG 타일(assets/paper-grain.png, 스크립트 재생성)로 구워 Image repeat로 패리티 확보.
+ * 웹과의 의도적 차이: 포일 마감(CSS 그라데 오버레이)만 생략. 색·위계·타이포 구조는 동일.
  * 왜 사진이 없나: 생체정보(얼굴)는 공유 산출물에 절대 포함하지 않는다(BIPA/PIPA).
  */
 import { forwardRef } from 'react';
-import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Image, Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 /** 카드에 표시되는 축 뱃지 (한국어 라벨만 — 성공 축만 전달) */
@@ -148,6 +149,15 @@ export const PersonaShareCard = forwardRef<View, PersonaShareCardProps>(function
       style={[styles.card, { width: fmt.width, minHeight: fmt.minH, padding: fmt.pad }, style]}
       testID="persona-share-card"
     >
+      {/* 종이 그레인 — 인쇄물 소유감(웹 PAPER_GRAIN_URI와 동일 노이즈, 캡처에 구워짐) */}
+      <Image
+        source={require('../../assets/paper-grain.png')}
+        resizeMode="repeat"
+        style={styles.grain}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
+
       {/* 브랜드 로우 — 인장 + 세리프 워드마크 + 발급번호(한정판 인쇄 넘버) */}
       <View style={styles.brandRow}>
         <HexagonY size={sz(16)} color={ROSE} />
@@ -237,6 +247,13 @@ const styles = StyleSheet.create({
     backgroundColor: CREAM,
     borderRadius: sz(24),
     overflow: 'hidden',
+  },
+  // 질감 규율: opacity 0.03~0.05 — "느껴지되 보이지 않아야" 한다 (웹과 동일)
+  grain: {
+    ...StyleSheet.absoluteFillObject,
+    width: undefined,
+    height: undefined,
+    opacity: 0.04,
   },
   brandRow: {
     flexDirection: 'row',

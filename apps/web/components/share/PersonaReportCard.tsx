@@ -659,8 +659,9 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
             <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
             <span className="font-serif text-[13px] italic text-[#B6A9A1]">Identity Report</span>
             {serial && (
+              // 레터프레스 압인 — 발급번호는 진단서의 인장(공유카드와 동일 처리)
               <span
-                className="ml-auto font-serif text-[12.5px] italic tabular-nums text-[#C56A84]"
+                className="ml-auto font-serif text-[12.5px] italic tabular-nums text-[#C56A84] [text-shadow:0_1px_0_rgba(255,255,255,0.55)]"
                 data-testid="report-serial"
               >
                 {serial}
@@ -683,7 +684,7 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
           <div className="mt-5 flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h2
-                className="whitespace-pre-wrap break-keep font-serif text-[27px] font-semibold leading-[1.25] tracking-tight"
+                className="whitespace-pre-wrap break-keep font-serif text-[27px] font-semibold leading-[1.25] tracking-tight [text-shadow:0_1px_0_rgba(255,255,255,0.45)]"
                 data-testid="report-hero"
               >
                 {toneName ?? oneLine}

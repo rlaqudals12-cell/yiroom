@@ -189,8 +189,9 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
             <HexagonY size={16} className="self-center text-[#C56A84]" />
             <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
             {serial && (
+              // 레터프레스 압인 — 크림 지면 아래 1px 밝은 섀도(활판 눌림의 하단 모서리 빛)
               <span
-                className="ml-auto font-serif text-[12.5px] italic tabular-nums text-[#C56A84]"
+                className="ml-auto font-serif text-[12.5px] italic tabular-nums text-[#C56A84] [text-shadow:0_1px_0_rgba(255,255,255,0.55)]"
                 data-testid="persona-share-serial"
               >
                 {serial}
@@ -205,7 +206,7 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
           {/* 진단명 히어로 — 자랑의 본체. 퍼컬 실패 시 은유가 히어로 자리를 지킨다 */}
           <h2
             className={cn(
-              'whitespace-pre-wrap break-keep font-bold leading-[1.25] tracking-tight',
+              'whitespace-pre-wrap break-keep font-bold leading-[1.25] tracking-tight [text-shadow:0_1px_0_rgba(255,255,255,0.45)]',
               fmt.hero
             )}
             data-testid="persona-share-hero"
