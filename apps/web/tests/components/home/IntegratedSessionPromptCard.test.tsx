@@ -8,7 +8,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 vi.mock('lucide-react', () => ({
-  Sparkles: () => null,
+  // 톤 정합 스윕(7/23): 장식 Sparkles → Palette(기능 아이콘)로 교체됨
+  Palette: () => null,
   ChevronRight: () => null,
   Check: () => null,
 }));

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { FlaskConical, Palette, Sparkles, ScanLine, ChevronRight } from 'lucide-react';
+import { FlaskConical, Palette, ScanLine, ChevronRight } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -259,14 +259,11 @@ export default function BeautyPage() {
       {/* 통합 분석 큐레이션에서 진입한 경우 맥락 안내 */}
       {isFromIntegrated && (
         <div
-          className="bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-transparent border-b px-4 py-3"
+          className="bg-secondary border-b px-4 py-3"
           data-testid="beauty-integrated-banner"
           role="status"
         >
-          <p className="text-sm text-foreground">
-            <Sparkles className="w-4 h-4 inline mr-1 text-primary" aria-hidden="true" />
-            통합 분석 결과를 바탕으로 추천하는 제품이에요
-          </p>
+          <p className="text-sm text-foreground">통합 분석 결과를 바탕으로 추천하는 제품이에요</p>
         </div>
       )}
 
@@ -274,7 +271,7 @@ export default function BeautyPage() {
       {hasAnalysis ? (
         <FadeInUp>
           <section
-            className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-900/20 px-4 py-4 border-b"
+            className="bg-secondary px-4 py-4 border-b"
             aria-label="내 피부 프로필"
             data-testid="beauty-profile"
           >
@@ -302,13 +299,13 @@ export default function BeautyPage() {
             </div>
             {/* AI 진단 결과: 피부타입 및 피부고민 */}
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs bg-pink-200 dark:bg-pink-800/50 text-pink-800 dark:text-pink-200 px-2.5 py-1 rounded-full font-medium">
+              <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
                 {getSkinTypeLabel(userSkinType)}
               </span>
               {userSkinConcerns.map((concern) => (
                 <span
                   key={concern}
-                  className="text-xs bg-rose-100 dark:bg-rose-800/30 text-rose-700 dark:text-rose-300 px-2.5 py-1 rounded-full"
+                  className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full"
                 >
                   {getSkinConcernLabel(concern)}
                 </span>
@@ -318,14 +315,10 @@ export default function BeautyPage() {
         </FadeInUp>
       ) : (
         <FadeInUp>
-          <section
-            className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-900/20 px-4 py-4 border-b"
-            data-testid="beauty-profile"
-          >
+          <section className="bg-secondary px-4 py-4 border-b" data-testid="beauty-profile">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
                   분석하면 내 피부 기준으로 골라드려요
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">

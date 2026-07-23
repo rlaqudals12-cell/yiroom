@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Sparkles, ChevronRight, Plus } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { AnalysisProgressBar } from '@/components/home/AnalysisProgressBar';
 import {
@@ -36,11 +36,11 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-amber-500" />내 분석 결과
+          내 분석 결과
         </h3>
         <button
           onClick={() => router.push('/analysis/integrated')}
-          className="text-sm text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1 min-h-[44px]"
+          className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1 min-h-[44px]"
         >
           전체보기
           <ChevronRight className="w-4 h-4" />
@@ -92,17 +92,17 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
         {!isAllComplete && nextAnalysis && (
           <button
             onClick={() => router.push(ANALYSIS_META[nextAnalysis].analysisHref)}
-            className="group flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 transition-colors text-left"
+            className="group flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-primary/40 hover:bg-primary/5 transition-colors text-left"
             data-testid="home-analysis-next-cta"
           >
-            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 transition-colors">
-              <Plus className="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors" />
+            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+              <Plus className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
             </div>
             <div className="min-w-0">
               <p className="text-xs text-slate-400 dark:text-slate-500">
                 {ANALYSIS_META[nextAnalysis].label}
               </p>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
                 분석해보기
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">

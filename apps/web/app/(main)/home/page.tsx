@@ -34,10 +34,7 @@ function HomeStateSkeleton() {
  */
 export default async function HomePage() {
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/20 dark:to-indigo-950/30 pb-20"
-      data-testid="home-page"
-    >
+    <div className="min-h-screen bg-background pb-20" data-testid="home-page">
       {/* 헤더 - Server Component (LCP 요소) */}
       <HomeHeader />
 

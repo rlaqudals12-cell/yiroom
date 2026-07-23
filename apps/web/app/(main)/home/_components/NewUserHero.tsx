@@ -75,26 +75,18 @@ function AnalysisPreviewCards({
 const SYNERGY_STEPS = [
   {
     icon: Palette,
-    colorFrom: 'from-pink-400',
-    colorTo: 'to-rose-500',
     key: 'synergyStep1' as const,
   },
   {
     icon: Droplet,
-    colorFrom: 'from-sky-400',
-    colorTo: 'to-blue-500',
     key: 'synergyStep2' as const,
   },
   {
     icon: Sparkles,
-    colorFrom: 'from-violet-400',
-    colorTo: 'to-purple-500',
     key: 'synergyStep3' as const,
   },
   {
     icon: ShoppingBag,
-    colorFrom: 'from-amber-400',
-    colorTo: 'to-orange-500',
     key: 'synergyStep4' as const,
   },
 ];
@@ -126,10 +118,8 @@ function SynergyChain({
             <div key={step.key} className="flex items-start flex-1 min-w-0">
               {/* 스텝 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
-                <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${step.colorFrom} ${step.colorTo} flex items-center justify-center shadow-sm`}
-                >
-                  <Icon className="w-[18px] h-[18px] text-white" aria-hidden="true" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
+                  <Icon className="w-[18px] h-[18px] text-primary" aria-hidden="true" />
                 </div>
                 <p className="text-[11px] font-medium text-foreground mt-2 text-center leading-tight">
                   {t(step.key)}
@@ -159,7 +149,7 @@ export default function NewUserHero(): React.ReactElement {
   return (
     <div data-testid="home-new-hero" role="region" aria-label={t('newUserGuide')}>
       {/* 히어로 카드 */}
-      <div className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-2xl p-6 mb-4">
+      <div className="bg-card border rounded-2xl p-6 mb-4">
         <h2 className="text-lg font-bold text-foreground mb-2 whitespace-pre-line">
           {t('heroTitle')}
         </h2>
@@ -171,9 +161,8 @@ export default function NewUserHero(): React.ReactElement {
         <Link
           href="/analysis/integrated"
           data-testid="home-hero-integrated-cta"
-          className="flex items-center justify-center gap-3 px-6 py-4 min-h-[56px] bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 rounded-xl text-white font-bold shadow-md shadow-pink-500/20 transition-all"
+          className="flex items-center justify-center gap-3 px-6 py-4 min-h-[56px] bg-primary hover:bg-primary/90 rounded-xl text-white font-bold shadow-sm transition-all"
         >
-          <Sparkles className="w-5 h-5" aria-hidden="true" />
           <span className="text-base leading-snug">
             내 정체성 5가지 알아보기
             <span className="block text-xs font-normal text-white/80 mt-0.5">

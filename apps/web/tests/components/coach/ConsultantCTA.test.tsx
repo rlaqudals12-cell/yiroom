@@ -100,7 +100,7 @@ describe('ConsultantCTA', () => {
     it('빠른 질문 버튼들을 렌더링한다', () => {
       render(<ConsultantCTA category="skin" showQuickQuestions />);
 
-      expect(screen.getByText('AI에게 물어보기')).toBeInTheDocument();
+      expect(screen.getByText('뷰티팀에게 물어보기')).toBeInTheDocument();
       expect(screen.getByText('제 피부에 맞는 루틴 알려줘요')).toBeInTheDocument();
     });
 

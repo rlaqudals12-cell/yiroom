@@ -64,7 +64,7 @@ export default function WelcomeBackBanner() {
 
   return (
     <div
-      className="relative bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 rounded-2xl p-5 border border-rose-200/50 dark:border-rose-800/30"
+      className="relative bg-card rounded-2xl p-5 border border-rose-200/50 dark:border-rose-800/30"
       data-testid="welcome-back-banner"
       role="status"
       aria-live="polite"

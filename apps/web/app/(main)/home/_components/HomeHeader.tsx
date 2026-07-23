@@ -32,9 +32,7 @@ export async function HomeHeader() {
             />
           </svg>
         </Link>
-        <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          {t('brandName')}
-        </h1>
+        <h1 className="font-serif text-lg font-semibold text-foreground">{t('brandName')}</h1>
         <Link
           href="/search"
           className="p-2 -mr-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"

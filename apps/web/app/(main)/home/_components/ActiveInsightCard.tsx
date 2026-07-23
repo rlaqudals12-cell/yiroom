@@ -12,7 +12,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
   Palette,
   Droplets,
   User,
@@ -166,14 +165,13 @@ export default function ActiveInsightCard({ analyses }: ActiveInsightCardProps) 
 
   return (
     <div
-      className="bg-gradient-to-br from-violet-50 via-indigo-50/50 to-blue-50/30 dark:from-violet-950/20 dark:via-indigo-950/15 dark:to-blue-950/10 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 overflow-hidden"
+      className="bg-card rounded-2xl border border-border overflow-hidden"
       data-testid="home-active-insight-card"
       role="region"
       aria-label="나를 위한 인사이트"
     >
       {/* 헤더 */}
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
-        <Sparkles className="w-5 h-5 text-violet-500" />
         <h3 className="font-semibold text-sm text-foreground">나를 위한 인사이트</h3>
       </div>
 
@@ -258,7 +256,7 @@ function InsightItem({
     <div className="bg-white/60 dark:bg-slate-800/40 rounded-xl p-4 space-y-2">
       {/* 내재화 상태 뱃지 */}
       {status !== 'exposed' && (
-        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
           {STATUS_LABELS[status]}
         </span>
       )}
@@ -306,7 +304,7 @@ function InsightItem({
           ) : (
             <button
               onClick={onConfirm}
-              className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-600 transition-colors min-h-[44px] px-2"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors min-h-[44px] px-2"
             >
               <Check className="w-3.5 h-3.5" />
               확인했어요

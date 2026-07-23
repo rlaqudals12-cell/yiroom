@@ -114,8 +114,8 @@ export default function HomeStreakWidget() {
         </div>
 
         {/* 뱃지 */}
-        <div className="flex flex-col items-center gap-1.5 p-3 bg-violet-50 dark:bg-violet-950/30 rounded-xl">
-          <Award className="w-5 h-5 text-violet-500" />
+        <div className="flex flex-col items-center gap-1.5 p-3 bg-primary/10 rounded-xl">
+          <Award className="w-5 h-5 text-primary" />
           <span className="text-lg font-bold text-foreground">{data.totalBadges}</span>
           <span className="text-[10px] text-muted-foreground">획득 뱃지</span>
         </div>

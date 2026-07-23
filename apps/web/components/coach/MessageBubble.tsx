@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Sparkles, User, Plus, Check } from 'lucide-react';
+import { MessageCircle, User, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CoachMessage } from '@/lib/coach/client';
 
@@ -70,13 +70,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div
         className={cn(
           'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-          isUser ? 'bg-primary/10' : 'bg-gradient-to-br from-pink-400 to-purple-500'
+          isUser ? 'bg-primary/10' : 'bg-primary'
         )}
       >
         {isUser ? (
           <User className="w-4 h-4 text-primary" />
         ) : (
-          <Sparkles className="w-4 h-4 text-white" />
+          <MessageCircle className="w-4 h-4 text-white" />
         )}
       </div>
 
@@ -116,7 +116,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               'flex items-center gap-1 mt-1.5 px-3 py-1 text-xs rounded-full transition-colors',
               addedToCapsule
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                : 'bg-violet-100 text-violet-700 hover:bg-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:hover:bg-violet-950/50'
+                : 'bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/15'
             )}
             data-testid="coach-add-to-capsule"
           >

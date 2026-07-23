@@ -73,7 +73,7 @@ function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactEle
     return (
       <Link
         href={`/beauty/${sp.id}`}
-        className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-500/25 transition-colors"
+        className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
         data-testid="capsule-catalog-chip"
       >
         맞는 제품 보기
@@ -83,7 +83,7 @@ function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactEle
   }
   return (
     <span
-      className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-violet-500/15 px-2 py-0.5 text-[11px] font-medium text-violet-600 dark:text-violet-400"
+      className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
       data-testid="capsule-catalog-chip"
     >
       맞는 제품 보기
@@ -249,7 +249,7 @@ export default function HomeDailyCapsuleWidget() {
               .catch(() => setHasError(true))
               .finally(() => setIsLoading(false));
           }}
-          className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
+          className="text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
         >
           {t('capsuleRetry')}
         </button>
@@ -260,14 +260,13 @@ export default function HomeDailyCapsuleWidget() {
   if (!capsule || capsule.items.length === 0) {
     return (
       <div
-        className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5 text-center"
+        className="bg-card rounded-2xl border border-border p-5 text-center"
         data-testid="home-daily-capsule-empty"
       >
-        <Sparkles className="w-5 h-5 text-violet-400 mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">{t('capsuleEmptyState')}</p>
         <Link
           href="/analysis/integrated"
-          className="mt-3 inline-flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium min-h-[44px]"
+          className="mt-3 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
         >
           {t('capsuleEmptyCta')}
           <ChevronRight className="w-4 h-4" />
@@ -287,7 +286,7 @@ export default function HomeDailyCapsuleWidget() {
 
   return (
     <div
-      className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 p-5"
+      className="bg-card rounded-2xl border border-border p-5"
       data-testid="home-daily-capsule"
       role="region"
       aria-label={t('capsuleLabel')}
@@ -295,7 +294,6 @@ export default function HomeDailyCapsuleWidget() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-violet-500" />
           <h3 className="font-semibold text-foreground">{t('todayRoutine')}</h3>
           <span className="text-xs text-muted-foreground" aria-live="polite">
             {checkedCount}/{totalCount}
@@ -308,9 +306,9 @@ export default function HomeDailyCapsuleWidget() {
       </div>
 
       {/* 프로그레스 바 */}
-      <div className="h-1.5 bg-violet-100 dark:bg-violet-900/30 rounded-full mb-4 overflow-hidden">
+      <div className="h-1.5 bg-secondary rounded-full mb-4 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-violet-400 to-purple-500 rounded-full transition-all duration-500"
+          className="h-full bg-primary rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -318,7 +316,7 @@ export default function HomeDailyCapsuleWidget() {
       {/* 오늘 저녁 포커스 배지 (ADR-117) + 요일·어제 대비 변화 (G4 일변화 체감) */}
       {eveningFocus?.label && (
         <div
-          className="mb-3 rounded-lg bg-indigo-500/10 px-3 py-1.5 text-xs text-indigo-700 dark:text-indigo-300"
+          className="mb-3 rounded-lg bg-primary/10 px-3 py-1.5 text-xs text-primary"
           data-testid="capsule-evening-focus"
         >
           <div className="flex items-center gap-1.5">
@@ -329,7 +327,7 @@ export default function HomeDailyCapsuleWidget() {
           </div>
           {eveningChange && (
             <span
-              className="mt-0.5 block text-[11px] text-indigo-600/80 dark:text-indigo-300/80"
+              className="mt-0.5 block text-[11px] text-primary/80"
               data-testid="capsule-evening-change"
             >
               {eveningChange}
@@ -360,11 +358,11 @@ export default function HomeDailyCapsuleWidget() {
                 className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
               >
                 {item.isChecked ? (
-                  <CheckCircle2 className="w-4.5 h-4.5 text-violet-500 shrink-0" />
+                  <CheckCircle2 className="w-4.5 h-4.5 text-primary shrink-0" />
                 ) : (
                   <Circle className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" />
                 )}
-                <Icon className="w-4 h-4 text-violet-400 shrink-0" />
+                <Icon className="w-4 h-4 text-primary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span
                     className={`text-sm block truncate ${
@@ -386,7 +384,7 @@ export default function HomeDailyCapsuleWidget() {
                   )}
                   {/* 실행 가이드("어떤 것으로/어떻게") — 엔진이 이미 생성하지만 위젯에서 숨겨져 있었음 */}
                   {depth === 'full' && item.solution && (
-                    <span className="text-[11px] text-violet-500/90 dark:text-violet-400/90 truncate block">
+                    <span className="text-[11px] text-primary/90 truncate block">
                       {item.solution}
                     </span>
                   )}
@@ -418,15 +416,13 @@ export default function HomeDailyCapsuleWidget() {
 
       {/* 완료 상태 또는 상세 보기 */}
       {capsule.status === 'completed' ? (
-        <div className="mt-3 pt-3 border-t border-violet-200/50 dark:border-violet-800/30 text-center">
-          <p className="text-sm font-medium text-violet-600 dark:text-violet-400">
-            {t('capsuleAllComplete')}
-          </p>
+        <div className="mt-3 pt-3 border-t border-border text-center">
+          <p className="text-sm font-medium text-primary">{t('capsuleAllComplete')}</p>
         </div>
       ) : (
         <Link
           href="/capsule/daily"
-          className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-violet-200/50 dark:border-violet-800/30 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+          className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-border text-sm text-primary hover:text-primary/80 transition-colors"
         >
           {t('capsuleDetail')}
           <ChevronRight className="w-4 h-4" />

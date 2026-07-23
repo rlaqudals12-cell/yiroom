@@ -27,14 +27,14 @@ const STATUS_SEGMENTS = [
   {
     key: 'recognized' as const,
     labelKey: 'statusRecognized' as const,
-    color: 'bg-violet-300 dark:bg-violet-700',
-    dot: 'bg-violet-400',
+    color: 'bg-primary/40',
+    dot: 'bg-primary/40',
   },
   {
     key: 'internalized' as const,
     labelKey: 'statusInternalized' as const,
-    color: 'bg-indigo-400 dark:bg-indigo-600',
-    dot: 'bg-indigo-400',
+    color: 'bg-primary',
+    dot: 'bg-primary',
   },
   {
     key: 'independent' as const,
@@ -193,7 +193,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
       {stats && stats.totalConnections > 0 && (
         <div className="mb-3" data-testid="internalization-segment-bar">
           <div className="flex items-center gap-2 mb-1.5">
-            <Brain className="w-4 h-4 text-violet-500" />
+            <Brain className="w-4 h-4 text-primary" />
             <span className="text-xs font-semibold text-foreground">
               {t('selfUnderstanding')} {Math.round(stats.internalizationRate * 100)}%
             </span>

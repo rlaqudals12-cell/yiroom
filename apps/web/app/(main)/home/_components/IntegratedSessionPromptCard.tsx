@@ -14,7 +14,7 @@
  */
 
 import Link from 'next/link';
-import { Sparkles, ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, Check, Palette } from 'lucide-react';
 import { useLatestIntegratedSession } from '@/hooks/useLatestIntegratedSession';
 
 export function IntegratedSessionPromptCard(): React.JSX.Element {
@@ -53,7 +53,7 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
       <Link
         href={`/analysis/integrated/result/${session.id}`}
         data-testid="integrated-prompt-existing"
-        className="flex items-center gap-3 rounded-2xl border border-pink-500/30 bg-gradient-to-r from-pink-500/10 to-purple-500/10 p-4 hover:border-pink-500/50 transition-colors"
+        className="flex items-center gap-3 rounded-2xl border border-pink-500/30 bg-card p-4 hover:border-pink-500/50 transition-colors"
       >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-500/20">
           <Check className="h-5 w-5 text-pink-400" aria-hidden="true" />
@@ -75,10 +75,10 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
     <Link
       href="/analysis/integrated"
       data-testid="integrated-prompt-cta"
-      className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 p-4 shadow-md shadow-pink-500/20 transition-all hover:from-pink-400 hover:to-purple-400"
+      className="flex items-center gap-3 rounded-2xl bg-primary p-4 shadow-sm transition-all hover:bg-primary/90"
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
-        <Sparkles className="h-5 w-5 text-white" aria-hidden="true" />
+        <Palette className="h-5 w-5 text-white" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0 text-white">
         <p className="text-sm font-bold">내 정체성 5가지 한 번에 알아보기</p>

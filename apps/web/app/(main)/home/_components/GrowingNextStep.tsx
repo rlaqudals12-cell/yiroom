@@ -181,10 +181,10 @@ export default function GrowingNextStep({ analyses }: GrowingNextStepProps) {
       <Link
         href={nextStep.href}
         onClick={handleClick}
-        className="flex items-center gap-4 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 rounded-2xl border border-violet-200/50 dark:border-violet-800/30 hover:from-violet-100 hover:to-indigo-100 dark:hover:from-violet-950/30 dark:hover:to-indigo-950/30 transition-colors"
+        className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border hover:border-primary/40 transition-colors"
       >
-        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-violet-100 dark:bg-violet-900/30 rounded-xl">
-          <Icon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-primary/10 rounded-xl">
+          <Icon className="w-5 h-5 text-primary" />
         </div>
         <p className="flex-1 text-sm text-foreground">{nextStep.message}</p>
         <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />

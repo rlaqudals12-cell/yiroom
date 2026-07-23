@@ -64,16 +64,11 @@ const Navbar = () => {
       className="flex justify-between items-center p-4 gap-4 h-16 max-w-7xl mx-auto"
       role="banner"
     >
+      {/* 공유카드 워드마크(Yiroom 세리프 잉크)와 동일 문법 — 브랜드 마크 1종 렌더 */}
       <Link
         href="/"
-        className="text-2xl font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
+        className="text-2xl font-serif font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
         aria-label={t('homeAria')}
-        style={{
-          background: 'linear-gradient(to right, #f9a8d4, #e879f9, #a855f7)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}
       >
         이룸
       </Link>

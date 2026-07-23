@@ -10,6 +10,8 @@ import ProfilePage from '@/app/(main)/profile/page';
 // Mock Clerk
 vi.mock('@clerk/nextjs', () => ({
   useUser: vi.fn(),
+  // IntegratedSessionPromptCard → useLatestIntegratedSession이 useAuth를 소비 — 누락 시 렌더 전체 실패
+  useAuth: () => ({ isSignedIn: true, isLoaded: true }),
   SignOutButton: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sign-out-button">{children}</div>
   ),

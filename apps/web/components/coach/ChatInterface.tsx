@@ -364,8 +364,8 @@ export function ChatInterface({
           {messages.length === 0 && (
             <div className="py-6" data-testid="coach-empty-state">
               {/* 인사 카드 */}
-              <div className="mb-5 rounded-2xl border border-border/60 bg-gradient-to-br from-pink-50 to-purple-50 p-5 text-center dark:from-pink-950/30 dark:to-purple-950/30">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-500">
+              <div className="mb-5 rounded-2xl border border-border/60 bg-secondary p-5 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
                   <span className="text-sm font-bold text-white">AI</span>
                 </div>
                 <p className="font-semibold text-foreground">{t('greeting')}</p>
@@ -450,7 +450,7 @@ export function ChatInterface({
           {/* 스트리밍 메시지 표시 */}
           {streamingContent && (
             <div className="flex gap-2 items-start">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-bold">AI</span>
               </div>
               <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
@@ -462,7 +462,7 @@ export function ChatInterface({
           {/* 로딩 인디케이터 (스트리밍 중이 아닐 때만) */}
           {loading && !streamingContent && (
             <div className="flex gap-2 items-center">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
               <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5">

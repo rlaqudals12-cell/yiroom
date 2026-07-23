@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { User, Palette, Shirt, Star, Sparkles, Loader2 } from 'lucide-react';
+import { User, Palette, Shirt, Star, Loader2 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { getBodyShapeLabel } from '@/lib/body';
@@ -282,16 +282,16 @@ export default function StylePage() {
       {/* 키/몸무게 미입력 안내 배너 — 어떤 소스에도 키가 없을 때만 표시 (중복 입력 방지) */}
       {shouldShowMeasurementBanner(hasMeasurements, bodyHeightCm) && (
         <FadeInUp>
-          <div className="mx-4 mt-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
-            <p className="font-medium text-amber-900 dark:text-amber-200 mb-1">
+          <div className="mx-4 mt-4 p-4 bg-muted/50 border border-border rounded-xl">
+            <p className="font-medium text-foreground mb-1">
               키/몸무게를 입력하면 더 정확한 추천을 받을 수 있어요
             </p>
-            <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               체형 분석을 하면 자동으로 채워져요. 직접 입력하거나 수정하려면 내 정보에서 관리하세요.
             </p>
             <button
               onClick={() => router.push('/profile/my-info')}
-              className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               내 정보에서 입력하기
             </button>
@@ -302,20 +302,17 @@ export default function StylePage() {
       {/* 내 체형 프로필 */}
       {hasAnalysis ? (
         <FadeInUp>
-          <section
-            className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 border-b"
-            aria-label="내 체형 프로필"
-          >
+          <section className="bg-secondary px-4 py-4 border-b" aria-label="내 체형 프로필">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-blue-500" aria-hidden="true" />
+                <User className="w-5 h-5 text-primary" aria-hidden="true" />
                 <span className="font-medium">{bodyType || '미분석'}</span>
                 {personalColor && (
                   <>
                     <span className="text-muted-foreground" aria-hidden="true">
                       |
                     </span>
-                    <Palette className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                    <Palette className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                     <span className="text-sm text-muted-foreground">{personalColor}</span>
                   </>
                 )}
@@ -331,12 +328,12 @@ export default function StylePage() {
             {(height || feature) && (
               <div className="flex gap-2 mt-2">
                 {height && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-secondary text-foreground/80 px-2 py-0.5 rounded-full">
                     {height}
                   </span>
                 )}
                 {feature && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-secondary text-foreground/80 px-2 py-0.5 rounded-full">
                     {feature}
                   </span>
                 )}
@@ -346,7 +343,7 @@ export default function StylePage() {
         </FadeInUp>
       ) : (
         <FadeInUp>
-          <section className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 border-b">
+          <section className="bg-secondary px-4 py-4 border-b">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-foreground">체형 분석하면 나에게 맞는 코디 추천!</p>
@@ -466,10 +463,7 @@ export default function StylePage() {
         {dailyOutfit.length > 0 && realOutfit ? (
           <FadeInUp delay={5}>
             <section>
-              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
-                오늘의 코디
-              </h2>
+              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">오늘의 코디</h2>
               <OutfitRoutineCard
                 occasion="daily"
                 items={dailyOutfit}
@@ -486,11 +480,8 @@ export default function StylePage() {
           </FadeInUp>
         ) : (
           <FadeInUp delay={5}>
-            <section className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-2xl border border-indigo-200 dark:border-indigo-900 p-4">
-              <h2 className="font-semibold mb-1 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
-                오늘의 코디
-              </h2>
+            <section className="bg-card rounded-2xl border border-border p-4">
+              <h2 className="font-semibold mb-1 flex items-center gap-2">오늘의 코디</h2>
               <p className="text-sm text-muted-foreground mb-3">
                 옷장에 옷을 등록하면 내 옷으로 매일 코디를 추천해드려요
               </p>
@@ -558,15 +549,15 @@ export default function StylePage() {
 
         {/* 오늘 뭐 입지? */}
         <FadeInUp delay={7}>
-          <section className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-4">
+          <section className="bg-card rounded-2xl border border-border p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2">
-              <Shirt className="w-5 h-5 text-violet-600" />
+              <Shirt className="w-5 h-5 text-primary" />
               오늘 뭐 입지?
             </h2>
             <p className="text-sm text-muted-foreground">체형 + 퍼스널컬러 + 날씨 맞춤 추천</p>
             <button
               onClick={() => router.push('/closet/recommend')}
-              className="mt-3 w-full bg-violet-600 text-white py-2 rounded-lg font-medium hover:bg-violet-700 transition-colors"
+              className="mt-3 w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-lg font-medium transition-colors"
             >
               추천 받기
             </button>

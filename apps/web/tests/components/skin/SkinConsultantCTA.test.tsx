@@ -134,7 +134,7 @@ describe('SkinConsultantCTA', () => {
     it('showQuickQuestions=true일 때 빠른 질문이 표시된다', () => {
       render(<SkinConsultantCTA showQuickQuestions />);
 
-      expect(screen.getByText('AI에게 물어보기')).toBeInTheDocument();
+      expect(screen.getByText('뷰티팀에게 물어보기')).toBeInTheDocument();
       expect(screen.getByText('제 피부에 맞는 루틴 알려줘요')).toBeInTheDocument();
     });
 

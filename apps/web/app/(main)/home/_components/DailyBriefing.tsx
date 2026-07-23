@@ -19,7 +19,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import {
-  Sparkles,
   MessageCircle,
   Shirt,
   ChevronRight,
@@ -250,16 +249,11 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     <div className="space-y-5" data-testid="home-daily-briefing">
       {/* 1) 브리핑 레터 */}
       <section
-        className="rounded-2xl border border-pink-200/60 dark:border-pink-900/40 bg-gradient-to-br from-pink-50/80 via-white to-purple-50/60 dark:from-pink-950/20 dark:via-slate-900/40 dark:to-purple-950/20 p-5"
+        className="rounded-2xl border border-pink-200/60 dark:border-pink-900/40 bg-card p-5"
         data-testid="briefing-letter"
         aria-label="오늘의 브리핑"
       >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 shadow-sm">
-            <Sparkles className="h-4 w-4 text-white" aria-hidden="true" />
-          </span>
-          <span className="text-xs font-medium text-muted-foreground">전속 뷰티팀</span>
-        </div>
+        <p className="mb-3 font-serif text-[13px] italic text-primary">전속 뷰티팀</p>
 
         <p className="text-lg font-bold text-foreground">{briefing.greeting}</p>
 
@@ -365,7 +359,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 스타일</h3>
         <Link
           href="/closet/recommend"
-          className="block rounded-2xl border border-blue-200/50 dark:border-blue-900/40 bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-blue-300 dark:hover:border-blue-800"
+          className="block rounded-2xl border border-border bg-white/60 dark:bg-slate-800/40 p-4 transition-colors hover:border-primary/40"
         >
           {/* 오늘의 배색 조합 (베스트 컬러가 있을 때만 — 결정론). 색 이름 함께 표기 */}
           {dailyOutfit && (
@@ -396,8 +390,8 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
             </div>
           )}
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15">
-              <Shirt className="h-5 w-5 text-blue-500" aria-hidden="true" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <Shirt className="h-5 w-5 text-primary" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-foreground/90 leading-snug">
@@ -406,7 +400,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                     ? '내 베스트 컬러로 짠 오늘의 배색이에요'
                     : '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요')}
               </p>
-              <p className="mt-0.5 text-xs font-medium text-blue-500">코디 추천 받기</p>
+              <p className="mt-0.5 text-xs font-medium text-primary">코디 추천 받기</p>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </div>
@@ -467,7 +461,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <button
           type="submit"
           aria-label="물어보기"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-sm transition-opacity hover:opacity-90"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-colors hover:bg-primary/90"
         >
           <ArrowRight className="h-5 w-5" aria-hidden="true" />
         </button>

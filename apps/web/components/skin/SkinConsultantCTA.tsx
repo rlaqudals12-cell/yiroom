@@ -78,7 +78,8 @@ export function SkinConsultantCTA({
       <div data-testid="skin-consultant-cta" className={cn('space-y-3', className)}>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="h-4 w-4" />
-          <span>AI에게 물어보기</span>
+          {/* 도착 화면 자칭('전속 뷰티팀')과 호칭 통일 — AI 고지는 화면 내 배지·디스클레이머가 담당 */}
+          <span>뷰티팀에게 물어보기</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {SKIN_QUICK_QUESTIONS.slice(0, 3).map((question, index) => (

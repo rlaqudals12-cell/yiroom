@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Info, X } from 'lucide-react';
+import { MessageCircle, Info, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface CoachHeaderProps {
@@ -15,11 +15,11 @@ export function CoachHeader({ contextSummary, leftAction }: CoachHeaderProps) {
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-pink-50 to-purple-50">
+      <div className="flex items-center gap-3 p-4 border-b bg-card">
         {leftAction}
-        {/* 코치 아바타 */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center shadow-lg">
-          <Sparkles className="w-6 h-6 text-white" />
+        {/* 코치 아바타 — BottomNav '물어보기'와 동일 기호(MessageCircle) */}
+        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-sm">
+          <MessageCircle className="w-6 h-6 text-white" />
         </div>
 
         {/* 코치 정보 */}
