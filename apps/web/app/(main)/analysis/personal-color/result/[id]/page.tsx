@@ -34,6 +34,8 @@ import {
   resolveSubtype,
 } from '@/lib/mock/personal-color';
 import AnalysisResult from '../../_components/AnalysisResult';
+import { getCardPalette } from '@/lib/share/tone-palettes';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat } from '@/components/share';
 import { useAnalysisShare, createPersonalColorShareData } from '@/hooks/useAnalysisShare';
@@ -41,7 +43,6 @@ import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
-import { VisualReportCard } from '@/components/analysis/visual-report';
 import { DrapingSimulationTab } from '@/components/analysis/visual';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
@@ -122,23 +123,6 @@ interface DbPersonalColorAssessment {
 // 신뢰도 기준값 (이 미만이면 재분석 권장)
 const LOW_CONFIDENCE_THRESHOLD = 70;
 
-// 퍼스널 대비(ADR-116) 안내 문구 — 초보자 풀이 병기("얼굴의 밝고 어두움 차이").
-// 판정 보조 1줄(접힌 섹션 아님) · 실측값이 있을 때만 노출.
-const CONTRAST_COPY: Record<'low' | 'medium' | 'high', { label: string; line: string }> = {
-  low: {
-    label: '낮은 대비',
-    line: '얼굴의 밝고 어두움 차이(대비)가 낮은 편이에요 — 톤온톤·인접 명도 배색이 잘 어울려요.',
-  },
-  medium: {
-    label: '중간 대비',
-    line: '얼굴의 밝고 어두움 차이(대비)가 중간이에요 — 배색 강도를 자유롭게 조절해도 잘 받아요.',
-  },
-  high: {
-    label: '높은 대비',
-    line: '얼굴의 밝고 어두움 차이(대비)가 높은 편이에요 — 명확한 명암 배색·진한 발색이 잘 어울려요.',
-  },
-};
-
 // 시즌별 톤/깊이 결정
 function getSeasonToneDepth(seasonType: SeasonType): { tone: ToneType; depth: DepthType } {
   switch (seasonType) {
@@ -183,6 +167,68 @@ function normalizeDbLipstick(
     }));
 }
 
+// AI 원시 서브타입(mute 등) → getCardPalette 12톤 키 접두사
+const RAW_TO_TONE12: Record<string, string> = {
+  bright: 'bright',
+  light: 'light',
+  true: 'true',
+  mute: 'muted',
+  deep: 'deep',
+};
+
+/**
+ * 팔레트 해석 — 공유카드 resolveCardPalettes 규칙 이식(2026-07-25).
+ * 개인 실측(4색+, 이름 보장)이면 그대로, 아니면 진단 톤의 12톤 표준 큐레이션(getCardPalette)로
+ * 대체해 웹세이프 Mock 폴백(#FF0000류)을 소거 — 공유카드와 화면 색 일치. Mock은 최후 폴백.
+ */
+function resolveResultPalettes(args: {
+  seasonType: SeasonType;
+  rawSubtype: string | null;
+  hasSubtype: boolean;
+  usedMock: boolean;
+  dbBestColors: ColorInfo[];
+  dbWorstColors: ColorInfo[];
+}): {
+  bestColors: ColorInfo[];
+  worstColors: ColorInfo[];
+  personalizedColors: boolean;
+  paletteToneKey: string;
+} {
+  const { seasonType, rawSubtype, hasSubtype, usedMock, dbBestColors, dbWorstColors } = args;
+
+  // 개인화 판정: Mock 폴백이 아니고 DB 팔레트가 충분할 때만 "내 사진에서 찾은 컬러"
+  // (4색 미만 = 카드 품질 미달 → 톤 표준 큐레이션 대체)
+  const personalizedColors = !usedMock && dbBestColors.length >= 4;
+
+  const tone12Prefix =
+    hasSubtype && rawSubtype ? RAW_TO_TONE12[rawSubtype.toLowerCase()] : undefined;
+  const paletteToneKey = tone12Prefix ? `${tone12Prefix}-${seasonType}` : seasonType;
+  const curated = getCardPalette(paletteToneKey, 'ko') ?? getCardPalette(seasonType, 'ko');
+  // 큐레이션 avoid는 이름이 없는 색 필드 — 결과 UI(ColorInfo)에는 관습 색이름을 붙여 정직 유지
+  const curatedAvoid = (curated?.avoid ?? []).map((c) => ({
+    hex: c.hex,
+    name: getKoreanColorName(c.hex),
+  }));
+
+  let worstColors: ColorInfo[];
+  if (!usedMock && dbWorstColors.length > 0) {
+    worstColors = dbWorstColors;
+  } else if (curatedAvoid.length > 0) {
+    worstColors = curatedAvoid;
+  } else {
+    worstColors = WORST_COLORS[seasonType] || [];
+  }
+
+  return {
+    bestColors: personalizedColors
+      ? dbBestColors
+      : (curated?.best ?? BEST_COLORS[seasonType] ?? []),
+    worstColors,
+    personalizedColors,
+    paletteToneKey,
+  };
+}
+
 // DB → PersonalColorResult 변환.
 // 개인화 우선: usedMock이 아니고 DB에 AI가 사진에서 뽑은 팔레트가 있으면 그걸 표시
 // (같은 시즌이어도 사람마다 다른 "내 팔레트"). 없거나 Mock이면 시즌 공통 Mock으로 폴백.
@@ -211,12 +257,18 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     undertoneLabel = `${toneLabel} · ${depthLabel}`;
   }
 
-  // 개인화 판정: Mock 폴백이 아니고 DB에 실제 팔레트가 있을 때만 "내 사진에서 찾은 컬러"
   const usedMock = dbData.image_analysis?.usedMock === true;
-  const dbBestColors = normalizeDbColors(dbData.best_colors);
-  const dbWorstColors = normalizeDbColors(dbData.worst_colors);
   const dbLipstick = normalizeDbLipstick(dbData.makeup_recommendations);
-  const personalizedColors = !usedMock && dbBestColors.length > 0;
+
+  // 팔레트 해석 — 개인 실측 우선, 아니면 12톤 표준 큐레이션 (resolveResultPalettes 참조)
+  const { bestColors, worstColors, personalizedColors, paletteToneKey } = resolveResultPalettes({
+    seasonType,
+    rawSubtype,
+    hasSubtype: subtype !== null,
+    usedMock,
+    dbBestColors: normalizeDbColors(dbData.best_colors),
+    dbWorstColors: normalizeDbColors(dbData.worst_colors),
+  });
 
   // 시즌 공통 Mock (폴백용)
   const mockFoundation = FOUNDATION_RECOMMENDATIONS[seasonType] || [];
@@ -233,11 +285,12 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
     // (실제 분석 신뢰도는 항상 85~95라 0과 충돌하지 않음)
     confidence: dbData.confidence ?? 0,
     undertoneLabel,
-    // 컬러 데이터: AI 개인 팔레트 우선, 없으면 시즌 Mock 폴백
-    bestColors: personalizedColors ? dbBestColors : BEST_COLORS[seasonType] || [],
-    worstColors:
-      !usedMock && dbWorstColors.length > 0 ? dbWorstColors : WORST_COLORS[seasonType] || [],
+    // 컬러 데이터: AI 개인 팔레트 우선, 없으면 12톤 표준 큐레이션(getCardPalette) 폴백
+    // (구 웹세이프 Mock 팔레트는 최후 폴백으로만 — 공유카드와 화면 색 일치)
+    bestColors,
+    worstColors,
     personalizedColors,
+    paletteToneKey,
     // 립스틱 추천: AI 개인 추천 우선, 없으면 Mock
     lipstickRecommendations:
       !usedMock && dbLipstick.length > 0 ? dbLipstick : LIPSTICK_RECOMMENDATIONS[seasonType] || [],
@@ -614,45 +667,15 @@ export default function PersonalColorResultPage() {
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="basic-tab"
             >
-              {/* 비주얼 리포트 카드 — 저장된 신뢰도(>0)가 있을 때만 (위장 점수 금지, 체형 정책과 동일) */}
-              {result.confidence > 0 && (
-                <VisualReportCard
-                  analysisType="personal-color"
-                  overallScore={result.confidence}
-                  seasonType={result.seasonType}
-                  seasonLabel={result.seasonLabel}
-                  confidence={result.confidence}
-                  bestColors={result.bestColors}
-                  analyzedAt={result.analyzedAt}
-                  className="mb-6"
-                />
-              )}
-
-              {/* 판정 → 결론 → 팔레트 → 접힌 심화 (ADR-111 표현 원칙 1) */}
+              {/* 진단지 문법 결과 시트 (ADR-120) — 88점 채점 카드 소거, 신뢰도는 시트 푸터
+                  신뢰 블록이 담당(정보 손실 0). 퍼스널 대비(ADR-116)도 속성표 행으로 흡수 */}
               <AnalysisResult
                 result={result}
                 onRetry={handleNewAnalysis}
                 evidence={analysisEvidence}
                 onTabChange={setActiveTab}
+                contrastLevel={contrastLevel}
               />
-
-              {/* 퍼스널 대비 실측 안내 — 판정 보조 1줄(접힘 아님), 실측값 있을 때만 (ADR-116) */}
-              {contrastLevel && (
-                <div
-                  className="mt-4 flex items-start gap-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/20 p-3.5"
-                  data-testid="pc-contrast-note"
-                >
-                  <GitCompareArrows className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {CONTRAST_COPY[contrastLevel].label}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                      {CONTRAST_COPY[contrastLevel].line}
-                    </p>
-                  </div>
-                </div>
-              )}
 
               {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (접힘 — 결론 먼저) */}
               {result.bestColors.length > 0 && (

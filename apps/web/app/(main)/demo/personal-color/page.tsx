@@ -12,14 +12,24 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { SignedOut, SignInButton, SignedIn } from '@clerk/nextjs';
-import { ArrowRight, Sparkles, Info } from 'lucide-react';
+import { ArrowRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AnalysisResult from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import { generateSeasonPersonalColorResult } from '@/lib/mock/personal-color';
+import { getCardPalette } from '@/lib/share/tone-palettes';
 
-// 봄 웜톤 고정 데모 데이터 — 팔레트/립/스타일 전부 spring 시즌 상수에서 결정론 구성
+// 봄 웜톤 고정 데모 데이터 — 립/스타일은 spring 시즌 상수에서 결정론 구성.
+// 팔레트는 12톤 표준 큐레이션(트루 스프링)으로 교체 — 웹세이프 목업색(골드×2 등
+// 이름 중복)이 첫 방문 표면에 노출되지 않게, 공유카드·통합 리포트와 같은 색을 말한다.
 function createDemoResult() {
-  return generateSeasonPersonalColorResult('spring', 92);
+  const base = generateSeasonPersonalColorResult('spring', 92);
+  const curated = getCardPalette('true-spring', 'ko');
+  if (curated) {
+    base.bestColors = curated.best.map((c) => ({ hex: c.hex, name: c.name }));
+    base.personalizedColors = false;
+    base.paletteToneKey = 'true-spring';
+  }
+  return base;
 }
 
 export default function DemoPersonalColorPage(): React.JSX.Element {
@@ -34,17 +44,17 @@ export default function DemoPersonalColorPage(): React.JSX.Element {
   return (
     <div className="min-h-screen" data-testid="demo-personal-color">
       {/* 데모 배너 */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-amber-500/90 to-orange-500/90 backdrop-blur-sm border-b border-amber-600/30">
+      <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-white text-sm font-medium">
-            <Info className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 text-foreground text-sm font-medium">
+            <Info className="w-4 h-4 shrink-0 text-primary" />
             <span>{t('demoBanner')}</span>
           </div>
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated?onboarding=1">
               <Button
                 size="sm"
-                className="bg-white text-amber-700 hover:bg-amber-50 font-bold text-xs shrink-0"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shrink-0"
               >
                 {t('demoBannerCta')}
                 <ArrowRight className="w-3 h-3 ml-1" />
@@ -54,8 +64,8 @@ export default function DemoPersonalColorPage(): React.JSX.Element {
           <SignedIn>
             <Button
               size="sm"
-              className="bg-white text-amber-700 hover:bg-amber-50 font-bold text-xs shrink-0"
-              onClick={() => router.push('/analysis/personal-color')}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shrink-0"
+              onClick={() => router.push('/analysis/integrated')}
             >
               {t('demoBannerCta')}
               <ArrowRight className="w-3 h-3 ml-1" />
@@ -74,18 +84,18 @@ export default function DemoPersonalColorPage(): React.JSX.Element {
             이것은 샘플이에요. 내 사진으로 분석하면 더 정확한 결과를 받을 수 있어요.
           </p>
           <SignedOut>
-            <SignInButton mode="modal">
-              <Button className="h-12 px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25">
-                <Sparkles className="w-4 h-4 mr-2" />내 퍼스널컬러 분석하기
+            <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated?onboarding=1">
+              <Button className="h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+                내 퍼스널컬러 분석하기
               </Button>
             </SignInButton>
           </SignedOut>
           <SignedIn>
             <Button
-              className="h-12 px-8 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white font-bold shadow-lg shadow-pink-500/25"
-              onClick={() => router.push('/analysis/personal-color')}
+              className="h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+              onClick={() => router.push('/analysis/integrated')}
             >
-              <Sparkles className="w-4 h-4 mr-2" />내 퍼스널컬러 분석하기
+              내 퍼스널컬러 분석하기
             </Button>
           </SignedIn>
         </div>

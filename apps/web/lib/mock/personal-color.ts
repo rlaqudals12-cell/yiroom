@@ -327,6 +327,9 @@ export interface PersonalColorResult {
   easyInsight?: EasyInsight;
   // 팔레트가 "내 사진에서 찾은" AI 개인 팔레트인지(true) 시즌 공통 폴백인지(false)
   personalizedColors?: boolean;
+  // 12톤 큐레이션 팔레트 키(예: 'muted-summer') — 포인트·금속 큐레이션(getCardPalette) 조회용.
+  // 없으면 시즌 키 폴백(트루 톤 표준 팔레트)
+  paletteToneKey?: string;
 }
 
 // 계절별 정보

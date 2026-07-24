@@ -96,11 +96,12 @@ describe('AnalysisResult', () => {
     });
   });
 
-  describe('퍼스널 컬러 타입 표시', () => {
-    it('시즌 타입 레이블을 표시한다', () => {
+  describe('퍼스널 컬러 타입 표시 (진단지 히어로)', () => {
+    it('시즌 타입 레이블을 표시한다 (히어로 진단명 + 속성표 계절 행)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('봄 웜톤')).toBeInTheDocument();
+      // 진단지 문법: 히어로 세리프 진단명과 01 진단 속성표의 계절 행이 함께 존재
+      expect(screen.getAllByText('봄 웜톤').length).toBeGreaterThanOrEqual(1);
     });
 
     it('시즌 설명을 표시한다', () => {
@@ -109,24 +110,53 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('밝고 따뜻한 느낌의 색상이 잘 어울려요')).toBeInTheDocument();
     });
 
-    it('신뢰도를 표시한다', () => {
+    it('신뢰도를 푸터 신뢰 블록에 텍스트 라인으로 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('신뢰도 85%')).toBeInTheDocument();
+      expect(screen.getByText('분석 신뢰도 85%')).toBeInTheDocument();
     });
 
-    it('축하 메시지를 표시한다', () => {
+    it('진단지 아이브로우를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('나에게 어울리는 색을 찾았어요!')).toBeInTheDocument();
+      expect(screen.getByText('PERSONAL COLOR REPORT')).toBeInTheDocument();
     });
 
-    it('시즌별 celebration 메시지를 표시한다', () => {
+    it('계절 인장 스탬프를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(
-        screen.getByText('따뜻한 봄빛처럼 생기 넘치는 컬러가 어울리는 당신!')
-      ).toBeInTheDocument();
+      const seal = screen.getByTestId('pc-season-seal');
+      expect(seal).toBeInTheDocument();
+      expect(seal).toHaveTextContent('Spring');
+    });
+
+    it('히어로 풀블리드 팔레트 스트립을 렌더한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByTestId('pc-hero-strip')).toBeInTheDocument();
+    });
+
+    it('진단 속성표를 렌더한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.getByTestId('pc-report-attrs')).toBeInTheDocument();
+      expect(screen.getByText('계절')).toBeInTheDocument();
+      expect(screen.getByText('언더톤')).toBeInTheDocument();
+    });
+
+    it('퍼스널 대비 실측값이 있으면 속성표 행 + 풀이 한 줄을 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} contrastLevel="low" />);
+
+      expect(screen.getByText('대비')).toBeInTheDocument();
+      expect(screen.getByText('낮은 대비')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-contrast-note')).toBeInTheDocument();
+    });
+
+    it('퍼스널 대비 실측값이 없으면 대비 행을 렌더하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByText('대비')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('pc-contrast-note')).not.toBeInTheDocument();
     });
   });
 
@@ -156,40 +186,43 @@ describe('AnalysisResult', () => {
       expect(bestColorElements.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('베스트 컬러를 getKoreanColorName으로 표시한다', () => {
+    it('베스트 컬러는 제공된 색이름을 우선 표시한다 (없을 때만 hex 근사 명명)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 컴포넌트는 color.name이 아닌 getKoreanColorName(hex)로 표시
-      // #FF7F50 → "코랄", #FFDAB9 → "라이트 코랄", #FFFFF0 → "라이트 옐로"
+      // 저장/큐레이션 이름이 있으면 그대로(정직) — 픽스처 name '피치'가 hex 근사명 대신 노출
       expect(screen.getAllByText('코랄').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('라이트 코랄').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('피치').length).toBeGreaterThan(0);
     });
 
-    it('컬러 비교 섹션 제목을 표시한다', () => {
+    it('피하면 좋은 색을 취소선 칩으로 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // "컬러가 주는 인상 차이"는 details summary 안에 있음
-      expect(screen.getByText('컬러가 주는 인상 차이')).toBeInTheDocument();
+      // 구 "컬러 비교" 아코디언은 03 컬러 팔레트의 회피 칩 그룹으로 흡수됨 (접힘 없이 노출)
+      expect(screen.getByText('피하면 좋은 색')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-avoid-chips')).toBeInTheDocument();
     });
 
-    it('나머지 주의 컬러 섹션을 표시한다 (펼침 후)', async () => {
+    it('워스트 컬러도 제공된 색이름을 우선 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // "컬러가 주는 인상 차이"는 접힘 — 펼쳐야 내부 콘텐츠가 DOM에 존재
-      openSection('컬러가 주는 인상 차이');
-      await waitFor(() => {
-        expect(screen.getByText('나머지 주의 컬러 (참고용)')).toBeInTheDocument();
-      });
+      // 픽스처 worstColors의 저장 이름이 회피 칩 캡션으로 직접 노출
+      expect(screen.getByTestId('pc-avoid-chips')).toHaveTextContent('블랙');
     });
 
-    it('워스트 컬러를 getKoreanColorName으로 표시한다 (펼침 후)', async () => {
+    it('피하는 이유 한 줄(avoidNote)을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // #000000 → "차콜" (무채색, l<=0.3). 접힌 비교 섹션을 펼친 뒤 확인
-      openSection('컬러가 주는 인상 차이');
-      await waitFor(() => {
-        expect(screen.getAllByText('차콜').length).toBeGreaterThan(0);
-      });
+      expect(screen.getByTestId('pc-avoid-note')).toBeInTheDocument();
+    });
+
+    it('포인트 컬러·액세서리 금속 큐레이션을 표시한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // getCardPalette 톤 표준 큐레이션 (공유카드와 동일 소스)
+      expect(screen.getByText('포인트 컬러')).toBeInTheDocument();
+      expect(screen.getByText('액세서리 금속')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-accent-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-metal-chips')).toBeInTheDocument();
     });
   });
 
@@ -209,22 +242,18 @@ describe('AnalysisResult', () => {
   });
 
   describe('스타일 가이드', () => {
-    it('스타일 키워드 섹션 제목을 표시한다', () => {
+    it('스타일 키워드 카드를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // <details> summary 안에 존재
-      expect(screen.getByText('나의 스타일 키워드')).toBeInTheDocument();
+      // 구 아코디언 → 04 스타일 가이드의 2열 미니카드로 흡수 (접힘 없이 노출)
+      expect(screen.getByText('스타일 키워드')).toBeInTheDocument();
     });
 
-    it('스타일 키워드를 표시한다 (펼침 후)', async () => {
+    it('스타일 키워드를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 키워드 섹션은 접힘 — 펼친 뒤 개별 키워드 확인
       // female 성별이므로 getGenderAdaptiveTerm이 원래 값을 그대로 반환
-      openSection('나의 스타일 키워드');
-      await waitFor(() => {
-        expect(screen.getByText('화사한')).toBeInTheDocument();
-      });
+      expect(screen.getByText('화사한')).toBeInTheDocument();
       expect(screen.getByText('생기있는')).toBeInTheDocument();
     });
 
@@ -284,14 +313,11 @@ describe('AnalysisResult', () => {
       expect(screen.getAllByText(/아이보리/).length).toBeGreaterThan(0);
     });
 
-    it('추천 이유를 표시한다 (펼침 후)', async () => {
+    it('추천 이유를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 추천 스타일링 섹션은 접힘 — 펼친 뒤 이유 확인
-      openSection('추천 스타일링');
-      await waitFor(() => {
-        expect(screen.getByText('얼굴이 환하게 보여요')).toBeInTheDocument();
-      });
+      // 05 추천 스타일링은 번호 섹션 — 접힘 없이 이유까지 노출
+      expect(screen.getByText('얼굴이 환하게 보여요')).toBeInTheDocument();
     });
   });
 
@@ -307,7 +333,7 @@ describe('AnalysisResult', () => {
 
       render(<AnalysisResult result={summerResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('여름 쿨톤')).toBeInTheDocument();
+      expect(screen.getAllByText('여름 쿨톤').length).toBeGreaterThanOrEqual(1);
     });
 
     it('가을 웜톤을 표시한다', () => {
@@ -320,7 +346,7 @@ describe('AnalysisResult', () => {
 
       render(<AnalysisResult result={autumnResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('가을 웜톤')).toBeInTheDocument();
+      expect(screen.getAllByText('가을 웜톤').length).toBeGreaterThanOrEqual(1);
     });
 
     it('겨울 쿨톤을 표시한다', () => {
@@ -334,19 +360,16 @@ describe('AnalysisResult', () => {
 
       render(<AnalysisResult result={winterResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('겨울 쿨톤')).toBeInTheDocument();
+      expect(screen.getAllByText('겨울 쿨톤').length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  describe('통계 및 메타 정보', () => {
-    it('통계 정보를 표시한다 (펼침 후)', async () => {
+  describe('통계 및 메타 정보 (푸터 신뢰 블록)', () => {
+    it('통계 정보를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 통계 섹션은 접힘 — 펼친 뒤 전체 문장 확인
-      openSection('통계');
-      await waitFor(() => {
-        expect(screen.getByText(/봄 웜톤이에요/)).toBeInTheDocument();
-      });
+      // 구 "통계" 아코디언 → 푸터 신뢰 블록 텍스트 라인으로 통합
+      expect(screen.getByText(/봄 웜톤이에요/)).toBeInTheDocument();
     });
 
     it('분석 시간을 표시한다', () => {
