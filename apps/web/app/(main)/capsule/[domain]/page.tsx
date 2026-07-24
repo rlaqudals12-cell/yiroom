@@ -8,7 +8,6 @@ import {
   Loader2,
   AlertTriangle,
   Package,
-  Sparkles,
   ShoppingBag,
   ExternalLink,
   Clock,
@@ -287,7 +286,7 @@ export default function DomainCapsulePage(): React.ReactElement {
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]" data-testid="capsule-domain">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -323,7 +322,7 @@ export default function DomainCapsulePage(): React.ReactElement {
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ backgroundColor: `${meta.color}20` }}
           >
-            <Sparkles className="h-5 w-5" style={{ color: meta.color }} />
+            <Package className="h-5 w-5" style={{ color: meta.color }} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">{meta.name} 플랜</h1>

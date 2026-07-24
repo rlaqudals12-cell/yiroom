@@ -114,7 +114,7 @@ export default function CapsuleGapPage(): React.ReactElement {
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]" data-testid="capsule-gap">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -175,18 +175,16 @@ export default function CapsuleGapPage(): React.ReactElement {
           {/* 전체 요약 카드 */}
           <Card className="p-4 mb-6">
             <div className="flex items-center gap-3 mb-3">
-              <TrendingUp className="h-5 w-5 text-indigo-500" />
+              <TrendingUp className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">전체 현황</h3>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                  {gapData.completedDomains}
-                </p>
+                <p className="text-2xl font-bold text-primary">{gapData.completedDomains}</p>
                 <p className="text-xs text-muted-foreground">완성 영역</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                <p className="text-2xl font-bold text-foreground">
                   {gapData.totalDomains - gapData.completedDomains}
                 </p>
                 <p className="text-xs text-muted-foreground">미완성 영역</p>
@@ -271,7 +269,7 @@ export default function CapsuleGapPage(): React.ReactElement {
                   {isComplete && (
                     <button
                       onClick={() => router.push(`/capsule/${item.domainId}`)}
-                      className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
+                      className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
                     >
                       플랜 보기 <ArrowRight className="h-3 w-3" />
                     </button>
@@ -285,7 +283,7 @@ export default function CapsuleGapPage(): React.ReactElement {
 
       {/* 빈 상태: 갭 없음 */}
       {!isLoading && !error && gapData && gapData.totalGap === 0 && (
-        <Card className="p-6 text-center mt-6 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800">
+        <Card className="p-6 text-center mt-6 bg-card">
           <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-emerald-500" />
           <h3 className="font-semibold mb-1">모든 플랜이 완성되었어요!</h3>
           <p className="text-sm text-muted-foreground">훌륭해요. 꾸준히 유지해보세요.</p>
