@@ -64,6 +64,24 @@ describe('ContextLinkingCard', () => {
     });
   });
 
+  describe('오늘의 루틴 다리', () => {
+    it('오늘의 루틴 행이 /capsule/daily로 링크되어야 함', () => {
+      render(<ContextLinkingCard currentModule="personal-color" />);
+
+      const routineLink = screen.getByTestId('context-link-daily-routine');
+      expect(routineLink).toBeInTheDocument();
+      expect(routineLink).toHaveAttribute('href', '/capsule/daily');
+      expect(screen.getByText('오늘의 루틴')).toBeInTheDocument();
+    });
+
+    it('오늘의 루틴 행은 completedModules 필터의 영향을 받지 않아야 함', () => {
+      render(<ContextLinkingCard currentModule="personal-color" completedModules={['makeup']} />);
+
+      // 메이크업은 완료로 제외돼도 루틴 다리는 유지됨
+      expect(screen.getByTestId('context-link-daily-routine')).toBeInTheDocument();
+    });
+  });
+
   describe('완료된 모듈 필터링', () => {
     it('완료된 모듈은 추천 목록에서 제외해야 함', () => {
       render(<ContextLinkingCard currentModule="personal-color" completedModules={['makeup']} />);

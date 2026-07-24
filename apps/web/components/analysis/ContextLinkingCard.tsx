@@ -1,7 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Palette, Sparkles, Activity, Scissors, ChevronRight, ScanFace, Wand2 } from 'lucide-react';
+import {
+  Palette,
+  Sparkles,
+  Activity,
+  Scissors,
+  ChevronRight,
+  ScanFace,
+  Wand2,
+  CalendarCheck,
+} from 'lucide-react';
 
 /**
  * 컨텍스트 기반 다음 분석 추천 카드
@@ -175,6 +184,25 @@ export function ContextLinkingCard({
             <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" aria-hidden="true" />
           </Link>
         ))}
+        {/* 결과 → 루틴 다리 — 관계 5단계 '첫 미팅 → 매일 브리핑' 고리.
+            분석 모듈이 아니므로 completedModules 필터 밖의 고정 행 (정적 링크) */}
+        <Link
+          href="/capsule/daily"
+          className="flex items-center gap-4 p-4 bg-white dark:bg-card rounded-lg hover:shadow-md transition-shadow"
+          data-testid="context-link-daily-routine"
+          aria-label="오늘의 루틴 — 이 분석으로 만든 오늘의 루틴을 확인해보세요"
+        >
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+            <CalendarCheck className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground">오늘의 루틴</p>
+            <p className="text-sm text-muted-foreground truncate">
+              이 분석으로 만든 오늘의 루틴을 확인해보세요
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );

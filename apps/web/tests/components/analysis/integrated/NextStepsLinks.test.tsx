@@ -125,4 +125,58 @@ describe('NextStepsLinks', () => {
       '/analysis/personal-color?forceNew=true'
     );
   });
+
+  // 실패 축 회복 경로 — completedSet 필터 완화: 실패 축을 숨기지 않고 '미완성' 행으로 노출
+  describe('실패 축 미완성 행', () => {
+    it('실패 축이 미완성 행으로 노출됨 (축 이름 + 미완성 요약)', () => {
+      render(<NextStepsLinks axesCompleted={['skin']} axesFailed={['hair']} />);
+      expect(screen.getByText('axes.hair')).toBeInTheDocument();
+      expect(screen.getByText('nextSteps.incomplete')).toBeInTheDocument();
+    });
+
+    it('실패 축은 심화 링크 없이 다시 촬영하기 링크만 노출', () => {
+      render(<NextStepsLinks axesCompleted={[]} axesFailed={['skin']} />);
+      // 결과가 없으므로 심화(딥링크) 카드 링크는 지어내지 않음
+      expect(screen.queryByTestId('next-step-skin')).toBeNull();
+      expect(screen.queryByTestId('next-step-reanalyze-skin')).toBeNull();
+      const retry = screen.getByTestId('next-step-retry-skin');
+      expect(retry).toHaveAttribute('href', '/analysis/skin?forceNew=true');
+      expect(retry).toHaveTextContent('nextSteps.retake');
+    });
+
+    it('퍼컬 실패는 통합 입력(/analysis/integrated)으로 회복 — mode:update 축 선택 재분석', () => {
+      render(<NextStepsLinks axesCompleted={['skin']} axesFailed={['personal_color']} />);
+      expect(screen.getByTestId('next-step-retry-personal_color')).toHaveAttribute(
+        'href',
+        '/analysis/integrated'
+      );
+    });
+
+    it('완료 축 없이 실패 축만 있어도 섹션 렌더 (회복 경로 유지)', () => {
+      render(<NextStepsLinks axesCompleted={[]} axesFailed={['body']} />);
+      expect(screen.getByTestId('next-steps-links')).toBeInTheDocument();
+      expect(screen.getByTestId('next-step-retry-body')).toHaveAttribute(
+        'href',
+        '/analysis/body?forceNew=true'
+      );
+    });
+
+    it('완료 축과 실패 축이 섞이면 각각 심화 행/미완성 행으로 렌더', () => {
+      render(
+        <NextStepsLinks
+          axesCompleted={['personal_color']}
+          axesFailed={['makeup']}
+          axisSummaries={{ personal_color: '가을 웜톤 · 웜톤' }}
+        />
+      );
+      // 완료 축 = 심화 행 (요약 + 심화 보기)
+      expect(screen.getByTestId('next-step-personal_color')).toBeInTheDocument();
+      expect(screen.getByText('가을 웜톤 · 웜톤')).toBeInTheDocument();
+      // 실패 축 = 미완성 행 (다시 촬영하기)
+      expect(screen.getByTestId('next-step-retry-makeup')).toHaveAttribute(
+        'href',
+        '/analysis/makeup?forceNew=true'
+      );
+    });
+  });
 });

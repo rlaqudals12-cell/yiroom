@@ -70,14 +70,14 @@ export function ImageUploadSection({
   return (
     <div className="grid gap-4 md:grid-cols-2" data-testid="integrated-image-upload">
       {/* 얼굴 셀카 (필수) */}
-      <div className="rounded-2xl border border-zinc-800 bg-neutral-900 p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-2 flex items-center gap-2">
-          <Camera className="h-4 w-4 text-pink-400" />
-          <p className="text-sm font-semibold text-white">
-            얼굴 셀카 <span className="text-pink-400">*</span>
+          <Camera className="h-4 w-4 text-primary" />
+          <p className="text-sm font-semibold text-foreground">
+            얼굴 셀카 <span className="text-primary">*</span>
           </p>
         </div>
-        <p className="mb-3 text-xs text-zinc-400">자연광에서 정면으로 찍은 사진이 좋아요</p>
+        <p className="mb-3 text-xs text-muted-foreground">자연광에서 정면으로 찍은 사진이 좋아요</p>
         {facePreview ? (
           <div className="relative">
             <Image
@@ -98,7 +98,7 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 bg-neutral-950 text-zinc-400 hover:border-pink-500/50 hover:text-pink-300">
+          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary">
             <Upload className="mb-2 h-6 w-6" />
             <span className="text-sm">{isProcessing === 'face' ? '처리 중...' : '사진 선택'}</span>
             <input
@@ -118,21 +118,23 @@ export function ImageUploadSection({
           </label>
         )}
         {uploadError?.kind === 'face' && (
-          <p role="alert" className="mt-2 text-xs text-red-400" data-testid="face-upload-error">
+          <p role="alert" className="mt-2 text-xs text-destructive" data-testid="face-upload-error">
             {uploadError.message}
           </p>
         )}
       </div>
 
       {/* 전신 사진 (선택) */}
-      <div className="rounded-2xl border border-zinc-800 bg-neutral-900 p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-2 flex items-center gap-2">
-          <Camera className="h-4 w-4 text-blue-400" />
-          <p className="text-sm font-semibold text-white">
-            전신 사진 <span className="text-zinc-500">(선택)</span>
+          <Camera className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-semibold text-foreground">
+            전신 사진 <span className="text-muted-foreground">(선택)</span>
           </p>
         </div>
-        <p className="mb-3 text-xs text-zinc-400">없으면 자가입력으로 체형을 추정해드려요</p>
+        <p className="mb-3 text-xs text-muted-foreground">
+          없으면 자가입력으로 체형을 추정해드려요
+        </p>
         {bodyPreview ? (
           <div className="relative">
             <Image
@@ -153,7 +155,7 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 bg-neutral-950 text-zinc-400 hover:border-blue-500/50 hover:text-blue-300">
+          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary">
             <Upload className="mb-2 h-6 w-6" />
             <span className="text-sm">{isProcessing === 'body' ? '처리 중...' : '사진 선택'}</span>
             <input
@@ -173,7 +175,7 @@ export function ImageUploadSection({
           </label>
         )}
         {uploadError?.kind === 'body' && (
-          <p role="alert" className="mt-2 text-xs text-red-400" data-testid="body-upload-error">
+          <p role="alert" className="mt-2 text-xs text-destructive" data-testid="body-upload-error">
             {uploadError.message}
           </p>
         )}

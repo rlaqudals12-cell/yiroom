@@ -551,7 +551,12 @@
         "heading": "各軸をさらに詳しく見る",
         "summaryFallback": "結果を詳しく見る",
         "deepDive": "詳しく見る",
-        "reanalyze": "再分析"
+        "reanalyze": "再分析",
+        "incomplete": "分析が完了しませんでした",
+        "retake": "もう一度撮影する"
+      },
+      "routineBridge": {
+        "title": "この分析から作った今日のルーティン"
       },
       "partialSuccess": {
         "title": "一部の分析が完了しませんでした",

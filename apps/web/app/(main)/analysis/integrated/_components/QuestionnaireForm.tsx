@@ -133,12 +133,12 @@ export function QuestionnaireForm({
     <div className="space-y-6" data-testid="integrated-questionnaire">
       {/* 성별 + 상황 (추천 분기용 — 분석 판정엔 영향 없음) */}
       <fieldset data-testid="recommendation-context">
-        <legend className="mb-3 text-sm font-semibold text-white">
-          추천 맞춤 <span className="text-zinc-500">(선택)</span>
+        <legend className="mb-3 text-sm font-semibold text-foreground">
+          추천 맞춤 <span className="text-muted-foreground">(선택)</span>
         </legend>
         <div className="space-y-3">
           <div>
-            <p className="mb-2 text-xs text-zinc-400">성별 (추천 제안에만 사용해요)</p>
+            <p className="mb-2 text-xs text-muted-foreground">성별 (추천 제안에만 사용해요)</p>
             <div className="flex flex-wrap gap-2">
               {GENDER_OPTIONS.map((opt) => (
                 <button
@@ -148,8 +148,8 @@ export function QuestionnaireForm({
                   onClick={() => setGender(gender === opt.value ? undefined : opt.value)}
                   className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                     gender === opt.value
-                      ? 'border-pink-500 bg-pink-500/20 text-pink-300'
-                      : 'border-zinc-700 bg-neutral-900 text-zinc-300 hover:border-pink-500/50'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50'
                   }`}
                   data-testid={`gender-option-${opt.value}`}
                 >
@@ -159,7 +159,7 @@ export function QuestionnaireForm({
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs text-zinc-400">어떤 상황을 준비하나요?</p>
+            <p className="mb-2 text-xs text-muted-foreground">어떤 상황을 준비하나요?</p>
             <div className="flex flex-wrap gap-2">
               {SITUATION_OPTIONS.map((opt) => (
                 <button
@@ -169,8 +169,8 @@ export function QuestionnaireForm({
                   onClick={() => setSituation(situation === opt.value ? undefined : opt.value)}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                     situation === opt.value
-                      ? 'border-violet-500 bg-violet-500/20 text-violet-300'
-                      : 'border-zinc-700 bg-neutral-900 text-zinc-400 hover:border-violet-500/50'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50'
                   }`}
                   data-testid={`situation-option-${opt.value}`}
                 >
@@ -184,7 +184,7 @@ export function QuestionnaireForm({
 
       {/* 피부 타입 (1문항) */}
       <fieldset>
-        <legend className="mb-3 text-sm font-semibold text-white">피부 타입</legend>
+        <legend className="mb-3 text-sm font-semibold text-foreground">피부 타입</legend>
         <div className="flex flex-wrap gap-2">
           {SKIN_TYPES.map((opt) => (
             <button
@@ -193,8 +193,8 @@ export function QuestionnaireForm({
               onClick={() => setSkinType(opt.value)}
               className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                 skinType === opt.value
-                  ? 'border-pink-500 bg-pink-500/20 text-pink-300'
-                  : 'border-zinc-700 bg-neutral-900 text-zinc-300 hover:border-pink-500/50'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border bg-card text-muted-foreground hover:border-primary/50'
               }`}
             >
               {opt.label}
@@ -205,10 +205,10 @@ export function QuestionnaireForm({
 
       {/* 헤어 (3문항, 모두 선택) */}
       <fieldset>
-        <legend className="mb-3 text-sm font-semibold text-white">헤어 정보 (선택)</legend>
+        <legend className="mb-3 text-sm font-semibold text-foreground">헤어 정보 (선택)</legend>
         <div className="space-y-3">
           <div>
-            <p className="mb-2 text-xs text-zinc-400">머리 길이</p>
+            <p className="mb-2 text-xs text-muted-foreground">머리 길이</p>
             <div className="flex flex-wrap gap-2">
               {HAIR_LENGTHS.map((opt) => (
                 <button
@@ -217,8 +217,8 @@ export function QuestionnaireForm({
                   onClick={() => setHairLength(hairLength === opt.value ? undefined : opt.value)}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                     hairLength === opt.value
-                      ? 'border-violet-500 bg-violet-500/20 text-violet-300'
-                      : 'border-zinc-700 bg-neutral-900 text-zinc-400 hover:border-violet-500/50'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   {opt.label}
@@ -227,7 +227,7 @@ export function QuestionnaireForm({
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs text-zinc-400">머리숱</p>
+            <p className="mb-2 text-xs text-muted-foreground">머리숱</p>
             <div className="flex flex-wrap gap-2">
               {HAIR_DENSITY.map((opt) => (
                 <button
@@ -236,8 +236,8 @@ export function QuestionnaireForm({
                   onClick={() => setHairDensity(hairDensity === opt.value ? undefined : opt.value)}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                     hairDensity === opt.value
-                      ? 'border-violet-500 bg-violet-500/20 text-violet-300'
-                      : 'border-zinc-700 bg-neutral-900 text-zinc-400 hover:border-violet-500/50'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   {opt.label}
@@ -246,7 +246,7 @@ export function QuestionnaireForm({
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs text-zinc-400">곱슬기</p>
+            <p className="mb-2 text-xs text-muted-foreground">곱슬기</p>
             <div className="flex flex-wrap gap-2">
               {HAIR_CURL.map((opt) => (
                 <button
@@ -255,8 +255,8 @@ export function QuestionnaireForm({
                   onClick={() => setHairCurl(hairCurl === opt.value ? undefined : opt.value)}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                     hairCurl === opt.value
-                      ? 'border-violet-500 bg-violet-500/20 text-violet-300'
-                      : 'border-zinc-700 bg-neutral-900 text-zinc-400 hover:border-violet-500/50'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   {opt.label}
@@ -270,8 +270,8 @@ export function QuestionnaireForm({
       {/* 체형 (전신 사진 없을 때만 표시) */}
       {showBodyFields && (
         <fieldset>
-          <legend className="mb-3 text-sm font-semibold text-white">
-            신체 정보 <span className="text-zinc-500">(전신 사진 대신)</span>
+          <legend className="mb-3 text-sm font-semibold text-foreground">
+            신체 정보 <span className="text-muted-foreground">(전신 사진 대신)</span>
           </legend>
           <div className="grid grid-cols-2 gap-3">
             <NumberInput
@@ -303,7 +303,7 @@ export function QuestionnaireForm({
               onChange={setWaistCm}
             />
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-xs text-muted-foreground">
             * 키만 입력해도 분석 가능해요. 정확도가 올라갈수록 세부 입력 추천.
           </p>
         </fieldset>
@@ -311,7 +311,7 @@ export function QuestionnaireForm({
 
       {/* 전신 사진 업로드 시 신체 정보 입력란이 숨겨지는 이유 안내 (QA #4) */}
       {!showBodyFields && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           전신 사진으로 체형을 자동 분석해요. 수동 입력은 필요 없어요.
         </p>
       )}
@@ -330,7 +330,7 @@ interface NumberInputProps {
 function NumberInput({ label, value, min, max, onChange }: NumberInputProps): React.JSX.Element {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-xs text-zinc-400">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
       <input
         type="number"
         inputMode="numeric"
@@ -348,7 +348,7 @@ function NumberInput({ label, value, min, max, onChange }: NumberInputProps): Re
           // 하한 미만은 blur 시 보정(타이핑 중 "1"→"100" 방해 방지). 상한/음수는 onChange에서 이미 처리
           if (value !== '' && value < min) onChange(min);
         }}
-        className="rounded-lg border border-zinc-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none"
+        className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
       />
     </label>
   );

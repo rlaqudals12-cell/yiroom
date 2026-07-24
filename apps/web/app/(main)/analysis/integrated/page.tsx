@@ -11,7 +11,6 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
-import { Sparkles } from 'lucide-react';
 import { measureBodyClient } from '@/lib/analysis/body-v2';
 import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
 import { measureContrastLevel } from '../personal-color/_components/measure-contrast';
@@ -56,7 +55,10 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const isPartialUpdate =
     isReturning && selectedAxes.length > 0 && selectedAxes.length < ALL_AXES.length;
 
-  const canSubmit = faceImage !== null && !isSubmitting;
+  // 복귀 사용자가 축을 전부 해제하면 mode 미전송 → 의도치 않은 'full' 5축 재분석(프로필 덮어쓰기)이
+  // 되므로 0축 제출을 차단한다.
+  const canSubmit =
+    faceImage !== null && (!isReturning || selectedAxes.length > 0) && !isSubmitting;
 
   const toggleAxis = useCallback((code: AxisCode) => {
     setSelectedAxes((prev) =>
@@ -67,6 +69,11 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const handleSubmit = useCallback(async () => {
     if (!faceImage) {
       setError('얼굴 사진이 필요해요.');
+      return;
+    }
+    // 재분석 0축 가드 — 버튼 비활성화를 우회한 제출도 차단
+    if (isReturning && selectedAxes.length === 0) {
+      setError('다시 분석할 축을 한 개 이상 선택해주세요');
       return;
     }
     setError(null);
@@ -114,10 +121,13 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       const json = await res.json();
 
       if (!res.ok || !json.success) {
+        // 429 레이트리밋은 표준 봉투가 아닌 { error: string } 평면 형태 — 문자열이면 그대로 노출
         const message =
-          json?.error?.userMessage ??
-          json?.error?.message ??
-          '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.';
+          typeof json?.error === 'string'
+            ? json.error
+            : (json?.error?.userMessage ??
+              json?.error?.message ??
+              '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.');
         setError(message);
         setIsSubmitting(false);
         return;
@@ -149,6 +159,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     bodyImage,
     questionnaire,
     selectedAxes,
+    isReturning,
     isPartialUpdate,
     router,
     detectFaceLandmarks,
@@ -157,7 +168,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   if (isSubmitting) {
     return (
       <div
-        className="min-h-[calc(100vh-80px)] bg-neutral-950 px-4 py-16"
+        className="min-h-[calc(100vh-80px)] bg-background px-4 py-16"
         data-testid="integrated-submitting"
       >
         <IntegratedLoadingUI />
@@ -167,7 +178,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] bg-neutral-950 px-4 py-8"
+      className="min-h-[calc(100vh-80px)] bg-background px-4 py-8"
       data-testid="integrated-input-page"
     >
       <div className="mx-auto max-w-3xl space-y-6">
@@ -176,16 +187,15 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
         {/* 헤더 */}
         <header className="space-y-2 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-4 py-1.5 text-xs text-pink-300">
-            <Sparkles className="h-3.5 w-3.5" />
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
             셀카 한 장 · 통합 분석
-          </div>
-          <h1 className="text-2xl font-bold text-white md:text-3xl">
+          </p>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
             셀카 한 장으로
             <br />
             색·피부·체형·헤어 한 번에
           </h1>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             약 2분이면 완료돼요. 자연광에서 찍은 정면 사진이 가장 정확해요.
           </p>
         </header>
@@ -193,8 +203,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         {/* 선택 재분석 — 복귀 사용자만 (ADR-109 cadence locking) */}
         {isReturning && (
           <section className="space-y-2" data-testid="axis-select-section">
-            <h2 className="text-lg font-semibold text-white">다시 분석할 축</h2>
-            <p className="text-xs text-zinc-400">
+            <h2 className="text-lg font-semibold text-foreground">다시 분석할 축</h2>
+            <p className="text-xs text-muted-foreground">
               체크한 축만 새로 분석해요. 나머지는 지금 프로필 값을 그대로 유지해서, 피부처럼 자주
               변하는 것만 갱신할 수 있어요.
             </p>
@@ -210,8 +220,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
                     className={cn(
                       'rounded-full border px-3 py-1.5 text-sm transition-colors',
                       on
-                        ? 'border-pink-500 bg-pink-500/15 text-pink-200'
-                        : 'border-zinc-700 text-zinc-500 hover:border-zinc-500'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/50'
                     )}
                   >
                     {label}
@@ -219,20 +229,25 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
                 );
               })}
             </div>
+            {selectedAxes.length === 0 && (
+              <p role="alert" className="text-xs text-destructive" data-testid="axis-select-error">
+                다시 분석할 축을 한 개 이상 선택해주세요
+              </p>
+            )}
           </section>
         )}
 
         {/* 1. 이미지 업로드 */}
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">1. 사진 업로드</h2>
+          <h2 className="text-lg font-semibold text-foreground">1. 사진 업로드</h2>
           <ImageUploadSection onFaceImageChange={setFaceImage} onBodyImageChange={setBodyImage} />
         </section>
 
         {/* 2. 자가입력 */}
         <section className="space-y-3">
           <div className="space-y-0.5">
-            <h2 className="text-lg font-semibold text-white">2. 나에 대한 정보</h2>
-            <p className="text-xs text-zinc-500">선택 — 건너뛰어도 분석돼요</p>
+            <h2 className="text-lg font-semibold text-foreground">2. 나에 대한 정보</h2>
+            <p className="text-xs text-muted-foreground">선택 — 건너뛰어도 분석돼요</p>
           </div>
           <QuestionnaireForm
             onChange={setQuestionnaire}
@@ -245,7 +260,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         {error && (
           <div
             role="alert"
-            className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+            className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
           >
             {error}
           </div>
@@ -257,14 +272,14 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="h-12 min-w-[240px] rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-sm font-bold text-white shadow-lg shadow-pink-500/25 hover:from-pink-400 hover:to-purple-400 disabled:opacity-50"
+            className="h-12 min-w-[240px] rounded-full bg-primary text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            <Sparkles className="mr-2 h-4 w-4" />내 정체성 알아보기
+            내 정체성 알아보기
           </Button>
         </div>
 
         {/* 안내 */}
-        <p className="text-center text-xs text-zinc-500">
+        <p className="text-center text-xs text-muted-foreground">
           분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
         </p>
       </div>

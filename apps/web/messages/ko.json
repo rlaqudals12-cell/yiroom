@@ -551,7 +551,12 @@
         "heading": "각 축 더 깊이 보기",
         "summaryFallback": "결과 자세히 보기",
         "deepDive": "심화 보기",
-        "reanalyze": "다시 분석"
+        "reanalyze": "다시 분석",
+        "incomplete": "분석이 완료되지 않았어요",
+        "retake": "다시 촬영하기"
+      },
+      "routineBridge": {
+        "title": "이 분석으로 만든 오늘의 루틴"
       },
       "partialSuccess": {
         "title": "일부 분석이 완료되지 않았어요",

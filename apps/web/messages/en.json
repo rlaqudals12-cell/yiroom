@@ -551,7 +551,12 @@
         "heading": "Explore each axis in depth",
         "summaryFallback": "View details",
         "deepDive": "Details",
-        "reanalyze": "Re-analyze"
+        "reanalyze": "Re-analyze",
+        "incomplete": "This analysis didn't finish",
+        "retake": "Retake photo"
+      },
+      "routineBridge": {
+        "title": "Today's Routine built from this analysis"
       },
       "partialSuccess": {
         "title": "Some analyses didn't finish",

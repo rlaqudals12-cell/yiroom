@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
+import { AXIS_ANALYSIS_HREF } from './axis-retry-links';
 
 // AxisCode → i18n 축 라벨 키 (axes.*)
 const AXIS_LABEL_KEY: Record<AxisCode, string> = {
@@ -16,16 +17,6 @@ const AXIS_LABEL_KEY: Record<AxisCode, string> = {
   body: 'axes.body',
   hair: 'axes.hair',
   makeup: 'axes.makeup',
-};
-
-// 축별 개별 분석 시작 경로 — 실패한 축을 각각 다시 시도할 수 있게 딥링크한다.
-// (forceNew=true: 기존 결과가 있어도 자동 진입하지 않고 새로 촬영)
-const AXIS_ANALYSIS_HREF: Record<AxisCode, string> = {
-  personal_color: '/analysis/personal-color?forceNew=true',
-  skin: '/analysis/skin?forceNew=true',
-  body: '/analysis/body?forceNew=true',
-  hair: '/analysis/hair?forceNew=true',
-  makeup: '/analysis/makeup?forceNew=true',
 };
 
 export interface PartialSuccessBannerProps {
@@ -64,8 +55,10 @@ export async function PartialSuccessBanner({
           <p className="text-xs text-amber-700 dark:text-amber-300">
             <span className="font-medium">{t('partialSuccess.failedLabel')}</span> {failedLabels}
           </p>
-          {/* 정직한 대체: 통합 재실행(사진 재업로드)이 아니라, 실패한 축만 개별 분석으로
-              다시 시도하도록 각 축을 딥링크한다. 세션 단위 부분 재시도 API는 없다. */}
+          {/* 정직한 대체: 세션 단위 부분 재시도 API는 없다 — 실패한 축만 각각 재시도 경로로
+              딥링크한다. 퍼컬은 통합 입력(/analysis/integrated)으로 보낸다: 복귀 유저의
+              축 선택 UI가 mode:'update' 재분석을 지원해 이 축만 다시 돌릴 수 있다.
+              나머지 축은 개별 분석(forceNew) 시작 경로. (맵 정본 = axis-retry-links.ts) */}
           <p className="pt-1 text-xs text-amber-700 dark:text-amber-300">
             {t('partialSuccess.retryHint')}
           </p>

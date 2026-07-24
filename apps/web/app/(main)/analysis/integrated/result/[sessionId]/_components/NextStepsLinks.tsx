@@ -7,6 +7,7 @@
  * 세션 고유물(Persona/ActionPlan/CrossInsights/Curation)만 담고, 축 요약은
  * 여기서 "핵심 결과 1줄 + 심화 보기 →"로 개별 결과 페이지에 연결한다.
  * (구 AxesSummaryCard/AxisDetailAccordion 흡수)
+ * 실패 축도 숨기지 않고 '미완성' 행(다시 촬영하기)으로 노출한다 — 회복 경로 유지.
  *
  * @see docs/adr/ADR-111-one-canon-ia.md
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §4.4
@@ -17,6 +18,7 @@ import { useTranslations } from 'next-intl';
 import { ChevronRight, RefreshCw, Palette, Droplet, Shirt, Scissors, Brush } from 'lucide-react';
 import type { AxisCode } from '@/lib/analysis/integrated';
 import { useAnalysisStatus, type AnalysisType } from '@/hooks/useAnalysisStatus';
+import { AXIS_ANALYSIS_HREF } from './axis-retry-links';
 
 interface NextStepItem {
   axis: AxisCode;
@@ -77,6 +79,11 @@ const ALL_STEPS: NextStepItem[] = [
 export interface NextStepsLinksProps {
   axesCompleted: AxisCode[];
   /**
+   * 실패한 축 — 숨기지 않고 '미완성' 행으로 노출해 회복 경로(다시 촬영하기)를 제공한다.
+   * (과거엔 completedSet 필터가 실패 축을 통째로 감춰 회복 동선이 끊겼음)
+   */
+  axesFailed?: AxisCode[];
+  /**
    * 축별 핵심 결과 1줄 요약 (서버에서 공용 라벨 헬퍼로 생성 — 원시 영문값 노출 금지).
    * 예: personal_color → "가을 웜톤 · 웜톤", skin → "복합성 · 컨디션 72점"
    */
@@ -85,11 +92,14 @@ export interface NextStepsLinksProps {
 
 export function NextStepsLinks({
   axesCompleted,
+  axesFailed = [],
   axisSummaries,
 }: NextStepsLinksProps): React.JSX.Element | null {
   const t = useTranslations('analysis.integratedResult');
   const completedSet = new Set(axesCompleted);
-  const steps = ALL_STEPS.filter((s) => completedSet.has(s.axis));
+  const failedSet = new Set(axesFailed);
+  // 완료 축 + 실패 축을 함께 노출 (실패 축은 회복 경로 행으로)
+  const steps = ALL_STEPS.filter((s) => completedSet.has(s.axis) || failedSet.has(s.axis));
 
   // 최신 개별 결과가 있으면 개별 결과 페이지(축 상세의 정본)로 딥링크 — 재분석 유도 방지
   const { analyses } = useAnalysisStatus();
@@ -103,6 +113,37 @@ export function NextStepsLinks({
       <ul className="grid gap-2 sm:grid-cols-2">
         {steps.map((step) => {
           const Icon = step.icon;
+          // 실패 축 = '미완성' 행 — 심화 링크 대신 회복 경로만 (결과가 없으므로 딥링크 지어내지 않음)
+          if (failedSet.has(step.axis) && !completedSet.has(step.axis)) {
+            return (
+              <li
+                key={step.axis}
+                className="overflow-hidden rounded-2xl border border-dashed bg-card"
+              >
+                <div className="flex items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">{t(step.axisNameKey)}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {t('nextSteps.incomplete')}
+                    </p>
+                  </div>
+                </div>
+                {/* 회복 경로 — 퍼컬은 통합 입력(mode:'update' 축 선택 재분석), 나머지는
+                    개별 forceNew 시작 경로 (맵 정본 = axis-retry-links.ts) */}
+                <Link
+                  href={AXIS_ANALYSIS_HREF[step.axis]}
+                  className="flex items-center justify-center gap-1 border-t px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-primary"
+                  data-testid={`next-step-retry-${step.axis}`}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {t('nextSteps.retake')}
+                </Link>
+              </li>
+            );
+          }
           const summary = axisSummaries?.[step.axis];
           // 최신 개별 결과가 있으면 결과 페이지로, 없으면 분석 시작 경로로 폴백
           const latest = latestByType.get(step.analysisType);

@@ -551,7 +551,12 @@
         "heading": "深入查看每个维度",
         "summaryFallback": "查看详情",
         "deepDive": "查看详情",
-        "reanalyze": "重新分析"
+        "reanalyze": "重新分析",
+        "incomplete": "分析未完成",
+        "retake": "重新拍摄"
+      },
+      "routineBridge": {
+        "title": "由本次分析生成的今日日程"
       },
       "partialSuccess": {
         "title": "部分分析未完成",

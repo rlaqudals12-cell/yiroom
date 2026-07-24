@@ -76,7 +76,7 @@ describe('PartialSuccessBanner', () => {
     expect(screen.getByText('partialSuccess.retryHint')).toBeInTheDocument();
   });
 
-  it('실패한 각 축이 개별 분석 경로(forceNew)로 딥링크됨 (통합 재실행 아님)', async () => {
+  it('퍼컬 외 실패 축은 개별 분석 경로(forceNew)로 딥링크됨 (통합 재실행 아님)', async () => {
     render(
       await PartialSuccessBanner({
         axesCompleted: ['personal_color'],
@@ -87,9 +87,22 @@ describe('PartialSuccessBanner', () => {
     const hairLink = screen.getByTestId('partial-retry-hair');
     expect(bodyLink).toHaveAttribute('href', '/analysis/body?forceNew=true');
     expect(hairLink).toHaveAttribute('href', '/analysis/hair?forceNew=true');
-    // 통합 전체 재실행(/analysis/integrated)으로 링크하지 않음
+    // 퍼컬 외 축은 통합 입력(/analysis/integrated)으로 링크하지 않음
     const allLinks = screen.getAllByRole('link');
     expect(allLinks.every((l) => l.getAttribute('href') !== '/analysis/integrated')).toBe(true);
+  });
+
+  it('퍼컬 실패는 통합 입력(/analysis/integrated)으로 회복 — 복귀 축 선택 UI가 mode:update 재분석 지원', async () => {
+    render(
+      await PartialSuccessBanner({
+        axesCompleted: ['skin'],
+        axesFailed: ['personal_color'],
+      })
+    );
+    expect(screen.getByTestId('partial-retry-personal_color')).toHaveAttribute(
+      'href',
+      '/analysis/integrated'
+    );
   });
 
   it('실패 축 개수만큼 재시도 링크가 생성됨', async () => {

@@ -40,10 +40,10 @@ export function IntegratedLoadingUI(): React.JSX.Element {
 
   return (
     <div
-      className="mx-auto max-w-md rounded-2xl border border-zinc-800 bg-neutral-900 p-6"
+      className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6"
       data-testid="integrated-loading"
     >
-      <h2 className="mb-4 text-lg font-bold text-white">다섯 가지를 분석하고 있어요...</h2>
+      <h2 className="mb-4 text-lg font-bold text-foreground">다섯 가지를 분석하고 있어요...</h2>
 
       <ul className="space-y-3">
         {AXES.map((axis) => {
@@ -55,21 +55,24 @@ export function IntegratedLoadingUI(): React.JSX.Element {
               data-testid={`loading-axis-${axis.code}`}
             >
               <span
-                className={`text-sm transition-colors ${isDone ? 'text-white' : 'text-zinc-400'}`}
+                className={`text-sm transition-colors ${isDone ? 'text-foreground' : 'text-muted-foreground'}`}
               >
                 {axis.label}
               </span>
               {isDone ? (
-                <Check className="h-4 w-4 text-green-400" aria-label="완료" />
+                <Check className="h-4 w-4 text-primary" aria-label="완료" />
               ) : (
-                <Loader2 className="h-4 w-4 animate-spin text-pink-400" aria-label="진행 중" />
+                <Loader2
+                  className="h-4 w-4 animate-spin text-muted-foreground"
+                  aria-label="진행 중"
+                />
               )}
             </li>
           );
         })}
       </ul>
 
-      <p className="mt-5 text-center text-xs text-zinc-500">
+      <p className="mt-5 text-center text-xs text-muted-foreground">
         {showSlowWarning
           ? '거의 다 됐어요. 조금만 더 기다려주세요...'
           : '최대 1~2분 걸릴 수 있어요'}

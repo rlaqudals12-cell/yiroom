@@ -8,8 +8,10 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { redirect, notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
+import { CalendarCheck, ChevronRight } from 'lucide-react';
 import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { hasAnyClosetItems } from '@/lib/analysis/integrated/internal/closet-check';
@@ -701,14 +703,36 @@ export default async function IntegratedResultPage({
         {/* ADR-104 체크리스트 #2: 다음 행동 3단계 */}
         <ActionPlanCard plan={actionPlan} />
 
+        {/* 결과 → 루틴 다리 — 관계 5단계 '첫 미팅 → 매일 브리핑' 고리.
+            분석이 1회성 리포트로 끝나지 않고 매일의 관리로 이어지는 정적 링크
+            (NextStepsLinks 카드 행 문법 재사용) */}
+        <Link
+          href="/capsule/daily"
+          className="group flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-secondary/50"
+          data-testid="routine-bridge-link"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+            <CalendarCheck className="h-5 w-5 text-primary" />
+          </div>
+          <p className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+            {t('routineBridge.title')}
+          </p>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+        </Link>
+
         {/* ADR-104 체크리스트 #4: 축 간 연결 인사이트 */}
         <CrossInsightsCard insights={crossInsights} />
 
         {/* ADR-104 체크리스트 #5: 통합 큐레이션 (제품 세트 + 실제 제품 3개) */}
         <CurationCard curation={curation} products={curationProducts} />
 
-        {/* 더 깊이 — 축별 심화 링크 (개별 결과 페이지가 축 상세의 정본, ADR-111 One Canon) */}
-        <NextStepsLinks axesCompleted={axesCompleted} axisSummaries={axisSummaries} />
+        {/* 더 깊이 — 축별 심화 링크 (개별 결과 페이지가 축 상세의 정본, ADR-111 One Canon).
+            실패 축은 '미완성' 행으로 노출해 회복 경로(다시 촬영)를 제공 */}
+        <NextStepsLinks
+          axesCompleted={axesCompleted}
+          axesFailed={axesFailed}
+          axisSummaries={axisSummaries}
+        />
 
         {/* 스타일 리포트 공유 — 사진 없는 공개 링크 (바이럴 루프) */}
         <ShareReportButton sessionId={session.id} />
