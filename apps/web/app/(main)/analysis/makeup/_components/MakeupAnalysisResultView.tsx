@@ -21,6 +21,7 @@ import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { Button } from '@/components/ui/button';
 import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
+import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
@@ -45,6 +46,16 @@ const FACE_ZONE_POS: Record<MakeupShelfCategory, { top: string; left: string }> 
   blush: { top: '52%', left: '27%' }, // 볼 (왼쪽)
   contour: { top: '60%', left: '75%' }, // 턱선/광대 (오른쪽)
   lip: { top: '65%', left: '50%' }, // 입술 (y≈135/210)
+};
+
+// 카테고리별 발색 질감 — 플랫 칩 대신 "실물 발색"(비주얼 벤치마크 m07·m08의 결정적 우위).
+// 색은 진단 hex 그대로, 질감만 고정 SVG(재현성 유지 — ADR-120 생성이미지 기각과 양립)
+const TEXTURE_BY_CATEGORY: Record<MakeupShelfCategory, TextureKind> = {
+  foundation: 'foundation',
+  lip: 'lip',
+  eyeshadow: 'powder',
+  blush: 'powder',
+  contour: 'powder',
 };
 
 // 얼굴형 → 익명 템플릿 형태 매핑 (round/square 외에는 oval)
@@ -255,13 +266,14 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-x-5 gap-y-3">
               {cr.colors.map((color, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-700 shadow-md"
-                    style={{ backgroundColor: color.hex }}
-                    aria-hidden="true"
+                <div key={i} className="flex items-center gap-2.5">
+                  <TextureSwatch
+                    hex={color.hex}
+                    kind={TEXTURE_BY_CATEGORY[cr.category] ?? 'powder'}
+                    width={56}
+                    className="shrink-0"
                   />
                   <div>
                     <p className="text-sm font-medium">{color.name}</p>

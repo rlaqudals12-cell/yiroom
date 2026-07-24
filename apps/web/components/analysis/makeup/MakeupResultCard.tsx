@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { selectByKey, mapToClass } from '@/lib/utils/conditional-helpers';
+import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 import type { MakeupAnalysisResult, ColorRecommendation } from '@/lib/mock/makeup-analysis';
 
 interface MakeupResultCardProps {
@@ -256,6 +257,15 @@ export function MakeupResultCard({ result, showDetails = true }: MakeupResultCar
   );
 }
 
+// 카테고리별 발색 질감 — 색은 진단 hex 그대로, 질감은 고정 SVG(재현성 유지)
+const TEXTURE_BY_CATEGORY: Record<string, TextureKind> = {
+  foundation: 'foundation',
+  lip: 'lip',
+  eyeshadow: 'powder',
+  blush: 'powder',
+  contour: 'powder',
+};
+
 /**
  * 컬러 카테고리 카드
  */
@@ -272,10 +282,11 @@ function ColorCategoryCard({ category }: { category: ColorRecommendation }) {
                   className="flex items-center gap-2 p-2 border rounded-lg hover:border-primary transition-colors cursor-pointer"
                   aria-label={`${color.name} (${color.hex})`}
                 >
-                  <div
-                    className="w-8 h-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-                    style={{ backgroundColor: color.hex }}
-                    aria-hidden="true"
+                  <TextureSwatch
+                    hex={color.hex}
+                    kind={TEXTURE_BY_CATEGORY[category.category] ?? 'powder'}
+                    width={52}
+                    className="shrink-0"
                   />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{color.name}</p>

@@ -29,6 +29,7 @@ import { ScaleIn } from '@/components/animations';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { getKoreanColorName } from '@/lib/utils/color-names';
+import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 import { getCardPalette, type CardLocale } from '@/lib/share/tone-palettes';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
@@ -189,23 +190,29 @@ function AttrRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string
   );
 }
 
-/** 소형 스와치 행(포인트·금속) — 색칩 + 이름 */
+/** 소형 스와치 행(포인트·금속) — 색칩 + 이름. texture 지정 시 화장품 발색 질감으로 렌더 */
 function SwatchChips({
   colors,
   testId,
+  texture,
 }: {
   colors: Array<{ hex: string; name?: string }>;
   testId: string;
+  texture?: TextureKind;
 }) {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1.5" data-testid={testId}>
       {colors.map((c, i) => (
         <span key={`${c.hex}-${i}`} className="flex items-center gap-1.5">
-          <span
-            className="h-4 w-4 rounded-full border border-border"
-            style={{ backgroundColor: c.hex }}
-            aria-hidden="true"
-          />
+          {texture ? (
+            <TextureSwatch hex={c.hex} kind={texture} width={44} className="shrink-0" />
+          ) : (
+            <span
+              className="h-4 w-4 rounded-full border border-border"
+              style={{ backgroundColor: c.hex }}
+              aria-hidden="true"
+            />
+          )}
           {c.name && <span className="text-xs text-muted-foreground">{c.name}</span>}
         </span>
       ))}
@@ -347,7 +354,8 @@ function PaletteSectionBody({
             <span className="ml-1.5 font-normal">립·네일·강조에</span>
           </p>
           <div className="mt-2">
-            <SwatchChips colors={accentColors.slice(0, 3)} testId="pc-accent-chips" />
+            {/* 포인트=립·네일 사용처 → 립 발색 질감으로(실물감) */}
+            <SwatchChips colors={accentColors.slice(0, 3)} testId="pc-accent-chips" texture="lip" />
           </div>
         </div>
       )}

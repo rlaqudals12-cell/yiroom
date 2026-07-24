@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
 import { applyDrapeColor } from '@/lib/analysis/drape-reflectance';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
+import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 import type { PaletteColor } from '@/components/share/PersonaShareCard';
 
 /** 행 아이콘 키 — 라벨 문자열(로케일)이 아닌 의미 키로 아이콘을 고정한다 */
@@ -295,23 +296,29 @@ function RowTable({ rows, testId }: { rows: ReportRow[]; testId: string }): Reac
   );
 }
 
-/** 소형 스와치 행(포인트·금속) — 색칩 + 이름 */
+/** 소형 스와치 행(포인트·금속) — 색칩 + 이름. texture 지정 시 화장품 발색 질감으로 렌더 */
 function SwatchChips({
   colors,
   testId,
+  texture,
 }: {
   colors: PaletteColor[];
   testId: string;
+  texture?: TextureKind;
 }): React.JSX.Element {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1.5" data-testid={testId}>
       {colors.map((c, i) => (
         <span key={`${c.hex}-${i}`} className="flex items-center gap-1.5">
-          <span
-            className="h-4 w-4 rounded-full border border-[#0000000f]"
-            style={{ backgroundColor: c.hex }}
-            aria-hidden="true"
-          />
+          {texture ? (
+            <TextureSwatch hex={c.hex} kind={texture} width={40} className="shrink-0" />
+          ) : (
+            <span
+              className="h-4 w-4 rounded-full border border-[#0000000f]"
+              style={{ backgroundColor: c.hex }}
+              aria-hidden="true"
+            />
+          )}
           {c.name && <span className="text-[11px] text-[#5C5049]">{c.name}</span>}
         </span>
       ))}
@@ -504,7 +511,8 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
                   )}
                 </p>
                 <div className="mt-1.5">
-                  <SwatchChips colors={accents.slice(0, 3)} testId="report-accents" />
+                  {/* 포인트=립·네일 사용처 → 립 발색 질감(캡처 안전 — 인라인 SVG) */}
+                  <SwatchChips colors={accents.slice(0, 3)} testId="report-accents" texture="lip" />
                 </div>
               </div>
             )}
