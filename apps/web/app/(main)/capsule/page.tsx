@@ -115,7 +115,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         className="flex items-center justify-center min-h-[60vh]"
         data-testid="capsule-dashboard"
       >
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -137,16 +137,13 @@ export default function CapsuleDashboardPage(): React.ReactElement {
     return (
       <div className="container mx-auto px-4 py-6" data-testid="capsule-dashboard">
         <div className="mb-6">
-          <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-          <div className="h-4 w-64 bg-slate-200 dark:bg-slate-700 rounded mt-2 animate-pulse" />
+          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
+          <div className="h-4 w-64 bg-muted rounded mt-2 animate-pulse" />
         </div>
         {/* 도메인 그리드와 동일한 6칸 (5축 + 패션) */}
         <div className="grid grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-28 bg-slate-200 dark:bg-slate-700 rounded-2xl animate-pulse"
-            />
+            <div key={i} className="h-28 bg-muted rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -181,13 +178,13 @@ export default function CapsuleDashboardPage(): React.ReactElement {
       {/* Daily Capsule 요약 카드 */}
       {daily && totalCount > 0 && (
         <Card
-          className="p-4 mb-6 cursor-pointer hover:shadow-md transition-shadow border-indigo-200 dark:border-indigo-800"
+          className="p-4 mb-6 cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => router.push('/capsule/daily')}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/50">
-                <CalendarCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 rounded-xl bg-primary/10">
+                <CalendarCheck className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">오늘의 루틴</h3>
@@ -198,9 +195,9 @@ export default function CapsuleDashboardPage(): React.ReactElement {
             </div>
             <div className="flex items-center gap-3">
               {/* 진행률 바 */}
-              <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-indigo-500 rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{
                     width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%`,
                   }}
@@ -246,13 +243,13 @@ export default function CapsuleDashboardPage(): React.ReactElement {
       {/* 갭 분석 CTA */}
       {gapData && gapData.totalGap > 0 && (
         <Card
-          className="p-4 cursor-pointer hover:shadow-md transition-shadow bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800"
+          className="p-4 cursor-pointer hover:shadow-md transition-shadow bg-card"
           onClick={() => router.push('/capsule/gap')}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/50">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <div className="p-2 rounded-xl bg-primary/10">
+                <AlertTriangle className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">부족한 영역이 있어요</h3>
@@ -269,10 +266,10 @@ export default function CapsuleDashboardPage(): React.ReactElement {
 
       {/* 전체 완성 시 */}
       {gapData && gapData.totalGap === 0 && (
-        <Card className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800">
+        <Card className="p-4 bg-card">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/50">
-              <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">플랜이 완성되었어요!</h3>

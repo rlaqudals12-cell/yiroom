@@ -145,6 +145,10 @@ export {
 export { extractSolutionColors } from './solution-colors';
 export type { SolutionColorChip } from './solution-colors';
 
+// 시간대 판정 (2026-07-25: verdict-first '지금 블록' — 루틴 IA 재편)
+export { getActiveTimeGroup, getTimeGroupPriority } from './time-of-day';
+export type { CapsuleTimeGroup } from './time-of-day';
+
 // Curate 실물 연결 (2026-07-08: 도메인 캡슐 아이템에 실제 제품 부착)
 export { attachCurateProducts } from './curate-products';
 export type { CurateSolutionProduct, CurateTargetItem } from './curate-products';

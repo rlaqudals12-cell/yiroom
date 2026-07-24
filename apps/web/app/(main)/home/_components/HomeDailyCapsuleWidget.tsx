@@ -30,6 +30,8 @@ import {
   Activity,
 } from 'lucide-react';
 import type { DailyCapsule, DailyItem, DailySolutionProduct, ModuleCode } from '@/types/capsule';
+// 시간대 → 활성 그룹 판정 — 배럴(index) 대신 직접 import (서버 전용 모듈 끌림 방지)
+import { getTimeGroupPriority } from '@/lib/capsule/time-of-day';
 import type { ExplanationDepth } from '@/lib/connection-awareness';
 import {
   exposeConnection,
@@ -278,6 +280,23 @@ export default function HomeDailyCapsuleWidget() {
   const checkedCount = capsule.items.filter((i) => i.isChecked).length;
   const totalCount = capsule.items.length;
   const progress = Math.round((checkedCount / totalCount) * 100);
+
+  // 홈/상세 분업 — 홈은 활성 시간대(아침/저녁/언제든)의 미체크 상위 3개만 노출.
+  // 전체 목록·시간대 그룹은 /capsule/daily 담당 (기존 5개 복제 축소, API·정렬 로직 불변)
+  const uncheckedItems = capsule.items.filter((i) => !i.isChecked);
+  let displayItems: DailyItem[] = [];
+  for (const key of getTimeGroupPriority(new Date().getHours())) {
+    const groupUnchecked = uncheckedItems.filter((i) => (i.timeOfDay ?? 'anytime') === key);
+    if (groupUnchecked.length > 0) {
+      displayItems = groupUnchecked.slice(0, 3);
+      break;
+    }
+  }
+  // 미체크가 전혀 없으면(전부 완료 직후 등) 앞 3개 폴백 — 빈 위젯 방지
+  if (displayItems.length === 0) displayItems = capsule.items.slice(0, 3);
+  const moreUncheckedCount = uncheckedItems.filter(
+    (i) => !displayItems.some((d) => d.id === i.id)
+  ).length;
   // ADR-117: 오늘 저녁 포커스(배지 1줄) — 있을 때만, 과하지 않게
   const eveningFocus = (capsule as CapsuleWithEveningFocus).skinEveningFocus;
   // G4: 어제 대비 변화 문구 + 오늘 요일 (일변화 체감)
@@ -336,9 +355,9 @@ export default function HomeDailyCapsuleWidget() {
         </div>
       )}
 
-      {/* 아이템 리스트 (최대 5개 표시) */}
+      {/* 아이템 리스트 — 활성 시간대 미체크 상위 3개 */}
       <div className="space-y-1.5">
-        {capsule.items.slice(0, 5).map((item) => {
+        {displayItems.map((item) => {
           const Icon = MODULE_ICONS[item.moduleCode] || Sparkles;
           const depth = moduleDepths[item.moduleCode] ?? 'full';
           // ADR-117: 아이템에 붙은 실제 제품 — 보유(shelf) 제품이면 "내 ○○" 배지,
@@ -407,10 +426,10 @@ export default function HomeDailyCapsuleWidget() {
         })}
       </div>
 
-      {/* 더 보기 */}
-      {capsule.items.length > 5 && (
+      {/* 더 보기 — 표시되지 않은 남은 미체크 수 */}
+      {moreUncheckedCount > 0 && (
         <p className="text-xs text-muted-foreground mt-2 pl-2">
-          {t('capsuleMoreItems', { count: capsule.items.length - 5 })}
+          {t('capsuleMoreItems', { count: moreUncheckedCount })}
         </p>
       )}
 
