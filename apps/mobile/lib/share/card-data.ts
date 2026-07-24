@@ -19,7 +19,17 @@
  */
 
 import { getCardPalette, toneHeroLabelKo } from '@yiroom/shared';
+
 import type { IntegratedAnalysisResult, AxisData, AxisResult } from '@/lib/api';
+import {
+  SKIN_TYPE_KO,
+  BODY_TYPE_KO,
+  FACE_SHAPE_KO,
+  cleanValue,
+  pick,
+  nestedTone,
+  toKoLabel,
+} from '@/lib/share/axis-labels';
 
 export interface CardPaletteColor {
   hex: string;
@@ -42,67 +52,8 @@ export interface PersonaCardData {
 /** #RGB / #RRGGBB만 통과 — 웹 정본 parsePaletteItem과 동일(8자리 알파는 카드 스와치 부적합) */
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
-// 영문 enum → ko 라벨 (정본 = 웹 labels.ts SKIN_TYPE/FACE_SHAPE·body/mapper.ts BODY_SHAPE_LABELS)
-const SKIN_TYPE_KO: Record<string, string> = {
-  dry: '건성',
-  oily: '지성',
-  combination: '복합성',
-  normal: '중성',
-  sensitive: '민감성',
-};
-const BODY_TYPE_KO: Record<string, string> = {
-  S: '스트레이트',
-  W: '웨이브',
-  N: '내추럴',
-  hourglass: '모래시계형',
-  pear: '배형',
-  invertedTriangle: '역삼각형',
-  apple: '사과형',
-  rectangle: '직사각형',
-  trapezoid: '사다리꼴형',
-};
-const FACE_SHAPE_KO: Record<string, string> = {
-  oval: '계란형',
-  round: '둥근형',
-  square: '각진형',
-  heart: '하트형',
-  oblong: '긴 얼굴형',
-  diamond: '다이아몬드형',
-};
-
 function axisData(axis: AxisResult<AxisData>): AxisData | null {
   return axis.success ? axis.data : null;
-}
-
-/** 비어있지 않은 문자열 값만 (placeholder '-' 제외) */
-function cleanValue(raw: unknown): string | null {
-  if (typeof raw !== 'string') return null;
-  const v = raw.trim();
-  return v.length > 0 && v !== '-' ? v : null;
-}
-
-/** camelCase(POST payload) 우선, snake_case(raw row) 폴백 */
-function pick(d: AxisData | null, camel: string, snake: string): string | null {
-  return cleanValue(d?.[camel]) ?? cleanValue(d?.[snake]);
-}
-
-/** raw row의 image_analysis JSONB에서 12톤 추출 (웹 page.tsx extractNested 미러) */
-function nestedTone(d: AxisData | null): string | null {
-  const ia = d?.image_analysis;
-  if (typeof ia === 'object' && ia !== null) {
-    return cleanValue((ia as Record<string, unknown>).tone);
-  }
-  return null;
-}
-
-/**
- * enum 값 → ko 라벨. 매핑이 없으면: 이미 한글이면 그대로, 영문이면 null(원시 영문 금지 — 지어내지 않음).
- */
-function toKoLabel(raw: string | null, map: Record<string, string>): string | null {
-  if (!raw) return null;
-  if (map[raw]) return map[raw];
-  // 한글 등 비ASCII 값은 이미 로케일된 표시값으로 간주
-  return /[^\x00-\x7F]/.test(raw) ? raw : null;
 }
 
 /** 개인 실측 best_colors JSONB → {hex,name} 배열 (형태 보장 없음 — 방어적 추출, 웹 미러: string hex도 수용) */

@@ -23,19 +23,20 @@ import { resolvePersonaCardData } from '@/lib/share/card-data';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
 import { useHasClosetItems } from '@/hooks/useHasClosetItems';
-import type {
-  IntegratedAnalysisResult,
-  AxisCode,
-  AxisData,
-  AxisResult,
-  PersonaProfile,
-} from '@/lib/api';
+import type { IntegratedAnalysisResult, AxisCode, AxisResult, PersonaProfile } from '@/lib/api';
 import {
   composeActionPlan,
   getHorizonLabel,
   type ActionItem,
   type ActionPlan,
 } from '@/lib/integrated/action-plan';
+import {
+  pcSummary,
+  skinSummary,
+  bodySummary,
+  hairSummary,
+  makeupSummary,
+} from '@/lib/integrated/axis-summary';
 import { composeCrossInsights, type CrossInsights } from '@/lib/integrated/cross-insights';
 import { composeCuration, type Curation, type CurationItem } from '@/lib/integrated/curation';
 import { ALL_STEPS } from '@/lib/integrated/next-steps';
@@ -291,41 +292,6 @@ function AxesSummaryCard({ axes }: AxesSummaryCardProps): React.JSX.Element {
     </GlassCard>
   );
 }
-
-function pcSummary(data: AxisData | null): string {
-  if (!data) return '분석 미완료';
-  // 12톤(tone)이 있으면 4계절(season)보다 우선 표시 — 서버는 12톤을 주는데
-  // 기존 요약이 4계절로 다운그레이드해 보여줬다 (2026-07-16 감사)
-  const toneOrSeason = String(data.tone ?? data.season ?? '-');
-  const undertone = String(data.undertone ?? '-');
-  return `${toneOrSeason} / ${undertone}`;
-}
-
-function skinSummary(data: AxisData | null): string {
-  if (!data) return '분석 미완료';
-  const type = String(data.skinType ?? '-');
-  const score = Number(data.overallScore ?? 0);
-  return `${type} · ${score}점`;
-}
-
-function bodySummary(data: AxisData | null): string {
-  if (!data) return '분석 미완료';
-  return String(data.bodyType ?? '-');
-}
-
-function hairSummary(data: AxisData | null): string {
-  if (!data) return '분석 미완료';
-  return `${String(data.faceShape ?? '-')}형`;
-}
-
-function makeupSummary(data: AxisData | null): string {
-  if (!data) return '분석 미완료';
-  return String(data.baseRecommendation ?? '추천 있음').slice(0, 28);
-}
-
-// ============================================
-// Partial Success 배너
-// ============================================
 
 // ============================================
 // 통합 큐레이션 섹션 (ADR-104 체크리스트 #5)
