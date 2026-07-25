@@ -7,7 +7,6 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import {
   ArrowLeft,
   RefreshCw,
-  Sparkles,
   Eye,
   ClipboardList,
   Lightbulb,
@@ -18,6 +17,10 @@ import {
   Share2,
   ChevronRight,
   Printer,
+  FileText,
+  ShoppingBag,
+  Activity,
+  Info,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
@@ -70,17 +73,15 @@ import SkinAnalysisEvidenceReport, {
   type SkinImageQuality,
 } from '@/components/analysis/SkinAnalysisEvidenceReport';
 import {
-  VisualReportCard,
   FaceZoneMap,
   SkinVitalityScore,
   ZoneDetailCard,
   TrendChart,
-  CircularProgress,
-  ScoreChangeBadge,
   type MetricItem,
   type ZoneStatus,
   type FaceZoneMapProps,
 } from '@/components/analysis/visual-report';
+import { ReportEyebrow, RowTable, AttrRow } from '@/components/analysis/report';
 import { SkinZoomViewer } from '@/components/analysis/SkinZoomViewer';
 import type { ProblemArea } from '@/types/skin-problem-area';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
@@ -230,6 +231,13 @@ function getStatus(value: number): 'good' | 'normal' | 'warning' {
   if (value >= 71) return 'good';
   if (value >= 41) return 'normal';
   return 'warning';
+}
+
+// 점수 → 상태 텍스트 — 신호등 색 대신 텍스트로 상태를 말한다 (진단지 문법, ADR-120)
+function getConditionText(value: number): string {
+  if (value >= 71) return '양호';
+  if (value >= 41) return '보통';
+  return '집중 케어';
 }
 
 // 점수에 따른 설명 생성
@@ -795,7 +803,7 @@ export default function SkinAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
@@ -905,35 +913,46 @@ export default function SkinAnalysisResultPage() {
             </div>
           )}
 
-          {/* 히어로 섹션: 타입 라벨 + 점수 원형 게이지 + 변화 배지 */}
+          {/* 히어로 — 진단지 문법(ADR-120): 아이브로우 + 세리프 진단명 + 속성표.
+              원형 채점 게이지 소거 — 점수는 속성표 행("NN점 · 상태")으로만 말한다 */}
           {result && (
-            <div className="flex flex-col items-center mb-6">
-              {/* Identity-First: 타입 라벨 1순위 (ADR-080) */}
-              {skinIdentityLabel && (
-                <p className="text-xl font-bold text-foreground mb-3">{skinIdentityLabel}</p>
-              )}
-              <div className="relative">
-                <CircularProgress
-                  score={result.overallScore}
-                  size="lg"
-                  animate
-                  showScore
-                  showGradeIcon
-                />
-                {/* 이전 분석 대비 변화 배지 */}
-                {previousScore !== null && (
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                    <ScoreChangeBadge delta={result.overallScore - previousScore} size="sm" />
-                  </div>
-                )}
+            <section
+              className="mb-6 rounded-2xl border border-border bg-card px-5 pb-5 pt-6 sm:px-7"
+              data-testid="skin-report-hero"
+            >
+              <ReportEyebrow>SKIN REPORT</ReportEyebrow>
+              {/* Identity-First: 타입 라벨이 진단명 (ADR-080) */}
+              <h2 className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground">
+                {skinIdentityLabel ?? (skinType ? `${getSkinTypeLabel(skinType)} 피부` : '내 피부')}
+              </h2>
+              <div className="mt-4">
+                <RowTable testId="skin-report-attrs">
+                  <AttrRow icon={Droplets} label="피부 타입" value={getSkinTypeLabel(skinType)} />
+                  <AttrRow
+                    icon={Activity}
+                    label="컨디션"
+                    value={`${result.overallScore}점 · ${getConditionText(result.overallScore)}`}
+                  />
+                  <AttrRow
+                    icon={Eye}
+                    label="주요 고민"
+                    value={
+                      result.metrics
+                        .filter((m) => m.status === 'warning')
+                        .slice(0, 3)
+                        .map((m) => m.name)
+                        .join(' · ') || '두드러진 고민 없음'
+                    }
+                  />
+                </RowTable>
               </div>
               {previousScore !== null && (
-                <p className="text-xs text-muted-foreground mt-4">
+                <p className="mt-3 text-xs text-muted-foreground">
                   지난 분석 대비 {result.overallScore - previousScore > 0 ? '+' : ''}
                   {result.overallScore - previousScore}점
                 </p>
               )}
-            </div>
+            </section>
           )}
 
           {/* 12존 히트맵 오버레이 제거 — 전신 지표를 존별 실측처럼 임의 배정하던 표시(사용자 오인 소지) */}
@@ -947,7 +966,7 @@ export default function SkinAnalysisResultPage() {
                   aria-label={t('tabAriaLabel.skin')}
                 >
                   <TabsTrigger value="basic" className="gap-1 text-xs px-1">
-                    <Sparkles className="w-3 h-3" />
+                    <FileText className="w-3 h-3" />
                     분석
                   </TabsTrigger>
                   <TabsTrigger value="evidence" className="gap-1 text-xs px-1">
@@ -964,24 +983,8 @@ export default function SkinAnalysisResultPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                {/* 기본 분석 탭 */}
+                {/* 기본 분석 탭 — 채점표 카드는 소거(진단지 히어로+SpectrumRow가 정본, ADR-120) */}
                 <TabsContent value="basic" className="mt-0">
-                  {/* 비주얼 리포트 카드 */}
-                  <VisualReportCard
-                    analysisType="skin"
-                    overallScore={result.overallScore}
-                    skinMetrics={result.metrics.map(
-                      (m): MetricItem => ({
-                        id: m.id,
-                        name: m.name,
-                        value: m.value,
-                        description: m.description,
-                      })
-                    )}
-                    analyzedAt={result.analyzedAt}
-                    className="mb-6"
-                  />
-
                   {/* 결론 먼저(ADR-111): "그래서, 이렇게 하세요" — 기존 결과에서 규칙 조립 */}
                   <TopActionsCard actions={topActions} className="mb-6" />
 
@@ -1015,12 +1018,13 @@ export default function SkinAnalysisResultPage() {
                   >
                     <div
                       data-testid="environment-info-card"
-                      className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50"
+                      className="p-4 bg-card rounded-xl border border-border"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                           <Lightbulb
-                            className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                            className="w-4 h-4 text-muted-foreground"
+                            strokeWidth={1.75}
                             aria-hidden="true"
                           />
                         </div>
@@ -1029,21 +1033,21 @@ export default function SkinAnalysisResultPage() {
                           <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                             <li className="flex items-start gap-1.5">
                               <Sun
-                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-muted-foreground"
                                 aria-hidden="true"
                               />
                               <span>{t('lightingNote')}</span>
                             </li>
                             <li className="flex items-start gap-1.5">
                               <Droplets
-                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-sky-500"
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-muted-foreground"
                                 aria-hidden="true"
                               />
                               <span>메이크업이 있으면 피부 상태 분석 정확도가 낮아져요</span>
                             </li>
                             <li className="flex items-start gap-1.5">
-                              <Sparkles
-                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
+                              <Camera
+                                className="w-3 h-3 mt-0.5 flex-shrink-0 text-muted-foreground"
                                 aria-hidden="true"
                               />
                               <span>노메이크업 상태에서 촬영하면 가장 정확해요</span>
@@ -1056,11 +1060,12 @@ export default function SkinAnalysisResultPage() {
 
                   {/* S-1 + PC-1 시너지 인사이트 — 루틴 아래 CTA (펼침 유지) */}
                   {synergyInsight && pcSeason && (
-                    <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                    <div className="mb-6 p-4 bg-card rounded-xl border border-border">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                           <Palette
-                            className="w-5 h-5 text-violet-600 dark:text-violet-400"
+                            className="w-5 h-5 text-muted-foreground"
+                            strokeWidth={1.75}
                             aria-hidden="true"
                           />
                         </div>
@@ -1080,11 +1085,12 @@ export default function SkinAnalysisResultPage() {
                   {/* PC-1 분석 유도 CTA (퍼스널컬러 미완료 시) */}
                   {synergyInsight && !pcSeason && (
                     <Link href="/analysis/personal-color" className="block mb-6">
-                      <div className="p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50 hover:shadow-md transition-shadow">
+                      <div className="p-4 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                             <Palette
-                              className="w-5 h-5 text-violet-600 dark:text-violet-400"
+                              className="w-5 h-5 text-muted-foreground"
+                              strokeWidth={1.75}
                               aria-hidden="true"
                             />
                           </div>
@@ -1108,11 +1114,12 @@ export default function SkinAnalysisResultPage() {
                     href={`/analysis/skin/solution?skinType=${skinType || ''}`}
                     className="block mb-6"
                   >
-                    <div className="p-4 bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 rounded-xl border border-sky-100 dark:border-sky-900/50 hover:shadow-md transition-shadow">
+                    <div className="p-4 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                           <Droplets
-                            className="w-5 h-5 text-sky-600 dark:text-sky-400"
+                            className="w-5 h-5 text-muted-foreground"
+                            strokeWidth={1.75}
                             aria-hidden="true"
                           />
                         </div>
@@ -1185,9 +1192,13 @@ export default function SkinAnalysisResultPage() {
                       {skinType && SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()] ? (
                         <>
                           {/* 피부 타입 설명 카드 */}
-                          <section className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-5">
+                          <section className="bg-card rounded-xl border border-border p-5">
                             <div className="flex items-center gap-2 mb-3">
-                              <Sparkles className="w-5 h-5 text-emerald-500" />
+                              <Info
+                                className="w-5 h-5 text-muted-foreground"
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              />
                               <h3 className="font-semibold text-foreground">
                                 왜 {getSkinTypeLabel(skinType)} 피부인가요?
                               </h3>
@@ -1199,16 +1210,18 @@ export default function SkinAnalysisResultPage() {
 
                           {/* T존 / U존 비교 */}
                           <section className="grid grid-cols-2 gap-3">
-                            <div className="bg-amber-50 rounded-xl border border-amber-200 p-4">
-                              <p className="text-xs font-medium text-amber-700 mb-1">
+                            <div className="bg-card rounded-xl border border-border p-4">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
                                 T존 (이마·코)
                               </p>
                               <p className="text-sm text-foreground/80">
                                 {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].tZone}
                               </p>
                             </div>
-                            <div className="bg-sky-50 rounded-xl border border-sky-200 p-4">
-                              <p className="text-xs font-medium text-sky-700 mb-1">U존 (볼·턱)</p>
+                            <div className="bg-card rounded-xl border border-border p-4">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
+                                U존 (볼·턱)
+                              </p>
                               <p className="text-sm text-foreground/80">
                                 {SKIN_TYPE_EXPLANATIONS[skinType.toLowerCase()].uZone}
                               </p>
@@ -1218,7 +1231,10 @@ export default function SkinAnalysisResultPage() {
                           {/* 관리 포인트 */}
                           <section className="bg-card rounded-xl border p-5">
                             <div className="flex items-start gap-2 mb-3">
-                              <Lightbulb className="w-4 h-4 text-green-500 mt-0.5" />
+                              <Lightbulb
+                                className="w-4 h-4 text-muted-foreground mt-0.5"
+                                strokeWidth={1.75}
+                              />
                               <div>
                                 <p className="text-sm font-medium text-foreground">
                                   핵심 관리 포인트
@@ -1229,7 +1245,10 @@ export default function SkinAnalysisResultPage() {
                               </div>
                             </div>
                             <div className="flex items-start gap-2 pt-3 border-t">
-                              <Eye className="w-4 h-4 text-amber-500 mt-0.5" />
+                              <Eye
+                                className="w-4 h-4 text-muted-foreground mt-0.5"
+                                strokeWidth={1.75}
+                              />
                               <div>
                                 <p className="text-sm font-medium text-foreground">주의할 점</p>
                                 <p className="text-sm text-foreground/80 mt-1">
@@ -1271,7 +1290,7 @@ export default function SkinAnalysisResultPage() {
                       </p>
                       <button
                         onClick={handleNewAnalysis}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                       >
                         <RefreshCw className="w-4 h-4" />
                         {t('reanalyze')}
@@ -1365,10 +1384,13 @@ export default function SkinAnalysisResultPage() {
                   className="mt-0 pb-40"
                   data-testid="consultation-tab"
                 >
-                  <div className="rounded-2xl border bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border-violet-200 dark:border-violet-800 p-5">
+                  <div className="rounded-2xl border bg-card border-border p-5">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
-                        <MessageCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-muted flex items-center justify-center">
+                        <MessageCircle
+                          className="w-5 h-5 text-muted-foreground"
+                          strokeWidth={1.75}
+                        />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">
@@ -1403,7 +1425,7 @@ export default function SkinAnalysisResultPage() {
               {/* 클렌징 가이드 */}
               <Button
                 size="sm"
-                className="shadow-lg whitespace-nowrap bg-sky-500 hover:bg-sky-600"
+                className="shadow-lg whitespace-nowrap"
                 onClick={() => {
                   router.push(`/analysis/skin/solution?skinType=${skinType || ''}`);
                   setIsActionMenuOpen(false);
@@ -1424,7 +1446,7 @@ export default function SkinAnalysisResultPage() {
                 }}
                 aria-label={t('productRecommendLabel.skin')}
               >
-                <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
+                <ShoppingBag className="w-4 h-4 mr-2" aria-hidden="true" />
                 맞춤 제품
               </Button>
 
@@ -1503,9 +1525,7 @@ export default function SkinAnalysisResultPage() {
           <button
             type="button"
             className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 ${
-              isActionMenuOpen
-                ? 'bg-gray-600 hover:bg-gray-700'
-                : 'bg-emerald-500 hover:bg-emerald-600'
+              isActionMenuOpen ? 'bg-gray-600 hover:bg-gray-700' : 'bg-primary hover:bg-primary/90'
             }`}
             onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
             aria-label={isActionMenuOpen ? '메뉴 닫기' : '액션 메뉴 열기'}

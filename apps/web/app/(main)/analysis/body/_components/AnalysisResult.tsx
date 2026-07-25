@@ -2,7 +2,6 @@
 
 import {
   RefreshCw,
-  Sparkles,
   ShoppingBag,
   Zap,
   Ruler,
@@ -217,16 +216,14 @@ export default function AnalysisResult({
       {/* 초보자 친화 스타일 가이드 (EASY_BODY_TIPS) — 시그니처 [결정], 펼침 유지 */}
       {easyBodyTip && (
         <FadeInUp delay={2}>
-          <section className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-200 dark:border-teal-800 p-6">
+          <section className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-5 h-5 text-teal-500" />
+              <Lightbulb className="w-5 h-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">초보자를 위한 스타일 가이드</h2>
             </div>
 
             {/* 요약 */}
-            <p className="text-teal-800 dark:text-teal-200 font-medium mb-3">
-              {easyBodyTip.summary}
-            </p>
+            <p className="text-foreground font-medium mb-3">{easyBodyTip.summary}</p>
             <p className="text-sm text-muted-foreground mb-4">{easyBodyTip.easyExplanation}</p>
 
             {/* DO / DON'T 리스트 */}
@@ -267,10 +264,9 @@ export default function AnalysisResult({
             </div>
 
             {/* 핵심 팁 */}
-            <div className="flex items-start gap-2 p-2.5 bg-teal-100 dark:bg-teal-900/50 rounded-lg">
-              <Sparkles className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-teal-800 dark:text-teal-200">
-                <span className="font-medium">핵심 팁:</span> {easyBodyTip.styleTip}
+            <div className="flex items-start gap-2 p-2.5 bg-muted rounded-lg">
+              <p className="text-sm text-foreground/80">
+                <span className="font-medium text-primary">핵심 팁:</span> {easyBodyTip.styleTip}
               </p>
             </div>
           </section>
@@ -336,14 +332,12 @@ export default function AnalysisResult({
           {/* 자가 진단 팁 */}
           {typeInfo3.selfCheckTip && (
             <FadeInUp delay={2}>
-              <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
+              <section className="bg-card rounded-xl border border-border p-4">
                 <div className="flex items-start gap-3">
-                  <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <Lightbulb className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
-                      알고 계셨나요?
-                    </p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+                    <p className="text-sm font-medium text-foreground mb-1">알고 계셨나요?</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {typeInfo3.selfCheckTip}
                     </p>
                   </div>
@@ -441,9 +435,8 @@ export default function AnalysisResult({
 
           {/* AI 스타일 인사이트 (가변 보상) */}
           <FadeInUp delay={6}>
-            <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
+            <section className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-5 h-5 text-purple-500" />
                 <h2 className="text-lg font-semibold text-foreground">스타일 인사이트</h2>
               </div>
               <p className="text-foreground/80 leading-relaxed">{insight}</p>
@@ -564,15 +557,15 @@ export default function AnalysisResult({
           {/* 색상 팁 */}
           {colorTips && colorTips.length > 0 && (
             <FadeInUp delay={8}>
-              <section className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-xl border border-violet-200 dark:border-violet-800 p-6">
+              <section className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <Palette className="w-5 h-5 text-violet-500" />
+                  <Palette className="w-5 h-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold text-foreground">색상 팁</h2>
                 </div>
                 <ul className="space-y-2">
                   {colorTips.map((tip, index) => (
                     <li key={index} className="flex items-start gap-2 text-foreground/80">
-                      <span className="text-violet-500 mt-0.5">•</span>
+                      <span className="text-primary mt-0.5">•</span>
                       {tip}
                     </li>
                   ))}
@@ -596,13 +589,10 @@ export default function AnalysisResult({
                 </div>
                 <div className="space-y-4">
                   {outfitExamples.map((outfit, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-lg border border-rose-100 dark:border-rose-800"
-                    >
+                    <div key={index} className="p-4 bg-muted/40 rounded-lg border border-border">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium text-foreground">{outfit.title}</h3>
-                        <span className="text-xs bg-white dark:bg-card px-2 py-0.5 rounded-full text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                        <span className="text-xs bg-card px-2 py-0.5 rounded-full text-primary border border-border">
                           {outfit.occasion}
                         </span>
                       </div>
@@ -610,7 +600,7 @@ export default function AnalysisResult({
                         {outfit.items.map((item, itemIndex) => (
                           <span
                             key={itemIndex}
-                            className="px-3 py-1.5 bg-white dark:bg-card rounded-lg text-sm text-foreground/80 border border-rose-100 dark:border-rose-900/50"
+                            className="px-3 py-1.5 bg-card rounded-lg text-sm text-foreground/80 border border-border"
                           >
                             {item}
                           </span>

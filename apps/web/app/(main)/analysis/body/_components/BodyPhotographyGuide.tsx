@@ -30,14 +30,14 @@ export default function BodyPhotographyGuide({ onContinue }: BodyPhotographyGuid
       {/* 2. 메인 비주얼: 전신 뷰파인더 UI (Blue 테마) */}
       <div className="relative mx-auto w-56 h-80 bg-zinc-50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 ring-1 ring-black/5">
         {/* 배경: 인디고/블루 그라디언트 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-indigo-50/50 to-violet-50/50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-violet-900/20" />
+        <div className="absolute inset-0 bg-muted/50" />
 
         {/* 가이드 라인 (전신) */}
         <div className="absolute inset-6 border-2 border-dashed border-blue-500/30 rounded-[1.5rem]" />
 
         {/* 상단 텍스트 */}
         <div className="absolute top-8 left-0 right-0 text-center">
-          <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm tracking-wider">
+          <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
             전신 촬영
           </span>
         </div>

@@ -86,12 +86,12 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
       {/* 2. 메인 비주얼: 뷰파인더 UI (Emerald 테마) */}
       <div className="relative mx-auto w-64 h-64 bg-zinc-50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 ring-1 ring-black/5">
         {/* 배경: 부드러운 민트 그라디언트 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-teal-50/50 to-cyan-50/50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-cyan-900/20" />
+        <div className="absolute inset-0 bg-muted/50" />
 
         {/* 가이드 라인 (뷰파인더) */}
         <div className="absolute inset-6 border-2 border-dashed border-emerald-500/30 rounded-3xl" />
         <div className="absolute top-8 left-0 right-0 text-center">
-          <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm tracking-wider">
+          <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
             밝은 실내
           </span>
         </div>

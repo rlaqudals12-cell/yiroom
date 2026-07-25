@@ -13,7 +13,7 @@
 
 'use client';
 
-import { FolderHeart, ChevronRight, Sparkles } from 'lucide-react';
+import { FolderHeart, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 
@@ -27,11 +27,11 @@ export function ClosetPromptCard({ className }: ClosetPromptCardProps) {
   return (
     <section
       data-testid="closet-prompt-card"
-      className={`relative overflow-hidden rounded-2xl border border-pink-200/60 bg-gradient-to-br from-pink-50 via-rose-50 to-amber-50 p-5 dark:border-pink-900/40 dark:from-pink-950/20 dark:via-rose-950/20 dark:to-amber-950/20 ${className ?? ''}`}
+      className={`relative overflow-hidden rounded-2xl border border-border bg-card p-5 ${className ?? ''}`}
       aria-label="내 옷장과 연결"
     >
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <FolderHeart className="h-4 w-4" aria-hidden />
         </span>
         <div>
@@ -46,20 +46,15 @@ export function ClosetPromptCard({ className }: ClosetPromptCardProps) {
         <Link
           href="/closet"
           data-testid="closet-prompt-link"
-          className="flex items-center justify-between gap-2 rounded-xl bg-white/80 p-3 text-sm font-medium text-foreground transition-colors hover:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-900/60"
+          className="flex items-center justify-between gap-2 rounded-xl bg-muted p-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
         >
-          <span className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-pink-500" aria-hidden />내 옷장으로 이동해서 조합 보기
-          </span>
+          <span className="flex items-center gap-2">내 옷장으로 이동해서 조합 보기</span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden />
         </Link>
       ) : (
-        <div
-          data-testid="closet-prompt-coming-soon"
-          className="rounded-xl bg-white/80 p-3 dark:bg-slate-900/40"
-        >
+        <div data-testid="closet-prompt-coming-soon" className="rounded-xl bg-muted p-3">
           <div className="mb-2 flex items-center gap-1.5">
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
               준비 중
             </span>
             <span className="text-xs text-muted-foreground">Phase 1.5 —</span>

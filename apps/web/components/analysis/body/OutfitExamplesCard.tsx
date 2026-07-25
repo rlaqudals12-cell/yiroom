@@ -52,11 +52,11 @@ export function OutfitExamplesCard({
   return (
     <section
       data-testid="outfit-examples-card"
-      className={`rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-white p-5 dark:border-blue-900/40 dark:from-blue-950/20 dark:to-slate-900 ${className ?? ''}`}
+      className={`rounded-2xl border border-border bg-card p-5 ${className ?? ''}`}
       aria-label="추천 코디 세트"
     >
       <header className="mb-4 flex items-center gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Shirt className="h-4 w-4" aria-hidden />
         </span>
         <div className="flex-1">
@@ -68,7 +68,7 @@ export function OutfitExamplesCard({
       </header>
 
       {!hasPersonalColor && (
-        <div className="mb-4 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
+        <div className="mb-4 rounded-xl border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-foreground/80">
           <Link
             href="/analysis/personal-color"
             className="flex items-center justify-between gap-2 font-medium hover:underline"
@@ -84,18 +84,18 @@ export function OutfitExamplesCard({
           <li
             key={outfit.title}
             data-testid={`outfit-example-${idx}`}
-            className="rounded-xl border border-blue-100/70 bg-white/70 p-4 dark:border-blue-900/30 dark:bg-slate-900/40"
+            className="rounded-xl border border-border bg-muted/30 p-4"
           >
             <div className="mb-2 flex items-center justify-between gap-2">
               <h4 className="text-sm font-semibold text-foreground">{outfit.title}</h4>
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                 {outfit.occasion}
               </span>
             </div>
             <ul className="space-y-1">
               {outfit.items.map((item) => (
                 <li key={item} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                  <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-blue-400" />
+                  <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-muted-foreground" />
                   <span>{item}</span>
                 </li>
               ))}

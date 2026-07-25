@@ -162,17 +162,8 @@ function generateShoppingLinks(keyword: string, color?: string) {
   };
 }
 
-// 카테고리 색상
-const CATEGORY_COLORS: Record<string, string> = {
-  상의: 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-  하의: 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800',
-  원피스:
-    'bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800',
-  아우터:
-    'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-  악세서리:
-    'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-};
+// 카테고리 칩 — 진단지 톤 정합(포인트 1색): 카테고리별 다색 대신 뮤트 단일 스타일
+const CATEGORY_CHIP_CLASS = 'bg-muted text-muted-foreground border-border';
 
 // 의류 아이템 컴포넌트
 function ClothingItemCard({
@@ -186,7 +177,7 @@ function ClothingItemCard({
 
   return (
     <div
-      className="p-4 bg-card rounded-lg border border-border/50 hover:border-pink-200 transition-colors"
+      className="p-4 bg-card rounded-lg border border-border/50 hover:border-primary/40 transition-colors"
       data-testid="clothing-item"
     >
       <div className="flex items-start gap-3">
@@ -194,9 +185,7 @@ function ClothingItemCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <p className="font-medium text-foreground text-sm">{item.name}</p>
-            <span
-              className={`text-xs px-1.5 py-0.5 rounded-full border ${CATEGORY_COLORS[item.category]}`}
-            >
+            <span className={`text-xs px-1.5 py-0.5 rounded-full border ${CATEGORY_CHIP_CLASS}`}>
               {item.category}
             </span>
           </div>
@@ -205,10 +194,8 @@ function ClothingItemCard({
           {/* 추천 색상 표시 */}
           {recommendedColor && (
             <div className="flex items-center gap-1 mb-2">
-              <Palette className="w-3 h-3 text-violet-500" />
-              <span className="text-xs text-violet-600 dark:text-violet-400">
-                {recommendedColor} 추천
-              </span>
+              <Palette className="w-3 h-3 text-primary" />
+              <span className="text-xs text-primary">{recommendedColor} 추천</span>
             </div>
           )}
 
@@ -307,32 +294,32 @@ export default function RecommendedClothingCard({
   return (
     <div
       data-testid="recommended-clothing-card"
-      className="bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 dark:from-pink-950/30 dark:via-rose-950/30 dark:to-fuchsia-950/30 rounded-2xl border border-pink-100 dark:border-pink-800 overflow-hidden"
+      className="bg-card rounded-2xl border border-border overflow-hidden"
     >
       {/* 헤더 */}
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <ShoppingBag className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h3 className="font-bold text-foreground flex items-center gap-2">
                 맞춤 의류 추천
                 {personalColorSeason && (
-                  <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                     {personalColorSeason}톤
                   </span>
                 )}
               </h3>
-              <p className="text-sm text-pink-600 dark:text-pink-400">
+              <p className="text-sm text-muted-foreground">
                 체형에 맞는 {clothingItems.length}개 아이템
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-pink-600 dark:text-pink-400"
+            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
             aria-label={isExpanded ? '접기' : '펼치기'}
           >
             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -345,9 +332,9 @@ export default function RecommendedClothingCard({
         <div className="px-4 pb-4 space-y-3">
           {/* PC-1 연동 안내 */}
           {colorRecommendations && (
-            <div className="flex items-center gap-2 p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg border border-violet-200 dark:border-violet-800">
-              <Shirt className="w-4 h-4 text-violet-500" />
-              <p className="text-xs text-violet-700 dark:text-violet-300">
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border border-border">
+              <Shirt className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
                 퍼스널컬러 기반 색상이 반영된 추천이에요
               </p>
             </div>

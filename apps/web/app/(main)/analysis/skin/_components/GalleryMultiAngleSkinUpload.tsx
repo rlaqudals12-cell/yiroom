@@ -311,7 +311,7 @@ export default function GalleryMultiAngleSkinUpload({
         <Button
           onClick={handleComplete}
           disabled={!hasFrontImage}
-          className="w-full h-14 text-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 shadow-lg shadow-emerald-500/20 rounded-2xl transition-all font-bold gap-2"
+          className="w-full h-14 text-lg rounded-2xl transition-all font-bold gap-2"
         >
           {additionalCount > 0 ? `${1 + additionalCount}장으로 분석하기` : '정면 사진으로 분석하기'}
           <ChevronRight className="w-5 h-5" />

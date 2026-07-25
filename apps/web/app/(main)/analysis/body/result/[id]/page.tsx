@@ -14,8 +14,8 @@ import {
   Shirt,
   ClipboardList,
   Lightbulb,
-  Sun,
-  Sparkles,
+  PersonStanding,
+  Ruler,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,9 @@ import {
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
-import { VisualReportCard } from '@/components/analysis/visual-report';
+// 진단지 문법(ADR-120): 아이브로우 + 속성표 + 신뢰 푸터 — 채점 게이지 연출 대체
+import { ReportEyebrow, RowTable, AttrRow, TrustFooter } from '@/components/analysis/report';
+import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import type { BodyRowForAvatar } from '@/lib/avatar';
@@ -478,19 +480,48 @@ export default function BodyAnalysisResultPage() {
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0">
-                {/* 비주얼 리포트 카드 — 신뢰도(confidence)가 저장된 경우에만 표시 (위장 점수 금지) */}
-                {confidence !== null && (
-                  <VisualReportCard
-                    analysisType="body"
-                    overallScore={confidence}
-                    bodyType={result.bodyType as 'S' | 'W' | 'N'}
-                    bodyTypeLabel={result.bodyTypeLabel}
-                    bodyStrengths={result.strengths}
-                    bodyMeasurements={result.measurements}
-                    analyzedAt={result.analyzedAt}
-                    className="mb-6"
-                  />
-                )}
+                {/* 진단지 히어로 — 아이브로우 + 세리프 체형명 + 속성표 + 신뢰 푸터 (ADR-120, 외모점수 연출 소거) */}
+                <section className="mb-6 overflow-hidden rounded-2xl border border-border bg-card">
+                  <div className="px-5 pb-6 pt-6 sm:px-7">
+                    <ReportEyebrow>BODY REPORT</ReportEyebrow>
+                    <h1
+                      className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground"
+                      data-testid="body-hero-title"
+                    >
+                      {result.bodyTypeLabel}
+                    </h1>
+                    {result.bodyTypeDescription && (
+                      <p className="mt-2 break-keep text-sm text-muted-foreground">
+                        {result.bodyTypeDescription}
+                      </p>
+                    )}
+                    {/* 속성표 — 체형 타입 + 비율 특징 (저장된 측정 서술만, 수치 채점 없음) */}
+                    <div className="mt-5">
+                      <RowTable testId="body-report-attrs">
+                        <AttrRow
+                          icon={PersonStanding}
+                          label="체형 타입"
+                          value={
+                            result.bodyType in BODY_TYPES_3
+                              ? `${result.bodyTypeLabel} · ${BODY_TYPES_3[result.bodyType as 'S' | 'W' | 'N'].labelEn}`
+                              : result.bodyTypeLabel
+                          }
+                        />
+                        {result.measurements.map((m) => (
+                          <AttrRow key={m.name} icon={Ruler} label={m.name} value={m.description} />
+                        ))}
+                      </RowTable>
+                    </div>
+                    {/* 신뢰 푸터 — confidence가 저장된 경우에만 (위장 점수 금지) */}
+                    {confidence !== null && (
+                      <TrustFooter
+                        confidence={confidence}
+                        testId="body-trust-footer"
+                        className="mt-6"
+                      />
+                    )}
+                  </div>
+                </section>
 
                 <AnalysisResult
                   result={result}
@@ -506,37 +537,25 @@ export default function BodyAnalysisResultPage() {
                 >
                   <div
                     data-testid="environment-info-card"
-                    className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50"
+                    className="p-4 bg-card rounded-xl border border-border"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0">
-                        <Lightbulb
-                          className="w-4 h-4 text-violet-600 dark:text-violet-400"
-                          aria-hidden="true"
-                        />
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <Lightbulb className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-sm text-foreground">{t('knowThis')}</p>
                         <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
                           <li className="flex items-start gap-1.5">
-                            <Sun
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500"
-                              aria-hidden="true"
-                            />
+                            <span aria-hidden="true">•</span>
                             <span>조명에 따라 실루엣 인식이 달라질 수 있어요</span>
                           </li>
                           <li className="flex items-start gap-1.5">
-                            <Shirt
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-500"
-                              aria-hidden="true"
-                            />
+                            <span aria-hidden="true">•</span>
                             <span>오버핏 의류는 분석 정확도에 영향을 줄 수 있어요</span>
                           </li>
                           <li className="flex items-start gap-1.5">
-                            <Sparkles
-                              className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500"
-                              aria-hidden="true"
-                            />
+                            <span aria-hidden="true">•</span>
                             <span>타이트한 옷에서 촬영하면 더 정확해요</span>
                           </li>
                         </ul>
