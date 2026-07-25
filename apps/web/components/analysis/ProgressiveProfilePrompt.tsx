@@ -204,11 +204,11 @@ export function ProgressiveProfilePrompt({
   if (submitted) {
     return (
       <div
-        className="rounded-2xl border border-pink-500/20 bg-pink-500/5 p-4 text-center"
+        className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center"
         data-testid="progressive-profile-thanks"
       >
-        <Sparkles className="mx-auto mb-2 h-5 w-5 text-pink-400" />
-        <p className="text-sm text-zinc-300">
+        <Sparkles className="mx-auto mb-2 h-5 w-5 text-primary" />
+        <p className="text-sm text-muted-foreground">
           추가 정보가 반영되었어요. 다음 분석부터 더 정확한 결과를 받을 수 있습니다.
         </p>
       </div>
@@ -217,7 +217,8 @@ export function ProgressiveProfilePrompt({
 
   return (
     <div
-      className="rounded-2xl border border-zinc-800 bg-neutral-900/50 p-4"
+      // 접힌 상태는 배경 없이 얇은 테두리만 — 결과 본문보다 시각 무게를 낮추기 위해
+      className={`rounded-2xl border p-4 ${isExpanded ? 'border-border bg-card' : 'border-border/60 bg-transparent'}`}
       data-testid="progressive-profile-prompt"
     >
       <button
@@ -225,16 +226,16 @@ export function ProgressiveProfilePrompt({
         className="flex w-full items-center justify-between text-left"
       >
         <div>
-          <p className="text-sm font-medium text-zinc-200">더 정확한 결과를 원하시나요?</p>
-          <p className="mt-0.5 text-xs text-zinc-500">
+          <p className="text-sm font-medium text-foreground">더 정확한 결과를 원하시나요?</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             추가 정보를 알려주시면 분석 정확도가 올라갑니다
             {currentConfidence ? ` (현재 ${currentConfidence}%)` : ''}
           </p>
         </div>
         {isExpanded ? (
-          <ChevronUp className="h-4 w-4 shrink-0 text-zinc-500" />
+          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-zinc-500" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
       </button>
 
@@ -243,10 +244,10 @@ export function ProgressiveProfilePrompt({
           {fields.map((field) => (
             <div key={field.id}>
               <div className="mb-1.5 flex items-baseline justify-between">
-                <label className="text-sm font-medium text-zinc-300">{field.label}</label>
-                <span className="text-[10px] text-pink-400">{field.accuracyBoost}</span>
+                <label className="text-sm font-medium text-foreground">{field.label}</label>
+                <span className="text-[10px] text-primary">{field.accuracyBoost}</span>
               </div>
-              <p className="mb-2 text-xs text-zinc-500">{field.description}</p>
+              <p className="mb-2 text-xs text-muted-foreground">{field.description}</p>
 
               {field.inputType === 'select' && field.options && (
                 <div className="flex flex-wrap gap-2">
@@ -256,8 +257,8 @@ export function ProgressiveProfilePrompt({
                       onClick={() => handleSelect(field.id, opt.value)}
                       className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
                         answers[field.id] === opt.value
-                          ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
-                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
+                          ? 'bg-primary/10 text-primary border border-primary/40'
+                          : 'bg-background text-muted-foreground border border-border hover:border-muted-foreground/40'
                       }`}
                     >
                       {opt.label}
@@ -276,8 +277,8 @@ export function ProgressiveProfilePrompt({
                         onClick={() => handleMultiSelect(field.id, opt.value)}
                         className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
                           selected
-                            ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
-                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
+                            ? 'bg-primary/10 text-primary border border-primary/40'
+                            : 'bg-background text-muted-foreground border border-border hover:border-muted-foreground/40'
                         }`}
                       >
                         {opt.label}
@@ -293,7 +294,7 @@ export function ProgressiveProfilePrompt({
                   placeholder={field.placeholder}
                   value={(answers[field.id] as string) || ''}
                   onChange={(e) => handleTextInput(field.id, e.target.value)}
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-pink-500/30 focus:outline-none"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none"
                 />
               )}
             </div>
@@ -302,7 +303,7 @@ export function ProgressiveProfilePrompt({
           <Button
             onClick={handleSubmit}
             disabled={Object.keys(answers).length === 0}
-            className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-sm font-medium text-white hover:from-pink-400 hover:to-purple-400 disabled:opacity-40"
+            className="w-full rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
           >
             정보 저장하기
           </Button>

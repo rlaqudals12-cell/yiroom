@@ -38,7 +38,7 @@ describe('ProgressiveProfilePrompt', () => {
       fireEvent.click(screen.getByText('더 정확한 결과를 원하시나요?'));
       const blueButton = screen.getByText('파란색/보라색');
       fireEvent.click(blueButton);
-      expect(blueButton.className).toContain('pink-500');
+      expect(blueButton.className).toContain('primary');
     });
 
     it('multiselect에서 여러 옵션을 선택할 수 있다', () => {
@@ -46,8 +46,8 @@ describe('ProgressiveProfilePrompt', () => {
       fireEvent.click(screen.getByText('더 정확한 결과를 원하시나요?'));
       fireEvent.click(screen.getByText('여드름/트러블'));
       fireEvent.click(screen.getByText('건조함/당김'));
-      expect(screen.getByText('여드름/트러블').className).toContain('pink-500');
-      expect(screen.getByText('건조함/당김').className).toContain('pink-500');
+      expect(screen.getByText('여드름/트러블').className).toContain('primary');
+      expect(screen.getByText('건조함/당김').className).toContain('primary');
     });
 
     it('정보 저장 후 감사 메시지를 표시한다', async () => {
