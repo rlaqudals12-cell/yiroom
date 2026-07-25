@@ -16,12 +16,7 @@ vi.mock('lucide-react', async (importOriginal) => {
 // next/image 모킹
 vi.mock('next/image', () => ({
   default: ({ src, alt, className }: { src: string; alt: string; className?: string }) => (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      data-testid="before-after-image"
-    />
+    <img src={src} alt={alt} className={className} data-testid="before-after-image" />
   ),
 }));
 
@@ -50,13 +45,7 @@ describe('BeforeAfterViewer', () => {
     });
 
     it('shows custom labels', () => {
-      render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          beforeLabel="이전"
-          afterLabel="이후"
-        />
-      );
+      render(<BeforeAfterViewer {...defaultProps} beforeLabel="이전" afterLabel="이후" />);
       expect(screen.getByText('이전')).toBeInTheDocument();
       expect(screen.getByText('이후')).toBeInTheDocument();
     });
@@ -67,13 +56,7 @@ describe('BeforeAfterViewer', () => {
     });
 
     it('has accessible aria-label', () => {
-      render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          beforeLabel="이전"
-          afterLabel="이후"
-        />
-      );
+      render(<BeforeAfterViewer {...defaultProps} beforeLabel="이전" afterLabel="이후" />);
       const viewer = screen.getByRole('img', { name: '이전와 이후 비교 이미지' });
       expect(viewer).toBeInTheDocument();
     });
@@ -141,12 +124,7 @@ describe('BeforeAfterViewer', () => {
 
     it('toggles to after image when button clicked', () => {
       render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          mode="toggle"
-          beforeLabel="이전"
-          afterLabel="이후"
-        />
+        <BeforeAfterViewer {...defaultProps} mode="toggle" beforeLabel="이전" afterLabel="이후" />
       );
 
       const toggleButton = screen.getByRole('button', { name: '이후 보기' });
@@ -160,12 +138,7 @@ describe('BeforeAfterViewer', () => {
 
     it('toggles back to before image', () => {
       render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          mode="toggle"
-          beforeLabel="이전"
-          afterLabel="이후"
-        />
+        <BeforeAfterViewer {...defaultProps} mode="toggle" beforeLabel="이전" afterLabel="이후" />
       );
 
       // 이후로 토글
@@ -199,24 +172,13 @@ describe('BeforeAfterViewer', () => {
 
   describe('Common Props', () => {
     it('applies custom className', () => {
-      render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          className="custom-viewer-class"
-        />
-      );
+      render(<BeforeAfterViewer {...defaultProps} className="custom-viewer-class" />);
       const viewer = screen.getByTestId('before-after-viewer');
       expect(viewer.className).toContain('custom-viewer-class');
     });
 
     it('uses custom alt prefix', () => {
-      render(
-        <BeforeAfterViewer
-          {...defaultProps}
-          altPrefix="피부 상태"
-          mode="side-by-side"
-        />
-      );
+      render(<BeforeAfterViewer {...defaultProps} altPrefix="피부 상태" mode="side-by-side" />);
       const images = screen.getAllByTestId('before-after-image');
       expect(images[0]).toHaveAttribute('alt', '피부 상태 - Before');
       expect(images[1]).toHaveAttribute('alt', '피부 상태 - After');
@@ -226,6 +188,51 @@ describe('BeforeAfterViewer', () => {
       render(<BeforeAfterViewer {...defaultProps} height={400} />);
       const viewer = screen.getByTestId('before-after-viewer');
       expect(viewer).toHaveStyle({ height: '400px' });
+    });
+  });
+
+  describe('aspectRatio prop', () => {
+    it('uses aspect-ratio frame instead of fixed height when aspectRatio is given', () => {
+      // 세로 셀피(3:4 = 0.75) — 고정 높이 크롭 대신 비율 컨테이너 사용
+      render(<BeforeAfterViewer {...defaultProps} aspectRatio={0.75} />);
+      const viewer = screen.getByTestId('before-after-viewer');
+      expect(viewer.style.aspectRatio).toBe('0.75');
+      expect(viewer.style.height).toBe('');
+      // maxHeight 클램프 시 비율이 어긋나지 않도록 maxWidth 동반
+      expect(viewer.style.maxHeight).toBe('70vh');
+      expect(viewer.style.maxWidth).toBe('calc(70vh * 0.75)');
+    });
+
+    it('keeps fixed height behavior when aspectRatio is not given', () => {
+      render(<BeforeAfterViewer {...defaultProps} height={300} />);
+      const viewer = screen.getByTestId('before-after-viewer');
+      expect(viewer.style.height).toBe('300px');
+      expect(viewer.style.aspectRatio).toBe('');
+    });
+
+    it('applies aspect-ratio frame in toggle mode', () => {
+      render(<BeforeAfterViewer {...defaultProps} mode="toggle" aspectRatio={0.75} />);
+      const viewer = screen.getByTestId('before-after-viewer');
+      const frame = viewer.querySelector('div.relative') as HTMLDivElement;
+      expect(frame.style.aspectRatio).toBe('0.75');
+      expect(frame.style.height).toBe('');
+    });
+
+    it('applies aspect-ratio frame to both panes in side-by-side mode', () => {
+      render(<BeforeAfterViewer {...defaultProps} mode="side-by-side" aspectRatio={0.75} />);
+      const viewer = screen.getByTestId('before-after-viewer');
+      const panes = viewer.querySelectorAll('div.relative');
+      expect(panes.length).toBe(2);
+      panes.forEach((pane) => {
+        expect((pane as HTMLDivElement).style.aspectRatio).toBe('0.75');
+        expect((pane as HTMLDivElement).style.height).toBe('');
+      });
+    });
+
+    it('slider mode container has touch-none class', () => {
+      render(<BeforeAfterViewer {...defaultProps} />);
+      const viewer = screen.getByTestId('before-after-viewer');
+      expect(viewer.className).toContain('touch-none');
     });
   });
 });

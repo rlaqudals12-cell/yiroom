@@ -24,6 +24,11 @@ export interface BeforeAfterViewerProps {
   altPrefix?: string;
   /** 이미지 높이 (aspect ratio 유지) */
   height?: number;
+  /**
+   * 원본 이미지 가로/세로 비율 (width / height).
+   * 지정 시 고정 height 대신 비율 컨테이너 사용 — 세로 셀피가 가로 띠로 크롭되는 문제 방지.
+   */
+  aspectRatio?: number;
   /** 추가 className */
   className?: string;
 }
@@ -42,9 +47,22 @@ export function BeforeAfterViewer({
   mode = 'slider',
   altPrefix = '이미지',
   height = 300,
+  aspectRatio,
   className,
 }: BeforeAfterViewerProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
+
+  // aspectRatio 지정 시 비율 프레임 — maxHeight 클램프가 걸려도 컨테이너 비율이 어긋나지
+  // 않도록 maxWidth(= 70vh × 비율)를 동반한다. 미지정 시 기존 고정 height 100% 유지.
+  const frameStyle: React.CSSProperties = aspectRatio
+    ? {
+        aspectRatio,
+        maxHeight: '70vh',
+        maxWidth: `calc(70vh * ${aspectRatio})`,
+        width: '100%',
+        marginInline: 'auto',
+      }
+    : { height };
   const [showAfter, setShowAfter] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -83,10 +101,10 @@ export function BeforeAfterViewer({
       <div
         ref={containerRef}
         className={cn(
-          'relative overflow-hidden rounded-xl cursor-ew-resize select-none',
+          'relative overflow-hidden rounded-xl cursor-ew-resize select-none touch-none',
           className
         )}
-        style={{ height }}
+        style={frameStyle}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -160,7 +178,7 @@ export function BeforeAfterViewer({
         aria-label={`${beforeLabel}와 ${afterLabel} 비교 이미지`}
       >
         {/* Before */}
-        <div className="relative" style={{ height }}>
+        <div className="relative" style={frameStyle}>
           <Image
             src={beforeImage}
             alt={`${altPrefix} - ${beforeLabel}`}
@@ -174,7 +192,7 @@ export function BeforeAfterViewer({
         </div>
 
         {/* After */}
-        <div className="relative" style={{ height }}>
+        <div className="relative" style={frameStyle}>
           <Image
             src={afterImage}
             alt={`${altPrefix} - ${afterLabel}`}
@@ -197,7 +215,7 @@ export function BeforeAfterViewer({
       data-testid="before-after-viewer"
     >
       {/* 이미지 */}
-      <div className="relative" style={{ height }}>
+      <div className="relative" style={frameStyle}>
         <Image
           src={showAfter ? afterImage : beforeImage}
           alt={`${altPrefix} - ${showAfter ? afterLabel : beforeLabel}`}

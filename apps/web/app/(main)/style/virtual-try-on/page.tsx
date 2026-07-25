@@ -56,6 +56,8 @@ export default function VirtualTryOnPage(): React.JSX.Element {
 
   const [tab, setTab] = useState<Tab>('lip');
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  // 업로드 이미지의 가로/세로 비율 — 비교뷰가 세로 셀피를 가로 띠로 크롭하지 않도록 전달
+  const [imageAspect, setImageAspect] = useState<number | null>(null);
   const [result, setResult] = useState<MakeupResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +150,22 @@ export default function VirtualTryOnPage(): React.JSX.Element {
     });
   };
 
+  // 선택 링 표시용 값 비교 — 참조 동등은 색 객체 재생성 시 깨지므로 r/g/b로 비교
+  const isSameColor = (a: RgbaColor, b: RgbaColor): boolean =>
+    a.r === b.r && a.g === b.g && a.b === b.b;
+
+  // 색 변경 시 이전 결과 폐기 — stale 이미지와 새 색 기반 제품 추천 불일치 방지
+  const handleColorSelect = (
+    color: RgbaColor,
+    hairHsl?: (typeof HAIR_PRESETS)[0]['targetHsl']
+  ): void => {
+    setSelectedColor(color);
+    if (hairHsl) {
+      setSelectedHairHsl(hairHsl);
+    }
+    setResult(null);
+  };
+
   // 프리셋이 시즌 추천인지 확인
   const isRecommendedPreset = (name: string, tabName: Tab): boolean => {
     if (!seasonPresets) return false;
@@ -202,9 +220,19 @@ export default function VirtualTryOnPage(): React.JSX.Element {
 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setOriginalImage(ev.target?.result as string);
+      const dataUrl = ev.target?.result as string;
+      setOriginalImage(dataUrl);
       setResult(null);
       setError(null);
+
+      // 원본 비율 측정 — 비교뷰 크롭 방지용 (실패해도 기본 레이아웃으로 동작)
+      const probe = new Image();
+      probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+          setImageAspect(probe.naturalWidth / probe.naturalHeight);
+        }
+      };
+      probe.src = dataUrl;
     };
     reader.readAsDataURL(file);
   }, []);
@@ -282,6 +310,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
   // 리셋
   const handleReset = (): void => {
     setOriginalImage(null);
+    setImageAspect(null);
     setResult(null);
     setError(null);
     if (fileInputRef.current) {
@@ -358,6 +387,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
             afterImage={result.dataUrl}
             beforeLabel="원본"
             afterLabel={getTabLabel()}
+            aspectRatio={imageAspect ?? undefined}
           />
         )}
         {originalImage && !result && (
@@ -391,13 +421,10 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                   ? sortPresetsBySeason([...HAIR_PRESETS], 'hair-color').map((preset) => (
                       <div key={preset.name} className="relative">
                         <button
-                          onClick={() => {
-                            setSelectedColor(preset.displayColor);
-                            setSelectedHairHsl(preset.targetHsl);
-                          }}
+                          onClick={() => handleColorSelect(preset.displayColor, preset.targetHsl)}
                           className={cn(
                             'w-8 h-8 rounded-full border-2 transition-transform',
-                            selectedColor === preset.displayColor
+                            isSameColor(selectedColor, preset.displayColor)
                               ? 'border-foreground scale-110'
                               : 'border-transparent'
                           )}
@@ -417,10 +444,10 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                   : getPresets().map((preset) => (
                       <div key={preset.name} className="relative">
                         <button
-                          onClick={() => setSelectedColor(preset.color)}
+                          onClick={() => handleColorSelect(preset.color)}
                           className={cn(
                             'w-8 h-8 rounded-full border-2 transition-transform',
-                            selectedColor === preset.color
+                            isSameColor(selectedColor, preset.color)
                               ? 'border-foreground scale-110'
                               : 'border-transparent'
                           )}
