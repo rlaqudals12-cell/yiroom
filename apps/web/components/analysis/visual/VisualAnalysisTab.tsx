@@ -47,6 +47,8 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
     melanin_avg: number;
     hemoglobin_avg: number;
   } | null>(null);
+  // 랜드마크가 Mock 폴백(표준 위치)인지 — true면 지어낸 수치를 실측처럼 노출하지 않는다 (AI 불변식)
+  const [usedFallback, setUsedFallback] = useState(false);
 
   // 기기 성능
   const deviceCapability = analyzeDeviceCapability();
@@ -89,6 +91,8 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
         throw new Error('얼굴을 감지할 수 없어요');
       }
 
+      // 폴백(useMock 강제 포함) 여부 기록 — 수치·히트맵 정직 노출 분기에 사용
+      setUsedFallback(landmarkResult.usedFallback === true);
       setLandmarks(landmarkResult.landmarks);
 
       // 3. 얼굴 마스크 생성
@@ -202,12 +206,23 @@ export default function VisualAnalysisTab({ imageUrl, className }: VisualAnalysi
             <LightModeLegend mode={lightMode} />
           </div>
 
-          {/* 수치 표시 */}
-          {pigmentSummary && (
-            <HeatmapMetrics
-              melaninAvg={pigmentSummary.melanin_avg}
-              hemoglobinAvg={pigmentSummary.hemoglobin_avg}
-            />
+          {/* 수치 표시 — 폴백이면 위치 추정 기반이라 실측 수치처럼 보여주지 않는다 */}
+          {usedFallback ? (
+            <div
+              className="p-3 rounded-lg bg-muted text-center"
+              data-testid="heatmap-fallback-notice"
+            >
+              <p className="text-xs text-muted-foreground">
+                이 기기에서는 위치 추정 기반 참고용이에요 — 정밀 수치는 표시하지 않아요
+              </p>
+            </div>
+          ) : (
+            pigmentSummary && (
+              <HeatmapMetrics
+                melaninAvg={pigmentSummary.melanin_avg}
+                hemoglobinAvg={pigmentSummary.hemoglobin_avg}
+              />
+            )
           )}
         </CardContent>
       </Card>

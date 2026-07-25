@@ -97,6 +97,8 @@ export async function applyHairColor(
     dataUrl: canvas.toDataURL('image/jpeg', 0.92),
     config,
     processingTimeMs,
+    // 폴백 랜드마크 여부 전파 — UI가 정직 배지를 띄울 수 있게 한다
+    usedFallback: landmarks.usedFallback === true,
   };
 }
 

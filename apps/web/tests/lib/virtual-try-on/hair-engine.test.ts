@@ -182,6 +182,26 @@ describe('applyHairColor', () => {
       'Canvas 초기화에 실패했습니다'
     );
   });
+
+  // 폴백 정직 노출 (AI 불변식): 랜드마크의 usedFallback이 결과로 전파되어야 한다
+  it('should propagate usedFallback=true from fallback landmarks', async () => {
+    vi.mocked(extractFaceLandmarks).mockResolvedValue({
+      ...createMockLandmarks(),
+      usedFallback: true,
+    } as never);
+
+    const result = await applyHairColor(mockImage, defaultConfig);
+
+    expect(result.usedFallback).toBe(true);
+  });
+
+  it('should report usedFallback=false when landmarks are real (플래그 부재 포함)', async () => {
+    vi.mocked(extractFaceLandmarks).mockResolvedValue(createMockLandmarks() as never);
+
+    const result = await applyHairColor(mockImage, defaultConfig);
+
+    expect(result.usedFallback).toBe(false);
+  });
 });
 
 describe('HAIR_PRESETS', () => {

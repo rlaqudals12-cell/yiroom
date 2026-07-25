@@ -44,6 +44,7 @@ import {
   type VTOMakeupType,
   type VTOMatchedProduct,
 } from '@/lib/virtual-try-on/product-matcher';
+import { checkMediaPipeCDN } from '@/lib/analysis';
 
 type Tab = 'lip' | 'blush' | 'hair-color' | 'eyeshadow' | 'foundation';
 
@@ -72,6 +73,9 @@ export default function VirtualTryOnPage(): React.JSX.Element {
   // VTO 결과 기반 추천 제품
   const [matchedProducts, setMatchedProducts] = useState<VTOMatchedProduct[]>([]);
   const [isMatchingProducts, setIsMatchingProducts] = useState(false);
+
+  // 얼굴 검출이 Mock 폴백(표준 위치)인지 — 정직 배지·난수 좌표 탭 차단 근거 (AI 불변식)
+  const [landmarkFallback, setLandmarkFallback] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -107,6 +111,40 @@ export default function VirtualTryOnPage(): React.JSX.Element {
       ),
     };
   }, [season]);
+
+  // 왜: CSP 등으로 MediaPipe CDN이 차단되면 모든 검출이 표준 위치 Mock으로 폴백된다.
+  // 블러셔·아이섀도는 폴백 좌표(난수)로는 결과가 무의미하므로 미리 확인해 탭을 잠근다.
+  useEffect(() => {
+    let cancelled = false;
+    const probeFallback = async (): Promise<void> => {
+      if (process.env.NEXT_PUBLIC_FORCE_MOCK_AI === 'true') {
+        if (!cancelled) setLandmarkFallback(true);
+        return;
+      }
+      try {
+        const available = await checkMediaPipeCDN();
+        if (!cancelled && !available) setLandmarkFallback(true);
+      } catch {
+        // CDN 확인 자체가 실패해도 검출은 폴백으로 흐른다
+        if (!cancelled) setLandmarkFallback(true);
+      }
+    };
+    void probeFallback();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 폴백 상태에서 난수 좌표 탭에 머물러 있으면 립으로 이동 (결과·에러 초기화)
+  useEffect(() => {
+    if (!landmarkFallback) return;
+    if (tab !== 'blush' && tab !== 'eyeshadow') return;
+    setTab('lip');
+    setSelectedColor(season ? getDefaultColorForSeason(season, 'lip') : LIP_PRESETS[0].color);
+    setOpacity(0.55);
+    setResult(null);
+    setError(null);
+  }, [landmarkFallback, tab, season]);
 
   // VTO 결과 나오면 유사 제품 매칭
   useEffect(() => {
@@ -267,6 +305,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
           dataUrl: hairResult.dataUrl,
           config: { type: 'hair-color', color: selectedColor, opacity },
           processingTimeMs: hairResult.processingTimeMs,
+          usedFallback: hairResult.usedFallback,
         };
       } else if (tab === 'eyeshadow') {
         const eyeshadowResult = await applyEyeshadow(img, {
@@ -277,6 +316,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
           dataUrl: eyeshadowResult.dataUrl,
           config: { type: 'eyeshadow', color: selectedColor, opacity },
           processingTimeMs: eyeshadowResult.processingTimeMs,
+          usedFallback: eyeshadowResult.usedFallback,
         };
       } else if (tab === 'foundation') {
         const foundationResult = await applyFoundation(img, {
@@ -287,6 +327,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
           dataUrl: foundationResult.dataUrl,
           config: { type: 'foundation', color: selectedColor, opacity },
           processingTimeMs: foundationResult.processingTimeMs,
+          usedFallback: foundationResult.usedFallback,
         };
       } else {
         const config = {
@@ -296,6 +337,16 @@ export default function VirtualTryOnPage(): React.JSX.Element {
         };
         makeupResult =
           tab === 'lip' ? await applyLipColor(img, config) : await applyBlush(img, config);
+      }
+
+      // 폴백 검출이면 상태에 반영 — 이후 블러셔·아이섀도 탭이 잠긴다
+      if (makeupResult.usedFallback === true) {
+        setLandmarkFallback(true);
+        // 난수 좌표 아티팩트 차단: 블러셔·아이섀도 폴백 결과는 표시하지 않는다
+        if (tab === 'blush' || tab === 'eyeshadow') {
+          setError('얼굴 인식이 가능할 때 제공돼요');
+          return;
+        }
       }
 
       setResult(makeupResult);
@@ -334,7 +385,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
         )}
       </div>
 
-      {/* 탭 */}
+      {/* 탭 — 폴백(표준 위치) 상태에서는 난수 좌표 기반 블러셔·아이섀도 비활성 */}
       <div className="px-4 mb-4">
         <div className="flex gap-2">
           {(['lip', 'blush', 'eyeshadow', 'foundation', 'hair-color'] as Tab[]).map((t) => (
@@ -342,6 +393,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
               key={t}
               variant={tab === t ? 'default' : 'outline'}
               size="sm"
+              disabled={landmarkFallback && (t === 'blush' || t === 'eyeshadow')}
               onClick={() => handleTabChange(t)}
             >
               {t === 'lip' && '립스틱'}
@@ -352,6 +404,11 @@ export default function VirtualTryOnPage(): React.JSX.Element {
             </Button>
           ))}
         </div>
+        {landmarkFallback && (
+          <p className="text-xs text-muted-foreground mt-2" data-testid="vto-fallback-tab-reason">
+            블러셔·아이섀도는 얼굴 인식이 가능할 때 제공돼요
+          </p>
+        )}
       </div>
 
       {/* 이미지 업로드 / 결과 */}
@@ -382,13 +439,26 @@ export default function VirtualTryOnPage(): React.JSX.Element {
           </Card>
         )}
         {originalImage && result && (
-          <BeforeAfterViewer
-            beforeImage={originalImage}
-            afterImage={result.dataUrl}
-            beforeLabel="원본"
-            afterLabel={getTabLabel()}
-            aspectRatio={imageAspect ?? undefined}
-          />
+          <>
+            <BeforeAfterViewer
+              beforeImage={originalImage}
+              afterImage={result.dataUrl}
+              beforeLabel="원본"
+              afterLabel={getTabLabel()}
+              aspectRatio={imageAspect ?? undefined}
+            />
+            {/* 폴백 정직 배지 — 표준 위치 기반 결과임을 숨기지 않는다 (AI 불변식) */}
+            {result.usedFallback === true && (
+              <div className="flex justify-center">
+                <span
+                  className="inline-flex items-center px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs"
+                  data-testid="vto-fallback-notice"
+                >
+                  미리보기는 표준 위치 기준이에요 — 실제 얼굴 위치와 다를 수 있어요
+                </span>
+              </div>
+            )}
+          </>
         )}
         {originalImage && !result && (
           <Card>

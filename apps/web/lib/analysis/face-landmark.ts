@@ -41,16 +41,17 @@ export async function extractFaceLandmarks(
   const { useMock = false, timeout = ANALYSIS_TIMEOUT_MS } = options ?? {};
 
   // Mock 강제 사용 또는 환경변수
+  // 왜: 폴백 경로는 usedFallback=true를 명시해 소비자 UI가 정직하게 노출하게 한다 (AI 불변식)
   if (useMock || process.env.NEXT_PUBLIC_FORCE_MOCK_AI === 'true') {
-    return generateMockLandmarks();
+    return { ...generateMockLandmarks(), usedFallback: true };
   }
 
   try {
-    // CDN 상태 확인
+    // CDN 상태 확인 (CSP 차단 시 프로덕션에서 항상 이 경로로 폴백된다)
     const cdnAvailable = await checkMediaPipeCDN();
     if (!cdnAvailable) {
       console.warn('[FaceLandmark] CDN 불가, Mock Fallback');
-      return generateMockLandmarks();
+      return { ...generateMockLandmarks(), usedFallback: true };
     }
 
     // MediaPipe 초기화
@@ -67,7 +68,7 @@ export async function extractFaceLandmarks(
     return result;
   } catch (error) {
     console.error('[FaceLandmark] 분석 실패, Mock Fallback:', error);
-    return generateMockLandmarks();
+    return { ...generateMockLandmarks(), usedFallback: true };
   }
 }
 
@@ -106,6 +107,8 @@ async function analyzeFaceWithMediaPipe(
         leftEye: LEFT_EYE_INDICES,
         rightEye: RIGHT_EYE_INDICES,
         lips: LIPS_INDICES,
+        // 실검출 성공 — 폴백 아님을 명시 (소비자가 정직 배지 분기에 사용)
+        usedFallback: false,
       });
     });
 

@@ -29,6 +29,13 @@ export interface FaceLandmarkResult {
   rightEye: number[];
   /** 입술 인덱스 */
   lips: number[];
+  /**
+   * Mock 폴백 사용 여부 (AI 불변식 — 폴백 시 정직 노출)
+   * - true: 실검출 실패/차단으로 표준 위치 Mock 좌표 사용
+   * - false: MediaPipe 실검출 성공
+   * - undefined: 폴백 여부 미상 (DB 복원 등 레거시 경로)
+   */
+  usedFallback?: boolean;
 }
 
 // ============================================

@@ -98,6 +98,8 @@ export async function applyEyeshadow(
     dataUrl: canvas.toDataURL('image/jpeg', 0.92),
     config,
     processingTimeMs,
+    // 폴백 랜드마크 여부 전파 — 아이섀도는 폴백 시 난수 좌표라 UI에서 차단 근거로 사용
+    usedFallback: landmarks.usedFallback === true,
   };
 }
 

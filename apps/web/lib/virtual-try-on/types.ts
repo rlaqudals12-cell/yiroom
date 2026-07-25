@@ -31,6 +31,8 @@ export interface MakeupResult {
   config: MakeupConfig;
   /** 처리 시간 (ms) */
   processingTimeMs: number;
+  /** 랜드마크가 Mock 폴백(표준 위치)이었는지 — true면 UI에 정직 배지 노출 */
+  usedFallback?: boolean;
 }
 
 /** 립 프리셋 색상 (12색) */
@@ -67,6 +69,8 @@ export interface HairColorResult {
   config: HairColorConfig;
   /** 처리 시간 (ms) */
   processingTimeMs: number;
+  /** 랜드마크가 Mock 폴백(표준 위치)이었는지 — true면 UI에 정직 배지 노출 */
+  usedFallback?: boolean;
 }
 
 /** 헤어 컬러 프리셋 (10색) */
@@ -144,6 +148,8 @@ export interface EyeshadowResult {
   dataUrl: string;
   config: EyeshadowConfig;
   processingTimeMs: number;
+  /** 랜드마크가 Mock 폴백(표준 위치)이었는지 — true면 UI에 정직 배지 노출 */
+  usedFallback?: boolean;
 }
 
 /** 파운데이션 설정 */
@@ -161,6 +167,8 @@ export interface FoundationResult {
   dataUrl: string;
   config: FoundationConfig;
   processingTimeMs: number;
+  /** 랜드마크가 Mock 폴백(표준 위치)이었는지 — true면 UI에 정직 배지 노출 */
+  usedFallback?: boolean;
 }
 
 /** 아이섀도 프리셋 색상 (10색) */
