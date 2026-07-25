@@ -6,7 +6,19 @@ import { ScoreTrendChip } from '@/components/analysis/ScoreTrendChip';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, Palette, Heart } from 'lucide-react';
+import {
+  Activity,
+  ArrowLeft,
+  ClipboardList,
+  Droplets,
+  Eye,
+  FileText,
+  Heart,
+  Palette,
+  RefreshCw,
+  ScanFace,
+  Smile,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
@@ -44,9 +56,17 @@ import {
   type MakeupResultView,
   transformDbToResult,
 } from './_lib/transform';
-import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
+import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
+import {
+  ReportEyebrow,
+  SectionHeader,
+  AttrRow,
+  RowTable,
+  SpectrumRow,
+  TrustFooter,
+} from '@/components/analysis/report';
 
 // 시즌 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -62,6 +82,29 @@ const SEASON_LABELS: Record<string, string> = {
 
 // 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
 const RESULT_TABS = ['basic', 'colors', 'tips'] as const;
+
+// 신호등 상태색 대신 텍스트로 말한다 (ADR-120 — 채점 연출 금지)
+const STATUS_LABELS: Record<'good' | 'normal' | 'warning', string> = {
+  good: '양호',
+  normal: '보통',
+  warning: '집중 케어',
+};
+
+// 신뢰도 등급 → 표시 % — ExpertDataPanel과 동일 매핑(새 수치 발명 아님)
+const RELIABILITY_CONFIDENCE: Record<'high' | 'medium' | 'low', number> = {
+  high: 90,
+  medium: 70,
+  low: 40,
+};
+
+// 카테고리별 발색 질감 — 플랫 칩 대신 "실물 발색". 색은 진단 hex 그대로(재현성 유지)
+const TEXTURE_BY_CATEGORY: Record<string, TextureKind> = {
+  foundation: 'foundation',
+  lip: 'lip',
+  eyeshadow: 'powder',
+  blush: 'powder',
+  contour: 'powder',
+};
 
 export default function MakeupAnalysisResultPage() {
   const t = useTranslations('analysis');
@@ -193,7 +236,7 @@ export default function MakeupAnalysisResultPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
@@ -311,7 +354,7 @@ export default function MakeupAnalysisResultPage() {
               aria-label={t('tabAriaLabel.makeup')}
             >
               <TabsTrigger value="basic" className="gap-1 text-xs sm:text-sm">
-                <Sparkles className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 {t('analysisComplete')}
               </TabsTrigger>
               <TabsTrigger value="colors" className="gap-1 text-xs sm:text-sm">
@@ -325,14 +368,71 @@ export default function MakeupAnalysisResultPage() {
 
             {/* 기본 분석 탭 */}
             <TabsContent value="basic" className="mt-0 space-y-6">
-              {/* 통합 비주얼 리포트 카드 (메이크업) */}
-              <VisualReportCard
-                analysisType="makeup"
-                overallScore={result.overallScore}
-                makeupMetrics={result.metrics}
-                undertoneLabel={result.undertoneLabel}
-                analyzedAt={result.analyzedAt}
-              />
+              {/* 진단지 시트 — 아이브로우 + 세리프 진단명 + 속성표 + 스펙트럼 + 신뢰 푸터 (ADR-120) */}
+              <section className="overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="px-5 pb-6 pt-6 sm:px-7">
+                  <ReportEyebrow>MAKEUP REPORT</ReportEyebrow>
+                  <h2 className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground">
+                    {[result.undertoneLabel, result.faceShapeLabel].filter(Boolean).join(' · ')}
+                  </h2>
+                  {(result.eyeShapeLabel || result.lipShapeLabel) && (
+                    <p className="mt-2 break-keep text-sm text-muted-foreground">
+                      {[result.eyeShapeLabel, result.lipShapeLabel].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+
+                  <div className="mt-6">
+                    <SectionHeader no={1} title="진단 속성" />
+                    <div className="mt-4">
+                      <RowTable testId="makeup-report-attrs">
+                        <AttrRow icon={Droplets} label="언더톤" value={result.undertoneLabel} />
+                        <AttrRow icon={ScanFace} label="얼굴형" value={result.faceShapeLabel} />
+                        <AttrRow icon={Eye} label="눈" value={result.eyeShapeLabel} />
+                        <AttrRow icon={Smile} label="입술" value={result.lipShapeLabel} />
+                        <AttrRow
+                          icon={Activity}
+                          label="피부 컨디션"
+                          value={`${result.overallScore}점`}
+                        />
+                      </RowTable>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <SectionHeader no={2} title="피부 상태" />
+                    <div className="mt-4">
+                      <RowTable testId="makeup-report-metrics">
+                        {result.metrics.map((metric) => (
+                          // 구 게이지의 progressbar aria 승계 — 값은 저장 점수 그대로
+                          <div
+                            key={metric.id}
+                            role="progressbar"
+                            aria-valuenow={metric.value}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${metric.name}: ${metric.value}점`}
+                          >
+                            <SpectrumRow
+                              label={metric.name}
+                              pos={metric.value / 100}
+                              status={`${metric.value}점 · ${STATUS_LABELS[metric.status]}`}
+                            />
+                          </div>
+                        ))}
+                      </RowTable>
+                    </div>
+                  </div>
+
+                  {/* 푸터 신뢰 블록 — 등급→% 매핑은 전문가 패널과 동일 (진단서의 직인) */}
+                  <TrustFooter
+                    confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+                    testId="makeup-trust-footer"
+                    className="mt-6"
+                  >
+                    <p>분석 시간: {result.analyzedAt.toLocaleString('ko-KR')}</p>
+                  </TrustFooter>
+                </div>
+              </section>
               {scoreTrend && (
                 <div className="flex justify-center -mt-3">
                   <ScoreTrendChip trend={scoreTrend} />
@@ -416,9 +516,12 @@ export default function MakeupAnalysisResultPage() {
                     <div className="space-y-3">
                       {colorRec.colors.map((color, idx) => (
                         <div key={idx} className="flex items-center gap-3">
-                          <div
-                            className="w-10 h-10 rounded-full shadow-md border-2 border-white dark:border-gray-700"
-                            style={{ backgroundColor: color.hex }}
+                          {/* 플랫 칩 → 발색 질감 스와치 (색은 진단 hex 그대로) */}
+                          <TextureSwatch
+                            hex={color.hex}
+                            kind={TEXTURE_BY_CATEGORY[colorRec.category] ?? 'powder'}
+                            width={56}
+                            className="shrink-0"
                           />
                           <div className="flex-1">
                             <p className="text-sm font-medium">{color.name}</p>
@@ -437,12 +540,16 @@ export default function MakeupAnalysisResultPage() {
 
               {/* 퍼스널 컬러 연결 */}
               {result.personalColorConnection && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
-                    <Heart className="w-5 h-5 text-purple-500" />
+                    <Heart
+                      className="w-5 h-5 text-muted-foreground"
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                    />
                     <h3 className="font-semibold">퍼스널 컬러 연동</h3>
                   </div>
-                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
+                  <p className="text-sm font-medium text-foreground mb-2">
                     추정 시즌:{' '}
                     {SEASON_LABELS[result.personalColorConnection.season] || '알 수 없음'}
                   </p>
@@ -465,7 +572,7 @@ export default function MakeupAnalysisResultPage() {
                           key={idx}
                           className="flex items-start gap-2 text-sm text-muted-foreground"
                         >
-                          <span className="text-rose-500">•</span>
+                          <span aria-hidden="true">•</span>
                           {tip}
                         </li>
                       ))}
@@ -508,7 +615,6 @@ export default function MakeupAnalysisResultPage() {
                 router.push(`/products?undertone=${result.undertone || ''}&category=makeup`)
               }
             >
-              <Sparkles className="w-4 h-4 mr-2" />
               맞춤 화장품 보기
             </Button>
             <div className="flex gap-2">

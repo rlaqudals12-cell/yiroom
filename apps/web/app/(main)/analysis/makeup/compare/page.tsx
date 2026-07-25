@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Share2, Loader2, Palette, Eye, Heart, Sparkles } from 'lucide-react';
+import { ArrowLeft, Share2, Loader2, Palette, Eye, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -183,12 +183,9 @@ function MakeupCompareContent() {
         )}
 
         {/* 스타일 요약 */}
-        <Card className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30">
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-pink-500" aria-hidden="true" />
-              스타일 변화
-            </CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">스타일 변화</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground text-center">
@@ -257,10 +254,7 @@ function MakeupCompareContent() {
         )}
 
         {/* 새 분석 버튼 */}
-        <Button
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-          onClick={() => router.push('/analysis/makeup')}
-        >
+        <Button className="w-full" onClick={() => router.push('/analysis/makeup')}>
           새로운 메이크업 분석하기
         </Button>
       </div>

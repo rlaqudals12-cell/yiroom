@@ -36,7 +36,7 @@ import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
-import { VisualReportCard } from '@/components/analysis/visual-report/VisualReportCard';
+import { HairReportSheet } from '../../_components/HairReportSheet';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
 
@@ -418,13 +418,22 @@ export default function HairAnalysisResultPage() {
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0 space-y-6">
-                {/* 통합 비주얼 리포트 카드 (헤어) */}
-                <VisualReportCard
-                  analysisType="hair"
-                  overallScore={result.overallScore}
-                  hairMetrics={result.metrics}
+                {/* 진단지 시트 — 원형 채점·신호등 게이지 대신 속성표 + 스펙트럼 (ADR-120) */}
+                {/* 결과 페이지 지표는 name 필드라 진단지 label로 어댑팅 (인라인 뷰와 필드명이 다름) */}
+                <HairReportSheet
                   hairTypeLabel={result.hairTypeLabel}
+                  hairThicknessLabel={result.hairThicknessLabel}
+                  scalpTypeLabel={result.scalpTypeLabel}
+                  overallScore={result.overallScore}
+                  metrics={result.metrics.map((m) => ({
+                    id: m.id,
+                    label: m.name,
+                    value: m.value,
+                    status: m.status,
+                  }))}
+                  reliability={result.analysisReliability}
                   analyzedAt={result.analyzedAt}
+                  testId="hair-report-sheet"
                 />
                 {scoreTrend && (
                   <div className="flex justify-center -mt-3">
@@ -481,9 +490,10 @@ export default function HairAnalysisResultPage() {
                   result.careTips.length === 0 &&
                   !imageUrl && (
                     <div className="bg-card rounded-xl p-8 shadow-sm text-center">
-                      <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-3">
+                      <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-3">
                         <ClipboardList
-                          className="w-6 h-6 text-amber-600 dark:text-amber-400"
+                          className="w-6 h-6 text-muted-foreground"
+                          strokeWidth={1.75}
                           aria-hidden="true"
                         />
                       </div>
@@ -497,10 +507,11 @@ export default function HairAnalysisResultPage() {
                   <div className="bg-card rounded-xl p-6 shadow-sm">
                     <h3 className="font-semibold mb-3">{t('careIngredients')}</h3>
                     <div className="flex flex-wrap gap-2">
+                      {/* 중립 칩 — 포인트 컬러 없이 텍스트로만 (ADR-120) */}
                       {result.recommendedIngredients.map((ingredient, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded-full text-sm"
+                          className="px-3 py-1 rounded-full border border-border text-sm text-foreground"
                         >
                           {ingredient}
                         </span>
@@ -516,10 +527,11 @@ export default function HairAnalysisResultPage() {
                 >
                   <h3 className="font-semibold mb-3">주의 성분 (피하면 좋아요)</h3>
                   <div className="flex flex-wrap gap-2">
+                    {/* 취소선 문법 — 경고색 대신 "지운 항목"으로 말한다 (ADR-120) */}
                     {getCautionIngredients(result.scalpType).map((ingredient, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300 rounded-full text-sm"
+                        className="px-3 py-1 rounded-full border border-border text-sm text-muted-foreground line-through decoration-muted-foreground/60"
                       >
                         {ingredient}
                       </span>
@@ -533,16 +545,14 @@ export default function HairAnalysisResultPage() {
                   if (!notice) return null;
                   return (
                     <div
-                      className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5"
+                      className="bg-muted/50 border border-border rounded-xl p-5"
                       role="note"
                       data-testid="hair-scalp-concern-notice"
                     >
-                      <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 text-sm">
+                      <h3 className="font-semibold text-foreground mb-2 text-sm">
                         두피 고민이 있다면
                       </h3>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                        {notice}
-                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{notice}</p>
                     </div>
                   );
                 })()}
@@ -557,7 +567,7 @@ export default function HairAnalysisResultPage() {
                           key={i}
                           className="flex items-start gap-2 text-sm text-muted-foreground"
                         >
-                          <span className="text-amber-500">•</span>
+                          <span aria-hidden="true">•</span>
                           {tip}
                         </li>
                       ))}
@@ -588,13 +598,10 @@ export default function HairAnalysisResultPage() {
           {result && (
             <button
               onClick={() => router.push('/analysis/integrated')}
-              className="mt-6 w-full text-left bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-900/20 rounded-xl border border-violet-200 dark:border-violet-800/30 p-5 hover:shadow-md transition-shadow"
+              className="mt-6 w-full text-left bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow"
               data-testid="hair-style-consult-cta"
             >
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-violet-500" aria-hidden="true" />
-                <h3 className="font-semibold">어울리는 헤어스타일·염색 컬러는?</h3>
-              </div>
+              <h3 className="font-semibold mb-1">어울리는 헤어스타일·염색 컬러는?</h3>
               <p className="text-sm text-muted-foreground">
                 컷은 얼굴형, 염색은 퍼스널컬러를 함께 봐야 정확해요. 통합 분석에서 나에게 맞는 헤어
                 스타일과 염색 컬러를 확인해보세요. →

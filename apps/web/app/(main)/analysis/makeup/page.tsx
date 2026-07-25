@@ -217,7 +217,7 @@ export default function MakeupAnalysisPage() {
         {step === 'guide' && existingAnalysis && !checkingExisting && (
           <Link
             href={`/analysis/makeup/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl border border-pink-200 dark:border-pink-800 hover:shadow-md transition-shadow"
+            className="block mb-6 p-4 bg-card rounded-xl border border-border hover:shadow-md transition-shadow"
             data-testid="makeup-existing-banner"
             aria-label={t('makeup.existingResultAria', { score: existingAnalysis.overall_score })}
           >

@@ -235,7 +235,7 @@ export default function HairHistoryPage() {
                           aria-label="헤어 분석 이미지"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
                           <Scissors className="h-6 w-6 text-amber-600" aria-hidden="true" />
                         </div>
                       )}

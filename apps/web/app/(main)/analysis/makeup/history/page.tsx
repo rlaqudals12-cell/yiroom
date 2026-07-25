@@ -282,7 +282,7 @@ export default function MakeupHistoryPage() {
                           aria-label="메이크업 분석 이미지"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
                           <Heart className="h-6 w-6 text-rose-500" aria-hidden="true" />
                         </div>
                       )}

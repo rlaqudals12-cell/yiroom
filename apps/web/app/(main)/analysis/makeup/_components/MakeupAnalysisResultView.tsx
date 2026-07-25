@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * 메이크업 분석 결과 인라인 뷰
+ * 메이크업 분석 결과 인라인 뷰 — 진단지 문법 (ADR-120)
  *
- * page.tsx 내 결과 표시용 (result/[id]와는 별도)
+ * page.tsx 내 결과 표시용 (result/[id]와는 별도).
+ * 구세대 핑크 그라데 + 원형 점수 연출을 진단지 문법(아이브로우 → 세리프 진단명 →
+ * 러닝넘버 섹션 → 속성표 → 신뢰 푸터)으로 재조립 — 데이터 배선은 그대로.
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Palette, Sparkles } from 'lucide-react';
+import { Activity, Droplets, Eye, ScanFace, Smile } from 'lucide-react';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import type { MakeupStyleId } from '@/lib/analysis/makeup';
 import {
@@ -19,9 +21,16 @@ import {
 } from '@/lib/analysis/makeup';
 import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { Button } from '@/components/ui/button';
-import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
+import {
+  ReportEyebrow,
+  SectionHeader,
+  AttrRow,
+  RowTable,
+  SpectrumRow,
+  TrustFooter,
+} from '@/components/analysis/report';
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
@@ -35,6 +44,20 @@ const STYLE_LABELS: Record<MakeupStyleId, string> = {
   chic: '시크',
   vintage: '빈티지',
   edgy: '엣지',
+};
+
+// 신호등 상태색 대신 텍스트로 말한다 (ADR-120 — 채점 연출 금지)
+const STATUS_LABELS: Record<'good' | 'normal' | 'warning', string> = {
+  good: '양호',
+  normal: '보통',
+  warning: '집중 케어',
+};
+
+// 신뢰도 등급 → 표시 % — result/[id]의 ExpertDataPanel과 동일 매핑(새 수치 발명 아님)
+const RELIABILITY_CONFIDENCE: Record<'high' | 'medium' | 'low', number> = {
+  high: 90,
+  medium: 70,
+  low: 40,
 };
 
 // 얼굴 도식 위 카테고리별 마커 위치 (AnonymousFaceTemplate viewBox 200×210 기준 %)
@@ -65,7 +88,16 @@ function toAnonymousFaceShape(faceShape: string): 'round' | 'angular' | 'oval' {
   return 'oval';
 }
 
-export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResultViewProps) {
+interface ReportSection {
+  key: string;
+  title: string;
+  body: React.ReactNode;
+}
+
+export function MakeupAnalysisResultView({
+  result,
+  onRetry,
+}: MakeupAnalysisResultViewProps): React.JSX.Element {
   // 상황별 팁 탭 (데일리 / 풀메이크업) — 기존 추천 데이터 재구성 (새 AI 없음)
   const situational = useMemo(() => buildSituationalTips(result), [result]);
   const [situation, setSituation] = useState<'daily' | 'full'>('daily');
@@ -84,7 +116,7 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
   const [ownedCats, setOwnedCats] = useState<Set<MakeupShelfCategory>>(new Set());
   useEffect(() => {
     let cancelled = false;
-    async function loadShelf() {
+    async function loadShelf(): Promise<void> {
       try {
         const res = await fetch('/api/scan/shelf?status=owned&limit=100');
         if (!res.ok) return;
@@ -106,88 +138,49 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
     };
   }, []);
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
-      case 'warning':
-        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
-      default:
-        return 'text-pink-600 bg-pink-100 dark:text-pink-400 dark:bg-pink-900/40';
-    }
-  };
-
   const situationTips = situation === 'daily' ? situational.daily : situational.full;
 
-  return (
-    <div className="space-y-6" data-testid="makeup-analysis-result">
-      {/* Layer 0.5: 얼굴형 일러스트 + 색상 포인트 (ADR-097) */}
-      <div className="flex justify-center">
-        <AnonymousFaceTemplate faceShape={toAnonymousFaceShape(result.faceShape)} skinTone="medium">
-          {/* 카테고리별 색상 스와치 — 각 부위 위치에 배치 */}
-          {result.colorRecommendations?.map((rec) => {
-            const pos = FACE_ZONE_POS[rec.category];
-            if (!pos) return null;
-            return (
-              <div
-                key={rec.category}
-                className="absolute flex flex-col items-center gap-0.5 -translate-x-1/2 -translate-y-1/2"
-                style={{ top: pos.top, left: pos.left }}
-                data-testid={`makeup-facemarker-${rec.category}`}
-                data-top={pos.top}
-              >
-                <div className="flex items-center gap-0.5">
-                  {rec.colors.slice(0, 3).map((c, j) => (
-                    <div
-                      key={j}
-                      className="w-3 h-3 rounded-full border border-white/70 shadow-sm"
-                      style={{ backgroundColor: c.hex }}
-                      title={c.name}
-                    />
-                  ))}
-                </div>
-                <span className="text-[8px] leading-none text-white bg-black/40 rounded px-1 py-0.5 whitespace-nowrap">
-                  {rec.categoryLabel ?? rec.category}
-                </span>
-              </div>
-            );
-          })}
-        </AnonymousFaceTemplate>
-      </div>
+  // 히어로 진단명 — 자가입력 경로는 얼굴형 라벨이 비어있음(빈 값은 표시하지 않음)
+  const heroTitle =
+    [result.undertoneLabel, result.faceShapeLabel].filter(Boolean).join(' · ') || '메이크업 진단';
+  const heroSub = [result.eyeShapeLabel, result.lipShapeLabel].filter(Boolean).join(' · ');
 
-      {/* 종합 점수 */}
-      <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-xl p-6 text-center">
-        <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-pink-900/40 shadow-lg flex items-center justify-center mb-4">
-          <span className="text-4xl font-bold text-pink-600 dark:text-pink-400">
-            {result.overallScore}
-          </span>
-        </div>
-        {/* 자가입력 경로는 얼굴형/눈/입술 라벨이 비어있음 — 빈 값은 표시하지 않음 */}
-        <h2 className="text-xl font-bold text-foreground">
-          {[result.undertoneLabel, result.faceShapeLabel].filter(Boolean).join(' · ')}
-        </h2>
-        {(result.eyeShapeLabel || result.lipShapeLabel) && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {[result.eyeShapeLabel, result.lipShapeLabel].filter(Boolean).join(' · ')}
-          </p>
+  // ─── 번호 섹션 — 데이터 있는 섹션만 조립, 번호는 렌더 시점에 매겨 결번을 막는다
+  const sections: ReportSection[] = [];
+
+  // 진단 속성표 — 실데이터 행만 (없는 행은 미렌더)
+  sections.push({
+    key: 'attrs',
+    title: '진단 속성',
+    body: (
+      <RowTable testId="makeup-report-attrs">
+        {result.undertoneLabel && (
+          <AttrRow icon={Droplets} label="언더톤" value={result.undertoneLabel} />
         )}
-      </div>
+        {result.faceShapeLabel && (
+          <AttrRow icon={ScanFace} label="얼굴형" value={result.faceShapeLabel} />
+        )}
+        {result.eyeShapeLabel && <AttrRow icon={Eye} label="눈" value={result.eyeShapeLabel} />}
+        {result.lipShapeLabel && <AttrRow icon={Smile} label="입술" value={result.lipShapeLabel} />}
+        <AttrRow icon={Activity} label="피부 컨디션" value={`${result.overallScore}점`} />
+      </RowTable>
+    ),
+  });
 
-      {/* 인사이트 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-pink-500" />
-          분석 요약
-        </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
-
+  // 분석 요약 + 쉬운 풀이
+  sections.push({
+    key: 'summary',
+    title: '분석 요약',
+    body: (
+      <div>
+        <p className="text-sm leading-relaxed text-muted-foreground">{result.insight}</p>
         {/* 초보자용 쉬운 풀이 — 요약에 등장한 전문 용어 설명 */}
         {glossary.length > 0 && (
           <div
-            className="mt-4 pt-4 border-t border-border/60 space-y-1.5"
+            className="mt-4 space-y-1.5 border-t border-border/60 pt-4"
             data-testid="makeup-glossary"
           >
-            <p className="text-xs font-medium text-pink-600 dark:text-pink-400">쉬운 풀이</p>
+            <p className="text-xs font-medium text-muted-foreground">쉬운 풀이</p>
             <ul className="space-y-1">
               {glossary.map((g) => (
                 <li key={g.term} className="text-xs text-muted-foreground">
@@ -198,106 +191,120 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
           </div>
         )}
       </div>
+    ),
+  });
 
-      {/* 지표 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">피부 상태</h3>
-        <div className="space-y-4">
+  // 피부 상태 — 신호등 게이지 → 뮤트 스펙트럼 행 (점수는 텍스트로 유지)
+  if (result.metrics.length > 0) {
+    sections.push({
+      key: 'skin',
+      title: '피부 상태',
+      body: (
+        <RowTable testId="makeup-report-metrics">
           {result.metrics.map((metric) => (
-            <div key={metric.id}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium">{metric.label}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(metric.status)}`}
-                >
-                  {metric.value}점
-                </span>
-              </div>
-              <div
-                className="h-2 bg-muted rounded-full overflow-hidden"
-                role="progressbar"
-                aria-valuenow={metric.value}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${metric.label}: ${metric.value}점`}
-              >
-                <div
-                  className={`h-full rounded-full transition-all ${mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-pink-500')}`}
-                  style={{ width: `${metric.value}%` }}
-                />
-              </div>
+            // 기존 게이지의 progressbar aria 승계 — 값은 저장 점수 그대로
+            <div
+              key={metric.id}
+              role="progressbar"
+              aria-valuenow={metric.value}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`${metric.label}: ${metric.value}점`}
+            >
+              <SpectrumRow
+                label={metric.label}
+                pos={metric.value / 100}
+                status={`${metric.value}점 · ${STATUS_LABELS[metric.status]}`}
+              />
             </div>
           ))}
-        </div>
-      </div>
+        </RowTable>
+      ),
+    });
+  }
 
-      {/* 추천 스타일 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <Palette className="w-4 h-4 text-pink-500" />
-          추천 메이크업 스타일
-        </h3>
-        <div className="flex flex-wrap gap-2">
+  // 추천 스타일 — 색면 칩 → 중립 보더 칩
+  if (result.recommendedStyles.length > 0) {
+    sections.push({
+      key: 'styles',
+      title: '추천 메이크업 스타일',
+      body: (
+        <div className="flex flex-wrap gap-1.5">
           {result.recommendedStyles.map((style, i) => (
             <span
               key={i}
-              className="px-3 py-1 bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 rounded-full text-sm"
+              className="rounded-full border border-border px-2.5 py-0.5 text-xs text-foreground/80"
             >
               {STYLE_LABELS[style as MakeupStyleId] || style}
             </span>
           ))}
         </div>
-      </div>
+      ),
+    });
+  }
 
-      {/* 색상 추천 */}
-      {result.colorRecommendations.map((cr) => {
-        const owned = ownedCats.has(cr.category);
-        return (
-          <div key={cr.category} className="bg-card rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">{cr.categoryLabel} 추천 색상</h3>
-              {/* 보유 화장품 연동 배지 */}
-              {owned && (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300"
-                  data-testid={`makeup-shelf-badge-${cr.category}`}
-                >
-                  내 {cr.categoryLabel} 활용
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-3">
-              {cr.colors.map((color, i) => (
-                <div key={i} className="flex items-center gap-2.5">
-                  <TextureSwatch
-                    hex={color.hex}
-                    kind={TEXTURE_BY_CATEGORY[cr.category] ?? 'powder'}
-                    width={56}
-                    className="shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm font-medium">{color.name}</p>
-                    <p className="text-xs text-muted-foreground">{color.description}</p>
-                  </div>
+  // 색상 추천 — 발색 질감 스와치 + 보유 화장품 배지
+  if (result.colorRecommendations.length > 0) {
+    sections.push({
+      key: 'colors',
+      title: '추천 색상',
+      body: (
+        <div className="space-y-5">
+          {result.colorRecommendations.map((cr) => {
+            const owned = ownedCats.has(cr.category);
+            return (
+              <div key={cr.category}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">{cr.categoryLabel}</p>
+                  {/* 보유 화장품 연동 배지 */}
+                  {owned && (
+                    <span
+                      className="rounded-full border border-primary/40 px-2 py-0.5 text-xs text-primary"
+                      data-testid={`makeup-shelf-badge-${cr.category}`}
+                    >
+                      내 {cr.categoryLabel} 활용
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-3">
+                  {cr.colors.map((color, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <TextureSwatch
+                        hex={color.hex}
+                        kind={TEXTURE_BY_CATEGORY[cr.category] ?? 'powder'}
+                        width={56}
+                        className="shrink-0"
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{color.name}</p>
+                        <p className="text-xs text-muted-foreground">{color.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ),
+    });
+  }
 
-      {/* 상황별 메이크업 (데일리 / 풀) */}
-      <div className="bg-card rounded-xl p-6 shadow-sm" data-testid="makeup-situational-tabs">
-        <h3 className="font-semibold mb-3">상황별 메이크업</h3>
-        <div className="inline-flex rounded-lg bg-muted p-1 mb-4">
+  // 상황별 메이크업 (데일리 / 풀) — 탭 testid 계약 유지
+  sections.push({
+    key: 'situational',
+    title: '상황별 메이크업',
+    body: (
+      <div data-testid="makeup-situational-tabs">
+        <div className="mb-4 inline-flex rounded-lg bg-muted p-1">
           <button
             type="button"
             onClick={() => setSituation('daily')}
             aria-pressed={situation === 'daily'}
             data-testid="makeup-situation-daily"
-            className={`px-4 py-1.5 text-sm rounded-md transition-colors ${
+            className={`rounded-md px-4 py-1.5 text-sm transition-colors ${
               situation === 'daily'
-                ? 'bg-pink-500 text-white shadow-sm'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -308,9 +315,9 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
             onClick={() => setSituation('full')}
             aria-pressed={situation === 'full'}
             data-testid="makeup-situation-full"
-            className={`px-4 py-1.5 text-sm rounded-md transition-colors ${
+            className={`rounded-md px-4 py-1.5 text-sm transition-colors ${
               situation === 'full'
-                ? 'bg-pink-500 text-white shadow-sm'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -320,11 +327,11 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
         <div className="space-y-4">
           {situationTips.map((tipGroup, i) => (
             <div key={i}>
-              <p className="text-sm font-medium text-pink-600 mb-2">{tipGroup.category}</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">{tipGroup.category}</p>
               <ul className="space-y-1">
                 {tipGroup.tips.map((tip, j) => (
                   <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <span className="text-pink-500">•</span>
+                    <span aria-hidden="true">•</span>
                     {tip}
                   </li>
                 ))}
@@ -333,18 +340,23 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
           ))}
         </div>
       </div>
+    ),
+  });
 
-      {/* 메이크업 팁 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-3">메이크업 팁</h3>
+  // 메이크업 팁
+  if (result.makeupTips.length > 0) {
+    sections.push({
+      key: 'tips',
+      title: '메이크업 팁',
+      body: (
         <div className="space-y-4">
           {result.makeupTips.map((tipGroup, i) => (
             <div key={i}>
-              <p className="text-sm font-medium text-pink-600 mb-2">{tipGroup.category}</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">{tipGroup.category}</p>
               <ul className="space-y-1">
                 {tipGroup.tips.map((tip, j) => (
                   <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <span className="text-pink-500">•</span>
+                    <span aria-hidden="true">•</span>
                     {tip}
                   </li>
                 ))}
@@ -352,27 +364,100 @@ export function MakeupAnalysisResultView({ result, onRetry }: MakeupAnalysisResu
             </div>
           ))}
         </div>
-      </div>
+      ),
+    });
+  }
 
-      {/* 퍼스널 컬러 연동 */}
-      {result.personalColorConnection && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
-          <h3 className="font-semibold mb-2 flex items-center gap-2">퍼스널 컬러 연동</h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            예상 시즌:{' '}
-            <span className="font-medium text-foreground">
-              {result.personalColorConnection.season}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">{result.personalColorConnection.note}</p>
+  // 퍼스널 컬러 연동 — 그라데 박스 → 속성표 행 + 한 줄 풀이 + 링크
+  if (result.personalColorConnection) {
+    const pc = result.personalColorConnection;
+    sections.push({
+      key: 'personal-color',
+      title: '퍼스널 컬러 연동',
+      body: (
+        <div>
+          <RowTable testId="makeup-report-pc">
+            <AttrRow label="예상 시즌" value={pc.season} />
+          </RowTable>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{pc.note}</p>
           <Link
             href="/analysis/personal-color"
-            className="inline-block mt-3 text-sm text-purple-600 dark:text-purple-400 hover:underline"
+            className="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"
           >
             퍼스널 컬러 진단받기 →
           </Link>
         </div>
-      )}
+      ),
+    });
+  }
+
+  return (
+    <div className="space-y-6" data-testid="makeup-analysis-result">
+      {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법) */}
+      <section className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="px-5 pb-6 pt-6 sm:px-7">
+          {/* 히어로 — 아이브로우 + 세리프 진단명 */}
+          <ReportEyebrow>MAKEUP REPORT</ReportEyebrow>
+          <h2 className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground">
+            {heroTitle}
+          </h2>
+          {heroSub && <p className="mt-2 break-keep text-sm text-muted-foreground">{heroSub}</p>}
+
+          {/* 얼굴형 일러스트 + 부위별 색상 포인트 (ADR-097) — 진단지의 도판 */}
+          <div className="mt-5 flex justify-center">
+            <AnonymousFaceTemplate
+              faceShape={toAnonymousFaceShape(result.faceShape)}
+              skinTone="medium"
+            >
+              {/* 카테고리별 색상 스와치 — 각 부위 위치에 배치 */}
+              {result.colorRecommendations?.map((rec) => {
+                const pos = FACE_ZONE_POS[rec.category];
+                if (!pos) return null;
+                return (
+                  <div
+                    key={rec.category}
+                    className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5"
+                    style={{ top: pos.top, left: pos.left }}
+                    data-testid={`makeup-facemarker-${rec.category}`}
+                    data-top={pos.top}
+                  >
+                    <div className="flex items-center gap-0.5">
+                      {rec.colors.slice(0, 3).map((c, j) => (
+                        <div
+                          key={j}
+                          className="h-3 w-3 rounded-full border border-white/70 shadow-sm"
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        />
+                      ))}
+                    </div>
+                    <span className="whitespace-nowrap rounded bg-black/40 px-1 py-0.5 text-[8px] leading-none text-white">
+                      {rec.categoryLabel ?? rec.category}
+                    </span>
+                  </div>
+                );
+              })}
+            </AnonymousFaceTemplate>
+          </div>
+
+          {/* 번호 섹션들 — 데이터 있는 것만, 번호 자동 재부여 */}
+          {sections.map((section, index) => (
+            <div key={section.key} className="mt-6">
+              <SectionHeader no={index + 1} title={section.title} />
+              <div className="mt-4">{section.body}</div>
+            </div>
+          ))}
+
+          {/* 푸터 신뢰 블록 — 등급→% 매핑은 result/[id]와 동일 (진단서의 직인) */}
+          <TrustFooter
+            confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+            testId="makeup-trust-footer"
+            className="mt-6"
+          >
+            <p>분석 시간: {result.analyzedAt.toLocaleString('ko-KR')}</p>
+          </TrustFooter>
+        </div>
+      </section>
 
       {/* 버튼 */}
       <Button

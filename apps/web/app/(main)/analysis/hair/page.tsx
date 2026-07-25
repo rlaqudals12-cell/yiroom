@@ -15,8 +15,8 @@ import {
   getScalpConcernNotice,
 } from '@/lib/mock/hair-analysis';
 import { Button } from '@/components/ui/button';
-import { mapToClass } from '@/lib/utils/conditional-helpers';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
+import { HairReportSheet } from './_components/HairReportSheet';
 import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
@@ -206,7 +206,7 @@ export default function HairAnalysisPage() {
         {step === 'guide' && existingAnalysis && !checkingExisting && (
           <Link
             href={`/analysis/hair/result/${existingAnalysis.id}`}
-            className="block mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800 hover:shadow-md transition-shadow"
+            className="block mb-6 p-4 bg-card rounded-xl border border-border hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -360,16 +360,6 @@ function AnalysisResultView({
   onRetry: () => void;
 }) {
   const t = useTranslations('analysisEntry');
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40';
-      case 'warning':
-        return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40';
-      default:
-        return 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40';
-    }
-  };
 
   return (
     <div className="space-y-6" data-testid="hair-analysis-result">
@@ -385,19 +375,18 @@ function AnalysisResultView({
         </AnonymousFaceTemplate>
       </div>
 
-      {/* 종합 점수 */}
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl p-6 text-center">
-        <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-amber-900/40 shadow-lg flex items-center justify-center mb-4">
-          <span className="text-4xl font-bold text-amber-600 dark:text-amber-400">
-            {result.overallScore}
-          </span>
-        </div>
-        {/* 자가입력 경로는 굵기 라벨이 비어있음 — 빈 값은 표시하지 않음 */}
-        <h2 className="text-xl font-bold text-foreground">
-          {[result.hairTypeLabel, result.hairThicknessLabel].filter(Boolean).join(' · ')}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">{result.scalpTypeLabel}</p>
-      </div>
+      {/* 진단지 시트 — 원형 채점·신호등 게이지 대신 속성표 + 스펙트럼 (ADR-120) */}
+      <HairReportSheet
+        hairTypeLabel={result.hairTypeLabel}
+        hairThicknessLabel={result.hairThicknessLabel}
+        scalpTypeLabel={result.scalpTypeLabel}
+        overallScore={result.overallScore}
+        metrics={result.metrics}
+        reliability={result.analysisReliability}
+        analyzedAt={result.analyzedAt}
+        metricsTitle={t('hair.metricScores')}
+        testId="hair-report-sheet"
+      />
 
       {/* 인사이트 */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
@@ -405,39 +394,14 @@ function AnalysisResultView({
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>
 
-      {/* 지표 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-4">{t('hair.metricScores')}</h3>
-        <div className="space-y-4">
-          {result.metrics.map((metric) => (
-            <div key={metric.id}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium">{metric.label}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(metric.status)}`}
-                >
-                  {t('hair.scorePoints', { score: metric.value })}
-                </span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${mapToClass(metric.status, { good: 'bg-green-500', warning: 'bg-red-500' }, 'bg-amber-500')}`}
-                  style={{ width: `${metric.value}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 추천 성분 */}
+      {/* 추천 성분 — 중립 칩 (포인트 컬러 없이 텍스트로만) */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
         <h3 className="font-semibold mb-3">{t('hair.recommendedIngredients')}</h3>
         <div className="flex flex-wrap gap-2">
           {result.recommendedIngredients.map((ingredient, i) => (
             <span
               key={i}
-              className="px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-full text-sm"
+              className="px-3 py-1 rounded-full border border-border text-sm text-foreground"
             >
               {ingredient}
             </span>
@@ -445,7 +409,7 @@ function AnalysisResultView({
         </div>
       </div>
 
-      {/* 주의 성분 — 두피 타입별 피하면 좋은 성분 (초보자 실행 도움) */}
+      {/* 주의 성분 — 취소선 문법 (경고색 대신 "지운 항목"으로 말한다) */}
       {(() => {
         const cautions = getCautionIngredients(result.scalpType);
         if (cautions.length === 0) return null;
@@ -456,7 +420,7 @@ function AnalysisResultView({
               {cautions.map((ingredient, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300 rounded-full text-sm"
+                  className="px-3 py-1 rounded-full border border-border text-sm text-muted-foreground line-through decoration-muted-foreground/60"
                 >
                   {ingredient}
                 </span>
@@ -466,20 +430,20 @@ function AnalysisResultView({
         );
       })()}
 
-      {/* 두피 고민 안내 — 탈모·비듬 등은 진단이 아닌 "전문의 상담 권유" 형태로만 */}
+      {/* 두피 고민 안내 — 탈모·비듬 등은 진단이 아닌 "전문의 상담 권유" 형태로만 (muted note) */}
       {(() => {
         const notice = getScalpConcernNotice(result.concerns);
         if (!notice) return null;
         return (
           <div
-            className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5"
+            className="bg-muted/50 border border-border rounded-xl p-5"
             role="note"
             data-testid="hair-scalp-concern-notice"
           >
-            <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 text-sm">
+            <h3 className="font-semibold text-foreground mb-2 text-sm">
               {t('hair.scalpConcernTitle')}
             </h3>
-            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">{notice}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{notice}</p>
           </div>
         );
       })()}
@@ -490,7 +454,7 @@ function AnalysisResultView({
         <ul className="space-y-2">
           {result.careTips.map((tip, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <span className="text-amber-500">•</span>
+              <span aria-hidden="true">•</span>
               {tip}
             </li>
           ))}

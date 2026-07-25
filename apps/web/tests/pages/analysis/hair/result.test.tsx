@@ -71,31 +71,6 @@ vi.mock('@/components/insights', () => ({
   ResultPageInsights: () => <div data-testid="result-page-insights" />,
 }));
 
-// Mock VisualReportCard (깊은 의존성 체인 우회: GradeDisplay → CountUp 등)
-vi.mock('@/components/analysis/visual-report/VisualReportCard', () => ({
-  VisualReportCard: ({
-    overallScore,
-    hairMetrics,
-    hairTypeLabel,
-  }: {
-    title?: string;
-    overallScore?: number;
-    hairMetrics?: Array<{ id: string; name: string; value: number }>;
-    hairTypeLabel?: string;
-  }) => (
-    <div data-testid="visual-report-card">
-      {overallScore !== undefined && <span>{overallScore}</span>}
-      {hairTypeLabel && <span>{hairTypeLabel}</span>}
-      {hairMetrics?.map((m) => (
-        <div key={m.id}>
-          <span>{m.name}</span>
-          <span>{m.value}</span>
-        </div>
-      ))}
-    </div>
-  ),
-}));
-
 // Mock AIBadge
 vi.mock('@/components/common/AIBadge', () => ({
   AIBadge: () => <span data-testid="ai-badge" />,
@@ -206,11 +181,13 @@ describe('HairAnalysisResultPage', () => {
       });
     });
 
-    it('종합 점수가 표시된다', async () => {
+    // 진단지 전환(ADR-120): 원형 게이지 대신 속성표 "85점 · 양호" 행으로 표시
+    it('종합 점수가 진단 속성표에 표시된다', async () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('85')).toBeInTheDocument();
+        expect(screen.getByTestId('hair-report-sheet')).toBeInTheDocument();
+        expect(screen.getByText(/85점/)).toBeInTheDocument();
       });
     });
 
@@ -411,7 +388,7 @@ describe('HairAnalysisResultPage', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('loading')).not.toBeInTheDocument();
-        expect(screen.getByText('85')).toBeInTheDocument();
+        expect(screen.getByText(/85점/)).toBeInTheDocument();
       });
     });
   });

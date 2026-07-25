@@ -213,12 +213,9 @@ function HairCompareContent() {
         )}
 
         {/* 전체 점수 변화 */}
-        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" aria-hidden="true" />
-              전체 헤어 점수
-            </CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">전체 헤어 점수</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center gap-8">
@@ -310,10 +307,7 @@ function HairCompareContent() {
         )}
 
         {/* 새 분석 버튼 */}
-        <Button
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-          onClick={() => router.push('/analysis/hair')}
-        >
+        <Button className="w-full" onClick={() => router.push('/analysis/hair')}>
           새로운 헤어 분석하기
         </Button>
       </div>
