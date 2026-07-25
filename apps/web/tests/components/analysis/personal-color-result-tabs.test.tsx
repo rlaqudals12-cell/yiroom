@@ -292,13 +292,9 @@ describe('PC-1 에러 처리 로직', () => {
 // 페이지 렌더링 테스트 (통합)
 // ============================================================================
 
-// 무거운 하위 컴포넌트 모킹
-vi.mock('@/components/analysis/visual', () => ({
-  DrapingSimulationTab: ({ className }: { className?: string }) => (
-    <div data-testid="mock-draping-tab" className={className}>
-      DrapingSimulationTab Mock
-    </div>
-  ),
+// 무거운 하위 컴포넌트 모킹 (드레이핑 정본 = DrapingSection zero-mask 캔버스 합성)
+vi.mock('@/components/analysis/personal-color', () => ({
+  DrapingSectionDynamic: () => <div data-testid="mock-draping-section">DrapingSection Mock</div>,
 }));
 
 vi.mock('@/components/analysis/personal-color/DetailedEvidenceReport', () => ({

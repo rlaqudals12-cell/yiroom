@@ -746,7 +746,7 @@ test.describe('분석 결과 - Visual Analysis 컴포넌트', () => {
     expect(criticalErrors).toHaveLength(0);
   });
 
-  test('DrapingSimulationTab 컴포넌트가 에러 없이 렌더링된다', async ({ page }) => {
+  test('DrapingSection 컴포넌트가 에러 없이 렌더링된다', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => {
       errors.push(error.message);

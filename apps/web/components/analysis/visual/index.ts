@@ -7,9 +7,9 @@
 export { default as LightModeTab, LightModeLegend } from './LightModeTab';
 export { default as SkinHeatmapCanvas, HeatmapMetrics } from './SkinHeatmapCanvas';
 
-// Phase 2: PC-1+ 드레이핑 시뮬레이션
-export { default as DrapeColorPalette } from './DrapeColorPalette';
-export { default as DrapeSimulator } from './DrapeSimulator';
+// Phase 2 드레이핑(DrapeColorPalette·DrapeSimulator·DrapingSimulationTab)은 삭제됨(2026-07)
+// — CSP가 MediaPipe CDN을 차단해 항상 Mock 마스크 폴백(유령 가면). 정본은
+// components/analysis/personal-color/DrapingSection (zero-mask 캔버스 합성).
 
 // Phase 3: 시너지 인사이트
 export {
@@ -20,7 +20,6 @@ export {
 
 // 페이지 통합용 탭 컴포넌트
 export { default as VisualAnalysisTab } from './VisualAnalysisTab';
-export { default as DrapingSimulationTab } from './DrapingSimulationTab';
 export { default as BodyStylingTab } from './BodyStylingTab';
 
 // Phase L-2: 자세 교정 시스템

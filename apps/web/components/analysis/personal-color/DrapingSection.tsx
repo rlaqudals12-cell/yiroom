@@ -9,7 +9,8 @@
  *
  * 기술: applyDrapeColor는 faceMask=0인 픽셀에만 드레이프를 칠하므로 zero-mask
  * (전부 0)를 넘기면 MediaPipe/얼굴 검출 없이 하단(72%~)에 천이 그려진다 —
- * DrapingSimulationTab(MediaPipe 의존·실패 경로)을 쓰지 않는 이유.
+ * 구 DrapingSimulationTab(MediaPipe 의존)은 CSP가 CDN을 막아 항상 Mock 마스크로
+ * 폴백해 "유령 가면"을 그렸기에 삭제됐고(2026-07), 이 zero-mask 방식이 정본이다.
  * 이미지 처리는 전부 이 기기(브라우저)에서만 일어나고 서버로 전송되지 않는다.
  */
 

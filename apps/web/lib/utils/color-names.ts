@@ -2,7 +2,7 @@ import { classifyByRange } from './conditional-helpers';
 
 /**
  * HEX 색상값 → 한국어 색상명 변환 (HSL 기반)
- * DrapeSimulator에서 추출한 공유 유틸리티
+ * 구 드레이프 시뮬레이터에서 추출한 공유 유틸리티
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export function getKoreanColorName(hex: string): string {

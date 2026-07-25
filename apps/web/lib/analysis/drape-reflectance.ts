@@ -1,6 +1,6 @@
 /**
- * 드레이프 반사광 효과 모듈
- * @description PC-1+ 드레이핑 시뮬레이션 - 금속 반사광 + 드레이프 색상 적용(체험 렌더)
+ * 드레이프 색상 합성 모듈
+ * @description PC-1+ 드레이핑 - 사진 하단(목/어깨)에 드레이프 색상 적용(체험 렌더)
  *
  * 순위/균일도 측정 로직 제거(2026-07): 드레이프 색은 얼굴 '밖'(목/어깨)에만 칠해지고
  * 금속 반사광은 색과 무관하게 적용되므로, 얼굴 영역 균일도는 색에 따라 유의미하게 달라지지
@@ -9,22 +9,8 @@
  * 추천 후보는 진단 정본(PC 결과의 bestColors)이 담당한다.
  */
 
-import type { MetalType, ReflectanceConfig } from '@/types/visual-analysis';
-import { rgbaToHsl, hslToRgba } from './canvas-utils';
-
-// ============================================
-// 금속 반사광 설정
-// ============================================
-
-/**
- * 금속별 반사광 설정
- * - 실버: 쿨톤 강조 (밝게 + 채도 낮춤)
- * - 골드: 웜톤 강조 (약간 밝게 + 채도 높임)
- */
-export const METAL_REFLECTANCE: Record<MetalType, ReflectanceConfig> = {
-  silver: { brightness: +10, saturation: -5 },
-  gold: { brightness: +5, saturation: +5 },
-};
+// 금속 반사광(METAL_REFLECTANCE·applyReflectance·applyMetalReflectance)은 삭제됨(2026-07)
+// — 유일 소비자였던 DrapeSimulator(MediaPipe 실패 경로)가 DrapingSection으로 통합되면서 소멸.
 
 // ============================================
 // 드레이프 레이아웃 상수
@@ -40,57 +26,6 @@ export const METAL_REFLECTANCE: Record<MetalType, ReflectanceConfig> = {
 const DRAPE_START_RATIO = 0.72;
 const DRAPE_FADE_RATIO = 0.08;
 const DRAPE_MAX_BLEND = 0.68;
-
-// ============================================
-// 반사광 적용
-// ============================================
-
-/**
- * 얼굴 영역에 반사광 효과 적용
- * @param ctx - Canvas 2D 컨텍스트
- * @param faceMask - 얼굴 마스크
- * @param config - 반사광 설정
- */
-export function applyReflectance(
-  ctx: CanvasRenderingContext2D,
-  faceMask: Uint8Array,
-  config: ReflectanceConfig
-): void {
-  const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  const { data } = imageData;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const pixelIndex = i / 4;
-    if (faceMask[pixelIndex] === 0) continue;
-
-    // RGB → HSL 변환
-    const { h, s, l } = rgbaToHsl(data[i], data[i + 1], data[i + 2]);
-
-    // 밝기/채도 조정
-    const newL = Math.max(0, Math.min(1, l + config.brightness / 100));
-    const newS = Math.max(0, Math.min(1, s + config.saturation / 100));
-
-    // HSL → RGB 변환
-    const { r, g, b } = hslToRgba(h, newS, newL);
-
-    data[i] = r;
-    data[i + 1] = g;
-    data[i + 2] = b;
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-}
-
-/**
- * 금속 타입에 따른 반사광 적용
- */
-export function applyMetalReflectance(
-  ctx: CanvasRenderingContext2D,
-  faceMask: Uint8Array,
-  metalType: MetalType
-): void {
-  applyReflectance(ctx, faceMask, METAL_REFLECTANCE[metalType]);
-}
 
 // ============================================
 // 드레이프 색상 적용

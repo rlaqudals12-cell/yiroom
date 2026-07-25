@@ -1,165 +1,24 @@
 /**
- * 드레이프 반사광 효과 테스트
+ * 드레이프 색상 합성 테스트
  *
  * @module tests/lib/analysis/drape-reflectance
- * @description METAL_REFLECTANCE, applyReflectance, applyMetalReflectance, applyDrapeColor 테스트
+ * @description applyDrapeColor 테스트
  *
  * 순위/균일도 측정(measureUniformity·getBestColors·analyzeFullPalette·drapeResultsToDbFormat·
  * analyzeSingleDrape)은 "측정 신호 없는 지어낸 순위"라 모듈에서 제거됨 → 관련 테스트도 제거.
- * 남은 것은 체험 렌더에 필요한 반사광·드레이프 블렌딩·얼굴 보존 로직뿐이다.
+ * 금속 반사광(METAL_REFLECTANCE·applyReflectance·applyMetalReflectance)도 유일 소비자였던
+ * DrapeSimulator(MediaPipe 실패 경로)가 삭제되며 함께 제거됨(2026-07).
+ * 남은 것은 체험 렌더에 필요한 드레이프 블렌딩·얼굴 보존 로직뿐이다.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  METAL_REFLECTANCE,
-  applyReflectance,
-  applyMetalReflectance,
-  applyDrapeColor,
-} from '@/lib/analysis/drape-reflectance';
+import { applyDrapeColor } from '@/lib/analysis/drape-reflectance';
 
 // =============================================================================
 // 테스트
 // =============================================================================
 
 describe('lib/analysis/drape-reflectance', () => {
-  // ---------------------------------------------------------------------------
-  // METAL_REFLECTANCE
-  // ---------------------------------------------------------------------------
-
-  describe('METAL_REFLECTANCE', () => {
-    it('should have silver and gold configurations', () => {
-      expect(METAL_REFLECTANCE).toHaveProperty('silver');
-      expect(METAL_REFLECTANCE).toHaveProperty('gold');
-    });
-
-    it('should have brightness and saturation for silver', () => {
-      expect(METAL_REFLECTANCE.silver).toHaveProperty('brightness');
-      expect(METAL_REFLECTANCE.silver).toHaveProperty('saturation');
-      expect(typeof METAL_REFLECTANCE.silver.brightness).toBe('number');
-      expect(typeof METAL_REFLECTANCE.silver.saturation).toBe('number');
-    });
-
-    it('should have brightness and saturation for gold', () => {
-      expect(METAL_REFLECTANCE.gold).toHaveProperty('brightness');
-      expect(METAL_REFLECTANCE.gold).toHaveProperty('saturation');
-      expect(typeof METAL_REFLECTANCE.gold.brightness).toBe('number');
-      expect(typeof METAL_REFLECTANCE.gold.saturation).toBe('number');
-    });
-
-    it('silver should have positive brightness (cooler, brighter)', () => {
-      expect(METAL_REFLECTANCE.silver.brightness).toBeGreaterThan(0);
-    });
-
-    it('gold should have positive brightness', () => {
-      expect(METAL_REFLECTANCE.gold.brightness).toBeGreaterThan(0);
-    });
-
-    it('silver should decrease saturation (cooler effect)', () => {
-      expect(METAL_REFLECTANCE.silver.saturation).toBeLessThan(0);
-    });
-
-    it('gold should increase saturation (warmer effect)', () => {
-      expect(METAL_REFLECTANCE.gold.saturation).toBeGreaterThan(0);
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // applyReflectance
-  // ---------------------------------------------------------------------------
-
-  describe('applyReflectance', () => {
-    let canvas: HTMLCanvasElement;
-    let ctx: CanvasRenderingContext2D;
-
-    beforeEach(() => {
-      canvas = document.createElement('canvas');
-      canvas.width = 10;
-      canvas.height = 10;
-      ctx = canvas.getContext('2d')!;
-    });
-
-    it('should apply positive brightness adjustment', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: 10, saturation: 0 });
-      }).not.toThrow();
-    });
-
-    it('should apply negative brightness adjustment', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: -10, saturation: 0 });
-      }).not.toThrow();
-    });
-
-    it('should apply positive saturation adjustment', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: 0, saturation: 10 });
-      }).not.toThrow();
-    });
-
-    it('should apply negative saturation adjustment', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: 0, saturation: -10 });
-      }).not.toThrow();
-    });
-
-    it('should skip pixels outside mask', () => {
-      const faceMask = new Uint8Array(100).fill(0);
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: 10, saturation: 5 });
-      }).not.toThrow();
-    });
-
-    it('should handle partial mask', () => {
-      const faceMask = new Uint8Array(100);
-      for (let i = 0; i < 50; i++) faceMask[i] = 1;
-
-      expect(() => {
-        applyReflectance(ctx, faceMask, { brightness: 5, saturation: -5 });
-      }).not.toThrow();
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // applyMetalReflectance
-  // ---------------------------------------------------------------------------
-
-  describe('applyMetalReflectance', () => {
-    let canvas: HTMLCanvasElement;
-    let ctx: CanvasRenderingContext2D;
-
-    beforeEach(() => {
-      canvas = document.createElement('canvas');
-      canvas.width = 10;
-      canvas.height = 10;
-      ctx = canvas.getContext('2d')!;
-    });
-
-    it('should apply silver reflectance', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyMetalReflectance(ctx, faceMask, 'silver');
-      }).not.toThrow();
-    });
-
-    it('should apply gold reflectance', () => {
-      const faceMask = new Uint8Array(100).fill(1);
-
-      expect(() => {
-        applyMetalReflectance(ctx, faceMask, 'gold');
-      }).not.toThrow();
-    });
-  });
-
   // ---------------------------------------------------------------------------
   // applyDrapeColor
   // ---------------------------------------------------------------------------

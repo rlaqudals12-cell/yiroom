@@ -101,14 +101,6 @@ export interface PigmentAnalysisSummary {
 /** 금속 테스트 타입 */
 export type MetalType = 'silver' | 'gold';
 
-/** 반사광 설정 */
-export interface ReflectanceConfig {
-  /** 밝기 조정 (-100 ~ +100) */
-  brightness: number;
-  /** 채도 조정 (-100 ~ +100) */
-  saturation: number;
-}
-
 /** 드레이프 색상 */
 export interface DrapeColor {
   /** HEX 색상 코드 */
@@ -204,25 +196,6 @@ export interface SkinHeatmapCanvasProps {
   lightMode: LightMode;
   /** 히트맵 투명도 (0.0 ~ 1.0) */
   opacity?: number;
-  /** 추가 클래스 */
-  className?: string;
-}
-
-/** 드레이프 시뮬레이터 Props */
-export interface DrapeSimulatorProps {
-  /** 원본 이미지 */
-  image: HTMLImageElement;
-  /** 얼굴 마스크 */
-  faceMask: Uint8Array;
-  /** 기기 성능 정보 */
-  deviceCapability: DeviceCapability;
-  /** 금속 타입 (골드/실버) */
-  metalType: MetalType;
-  /**
-   * 진단 정본 베스트 컬러 (순위·측정이 아니라 PC 결과의 추천 후보).
-   * 시뮬레이터는 판정하지 않고, 이 후보를 스와치로 제시해 직접 대보게 한다.
-   */
-  diagnosisBestColors?: Array<{ hex: string; name: string }>;
   /** 추가 클래스 */
   className?: string;
 }

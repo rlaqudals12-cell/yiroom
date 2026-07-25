@@ -50,7 +50,7 @@ import { AxisFallbackNotice } from './_components/AxisFallbackNotice';
 import { NextStepsLinks } from './_components/NextStepsLinks';
 import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
 import { PersonaShareSection, type PersonaReportData } from './_components/PersonaShareSection';
-import { DrapingSectionDynamic } from './_components/DrapingSectionDynamic';
+import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
 import { DrapingShareSection } from './_components/DrapingShareSection';
 import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';

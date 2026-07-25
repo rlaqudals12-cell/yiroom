@@ -43,7 +43,7 @@ import type { ShareCardTheme } from '@/hooks/useAnalysisShare';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
-import { DrapingSimulationTab } from '@/components/analysis/visual';
+import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
@@ -789,13 +789,12 @@ export default function PersonalColorResultPage() {
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="draping-tab"
             >
+              {/* 통합결과 정본과 동일한 zero-mask 캔버스 합성 — 구 MediaPipe 경로(CSP 차단→Mock 가면)는 삭제됨 */}
               {activeTab === 'draping' && imageUrl && (
-                <DrapingSimulationTab
+                <DrapingSectionDynamic
                   imageUrl={imageUrl}
-                  userSeason={result.seasonType}
-                  userSubtypeLabel={result.undertoneLabel}
                   bestColors={result.bestColors}
-                  className="w-full"
+                  worstColors={result.worstColors}
                 />
               )}
               {activeTab === 'draping' && !imageUrl && (

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { DrapingSection } from '@/app/(main)/analysis/integrated/result/[sessionId]/_components/DrapingSection';
+import { DrapingSection } from '@/components/analysis/personal-color';
 
 // 캔버스 파이프 mock — jsdom엔 2D 컨텍스트가 없다 (동작 검증은 렌더 계약으로)
 const mockApplyDrape = vi.fn();

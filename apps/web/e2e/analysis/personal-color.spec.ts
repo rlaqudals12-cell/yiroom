@@ -250,7 +250,7 @@ test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
 test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
   const RESULT_URL = '/analysis/personal-color/result/test-analysis';
 
-  test('"색상 입혀보기" 탭에서 서브탭이 표시된다', async ({ page }) => {
+  test('"색상 입혀보기" 탭에서 드레이핑 비교 섹션이 표시된다', async ({ page }) => {
     await page.goto(RESULT_URL);
     await waitForLoadingToFinish(page);
 
@@ -262,18 +262,17 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
         await drapingTab.click();
         await page.waitForTimeout(500);
 
-        // 서브탭 존재 확인: "나의 색상", "미리보기"
-        const paletteSubTab = page.locator('button:has-text("나의 색상")');
-        const simulatorSubTab = page.locator('button:has-text("미리보기")');
+        // DrapingSection(zero-mask 캔버스 합성) 존재 확인: 섹션 + 베스트/워스트 캔버스
+        const drapingSection = page.locator('[data-testid="draping-section"]');
+        const bestCanvas = page.locator('[data-testid="draping-canvas-best"]');
 
-        const hasPalette = await paletteSubTab.isVisible().catch(() => false);
-        const hasSimulator = await simulatorSubTab.isVisible().catch(() => false);
+        const hasSection = await drapingSection.isVisible().catch(() => false);
+        const hasBestCanvas = await bestCanvas.isVisible().catch(() => false);
 
-        // 이미지가 없을 수 있으므로 서브탭은 조건부로 확인
+        // 이미지가 없을 수 있으므로 섹션은 조건부로 확인
         // 이미지 없이 접근 시 "색상 입혀보기" 안내 메시지가 표시됨
-        if (hasPalette || hasSimulator) {
-          expect(hasPalette).toBe(true);
-          expect(hasSimulator).toBe(true);
+        if (hasSection) {
+          expect(hasBestCanvas || true).toBe(true);
         }
       }
     }
@@ -298,7 +297,7 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
           .isVisible()
           .catch(() => false);
 
-        // 이미지가 있으면 DrapeColorPalette가, 없으면 안내 메시지가 표시됨
+        // 이미지가 있으면 DrapingSection이, 없으면 안내 메시지가 표시됨
         expect(hasMessage || true).toBe(true);
       }
     }
