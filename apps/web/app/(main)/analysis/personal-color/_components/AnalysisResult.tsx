@@ -41,14 +41,13 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { getGenderAdaptiveTerm, type GenderPreference } from '@/lib/content/gender-adaptive';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { toast } from 'sonner';
-
-// 신뢰도 등급 라벨 — 푸터 신뢰 블록의 근거 한 줄(근거 없는 숫자는 낚시로 보임)
-function getConfidenceGrade(confidence: number): string {
-  if (confidence >= 90) return '매우 높음 — 분석 조건이 매우 좋아요';
-  if (confidence >= 75) return '높음 — 신뢰할 수 있는 결과예요';
-  if (confidence >= 60) return '보통 — 조명이나 각도를 개선하면 더 정확해져요';
-  return '재분석 권장 — 더 밝은 조명에서 다시 촬영해보세요';
-}
+import {
+  ReportEyebrow,
+  SectionHeader,
+  AttrRow,
+  RowTable,
+  TrustFooter,
+} from '@/components/analysis/report';
 
 // 계절 인장 텍스트 — 점수 없는 타입 확정 스탬프(진단지 문법). 히어로 진단명(한국어)과
 // 겹치지 않도록 영문 세리프로 — 아이브로우(PERSONAL COLOR REPORT) 영문 관례와 세트
@@ -163,33 +162,6 @@ function toCardLocale(locale: string): CardLocale {
   return locale === 'en' || locale === 'ja' || locale === 'zh' ? locale : 'ko';
 }
 
-/** 번호 섹션 헤더 — 세리프 이탤릭 러닝넘버 + 제목 + 헤어라인 (PersonaReportCard 문법 이식) */
-function SectionHeader({ no, title }: { no: number; title: string }) {
-  return (
-    <div className="flex items-baseline gap-2 border-b border-border pb-2">
-      <span className="font-serif text-sm italic tabular-nums text-primary" aria-hidden="true">
-        {String(no).padStart(2, '0')}
-      </span>
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-    </div>
-  );
-}
-
-/** 진단 속성표 한 행 — 라인아트 아이콘 앵커 + 라벨/값, 헤어라인 디바이더 (RowTable 문법) */
-function AttrRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-2 py-1.5">
-      <Icon
-        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-        strokeWidth={1.75}
-        aria-hidden="true"
-      />
-      <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
-      <dd className="ml-auto text-right text-sm font-medium text-foreground">{value}</dd>
-    </div>
-  );
-}
-
 /** 소형 스와치 행(포인트·금속) — 색칩 + 이름. texture 지정 시 화장품 발색 질감으로 렌더 */
 function SwatchChips({
   colors,
@@ -236,7 +208,7 @@ function AttrsSectionBody({
 }) {
   return (
     <div>
-      <dl className="divide-y divide-border" data-testid="pc-report-attrs">
+      <RowTable testId="pc-report-attrs">
         <AttrRow icon={Leaf} label="계절" value={seasonLabel} />
         <AttrRow
           icon={Droplets}
@@ -246,7 +218,7 @@ function AttrsSectionBody({
         {contrastLevel && (
           <AttrRow icon={Contrast} label="대비" value={CONTRAST_COPY[contrastLevel].label} />
         )}
-      </dl>
+      </RowTable>
       {/* 퍼스널 대비 풀이 — 판정 보조 1줄 (구 인디고 박스 흡수, ADR-116) */}
       {contrastLevel && (
         <p
@@ -965,9 +937,7 @@ export default function AnalysisResult({
         <section className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="px-5 pb-6 pt-6 sm:px-7">
             {/* 히어로 — 아이브로우 + 세리프 진단명 + 서브카피 + 계절 인장 */}
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
-              PERSONAL COLOR REPORT
-            </p>
+            <ReportEyebrow>PERSONAL COLOR REPORT</ReportEyebrow>
             <div className="mt-3 flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1
@@ -1018,24 +988,12 @@ export default function AnalysisResult({
             <InsightNote easyInsight={easyInsight} insight={insight} />
 
             {/* 푸터 신뢰 블록 — 신뢰도(진단의 점수) + 통계 + 분석 시간 (진단서의 직인) */}
-            <div
-              className="mt-6 space-y-1 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground"
-              data-testid="pc-trust-footer"
-            >
-              {/* 저장된 신뢰도(>0)가 있을 때만 (위장 수치 금지) */}
-              {confidence > 0 && (
-                <p className="font-medium text-foreground/80">
-                  분석 신뢰도 {confidence}%
-                  <span className="ml-1.5 font-normal text-muted-foreground">
-                    {getConfidenceGrade(confidence)}
-                  </span>
-                </p>
-              )}
+            <TrustFooter confidence={confidence} testId="pc-trust-footer" className="mt-6">
               <p>
                 전체 사용자 중 {info.percentage}%가 {seasonLabel}이에요
               </p>
               <p>분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}</p>
-            </div>
+            </TrustFooter>
           </div>
         </section>
       </ScaleIn>
