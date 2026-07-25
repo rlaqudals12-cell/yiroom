@@ -47,9 +47,9 @@ import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
 import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
-import { Camera, Shirt, History, Wand2, GitCompareArrows } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Camera, Shirt, History, Wand2, SlidersHorizontal } from 'lucide-react';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 const ProgressiveProfilePrompt = dynamic(
@@ -563,25 +563,26 @@ export default function PersonalColorResultPage() {
             <AIBadge variant="small" />
             <ExpertModeToggle isExpert={isExpert} onToggle={toggleExpert} />
           </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/analysis/personal-color/history">
-              <History className="w-4 h-4 mr-1" />
-              {t('previousResults')}
-            </Link>
-          </Button>
+          <div className="flex items-center gap-1">
+            {/* 다시 분석 — 하단 sticky에서 헤더 보조 액션으로 이동 (primary 1개 원칙, 저신뢰 배너의 조건부 재분석과 별개) */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNewAnalysis}
+              aria-label={t('reanalyze')}
+              title={t('reanalyze')}
+              data-testid="header-reanalyze"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/analysis/personal-color/history">
+                <History className="w-4 h-4 mr-1" />
+                {t('previousResults')}
+              </Link>
+            </Button>
+          </div>
         </header>
-
-        {/* 이전 결과 비교 링크 */}
-        <div className="mb-4" data-testid="pc-compare-link">
-          <Link
-            href="/analysis/compare?type=personal-color"
-            className="flex items-center gap-2 p-3 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-sm"
-          >
-            <GitCompareArrows className="w-4 h-4 text-primary flex-shrink-0" />
-            <span className="text-muted-foreground">{t('comparePrevious')}</span>
-            <span className="ml-auto text-primary text-xs">{t('compare')} →</span>
-          </Link>
-        </div>
 
         {/* AI 분석 실패 시 Mock 데이터 알림 */}
         {usedMock && (
@@ -774,7 +775,7 @@ export default function PersonalColorResultPage() {
                     <p className="font-medium text-foreground text-sm">{t('tryColorOnPhoto')}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {imageUrl
-                        ? '드레이핑 탭에서 내 얼굴에 시즌 컬러를 입혀볼 수 있어요'
+                        ? '드레이핑 탭에서 색을 얼굴 아래 대보고 비교할 수 있어요'
                         : '분석 이미지가 없어 이용할 수 없어요. 다시 분석해보세요'}
                     </p>
                   </div>
@@ -809,6 +810,16 @@ export default function PersonalColorResultPage() {
                   </Button>
                 </div>
               )}
+              {/* 가상 메이크업 진입 — 구 sticky 보조 버튼을 드레이핑 경유 텍스트 링크로 격하 (primary 1개 원칙) */}
+              <div className="mt-4 text-center">
+                <Link
+                  href={`/style/virtual-try-on?season=${result.seasonType}`}
+                  className="text-sm text-primary hover:underline underline-offset-2"
+                  data-testid="draping-to-makeup-link"
+                >
+                  메이크업으로도 입혀보기 →
+                </Link>
+              </div>
             </TabsContent>
 
             {/* 상세 리포트 탭 */}
@@ -850,18 +861,8 @@ export default function PersonalColorResultPage() {
                 </div>
               </div>
 
-              {/* P2: 상세 탭 하단 CTA */}
+              {/* P2: 상세 탭 하단 CTA — 제품 링크는 sticky primary가 정본이라 중복 제거 */}
               <div className="mt-6 flex flex-col items-center gap-2 text-sm">
-                <button
-                  type="button"
-                  className="text-primary hover:underline underline-offset-2 cursor-pointer"
-                  onClick={() =>
-                    router.push(`/products?season=${result.seasonType}&category=makeup`)
-                  }
-                >
-                  <Palette className="w-3.5 h-3.5 inline-block mr-1" />
-                  맞춤 제품 보기
-                </button>
                 <button
                   type="button"
                   className="text-muted-foreground hover:text-foreground cursor-pointer"
@@ -875,7 +876,7 @@ export default function PersonalColorResultPage() {
         )}
       </div>
 
-      {/* P14: 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
+      {/* P14: 하단 액션 바 — primary는 "다음 행동" 1개만, 공유는 보조 클러스터 (verdict-first 위계) */}
       {result && (
         <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
           <div className="max-w-md mx-auto space-y-2">
@@ -885,29 +886,35 @@ export default function PersonalColorResultPage() {
             >
               <Palette className="w-4 h-4 mr-2" />내 색상에 맞는 제품
             </Button>
-            {/* P15: 가상 메이크업 체험 */}
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => router.push(`/style/virtual-try-on?season=${result.seasonType}`)}
-            >
-              <Wand2 className="w-4 h-4 mr-2" />
-              가상 메이크업 체험
-            </Button>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleNewAnalysis}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {t('reanalyze')}
-              </Button>
-              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-              <ShareThemePicker
-                value={shareTheme}
-                onChange={setShareTheme}
-                format={shareFormat}
-                onFormatChange={setShareFormat}
-                className="mt-2"
+              <ShareButton
+                onShare={share}
+                loading={shareLoading}
+                variant="outline"
+                className="flex-1"
               />
-              <PrintButton title={t('printTitle.personalColor')} variant="outline" />
+              {/* 카드 스타일 선택은 공유 인터랙션 시에만 — 상시 인라인 노출 제거 */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="공유 카드 스타일 선택"
+                    data-testid="share-style-trigger"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" side="top" className="w-auto">
+                  <ShareThemePicker
+                    value={shareTheme}
+                    onChange={setShareTheme}
+                    format={shareFormat}
+                    onFormatChange={setShareFormat}
+                  />
+                </PopoverContent>
+              </Popover>
+              <PrintButton title={t('printTitle.personalColor')} variant="outline" size="icon" />
             </div>
             {/*
               URL 공유는 제거 — 결과 페이지는 로그인+본인 소유(RLS)라 친구가 열면 로그인 벽/404.
@@ -917,10 +924,9 @@ export default function PersonalColorResultPage() {
         </div>
       )}
 
-      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
+      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출. 다음 행동 표면은 ResultPageInsights 1곳 */}
       {result && (
         <div className="max-w-lg mx-auto px-4 pb-8">
-          <ContextLinkingCard currentModule="personal-color" />
           <ResultPageInsights currentModule="personal-color" />
           <div className="mt-6">
             <AnalysisMatchedProducts

@@ -56,10 +56,6 @@ vi.mock('@/components/insights', () => ({
   ResultPageInsights: () => <div data-testid="result-page-insights" />,
 }));
 
-vi.mock('@/components/analysis/ContextLinkingCard', () => ({
-  ContextLinkingCard: () => <div data-testid="context-linking-card" />,
-}));
-
 vi.mock('@/components/analysis/visual-report/VisualReportCard', () => ({
   VisualReportCard: ({ overallScore }: { overallScore?: number }) => (
     <div data-testid="visual-report-card">

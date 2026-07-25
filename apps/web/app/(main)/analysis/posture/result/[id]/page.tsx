@@ -24,7 +24,6 @@ import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { useExpertMode } from '@/hooks/useExpertMode';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { useTranslations } from 'next-intl';
 
@@ -341,7 +340,6 @@ export default function PostureAnalysisResultPage() {
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       {result && (
         <div className="max-w-lg mx-auto px-4 pb-8">
-          <ContextLinkingCard currentModule="posture" />
           <ResultPageInsights currentModule="posture" />
           <AITransparencyNotice compact className="mt-8" />
         </div>

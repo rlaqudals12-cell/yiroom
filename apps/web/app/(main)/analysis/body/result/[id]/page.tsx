@@ -66,7 +66,6 @@ import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ResultPageInsights } from '@/components/insights';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { useTranslations } from 'next-intl';
@@ -647,7 +646,6 @@ export default function BodyAnalysisResultPage() {
 
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       <div className="max-w-lg mx-auto px-4 pb-8">
-        <ContextLinkingCard currentModule="body" />
         <ResultPageInsights currentModule="body" />
         <div className="mt-6">
           <AnalysisMatchedProducts analysisType="body" />

@@ -36,6 +36,9 @@
 | 통합 결과             | **세션 고유물만** — Persona → ActionPlan → CrossInsights → Curation → 심화 링크 → Share (컨설팅 리포트 스토리)   | 개별 결과 재현물 제거                                                            |
 | 제품 추천(개별)       | **AnalysisMatchedProducts** (실DB + 개인화 + matchReasons)                                                       | RecommendedProducts 블록 제거                                                    |
 | 스킨케어 루틴         | **`lib/skincare/routine.ts` generateRoutine**                                                                    | 스킨 결과 페이지의 Mock/DB문자열 루틴 → 정본 요약 + 루틴 페이지 링크             |
+| 다음 행동(결과 하단)  | **ResultPageInsights** (통합 인사이트 + 오늘의 루틴 다리 + 다음 분석 1행, 2026-07-25)                            | ContextLinkingCard 삭제(기능 흡수, 루틴 다리 testid 보존)                        |
+| 드레이핑(색 대보기)   | **DrapingSection** (zero-mask 캔버스 합성, PC 결과·통합 결과 동일 컴포넌트)                                      | 구 MediaPipe 경로 삭제(CSP 차단 → Mock 가면이던 표면)                            |
+| 가상 메이크업 진입    | **드레이핑 탭 경유 텍스트 링크** (`/style/virtual-try-on`, 2026-07-25)                                           | PC 결과 sticky 보조 버튼 제거(하단 primary는 제품 CTA 1개만)                     |
 
 링크 재배선은 인텐트 기준: "내 결과 보기" → `/home`, "새 분석 시작" → `/analysis/integrated`(또는 해당 축 직행), 에러 폴백 → `/home`.
 

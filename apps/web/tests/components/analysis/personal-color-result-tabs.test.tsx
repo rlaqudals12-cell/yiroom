@@ -334,10 +334,6 @@ vi.mock('@/components/analysis/GenderAdaptiveAccessories', () => ({
   ),
 }));
 
-vi.mock('@/components/analysis/ContextLinkingCard', () => ({
-  ContextLinkingCard: () => <div data-testid="mock-context-linking">ContextLinkingCard Mock</div>,
-}));
-
 vi.mock('@/components/insights', () => ({
   default: () => null,
   ResultPageInsights: () => (

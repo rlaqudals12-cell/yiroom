@@ -31,7 +31,6 @@ const AnalysisMatchedProducts = dynamic(
   { loading: () => null, ssr: false }
 );
 import { MockDataNotice } from '@/components/common/MockDataNotice';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
@@ -529,7 +528,6 @@ export default function MakeupAnalysisResultPage() {
 
       {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출 */}
       <div className="max-w-lg mx-auto px-4 pb-8">
-        <ContextLinkingCard currentModule="makeup" />
         <ResultPageInsights currentModule="makeup" />
         <div className="mt-6">
           <AnalysisMatchedProducts

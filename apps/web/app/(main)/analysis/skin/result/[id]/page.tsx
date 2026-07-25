@@ -96,7 +96,6 @@ import {
 } from '@/components/analysis/skin/dynamic';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import { MockDataNotice } from '@/components/common/MockDataNotice';
-import { ContextLinkingCard } from '@/components/analysis/ContextLinkingCard';
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
@@ -1130,8 +1129,7 @@ export default function SkinAnalysisResultPage() {
                     </div>
                   </Link>
 
-                  {/* 다음 분석 추천 */}
-                  <ContextLinkingCard currentModule="skin" />
+                  {/* 다음 행동 — ResultPageInsights가 정본 (인사이트 + 루틴 다리 + 다음 분석) */}
                   <ResultPageInsights currentModule="skin" />
 
                   {/* 분석 기반 맞춤 제품 (어필리에이트 연결) */}

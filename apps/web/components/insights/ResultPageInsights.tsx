@@ -2,14 +2,17 @@
 
 /**
  * 분석 결과 페이지 크로스 모듈 인사이트 + ConnectionAwareness 내재화 추적
+ * + 다음 행동 다리 (구 ContextLinkingCard 흡수 — 결과 페이지 하단 다음행동 정본 1곳, ADR-111)
  *
  * - 인사이트 노출 시 자동 expose (내재화 카운트 증가)
  * - "이해했어요" 버튼으로 confirm (상태 전이 촉진)
  * - 내재화 상태에 따라 설명 깊이 분기 (full → brief → minimal → none)
+ * - 하단 고정 행: 오늘의 루틴 다리(관계 5단계 '첫 미팅 → 매일 브리핑' 고리) + 다음 분석 1행
  * - 7개 모든 결과 페이지에서 자동 적용 (import 변경 없음)
  */
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import {
   Sparkles,
@@ -20,6 +23,10 @@ import {
   AlertCircle,
   Zap,
   Check,
+  CalendarCheck,
+  ChevronRight,
+  Wand2,
+  Scissors,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@clerk/nextjs';
@@ -101,6 +108,84 @@ const STATUS_LABELS: Record<ConnectionStatus, string> = {
   independent: '자립적 판단 가능',
 };
 
+// 다음 분석 추천 링크 (구 ContextLinkingCard의 도메인 연결 논리 이식)
+interface NextAnalysisLink {
+  id: string;
+  title: string;
+  reason: string;
+  href: string;
+}
+
+// 모듈별 다음 분석 후보 — 순서 = 우선순위 (완료한 분석은 건너뛰고 첫 후보만 1행 노출)
+const NEXT_ANALYSIS: Record<string, NextAnalysisLink[]> = {
+  'personal-color': [
+    {
+      id: 'makeup',
+      title: '메이크업 분석',
+      reason: '퍼스널 컬러에 맞는 메이크업을 찾아보세요',
+      href: '/analysis/makeup',
+    },
+    {
+      id: 'hair',
+      title: '헤어 분석',
+      reason: '어울리는 헤어 컬러를 추천받아보세요',
+      href: '/analysis/hair',
+    },
+  ],
+  skin: [
+    {
+      id: 'makeup',
+      title: '메이크업 분석',
+      reason: '피부 상태에 맞는 메이크업 팁을 받아보세요',
+      href: '/analysis/makeup',
+    },
+  ],
+  body: [
+    {
+      id: 'personal-color',
+      title: '퍼스널 컬러',
+      reason: '체형에 어울리는 코디 색까지 함께 찾아보세요',
+      href: '/analysis/personal-color',
+    },
+    {
+      id: 'hair',
+      title: '헤어 분석',
+      reason: '전체 인상을 완성하는 헤어스타일을 추천받아보세요',
+      href: '/analysis/hair',
+    },
+  ],
+  hair: [
+    {
+      id: 'personal-color',
+      title: '퍼스널 컬러',
+      reason: '어울리는 헤어 컬러의 근거를 확인해보세요',
+      href: '/analysis/personal-color',
+    },
+  ],
+  makeup: [
+    {
+      id: 'personal-color',
+      title: '퍼스널 컬러',
+      reason: '메이크업 컬러 선택의 기준이 되는 분석이에요',
+      href: '/analysis/personal-color',
+    },
+    {
+      id: 'skin',
+      title: '피부 분석',
+      reason: '피부 상태에 맞는 메이크업 제품을 찾아보세요',
+      href: '/analysis/skin',
+    },
+  ],
+};
+
+// 다음 분석 행 아이콘 (추천 대상 모듈 기준)
+const NEXT_ANALYSIS_ICONS: Record<string, typeof Sparkles> = {
+  'personal-color': Palette,
+  skin: Sparkles,
+  makeup: Wand2,
+  hair: Scissors,
+};
+
 interface ResultPageInsightsProps {
   /** 현재 결과 페이지의 모듈 (URL 형식: 'skin', 'personal-color' 등) */
   currentModule: string;
@@ -179,45 +264,114 @@ export default function ResultPageInsights({ currentModule, className }: ResultP
     [userId, supabase]
   );
 
-  // 로딩 중이거나 인사이트 없으면 렌더링 안 함
-  if (isLoading || insights.length === 0) return null;
+  // 다음 분석 1행 — 이미 완료한 분석은 건너뛰고 첫 후보만 (구 ContextLinkingCard 필터 논리)
+  const completedTypes = useMemo(() => new Set<string>(analyses.map((a) => a.type)), [analyses]);
+  const nextAnalysis =
+    (NEXT_ANALYSIS[currentModule] ?? []).find((link) => !completedTypes.has(link.id)) ?? null;
+  // 다음 행동 다리는 분석 모듈로 식별되는 페이지에서만 (posture 등 비연결 모듈은 기존대로 미노출)
+  const hasNextActions = currentModule in NEXT_ANALYSIS;
+
+  // 로딩 중이거나 표시할 것이 없으면 렌더링 안 함
+  if (isLoading || (insights.length === 0 && !hasNextActions)) return null;
+
+  const hasInsights = insights.length > 0;
 
   return (
     <div
-      className={cn('bg-card rounded-2xl border border-border/50 p-5', className)}
+      className={cn('mt-8 bg-card rounded-2xl border border-border/50 p-5', className)}
       data-testid="result-page-insights"
     >
-      {/* 헤더 */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-7 h-7 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-          <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+      {hasInsights && (
+        <>
+          {/* 헤더 */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">통합 인사이트</h3>
+            <Badge variant="secondary" className="text-[10px] ml-auto">
+              {insights.length}개
+            </Badge>
+          </div>
+
+          {/* 인사이트 목록 */}
+          <div className="space-y-3">
+            {insights.map((insight) => {
+              const connectionId = insightToExposeRequest(insight).connectionId;
+              const status = connectionStatuses[connectionId] ?? 'exposed';
+              const depth = getExplanationDepth(status);
+              const isConfirmed = confirmedIds.has(connectionId);
+
+              return (
+                <InsightRow
+                  key={insight.id}
+                  insight={insight}
+                  depth={depth}
+                  status={status}
+                  isConfirmed={isConfirmed}
+                  onConfirm={() => handleConfirm(insight)}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* 다음 행동 다리 — 인사이트 유무와 무관하게 유지 (루틴 다리는 리텐션 고리라 항상 보존) */}
+      {hasNextActions && (
+        <div
+          className={cn('space-y-2', hasInsights && 'mt-4 pt-4 border-t border-border/50')}
+          aria-label="다음 행동"
+        >
+          <Link
+            href="/capsule/daily"
+            className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+            data-testid="context-link-daily-routine"
+            aria-label="오늘의 루틴 — 이 분석으로 만든 오늘의 루틴을 확인해보세요"
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+              <CalendarCheck className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">오늘의 루틴</p>
+              <p className="text-xs text-muted-foreground truncate">
+                이 분석으로 만든 오늘의 루틴을 확인해보세요
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
+          </Link>
+          {nextAnalysis &&
+            (() => {
+              const NextIcon = NEXT_ANALYSIS_ICONS[nextAnalysis.id] ?? ChevronRight;
+              return (
+                <Link
+                  href={nextAnalysis.href}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  data-testid={`context-link-${nextAnalysis.id}`}
+                  aria-label={`${nextAnalysis.title} — ${nextAnalysis.reason}`}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundColor: `var(--module-${nextAnalysis.id}-light)`,
+                      color: `var(--module-${nextAnalysis.id})`,
+                    }}
+                  >
+                    <NextIcon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{nextAnalysis.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{nextAnalysis.reason}</p>
+                  </div>
+                  <ChevronRight
+                    className="w-4 h-4 text-muted-foreground shrink-0"
+                    aria-hidden="true"
+                  />
+                </Link>
+              );
+            })()}
         </div>
-        <h3 className="text-sm font-semibold text-foreground">통합 인사이트</h3>
-        <Badge variant="secondary" className="text-[10px] ml-auto">
-          {insights.length}개
-        </Badge>
-      </div>
-
-      {/* 인사이트 목록 */}
-      <div className="space-y-3">
-        {insights.map((insight) => {
-          const connectionId = insightToExposeRequest(insight).connectionId;
-          const status = connectionStatuses[connectionId] ?? 'exposed';
-          const depth = getExplanationDepth(status);
-          const isConfirmed = confirmedIds.has(connectionId);
-
-          return (
-            <InsightRow
-              key={insight.id}
-              insight={insight}
-              depth={depth}
-              status={status}
-              isConfirmed={isConfirmed}
-              onConfirm={() => handleConfirm(insight)}
-            />
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 }

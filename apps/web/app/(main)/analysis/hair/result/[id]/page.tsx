@@ -40,14 +40,6 @@ import { VisualReportCard } from '@/components/analysis/visual-report/VisualRepo
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
 
-// 하단 컴포넌트는 dynamic import (below the fold, 번들 분할)
-const ContextLinkingCard = dynamic(
-  () =>
-    import('@/components/analysis/ContextLinkingCard').then((mod) => ({
-      default: mod.ContextLinkingCard,
-    })),
-  { ssr: false }
-);
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -666,7 +658,6 @@ export default function HairAnalysisResultPage() {
         <p className="text-xs text-muted-foreground text-center mt-4 px-2">
           분석 결과는 참고용이며, 전문가 진단을 대체하지 않아요
         </p>
-        <ContextLinkingCard currentModule="hair" />
         <ResultPageInsights currentModule="hair" />
       </div>
     </>
