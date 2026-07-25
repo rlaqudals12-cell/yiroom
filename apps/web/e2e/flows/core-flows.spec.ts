@@ -259,13 +259,13 @@ test.describe('핵심 플로우 - 제품 스캔', () => {
 // ============================================
 
 test.describe('핵심 플로우 - 온보딩', () => {
-  test('온보딩 페이지가 정상적으로 로드된다', async ({ page }) => {
+  test('온보딩 진입(통합 분석)이 정상적으로 로드된다', async ({ page }) => {
     await page.goto(ROUTES.ONBOARDING);
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    // 온보딩 또는 로그인 또는 홈(이미 완료된 경우)
-    expect(url).toMatch(/onboarding|sign-in|home/);
+    // 통합 분석 또는 로그인 또는 홈(이미 완료된 경우)
+    expect(url).toMatch(/analysis\/integrated|sign-in|home/);
   });
 });
 

@@ -189,11 +189,15 @@ export default function OutfitPage() {
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{
-                  backgroundColor: selectByKey(seasonType, {
-                    spring: '#FFD700',
-                    summer: '#87CEEB',
-                    autumn: '#D2691E',
-                  }, '#4169E1'),
+                  backgroundColor: selectByKey(
+                    seasonType,
+                    {
+                      spring: '#FFD700',
+                      summer: '#87CEEB',
+                      autumn: '#D2691E',
+                    },
+                    '#4169E1'
+                  ),
                 }}
               >
                 <Palette className="w-6 h-6 text-white" />
@@ -205,9 +209,6 @@ export default function OutfitPage() {
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => router.push('/styling')}>
-              스타일링
-            </Button>
           </div>
         </CardContent>
       </Card>

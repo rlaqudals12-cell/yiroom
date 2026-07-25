@@ -128,7 +128,8 @@ export const ROUTES = {
   SEARCH: '/search',
   NOTIFICATIONS: '/notifications',
   SETTINGS: '/profile/settings',
-  ONBOARDING: '/onboarding',
+  // 온보딩 = 통합 분석 진입이 실제 퍼널 (구 /onboarding 페이지는 레거시로 삭제됨)
+  ONBOARDING: '/analysis/integrated?onboarding=1',
   YEAR_REVIEW: '/year-review',
   FEED: '/feed',
   // 분석 플로우

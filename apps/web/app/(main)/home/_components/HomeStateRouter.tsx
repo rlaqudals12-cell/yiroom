@@ -16,7 +16,6 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trackBriefingView } from '@/lib/analytics';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
-import { useOnboardingSync } from '@/hooks/useOnboardingSync';
 import HomeStateNew from './HomeStateNew';
 import HomeStateGrowing from './HomeStateGrowing';
 import HomeStateActive from './HomeStateActive';
@@ -44,9 +43,6 @@ function HomeStateSkeleton() {
 }
 
 export default function HomeStateRouter() {
-  // 온보딩 데이터 Supabase 동기화 (로그인 후 1회)
-  useOnboardingSync();
-
   const { isLoading, hasError, analysisCount, analyses, refetch } = useAnalysisStatus();
 
   // 리텐션 계기판 신호 — 홈=브리핑 열람을 마운트당 1회 기록(코호트 D1/D7/D30 산출용).

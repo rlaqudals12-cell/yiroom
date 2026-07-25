@@ -85,7 +85,10 @@ test.describe('Hybrid UX - 검색', () => {
     const url = page.url();
     if (!url.includes('sign-in')) {
       const searchInput = page.locator('input[type="text"], input[type="search"]');
-      const isVisible = await searchInput.first().isVisible().catch(() => false);
+      const isVisible = await searchInput
+        .first()
+        .isVisible()
+        .catch(() => false);
       if (isVisible) {
         await expect(searchInput.first()).toBeVisible();
       }
@@ -148,11 +151,11 @@ test.describe('Hybrid UX - 기록/레코드', () => {
 });
 
 test.describe('Hybrid UX - 온보딩', () => {
-  test('온보딩 페이지가 정상적으로 로드된다', async ({ page }) => {
+  test('온보딩 진입(통합 분석)이 정상적으로 로드된다', async ({ page }) => {
     await page.goto(ROUTES.ONBOARDING);
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/onboarding|sign-in|dashboard/);
+    expect(url).toMatch(/analysis\/integrated|sign-in|dashboard/);
   });
 });
