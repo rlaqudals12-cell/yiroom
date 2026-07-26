@@ -56,14 +56,6 @@ vi.mock('@/components/insights', () => ({
   ResultPageInsights: () => <div data-testid="result-page-insights" />,
 }));
 
-vi.mock('@/components/analysis/visual-report/VisualReportCard', () => ({
-  VisualReportCard: ({ overallScore }: { overallScore?: number }) => (
-    <div data-testid="visual-report-card">
-      {overallScore !== undefined && <span>{overallScore}</span>}
-    </div>
-  ),
-}));
-
 vi.mock('@/components/common/AIBadge', () => ({
   AIBadge: () => <span data-testid="ai-badge" />,
   AITransparencyNotice: () => <div data-testid="ai-transparency" />,
