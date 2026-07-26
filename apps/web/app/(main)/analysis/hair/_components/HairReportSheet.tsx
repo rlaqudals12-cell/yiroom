@@ -116,13 +116,22 @@ export function HairReportSheet({
             <div className="mt-4">
               <RowTable testId={testId ? `${testId}-metrics` : undefined}>
                 {metrics.map((metric) => (
-                  <SpectrumRow
+                  // 메이크업 결과의 progressbar aria 문법 승계 — 값은 저장 점수 그대로
+                  <div
                     key={metric.id}
-                    label={metric.label}
-                    pos={metric.value / 100}
-                    status={STATUS_TEXT[metric.status]}
-                    testId={testId ? `${testId}-metric-${metric.id}` : undefined}
-                  />
+                    role="progressbar"
+                    aria-valuenow={metric.value}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${metric.label}: ${metric.value}점`}
+                  >
+                    <SpectrumRow
+                      label={metric.label}
+                      pos={metric.value / 100}
+                      status={`${metric.value}점 · ${STATUS_TEXT[metric.status]}`}
+                      testId={testId ? `${testId}-metric-${metric.id}` : undefined}
+                    />
+                  </div>
                 ))}
               </RowTable>
             </div>
