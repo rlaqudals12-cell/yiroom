@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, Sparkles, ChevronRight } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,15 +22,8 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import {
-  InventoryGrid,
-  CategoryFilter,
-  ItemDetailSheet,
-} from '@/components/inventory';
-import type {
-  InventoryItem,
-  InventoryItemDB,
-} from '@/types/inventory';
+import { InventoryGrid, CategoryFilter, ItemDetailSheet } from '@/components/inventory';
+import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 
 export default function ClosetPage() {
   const router = useRouter();
@@ -82,9 +75,7 @@ export default function ClosetPage() {
 
         // 검색
         if (searchQuery) {
-          query = query.or(
-            `name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`
-          );
+          query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
         }
 
         const { data, error } = await query;
@@ -143,9 +134,7 @@ export default function ClosetPage() {
     const newValue = !item.isFavorite;
 
     // 낙관적 업데이트
-    setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, isFavorite: newValue } : i))
-    );
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, isFavorite: newValue } : i)));
 
     const { error } = await supabase
       .from('user_inventory')
@@ -154,11 +143,7 @@ export default function ClosetPage() {
 
     if (error) {
       // 롤백
-      setItems((prev) =>
-        prev.map((i) =>
-          i.id === item.id ? { ...i, isFavorite: !newValue } : i
-        )
-      );
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, isFavorite: !newValue } : i)));
     }
   };
 
@@ -166,10 +151,7 @@ export default function ClosetPage() {
   const handleDelete = async (item: InventoryItem) => {
     if (!supabase) return;
 
-    const { error } = await supabase
-      .from('user_inventory')
-      .delete()
-      .eq('id', item.id);
+    const { error } = await supabase.from('user_inventory').delete().eq('id', item.id);
 
     if (!error) {
       setItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -243,11 +225,7 @@ export default function ClosetPage() {
                 className="pl-9"
               />
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowFilters(true)}
-            >
+            <Button variant="outline" size="icon" onClick={() => setShowFilters(true)}>
               <SlidersHorizontal className="w-4 h-4" />
             </Button>
           </div>
@@ -262,6 +240,23 @@ export default function ClosetPage() {
           />
         </div>
       </div>
+
+      {/* 오늘의 코디 진입 — 옷장에서 코디 조립으로 이어지는 경로 가시화.
+          옷 0벌 empty 상태는 기존 그대로 유지(그때는 등록이 우선이라 노출하지 않음) */}
+      {items.length > 0 && (
+        <div className="px-4 pt-4">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push('/closet/recommend')}
+            data-testid="closet-recommend-cta"
+          >
+            <Sparkles className="w-4 h-4 mr-1" />
+            오늘의 코디 받기
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
+      )}
 
       {/* 그리드 */}
       <div className="px-4 pt-4">

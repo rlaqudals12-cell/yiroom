@@ -86,6 +86,9 @@ export {
   type RoutineInventoryResult,
 } from './routine-bridge';
 
+// Clothing Category (한글 세부종류 → 영문 대분류 정규화)
+export { resolveClothingCategory } from './clothingCategory';
+
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {
   calculateMatchScore,

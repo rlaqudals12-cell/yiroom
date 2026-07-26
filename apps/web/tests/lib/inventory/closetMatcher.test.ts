@@ -399,13 +399,7 @@ describe('closetMatcher', () => {
       });
 
       it('여러 트렌드 아이템이 인식되어야 한다', () => {
-        const trendItems = [
-          '폴로 셔츠',
-          '새깅 팬츠',
-          '테크웨어',
-          '니트 베스트',
-          '고프코어 아이템',
-        ];
+        const trendItems = ['폴로 셔츠', '새깅 팬츠', '테크웨어', '니트 베스트', '고프코어 아이템'];
 
         for (const itemName of trendItems) {
           const item = createMockItem({
@@ -477,7 +471,9 @@ describe('closetMatcher', () => {
         const trendRec = recommendations[0];
 
         if (trendRec.score.trendBonus && trendRec.score.trendBonus > 0) {
-          expect(trendRec.reasons.some((r) => r.includes('2026') || r.includes('트렌드'))).toBe(true);
+          expect(trendRec.reasons.some((r) => r.includes('2026') || r.includes('트렌드'))).toBe(
+            true
+          );
         }
       });
     });
@@ -509,9 +505,7 @@ describe('closetMatcher', () => {
       });
 
       it.each(allStyles)('스타일 "%s"가 recommendFromCloset에서 지원되어야 한다', (style) => {
-        const items = [
-          createMockItem({ id: 'test-1', name: '테스트 아이템' }),
-        ];
+        const items = [createMockItem({ id: 'test-1', name: '테스트 아이템' })];
 
         const recommendations = recommendFromCloset(items, { style });
 
@@ -573,6 +567,138 @@ describe('closetMatcher', () => {
         expect(score.seasonScore).toBeDefined();
         expect(score.styleScore).toBeDefined();
       });
+    });
+  });
+
+  // ============================================================================
+  // 실데이터 형상: sub_category에 한글 세부종류 저장 (코디 영구 불발 근본 수리 검증)
+  // ============================================================================
+
+  describe('한글 sub_category 실데이터 형상', () => {
+    // 저장측(closet/add)이 실제로 만드는 형상 — sub_category='티셔츠' 등 한글 세부종류
+    const koreanItems: InventoryItem[] = [
+      createMockItem({
+        id: 'ko-top-1',
+        name: '화이트 티셔츠',
+        subCategory: '티셔츠',
+        metadata: { color: ['화이트'], season: ['spring', 'summer'], occasion: ['casual'] },
+      }),
+      createMockItem({
+        id: 'ko-bottom-1',
+        name: '연청 청바지',
+        subCategory: '청바지',
+        metadata: { color: ['블루'], season: ['spring', 'autumn'], occasion: ['casual'] },
+      }),
+      createMockItem({
+        id: 'ko-shoes-1',
+        name: '흰색 스니커즈',
+        subCategory: '스니커즈',
+        metadata: { color: ['화이트'], season: ['spring'], occasion: ['casual'] },
+      }),
+    ];
+
+    it('recommendFromCloset 카테고리 필터가 한글 sub_category를 인식해야 한다', () => {
+      const tops = recommendFromCloset(koreanItems, { category: 'top' });
+      const bottoms = recommendFromCloset(koreanItems, { category: 'bottom' });
+
+      expect(tops).toHaveLength(1);
+      expect(tops[0].item.id).toBe('ko-top-1');
+      expect(bottoms).toHaveLength(1);
+      expect(bottoms[0].item.id).toBe('ko-bottom-1');
+    });
+
+    it('한글 sub_category만으로도 코디가 조립되어야 한다', () => {
+      const suggestion = suggestOutfitFromCloset(koreanItems, {});
+
+      expect(suggestion).not.toBeNull();
+      expect(suggestion?.top?.item.id).toBe('ko-top-1');
+      expect(suggestion?.bottom?.item.id).toBe('ko-bottom-1');
+      expect(suggestion?.shoes?.item.id).toBe('ko-shoes-1');
+    });
+
+    it('한글·영문 혼재 옷장(구 폴백 행 공존)에서도 코디가 조립되어야 한다', () => {
+      const mixed: InventoryItem[] = [
+        createMockItem({
+          id: 'en-top-1',
+          name: '화이트 셔츠',
+          subCategory: 'top',
+          metadata: { color: ['화이트'], season: ['spring'], occasion: [] },
+        }),
+        createMockItem({
+          id: 'ko-bottom-2',
+          name: '검정 슬랙스',
+          subCategory: '슬랙스',
+          metadata: { color: ['블랙'], season: ['spring'], occasion: ['formal'] },
+        }),
+      ];
+      const suggestion = suggestOutfitFromCloset(mixed, {});
+
+      expect(suggestion).not.toBeNull();
+      expect(suggestion?.top?.item.id).toBe('en-top-1');
+      expect(suggestion?.bottom?.item.id).toBe('ko-bottom-2');
+    });
+
+    it('목록 밖 한글이라도 metadata.clothingCategory가 있으면 슬롯에 포함되어야 한다', () => {
+      // 신규 저장 경로: AI가 '후드티'(목록 밖)를 반환해도 폼 대분류가 metadata에 생존
+      const withMetadata: InventoryItem[] = [
+        createMockItem({
+          id: 'meta-top-1',
+          name: '그레이 후드티',
+          subCategory: '후드티',
+          metadata: {
+            color: ['그레이'],
+            season: ['spring'],
+            occasion: ['casual'],
+            clothingCategory: 'top',
+          },
+        }),
+        createMockItem({
+          id: 'ko-bottom-3',
+          name: '조거팬츠',
+          subCategory: '조거팬츠',
+          metadata: { color: ['블랙'], season: ['spring'], occasion: ['casual'] },
+        }),
+      ];
+      const suggestion = suggestOutfitFromCloset(withMetadata, {});
+
+      expect(suggestion).not.toBeNull();
+      expect(suggestion?.top?.item.id).toBe('meta-top-1');
+    });
+
+    it('목록 밖 한글 + metadata 부재(구 데이터 잔여)는 슬롯에서 제외되어야 한다', () => {
+      // 수용된 잔여: 미매핑 아이템은 지어내지 않고 정직하게 제외
+      const unmapped: InventoryItem[] = [
+        createMockItem({
+          id: 'unknown-1',
+          name: '정체불명 상의',
+          subCategory: '후드티',
+          metadata: { color: [], season: [], occasion: [] },
+        }),
+      ];
+      const tops = recommendFromCloset(unmapped, { category: 'top' });
+
+      expect(tops).toHaveLength(0);
+    });
+
+    it('한글 sub_category 아이템에도 체형 점수가 계산되어야 한다', () => {
+      // '니트'는 top 목록의 한글 세부종류 — S 체형 top 추천 키워드('니트')와 이름 매칭
+      const item = createMockItem({
+        name: '아이보리 니트',
+        subCategory: '니트',
+        metadata: { color: ['아이보리'], season: ['autumn'], occasion: [] },
+      });
+      const score = calculateMatchScore(item, { bodyType: 'S' });
+
+      expect(score.bodyTypeScore).toBeGreaterThan(50);
+    });
+
+    it('getRecommendationSummary가 한글 sub_category를 대분류로 집계해야 한다', () => {
+      // top('티셔츠')·bottom('청바지')·shoes('스니커즈') 각 1벌 → 2벌 미만이라 부족 제안에 포함,
+      // 단 '상의가 없다'류의 오집계(unknown 처리)는 아니어야 한다
+      const summary = getRecommendationSummary(koreanItems, {});
+
+      // 아우터 0벌은 반드시 부족 목록에 포함
+      expect(summary.suggestions.some((s) => s.includes('아우터'))).toBe(true);
     });
   });
 });

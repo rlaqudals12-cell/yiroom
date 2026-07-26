@@ -15,6 +15,7 @@ import type {
   Occasion,
 } from '@/types/inventory';
 import { toClothingItem } from '@/types/inventory';
+import { resolveClothingCategory } from './clothingCategory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 import {
   type StyleCategory,
@@ -132,16 +133,34 @@ const COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
 // 퍼스널컬러별 피해야 할 색상 키워드
 const AVOID_COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
   Spring: ['블랙', '다크', '버건디', '차가운', 'black', 'dark', 'burgundy', 'cool'],
-  Summer: ['오렌지', '머스타드', '테라코타', '브라운', 'orange', 'mustard', 'terracotta', 'brown', 'warm'],
+  Summer: [
+    '오렌지',
+    '머스타드',
+    '테라코타',
+    '브라운',
+    'orange',
+    'mustard',
+    'terracotta',
+    'brown',
+    'warm',
+  ],
   Autumn: ['핑크', '퓨시아', '파스텔', '네온', 'pink', 'fuchsia', 'pastel', 'neon', 'bright'],
-  Winter: ['베이지', '머스타드', '살몬', '오렌지', 'beige', 'mustard', 'salmon', 'orange', 'warm', 'muted'],
+  Winter: [
+    '베이지',
+    '머스타드',
+    '살몬',
+    '오렌지',
+    'beige',
+    'mustard',
+    'salmon',
+    'orange',
+    'warm',
+    'muted',
+  ],
 };
 
 // 체형별 추천 카테고리 서브타입
-const BODY_TYPE_RECOMMENDATIONS: Record<
-  BodyType3,
-  Record<ClothingCategory, string[]>
-> = {
+const BODY_TYPE_RECOMMENDATIONS: Record<BodyType3, Record<ClothingCategory, string[]>> = {
   // Straight (I라인 실루엣)
   S: {
     outer: ['트렌치코트', '싱글 코트', '블레이저', '자켓'],
@@ -210,16 +229,14 @@ function calculateColorMatchScore(
     // 좋은 색상 매칭
     const goodMatch = goodKeywords.some(
       (keyword) =>
-        lowerColor.includes(keyword.toLowerCase()) ||
-        keyword.toLowerCase().includes(lowerColor)
+        lowerColor.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(lowerColor)
     );
     if (goodMatch) score += 25;
 
     // 피해야 할 색상 매칭
     const badMatch = badKeywords.some(
       (keyword) =>
-        lowerColor.includes(keyword.toLowerCase()) ||
-        keyword.toLowerCase().includes(lowerColor)
+        lowerColor.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(lowerColor)
     );
     if (badMatch) score -= 20;
   }
@@ -232,17 +249,19 @@ function calculateColorMatchScore(
  */
 function calculateBodyTypeMatchScore(
   item: ClothingItem,
-  bodyType: BodyType3
+  bodyType: BodyType3,
+  // sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어, 호출측에서
+  // 원본 아이템(metadata 포함) 기준으로 정규화한 대분류를 받는다.
+  // (toClothingItem이 metadata.clothingCategory를 벗겨내므로 여기서 재정규화하면 정보 손실)
+  resolvedCategory: ClothingCategory | null
 ): number {
-  const category = item.subCategory;
-  const recommendations = BODY_TYPE_RECOMMENDATIONS[bodyType][category];
+  if (!resolvedCategory) return 50;
+  const recommendations = BODY_TYPE_RECOMMENDATIONS[bodyType][resolvedCategory];
 
   if (!recommendations) return 50;
 
   const itemName = item.name.toLowerCase();
-  const matchCount = recommendations.filter((rec) =>
-    itemName.includes(rec.toLowerCase())
-  ).length;
+  const matchCount = recommendations.filter((rec) => itemName.includes(rec.toLowerCase())).length;
 
   // 매칭되는 키워드가 있으면 점수 증가
   return 50 + matchCount * 20;
@@ -251,10 +270,7 @@ function calculateBodyTypeMatchScore(
 /**
  * 계절 매칭 점수 계산
  */
-function calculateSeasonMatchScore(
-  item: ClothingItem,
-  targetSeason: Season
-): number {
+function calculateSeasonMatchScore(item: ClothingItem, targetSeason: Season): number {
   const metadata = item.metadata;
 
   // 명시적 시즌 태그가 있으면 확인
@@ -299,10 +315,7 @@ export interface MatchScore {
 /**
  * 스타일 카테고리 매칭 점수 계산
  */
-function calculateStyleMatchScore(
-  item: ClothingItem,
-  targetStyle: StyleCategory
-): number {
+function calculateStyleMatchScore(item: ClothingItem, targetStyle: StyleCategory): number {
   const keywords = STYLE_CATEGORY_KEYWORDS[targetStyle];
   if (!keywords) return 50;
 
@@ -310,9 +323,7 @@ function calculateStyleMatchScore(
   let score = 50;
 
   // 키워드 매칭
-  const matchCount = keywords.filter((keyword) =>
-    itemName.includes(keyword.toLowerCase())
-  ).length;
+  const matchCount = keywords.filter((keyword) => itemName.includes(keyword.toLowerCase())).length;
 
   score += matchCount * 15;
 
@@ -338,16 +349,14 @@ export function calculateMatchScore(
     ? calculateColorMatchScore(metadata.color, options.personalColor)
     : 50;
 
-  // 체형 점수
+  // 체형 점수 — 원본 아이템 기준 정규화(한글 sub_category·metadata.clothingCategory 대응)
   const bodyTypeScore = options.bodyType
-    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType)
+    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType, resolveClothingCategory(item))
     : 50;
 
   // 계절 점수
   const targetSeason = options.season || (options.temp ? getSeasonFromTemp(options.temp) : null);
-  const seasonScore = targetSeason
-    ? calculateSeasonMatchScore(clothingItem, targetSeason)
-    : 50;
+  const seasonScore = targetSeason ? calculateSeasonMatchScore(clothingItem, targetSeason) : 50;
 
   // 스타일 점수 (K-2 확장)
   const styleScore = options.style
@@ -355,9 +364,7 @@ export function calculateMatchScore(
     : undefined;
 
   // 트렌드 보너스 (K-2 확장)
-  const trendBonus = isTrendItem2026(clothingItem.name)
-    ? Math.round(TREND_BONUS_2026 * 100)
-    : 0;
+  const trendBonus = isTrendItem2026(clothingItem.name) ? Math.round(TREND_BONUS_2026 * 100) : 0;
 
   // 상황(TPO) 점수 보정
   let occasionBonus = 0;
@@ -411,10 +418,11 @@ export function recommendFromCloset(
     limit?: number;
   }
 ): ClosetRecommendation[] {
-  // 카테고리 필터
+  // 카테고리 필터 — sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어
+  // 영문 완전일치 대신 정규화(resolveClothingCategory) 후 비교한다 (코디 영구 불발 근본 수리)
   let filtered = items.filter((item) => item.category === 'closet');
   if (options.category) {
-    filtered = filtered.filter((item) => item.subCategory === options.category);
+    filtered = filtered.filter((item) => resolveClothingCategory(item) === options.category);
   }
 
   // 점수 계산 및 정렬
@@ -528,9 +536,7 @@ export function suggestOutfitFromCloset(
   if (outer) scores.push(outer.score.total);
   if (shoes) scores.push(shoes.score.total);
 
-  const totalScore = Math.round(
-    scores.reduce((a, b) => a + b, 0) / scores.length
-  );
+  const totalScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
   // 팁 생성
   const tips: string[] = [];
@@ -598,8 +604,9 @@ export function getRecommendationSummary(
       needsImprovement++;
     }
 
-    categoryCount[item.subCategory || 'unknown'] =
-      (categoryCount[item.subCategory || 'unknown'] || 0) + 1;
+    // 한글 sub_category('티셔츠')도 대분류('top')로 집계 — 미매핑은 unknown으로 정직 분류
+    const resolvedCategory = resolveClothingCategory(item) ?? 'unknown';
+    categoryCount[resolvedCategory] = (categoryCount[resolvedCategory] || 0) + 1;
   }
 
   // 부족한 카테고리 확인
@@ -621,15 +628,11 @@ export function getRecommendationSummary(
       bag: '가방',
       accessory: '액세서리',
     };
-    suggestions.push(
-      `${missingCategories.map((c) => categoryNames[c]).join(', ')}이 부족해요`
-    );
+    suggestions.push(`${missingCategories.map((c) => categoryNames[c]).join(', ')}이 부족해요`);
   }
 
   if (options.personalColor && wellMatched < closetItems.length * 0.3) {
-    suggestions.push(
-      `${options.personalColor} 톤에 어울리는 옷을 추가해보세요`
-    );
+    suggestions.push(`${options.personalColor} 톤에 어울리는 옷을 추가해보세요`);
   }
 
   return {

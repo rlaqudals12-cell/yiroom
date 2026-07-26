@@ -15,6 +15,9 @@ export {
   type ClothingClassificationResult,
 } from './imageProcessing';
 
+// Clothing Category (순수 함수 — 한글 세부종류 → 영문 대분류 정규화)
+export { resolveClothingCategory } from './clothingCategory';
+
 // Closet Matcher (순수 함수, 서버 의존 없음)
 export {
   calculateMatchScore,

@@ -162,6 +162,9 @@ export default function AddClothingPage() {
             season: seasons,
             occasion: occasions,
             pattern,
+            // sub_category에는 한글 세부종류가 들어갈 수 있어(AI 자유 응답 포함)
+            // 조립기(closetMatcher)가 쓸 영문 대분류를 별도 보존한다
+            clothingCategory: category,
           },
         }),
       });

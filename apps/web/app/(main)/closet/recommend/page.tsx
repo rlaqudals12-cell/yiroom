@@ -27,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   suggestOutfitFromCloset,
   getRecommendationSummary,
+  resolveClothingCategory,
   type OutfitSuggestion,
   type BodyType3,
   type ClosetRecommendation,
@@ -267,6 +268,30 @@ export default function ClosetRecommendPage() {
   const summary = useMemo(() => {
     return getRecommendationSummary(items, { personalColor, bodyType });
   }, [items, personalColor, bodyType]);
+
+  // 보유 슬롯 집계 — 조립기가 실제로 인식하는 기준(resolveClothingCategory)과 동일하게 센다.
+  // 미매핑 아이템(목록 밖 한글 세부종류 등)은 조립 슬롯에서 빠지므로 집계에도 넣지 않는다
+  // (등록했는데 집계에 없다고 카피가 거짓말하지 않게, 코드와 같은 기준 사용).
+  const slotCounts = useMemo(() => {
+    const counts = { top: 0, bottom: 0 };
+    for (const item of items) {
+      const category = resolveClothingCategory(item);
+      if (category === 'top' || category === 'bottom') counts[category] += 1;
+    }
+    return counts;
+  }, [items]);
+
+  // 코디 불발 시 안내 문구 — 보유 슬롯 집계 기반(무엇이 있고 무엇이 부족한지 정직하게).
+  // 미매핑 아이템은 집계에 없으므로 "등록하면 된다"는 약속이 코드 기준과 어긋나지 않는다.
+  const missingSlotMessage = ((): string => {
+    if (slotCounts.top > 0 && slotCounts.bottom === 0) {
+      return `상의 ${slotCounts.top}벌 있어요 — 하의를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
+    }
+    if (slotCounts.bottom > 0 && slotCounts.top === 0) {
+      return `하의 ${slotCounts.bottom}벌 있어요 — 상의를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
+    }
+    return '코디를 조립하려면 상의와 하의가 각각 1벌 이상 필요해요';
+  })();
 
   // 빈 옷장 콜드스타트 — 진단 기반 코디 "방향"(실제 옷을 지어내지 않고 색·역할·스타일 가이드만).
   // 오늘의 배색: DB 베스트 컬러 우선, 없으면 진단 시즌의 추천 팔레트(Hybrid). 둘 다 없으면 null(정직성).
@@ -758,10 +783,49 @@ export default function ClosetRecommendPage() {
             )}
           </div>
         ) : (
-          <Card className="p-6 text-center">
-            <p className="text-muted-foreground mb-2">추천할 코디를 찾지 못했어요</p>
-            <p className="text-sm text-muted-foreground">상의와 하의가 필요해요</p>
-          </Card>
+          <div className="space-y-4" data-testid="outfit-missing-slots">
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground mb-2">추천할 코디를 찾지 못했어요</p>
+              <p className="text-sm text-muted-foreground">{missingSlotMessage}</p>
+            </Card>
+
+            {/* 빈 옷장 상태와 동일한 일괄 등록 CTA 카드 재사용 (두 분기는 동시에 렌더되지 않음) */}
+            <Card data-testid="closet-register-cta">
+              <CardContent className="p-4">
+                <h3 className="mb-1 text-sm font-semibold">내 옷으로 코디를 받으려면</h3>
+                <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                  한 벌씩 넣지 않아도 돼요. 옷 사진을 여러 장 한 번에 올리면 AI가 자동으로 분류해요.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() =>
+                    router.push(
+                      withIntegratedContext(
+                        '/closet/add/batch',
+                        isFromIntegrated,
+                        curationSessionId
+                      )
+                    )
+                  }
+                  data-testid="closet-empty-cta"
+                >
+                  <Images className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  사진 여러 장 한 번에 등록
+                </Button>
+                <button
+                  onClick={() =>
+                    router.push(
+                      withIntegratedContext('/closet/add', isFromIntegrated, curationSessionId)
+                    )
+                  }
+                  data-testid="closet-empty-single-cta"
+                  className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+                >
+                  한 벌씩 등록할래요
+                </button>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* 옷장 분석 요약 */}
