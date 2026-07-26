@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Brush,
   Contrast,
@@ -8,7 +9,9 @@ import {
   Gem,
   Heart,
   Leaf,
+  Palette,
   Shirt,
+  Sun,
   Tag,
   type LucideIcon,
 } from 'lucide-react';
@@ -48,6 +51,9 @@ import {
   RowTable,
   TrustFooter,
 } from '@/components/analysis/report';
+import { getRelativeLuminance, hexToRgb } from '@/lib/a11y';
+import { TONE_PALETTES, type TwelveTone, type TonePalette } from '@/lib/analysis/personal-color-v2';
+import { cn } from '@/lib/utils';
 
 // 계절 인장 텍스트 — 점수 없는 타입 확정 스탬프(진단지 문법). 히어로 진단명(한국어)과
 // 겹치지 않도록 영문 세리프로 — 아이브로우(PERSONAL COLOR REPORT) 영문 관례와 세트
@@ -83,6 +89,42 @@ const AVOID_NOTES: Record<SeasonType, string> = {
   winter: '흐릿한 중간 톤은 겨울 쿨톤의 또렷한 대비를 죽여요.',
 };
 
+// 12톤 서브타입 접두사 → 명도·채도 정의 서술 (12톤 표준 정의에서 파생 — 계측이 아니라 톤 정의).
+// 키 = paletteToneKey 접두사, PERSONAL_COLOR_SUBTYPES shortLabel과 1:1 대응
+// (light=라이트, bright=브라이트, true=트루, muted=뮤트, deep=딥) — 라벨 정본과 일치 확인됨
+const SUBTYPE_ATTRS: Record<string, { brightness: string; saturation: string }> = {
+  light: { brightness: '높은 명도', saturation: '부드러운 채도' },
+  bright: { brightness: '높은 명도', saturation: '높은 채도' },
+  true: { brightness: '중간 명도', saturation: '중간 채도' },
+  muted: { brightness: '중간 명도', saturation: '차분한 채도' },
+  deep: { brightness: '낮은 명도', saturation: '풍부한 채도' },
+};
+
+// paletteToneKey('muted-summer' 등 12톤 키)에서 명도·채도 정의 서술 파생 — 시즌 키('spring' 등,
+// 서브타입 미저장 구 데이터)면 undefined 반환 → 행 미렌더(지어내지 않음)
+function deriveSubtypeAttrs(
+  paletteToneKey?: string
+): { brightness: string; saturation: string } | undefined {
+  if (!paletteToneKey || !paletteToneKey.includes('-')) return undefined;
+  return SUBTYPE_ATTRS[paletteToneKey.split('-')[0]];
+}
+
+// 회피 칩 취소선 색 — 어두운 칩에서 검정 취소선이 식별 불가하므로 칩 명도에 따라 흰색 전환.
+// 0.179 = 흰/검 텍스트 대비율이 교차하는 상대 휘도 경계(WCAG 공식 파생).
+// culori는 devDependency 테스트 오라클 전용(런타임 반입 금지 계약) — lib/a11y contrast-utils 재사용.
+// @internal export는 테스트 전용 (jsdom이 linear-gradient 스타일을 보존하지 않아 단위 검증 필요)
+export function getAvoidStrokeColor(hex: string): string {
+  return getRelativeLuminance(hexToRgb(hex)) <= 0.179
+    ? 'rgba(255,255,255,0.6)'
+    : 'rgba(0,0,0,0.45)';
+}
+
+// paletteToneKey가 v2 12톤 키일 때만 톤 팔레트 총람(정적 정의 데이터) 조회 — 없는 키는 미렌더
+function getTonePaletteOverview(paletteToneKey?: string): TonePalette | undefined {
+  if (!paletteToneKey || !(paletteToneKey in TONE_PALETTES)) return undefined;
+  return TONE_PALETTES[paletteToneKey as TwelveTone];
+}
+
 // 분석 근거 타입 (AnalysisEvidenceReport와 호환)
 interface AnalysisEvidence {
   veinColor?: PersonalColorEvidenceSummaryProps['veinColor'];
@@ -96,6 +138,8 @@ interface AnalysisResultProps {
   onTabChange?: (tab: string) => void;
   /** 퍼스널 대비 실측값(ADR-116) — 호스트가 저장값이 있을 때만 전달(없으면 행 미렌더) */
   contrastLevel?: 'low' | 'medium' | 'high' | null;
+  /** 분석 원본 사진 URL — 있으면 md+ 히어로를 2단(사진|진단명)으로. 없으면 현 레이아웃(데모·구 데이터 폴백) */
+  photoUrl?: string;
 }
 
 // "그래서, 이렇게 하세요" 액션 조립 — 규칙 기반 (새 fetch/AI 없음). 컴포넌트 복잡도 절감 위해 분리.
@@ -192,19 +236,22 @@ function SwatchChips({
   );
 }
 
-/** 01 진단 속성표 — RowTable + 대비 풀이 + 판정 근거 요약 */
+/** 01 진단 속성표 — RowTable(+12톤 명도·채도 정의 행) + 대비 풀이 + 결론 + 판정 근거 요약 */
 function AttrsSectionBody({
   seasonLabel,
   tone,
   characteristics,
   contrastLevel,
   evidence,
+  subtypeAttrs,
 }: {
   seasonLabel: string;
   tone: PersonalColorResult['tone'];
   characteristics: string;
   contrastLevel?: 'low' | 'medium' | 'high' | null;
   evidence?: AnalysisEvidence | null;
+  /** 12톤 서브타입 저장 건에서만 파생되는 명도·채도 정의 서술 — 없으면 행 미렌더 */
+  subtypeAttrs?: { brightness: string; saturation: string };
 }) {
   return (
     <div>
@@ -215,6 +262,13 @@ function AttrsSectionBody({
           label="언더톤"
           value={tone === 'warm' ? '웜 (옐로 베이스)' : '쿨 (핑크 베이스)'}
         />
+        {/* 12톤 정의 서술 행 — season_subtype 저장 건에 한해(정의 서술이지 계측 아님) */}
+        {subtypeAttrs && (
+          <>
+            <AttrRow icon={Sun} label="명도" value={subtypeAttrs.brightness} />
+            <AttrRow icon={Palette} label="채도" value={subtypeAttrs.saturation} />
+          </>
+        )}
         {contrastLevel && (
           <AttrRow icon={Contrast} label="대비" value={CONTRAST_COPY[contrastLevel].label} />
         )}
@@ -228,7 +282,13 @@ function AttrsSectionBody({
           {CONTRAST_COPY[contrastLevel].line}
         </p>
       )}
-      <p className="mt-2 break-keep text-xs text-muted-foreground">{characteristics}</p>
+      {/* 결론 승격 — 특성 문단을 라벨 붙은 결론 블록으로 (목업 m03 결론 박스 문법) */}
+      <div className="mt-3 rounded-lg bg-muted/60 px-3.5 py-2.5" data-testid="pc-attrs-conclusion">
+        <p className="text-xs font-semibold text-primary">결론</p>
+        <p className="mt-1 break-keep text-sm leading-relaxed text-foreground/80">
+          {characteristics}
+        </p>
+      </div>
       {/* 핵심 판정 근거 요약 */}
       <PersonalColorEvidenceSummary
         veinColor={evidence?.veinColor}
@@ -240,7 +300,7 @@ function AttrsSectionBody({
   );
 }
 
-/** 03 컬러 팔레트 — 베스트 그리드(hex 캡션 급수) + 포인트·금속 큐레이션 + 취소선 회피 칩 */
+/** 03 컬러 팔레트 — 베스트 그리드(hex 캡션 급수) + 포인트·금속 큐레이션 + 취소선 회피 칩 + 톤 총람 */
 function PaletteSectionBody({
   bestColors,
   worstColors,
@@ -250,6 +310,7 @@ function PaletteSectionBody({
   seasonLabel,
   seasonType,
   onTabChange,
+  tonePalette,
 }: {
   bestColors: ColorInfo[];
   worstColors: ColorInfo[];
@@ -259,6 +320,8 @@ function PaletteSectionBody({
   seasonLabel: string;
   seasonType: SeasonType;
   onTabChange?: (tab: string) => void;
+  /** 12톤 표준 정의 팔레트(v2 정적 데이터) — paletteToneKey가 12톤 키일 때만 존재 */
+  tonePalette?: TonePalette;
 }) {
   return (
     <div className="space-y-5">
@@ -347,11 +410,11 @@ function PaletteSectionBody({
               <div key={`${color.hex}-${index}`}>
                 <div
                   className="h-8 w-full rounded-md"
-                  // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제 (공유카드 문법)
+                  // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제 (공유카드 문법).
+                  // 스트로크 색은 칩 명도 적응(어두운 칩=흰색) — getAvoidStrokeColor 참조
                   style={{
                     backgroundColor: color.hex,
-                    backgroundImage:
-                      'linear-gradient(135deg, transparent 46%, rgba(0,0,0,0.45) 46%, rgba(0,0,0,0.45) 54%, transparent 54%)',
+                    backgroundImage: `linear-gradient(135deg, transparent 46%, ${getAvoidStrokeColor(color.hex)} 46%, ${getAvoidStrokeColor(color.hex)} 54%, transparent 54%)`,
                   }}
                   aria-hidden="true"
                 />
@@ -364,6 +427,39 @@ function PaletteSectionBody({
           <p className="mt-1.5 text-xs text-muted-foreground" data-testid="pc-avoid-note">
             {AVOID_NOTES[seasonType]}
           </p>
+        </div>
+      )}
+      {/* 톤 팔레트 총람 — 12톤 표준 정의 데이터(v2 정적)의 사용처별 축소 스와치.
+          이름 없는 hex 정의 데이터라 이름을 지어내지 않고 색면만 — 서브타입 저장 건에서만 렌더 */}
+      {tonePalette && (
+        <div data-testid="pc-tone-palette-overview">
+          <p className="text-xs font-medium text-muted-foreground">
+            톤 팔레트 총람
+            <span className="ml-1.5 font-normal">12톤 표준 정의 팔레트예요</span>
+          </p>
+          <div className="mt-2 space-y-1.5">
+            {(
+              [
+                ['립', tonePalette.lipColors],
+                ['아이섀도', tonePalette.eyeshadowColors],
+                ['블러셔', tonePalette.blushColors],
+              ] as const
+            ).map(([rowLabel, hexes]) => (
+              <div key={rowLabel} className="flex items-center gap-2">
+                <span className="w-12 shrink-0 text-[10px] text-muted-foreground">{rowLabel}</span>
+                <div className="flex flex-1 gap-1" aria-hidden="true">
+                  {hexes.map((hex, i) => (
+                    <span
+                      key={`${hex}-${i}`}
+                      className="h-5 flex-1 rounded-sm border border-border/50"
+                      style={{ backgroundColor: hex }}
+                      title={hex}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -708,7 +804,7 @@ function ProductsSectionBody({
   );
 }
 
-/** 스타일 인사이트 — 전속 뷰티팀 총평 문법(세리프 이탤릭 인용) */
+/** 컨설턴트 TIP — 전속 뷰티팀 총평 문법(세리프 이탤릭 인용), 풀블리드 밴드(목업 m03 하단 밴드) */
 function InsightNote({
   easyInsight,
   insight,
@@ -717,8 +813,11 @@ function InsightNote({
   insight: string;
 }) {
   return (
-    <div className="mt-6 border-l-2 border-primary/50 pl-4" data-testid="pc-insight-note">
-      <p className="text-xs font-medium text-muted-foreground">스타일 인사이트</p>
+    <div
+      className="-mx-5 mt-6 border-y border-border bg-muted/50 px-5 py-4 sm:-mx-7 sm:px-7"
+      data-testid="pc-insight-note"
+    >
+      <p className="text-xs font-semibold tracking-wide text-primary">컨설턴트 TIP</p>
       {easyInsight ? (
         <>
           <p className="mt-1.5 break-keep font-serif text-sm italic leading-relaxed text-foreground/80">
@@ -741,6 +840,8 @@ interface ReportSection {
   key: string;
   title: string;
   body: React.ReactNode;
+  /** md+ 2단 병치 대상(속성표|액션, 스타일링|제품) — false/미지정이면 풀폭 */
+  half?: boolean;
 }
 
 /**
@@ -758,7 +859,10 @@ export default function AnalysisResult({
   evidence,
   onTabChange,
   contrastLevel,
+  photoUrl,
 }: AnalysisResultProps) {
+  // 사진 앵커 로드 실패 시 무사진 히어로로 폴백 (만료된 서명 URL 등 — 깨진 이미지 노출 금지)
+  const [photoError, setPhotoError] = useState(false);
   const {
     seasonType,
     seasonLabel,
@@ -820,6 +924,10 @@ export default function AnalysisResult({
   // 히어로 진단명 — 12톤/언더톤 라벨이 있으면 그것이 가장 정밀한 진단명(통합 리포트와 동일 문법)
   const heroTitle = undertoneLabel ?? seasonLabel;
 
+  // 12톤 서브타입 저장 건에서만 파생되는 정의 데이터 — 명도·채도 행 + 톤 팔레트 총람
+  const subtypeAttrs = deriveSubtypeAttrs(result.paletteToneKey);
+  const tonePalette = getTonePaletteOverview(result.paletteToneKey);
+
   // ─── 번호 섹션 — 데이터 있는 섹션만 조립, 번호는 렌더 시점에 매겨 결번을 막는다
   const sections: ReportSection[] = [];
 
@@ -827,6 +935,7 @@ export default function AnalysisResult({
   sections.push({
     key: 'attrs',
     title: '진단 속성',
+    half: true,
     body: (
       <AttrsSectionBody
         seasonLabel={seasonLabel}
@@ -834,6 +943,7 @@ export default function AnalysisResult({
         characteristics={info.characteristics}
         contrastLevel={contrastLevel}
         evidence={evidence}
+        subtypeAttrs={subtypeAttrs}
       />
     ),
   });
@@ -843,6 +953,7 @@ export default function AnalysisResult({
     sections.push({
       key: 'actions',
       title: '그래서, 이렇게 하세요',
+      half: true,
       body: (
         <div className="[&_h2]:sr-only">
           <TopActionsCard actions={topActions} />
@@ -866,6 +977,7 @@ export default function AnalysisResult({
           seasonLabel={seasonLabel}
           seasonType={seasonType}
           onTabChange={onTabChange}
+          tonePalette={tonePalette}
         />
       ),
     });
@@ -889,6 +1001,7 @@ export default function AnalysisResult({
     sections.push({
       key: 'clothing',
       title: '추천 스타일링',
+      half: true,
       body: (
         <ol className="space-y-2.5" data-testid="pc-clothing-list">
           {genderClothingRecommendations.map((rec, index) => (
@@ -918,6 +1031,7 @@ export default function AnalysisResult({
     sections.push({
       key: 'products',
       title: '추천 제품',
+      half: true,
       body: (
         <ProductsSectionBody
           isMale={isMale}
@@ -936,27 +1050,45 @@ export default function AnalysisResult({
         {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법) */}
         <section className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="px-5 pb-6 pt-6 sm:px-7">
-            {/* 히어로 — 아이브로우 + 세리프 진단명 + 서브카피 + 계절 인장 */}
+            {/* 히어로 — 아이브로우 + (md+ 사진 앵커) + 세리프 진단명 + 서브카피 + 계절 인장 */}
             <ReportEyebrow>PERSONAL COLOR REPORT</ReportEyebrow>
-            <div className="mt-3 flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h1
-                  className="break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground"
-                  data-testid="pc-hero-title"
+            <div className="mt-3 flex items-start gap-5">
+              {/* 사진 앵커 — 분석 원본이 있을 때만 md+ 2단 좌측(모바일 1열 불변). 같은 페이지
+                  드레이핑 탭이 이미 표시하는 이미지라 신규 프라이버시 노출 없음. 로드 실패 시 무사진 폴백 */}
+              {photoUrl && !photoError && (
+                <img
+                  src={photoUrl}
+                  alt="분석에 사용한 내 사진"
+                  onError={() => setPhotoError(true)}
+                  className="hidden h-40 w-32 shrink-0 rounded-xl border border-border object-cover md:block"
+                  data-testid="pc-hero-photo"
+                />
+              )}
+              <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h1
+                    className="break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground"
+                    data-testid="pc-hero-title"
+                  >
+                    {heroTitle}
+                  </h1>
+                  {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표(01)가 담당 — 중복 표기 없음 */}
+                  <p className="mt-2 break-keep text-sm text-muted-foreground">
+                    {seasonDescription}
+                  </p>
+                </div>
+                {/* 계절 인장 — 점수 없는 타입 확정 스탬프 (채움 배경 + 타입명 병기, 점수 없음 유지) */}
+                <div
+                  className="mt-1 flex h-[72px] w-[72px] shrink-0 rotate-3 flex-col items-center justify-center gap-0.5 rounded-full border-[1.5px] border-primary/60 bg-primary/10"
+                  data-testid="pc-season-seal"
                 >
-                  {heroTitle}
-                </h1>
-                {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표(01)가 담당 — 중복 표기 없음 */}
-                <p className="mt-2 break-keep text-sm text-muted-foreground">{seasonDescription}</p>
-              </div>
-              {/* 계절 인장 — 점수 없는 타입 확정 스탬프 */}
-              <div
-                className="mt-1 flex h-[58px] w-[58px] shrink-0 rotate-3 items-center justify-center rounded-full border-[1.5px] border-primary/60"
-                data-testid="pc-season-seal"
-              >
-                <span className="break-keep px-1.5 text-center font-serif text-[11px] italic leading-tight text-primary">
-                  {SEASON_SEAL[seasonType]}
-                </span>
+                  <span className="break-keep px-1.5 text-center font-serif text-[11px] italic leading-tight text-primary">
+                    {SEASON_SEAL[seasonType]}
+                  </span>
+                  <span className="break-keep px-1.5 text-center text-[9px] leading-tight text-primary/80">
+                    {seasonLabel}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -977,13 +1109,16 @@ export default function AnalysisResult({
               </div>
             )}
 
-            {/* 번호 섹션들 — 데이터 있는 것만, 번호 자동 재부여 */}
-            {sections.map((section, index) => (
-              <div key={section.key} className="mt-6">
-                <SectionHeader no={index + 1} title={section.title} />
-                <div className="mt-4">{section.body}</div>
-              </div>
-            ))}
+            {/* 번호 섹션들 — 데이터 있는 것만, 번호 자동 재부여.
+                md+에서 half 섹션(01|02, 05|06)은 2단 병치, 풀폭 섹션은 col-span-2 (모바일 1열 불변) */}
+            <div className="md:grid md:grid-cols-2 md:items-start md:gap-x-10">
+              {sections.map((section, index) => (
+                <div key={section.key} className={cn('mt-6', !section.half && 'md:col-span-2')}>
+                  <SectionHeader no={index + 1} title={section.title} />
+                  <div className="mt-4">{section.body}</div>
+                </div>
+              ))}
+            </div>
 
             <InsightNote easyInsight={easyInsight} insight={insight} />
 

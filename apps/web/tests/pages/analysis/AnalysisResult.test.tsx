@@ -6,8 +6,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AnalysisResult from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import AnalysisResult, {
+  getAvoidStrokeColor,
+} from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
 // 접힘 섹션(ProgressiveDisclosure)을 제목 트리거 클릭으로 펼친다
@@ -226,11 +228,12 @@ describe('AnalysisResult', () => {
     });
   });
 
-  describe('스타일 인사이트', () => {
-    it('스타일 인사이트 섹션을 표시한다', () => {
+  describe('컨설턴트 TIP (구 스타일 인사이트)', () => {
+    it('컨설턴트 TIP 밴드를 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      expect(screen.getByText('스타일 인사이트')).toBeInTheDocument();
+      expect(screen.getByText('컨설턴트 TIP')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-insight-note')).toBeInTheDocument();
     });
 
     it('insight 텍스트를 표시한다 (easyInsight가 없을 때)', () => {
@@ -361,6 +364,136 @@ describe('AnalysisResult', () => {
       render(<AnalysisResult result={winterResult} onRetry={mockOnRetry} />);
 
       expect(screen.getAllByText('겨울 쿨톤').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('사진 앵커 (A1)', () => {
+    it('photoUrl이 있으면 히어로에 원본 사진을 렌더한다', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          photoUrl="https://example.com/face.jpg"
+        />
+      );
+
+      const photo = screen.getByTestId('pc-hero-photo');
+      expect(photo).toBeInTheDocument();
+      expect(photo).toHaveAttribute('alt', '분석에 사용한 내 사진');
+      expect(photo).toHaveAttribute('src', 'https://example.com/face.jpg');
+    });
+
+    it('photoUrl이 없으면 사진 없이 현 레이아웃을 유지한다 (데모·구 데이터 폴백)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
+      expect(screen.getByTestId('pc-hero-title')).toBeInTheDocument();
+    });
+
+    it('사진 로드 실패 시 무사진 히어로로 폴백한다', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          photoUrl="https://example.com/broken.jpg"
+        />
+      );
+
+      fireEvent.error(screen.getByTestId('pc-hero-photo'));
+      expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
+      // 폴백 후에도 진단명은 유지
+      expect(screen.getByTestId('pc-hero-title')).toBeInTheDocument();
+    });
+  });
+
+  describe('회피색 취소선 명도 적응 (A5)', () => {
+    it('어두운 칩은 흰색 스트로크를 쓴다', () => {
+      // 블랙·네이비·와인 — 검정 취소선이 식별 불가한 저명도 색들
+      expect(getAvoidStrokeColor('#000000')).toBe('rgba(255,255,255,0.6)');
+      expect(getAvoidStrokeColor('#000080')).toBe('rgba(255,255,255,0.6)');
+      expect(getAvoidStrokeColor('#722F37')).toBe('rgba(255,255,255,0.6)');
+    });
+
+    it('밝은 칩은 검정 스트로크를 유지한다', () => {
+      expect(getAvoidStrokeColor('#FFFFF0')).toBe('rgba(0,0,0,0.45)');
+      expect(getAvoidStrokeColor('#FFDAB9')).toBe('rgba(0,0,0,0.45)');
+    });
+
+    it('회피 칩 DOM에 명도 적응 스트로크가 배선된다 (어두운 픽스처 → 흰색)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // 픽스처 worstColors 첫 칩 = #000000 → 흰 스트로크가 gradient 문자열에 포함
+      const chips = screen.getByTestId('pc-avoid-chips');
+      const firstChip = chips.querySelector<HTMLElement>('[aria-hidden="true"]');
+      expect(firstChip).not.toBeNull();
+      expect(firstChip?.style.backgroundImage).toContain('rgba(255,255,255,0.6)');
+    });
+  });
+
+  describe('12톤 속성표 확장 (A3)', () => {
+    it('paletteToneKey가 12톤 키면 명도·채도 정의 행을 렌더한다', () => {
+      render(
+        <AnalysisResult
+          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
+          onRetry={mockOnRetry}
+        />
+      );
+
+      expect(screen.getByText('명도')).toBeInTheDocument();
+      expect(screen.getByText('채도')).toBeInTheDocument();
+      // 트루 = 중간 명도·중간 채도 (12톤 정의 서술)
+      expect(screen.getByText('중간 명도')).toBeInTheDocument();
+      expect(screen.getByText('중간 채도')).toBeInTheDocument();
+    });
+
+    it('서브타입 미저장(시즌 키) 건은 명도·채도 행을 렌더하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByText('명도')).not.toBeInTheDocument();
+      expect(screen.queryByText('채도')).not.toBeInTheDocument();
+    });
+
+    it('특성 문단을 결론 라벨 블록으로 승격한다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const conclusion = screen.getByTestId('pc-attrs-conclusion');
+      expect(within(conclusion).getByText('결론')).toBeInTheDocument();
+    });
+  });
+
+  describe('시즌 인장 보강 (A4)', () => {
+    it('인장에 영문 시즌 + 한국어 타입명을 병기한다 (점수 없음)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const seal = screen.getByTestId('pc-season-seal');
+      expect(within(seal).getByText('Spring')).toBeInTheDocument();
+      expect(within(seal).getByText('봄 웜톤')).toBeInTheDocument();
+      // 점수·퍼센트 문자열이 인장 안에 없어야 한다
+      expect(seal.textContent).not.toMatch(/\d+%|점/);
+    });
+  });
+
+  describe('톤 팔레트 총람 (A7)', () => {
+    it('paletteToneKey가 12톤 키면 총람 소섹션을 렌더한다', () => {
+      render(
+        <AnalysisResult
+          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
+          onRetry={mockOnRetry}
+        />
+      );
+
+      const overview = screen.getByTestId('pc-tone-palette-overview');
+      expect(overview).toBeInTheDocument();
+      // 사용처 행 라벨 3종 (립·아이섀도·블러셔) — v2 정적 정의 데이터
+      expect(within(overview).getByText('립')).toBeInTheDocument();
+      expect(within(overview).getByText('아이섀도')).toBeInTheDocument();
+      expect(within(overview).getByText('블러셔')).toBeInTheDocument();
+    });
+
+    it('paletteToneKey가 없거나 시즌 키면 총람을 렌더하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByTestId('pc-tone-palette-overview')).not.toBeInTheDocument();
     });
   });
 
