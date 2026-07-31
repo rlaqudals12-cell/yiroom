@@ -101,8 +101,8 @@ export default function FeedbackPage() {
         data-testid="feedback-success"
       >
         {/* 체크 아이콘 - 바운스 애니메이션 */}
-        <div className="animate-success-bounce mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-          <CheckCircle className="h-8 w-8 text-green-600" />
+        <div className="animate-success-bounce mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
         </div>
         {/* 텍스트 - 페이드인 애니메이션 */}
         <div className="animate-fade-in-up animation-delay-200">
@@ -152,7 +152,6 @@ export default function FeedbackPage() {
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="mb-2 block text-2xl"></span>
               <p className="text-sm font-medium">{option.label}</p>
               <p className="text-muted-foreground text-xs">{option.description}</p>
             </button>

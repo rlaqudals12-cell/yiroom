@@ -265,7 +265,7 @@ export function ChatInterface({
         setLoading(false);
       }
     },
-    [loading, messages, onSendMessage, useStreaming, handleStreamingSend, pendingImage]
+    [loading, messages, onSendMessage, useStreaming, handleStreamingSend, pendingImage, t]
   );
 
   // 분석 결과 CTA(?q=)에서 넘어온 초기 질문 1회 자동 전송
@@ -357,14 +357,16 @@ export function ChatInterface({
         }
       />
 
-      {/* 메시지 영역 — 데스크톱에서 가운데 정렬(넓은 화면 흩어짐 방지) */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* 메시지 영역 — 데스크톱에서 가운데 정렬(넓은 화면 흩어짐 방지).
+          크림 지면(--surface-ground) 위에 백색 시트(말풍선·카드)가 놓이는 2단 깊이 —
+          다크는 토큰이 배경으로 수렴해 기존 명도 단차 유지 */}
+      <div className="flex-1 overflow-y-auto bg-surface-ground p-4">
         <div className="mx-auto w-full max-w-2xl space-y-4">
           {/* 초기 인사 (빈 대화) — 리치 카드 + 상황형 퀵질문 그리드 */}
           {messages.length === 0 && (
             <div className="py-6" data-testid="coach-empty-state">
-              {/* 인사 카드 */}
-              <div className="mb-5 rounded-2xl border border-border/60 bg-secondary p-5 text-center">
+              {/* 인사 카드 — 크림 지면 위 백색 시트 (rest 섀도, 다크는 배경 단차) */}
+              <div className="mb-5 rounded-2xl border border-border/60 bg-card p-5 text-center shadow-sm dark:shadow-none">
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
                   <span className="text-sm font-bold text-white">AI</span>
                 </div>
@@ -453,7 +455,7 @@ export function ChatInterface({
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-bold">AI</span>
               </div>
-              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
+              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border/60 bg-card px-4 py-2.5 shadow-sm dark:shadow-none">
                 <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
               </div>
             </div>
@@ -465,7 +467,7 @@ export function ChatInterface({
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
-              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-2.5">
+              <div className="rounded-2xl rounded-tl-sm border border-border/60 bg-card px-4 py-2.5 shadow-sm dark:shadow-none">
                 <p className="text-sm text-muted-foreground">{t('thinking')}</p>
               </div>
             </div>
@@ -527,8 +529,8 @@ export function ChatInterface({
         </div>
       </div>
 
-      {/* 입력 영역 — 메시지 영역과 동일 폭으로 가운데 정렬 */}
-      <div className="border-t p-4 bg-background">
+      {/* 입력 영역 — 메시지 영역과 동일 폭으로 가운데 정렬. 크림 지면 위 종이 재질(bg-card) */}
+      <div className="border-t bg-card p-4">
         <div className="mx-auto w-full max-w-2xl">
           {/* 첨부 이미지 미리보기 */}
           {pendingImage && (

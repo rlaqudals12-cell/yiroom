@@ -11,6 +11,7 @@ import {
   Sparkles,
   PersonStanding,
   CalendarCheck,
+  CheckCircle2,
   AlertTriangle,
   ArrowRight,
   Loader2,
@@ -124,7 +125,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
   if (!isSignedIn) {
     return (
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-dashboard">
-        <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+        <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
         <p className="text-muted-foreground mb-4">나만의 플랜을 보려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
@@ -175,10 +176,11 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·스타일 플랜을 관리해요</p>
       </div>
 
-      {/* Daily Capsule 요약 카드 */}
+      {/* Daily Capsule 요약 카드 — 호버 = raised 섀도
+          (rest와 동일값이라 무효이던 hover:shadow-md 수리, 다크는 배경 단차 유지) */}
       {daily && totalCount > 0 && (
         <Card
-          className="p-4 mb-6 cursor-pointer hover:shadow-md transition-shadow"
+          className="p-4 mb-6 cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
           onClick={() => router.push('/capsule/daily')}
         >
           <div className="flex items-center justify-between">
@@ -220,7 +222,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
           return (
             <Card
               key={domain.id}
-              className="p-4 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] text-center"
+              className="p-4 cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-all hover:scale-[1.02] text-center"
               onClick={() => router.push(`/capsule/${domain.id}`)}
             >
               <div
@@ -243,7 +245,7 @@ export default function CapsuleDashboardPage(): React.ReactElement {
       {/* 갭 분석 CTA */}
       {gapData && gapData.totalGap > 0 && (
         <Card
-          className="p-4 cursor-pointer hover:shadow-md transition-shadow bg-card"
+          className="p-4 cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow bg-card"
           onClick={() => router.push('/capsule/gap')}
         >
           <div className="flex items-center justify-between">
@@ -269,7 +271,8 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         <Card className="p-4 bg-card">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-primary/10">
-              <Sparkles className="h-5 w-5 text-primary" />
+              {/* 완료 상태 기호 — 장식 Sparkles 대신 의미 있는 체크 */}
+              <CheckCircle2 className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">플랜이 완성되었어요!</h3>

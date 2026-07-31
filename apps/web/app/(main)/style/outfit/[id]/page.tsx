@@ -3,15 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import {
-  ArrowLeft,
-  Heart,
-  Sparkles,
-  ExternalLink,
-  Loader2,
-  AlertTriangle,
-  Shirt,
-} from 'lucide-react';
+import { ArrowLeft, Heart, ExternalLink, Loader2, AlertTriangle, Shirt } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -282,7 +274,7 @@ export default function OutfitDetailPage() {
       <div className="px-4 py-4 space-y-6">
         {/* 코디 이미지 */}
         <FadeInUp>
-          <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-rose-50 to-amber-50 rounded-2xl flex items-center justify-center overflow-hidden">
+          <div className="relative w-full aspect-[3/4] bg-muted rounded-2xl flex items-center justify-center overflow-hidden">
             <span className="text-6xl">👕</span>
 
             {/* 아이템 태그 */}
@@ -308,24 +300,23 @@ export default function OutfitDetailPage() {
         {/* 프로필 매칭 — 체형·퍼스널컬러 일치 여부 기반 근사치 (분석 결과 있을 때만) */}
         {hasProfile && (
           <FadeInUp delay={1}>
-            <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                <Sparkles className="w-5 h-5 text-indigo-600" />내 프로필 매칭
-              </h3>
+            {/* 장식 그라데·인디고 소거 — 솔리드 카드 + 브랜드 프라이머리로 수렴 (다크 라이트섬 방지) */}
+            <section className="bg-card rounded-2xl border p-4 shadow-[var(--shadow-card)] dark:shadow-none">
+              <h3 className="font-semibold text-foreground mb-3">내 프로필 매칭</h3>
               <div className="mb-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-3xl font-bold text-indigo-600">
+                  <span className="text-3xl font-bold text-primary">
                     {displayOutfit.matchRate}%
                   </span>
                 </div>
-                <div className="h-3 bg-indigo-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
+                    className="h-full bg-primary rounded-full transition-all"
                     style={{ width: `${displayOutfit.matchRate}%` }}
                   />
                 </div>
               </div>
-              <p className="text-sm text-indigo-700">
+              <p className="text-sm text-muted-foreground">
                 {[
                   userBodyTypeRaw ? `${userBodyType} 체형` : null,
                   userPersonalColorRaw ? userPersonalColor : null,

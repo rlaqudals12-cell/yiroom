@@ -295,7 +295,7 @@ export default function DomainCapsulePage(): React.ReactElement {
   if (!isSignedIn) {
     return (
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-domain">
-        <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+        <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
         <p className="text-muted-foreground mb-4">플랜을 확인하려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
@@ -335,7 +335,7 @@ export default function DomainCapsulePage(): React.ReactElement {
       {isLoading && (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       )}
@@ -366,7 +366,7 @@ export default function DomainCapsulePage(): React.ReactElement {
       {/* 빈 상태: 캡슐 없음 */}
       {!isLoading && !error && items.length === 0 && (
         <div className="text-center py-12">
-          <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+          <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="font-semibold mb-2">아직 플랜이 없어요</h3>
           <p className="text-sm text-muted-foreground mb-4">
             큐레이션을 시작해서 나에게 맞는 아이템을 추천받아보세요.
@@ -430,7 +430,7 @@ export default function DomainCapsulePage(): React.ReactElement {
                       )}
                       {item.score != null && (
                         <div className="flex items-center gap-1 mt-1.5">
-                          <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
                               className="h-full rounded-full"
                               style={{
@@ -450,7 +450,7 @@ export default function DomainCapsulePage(): React.ReactElement {
                         type="button"
                         onClick={() => openAffiliateLink(productUrl, 'cosmetic', trackedProductId)}
                         aria-label={`${item.label} 구매 페이지 열기`}
-                        className="flex-shrink-0 ml-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="flex-shrink-0 ml-3 p-2 rounded-lg hover:bg-muted transition-colors"
                       >
                         <ExternalLink className="h-4 w-4 text-muted-foreground" />
                       </button>

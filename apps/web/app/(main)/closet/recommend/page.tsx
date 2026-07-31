@@ -9,15 +9,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowLeft,
-  RefreshCw,
-  Thermometer,
-  Sparkles,
-  ChevronRight,
-  Images,
-  MapPin,
-} from 'lucide-react';
+import { ArrowLeft, RefreshCw, Thermometer, ChevronRight, Images, MapPin } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -448,10 +440,7 @@ export default function ClosetRecommendPage() {
             <div className="space-y-5" data-testid="coldstart-suggestions">
               {/* 안내 — 진단 기반 "방향" 제안이며 실제 옷이 아님을 명확히 */}
               <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                <div className="mb-1 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <h2 className="text-sm font-semibold">옷장은 비었지만, 이렇게 입어보세요</h2>
-                </div>
+                <h2 className="mb-1 text-sm font-semibold">옷장은 비었지만, 이렇게 입어보세요</h2>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   아직 등록한 옷이 없어서, 분석한 컬러와 체형으로 오늘의 코디 방향을 제안해드릴게요.
                   실제 옷이 아니라 색·스타일 가이드예요.
@@ -548,7 +537,6 @@ export default function ClosetRecommendPage() {
                 href="/analysis/integrated"
                 className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
               >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
                 분석하고 맞춤 추천 받기
                 <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </Link>
@@ -666,7 +654,6 @@ export default function ClosetRecommendPage() {
                   href="/analysis/integrated"
                   className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
                 >
-                  <Sparkles className="w-4 h-4" />
                   <span>분석하고 맞춤 추천 받기</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
@@ -706,10 +693,7 @@ export default function ClosetRecommendPage() {
         {outfit ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold">추천 코디</h2>
-              </div>
+              <h2 className="font-semibold">추천 코디</h2>
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                 {outfit.totalScore}
               </div>

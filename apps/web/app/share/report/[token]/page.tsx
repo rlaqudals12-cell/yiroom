@@ -111,7 +111,7 @@ export default async function SharedReportPage({ params }: PageProps) {
         {/* 퍼스널컬러 — 히어로 */}
         {report.personalColor && (
           <section className="rounded-2xl border bg-card p-5 space-y-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">🎨 나의 색</h2>
+            <h2 className="text-sm font-semibold flex items-center gap-2">나의 색</h2>
             <p className="text-lg font-bold">
               {seasonLabel(report.personalColor.season)}
               {report.personalColor.undertone && (
@@ -167,7 +167,7 @@ export default async function SharedReportPage({ params }: PageProps) {
         {/* 피부 */}
         {report.skin && (
           <section className="rounded-2xl border bg-card p-5 space-y-2">
-            <h2 className="text-sm font-semibold flex items-center gap-2">✨ 나의 피부</h2>
+            <h2 className="text-sm font-semibold flex items-center gap-2">나의 피부</h2>
             <p className="text-lg font-bold">
               {SKIN_TYPE_LABELS[report.skin.skinType] ?? report.skin.skinType} 피부
               {report.skin.overallScore != null && (
@@ -187,7 +187,7 @@ export default async function SharedReportPage({ params }: PageProps) {
         {/* 체형 */}
         {report.body && (
           <section className="rounded-2xl border bg-card p-5 space-y-2">
-            <h2 className="text-sm font-semibold flex items-center gap-2">👗 나의 체형</h2>
+            <h2 className="text-sm font-semibold flex items-center gap-2">나의 체형</h2>
             <p className="text-lg font-bold">
               {BODY_TYPE_LABELS[report.body.bodyType] ?? report.body.bodyType} 타입
             </p>
@@ -206,7 +206,7 @@ export default async function SharedReportPage({ params }: PageProps) {
         {/* 헤어 · 메이크업 */}
         {(report.hair || report.makeup) && (
           <section className="rounded-2xl border bg-card p-5 space-y-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">💇 헤어 · 메이크업</h2>
+            <h2 className="text-sm font-semibold flex items-center gap-2">헤어 · 메이크업</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {report.hair?.hairType && (
                 <div>
@@ -250,7 +250,8 @@ export default async function SharedReportPage({ params }: PageProps) {
         )}
 
         {/* CTA — 바이럴 루프 */}
-        <section className="rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 border border-pink-200 dark:border-pink-900 p-5 text-center space-y-3">
+        {/* 장식 그라데 소거 — 솔리드 카드 + 헤어라인, CTA 버튼이 주인공 (깊이 레시피) */}
+        <section className="rounded-2xl bg-card border p-5 text-center space-y-3">
           <p className="text-sm font-medium">나도 내 스타일이 궁금하다면?</p>
           <p className="text-xs text-muted-foreground">
             사진 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업을 한 번에 — 무료

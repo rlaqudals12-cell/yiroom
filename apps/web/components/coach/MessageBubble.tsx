@@ -85,7 +85,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={cn(
             'rounded-2xl px-4 py-2.5',
-            isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'
+            // 코치 말풍선 = 크림 지면 위 백색 시트(rest 섀도) — 다크는 배경 명도 단차
+            isUser
+              ? 'bg-primary text-primary-foreground rounded-tr-sm'
+              : 'rounded-tl-sm border border-border/60 bg-card shadow-sm dark:shadow-none'
           )}
         >
           {message.imageUrl && (

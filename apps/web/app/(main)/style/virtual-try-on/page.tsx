@@ -7,7 +7,7 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Camera, Upload, Loader2, RotateCcw, Sparkles, ExternalLink } from 'lucide-react';
+import { Camera, Upload, Loader2, RotateCcw, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -379,7 +379,6 @@ export default function VirtualTryOnPage(): React.JSX.Element {
         </p>
         {season && (
           <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-            <Sparkles className="h-3 w-3" />
             {SEASON_LABELS[season]} 추천 컬러 적용 중
           </div>
         )}
@@ -504,10 +503,9 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                           title={preset.name}
                           aria-label={preset.name}
                         />
+                        {/* 추천 프리셋 마커 — 2px 아이콘은 식별 불가, 도트만으로 전달 */}
                         {isRecommendedPreset(preset.name, 'hair-color') && (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full flex items-center justify-center">
-                            <Sparkles className="h-2 w-2 text-primary-foreground" />
-                          </span>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background" />
                         )}
                       </div>
                     ))
@@ -527,10 +525,9 @@ export default function VirtualTryOnPage(): React.JSX.Element {
                           title={preset.name}
                           aria-label={preset.name}
                         />
+                        {/* 추천 프리셋 마커 — 2px 아이콘은 식별 불가, 도트만으로 전달 */}
                         {isRecommendedPreset(preset.name, tab) && (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full flex items-center justify-center">
-                            <Sparkles className="h-2 w-2 text-primary-foreground" />
-                          </span>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background" />
                         )}
                       </div>
                     ))}
@@ -582,9 +579,7 @@ export default function VirtualTryOnPage(): React.JSX.Element {
         {result && (
           <Card data-testid="vto-matched-products">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />이 색상과 비슷한 제품
-              </CardTitle>
+              <CardTitle className="text-base">이 색상과 비슷한 제품</CardTitle>
             </CardHeader>
             <CardContent>
               {isMatchingProducts && (

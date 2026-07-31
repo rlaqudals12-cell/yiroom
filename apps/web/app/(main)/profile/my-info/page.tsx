@@ -43,8 +43,9 @@ export default function MyInfoPage() {
       <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
         {/* 프로필 완성도 안내 */}
         <div className="text-center py-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 mb-3">
-            <User className="h-8 w-8 text-white" />
+          {/* 장식 그라데 소거 — 프라이머리 틴트 원 (깊이 레시피) */}
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-3">
+            <User className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-lg font-semibold mb-1">내 정보를 완성해보세요</h2>
           <p className="text-muted-foreground text-sm">

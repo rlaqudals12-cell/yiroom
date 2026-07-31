@@ -167,7 +167,7 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -196,12 +196,12 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
     <div className="px-4 py-6 pb-24">
       <h1 className="text-2xl font-bold text-foreground mb-2">
         위시리스트
-        <span className="text-pink-500 text-lg font-normal ml-2">{wishlists.length}개</span>
+        <span className="text-primary text-lg font-normal ml-2">{wishlists.length}개</span>
       </h1>
       {/* 찜 vs 제품함 혼동 방지 — 역할 안내 (창업자 피드백 2026-07-11) */}
       <p className="text-sm text-muted-foreground mb-6">
         사고 싶은 제품을 모아두는 곳이에요. 이미 쓰고 있는 제품은{' '}
-        <Link href="/scan/shelf" className="text-pink-500 underline underline-offset-2">
+        <Link href="/scan/shelf" className="text-primary underline underline-offset-2">
           내 제품함
         </Link>
         에 담으면 맞춤 루틴에 반영돼요.

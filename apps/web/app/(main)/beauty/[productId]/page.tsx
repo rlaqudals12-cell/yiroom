@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Check,
   AlertTriangle,
-  Sparkles,
   ExternalLink,
   Loader2,
   ChevronRight,
@@ -346,10 +345,9 @@ export default function BeautyProductDetailPage() {
 
         {/* 매칭률 */}
         <FadeInUp delay={2}>
-          <section className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl border border-green-200 dark:border-green-900/50 p-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />내 피부 매칭률
-            </h3>
+          {/* 장식 그라데 소거 — 매칭 강도는 텍스트·바의 시맨틱 그린만으로 전달 */}
+          <section className="bg-card rounded-2xl border p-4 shadow-[var(--shadow-card)] dark:shadow-none">
+            <h3 className="font-semibold text-foreground mb-3">내 피부 매칭률</h3>
             {userSkinTypeRaw && matchScore.evaluable && (
               <>
                 <div className="mb-3">
@@ -360,7 +358,7 @@ export default function BeautyProductDetailPage() {
                   </div>
                   <div className="h-3 bg-green-100 dark:bg-green-900/40 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all"
+                      className="h-full bg-green-500 rounded-full transition-all"
                       style={{ width: `${matchScore.overall}%` }}
                     />
                   </div>
@@ -393,7 +391,7 @@ export default function BeautyProductDetailPage() {
                   onClick={() => router.push('/scan')}
                   className="inline-flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
                 >
-                  <Sparkles className="w-4 h-4" /> 성분표 찍어서 바로 분석하기
+                  성분표 찍어서 바로 분석하기
                 </button>
               </div>
             )}
@@ -409,7 +407,7 @@ export default function BeautyProductDetailPage() {
                   onClick={() => router.push('/analysis/integrated')}
                   className="inline-flex items-center gap-1 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors"
                 >
-                  <Sparkles className="w-4 h-4" /> 피부 분석하기
+                  피부 분석하기
                 </button>
               </div>
             )}

@@ -162,7 +162,8 @@ export default function PrivacySettingsPage() {
   return (
     <div className="min-h-screen bg-background" data-testid="privacy-settings-page">
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-4 py-3">
+      {/* 글래스(backdrop-blur) 소거 — 솔리드 지면 + 헤어라인 (깊이 레시피) */}
+      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <Link
             href="/settings"

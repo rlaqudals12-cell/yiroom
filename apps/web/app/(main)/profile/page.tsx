@@ -59,7 +59,7 @@ import { WellnessScoreRing, MyInfoSummaryCard, ProfileCardGrid } from '@/compone
 import { IntegratedSessionPromptCard } from '@/app/(main)/home/_components/IntegratedSessionPromptCard';
 import { MyTwinCard } from '@/components/visual-expression';
 import { BeforeAfterSection } from '@/components/profile/BeforeAfterSection';
-import { getGreetingWithEmoji, TIME_GRADIENTS } from '@/lib/utils/greeting';
+import { getGreetingWithEmoji } from '@/lib/utils/greeting';
 import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 import { useProfilePersona } from '@/hooks/useProfilePersona';
 
@@ -289,9 +289,8 @@ export default function ProfilePage() {
       <div className="space-y-4 px-4 py-6">
         {/* K-5: 시간대별 인사말 헤더 */}
         <FadeInUp>
-          <section
-            className={`rounded-2xl border bg-gradient-to-r p-4 ${TIME_GRADIENTS[greetingInfo.timeOfDay]}`}
-          >
+          {/* 장식 그라데 소거 — 솔리드 카드 + 헤어라인 (깊이 레시피) */}
+          <section className="bg-card rounded-2xl border p-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{greetingInfo.emoji}</span>
               <p className="font-medium">{greetingInfo.greeting}</p>
@@ -314,8 +313,8 @@ export default function ProfilePage() {
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-indigo-500">
-                    <span className="text-2xl font-bold text-white">
+                  <div className="bg-primary flex h-[72px] w-[72px] items-center justify-center rounded-full">
+                    <span className="text-primary-foreground text-2xl font-bold">
                       {(user.fullName || user.username || 'U')[0].toUpperCase()}
                     </span>
                   </div>
@@ -529,7 +528,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
+                        className="bg-primary h-full rounded-full"
                         style={{ width: `${profileData?.badgeStats.progress || 0}%` }}
                       />
                     </div>
@@ -642,7 +641,8 @@ export default function ProfilePage() {
 
             {/* 리더보드 */}
             <FadeInUp delay={1}>
-              <section className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:from-amber-950/30 dark:to-orange-950/30 dark:border-amber-800">
+              {/* 장식 그라데 소거 — 솔리드 카드, 앰버 정체성은 아이콘·링크 액센트로 유지 (깊이 레시피) */}
+              <section className="bg-card rounded-2xl border p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-foreground flex items-center gap-2 font-semibold">

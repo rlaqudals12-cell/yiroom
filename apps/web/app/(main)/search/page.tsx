@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Search, X, Clock, Sparkles, SearchX } from 'lucide-react';
+import { ArrowLeft, Search, X, Clock, SearchX } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
@@ -515,16 +515,14 @@ export default function SearchPage() {
             {/* 맞춤 추천 검색 */}
             <FadeInUp delay={2}>
               <section aria-label="맞춤 추천 검색">
-                <h2 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-yellow-500" aria-hidden="true" />
-                  추천 검색
-                </h2>
+                <h2 className="font-semibold text-foreground mb-3">추천 검색</h2>
+                {/* 장식 그라데 소거 — 리스트는 카드 해체(솔리드 배경) 원칙 */}
                 <div className="space-y-2">
                   {recommendedSearches.map((item) => (
                     <button
                       key={item.query}
                       onClick={() => handleSearch(item.query)}
-                      className="w-full flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-950/50 dark:hover:to-pink-950/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-3 bg-card border rounded-xl hover:bg-muted/50 transition-colors text-left"
                     >
                       <span className="text-sm text-muted-foreground">{item.reason}</span>
                       <span className="font-medium text-foreground">&quot;{item.query}&quot;</span>

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, SlidersHorizontal, Sparkles, ChevronRight } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -251,7 +251,6 @@ export default function ClosetPage() {
             onClick={() => router.push('/closet/recommend')}
             data-testid="closet-recommend-cta"
           >
-            <Sparkles className="w-4 h-4 mr-1" />
             오늘의 코디 받기
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>

@@ -98,8 +98,9 @@ export default function CompleteProfilePage() {
         </div>
 
         {/* 안내 박스 */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
+        {/* 다크 테마에서 라이트 아일랜드가 되지 않도록 다크 변형 병기 */}
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+          <p className="text-sm text-blue-800 dark:text-blue-300">
             <strong>{t('whyTitle')}</strong>
             <br />
             {t('whyDesc', { age: MINIMUM_AGE })}
@@ -127,7 +128,7 @@ export default function CompleteProfilePage() {
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-lg">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">{error}</p>
             </div>

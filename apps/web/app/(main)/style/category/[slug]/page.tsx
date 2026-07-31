@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { ArrowLeft, ChevronDown, Star, Sparkles, Loader2, Shirt, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Star, Loader2, Shirt, ExternalLink } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { BottomNav } from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
@@ -260,7 +260,8 @@ export default function StyleCategoryPage() {
         </div>
 
         {/* 체형 프로필 */}
-        <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-t text-sm">
+        {/* 장식 그라데 소거 + 다크 라이트섬 방지 — 중립 배경 */}
+        <div className="px-4 py-2 bg-muted/50 border-t text-sm">
           <span className="text-muted-foreground">내 체형:</span>{' '}
           <span className="font-medium text-foreground">{userBodyType}</span>
         </div>
@@ -277,7 +278,6 @@ export default function StyleCategoryPage() {
                 : 'bg-muted text-muted-foreground'
             )}
           >
-            <Sparkles className="w-4 h-4" />
             {minMatchRate}% 이상
           </button>
 

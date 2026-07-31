@@ -123,7 +123,7 @@ export default function CapsuleGapPage(): React.ReactElement {
   if (!isSignedIn) {
     return (
       <div className="container mx-auto px-4 py-12 text-center" data-testid="capsule-gap">
-        <Package className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+        <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h2 className="text-xl font-bold mb-2">로그인이 필요해요</h2>
         <p className="text-muted-foreground mb-4">부족한 영역을 확인하려면 먼저 로그인해주세요.</p>
         <Button onClick={() => router.push('/sign-in')}>로그인하기</Button>
@@ -153,7 +153,7 @@ export default function CapsuleGapPage(): React.ReactElement {
       {isLoading && (
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       )}
@@ -232,7 +232,7 @@ export default function CapsuleGapPage(): React.ReactElement {
                   </div>
 
                   {/* 진행률 바 */}
-                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{

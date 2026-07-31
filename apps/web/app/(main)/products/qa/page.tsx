@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2, Bot, User, Sparkles, Package } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Bot, User, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   askProductQuestionClient,
@@ -33,9 +33,7 @@ function ChatMessage({ message }: { message: Message }) {
       {/* 아바타 */}
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-          isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-gradient-to-br from-violet-500 to-purple-600 text-white'
+          isUser ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
         }`}
       >
         {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -258,10 +256,7 @@ export default function ProductQAPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <h1 className="font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-violet-500" />
-              제품 Q&A
-            </h1>
+            <h1 className="font-bold text-foreground">제품 Q&A</h1>
             <p className="text-xs text-muted-foreground">AI가 제품에 대한 궁금증을 해결해 드려요</p>
           </div>
         </div>
@@ -273,8 +268,8 @@ export default function ProductQAPage() {
           {/* 초기 상태 */}
           {messages.length === 0 && (
             <div className="text-center py-8 space-y-6">
-              <div className="w-16 h-16 mx-auto bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Bot className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                <Bot className="w-8 h-8 text-primary" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-foreground mb-2">무엇이든 물어보세요!</h2>
@@ -283,19 +278,19 @@ export default function ProductQAPage() {
                 </p>
               </div>
 
-              {/* 제품 미선택 안내 */}
+              {/* 제품 미선택 안내 — 다크 테마에서 라이트 섬이 되지 않도록 dark 변형 병기 */}
               {!selectedProduct && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-amber-700 mb-2">
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 mb-2">
                     <Package className="w-4 h-4" />
                     <span className="font-medium text-sm">제품을 선택해주세요</span>
                   </div>
-                  <p className="text-xs text-amber-600 mb-3">
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
                     특정 제품을 선택하면 더 정확한 답변을 받을 수 있어요
                   </p>
                   <Link
                     href="/products"
-                    className="inline-flex items-center gap-2 text-sm text-amber-700 hover:text-amber-800 font-medium"
+                    className="inline-flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 font-medium"
                   >
                     제품 둘러보기 →
                   </Link>
@@ -322,8 +317,8 @@ export default function ProductQAPage() {
           {/* 로딩 */}
           {isLoading && (
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-primary" />
               </div>
               <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-md">
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />

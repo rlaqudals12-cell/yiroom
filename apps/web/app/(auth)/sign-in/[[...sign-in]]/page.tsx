@@ -3,8 +3,9 @@
 import { SignIn } from '@clerk/nextjs';
 
 export default function SignInPage() {
+  // 웜 크림 지면 위 백색 카드 = 2단 깊이 — 장식 그라데·zinc 다크 아일랜드 소거 (깊이 레시피)
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-rose-50 to-sky-50 dark:from-zinc-900 dark:to-zinc-800">
+    <div className="flex min-h-screen items-center justify-center bg-surface-ground">
       <SignIn
         appearance={{
           elements: {
