@@ -17,7 +17,7 @@ interface HomeAnalysisSummaryProps {
 
 /**
  * 홈 - 기존 사용자용 분석 요약
- * Glassmorphism 스타일
+ * 솔리드 카드 + 헤어라인 보더 (ADR-120 — 유리/그라데 해체)
  */
 export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryProps) {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
 
   return (
     <section
-      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none"
+      className="bg-card rounded-2xl border border-border p-5 shadow-sm dark:shadow-none"
       data-testid="home-analysis-summary"
       aria-label="내 분석 결과"
     >
@@ -70,10 +70,9 @@ export default function HomeAnalysisSummary({ analyses }: HomeAnalysisSummaryPro
               className="group flex items-center gap-3 p-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors text-left"
               data-testid={`home-analysis-${analysis.type}`}
             >
-              <div
-                className={`w-10 h-10 rounded-lg bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md ${meta.shadow} flex-shrink-0`}
-              >
-                <Icon className="w-5 h-5 text-white" />
+              {/* 장식 그라데 칩 소거 — 솔리드 틴트 칩(색은 프라이머리 저농도만) */}
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-5 h-5 text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-slate-500 dark:text-slate-400">{meta.label}</p>

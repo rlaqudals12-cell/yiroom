@@ -244,7 +244,7 @@ function InsightItem({
   // 완전 내재화 — 제목만 표시
   if (depth === 'none') {
     return (
-      <div className="bg-white/60 dark:bg-slate-800/40 rounded-xl px-4 py-3 flex items-center gap-3">
+      <div className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3">
         <ArrowRight className={`w-4 h-4 ${colorClass} flex-shrink-0`} />
         <p className="text-sm font-medium text-foreground flex-1">{insight.title}</p>
         <span className="text-xs text-emerald-500 font-medium">{STATUS_LABELS[status]}</span>
@@ -253,7 +253,7 @@ function InsightItem({
   }
 
   return (
-    <div className="bg-white/60 dark:bg-slate-800/40 rounded-xl p-4 space-y-2">
+    <div className="bg-card rounded-xl border border-border p-4 space-y-2">
       {/* 내재화 상태 뱃지 */}
       {status !== 'exposed' && (
         <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">

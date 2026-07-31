@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic';
 
 // 최근 본 제품 - lazy loading (비필수 콘텐츠)
 const RecentlyViewed = dynamic(
-  () => import('@/components/products/RecentlyViewed').then((mod) => ({ default: mod.RecentlyViewed })),
+  () =>
+    import('@/components/products/RecentlyViewed').then((mod) => ({ default: mod.RecentlyViewed })),
   {
     ssr: false,
     loading: () => <RecentlyViewedSkeleton />,
@@ -19,10 +20,7 @@ function RecentlyViewedSkeleton() {
       <div className="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-3" />
       <div className="flex gap-3 overflow-hidden">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 w-28 bg-white/60 dark:bg-slate-800/60 rounded-xl p-2"
-          >
+          <div key={i} className="flex-shrink-0 w-28 bg-card rounded-xl border border-border p-2">
             <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse mb-2" />
             <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1" />
             <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />

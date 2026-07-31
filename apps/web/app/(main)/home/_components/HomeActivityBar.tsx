@@ -123,7 +123,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 animate-pulse">
+      <div className="bg-card rounded-2xl border border-border p-4 animate-pulse">
         <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded" />
       </div>
     );
@@ -166,7 +166,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
   if (hasError) {
     return (
       <section
-        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
+        className="bg-card rounded-2xl border border-border p-4 shadow-sm dark:shadow-none"
         data-testid="home-activity-bar-error"
       >
         <p className="text-sm text-muted-foreground">{t('activityLoadError')}</p>
@@ -184,7 +184,7 @@ export default function HomeActivityBar({ userId }: HomeActivityBarProps) {
 
   return (
     <section
-      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 shadow-sm"
+      className="bg-card rounded-2xl border border-border p-4 shadow-sm dark:shadow-none"
       data-testid="home-activity-bar"
       role="region"
       aria-label={t('activitySummary')}

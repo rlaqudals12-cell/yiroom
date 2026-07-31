@@ -12,6 +12,7 @@
 import Link from 'next/link';
 import { Palette, Sparkles, ChevronRight, Droplet, Shirt, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 
 /**
  * 분석 결과 미리보기 카드 3종
@@ -30,7 +31,7 @@ function AnalysisPreviewCards({
       aria-label={t('previewLabel')}
     >
       {/* 퍼스널컬러 미니카드 */}
-      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
         <div className="flex gap-1.5 mb-2">
           <div className="w-4 h-4 rounded-full bg-[#F472B6]" />
           <div className="w-4 h-4 rounded-full bg-[#EC4899]" />
@@ -45,7 +46,7 @@ function AnalysisPreviewCards({
       </div>
 
       {/* 피부 분석 미니카드 */}
-      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
         <div className="text-lg font-bold text-foreground dark:text-white leading-tight">85</div>
         <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
           {t('previewSkinScore')}
@@ -56,7 +57,7 @@ function AnalysisPreviewCards({
       </div>
 
       {/* 체형 분석 미니카드 */}
-      <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-3 flex-1 min-w-0">
+      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
         <div className="w-6 h-6 mb-1">
           <Shirt className="w-5 h-5 text-foreground/60 dark:text-white/60" aria-hidden="true" />
         </div>
@@ -102,7 +103,7 @@ function SynergyChain({
 }): React.ReactElement {
   return (
     <div
-      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm"
+      className="bg-card rounded-2xl border border-border p-5 shadow-sm dark:shadow-none"
       data-testid="hero-synergy-chain"
       role="region"
       aria-label={t('synergyLabel')}
@@ -148,55 +149,66 @@ export default function NewUserHero(): React.ReactElement {
 
   return (
     <div data-testid="home-new-hero" role="region" aria-label={t('newUserGuide')}>
-      {/* 히어로 카드 */}
-      <div className="bg-card border rounded-2xl p-6 mb-4">
-        <h2 className="text-lg font-bold text-foreground mb-2 whitespace-pre-line">
-          {t('heroTitle')}
-        </h2>
+      {/* 히어로 카드 — 신규 상태 표면의 유일한 주인공(raised 섀도 + 세리프 앵커) */}
+      <div className="relative overflow-hidden bg-card border border-border rounded-2xl p-6 mb-4 shadow-[var(--shadow-raised)] dark:shadow-none">
+        {/* 종이 그레인 — 히어로 한정 1겹(전 카드 살포 금지) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: PAPER_GRAIN_URI }}
+        />
+        <div className="relative">
+          <h2 className="break-keep font-serif text-2xl font-semibold leading-snug text-foreground mb-2 whitespace-pre-line">
+            {t('heroTitle')}
+          </h2>
 
-        {/* 가치/신뢰 문구 (가짜 DAU 제거 — 정직한 무료·삭제 카피) */}
-        <p className="text-sm text-muted-foreground mb-5">{t('socialProof')}</p>
+          {/* 가치/신뢰 문구 (가짜 DAU 제거 — 정직한 무료·삭제 카피) */}
+          <p className="text-sm text-muted-foreground mb-5">{t('socialProof')}</p>
 
-        {/* ADR-101: Primary CTA 통합 진입점 (이전 2개 분기 → 1개) */}
-        <Link
-          href="/analysis/integrated"
-          data-testid="home-hero-integrated-cta"
-          className="flex items-center justify-center gap-3 px-6 py-4 min-h-[56px] bg-primary hover:bg-primary/90 rounded-xl text-white font-bold shadow-sm transition-all"
-        >
-          <span className="text-base leading-snug">
-            내 정체성 5가지 알아보기
-            <span className="block text-xs font-normal text-white/80 mt-0.5">
-              색 · 피부 · 체형 · 헤어 한 번에 · 약 2분
+          {/* ADR-101: Primary CTA 통합 진입점 (이전 2개 분기 → 1개) */}
+          <Link
+            href="/analysis/integrated"
+            data-testid="home-hero-integrated-cta"
+            className="flex items-center justify-center gap-3 px-6 py-4 min-h-[56px] bg-primary hover:bg-primary/90 rounded-xl text-white font-bold shadow-sm transition-all"
+          >
+            <span className="text-base leading-snug">
+              내 정체성 5가지 알아보기
+              <span className="block text-xs font-normal text-white/80 mt-0.5">
+                색 · 피부 · 체형 · 헤어 한 번에 · 약 2분
+              </span>
             </span>
-          </span>
-        </Link>
+          </Link>
 
-        {/* Secondary: 개별 분석 (심화/재측정용) */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-4 text-xs text-muted-foreground">
-          <span className="text-muted-foreground/60">개별 분석:</span>
-          <Link href="/analysis/personal-color" className="hover:text-foreground transition-colors">
-            {t('personalColor')}
-          </Link>
-          <span>·</span>
-          <Link href="/analysis/skin" className="hover:text-foreground transition-colors">
-            {t('skinAnalysis')}
-          </Link>
-          <span>·</span>
-          <Link href="/analysis/body" className="hover:text-foreground transition-colors">
-            {t('bodyAnalysis')}
-          </Link>
-          <span>·</span>
-          <Link href="/analysis/hair" className="hover:text-foreground transition-colors">
-            {t('hairAnalysis')}
-          </Link>
-          <span>·</span>
-          <Link href="/analysis/makeup" className="hover:text-foreground transition-colors">
-            {t('makeupAnalysis')}
-          </Link>
+          {/* Secondary: 개별 분석 (심화/재측정용) */}
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-4 text-xs text-muted-foreground">
+            <span className="text-muted-foreground/60">개별 분석:</span>
+            <Link
+              href="/analysis/personal-color"
+              className="hover:text-foreground transition-colors"
+            >
+              {t('personalColor')}
+            </Link>
+            <span>·</span>
+            <Link href="/analysis/skin" className="hover:text-foreground transition-colors">
+              {t('skinAnalysis')}
+            </Link>
+            <span>·</span>
+            <Link href="/analysis/body" className="hover:text-foreground transition-colors">
+              {t('bodyAnalysis')}
+            </Link>
+            <span>·</span>
+            <Link href="/analysis/hair" className="hover:text-foreground transition-colors">
+              {t('hairAnalysis')}
+            </Link>
+            <span>·</span>
+            <Link href="/analysis/makeup" className="hover:text-foreground transition-colors">
+              {t('makeupAnalysis')}
+            </Link>
+          </div>
+
+          {/* 분석 결과 미리보기 카드 3종 */}
+          <AnalysisPreviewCards t={t} />
         </div>
-
-        {/* 분석 결과 미리보기 카드 3종 */}
-        <AnalysisPreviewCards t={t} />
       </div>
 
       {/* 통합 시너지 인과 체인 */}

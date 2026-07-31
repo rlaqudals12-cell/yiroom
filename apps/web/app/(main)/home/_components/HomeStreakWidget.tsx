@@ -69,7 +69,7 @@ export default function HomeStreakWidget() {
   if (isLoading) {
     return (
       <div
-        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4 animate-pulse"
+        className="bg-card rounded-2xl border border-border p-4 animate-pulse"
         data-testid="home-streak-widget-skeleton"
       >
         <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
@@ -84,7 +84,7 @@ export default function HomeStreakWidget() {
 
   return (
     <div
-      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4"
+      className="bg-card rounded-2xl border border-border p-4 shadow-sm dark:shadow-none"
       data-testid="home-streak-widget"
     >
       <div className="flex items-center justify-between mb-3">

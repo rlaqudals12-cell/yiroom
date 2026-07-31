@@ -26,7 +26,8 @@ export async function HomeGreeting({ userName }: HomeGreetingProps) {
 
   return (
     <section className="animate-fade-in-up">
-      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+      {/* 브리핑 레터의 세리프 앵커와 동일 문법(H2 — "아침 편지" 물성 동반) */}
+      <h2 className="break-keep font-serif text-2xl font-semibold leading-snug text-slate-900 dark:text-white">
         {t(greetingKey)}, {t('greetingSuffix', { name: userName })}
       </h2>
       <p className="text-slate-500 dark:text-slate-400 mt-1">{t('dailyMotivation')}</p>

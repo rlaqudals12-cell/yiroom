@@ -33,7 +33,8 @@ export function getHomeState(analysisCount: number): HomeState {
 function HomeStateSkeleton() {
   return (
     <div className="space-y-5 animate-pulse" data-testid="home-state-skeleton">
-      <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-6">
+      {/* 유리 해체(ADR-120): 솔리드 bg-card + 헤어라인 보더 */}
+      <div className="bg-card rounded-2xl border border-border p-6">
         <div className="h-6 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
         <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
         <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
@@ -62,7 +63,7 @@ export default function HomeStateRouter() {
   if (hasError) {
     return (
       <div
-        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-6 text-center"
+        className="bg-card rounded-2xl border border-border p-6 text-center shadow-sm dark:shadow-none"
         data-testid="home-state-error"
       >
         <p className="text-muted-foreground mb-3">분석 정보를 불러오지 못했어요</p>

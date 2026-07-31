@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { hexToLab, calculateChroma } from '@/lib/color';
 import { composeDailyOutfit } from '@/lib/color/daily-outfit';
 
 const palette = [
@@ -31,12 +32,33 @@ describe('composeDailyOutfit', () => {
     expect(top.name).toBe(original!.name);
   });
 
-  it('파생색(하의·가방·포인트)은 "계열" 표기로 정직하게 이름 짓는다', () => {
+  it('파생색(하의·가방)은 "계열" 표기로 정직하게 이름 짓는다', () => {
     const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
-    for (const role of ['하의', '가방', '포인트'] as const) {
+    for (const role of ['하의', '가방'] as const) {
       const block = out.colors.find((c) => c.role === role)!;
       expect(block.name).toContain('계열');
     }
+  });
+
+  it('포인트는 진단 팔레트 중 최고 채도 색(합성 보색 아님, 원본 이름 유지)', () => {
+    const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
+    const top = out.colors[0];
+    const point = out.colors.find((c) => c.role === '포인트')!;
+    // 진단 hex 내 선택 — 팔레트에 실재하는 색이고, 원본 이름을 그대로 쓴다
+    const original = palette.find((p) => p.hex === point.hex);
+    expect(original).toBeDefined();
+    expect(point.name).toBe(original!.name);
+    // 베이스(상의)와 다른 색 중 채도가 가장 높은 색이어야 한다
+    const others = palette.filter((p) => p.hex !== top.hex);
+    const maxChroma = Math.max(...others.map((p) => calculateChroma(hexToLab(p.hex))));
+    expect(calculateChroma(hexToLab(point.hex))).toBe(maxChroma);
+  });
+
+  it('팔레트가 1색이면 포인트도 그 색 그대로(지어내지 않음)', () => {
+    const out = composeDailyOutfit([{ name: '코랄', hex: '#FF7F50' }], new Date('2026-07-08'))!;
+    const point = out.colors.find((c) => c.role === '포인트')!;
+    expect(point.hex).toBe('#FF7F50');
+    expect(point.name).toBe('코랄');
   });
 
   it('신발은 중립색(차콜/아이보리 뉴트럴)으로 배색을 받쳐준다', () => {

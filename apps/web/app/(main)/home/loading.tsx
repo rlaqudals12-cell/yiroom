@@ -9,10 +9,8 @@ import { HomeHeader } from './_components/HomeHeader';
 // Server Component - 즉시 렌더링
 export default function HomeLoading() {
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/20 dark:to-indigo-950/30 pb-20"
-      data-testid="home-loading"
-    >
+    // 본 페이지와 동일한 크림 지면 — 로딩→콘텐츠 전환 시 배경 점프 방지(장식 그라데 해체)
+    <div className="min-h-screen bg-surface-ground pb-20" data-testid="home-loading">
       {/* 실제 헤더 컴포넌트 - CLS 방지 */}
       <HomeHeader />
 
@@ -25,7 +23,7 @@ export default function HomeLoading() {
         </section>
 
         {/* 분석 섹션 스켈레톤 */}
-        <section className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none">
+        <section className="bg-card rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="h-5 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
             <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
@@ -51,10 +49,7 @@ export default function HomeLoading() {
           <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-3" />
           <div className="grid grid-cols-2 gap-3">
             {[1, 2].map((i) => (
-              <div
-                key={i}
-                className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-4"
-              >
+              <div key={i} className="bg-card rounded-2xl border border-border p-4">
                 <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse mb-3" />
                 <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1" />
                 <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
@@ -70,7 +65,7 @@ export default function HomeLoading() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-28 bg-white/60 dark:bg-slate-800/60 rounded-xl p-2"
+                className="flex-shrink-0 w-28 bg-card rounded-xl border border-border p-2"
               >
                 <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse mb-2" />
                 <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1" />

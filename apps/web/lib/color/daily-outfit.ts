@@ -8,7 +8,9 @@
  *  - 하의(bottom) = 유사색(analogous) — 조화로운 기본 배색
  *  - 신발(shoes)  = 중립색(명도로 결정) — 배색을 받쳐주는 뉴트럴
  *  - 가방(bag)    = 유사색(다른 이웃) — 배색 파생 소품
- *  - 포인트(point) = 보색(complementary) — 액세서리 한 점 악센트
+ *  - 포인트(point) = 진단 팔레트 중 최고 채도 색 — 액세서리 한 점 악센트
+ *    (보색 합성 폐지: 합성색은 저채도 베이스에서 흐릿한 비진단색으로 수렴해
+ *     포인트가 죽는다. 진단 hex 안에서 고르면 "실제 내 색"이면서 가장 또렷하다)
  *
  * 색 이름(name): 상의는 진단된 원본 이름(있으면). 파생색은 지어내지 않고
  * 실제 계산된 색의 "계열명"(예: 소프트 블루 계열)으로 정직하게 표기. 중립색은 뉴트럴 이름.
@@ -20,7 +22,7 @@
  */
 
 import { hexToLab, labToHex, calculateChroma, calculateHue } from '@/lib/color';
-import { analogous, complementary } from './harmony';
+import { analogous } from './harmony';
 
 export type OutfitRole = '상의' | '하의' | '신발' | '가방' | '포인트';
 
@@ -113,6 +115,34 @@ function neutralShoes(baseL: number): OutfitColor {
 }
 
 /**
+ * 포인트 색 — 합성 보색 대신 진단 팔레트 안에서 최고 채도 색을 고른다(결정론).
+ * 왜: 베스트 팔레트가 뉴트럴로 수렴한 날 보색 합성마저 저채도라 포인트가 죽는다.
+ * 진단 hex 내 선택이므로 채도 증폭·색 지어내기 없음(정직성). 베이스와 다른 색이
+ * 있으면 그중에서, 팔레트가 1색뿐이면 그 색 그대로 쓴다.
+ */
+function pickPointColor(
+  valid: ReadonlyArray<{ name?: string; hex?: string }>,
+  baseHex: string
+): OutfitColor {
+  const others = valid.filter((c) => (c.hex as string).toLowerCase() !== baseHex.toLowerCase());
+  const pool = others.length > 0 ? others : valid;
+
+  let best = pool[0];
+  let bestChroma = -1;
+  for (const candidate of pool) {
+    const chroma = calculateChroma(hexToLab(candidate.hex as string));
+    if (chroma > bestChroma) {
+      bestChroma = chroma;
+      best = candidate;
+    }
+  }
+
+  const hex = best.hex as string;
+  // 진단된 원본 이름 그대로(있으면) — 파생색이 아니므로 계열명 폴백은 이름 없을 때만
+  return { hex, role: '포인트', name: best.name?.trim() || colorFamilyName(hex) };
+}
+
+/**
  * 오늘의 배색 조합 생성 — 순수 함수.
  * 유효한 베스트 컬러가 없으면 null(호출부에서 섹션 생략 — 정직성 가드).
  *
@@ -150,8 +180,8 @@ export function composeDailyOutfit(
   } else {
     bottomHex = bottomNeighbor;
   }
-  // 보색 → 포인트
-  const pointHex = complementary(baseHex);
+  // 포인트: 진단 팔레트 중 최고 채도 색(합성 보색 폐지 — 위 pickPointColor 주석 참조)
+  const point = pickPointColor(valid, baseHex);
 
   return {
     baseName: base.name?.trim() || '베스트 컬러',
@@ -164,8 +194,8 @@ export function composeDailyOutfit(
       neutralShoes(baseL),
       // 가방: 다른 유사색 → 계열명
       { hex: bagNeighbor, role: '가방', name: colorFamilyName(bagNeighbor) },
-      // 포인트: 보색 → 계열명
-      { hex: pointHex, role: '포인트', name: colorFamilyName(pointHex) },
+      // 포인트: 진단 팔레트 내 최고 채도 색(원본 이름 유지)
+      point,
     ],
   };
 }

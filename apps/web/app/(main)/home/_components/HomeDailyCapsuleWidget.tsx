@@ -220,7 +220,7 @@ export default function HomeDailyCapsuleWidget() {
   // 로딩/데이터 없음
   if (isLoading) {
     return (
-      <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm animate-pulse">
+      <div className="bg-card rounded-2xl border border-border p-5 animate-pulse">
         <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
         <div className="space-y-2">
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded" />
@@ -233,7 +233,7 @@ export default function HomeDailyCapsuleWidget() {
   if (hasError) {
     return (
       <div
-        className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-sm"
+        className="bg-card rounded-2xl border border-border p-5"
         data-testid="home-daily-capsule-error"
       >
         <p className="text-sm text-muted-foreground mb-2">{t('capsuleLoadError')}</p>
@@ -374,7 +374,7 @@ export default function HomeDailyCapsuleWidget() {
             <div key={item.id} className="rounded-lg">
               <button
                 onClick={() => handleCheck(item)}
-                className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors text-left"
+                className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-secondary/60 transition-colors text-left"
               >
                 {item.isChecked ? (
                   <CheckCircle2 className="w-4.5 h-4.5 text-primary shrink-0" />
