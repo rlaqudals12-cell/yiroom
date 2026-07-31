@@ -513,7 +513,7 @@ export default function PersonalColorResultPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-surface-ground">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -544,14 +544,14 @@ export default function PersonalColorResultPage() {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] bg-muted"
+      className="min-h-[calc(100vh-80px)] bg-surface-ground"
       data-testid="personal-color-result-page"
       role="region"
       aria-label={t('pageAriaLabel.personalColor')}
     >
-      {/* 호스트 확폭 — md+에서 진단지 2단 밀도(01|02, 05|06 병치)를 담기 위해 max-w-3xl.
-          모바일은 max-w-lg 그대로(1열 불변). 탭바·헤더도 같은 폭을 따라간다 */}
-      <div className="max-w-lg md:max-w-3xl mx-auto px-4 py-8">
+      {/* 호스트 확폭 — md+에서 진단지 2단 밀도(01|02, 03 내부 2열, 05|06 병치)를 담기 위해
+          ~880px (R5). 모바일은 max-w-lg 그대로(1열 불변). 탭바·헤더도 같은 폭을 따라간다 */}
+      <div className="max-w-lg md:max-w-[880px] mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="sm" asChild>

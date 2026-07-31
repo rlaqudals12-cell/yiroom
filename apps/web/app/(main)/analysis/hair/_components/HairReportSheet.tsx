@@ -11,6 +11,7 @@ import {
   TrustFooter,
 } from '@/components/analysis/report';
 import { getDateLocale } from '@/lib/utils/date-format';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 
 /** 진단지에 올리는 항목별 컨디션 행 — 인라인(label)·결과(name) 필드 차이는 호출부가 어댑팅한다 */
 export interface HairReportMetric {
@@ -77,9 +78,15 @@ export function HairReportSheet({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl border border-border bg-card"
+      className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none"
       data-testid={testId}
     >
+      {/* 깊이: 크림 지면 위 백색 시트 — 종이 그레인 1겹(시트 한정, ≤0.05) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
+        style={{ backgroundImage: PAPER_GRAIN_URI }}
+      />
       <div className="px-5 pb-6 pt-6 sm:px-7">
         {/* 히어로 — 아이브로우 + 세리프 진단명 + 두피 서브카피 */}
         <ReportEyebrow>HAIR REPORT</ReportEyebrow>

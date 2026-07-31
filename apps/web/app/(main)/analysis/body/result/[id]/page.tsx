@@ -37,6 +37,7 @@ import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { useAnalysisShare, createBodyShareData } from '@/hooks/useAnalysisShare';
 // 진단지 문법(ADR-120): 아이브로우 + 속성표 + 신뢰 푸터 — 채점 게이지 연출 대체
 import { ReportEyebrow, RowTable, AttrRow, TrustFooter } from '@/components/analysis/report';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
@@ -317,7 +318,7 @@ export default function BodyAnalysisResultPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-surface-ground">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -356,7 +357,7 @@ export default function BodyAnalysisResultPage() {
       />
 
       <div
-        className="min-h-[calc(100vh-80px)] bg-muted"
+        className="min-h-[calc(100vh-80px)] bg-surface-ground"
         data-testid="body-result-page"
         role="region"
         aria-label={t('pageAriaLabel.body')}
@@ -480,8 +481,14 @@ export default function BodyAnalysisResultPage() {
 
               {/* 기본 분석 탭 */}
               <TabsContent value="basic" className="mt-0">
-                {/* 진단지 히어로 — 아이브로우 + 세리프 체형명 + 속성표 + 신뢰 푸터 (ADR-120, 외모점수 연출 소거) */}
-                <section className="mb-6 overflow-hidden rounded-2xl border border-border bg-card">
+                {/* 진단지 히어로 — 아이브로우 + 세리프 체형명 + 속성표 + 신뢰 푸터 (ADR-120, 외모점수 연출 소거)
+                    깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
+                <section className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
+                    style={{ backgroundImage: PAPER_GRAIN_URI }}
+                  />
                   <div className="px-5 pb-6 pt-6 sm:px-7">
                     <ReportEyebrow>BODY REPORT</ReportEyebrow>
                     <h1

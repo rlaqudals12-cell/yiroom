@@ -9,6 +9,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import AnalysisResult, {
   getAvoidStrokeColor,
+  buildNamedHexMap,
+  resolveNamedHex,
 } from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
@@ -494,6 +496,146 @@ describe('AnalysisResult', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
       expect(screen.queryByTestId('pc-tone-palette-overview')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('색명에 색 동행 (R1)', () => {
+    it('buildNamedHexMap은 이름 있는 색만 등록하고 같은 이름은 먼저 온 소스가 이긴다', () => {
+      const map = buildNamedHexMap([
+        [{ name: '코랄', hex: '#FF7F50' }],
+        [{ name: '코랄', hex: '#000000' }, { hex: '#123456' }],
+      ]);
+
+      expect(map.get('코랄')).toBe('#FF7F50');
+      expect(map.size).toBe(1);
+    });
+
+    it('resolveNamedHex는 정확 일치를 우선하고, 없으면 포함된 가장 긴 등록 색명으로 폴백한다', () => {
+      const map = buildNamedHexMap([
+        [
+          { name: '피치', hex: '#FFDAB9' },
+          { name: '피치 베이지', hex: '#EED9C4' },
+        ],
+      ]);
+
+      // 정확 일치 (공백 무시)
+      expect(resolveNamedHex(map, '피치 베이지')).toBe('#EED9C4');
+      // 부분 폴백 — '피치 핑크'는 등록된 '피치'를 포함
+      expect(resolveNamedHex(map, '피치 핑크')).toBe('#FFDAB9');
+      // 매핑 없는 색명은 undefined — 스와치 없이 텍스트만(지어내기 금지)
+      expect(resolveNamedHex(map, '무지개색')).toBeUndefined();
+    });
+
+    it('스타일링 색 제안에 결과 데이터의 실색 스와치를 전치한다 (아이보리=베스트 컬러)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // 픽스처: 블라우스—아이보리, 아이보리는 bestColors에 #FFFFF0으로 존재
+      const list = screen.getByTestId('pc-clothing-list');
+      const dots = list.querySelectorAll<HTMLElement>('[aria-hidden="true"]');
+      expect(dots.length).toBeGreaterThan(0);
+      const hexes = Array.from(dots).map((d) => d.style.backgroundColor);
+      expect(hexes).toContain('rgb(255, 255, 240)');
+    });
+
+    it('패션 색명 칩은 매핑되는 색만 스와치를 갖고, 매핑 없는 색명은 텍스트만 유지한다', () => {
+      const withFashion: PersonalColorResult = {
+        ...mockResult,
+        styleDescription: {
+          ...mockResult.styleDescription,
+          easyFashion: {
+            colors: ['코랄', '무지개색'],
+            avoid: ['블랙'],
+            style: '밝고 부드러운 느낌',
+            tip: '밝은 색 위주로 입어보세요',
+          },
+        },
+      };
+      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+
+      const chips = screen.getByTestId('pc-fashion-color-chips');
+      // '코랄'은 bestColors #FF7F50 매핑 → 스와치 존재
+      const coralChip = within(chips).getByText('코랄');
+      expect(coralChip.querySelector('[aria-hidden="true"]')).not.toBeNull();
+      // '무지개색'은 결과 데이터에 없음 → 스와치 없음
+      const unknownChip = within(chips).getByText('무지개색');
+      expect(unknownChip.querySelector('[aria-hidden="true"]')).toBeNull();
+    });
+  });
+
+  describe('시즌 인장 오브젝트 승격 (R2)', () => {
+    it('인장은 라이트 시즌색 채움 + 다크 전경 텍스트를 쓴다 (백색 텍스트 금지)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const seal = screen.getByTestId('pc-season-seal');
+      // spring 도장 잉크 — 라이트 채움 #F9E4D4
+      expect(seal.style.backgroundColor).toBe('rgb(249, 228, 212)');
+      const label = within(seal).getByText('Spring');
+      // 다크 전경 #8A4B2B — 백색 아님
+      expect(label.style.color).toBe('rgb(138, 75, 43)');
+    });
+
+    it('베스트 컬러가 있으면 인장은 히어로가 아닌 스트립 오버랩 위치에 렌더된다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const seal = screen.getByTestId('pc-season-seal');
+      const strip = screen.getByTestId('pc-hero-strip');
+      // 같은 relative 래퍼 안에 스트립과 인장이 형제로 존재 (지면 위 도장)
+      expect(seal.parentElement).toBe(strip.parentElement);
+    });
+  });
+
+  describe('드레이핑 색면 스택 폴백 (R3)', () => {
+    it('photoUrl이 없으면 같은 자리에 드레이핑 색면 스택을 렌더한다 (인물 배제 정본)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const draping = screen.getByTestId('pc-hero-draping');
+      expect(draping).toBeInTheDocument();
+      // 베스트 컬러 상위 5색의 색면
+      expect(draping.querySelectorAll('span').length).toBe(5);
+    });
+
+    it('photoUrl이 있으면 드레이핑 스택 대신 사진 앵커를 렌더한다', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          photoUrl="https://example.com/face.jpg"
+        />
+      );
+
+      expect(screen.getByTestId('pc-hero-photo')).toBeInTheDocument();
+      expect(screen.queryByTestId('pc-hero-draping')).not.toBeInTheDocument();
+    });
+
+    it('사진 로드 실패 시 드레이핑 스택으로 폴백한다', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          photoUrl="https://example.com/broken.jpg"
+        />
+      );
+
+      fireEvent.error(screen.getByTestId('pc-hero-photo'));
+      expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
+      expect(screen.getByTestId('pc-hero-draping')).toBeInTheDocument();
+    });
+  });
+
+  describe('톤 팔레트 총람 질감 스와치 (R4)', () => {
+    it('총람 3행을 발색 질감으로 렌더한다 (립→lip, 아이섀도·블러셔→powder)', () => {
+      render(
+        <AnalysisResult
+          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
+          onRetry={mockOnRetry}
+        />
+      );
+
+      const overview = screen.getByTestId('pc-tone-palette-overview');
+      // 립 행은 lip 질감 — 포인트 컬러(pc-accent-chips)의 lip과 별개로 총람 안에도 존재
+      expect(within(overview).getAllByTestId('texture-swatch-lip').length).toBeGreaterThan(0);
+      // 아이섀도·블러셔 행은 powder 질감
+      expect(within(overview).getAllByTestId('texture-swatch-powder').length).toBeGreaterThan(0);
     });
   });
 

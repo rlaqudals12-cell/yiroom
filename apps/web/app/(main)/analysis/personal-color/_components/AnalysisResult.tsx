@@ -33,6 +33,7 @@ import { TopActionsCard, type TopAction } from '@/components/analysis/TopActions
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { getKoreanColorName } from '@/lib/utils/color-names';
 import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import { getCardPalette, type CardLocale } from '@/lib/share/tone-palettes';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
@@ -123,6 +124,100 @@ export function getAvoidStrokeColor(hex: string): string {
 function getTonePaletteOverview(paletteToneKey?: string): TonePalette | undefined {
   if (!paletteToneKey || !(paletteToneKey in TONE_PALETTES)) return undefined;
   return TONE_PALETTES[paletteToneKey as TwelveTone];
+}
+
+// ─── R1 색명에 색 동행 — 이 결과에 이미 실린 색 데이터(베스트·회피·포인트·금속·립·그루밍)만
+// 소스로 색명→hex 사전을 조립한다. 신규 색 반입 0 — 사전에 없는 색명은 스와치 없이 텍스트 유지.
+// @internal export는 테스트 전용
+export function buildNamedHexMap(
+  sources: ReadonlyArray<ReadonlyArray<{ name?: string; hex: string }>>
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const list of sources) {
+    for (const { name, hex } of list) {
+      if (!name) continue;
+      const key = name.replace(/\s+/g, '');
+      // 같은 이름이 여러 소스에 있으면 먼저 등록된 소스(베스트 팔레트) 우선 — 진단 팔레트가 정본
+      if (!map.has(key)) map.set(key, hex);
+    }
+  }
+  return map;
+}
+
+// 색명 → 결과 데이터의 hex. 정확 일치 우선, 없으면 색명 안에 포함된 가장 긴 등록 색명으로
+// 폴백('피치 핑크' ⊃ '피치' — 기존 hex 재사용일 뿐 새 색을 지어내지 않는다).
+// 매핑 실패는 undefined — 호출부가 무스와치로 렌더한다.
+// @internal export는 테스트 전용
+export function resolveNamedHex(map: Map<string, string>, name: string): string | undefined {
+  const key = name.replace(/\s+/g, '');
+  const exact = map.get(key);
+  if (exact) return exact;
+  let bestKey: string | undefined;
+  for (const candidate of map.keys()) {
+    // 2글자 미만 후보는 우연 일치 위험이 커 제외 ('레드'·'골드' 등 2글자부터 허용)
+    if (candidate.length >= 2 && key.includes(candidate)) {
+      if (!bestKey || candidate.length > bestKey.length) bestKey = candidate;
+    }
+  }
+  return bestKey ? map.get(bestKey) : undefined;
+}
+
+/** R1 색명 동행 스와치 — 14px 실색 사각 전치. hex 매핑이 없으면 렌더하지 않는다(지어내기 금지) */
+function NamedColorDot({ hex }: { hex?: string }): React.JSX.Element | null {
+  if (!hex) return null;
+  return (
+    <span
+      className="inline-block h-3.5 w-3.5 shrink-0 rounded-[4px] border border-border/60"
+      style={{ backgroundColor: hex }}
+      aria-hidden="true"
+    />
+  );
+}
+
+// ─── R2 계절 인장 색 — 라이트 시즌색 채움 + 다크 전경(백색 텍스트 금지, 명도 대비 확보).
+// 진단 hex가 아닌 장식 오브젝트 토큰(도장 잉크) — 시즌 계열 색상으로 고정, 채도 증폭 없음.
+const SEASON_SEAL_COLORS: Record<SeasonType, { bg: string; fg: string }> = {
+  spring: { bg: '#F9E4D4', fg: '#8A4B2B' },
+  summer: { bg: '#E4E8F3', fg: '#4A5480' },
+  autumn: { bg: '#EFE4CE', fg: '#6E4E26' },
+  winter: { bg: '#E3E8EE', fg: '#33415C' },
+};
+
+/** 계절 인장 — 점수 없는 타입 확정 스탬프. 시즌색 채움 + 미세 섀도 + rotate(지면 위 도장) */
+function SeasonSeal({
+  seasonType,
+  seasonLabel,
+  className,
+}: {
+  seasonType: SeasonType;
+  seasonLabel: string;
+  className?: string;
+}): React.JSX.Element {
+  const { bg, fg } = SEASON_SEAL_COLORS[seasonType];
+  return (
+    <div
+      className={cn(
+        'flex h-[76px] w-[76px] rotate-3 flex-col items-center justify-center gap-0.5 rounded-full border-[1.5px] shadow-[var(--shadow-rest)] dark:shadow-none',
+        className
+      )}
+      // 도장 잉크 — 라이트 시즌색 채움 + 다크 전경 + 전경 계열 테두리(hex 알파 35%)
+      style={{ backgroundColor: bg, borderColor: `${fg}59` }}
+      data-testid="pc-season-seal"
+    >
+      <span
+        className="break-keep px-1.5 text-center font-serif text-sm italic leading-tight"
+        style={{ color: fg }}
+      >
+        {SEASON_SEAL[seasonType]}
+      </span>
+      <span
+        className="break-keep px-1.5 text-center text-[10px] leading-tight opacity-80"
+        style={{ color: fg }}
+      >
+        {seasonLabel}
+      </span>
+    </div>
+  );
 }
 
 // 분석 근거 타입 (AnalysisEvidenceReport와 호환)
@@ -324,7 +419,8 @@ function PaletteSectionBody({
   tonePalette?: TonePalette;
 }) {
   return (
-    <div className="space-y-5">
+    // R5 md+ 2열 — 좌 베스트 그리드 | 우 큐레이션(포인트·금속·회피·총람). 모바일 1열 불변
+    <div className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-10 md:space-y-0">
       <div>
         <p className="text-xs font-medium text-muted-foreground">
           베스트 컬러
@@ -334,7 +430,10 @@ function PaletteSectionBody({
               : `${seasonLabel} 타입에 잘 어울리는 컬러예요`}
           </span>
         </p>
-        <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5" data-testid="pc-best-grid">
+        <div
+          className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-3"
+          data-testid="pc-best-grid"
+        >
           {bestColors.map((color, index) => (
             <button
               key={index}
@@ -382,86 +481,96 @@ function PaletteSectionBody({
           )}
         </p>
       </div>
-      {accentColors.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-muted-foreground">
-            포인트 컬러
-            <span className="ml-1.5 font-normal">립·네일·강조에</span>
-          </p>
-          <div className="mt-2">
-            {/* 포인트=립·네일 사용처 → 립 발색 질감으로(실물감) */}
-            <SwatchChips colors={accentColors.slice(0, 3)} testId="pc-accent-chips" texture="lip" />
+      {/* R5 우측 열 — 큐레이션 소섹션 묶음(모바일에선 그대로 세로 흐름) */}
+      <div className="space-y-5">
+        {accentColors.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">
+              포인트 컬러
+              <span className="ml-1.5 font-normal">립·네일·강조에</span>
+            </p>
+            <div className="mt-2">
+              {/* 포인트=립·네일 사용처 → 립 발색 질감으로(실물감) */}
+              <SwatchChips
+                colors={accentColors.slice(0, 3)}
+                testId="pc-accent-chips"
+                texture="lip"
+              />
+            </div>
           </div>
-        </div>
-      )}
-      {metalColors.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-muted-foreground">액세서리 금속</p>
-          <div className="mt-2">
-            <SwatchChips colors={metalColors.slice(0, 2)} testId="pc-metal-chips" />
+        )}
+        {metalColors.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">액세서리 금속</p>
+            <div className="mt-2">
+              <SwatchChips colors={metalColors.slice(0, 2)} testId="pc-metal-chips" />
+            </div>
           </div>
-        </div>
-      )}
-      {worstColors.length > 0 && (
-        <div data-testid="pc-avoid">
-          <p className="text-xs font-medium text-muted-foreground">피하면 좋은 색</p>
-          <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-6" data-testid="pc-avoid-chips">
-            {worstColors.slice(0, 4).map((color, index) => (
-              <div key={`${color.hex}-${index}`}>
-                <div
-                  className="h-8 w-full rounded-md"
-                  // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제 (공유카드 문법).
-                  // 스트로크 색은 칩 명도 적응(어두운 칩=흰색) — getAvoidStrokeColor 참조
-                  style={{
-                    backgroundColor: color.hex,
-                    backgroundImage: `linear-gradient(135deg, transparent 46%, ${getAvoidStrokeColor(color.hex)} 46%, ${getAvoidStrokeColor(color.hex)} 54%, transparent 54%)`,
-                  }}
-                  aria-hidden="true"
-                />
-                <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                  {color.name || getKoreanColorName(color.hex)}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-1.5 text-xs text-muted-foreground" data-testid="pc-avoid-note">
-            {AVOID_NOTES[seasonType]}
-          </p>
-        </div>
-      )}
-      {/* 톤 팔레트 총람 — 12톤 표준 정의 데이터(v2 정적)의 사용처별 축소 스와치.
-          이름 없는 hex 정의 데이터라 이름을 지어내지 않고 색면만 — 서브타입 저장 건에서만 렌더 */}
-      {tonePalette && (
-        <div data-testid="pc-tone-palette-overview">
-          <p className="text-xs font-medium text-muted-foreground">
-            톤 팔레트 총람
-            <span className="ml-1.5 font-normal">12톤 표준 정의 팔레트예요</span>
-          </p>
-          <div className="mt-2 space-y-1.5">
-            {(
-              [
-                ['립', tonePalette.lipColors],
-                ['아이섀도', tonePalette.eyeshadowColors],
-                ['블러셔', tonePalette.blushColors],
-              ] as const
-            ).map(([rowLabel, hexes]) => (
-              <div key={rowLabel} className="flex items-center gap-2">
-                <span className="w-12 shrink-0 text-[10px] text-muted-foreground">{rowLabel}</span>
-                <div className="flex flex-1 gap-1" aria-hidden="true">
-                  {hexes.map((hex, i) => (
-                    <span
-                      key={`${hex}-${i}`}
-                      className="h-5 flex-1 rounded-sm border border-border/50"
-                      style={{ backgroundColor: hex }}
-                      title={hex}
-                    />
-                  ))}
+        )}
+        {worstColors.length > 0 && (
+          <div data-testid="pc-avoid">
+            <p className="text-xs font-medium text-muted-foreground">피하면 좋은 색</p>
+            <div
+              className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-4"
+              data-testid="pc-avoid-chips"
+            >
+              {worstColors.slice(0, 4).map((color, index) => (
+                <div key={`${color.hex}-${index}`}>
+                  <div
+                    className="h-8 w-full rounded-md"
+                    // 취소선 오버레이(얇게) — 색은 정직 유지, 존재감은 크기로 억제 (공유카드 문법).
+                    // 스트로크 색은 칩 명도 적응(어두운 칩=흰색) — getAvoidStrokeColor 참조
+                    style={{
+                      backgroundColor: color.hex,
+                      backgroundImage: `linear-gradient(135deg, transparent 46%, ${getAvoidStrokeColor(color.hex)} 46%, ${getAvoidStrokeColor(color.hex)} 54%, transparent 54%)`,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                    {color.name || getKoreanColorName(color.hex)}
+                  </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground" data-testid="pc-avoid-note">
+              {AVOID_NOTES[seasonType]}
+            </p>
           </div>
-        </div>
-      )}
+        )}
+        {/* 톤 팔레트 총람 — 12톤 표준 정의 데이터(v2 정적)의 사용처별 스와치.
+            이름 없는 hex 정의 데이터라 이름을 지어내지 않고 색면만 — 서브타입 저장 건에서만 렌더.
+            R4: 사용처가 화장품이므로 발색 질감으로(립→lip, 아이섀도·블러셔→powder) — 히어로 스트립은 플랫 유지 */}
+        {tonePalette && (
+          <div data-testid="pc-tone-palette-overview">
+            <p className="text-xs font-medium text-muted-foreground">
+              톤 팔레트 총람
+              <span className="ml-1.5 font-normal">12톤 표준 정의 팔레트예요</span>
+            </p>
+            <div className="mt-2 space-y-1.5">
+              {(
+                [
+                  ['립', tonePalette.lipColors, 'lip'],
+                  ['아이섀도', tonePalette.eyeshadowColors, 'powder'],
+                  ['블러셔', tonePalette.blushColors, 'powder'],
+                ] as const
+              ).map(([rowLabel, hexes, texture]) => (
+                <div key={rowLabel} className="flex items-center gap-2">
+                  <span className="w-12 shrink-0 text-[10px] text-muted-foreground">
+                    {rowLabel}
+                  </span>
+                  <div className="flex flex-1 flex-wrap items-center gap-1" aria-hidden="true">
+                    {hexes.map((hex, i) => (
+                      <span key={`${hex}-${i}`} title={hex}>
+                        <TextureSwatch hex={hex} kind={texture} width={40} />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -543,10 +652,13 @@ function StyleCardsBody({
   styleDescription,
   userGender,
   isMale,
+  namedHexMap,
 }: {
   styleDescription: StyleDescription;
   userGender: GenderPreference;
   isMale: boolean;
+  /** R1 색명→hex 사전 — 패션 색명 칩에 실색 스와치 동행(매핑 없으면 텍스트만) */
+  namedHexMap: Map<string, string>;
 }) {
   return (
     <div className="grid gap-2.5 sm:grid-cols-2" data-testid="pc-style-cards">
@@ -572,12 +684,14 @@ function StyleCardsBody({
           <div className="space-y-2">
             <div>
               <p className="mb-1 text-xs text-muted-foreground">추천 컬러</p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1" data-testid="pc-fashion-color-chips">
                 {styleDescription.easyFashion.colors.map((color, idx) => (
                   <span
                     key={idx}
-                    className="rounded border border-border px-2 py-0.5 text-xs text-foreground/80"
+                    className="flex items-center gap-1.5 rounded border border-border px-2 py-0.5 text-xs text-foreground/80"
                   >
+                    {/* R1 색명에 색 동행 — 결과 데이터에 있는 색만 스와치 전치 */}
+                    <NamedColorDot hex={resolveNamedHex(namedHexMap, color)} />
                     {color}
                   </span>
                 ))}
@@ -589,8 +703,9 @@ function StyleCardsBody({
                 {styleDescription.easyFashion.avoid.map((color, idx) => (
                   <span
                     key={idx}
-                    className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground line-through"
+                    className="flex items-center gap-1.5 rounded border border-border px-2 py-0.5 text-xs text-muted-foreground line-through"
                   >
+                    <NamedColorDot hex={resolveNamedHex(namedHexMap, color)} />
                     {color}
                   </span>
                 ))}
@@ -928,6 +1043,17 @@ export default function AnalysisResult({
   const subtypeAttrs = deriveSubtypeAttrs(result.paletteToneKey);
   const tonePalette = getTonePaletteOverview(result.paletteToneKey);
 
+  // R1 색명→hex 사전 — 이 결과에 실린 색 데이터만 소스(베스트 팔레트 우선).
+  // 04 패션 색명 칩·05 스타일링 색 제안에 실색 스와치를 동행시킨다(매핑 없으면 텍스트만)
+  const namedHexMap = buildNamedHexMap([
+    bestColors,
+    worstColors,
+    accentColors,
+    metalColors,
+    lipstickRecommendations.map((lip) => ({ name: lip.colorName, hex: lip.hex })),
+    groomingRecommendations.map((item) => ({ name: item.colorTone, hex: item.hex })),
+  ]);
+
   // ─── 번호 섹션 — 데이터 있는 섹션만 조립, 번호는 렌더 시점에 매겨 결번을 막는다
   const sections: ReportSection[] = [];
 
@@ -992,6 +1118,7 @@ export default function AnalysisResult({
         styleDescription={genderStyleDescription}
         userGender={userGender}
         isMale={isMale}
+        namedHexMap={namedHexMap}
       />
     ),
   });
@@ -1006,13 +1133,16 @@ export default function AnalysisResult({
         <ol className="space-y-2.5" data-testid="pc-clothing-list">
           {genderClothingRecommendations.map((rec, index) => (
             <li key={index} className="flex items-start gap-2.5">
-              {/* 항목 번호는 섹션 번호(primary)보다 낮은 회조 — 러닝 넘버 시스템은 하나 */}
-              <span className="mt-[1px] shrink-0 font-serif text-xs italic tabular-nums text-muted-foreground">
+              {/* 항목 번호는 섹션 번호(primary)보다 낮은 회조 — 러닝 넘버 시스템은 하나.
+                  소형 세리프 이탤릭(12px) 금지 대역이라 산세리프로 전환 (R6) */}
+              <span className="mt-[1px] shrink-0 text-xs tabular-nums text-muted-foreground">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground">
-                  {rec.item} — {rec.colorSuggestion}
+                <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-foreground">
+                  {rec.item} —{/* R1 색명에 색 동행 — 결과 데이터에 있는 색만 실색 사각 전치 */}
+                  <NamedColorDot hex={resolveNamedHex(namedHexMap, rec.colorSuggestion)} />
+                  {rec.colorSuggestion}
                 </p>
                 <p className="text-xs text-muted-foreground">{rec.reason}</p>
               </div>
@@ -1047,65 +1177,90 @@ export default function AnalysisResult({
   return (
     <div data-testid="analysis-result">
       <ScaleIn>
-        {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법) */}
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
+        {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법)
+            깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
+        <section className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
+            style={{ backgroundImage: PAPER_GRAIN_URI }}
+          />
           <div className="px-5 pb-6 pt-6 sm:px-7">
-            {/* 히어로 — 아이브로우 + (md+ 사진 앵커) + 세리프 진단명 + 서브카피 + 계절 인장 */}
+            {/* 마스트헤드 — 아이브로우 + 이중 헤어라인(신문 마스트헤드 관례, R6) */}
             <ReportEyebrow>PERSONAL COLOR REPORT</ReportEyebrow>
-            <div className="mt-3 flex items-start gap-5">
-              {/* 사진 앵커 — 분석 원본이 있을 때만 md+ 2단 좌측(모바일 1열 불변). 같은 페이지
-                  드레이핑 탭이 이미 표시하는 이미지라 신규 프라이버시 노출 없음. 로드 실패 시 무사진 폴백 */}
-              {photoUrl && !photoError && (
+            <div aria-hidden="true" className="mt-2.5">
+              <div className="border-t border-border" />
+              <div className="mt-[3px] border-t border-border" />
+            </div>
+
+            {/* 히어로 2단 — 좌 사진/드레이핑 앵커(~40%) + 우 세리프 진단명 (모바일 포함, R3) */}
+            <div className="mt-5 flex items-start gap-4 sm:gap-6">
+              {/* 사진 앵커 — 분석 원본이 있으면 사진(같은 페이지 드레이핑 탭이 이미 표시하는
+                  이미지라 신규 프라이버시 노출 없음). 없거나 로드 실패면 드레이핑 색면 스택을
+                  같은 자리에(데모 포함 — 생성 인물 사진 배제 정본) */}
+              {photoUrl && !photoError ? (
                 <img
                   src={photoUrl}
                   alt="분석에 사용한 내 사진"
                   onError={() => setPhotoError(true)}
-                  className="hidden h-40 w-32 shrink-0 rounded-xl border border-border object-cover md:block"
+                  className="aspect-[3/4] w-[40%] max-w-[240px] shrink-0 rounded-xl border border-border object-cover"
                   data-testid="pc-hero-photo"
                 />
-              )}
-              <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <h1
-                    className="break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground"
-                    data-testid="pc-hero-title"
+              ) : (
+                bestColors.length > 0 && (
+                  <div
+                    className="flex aspect-[3/4] w-[40%] max-w-[240px] shrink-0 flex-col overflow-hidden rounded-xl border border-border"
+                    data-testid="pc-hero-draping"
+                    aria-hidden="true"
                   >
-                    {heroTitle}
-                  </h1>
-                  {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표(01)가 담당 — 중복 표기 없음 */}
-                  <p className="mt-2 break-keep text-sm text-muted-foreground">
-                    {seasonDescription}
-                  </p>
-                </div>
-                {/* 계절 인장 — 점수 없는 타입 확정 스탬프 (채움 배경 + 타입명 병기, 점수 없음 유지) */}
-                <div
-                  className="mt-1 flex h-[72px] w-[72px] shrink-0 rotate-3 flex-col items-center justify-center gap-0.5 rounded-full border-[1.5px] border-primary/60 bg-primary/10"
-                  data-testid="pc-season-seal"
+                    {bestColors.slice(0, 5).map((color, index) => (
+                      <span
+                        key={`${color.hex}-${index}`}
+                        className="block w-full flex-1"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                    ))}
+                  </div>
+                )
+              )}
+              <div className="min-w-0 flex-1">
+                <h1
+                  className="break-keep font-serif text-[clamp(2.25rem,4.5vw,3rem)] font-semibold leading-tight tracking-tight text-foreground"
+                  data-testid="pc-hero-title"
                 >
-                  <span className="break-keep px-1.5 text-center font-serif text-[11px] italic leading-tight text-primary">
-                    {SEASON_SEAL[seasonType]}
-                  </span>
-                  <span className="break-keep px-1.5 text-center text-[9px] leading-tight text-primary/80">
-                    {seasonLabel}
-                  </span>
-                </div>
+                  {heroTitle}
+                </h1>
+                {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표(01)가 담당 — 중복 표기 없음 */}
+                <p className="mt-2 break-keep text-sm text-muted-foreground">{seasonDescription}</p>
+                {/* 스트립이 없으면(베스트 컬러 0) 인장이 오버랩할 지면이 없어 히어로에 폴백 */}
+                {bestColors.length === 0 && (
+                  <SeasonSeal seasonType={seasonType} seasonLabel={seasonLabel} className="mt-4" />
+                )}
               </div>
             </div>
 
-            {/* 풀블리드 팔레트 스트립 — 하드엣지 색 필드 + 하단 헤어라인 */}
+            {/* 풀블리드 팔레트 스트립 — 하드엣지 색 필드 + 하단 헤어라인(플랫 유지).
+                계절 인장이 상단 경계를 오버랩 — "지면 위 도장" (R2) */}
             {bestColors.length > 0 && (
-              <div
-                className="-mx-5 mt-5 flex border-b border-border sm:-mx-7"
-                data-testid="pc-hero-strip"
-                aria-hidden="true"
-              >
-                {bestColors.slice(0, 6).map((color, index) => (
-                  <span
-                    key={`${color.hex}-${index}`}
-                    className="block h-10 flex-1"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                ))}
+              <div className="relative -mx-5 mt-6 sm:-mx-7">
+                <div
+                  className="flex border-b border-border"
+                  data-testid="pc-hero-strip"
+                  aria-hidden="true"
+                >
+                  {bestColors.slice(0, 6).map((color, index) => (
+                    <span
+                      key={`${color.hex}-${index}`}
+                      className="block h-10 flex-1"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  ))}
+                </div>
+                <SeasonSeal
+                  seasonType={seasonType}
+                  seasonLabel={seasonLabel}
+                  className="absolute -top-9 right-5 z-10 sm:right-7"
+                />
               </div>
             )}
 

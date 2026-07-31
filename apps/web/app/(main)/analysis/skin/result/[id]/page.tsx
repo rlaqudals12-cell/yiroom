@@ -82,6 +82,7 @@ import {
   type FaceZoneMapProps,
 } from '@/components/analysis/visual-report';
 import { ReportEyebrow, RowTable, AttrRow } from '@/components/analysis/report';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import { SkinZoomViewer } from '@/components/analysis/SkinZoomViewer';
 import type { ProblemArea } from '@/types/skin-problem-area';
 import { useSwipeTab } from '@/hooks/useSwipeTab';
@@ -831,7 +832,7 @@ export default function SkinAnalysisResultPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-surface-ground">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -864,7 +865,7 @@ export default function SkinAnalysisResultPage() {
       />
 
       <div
-        className="min-h-[calc(100vh-80px)] bg-muted"
+        className="min-h-[calc(100vh-80px)] bg-surface-ground"
         data-testid="skin-result-page"
         role="region"
         aria-label={t('pageAriaLabel.skin')}
@@ -917,9 +918,15 @@ export default function SkinAnalysisResultPage() {
               원형 채점 게이지 소거 — 점수는 속성표 행("NN점 · 상태")으로만 말한다 */}
           {result && (
             <section
-              className="mb-6 rounded-2xl border border-border bg-card px-5 pb-5 pt-6 sm:px-7"
+              className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card px-5 pb-5 pt-6 shadow-[var(--shadow-card)] dark:shadow-none sm:px-7"
               data-testid="skin-report-hero"
             >
+              {/* 깊이: 크림 지면 위 백색 시트 — 종이 그레인 1겹(시트 한정, ≤0.05) */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
+                style={{ backgroundImage: PAPER_GRAIN_URI }}
+              />
               <ReportEyebrow>SKIN REPORT</ReportEyebrow>
               {/* Identity-First: 타입 라벨이 진단명 (ADR-080) */}
               <h2 className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground">

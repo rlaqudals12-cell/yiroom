@@ -41,8 +41,9 @@ export default function DemoPersonalColorPage(): React.JSX.Element {
     router.push('/analysis/personal-color');
   }, [router]);
 
+  // 깊이: 결과 페이지와 동일한 크림 지면 — 데모는 PC 결과의 공개 미러라 지면도 동기화
   return (
-    <div className="min-h-screen" data-testid="demo-personal-color">
+    <div className="min-h-screen bg-surface-ground" data-testid="demo-personal-color">
       {/* 데모 배너 */}
       <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between gap-3">
@@ -74,8 +75,8 @@ export default function DemoPersonalColorPage(): React.JSX.Element {
         </div>
       </div>
 
-      {/* 기존 AnalysisResult 컴포넌트 재사용 */}
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      {/* 기존 AnalysisResult 컴포넌트 재사용 — md+ 진단지 2단 밀도용 ~880px (R5, 결과 페이지와 동기화) */}
+      <div className="mx-auto max-w-[880px] px-4 py-6">
         <AnalysisResult result={demoResult} onRetry={handleRetry} />
 
         {/* 하단 CTA */}

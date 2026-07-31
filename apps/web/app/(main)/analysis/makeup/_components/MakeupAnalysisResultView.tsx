@@ -23,6 +23,7 @@ import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { Button } from '@/components/ui/button';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
+import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import {
   ReportEyebrow,
   SectionHeader,
@@ -393,8 +394,14 @@ export function MakeupAnalysisResultView({
 
   return (
     <div className="space-y-6" data-testid="makeup-analysis-result">
-      {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법) */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card">
+      {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법)
+          깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
+          style={{ backgroundImage: PAPER_GRAIN_URI }}
+        />
         <div className="px-5 pb-6 pt-6 sm:px-7">
           {/* 히어로 — 아이브로우 + 세리프 진단명 */}
           <ReportEyebrow>MAKEUP REPORT</ReportEyebrow>

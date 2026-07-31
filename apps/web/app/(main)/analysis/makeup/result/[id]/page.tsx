@@ -264,7 +264,7 @@ export default function MakeupAnalysisResultPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-80px)] bg-muted">
+      <div className="min-h-[calc(100vh-80px)] bg-surface-ground">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
@@ -295,7 +295,7 @@ export default function MakeupAnalysisResultPage() {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] bg-muted"
+      className="min-h-[calc(100vh-80px)] bg-surface-ground"
       data-testid="makeup-result-page"
       role="region"
       aria-label={t('pageAriaLabel.makeup')}
