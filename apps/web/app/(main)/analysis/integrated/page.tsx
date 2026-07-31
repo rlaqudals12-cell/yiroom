@@ -187,9 +187,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
         {/* 헤더 */}
         <header className="space-y-2 text-center">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            셀카 한 장 · 통합 분석
-          </p>
+          <p className="text-xs text-muted-foreground">셀카 한 장 · 통합 분석</p>
           <h1 className="text-2xl font-bold text-foreground md:text-3xl">
             셀카 한 장으로
             <br />

@@ -48,8 +48,8 @@ describe('AngleSelector', () => {
       const statusDots = container.querySelectorAll('.rounded-full.w-2.h-2');
       expect(statusDots).toHaveLength(3);
 
-      // 첫 번째 점(정면)은 녹색
-      expect(statusDots[0]).toHaveClass('bg-green-500');
+      // 첫 번째 점(정면)은 촬영 완료 상태(프라이머리) — 신호등색 소거로 green→primary 전환
+      expect(statusDots[0]).toHaveClass('bg-primary');
     });
 
     it('좌측이 촬영되면 버튼이 완료로 변경된다', () => {

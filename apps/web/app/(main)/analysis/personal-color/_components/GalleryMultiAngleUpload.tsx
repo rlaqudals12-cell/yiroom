@@ -185,7 +185,7 @@ export default function GalleryMultiAngleUpload({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">정면 사진</span>
-          <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">
+          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
             필수
           </span>
         </div>
@@ -237,7 +237,7 @@ export default function GalleryMultiAngleUpload({
           {(['left', 'right'] as const).map((angle) => (
             <div key={angle} className="flex-1 max-w-[180px]">
               {images[angle] ? (
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-primary shadow-md dark:shadow-none">
                   {/* eslint-disable-next-line @next/next/no-img-element -- 갤러리에서 선택한 base64 이미지 미리보기 */}
                   <img
                     src={images[angle]}
@@ -250,7 +250,7 @@ export default function GalleryMultiAngleUpload({
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
-                  <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-green-500 text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+                  <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center gap-1.5">
                     <Check className="w-3 h-3" />
                     {ANGLE_LABELS[angle]}
                   </div>
@@ -283,7 +283,7 @@ export default function GalleryMultiAngleUpload({
 
       {/* 검증 중 오버레이 */}
       {isValidating && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 text-sm text-center flex items-center justify-center gap-2">
+        <div className="p-3 bg-muted border border-border rounded-lg text-muted-foreground text-sm text-center flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           이미지 확인 중...
         </div>
@@ -291,7 +291,7 @@ export default function GalleryMultiAngleUpload({
 
       {/* 경고 메시지 */}
       {validationWarning && !error && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm flex items-start gap-2">
+        <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-300 text-sm flex items-start gap-2">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{validationWarning}</span>
         </div>
@@ -299,7 +299,7 @@ export default function GalleryMultiAngleUpload({
 
       {/* 에러 메시지 */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+        <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm text-center">
           {error}
         </div>
       )}
@@ -309,7 +309,7 @@ export default function GalleryMultiAngleUpload({
         <Button
           onClick={handleComplete}
           disabled={!hasFrontImage}
-          className="w-full h-14 text-lg bg-gradient-brand hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl transition-all font-bold gap-2"
+          className="w-full h-14 text-lg bg-primary hover:opacity-90 rounded-2xl transition-all font-bold gap-2"
         >
           {additionalCount > 0 ? `${1 + additionalCount}장으로 분석하기` : '정면 사진으로 분석하기'}
           <ChevronRight className="w-5 h-5" />

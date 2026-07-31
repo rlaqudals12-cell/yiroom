@@ -210,8 +210,8 @@ export default function HairAnalysisPage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                  <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-lg font-bold text-primary">
                     {existingAnalysis.overall_score}
                   </span>
                 </div>
@@ -223,7 +223,7 @@ export default function HairAnalysisPage() {
                   </div>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-amber-500" />
+              <ArrowRight className="w-5 h-5 text-primary" />
             </div>
           </Link>
         )}
@@ -233,7 +233,7 @@ export default function HairAnalysisPage() {
           <div className="space-y-6">
             {/* 한 장이면 충분 — 사용자가 여러 장 촬영을 혼동하지 않도록 명시 */}
             <div
-              className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm text-amber-800 dark:text-amber-300"
+              className="bg-muted/50 border border-border rounded-xl p-4 text-sm text-foreground"
               data-testid="hair-single-photo-notice"
             >
               {t('hair.guideSinglePhoto')}
@@ -243,19 +243,19 @@ export default function HairAnalysisPage() {
               <h2 className="font-semibold text-lg mb-4">{t('hair.guideTitle')}</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">&#10003;</span>
+                  <span className="text-primary">&#10003;</span>
                   {t('hair.guideTip1')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">&#10003;</span>
+                  <span className="text-primary">&#10003;</span>
                   {t('hair.guideTip2')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-500">&#10003;</span>
+                  <span className="text-primary">&#10003;</span>
                   {t('hair.guideTip3')}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">&#10007;</span>
+                  <span className="text-muted-foreground">&#10007;</span>
                   {t('hair.guideAvoid')}
                 </li>
               </ul>
@@ -316,8 +316,8 @@ export default function HairAnalysisPage() {
                 onClick={handleUploadClick}
                 className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
               >
-                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-foreground">{t('upload.selectPhoto')}</p>
@@ -335,10 +335,10 @@ export default function HairAnalysisPage() {
         {/* 로딩 */}
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 animate-pulse"></div>
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-pulse"></div>
             <p className="text-lg font-medium text-foreground">{t('hair.aiAnalyzingHair')}</p>
             <p className="text-sm text-muted-foreground mt-2">{t('loading.pleaseWait')}</p>
-            <Loader2 className="w-8 h-8 mt-6 animate-spin text-amber-500" />
+            <Loader2 className="w-8 h-8 mt-6 animate-spin text-primary" />
           </div>
         )}
 

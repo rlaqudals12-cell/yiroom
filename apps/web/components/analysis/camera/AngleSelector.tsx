@@ -39,7 +39,7 @@ export function AngleSelector({
   if (allCaptured) {
     return (
       <div className={cn('text-center', className)} data-testid="angle-selector">
-        <div className="flex items-center justify-center gap-2 text-green-600 mb-4">
+        <div className="flex items-center justify-center gap-2 text-primary mb-4">
           <Check className="w-5 h-5" />
           <span className="font-medium">모든 사진이 준비되었어요</span>
         </div>
@@ -121,7 +121,7 @@ export function AngleSelector({
 function StatusDot({ captured, label }: { captured: boolean; label: string }) {
   return (
     <div className="flex items-center gap-1">
-      <div className={cn('w-2 h-2 rounded-full', captured ? 'bg-green-500' : 'bg-gray-300')} />
+      <div className={cn('w-2 h-2 rounded-full', captured ? 'bg-primary' : 'bg-border')} />
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );

@@ -224,7 +224,7 @@ export default function BodyAnalysisPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">{t('loading.checkingExisting')}</p>
         </div>
       </div>
@@ -301,7 +301,7 @@ export default function BodyAnalysisPage() {
 
       {/* 공유 버튼 - 결과 화면에서만 하단 고정 */}
       {step === 'result' && result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card border-t border-border z-10">
           <div className="max-w-md mx-auto">
             <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>

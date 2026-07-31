@@ -177,7 +177,7 @@ export default function GalleryMultiAngleSkinUpload({
     <div className="space-y-6" data-testid="gallery-multi-angle-skin-upload">
       {/* 헤더 */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
           갤러리에서 선택
         </div>
         <h2 className="text-xl font-bold">피부 사진을 선택해주세요</h2>
@@ -185,9 +185,9 @@ export default function GalleryMultiAngleSkinUpload({
       </div>
 
       {/* 피부 분석 팁 */}
-      <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-sm text-emerald-700 dark:text-emerald-300">
+      <div className="bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground">
         <p className="font-medium mb-1">정확한 분석을 위한 팁</p>
-        <ul className="text-xs space-y-0.5 text-emerald-600 dark:text-emerald-400">
+        <ul className="text-xs space-y-0.5 text-muted-foreground">
           <li>• 화장을 지운 상태가 좋아요</li>
           <li>• 자연광에서 촬영된 사진이 정확해요</li>
           <li>• 피부가 잘 보이는 선명한 사진을 선택해주세요</li>
@@ -198,11 +198,13 @@ export default function GalleryMultiAngleSkinUpload({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">정면 사진</span>
-          <span className="text-xs text-red-500">필수</span>
+          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+            필수
+          </span>
         </div>
 
         {images.front ? (
-          <div className="relative aspect-[3/4] max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500">
+          <div className="relative aspect-[3/4] max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-primary">
             <Image src={images.front} alt="정면 사진" fill className="object-cover" unoptimized />
             <button
               onClick={() => handleRemoveImage('front')}
@@ -210,7 +212,7 @@ export default function GalleryMultiAngleSkinUpload({
             >
               <X className="w-4 h-4" />
             </button>
-            <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
+            <div className="absolute bottom-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center gap-1">
               <Check className="w-3 h-3" />
               정면
             </div>
@@ -218,15 +220,13 @@ export default function GalleryMultiAngleSkinUpload({
         ) : (
           <button
             onClick={() => handleSelectAngle('front')}
-            className="w-full aspect-[3/4] max-w-[200px] mx-auto rounded-2xl border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 flex flex-col items-center justify-center gap-3 hover:bg-emerald-500/10 transition-colors"
+            className="w-full aspect-[3/4] max-w-[200px] mx-auto rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 flex flex-col items-center justify-center gap-3 hover:bg-primary/10 transition-colors"
           >
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <User className="w-8 h-8 text-emerald-500/50" />
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="w-8 h-8 text-primary/50" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                정면 사진 선택
-              </p>
+              <p className="text-sm font-medium text-primary">정면 사진 선택</p>
               <p className="text-xs text-muted-foreground mt-1">{ANGLE_DESCRIPTIONS.front}</p>
             </div>
           </button>
@@ -261,7 +261,7 @@ export default function GalleryMultiAngleSkinUpload({
                   >
                     <X className="w-3 h-3" />
                   </button>
-                  <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full flex items-center gap-0.5">
+                  <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center gap-0.5">
                     <Check className="w-2.5 h-2.5" />
                     {ANGLE_LABELS[angle]}
                   </div>
@@ -285,7 +285,7 @@ export default function GalleryMultiAngleSkinUpload({
 
       {/* 검증 중 오버레이 */}
       {isValidating && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-sm text-center flex items-center justify-center gap-2">
+        <div className="p-3 bg-muted border border-border rounded-lg text-muted-foreground text-sm text-center flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           이미지 확인 중...
         </div>

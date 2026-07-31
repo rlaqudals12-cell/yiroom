@@ -125,7 +125,11 @@ export function MultiAngleCapture({
       }
 
       // 이미지 저장
-      const imageKey = selectByKey(currentAngle, { front: 'frontImageBase64' as const, left: 'leftImageBase64' as const }, 'rightImageBase64' as const)!;
+      const imageKey = selectByKey(
+        currentAngle,
+        { front: 'frontImageBase64' as const, left: 'leftImageBase64' as const },
+        'rightImageBase64' as const
+      )!;
 
       setImages((prev) => ({ ...prev, [imageKey]: imageBase64 }));
       setCapturedAngles((prev) => [...prev, currentAngle]);
@@ -254,11 +258,9 @@ export function MultiAngleCapture({
               </div>
 
               {/* 촬영 팁 */}
-              <div className="w-full bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3 mb-6">
-                <p className="text-xs text-blue-800 dark:text-blue-300 font-medium mb-1.5">
-                  촬영 팁
-                </p>
-                <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-0.5">
+              <div className="w-full bg-muted/50 border border-border rounded-lg p-3 mb-6">
+                <p className="text-xs text-foreground font-medium mb-1.5">촬영 팁</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5">
                   <li>• 자연광이 있는 밝은 곳에서 촬영</li>
                   <li>• 맨 얼굴 상태가 가장 정확해요</li>
                   <li>• 얼굴 전체가 화면에 나오도록</li>
@@ -342,19 +344,19 @@ export function MultiAngleCapture({
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">정면 사진</span>
-                  <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-medium">
+                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
                     완료
                   </span>
                 </div>
                 {images.frontImageBase64 && (
-                  <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden border-2 border-green-400 shadow-lg">
+                  <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden border-2 border-primary shadow-lg dark:shadow-none">
                     {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                     <img
                       src={images.frontImageBase64}
                       alt="정면 사진"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-2 left-2 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+                    <div className="absolute bottom-2 left-2 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center gap-1.5">
                       <Camera className="w-3.5 h-3.5" />
                       정면
                     </div>
@@ -378,14 +380,14 @@ export function MultiAngleCapture({
                   {/* 좌측 */}
                   <div className="flex-1 max-w-[180px]">
                     {capturedAngles.includes('left') && images.leftImageBase64 ? (
-                      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-primary shadow-md dark:shadow-none">
                         {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                         <img
                           src={images.leftImageBase64}
                           alt="좌측 사진"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-green-500 text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+                        <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center gap-1.5">
                           <Camera className="w-3 h-3" />
                           좌측
                         </div>
@@ -409,14 +411,14 @@ export function MultiAngleCapture({
                   {/* 우측 */}
                   <div className="flex-1 max-w-[180px]">
                     {capturedAngles.includes('right') && images.rightImageBase64 ? (
-                      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-primary shadow-md dark:shadow-none">
                         {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                         <img
                           src={images.rightImageBase64}
                           alt="우측 사진"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-green-500 text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow">
+                        <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center gap-1.5">
                           <Camera className="w-3 h-3" />
                           우측
                         </div>
@@ -443,7 +445,7 @@ export function MultiAngleCapture({
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={handleComplete}
-                  className="w-full h-14 text-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 shadow-lg rounded-2xl transition-all font-bold gap-2"
+                  className="w-full h-14 text-lg bg-primary hover:opacity-90 rounded-2xl transition-all font-bold gap-2"
                 >
                   {capturedAngles.length > 1
                     ? `${capturedAngles.length}장으로 분석하기`

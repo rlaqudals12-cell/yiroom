@@ -486,7 +486,7 @@ export default function PersonalColorPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">{t('loading.checkingExisting')}</p>
           <button
             onClick={() => window.history.back()}
@@ -523,38 +523,36 @@ export default function PersonalColorPage() {
 
         {/* 기존 분석 결과 배너 (낮은 신뢰도인 경우에만 표시 - 높은 신뢰도는 자동 리디렉트) */}
         {step === 'guide' && existingAnalysis && !checkingExisting && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
+          <div className="mb-6 p-4 bg-card rounded-xl border border-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                <Palette className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Palette className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="font-medium text-foreground">{t('pc.existingResult')}</p>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-amber-600">
+                  <span className="font-medium text-foreground">
                     {getSeasonLabel(existingAnalysis.season, t)}
                   </span>
                   <span>•</span>
-                  <span className="text-amber-500">{t('pc.lowConfidence')}</span>
+                  <span>{t('pc.lowConfidence')}</span>
                   <span>•</span>
                   <Clock className="w-3 h-3" />
                   {formatDate(new Date(existingAnalysis.created_at), locale, t)}
                 </div>
               </div>
             </div>
-            <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
-              {t('pc.lowConfidenceDesc')}
-            </p>
+            <p className="text-sm text-muted-foreground mb-3">{t('pc.lowConfidenceDesc')}</p>
             <div className="flex gap-2">
               <Link
                 href={`/analysis/personal-color/result/${existingAnalysis.id}`}
-                className="flex-1 px-3 py-2 text-sm text-center bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
+                className="flex-1 px-3 py-2 text-sm text-center bg-background border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 {t('action.viewExistingResult')}
               </Link>
               <button
                 onClick={() => setStep('multi-angle')}
-                className="flex-1 px-3 py-2 text-sm text-center bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
+                className="flex-1 px-3 py-2 text-sm text-center bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-colors font-medium"
               >
                 {t('action.reAnalyze')}
               </button>

@@ -93,9 +93,9 @@ export default function WristPhotoUpload({ onPhotoSelect, onSkip }: WristPhotoUp
       </button>
 
       {/* 촬영 팁 - 컴팩트 버전 */}
-      <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
-        <p className="text-xs text-blue-800 dark:text-blue-300 font-medium mb-1.5">촬영 팁</p>
-        <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-0.5">
+      <div className="bg-muted/50 border border-border rounded-lg p-3">
+        <p className="text-xs text-foreground font-medium mb-1.5">촬영 팁</p>
+        <ul className="text-xs text-muted-foreground space-y-0.5">
           <li>• 손목 안쪽의 혈관이 잘 보이는 밝은 곳에서</li>
           <li>• 손목 안쪽이 카메라를 향하도록 촬영해주세요</li>
           <li>• 혈관 색이 파란색/보라색인지 녹색인지 확인할 수 있어요</li>

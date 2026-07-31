@@ -7,7 +7,7 @@ import { getDateLocale } from '@/lib/utils/date-format';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, ArrowRight, Upload, Loader2 } from 'lucide-react';
+import { Clock, ArrowRight, Upload, Loader2, Brush } from 'lucide-react';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import { Button } from '@/components/ui/button';
@@ -194,17 +194,17 @@ export default function MakeupAnalysisPage() {
         {/* 에러 메시지 */}
         {error && (
           <div
-            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm"
+            className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-sm"
             role="alert"
             aria-live="assertive"
             data-testid="makeup-error-banner"
           >
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRetry}
-              className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 px-0"
+              className="mt-2 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 px-0"
               aria-label={t('makeup.retryAria')}
               data-testid="makeup-error-retry-button"
             >
@@ -223,8 +223,8 @@ export default function MakeupAnalysisPage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
-                  <span className="text-lg font-bold text-pink-600 dark:text-pink-400">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-lg font-bold text-primary">
                     {existingAnalysis.overall_score}
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function MakeupAnalysisPage() {
                   </div>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-pink-500" />
+              <ArrowRight className="w-5 h-5 text-primary" />
             </div>
           </Link>
         )}
@@ -282,7 +282,7 @@ export default function MakeupAnalysisPage() {
                   <Button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
-                    className="flex-1 bg-pink-500 hover:bg-pink-600"
+                    className="flex-1"
                     data-testid="makeup-analyze-button"
                     aria-label={t('makeup.startAnalysisAria')}
                   >
@@ -300,12 +300,12 @@ export default function MakeupAnalysisPage() {
             ) : (
               <button
                 onClick={handleUploadClick}
-                className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-pink-500/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
+                className="w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-4 bg-card"
                 aria-label={t('upload.selectPhotoAria')}
                 data-testid="makeup-upload-area"
               >
-                <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <div className="text-center">
                   <p className="font-medium text-foreground">{t('upload.selectPhoto')}</p>
@@ -327,12 +327,12 @@ export default function MakeupAnalysisPage() {
             aria-live="polite"
             data-testid="makeup-loading"
           >
-            <div className="w-20 h-20 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center mb-6 animate-pulse">
-              <span className="text-4xl">💄</span>
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-pulse">
+              <Brush className="w-9 h-9 text-primary" aria-hidden="true" />
             </div>
             <p className="text-lg font-medium text-foreground">{t('makeup.aiAnalyzingFace')}</p>
             <p className="text-sm text-muted-foreground mt-2">{t('loading.pleaseWait')}</p>
-            <Loader2 className="w-8 h-8 mt-6 animate-spin text-pink-500" />
+            <Loader2 className="w-8 h-8 mt-6 animate-spin text-primary" />
           </div>
         )}
 

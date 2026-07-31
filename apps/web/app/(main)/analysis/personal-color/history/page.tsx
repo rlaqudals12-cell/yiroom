@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
-import { ArrowLeft, Calendar, ChevronRight, Palette, Sparkles } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronRight, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
 import type {
   PersonalColorHistoryItem,
@@ -31,14 +30,6 @@ const SEASON_COLORS: Record<string, string[]> = {
   summer: ['#B0C4DE', '#DDA0DD', '#87CEEB', '#E6E6FA'],
   autumn: ['#D2691E', '#8B4513', '#DAA520', '#CD853F'],
   winter: ['#000080', '#8B0000', '#4B0082', '#FFFFFF'],
-};
-
-// 시즌별 그라데이션 배경
-const SEASON_GRADIENT: Record<string, string> = {
-  spring: 'from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30',
-  summer: 'from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30',
-  autumn: 'from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30',
-  winter: 'from-indigo-100 to-slate-100 dark:from-indigo-900/30 dark:to-slate-900/30',
 };
 
 export default function PersonalColorHistoryPage(): React.JSX.Element {
@@ -87,7 +78,7 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="personal-color-history-page">
       {/* 헤더 */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <header className="sticky top-0 z-40 bg-background border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <Button
@@ -168,7 +159,6 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
               const seasonKey = item.details.season.toLowerCase();
               const seasonLabel = SEASON_LABELS[seasonKey] || item.details.season;
               const seasonColors = SEASON_COLORS[seasonKey] || SEASON_COLORS.spring;
-              const gradient = SEASON_GRADIENT[seasonKey] || SEASON_GRADIENT.spring;
 
               return (
                 <Card
@@ -178,14 +168,15 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      {/* 시즌 아이콘 */}
+                      {/* 시즌 팔레트 — 장식 대신 진단 대표색 4칩이 주인공 */}
                       <div
-                        className={cn(
-                          'w-16 h-16 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0',
-                          gradient
-                        )}
+                        className="w-16 h-16 rounded-lg overflow-hidden grid grid-cols-2 border border-border/50 flex-shrink-0"
+                        role="img"
+                        aria-label={`${seasonLabel} 대표색`}
                       >
-                        <Sparkles className="h-6 w-6 text-pink-500" aria-hidden="true" />
+                        {seasonColors.map((color) => (
+                          <div key={color} style={{ backgroundColor: color }} />
+                        ))}
                       </div>
 
                       {/* 정보 */}
@@ -200,23 +191,6 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
                         <p className="text-sm text-muted-foreground">
                           {seasonLabel} | 신뢰도 {item.details.confidence}%
                         </p>
-
-                        {/* 시즌 대표색 칩 */}
-                        <div className="flex gap-1.5 mt-2">
-                          {seasonColors.map((color) => (
-                            <div
-                              key={color}
-                              className="w-5 h-5 rounded-full border border-border/50"
-                              style={{ backgroundColor: color }}
-                              title={color}
-                              role="img"
-                              aria-label={`시즌 컬러 ${color}`}
-                            />
-                          ))}
-                          <span className="text-xs text-muted-foreground self-center ml-1">
-                            대표색
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </CardContent>

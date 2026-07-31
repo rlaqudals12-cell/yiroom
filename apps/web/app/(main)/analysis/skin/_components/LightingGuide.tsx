@@ -59,7 +59,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
   if (isProfileLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -68,13 +68,13 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
     <div data-testid="skin-lighting-guide" className="space-y-8 animate-fade-in-up">
       {/* 1. 헤더: 전문적인 느낌 */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold mb-2">
+        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-2">
           Step 1. 촬영 환경 체크
         </div>
         <h2 className="text-2xl font-bold text-foreground leading-tight">
           정확한 분석을 위해
           <br />
-          <span className="text-emerald-500">밝은 실내</span>가 좋아요
+          <span className="text-primary">밝은 실내</span>가 좋아요
         </h2>
         <p className="text-muted-foreground">
           조명에 따라 결과가 달라질 수 있어요.
@@ -83,15 +83,15 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
         </p>
       </div>
 
-      {/* 2. 메인 비주얼: 뷰파인더 UI (Emerald 테마) */}
-      <div className="relative mx-auto w-64 h-64 bg-zinc-50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 ring-1 ring-black/5">
-        {/* 배경: 부드러운 민트 그라디언트 */}
+      {/* 2. 메인 비주얼: 뷰파인더 UI — 웜 섀도 토큰(raised)·솔리드 배지, 글로우/블러 금지 */}
+      <div className="relative mx-auto w-64 h-64 bg-card rounded-[2rem] overflow-hidden shadow-lg dark:shadow-none border-4 border-background ring-1 ring-border">
+        {/* 배경: 지면과의 명도 단차 */}
         <div className="absolute inset-0 bg-muted/50" />
 
         {/* 가이드 라인 (뷰파인더) */}
-        <div className="absolute inset-6 border-2 border-dashed border-emerald-500/30 rounded-3xl" />
+        <div className="absolute inset-6 border-2 border-dashed border-primary/30 rounded-3xl" />
         <div className="absolute top-8 left-0 right-0 text-center">
-          <span className="text-[10px] font-medium text-muted-foreground bg-white/50 dark:bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
+          <span className="text-[10px] font-medium text-muted-foreground bg-background px-2 py-1 rounded-full border border-border">
             밝은 실내
           </span>
         </div>
@@ -99,14 +99,12 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
         {/* 중앙 아이콘 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="absolute -top-8 -right-8 w-16 h-16 bg-emerald-400/20 rounded-full blur-xl animate-pulse-light" />
-
-            <div className="w-24 h-24 rounded-full bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center relative z-10">
+            <div className="w-24 h-24 rounded-full bg-background shadow-sm dark:shadow-none flex items-center justify-center relative z-10">
               <User className="w-10 h-10 text-muted-foreground/40" />
             </div>
 
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-md z-20 animate-scale-in">
-              <Check className="w-5 h-5 text-white stroke-[3]" />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-sm dark:shadow-none z-20 animate-scale-in">
+              <Check className="w-5 h-5 text-primary-foreground stroke-[3]" />
             </div>
           </div>
         </div>
@@ -115,9 +113,9 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
       {/* 3. 가이드 팁 리스트 */}
       <div className="grid grid-cols-1 gap-3">
         {/* Tip 1 */}
-        <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/60 dark:bg-card/40 border border-border/50 shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-            <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+        <div className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border/50 shadow-sm dark:shadow-none">
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <Lightbulb className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
             <p className="text-sm font-bold text-foreground">밝은 실내</p>
@@ -128,9 +126,9 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
         </div>
 
         {/* Tip 2 */}
-        <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/60 dark:bg-card/40 border border-border/50 shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <div className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border/50 shadow-sm dark:shadow-none">
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
             <p className="text-sm font-bold text-foreground">맨 얼굴 권장</p>
@@ -143,15 +141,15 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
         {/* Tip 3 & 4 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-2xl bg-muted/30 border border-border/50 text-center">
-            <div className="w-8 h-8 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-2">
-              <ZapOff className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <div className="w-8 h-8 mx-auto bg-muted rounded-full flex items-center justify-center mb-2">
+              <ZapOff className="w-4 h-4 text-muted-foreground" />
             </div>
             <p className="text-xs font-bold mb-0.5">플래시 OFF</p>
             <p className="text-[10px] text-muted-foreground">피부색 왜곡 주의</p>
           </div>
           <div className="p-3 rounded-2xl bg-muted/30 border border-border/50 text-center">
-            <div className="w-8 h-8 mx-auto bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mb-2">
-              <Smartphone className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <div className="w-8 h-8 mx-auto bg-muted rounded-full flex items-center justify-center mb-2">
+              <Smartphone className="w-4 h-4 text-muted-foreground" />
             </div>
             <p className="text-xs font-bold mb-0.5">기본 카메라</p>
             <p className="text-[10px] text-muted-foreground">필터 사용 자제</p>
@@ -162,8 +160,8 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
       {/* 성별 선택 */}
       <div className="p-4 rounded-2xl bg-muted/50 border border-border">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-            <Users className="w-4 h-4 text-emerald-600" />
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-primary" />
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">성별 선택</p>
@@ -183,7 +181,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
               className={cn(
                 'flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all',
                 selectedGender === option.id
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                   : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground',
                 (isGenderSaving || isProfileLoading) && 'opacity-50 cursor-not-allowed'
               )}
@@ -195,7 +193,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
       </div>
 
       {/* 이미지 저장 동의 체크박스 */}
-      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+      <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
         <label className="flex items-start gap-3 cursor-pointer">
           <Checkbox
             id="consent-save-skin-image"
@@ -205,13 +203,13 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4 text-primary" />
               <span className="text-sm font-semibold text-foreground">피부 변화 추적 사용</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               분석 이미지를 30일간 저장하여 피부 변화를 추적할 수 있어요.
               <br />
-              <span className="text-emerald-600/80">
+              <span className="text-primary/80">
                 미동의 시 비포/애프터 비교 기능을 사용할 수 없어요.
               </span>
             </p>
@@ -232,7 +230,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
           onClick={onContinue}
           disabled={!canProceed || isGenderSaving}
           className={cn(
-            'w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700 hover:opacity-90 shadow-lg shadow-emerald-500/20 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold text-white',
+            'w-full h-14 text-lg bg-primary hover:opacity-90 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 font-bold',
             (!canProceed || isGenderSaving) && 'opacity-50 cursor-not-allowed'
           )}
         >

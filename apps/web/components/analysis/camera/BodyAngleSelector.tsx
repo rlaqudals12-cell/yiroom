@@ -78,7 +78,7 @@ export function BodyAngleSelector({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">정면 사진</span>
-            <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
               필수
             </span>
           </div>
@@ -110,7 +110,7 @@ export function BodyAngleSelector({
             </span>
           </div>
           {additionalCount > 0 && (
-            <p className="text-xs text-green-600 font-medium">{additionalCount}장 추가됨</p>
+            <p className="text-xs text-primary font-medium">{additionalCount}장 추가됨</p>
           )}
         </div>
 
@@ -124,7 +124,7 @@ export function BodyAngleSelector({
               <div key={angle}>
                 {captured && imageData ? (
                   // 촬영된 카드: 이미지 프리뷰 + X 삭제
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-green-400 shadow-md">
+                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-primary shadow-md dark:shadow-none">
                     {/* eslint-disable-next-line @next/next/no-img-element -- 카메라 촬영 base64 이미지 미리보기 */}
                     <img
                       src={imageData}
@@ -138,7 +138,7 @@ export function BodyAngleSelector({
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
-                    <div className="absolute bottom-1.5 left-1.5 px-2 py-1 bg-green-500 text-white text-[10px] font-medium rounded-full flex items-center gap-1 shadow">
+                    <div className="absolute bottom-1.5 left-1.5 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center gap-1">
                       <Check className="w-3 h-3" />
                       {ANGLE_LABELS[angle]}
                     </div>
@@ -181,7 +181,7 @@ export function BodyAngleSelector({
         <Button
           onClick={onSkip}
           disabled={disabled || !hasFront}
-          className="w-full h-14 text-lg bg-gradient-brand hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl transition-all font-bold gap-2"
+          className="w-full h-14 text-lg bg-primary hover:opacity-90 rounded-2xl transition-all font-bold gap-2"
         >
           {ctaText}
           <ChevronRight className="w-5 h-5" />

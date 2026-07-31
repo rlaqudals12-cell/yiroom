@@ -457,7 +457,7 @@ export default function SkinAnalysisPage() {
     return (
       <div className="min-h-[calc(100vh-80px)] bg-muted flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">{t('loading.checkingExisting')}</p>
           <button
             onClick={() => window.history.back()}
@@ -495,7 +495,7 @@ export default function SkinAnalysisPage() {
           {/* 에러 메시지 */}
           {error && (step === 'upload' || step === 'camera') && (
             <div
-              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+              className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm"
               role="alert"
               aria-live="polite"
             >
@@ -605,7 +605,7 @@ export default function SkinAnalysisPage() {
 
       {/* 공유 버튼 - 결과 화면에서만 하단 고정 */}
       {step === 'result' && result && (
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-card border-t border-border z-10">
           <div className="max-w-md mx-auto">
             <ShareButton onShare={share} loading={shareLoading} variant="outline" />
           </div>
