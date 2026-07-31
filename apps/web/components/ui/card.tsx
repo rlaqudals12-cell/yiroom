@@ -6,7 +6,12 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('rounded-2xl border bg-card text-card-foreground shadow', className)}
+      // 깊이 시스템(2026-07-31): 기본 섀도를 rest 토큰으로 승급 — 웜 브라운 2층이 전 카드에 전파.
+      // 다크는 섀도 대신 배경 명도 단차(기존 dark:shadow-none 패턴).
+      className={cn(
+        'rounded-2xl border bg-card text-card-foreground shadow-[var(--shadow-card)] dark:shadow-none',
+        className
+      )}
       {...props}
     />
   )
