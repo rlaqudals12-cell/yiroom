@@ -417,7 +417,8 @@ export function BeautyRecommendTab({
         const { data, error } = await query;
 
         if (error) {
-          console.error('[Beauty] 제품 조회 실패:', error);
+          // PostgrestError는 message가 열거 프로퍼티가 아니라 '{}'로 찍힘 — code/message 명시
+          console.error('[Beauty] 제품 조회 실패:', error.code, error.message);
           return;
         }
 

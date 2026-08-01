@@ -48,7 +48,7 @@ function generateCSP(isDev: boolean): string {
     // 폰트 소스 (Tawk.to 포함)
     "font-src 'self' https://*.tawk.to",
     // 연결 소스 (API, Supabase, Clerk, Gemini, Naver OAuth, Tawk.to, Sentry)
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.dev https://clerk-telemetry.com https://*.google.com https://*.googleapis.com https://generativelanguage.googleapis.com https://nid.naver.com https://openapi.naver.com https://*.tawk.to wss://*.tawk.to https://va.vercel-scripts.com https://*.sentry.io",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.dev https://clerk-telemetry.com https://*.google.com https://*.googleapis.com https://generativelanguage.googleapis.com https://nid.naver.com https://openapi.naver.com https://api.open-meteo.com https://*.tawk.to wss://*.tawk.to https://va.vercel-scripts.com https://*.sentry.io",
     // Worker 소스 (Clerk에서 blob workers 사용)
     "worker-src 'self' blob:",
     // 프레임 소스 (Clerk, Cloudflare Turnstile, Naver OAuth, Tawk.to)

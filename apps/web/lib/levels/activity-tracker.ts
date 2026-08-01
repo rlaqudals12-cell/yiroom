@@ -66,7 +66,8 @@ export async function getUserLevel(
           levelUpdatedAt: null,
         };
       }
-      console.error('[Levels] Failed to get user level:', error);
+      // PostgrestError는 message가 열거 프로퍼티가 아니라 '{}'로 찍힘 — code/message 명시
+      console.error('[Levels] Failed to get user level:', error.code, error.message);
       return null;
     }
 
