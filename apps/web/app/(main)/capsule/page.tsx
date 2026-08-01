@@ -10,7 +10,6 @@ import {
   Palette,
   Sparkles,
   PersonStanding,
-  CalendarCheck,
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
@@ -29,21 +28,6 @@ const DOMAINS = [
   { id: 'personal-color', name: '퍼스널 컬러', icon: Sparkles, color: '#F472B6' },
   { id: 'body', name: '체형', icon: PersonStanding, color: '#A78BFA' },
 ] as const;
-
-// API(/api/capsule/daily) 실제 응답 계약 — types/capsule.ts DailyItem 형태.
-// 기존엔 completed를 읽어 통계가 항상 0이던 버그 (실필드 isChecked, 2026-07-08 감사 수리)
-interface DailyItem {
-  id: string;
-  name?: string;
-  moduleCode?: string;
-  isChecked?: boolean;
-}
-
-interface DailyCapsule {
-  id: string;
-  date: string;
-  items: DailyItem[];
-}
 
 interface GapData {
   gaps: Array<{
@@ -68,27 +52,18 @@ export default function CapsuleDashboardPage(): React.ReactElement {
   const { isSignedIn, isLoaded } = useUser();
   const router = useRouter();
 
-  const [daily, setDaily] = useState<DailyCapsule | null>(null);
   const [gapData, setGapData] = useState<GapData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 오늘의 루틴 요약카드 제거(2026-08-01): 같은 데이터의 3번째 렌더링이었음 —
+  // "오늘" 표면은 홈 위젯(요약·체크)+/capsule/daily(정본) 정확히 2개로 확정(ADR-111)
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const [dailyRes, gapRes] = await Promise.all([
-        fetch('/api/capsule/daily'),
-        fetch('/api/capsule/gap'),
-      ]);
-
-      if (dailyRes.ok) {
-        const dailyJson = await dailyRes.json();
-        if (dailyJson.success) {
-          setDaily(dailyJson.data);
-        }
-      }
+      const gapRes = await fetch('/api/capsule/gap');
 
       if (gapRes.ok) {
         const gapJson = await gapRes.json();
@@ -165,9 +140,6 @@ export default function CapsuleDashboardPage(): React.ReactElement {
     );
   }
 
-  const completedCount = daily?.items.filter((i) => i.isChecked).length ?? 0;
-  const totalCount = daily?.items.length ?? 0;
-
   return (
     <div className="container mx-auto px-4 py-6 pb-24" data-testid="capsule-dashboard">
       {/* 헤더 — "캡슐" 용어는 사용자 표면에서 제거 (2026-07-08 피드백: 초보자가 모르는 내부 용어) */}
@@ -175,41 +147,6 @@ export default function CapsuleDashboardPage(): React.ReactElement {
         <h1 className="text-2xl font-bold">나만의 플랜</h1>
         <p className="mt-1 text-muted-foreground">나에게 꼭 맞는 뷰티·스타일 플랜을 관리해요</p>
       </div>
-
-      {/* Daily Capsule 요약 카드 — 호버 = raised 섀도
-          (rest와 동일값이라 무효이던 hover:shadow-md 수리, 다크는 배경 단차 유지) */}
-      {daily && totalCount > 0 && (
-        <Card
-          className="p-4 mb-6 cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
-          onClick={() => router.push('/capsule/daily')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <CalendarCheck className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">오늘의 루틴</h3>
-                <p className="text-xs text-muted-foreground">
-                  {completedCount}/{totalCount} 완료
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* 진행률 바 */}
-              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all"
-                  style={{
-                    width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* 시각 정체성 도메인 그리드 */}
       <div className="grid grid-cols-3 gap-3 mb-6">

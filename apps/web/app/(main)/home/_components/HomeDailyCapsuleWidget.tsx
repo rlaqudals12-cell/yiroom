@@ -192,7 +192,9 @@ export default function HomeDailyCapsuleWidget() {
       }
 
       try {
-        await fetch(`/api/capsule/check/${capsule.id}`, {
+        // 체크 API 정본 = /api/capsule/daily/[id] (모바일 APK도 이 경로 하드코딩 —
+        // 구 check/[id] 이중화가 표면별 계약 드리프트의 원천이라 통일, 2026-08-01)
+        await fetch(`/api/capsule/daily/${capsule.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ itemId: item.id, isChecked: !item.isChecked }),

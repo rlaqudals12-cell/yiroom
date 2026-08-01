@@ -29,16 +29,17 @@
 
 **모든 정보 유형에 정본(canon) 표면을 정확히 1곳 지정하고, 나머지 표면은 흡수(재사용)하거나 링크로 위임한다.**
 
-| 정보 유형             | 정본                                                                                                             | 나머지 표면의 처리                                                               |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| 분석 진입 + 축별 요약 | **[나] 탭 ProfileCardGrid 단독** (ADR-114 갱신 2026-07-10 — 홈=브리핑 정본, 새 분석 진입=온보딩+프로필 빈칸 CTA) | `/analysis` 허브 → `/home` redirect 유지. 홈에서는 ProfileCardGrid 제거(ADR-114) |
-| 축 상세(심화)         | **개별 결과 페이지** (`/analysis/{axis}/result/[id]`)                                                            | 통합 결과의 AxesSummaryCard·AxisDetailAccordion 제거, 축별 심화 링크로 위임      |
-| 통합 결과             | **세션 고유물만** — Persona → ActionPlan → CrossInsights → Curation → 심화 링크 → Share (컨설팅 리포트 스토리)   | 개별 결과 재현물 제거                                                            |
-| 제품 추천(개별)       | **AnalysisMatchedProducts** (실DB + 개인화 + matchReasons)                                                       | RecommendedProducts 블록 제거                                                    |
-| 스킨케어 루틴         | **`lib/skincare/routine.ts` generateRoutine**                                                                    | 스킨 결과 페이지의 Mock/DB문자열 루틴 → 정본 요약 + 루틴 페이지 링크             |
-| 다음 행동(결과 하단)  | **ResultPageInsights** (통합 인사이트 + 오늘의 루틴 다리 + 다음 분석 1행, 2026-07-25)                            | ContextLinkingCard 삭제(기능 흡수, 루틴 다리 testid 보존)                        |
-| 드레이핑(색 대보기)   | **DrapingSection** (zero-mask 캔버스 합성, PC 결과·통합 결과 동일 컴포넌트)                                      | 구 MediaPipe 경로 삭제(CSP 차단 → Mock 가면이던 표면)                            |
-| 가상 메이크업 진입    | **드레이핑 탭 경유 텍스트 링크** (`/style/virtual-try-on`, 2026-07-25)                                           | PC 결과 sticky 보조 버튼 제거(하단 primary는 제품 CTA 1개만)                     |
+| 정보 유형             | 정본                                                                                                             | 나머지 표면의 처리                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 분석 진입 + 축별 요약 | **[나] 탭 ProfileCardGrid 단독** (ADR-114 갱신 2026-07-10 — 홈=브리핑 정본, 새 분석 진입=온보딩+프로필 빈칸 CTA) | `/analysis` 허브 → `/home` redirect 유지. 홈에서는 ProfileCardGrid 제거(ADR-114)               |
+| 축 상세(심화)         | **개별 결과 페이지** (`/analysis/{axis}/result/[id]`)                                                            | 통합 결과의 AxesSummaryCard·AxisDetailAccordion 제거, 축별 심화 링크로 위임                    |
+| 통합 결과             | **세션 고유물만** — Persona → ActionPlan → CrossInsights → Curation → 심화 링크 → Share (컨설팅 리포트 스토리)   | 개별 결과 재현물 제거                                                                          |
+| 제품 추천(개별)       | **AnalysisMatchedProducts** (실DB + 개인화 + matchReasons)                                                       | RecommendedProducts 블록 제거                                                                  |
+| 스킨케어 루틴         | **`lib/skincare/routine.ts` generateRoutine**                                                                    | 스킨 결과 페이지의 Mock/DB문자열 루틴 → 정본 요약 + 루틴 페이지 링크                           |
+| 다음 행동(결과 하단)  | **ResultPageInsights** (통합 인사이트 + 오늘의 루틴 다리 + 다음 분석 1행, 2026-07-25)                            | ContextLinkingCard 삭제(기능 흡수, 루틴 다리 testid 보존)                                      |
+| 드레이핑(색 대보기)   | **DrapingSection** (zero-mask 캔버스 합성, PC 결과·통합 결과 동일 컴포넌트)                                      | 구 MediaPipe 경로 삭제(CSP 차단 → Mock 가면이던 표면)                                          |
+| 가상 메이크업 진입    | **드레이핑 탭 경유 텍스트 링크** (`/style/virtual-try-on`, 2026-07-25)                                           | PC 결과 sticky 보조 버튼 제거(하단 primary는 제품 CTA 1개만)                                   |
+| 오늘의 루틴           | **홈 위젯(지금 할 3개·인라인 체크) + `/capsule/daily`(전체 정본)** — 정확히 2표면, 체크 API는 `daily/[id]` 단일  | /capsule 허브의 요약카드 삭제(같은 데이터 3번째 렌더링) + 구 `check/[id]` API 삭제(2026-08-01) |
 
 링크 재배선은 인텐트 기준: "내 결과 보기" → `/home`, "새 분석 시작" → `/analysis/integrated`(또는 해당 축 직행), 에러 폴백 → `/home`.
 
