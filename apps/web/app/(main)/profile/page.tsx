@@ -573,26 +573,7 @@ export default function ProfilePage() {
                     챌린지 보기 <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {profileData?.challengeStats.inProgress || 0}
-                    </div>
-                    <div className="text-muted-foreground mt-1 text-xs">진행 중</div>
-                  </div>
-                  <div className="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {profileData?.challengeStats.completed || 0}
-                    </div>
-                    <div className="text-muted-foreground mt-1 text-xs">완료</div>
-                  </div>
-                  <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900/20">
-                    <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-                      {profileData?.challengeStats.total || 0}
-                    </div>
-                    <div className="text-muted-foreground mt-1 text-xs">전체 참여</div>
-                  </div>
-                </div>
+                <ChallengeStatsPanel stats={profileData?.challengeStats} />
               </section>
             </FadeInUp>
           </>
@@ -622,20 +603,7 @@ export default function ProfilePage() {
                     아직 친구가 없어요. 친구를 추가해보세요.
                   </p>
                 )}
-                <div className="flex gap-2">
-                  <Link
-                    href="/friends/search"
-                    className="bg-muted hover:bg-muted/80 flex-1 rounded-lg py-2 text-center text-sm font-medium"
-                  >
-                    친구 추가
-                  </Link>
-                  <Link
-                    href="/friends/requests"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg py-2 text-center text-sm font-medium"
-                  >
-                    친구 요청 ({friendRequests})
-                  </Link>
-                </div>
+                <FriendActionButtons friendRequests={friendRequests} />
               </section>
             </FadeInUp>
 
@@ -832,6 +800,75 @@ export default function ProfilePage() {
       </div>
 
       <BottomNav />
+    </div>
+  );
+}
+
+/** 챌린지 스탯 — 참여 이력 0이면 "0·0·0" 빈 채점판 대신 1행 진입 링크로 축약 (배치 C4) */
+function ChallengeStatsPanel({ stats }: { stats: ChallengeStats | undefined }): React.JSX.Element {
+  if ((stats?.total ?? 0) === 0) {
+    return (
+      <Link
+        href="/challenges"
+        className="bg-muted/50 hover:bg-muted flex items-center justify-between rounded-xl p-4 transition-colors"
+        data-testid="challenge-empty-entry"
+      >
+        <span className="text-muted-foreground text-sm">
+          아직 참여한 챌린지가 없어요. 첫 챌린지를 시작해보세요.
+        </span>
+        <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+      </Link>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
+        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          {stats?.inProgress || 0}
+        </div>
+        <div className="text-muted-foreground mt-1 text-xs">진행 중</div>
+      </div>
+      <div className="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
+        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          {stats?.completed || 0}
+        </div>
+        <div className="text-muted-foreground mt-1 text-xs">완료</div>
+      </div>
+      <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900/20">
+        <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+          {stats?.total || 0}
+        </div>
+        <div className="text-muted-foreground mt-1 text-xs">전체 참여</div>
+      </div>
+    </div>
+  );
+}
+
+/** 친구 액션 — 받은 요청이 0이면 응답할 대상이 없으므로 '친구 추가'를 주 액션으로 승격 (배치 C4) */
+function FriendActionButtons({ friendRequests }: { friendRequests: number }): React.JSX.Element {
+  const primaryClass = 'bg-primary text-primary-foreground hover:bg-primary/90';
+  const mutedClass = 'bg-muted hover:bg-muted/80';
+  const hasRequests = friendRequests > 0;
+
+  return (
+    <div className="flex gap-2">
+      <Link
+        href="/friends/search"
+        className={`flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors ${
+          hasRequests ? mutedClass : primaryClass
+        }`}
+      >
+        친구 추가
+      </Link>
+      <Link
+        href="/friends/requests"
+        className={`flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors ${
+          hasRequests ? primaryClass : mutedClass
+        }`}
+      >
+        친구 요청 ({friendRequests})
+      </Link>
     </div>
   );
 }

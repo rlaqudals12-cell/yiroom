@@ -343,12 +343,14 @@ export default function SettingsPage() {
                     isLoading={isProfileLoading}
                   />
 
-                  {/* 알러지 정보 카드 */}
-                  <AllergyInfoCard
-                    allergies={profile.allergies}
-                    onAllergiesChange={updateAllergies}
-                    isLoading={isProfileLoading}
-                  />
+                  {/* 알러지 정보 카드 — 영양(N-1) 입력이라 W/N 게이팅과 대칭 (ADR-098, 코드·데이터 유지) */}
+                  {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+                    <AllergyInfoCard
+                      allergies={profile.allergies}
+                      onAllergiesChange={updateAllergies}
+                      isLoading={isProfileLoading}
+                    />
+                  )}
                 </div>
               </div>
 

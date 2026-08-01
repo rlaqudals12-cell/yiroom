@@ -397,6 +397,23 @@ describe('ProfilePage', () => {
         expect(screen.getByText('리더보드')).toBeInTheDocument();
       });
     });
+
+    // 배치 C4: 받은 요청 0이면 응답 대상이 없으므로 '친구 추가'가 주 액션
+    it('받은 친구 요청이 없으면 "친구 추가"가 주 액션(primary)이다', async () => {
+      render(<ProfilePage />);
+
+      await vi.waitFor(() => {
+        expect(screen.getByText('소셜')).toBeInTheDocument();
+      });
+      screen.getByText('소셜').click();
+
+      await vi.waitFor(() => {
+        const addLink = screen.getByRole('link', { name: '친구 추가' });
+        expect(addLink.className).toContain('bg-primary');
+      });
+      const requestLink = screen.getByRole('link', { name: /친구 요청/ });
+      expect(requestLink.className).not.toContain('bg-primary');
+    });
   });
 
   describe('챌린지 통계', () => {
@@ -446,6 +463,33 @@ describe('ProfilePage', () => {
         expect(screen.getByText('3')).toBeInTheDocument(); // 완료
         expect(screen.getByText('5')).toBeInTheDocument(); // 전체 참여
       });
+    });
+
+    // 배치 C4: 참여 이력 0이면 "0·0·0" 빈 채점판 대신 1행 진입 링크
+    it('참여한 챌린지가 없으면 스탯 3박스 대신 1행 진입 링크를 표시한다', async () => {
+      vi.mocked(getUserChallengeStats).mockResolvedValue({
+        total: 0,
+        inProgress: 0,
+        completed: 0,
+        failed: 0,
+        expired: 0,
+        abandoned: 0,
+      });
+
+      render(<ProfilePage />);
+
+      // 활동 탭으로 전환
+      await vi.waitFor(() => {
+        expect(screen.getByText('활동')).toBeInTheDocument();
+      });
+      screen.getByText('활동').click();
+
+      await vi.waitFor(() => {
+        const entry = screen.getByTestId('challenge-empty-entry');
+        expect(entry).toBeInTheDocument();
+        expect(entry).toHaveAttribute('href', '/challenges');
+      });
+      expect(screen.queryByText('전체 참여')).not.toBeInTheDocument();
     });
   });
 

@@ -8,6 +8,7 @@
 
 import { ArrowLeft, User } from 'lucide-react';
 import Link from 'next/link';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { useUserProfile, type GenderType } from '@/hooks/useUserProfile';
 import { PhysicalInfoCard, AllergyInfoCard } from '@/components/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,12 +98,14 @@ export default function MyInfoPage() {
           isLoading={isLoading}
         />
 
-        {/* 알러지 정보 */}
-        <AllergyInfoCard
-          allergies={profile.allergies}
-          onAllergiesChange={updateAllergies}
-          isLoading={isLoading}
-        />
+        {/* 알러지 정보 — 영양(N-1) 입력이라 W/N 게이팅과 대칭 (ADR-098, 코드·데이터 유지) */}
+        {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+          <AllergyInfoCard
+            allergies={profile.allergies}
+            onAllergiesChange={updateAllergies}
+            isLoading={isLoading}
+          />
+        )}
 
         {/* 추가 링크 */}
         <div className="pt-4 border-t">

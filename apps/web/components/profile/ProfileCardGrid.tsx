@@ -18,7 +18,6 @@ import {
   Plus,
   Check,
   ChevronRight,
-  Sparkles,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -62,38 +61,37 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
   const pct = Math.round((completedCount / TOTAL_ANALYSIS_TYPES) * 100);
 
   return (
+    // 유리(backdrop-blur)·그림자 해체 — 솔리드 카드 + 헤어라인 보더 (ADR-120 깊이 레시피)
     <section
-      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 shadow-xl shadow-slate-200/50 dark:shadow-none"
+      className="bg-card rounded-2xl border p-5"
       data-testid="profile-card-grid"
       aria-label="내 정체성 프로필"
     >
-      {/* 페르소나 한 줄 — "살아있는 나" (있을 때만, ADR-109 A-visual) */}
+      {/* 페르소나 한 줄 — "살아있는 나" (있을 때만, ADR-109 A-visual). 그라데 텍스트·장식 아이콘 소거 */}
       {personaOneLine && (
-        <p
-          className="flex items-center gap-1.5 mb-3 text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500"
-          data-testid="profile-persona-line"
-        >
-          <Sparkles className="w-4 h-4 text-pink-400 shrink-0" aria-hidden="true" />
+        <p className="mb-3 text-base font-bold text-foreground" data-testid="profile-persona-line">
           {personaOneLine}
         </p>
       )}
 
-      {/* 헤더 + 완성도 미터 */}
+      {/* 헤더 + 완성도 미터 — 그라데 진행바 대신 채움 도트(N/5)로 표기 (ADR-120 채점형 미터 소거) */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-slate-900 dark:text-white">내 정체성</h3>
-          <span className="text-sm font-medium text-violet-600 dark:text-violet-400">
-            {pct === 100 ? '완성' : `나를 ${pct}% 알아냈어요`}
+          <span className="text-sm font-medium text-muted-foreground">
+            {pct === 100 ? '완성' : `${completedCount}/${TOTAL_ANALYSIS_TYPES} 채움`}
           </span>
         </div>
-        <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-violet-400 to-purple-500 transition-all"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="flex items-center gap-1.5" aria-hidden="true">
+          {Array.from({ length: TOTAL_ANALYSIS_TYPES }, (_, i) => (
+            <span
+              key={i}
+              className={`h-2 w-2 rounded-full ${i < completedCount ? 'bg-primary' : 'bg-muted'}`}
+            />
+          ))}
         </div>
         <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-          {completedCount}/{TOTAL_ANALYSIS_TYPES} · 셀카 한 장으로 채워가요
+          셀카 한 장으로 채워가요
         </p>
       </div>
 
@@ -111,14 +109,14 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
                 key={type}
                 href={meta.analysisHref}
                 onClick={() => track('profile_card_cta', { axis: type })}
-                className="group flex flex-col gap-1.5 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 transition-colors"
+                className="group flex flex-col gap-1.5 p-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-primary/40 hover:bg-primary/5 transition-colors"
                 data-testid={`profile-card-empty-${type}`}
               >
-                <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 transition-colors">
-                  <Plus className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+                <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                  <Plus className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
                 </div>
                 <p className="text-xs text-slate-400 dark:text-slate-500">{meta.label}</p>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
                   채우기
                 </p>
               </Link>
@@ -137,10 +135,9 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
               data-testid={`profile-card-${type}`}
             >
               <div className="flex items-center justify-between">
-                <div
-                  className={`w-9 h-9 rounded-lg bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md ${meta.shadow}`}
-                >
-                  <Icon className="w-4 h-4 text-white" />
+                {/* 축별 4색 그라데 칩 소거 — 프라이머리 저농도 틴트 단색 칩 (HomeAnalysisSummary와 동일 레시피) */}
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-primary" />
                 </div>
                 {/* 변동 뱃지 = 양 극단(PC·피부)만 — 체형/헤어/메이크업은 과한 주장이라 미노출 */}
                 {shouldShowCadenceBadge(type) && (
@@ -191,7 +188,7 @@ export default function ProfileCardGrid({ analyses, personaOneLine }: ProfileCar
         <Link
           href="/analysis/integrated"
           onClick={() => track('profile_integrated_cta', { completed: completedCount })}
-          className="mt-3 flex items-center justify-center gap-1 w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-bold shadow-md shadow-pink-500/20 hover:from-pink-400 hover:to-purple-400 transition-all"
+          className="mt-3 flex items-center justify-center gap-1 w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
           data-testid="profile-card-integrated-cta"
         >
           셀카 한 장으로 채우기

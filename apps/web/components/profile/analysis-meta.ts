@@ -11,13 +11,13 @@ import type { AnalysisSummary, AnalysisType } from '@/hooks/useAnalysisStatus';
 
 export const TOTAL_ANALYSIS_TYPES = 5;
 
+// 축별 4색 그라데·글로우 토큰(gradient/shadow)은 ADR-120 슬롭 해체로 제거 —
+// 아이콘 칩은 소비처에서 프라이머리 틴트 단색(bg-primary/10 + text-primary)으로 그린다.
 export interface AnalysisMeta {
   icon: typeof Palette;
   label: string;
   valueHint: string;
   narrative: string;
-  gradient: string;
-  shadow: string;
   href: string;
   analysisHref: string;
 }
@@ -28,8 +28,6 @@ export const ANALYSIS_META: Record<AnalysisType, AnalysisMeta> = {
     label: '퍼스널 컬러',
     valueHint: '나에게 어울리는 색을 알면 선택이 쉬워져요',
     narrative: '나에게 어울리는 색상 톤이에요',
-    gradient: 'from-violet-400 to-purple-500',
-    shadow: 'shadow-violet-500/30',
     href: '/analysis/personal-color/result',
     analysisHref: '/analysis/personal-color',
   },
@@ -38,8 +36,6 @@ export const ANALYSIS_META: Record<AnalysisType, AnalysisMeta> = {
     label: '피부',
     valueHint: '피부 상태를 알면 관리 방향이 보여요',
     narrative: '현재 피부 컨디션이에요',
-    gradient: 'from-rose-400 to-pink-500',
-    shadow: 'shadow-rose-500/30',
     href: '/analysis/skin/result',
     analysisHref: '/analysis/skin',
   },
@@ -48,8 +44,6 @@ export const ANALYSIS_META: Record<AnalysisType, AnalysisMeta> = {
     label: '체형',
     valueHint: '체형을 알면 스타일링이 달라져요',
     narrative: '나의 체형 특징이에요',
-    gradient: 'from-blue-400 to-indigo-500',
-    shadow: 'shadow-blue-500/30',
     href: '/analysis/body/result',
     analysisHref: '/analysis/body',
   },
@@ -58,8 +52,6 @@ export const ANALYSIS_META: Record<AnalysisType, AnalysisMeta> = {
     label: '헤어',
     valueHint: '얼굴형에 맞는 헤어를 찾아보세요',
     narrative: '모발 특성을 알게 됐어요',
-    gradient: 'from-amber-400 to-orange-500',
-    shadow: 'shadow-amber-500/30',
     href: '/analysis/hair/result',
     analysisHref: '/analysis/hair',
   },
@@ -68,8 +60,6 @@ export const ANALYSIS_META: Record<AnalysisType, AnalysisMeta> = {
     label: '메이크업',
     valueHint: '나만의 메이크업 포인트를 발견해요',
     narrative: '나만의 메이크업 포인트에요',
-    gradient: 'from-pink-400 to-rose-500',
-    shadow: 'shadow-pink-500/30',
     href: '/analysis/makeup/result',
     analysisHref: '/analysis/makeup',
   },

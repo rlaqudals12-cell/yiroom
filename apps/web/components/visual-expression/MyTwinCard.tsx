@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -124,8 +124,8 @@ export function MyTwinCard() {
 
   return (
     <section data-testid="my-twin-card" className="bg-card rounded-2xl border p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-purple-500" aria-hidden="true" />
+      {/* 장식 Sparkles 소거 — 텍스트 헤더만 유지 (ADR-120 슬롭 해체) */}
+      <div className="mb-3">
         <h3 className="font-semibold">내 AI 아바타</h3>
       </div>
       {renderBody()}

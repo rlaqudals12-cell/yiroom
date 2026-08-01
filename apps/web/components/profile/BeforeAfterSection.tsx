@@ -1,10 +1,13 @@
 'use client';
 
 /**
- * 프로필 Before/After 비교 섹션
- * - 첫 분석과 최근 분석을 나란히 표시
+ * 프로필 컨디션 변화 비교 섹션
+ * - 첫 분석과 최근 분석을 나란히 표시 (컨디션 축: 피부·헤어)
  * - 점수 변화 표시 (개선/악화/유지)
  * - 분석 2회 미만이면 안내 메시지
+ *
+ * 왜 컨디션 축만: 체형은 부위별 계측 점수의 평균이라 "점수 변화"로 표기하면
+ * ADR-120 채점 금지 원칙 위반 — 컨디션(시간에 따라 실제로 변하는 상태)만 비교한다.
  */
 
 import { useState, useEffect } from 'react';
@@ -15,13 +18,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import type { AnalysisType, AnalysisHistoryItem } from '@/types/analysis-history';
 
-// 분석 타입 표시용 매핑
-const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
+// 분석 타입 표시용 매핑 (컨디션 축만 — tryTypes와 동기)
+const ANALYSIS_TYPE_LABELS: Partial<Record<AnalysisType, string>> = {
   skin: '피부',
-  body: '체형',
-  'personal-color': '퍼스널 컬러',
   hair: '헤어',
-  makeup: '메이크업',
 };
 
 function ScoreChange({ before, after }: { before: number; after: number }): React.JSX.Element {
@@ -100,8 +100,9 @@ export function BeforeAfterSection(): React.JSX.Element | null {
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
 
-    // 피부 → 체형 → 헤어 순으로 Before/After 가능한 타입 찾기
-    const tryTypes: AnalysisType[] = ['skin', 'body', 'hair'];
+    // 피부 → 헤어 순으로 컨디션 비교 가능한 타입 찾기
+    // 체형(body)은 부위별 계측 점수 평균 = 채점 표기 금지(ADR-120) 위반이라 제외
+    const tryTypes: AnalysisType[] = ['skin', 'hair'];
 
     const findComparable = async (): Promise<void> => {
       for (const type of tryTypes) {
@@ -132,13 +133,12 @@ export function BeforeAfterSection(): React.JSX.Element | null {
     return (
       <Card data-testid="before-after-section">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Before / After</CardTitle>
+          <CardTitle className="text-base">컨디션 변화</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-2 py-4">
-            <span className="text-sm text-muted-foreground">Before / After</span>
             <p className="text-sm text-muted-foreground text-center">
-              분석을 2회 이상 하면 변화를 비교할 수 있어요
+              피부·헤어 분석을 2회 이상 하면 컨디션 변화를 비교할 수 있어요
             </p>
           </div>
         </CardContent>
@@ -147,16 +147,16 @@ export function BeforeAfterSection(): React.JSX.Element | null {
   }
 
   const period = calculatePeriod(data.first.date, data.latest.date);
-  const typeLabel = ANALYSIS_TYPE_LABELS[data.type];
+  // tryTypes가 컨디션 축(피부·헤어)만 시도하므로 라벨은 항상 존재 — 방어적 폴백만 유지
+  const typeLabel = ANALYSIS_TYPE_LABELS[data.type] ?? '';
 
   return (
     <Card data-testid="before-after-section">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center justify-between">
-          <span>Before / After</span>
-          <span className="text-xs font-normal text-muted-foreground">
-            {typeLabel} | {period} 변화
-          </span>
+          {/* 컨디션 예외임을 제목이 직접 증명 — "피부 컨디션 변화" (ADR-120) */}
+          <span>{typeLabel} 컨디션 변화</span>
+          <span className="text-xs font-normal text-muted-foreground">{period} 변화</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -16,11 +16,12 @@ function summary(
 }
 
 describe('ProfileCardGrid', () => {
-  it('완료 2축이면 완성도 40% + 완료 카드 + 빈 칸 + 통합 CTA', () => {
+  it('완료 2축이면 채움 도트 2/5 + 완료 카드 + 빈 칸 + 통합 CTA', () => {
     render(<ProfileCardGrid analyses={[summary('personal-color'), summary('skin')]} />);
 
     expect(screen.getByTestId('profile-card-grid')).toBeInTheDocument();
-    expect(screen.getByText(/나를 40% 알아냈어요/)).toBeInTheDocument();
+    // 그라데 진행바 소거 — "N/5 채움" 도트 표기 (ADR-120)
+    expect(screen.getByText('2/5 채움')).toBeInTheDocument();
     // 완료 칸 → 개별 결과 링크
     const pc = screen.getByTestId('profile-card-personal-color');
     expect(pc).toHaveAttribute('href', '/analysis/personal-color/result/personal-color-1');
@@ -45,7 +46,7 @@ describe('ProfileCardGrid', () => {
 
   it('분석 0개면 5칸 모두 빈 칸 CTA', () => {
     render(<ProfileCardGrid analyses={[]} />);
-    expect(screen.getByText(/나를 0% 알아냈어요/)).toBeInTheDocument();
+    expect(screen.getByText('0/5 채움')).toBeInTheDocument();
     expect(screen.getAllByTestId(/profile-card-empty-/)).toHaveLength(5);
   });
 
