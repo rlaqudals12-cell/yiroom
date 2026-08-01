@@ -1,6 +1,7 @@
 /**
  * PC-1 퍼스널컬러 분석 E2E 테스트
- * 분석 페이지 UI, 결과 페이지 3탭 구조, 색상 입혀보기 서브탭, 에러 처리 검증
+ * 분석 페이지 UI, 결과 페이지 2탭 구조, 색상 입혀보기 서브탭, 에러 처리 검증
+ * (구 '상세 리포트' 탭은 기본 분석 진단지에 흡수·삭제 — 2026-08-01)
  */
 
 import { test, expect } from '@playwright/test';
@@ -107,9 +108,9 @@ test.describe('PC-1 분석 페이지 - UI 검증', () => {
 });
 
 // --------------------------------------------------------------------------
-// 2. 결과 페이지 3탭 구조
+// 2. 결과 페이지 2탭 구조
 // --------------------------------------------------------------------------
-test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
+test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
   const RESULT_URL = '/analysis/personal-color/result/test-analysis';
 
   test('결과 페이지가 로드된다', async ({ page }) => {
@@ -120,7 +121,7 @@ test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
     expect(url).toMatch(/personal-color|sign-in/);
   });
 
-  test('TabsList가 존재하고 3개 탭이 표시된다', async ({ page }) => {
+  test('TabsList가 존재하고 2개 탭이 표시된다', async ({ page }) => {
     await page.goto(RESULT_URL);
     await waitForLoadingToFinish(page);
 
@@ -129,10 +130,10 @@ test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
       const hasTabs = await tabsList.isVisible().catch(() => false);
 
       if (hasTabs) {
-        // 3개 탭 텍스트 확인
+        // 2개 탭 텍스트 확인 — 구 상세 리포트 탭은 진단지에 흡수·삭제
         await expect(page.locator('button:has-text("기본 분석")')).toBeVisible();
         await expect(page.locator('button:has-text("색상 입혀보기")')).toBeVisible();
-        await expect(page.locator('button:has-text("상세 리포트")')).toBeVisible();
+        await expect(page.locator('button:has-text("상세 리포트")')).toHaveCount(0);
       }
     }
   });
@@ -183,31 +184,7 @@ test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
     }
   });
 
-  test('"상세 리포트" 탭 전환이 작동한다', async ({ page }) => {
-    await page.goto(RESULT_URL);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      const detailedTab = page.locator('button:has-text("상세 리포트")');
-      const isVisible = await detailedTab.isVisible().catch(() => false);
-
-      if (isVisible) {
-        await detailedTab.click();
-        await page.waitForTimeout(500);
-
-        // 탭이 활성 상태로 변경되었는지 확인
-        const tabState = await detailedTab.getAttribute('data-state');
-        expect(tabState).toBe('active');
-
-        // 상세 리포트 탭 콘텐츠 영역 확인
-        const detailedContent = page.locator('[data-testid="detailed-tab"]');
-        const hasContent = await detailedContent.isVisible().catch(() => false);
-        expect(hasContent || true).toBe(true);
-      }
-    }
-  });
-
-  test('탭 전환 순서가 올바르게 작동한다 (기본 -> 색상 -> 상세 -> 기본)', async ({ page }) => {
+  test('탭 전환 순서가 올바르게 작동한다 (기본 -> 색상 -> 기본)', async ({ page }) => {
     await page.goto(RESULT_URL);
     await waitForLoadingToFinish(page);
 
@@ -227,18 +204,11 @@ test.describe('PC-1 결과 페이지 - 3탭 구조', () => {
         expect(await drapingTab.getAttribute('data-state')).toBe('active');
         expect(await basicTab.getAttribute('data-state')).toBe('inactive');
 
-        // 상세 리포트 탭으로 전환
-        const detailedTab = page.locator('button:has-text("상세 리포트")');
-        await detailedTab.click();
-        await page.waitForTimeout(300);
-        expect(await detailedTab.getAttribute('data-state')).toBe('active');
-        expect(await drapingTab.getAttribute('data-state')).toBe('inactive');
-
         // 기본 분석으로 다시 전환
         await basicTab.click();
         await page.waitForTimeout(300);
         expect(await basicTab.getAttribute('data-state')).toBe('active');
-        expect(await detailedTab.getAttribute('data-state')).toBe('inactive');
+        expect(await drapingTab.getAttribute('data-state')).toBe('inactive');
       }
     }
   });
@@ -407,12 +377,6 @@ test.describe('PC-1 - JavaScript 에러 없음', () => {
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
       if (await drapingTab.isVisible().catch(() => false)) {
         await drapingTab.click();
-        await page.waitForTimeout(500);
-      }
-
-      const detailedTab = page.locator('button:has-text("상세 리포트")');
-      if (await detailedTab.isVisible().catch(() => false)) {
-        await detailedTab.click();
         await page.waitForTimeout(500);
       }
 

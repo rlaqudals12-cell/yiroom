@@ -90,6 +90,56 @@ const AVOID_NOTES: Record<SeasonType, string> = {
   winter: '흐릿한 중간 톤은 겨울 쿨톤의 또렷한 대비를 죽여요.',
 };
 
+// "왜 이 색이 어울리나" 한 줄 — 구 상세 리포트 탭(2026-08-01 삭제) 시즌 설명의
+// whyThisColor를 이관. 언더톤 근거까지 담아 팔레트 섹션의 짧은 문구를 승격한다(시즌 정의 서술)
+const SEASON_WHY: Record<SeasonType, string> = {
+  spring:
+    '봄 웜톤은 피부에 노란 언더톤이 있어서, 따뜻하고 맑은 색상이 피부를 밝고 건강하게 보이게 해요.',
+  summer:
+    '여름 쿨톤은 피부에 핑크 언더톤이 있어서, 부드럽고 시원한 파스텔 계열이 피부를 맑게 보이게 해요.',
+  autumn:
+    '가을 웜톤은 피부에 황금빛 언더톤이 있어서, 깊고 따뜻한 어스 톤이 피부에 깊이감을 더해줘요.',
+  winter:
+    '겨울 쿨톤은 피부에 푸른 언더톤이 있어서, 선명하고 대비가 강한 색이 얼굴에 생동감을 줘요.',
+};
+
+// 입술 자연색 → 판정 근거 1줄 — 구 상세 탭 "내 분석 근거" 문구 이관.
+// neutral은 어느 톤의 근거도 아니라 미표시(지어내지 않음)
+const LIP_EVIDENCE_NOTES: Record<'pink' | 'coral', string> = {
+  pink: '입술 자연색이 핑크빛이라 쿨톤 근거가 돼요.',
+  coral: '입술 자연색이 코랄빛이라 웜톤 근거가 돼요.',
+};
+
+/**
+ * 구 상세 탭 톤 스펙트럼 바 흡수 — veinScore(0~100 쿨톤 확률)를 판정 톤 기준 경향(%)으로
+ * 환산해 속성표 행 + 풀이 1줄로. 구 표기는 웜톤에서도 쿨톤 확률 수치를 그대로 라벨링하던
+ * 결함이 있어(웜톤 25% 표기), 웜톤은 100-veinScore로 정직하게 환산한다.
+ * 실측값이 없으면(0 또는 미저장) undefined — 행 미렌더.
+ * @internal export는 테스트 전용
+ */
+export function deriveToneTendency(
+  tone: PersonalColorResult['tone'],
+  veinScore?: number
+): { value: string; note: string } | undefined {
+  if (veinScore === undefined || veinScore <= 0 || veinScore > 100) return undefined;
+  const isCool = tone === 'cool';
+  const strength = isCool ? veinScore : 100 - veinScore;
+  const toneLabel = isCool ? '쿨톤' : '웜톤';
+  let note: string;
+  if (strength > 70) {
+    note = isCool
+      ? '뚜렷한 쿨톤이에요. 시원한 계열의 색상이 잘 어울려요.'
+      : '뚜렷한 웜톤이에요. 따뜻한 계열의 색상이 잘 어울려요.';
+  } else if (strength > 40) {
+    note = '중성 톤에 가까워서 다양한 색상을 소화할 수 있어요.';
+  } else {
+    note = isCool
+      ? '약한 쿨톤이에요. 따뜻한 색도 어느 정도 어울려요.'
+      : '약한 웜톤이에요. 시원한 색도 어느 정도 어울려요.';
+  }
+  return { value: `${toneLabel} 경향 ${strength}%`, note };
+}
+
 // 12톤 서브타입 접두사 → 명도·채도 정의 서술 (12톤 표준 정의에서 파생 — 계측이 아니라 톤 정의).
 // 키 = paletteToneKey 접두사, PERSONAL_COLOR_SUBTYPES shortLabel과 1:1 대응
 // (light=라이트, bright=브라이트, true=트루, muted=뮤트, deep=딥) — 라벨 정본과 일치 확인됨
@@ -225,13 +275,16 @@ function SeasonSeal({
 interface AnalysisEvidence {
   veinColor?: PersonalColorEvidenceSummaryProps['veinColor'];
   skinUndertone?: PersonalColorEvidenceSummaryProps['skinUndertone'];
+  /** 0~100 쿨톤 확률 — 구 상세 탭 톤 스펙트럼의 데이터 원천(deriveToneTendency로 흡수) */
+  veinScore?: number;
+  /** 입술 자연색 — 판정 근거 보조(구 상세 탭 "내 분석 근거" 흡수) */
+  lipNaturalColor?: 'coral' | 'pink' | 'neutral';
 }
 
 interface AnalysisResultProps {
   result: PersonalColorResult;
   onRetry?: () => void;
   evidence?: AnalysisEvidence | null;
-  onTabChange?: (tab: string) => void;
   /** 퍼스널 대비 실측값(ADR-116) — 호스트가 저장값이 있을 때만 전달(없으면 행 미렌더) */
   contrastLevel?: 'low' | 'medium' | 'high' | null;
   /** 분석 원본 사진 URL — 있으면 md+ 히어로를 2단(사진|진단명)으로. 없으면 현 레이아웃(데모·구 데이터 폴백) */
@@ -332,7 +385,7 @@ function SwatchChips({
   );
 }
 
-/** 01 진단 속성표 — RowTable(+12톤 명도·채도 정의 행) + 대비 풀이 + 결론 + 판정 근거 요약 */
+/** 01 진단 속성표 — RowTable(+12톤 명도·채도 정의 행+톤 경향 실측 행) + 풀이 + 결론 + 판정 근거 요약 */
 function AttrsSectionBody({
   seasonLabel,
   tone,
@@ -340,6 +393,8 @@ function AttrsSectionBody({
   contrastLevel,
   evidence,
   subtypeAttrs,
+  toneTendency,
+  lipNote,
 }: {
   seasonLabel: string;
   tone: PersonalColorResult['tone'];
@@ -348,6 +403,10 @@ function AttrsSectionBody({
   evidence?: AnalysisEvidence | null;
   /** 12톤 서브타입 저장 건에서만 파생되는 명도·채도 정의 서술 — 없으면 행 미렌더 */
   subtypeAttrs?: { brightness: string; saturation: string };
+  /** veinScore 실측 건에서만 파생되는 톤 경향(구 상세 탭 톤 스펙트럼 흡수) — 없으면 행 미렌더 */
+  toneTendency?: { value: string; note: string };
+  /** 입술 자연색 판정 근거 1줄(구 상세 탭 "내 분석 근거" 흡수) — 없으면 미렌더 */
+  lipNote?: string;
 }) {
   return (
     <div>
@@ -358,6 +417,8 @@ function AttrsSectionBody({
           label="언더톤"
           value={tone === 'warm' ? '웜 (옐로 베이스)' : '쿨 (핑크 베이스)'}
         />
+        {/* 톤 경향 실측 행 — veinScore(쿨톤 확률) 저장 건에 한해(구 상세 탭 흡수) */}
+        {toneTendency && <AttrRow icon={Droplet} label="톤 경향" value={toneTendency.value} />}
         {/* 12톤 정의 서술 행 — season_subtype 저장 건에 한해(정의 서술이지 계측 아님) */}
         {subtypeAttrs && (
           <>
@@ -369,6 +430,15 @@ function AttrsSectionBody({
           <AttrRow icon={Contrast} label="대비" value={CONTRAST_COPY[contrastLevel].label} />
         )}
       </RowTable>
+      {/* 톤 경향 풀이 — 뚜렷함/중성 정도 1줄 (구 톤 스펙트럼 바의 텍스트 핵심만 흡수) */}
+      {toneTendency && (
+        <p
+          className="mt-2 text-xs leading-relaxed text-muted-foreground"
+          data-testid="pc-tone-tendency-note"
+        >
+          {toneTendency.note}
+        </p>
+      )}
       {/* 퍼스널 대비 풀이 — 판정 보조 1줄 (구 인디고 박스 흡수, ADR-116) */}
       {contrastLevel && (
         <p
@@ -392,6 +462,15 @@ function AttrsSectionBody({
         tone={tone}
         className="mt-4"
       />
+      {/* 입술 자연색 근거 보조 1줄 — 혈관·언더톤(요약 칩)에 없는 세 번째 근거만 텍스트로 */}
+      {lipNote && (
+        <p
+          className="mt-2 text-xs leading-relaxed text-muted-foreground"
+          data-testid="pc-lip-evidence-note"
+        >
+          {lipNote}
+        </p>
+      )}
     </div>
   );
 }
@@ -405,7 +484,6 @@ function PaletteSectionBody({
   personalizedColors,
   seasonLabel,
   seasonType,
-  onTabChange,
   tonePalette,
 }: {
   bestColors: ColorInfo[];
@@ -415,7 +493,6 @@ function PaletteSectionBody({
   personalizedColors?: boolean;
   seasonLabel: string;
   seasonType: SeasonType;
-  onTabChange?: (tab: string) => void;
   /** 12톤 표준 정의 팔레트(v2 정적 데이터) — paletteToneKey가 12톤 키일 때만 존재 */
   tonePalette?: TonePalette;
 }) {
@@ -460,26 +537,10 @@ function PaletteSectionBody({
             </button>
           ))}
         </div>
-        {/* "왜 이 색이 어울리는지" 1줄 (상세는 리포트 탭 — 탭 전환 핸들러가 있을 때만 링크) */}
-        <p className="mt-3 text-xs text-muted-foreground">
-          {selectByKey(
-            seasonType,
-            {
-              spring: '따뜻하고 맑은 색이 피부톤과 조화를 이뤄요.',
-              summer: '부드러운 파스텔 톤이 피부를 맑게 보이게 해줘요.',
-              autumn: '깊고 따뜻한 어스 톤이 고급스러운 인상을 줘요.',
-            },
-            '선명한 대비 컬러가 세련된 인상을 줘요.'
-          )}
-          {onTabChange && (
-            <button
-              type="button"
-              className="ml-1 cursor-pointer text-primary/70 underline-offset-2 hover:text-primary hover:underline"
-              onClick={() => onTabChange('detailed')}
-            >
-              상세 리포트에서 더 알아보기
-            </button>
-          )}
+        {/* "왜 이 색이 어울리는지" 1줄 — 구 상세 탭 시즌 설명(whyThisColor) 승격.
+            상세 리포트 탭이 삭제되어(2026-08-01) 유도 링크 대신 언더톤 근거를 본문에 담는다 */}
+        <p className="mt-3 break-keep text-xs text-muted-foreground" data-testid="pc-palette-why">
+          {SEASON_WHY[seasonType]}
         </p>
       </div>
       {/* R5 우측 열 — 큐레이션 소섹션 묶음(모바일에선 그대로 세로 흐름) */}
@@ -973,7 +1034,6 @@ export default function AnalysisResult({
   result,
   onRetry: _onRetry,
   evidence,
-  onTabChange,
   contrastLevel,
   photoUrl,
 }: AnalysisResultProps) {
@@ -1044,6 +1104,13 @@ export default function AnalysisResult({
   const subtypeAttrs = deriveSubtypeAttrs(result.paletteToneKey);
   const tonePalette = getTonePaletteOverview(result.paletteToneKey);
 
+  // 구 상세 리포트 탭 흡수(2026-08-01) — 실측 evidence가 있을 때만 파생(지어내지 않음)
+  const toneTendency = deriveToneTendency(result.tone, evidence?.veinScore);
+  const lipNote =
+    evidence?.lipNaturalColor && evidence.lipNaturalColor !== 'neutral'
+      ? LIP_EVIDENCE_NOTES[evidence.lipNaturalColor]
+      : undefined;
+
   // R1 색명→hex 사전 — 이 결과에 실린 색 데이터만 소스(베스트 팔레트 우선).
   // 04 패션 색명 칩·05 스타일링 색 제안에 실색 스와치를 동행시킨다(매핑 없으면 텍스트만)
   const namedHexMap = buildNamedHexMap([
@@ -1071,6 +1138,8 @@ export default function AnalysisResult({
         contrastLevel={contrastLevel}
         evidence={evidence}
         subtypeAttrs={subtypeAttrs}
+        toneTendency={toneTendency}
+        lipNote={lipNote}
       />
     ),
   });
@@ -1103,7 +1172,6 @@ export default function AnalysisResult({
           personalizedColors={personalizedColors}
           seasonLabel={seasonLabel}
           seasonType={seasonType}
-          onTabChange={onTabChange}
           tonePalette={tonePalette}
         />
       ),

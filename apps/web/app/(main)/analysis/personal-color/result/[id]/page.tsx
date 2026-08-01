@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   RefreshCw,
   Palette,
-  ClipboardList,
   AlertTriangle,
   Lightbulb,
   Sun,
@@ -44,7 +43,6 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
 import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
-import DetailedEvidenceReport from '@/components/analysis/personal-color/DetailedEvidenceReport';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { ResultPageInsights } from '@/components/insights';
@@ -316,8 +314,10 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
   };
 }
 
-// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
-const RESULT_TABS = ['basic', 'draping', 'detailed'] as const;
+// 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지).
+// 구 'detailed' 탭은 진단지(기본 분석)에 흡수·삭제(2026-08-01) — 옛 ?tab=detailed 링크는
+// useUrlTab이 무효 값으로 판정해 basic으로 폴백한다
+const RESULT_TABS = ['basic', 'draping'] as const;
 
 export default function PersonalColorResultPage() {
   const t = useTranslations('analysis');
@@ -567,15 +567,15 @@ export default function PersonalColorResultPage() {
           </div>
           <div className="flex items-center gap-1">
             {/* 다시 분석 — 하단 sticky에서 헤더 보조 액션으로 이동 (primary 1개 원칙, 저신뢰 배너의 조건부 재분석과 별개) */}
+            {/* 아이콘 단독은 발견 불가(창업자 실사용 피드백 8/1) — 텍스트 라벨 병기 */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleNewAnalysis}
-              aria-label={t('reanalyze')}
-              title={t('reanalyze')}
               data-testid="header-reanalyze"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 mr-1" />
+              {t('reanalyze')}
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/analysis/personal-color/history">
@@ -649,7 +649,8 @@ export default function PersonalColorResultPage() {
         {/* 탭 기반 결과 */}
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4 sticky top-0 z-10 bg-muted">
+            {/* 구 3탭 중 'detailed'는 진단지에 흡수·삭제(세대 정합, 2026-08-01) — 2탭 */}
+            <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
                 {t('basicAnalysis')}
@@ -657,10 +658,6 @@ export default function PersonalColorResultPage() {
               <TabsTrigger value="draping" className="gap-1">
                 <Shirt className="w-4 h-4" />
                 {t('colorDraping')}
-              </TabsTrigger>
-              <TabsTrigger value="detailed" className="gap-1">
-                <ClipboardList className="w-4 h-4" />
-                {t('detailedReport')}
               </TabsTrigger>
             </TabsList>
 
@@ -676,7 +673,6 @@ export default function PersonalColorResultPage() {
                 result={result}
                 onRetry={handleNewAnalysis}
                 evidence={analysisEvidence}
-                onTabChange={setActiveTab}
                 contrastLevel={contrastLevel}
                 photoUrl={imageUrl ?? undefined}
               />
@@ -739,6 +735,11 @@ export default function PersonalColorResultPage() {
                     <li className="flex items-start gap-1.5">
                       <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-500" />
                       <span>염색은 피부톤에 영향 없지만 분석 정확도에 영향을 줄 수 있어요</span>
+                    </li>
+                    {/* 구 상세 탭 "더 정확한 결과를 위한 팁" 중 유일한 미중복 항목 흡수 */}
+                    <li className="flex items-start gap-1.5">
+                      <Camera className="w-3 h-3 mt-0.5 flex-shrink-0 text-rose-400" />
+                      <span>노메이크업 상태에서 촬영하면 분석이 가장 정확해요</span>
                     </li>
                   </ul>
                 </ProgressiveDisclosure>
@@ -824,57 +825,6 @@ export default function PersonalColorResultPage() {
                 </Link>
               </div>
             </TabsContent>
-
-            {/* 상세 리포트 탭 */}
-            <TabsContent
-              value="detailed"
-              className="mt-0 data-[state=inactive]:hidden"
-              data-testid="detailed-tab"
-            >
-              {/* 시각적 상세 리포트 */}
-              <DetailedEvidenceReport
-                evidence={analysisEvidence}
-                imageQuality={imageQuality}
-                seasonType={result.seasonType}
-                tone={result.tone}
-                bestColors={result.bestColors}
-                worstColors={result.worstColors}
-              />
-
-              {/* 분석 정확도 안내 */}
-              <div className="mt-6 p-5 bg-card rounded-xl border border-border">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-blue-500" />더 정확한 결과를 위한 팁
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3">
-                    <Sun className="w-4 h-4 text-amber-500 mt-0.5" />
-                    <p className="text-muted-foreground">
-                      <span className="text-foreground font-medium">자연광</span>에서 촬영하면
-                      피부톤 왜곡이 적어요
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="w-4 h-4 text-rose-500 mt-0.5" />
-                    <p className="text-muted-foreground">
-                      <span className="text-foreground font-medium">노메이크업</span> 상태가 가장
-                      정확해요
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* P2: 상세 탭 하단 CTA — 제품 링크는 sticky primary가 정본이라 중복 제거 */}
-              <div className="mt-6 flex flex-col items-center gap-2 text-sm">
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground cursor-pointer"
-                  onClick={() => setActiveTab('basic')}
-                >
-                  {t('viewBasicAnalysis')}
-                </button>
-              </div>
-            </TabsContent>
           </Tabs>
         )}
       </div>
@@ -927,22 +877,33 @@ export default function PersonalColorResultPage() {
         </div>
       )}
 
-      {/* 하단 콘텐츠 — sticky 바 아래에 배치되어 스크롤 끝에서 노출. 다음 행동 표면은 ResultPageInsights 1곳 */}
+      {/* 하단 콘텐츠 — sticky 바 아래 스크롤 끝에서 노출. 다음 행동 표면은 ResultPageInsights 1곳.
+          B3(2026-08-01): 하단 클러스터를 시트 내부와 동일한 접힘 헤더 문법(ProgressiveDisclosure)으로
+          정돈 — 주요 1행(제목+요약 헤더)만 먼저 보이고 상세는 펼침. 폭도 시트 호스트와 동기화.
+          내부 컴포넌트·testid 계약은 불변(표현 재조립만) */}
       {result && (
-        <div className="max-w-lg mx-auto px-4 pb-8">
-          <ResultPageInsights currentModule="personal-color" />
-          <div className="mt-6">
+        <div className="max-w-lg md:max-w-[880px] mx-auto px-4 pb-8 space-y-3">
+          <ProgressiveDisclosure
+            title="다음 행동"
+            summary="오늘의 루틴과 이어서 하면 좋은 분석을 확인해보세요"
+            icon={<Sparkles className="w-4 h-4 text-primary" />}
+          >
+            <ResultPageInsights currentModule="personal-color" className="mt-0" />
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            title="내 색에 맞는 제품 추천"
+            summary="퍼스널 컬러와 매칭된 제품을 확인해보세요"
+            icon={<Palette className="w-4 h-4 text-primary" />}
+          >
             <AnalysisMatchedProducts
               analysisType="personal-color"
               personalColorSeason={result.seasonType}
             />
-          </div>
-          <div className="mt-4">
-            <ProgressiveProfilePrompt
-              moduleId="personal-color"
-              currentConfidence={result.confidence > 0 ? result.confidence : undefined}
-            />
-          </div>
+          </ProgressiveDisclosure>
+          <ProgressiveProfilePrompt
+            moduleId="personal-color"
+            currentConfidence={result.confidence > 0 ? result.confidence : undefined}
+          />
           {/* 퍼스널컬러는 동일 사진 반복 분석 판정 일치를 실측 → 재현성 문구 노출 */}
           <AITransparencyNotice compact showReproducibility className="mt-4" />
         </div>

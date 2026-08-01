@@ -3,7 +3,8 @@
  *
  * @module tests/components/analysis/personal-color-result-tabs
  * @description
- * - 3탭 구조 렌더링 검증 (기본 분석, 색상 입혀보기, 상세 리포트)
+ * - 2탭 구조 렌더링 검증 (기본 분석, 색상 입혀보기)
+ *   — 구 '상세 리포트' 탭은 진단지(기본 분석)에 흡수·삭제됨 (세대 정합, 2026-08-01)
  * - ADR-063 용어 변경 일치 검증
  * - isRetryable 에러 분기 검증
  * - getSeasonToneDepth 순수 함수 검증
@@ -42,14 +43,13 @@ const LOW_CONFIDENCE_THRESHOLD = 70;
 // 탭 구조 상수 (page.tsx 소스코드 기반)
 // ============================================================================
 
-/** 페이지에서 사용하는 탭 값 목록 */
-const TAB_VALUES = ['basic', 'draping', 'detailed'] as const;
+/** 페이지에서 사용하는 탭 값 목록 — 구 'detailed'는 기본 분석 진단지에 흡수·삭제 */
+const TAB_VALUES = ['basic', 'draping'] as const;
 
 /** 페이지에서 사용하는 탭 i18n 키 (useTranslations mock은 키 자체를 반환) */
 const TAB_LABELS = {
   basic: 'basicAnalysis',
   draping: 'colorDraping',
-  detailed: 'detailedReport',
 } as const;
 
 /** 기본 활성 탭 */
@@ -132,14 +132,14 @@ describe('getSeasonToneDepth (시즌별 톤/깊이 결정)', () => {
 
 describe('PC-1 결과 페이지 탭 구조', () => {
   describe('탭 개수 및 값', () => {
-    it('탭은 정확히 3개이다', () => {
-      expect(TAB_VALUES).toHaveLength(3);
+    it('탭은 정확히 2개이다 (구 detailed 탭은 진단지에 흡수·삭제)', () => {
+      expect(TAB_VALUES).toHaveLength(2);
     });
 
-    it('탭 값이 basic, draping, detailed이다', () => {
+    it('탭 값이 basic, draping이다', () => {
       expect(TAB_VALUES).toContain('basic');
       expect(TAB_VALUES).toContain('draping');
-      expect(TAB_VALUES).toContain('detailed');
+      expect(TAB_VALUES).not.toContain('detailed');
     });
 
     it('기본 활성 탭은 basic이다', () => {
@@ -154,10 +154,6 @@ describe('PC-1 결과 페이지 탭 구조', () => {
 
     it('드레이핑 탭의 i18n 키가 "colorDraping"이다', () => {
       expect(TAB_LABELS.draping).toBe('colorDraping');
-    });
-
-    it('상세 리포트 탭의 i18n 키가 "detailedReport"이다', () => {
-      expect(TAB_LABELS.detailed).toBe('detailedReport');
     });
   });
 
@@ -295,10 +291,6 @@ describe('PC-1 에러 처리 로직', () => {
 // 무거운 하위 컴포넌트 모킹 (드레이핑 정본 = DrapingSection zero-mask 캔버스 합성)
 vi.mock('@/components/analysis/personal-color', () => ({
   DrapingSectionDynamic: () => <div data-testid="mock-draping-section">DrapingSection Mock</div>,
-}));
-
-vi.mock('@/components/analysis/personal-color/DetailedEvidenceReport', () => ({
-  default: () => <div data-testid="mock-detailed-report">DetailedEvidenceReport Mock</div>,
 }));
 
 vi.mock('@/components/analysis/AnalysisEvidenceReport', () => ({
@@ -492,8 +484,8 @@ describe('PC-1 결과 페이지 렌더링', () => {
     });
   }
 
-  describe('3탭 렌더링', () => {
-    it('데이터 로드 후 3개 탭 트리거가 모두 표시된다', async () => {
+  describe('2탭 렌더링', () => {
+    it('데이터 로드 후 2개 탭 트리거가 모두 표시된다', async () => {
       setupSignedInState();
       setupSuccessfulFetch();
 
@@ -508,10 +500,10 @@ describe('PC-1 결과 페이지 렌더링', () => {
         expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       });
 
-      // 3개 탭 트리거 확인
+      // 2개 탭 트리거 확인 — 구 상세 리포트 탭은 진단지에 흡수·삭제
       expect(screen.getByText('basicAnalysis')).toBeInTheDocument();
       expect(screen.getByText('colorDraping')).toBeInTheDocument();
-      expect(screen.getByText('detailedReport')).toBeInTheDocument();
+      expect(screen.queryByText('detailedReport')).not.toBeInTheDocument();
     });
 
     it('기본 탭(basic)이 초기 활성 상태이다', async () => {
@@ -548,7 +540,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       });
     });
 
-    it('detailed 탭에 data-testid="detailed-tab"이 존재한다', async () => {
+    it('구 detailed 탭 콘텐츠(data-testid="detailed-tab")는 더 이상 렌더되지 않는다', async () => {
       setupSignedInState();
       setupSuccessfulFetch();
 
@@ -559,8 +551,9 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('detailed-tab')).toBeInTheDocument();
+        expect(screen.getByTestId('draping-tab')).toBeInTheDocument();
       });
+      expect(screen.queryByTestId('detailed-tab')).not.toBeInTheDocument();
     });
   });
 
@@ -739,7 +732,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       expect(basicTrigger).toHaveAttribute('aria-selected', 'true');
     });
 
-    it('3개 탭 트리거 모두 tab role을 가진다', async () => {
+    it('2개 탭 트리거 모두 tab role을 가진다', async () => {
       setupSignedInState();
       setupSuccessfulFetch();
 
@@ -754,7 +747,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       });
 
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(3);
+      expect(tabs).toHaveLength(2);
     });
 
     it('draping 탭 콘텐츠 영역이 초기에는 비활성 상태이다', async () => {

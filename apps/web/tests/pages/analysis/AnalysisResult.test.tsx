@@ -11,6 +11,7 @@ import AnalysisResult, {
   getAvoidStrokeColor,
   buildNamedHexMap,
   resolveNamedHex,
+  deriveToneTendency,
 } from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
@@ -636,6 +637,86 @@ describe('AnalysisResult', () => {
       expect(within(overview).getAllByTestId('texture-swatch-lip').length).toBeGreaterThan(0);
       // 아이섀도·블러셔 행은 powder 질감
       expect(within(overview).getAllByTestId('texture-swatch-powder').length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('구 상세 리포트 탭 흡수 (B1, 2026-08-01)', () => {
+    describe('deriveToneTendency — veinScore(쿨톤 확률)의 판정 톤 기준 환산', () => {
+      it('쿨톤은 veinScore를 그대로 경향 %로 쓴다 (75 → 뚜렷한 쿨톤)', () => {
+        const tendency = deriveToneTendency('cool', 75);
+        expect(tendency?.value).toBe('쿨톤 경향 75%');
+        expect(tendency?.note).toContain('뚜렷한 쿨톤');
+      });
+
+      it('웜톤은 100-veinScore로 환산한다 (쿨톤 확률 25 → 웜톤 경향 75%)', () => {
+        const tendency = deriveToneTendency('warm', 25);
+        expect(tendency?.value).toBe('웜톤 경향 75%');
+        expect(tendency?.note).toContain('뚜렷한 웜톤');
+      });
+
+      it('경향 41~70%는 중성 톤 안내를 반환한다', () => {
+        expect(deriveToneTendency('cool', 55)?.note).toContain('중성 톤에 가까워서');
+        expect(deriveToneTendency('warm', 45)?.note).toContain('중성 톤에 가까워서');
+      });
+
+      it('경향 40% 이하는 약한 톤 안내를 반환한다', () => {
+        expect(deriveToneTendency('cool', 30)?.note).toContain('약한 쿨톤');
+      });
+
+      it('실측값이 없거나(0·undefined) 범위 밖이면 undefined — 행 미렌더(지어내기 금지)', () => {
+        expect(deriveToneTendency('cool', undefined)).toBeUndefined();
+        expect(deriveToneTendency('cool', 0)).toBeUndefined();
+        expect(deriveToneTendency('cool', 101)).toBeUndefined();
+      });
+    });
+
+    it('veinScore 실측이 있으면 속성표에 톤 경향 행 + 풀이 1줄을 렌더한다', () => {
+      render(
+        <AnalysisResult result={mockResult} onRetry={mockOnRetry} evidence={{ veinScore: 25 }} />
+      );
+
+      expect(screen.getByText('톤 경향')).toBeInTheDocument();
+      expect(screen.getByText('웜톤 경향 75%')).toBeInTheDocument();
+      expect(screen.getByTestId('pc-tone-tendency-note')).toBeInTheDocument();
+    });
+
+    it('evidence가 없으면 톤 경향 행을 렌더하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByText('톤 경향')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('pc-tone-tendency-note')).not.toBeInTheDocument();
+    });
+
+    it('입술 자연색이 coral/pink면 판정 근거 보조 1줄을 렌더한다', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          evidence={{ lipNaturalColor: 'coral' }}
+        />
+      );
+
+      const note = screen.getByTestId('pc-lip-evidence-note');
+      expect(note).toHaveTextContent('입술 자연색이 코랄빛이라 웜톤 근거가 돼요.');
+    });
+
+    it('입술 자연색이 neutral이면 근거 줄을 렌더하지 않는다 (어느 톤의 근거도 아님)', () => {
+      render(
+        <AnalysisResult
+          result={mockResult}
+          onRetry={mockOnRetry}
+          evidence={{ lipNaturalColor: 'neutral' }}
+        />
+      );
+
+      expect(screen.queryByTestId('pc-lip-evidence-note')).not.toBeInTheDocument();
+    });
+
+    it('팔레트 "왜" 문구가 언더톤 근거를 담은 시즌 설명(whyThisColor 이관)이다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const why = screen.getByTestId('pc-palette-why');
+      expect(why).toHaveTextContent('봄 웜톤은 피부에 노란 언더톤이 있어서');
     });
   });
 
