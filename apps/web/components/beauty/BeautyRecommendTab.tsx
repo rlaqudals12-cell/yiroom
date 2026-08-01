@@ -342,8 +342,10 @@ export function BeautyRecommendTab({
       try {
         let query = supabase
           .from('cosmetic_products')
+          // target_age_groups는 select에서 제외 — prod에 컬럼이 아직 없어(SQL 미적용) 42703으로
+          // 기본 쿼리 전체가 죽었다. 소비처도 0곳(rawProducts 매핑 미사용, 아래 연령 or-필터만 참조).
           .select(
-            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, target_age_groups'
+            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients'
           )
           .eq('is_active', true)
           .limit(40);
@@ -393,6 +395,8 @@ export function BeautyRecommendTab({
         }
 
         if (selectedAgeGroups.length > 0) {
+          // 주의: prod에 target_age_groups 컬럼이 없으면 이 or-필터만 400으로 실패한다.
+          // 이는 의도된 동작 — 기본 쿼리는 살리고, 연령대 필터 선택 시에만 에러 UI가 정직하게 노출된다.
           const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
           query = query.or(
             `target_age_groups.ov.{${dbAgeGroups.join(',')}},target_age_groups.is.null,target_age_groups.eq.{}`
@@ -419,6 +423,9 @@ export function BeautyRecommendTab({
         if (error) {
           // PostgrestError는 message가 열거 프로퍼티가 아니라 '{}'로 찍힘 — code/message 명시
           console.error('[Beauty] 제품 조회 실패:', error.code, error.message);
+          // 실패를 빈 결과/이전 그리드로 위장하지 않는다 — 에러 상태를 정직하게 노출 (다시 시도 UI 소생)
+          setProducts([]);
+          setProductsError(true);
           return;
         }
 
@@ -626,7 +633,7 @@ export function BeautyRecommendTab({
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200',
                   isSelected
-                    ? 'bg-rose-500 text-white shadow-sm'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 )}
                 aria-pressed={isSelected}
@@ -847,9 +854,12 @@ export function BeautyRecommendTab({
               <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
               {hasAnalysis ? '내 피부 맞춤' : '추천 제품'}
             </h2>
-            <span className="text-sm text-muted-foreground">
-              {productsLoading ? '로딩...' : `${products.length}개 제품`}
-            </span>
+            {/* 로딩/에러 중에는 개수를 단정하지 않는다 — 실패를 "0개 제품"으로 위장 금지 */}
+            {!productsError && (
+              <span className="text-sm text-muted-foreground">
+                {productsLoading ? '로딩...' : `${products.length}개 제품`}
+              </span>
+            )}
           </div>
 
           {/* 로딩 스켈레톤 */}
@@ -870,7 +880,8 @@ export function BeautyRecommendTab({
           {!productsLoading && productsError && (
             <div className="text-center py-12 text-muted-foreground">
               <p>제품을 불러오지 못했어요</p>
-              <p className="text-sm mt-1">네트워크 연결을 확인해 보세요</p>
+              {/* 원인 중립 카피 — 42703 같은 서버 측 실패는 네트워크 문제가 아니므로 단정하지 않는다 */}
+              <p className="text-sm mt-1">일시적인 문제예요 — 잠시 후 다시 시도해 주세요</p>
               <button
                 onClick={() => setRetryCount((c) => c + 1)}
                 className="mt-3 text-sm text-primary font-medium hover:underline"

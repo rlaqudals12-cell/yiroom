@@ -277,13 +277,13 @@ export default function BeautyPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
-                  <FlaskConical className="w-5 h-5 text-pink-500" aria-hidden="true" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FlaskConical className="w-5 h-5 text-primary" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">내 피부</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Palette className="w-3.5 h-3.5 text-rose-500" aria-hidden="true" />
+                    <Palette className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                     <span className="text-sm text-muted-foreground">{seasonKo(personalColor)}</span>
                   </div>
                 </div>

@@ -87,6 +87,9 @@ const mockRows = [
 // 쿼리 빌더 호출 기록 (필터 값 검증용)
 const queryCalls: { method: string; args: unknown[] }[] = [];
 
+// 에러 시나리오 토글 — null이면 정상 데이터, 설정 시 PostgrestError 형태로 실패를 흉내낸다
+let mockQueryError: { code: string; message: string } | null = null;
+
 function createQueryMock() {
   const query: Record<string, unknown> = {};
   for (const method of ['select', 'eq', 'limit', 'filter', 'order', 'in', 'or']) {
@@ -97,8 +100,14 @@ function createQueryMock() {
   }
   // await query → { data, error }
   (query as { then?: unknown }).then = (
-    resolve: (value: { data: typeof mockRows; error: null }) => void
-  ) => resolve({ data: mockRows, error: null });
+    resolve: (value: {
+      data: typeof mockRows | null;
+      error: { code: string; message: string } | null;
+    }) => void
+  ) =>
+    resolve(
+      mockQueryError ? { data: null, error: mockQueryError } : { data: mockRows, error: null }
+    );
   return query;
 }
 
@@ -133,6 +142,7 @@ describe('BeautyRecommendTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     queryCalls.length = 0;
+    mockQueryError = null;
   });
 
   it('data-testid="beauty-recommend-tab"이 존재한다', () => {
@@ -330,6 +340,48 @@ describe('BeautyRecommendTab', () => {
           (c) => typeof c.args[0] === 'string' && (c.args[0] as string).includes('concerns.is.null')
         )
       ).toBe(true);
+    });
+  });
+
+  describe('에러 정직화 (실패를 빈 결과/stale 그리드로 위장 금지)', () => {
+    it('DB 에러 시 그리드 대신 에러 상태와 다시 시도 버튼을 렌더한다', async () => {
+      // 42703 = undefined_column — prod에서 select 컬럼 불일치로 실제 발생했던 코드
+      mockQueryError = { code: '42703', message: 'column cosmetic_products.x does not exist' };
+      renderTab();
+
+      expect(await screen.findByText('제품을 불러오지 못했어요')).toBeInTheDocument();
+      expect(
+        screen.getByText('일시적인 문제예요 — 잠시 후 다시 시도해 주세요')
+      ).toBeInTheDocument();
+      expect(screen.getByText('다시 시도')).toBeInTheDocument();
+
+      // 실패를 제품 그리드/빈 상태로 위장하지 않는다
+      expect(screen.queryByText('히알루론 수분 크림')).not.toBeInTheDocument();
+      expect(screen.queryByText('아직 딱 맞는 제품을 찾지 못했어요')).not.toBeInTheDocument();
+      // 개수 라벨("N개 제품")도 단정하지 않는다
+      expect(screen.queryByText(/개 제품/)).not.toBeInTheDocument();
+    });
+
+    it('에러 카피가 원인을 네트워크로 단정하지 않는다 (42703은 서버 측 실패)', async () => {
+      mockQueryError = { code: '42703', message: 'column does not exist' };
+      renderTab();
+      await screen.findByText('제품을 불러오지 못했어요');
+
+      expect(screen.queryByText('네트워크 연결을 확인해 보세요')).not.toBeInTheDocument();
+    });
+
+    it('기본 select에 prod 미존재 컬럼(target_age_groups)을 포함하지 않는다 — 42703 방어', async () => {
+      renderTab();
+      await screen.findByText('히알루론 수분 크림');
+
+      const selectCalls = queryCalls.filter((c) => c.method === 'select');
+      expect(selectCalls.length).toBeGreaterThan(0);
+      expect(
+        selectCalls.some(
+          (c) =>
+            typeof c.args[0] === 'string' && (c.args[0] as string).includes('target_age_groups')
+        )
+      ).toBe(false);
     });
   });
 
