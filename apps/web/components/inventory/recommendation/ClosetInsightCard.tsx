@@ -119,8 +119,8 @@ export function ClosetInsightCard({
     );
   }
 
-  // 매칭 비율
-  const matchRate = Math.round((summary.wellMatched / closetCount) * 100);
+  // 매칭 비율 — 분모는 자체 재계산 대신 summary.total 소비 (요약과 같은 필터 기준 단일화)
+  const matchRate = summary.total > 0 ? Math.round((summary.wellMatched / summary.total) * 100) : 0;
 
   // 상태 색상
   const getStatusColor = (rate: number) => {
@@ -233,8 +233,7 @@ export function ClosetInsightCard({
         <span>
           {personalColor && `${personalColor} 컬러`}
           {personalColor && bodyType && ' + '}
-          {bodyType &&
-            `${selectByKey(bodyType, { S: '스트레이트', W: '웨이브' }, '내추럴')} 체형`}
+          {bodyType && `${selectByKey(bodyType, { S: '스트레이트', W: '웨이브' }, '내추럴')} 체형`}
           {!personalColor && !bodyType && '기본 분석'}
           {' 기준'}
         </span>

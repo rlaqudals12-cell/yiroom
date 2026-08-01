@@ -818,14 +818,28 @@ export default function ClosetRecommendPage() {
             <CardTitle className="text-sm">내 옷장 분석</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="flex justify-around py-3 border-b mb-3">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-500">{summary.wellMatched}</p>
-                <p className="text-xs text-muted-foreground">잘 어울림</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-500">{summary.needsImprovement}</p>
-                <p className="text-xs text-muted-foreground">개선 필요</p>
+            {/* 0/0 침묵 밴드 해소 — 양끝(잘 어울림/개선 필요)만 보이면 중간 밴드 옷들이 '0벌 옷장'과
+                구분되지 않는다. 전체 N벌 + '무난' 열로 전량을 정직하게 드러낸다.
+                '무난'에는 판단보류(정보 부족)도 섞이므로 과잉 확신 카피는 쓰지 않는다 */}
+            <div className="py-3 border-b mb-3">
+              <p className="mb-2 text-center text-xs text-muted-foreground">
+                전체 {summary.total}벌
+              </p>
+              <div className="flex justify-around">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-500">{summary.wellMatched}</p>
+                  <p className="text-xs text-muted-foreground">잘 어울림</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">
+                    {summary.total - summary.wellMatched - summary.needsImprovement}
+                  </p>
+                  <p className="text-xs text-muted-foreground">무난</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-yellow-500">{summary.needsImprovement}</p>
+                  <p className="text-xs text-muted-foreground">개선 필요</p>
+                </div>
               </div>
             </div>
             {summary.suggestions.length > 0 && (

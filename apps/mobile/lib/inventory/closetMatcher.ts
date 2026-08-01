@@ -48,6 +48,13 @@ const COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
     '로즈',
     '핑크',
     '스카이',
+    // 쿨톤 여름의 대표색인 블루 계열 부재 수리 — bare '블루' 허용은 Winter의 bare 'blue' 선례와
+    // 동일한 조도(파랑 계열 전반을 쿨톤 적합으로 인정). Summer AVOID와 충돌 없음
+    '블루',
+    '라이트블루',
+    '스카이블루',
+    '하늘',
+    '데님',
     '민트',
     '그레이',
     '네이비',
@@ -58,6 +65,8 @@ const COLOR_KEYWORDS: Record<PersonalColorSeason, string[]> = {
     'rose',
     'pink',
     'sky',
+    'blue',
+    'denim',
     'mint',
     'gray',
     'grey',
@@ -477,6 +486,8 @@ export function suggestOutfitFromCloset(
 }
 
 export interface RecommendationSummary {
+  /** 옷장 전체 벌 수 — 소비측이 '무난' 밴드(total−양끝)를 계산할 수 있게 함께 반환 */
+  total: number;
   wellMatched: number;
   needsImprovement: number;
   suggestions: string[];
@@ -496,7 +507,6 @@ export function getRecommendationSummary(
 
   let wellMatched = 0;
   let needsImprovement = 0;
-  const missingCategories: ClothingCategory[] = [];
 
   const categoryCount: Record<string, number> = {};
 
@@ -512,25 +522,38 @@ export function getRecommendationSummary(
       (categoryCount[item.subCategory || 'unknown'] || 0) + 1;
   }
 
+  // 부족한 카테고리 확인 — 0벌(부재)과 1벌(빈약)을 분리한다.
+  // 1벌만 있어도 코디 조립은 진행되므로(진행 안내와 정합) '없어요'로 뭉뚱그리면 자기모순이 된다
   const essentialCategories: ClothingCategory[] = ['outer', 'top', 'bottom', 'shoes'];
+  const absentCategories: ClothingCategory[] = [];
+  const thinCategories: ClothingCategory[] = [];
   for (const cat of essentialCategories) {
-    if (!categoryCount[cat] || categoryCount[cat] < 2) {
-      missingCategories.push(cat);
+    const count = categoryCount[cat] || 0;
+    if (count === 0) {
+      absentCategories.push(cat);
+    } else if (count === 1) {
+      thinCategories.push(cat);
     }
   }
 
+  const categoryNames: Record<ClothingCategory, string> = {
+    outer: '아우터',
+    top: '상의',
+    bottom: '하의',
+    dress: '원피스',
+    shoes: '신발',
+    bag: '가방',
+    accessory: '액세서리',
+  };
+
   const suggestions: string[] = [];
-  if (missingCategories.length > 0) {
-    const categoryNames: Record<ClothingCategory, string> = {
-      outer: '아우터',
-      top: '상의',
-      bottom: '하의',
-      dress: '원피스',
-      shoes: '신발',
-      bag: '가방',
-      accessory: '액세서리',
-    };
-    suggestions.push(`${missingCategories.map((c) => categoryNames[c]).join(', ')}이 부족해요`);
+  if (absentCategories.length > 0) {
+    suggestions.push(`${absentCategories.map((c) => categoryNames[c]).join(', ')}이 없어요`);
+  }
+  if (thinCategories.length > 0) {
+    suggestions.push(
+      `${thinCategories.map((c) => categoryNames[c]).join(', ')}은 1벌뿐이에요 — 1벌씩 더 있으면 조합이 다양해져요`
+    );
   }
 
   if (options.personalColor && wellMatched < closetItems.length * 0.3) {
@@ -538,6 +561,7 @@ export function getRecommendationSummary(
   }
 
   return {
+    total: closetItems.length,
     wellMatched,
     needsImprovement,
     suggestions,
