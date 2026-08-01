@@ -246,6 +246,8 @@ export function registerColorNameSynonyms(map: Map<string, string>): Map<string,
 // 표준 hex 상수(CSS 표준색·관용 표준색). 진단 데이터가 아니라 표준 색명의 표기 번역이며,
 // 통용 hex가 하나로 수렴하지 않는 색명(카키 등)과 재질명(진주 등)은 싣지 않는다 — 매핑 실패는
 // 무색 유지가 계약. 진단 결과에 실린 색이 항상 우선(resolveRecommendedHex 참조).
+// 한계: resolveNamedHex의 부분일치는 단방향(질의 ⊃ 등록명)만 — 질의가 등록명보다 짧으면
+// 표준 사전 폴백으로 넘어간다(역방향 최장일치는 '핑크'⊃'피치핑크' 오탐 위험으로 비채택).
 const STANDARD_COLOR_ENTRIES: ReadonlyArray<{ name: string; hex: string }> = [
   { name: '화이트', hex: '#FFFFFF' },
   { name: '아이보리', hex: '#FFFFF0' },
@@ -600,7 +602,9 @@ function PaletteSectionBody({
             늘어붙어 5+1 고아 구간이 자동 해소된다. 클릭 복사 유지 */}
         <div className="mt-2" data-testid="pc-best-grid">
           <div className="flex flex-wrap overflow-hidden rounded-md">
-            {bestColors.map((color, index) => (
+            {/* 실 AI 개인화 경로는 10색 반환 — 스트립은 히어로와 동일 6색 상한(초과 시 md 2열에서
+                명세 전멸·모바일 고아 밴드가 생기던 실회귀, 2026-08 리뷰) */}
+            {bestColors.slice(0, 6).map((color, index) => (
               <button
                 key={index}
                 type="button"
@@ -1314,8 +1318,12 @@ export default function AnalysisResult({
       title: '그래서, 이렇게 하세요',
       body: (
         <div className="[&_h2]:sr-only">
-          {/* G9 액션 존 배경 — 핑크 틴트 카드를 딥크림 지면으로 교체(핑크는 결론·TIP 악센트만 잔류) */}
-          <TopActionsCard actions={topActions} className="border-border bg-surface-ground-deep" />
+          {/* G9 액션 존 배경 — 핑크 틴트 카드를 딥크림 지면으로 교체(핑크는 결론·TIP 악센트만 잔류).
+              다크는 딥크림 토큰이 카드와 동색이라 단차 소멸 — 백색 3% 오버레이로 명도 단차 복원 */}
+          <TopActionsCard
+            actions={topActions}
+            className="border-border bg-surface-ground-deep dark:bg-white/[0.03]"
+          />
         </div>
       ),
     });
@@ -1531,8 +1539,8 @@ export default function AnalysisResult({
               )}
             </div>
 
-            {/* 번호 섹션들 — 데이터 있는 것만, 번호 자동 재부여.
-                md+에서 half 섹션(01|02, 05|06)은 2단 병치, 풀폭 섹션은 col-span-2 (모바일 1열 불변) */}
+            {/* 번호 섹션들 — 데이터 있는 것만, 번호는 렌더 시점 자동 재부여(하드코딩 금지).
+                md+에서 half 섹션(clothing|products 등)은 2단 병치, 풀폭 섹션은 col-span-2 (모바일 1열 불변) */}
             <div className="md:grid md:grid-cols-2 md:items-start md:gap-x-10">
               {sections.map((section, index) => (
                 <div key={section.key} className={cn('mt-6', !section.half && 'md:col-span-2')}>

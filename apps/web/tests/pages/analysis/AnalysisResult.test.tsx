@@ -773,6 +773,19 @@ describe('AnalysisResult', () => {
       expect(within(grid).getByText('#FF7F50')).toBeInTheDocument();
       expect(within(grid).getAllByRole('button')).toHaveLength(mockResult.bestColors.length);
     });
+
+    it('실 AI 개인화 경로의 10색도 스트립은 6색 상한 (md 2열 명세 전멸·모바일 고아 밴드 회귀 가드)', () => {
+      const tenColors = Array.from({ length: 10 }, (_, i) => ({
+        name: `컬러${i + 1}`,
+        hex: `#00000${i}`,
+      }));
+      render(
+        <AnalysisResult result={{ ...mockResult, bestColors: tenColors }} onRetry={mockOnRetry} />
+      );
+
+      const grid = screen.getByTestId('pc-best-grid');
+      expect(within(grid).getAllByRole('button')).toHaveLength(6);
+    });
   });
 
   describe('색명 동의 표기 등록 (G6)', () => {
