@@ -49,9 +49,10 @@ export function TopActionsCard({
       <ol className="space-y-3">
         {visible.map((action, i) => (
           <li key={`${action.title}-${i}`} className="flex items-start gap-3">
+            {/* 잉크 원문자 — 솔리드 핑크 원은 지면 최고 채도가 되어 뮤트 규율 위반(번호는 색이 아니라 조판) */}
             <span
               aria-hidden
-              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-foreground/70 text-xs font-bold text-foreground"
             >
               {i + 1}
             </span>

@@ -121,6 +121,7 @@
   --color-card: var(--card);
   /* 지면 토큰 — bg-surface-ground 유틸리티 생성(색상 매핑은 @theme 허용 대상) */
   --color-surface-ground: var(--surface-ground);
+  --color-surface-ground-deep: var(--surface-ground-deep);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -287,6 +288,10 @@
      "크림 지면 위 백색 진단지" 2단 깊이를 얻는다. 라이트 전용(다크는 기존 배경 유지).
      ======================================== */
   --surface-ground: #fbf3f1;
+  /* 깊은 지면 — 크림에서 명도만 약 -2%(96.5%→94.5%, 동일 웜 휴) 내린 한 단 아래 지면.
+     왜: 크림 지면 안에서 또 한 겹 가라앉는 구획(인쇄물의 별색 박스)이 필요할 때
+     채도를 올리지 않고 명도 단차로만 깊이를 만든다(뮤트 규율). 라이트 전용. */
+  --surface-ground-deep: #f8edea;
 
   /* ========================================
      깊이 시스템 — 웜 브라운 2층 섀도 (2026-07-31)
@@ -451,6 +456,8 @@
 
   /* 지면 토큰 — 다크는 크림 대신 기존 배경 유지(깊이는 배경 명도 단차로) */
   --surface-ground: var(--background);
+  /* 깊은 지면 — 다크는 크림 시프트 대신 기존 웜 다크 스텝(카드 명도)으로 단차 확보 */
+  --surface-ground-deep: var(--card);
 }
 
 /* ========================================

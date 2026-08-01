@@ -24,6 +24,8 @@ export interface TrustFooterProps {
 /**
  * 푸터 신뢰 블록 — "분석 신뢰도 N%" + 힌트 + 재현성 배지 (진단서의 직인, ADR-120).
  * 점수 게이지·등급 메달 없이 텍스트 라인으로만 신뢰를 말한다.
+ * 조판은 콜로폰(발행 정보) 문법: 상단 괘선 + 표 숫자(tabular) + 소형 레터스페이스 라벨 —
+ * 채점표가 아니라 인쇄물의 판권면으로 읽히게 한다.
  */
 export function TrustFooter({
   confidence,
@@ -36,16 +38,17 @@ export function TrustFooter({
   return (
     <div
       className={cn(
-        'space-y-1 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground',
+        // tabular-nums는 상속 — children의 타임스탬프·통계 숫자도 표 숫자로 정렬된다
+        'space-y-1 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground tabular-nums',
         className
       )}
       data-testid={testId}
     >
       {/* 저장된 신뢰도(>0)가 있을 때만 (위장 수치 금지) */}
       {typeof confidence === 'number' && confidence > 0 && (
-        <p className="font-medium text-foreground/80">
+        <p className="font-medium tracking-wide text-foreground/80">
           분석 신뢰도 {confidence}%
-          <span className="ml-1.5 font-normal text-muted-foreground">
+          <span className="ml-1.5 font-normal tracking-normal text-muted-foreground">
             {hint ?? getConfidenceGrade(confidence)}
           </span>
         </p>
