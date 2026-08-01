@@ -212,6 +212,92 @@ export function resolveNamedHex(map: Map<string, string>, name: string): string 
   return bestKey ? map.get(bestKey) : undefined;
 }
 
+// ─── G6 색명 동의 표기쌍 — 같은 색의 한글/외래 표기(순수 표기 번역). 결과 데이터에 이미 실린
+// hex를 다른 표기로도 찾게 등록할 뿐, 새 hex를 만들지 않는다(회피 행 "신규 hex 금지" 계약).
+const COLOR_NAME_SYNONYM_PAIRS: ReadonlyArray<[string, string]> = [
+  ['검정', '블랙'],
+  ['검은색', '블랙'],
+  ['흰색', '화이트'],
+  ['회색', '그레이'],
+  ['남색', '네이비'],
+  ['빨간색', '레드'],
+  ['빨강', '레드'],
+  ['주황색', '오렌지'],
+  ['주황', '오렌지'],
+  ['보라', '퍼플'],
+];
+
+/**
+ * 등록된 색명의 동의 표기를 같은 hex로 추가 등록 — 회피 칩('검정' vs worstColors '블랙')처럼
+ * 표기만 다른 결손을 해소한다. 양쪽 다 없으면 아무것도 하지 않는다(지어내기 금지).
+ * @internal export는 테스트 전용
+ */
+export function registerColorNameSynonyms(map: Map<string, string>): Map<string, string> {
+  for (const [a, b] of COLOR_NAME_SYNONYM_PAIRS) {
+    const hexA = map.get(a);
+    const hexB = map.get(b);
+    if (hexA !== undefined && !map.has(b)) map.set(b, hexA);
+    else if (hexB !== undefined && !map.has(a)) map.set(a, hexB);
+  }
+  return map;
+}
+
+// ─── G7 표준 색명 사전 — getKoreanColorName 계열 색명(레드·코랄·…·로즈)과 패션 통용 표기의
+// 표준 hex 상수(CSS 표준색·관용 표준색). 진단 데이터가 아니라 표준 색명의 표기 번역이며,
+// 통용 hex가 하나로 수렴하지 않는 색명(카키 등)과 재질명(진주 등)은 싣지 않는다 — 매핑 실패는
+// 무색 유지가 계약. 진단 결과에 실린 색이 항상 우선(resolveRecommendedHex 참조).
+const STANDARD_COLOR_ENTRIES: ReadonlyArray<{ name: string; hex: string }> = [
+  { name: '화이트', hex: '#FFFFFF' },
+  { name: '아이보리', hex: '#FFFFF0' },
+  { name: '베이지', hex: '#F5F5DC' },
+  { name: '블랙', hex: '#000000' },
+  { name: '그레이', hex: '#808080' },
+  { name: '라이트 그레이', hex: '#D3D3D3' },
+  { name: '차콜', hex: '#36454F' },
+  { name: '네이비', hex: '#000080' },
+  { name: '블루', hex: '#0000FF' },
+  { name: '스카이블루', hex: '#87CEEB' },
+  { name: '하늘색', hex: '#87CEEB' },
+  { name: '민트', hex: '#3EB489' },
+  { name: '그린', hex: '#008000' },
+  { name: '올리브', hex: '#808000' },
+  { name: '레드', hex: '#FF0000' },
+  { name: '버건디', hex: '#800020' },
+  { name: '와인', hex: '#722F37' },
+  { name: '코랄', hex: '#FF7F50' },
+  { name: '오렌지', hex: '#FFA500' },
+  { name: '겨자색', hex: '#FFDB58' },
+  { name: '골드', hex: '#FFD700' },
+  { name: '옐로', hex: '#FFFF00' },
+  { name: '노란색', hex: '#FFFF00' },
+  { name: '연노랑', hex: '#FFFFE0' },
+  { name: '핑크', hex: '#FFC0CB' },
+  { name: '분홍', hex: '#FFC0CB' },
+  { name: '연분홍', hex: '#FFB6C1' },
+  { name: '진분홍', hex: '#FF1493' },
+  { name: '로즈', hex: '#FF007F' },
+  { name: '퍼플', hex: '#800080' },
+  { name: '바이올렛', hex: '#EE82EE' },
+  { name: '라벤더', hex: '#E6E6FA' },
+  { name: '연보라', hex: '#C8A2C8' },
+  { name: '브라운', hex: '#8B4513' },
+  { name: '갈색', hex: '#8B4513' },
+  { name: '카멜', hex: '#C19A6B' },
+  { name: '살구색', hex: '#FBCEB1' },
+];
+
+// 표준 사전도 같은 정규화·부분 폴백 규칙을 태우기 위해 Map으로 조립(동의 표기까지 등록)
+const STANDARD_NAME_MAP = registerColorNameSynonyms(buildNamedHexMap([STANDARD_COLOR_ENTRIES]));
+
+/**
+ * G7 패션 '추천 컬러' 해석 — 진단 결과 데이터 우선, 없으면 표준 색명 사전 폴백.
+ * 둘 다 실패하면 undefined(무색 유지). 회피 행에는 쓰지 않는다(신규 hex 금지 — G6).
+ * @internal export는 테스트 전용
+ */
+export function resolveRecommendedHex(map: Map<string, string>, name: string): string | undefined {
+  return resolveNamedHex(map, name) ?? resolveNamedHex(STANDARD_NAME_MAP, name);
+}
+
 /** R1 색명 동행 스와치 — 14px 실색 사각 전치. hex 매핑이 없으면 렌더하지 않는다(지어내기 금지) */
 function NamedColorDot({ hex }: { hex?: string }): React.JSX.Element | null {
   if (!hex) return null;
@@ -385,7 +471,7 @@ function SwatchChips({
   );
 }
 
-/** 01 진단 속성표 — RowTable(+12톤 명도·채도 정의 행+톤 경향 실측 행) + 풀이 + 결론 + 판정 근거 요약 */
+/** 진단 속성표(히어로 흡수, G1) — RowTable(+12톤 명도·채도 정의 행+톤 경향 실측 행) + 풀이 + 결론 + 판정 근거 요약 */
 function AttrsSectionBody({
   seasonLabel,
   tone,
@@ -475,7 +561,7 @@ function AttrsSectionBody({
   );
 }
 
-/** 03 컬러 팔레트 — 베스트 그리드(hex 캡션 급수) + 포인트·금속 큐레이션 + 취소선 회피 칩 + 톤 총람 */
+/** 02 컬러 팔레트 — 베스트 연속 스트립(이름·hex 명세) + 포인트·금속 큐레이션 + 취소선 회피 칩 + 톤 총람 */
 function PaletteSectionBody({
   bestColors,
   worstColors,
@@ -508,34 +594,38 @@ function PaletteSectionBody({
               : `${seasonLabel} 타입에 잘 어울리는 컬러예요`}
           </span>
         </p>
-        <div
-          className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-3"
-          data-testid="pc-best-grid"
-        >
-          {bestColors.map((color, index) => (
-            <button
-              key={index}
-              type="button"
-              className="group cursor-pointer text-left"
-              onClick={() => {
-                navigator.clipboard.writeText(color.hex).then(() => {
-                  toast.success(`${color.hex} 복사됨`, { duration: 1500 });
-                });
-              }}
-            >
-              <div
-                className="aspect-square w-full rounded-lg border border-border transition-all group-hover:ring-2 group-hover:ring-primary/50"
-                style={{ backgroundColor: color.hex }}
-              />
-              <p className="mt-1 truncate text-xs text-foreground/80">
-                {color.name || getKoreanColorName(color.hex)}
-              </p>
-              {/* hex = 캡션 급수(이름보다 한 단계 아래) — 이름과 붙여 한 덩어리로 */}
-              <p className="text-[10px] uppercase tabular-nums tracking-wide text-muted-foreground/70">
-                {color.hex}
-              </p>
-            </button>
-          ))}
+        {/* 연속 페인트 스트립(G3) — 낱개 색카드 대신 간격 0 색면 이음(높이 72px), 양끝만
+            미세 라운드(래퍼 클립). 히어로 풀블리드 스트립과 역할 구분: 히어로=색 필드(장식 마감),
+            03=명세(이름·hex 병기 스펙). sm 미만은 basis 1/3로 3+3 두 줄 — 5색이면 3+2로
+            늘어붙어 5+1 고아 구간이 자동 해소된다. 클릭 복사 유지 */}
+        <div className="mt-2" data-testid="pc-best-grid">
+          <div className="flex flex-wrap overflow-hidden rounded-md">
+            {bestColors.map((color, index) => (
+              <button
+                key={index}
+                type="button"
+                className="group min-w-[33.333%] flex-1 cursor-pointer text-left sm:min-w-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(color.hex).then(() => {
+                    toast.success(`${color.hex} 복사됨`, { duration: 1500 });
+                  });
+                }}
+              >
+                {/* 호버 링은 inset — 간격 0 이음이라 바깥 링은 이웃 색면에 클리핑된다 */}
+                <div
+                  className="h-[72px] w-full group-hover:ring-2 group-hover:ring-inset group-hover:ring-primary/50"
+                  style={{ backgroundColor: color.hex }}
+                />
+                <p className="mt-1 truncate pr-1.5 text-xs text-foreground/80">
+                  {color.name || getKoreanColorName(color.hex)}
+                </p>
+                {/* hex = 캡션 급수(이름보다 한 단계 아래) — 이름과 붙여 한 덩어리로 */}
+                <p className="truncate pr-1.5 text-[10px] uppercase tabular-nums tracking-wide text-muted-foreground/70">
+                  {color.hex}
+                </p>
+              </button>
+            ))}
+          </div>
         </div>
         {/* "왜 이 색이 어울리는지" 1줄 — 구 상세 탭 시즌 설명(whyThisColor) 승격.
             상세 리포트 탭이 삭제되어(2026-08-01) 유도 링크 대신 언더톤 근거를 본문에 담는다 */}
@@ -608,7 +698,9 @@ function PaletteSectionBody({
               톤 팔레트 총람
               <span className="ml-1.5 font-normal">12톤 표준 정의 팔레트예요</span>
             </p>
-            <div className="mt-2 space-y-1.5">
+            {/* G11 밀도 — 행간·스와치 간격 절반 + 스와치 미세 확대(40→44) + 행 라벨 좌측 고정
+                칼럼 + 행 사이 헤어라인 = '표' 인상. 발색 질감은 정본 유지 */}
+            <div className="mt-2 divide-y divide-border/60">
               {(
                 [
                   ['립', tonePalette.lipColors, 'lip'],
@@ -616,14 +708,14 @@ function PaletteSectionBody({
                   ['블러셔', tonePalette.blushColors, 'powder'],
                 ] as const
               ).map(([rowLabel, hexes, texture]) => (
-                <div key={rowLabel} className="flex items-center gap-2">
+                <div key={rowLabel} className="flex items-center gap-2 py-[3px]">
                   <span className="w-12 shrink-0 text-[10px] text-muted-foreground">
                     {rowLabel}
                   </span>
-                  <div className="flex flex-1 flex-wrap items-center gap-1" aria-hidden="true">
+                  <div className="flex flex-1 flex-wrap items-center gap-0.5" aria-hidden="true">
                     {hexes.map((hex, i) => (
                       <span key={`${hex}-${i}`} title={hex}>
-                        <TextureSwatch hex={hex} kind={texture} width={40} />
+                        <TextureSwatch hex={hex} kind={texture} width={44} />
                       </span>
                     ))}
                   </div>
@@ -637,7 +729,7 @@ function PaletteSectionBody({
   );
 }
 
-/** 스타일 가이드 미니 카드 — 색면 박스 대신 중립 카드 + 라인아트 아이콘 muted 1색 */
+/** 스타일 가이드 미니 구획 — 라운드 카드 외곽 해체, 소제목 위 얇은 상단 rule로만 구획(무박스 인쇄 문법, G2) */
 function StyleMiniCard({
   icon: Icon,
   label,
@@ -648,7 +740,7 @@ function StyleMiniCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-3.5 py-3">
+    <div className="border-t border-border pt-2.5">
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
         {label}
@@ -709,7 +801,7 @@ function StyleGuideSection({
   );
 }
 
-/** 04 스타일 가이드 — 색면 박스 3종 → 2열 미니카드(키워드·메이크업/그루밍·패션·액세서리) */
+/** 03 스타일 가이드 — 상단 rule 무박스 2열 구획(키워드·메이크업/그루밍·패션·액세서리) */
 function StyleCardsBody({
   styleDescription,
   userGender,
@@ -722,8 +814,20 @@ function StyleCardsBody({
   /** R1 색명→hex 사전 — 패션 색명 칩에 실색 스와치 동행(매핑 없으면 텍스트만) */
   namedHexMap: Map<string, string>;
 }) {
+  // G6 회피 행 스와치는 행 단위 전부/전무 — 일부만 칠해지면 결손이 정보처럼 읽힌다.
+  // 회피 색은 표준 사전 폴백 금지(신규 hex 금지) — 결과 데이터(동의 표기 포함)만 소스.
+  const avoidDotHexes = (styleDescription.easyFashion?.avoid ?? []).map((color) =>
+    resolveNamedHex(namedHexMap, color)
+  );
+  const showAvoidDots = avoidDotHexes.length > 0 && avoidDotHexes.every((hex) => hex !== undefined);
+
   return (
-    <div className="grid gap-2.5 sm:grid-cols-2" data-testid="pc-style-cards">
+    // sm:items-start — 행 짝 카드의 세로 스트레치가 만들던 빈 하단 40% 소멸(G2).
+    // 무박스 전환으로 구획은 rule이 담당 — 열 간격만 여유 있게
+    <div
+      className="grid gap-x-8 gap-y-5 sm:grid-cols-2 sm:items-start"
+      data-testid="pc-style-cards"
+    >
       <StyleMiniCard icon={Tag} label="스타일 키워드">
         <div className="flex flex-wrap gap-1.5">
           {styleDescription.imageKeywords.map((keyword, index) => (
@@ -752,8 +856,9 @@ function StyleCardsBody({
                     key={idx}
                     className="flex items-center gap-1.5 rounded border border-border px-2 py-0.5 text-xs text-foreground/80"
                   >
-                    {/* R1 색명에 색 동행 — 결과 데이터에 있는 색만 스와치 전치 */}
-                    <NamedColorDot hex={resolveNamedHex(namedHexMap, color)} />
+                    {/* G7 색명에 색 동행 — 진단 데이터 우선 + 표준 색명 사전 폴백.
+                        매핑 실패(재질명 등)는 무색 유지 */}
+                    <NamedColorDot hex={resolveRecommendedHex(namedHexMap, color)} />
                     {color}
                   </span>
                 ))}
@@ -767,7 +872,8 @@ function StyleCardsBody({
                     key={idx}
                     className="flex items-center gap-1.5 rounded border border-border px-2 py-0.5 text-xs text-muted-foreground line-through"
                   >
-                    <NamedColorDot hex={resolveNamedHex(namedHexMap, color)} />
+                    {/* G6 행 단위 전부/전무 — 전원 매핑될 때만 스와치 동행 */}
+                    {showAvoidDots && <NamedColorDot hex={avoidDotHexes[idx]} />}
                     {color}
                   </span>
                 ))}
@@ -923,7 +1029,7 @@ function FoundationList({ items }: { items: FoundationRecommendation[] }) {
   );
 }
 
-/** 06 추천 제품 — 립/그루밍 + 파운데이션 (접힘 유지, 이모지만 소거) */
+/** 05 추천 제품 — 첫 립은 지면에 펼쳐 인쇄(G10), 나머지 립·그루밍·파운데이션은 접힘 유지 */
 function ProductsSectionBody({
   isMale,
   groomingRecommendations,
@@ -937,33 +1043,52 @@ function ProductsSectionBody({
   foundationRecommendations?: FoundationRecommendation[];
   foundationBaseLabel: string;
 }) {
-  const productTitle = isMale ? '추천 그루밍 아이템' : '추천 립스틱';
-  const productSummary = isMale
-    ? (groomingRecommendations[0]?.itemName ?? '')
-    : (lipstickRecommendations[0]?.colorName ?? '');
-  const hasPrimary = (isMale ? groomingRecommendations : lipstickRecommendations).length > 0;
+  // G10 지면 개폐 — 첫 립 추천(제품명+이유 1줄)은 접힘 밖에 인쇄, 접힘엔 나머지만.
+  // 인쇄물에서 첫 추천이 사라지지 않게 하는 조치라 남성 그루밍 접힘은 현행 유지(처방 범위)
+  const [firstLip, ...restLips] = lipstickRecommendations;
+  const firstLipReason = firstLip?.easyDescription ?? firstLip?.brandExample;
 
   return (
     <div className="space-y-3">
-      {hasPrimary && (
-        <ProgressiveDisclosure
-          title={productTitle}
-          summary={productSummary}
-          icon={
-            isMale ? (
-              <Brush className="h-4 w-4" strokeWidth={1.75} />
-            ) : (
-              <Heart className="h-4 w-4" strokeWidth={1.75} />
-            )
-          }
-        >
-          {isMale ? (
-            <GroomingList items={groomingRecommendations} />
-          ) : (
-            <LipstickList items={lipstickRecommendations} />
+      {isMale
+        ? groomingRecommendations.length > 0 && (
+            <ProgressiveDisclosure
+              title="추천 그루밍 아이템"
+              summary={groomingRecommendations[0]?.itemName ?? ''}
+              icon={<Brush className="h-4 w-4" strokeWidth={1.75} />}
+            >
+              <GroomingList items={groomingRecommendations} />
+            </ProgressiveDisclosure>
+          )
+        : firstLip && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">추천 립스틱</p>
+              <div className="mt-2 flex items-center gap-3" data-testid="pc-product-first">
+                <span
+                  className="h-8 w-8 shrink-0 rounded-full border border-border shadow-sm"
+                  style={{ backgroundColor: firstLip.hex }}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">{firstLip.colorName}</p>
+                  {firstLipReason && (
+                    <p className="truncate text-xs text-muted-foreground">{firstLipReason}</p>
+                  )}
+                </div>
+              </div>
+              {restLips.length > 0 && (
+                <div className="mt-3">
+                  <ProgressiveDisclosure
+                    title="다른 추천 더 보기"
+                    summary={`립스틱 ${restLips.length}개`}
+                    icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
+                  >
+                    <LipstickList items={restLips} />
+                  </ProgressiveDisclosure>
+                </div>
+              )}
+            </div>
           )}
-        </ProgressiveDisclosure>
-      )}
 
       {foundationRecommendations && foundationRecommendations.length > 0 && (
         <ProgressiveDisclosure
@@ -981,7 +1106,8 @@ function ProductsSectionBody({
   );
 }
 
-/** 컨설턴트 TIP — 전속 뷰티팀 총평 문법(세리프 이탤릭 인용), 풀블리드 밴드(목업 m03 하단 밴드) */
+/** 컨설턴트 TIP — 전속 뷰티팀 총평 문법(세리프 이탤릭 인용). 1px 괘선 박스·사각 모서리
+ *  (목업 m03 하단 TIP 박스 문법, G10) — 배경은 지면 그대로, 핑크는 라벨 악센트만(G9) */
 function InsightNote({
   easyInsight,
   insight,
@@ -990,10 +1116,7 @@ function InsightNote({
   insight: string;
 }) {
   return (
-    <div
-      className="-mx-5 mt-6 border-y border-border bg-muted/50 px-5 py-4 sm:-mx-7 sm:px-7"
-      data-testid="pc-insight-note"
-    >
+    <div className="mt-6 border border-border px-4 py-3.5" data-testid="pc-insight-note">
       <p className="text-xs font-semibold tracking-wide text-primary">컨설턴트 TIP</p>
       {easyInsight ? (
         <>
@@ -1017,8 +1140,55 @@ interface ReportSection {
   key: string;
   title: string;
   body: React.ReactNode;
-  /** md+ 2단 병치 대상(속성표|액션, 스타일링|제품) — false/미지정이면 풀폭 */
+  /** md+ 2단 병치 대상(스타일링|제품) — false/미지정이면 풀폭 */
   half?: boolean;
+}
+
+/**
+ * 히어로 좌측 앵커 — 분석 원본 사진이 있으면 사진(같은 페이지 드레이핑 탭이 이미 표시하는
+ * 이미지라 신규 프라이버시 노출 없음), 없거나 로드 실패면 드레이핑 색면 스택을 같은 자리에
+ * (데모 포함 — 생성 인물 사진 배제 정본). md+는 두 행(타이틀+속성표) 옆을 세로로 채우는
+ * row-span-2 (G1). 본체 분기 이관 — cognitive complexity 절감.
+ */
+function HeroAnchor({
+  photoUrl,
+  photoError,
+  onPhotoError,
+  bestColors,
+}: {
+  photoUrl?: string;
+  photoError: boolean;
+  onPhotoError: () => void;
+  bestColors: ColorInfo[];
+}): React.JSX.Element | null {
+  if (photoUrl && !photoError) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- 서명 URL 원본(최적화 프록시 비대상)
+      <img
+        src={photoUrl}
+        alt="분석에 사용한 내 사진"
+        onError={onPhotoError}
+        className="col-start-1 row-start-1 aspect-[3/4] w-full rounded-xl border border-border object-cover md:row-span-2"
+        data-testid="pc-hero-photo"
+      />
+    );
+  }
+  if (bestColors.length === 0) return null;
+  return (
+    <div
+      className="col-start-1 row-start-1 flex aspect-[3/4] w-full flex-col overflow-hidden rounded-xl border border-border md:row-span-2"
+      data-testid="pc-hero-draping"
+      aria-hidden="true"
+    >
+      {bestColors.slice(0, 5).map((color, index) => (
+        <span
+          key={`${color.hex}-${index}`}
+          className="block w-full flex-1"
+          style={{ backgroundColor: color.hex }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /**
@@ -1112,53 +1282,46 @@ export default function AnalysisResult({
       : undefined;
 
   // R1 색명→hex 사전 — 이 결과에 실린 색 데이터만 소스(베스트 팔레트 우선).
-  // 04 패션 색명 칩·05 스타일링 색 제안에 실색 스와치를 동행시킨다(매핑 없으면 텍스트만)
-  const namedHexMap = buildNamedHexMap([
-    bestColors,
-    worstColors,
-    accentColors,
-    metalColors,
-    lipstickRecommendations.map((lip) => ({ name: lip.colorName, hex: lip.hex })),
-    groomingRecommendations.map((item) => ({ name: item.colorTone, hex: item.hex })),
-  ]);
+  // 패션 색명 칩·스타일링 색 제안에 실색 스와치를 동행시킨다(매핑 없으면 텍스트만).
+  // G6: 동의 표기('검정'↔'블랙' 등)를 같은 hex로 추가 등록 — 새 hex 반입 없음
+  const namedHexMap = registerColorNameSynonyms(
+    buildNamedHexMap([
+      bestColors,
+      worstColors,
+      accentColors,
+      metalColors,
+      lipstickRecommendations.map((lip) => ({ name: lip.colorName, hex: lip.hex })),
+      groomingRecommendations.map((item) => ({ name: item.colorTone, hex: item.hex })),
+    ])
+  );
 
-  // ─── 번호 섹션 — 데이터 있는 섹션만 조립, 번호는 렌더 시점에 매겨 결번을 막는다
+  // 히어로 좌측 앵커(사진 또는 드레이핑 스택) 존재 여부 — 없으면 우측 칼럼이 풀폭을 쓴다(G1)
+  const hasHeroAnchor = Boolean(photoUrl && !photoError) || bestColors.length > 0;
+
+  // md 히어로 캡션의 진단일 — 기존 analyzedAt의 표기(신규 데이터 아님, G1)
+  const heroDateLabel = analyzedAt.toLocaleDateString(getDateLocale(locale));
+
+  // ─── 번호 섹션 — 데이터 있는 섹션만 조립, 번호는 렌더 시점에 매겨 결번을 막는다.
+  // 구 01 진단 속성은 히어로가 흡수(G1) — 배열에서 빠지고 번호는 자동 재부여된다.
+
   const sections: ReportSection[] = [];
 
-  // 01 진단 속성표 — 실데이터 행만 (없는 행은 미렌더)
-  sections.push({
-    key: 'attrs',
-    title: '진단 속성',
-    half: true,
-    body: (
-      <AttrsSectionBody
-        seasonLabel={seasonLabel}
-        tone={result.tone}
-        characteristics={info.characteristics}
-        contrastLevel={contrastLevel}
-        evidence={evidence}
-        subtypeAttrs={subtypeAttrs}
-        toneTendency={toneTendency}
-        lipNote={lipNote}
-      />
-    ),
-  });
-
-  // 02 그래서 이렇게 — 기존 TopActionsCard 그대로 (내부 제목은 섹션 헤더와 중복이라 시각만 숨김)
+  // 01 그래서 이렇게 — 기존 TopActionsCard 그대로 (내부 제목은 섹션 헤더와 중복이라 시각만 숨김).
+  // 속성표 흡수 후 홀로 남은 half는 md 우측 공백을 만들어 풀폭 밴드로 전환(G1)
   if (topActions.length > 0) {
     sections.push({
       key: 'actions',
       title: '그래서, 이렇게 하세요',
-      half: true,
       body: (
         <div className="[&_h2]:sr-only">
-          <TopActionsCard actions={topActions} />
+          {/* G9 액션 존 배경 — 핑크 틴트 카드를 딥크림 지면으로 교체(핑크는 결론·TIP 악센트만 잔류) */}
+          <TopActionsCard actions={topActions} className="border-border bg-surface-ground-deep" />
         </div>
       ),
     });
   }
 
-  // 03 컬러 팔레트
+  // 02 컬러 팔레트
   if (bestColors.length > 0) {
     sections.push({
       key: 'palette',
@@ -1178,7 +1341,7 @@ export default function AnalysisResult({
     });
   }
 
-  // 04 스타일 가이드
+  // 03 스타일 가이드
   sections.push({
     key: 'style',
     title: '스타일 가이드',
@@ -1192,7 +1355,7 @@ export default function AnalysisResult({
     ),
   });
 
-  // 05 추천 스타일링 — 의류 (성별 적응형)
+  // 04 추천 스타일링 — 의류 (성별 적응형)
   if (genderClothingRecommendations.length > 0) {
     sections.push({
       key: 'clothing',
@@ -1209,9 +1372,15 @@ export default function AnalysisResult({
               </span>
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-foreground">
-                  {rec.item} —{/* R1 색명에 색 동행 — 결과 데이터에 있는 색만 실색 사각 전치 */}
+                  <span>{rec.item}</span>
+                  {/* G6 em대시 자체 span — 텍스트 노드에 붙이면 flex gap이 왼쪽에만 걸려
+                      좌우 간격이 비대칭이 된다 */}
+                  <span aria-hidden="true" className="text-muted-foreground">
+                    —
+                  </span>
+                  {/* R1 색명에 색 동행 — 결과 데이터에 있는 색만 실색 사각 전치 */}
                   <NamedColorDot hex={resolveNamedHex(namedHexMap, rec.colorSuggestion)} />
-                  {rec.colorSuggestion}
+                  <span>{rec.colorSuggestion}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">{rec.reason}</p>
               </div>
@@ -1222,7 +1391,7 @@ export default function AnalysisResult({
     });
   }
 
-  // 06 추천 제품 — 접힘 유지
+  // 05 추천 제품 — 첫 립은 인쇄, 나머지 접힘 유지(G10)
   const hasProducts =
     (isMale ? groomingRecommendations : lipstickRecommendations).length > 0 ||
     (foundationRecommendations?.length ?? 0) > 0;
@@ -1247,93 +1416,120 @@ export default function AnalysisResult({
     <div data-testid="analysis-result">
       <ScaleIn>
         {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법)
-            깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
-        <section className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+            깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05).
+            word-break:keep-all 시트 일괄(G6) — 한국어 어절 중간 개행 금지, 히어로 h1의
+            overflow-wrap:anywhere(클리핑 방어)는 그대로 우선한다 */}
+        <section className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] [word-break:keep-all] dark:shadow-none">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
             style={{ backgroundImage: PAPER_GRAIN_URI }}
           />
           <div className="px-5 pb-6 pt-6 sm:px-7">
-            {/* 마스트헤드 — 아이브로우 + 이중 헤어라인(신문 마스트헤드 관례, R6) */}
-            <ReportEyebrow>PERSONAL COLOR REPORT</ReportEyebrow>
-            <div aria-hidden="true" className="mt-2.5">
+            {/* 마스트헤드 — 아이브로우 + 이중 헤어라인(신문 마스트헤드 관례, R6).
+                md+에선 라벨이 히어로 캡션(리포트명·진단일 병치)으로 내려가므로 괘선만 남긴다(G1) */}
+            <ReportEyebrow className="md:hidden">PERSONAL COLOR REPORT</ReportEyebrow>
+            <div aria-hidden="true" className="mt-2.5 md:mt-0">
               <div className="border-t border-border" />
               <div className="mt-[3px] border-t border-border" />
             </div>
 
-            {/* 히어로 2단 — 좌 사진/드레이핑 앵커(~40%) + 우 세리프 진단명 (모바일 포함, R3) */}
-            <div className="mt-5 flex items-start gap-4 sm:gap-6">
-              {/* 사진 앵커 — 분석 원본이 있으면 사진(같은 페이지 드레이핑 탭이 이미 표시하는
-                  이미지라 신규 프라이버시 노출 없음). 없거나 로드 실패면 드레이핑 색면 스택을
-                  같은 자리에(데모 포함 — 생성 인물 사진 배제 정본) */}
-              {photoUrl && !photoError ? (
-                <img
-                  src={photoUrl}
-                  alt="분석에 사용한 내 사진"
-                  onError={() => setPhotoError(true)}
-                  className="aspect-[3/4] w-[40%] max-w-[240px] shrink-0 rounded-xl border border-border object-cover"
-                  data-testid="pc-hero-photo"
-                />
-              ) : (
-                bestColors.length > 0 && (
-                  <div
-                    className="flex aspect-[3/4] w-[40%] max-w-[240px] shrink-0 flex-col overflow-hidden rounded-xl border border-border"
-                    data-testid="pc-hero-draping"
-                    aria-hidden="true"
-                  >
-                    {bestColors.slice(0, 5).map((color, index) => (
-                      <span
-                        key={`${color.hex}-${index}`}
-                        className="block w-full flex-1"
-                        style={{ backgroundColor: color.hex }}
-                      />
-                    ))}
-                  </div>
-                )
-              )}
-              <div className="min-w-0 flex-1">
+            {/* 히어로 그리드 — 좌 사진/드레이핑 앵커 | 우 타이틀 블록. md+는 우측 칼럼이
+                '타이틀(스케일 상향)+부제+캡션+진단 속성표+인장'으로 만석 — 1440 우측 백지 해소
+                (m03 문법, G1). 모바일(1열 흐름)은 현행 유지: 앵커|타이틀 → 풀블리드 스트립 →
+                진단 속성(히어로 아래 첫 블록). 속성표는 단일 DOM을 그리드 행 배치로만 이동시켜
+                중복 렌더 없이 반응한다. */}
+            <div className="mt-5 grid grid-cols-[min(40%,240px)_minmax(0,1fr)] gap-x-4 sm:gap-x-6">
+              <HeroAnchor
+                photoUrl={photoUrl}
+                photoError={photoError}
+                onPhotoError={() => setPhotoError(true)}
+                bestColors={bestColors}
+              />
+              <div
+                className={cn('row-start-1 min-w-0', hasHeroAnchor ? 'col-start-2' : 'col-span-2')}
+              >
                 {/* overflow-wrap:anywhere — break-keep+사진 40% 조합에서 303px 미만 뷰포트의
-                    '브라이트' 어절이 시트 밖으로 클리핑되던 것 방어(넘칠 때만 어절 내 개행) */}
+                    '브라이트' 어절이 시트 밖으로 클리핑되던 것 방어(넘칠 때만 어절 내 개행).
+                    스케일 상향(G1)은 clamp 상한만 — 모바일 최소 급수(2.25rem)는 현행 유지 */}
                 <h1
-                  className="break-keep font-serif text-[clamp(2.25rem,4.5vw,3rem)] font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere]"
+                  className="break-keep font-serif text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere]"
                   data-testid="pc-hero-title"
                 >
                   {heroTitle}
                 </h1>
-                {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표(01)가 담당 — 중복 표기 없음 */}
+                {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표가 담당 — 중복 표기 없음 */}
                 <p className="mt-2 break-keep text-sm text-muted-foreground">{seasonDescription}</p>
-                {/* 스트립이 없으면(베스트 컬러 0) 인장이 오버랩할 지면이 없어 히어로에 폴백 */}
+                {/* md 캡션 — 마스트헤드 라벨·진단일 병치(초소형, G1). 기존 진단일 데이터의
+                    표기일 뿐 신규 데이터 아님. 단일 텍스트 노드로 마스트헤드 라벨과 구분 */}
+                <p
+                  className="mt-3 hidden text-[10px] uppercase tracking-widest text-muted-foreground md:block"
+                  data-testid="pc-hero-caption"
+                >
+                  PERSONAL COLOR REPORT · {heroDateLabel}
+                </p>
+                {/* 스트립이 없으면(베스트 컬러 0) 모바일 인장이 오버랩할 지면이 없어 여기 폴백 */}
                 {bestColors.length === 0 && (
-                  <SeasonSeal seasonType={seasonType} seasonLabel={seasonLabel} className="mt-4" />
+                  <SeasonSeal
+                    seasonType={seasonType}
+                    seasonLabel={seasonLabel}
+                    className="mt-4 md:hidden"
+                  />
                 )}
               </div>
-            </div>
-
-            {/* 풀블리드 팔레트 스트립 — 하드엣지 색 필드 + 하단 헤어라인(플랫 유지).
-                계절 인장이 상단 경계를 오버랩 — "지면 위 도장" (R2) */}
-            {bestColors.length > 0 && (
-              <div className="relative -mx-5 mt-6 sm:-mx-7">
-                <div
-                  className="flex border-b border-border"
-                  data-testid="pc-hero-strip"
-                  aria-hidden="true"
-                >
-                  {bestColors.slice(0, 6).map((color, index) => (
-                    <span
-                      key={`${color.hex}-${index}`}
-                      className="block h-10 flex-1"
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
-                <SeasonSeal
-                  seasonType={seasonType}
+              {/* 진단 속성 — 구 01 섹션을 히어로가 흡수(G1). 모바일은 스트립 아래 첫 블록(풀폭),
+                  md+는 우측 칼럼 2행. 인장 자리만큼 우측 패딩(92px=인장 76+여백) */}
+              <div
+                className={cn(
+                  'col-span-2 row-start-3 mt-6 md:row-start-2 md:mt-5 md:pr-[92px]',
+                  hasHeroAnchor && 'md:col-span-1 md:col-start-2'
+                )}
+              >
+                <AttrsSectionBody
                   seasonLabel={seasonLabel}
-                  className="absolute -top-9 right-5 z-10 sm:right-7"
+                  tone={result.tone}
+                  characteristics={info.characteristics}
+                  contrastLevel={contrastLevel}
+                  evidence={evidence}
+                  subtypeAttrs={subtypeAttrs}
+                  toneTendency={toneTendency}
+                  lipNote={lipNote}
                 />
               </div>
-            )}
+              {/* md 인장 — 속성표 우측 여백에 병치(m03 BEST TYPE 원형 문법).
+                  모바일 인장은 스트립 오버랩 쪽이 담당(아래) — 양쪽 다 display 게이팅이라
+                  스크린리더에 이중 노출되지 않는다 */}
+              <SeasonSeal
+                seasonType={seasonType}
+                seasonLabel={seasonLabel}
+                className="col-start-2 row-start-2 mt-5 hidden self-start justify-self-end md:flex"
+              />
+              {/* 풀블리드 팔레트 스트립 — 하드엣지 색 필드 + 하단 헤어라인(플랫 유지).
+                  모바일은 타이틀 직후(row2)·md+는 속성표 아래(row3)가 히어로의 마감 괘선.
+                  계절 인장이 상단 경계를 오버랩 — "지면 위 도장" (R2, 모바일 전용) */}
+              {bestColors.length > 0 && (
+                <div className="relative col-span-2 row-start-2 -mx-5 mt-6 sm:-mx-7 md:row-start-3">
+                  <div
+                    className="flex border-b border-border"
+                    data-testid="pc-hero-strip"
+                    aria-hidden="true"
+                  >
+                    {bestColors.slice(0, 6).map((color, index) => (
+                      <span
+                        key={`${color.hex}-${index}`}
+                        className="block h-10 flex-1"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                    ))}
+                  </div>
+                  <SeasonSeal
+                    seasonType={seasonType}
+                    seasonLabel={seasonLabel}
+                    className="absolute -top-9 right-5 z-10 sm:right-7 md:hidden"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* 번호 섹션들 — 데이터 있는 것만, 번호 자동 재부여.
                 md+에서 half 섹션(01|02, 05|06)은 2단 병치, 풀폭 섹션은 col-span-2 (모바일 1열 불변) */}
@@ -1348,12 +1544,23 @@ export default function AnalysisResult({
 
             <InsightNote easyInsight={easyInsight} insight={insight} />
 
+            {/* 지면 개폐 대칭(G10) — 마스트헤드 이중 헤어라인과 짝: 아래 1줄 + TrustFooter
+                내장 상단 괘선이 두 번째 줄(3px 간격) */}
+            <div aria-hidden="true" className="mt-6 border-t border-border" />
+
             {/* 푸터 신뢰 블록 — 신뢰도(진단의 점수) + 통계 + 분석 시간 (진단서의 직인) */}
-            <TrustFooter confidence={confidence} testId="pc-trust-footer" className="mt-6">
+            <TrustFooter confidence={confidence} testId="pc-trust-footer" className="mt-[3px]">
               <p>
                 전체 사용자 중 {info.percentage}%가 {seasonLabel}이에요
               </p>
-              <p>분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}</p>
+              {/* 초 단위는 발행 정보(콜로폰)에 과잉 — 분까지만 (재현성 직인 인상) */}
+              <p>
+                분석 시간:{' '}
+                {analyzedAt.toLocaleString(getDateLocale(locale), {
+                  dateStyle: 'long',
+                  timeStyle: 'short',
+                })}
+              </p>
             </TrustFooter>
           </div>
         </section>

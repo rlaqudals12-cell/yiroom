@@ -12,6 +12,8 @@ import AnalysisResult, {
   buildNamedHexMap,
   resolveNamedHex,
   deriveToneTendency,
+  registerColorNameSynonyms,
+  resolveRecommendedHex,
 } from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 import type { PersonalColorResult } from '@/lib/mock/personal-color';
 
@@ -127,12 +129,13 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('PERSONAL COLOR REPORT')).toBeInTheDocument();
     });
 
-    it('계절 인장 스탬프를 표시한다', () => {
+    it('계절 인장 스탬프를 표시한다 (모바일 스트립 오버랩 + md 히어로 병치 — 반응형 2노드, G1)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      const seal = screen.getByTestId('pc-season-seal');
-      expect(seal).toBeInTheDocument();
-      expect(seal).toHaveTextContent('Spring');
+      // 두 노드는 display 게이팅(md:hidden / hidden md:flex)이라 화면·스크린리더엔 항상 1개만 노출
+      const seals = screen.getAllByTestId('pc-season-seal');
+      expect(seals).toHaveLength(2);
+      seals.forEach((seal) => expect(seal).toHaveTextContent('Spring'));
     });
 
     it('히어로 풀블리드 팔레트 스트립을 렌더한다', () => {
@@ -281,15 +284,25 @@ describe('AnalysisResult', () => {
     it('추천 립스틱 섹션 제목을 표시한다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // <details> summary 안에 존재 (여성 프로필)
+      // G10 이후 라벨은 인쇄된 첫 립 항목 위에 존재 (여성 프로필)
       expect(screen.getByText('추천 립스틱')).toBeInTheDocument();
     });
 
-    it('립스틱 컬러명을 표시한다 (펼침 후)', async () => {
+    it('첫 립 추천은 접힘 없이 지면에 인쇄된다 — 제품명+이유 1줄 (G10)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      // 립스틱 추천 섹션은 접힘 — 펼친 뒤 전체 목록 확인
-      openSection('추천 립스틱');
+      const first = screen.getByTestId('pc-product-first');
+      expect(within(first).getByText('코랄 핑크')).toBeInTheDocument();
+      expect(within(first).getByText('MAC Coral Bliss')).toBeInTheDocument();
+      // 나머지는 접힘 유지 — 펼치기 전엔 미노출
+      expect(screen.queryByText('피치 누드')).not.toBeInTheDocument();
+    });
+
+    it('나머지 립스틱 컬러명을 표시한다 (펼침 후)', async () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // 첫 립을 제외한 나머지가 접힘 — 펼친 뒤 확인 (G10)
+      openSection('다른 추천 더 보기');
       await waitFor(() => {
         expect(screen.getByText('피치 누드')).toBeInTheDocument();
       });
@@ -300,7 +313,9 @@ describe('AnalysisResult', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
       // 첫 립 추천 브랜드는 "그래서, 이렇게 하세요" 결론 카드에 노출됨
-      expect(screen.getByText('MAC Coral Bliss')).toBeInTheDocument();
+      // (인쇄된 첫 립 항목에도 같은 문구가 실리므로 카드 스코프로 확인)
+      const card = screen.getByTestId('top-actions-card');
+      expect(within(card).getByText('MAC Coral Bliss')).toBeInTheDocument();
     });
   });
 
@@ -468,11 +483,14 @@ describe('AnalysisResult', () => {
     it('인장에 영문 시즌 + 한국어 타입명을 병기한다 (점수 없음)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      const seal = screen.getByTestId('pc-season-seal');
-      expect(within(seal).getByText('Spring')).toBeInTheDocument();
-      expect(within(seal).getByText('봄 웜톤')).toBeInTheDocument();
-      // 점수·퍼센트 문자열이 인장 안에 없어야 한다
-      expect(seal.textContent).not.toMatch(/\d+%|점/);
+      // 반응형 2노드(G1) 모두 동일 내용이어야 한다
+      const seals = screen.getAllByTestId('pc-season-seal');
+      seals.forEach((seal) => {
+        expect(within(seal).getByText('Spring')).toBeInTheDocument();
+        expect(within(seal).getByText('봄 웜톤')).toBeInTheDocument();
+        // 점수·퍼센트 문자열이 인장 안에 없어야 한다
+        expect(seal.textContent).not.toMatch(/\d+%|점/);
+      });
     });
   });
 
@@ -567,7 +585,7 @@ describe('AnalysisResult', () => {
     it('인장은 라이트 시즌색 채움 + 다크 전경 텍스트를 쓴다 (백색 텍스트 금지)', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      const seal = screen.getByTestId('pc-season-seal');
+      const seal = screen.getAllByTestId('pc-season-seal')[0];
       // spring 도장 잉크 — 라이트 채움 #F9E4D4
       expect(seal.style.backgroundColor).toBe('rgb(249, 228, 212)');
       const label = within(seal).getByText('Spring');
@@ -575,13 +593,14 @@ describe('AnalysisResult', () => {
       expect(label.style.color).toBe('rgb(138, 75, 43)');
     });
 
-    it('베스트 컬러가 있으면 인장은 히어로가 아닌 스트립 오버랩 위치에 렌더된다', () => {
+    it('베스트 컬러가 있으면 모바일 인장은 스트립 오버랩 위치에 렌더된다', () => {
       render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
 
-      const seal = screen.getByTestId('pc-season-seal');
+      const seals = screen.getAllByTestId('pc-season-seal');
       const strip = screen.getByTestId('pc-hero-strip');
-      // 같은 relative 래퍼 안에 스트립과 인장이 형제로 존재 (지면 위 도장)
-      expect(seal.parentElement).toBe(strip.parentElement);
+      // 같은 relative 래퍼 안에 스트립과 인장이 형제로 존재 (지면 위 도장, 모바일 쪽 노드)
+      const stripSeal = seals.find((seal) => seal.parentElement === strip.parentElement);
+      expect(stripSeal).toBeDefined();
     });
   });
 
@@ -717,6 +736,149 @@ describe('AnalysisResult', () => {
 
       const why = screen.getByTestId('pc-palette-why');
       expect(why).toHaveTextContent('봄 웜톤은 피부에 노란 언더톤이 있어서');
+    });
+  });
+
+  describe('히어로 만석 — 속성표 흡수·캡션·번호 재부여 (G1)', () => {
+    it('md 히어로 캡션에 리포트명·진단일이 병치된다 (단일 텍스트 노드)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const caption = screen.getByTestId('pc-hero-caption');
+      expect(caption).toHaveTextContent(/PERSONAL COLOR REPORT ·/);
+      // 마스트헤드 아이브로우(정확 일치 텍스트)는 여전히 1개만 존재
+      expect(screen.getByText('PERSONAL COLOR REPORT')).toBeInTheDocument();
+    });
+
+    it('구 01 진단 속성 섹션 헤더가 사라지고 속성표는 1회만 렌더된다 (히어로 흡수)', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      expect(screen.queryByText('진단 속성')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('pc-report-attrs')).toHaveLength(1);
+    });
+
+    it('번호 섹션은 01부터 결번 없이 재부여된다 — 01은 "그래서, 이렇게 하세요"', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      // 문서 순서상 첫 '01'은 첫 섹션 헤더의 러닝넘버 (의류 목록 번호보다 앞)
+      const firstNo = screen.getAllByText('01')[0];
+      expect(firstNo.nextElementSibling).toHaveTextContent('그래서, 이렇게 하세요');
+    });
+  });
+
+  describe('베스트 컬러 연속 페인트 스트립 (G3)', () => {
+    it('셀 아래 이름·hex 캡션이 병기되고 클릭 복사 버튼 수가 색 수와 같다', () => {
+      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+
+      const grid = screen.getByTestId('pc-best-grid');
+      expect(within(grid).getByText('#FF7F50')).toBeInTheDocument();
+      expect(within(grid).getAllByRole('button')).toHaveLength(mockResult.bestColors.length);
+    });
+  });
+
+  describe('색명 동의 표기 등록 (G6)', () => {
+    it('등록된 색명의 동의 표기를 같은 hex로 추가 등록한다 (신규 hex 없음)', () => {
+      const map = buildNamedHexMap([[{ name: '블랙', hex: '#000000' }]]);
+      registerColorNameSynonyms(map);
+
+      expect(map.get('검정')).toBe('#000000');
+      expect(map.get('검은색')).toBe('#000000');
+    });
+
+    it('양쪽 표기가 모두 있으면 덮어쓰지 않고, 둘 다 없으면 등록하지 않는다', () => {
+      const map = buildNamedHexMap([
+        [
+          { name: '검정', hex: '#111111' },
+          { name: '블랙', hex: '#000000' },
+        ],
+      ]);
+      registerColorNameSynonyms(map);
+
+      expect(map.get('검정')).toBe('#111111');
+      expect(map.get('블랙')).toBe('#000000');
+      expect(map.has('네이비')).toBe(false);
+    });
+
+    it('회피 색명 칩 스와치는 행 단위 전부 렌더된다 (전원 매핑 시)', () => {
+      const withFashion: PersonalColorResult = {
+        ...mockResult,
+        styleDescription: {
+          ...mockResult.styleDescription,
+          easyFashion: {
+            colors: ['코랄'],
+            // worstColors 블랙·네이비의 동의 표기 — 별칭 등록으로 전원 매핑
+            avoid: ['검정', '남색'],
+            style: '밝고 부드러운 느낌',
+            tip: '밝은 색 위주로 입어보세요',
+          },
+        },
+      };
+      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+
+      expect(screen.getByText('검정').querySelector('[aria-hidden="true"]')).not.toBeNull();
+      expect(screen.getByText('남색').querySelector('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    it('하나라도 매핑 실패면 회피 행 스와치는 전무다 (결손 비일관 금지)', () => {
+      const withFashion: PersonalColorResult = {
+        ...mockResult,
+        styleDescription: {
+          ...mockResult.styleDescription,
+          easyFashion: {
+            colors: ['코랄'],
+            avoid: ['검정', '무지개색'],
+            style: '밝고 부드러운 느낌',
+            tip: '밝은 색 위주로 입어보세요',
+          },
+        },
+      };
+      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+
+      // '검정'은 매핑 가능하지만 '무지개색' 실패 → 행 단위 전무
+      expect(screen.getByText('검정').querySelector('[aria-hidden="true"]')).toBeNull();
+      expect(screen.getByText('무지개색').querySelector('[aria-hidden="true"]')).toBeNull();
+    });
+  });
+
+  describe('추천 컬러 표준 색명 동행 (G7)', () => {
+    it('진단 데이터에 없는 표준 색명은 표준 사전 hex로 폴백한다', () => {
+      const empty = buildNamedHexMap([]);
+      expect(resolveRecommendedHex(empty, '하늘색')).toBe('#87CEEB');
+    });
+
+    it('진단 데이터에 실린 색이 표준 사전보다 우선한다', () => {
+      const map = buildNamedHexMap([[{ name: '하늘색', hex: '#123456' }]]);
+      expect(resolveRecommendedHex(map, '하늘색')).toBe('#123456');
+    });
+
+    it('재질명(진주)·미등록 색명은 무색 유지 — undefined', () => {
+      const empty = buildNamedHexMap([]);
+      expect(resolveRecommendedHex(empty, '진주')).toBeUndefined();
+      expect(resolveRecommendedHex(empty, '무지개색')).toBeUndefined();
+    });
+
+    it('패션 추천 컬러 칩에 표준 색명 스와치가 동행한다 (렌더)', () => {
+      const withFashion: PersonalColorResult = {
+        ...mockResult,
+        styleDescription: {
+          ...mockResult.styleDescription,
+          easyFashion: {
+            colors: ['하늘색', '진주'],
+            avoid: ['검정'],
+            style: '시원한 느낌',
+            tip: '파스텔 위주로 입어보세요',
+          },
+        },
+      };
+      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+
+      const chips = screen.getByTestId('pc-fashion-color-chips');
+      // 표준 사전 매핑 — 하늘색 #87CEEB
+      const sky = within(chips).getByText('하늘색');
+      const dot = sky.querySelector<HTMLElement>('[aria-hidden="true"]');
+      expect(dot).not.toBeNull();
+      expect(dot?.style.backgroundColor).toBe('rgb(135, 206, 235)');
+      // 재질명은 무색 유지
+      expect(within(chips).getByText('진주').querySelector('[aria-hidden="true"]')).toBeNull();
     });
   });
 
