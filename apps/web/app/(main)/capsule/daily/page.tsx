@@ -343,9 +343,12 @@ export default function DailyCapsulePage(): React.ReactElement {
       })).filter((group) => group.items.length > 0)
     : [];
 
+  // 시간대 우선순위 — 히어로 탐색과 시각 무게 차등(활성 그룹 판정)에 공용
+  const timePriority = getTimeGroupPriority(new Date().getHours());
+
   let foundGroup: (typeof groupsWithItems)[number] | undefined;
   let foundItem: DailyItem | undefined;
-  for (const key of getTimeGroupPriority(new Date().getHours())) {
+  for (const key of timePriority) {
     const group = groupsWithItems.find((g) => g.key === key);
     const firstUnchecked = group?.items.find((item) => !checkedItems.has(item.id));
     if (group && firstUnchecked) {
@@ -357,6 +360,10 @@ export default function DailyCapsulePage(): React.ReactElement {
   // const 별칭 — 클로저(onClick 등) 안에서도 내로잉 유지 (non-null 단언 회피)
   const heroGroup = foundGroup;
   const heroItem = foundItem;
+
+  // 균일 카드 벽 완화 — 히어로가 속한 그룹(전부 완료면 현재 시간대 우선 그룹)만
+  // 카드 무게, 나머지 시간대 그룹은 경량 표시. 데이터·체크 로직·testid는 동일.
+  const activeGroupKey = heroGroup?.key ?? timePriority[0];
 
   // 인증 로딩
   if (!isLoaded) {
@@ -509,6 +516,8 @@ export default function DailyCapsulePage(): React.ReactElement {
             {groupsWithItems.map((group, groupIndex) => {
               const GroupIcon = group.icon;
               const groupDone = group.items.filter((item) => checkedItems.has(item.id)).length;
+              // 시각 무게 차등 — 활성 그룹만 카드, 비활성 시간대 그룹은 경량 블록
+              const isActiveGroup = group.key === activeGroupKey;
 
               // 시간 섹션 안에서 모듈(스킨케어/메이크업/…)별로 다시 묶음 — "아침 8개"가 아니라
               // "아침 스킨케어 4단계 + 메이크업 3단계 + 코디"라는 덩어리로 읽히게 (인지 부담 축소)
@@ -530,7 +539,7 @@ export default function DailyCapsulePage(): React.ReactElement {
                       {groupDone}/{group.items.length}
                     </span>
                   </div>
-                  <div className="space-y-3">
+                  <div className={isActiveGroup ? 'space-y-3' : 'space-y-1'}>
                     {moduleClusters.map((cluster) => {
                       const moduleName = MODULE_NAMES[cluster.code] ?? cluster.code;
                       const clusterDone = cluster.items.filter((i) =>
@@ -540,8 +549,9 @@ export default function DailyCapsulePage(): React.ReactElement {
                       // 개인화 근거 (그룹 첫 아이템에 실림) — "내 분석이 반영됐다" 가시화
                       const groupNote = cluster.items.find((i) => i.groupNote)?.groupNote;
 
-                      return (
-                        <Card key={cluster.code} className="p-3">
+                      // 클러스터 내용은 동일, 활성 그룹만 카드 크롬(테두리·지면)을 얹는다
+                      const clusterBody = (
+                        <>
                           {/* 모듈 헤더 — 중립 배지 + 일괄 완료 */}
                           <div className="flex items-center justify-between mb-1.5">
                             <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
@@ -583,7 +593,17 @@ export default function DailyCapsulePage(): React.ReactElement {
                               />
                             ))}
                           </div>
+                        </>
+                      );
+
+                      return isActiveGroup ? (
+                        <Card key={cluster.code} className="p-3">
+                          {clusterBody}
                         </Card>
+                      ) : (
+                        <div key={cluster.code} className="px-3 py-1.5">
+                          {clusterBody}
+                        </div>
                       );
                     })}
                   </div>

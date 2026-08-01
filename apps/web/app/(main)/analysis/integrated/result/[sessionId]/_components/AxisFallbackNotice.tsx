@@ -44,24 +44,18 @@ export async function AxisFallbackNotice({
   if (labels.length === 0) return null;
 
   return (
-    <div
-      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
-      data-testid="axis-fallback-notice"
-      role="alert"
-    >
+    // 톤 절제(2026-08 배치 D): amber 벽면 대신 bg-card + amber 아이콘만 상태색으로 유지
+    // — verdict(히어로) 아래로 격하된 보조 고지라 카드 문법에 맞춘다 (샘플 고지 문구는 전량 보존)
+    <div className="rounded-2xl border bg-card p-4" data-testid="axis-fallback-notice" role="alert">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            {t('fallback.title')}
-          </p>
+          <p className="text-sm font-semibold text-foreground">{t('fallback.title')}</p>
           {/* 축 라벨은 강조 span으로 분리하고, 나머지 본문만 번역 (t.rich 미사용) */}
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+          <p className="text-xs text-muted-foreground">
             <span className="font-medium">{labels.join(', ')}</span> {t('fallback.bodyAfterLabels')}
           </p>
-          <p className="pt-1 text-xs text-amber-700 dark:text-amber-300">
-            {t('fallback.retryHint')}
-          </p>
+          <p className="pt-1 text-xs text-muted-foreground">{t('fallback.retryHint')}</p>
         </div>
       </div>
     </div>

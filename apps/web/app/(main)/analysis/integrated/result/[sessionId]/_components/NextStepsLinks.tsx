@@ -116,10 +116,8 @@ export function NextStepsLinks({
           // 실패 축 = '미완성' 행 — 심화 링크 대신 회복 경로만 (결과가 없으므로 딥링크 지어내지 않음)
           if (failedSet.has(step.axis) && !completedSet.has(step.axis)) {
             return (
-              <li
-                key={step.axis}
-                className="overflow-hidden rounded-2xl border border-dashed bg-card"
-              >
+              // 미완성 행도 솔리드 헤어라인 — 대시드 보더(슬롭 신호) 소거, 완료 행과 문법 통일
+              <li key={step.axis} className="overflow-hidden rounded-2xl border bg-card">
                 <div className="flex items-center gap-3 p-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
                     <Icon className="h-5 w-5 text-muted-foreground" />

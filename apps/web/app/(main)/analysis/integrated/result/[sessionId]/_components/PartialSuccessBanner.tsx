@@ -35,33 +35,31 @@ export async function PartialSuccessBanner({
   const failedLabels = axesFailed.map((c) => t(AXIS_LABEL_KEY[c])).join(', ');
 
   return (
+    // 톤 절제(2026-08 배치 D): amber 벽면 대신 bg-card + amber 아이콘만 상태색으로 유지
+    // — verdict(히어로) 아래로 격하된 보조 고지라 카드 문법에 맞춘다 (정직성 문구는 전량 보존)
     <div
-      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
+      className="rounded-2xl border bg-card p-4"
       data-testid="partial-success-banner"
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            {t('partialSuccess.title')}
-          </p>
+          <p className="text-sm font-semibold text-foreground">{t('partialSuccess.title')}</p>
           {completedLabels && (
-            <p className="text-xs text-amber-700 dark:text-amber-300">
+            <p className="text-xs text-muted-foreground">
               <span className="font-medium">{t('partialSuccess.successLabel')}</span>{' '}
               {completedLabels}
             </p>
           )}
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+          <p className="text-xs text-muted-foreground">
             <span className="font-medium">{t('partialSuccess.failedLabel')}</span> {failedLabels}
           </p>
           {/* 정직한 대체: 세션 단위 부분 재시도 API는 없다 — 실패한 축만 각각 재시도 경로로
               딥링크한다. 퍼컬은 통합 입력(/analysis/integrated)으로 보낸다: 복귀 유저의
               축 선택 UI가 mode:'update' 재분석을 지원해 이 축만 다시 돌릴 수 있다.
               나머지 축은 개별 분석(forceNew) 시작 경로. (맵 정본 = axis-retry-links.ts) */}
-          <p className="pt-1 text-xs text-amber-700 dark:text-amber-300">
-            {t('partialSuccess.retryHint')}
-          </p>
+          <p className="pt-1 text-xs text-muted-foreground">{t('partialSuccess.retryHint')}</p>
         </div>
       </div>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -70,7 +68,7 @@ export async function PartialSuccessBanner({
             key={axis}
             href={AXIS_ANALYSIS_HREF[axis]}
             data-testid={`partial-retry-${axis}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 px-3 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/40"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-primary"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             {t('partialSuccess.reanalyzeAxis', { axis: t(AXIS_LABEL_KEY[axis]) })}

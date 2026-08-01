@@ -361,7 +361,14 @@ export function ChatInterface({
           크림 지면(--surface-ground) 위에 백색 시트(말풍선·카드)가 놓이는 2단 깊이 —
           다크는 토큰이 배경으로 수렴해 기존 명도 단차 유지 */}
       <div className="flex-1 overflow-y-auto bg-surface-ground p-4">
-        <div className="mx-auto w-full max-w-2xl space-y-4">
+        <div
+          className={cn(
+            'mx-auto w-full max-w-2xl space-y-4',
+            // 빈 상태(인사+제안 카드)는 세로 중앙 배치 — 하단 거대 여백 해소.
+            // 대화가 시작되면 기존 상단 흐름 유지 (구조 불변, flex 정렬만)
+            messages.length === 0 && 'flex min-h-full flex-col justify-center'
+          )}
+        >
           {/* 초기 인사 (빈 대화) — 리치 카드 + 상황형 퀵질문 그리드 */}
           {messages.length === 0 && (
             <div className="py-6" data-testid="coach-empty-state">

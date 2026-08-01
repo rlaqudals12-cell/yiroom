@@ -50,15 +50,19 @@ describe('getMatchedItemsEmptyState', () => {
     expect(state.message).not.toContain('준비하고');
   });
 
-  it('분석 후 옷장이 있으면 옷장 코디로 안내한다 (가짜 로딩 문구 없음)', () => {
+  it('분석 후 옷장이 있으면 CTA 없이 오늘의 코디로 안내한다 (/closet/recommend 진입 중복 금지)', () => {
     const state = getMatchedItemsEmptyState(true, true);
-    expect(state.ctaHref).toBe('/closet/recommend');
+    expect(state.ctaHref).toBeNull();
+    expect(state.ctaLabel).toBeNull();
+    expect(state.message).toContain('오늘의 코디');
     // "준비하고 있어요" 같은 가짜 로딩 암시 금지
     expect(state.message).not.toContain('준비하고 있어요');
   });
 
-  it('분석 후 옷장이 비어있으면 옷장 등록으로 안내한다', () => {
+  it('분석 후 옷장이 비어있으면 CTA 없이 옷장 등록으로 안내한다 (주인공 CTA와 중복 금지)', () => {
     const state = getMatchedItemsEmptyState(true, false);
-    expect(state.ctaHref).toBe('/closet/add/batch');
+    expect(state.ctaHref).toBeNull();
+    expect(state.ctaLabel).toBeNull();
+    expect(state.message).toContain('옷');
   });
 });

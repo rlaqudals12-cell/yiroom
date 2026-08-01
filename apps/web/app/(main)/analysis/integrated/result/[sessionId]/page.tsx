@@ -655,14 +655,17 @@ export default async function IntegratedResultPage({
           </p>
         </header>
 
-        {/* Partial Success 안내 */}
+        {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 (상단 히어로).
+            왜 최상단: 첫 미팅 산출물은 verdict가 먼저다 — 경고 2종이 히어로보다 먼저
+            렌더되던 에러-퍼스트 위계를 교정(2026-08 배치 D). 정직성 계약(문구·
+            usedFallback 노출·재분석 링크)은 아래 배너 2종에 전량 보존, 순서만 조정 */}
+        <PersonaNarrativeCard persona={session.persona} />
+
+        {/* Partial Success 안내 — 히어로 바로 아래(정직성 유지, 위계만 격하) */}
         <PartialSuccessBanner axesCompleted={axesCompleted} axesFailed={axesFailed} />
 
         {/* 정직성: Mock Fallback으로 대체된 축을 샘플 결과로 명시 (감사 B7) */}
         <AxisFallbackNotice usedFallback={usedFallbackAxes} />
-
-        {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 (상단 히어로) */}
-        <PersonaNarrativeCard persona={session.persona} />
 
         {/* 정체성 공유 카드 — "뽐내기" 정서(2026-07-12 인사이트): 페르소나를 자랑 가능한
             이미지 배지로. 사진 미포함(생체정보), 성공 축 뱃지만 표시 */}

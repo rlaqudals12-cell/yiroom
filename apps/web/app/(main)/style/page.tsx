@@ -25,13 +25,13 @@ import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
 /**
  * 스타일 탭 - 룩핀 스타일 코디 피드
- * - 내 체형 프로필 표시
- * - 내 컬러 팔레트
- * - 체형 맞춤 필터 토글
- * - 카테고리 필터 (전체/상의/하의/아우터/코디)
- * - 오늘의 코디 추천 (내 옷장 실제 매칭)
- * - 맞춤 아이템 추천
- * - 오늘 뭐 입지? 추천
+ *
+ * 위계 원칙 (PC 결과 검증 패턴 이식, 2026-08-01):
+ * - 주인공 CTA는 상태 기반 1개만 — 옷장 0벌=옷장 등록, 1벌+=오늘의 코디(날씨·상황별 추천).
+ *   나머지 행동(내 정보 입력·체형 분석)은 아웃라인/텍스트 링크로 격하.
+ * - /closet/recommend 진입은 오늘의 코디 섹션 1곳뿐 (구 "오늘 뭐 입지?" 중복 섹션 제거).
+ * - 섹션 적층 축소: 내 프로필(프로필+팔레트 병합) / 필터(맞춤 토글+카테고리+소재 병합)
+ *   / 오늘의 코디 / 맞춤 아이템 — 4~5단.
  */
 
 type Category = 'all' | 'tops' | 'bottoms' | 'outer' | 'outfit';
@@ -286,20 +286,21 @@ export default function StylePage() {
             <p className="font-medium text-foreground mb-1">
               키/몸무게를 입력하면 더 정확한 추천을 받을 수 있어요
             </p>
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm text-muted-foreground mb-2">
               체형 분석을 하면 자동으로 채워져요. 직접 입력하거나 수정하려면 내 정보에서 관리하세요.
             </p>
+            {/* 보조 행동 — 주인공 CTA(옷장/코디)와 경쟁하지 않도록 텍스트 링크로 격하 */}
             <button
               onClick={() => router.push('/profile/my-info')}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="text-sm font-medium text-primary hover:underline"
             >
-              내 정보에서 입력하기
+              내 정보에서 입력하기 →
             </button>
           </div>
         </FadeInUp>
       )}
 
-      {/* 내 체형 프로필 */}
+      {/* 내 프로필 — 체형 프로필 + 컬러 팔레트 병합 (섹션 적층 축소) */}
       {hasAnalysis ? (
         <FadeInUp>
           <section className="bg-secondary px-4 py-4 border-b" aria-label="내 체형 프로필">
@@ -339,6 +340,26 @@ export default function StylePage() {
                 )}
               </div>
             )}
+            {/* 컬러 팔레트 — 별도 섹션이던 것을 프로필 하위 블록으로 병합 */}
+            {colorPalette.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Palette className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                  <span className="text-sm font-medium">내 컬러 팔레트</span>
+                </div>
+                <div className="flex gap-2">
+                  {colorPalette.map((color) => (
+                    <div key={color.name} className="flex flex-col items-center">
+                      <div
+                        className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: color.color }}
+                      />
+                      <span className="text-xs text-muted-foreground mt-1">{color.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         </FadeInUp>
       ) : (
@@ -351,9 +372,10 @@ export default function StylePage() {
                   AI가 내 체형에 어울리는 스타일을 찾아드려요
                 </p>
               </div>
+              {/* 보조 행동 — 아웃라인 격하 (주인공 CTA는 아래 옷장/코디 1개) */}
               <button
                 onClick={() => router.push('/analysis/body')}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium"
+                className="border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors shrink-0"
               >
                 지금 분석하기
               </button>
@@ -362,33 +384,10 @@ export default function StylePage() {
         </FadeInUp>
       )}
 
-      {/* 내 컬러 팔레트 */}
-      {hasAnalysis && colorPalette.length > 0 && (
-        <FadeInUp delay={1}>
-          <section className="px-4 py-3 border-b">
-            <div className="flex items-center gap-2 mb-2">
-              <Palette className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">내 컬러 팔레트</span>
-            </div>
-            <div className="flex gap-2">
-              {colorPalette.map((color) => (
-                <div key={color.name} className="flex flex-col items-center">
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                    style={{ backgroundColor: color.color }}
-                  />
-                  <span className="text-xs text-muted-foreground mt-1">{color.name}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        </FadeInUp>
-      )}
-
-      {/* 체형 맞춤 필터 토글 */}
-      {hasAnalysis && (
-        <FadeInUp delay={2}>
-          <div className="px-4 py-3 border-b">
+      {/* 필터 — 체형 맞춤 토글 + 카테고리 + 소재·스타일 병합 (섹션 적층 축소, 로직 불변) */}
+      <FadeInUp delay={1}>
+        <section className="px-4 py-3 border-b space-y-3" aria-label="코디 필터">
+          {hasAnalysis && (
             <button
               onClick={() => setMatchFilterOn(!matchFilterOn)}
               className="flex items-center gap-2"
@@ -415,38 +414,32 @@ export default function StylePage() {
                 />
               </div>
             </button>
-          </div>
-        </FadeInUp>
-      )}
+          )}
 
-      {/* 카테고리 필터 */}
-      <FadeInUp delay={3}>
-        <nav className="px-4 py-3 border-b overflow-x-auto" aria-label="카테고리 필터">
-          <div className="flex gap-2" role="tablist" aria-label="스타일 카테고리">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                role="tab"
-                aria-selected={category === cat.id}
-                aria-controls={`category-panel-${cat.id}`}
-                className={cn(
-                  'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
-                  category === cat.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </nav>
-      </FadeInUp>
+          {/* 카테고리 필터 */}
+          <nav className="overflow-x-auto" aria-label="카테고리 필터">
+            <div className="flex gap-2" role="tablist" aria-label="스타일 카테고리">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id)}
+                  role="tab"
+                  aria-selected={category === cat.id}
+                  aria-controls={`category-panel-${cat.id}`}
+                  className={cn(
+                    'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
+                    category === cat.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </nav>
 
-      {/* 소재 즐겨찾기 필터 + 선호 스타일 (하이브리드 UX) */}
-      <FadeInUp delay={4}>
-        <section className="px-4 py-3 border-b space-y-3" aria-label="소재·스타일 필터">
+          {/* 소재 즐겨찾기 필터 + 선호 스타일 (하이브리드 UX) */}
           <MaterialFavoriteFilter
             favorites={favoriteMaterials}
             avoids={avoidMaterials}
@@ -459,9 +452,11 @@ export default function StylePage() {
 
       {/* 본문 */}
       <div className="px-4 py-4 space-y-6">
-        {/* 오늘의 코디 — 내 옷장 실제 매칭 (가짜 하드코딩 코디였던 것 교체, 2026-07-08) */}
+        {/* 오늘의 코디 — 상태 기반 주인공 1개:
+            옷장 1벌+ = 날씨·상황별 코디 추천(유일한 /closet/recommend 진입),
+            옷장 0벌 = 옷장 등록. 그 외 CTA는 전부 격하. */}
         {dailyOutfit.length > 0 && realOutfit ? (
-          <FadeInUp delay={5}>
+          <FadeInUp delay={2}>
             <section>
               <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">오늘의 코디</h2>
               <OutfitRoutineCard
@@ -472,14 +467,14 @@ export default function StylePage() {
               />
               <button
                 onClick={() => router.push('/closet/recommend')}
-                className="mt-3 w-full border rounded-lg py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                className="mt-3 w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 rounded-lg font-medium transition-colors"
               >
-                날씨·상황별 코디 더 보기 →
+                날씨·상황별 코디 추천 받기
               </button>
             </section>
           </FadeInUp>
         ) : (
-          <FadeInUp delay={5}>
+          <FadeInUp delay={2}>
             <section className="bg-card rounded-2xl border border-border p-4">
               <h2 className="font-semibold mb-1 flex items-center gap-2">오늘의 코디</h2>
               <p className="text-sm text-muted-foreground mb-3">
@@ -487,7 +482,7 @@ export default function StylePage() {
               </p>
               <button
                 onClick={() => router.push('/closet/add/batch')}
-                className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
+                className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
                 사진으로 옷장 한 번에 등록하기
               </button>
@@ -496,7 +491,7 @@ export default function StylePage() {
         )}
 
         {/* 맞춤 아이템 추천 */}
-        <FadeInUp delay={6}>
+        <FadeInUp delay={3}>
           <section>
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               {hasAnalysis ? '내 체형 맞춤 아이템' : '인기 아이템'}
@@ -528,39 +523,28 @@ export default function StylePage() {
               </div>
             ) : (
               (() => {
-                // 패션 상품 DB가 없어 쇼핑 매칭 아이템은 미제공 — 실제 동작하는 경로로 안내
-                const emptyState = getMatchedItemsEmptyState(hasAnalysis, closetItems.length > 0);
+                // 패션 상품 DB가 없어 쇼핑 매칭 아이템은 미제공 — 정직하게 안내.
+                // 주인공 CTA(오늘의 코디 섹션)와 겹치는 경로는 CTA 없이 메시지만 (진입 1곳 원칙)
+                const { message, ctaHref, ctaLabel } = getMatchedItemsEmptyState(
+                  hasAnalysis,
+                  closetItems.length > 0
+                );
                 return (
                   <div className="text-center py-8 bg-card rounded-xl border px-4">
                     <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-3">{emptyState.message}</p>
-                    <button
-                      onClick={() => router.push(emptyState.ctaHref)}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-                    >
-                      {emptyState.ctaLabel}
-                    </button>
+                    <p className="text-sm text-muted-foreground">{message}</p>
+                    {ctaHref && ctaLabel && (
+                      <button
+                        onClick={() => router.push(ctaHref)}
+                        className="mt-3 text-sm font-medium text-primary hover:underline"
+                      >
+                        {ctaLabel} →
+                      </button>
+                    )}
                   </div>
                 );
               })()
             )}
-          </section>
-        </FadeInUp>
-
-        {/* 오늘 뭐 입지? */}
-        <FadeInUp delay={7}>
-          <section className="bg-card rounded-2xl border border-border p-4">
-            <h2 className="font-semibold mb-2 flex items-center gap-2">
-              <Shirt className="w-5 h-5 text-primary" />
-              오늘 뭐 입지?
-            </h2>
-            <p className="text-sm text-muted-foreground">체형 + 퍼스널컬러 + 날씨 맞춤 추천</p>
-            <button
-              onClick={() => router.push('/closet/recommend')}
-              className="mt-3 w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-lg font-medium transition-colors"
-            >
-              추천 받기
-            </button>
           </section>
         </FadeInUp>
       </div>
