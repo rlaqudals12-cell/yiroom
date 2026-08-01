@@ -12,6 +12,11 @@
  *    (보색 합성 폐지: 합성색은 저채도 베이스에서 흐릿한 비진단색으로 수렴해
  *     포인트가 죽는다. 진단 hex 안에서 고르면 "실제 내 색"이면서 가장 또렷하다)
  *
+ * 뮤트 베이스 예외(2026-08): 베이스 C*<15이면 하의·가방을 analogous 합성 대신
+ * 진단 팔레트에서 직접 선정한다. rotateHue는 L*·C*를 보존하고 h°만 돌리므로
+ * 저채도 베이스에서는 파생색이 ΔE≈6 이하 — 상의·하의·가방이 "같은 회청 덩어리"로
+ * 보이는 근본 원인이었다. 유채(C*≥15) 베이스 경로는 기존 로직 그대로(결정론 유지).
+ *
  * 색 이름(name): 상의는 진단된 원본 이름(있으면). 파생색은 지어내지 않고
  * 실제 계산된 색의 "계열명"(예: 소프트 블루 계열)으로 정직하게 표기. 중립색은 뉴트럴 이름.
  *
@@ -21,7 +26,7 @@
  * @see lib/color/harmony.ts
  */
 
-import { hexToLab, labToHex, calculateChroma, calculateHue } from '@/lib/color';
+import { hexToLab, labToHex, calculateChroma, calculateHue, calculateCIEDE2000 } from '@/lib/color';
 import { analogous } from './harmony';
 
 export type OutfitRole = '상의' | '하의' | '신발' | '가방' | '포인트';
@@ -48,6 +53,25 @@ function isHex(value: unknown): value is string {
   return typeof value === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(value.trim());
 }
 
+/** 뮤트 베이스 판정 임계(C*) — 이 미만이면 analogous 회전 파생이 지각 불가 색차로 수렴 */
+const MUTED_CHROMA_MAX = 15;
+/** 무채색 판정 임계(C*) — 배색(상의·하의·가방) 안에서 무채는 1칸까지만 허용 */
+const ACHROMATIC_CHROMA_MAX = 8;
+/** 하의 팔레트 선정의 최소 명도 격차(|ΔL*|) — 미만이면 파생 폴백으로 격차를 보장 */
+const MIN_BOTTOM_L_GAP = 12;
+/** 가방 팔레트 선정의 최소 색차(ΔE00) — 미만이면 상·하의와 구분 불가라 파생 폴백 */
+const MIN_BAG_DELTA_E = 5;
+
+/** 파생색 명도 안전 범위 — 검정/흰색 붕괴 방지(진단 hue·채도는 보존) */
+function clampLightness(L: number): number {
+  return Math.max(30, Math.min(88, L));
+}
+
+/** 무채색(C*<8) 여부 — 배색 내 무채 상한 1칸 가드에 사용 */
+function isAchromaticHex(hex: string): boolean {
+  return calculateChroma(hexToLab(hex)) < ACHROMATIC_CHROMA_MAX;
+}
+
 /**
  * 날짜 → 정수 시드. 연·월·일만 사용해 하루 동안 불변(결정론).
  * (Date.now 대신 달력값을 써서 같은 날 재호출 시 동일 결과 보장)
@@ -57,13 +81,20 @@ function dateSeed(date: Date): number {
 }
 
 /**
+ * 명도만 지정값으로 바꾼 변형색 — hue·채도(a*, b*) 보존, L*는 [30, 88] 클램프.
+ * 왜 클램프: 극단 명도 베이스에서 파생색이 검정/흰색으로 붕괴해 "색"이 사라지는 것을 막는다.
+ */
+function withLightness(hex: string, targetL: number): string {
+  const lab = hexToLab(hex);
+  return labToHex({ L: clampLightness(targetL), a: lab.a, b: lab.b });
+}
+
+/**
  * 명도만 이동한 변형색 — 상·하의 명도 격차(대비) 조절용.
  * 밝은 base는 어둡게, 어두운 base는 밝게 밀어 자연스러운 방향으로 격차를 만든다.
  */
 function shiftLightness(hex: string, delta: number): string {
-  const lab = hexToLab(hex);
-  const nextL = Math.max(0, Math.min(100, lab.L + delta));
-  return labToHex({ L: nextL, a: lab.a, b: lab.b });
+  return withLightness(hex, hexToLab(hex).L + delta);
 }
 
 /**
@@ -143,6 +174,84 @@ function pickPointColor(
 }
 
 /**
+ * 뮤트 베이스 하의 — 진단 팔레트에서 상의와 명도 격차(|ΔL*|)가 가장 큰 색을 직접 선정.
+ * 왜: 뮤트 베이스에서 analogous 회전은 L*·C*를 보존해 상·하의가 같은 덩어리로 보인다.
+ * 진단 원본 hex·이름을 그대로 유지(색 지어내기 없음). 무채 상한 1칸: 베이스가 이미
+ * 무채(C*<8)면 유채 후보를 우선한다(유채가 하나도 없으면 전체 허용).
+ * 최대 격차가 MIN_BOTTOM_L_GAP 미만이면(1색 팔레트 등) 명도 이동 파생으로 폴백
+ * — 파생은 진단 hue·채도를 보존한 명도 이동이라 채도 증폭이 아니다.
+ */
+function pickMutedBottom(
+  valid: ReadonlyArray<{ name?: string; hex?: string }>,
+  baseHex: string,
+  baseL: number
+): OutfitColor {
+  const chromatic = valid.filter((c) => !isAchromaticHex(c.hex as string));
+  const pool = isAchromaticHex(baseHex) && chromatic.length > 0 ? chromatic : valid;
+
+  let best = pool[0];
+  let bestGap = -1;
+  for (const candidate of pool) {
+    const gap = Math.abs(hexToLab(candidate.hex as string).L - baseL);
+    if (gap > bestGap) {
+      bestGap = gap;
+      best = candidate;
+    }
+  }
+
+  if (bestGap >= MIN_BOTTOM_L_GAP) {
+    const hex = best.hex as string;
+    return { hex, role: '하의', name: best.name?.trim() || colorFamilyName(hex) };
+  }
+  // 폴백: 명도 격차 보장(밝은 베이스는 어둡게, 어두운 베이스는 밝게)
+  const hex = withLightness(baseHex, baseL > 50 ? baseL - 18 : baseL + 18);
+  return { hex, role: '하의', name: colorFamilyName(hex) };
+}
+
+/**
+ * 뮤트 베이스 가방 — 상의·하의 모두와의 색차(ΔE00) 최솟값이 가장 큰 진단색(maximin).
+ * 무채 상한 1칸: 상의·하의에 이미 무채가 있으면 유채 후보를 우선(차순위 유채 교체).
+ * 최대 점수가 MIN_BAG_DELTA_E 미만이면(팔레트가 좁아 구분 불가) 명도 이동 파생으로 폴백
+ * — 폴백 명도는 ±34 두 후보 중 상·하의와의 명도 거리가 더 큰 쪽(결정론: 동률이면 밝은 쪽).
+ */
+function pickMutedBag(
+  valid: ReadonlyArray<{ name?: string; hex?: string }>,
+  baseHex: string,
+  bottomHex: string,
+  baseL: number
+): OutfitColor {
+  const usedAchromatic = isAchromaticHex(baseHex) || isAchromaticHex(bottomHex);
+  const chromatic = valid.filter((c) => !isAchromaticHex(c.hex as string));
+  const pool = usedAchromatic && chromatic.length > 0 ? chromatic : valid;
+
+  const baseLab = hexToLab(baseHex);
+  const bottomLab = hexToLab(bottomHex);
+  let best = pool[0];
+  let bestScore = -1;
+  for (const candidate of pool) {
+    const lab = hexToLab(candidate.hex as string);
+    const score = Math.min(calculateCIEDE2000(lab, baseLab), calculateCIEDE2000(lab, bottomLab));
+    if (score > bestScore) {
+      bestScore = score;
+      best = candidate;
+    }
+  }
+
+  if (bestScore >= MIN_BAG_DELTA_E) {
+    const hex = best.hex as string;
+    return { hex, role: '가방', name: best.name?.trim() || colorFamilyName(hex) };
+  }
+  // 폴백: 밝은/어두운 두 후보 중 상·하의 어느 쪽과도 명도 거리가 최대인 쪽(클램프 반영)
+  const bottomL = bottomLab.L;
+  const lighter = clampLightness(baseL + 34);
+  const darker = clampLightness(baseL - 34);
+  const scoreOf = (L: number): number => Math.min(Math.abs(L - baseL), Math.abs(L - bottomL));
+  const targetL = scoreOf(lighter) >= scoreOf(darker) ? lighter : darker;
+  const hex = withLightness(baseHex, targetL);
+  return { hex, role: '가방', name: colorFamilyName(hex) };
+}
+
+/**
  * 오늘의 배색 조합 생성 — 순수 함수.
  * 유효한 베스트 컬러가 없으면 null(호출부에서 섹션 생략 — 정직성 가드).
  *
@@ -162,24 +271,37 @@ export function composeDailyOutfit(
   const seed = dateSeed(date);
   const base = valid[seed % valid.length];
   const baseHex = base.hex as string;
-  const baseL = hexToLab(baseHex).L;
+  const baseLab = hexToLab(baseHex);
+  const baseL = baseLab.L;
+  // 뮤트 베이스(C*<15): analogous 회전 파생이 지각 불가 색차로 수렴 → 팔레트 직접 선정으로 전환
+  const isMutedBase = calculateChroma(baseLab) < MUTED_CHROMA_MAX;
 
-  // 유사색 2개(-spread, +spread) — 하의(기본)·가방(다른 이웃)에 배색 파생으로 사용
+  // 유사색 2개(-spread, +spread) — 유채 베이스에서만 하의(기본)·가방에 배색 파생으로 사용
   const neighbors = analogous(baseHex, 30);
   const bottomNeighbor = neighbors[seed % neighbors.length];
   const bagNeighbor = neighbors[(seed + 1) % neighbors.length];
 
-  // 하의 명도: 대비 수준에 따라 조절 (기본 = 유사색 — 하위호환)
-  let bottomHex: string;
+  // 하의: 대비 수준(ADR-116) → 뮤트 팔레트 선정 → 유사색(하위호환) 순으로 결정
+  let bottom: OutfitColor;
   if (contrast === 'high') {
     // 명암 격차 큰 조합: 밝은 base는 어둡게, 어두운 base는 밝게
-    bottomHex = shiftLightness(baseHex, baseL > 50 ? -35 : 35);
+    const hex = shiftLightness(baseHex, baseL > 50 ? -35 : 35);
+    bottom = { hex, role: '하의', name: colorFamilyName(hex) };
   } else if (contrast === 'low') {
     // 톤온톤: 인접 명도(작은 격차)로 좁혀 얼굴이 묻히지 않게
-    bottomHex = shiftLightness(baseHex, baseL > 50 ? -8 : 8);
+    const hex = shiftLightness(baseHex, baseL > 50 ? -8 : 8);
+    bottom = { hex, role: '하의', name: colorFamilyName(hex) };
+  } else if (isMutedBase) {
+    bottom = pickMutedBottom(valid, baseHex, baseL);
   } else {
-    bottomHex = bottomNeighbor;
+    bottom = { hex: bottomNeighbor, role: '하의', name: colorFamilyName(bottomNeighbor) };
   }
+
+  // 가방: 뮤트 베이스면 팔레트 maximin 선정, 유채 베이스면 기존 유사색 파생(불변)
+  const bag: OutfitColor = isMutedBase
+    ? pickMutedBag(valid, baseHex, bottom.hex, baseL)
+    : { hex: bagNeighbor, role: '가방', name: colorFamilyName(bagNeighbor) };
+
   // 포인트: 진단 팔레트 중 최고 채도 색(합성 보색 폐지 — 위 pickPointColor 주석 참조)
   const point = pickPointColor(valid, baseHex);
 
@@ -188,12 +310,12 @@ export function composeDailyOutfit(
     colors: [
       // 상의: 진단된 원본 이름 사용(있으면), 없으면 실제 색의 계열명
       { hex: baseHex, role: '상의', name: base.name?.trim() || colorFamilyName(baseHex) },
-      // 하의: 배색 파생 → 계열명(지어내지 않음)
-      { hex: bottomHex, role: '하의', name: colorFamilyName(bottomHex) },
+      // 하의: 뮤트=진단 원본 유지 / 유채=배색 파생 계열명(지어내지 않음)
+      bottom,
       // 신발: 배색을 받쳐주는 중립색
       neutralShoes(baseL),
-      // 가방: 다른 유사색 → 계열명
-      { hex: bagNeighbor, role: '가방', name: colorFamilyName(bagNeighbor) },
+      // 가방: 뮤트=진단 원본 유지 / 유채=다른 유사색 계열명
+      bag,
       // 포인트: 진단 팔레트 내 최고 채도 색(원본 이름 유지)
       point,
     ],

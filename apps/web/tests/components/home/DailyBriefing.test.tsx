@@ -121,9 +121,10 @@ describe('DailyBriefing', () => {
     const section = screen.getByTestId('briefing-my-colors');
     expect(section).toBeInTheDocument();
     // 스와치 개수 = 팔레트 색 수, 각 스와치 title=색이름
+    // 표시 순서는 명도(L*) 내림차순 — 골드(L*86.9)가 맨 앞
     const swatches = screen.getAllByTestId('briefing-color-swatch');
     expect(swatches).toHaveLength(3);
-    expect(swatches[0]).toHaveAttribute('title', '코랄');
+    expect(swatches[0]).toHaveAttribute('title', '골드');
     // 행 전체가 PC 결과 페이지로 링크
     expect(section.querySelector('a')).toHaveAttribute(
       'href',
@@ -150,6 +151,16 @@ describe('DailyBriefing', () => {
     expect(names.some((n) => /계열/.test(n.textContent ?? ''))).toBe(true);
   });
 
+  // 포인트 6%→13% 상향(지각 한계 미만 수리) — 합 100% 유지
+  it('배색 바 폭 합은 100%이고 포인트 블록은 13%다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const blocks = screen.getAllByTestId('briefing-outfit-block') as HTMLElement[];
+    const widths = blocks.map((el) => parseFloat(el.style.width));
+    expect(widths.reduce((sum, w) => sum + w, 0)).toBe(100);
+    const point = blocks.find((el) => el.getAttribute('title')?.startsWith('포인트'))!;
+    expect(parseFloat(point.style.width)).toBe(13);
+  });
+
   it('베스트 컬러가 없으면 배색 블록 없이 오늘의 스타일 카드만 렌더한다', () => {
     render(<DailyBriefing analyses={analyses} />);
     expect(screen.getByTestId('briefing-style')).toBeInTheDocument();
@@ -162,11 +173,26 @@ describe('DailyBriefing', () => {
     expect(screen.getByText('나의 퍼스널컬러')).toBeInTheDocument();
   });
 
-  it('베스트 컬러 이름을 스와치 아래에 표시한다', () => {
+  it('베스트 컬러 이름을 스와치 아래에 표시한다(표시 순서=명도 내림차순)', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const names = screen.getAllByTestId('briefing-color-name');
     expect(names).toHaveLength(3);
-    expect(names[0]).toHaveTextContent('코랄');
+    expect(names[0]).toHaveTextContent('골드');
+  });
+
+  // 회청 일색 수리 — 밴드를 명도 그라데이션으로 표시(진단 hex·데이터는 불변, 표시 순서만)
+  it('스와치 밴드를 명도(L*) 내림차순으로 정렬해 표시한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const titles = screen
+      .getAllByTestId('briefing-color-swatch')
+      .map((el) => el.getAttribute('title'));
+    // 골드 L*86.9 > 오렌지 L*74.9 > 코랄 L*67.3 (원본 배열 순서: 코랄·골드·오렌지)
+    expect(titles).toEqual(['골드', '오렌지', '코랄']);
+    // 이름 행도 같은 정렬을 따른다(스와치와 1:1 정합)
+    const nameOrder = screen
+      .getAllByTestId('briefing-color-name')
+      .map((el) => el.textContent?.trim());
+    expect(nameOrder).toEqual(['골드', '오렌지', '코랄']);
   });
 
   it('스와치 이름은 잘림(truncate)이 아니라 온전히 읽히게 렌더한다', () => {

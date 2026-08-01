@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
+import { hexToLab, calculateHue } from '@/lib/color';
 import type { OutfitColor, OutfitRole } from '@/lib/color/daily-outfit';
 import {
   assembleBriefing,
@@ -94,12 +95,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /**
  * 배색 바 역할별 폭 비율(%) — 실제 착장에서 차지하는 면적 비율로 색 질량을 표현.
  * 동일 크기 점 5개는 "역할"이 읽히지 않던 원인 — 상의가 주인공, 포인트는 좁은 세로 띠.
+ * 포인트 6%→13% 상향(2026-08): 6%는 모바일에서 지각 한계 미만이라 악센트가 죽었다.
+ * 합 100% 유지 — 상의·하의·가방에서 7%p를 회수해 재배분.
  */
 const OUTFIT_BAND: ReadonlyArray<{ role: OutfitRole; widthPct: number }> = [
-  { role: '상의', widthPct: 35 },
-  { role: '하의', widthPct: 30 },
-  { role: '가방', widthPct: 16 },
-  { role: '포인트', widthPct: 6 },
+  { role: '상의', widthPct: 32 },
+  { role: '하의', widthPct: 27 },
+  { role: '가방', widthPct: 15 },
+  { role: '포인트', widthPct: 13 },
   { role: '신발', widthPct: 13 }, // 뉴트럴 끝단 — 배색을 받쳐주며 바를 닫는다
 ];
 
@@ -229,6 +232,21 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   );
 
   const { briefing, myColors } = payload;
+
+  // 12톤 밴드 표시용 정렬 — 명도(L*) 내림차순, 동률이면 색상각(h°) 오름차순.
+  // 왜: 진단 팔레트 원래 순서는 뮤트 톤에서 "회청 일색"으로 보인다 —
+  // 밝음→어두움 그라데이션으로 늘어놓으면 같은 색들이 명도 축으로 구분된다.
+  // hex·데이터는 불변(표시 순서만 바꿈 — 진단 결과 훼손 없음).
+  const sortedMyColors = useMemo(() => {
+    if (!myColors) return null;
+    return [...myColors.colors].sort((a, b) => {
+      const labA = hexToLab(a.hex);
+      const labB = hexToLab(b.hex);
+      if (labB.L !== labA.L) return labB.L - labA.L;
+      return calculateHue(labA) - calculateHue(labB);
+    });
+  }, [myColors]);
+
   const dailyOutfit = payload.todayStyle.outfit;
   const fashionTip = payload.todayStyle.fashionTip;
   // 응답 대기 중인 제품함 후속(미응답 질문일 때만 존재) — 로컬 const라 클로저에서 좁힘이 유지된다
@@ -277,9 +295,10 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     <div className="space-y-8" data-testid="home-daily-briefing">
       {/* ── 그룹 1: 브리핑 레터(주인공) + 나의 퍼스널컬러 밴드 ── */}
       <div className="space-y-3">
-        {/* 1) 브리핑 레터 — 표면당 유일한 히어로. raised 섀도 + 종이 그레인 1겹("아침 편지" 물성) */}
+        {/* 1) 브리핑 레터 — 표면당 유일한 히어로. raised 섀도 + 종이 그레인 1겹("아침 편지" 물성).
+            보더는 히어로 전용 웜 시트 토큰(라이트 한정 — 다크는 기존 보더 유지) */}
         <section
-          className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-raised)] dark:shadow-none"
+          className="relative overflow-hidden rounded-2xl border border-[var(--border-warm-sheet)] dark:border-border bg-card p-6 shadow-[var(--shadow-raised)] dark:shadow-none"
           data-testid="briefing-letter"
           aria-label="오늘의 브리핑"
         >
@@ -353,7 +372,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
         {/* 1-b) 나의 퍼스널컬러 — 원형 점 대신 풀폭 색면 밴드(하드엣지)로 색 질량 복구.
             색은 전부 사용자 진단 hex — 장식색·채도 증폭 없음 */}
-        {myColors && (
+        {myColors && sortedMyColors && (
           <section aria-label="나의 퍼스널컬러" data-testid="briefing-my-colors">
             <Link
               href={`/analysis/personal-color/result/${myColors.analysisId}`}
@@ -370,9 +389,9 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                   </span>
                 )}
               </div>
-              {/* 색면 밴드 — 이어붙은 색면(간격 0), 높이 48px */}
+              {/* 색면 밴드 — 이어붙은 색면(간격 0), 높이 48px. 명도 내림차순 표시(위 정렬 주석) */}
               <div className="mt-3 flex h-12 overflow-hidden rounded-lg">
-                {myColors.colors.map((c, i) => (
+                {sortedMyColors.map((c, i) => (
                   <span
                     key={`${c.hex}-${i}`}
                     className="h-full min-w-0 flex-1"
@@ -385,7 +404,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               </div>
               {/* 색 이름 — 밴드 세그먼트와 같은 폭 배분, 2줄까지 허용(잘림 대신 가독) */}
               <div className="mt-1.5 flex">
-                {myColors.colors.map((c, i) => (
+                {sortedMyColors.map((c, i) => (
                   <span
                     key={`${c.hex}-name-${i}`}
                     className="min-w-0 flex-1 text-center text-[10px] leading-tight text-muted-foreground break-keep line-clamp-2"

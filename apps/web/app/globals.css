@@ -294,13 +294,19 @@
      종이·크림 지면과 같은 계열(브라운 #5D4037)로 물들여야 "인쇄물 위 시트"로 읽힌다.
      2층만 허용: rest(기본 안착) / raised(주인공·호버). 3단계+ 금지.
      ======================================== */
-  --shadow-rest: 0 1px 2px rgba(93, 64, 55, 0.05), 0 6px 16px rgba(93, 64, 55, 0.06);
-  --shadow-raised: 0 2px 4px rgba(93, 64, 55, 0.06), 0 12px 28px rgba(93, 64, 55, 0.1);
+  /* 2026-08 상향: 이전 rest 0.05/0.06은 측면 delta 4/255 — 지각 한계 미만이라 입체감 0.
+     알파 상한 0.12 준수(그 이상은 "떠 있는" 슬롭). 2층(rest/raised)만 허용, 다크 무개입. */
+  --shadow-rest: 0 1px 2px rgba(93, 64, 55, 0.07), 0 8px 24px rgba(93, 64, 55, 0.08);
+  --shadow-raised: 0 2px 4px rgba(93, 64, 55, 0.08), 0 16px 40px rgba(93, 64, 55, 0.12);
   /* 구 토큰명 유지 — 기존 shadow-sm/md/lg/card 사용처에 자동 파급(웜 브라운 2층으로 수렴) */
   --shadow-sm: var(--shadow-rest);
   --shadow-md: var(--shadow-rest);
   --shadow-lg: var(--shadow-raised);
   --shadow-card: var(--shadow-rest);
+  /* 크림 지면 위 "시트" 전용 웜 보더 — 히어로(브리핑 레터·신규 히어로)에만 적용.
+     왜: 무채 보더는 크림 지면에서 시트 가장자리가 붕 뜬다 — 섀도와 같은 브라운 계열로
+     물들여 "인쇄물 가장자리"로 읽히게 한다. 전 카드 살포 금지(히어로 한정). */
+  --border-warm-sheet: rgba(93, 64, 55, 0.1);
 
   /* ========================================
      버튼/인터랙티브 요소 패딩
@@ -460,9 +466,10 @@ html:not(.dark)
   --tw-shadow: var(--shadow-rest);
 }
 /* 폼 컨트롤 마이크로 섀도(shadow-xs — 버튼·인풋·셀렉트)도 웜 계열로 수렴
-   (리뷰 발견: 누락 시 무채색 마이크로 섀도가 잔존해 2층 계약이 표면 전체에 비일관) */
+   (리뷰 발견: 누락 시 무채색 마이크로 섀도가 잔존해 2층 계약이 표면 전체에 비일관)
+   2026-08: rest 상향(0.07)과 동반 상향 — 마이크로만 옅으면 표면 간 위계가 역전된다 */
 html:not(.dark) .shadow-xs {
-  --tw-shadow: 0 1px 2px rgba(93, 64, 55, 0.05);
+  --tw-shadow: 0 1px 2px rgba(93, 64, 55, 0.07);
 }
 html:not(.dark)
   :is(.shadow-lg, .shadow-xl, .shadow-2xl, .hover\:shadow-lg:hover, .hover\:shadow-xl:hover) {

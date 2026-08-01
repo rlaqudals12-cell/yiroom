@@ -149,8 +149,9 @@ export default function NewUserHero(): React.ReactElement {
 
   return (
     <div data-testid="home-new-hero" role="region" aria-label={t('newUserGuide')}>
-      {/* 히어로 카드 — 신규 상태 표면의 유일한 주인공(raised 섀도 + 세리프 앵커) */}
-      <div className="relative overflow-hidden bg-card border border-border rounded-2xl p-6 mb-4 shadow-[var(--shadow-raised)] dark:shadow-none">
+      {/* 히어로 카드 — 신규 상태 표면의 유일한 주인공(raised 섀도 + 세리프 앵커).
+          보더는 히어로 전용 웜 시트 토큰(라이트 한정 — 다크는 기존 보더 유지) */}
+      <div className="relative overflow-hidden bg-card border border-[var(--border-warm-sheet)] dark:border-border rounded-2xl p-6 mb-4 shadow-[var(--shadow-raised)] dark:shadow-none">
         {/* 종이 그레인 — 히어로 한정 1겹(전 카드 살포 금지) */}
         <div
           aria-hidden="true"
