@@ -138,8 +138,16 @@ function colorFamilyName(hex: string): string {
   return `${tone}${family} 계열`;
 }
 
-/** 배색을 받쳐주는 중립 신발색 — 밝은 상의는 어두운 신발, 어두운 상의는 밝은 신발(결정론) */
-function neutralShoes(baseL: number): OutfitColor {
+/**
+ * 배색을 받쳐주는 중립 신발색 — 밝은 상의는 어두운 신발, 어두운 상의는 밝은 신발(결정론).
+ * 저대비(low) 퍼스널 대비에서 밝은 베이스일 때만 차콜 대신 중명도 그레이(L*≈61 무채) —
+ * 톤온톤으로 좁힌 상·하의 옆에서 차콜의 강한 명암 점프가 저대비 처방을 깨기 때문.
+ * 그 외 전 경로는 현행(차콜/아이보리) 유지 — 뉴트럴 정직 계약(색 지어내기 없음).
+ */
+function neutralShoes(baseL: number, contrast?: OutfitContrast): OutfitColor {
+  if (contrast === 'low' && baseL > 55) {
+    return { hex: '#8E939B', role: '신발', name: '그레이' };
+  }
   return baseL > 55
     ? { hex: '#3A3A3C', role: '신발', name: '차콜' }
     : { hex: '#ECE6DC', role: '신발', name: '아이보리' };
@@ -312,8 +320,8 @@ export function composeDailyOutfit(
       { hex: baseHex, role: '상의', name: base.name?.trim() || colorFamilyName(baseHex) },
       // 하의: 뮤트=진단 원본 유지 / 유채=배색 파생 계열명(지어내지 않음)
       bottom,
-      // 신발: 배색을 받쳐주는 중립색
-      neutralShoes(baseL),
+      // 신발: 배색을 받쳐주는 중립색(저대비+밝은 베이스만 그레이 분기 — 위 neutralShoes 주석)
+      neutralShoes(baseL, contrast),
       // 가방: 뮤트=진단 원본 유지 / 유채=다른 유사색 계열명
       bag,
       // 포인트: 진단 팔레트 내 최고 채도 색(원본 이름 유지)

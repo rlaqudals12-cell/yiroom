@@ -20,6 +20,7 @@ import {
   type ClosetRecommendation,
 } from '@/lib/inventory/client';
 import { colorNameToHex } from '@/lib/inventory/color-bridge';
+import { hexToLab, calculateHue } from '@/lib/color';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
@@ -81,6 +82,18 @@ export default function StylePage() {
 
   // DB 연결 데이터
   const [colorPalette, setColorPalette] = useState<ColorItem[]>([]);
+
+  // 팔레트 표시용 정렬 — 명도(L*) 내림차순, 동률이면 색상각(h°) 오름차순.
+  // 왜: 홈 DailyBriefing 색면 밴드와 같은 기준 — 밝음→어두움 그라데이션이어야
+  // 뮤트 톤에서도 색이 명도 축으로 구분된다. hex·데이터는 불변(표시 순서만).
+  const sortedColorPalette = useMemo(() => {
+    return [...colorPalette].sort((a, b) => {
+      const labA = hexToLab(a.color);
+      const labB = hexToLab(b.color);
+      if (labB.L !== labA.L) return labB.L - labA.L;
+      return calculateHue(labA) - calculateHue(labB);
+    });
+  }, [colorPalette]);
   const [products] = useState<ProductItem[]>([]); // 패션 제품 DB 미보유 — 빈 상태 유지 (유령 쿼리 제거, 2026-07-08)
 
   // L-1-2: 키/몸무게 체크 상태
@@ -143,10 +156,11 @@ export default function StylePage() {
       color?: string;
     }> | null;
     if (bestColors && bestColors.length > 0) {
+      // 전체 표시(slice 제거) — 진단 팔레트를 자르지 않고 세그먼트 바에 모두 늘어놓는다
       setColorPalette(
-        bestColors.slice(0, 6).map((c) => ({
+        bestColors.map((c) => ({
           name: c.name ?? '',
-          color: c.hex ?? c.color ?? '#ccc',
+          color: c.hex ?? c.color ?? '#CCCCCC',
         }))
       );
     }
@@ -347,15 +361,28 @@ export default function StylePage() {
                   <Palette className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm font-medium">내 컬러 팔레트</span>
                 </div>
-                <div className="flex gap-2">
-                  {colorPalette.map((color) => (
-                    <div key={color.name} className="flex flex-col items-center">
-                      <div
-                        className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                        style={{ backgroundColor: color.color }}
-                      />
-                      <span className="text-xs text-muted-foreground mt-1">{color.name}</span>
-                    </div>
+                {/* 색면 밴드 — 원형 점 대신 이어붙은 풀폭 세그먼트(간격 0·하드엣지).
+                    홈 DailyBriefing 밴드와 같은 문법 — 색은 전부 진단 hex, 장식색 없음 */}
+                <div className="flex h-10 overflow-hidden rounded-lg">
+                  {sortedColorPalette.map((color, i) => (
+                    <span
+                      key={`${color.color}-${i}`}
+                      className="h-full min-w-0 flex-1"
+                      style={{ backgroundColor: color.color }}
+                      title={color.name || color.color}
+                      aria-label={color.name || color.color}
+                    />
+                  ))}
+                </div>
+                {/* 색 이름 — 밴드 세그먼트와 같은 폭 배분, 2줄까지 허용(잘림 대신 가독) */}
+                <div className="mt-1.5 flex">
+                  {sortedColorPalette.map((color, i) => (
+                    <span
+                      key={`${color.color}-name-${i}`}
+                      className="min-w-0 flex-1 text-center text-[10px] leading-tight text-muted-foreground break-keep line-clamp-2"
+                    >
+                      {color.name}
+                    </span>
                   ))}
                 </div>
               </div>

@@ -67,6 +67,40 @@ describe('composeDailyOutfit', () => {
     expect(['차콜', '아이보리']).toContain(shoes.name);
   });
 
+  it('저대비(low)+밝은 베이스면 신발은 차콜 대신 중명도 그레이(무채)', () => {
+    // 골드 L*≈87(>55) + low — 톤온톤 처방에서 차콜의 명암 점프를 피한다
+    const out = composeDailyOutfit(
+      [{ name: '골드', hex: '#FFD700' }],
+      new Date('2026-07-08'),
+      'low'
+    )!;
+    const shoes = out.colors.find((c) => c.role === '신발')!;
+    expect(shoes.hex).toBe('#8E939B');
+    expect(shoes.name).toBe('그레이');
+    // 무채 뉴트럴 계약 — 채도 C*<12 (색 지어내기 없음)
+    expect(calculateChroma(hexToLab(shoes.hex))).toBeLessThan(12);
+  });
+
+  it('그레이 분기는 low+밝은 베이스에서만 — 그 외 경로는 현행 차콜/아이보리 유지', () => {
+    // low + 어두운 베이스(잉크 블랙 L*≈9) → 아이보리(현행)
+    const dark = composeDailyOutfit(
+      [{ name: '잉크 블랙', hex: '#1A1A1E' }],
+      new Date('2026-07-08'),
+      'low'
+    )!;
+    expect(dark.colors.find((c) => c.role === '신발')!.name).toBe('아이보리');
+    // high + 밝은 베이스 → 차콜(현행)
+    const high = composeDailyOutfit(
+      [{ name: '골드', hex: '#FFD700' }],
+      new Date('2026-07-08'),
+      'high'
+    )!;
+    expect(high.colors.find((c) => c.role === '신발')!.name).toBe('차콜');
+    // 대비 미지정 + 밝은 베이스 → 차콜(하위호환)
+    const plain = composeDailyOutfit([{ name: '골드', hex: '#FFD700' }], new Date('2026-07-08'))!;
+    expect(plain.colors.find((c) => c.role === '신발')!.name).toBe('차콜');
+  });
+
   it('같은 날짜+같은 팔레트면 항상 같은 조합(결정론)', () => {
     const a = composeDailyOutfit(palette, new Date('2026-07-08'));
     const b = composeDailyOutfit(palette, new Date('2026-07-08'));
