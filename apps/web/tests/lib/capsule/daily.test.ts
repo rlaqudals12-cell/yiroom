@@ -674,34 +674,17 @@ describe('Daily Capsule', () => {
       mockSupabaseFrom.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: {
-                id: 'daily-1',
-                clerk_user_id: 'user_test',
-                date: '2026-03-04',
-                items,
-                total_ccs: 80,
-                estimated_minutes: 15,
-                status: 'pending',
-                completed_at: null,
-                created_at: new Date().toISOString(),
-              },
-              error: null,
-            }),
-          }),
-        }),
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
+            // 소유자 필터 추가(2026-08-01 IDOR 수리)로 .eq 2연쇄
+            eq: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
                 data: {
                   id: 'daily-1',
                   clerk_user_id: 'user_test',
                   date: '2026-03-04',
-                  items: [{ ...items[0], isChecked: true }, items[1]],
+                  items,
                   total_ccs: 80,
                   estimated_minutes: 15,
-                  status: 'in_progress',
+                  status: 'pending',
                   completed_at: null,
                   created_at: new Date().toISOString(),
                 },
@@ -710,9 +693,31 @@ describe('Daily Capsule', () => {
             }),
           }),
         }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: {
+                    id: 'daily-1',
+                    clerk_user_id: 'user_test',
+                    date: '2026-03-04',
+                    items: [{ ...items[0], isChecked: true }, items[1]],
+                    total_ccs: 80,
+                    estimated_minutes: 15,
+                    status: 'in_progress',
+                    completed_at: null,
+                    created_at: new Date().toISOString(),
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        }),
       });
 
-      const result = await checkDailyItem('daily-1', 'item-1', true);
+      const result = await checkDailyItem('daily-1', 'item-1', true, 'user_test');
 
       expect(result).not.toBeNull();
       expect(result!.status).toBe('in_progress');
@@ -722,15 +727,17 @@ describe('Daily Capsule', () => {
       mockSupabaseFrom.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'not found' },
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: null,
+                error: { message: 'not found' },
+              }),
             }),
           }),
         }),
       });
 
-      const result = await checkDailyItem('nonexistent', 'item-1', true);
+      const result = await checkDailyItem('nonexistent', 'item-1', true, 'user_test');
       expect(result).toBeNull();
     });
   });

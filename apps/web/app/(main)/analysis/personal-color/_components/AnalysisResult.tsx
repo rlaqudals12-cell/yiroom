@@ -210,8 +210,9 @@ function SeasonSeal({
       >
         {SEASON_SEAL[seasonType]}
       </span>
+      {/* opacity 감산 금지 — 라이트 시즌 배경 위 10px 라벨이 AA(4.5:1) 미달됨(리뷰 실측) */}
       <span
-        className="break-keep px-1.5 text-center text-[10px] leading-tight opacity-80"
+        className="break-keep px-1.5 text-center text-[10px] leading-tight"
         style={{ color: fg }}
       >
         {seasonLabel}
@@ -1224,8 +1225,10 @@ export default function AnalysisResult({
                 )
               )}
               <div className="min-w-0 flex-1">
+                {/* overflow-wrap:anywhere — break-keep+사진 40% 조합에서 303px 미만 뷰포트의
+                    '브라이트' 어절이 시트 밖으로 클리핑되던 것 방어(넘칠 때만 어절 내 개행) */}
                 <h1
-                  className="break-keep font-serif text-[clamp(2.25rem,4.5vw,3rem)] font-semibold leading-tight tracking-tight text-foreground"
+                  className="break-keep font-serif text-[clamp(2.25rem,4.5vw,3rem)] font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere]"
                   data-testid="pc-hero-title"
                 >
                   {heroTitle}

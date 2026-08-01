@@ -194,11 +194,15 @@ export default function HomeDailyCapsuleWidget() {
       try {
         // 체크 API 정본 = /api/capsule/daily/[id] (모바일 APK도 이 경로 하드코딩 —
         // 구 check/[id] 이중화가 표면별 계약 드리프트의 원천이라 통일, 2026-08-01)
-        await fetch(`/api/capsule/daily/${capsule.id}`, {
+        const res = await fetch(`/api/capsule/daily/${capsule.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ itemId: item.id, isChecked: !item.isChecked }),
         });
+
+        // 서버 거부(400/404/500) 시 로컬 갱신 금지 — 새로고침 때 체크가 사라지는
+        // 무음 유실을 막는다(성공 확정 후에만 반영, 2026-08-01 리뷰 수리)
+        if (!res.ok) return;
 
         setCapsule((prev) => {
           if (!prev) return prev;
@@ -223,7 +227,7 @@ export default function HomeDailyCapsuleWidget() {
   if (isLoading) {
     return (
       <div className="bg-card rounded-2xl border border-border p-5 animate-pulse">
-        <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
+        <div className="h-5 w-32 bg-muted rounded mb-3" />
         <div className="space-y-2">
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded" />
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded" />

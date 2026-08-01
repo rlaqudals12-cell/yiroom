@@ -42,7 +42,12 @@ export async function PATCH(
       );
     }
 
-    const updated = await checkDailyItem(dailyCapsuleId, parsed.data.itemId, parsed.data.isChecked);
+    const updated = await checkDailyItem(
+      dailyCapsuleId,
+      parsed.data.itemId,
+      parsed.data.isChecked,
+      userId
+    );
 
     if (!updated) {
       return NextResponse.json(

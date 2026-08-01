@@ -459,6 +459,11 @@ html:not(.dark)
   :is(.shadow, .shadow-sm, .shadow-md, .hover\:shadow-sm:hover, .hover\:shadow-md:hover) {
   --tw-shadow: var(--shadow-rest);
 }
+/* 폼 컨트롤 마이크로 섀도(shadow-xs — 버튼·인풋·셀렉트)도 웜 계열로 수렴
+   (리뷰 발견: 누락 시 무채색 마이크로 섀도가 잔존해 2층 계약이 표면 전체에 비일관) */
+html:not(.dark) .shadow-xs {
+  --tw-shadow: 0 1px 2px rgba(93, 64, 55, 0.05);
+}
 html:not(.dark)
   :is(.shadow-lg, .shadow-xl, .shadow-2xl, .hover\:shadow-lg:hover, .hover\:shadow-xl:hover) {
   --tw-shadow: var(--shadow-raised);

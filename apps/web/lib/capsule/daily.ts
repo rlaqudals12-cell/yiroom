@@ -315,19 +315,24 @@ async function computeEveningFocus(
 
 /**
  * Daily Capsule 아이템 완료 체크
+ *
+ * userId 필수 — service-role 클라이언트는 RLS를 우회하므로 소유자 필터가
+ * 유일한 방어선(타인 UUID로 체크 변조하는 IDOR 차단, 2026-08-01 리뷰 수리)
  */
 export async function checkDailyItem(
   dailyCapsuleId: string,
   itemId: string,
-  isChecked: boolean
+  isChecked: boolean,
+  userId: string
 ): Promise<DailyCapsule | null> {
   const supabase = createServiceRoleClient();
 
-  // 현재 Daily Capsule 조회
+  // 현재 Daily Capsule 조회 — 소유자 일치 행만
   const { data: row, error } = await supabase
     .from('daily_capsules')
     .select('*')
     .eq('id', dailyCapsuleId)
+    .eq('clerk_user_id', userId)
     .single();
 
   if (error || !row) {
@@ -352,6 +357,7 @@ export async function checkDailyItem(
       completed_at: allChecked ? new Date().toISOString() : null,
     })
     .eq('id', dailyCapsuleId)
+    .eq('clerk_user_id', userId)
     .select()
     .single();
 
@@ -395,7 +401,7 @@ export async function syncRoutineToCapsule(
     if (uncheckedItems.length === 0) return;
 
     // 첫 번째 미완료 아이템을 완료 처리
-    await checkDailyItem(capsule.id, uncheckedItems[0].id, true);
+    await checkDailyItem(capsule.id, uncheckedItems[0].id, true, userId);
   } catch (error) {
     // 캡슐 동기화 실패는 기록 저장에 영향을 주지 않음
     console.error('[Daily] 루틴-캡슐 동기화 실패:', error);
