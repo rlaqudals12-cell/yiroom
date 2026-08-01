@@ -57,7 +57,8 @@ import {
   transformDbToResult,
 } from './_lib/transform';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 import {
   ReportEyebrow,
@@ -90,6 +91,17 @@ const STATUS_LABELS: Record<'good' | 'normal' | 'warning', string> = {
   warning: '집중 케어',
 };
 
+// 종합 점수 상태어 임계값 — 헤어 진단지 scoreStatusText와 동일 기준(결정론 매핑)
+const SCORE_GOOD_MIN = 71;
+const SCORE_NORMAL_MIN = 41;
+
+// 저장 점수의 표기 번역(새 판정 생성 아님) — "NN점" 단독 표기의 해석 공백을 메운다
+function scoreStatusText(value: number): string {
+  if (value >= SCORE_GOOD_MIN) return STATUS_LABELS.good;
+  if (value >= SCORE_NORMAL_MIN) return STATUS_LABELS.normal;
+  return STATUS_LABELS.warning;
+}
+
 // 신뢰도 등급 → 표시 % — ExpertDataPanel과 동일 매핑(새 수치 발명 아님)
 const RELIABILITY_CONFIDENCE: Record<'high' | 'medium' | 'low', number> = {
   high: 90,
@@ -108,6 +120,8 @@ const TEXTURE_BY_CATEGORY: Record<string, TextureKind> = {
 
 export default function MakeupAnalysisResultPage() {
   const t = useTranslations('analysis');
+  // 콜로폰 분석 시간 표기 — 하드코딩 ko-KR 대신 사용자 로캘 (PC 진단지 표준)
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -392,7 +406,7 @@ export default function MakeupAnalysisResultPage() {
                         <AttrRow
                           icon={Activity}
                           label="피부 컨디션"
-                          value={`${result.overallScore}점`}
+                          value={`${result.overallScore}점 · ${scoreStatusText(result.overallScore)}`}
                         />
                       </RowTable>
                     </div>
@@ -429,7 +443,13 @@ export default function MakeupAnalysisResultPage() {
                     testId="makeup-trust-footer"
                     className="mt-6"
                   >
-                    <p>분석 시간: {result.analyzedAt.toLocaleString('ko-KR')}</p>
+                    <p>
+                      분석 시간:{' '}
+                      {result.analyzedAt.toLocaleString(getDateLocale(locale), {
+                        dateStyle: 'long',
+                        timeStyle: 'short',
+                      })}
+                    </p>
                   </TrustFooter>
                 </div>
               </section>

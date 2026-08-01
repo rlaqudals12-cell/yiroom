@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { Droplets } from 'lucide-react';
 import { RowTable, SpectrumRow } from '@/components/analysis/report';
 
 describe('SpectrumRow', () => {
@@ -50,6 +51,33 @@ describe('SpectrumRow', () => {
 
     expect(screen.getByTestId('row-scalp-track')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('집중 케어').tagName).toBe('DD');
+  });
+
+  it('아이콘이 있으면 AttrRow와 동일한 24px 원형 앵커 컨테이너에 담는다', () => {
+    render(
+      <RowTable>
+        <SpectrumRow icon={Droplets} label="수분" pos={0.5} status="양호" testId="row-icon" />
+      </RowTable>
+    );
+
+    const row = screen.getByTestId('row-icon');
+    // 앵커 컨테이너 규격 — h-6 w-6(24px) 원형 + 크림 지면 틴트 (AttrRow 문법 공유)
+    const anchor = row.querySelector('span.h-6.w-6');
+    expect(anchor).not.toBeNull();
+    expect(anchor).toHaveClass('rounded-full', 'bg-surface-ground');
+    expect(anchor).toHaveAttribute('aria-hidden', 'true');
+    // 아이콘은 앵커 안에 담긴다 (setup.ts가 lucide를 span[data-testid=lucide-*]로 mock)
+    expect(anchor?.querySelector('[data-testid="lucide-droplets"]')).not.toBeNull();
+  });
+
+  it('아이콘이 없으면 앵커 컨테이너 없이 라벨부터 시작한다', () => {
+    render(
+      <RowTable>
+        <SpectrumRow label="유분" pos={0.4} status="보통" testId="row-no-icon" />
+      </RowTable>
+    );
+
+    expect(screen.getByTestId('row-no-icon').querySelector('span.h-6.w-6')).toBeNull();
   });
 
   it('신호등 상태색 클래스를 사용하지 않는다 (ADR-120 금지 패턴)', () => {

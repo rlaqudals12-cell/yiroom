@@ -71,7 +71,8 @@ import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { ResultPageInsights } from '@/components/insights';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { getDateLocale } from '@/lib/utils/date-format';
 import { transformDbToResult, type DbBodyAnalysis } from './_lib/transform';
 
 // 탭 전용 컴포넌트 — dynamic import (번들 분할)
@@ -94,6 +95,8 @@ const RESULT_TABS = ['basic', 'evidence', 'styling'] as const;
 
 export default function BodyAnalysisResultPage() {
   const t = useTranslations('analysis');
+  // 콜로폰 분석 시간 표기 — 사용자 로캘 기반 (PC 진단지 표준)
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
@@ -483,7 +486,8 @@ export default function BodyAnalysisResultPage() {
               <TabsContent value="basic" className="mt-0">
                 {/* 진단지 히어로 — 아이브로우 + 세리프 체형명 + 속성표 + 신뢰 푸터 (ADR-120, 외모점수 연출 소거)
                     깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
-                <section className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+                {/* text-pretty: 짧은 꼬리 줄 방지 점진 향상 (Tailwind v4 내장 유틸) */}
+                <section className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card text-pretty shadow-[var(--shadow-card)] dark:shadow-none">
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
@@ -519,13 +523,23 @@ export default function BodyAnalysisResultPage() {
                         ))}
                       </RowTable>
                     </div>
-                    {/* 신뢰 푸터 — confidence가 저장된 경우에만 (위장 점수 금지) */}
-                    {confidence !== null && (
+                    {/* 신뢰 푸터 — 저장된 confidence·분석 시간이 있을 때만 (위장 수치 금지) */}
+                    {(confidence !== null || analyzedAt !== null) && (
                       <TrustFooter
                         confidence={confidence}
                         testId="body-trust-footer"
                         className="mt-6"
-                      />
+                      >
+                        {analyzedAt && (
+                          <p>
+                            분석 시간:{' '}
+                            {new Date(analyzedAt).toLocaleString(getDateLocale(locale), {
+                              dateStyle: 'long',
+                              timeStyle: 'short',
+                            })}
+                          </p>
+                        )}
+                      </TrustFooter>
                     )}
                   </div>
                 </section>

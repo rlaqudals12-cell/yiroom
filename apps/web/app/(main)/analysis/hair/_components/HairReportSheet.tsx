@@ -78,7 +78,8 @@ export function HairReportSheet({
 
   return (
     <section
-      className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none"
+      // text-pretty: 짧은 꼬리 줄 방지 점진 향상 (Tailwind v4 내장 유틸)
+      className="relative overflow-hidden rounded-2xl border border-border bg-card text-pretty shadow-[var(--shadow-card)] dark:shadow-none"
       data-testid={testId}
     >
       {/* 깊이: 크림 지면 위 백색 시트 — 종이 그레인 1겹(시트 한정, ≤0.05) */}
@@ -151,7 +152,15 @@ export function HairReportSheet({
           testId={testId ? `${testId}-trust` : undefined}
           className="mt-6"
         >
-          {analyzedAt && <p>분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}</p>}
+          {analyzedAt && (
+            <p>
+              분석 시간:{' '}
+              {analyzedAt.toLocaleString(getDateLocale(locale), {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              })}
+            </p>
+          )}
         </TrustFooter>
       </div>
     </section>

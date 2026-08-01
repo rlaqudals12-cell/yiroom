@@ -355,7 +355,8 @@ export default function AnalysisResult({
   const insightFirstSentence = insight.split(/(?<=[.!?。])\s/)[0] ?? insight;
 
   return (
-    <div ref={shareRef} className="space-y-6" role="region" aria-label="피부 분석 결과">
+    // text-pretty: 짧은 꼬리 줄 방지 점진 향상 (Tailwind v4 내장 유틸)
+    <div ref={shareRef} className="space-y-6 text-pretty" role="region" aria-label="피부 분석 결과">
       {/* 피부 고민 한눈에 (시그니처 판정 시각물) — 펼침 유지 (결론 먼저) */}
       <FadeInUp>
         <section>
@@ -928,7 +929,10 @@ export default function AnalysisResult({
           위장 수치 없이 분석 시간만 정직하게 표기 */}
       <FadeInUp delay={8}>
         <TrustFooter testId="skin-trust-footer">
-          <p>분석 시간: {formatDateTime(analyzedAt, locale)}</p>
+          <p>
+            분석 시간:{' '}
+            {formatDateTime(analyzedAt, locale, { dateStyle: 'long', timeStyle: 'short' })}
+          </p>
         </TrustFooter>
       </FadeInUp>
 

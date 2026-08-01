@@ -10,7 +10,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { Activity, Droplets, Eye, ScanFace, Smile } from 'lucide-react';
+import { getDateLocale } from '@/lib/utils/date-format';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import type { MakeupStyleId } from '@/lib/analysis/makeup';
 import {
@@ -53,6 +55,17 @@ const STATUS_LABELS: Record<'good' | 'normal' | 'warning', string> = {
   normal: '보통',
   warning: '집중 케어',
 };
+
+// 종합 점수 상태어 임계값 — 헤어 진단지 scoreStatusText와 동일 기준(결정론 매핑)
+const SCORE_GOOD_MIN = 71;
+const SCORE_NORMAL_MIN = 41;
+
+// 저장 점수의 표기 번역(새 판정 생성 아님) — "NN점" 단독 표기의 해석 공백을 메운다
+function scoreStatusText(value: number): string {
+  if (value >= SCORE_GOOD_MIN) return STATUS_LABELS.good;
+  if (value >= SCORE_NORMAL_MIN) return STATUS_LABELS.normal;
+  return STATUS_LABELS.warning;
+}
 
 // 신뢰도 등급 → 표시 % — result/[id]의 ExpertDataPanel과 동일 매핑(새 수치 발명 아님)
 const RELIABILITY_CONFIDENCE: Record<'high' | 'medium' | 'low', number> = {
@@ -99,6 +112,8 @@ export function MakeupAnalysisResultView({
   result,
   onRetry,
 }: MakeupAnalysisResultViewProps): React.JSX.Element {
+  // 콜로폰 분석 시간 표기 — 하드코딩 ko-KR 대신 사용자 로캘 (PC 진단지 표준)
+  const locale = useLocale();
   // 상황별 팁 탭 (데일리 / 풀메이크업) — 기존 추천 데이터 재구성 (새 AI 없음)
   const situational = useMemo(() => buildSituationalTips(result), [result]);
   const [situation, setSituation] = useState<'daily' | 'full'>('daily');
@@ -163,7 +178,11 @@ export function MakeupAnalysisResultView({
         )}
         {result.eyeShapeLabel && <AttrRow icon={Eye} label="눈" value={result.eyeShapeLabel} />}
         {result.lipShapeLabel && <AttrRow icon={Smile} label="입술" value={result.lipShapeLabel} />}
-        <AttrRow icon={Activity} label="피부 컨디션" value={`${result.overallScore}점`} />
+        <AttrRow
+          icon={Activity}
+          label="피부 컨디션"
+          value={`${result.overallScore}점 · ${scoreStatusText(result.overallScore)}`}
+        />
       </RowTable>
     ),
   });
@@ -396,7 +415,8 @@ export function MakeupAnalysisResultView({
     <div className="space-y-6" data-testid="makeup-analysis-result">
       {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법)
           깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] dark:shadow-none">
+      {/* text-pretty: 짧은 꼬리 줄 방지 점진 향상 (Tailwind v4 내장 유틸) */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card text-pretty shadow-[var(--shadow-card)] dark:shadow-none">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-[0.05] dark:hidden"
@@ -461,7 +481,13 @@ export function MakeupAnalysisResultView({
             testId="makeup-trust-footer"
             className="mt-6"
           >
-            <p>분석 시간: {result.analyzedAt.toLocaleString('ko-KR')}</p>
+            <p>
+              분석 시간:{' '}
+              {result.analyzedAt.toLocaleString(getDateLocale(locale), {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              })}
+            </p>
           </TrustFooter>
         </div>
       </section>
