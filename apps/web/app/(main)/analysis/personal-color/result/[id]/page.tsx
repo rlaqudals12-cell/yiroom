@@ -586,10 +586,10 @@ export default function PersonalColorResultPage() {
           </div>
         </header>
 
-        {/* AI 분석 실패 시 Mock 데이터 알림 */}
+        {/* AI 분석 실패 시 Mock 데이터 알림 — 상단은 컴팩트 칩으로 격하(위계), 전문 고지는 본문 말미 1회 */}
         {usedMock && (
-          <div className="mb-6">
-            <MockDataNotice />
+          <div className="mb-4 flex justify-center">
+            <MockDataNotice compact />
           </div>
         )}
 
@@ -786,6 +786,9 @@ export default function PersonalColorResultPage() {
                   {imageUrl && <span className="text-primary text-sm">→</span>}
                 </button>
               </div>
+
+              {/* Mock 전문 고지(재시도 안내 포함) — 상단 칩과 짝, 본문 말미 1회만 노출 */}
+              {usedMock && <MockDataNotice className="mt-6" />}
             </TabsContent>
 
             {/* 드레이핑 시뮬레이션 탭 - 조건부 렌더링으로 canvas 오버플로우 방지 */}

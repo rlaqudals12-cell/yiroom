@@ -383,7 +383,7 @@ export function ChatInterface({
 
               {/* 상황형 퀵질문 — general은 아이콘 카드 2×2, 그 외 카테고리는 칩 목록 */}
               {activeCategory === 'general' ? (
-                <div className="grid grid-cols-2 gap-2.5" data-testid="coach-quick-cards">
+                <div className="grid grid-cols-2 gap-3" data-testid="coach-quick-cards">
                   {QUICK_QUESTIONS_BY_CATEGORY.general.map((question) => {
                     const Icon = GENERAL_QUESTION_ICONS[question] ?? Sparkles;
                     return (
@@ -391,9 +391,9 @@ export function ChatInterface({
                         key={question}
                         onClick={() => handleQuickQuestion(question)}
                         disabled={loading}
-                        className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
+                        className="flex min-h-[104px] flex-col items-start gap-2 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                           <Icon className="h-5 w-5" aria-hidden="true" />
                         </span>
                         <span className="text-sm font-medium">{question}</span>
@@ -403,10 +403,10 @@ export function ChatInterface({
                   {/* ADR-114: "이 제품 나한테 맞을까요?"는 채팅 대신 스캔(사진 판정 정본)으로 분기 */}
                   <Link
                     href="/scan"
-                    className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    className="flex min-h-[104px] flex-col items-start gap-2 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
                     data-testid="coach-scan-chip"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <ScanLine className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <span className="text-sm font-medium">이 제품 나한테 맞을까요?</span>

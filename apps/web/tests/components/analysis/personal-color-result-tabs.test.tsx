@@ -348,7 +348,13 @@ vi.mock('@/components/common/AIBadge', () => ({
 }));
 
 vi.mock('@/components/common/MockDataNotice', () => ({
-  MockDataNotice: () => <div data-testid="mock-data-notice">MockDataNotice Mock</div>,
+  // 실제 컴포넌트처럼 compact 여부로 testid를 분기 — 상단 칩/본문 전문 고지 이중 렌더 검증용
+  MockDataNotice: ({ compact }: { compact?: boolean }) =>
+    compact ? (
+      <div data-testid="mock-data-notice-compact">MockDataNotice Compact Mock</div>
+    ) : (
+      <div data-testid="mock-data-notice">MockDataNotice Mock</div>
+    ),
 }));
 
 vi.mock('next/link', () => ({
@@ -669,6 +675,8 @@ describe('PC-1 결과 페이지 렌더링', () => {
       render(<PersonalColorResultPage />);
 
       await waitFor(() => {
+        // 상단은 컴팩트 칩, 본문 말미에 전문 고지 — 2단 위계로 각 1회씩 노출
+        expect(screen.getByTestId('mock-data-notice-compact')).toBeInTheDocument();
         expect(screen.getByTestId('mock-data-notice')).toBeInTheDocument();
       });
     });
@@ -688,6 +696,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
       });
 
       expect(screen.queryByTestId('mock-data-notice')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mock-data-notice-compact')).not.toBeInTheDocument();
     });
   });
 
