@@ -108,6 +108,9 @@ interface DbPersonalColorAssessment {
   image_analysis: {
     insight?: string;
     seasonSubtype?: string | null;
+    // 통합 파이프라인(axis-adapters)이 저장하는 12톤 서브타입 키 — 단독 경로의 seasonSubtype과
+    // 이름이 갈려 통합 퍼널 사용자에게 서브타입이 통째로 소실됐다(2026-08 수리). 구 데이터 호환용.
+    subtype?: string | null;
     analysisEvidence?: AnalysisEvidence;
     imageQuality?: ImageQuality;
     usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
@@ -163,6 +166,19 @@ function normalizeDbLipstick(
       brandExample: l.brandExample,
       easyDescription: l.description,
     }));
+}
+
+// 서브타입 표기 별칭 → 정본 표기.
+// 왜: 저장 경로마다 어휘가 갈린다. 단독 경로(Gemini 프롬프트)는 'mute', 통합 경로
+// (classifyTone·personal-color-v2)는 'muted'를 낸다. 같은 12톤인데 표기가 달라 통합 사용자의
+// 서브타입 해석이 통째로 실패했다 → 읽는 쪽에서 한 번 접어 정본('mute')으로 통일한다.
+const SUBTYPE_ALIAS: Record<string, string> = { muted: 'mute' };
+
+// 저장된 원시 서브타입을 정본 표기로 정규화 (없으면 null → 시즌 기반 파생 폴백)
+function normalizeRawSubtype(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const key = raw.toLowerCase();
+  return SUBTYPE_ALIAS[key] ?? key;
 }
 
 // AI 원시 서브타입(mute 등) → getCardPalette 12톤 키 접두사
@@ -236,7 +252,11 @@ function transformDbToResult(dbData: DbPersonalColorAssessment): PersonalColorRe
 
   // 12톤 서브타입 우선: 저장값이 유효하면 tone/depth/라벨을 서브타입에서 도출
   // (예: 여름 쿨 뮤트 사용자에게 하드코딩 "라이트" 대신 "뮤트" 정확 표시). 없으면 시즌 파생.
-  const rawSubtype = dbData.season_subtype ?? dbData.image_analysis?.seasonSubtype ?? null;
+  // 폴백 체인: 컬럼(단독 경로) → image_analysis.seasonSubtype(구 단독) → image_analysis.subtype(통합 경로).
+  // 통합 퍼널은 마지막 키에만 저장해왔다 — 빠뜨리면 12톤 팔레트·명도/채도 행·톤 총람이 전부 소실된다.
+  const rawSubtype = normalizeRawSubtype(
+    dbData.season_subtype ?? dbData.image_analysis?.seasonSubtype ?? dbData.image_analysis?.subtype
+  );
   const subtype = resolveSubtype(seasonType, rawSubtype);
   const { tone, depth } = subtype
     ? { tone: subtype.tone, depth: subtype.depth }

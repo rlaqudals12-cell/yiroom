@@ -48,6 +48,8 @@ import type { CaptureConditions } from '@/lib/analysis/integrated';
 // prod CHECK 제약이 허용하는 값 (실제 personal_color_assessments 제약과 동일)
 const ALLOWED_SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const ALLOWED_UNDERTONES = ['Warm', 'Cool', 'Neutral'];
+// season_subtype 컬럼의 정본 어휘 (마이그레이션 20260709_pc_season_subtype.sql 코멘트와 동일)
+const ALLOWED_SUBTYPES = ['bright', 'light', 'true', 'mute', 'deep'];
 
 function baseInput(): IntegratedAnalysisInput {
   return {
@@ -84,6 +86,31 @@ describe('axis-adapters — DB 저장 규격 (스키마 계약)', () => {
       // 근본 원인: 소문자('spring')가 저장돼 CHECK 위반 → 반드시 대문자 시작으로 변환돼야 함
       expect(ALLOWED_SEASONS).toContain(insert!.payload.season);
       expect(ALLOWED_UNDERTONES).toContain(insert!.payload.undertone);
+    });
+
+    it('12톤 서브타입을 season_subtype 컬럼에 정본 표기로 저장한다', async () => {
+      const result = await runPersonalColorAxis('sess-subtype', 'clerk-1', baseInput());
+
+      expect(result.success).toBe(true);
+
+      const insert = capturedInserts.find((c) => c.table === 'personal_color_assessments');
+      expect(insert).toBeDefined();
+      // 근본 원인: image_analysis.subtype에만 저장 → 단독 진단지가 읽는 컬럼이 비어 시즌 폴백으로 추락
+      expect(ALLOWED_SUBTYPES).toContain(insert!.payload.season_subtype);
+      // classifyTone의 'muted'는 컬럼 정본 어휘 'mute'로 접혀야 한다 (표기 단일화)
+      expect(insert!.payload.season_subtype).not.toBe('muted');
+    });
+
+    it('image_analysis.subtype도 유지한다 (통합 리포트가 읽는 키 — 구 데이터 호환)', async () => {
+      const result = await runPersonalColorAxis('sess-subtype-2', 'clerk-1', baseInput());
+
+      expect(result.success).toBe(true);
+
+      const insert = capturedInserts.find((c) => c.table === 'personal_color_assessments');
+      expect(insert).toBeDefined();
+      const analysis = insert!.payload.image_analysis as Record<string, unknown>;
+      expect(typeof analysis.subtype).toBe('string');
+      expect(analysis.subtype).toBeTruthy();
     });
 
     it('반환 AxisData는 소문자 season을 유지한다 (persona-composer 톤 판정 계약)', async () => {

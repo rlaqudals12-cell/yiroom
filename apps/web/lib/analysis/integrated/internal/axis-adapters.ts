@@ -105,6 +105,18 @@ function mapUndertoneToDb(undertone: string): string {
   return map[undertone.toLowerCase()] ?? undertone;
 }
 
+/**
+ * 12톤 서브타입을 `season_subtype` 컬럼 표기로 변환.
+ *
+ * 왜: 컬럼의 정본 어휘는 단독 경로(Gemini 프롬프트)가 쓰는 bright/light/true/mute/deep이다
+ * (마이그레이션 20260709_pc_season_subtype.sql 코멘트). 통합 경로의 classifyTone은 'muted'를
+ * 내므로 그대로 넣으면 같은 12톤이 'mute'/'muted' 두 값으로 쪼개진다 → 표기를 통일해 저장한다.
+ */
+function mapSubtypeToDb(subtype: string): string {
+  const key = subtype.toLowerCase();
+  return key === 'muted' ? 'mute' : key;
+}
+
 // ============================================
 // 1. PC-2 Adapter (Personal Color)
 // ============================================
@@ -183,6 +195,9 @@ export async function runPersonalColorAxis(
         // DB CHECK 제약은 대문자 시작만 허용 → 저장 직전 변환 (반환 데이터는 소문자 유지)
         season: mapSeasonToDb(classification.season),
         undertone: mapUndertoneToDb(classification.undertone),
+        // 12톤 서브타입은 전용 컬럼에도 저장 — 단독 진단지(result page)가 읽는 정본 위치다.
+        // image_analysis.subtype만 채우던 시절엔 통합 사용자가 심화 진단지에서 시즌 폴백으로 떨어졌다.
+        season_subtype: mapSubtypeToDb(classification.subtype),
         confidence: classification.confidence,
         image_analysis: {
           version: 2,
