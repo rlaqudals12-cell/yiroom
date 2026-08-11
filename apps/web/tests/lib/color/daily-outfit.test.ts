@@ -242,6 +242,57 @@ describe('composeDailyOutfit — 뮤트 베이스 팔레트 직접 선정', () =
     expect(a).toEqual(b);
   });
 
+  it('포인트는 하의·가방에 이미 배정된 진단색을 배제한다 (밝은 뉴트럴 + 딥 1점)', () => {
+    // 실측 Lab: 아이보리 L*91.8 C*6.1 / 샌드 L*84.4 C*5.7 / 그레이지 L*72.2 C*7.2 / 딥 네이비 L*24.1 C*11.3
+    // 시드 20260708 % 4 === 0 → 상의 = 아이보리(뮤트) → 하의 = ΔL* 최대인 딥 네이비.
+    // 배제 없으면 최고 채도(딥 네이비)가 포인트로도 뽑혀 하의와 같은 색이 매일 반복된다.
+    const brightNeutral = [
+      { name: '아이보리', hex: '#EDE7DC' },
+      { name: '샌드', hex: '#D8D2C8' },
+      { name: '그레이지', hex: '#B8B0A4' },
+      { name: '딥 네이비', hex: '#2F3A4A' },
+    ];
+    const out = composeDailyOutfit(brightNeutral, new Date('2026-07-08'))!;
+    const bottom = out.colors.find((c) => c.role === '하의')!;
+    const bag = out.colors.find((c) => c.role === '가방')!;
+    const point = out.colors.find((c) => c.role === '포인트')!;
+
+    expect(bottom.hex).toBe('#2F3A4A');
+    expect(point.hex).not.toBe(bottom.hex);
+    expect(point.hex).not.toBe(bag.hex);
+    // 여전히 진단 팔레트 안의 색(합성 없음) + 원본 이름 유지
+    expect(point.hex).toBe('#B8B0A4');
+    expect(point.name).toBe('그레이지');
+  });
+
+  it('가방이 팔레트에서 선정된 날에도 포인트가 가방과 겹치지 않는다', () => {
+    // 상의 회청 · 하의 라이트 그레이 · 가방 더스티 로즈(팔레트 선정) → 포인트는 남은 잉크 블랙
+    const guarded = [
+      { name: '회청', hex: '#4E5A66' },
+      { name: '라이트 그레이', hex: '#C9C9CB' },
+      { name: '잉크 블랙', hex: '#1A1A1E' },
+      { name: '더스티 로즈', hex: '#A89096' },
+    ];
+    const out = composeDailyOutfit(guarded, new Date('2026-07-08'))!;
+    const bag = out.colors.find((c) => c.role === '가방')!;
+    const point = out.colors.find((c) => c.role === '포인트')!;
+
+    expect(bag.hex).toBe('#A89096');
+    expect(point.hex).toBe('#1A1A1E');
+    expect(point.name).toBe('잉크 블랙');
+  });
+
+  it('후보 소진(좁은 팔레트)이면 기존 폴백 — 진단색 안에서 고르고 결정론 유지', () => {
+    // 3색 팔레트는 상의·하의·가방이 전부 소비 → 배제 후보가 없다.
+    // 이때는 기존 동작(베이스 제외 최고 채도)으로 되돌아가되 색을 지어내지 않는다.
+    const out = composeDailyOutfit(MUTED, MUTED_DATE)!;
+    const point = out.colors.find((c) => c.role === '포인트')!;
+    expect(MUTED.some((p) => p.hex === point.hex)).toBe(true);
+    expect(point.hex).not.toBe(out.colors[0].hex); // 상의(베이스)와는 다르다
+    // 같은 날 재호출 결과가 동일해야 한다(결정론)
+    expect(composeDailyOutfit(MUTED, MUTED_DATE)!.colors).toEqual(out.colors);
+  });
+
   it('유채 베이스(C*≥15) 경로는 기존 로직 그대로 — 하의·가방이 파생 계열명이다', () => {
     // 코랄 C*65.7 — 뮤트 아님 → analogous 파생 유지(팔레트 원본이 아닌 합성색)
     const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;

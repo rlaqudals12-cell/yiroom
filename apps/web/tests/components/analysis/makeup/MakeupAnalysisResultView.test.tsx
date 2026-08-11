@@ -77,6 +77,37 @@ describe('MakeupAnalysisResultView', () => {
     });
   });
 
+  // prod 형상 회귀: 소비처가 SpectrumRow를 progressbar로 감싸면 children이 presentational로
+  // 접혀 "NN점 · 상태" 텍스트가 보조기기에서 사라진다 (ADR-120 취지 역행)
+  describe('피부 상태 지표 접근성', () => {
+    const STATUS_TEXT: Record<'good' | 'normal' | 'warning', string> = {
+      good: '양호',
+      normal: '보통',
+      warning: '집중 케어',
+    };
+
+    it('지표마다 progressbar 이름에 점수와 상태어가 함께 실린다', () => {
+      render(<MakeupAnalysisResultView result={result} onRetry={() => {}} />);
+
+      for (const metric of result.metrics) {
+        const bar = screen.getByRole('progressbar', {
+          name: `${metric.label}: ${metric.value}점 · ${STATUS_TEXT[metric.status]}`,
+        });
+        expect(bar).toHaveAttribute('aria-valuenow', String(metric.value));
+      }
+    });
+
+    it('상태 텍스트는 progressbar 서브트리 밖에 남는다', () => {
+      render(<MakeupAnalysisResultView result={result} onRetry={() => {}} />);
+
+      const statuses = screen.getAllByText(/^\d+점 · (양호|보통|집중 케어)$/);
+      expect(statuses.length).toBeGreaterThanOrEqual(result.metrics.length);
+      for (const status of statuses) {
+        expect(status.closest('[role="progressbar"]')).toBeNull();
+      }
+    });
+  });
+
   describe('보유 화장품 배지', () => {
     it('제품함에 립 제품이 있으면 "내 립 활용" 배지가 표시된다', async () => {
       mockFetch([{ productName: '롬앤 쥬시래스팅 틴트' }]);

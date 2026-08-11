@@ -8,7 +8,7 @@
  *  - 하의(bottom) = 유사색(analogous) — 조화로운 기본 배색
  *  - 신발(shoes)  = 중립색(명도로 결정) — 배색을 받쳐주는 뉴트럴
  *  - 가방(bag)    = 유사색(다른 이웃) — 배색 파생 소품
- *  - 포인트(point) = 진단 팔레트 중 최고 채도 색 — 액세서리 한 점 악센트
+ *  - 포인트(point) = 진단 팔레트 중 최고 채도 색(하의·가방에 이미 배정된 hex는 배제) — 액세서리 한 점 악센트
  *    (보색 합성 폐지: 합성색은 저채도 베이스에서 흐릿한 비진단색으로 수렴해
  *     포인트가 죽는다. 진단 hex 안에서 고르면 "실제 내 색"이면서 가장 또렷하다)
  *
@@ -156,15 +156,25 @@ function neutralShoes(baseL: number, contrast?: OutfitContrast): OutfitColor {
 /**
  * 포인트 색 — 합성 보색 대신 진단 팔레트 안에서 최고 채도 색을 고른다(결정론).
  * 왜: 베스트 팔레트가 뉴트럴로 수렴한 날 보색 합성마저 저채도라 포인트가 죽는다.
- * 진단 hex 내 선택이므로 채도 증폭·색 지어내기 없음(정직성). 베이스와 다른 색이
- * 있으면 그중에서, 팔레트가 1색뿐이면 그 색 그대로 쓴다.
+ * 진단 hex 내 선택이므로 채도 증폭·색 지어내기 없음(정직성).
+ *
+ * 중복 배정 방지(2026-08): 뮤트 베이스 경로는 하의·가방도 진단 팔레트에서 직접 뽑기 때문에
+ * 배제 없이 최고 채도만 고르면 같은 hex가 하의(또는 가방)와 포인트에 동시에 배정된다.
+ * 결정론이라 그 조합이 매일 반복되므로, 이미 배정된 hex를 먼저 배제한다.
+ * 후보 소진 시(좁은 팔레트) 기존 폴백 순서로 되돌아간다: 베이스 제외 → 전체(1색 팔레트).
  */
 function pickPointColor(
   valid: ReadonlyArray<{ name?: string; hex?: string }>,
-  baseHex: string
+  baseHex: string,
+  assignedHexes: ReadonlyArray<string> = []
 ): OutfitColor {
+  const used = new Set([baseHex, ...assignedHexes].map((hex) => hex.toLowerCase()));
+  const unused = valid.filter((c) => !used.has((c.hex as string).toLowerCase()));
   const others = valid.filter((c) => (c.hex as string).toLowerCase() !== baseHex.toLowerCase());
-  const pool = others.length > 0 ? others : valid;
+
+  let pool: ReadonlyArray<{ name?: string; hex?: string }> = unused;
+  if (pool.length === 0) pool = others;
+  if (pool.length === 0) pool = valid;
 
   let best = pool[0];
   let bestChroma = -1;
@@ -310,8 +320,8 @@ export function composeDailyOutfit(
     ? pickMutedBag(valid, baseHex, bottom.hex, baseL)
     : { hex: bagNeighbor, role: '가방', name: colorFamilyName(bagNeighbor) };
 
-  // 포인트: 진단 팔레트 중 최고 채도 색(합성 보색 폐지 — 위 pickPointColor 주석 참조)
-  const point = pickPointColor(valid, baseHex);
+  // 포인트: 진단 팔레트 중 최고 채도 색 — 이미 배정된 하의·가방 hex는 배제(중복 배정 방지)
+  const point = pickPointColor(valid, baseHex, [bottom.hex, bag.hex]);
 
   return {
     baseName: base.name?.trim() || '베스트 컬러',

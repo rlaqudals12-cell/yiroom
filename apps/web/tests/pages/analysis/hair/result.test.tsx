@@ -252,6 +252,23 @@ describe('HairAnalysisResultPage', () => {
       });
     });
 
+    // prod 형상 회귀: 진단지 행을 progressbar로 감싸면 children이 presentational로 접혀
+    // "75점 · 양호" 상태 텍스트가 보조기기에서 사라진다 (ADR-120 취지 역행)
+    it('지표 progressbar 이름에 점수·상태어가 함께 실리고 상태 텍스트는 바깥에 남는다', async () => {
+      render(<HairAnalysisResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('hair-report-sheet')).toBeInTheDocument();
+      });
+
+      // 수분도 75점 → 임계 71 이상이라 '양호'
+      const bar = screen.getByRole('progressbar', { name: '수분도: 75점 · 양호' });
+      expect(bar).toHaveAttribute('aria-valuenow', '75');
+      for (const status of screen.getAllByText('75점 · 양호')) {
+        expect(status.closest('[role="progressbar"]')).toBeNull();
+      }
+    });
+
     it('6개의 상세 지표가 모두 표시된다', async () => {
       render(<HairAnalysisResultPage />);
 
