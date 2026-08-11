@@ -5,6 +5,7 @@
 
 import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './types';
 import { toClothingItem } from './types';
+import { resolveClothingCategory } from './clothingCategory';
 
 // 체형 타입 (3-type 시스템)
 export type BodyType3 = 'S' | 'W' | 'N';
@@ -248,9 +249,16 @@ function calculateColorMatchScore(
   return Math.max(0, Math.min(100, score));
 }
 
-function calculateBodyTypeMatchScore(item: ClothingItem, bodyType: BodyType3): number {
-  const category = item.subCategory;
-  const recommendations = BODY_TYPE_RECOMMENDATIONS[bodyType][category];
+function calculateBodyTypeMatchScore(
+  item: ClothingItem,
+  bodyType: BodyType3,
+  // sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어, 호출측에서
+  // 원본 아이템(metadata 포함) 기준으로 정규화한 대분류를 받는다.
+  // (toClothingItem이 metadata.clothingCategory를 벗겨내므로 여기서 재정규화하면 정보 손실)
+  resolvedCategory: ClothingCategory | null
+): number {
+  if (!resolvedCategory) return 50;
+  const recommendations = BODY_TYPE_RECOMMENDATIONS[bodyType][resolvedCategory];
 
   if (!recommendations) return 50;
 
@@ -317,8 +325,9 @@ export function calculateMatchScore(item: InventoryItem, options: MatchOptions):
     ? calculateColorMatchScore(metadata.color, options.personalColor)
     : 50;
 
+  // 체형 점수 — 원본 아이템 기준 정규화(한글 sub_category·metadata.clothingCategory 대응)
   const bodyTypeScore = options.bodyType
-    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType)
+    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType, resolveClothingCategory(item))
     : 50;
 
   const targetSeason = options.season || (options.temp ? getSeasonFromTemp(options.temp) : null);
@@ -363,9 +372,11 @@ export function recommendFromCloset(
   items: InventoryItem[],
   options: MatchOptions & { category?: ClothingCategory | null; limit?: number }
 ): ClosetRecommendation[] {
+  // 카테고리 필터 — sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어
+  // 영문 완전일치 대신 정규화(resolveClothingCategory) 후 비교한다 (코디 영구 불발 근본 수리)
   let filtered = items.filter((item) => item.category === 'closet');
   if (options.category) {
-    filtered = filtered.filter((item) => item.subCategory === options.category);
+    filtered = filtered.filter((item) => resolveClothingCategory(item) === options.category);
   }
 
   const scored = filtered.map((item) => {
@@ -518,8 +529,9 @@ export function getRecommendationSummary(
       needsImprovement++;
     }
 
-    categoryCount[item.subCategory || 'unknown'] =
-      (categoryCount[item.subCategory || 'unknown'] || 0) + 1;
+    // 한글 sub_category('티셔츠')도 대분류('top')로 집계 — 미매핑은 unknown으로 정직 분류
+    const resolvedCategory = resolveClothingCategory(item) ?? 'unknown';
+    categoryCount[resolvedCategory] = (categoryCount[resolvedCategory] || 0) + 1;
   }
 
   // 부족한 카테고리 확인 — 0벌(부재)과 1벌(빈약)을 분리한다.

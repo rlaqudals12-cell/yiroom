@@ -18,6 +18,10 @@ export type { AnalysisErrorStateProps } from './AnalysisErrorState';
 export { AnalysisTrustBadge } from './AnalysisTrustBadge';
 export type { AnalysisTrustBadgeProps, TrustBadgeType } from './AnalysisTrustBadge';
 
+// 축별 Mock 폴백 정직 고지 (design-contracts §3 · 웹 AxisFallbackNotice 미러)
+export { AxisFallbackNotice } from './AxisFallbackNotice';
+export type { AxisFallbackNoticeProps } from './AxisFallbackNotice';
+
 export { MetricBar } from './MetricBar';
 export type { MetricBarProps } from './MetricBar';
 
@@ -93,9 +97,6 @@ export type {
 
 export { PhotoOverlayMap } from './PhotoOverlayMap';
 export type { PhotoOverlayMapProps, OverlayZoneId, OverlayZoneStatus } from './PhotoOverlayMap';
-
-export { ContextLinkingCard } from './ContextLinkingCard';
-export type { ContextLinkingCardProps, ContextLink } from './ContextLinkingCard';
 
 export { SolutionPanel } from './SolutionPanel';
 export type { SolutionPanelProps, SolutionStep } from './SolutionPanel';

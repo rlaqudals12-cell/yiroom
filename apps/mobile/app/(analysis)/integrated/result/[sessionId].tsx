@@ -14,7 +14,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 
-import { ColorPalette } from '@/components/analysis';
+import { AxisFallbackNotice, ColorPalette } from '@/components/analysis';
 import { PersonaShareSection } from '@/components/share';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { fetchIssueNo } from '@/lib/api';
@@ -140,6 +140,9 @@ export default function IntegratedResultScreen(): React.JSX.Element {
 
         {/* ADR-104 체크리스트 #1: 나 프로필 내러티브 */}
         <PersonaNarrativeCard persona={result.persona} />
+
+        {/* 축별 Mock 폴백 정직 고지 — verdict(나 프로필) 아래로 격하 배치(웹 정본과 동일) */}
+        <AxisFallbackNotice usedFallback={result.usedFallback} />
 
         {/* 나만의 컬러 팔레트 — 서버 개인화 palette 배선 (있을 때만 렌더) */}
         <MyPaletteCard axis={result.axes.personalColor} />
