@@ -42,7 +42,8 @@ function makeCapsule(items: Item[], estimatedMinutes = 12) {
 }
 
 interface PatchCall {
-  itemId: string;
+  itemId?: string;
+  itemIds?: string[];
   isChecked: boolean;
 }
 
@@ -170,11 +171,13 @@ describe('DailyCapsulePage — 지금 블록 / 완주 / 체크 저장', () => {
     expect(screen.getByTestId('daily-progress-line')).toHaveTextContent('2단계 중 0 완료');
   });
 
-  it("모듈 클러스터 '모두 완료' 버튼이 미체크 아이템을 일괄 체크한다", async () => {
+  it("모듈 클러스터 '모두 완료'가 배치 PATCH 1회로 전체를 저장한다 (경합 유실 수리)", async () => {
     const patchCalls = stubFetch(
       makeCapsule([
         makeItem('m1'),
         makeItem('m2'),
+        makeItem('m3'),
+        makeItem('m4'),
         makeItem('a1', { timeOfDay: 'anytime', moduleCode: 'PC' }),
       ])
     );
@@ -184,14 +187,76 @@ describe('DailyCapsulePage — 지금 블록 / 완주 / 체크 저장', () => {
     fireEvent.click(screen.getByTestId('daily-cluster-complete-S'));
 
     await waitFor(() => {
-      expect(patchCalls).toEqual(
-        expect.arrayContaining([
-          { itemId: 'm1', isChecked: true },
-          { itemId: 'm2', isChecked: true },
-        ])
-      );
+      // 단건 4발 병렬(마지막 쓰기 승리로 3개 유실)이 아니라 배치 1회
+      expect(patchCalls).toEqual([{ itemIds: ['m1', 'm2', 'm3', 'm4'], isChecked: true }]);
     });
     // 아침 클러스터 완료 → 지금 블록은 언제든 그룹으로 승계
     expect(screen.getByTestId('daily-now-block')).toHaveTextContent('아이템 a1');
+  });
+
+  it("'모두 완료'는 이미 체크된 아이템을 배치에서 제외한다", async () => {
+    const patchCalls = stubFetch(
+      makeCapsule([makeItem('m1', { isChecked: true }), makeItem('m2'), makeItem('m3')])
+    );
+    render(<DailyCapsulePage />);
+
+    await screen.findByTestId('daily-now-block');
+    fireEvent.click(screen.getByTestId('daily-cluster-complete-S'));
+
+    await waitFor(() => {
+      expect(patchCalls).toEqual([{ itemIds: ['m2', 'm3'], isChecked: true }]);
+    });
+  });
+
+  it('연속 체크는 직렬 전송된다 — 앞 저장이 끝난 뒤 다음 요청 (덮어쓰기 유실 방지)', async () => {
+    // PATCH 응답을 수동으로 풀어 겹침을 재현: 첫 요청이 미완료인 동안 둘째를 탭한다
+    const started: string[] = [];
+    const releases: Array<() => void> = [];
+    const capsule = makeCapsule([makeItem('m1'), makeItem('m2')]);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        if (init?.method === 'PATCH') {
+          const body = JSON.parse(String(init.body)) as PatchCall;
+          started.push(String(body.itemId));
+          await new Promise<void>((resolve) => releases.push(resolve));
+          return { ok: true, json: async () => ({ success: true }) };
+        }
+        return { ok: true, json: async () => ({ success: true, data: capsule }) };
+      })
+    );
+
+    render(<DailyCapsulePage />);
+    await screen.findByTestId('daily-now-block');
+
+    fireEvent.click(screen.getByTestId('daily-check-m1'));
+    await waitFor(() => expect(started).toEqual(['m1']));
+
+    // 첫 요청이 아직 응답 전인데 둘째 탭 → 큐에 대기(전송되지 않아야 함)
+    fireEvent.click(screen.getByTestId('daily-check-m2'));
+    await waitFor(() => expect(screen.getByTestId('daily-complete-card')).toBeInTheDocument());
+    expect(started).toEqual(['m1']);
+
+    // 첫 응답을 풀면 그제서야 둘째가 나간다
+    releases[0]();
+    await waitFor(() => expect(started).toEqual(['m1', 'm2']));
+    releases[1]();
+  });
+
+  it("'모두 완료' 저장 실패 시 일괄 체크를 롤백하고 안내한다", async () => {
+    stubFetch(makeCapsule([makeItem('m1'), makeItem('m2'), makeItem('m3')]), false);
+    render(<DailyCapsulePage />);
+
+    await screen.findByTestId('daily-now-block');
+    fireEvent.click(screen.getByTestId('daily-cluster-complete-S'));
+
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+        '체크를 저장하지 못했어요. 잠시 후 다시 시도해주세요.'
+      );
+    });
+    // 롤백 → 히어로·진행 라인 모두 미완료 상태 유지 (화면만 완료로 남는 거짓 표시 방지)
+    expect(screen.getByTestId('daily-now-block')).toHaveTextContent('아이템 m1');
+    expect(screen.getByTestId('daily-progress-line')).toHaveTextContent('아침 3단계 중 0 완료');
   });
 });

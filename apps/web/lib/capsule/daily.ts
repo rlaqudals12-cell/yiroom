@@ -314,7 +314,7 @@ async function computeEveningFocus(
 }
 
 /**
- * Daily Capsule 아이템 완료 체크
+ * Daily Capsule 아이템 완료 체크 (단수 — 배치 함수의 얇은 래퍼)
  *
  * userId 필수 — service-role 클라이언트는 RLS를 우회하므로 소유자 필터가
  * 유일한 방어선(타인 UUID로 체크 변조하는 IDOR 차단, 2026-08-01 리뷰 수리)
@@ -322,6 +322,26 @@ async function computeEveningFocus(
 export async function checkDailyItem(
   dailyCapsuleId: string,
   itemId: string,
+  isChecked: boolean,
+  userId: string
+): Promise<DailyCapsule | null> {
+  return checkDailyItems(dailyCapsuleId, [itemId], isChecked, userId);
+}
+
+/**
+ * Daily Capsule 아이템 여러 개를 한 번에 체크 (배치)
+ *
+ * 왜 배치가 필요한가: items는 JSONB 통짜 컬럼이라 체크 1건마다 read-modify-write가
+ * 일어난다. 클라이언트가 "모두 완료"로 단건 PATCH를 병렬 발사하면 각 요청이 같은
+ * 옛 items를 읽어 마지막 쓰기만 살아남고(last-write-wins) 나머지 체크가 유실됐다
+ * (화면은 4/4인데 새로고침하면 1/4 — 리텐션 폐루프 파괴). 단일 read-modify-write로
+ * 경합 자체를 없앤다.
+ *
+ * userId 필수 — 소유자 필터(clerk_user_id)가 유일한 IDOR 방어선(위 주석과 동일).
+ */
+export async function checkDailyItems(
+  dailyCapsuleId: string,
+  itemIds: string[],
   isChecked: boolean,
   userId: string
 ): Promise<DailyCapsule | null> {
@@ -340,9 +360,10 @@ export async function checkDailyItem(
     return null;
   }
 
-  // 아이템 업데이트
+  // 대상 아이템 일괄 업데이트 (단일 read-modify-write)
+  const targets = new Set(itemIds);
   const items = (row.items as DailyItem[]).map((item) =>
-    item.id === itemId ? { ...item, isChecked } : item
+    targets.has(item.id) ? { ...item, isChecked } : item
   );
 
   // 모든 아이템 완료 시 status 업데이트

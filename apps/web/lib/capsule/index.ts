@@ -137,6 +137,7 @@ export type { RotationResult } from './rotation';
 export {
   generateDailyCapsule,
   checkDailyItem,
+  checkDailyItems,
   getTodayDailyCapsule,
   syncRoutineToCapsule,
 } from './daily';

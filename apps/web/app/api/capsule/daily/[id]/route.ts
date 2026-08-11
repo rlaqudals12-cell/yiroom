@@ -8,12 +8,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { checkDailyItem } from '@/lib/capsule/daily';
+import { checkDailyItems } from '@/lib/capsule/daily';
 
-const checkSchema = z.object({
-  itemId: z.string().min(1),
-  isChecked: z.boolean(),
-});
+// 단수(itemId) 계약은 하위호환 유지 — 배포된 모바일 APK가 단수 형태를 하드코딩하고 있다.
+// 복수(itemIds)는 "모두 완료" 배치용: 단건 PATCH 병렬 발사가 items JSONB
+// read-modify-write 경합으로 체크를 유실시키던 결함의 근본 수리.
+const checkSchema = z
+  .object({
+    itemId: z.string().min(1).optional(),
+    itemIds: z.array(z.string().min(1)).min(1).optional(),
+    isChecked: z.boolean(),
+  })
+  .refine((data) => Boolean(data.itemId) || Boolean(data.itemIds), {
+    message: 'itemId 또는 itemIds가 필요합니다.',
+  });
 
 export async function PATCH(
   request: NextRequest,
@@ -42,12 +50,10 @@ export async function PATCH(
       );
     }
 
-    const updated = await checkDailyItem(
-      dailyCapsuleId,
-      parsed.data.itemId,
-      parsed.data.isChecked,
-      userId
-    );
+    // 단수·복수 계약을 배열 하나로 정규화 — 저장은 항상 단일 read-modify-write
+    const itemIds = parsed.data.itemIds ?? (parsed.data.itemId ? [parsed.data.itemId] : []);
+
+    const updated = await checkDailyItems(dailyCapsuleId, itemIds, parsed.data.isChecked, userId);
 
     if (!updated) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -49,6 +49,15 @@ interface DailyItem {
     imageUrl?: string;
   };
 }
+
+/**
+ * 체크 저장 PATCH 바디 — 단수(itemId)는 단건 토글, 복수(itemIds)는 "모두 완료" 배치.
+ * 배치가 필요한 이유: 서버가 items JSONB를 통째로 다시 쓰기 때문에 단건 병렬 발사는
+ * 마지막 요청만 살아남는다(체크 유실).
+ */
+type CheckPatchBody =
+  | { itemId: string; isChecked: boolean }
+  | { itemIds: string[]; isChecked: boolean };
 
 interface DailyCapsule {
   id: string;
@@ -217,6 +226,32 @@ export default function DailyCapsulePage(): React.ReactElement {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   // 행 펼침 수동 오버라이드 — 자동 펼침(활성 그룹 첫 미체크)과 별개로 사용자가 탭한 상태
   const [expandedOverrides, setExpandedOverrides] = useState<Record<string, boolean>>({});
+  // 체크 저장 요청 직렬화 큐 — 서버가 items JSONB를 통째로 read-modify-write 하므로
+  // 요청이 겹치면 나중 응답이 옛 스냅샷을 덮어써 앞선 체크가 유실된다(빠른 연속 탭).
+  // 한 줄로 세워 보내면 각 요청이 직전 저장 결과를 읽는다.
+  const patchQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  /** 체크 저장 PATCH — 큐에 이어 붙여 순차 전송. 성공 여부만 반환(실패 시 호출자가 롤백) */
+  const patchChecks = useCallback((capsuleId: string, body: CheckPatchBody): Promise<boolean> => {
+    const run = patchQueueRef.current.then(async (): Promise<boolean> => {
+      try {
+        const res = await fetch(`/api/capsule/daily/${capsuleId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    });
+    // 실패해도 큐는 이어져야 한다 (한 번 실패가 이후 저장을 막지 않도록)
+    patchQueueRef.current = run.then(
+      () => undefined,
+      () => undefined
+    );
+    return run;
+  }, []);
 
   const fetchDaily = useCallback(async () => {
     setIsLoading(true);
@@ -283,15 +318,9 @@ export default function DailyCapsulePage(): React.ReactElement {
         return next;
       });
 
-      try {
-        // API 스키마 = { itemId, isChecked } — 기존 completed 키는 400으로 조용히 실패했음
-        const res = await fetch(`/api/capsule/daily/${daily.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId, isChecked: nextChecked }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      } catch {
+      // API 스키마 = { itemId, isChecked } — 기존 completed 키는 400으로 조용히 실패했음
+      const ok = await patchChecks(daily.id, { itemId, isChecked: nextChecked });
+      if (!ok) {
         // 저장 실패 → 낙관적 체크 롤백 + 안내 (기존: res.ok 미검사로 무음 실패하던 결함 수리)
         setCheckedItems((prev) => {
           const next = new Set(prev);
@@ -305,17 +334,40 @@ export default function DailyCapsulePage(): React.ReactElement {
         toast.error('체크를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
       }
     },
-    [daily, checkedItems]
+    [daily, checkedItems, patchChecks]
   );
 
-  // 모듈 클러스터 일괄 완료 — 미체크 아이템만 기존 toggleItem 순회 (마찰 축소)
+  // 모듈 클러스터 일괄 완료 — 배치 PATCH 1회 (마찰 축소)
+  //
+  // 왜 순회가 아니라 배치인가: 서버는 items JSONB를 통째로 read-modify-write 하므로
+  // 단건 PATCH를 병렬 발사하면 마지막 응답만 살아남아 나머지 체크가 유실됐다
+  // (화면은 4/4인데 새로고침하면 1/4). 한 요청으로 보내 경합 자체를 없앤다.
   const completeCluster = useCallback(
-    (items: DailyItem[]) => {
-      for (const item of items) {
-        if (!checkedItems.has(item.id)) void toggleItem(item.id);
+    async (items: DailyItem[]) => {
+      if (!daily) return;
+
+      const targetIds = items.filter((item) => !checkedItems.has(item.id)).map((item) => item.id);
+      if (targetIds.length === 0) return;
+
+      // 낙관적 반영
+      setCheckedItems((prev) => {
+        const next = new Set(prev);
+        for (const id of targetIds) next.add(id);
+        return next;
+      });
+
+      const ok = await patchChecks(daily.id, { itemIds: targetIds, isChecked: true });
+      if (!ok) {
+        // 저장 실패 → 이번에 켠 체크만 되돌림 (미반영을 정직하게 표시)
+        setCheckedItems((prev) => {
+          const next = new Set(prev);
+          for (const id of targetIds) next.delete(id);
+          return next;
+        });
+        toast.error('체크를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
       }
     },
-    [checkedItems, toggleItem]
+    [daily, checkedItems, patchChecks]
   );
 
   const toggleExpanded = useCallback((itemId: string, autoExpanded: boolean) => {
@@ -564,7 +616,7 @@ export default function DailyCapsulePage(): React.ReactElement {
                               {clusterDone < cluster.items.length && (
                                 <button
                                   type="button"
-                                  onClick={() => completeCluster(cluster.items)}
+                                  onClick={() => void completeCluster(cluster.items)}
                                   className="min-h-[44px] px-2 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
                                   data-testid={`daily-cluster-complete-${cluster.code}`}
                                 >

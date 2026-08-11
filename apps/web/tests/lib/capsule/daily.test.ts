@@ -52,6 +52,7 @@ vi.mock('@/lib/safety', () => ({
 import {
   generateDailyCapsule,
   checkDailyItem,
+  checkDailyItems,
   syncRoutineToCapsule,
   isCapsuleStale,
   CAPSULE_ENGINE_VERSION,
@@ -743,6 +744,173 @@ describe('Daily Capsule', () => {
   });
 
   // =========================================================================
+  // checkDailyItems (배치) — "모두 완료" 경합 유실 회귀 방지
+  // =========================================================================
+
+  describe('checkDailyItems', () => {
+    /** prod 형상 픽스처 — 미체크 아이템 N개를 담은 daily_capsules 행 */
+    function makeRow(items: DailyItem[]): Record<string, unknown> {
+      return {
+        id: 'daily-1',
+        clerk_user_id: 'user_test',
+        date: '2026-03-04',
+        items,
+        total_ccs: 80,
+        estimated_minutes: 15,
+        status: 'pending',
+        completed_at: null,
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    function makeItems(ids: string[]): DailyItem[] {
+      return ids.map((id) => ({
+        id,
+        moduleCode: 'S',
+        name: `Item ${id}`,
+        reason: '이유',
+        compatibilityScore: 80,
+        isChecked: false,
+      }));
+    }
+
+    interface UpdatePayload {
+      items: DailyItem[];
+      status: string;
+      completed_at: string | null;
+    }
+
+    /** .eq(id).eq(clerk_user_id) 2연쇄(prod 형상)를 지나 leaf를 돌려주는 빌더 */
+    function eqPair<T>(recordEq: (c: string, v: string) => void, leaf: T): unknown {
+      const second = (c: string, v: string): T => {
+        recordEq(c, v);
+        return leaf;
+      };
+      return {
+        eq: (c: string, v: string) => {
+          recordEq(c, v);
+          return { eq: second };
+        },
+      };
+    }
+
+    /**
+     * items JSONB를 실제로 보관하는 stateful 스텁 —
+     * read-modify-write 경합(마지막 쓰기 승리)을 그대로 재현한다.
+     */
+    function stubStatefulCapsule(initial: DailyItem[]): {
+      store: { items: DailyItem[] };
+      updates: UpdatePayload[];
+      ownerFilters: string[];
+    } {
+      const store = { items: initial };
+      const updates: UpdatePayload[] = [];
+      const ownerFilters: string[] = [];
+
+      const recordEq = (column: string, value: string): void => {
+        if (column === 'clerk_user_id') ownerFilters.push(value);
+      };
+
+      // 읽는 시점의 스냅샷 (JSONB 통짜 read)
+      const readLeaf = {
+        single: async () => ({
+          data: makeRow(store.items.map((item) => ({ ...item }))),
+          error: null,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue({
+        select: () => eqPair(recordEq, readLeaf),
+        update: (payload: UpdatePayload) => {
+          updates.push(payload);
+          store.items = payload.items;
+          const writeLeaf = {
+            select: () => ({
+              single: async () => ({ data: { ...makeRow(store.items), ...payload }, error: null }),
+            }),
+          };
+          return eqPair(recordEq, writeLeaf);
+        },
+      });
+
+      return { store, updates, ownerFilters };
+    }
+
+    it('4개 전부 미체크 → 모두 완료 → 저장 형상이 4/4 (단일 read-modify-write)', async () => {
+      const ids = ['i1', 'i2', 'i3', 'i4'];
+      const { store, updates } = stubStatefulCapsule(makeItems(ids));
+
+      const result = await checkDailyItems('daily-1', ids, true, 'user_test');
+
+      // 쓰기는 1회 — 병렬 발사가 아니라 배치라서 경합 자체가 없다
+      expect(updates).toHaveLength(1);
+      expect(store.items.filter((item) => item.isChecked).map((item) => item.id)).toEqual(ids);
+      expect(updates[0].status).toBe('completed');
+      expect(updates[0].completed_at).not.toBeNull();
+      expect(result!.status).toBe('completed');
+      expect(result!.items.every((item) => item.isChecked)).toBe(true);
+    });
+
+    it('단건 병렬 발사는 체크를 유실하지만, 배치는 유실하지 않는다 (확정 결함 재현)', async () => {
+      const ids = ['i1', 'i2', 'i3', 'i4'];
+
+      // (a) 옛 경로 재현: 단건 PATCH 4개를 동시에 — 모두 같은 옛 items를 읽어 마지막만 살아남음
+      const parallel = stubStatefulCapsule(makeItems(ids));
+      await Promise.all(ids.map((id) => checkDailyItem('daily-1', id, true, 'user_test')));
+      expect(parallel.store.items.filter((item) => item.isChecked)).toHaveLength(1);
+
+      // (b) 수리된 경로: 한 번의 배치 호출 → 4개 전부 저장
+      const batched = stubStatefulCapsule(makeItems(ids));
+      await checkDailyItems('daily-1', ids, true, 'user_test');
+      expect(batched.store.items.filter((item) => item.isChecked)).toHaveLength(4);
+    });
+
+    it('지정하지 않은 아이템은 건드리지 않고, 전부 완료가 아니면 in_progress', async () => {
+      const { store, updates } = stubStatefulCapsule(makeItems(['i1', 'i2', 'i3']));
+
+      await checkDailyItems('daily-1', ['i1', 'i3'], true, 'user_test');
+
+      expect(store.items.map((item) => item.isChecked)).toEqual([true, false, true]);
+      expect(updates[0].status).toBe('in_progress');
+      expect(updates[0].completed_at).toBeNull();
+    });
+
+    it('소유자 필터(clerk_user_id)를 조회·갱신 양쪽에 승계한다 (IDOR 가드)', async () => {
+      const { ownerFilters } = stubStatefulCapsule(makeItems(['i1']));
+
+      await checkDailyItems('daily-1', ['i1'], true, 'user_test');
+
+      // select 1회 + update 1회 = 소유자 필터 2회, 모두 호출자 userId
+      expect(ownerFilters).toEqual(['user_test', 'user_test']);
+    });
+
+    it('체크 해제(isChecked=false)도 배치로 처리한다', async () => {
+      const checked = makeItems(['i1', 'i2']).map((item) => ({ ...item, isChecked: true }));
+      const { store, updates } = stubStatefulCapsule(checked);
+
+      await checkDailyItems('daily-1', ['i1', 'i2'], false, 'user_test');
+
+      expect(store.items.every((item) => !item.isChecked)).toBe(true);
+      expect(updates[0].status).toBe('in_progress');
+    });
+
+    it('캡슐이 없으면 null (소유자 불일치 포함)', async () => {
+      mockSupabaseFrom.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null, error: { message: 'not found' } }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await checkDailyItems('daily-1', ['i1'], true, 'other_user');
+      expect(result).toBeNull();
+    });
+  });
+
+  // =========================================================================
   // syncRoutineToCapsule (루틴-캡슐 동기화)
   // =========================================================================
 
@@ -789,26 +957,31 @@ describe('Daily Capsule', () => {
         }),
       };
 
-      // checkDailyItem 호출 시
+      // checkDailyItem 호출 시 — 소유자 필터로 .eq 2연쇄 (prod 형상).
+      // 옛 픽스처는 .eq 1개라 조회가 조용히 실패했고, syncRoutineToCapsule이 에러를
+      // 삼켜 "그린인데 무동작"이었다 → 실제 저장 형상까지 단언한다.
       const singleSelectChain = {
         eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: {
-              id: 'daily-1',
-              clerk_user_id: 'user_test',
-              date: new Date().toISOString().split('T')[0],
-              items,
-              total_ccs: 80,
-              estimated_minutes: 15,
-              status: 'pending',
-              completed_at: null,
-              created_at: new Date().toISOString(),
-            },
-            error: null,
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: 'daily-1',
+                clerk_user_id: 'user_test',
+                date: new Date().toISOString().split('T')[0],
+                items,
+                total_ccs: 80,
+                estimated_minutes: 15,
+                status: 'pending',
+                completed_at: null,
+                created_at: new Date().toISOString(),
+              },
+              error: null,
+            }),
           }),
         }),
       };
 
+      const updatePayloads: Array<{ items: DailyItem[] }> = [];
       let callCount = 0;
       mockSupabaseFrom.mockImplementation(() => {
         callCount++;
@@ -819,31 +992,39 @@ describe('Daily Capsule', () => {
         // checkDailyItem → select + update
         return {
           select: vi.fn().mockReturnValue(singleSelectChain),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: 'daily-1',
-                    clerk_user_id: 'user_test',
-                    date: new Date().toISOString().split('T')[0],
-                    items: [items[0], { ...items[1], isChecked: true }],
-                    total_ccs: 80,
-                    estimated_minutes: 15,
-                    status: 'in_progress',
-                    completed_at: null,
-                    created_at: new Date().toISOString(),
-                  },
-                  error: null,
+          update: vi.fn().mockImplementation((payload: { items: DailyItem[] }) => {
+            updatePayloads.push(payload);
+            return {
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  select: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                      data: {
+                        id: 'daily-1',
+                        clerk_user_id: 'user_test',
+                        date: new Date().toISOString().split('T')[0],
+                        items: payload.items,
+                        total_ccs: 80,
+                        estimated_minutes: 15,
+                        status: 'in_progress',
+                        completed_at: null,
+                        created_at: new Date().toISOString(),
+                      },
+                      error: null,
+                    }),
+                  }),
                 }),
               }),
-            }),
+            };
           }),
         };
       });
 
-      // 에러 없이 실행되어야 함
       await expect(syncRoutineToCapsule('user_test', 'N')).resolves.not.toThrow();
+
+      // N 도메인 첫 미완료(nut-1)만 체크되어 저장돼야 한다
+      expect(updatePayloads).toHaveLength(1);
+      expect(updatePayloads[0].items.map((item) => item.isChecked)).toEqual([false, true]);
     });
 
     it('should not throw if no cached capsule exists', async () => {
