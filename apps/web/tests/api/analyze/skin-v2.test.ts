@@ -299,8 +299,28 @@ describe('POST /api/analyze/skin-v2', () => {
 
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
-      expect(analyzeSkinV2WithGemini).toHaveBeenCalledWith('data:image/jpeg;base64,/9j/test');
+      // 4번째 인자 = 폴백 Mock 결정론 시드 (Gemini 실패 시 내부 폴백도 재현 가능해야 함)
+      expect(analyzeSkinV2WithGemini).toHaveBeenCalledWith(
+        'data:image/jpeg;base64,/9j/test',
+        null,
+        'ko',
+        expect.any(String)
+      );
       expect(json.result.skinType).toBe('combination');
+    });
+
+    it('같은 사용자·같은 사진이면 폴백 시드가 동일하다 (재현성 계약)', async () => {
+      const request = () =>
+        POST(createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/test' }));
+
+      await request();
+      await request();
+
+      const seeds = vi.mocked(analyzeSkinV2WithGemini).mock.calls.map((call) => call[3]);
+      expect(seeds).toHaveLength(2);
+      expect(seeds[0]).toBeTruthy();
+      // 회차가 달라도 시드는 같아야 한다 — 시각·세션 같은 비결정 재료가 섞이면 여기서 깨진다
+      expect(seeds[0]).toBe(seeds[1]);
     });
 
     it('Gemini 분석 결과에 점수 분해가 포함된다', async () => {

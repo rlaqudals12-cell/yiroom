@@ -5,7 +5,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createSeededRandom, hashStringToSeed, DEFAULT_SEED } from '@/lib/utils/seeded-random';
+import {
+  createSeededRandom,
+  hashStringToSeed,
+  hashImageFingerprint,
+  buildFallbackSeed,
+  DEFAULT_SEED,
+} from '@/lib/utils/seeded-random';
 
 describe('hashStringToSeed', () => {
   it('should be deterministic for the same input', () => {
@@ -77,5 +83,65 @@ describe('createSeededRandom', () => {
     }
     // 각 사분면에 최소 1개 이상 (완전 편향 아님)
     buckets.forEach((count) => expect(count).toBeGreaterThan(0));
+  });
+});
+
+describe('hashImageFingerprint', () => {
+  /** 조각 샘플링(앞·중간·뒤 256자)을 넘어서는 길이의 가짜 이미지 문자열 */
+  const bigImage = (fill: string): string => `data:image/jpeg;base64,${fill.repeat(2000)}`;
+
+  it('같은 이미지 문자열은 항상 같은 지문을 낸다', () => {
+    const img = bigImage('AB');
+    expect(hashImageFingerprint(img)).toBe(hashImageFingerprint(img));
+  });
+
+  it('다른 이미지는 다른 지문을 낸다', () => {
+    expect(hashImageFingerprint(bigImage('AB'))).not.toBe(hashImageFingerprint(bigImage('CD')));
+  });
+
+  it('길이가 같아도 내용이 다르면 지문이 다르다 (조각 샘플링 검증)', () => {
+    const base = bigImage('AB');
+    // 뒷부분만 바꿈 — tail 조각에 반영돼야 한다
+    const tailChanged = `${base.slice(0, base.length - 10)}ZZZZZZZZZZ`;
+    expect(tailChanged.length).toBe(base.length);
+    expect(hashImageFingerprint(tailChanged)).not.toBe(hashImageFingerprint(base));
+  });
+
+  it('이미지가 없으면 no-image 고정값 (비결정 재료 미사용)', () => {
+    expect(hashImageFingerprint()).toBe('no-image');
+    expect(hashImageFingerprint(null)).toBe('no-image');
+    expect(hashImageFingerprint('')).toBe('no-image');
+  });
+});
+
+describe('buildFallbackSeed', () => {
+  const img = `data:image/jpeg;base64,${'QQ'.repeat(2000)}`;
+
+  it('같은 사용자·축·사진이면 항상 같은 시드 (재현성 계약)', () => {
+    expect(buildFallbackSeed('user-1', 'hair', img)).toBe(buildFallbackSeed('user-1', 'hair', img));
+  });
+
+  it('사용자가 다르면 시드가 다르다', () => {
+    expect(buildFallbackSeed('user-1', 'hair', img)).not.toBe(
+      buildFallbackSeed('user-2', 'hair', img)
+    );
+  });
+
+  it('축이 다르면 시드가 다르다 (축 간 결과 동조 방지)', () => {
+    expect(buildFallbackSeed('user-1', 'hair', img)).not.toBe(
+      buildFallbackSeed('user-1', 'body', img)
+    );
+  });
+
+  it('사진이 다르면 시드가 다르다', () => {
+    const other = `data:image/jpeg;base64,${'RR'.repeat(2000)}`;
+    expect(buildFallbackSeed('user-1', 'hair', img)).not.toBe(
+      buildFallbackSeed('user-1', 'hair', other)
+    );
+  });
+
+  it('사진이 없어도 사용자·축만으로 결정론적이다', () => {
+    expect(buildFallbackSeed('user-1', 'body')).toBe(buildFallbackSeed('user-1', 'body'));
+    expect(buildFallbackSeed('user-1', 'body')).toContain('no-image');
   });
 });

@@ -542,4 +542,95 @@ describe('generateMockSkinAnalysisV2Result', () => {
       expect(cleanser?.avoidIngredients).toContain('SLS');
     });
   });
+
+  /**
+   * 재현성 계약 (2026-08-13).
+   *
+   * 폴백 Mock이 Math.random()을 쓰면 같은 사진을 재분석할 때마다 피부 지표가 널뛴다.
+   * 시드에서 결정론적으로 생성되는지, 그리고 픽셀 없이 지어낼 수 없는 GLCM/LBP가
+   * "미측정 중립값"으로 남는지를 고정한다.
+   */
+  describe('결정론 (시드)', () => {
+    /** 회차마다 달라도 되는 필드(레코드 ID·생성 시각)를 제외한 비교 대상 */
+    const comparable = (r: SkinAnalysisV2Result) => ({
+      skinType: r.skinType,
+      vitalityScore: r.vitalityScore,
+      vitalityGrade: r.vitalityGrade,
+      zoneAnalysis: r.zoneAnalysis,
+      scoreBreakdown: r.scoreBreakdown,
+      primaryConcerns: r.primaryConcerns,
+    });
+
+    it('같은 시드는 항상 같은 결과를 낸다', () => {
+      const a = generateMockSkinAnalysisV2Result(undefined, 'user-1:skin:photo-a');
+      const b = generateMockSkinAnalysisV2Result(undefined, 'user-1:skin:photo-a');
+
+      expect(comparable(a)).toEqual(comparable(b));
+    });
+
+    it('시드가 없어도 결과가 고정된다 (무작위 아님)', () => {
+      const a = generateMockSkinAnalysisV2Result();
+      const b = generateMockSkinAnalysisV2Result();
+
+      expect(comparable(a)).toEqual(comparable(b));
+    });
+
+    it('시드가 다르면 결과가 달라진다', () => {
+      const a = generateMockSkinAnalysisV2Result(undefined, 'user-1:skin:photo-a');
+      const b = generateMockSkinAnalysisV2Result(undefined, 'user-2:skin:photo-b');
+
+      expect(comparable(a)).not.toEqual(comparable(b));
+    });
+
+    it('존별 메트릭도 시드로 재현된다', () => {
+      const a = generateMockZoneMetrics('forehead', 'oily', 'seed-x');
+      const b = generateMockZoneMetrics('forehead', 'oily', 'seed-x');
+      const c = generateMockZoneMetrics('forehead', 'oily', 'seed-y');
+
+      expect(a).toEqual(b);
+      expect(a).not.toEqual(c);
+    });
+
+    it('레코드 ID는 호출마다 고유하다 (재현 대상 아님)', () => {
+      const a = generateMockSkinAnalysisV2Result(undefined, 'same-seed');
+      const b = generateMockSkinAnalysisV2Result(undefined, 'same-seed');
+
+      expect(a.id).not.toBe(b.id);
+    });
+  });
+
+  describe('GLCM/LBP 미측정 처리', () => {
+    it('GLCM은 지어낸 수치가 아니라 미측정 중립값이다', () => {
+      const result = generateMockSkinAnalysisV2Result(undefined, 'texture-seed');
+
+      // texture-analyzer가 크롭 실패 시 쓰는 중립값과 동일 (픽셀이 없으므로 측정 불가)
+      for (const zone of Object.values(result.zoneAnalysis.zones)) {
+        expect(zone.textureAnalysis.glcm).toEqual({
+          contrast: 0,
+          homogeneity: 1,
+          energy: 1,
+          correlation: 0,
+          entropy: 0,
+        });
+      }
+    });
+
+    it('LBP 히스토그램은 전부 0이다 (난수 256빈 저장 금지)', () => {
+      const result = generateMockSkinAnalysisV2Result(undefined, 'texture-seed');
+      const { lbp } = result.zoneAnalysis.zones.forehead.textureAnalysis;
+
+      expect(lbp.histogram).toHaveLength(256);
+      expect(lbp.histogram.every((v) => v === 0)).toBe(true);
+      expect(lbp.uniformPatternRatio).toBe(1);
+      expect(lbp.roughnessScore).toBe(100);
+    });
+
+    it('텍스처 3점수는 존 메트릭에서 파생된다 (독립 난수 아님)', () => {
+      const analysis = generateMockZoneAnalysis('nose', 'combination', undefined, 'derive-seed');
+
+      expect(analysis.textureAnalysis.poreScore).toBe(analysis.metrics.pores);
+      expect(analysis.textureAnalysis.wrinkleScore).toBe(analysis.metrics.elasticity);
+      expect(analysis.textureAnalysis.textureScore).toBe(analysis.metrics.texture);
+    });
+  });
 });

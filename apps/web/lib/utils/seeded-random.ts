@@ -49,3 +49,49 @@ export function createSeededRandom(seed: string | number): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+/** 이미지 지문에 사용할 조각 길이(문자) — 앞·중간·뒤 각각 */
+const FINGERPRINT_SLICE = 256;
+
+/**
+ * 이미지(base64)의 안정적 지문 문자열
+ *
+ * 왜 전체를 해싱하지 않나: base64 이미지는 수 MB라 문자 단위 순회 비용이 크다.
+ * 길이 + 앞·중간·뒤 조각만 해싱해도 "같은 파일 → 항상 같은 지문"은 그대로 성립하고,
+ * 서로 다른 사진이 길이와 세 조각까지 모두 같을 확률은 무시할 수준이다.
+ *
+ * @param imageBase64 - data URL 또는 base64 문자열 (없으면 'no-image')
+ * @returns 같은 이미지면 항상 동일한 짧은 문자열
+ */
+export function hashImageFingerprint(imageBase64?: string | null): string {
+  if (!imageBase64) return 'no-image';
+
+  const len = imageBase64.length;
+  const half = FINGERPRINT_SLICE / 2;
+  const midStart = Math.max(0, Math.floor(len / 2) - half);
+  const head = imageBase64.slice(0, FINGERPRINT_SLICE);
+  const mid = imageBase64.slice(midStart, midStart + FINGERPRINT_SLICE);
+  const tail = imageBase64.slice(Math.max(0, len - FINGERPRINT_SLICE));
+  const sample = `${head}|${mid}|${tail}`;
+
+  return `${len}-${hashStringToSeed(sample).toString(36)}`;
+}
+
+/**
+ * 폴백 Mock 시드 조립 — "같은 사용자 + 같은 축 + 같은 사진 = 같은 폴백 결과"
+ *
+ * 왜 이 재료인가: 재분석해도 값이 그대로여야 재현성 계약이 지켜진다.
+ * 세션 ID·타임스탬프처럼 회차마다 바뀌는 값은 시드 재료로 쓰지 않는다
+ * (같은 사진을 다시 올렸는데 얼굴형이 바뀌는 현상의 원인이 된다).
+ *
+ * @param userId - Clerk 사용자 ID
+ * @param axis - 축 식별자 (예: 'body', 'hair', 'skin')
+ * @param imageBase64 - 분석 대상 이미지 (없으면 이미지 없는 축으로 취급)
+ */
+export function buildFallbackSeed(
+  userId: string,
+  axis: string,
+  imageBase64?: string | null
+): string {
+  return `${userId}:${axis}:${hashImageFingerprint(imageBase64)}`;
+}

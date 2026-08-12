@@ -24,9 +24,21 @@ import {
   getTonePalette,
 } from '@/lib/analysis/personal-color-v2';
 import { generateMockSkinAnalysisV2Result } from '@/lib/analysis/skin-v2';
-import { generateMockBodyAnalysisResult, type BodyShapeType } from '@/lib/analysis/body-v2';
+import {
+  generateMockBodyAnalysisResult,
+  getBodyShapeInfo,
+  getStylingPriorities,
+  getStylesToAvoid,
+  BODY_SHAPE_INFO,
+  type BodyShapeType,
+} from '@/lib/analysis/body-v2';
 import { bodyShapeToType3 } from '@/lib/body';
-import { generateMockHairAnalysisResult } from '@/lib/analysis/hair';
+import {
+  generateMockHairAnalysisResult,
+  recommendHairstyles,
+  type FaceShapeType,
+} from '@/lib/analysis/hair';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { buildSkinEnrichment } from './skin-enrichment';
 import {
   extractSkinColorWithGemini,
@@ -115,6 +127,17 @@ function mapUndertoneToDb(undertone: string): string {
 function mapSubtypeToDb(subtype: string): string {
   const key = subtype.toLowerCase();
   return key === 'muted' ? 'mute' : key;
+}
+
+/**
+ * 클라이언트 측정 체형 문자열이 알려진 5형인지 검사.
+ *
+ * 왜: `measuredBody.shape`는 입력 스키마상 자유 문자열(z.string())이라 구/변조 클라이언트가
+ * 미지의 값을 보낼 수 있다. 이제 체형 정보·스타일링을 체형 지식표에서 파생하므로
+ * 미지 값을 그대로 쓰면 조회가 비어 축 전체가 실패한다 → 알 수 없으면 측정을 신뢰하지 않는다.
+ */
+function isKnownBodyShape(shape: string): shape is BodyShapeType {
+  return Object.prototype.hasOwnProperty.call(BODY_SHAPE_INFO, shape);
 }
 
 // ============================================
@@ -262,17 +285,22 @@ export async function runSkinAxis(
     let result: ReturnType<typeof generateMockSkinAnalysisV2Result>;
     let usedFallback: boolean;
 
+    // 폴백 시드: 같은 사용자·같은 얼굴 사진이면 항상 같은 폴백 지표 (재현성 계약)
+    const fallbackSeed = buildFallbackSeed(clerkUserId, 'skin', input.faceImageBase64);
+
     if (isMockMode()) {
-      result = generateMockSkinAnalysisV2Result();
+      result = generateMockSkinAnalysisV2Result(undefined, fallbackSeed);
       usedFallback = true;
     } else {
       // Level 3: 직전 분석 앵커 주입 (없으면 null → Level 2와 동일)
       const skinPrior = await getSkinPriorHint(clerkUserId);
       // locale 전달 → concerns 등 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
+      // seed 전달 → Gemini 실패 시 내부 Mock 폴백도 같은 사진이면 같은 결과
       const gemini = await analyzeSkinV2WithGemini(
         input.faceImageBase64,
         skinPrior,
-        input.options.locale
+        input.options.locale,
+        fallbackSeed
       );
       result = gemini.result;
       usedFallback = gemini.usedFallback;
@@ -400,14 +428,6 @@ export async function runBodyAxis(
       };
     }
 
-    // Phase F.3: 전신 사진 있고 FORCE_MOCK 아닐 때만 Gemini 시도
-    const mockResult = generateMockBodyAnalysisResult();
-    let bodyShape = mockResult.bodyShape;
-    let shoulderToWaistRatio = mockResult.bodyRatios?.shoulderToWaistRatio;
-    let stylingRecommendations = mockResult.stylingRecommendations;
-    const characteristics = mockResult.bodyShapeInfo?.characteristics ?? null;
-    let usedFallback = isMockMode();
-
     // A3: 측정값 우선 — 클라이언트 MediaPipe 측정(measuredBody)이 충분히 신뢰되면
     // Gemini "눈대중 추정"보다 우선 사용한다. (측정 5형 + 측정 비율)
     const measured = input.measuredBody;
@@ -416,12 +436,34 @@ export async function runBodyAxis(
     // A4: 측정 출처 — measured(MediaPipe 실측) vs estimated(Gemini/Mock 추정). A5 배지 입력.
     let measurementSource: 'measured' | 'estimated' = 'estimated';
 
-    if (measured && hasReliableMeasurement) {
-      bodyShape = measured.shape as BodyShapeType;
-      if (measured.waistWidth > 0) {
-        shoulderToWaistRatio = measured.shoulderWidth / measured.waistWidth;
-      }
-      usedFallback = false;
+    /**
+     * 결과는 "실제 신호(측정/AI)"에서만 구성한다.
+     *
+     * 왜: 예전엔 Mock 결과를 먼저 만들어 놓고 측정/AI 값으로 일부 필드만 덮어썼다.
+     * 그러면 덮이지 않은 필드(스타일링·특징·스타일 원칙)는 usedFallback=false인데도
+     * 조용히 Mock 값이 나갔다 — 지어낸 데이터가 진짜인 척 표시되는 정직성 위반이다.
+     * 이제 Mock은 폴백 경로에서만 만들고, AI가 주지 않는 필드는 판정된 체형에서
+     * 결정론적으로 파생한다(정적 지식표 = 단독 /api/analyze/body-v2와 동일 계약).
+     */
+    let bodyShape: BodyShapeType;
+    let shoulderToWaistRatio: number | undefined;
+    /** AI가 실제로 준 스타일링 추천만 담는다 (없으면 undefined → 체형 지식표에서 파생) */
+    let aiStyling: { tops: string[]; bottoms: string[]; avoid: string[] } | undefined;
+    let usedFallback = false;
+
+    // 폴백 시드: 같은 사용자·같은 전신 사진이면 항상 같은 폴백 결과 (재현성 계약)
+    const fallbackSeed = buildFallbackSeed(clerkUserId, 'body', input.bodyImageBase64);
+    const bodyFallback = (): { shape: BodyShapeType; ratio: number | undefined } => {
+      const mock = generateMockBodyAnalysisResult({ seed: fallbackSeed });
+      return { shape: mock.bodyShape, ratio: mock.bodyRatios?.shoulderToWaistRatio };
+    };
+
+    // 알 수 없는 체형 문자열이면 측정을 신뢰하지 않는다 (isKnownBodyShape 주석 참조)
+    if (measured && hasReliableMeasurement && isKnownBodyShape(measured.shape)) {
+      bodyShape = measured.shape;
+      // 허리 폭이 0이면 비율은 계산 불가 — 지어내지 않고 생략한다
+      shoulderToWaistRatio =
+        measured.waistWidth > 0 ? measured.shoulderWidth / measured.waistWidth : undefined;
       measurementSource = 'measured';
     } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
       const bodyPrior = await getBodyPriorHint(clerkUserId);
@@ -434,19 +476,35 @@ export async function runBodyAxis(
       if (gemini.data && !gemini.usedFallback) {
         bodyShape = gemini.data.bodyShape;
         shoulderToWaistRatio = gemini.data.estimatedRatios.shoulderToWaistRatio;
-        stylingRecommendations = {
-          ...stylingRecommendations,
-          tops: gemini.data.stylingRecommendations.tops,
-          bottoms: gemini.data.stylingRecommendations.bottoms,
-          avoid: gemini.data.stylingRecommendations.avoid,
-        } as typeof stylingRecommendations;
+        aiStyling = gemini.data.stylingRecommendations;
       } else {
+        const fb = bodyFallback();
+        bodyShape = fb.shape;
+        shoulderToWaistRatio = fb.ratio;
         usedFallback = true;
       }
-    } else if (!hasBodyImage) {
-      // 자가입력만 있는 경우 — Mock 기반 추정 (AI 호출 스킵)
+    } else {
+      // FORCE_MOCK / 전신 사진 없이 자가입력만 → Mock 추정 (AI 호출 스킵)
+      const fb = bodyFallback();
+      bodyShape = fb.shape;
+      shoulderToWaistRatio = fb.ratio;
       usedFallback = true;
     }
+
+    // 판정된 체형의 정적 지식표(BODY_SHAPE_INFO) — Mock 생성기가 아니라 체형에서 파생.
+    // 과거 결함: Mock의 체형 정보를 그대로 썼기 때문에 측정/AI가 '삼각형'이라 해도
+    // 저장된 특징·스타일 팁은 Mock이 뽑은 다른 체형(예: 모래시계형)의 것이 나갔다.
+    const shapeInfo = getBodyShapeInfo(bodyShape);
+    const characteristics = shapeInfo.characteristics;
+    // outerwear·silhouettes는 측정에도 AI 응답에도 신호가 없어 저장하지 않는다
+    // (예전엔 Mock 상수 '롱 카디건' 등이 실제 추천인 척 저장됐다).
+    const stylingRecommendations = {
+      tops: aiStyling?.tops ?? shapeInfo.stylingTips.slice(0, 2),
+      bottoms:
+        aiStyling?.bottoms ??
+        getStylingPriorities(bodyShape).filter((s) => s.includes('팬츠') || s.includes('스커트')),
+      avoid: aiStyling?.avoid ?? getStylesToAvoid(bodyShape),
+    };
 
     // ADR-108: 저장/반환 taxonomy = S/W/N(골격). 측정/추정 5형(BodyShapeType)을 S/W/N으로 통일.
     // 옷장 추천(closet/recommend)·cross-module이 S/W/N을 기대하므로 일관성 확보. 표시는 getBodyShapeLabel이 한글화.
@@ -499,7 +557,8 @@ export async function runBodyAxis(
         id: data?.id as string | undefined,
         bodyType: bodyType3,
         ratio: shoulderToWaistRatio,
-        stylingPrinciples: mockResult.bodyShapeInfo?.stylingTips,
+        // 판정된 체형의 스타일 원칙 — Mock 결과가 아니라 체형에서 파생 (위 shapeInfo와 동일 출처)
+        stylingPrinciples: shapeInfo.stylingTips,
       },
     };
   } catch (error) {
@@ -520,13 +579,27 @@ export async function runHairAxis(
   input: IntegratedAnalysisInput
 ): Promise<AxisResult<HairAxisData>> {
   try {
-    // Phase F.3: 얼굴형 판정은 얼굴 셀카에서 Gemini로 추출 가능
-    const mockResult = generateMockHairAnalysisResult();
-    let faceShape = mockResult.faceShapeAnalysis.faceShape;
-    let styleRecommendations = mockResult.styleRecommendations;
-    let usedFallback = isMockMode();
+    /**
+     * Phase F.3: 얼굴형 판정은 얼굴 셀카에서 Gemini로 추출.
+     *
+     * 왜 Mock을 먼저 만들지 않는가: 예전 구조는 Mock 결과를 만들어 두고 AI 값으로
+     * faceShape만 덮어썼다. 게다가 스타일 추천을 덮는 분기가 Gemini 응답의
+     * `stylingTips`를 봤는데 H-1 스키마엔 그런 필드가 없다(`hairstyleRecommendations`).
+     * 결과적으로 AI가 성공해도 저장된 스타일 추천은 100% Mock — usedFallback=false로
+     * "AI 결과"인 척 나갔다. 이제 Mock은 폴백 경로에서만 만든다.
+     */
+    let faceShape: FaceShapeType;
+    let usedFallback = false;
 
-    if (!isMockMode()) {
+    // 폴백 시드: 같은 사용자·같은 얼굴 사진이면 항상 같은 폴백 얼굴형 (재현성 계약)
+    const fallbackSeed = buildFallbackSeed(clerkUserId, 'hair', input.faceImageBase64);
+    const hairFallbackShape = (): FaceShapeType =>
+      generateMockHairAnalysisResult({ seed: fallbackSeed }).faceShapeAnalysis.faceShape;
+
+    if (isMockMode()) {
+      faceShape = hairFallbackShape();
+      usedFallback = true;
+    } else {
       const hairPrior = await getHairPriorHint(clerkUserId);
       // locale 전달 → 스타일 추천 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
       const gemini = await analyzeHairWithGemini(
@@ -536,15 +609,16 @@ export async function runHairAxis(
       );
       if (gemini.data && !gemini.usedFallback) {
         faceShape = gemini.data.faceShape;
-        // Gemini 응답의 hairAnalysis.stylingTips 있으면 사용 (schema에 따라)
-        const tips = (gemini.data as Record<string, unknown>).stylingTips;
-        if (Array.isArray(tips) && tips.length > 0) {
-          styleRecommendations = tips as typeof styleRecommendations;
-        }
       } else {
+        faceShape = hairFallbackShape();
         usedFallback = true;
       }
     }
+
+    // 스타일 추천은 "판정된 얼굴형"에서 결정론적으로 파생 — 단독 `/api/analyze/hair-v2`와 동일 계약.
+    // Gemini의 자유 텍스트 추천(hairstyleRecommendations.recommended)은 suitability·length 메타가
+    // 없어 리포트의 어울림 표시 계약을 만족하지 못하므로, 얼굴형 카탈로그 매핑을 정본으로 쓴다.
+    const styleRecommendations = recommendHairstyles(faceShape, { maxResults: 5 });
 
     const supabase = createServiceRoleClient();
     // hair_analyses 스키마 = 단독 `/api/analyze/hair` 계약과 동일:
@@ -586,7 +660,8 @@ export async function runHairAxis(
         id: data?.id as string | undefined,
         faceShape,
         hairType: input.questionnaire.hair.curlType,
-        recommendedStyles: mockResult.styleRecommendations?.map((s) => s.name ?? ''),
+        // 저장한 것과 같은 목록 — 판정된 얼굴형 파생 (예전엔 Mock 결과를 그대로 내보냈다)
+        recommendedStyles: styleRecommendations.map((s) => s.name),
       },
     };
   } catch (error) {

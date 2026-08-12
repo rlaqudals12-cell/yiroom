@@ -293,17 +293,22 @@ function convertGeminiToSkinV2Result(geminiResponse: GeminiSkinV2Response): Skin
  * S-2 피부분석 v2 Gemini 호출
  *
  * @param imageBase64 - Base64 인코딩된 얼굴 이미지
+ * @param priorHint - 직전 분석 앵커 (Level 3)
+ * @param locale - 결과 자유 텍스트 언어
+ * @param fallbackSeed - 폴백 Mock 결정론 시드. 같은 사용자·같은 사진이면 폴백 결과도 같아야
+ *   재현성 계약이 지켜진다(미지정 시 고정 기본 시드 — 난수는 어느 경우에도 쓰지 않는다).
  * @returns 피부 분석 결과
  */
 export async function analyzeSkinV2WithGemini(
   imageBase64: string,
   priorHint?: string | null,
-  locale: OutputLocale = 'ko'
+  locale: OutputLocale = 'ko',
+  fallbackSeed?: string
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
     return {
-      result: generateMockSkinAnalysisV2Result(),
+      result: generateMockSkinAnalysisV2Result(undefined, fallbackSeed),
       usedFallback: true,
     };
   }
@@ -350,7 +355,7 @@ ${outputLanguageDirective(locale)}`,
     if (!validated.success) {
       console.error('[S-2 Gemini] Validation failed:', validated.error);
       return {
-        result: generateMockSkinAnalysisV2Result(),
+        result: generateMockSkinAnalysisV2Result(undefined, fallbackSeed),
         usedFallback: true,
       };
     }
@@ -361,7 +366,7 @@ ${outputLanguageDirective(locale)}`,
   } catch (error) {
     console.error('[S-2 Gemini] Error, falling back to mock:', error);
     return {
-      result: generateMockSkinAnalysisV2Result(),
+      result: generateMockSkinAnalysisV2Result(undefined, fallbackSeed),
       usedFallback: true,
     };
   }

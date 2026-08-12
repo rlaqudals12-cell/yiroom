@@ -37,13 +37,32 @@ vi.mock('@/lib/supabase/service-role', () => ({
   }),
 }));
 
+// AI 성공 경로 검증용 — Gemini/prior-context는 어댑터 밖 의존성이라 스텁으로 고정
+vi.mock('@/lib/gemini/v2-analysis', () => ({
+  extractSkinColorWithGemini: vi.fn(),
+  analyzeSkinV2WithGemini: vi.fn(),
+  analyzeBodyWithGemini: vi.fn(),
+  analyzeHairWithGemini: vi.fn(),
+}));
+
+vi.mock('@/lib/analysis/prior-context', () => ({
+  getSkinPriorHint: vi.fn(async () => null),
+  getBodyPriorHint: vi.fn(async () => null),
+  getHairPriorHint: vi.fn(async () => null),
+}));
+
 // mock 모드에서 어댑터를 구동하면 Gemini/prior-context를 타지 않고 순수 Mock → INSERT 경로만 실행됨
 import {
   runPersonalColorAxis,
   runSkinAxis,
+  runBodyAxis,
   runHairAxis,
 } from '@/lib/analysis/integrated/internal/axis-adapters';
 import type { CaptureConditions } from '@/lib/analysis/integrated';
+import { analyzeBodyWithGemini, analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
+import { getBodyShapeInfo, generateMockBodyAnalysisResult } from '@/lib/analysis/body-v2';
+import { recommendHairstyles, generateMockHairAnalysisResult } from '@/lib/analysis/hair';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // prod CHECK 제약이 허용하는 값 (실제 personal_color_assessments 제약과 동일)
 const ALLOWED_SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -202,5 +221,269 @@ describe('axis-adapters — DB 저장 규격 (스키마 계약)', () => {
       const recs = insert!.payload.recommendations as Record<string, unknown>;
       expect(recs).not.toHaveProperty('capture');
     });
+  });
+});
+
+/**
+ * AI 성공 경로 Mock 누수 (2026-08-13).
+ *
+ * 배경: 어댑터가 Mock 결과를 먼저 만들어 두고 AI 값으로 **일부 필드만** 덮어썼다.
+ * 그래서 usedFallback=false(= "AI가 판정했다")인데도 덮이지 않은 필드는 Mock 값이 그대로
+ * 나갔다 — 지어낸 데이터가 진짜인 척 저장·표시되는 정직성 위반(design-contracts §3).
+ * 특히 헤어는 Gemini H-1 스키마에 없는 `stylingTips`를 보고 덮으려 해서 스타일 추천이
+ * **항상** Mock이었다. 이 테스트는 "AI가 준 것 + 판정값 파생"만 나가는 것을 고정한다.
+ */
+describe('axis-adapters — AI 성공 경로에 Mock 값이 섞이지 않는다', () => {
+  const USER = 'clerk-ai-1';
+  const BODY_IMG = 'data:image/jpeg;base64,BODYIMAGE';
+
+  function bodyInput(): IntegratedAnalysisInput {
+    return { ...baseInput(), bodyImageBase64: BODY_IMG } as IntegratedAnalysisInput;
+  }
+
+  beforeEach(() => {
+    capturedInserts.length = 0;
+    // 실제 AI 경로: FORCE_MOCK_AI=false → Gemini 스텁이 성공을 반환
+    vi.stubEnv('FORCE_MOCK_AI', 'false');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.mocked(analyzeBodyWithGemini).mockReset();
+    vi.mocked(analyzeHairWithGemini).mockReset();
+  });
+
+  it('체형: 저장되는 스타일링·특징이 AI 판정 체형에서만 나온다', async () => {
+    // 폴백 Mock이 뽑을 체형과 "다른" 체형을 AI가 판정하게 해서 누수를 검출
+    const mockShape = generateMockBodyAnalysisResult({
+      seed: buildFallbackSeed(USER, 'body', BODY_IMG),
+    }).bodyShape;
+    const aiShape = mockShape === 'triangle' ? 'hourglass' : 'triangle';
+
+    vi.mocked(analyzeBodyWithGemini).mockResolvedValue({
+      usedFallback: false,
+      data: {
+        canAnalyze: true,
+        bodyShape: aiShape,
+        confidence: 88,
+        estimatedRatios: {
+          shoulderToWaistRatio: 1.4,
+          waistToHipRatio: 0.8,
+          upperToLowerRatio: 0.9,
+        },
+        visualAssessment: {
+          shoulderWidth: 'medium',
+          waistDefinition: 'defined',
+          hipWidth: 'medium',
+        },
+        stylingRecommendations: {
+          tops: ['AI 상의'],
+          bottoms: ['AI 하의'],
+          avoid: ['AI 회피'],
+        },
+        imageQuality: {
+          fullBodyVisible: true,
+          poseQuality: 'front',
+          clothingImpact: 'minimal',
+        },
+      },
+    } as unknown as Awaited<ReturnType<typeof analyzeBodyWithGemini>>);
+
+    const result = await runBodyAxis('sess-ai-body', USER, bodyInput());
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(false);
+
+    const insert = capturedInserts.find((c) => c.table === 'body_analyses');
+    expect(insert).toBeDefined();
+
+    // AI가 준 3개 필드만 저장 — Mock 상수(outerwear '롱 카디건' 등)는 더 이상 나가지 않는다
+    expect(insert!.payload.style_recommendations).toEqual({
+      tops: ['AI 상의'],
+      bottoms: ['AI 하의'],
+      avoid: ['AI 회피'],
+    });
+
+    // 특징(strengths)은 AI 판정 체형의 지식표 — Mock이 뽑은 다른 체형의 것이면 안 된다
+    expect(insert!.payload.strengths).toEqual(getBodyShapeInfo(aiShape).characteristics);
+    expect(insert!.payload.strengths).not.toEqual(getBodyShapeInfo(mockShape).characteristics);
+    expect(result.data.stylingPrinciples).toEqual(getBodyShapeInfo(aiShape).stylingTips);
+  });
+
+  it('헤어: 저장되는 스타일 추천이 AI 판정 얼굴형에서만 나온다', async () => {
+    const mockShape = generateMockHairAnalysisResult({
+      seed: buildFallbackSeed(USER, 'hair', baseInput().faceImageBase64),
+    }).faceShapeAnalysis.faceShape;
+    const aiShape = mockShape === 'square' ? 'heart' : 'square';
+
+    // 실제 H-1 응답에는 stylingTips가 없다 — 구 코드가 이 필드를 찾다 실패해 Mock을 저장했다
+    vi.mocked(analyzeHairWithGemini).mockResolvedValue({
+      usedFallback: false,
+      data: {
+        canAnalyze: true,
+        faceShape: aiShape,
+        confidence: 90,
+        estimatedRatios: {
+          faceLength: 120,
+          faceWidth: 90,
+          foreheadWidth: 80,
+          cheekboneWidth: 90,
+          jawWidth: 70,
+          lengthToWidthRatio: 1.33,
+        },
+        visualAssessment: {
+          foreheadShape: 'medium',
+          cheekboneProminence: 'medium',
+          jawlineDefinition: 'moderate',
+          chinShape: 'round',
+        },
+        hairstyleRecommendations: { recommended: ['AI 추천컷'], avoid: ['AI 비추천컷'] },
+        imageQuality: {
+          faceFullyVisible: true,
+          poseQuality: 'frontal',
+          hairCoverage: 'moderate',
+        },
+      },
+    } as unknown as Awaited<ReturnType<typeof analyzeHairWithGemini>>);
+
+    const result = await runHairAxis('sess-ai-hair', USER, baseInput());
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(false);
+
+    const insert = capturedInserts.find((c) => c.table === 'hair_analyses');
+    expect(insert).toBeDefined();
+    expect(insert!.payload.face_shape).toBe(aiShape);
+
+    const expected = recommendHairstyles(aiShape, { maxResults: 5 });
+    const recs = insert!.payload.recommendations as Record<string, unknown>;
+    expect(recs.styleRecommendations).toEqual(expected);
+    // 구 결함 재발 방지: Mock이 뽑은 얼굴형의 추천이 저장되면 안 된다
+    expect(recs.styleRecommendations).not.toEqual(
+      recommendHairstyles(mockShape, { maxResults: 5 })
+    );
+    // 반환 데이터도 저장한 것과 같은 출처여야 한다
+    expect(result.data.recommendedStyles).toEqual(expected.map((s) => s.name));
+  });
+});
+
+/**
+ * 폴백 시드 배선 (2026-08-13).
+ *
+ * 폴백 Mock은 결정론이지만, 호출부가 시드를 넘기지 않으면 모두가 같은 기본 결과를 받는다.
+ * "같은 사용자 + 같은 사진 = 같은 폴백 결과"가 성립하는지(=시드가 실제로 전달되는지) 고정한다.
+ */
+describe('axis-adapters — 폴백 시드 배선 (재현성)', () => {
+  const USER = 'clerk-seed-1';
+  const BODY_IMG = 'data:image/jpeg;base64,BODYSEED';
+
+  beforeEach(() => {
+    capturedInserts.length = 0;
+    vi.stubEnv('FORCE_MOCK_AI', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('헤어 폴백 얼굴형이 "사용자+사진" 시드로 결정된다', async () => {
+    const input = baseInput();
+    const result = await runHairAxis('sess-seed-hair', USER, input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(true);
+
+    const expectedShape = generateMockHairAnalysisResult({
+      seed: buildFallbackSeed(USER, 'hair', input.faceImageBase64),
+    }).faceShapeAnalysis.faceShape;
+
+    const insert = capturedInserts.find((c) => c.table === 'hair_analyses');
+    expect(insert!.payload.face_shape).toBe(expectedShape);
+  });
+
+  it('같은 사용자·같은 사진을 재분석해도 폴백 얼굴형이 그대로다', async () => {
+    await runHairAxis('sess-seed-hair-1', USER, baseInput());
+    await runHairAxis('sess-seed-hair-2', USER, baseInput());
+
+    const shapes = capturedInserts
+      .filter((c) => c.table === 'hair_analyses')
+      .map((c) => c.payload.face_shape);
+
+    expect(shapes).toHaveLength(2);
+    // 세션 ID가 달라도 결과는 같아야 한다 (세션은 시드 재료가 아니다)
+    expect(shapes[0]).toBe(shapes[1]);
+  });
+
+  it('체형 폴백이 "사용자+전신사진" 시드로 결정된다', async () => {
+    const input = { ...baseInput(), bodyImageBase64: BODY_IMG } as IntegratedAnalysisInput;
+    const result = await runBodyAxis('sess-seed-body', USER, input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(true);
+
+    const expectedShape = generateMockBodyAnalysisResult({
+      seed: buildFallbackSeed(USER, 'body', BODY_IMG),
+    }).bodyShape;
+
+    const insert = capturedInserts.find((c) => c.table === 'body_analyses');
+    expect(insert!.payload.strengths).toEqual(getBodyShapeInfo(expectedShape).characteristics);
+    // 폴백에서도 저장 스타일링은 판정 체형 파생 3필드만 (Mock 상수 outerwear 없음)
+    expect(Object.keys(insert!.payload.style_recommendations as object).sort()).toEqual([
+      'avoid',
+      'bottoms',
+      'tops',
+    ]);
+  });
+
+  it('신뢰 측정이 있으면 그 체형의 특징을 저장한다 (측정 우선)', async () => {
+    const input = {
+      ...baseInput(),
+      // 전신 사진 없이 측정만 있는 경우 — 자가입력이 있어야 MISSING_INPUT 게이트를 통과한다
+      questionnaire: { ...baseInput().questionnaire, body: { heightCm: 170 } },
+      measuredBody: {
+        shoulderWidth: 0.4,
+        waistWidth: 0.3,
+        hipWidth: 0.35,
+        shape: 'hourglass',
+        confidence: 0.8,
+      },
+    } as IntegratedAnalysisInput;
+
+    const result = await runBodyAxis('sess-measured', USER, input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    // 측정은 실제 신호 → Mock 모드여도 폴백이 아니다
+    expect(result.usedFallback).toBe(false);
+
+    const insert = capturedInserts.find((c) => c.table === 'body_analyses');
+    expect(insert!.payload.strengths).toEqual(getBodyShapeInfo('hourglass').characteristics);
+  });
+
+  it('측정 체형 문자열이 알 수 없는 값이면 축을 깨뜨리지 않고 폴백한다', async () => {
+    const input = {
+      ...baseInput(),
+      questionnaire: { ...baseInput().questionnaire, body: { heightCm: 170 } },
+      measuredBody: {
+        shoulderWidth: 0.4,
+        waistWidth: 0.3,
+        hipWidth: 0.35,
+        // 구/변조 클라이언트가 보낼 수 있는 미지의 값 (입력 스키마가 자유 문자열)
+        shape: 'unknown-shape',
+        confidence: 0.9,
+      },
+    } as unknown as IntegratedAnalysisInput;
+
+    const result = await runBodyAxis('sess-unknown-shape', USER, input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(true);
+    // 폴백이라도 특징·스타일 원칙은 반드시 채워진다 (조회 실패로 비면 안 됨)
+    expect(result.data.stylingPrinciples?.length).toBeGreaterThan(0);
   });
 });

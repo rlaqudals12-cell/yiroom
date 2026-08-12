@@ -44,6 +44,7 @@ import {
 } from '@/lib/analysis/body-v2';
 import { bodyShapeToType3 } from '@/lib/body';
 import { analyzeBodyWithGemini } from '@/lib/gemini/v2-analysis';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
@@ -116,9 +117,13 @@ export async function POST(req: NextRequest) {
     let result: BodyAnalysisV2Result;
     let usedFallback = false;
 
+    // 폴백 Mock 시드 — 같은 사용자·같은 사진이면 폴백 체형도 항상 같아야 한다(재현성 계약).
+    // 체형은 정체성 값이라 재분석마다 바뀌면 신뢰가 무너진다.
+    const fallbackSeed = buildFallbackSeed(userId, 'body', imageBase64);
+
     if (FORCE_MOCK || useMock) {
       // Mock 모드
-      result = generateMockBodyAnalysisResult();
+      result = generateMockBodyAnalysisResult({ seed: fallbackSeed });
       usedFallback = true;
     } else {
       // Real AI 분석
@@ -193,7 +198,7 @@ export async function POST(req: NextRequest) {
             };
 
             // Mock PoseDetectionResult 생성 (Gemini는 랜드마크 제공 안 함)
-            const mockPose = generateMockPoseResult();
+            const mockPose = generateMockPoseResult(fallbackSeed);
 
             result = {
               id: `c2-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
@@ -214,14 +219,14 @@ export async function POST(req: NextRequest) {
             };
           } else {
             // Gemini 분석 실패 - Mock으로 폴백
-            result = generateMockBodyAnalysisResult();
+            result = generateMockBodyAnalysisResult({ seed: fallbackSeed });
             usedFallback = true;
           }
         }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[C-2] Analysis error, falling back to mock:', aiError);
-        result = generateMockBodyAnalysisResult();
+        result = generateMockBodyAnalysisResult({ seed: fallbackSeed });
         usedFallback = true;
       }
     }

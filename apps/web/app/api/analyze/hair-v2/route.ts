@@ -43,6 +43,7 @@ import {
 import type { Landmark33 } from '@/lib/analysis/body-v2';
 import { checkAndAwardAllAnalysisBadge, addXp, type BadgeAwardResult } from '@/lib/gamification';
 import { analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -126,10 +127,15 @@ export async function POST(req: NextRequest) {
     let result: HairAnalysisResult;
     let usedFallback = false;
 
+    // 폴백 Mock 시드 — 같은 사용자·같은 사진이면 폴백 얼굴형도 항상 같아야 한다(재현성 계약).
+    // 얼굴형은 정체성 값이라 재분석마다 바뀌면 신뢰가 무너진다.
+    const fallbackSeed = buildFallbackSeed(userId, 'hair', imageBase64);
+
     if (FORCE_MOCK || useMock) {
       // Mock 모드
       result = generateMockHairAnalysisResult({
         personalColorSeason,
+        seed: fallbackSeed,
       });
       usedFallback = true;
     } else {
@@ -168,7 +174,7 @@ export async function POST(req: NextRequest) {
             };
           } else {
             // Gemini 분석 실패 - Mock으로 폴백
-            result = generateMockHairAnalysisResult({ personalColorSeason });
+            result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
             usedFallback = true;
 
             const supabase = createServiceRoleClient();
@@ -177,7 +183,7 @@ export async function POST(req: NextRequest) {
         }
         // 이미지도 없으면 Mock 폴백
         else {
-          result = generateMockHairAnalysisResult({ personalColorSeason });
+          result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
           usedFallback = true;
 
           const supabase = createServiceRoleClient();
@@ -220,7 +226,7 @@ export async function POST(req: NextRequest) {
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[H-1] Analysis error, falling back to mock:', aiError);
-        result = generateMockHairAnalysisResult({ personalColorSeason });
+        result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
         usedFallback = true;
       }
     }

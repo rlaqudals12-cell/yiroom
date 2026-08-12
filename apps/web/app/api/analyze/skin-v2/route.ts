@@ -33,6 +33,7 @@ import {
   type SkinAnalysisV2Result,
 } from '@/lib/analysis/skin-v2';
 import { analyzeSkinV2WithGemini } from '@/lib/gemini/v2-analysis';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
@@ -104,20 +105,24 @@ export async function POST(req: NextRequest) {
     let result: SkinAnalysisV2Result;
     let usedFallback = false;
 
+    // 폴백 Mock 시드 — 같은 사용자·같은 사진이면 폴백 결과도 항상 같아야 한다(재현성 계약).
+    // 세션·시각처럼 회차마다 바뀌는 값은 시드 재료로 쓰지 않는다.
+    const fallbackSeed = buildFallbackSeed(userId, 'skin', imageBase64);
+
     if (FORCE_MOCK || useMock) {
       // Mock 모드
-      result = generateMockSkinAnalysisV2Result();
+      result = generateMockSkinAnalysisV2Result(undefined, fallbackSeed);
       usedFallback = true;
     } else {
       // Real AI 분석 (Gemini Vision API)
       try {
-        const geminiResult = await analyzeSkinV2WithGemini(imageBase64);
+        const geminiResult = await analyzeSkinV2WithGemini(imageBase64, null, 'ko', fallbackSeed);
         result = geminiResult.result;
         usedFallback = geminiResult.usedFallback;
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[S-2] Analysis error, falling back to mock:', aiError);
-        result = generateMockSkinAnalysisV2Result();
+        result = generateMockSkinAnalysisV2Result(undefined, fallbackSeed);
         usedFallback = true;
       }
     }
