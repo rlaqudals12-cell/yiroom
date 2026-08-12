@@ -83,16 +83,20 @@ describe('generateMockLandmarks', () => {
     expect(landmarks[23].y).toBeCloseTo(landmarks[24].y, 1);
   });
 
-  it('should generate different values on each call (randomness)', () => {
-    const landmarks1 = generateMockLandmarks();
-    const landmarks2 = generateMockLandmarks();
+  it('should be deterministic for the same seed and vary across seeds', () => {
+    // 같은 시드 → 완전히 동일 (재현성)
+    expect(generateMockLandmarks('seed-a')).toEqual(generateMockLandmarks('seed-a'));
 
-    // 어깨 너비가 다를 수 있음 (randomInRange 사용)
-    const shoulderWidth1 = Math.abs(landmarks1[11].x - landmarks1[12].x);
-    const shoulderWidth2 = Math.abs(landmarks2[11].x - landmarks2[12].x);
+    // 서로 다른 시드 → 어깨/힙 너비가 달라짐
+    const a = generateMockLandmarks('seed-a');
+    const b = generateMockLandmarks('seed-b');
+    const shoulderWidthA = Math.abs(a[11].x - a[12].x);
+    const shoulderWidthB = Math.abs(b[11].x - b[12].x);
+    expect(shoulderWidthA !== shoulderWidthB || a[23].x !== b[23].x).toBe(true);
+  });
 
-    // 완전히 같을 확률은 매우 낮음
-    expect(shoulderWidth1 !== shoulderWidth2 || landmarks1[23].x !== landmarks2[23].x).toBe(true);
+  it('should not use Math.random (default seed is stable)', () => {
+    expect(generateMockLandmarks()).toEqual(generateMockLandmarks());
   });
 });
 
@@ -307,68 +311,55 @@ describe('generateMockPostureAnalysis', () => {
     expect(['forward', 'neutral', 'backward']).toContain(analysis.headPosition);
   });
 
-  it('should include issues when includeIssues is true', () => {
-    // 여러 번 실행하여 issues가 포함된 경우 확인
-    let hasIssues = false;
-    for (let i = 0; i < 20; i++) {
-      const analysis = generateMockPostureAnalysis(true);
-      if (analysis.issues.length > 0) {
-        hasIssues = true;
-        break;
-      }
-    }
-    // 확률적으로 70% 이상 문제가 포함됨
+  it('should include issues for some seeds when includeIssues is true', () => {
+    // 시드 공간을 결정론적으로 훑어 issues가 포함되는 경우가 존재함을 확인
+    const hasIssues = Array.from({ length: 20 }, (_, i) =>
+      generateMockPostureAnalysis(true, `seed-${i}`)
+    ).some((a) => a.issues.length > 0);
     expect(hasIssues).toBe(true);
   });
 
   it('should not include issues when includeIssues is false', () => {
-    const analysis = generateMockPostureAnalysis(false);
-    expect(analysis.issues).toHaveLength(0);
+    // includeIssues=false는 시드와 무관하게 항상 비어 있어야 함
+    for (let i = 0; i < 10; i++) {
+      const analysis = generateMockPostureAnalysis(false, `seed-${i}`);
+      expect(analysis.issues).toHaveLength(0);
+    }
+  });
+
+  it('should be deterministic for the same seed (재현성)', () => {
+    expect(generateMockPostureAnalysis(true, 'posture-seed')).toEqual(
+      generateMockPostureAnalysis(true, 'posture-seed')
+    );
   });
 
   it('should have valid issue structure when issues exist', () => {
-    // issues가 있는 결과 찾기
-    let analysisWithIssues = null;
-    for (let i = 0; i < 30; i++) {
-      const analysis = generateMockPostureAnalysis(true);
-      if (analysis.issues.length > 0) {
-        analysisWithIssues = analysis;
-        break;
-      }
-    }
+    const analysisWithIssues = Array.from({ length: 30 }, (_, i) =>
+      generateMockPostureAnalysis(true, `seed-${i}`)
+    ).find((a) => a.issues.length > 0);
 
-    if (analysisWithIssues) {
-      analysisWithIssues.issues.forEach((issue) => {
-        expect(issue).toHaveProperty('type');
-        expect(issue).toHaveProperty('severity');
-        expect(issue).toHaveProperty('description');
-        expect(issue).toHaveProperty('exercises');
+    expect(analysisWithIssues).toBeDefined();
+    analysisWithIssues?.issues.forEach((issue) => {
+      expect(issue).toHaveProperty('type');
+      expect(issue).toHaveProperty('severity');
+      expect(issue).toHaveProperty('description');
+      expect(issue).toHaveProperty('exercises');
 
-        expect(issue.severity).toBeGreaterThanOrEqual(1);
-        expect(issue.severity).toBeLessThanOrEqual(4);
-        expect(issue.exercises).toBeInstanceOf(Array);
-        expect(issue.exercises.length).toBeGreaterThan(0);
-      });
-    }
+      expect(issue.severity).toBeGreaterThanOrEqual(1);
+      expect(issue.severity).toBeLessThanOrEqual(4);
+      expect(issue.exercises).toBeInstanceOf(Array);
+      expect(issue.exercises.length).toBeGreaterThan(0);
+    });
   });
 
-  it('should generate 1-2 issues when issues are included', () => {
-    let issueCount = 0;
-    let totalWithIssues = 0;
-
-    for (let i = 0; i < 50; i++) {
-      const analysis = generateMockPostureAnalysis(true);
-      if (analysis.issues.length > 0) {
-        issueCount += analysis.issues.length;
-        totalWithIssues++;
-      }
-    }
-
-    if (totalWithIssues > 0) {
-      const avgIssues = issueCount / totalWithIssues;
-      expect(avgIssues).toBeGreaterThanOrEqual(1);
-      expect(avgIssues).toBeLessThanOrEqual(2);
-    }
+  it('should generate 1-2 issues whenever issues are included', () => {
+    // 문제가 포함된 모든 케이스에서 개수는 1 또는 2여야 함
+    Array.from({ length: 50 }, (_, i) => generateMockPostureAnalysis(true, `seed-${i}`))
+      .filter((a) => a.issues.length > 0)
+      .forEach((a) => {
+        expect(a.issues.length).toBeGreaterThanOrEqual(1);
+        expect(a.issues.length).toBeLessThanOrEqual(2);
+      });
   });
 });
 
@@ -487,6 +478,29 @@ describe('generateMockBodyAnalysisResult', () => {
       expect(result.stylingRecommendations).toHaveProperty('silhouettes');
       expect(result.stylingRecommendations).toHaveProperty('avoid');
     }
+  });
+
+  it('should be deterministic for the same seed except record id (재현성)', () => {
+    const a = generateMockBodyAnalysisResult({ seed: 'user-9:image-777' });
+    const b = generateMockBodyAnalysisResult({ seed: 'user-9:image-777' });
+
+    // 정체성/분석 내용은 동일해야 함
+    expect(a.bodyShape).toBe(b.bodyShape);
+    expect(a.bodyRatios).toEqual(b.bodyRatios);
+    expect(a.poseDetection).toEqual(b.poseDetection);
+    expect(a.postureAnalysis).toEqual(b.postureAnalysis);
+    expect(a.measurementConfidence).toBe(b.measurementConfidence);
+
+    // 레코드 ID는 고유
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('should produce different body shapes across different seeds', () => {
+    const shapes = Array.from(
+      { length: 12 },
+      (_, i) => generateMockBodyAnalysisResult({ seed: `seed-${i}` }).bodyShape
+    );
+    expect(new Set(shapes).size).toBeGreaterThan(1);
   });
 });
 

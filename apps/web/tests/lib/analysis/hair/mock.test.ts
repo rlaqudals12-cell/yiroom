@@ -97,15 +97,29 @@ describe('generateMockFaceShapeAnalysis', () => {
     });
   });
 
-  it('should apply small variance to base ratios', () => {
-    const results = Array.from({ length: 5 }, () =>
-      generateMockFaceShapeAnalysis('oval')
+  it('should apply seed-based variance to base ratios', () => {
+    // 서로 다른 시드는 서로 다른 variance를 적용해야 함 (결정론적 다양성)
+    const results = ['s1', 's2', 's3', 's4', 's5'].map((seed) =>
+      generateMockFaceShapeAnalysis('oval', seed)
     );
 
-    // 비율이 완전히 같지 않아야 함 (variance 적용)
     const lengths = results.map((r) => r.ratios.faceLength);
     const uniqueLengths = new Set(lengths);
     expect(uniqueLengths.size).toBeGreaterThan(1);
+  });
+
+  it('should be deterministic for the same seed (재현성)', () => {
+    const a = generateMockFaceShapeAnalysis(undefined, 'user-42:image-abc');
+    const b = generateMockFaceShapeAnalysis(undefined, 'user-42:image-abc');
+    expect(a).toEqual(b);
+    // 시드가 얼굴형 선택까지 결정 — 같은 시드면 얼굴형도 동일
+    expect(a.faceShape).toBe(b.faceShape);
+  });
+
+  it('should not use Math.random (default seed is stable)', () => {
+    const a = generateMockFaceShapeAnalysis();
+    const b = generateMockFaceShapeAnalysis();
+    expect(a).toEqual(b);
   });
 
   it('should return valid ratio ranges (0-1 normalized)', () => {
@@ -231,9 +245,7 @@ describe('generateMockHairAnalysisResult', () => {
   });
 
   it('should generate unique IDs', () => {
-    const results = Array.from({ length: 5 }, () =>
-      generateMockHairAnalysisResult()
-    );
+    const results = Array.from({ length: 5 }, () => generateMockHairAnalysisResult());
 
     const ids = results.map((r) => r.id);
     const uniqueIds = new Set(ids);
@@ -334,15 +346,9 @@ describe('Hair Mock Edge Cases', () => {
   it('should handle undefined face shape gracefully', () => {
     const result = generateMockFaceShapeAnalysis(undefined);
     expect(result.faceShape).toBeDefined();
-    expect([
-      'oval',
-      'round',
-      'square',
-      'heart',
-      'oblong',
-      'diamond',
-      'rectangle',
-    ]).toContain(result.faceShape);
+    expect(['oval', 'round', 'square', 'heart', 'oblong', 'diamond', 'rectangle']).toContain(
+      result.faceShape
+    );
   });
 
   it('should handle undefined personal color season gracefully', () => {
@@ -363,16 +369,25 @@ describe('Hair Mock Edge Cases', () => {
     expect(result.id).toBeDefined();
   });
 
-  it('should generate different results on each call (randomness)', () => {
-    const results = Array.from({ length: 10 }, () =>
-      generateMockHairAnalysisResult()
+  it('should be deterministic for the same seed but keep unique record ids', () => {
+    const a = generateMockHairAnalysisResult({ seed: 'user-7:image-xyz' });
+    const b = generateMockHairAnalysisResult({ seed: 'user-7:image-xyz' });
+
+    // 재현성: 같은 시드 → 정체성/분석 내용 동일
+    expect(a.faceShapeAnalysis).toEqual(b.faceShapeAnalysis);
+    expect(a.currentHairInfo).toEqual(b.currentHairInfo);
+    expect(a.hairColorAnalysis).toEqual(b.hairColorAnalysis);
+
+    // 레코드 ID는 재현 대상이 아니라 레코드마다 고유
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('should produce different identities for different seeds', () => {
+    const seeds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const faceShapes = seeds.map(
+      (seed) => generateMockHairAnalysisResult({ seed }).faceShapeAnalysis.faceShape
     );
-
-    // ID는 항상 다르고, 얼굴형도 랜덤하게 분포
-    const faceShapes = results.map((r) => r.faceShapeAnalysis.faceShape);
-    const uniqueFaceShapes = new Set(faceShapes);
-
-    // 10번 중 최소 2가지 이상의 얼굴형이 나와야 함 (확률적)
-    expect(uniqueFaceShapes.size).toBeGreaterThanOrEqual(1);
+    // 서로 다른 시드는 얼굴형 분포가 하나로 고정되지 않아야 함
+    expect(new Set(faceShapes).size).toBeGreaterThan(1);
   });
 });

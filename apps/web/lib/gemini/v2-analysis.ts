@@ -249,19 +249,15 @@ function convertGeminiToSkinV2Result(geminiResponse: GeminiSkinV2Response): Skin
       group: ZONE_GROUP_MAPPING[zoneType],
       score,
       metrics,
+      // GLCM/LBP는 픽셀 단위 실측이 필요한데(texture-analyzer.ts), Gemini는
+      // JSON만 반환하므로 서버 이 지점엔 픽셀이 없다. 예전엔 Math.random()으로
+      // 지어내 DB에 저장했으나 — 재현성 위반(같은 사진이 매번 다른 텍스처) +
+      // 오염 데이터. UI 노출 0이라, texture-analyzer의 "미측정" 기본값(중립)을
+      // 그대로 써서 난수 저장을 제거한다. 실측 필요 시 CSP 복구 후 클라 파이프라인에서 채운다.
       textureAnalysis: {
-        glcm: {
-          contrast: 15 + Math.random() * 20,
-          homogeneity: 0.75 + Math.random() * 0.2,
-          energy: 0.15 + Math.random() * 0.15,
-          correlation: 0.85 + Math.random() * 0.1,
-          entropy: 3.5 + Math.random() * 1.5,
-        },
-        lbp: {
-          histogram: new Array(256).fill(0).map(() => Math.random() / 256),
-          uniformPatternRatio: 0.65 + Math.random() * 0.25,
-          roughnessScore: 100 - metrics.texture,
-        },
+        glcm: { contrast: 0, homogeneity: 1, energy: 1, correlation: 0, entropy: 0 },
+        lbp: { histogram: new Array(256).fill(0), uniformPatternRatio: 1, roughnessScore: 100 },
+        // pore/wrinkle/texture는 Gemini 실측 metrics에서 결정론적으로 파생
         poreScore: metrics.pores,
         wrinkleScore: metrics.elasticity,
         textureScore: metrics.texture,

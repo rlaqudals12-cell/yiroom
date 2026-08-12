@@ -20,15 +20,20 @@ import type {
 } from './types';
 import { FACE_SHAPE_LABELS } from './types';
 import { recommendHairstyles, recommendHairColors, generateCareTips } from './style-recommender';
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
 
 // =============================================================================
 // Mock 데이터 생성
+//
+// 재현성 계약: 폴백 Mock은 시드(사용자·이미지 식별자 등)로부터 결정론적으로
+// 생성한다. Math.random() 금지 — 같은 시드는 항상 같은 얼굴형·비율을 낸다.
+// 시드 미지정 시 고정 기본 시드로 항상 동일한 결과.
 // =============================================================================
 
 /**
- * Mock 얼굴형 생성
+ * Mock 얼굴형 생성 (시드 기반 결정론)
  */
-function generateMockFaceShape(): FaceShapeType {
+function generateMockFaceShape(rng: () => number): FaceShapeType {
   const shapes: FaceShapeType[] = [
     'oval',
     'round',
@@ -38,14 +43,21 @@ function generateMockFaceShape(): FaceShapeType {
     'diamond',
     'rectangle',
   ];
-  return shapes[Math.floor(Math.random() * shapes.length)];
+  return shapes[Math.floor(rng() * shapes.length)];
 }
 
 /**
  * Mock 얼굴형 분석 결과 생성
+ *
+ * @param faceShape - 지정 시 해당 얼굴형 사용
+ * @param seed - 결정론 시드 (미지정 시 고정 기본 시드)
  */
-export function generateMockFaceShapeAnalysis(faceShape?: FaceShapeType): FaceShapeAnalysis {
-  const shape = faceShape || generateMockFaceShape();
+export function generateMockFaceShapeAnalysis(
+  faceShape?: FaceShapeType,
+  seed?: string
+): FaceShapeAnalysis {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
+  const shape = faceShape || generateMockFaceShape(rng);
 
   // 얼굴형별 대표 비율
   const ratioPresets: Record<FaceShapeType, FaceShapeAnalysis['ratios']> = {
@@ -108,12 +120,12 @@ export function generateMockFaceShapeAnalysis(faceShape?: FaceShapeType): FaceSh
   };
 
   const baseRatios = ratioPresets[shape];
-  const variance = () => (Math.random() - 0.5) * 0.02;
+  const variance = (): number => (rng() - 0.5) * 0.02;
 
   return {
     faceShape: shape,
     faceShapeLabel: FACE_SHAPE_LABELS[shape],
-    confidence: Math.round(65 + Math.random() * 25),
+    confidence: Math.round(65 + rng() * 25),
     ratios: {
       faceLength: Math.round((baseRatios.faceLength + variance()) * 1000) / 1000,
       faceWidth: Math.round((baseRatios.faceWidth + variance()) * 1000) / 1000,
@@ -127,10 +139,17 @@ export function generateMockFaceShapeAnalysis(faceShape?: FaceShapeType): FaceSh
 
 /**
  * Mock 헤어컬러 분석 결과 생성
+ *
+ * @param personalColorSeason - 지정 시 해당 시즌 사용
+ * @param seed - 결정론 시드 (미지정 시 고정 기본 시드)
  */
-export function generateMockHairColorAnalysis(personalColorSeason?: string): HairColorAnalysis {
+export function generateMockHairColorAnalysis(
+  personalColorSeason?: string,
+  seed?: string
+): HairColorAnalysis {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
   const season =
-    personalColorSeason || ['spring', 'summer', 'autumn', 'winter'][Math.floor(Math.random() * 4)];
+    personalColorSeason || ['spring', 'summer', 'autumn', 'winter'][Math.floor(rng() * 4)];
 
   const currentColors = [
     { name: '내추럴 블랙', hexColor: '#1C1C1C' },
@@ -138,18 +157,18 @@ export function generateMockHairColorAnalysis(personalColorSeason?: string): Hai
     { name: '미디엄 브라운', hexColor: '#6B4423' },
   ];
 
-  const currentColor = currentColors[Math.floor(Math.random() * currentColors.length)];
+  const currentColor = currentColors[Math.floor(rng() * currentColors.length)];
 
   return {
     currentColor: {
       ...currentColor,
       labColor: {
-        L: 20 + Math.random() * 20,
-        a: 5 + Math.random() * 10,
-        b: 10 + Math.random() * 15,
+        L: 20 + rng() * 20,
+        a: 5 + rng() * 10,
+        b: 10 + rng() * 15,
       },
     },
-    skinToneMatch: Math.round(60 + Math.random() * 30),
+    skinToneMatch: Math.round(60 + rng() * 30),
     recommendedColors: recommendHairColors(season, { maxResults: 4 }),
   };
 }
@@ -160,35 +179,40 @@ export function generateMockHairColorAnalysis(personalColorSeason?: string): Hai
 export function generateMockHairAnalysisResult(options?: {
   faceShape?: FaceShapeType;
   personalColorSeason?: string;
+  seed?: string;
 }): HairAnalysisResult {
-  const { faceShape, personalColorSeason } = options || {};
+  const { faceShape, personalColorSeason, seed } = options || {};
+  const baseSeed = seed ?? DEFAULT_SEED;
 
-  const faceShapeAnalysis = generateMockFaceShapeAnalysis(faceShape);
-  const hairColorAnalysis = generateMockHairColorAnalysis(personalColorSeason);
+  // 하위 항목마다 파생 시드를 써서 한 시드로 전체 결과가 결정론적으로 재현되게 함
+  const faceShapeAnalysis = generateMockFaceShapeAnalysis(faceShape, `${baseSeed}:face`);
+  const hairColorAnalysis = generateMockHairColorAnalysis(personalColorSeason, `${baseSeed}:color`);
 
   const styleRecommendations = recommendHairstyles(faceShapeAnalysis.faceShape, {
     maxResults: 5,
   });
 
+  const rng = createSeededRandom(`${baseSeed}:hair`);
   const textures: HairTexture[] = ['straight', 'wavy', 'curly'];
   const scalpConditions: ScalpCondition[] = ['dry', 'normal', 'oily'];
 
   const careTips = generateCareTips(faceShapeAnalysis.faceShape, {
-    texture: textures[Math.floor(Math.random() * textures.length)],
-    scalpCondition: scalpConditions[Math.floor(Math.random() * scalpConditions.length)],
+    texture: textures[Math.floor(rng() * textures.length)],
+    scalpCondition: scalpConditions[Math.floor(rng() * scalpConditions.length)],
   });
 
   return {
-    id: `mock-h1-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    // 레코드 ID는 재현 대상이 아니라 레코드마다 고유해야 함 (Math.random 아님)
+    id: `mock-h1-${crypto.randomUUID()}`,
     faceShapeAnalysis,
     hairColorAnalysis,
     currentHairInfo: {
-      length: (['short', 'medium', 'long'] as HairLength[])[Math.floor(Math.random() * 3)],
-      texture: textures[Math.floor(Math.random() * textures.length)],
-      thickness: (['fine', 'medium', 'thick'] as HairThickness[])[Math.floor(Math.random() * 3)],
-      density: (['thin', 'normal', 'dense'] as HairDensity[])[Math.floor(Math.random() * 3)],
+      length: (['short', 'medium', 'long'] as HairLength[])[Math.floor(rng() * 3)],
+      texture: textures[Math.floor(rng() * textures.length)],
+      thickness: (['fine', 'medium', 'thick'] as HairThickness[])[Math.floor(rng() * 3)],
+      density: (['thin', 'normal', 'dense'] as HairDensity[])[Math.floor(rng() * 3)],
       scalpCondition: (['dry', 'normal', 'oily', 'sensitive'] as ScalpCondition[])[
-        Math.floor(Math.random() * 4)
+        Math.floor(rng() * 4)
       ],
     },
     styleRecommendations,

@@ -17,23 +17,28 @@ import type {
   PostureIssue,
 } from './types';
 import { BODY_SHAPE_INFO } from './types';
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
 
 // =============================================================================
 // 내부 유틸리티
+//
+// 재현성 계약: 폴백 Mock은 시드(사용자·이미지 식별자 등)로부터 결정론적으로
+// 생성한다. Math.random() 금지 — 같은 시드는 항상 같은 체형·자세를 낸다.
+// 시드 미지정 시 고정 기본 시드로 항상 동일한 결과.
 // =============================================================================
 
 /**
- * 범위 내 랜덤 값 생성
+ * 시드 기반 범위 내 값 생성
  */
-function randomInRange(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
+function randomInRange(rng: () => number, min: number, max: number): number {
+  return rng() * (max - min) + min;
 }
 
 /**
- * 배열에서 랜덤 선택
+ * 시드 기반 배열 선택
  */
-function randomChoice<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function randomChoice<T>(rng: () => number, arr: T[]): T {
+  return arr[Math.floor(rng() * arr.length)];
 }
 
 /**
@@ -78,7 +83,8 @@ const BODY_SHAPE_RATIO_RANGES: Record<
  * @description 33개 MediaPipe Pose 랜드마크의 Mock 데이터를 생성합니다.
  * @returns 33개 랜드마크 배열
  */
-export function generateMockLandmarks(): Landmark33[] {
+export function generateMockLandmarks(seed?: string): Landmark33[] {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
   const landmarks: Landmark33[] = [];
 
   // 기본 신체 비율 기준점
@@ -113,7 +119,7 @@ export function generateMockLandmarks(): Landmark33[] {
   landmarks.push({ x: 0.53, y: headY + 0.03, z: -0.03, visibility: 0.85 });
 
   // 상체 랜드마크 (11-22)
-  const shoulderWidth = randomInRange(0.12, 0.18);
+  const shoulderWidth = randomInRange(rng, 0.12, 0.18);
   // LEFT_SHOULDER
   landmarks.push({ x: 0.5 - shoulderWidth, y: shoulderY, z: 0, visibility: 0.95 });
   // RIGHT_SHOULDER
@@ -140,7 +146,7 @@ export function generateMockLandmarks(): Landmark33[] {
   landmarks.push({ x: 0.5 + shoulderWidth + 0.03, y: shoulderY + 0.32, z: 0, visibility: 0.65 });
 
   // 하체 랜드마크 (23-32)
-  const hipWidth = randomInRange(0.1, 0.15);
+  const hipWidth = randomInRange(rng, 0.1, 0.15);
   // LEFT_HIP
   landmarks.push({ x: 0.5 - hipWidth, y: hipY, z: 0, visibility: 0.9 });
   // RIGHT_HIP
@@ -168,15 +174,17 @@ export function generateMockLandmarks(): Landmark33[] {
 /**
  * Mock Pose 검출 결과 생성
  */
-export function generateMockPoseResult(): PoseDetectionResult {
-  const landmarks = generateMockLandmarks();
+export function generateMockPoseResult(seed?: string): PoseDetectionResult {
+  const baseSeed = seed ?? DEFAULT_SEED;
+  const landmarks = generateMockLandmarks(baseSeed);
   const overallVisibility =
     landmarks.reduce((sum, lm) => sum + lm.visibility, 0) / landmarks.length;
 
+  const rng = createSeededRandom(`${baseSeed}:pose`);
   return {
     landmarks,
     overallVisibility,
-    confidence: randomInRange(0.7, 0.9),
+    confidence: randomInRange(rng, 0.7, 0.9),
   };
 }
 
@@ -185,10 +193,11 @@ export function generateMockPoseResult(): PoseDetectionResult {
  *
  * @param targetType - 생성할 체형 유형 (지정 시 해당 체형에 맞는 비율 생성)
  */
-export function generateMockBodyRatios(targetType?: BodyShapeType): BodyRatios {
+export function generateMockBodyRatios(targetType?: BodyShapeType, seed?: string): BodyRatios {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
   const type =
     targetType ||
-    randomChoice<BodyShapeType>([
+    randomChoice<BodyShapeType>(rng, [
       'rectangle',
       'inverted-triangle',
       'triangle',
@@ -197,21 +206,21 @@ export function generateMockBodyRatios(targetType?: BodyShapeType): BodyRatios {
     ]);
 
   const ranges = BODY_SHAPE_RATIO_RANGES[type];
-  const shoulderHipRatio = randomInRange(...ranges.shoulderHipRatio);
-  const waistToAvgRatio = randomInRange(...ranges.waistToAvgRatio);
+  const shoulderHipRatio = randomInRange(rng, ...ranges.shoulderHipRatio);
+  const waistToAvgRatio = randomInRange(rng, ...ranges.waistToAvgRatio);
 
   // 기본 너비 설정 (정규화된 값)
-  const hipWidth = randomInRange(0.2, 0.28);
+  const hipWidth = randomInRange(rng, 0.2, 0.28);
   const shoulderWidth = hipWidth * shoulderHipRatio;
   const waistWidth = ((shoulderWidth + hipWidth) / 2) * waistToAvgRatio;
 
   // 상하체 길이
-  const upperBodyLength = randomInRange(0.32, 0.38);
-  const lowerBodyLength = randomInRange(0.42, 0.48);
+  const upperBodyLength = randomInRange(rng, 0.32, 0.38);
+  const lowerBodyLength = randomInRange(rng, 0.42, 0.48);
 
   // 팔다리 길이
-  const armLength = randomInRange(0.28, 0.35);
-  const legLength = randomInRange(0.45, 0.52);
+  const armLength = randomInRange(rng, 0.28, 0.35);
+  const legLength = randomInRange(rng, 0.45, 0.52);
 
   return {
     shoulderWidth,
@@ -233,42 +242,47 @@ export function generateMockBodyRatios(targetType?: BodyShapeType): BodyRatios {
  *
  * @param includeIssues - 자세 문제 포함 여부 (기본 true)
  */
-export function generateMockPostureAnalysis(includeIssues = true): PostureAnalysis {
-  const shoulderTilt = randomInRange(-5, 5);
-  const hipTilt = randomInRange(-4, 4);
-  const spineAlignment = randomInRange(70, 95);
+export function generateMockPostureAnalysis(includeIssues = true, seed?: string): PostureAnalysis {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
+  const shoulderTilt = randomInRange(rng, -5, 5);
+  const hipTilt = randomInRange(rng, -4, 4);
+  const spineAlignment = randomInRange(rng, 70, 95);
 
   const headPositions: ('forward' | 'neutral' | 'backward')[] = ['forward', 'neutral', 'backward'];
-  const headPosition = randomChoice(headPositions);
+  const headPosition = randomChoice(rng, headPositions);
 
   const issues: PostureIssue[] = [];
 
-  if (includeIssues && Math.random() > 0.3) {
-    // 30% 확률로 자세 문제 추가
+  if (includeIssues && rng() > 0.3) {
+    // 약 70% 확률로 자세 문제 추가 (시드 결정론)
     const possibleIssues: PostureIssue[] = [
       {
         type: 'shoulder-imbalance',
-        severity: Math.ceil(randomInRange(1, 3)),
+        severity: Math.ceil(randomInRange(rng, 1, 3)),
         description: '왼쪽 어깨가 2.5도 높아요',
         exercises: ['사이드 플랭크', '덤벨 숄더 프레스', '스트레칭'],
       },
       {
         type: 'forward-head',
-        severity: Math.ceil(randomInRange(1, 4)),
+        severity: Math.ceil(randomInRange(rng, 1, 4)),
         description: '머리가 앞으로 나와 있어요 (거북목 의심)',
         exercises: ['턱 당기기', '목 스트레칭', '흉추 신전'],
       },
       {
         type: 'rounded-shoulders',
-        severity: Math.ceil(randomInRange(1, 3)),
+        severity: Math.ceil(randomInRange(rng, 1, 3)),
         description: '어깨가 앞으로 굽어 있어요',
         exercises: ['가슴 스트레칭', '로우 운동', '페이스 풀'],
       },
     ];
 
-    // 1-2개 문제 선택
-    const numIssues = Math.ceil(Math.random() * 2);
-    const shuffled = possibleIssues.sort(() => Math.random() - 0.5);
+    // 1-2개 문제 선택 (Fisher-Yates 결정론 셔플 — sort 비교자에 난수 주입 금지)
+    const numIssues = Math.ceil(rng() * 2);
+    const shuffled = [...possibleIssues];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     issues.push(...shuffled.slice(0, numIssues));
   }
 
@@ -296,13 +310,16 @@ export function generateMockBodyAnalysisResult(options?: {
   targetBodyType?: BodyShapeType;
   includePosture?: boolean;
   includeStyling?: boolean;
+  seed?: string;
 }): BodyAnalysisV2Result {
-  const { targetBodyType, includePosture = true, includeStyling = true } = options || {};
+  const { targetBodyType, includePosture = true, includeStyling = true, seed } = options || {};
+  const baseSeed = seed ?? DEFAULT_SEED;
 
-  // 체형 유형 결정
+  // 체형 유형 결정 (시드 결정론)
+  const shapeRng = createSeededRandom(`${baseSeed}:shape`);
   const bodyShape: BodyShapeType =
     targetBodyType ||
-    randomChoice<BodyShapeType>([
+    randomChoice<BodyShapeType>(shapeRng, [
       'rectangle',
       'inverted-triangle',
       'triangle',
@@ -310,16 +327,18 @@ export function generateMockBodyAnalysisResult(options?: {
       'hourglass',
     ]);
 
-  // 각 항목 생성
-  const poseDetection = generateMockPoseResult();
-  const bodyRatios = generateMockBodyRatios(bodyShape);
+  // 각 항목 생성 — 하위 항목마다 파생 시드로 전체 결과를 결정론적으로 재현
+  const poseDetection = generateMockPoseResult(`${baseSeed}:pose`);
+  const bodyRatios = generateMockBodyRatios(bodyShape, `${baseSeed}:ratios`);
   const bodyShapeInfo = {
     type: bodyShape,
     ...BODY_SHAPE_INFO[bodyShape],
   };
 
   // 선택적 항목
-  const postureAnalysis = includePosture ? generateMockPostureAnalysis() : undefined;
+  const postureAnalysis = includePosture
+    ? generateMockPostureAnalysis(true, `${baseSeed}:posture`)
+    : undefined;
 
   const stylingRecommendations = includeStyling
     ? {
@@ -339,7 +358,7 @@ export function generateMockBodyAnalysisResult(options?: {
     bodyShapeInfo,
     postureAnalysis,
     stylingRecommendations,
-    measurementConfidence: randomInRange(65, 85),
+    measurementConfidence: randomInRange(createSeededRandom(`${baseSeed}:conf`), 65, 85),
     analyzedAt: new Date().toISOString(),
     usedFallback: true,
   };
