@@ -116,6 +116,19 @@ describe('DailyBriefing', () => {
     expect(screen.getByTestId('integrated-session-prompt-card')).toBeInTheDocument();
   });
 
+  // 다이어리 추적 IA 진입 — 피부 분석이 있으면 홈 브리핑에서 피부 일기로 유도(재측정 링크)
+  it('피부 분석이 있으면 "내 상태"에 피부 일기 진입 링크를 렌더한다', () => {
+    render(<DailyBriefing analyses={analyses} />);
+    const link = screen.getByTestId('briefing-skin-diary-link');
+    expect(link).toHaveAttribute('href', '/analysis/skin/diary');
+  });
+
+  it('피부 분석이 없으면 피부 일기 진입 링크를 렌더하지 않는다', () => {
+    // analysesWithColors: PC만 있고 skin 없음 → 링크 미노출(빈 상태 유도는 다이어리 페이지가 담당)
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    expect(screen.queryByTestId('briefing-skin-diary-link')).not.toBeInTheDocument();
+  });
+
   it('PC 베스트 컬러가 있으면 "나의 컬러" 스와치 행을 렌더하고 PC 결과로 링크한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const section = screen.getByTestId('briefing-my-colors');

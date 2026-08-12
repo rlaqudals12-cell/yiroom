@@ -518,6 +518,18 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               내 프로필 전체 보기
               <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
+            {/* 피부 일기 재측정 유도 — 피부 분석을 한 사용자에게만 노출(다이어리 추적 IA 진입).
+                리텐션 엔진(before/after·상관·악화 알림)이 홈에서 도달 가능하게 배선 */}
+            {skinEntry && (
+              <Link
+                href="/analysis/skin/diary"
+                className="mt-2 flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
+                data-testid="briefing-skin-diary-link"
+              >
+                피부 일기로 오늘 컨디션 기록하기
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            )}
           </div>
         </section>
       </div>

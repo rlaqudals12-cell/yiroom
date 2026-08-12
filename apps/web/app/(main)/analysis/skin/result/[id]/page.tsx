@@ -1143,6 +1143,35 @@ export default function SkinAnalysisResultPage() {
                     </div>
                   </Link>
 
+                  {/* 피부 일기·변화 추이 진입 — 리텐션 엔진(다이어리·before/after·상관·악화 알림)이
+                      결과 페이지에서 도달 가능하게 배선. 클렌징 가이드 카드와 동일한 CTA 문법 재사용 */}
+                  <Link
+                    href="/analysis/skin/diary"
+                    className="block mb-6"
+                    data-testid="skin-diary-cta"
+                  >
+                    <div className="p-4 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <ClipboardList
+                            className="w-5 h-5 text-muted-foreground"
+                            strokeWidth={1.75}
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-foreground">
+                            피부 일기로 변화 기록하기
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            매일 컨디션을 기록하면 before/after 추이와 악화 알림을 받을 수 있어요
+                          </p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </Link>
+
                   {/* 다음 행동 — ResultPageInsights가 정본 (인사이트 + 루틴 다리 + 다음 분석) */}
                   <ResultPageInsights currentModule="skin" />
 

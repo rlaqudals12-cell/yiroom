@@ -54,6 +54,9 @@ import {
   SCALP_TYPES,
   HAIR_CONCERNS,
 } from '@/lib/mock/hair-analysis';
+// 퍼스널컬러 시즌 기반 염색 컬러 처방 (5축 고유 산출물 — AI 콜 0, 하드코딩 팔레트×시즌)
+import { recommendHairColors, type HairColorRecommendation } from '@/lib/analysis/hair';
+import { ReportEyebrow } from '@/components/analysis/report';
 
 // 점수 -> 상태
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -165,6 +168,10 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
 // 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
 const RESULT_TABS = ['basic', 'details'] as const;
 
+// 유효 퍼스널컬러 시즌 키 — 이 외 값이면 색을 지어내지 않고 빈 상태로 유도(정직성).
+// DB는 'Spring' 등 대문자로 저장하므로 소문자화 후 대조한다.
+const VALID_PC_SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
+
 export default function HairAnalysisResultPage() {
   const t = useTranslations('analysis');
   const params = useParams();
@@ -183,6 +190,8 @@ export default function HairAnalysisResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usedMock, setUsedMock] = useState(false);
+  // 퍼스널컬러 시즌 — 헤어 염색 컬러 처방 연동용(없으면 빈 상태로 퍼컬 진단 유도)
+  const [pcSeason, setPcSeason] = useState<string | null>(null);
   const { isExpert, toggleExpert } = useExpertMode();
   // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
   const [activeTab, setActiveTab] = useUrlTab(RESULT_TABS, 'basic');
@@ -216,6 +225,14 @@ export default function HairAnalysisResultPage() {
     '이룸-헤어분석-결과'
   );
 
+  // 시즌별 염색 컬러 — 하드코딩 팔레트(hex)×사용자 퍼컬 시즌, AI 콜 0.
+  // 유효 시즌이 없으면 빈 배열 → 빈 상태(퍼컬 진단 유도)로 표시(색을 지어내지 않는다).
+  const hairColors = useMemo<HairColorRecommendation[]>(() => {
+    const key = pcSeason?.toLowerCase();
+    if (!key || !VALID_PC_SEASONS.has(key)) return [];
+    return recommendHairColors(key);
+  }, [pcSeason]);
+
   // DB에서 분석 결과 조회
   const fetchAnalysis = useCallback(async () => {
     if (!isSignedIn || !analysisId || fetchedRef.current) return;
@@ -248,6 +265,22 @@ export default function HairAnalysisResultPage() {
         setUsedMock(true);
       }
       fetchedRef.current = true;
+
+      // 퍼스널컬러 시즌 조회 — 염색 컬러 처방 연동(실패해도 메인 결과 흐름 불변).
+      // 별도 try/catch로 격리: 퍼컬 미진단/조회 실패가 헤어 결과 표시를 막지 않게 한다.
+      try {
+        const { data: pcData } = await supabase
+          .from('personal_color_assessments')
+          .select('season')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (pcData?.season) {
+          setPcSeason(pcData.season);
+        }
+      } catch {
+        /* 퍼스널컬러 미진단/조회 실패 — 헤어 컬러 섹션은 빈 상태로 유도 */
+      }
     } catch (err) {
       console.error('[H-1] Fetch error:', err);
 
@@ -592,6 +625,64 @@ export default function HairAnalysisResultPage() {
                 )}
               </TabsContent>
             </Tabs>
+          )}
+
+          {/* 퍼스널컬러 기반 염색 컬러 처방 — 진단지 문법(색 스와치 + 속성).
+              하드코딩 팔레트×사용자 시즌, AI 콜 0. 시즌 미진단 시 정직한 빈 상태(색 지어내지 않음). */}
+          {result && (
+            <section
+              className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm"
+              data-testid="hair-color-prescription"
+            >
+              <ReportEyebrow>HAIR COLOR</ReportEyebrow>
+              <h3 className="mt-2 break-keep font-serif text-lg font-semibold text-foreground">
+                나에게 어울리는 염색 컬러
+              </h3>
+              {hairColors.length > 0 ? (
+                <>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    퍼스널컬러 시즌을 기준으로 어울리는 헤어 컬러예요
+                  </p>
+                  <ul className="mt-4 space-y-2" data-testid="hair-color-swatches">
+                    {hairColors.map((color) => (
+                      <li
+                        key={color.name}
+                        className="flex items-center gap-3"
+                        data-testid="hair-color-swatch"
+                      >
+                        {/* 색 스와치 — 하드코딩 hex를 그대로 표시(장식색·채도 증폭 없음) */}
+                        <span
+                          className="h-9 w-9 shrink-0 rounded-lg border border-border"
+                          style={{ backgroundColor: color.hexColor }}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground">{color.name}</p>
+                          <p className="text-xs text-muted-foreground">{color.tags.join(' · ')}</p>
+                        </div>
+                        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                          어울림 {color.suitability}%
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                // 정직한 빈 상태 — 시즌 미진단 시 색을 지어내지 않고 퍼컬 진단으로 유도
+                <div className="mt-3" data-testid="hair-color-empty">
+                  <p className="text-sm text-muted-foreground">
+                    퍼스널컬러 시즌을 알면 어울리는 염색 컬러를 알려드릴 수 있어요.
+                  </p>
+                  <Link
+                    href="/analysis/personal-color"
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
+                    data-testid="hair-color-pc-cta"
+                  >
+                    먼저 퍼스널 컬러 진단하기 →
+                  </Link>
+                </div>
+              )}
+            </section>
           )}
 
           {/* 헤어 스타일·염색 추천 안내 — 컷(×얼굴형)·염색(×퍼스널컬러)은 크로스축이라 종합 분석으로 유도 (ADR-107) */}
