@@ -163,8 +163,11 @@ export async function runPersonalColorAxis(
     let avoidColors: string[] = [];
     let usedFallback = false;
 
+    // 폴백 시드: 같은 사용자·같은 얼굴 사진이면 항상 같은 폴백 시즌·서브타입 (재현성 계약)
+    const fallbackSeed = buildFallbackSeed(clerkUserId, 'personal-color', input.faceImageBase64);
+
     if (isMockMode()) {
-      const mock = generateMockPC();
+      const mock = generateMockPC({ seed: fallbackSeed });
       classification = {
         season: mock.classification.season,
         tone: mock.classification.tone,
@@ -192,8 +195,8 @@ export async function runPersonalColorAxis(
         mainColors = palette.mainColors ?? [];
         avoidColors = palette.avoidColors ?? [];
       } else {
-        // Gemini 실패 → Mock fallback
-        const mock = generateMockPC();
+        // Gemini 실패 → Mock fallback (같은 사진이면 같은 폴백 결과)
+        const mock = generateMockPC({ seed: fallbackSeed });
         classification = {
           season: mock.classification.season,
           tone: mock.classification.tone,

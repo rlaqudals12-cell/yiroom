@@ -43,6 +43,7 @@ import {
   mapBrightnessToValueLevel,
   mapSaturationLevel,
 } from '@/lib/gemini/v2-analysis';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
@@ -120,13 +121,17 @@ export async function POST(req: NextRequest) {
       pipelineMeta = pipelineResult.pipeline;
     }
 
+    // 폴백 시드: 같은 사용자·같은 얼굴 사진이면 항상 같은 폴백 시즌·서브타입 (재현성 계약).
+    // 타임스탬프·세션 ID 같은 회차마다 바뀌는 값은 재료로 쓰지 않는다.
+    const fallbackSeed = buildFallbackSeed(userId, 'personal-color', imageBase64);
+
     // 분석 실행 (Real AI 또는 Mock)
     let result: PersonalColorV2Result;
     let usedFallback = false;
 
     if (FORCE_MOCK || useMock) {
       // Mock 모드
-      result = generateMockResult();
+      result = generateMockResult({ seed: fallbackSeed });
       usedFallback = true;
     } else {
       // Real AI 분석
@@ -204,15 +209,15 @@ export async function POST(req: NextRequest) {
             result.palette.eyeshadowColors = makeup.eyeColors;
             result.palette.blushColors = makeup.blushColors;
           } else {
-            // Gemini 실패: Mock으로 폴백
-            result = generateMockResult();
+            // Gemini 실패: Mock으로 폴백 (같은 사진이면 같은 폴백 결과)
+            result = generateMockResult({ seed: fallbackSeed });
             usedFallback = true;
           }
         }
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[PC-2] Analysis error, falling back to mock:', aiError);
-        result = generateMockResult();
+        result = generateMockResult({ seed: fallbackSeed });
         usedFallback = true;
       }
     }

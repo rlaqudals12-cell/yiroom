@@ -62,6 +62,7 @@ import type { CaptureConditions } from '@/lib/analysis/integrated';
 import { analyzeBodyWithGemini, analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
 import { getBodyShapeInfo, generateMockBodyAnalysisResult } from '@/lib/analysis/body-v2';
 import { recommendHairstyles, generateMockHairAnalysisResult } from '@/lib/analysis/hair';
+import { generateMockResult as generateMockPC } from '@/lib/analysis/personal-color-v2';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // prod CHECK 제약이 허용하는 값 (실제 personal_color_assessments 제약과 동일)
@@ -386,6 +387,52 @@ describe('axis-adapters — 폴백 시드 배선 (재현성)', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it('PC 폴백 시즌·서브타입이 "사용자+사진" 시드로 결정된다', async () => {
+    const input = baseInput();
+    const result = await runPersonalColorAxis('sess-seed-pc', USER, input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.usedFallback).toBe(true);
+
+    const expected = generateMockPC({
+      seed: buildFallbackSeed(USER, 'personal-color', input.faceImageBase64),
+    }).classification;
+
+    expect(result.data.season).toBe(expected.season);
+    expect(result.data.tone).toBe(expected.tone);
+    expect(result.data.undertone).toBe(expected.undertone);
+    expect(result.data.confidence).toBe(expected.confidence);
+  });
+
+  it('같은 사용자·같은 사진을 재분석해도 폴백 퍼스널컬러가 그대로다', async () => {
+    await runPersonalColorAxis('sess-seed-pc-1', USER, baseInput());
+    await runPersonalColorAxis('sess-seed-pc-2', USER, baseInput());
+
+    const rows = capturedInserts
+      .filter((c) => c.table === 'personal_color_assessments')
+      .map((c) => ({
+        season: c.payload.season,
+        subtype: c.payload.season_subtype,
+        confidence: c.payload.confidence,
+        best: c.payload.best_colors,
+      }));
+
+    expect(rows).toHaveLength(2);
+    // 세션 ID가 달라도 시즌·서브타입·신뢰도·팔레트까지 동일 (세션은 시드 재료가 아니다)
+    expect(rows[0]).toEqual(rows[1]);
+  });
+
+  it('사용자가 다르면 폴백 퍼스널컬러가 한 시즌으로 고정되지 않는다', () => {
+    // 시즌 가중 추첨은 유지되어야 한다 — 시드마다 다른 시즌이 나올 수 있어야 분포가 살아있다
+    const seasons = ['u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8'].map(
+      (user) =>
+        generateMockPC({ seed: buildFallbackSeed(user, 'personal-color', 'img') }).classification
+          .season
+    );
+    expect(new Set(seasons).size).toBeGreaterThan(1);
   });
 
   it('헤어 폴백 얼굴형이 "사용자+사진" 시드로 결정된다', async () => {

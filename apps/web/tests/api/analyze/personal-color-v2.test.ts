@@ -74,6 +74,7 @@ import {
   generateMockResult,
   getTonePalette,
 } from '@/lib/analysis/personal-color-v2';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { NextRequest } from 'next/server';
 
 // Mock 요청 헬퍼 (NextRequest 호환)
@@ -285,6 +286,46 @@ describe('POST /api/analyze/personal-color-v2', () => {
       expect(json.success).toBe(true);
       expect(json.usedFallback).toBe(true);
       expect(generateMockResult).toHaveBeenCalled();
+    });
+
+    it('Mock 폴백에 "사용자+사진" 시드를 전달한다 (재현성 계약)', async () => {
+      const imageBase64 = 'data:image/jpeg;base64,/9j/seedtest';
+      await POST(createMockPostRequest({ imageBase64, useMock: true }));
+
+      // 시드를 안 넘기면 모든 사용자가 같은 기본 폴백을 받는다 — 배선 자체를 고정한다
+      expect(generateMockResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'personal-color', imageBase64),
+      });
+    });
+
+    it('같은 사용자·같은 사진이면 회차가 달라도 같은 시드를 쓴다', async () => {
+      const imageBase64 = 'data:image/jpeg;base64,/9j/repeat';
+      await POST(createMockPostRequest({ imageBase64, useMock: true }));
+      await POST(createMockPostRequest({ imageBase64, useMock: true }));
+
+      const seeds = vi
+        .mocked(generateMockResult)
+        .mock.calls.map((call) => (call[0] as { seed?: string } | undefined)?.seed);
+
+      expect(seeds).toHaveLength(2);
+      expect(seeds[0]).toBeDefined();
+      // 타임스탬프 같은 회차 의존 재료가 섞이면 여기서 깨진다
+      expect(seeds[0]).toBe(seeds[1]);
+    });
+
+    it('사진이 다르면 시드도 다르다', async () => {
+      await POST(
+        createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/AAA', useMock: true })
+      );
+      await POST(
+        createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/BBBBBB', useMock: true })
+      );
+
+      const seeds = vi
+        .mocked(generateMockResult)
+        .mock.calls.map((call) => (call[0] as { seed?: string } | undefined)?.seed);
+
+      expect(seeds[0]).not.toBe(seeds[1]);
     });
 
     it('Mock 분석 시 Gemini를 호출하지 않는다', async () => {

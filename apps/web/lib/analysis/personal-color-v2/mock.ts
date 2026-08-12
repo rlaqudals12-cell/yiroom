@@ -15,6 +15,7 @@ import type {
 } from './types';
 import { TWELVE_TONE_REFERENCE_LAB, TWELVE_TONE_LABELS } from './types';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
 
 // ============================================
 // 톤별 추천 팔레트
@@ -144,18 +145,27 @@ export const TONE_PALETTES: Record<TwelveTone, TonePalette> = {
 
 // ============================================
 // Mock 결과 생성 함수
+//
+// 재현성 계약: 폴백 Mock은 시드(사용자·이미지 지문)로부터 결정론적으로 생성한다.
+// Math.random() 금지 — 같은 사진을 재분석할 때마다 시즌·서브타입이 널뛰면
+// "퍼스널컬러 = 나의 고정된 속성"이라는 제품 계약 자체가 깨진다.
+// 시드 미지정 시 고정 기본 시드로 항상 동일한 결과(무작위 아님).
 // ============================================
 
 /**
- * 랜덤 12톤 선택 (가중치 적용)
+ * 12톤 가중 추첨 (시드 기반 결정론)
  *
  * 한국인에게 흔한 톤에 가중치 부여:
  * - muted-summer, true-autumn, true-spring: 높은 확률
  * - deep-winter, bright-winter: 낮은 확률
  *
- * @returns 랜덤 12톤
+ * 왜 가중치를 유지하는가: 폴백이 특정 시즌으로 고정되면 Mock 사용자 전원이
+ * 같은 시즌으로 몰려 분포가 왜곡된다. 시드 PRNG로 같은 가중 추첨을 돌린다.
+ *
+ * @param rng - 시드 기반 난수 생성기
+ * @returns 가중 추첨된 12톤
  */
-function selectRandomTone(): TwelveTone {
+function selectWeightedTone(rng: () => number): TwelveTone {
   const weightedTones: Array<{ tone: TwelveTone; weight: number }> = [
     { tone: 'light-spring', weight: 8 },
     { tone: 'true-spring', weight: 12 },
@@ -172,7 +182,7 @@ function selectRandomTone(): TwelveTone {
   ];
 
   const totalWeight = weightedTones.reduce((sum, t) => sum + t.weight, 0);
-  let random = Math.random() * totalWeight;
+  let random = rng() * totalWeight;
 
   for (const { tone, weight } of weightedTones) {
     random -= weight;
@@ -185,15 +195,16 @@ function selectRandomTone(): TwelveTone {
 /**
  * Mock Lab 값 생성
  *
- * 레퍼런스 Lab에 약간의 랜덤 편차 추가
+ * 레퍼런스 Lab에 약간의 편차 추가 (시드 기반 결정론)
  *
  * @param tone - 12톤 타입
+ * @param rng - 시드 기반 난수 생성기
  * @returns Mock Lab 값
  */
-function generateMockLab(tone: TwelveTone): LabColor {
+function generateMockLab(tone: TwelveTone, rng: () => number): LabColor {
   const ref = TWELVE_TONE_REFERENCE_LAB[tone];
-  // ±3 범위의 랜덤 편차
-  const variance = () => (Math.random() - 0.5) * 6;
+  // ±3 범위의 편차 (시드 결정론)
+  const variance = () => (rng() - 0.5) * 6;
 
   return {
     L: Math.max(0, Math.min(100, ref.L + variance())),
@@ -208,9 +219,13 @@ function generateMockLab(tone: TwelveTone): LabColor {
  * 선택된 톤에 가장 높은 점수, 인접 톤에 중간 점수
  *
  * @param selectedTone - 선택된 톤
+ * @param rng - 시드 기반 난수 생성기
  * @returns 톤별 점수
  */
-function generateMockToneScores(selectedTone: TwelveTone): Record<TwelveTone, number> {
+function generateMockToneScores(
+  selectedTone: TwelveTone,
+  rng: () => number
+): Record<TwelveTone, number> {
   const tones = Object.keys(TWELVE_TONE_REFERENCE_LAB) as TwelveTone[];
   const scores: Partial<Record<TwelveTone, number>> = {};
 
@@ -236,13 +251,13 @@ function generateMockToneScores(selectedTone: TwelveTone): Record<TwelveTone, nu
 
     if (tone === selectedTone) {
       // 선택된 톤: 85-95점
-      score = 85 + Math.random() * 10;
+      score = 85 + rng() * 10;
     } else if (seasonGroups[selectedSeason]?.includes(tone)) {
       // 같은 시즌 내 다른 톤: 55-75점
-      score = 55 + Math.random() * 20;
+      score = 55 + rng() * 20;
     } else {
       // 다른 시즌: 20-50점
-      score = 20 + Math.random() * 30;
+      score = 20 + rng() * 30;
     }
 
     scores[tone] = Math.round(score * 10) / 10;
@@ -254,13 +269,19 @@ function generateMockToneScores(selectedTone: TwelveTone): Record<TwelveTone, nu
 /**
  * Mock 분류 결과 생성
  *
- * @param options - 생성 옵션
+ * 같은 시드 → 항상 같은 톤·시즌·서브타입·confidence·Lab (재현성 계약).
+ * 항목별로 파생 시드를 쓰는 이유: preferredTone을 지정해도 confidence·점수가
+ * 흔들리지 않도록 난수 시퀀스를 항목마다 독립시킨다.
+ *
+ * @param options - 생성 옵션 (seed 미지정 시 고정 기본 시드)
  * @returns Mock 분류 결과
  */
 export function generateMockClassification(options?: {
   preferredTone?: TwelveTone;
+  seed?: string;
 }): TwelveToneClassificationResult {
-  const tone = options?.preferredTone ?? selectRandomTone();
+  const baseSeed = options?.seed ?? DEFAULT_SEED;
+  const tone = options?.preferredTone ?? selectWeightedTone(createSeededRandom(`${baseSeed}:tone`));
   const parts = tone.split('-');
   const subtype = parts[0] as 'light' | 'true' | 'bright' | 'muted' | 'deep';
   const season = parts[1] as 'spring' | 'summer' | 'autumn' | 'winter';
@@ -282,9 +303,9 @@ export function generateMockClassification(options?: {
     season,
     subtype,
     undertone,
-    confidence: 75 + Math.round(Math.random() * 15), // 75-90
-    toneScores: generateMockToneScores(tone),
-    measuredLab: generateMockLab(tone),
+    confidence: 75 + Math.round(createSeededRandom(`${baseSeed}:confidence`)() * 15), // 75-90
+    toneScores: generateMockToneScores(tone, createSeededRandom(`${baseSeed}:scores`)),
+    measuredLab: generateMockLab(tone, createSeededRandom(`${baseSeed}:lab`)),
   };
 }
 
@@ -293,25 +314,30 @@ export function generateMockClassification(options?: {
  *
  * AI 분석 실패 시 Fallback으로 사용
  *
- * @param options - 생성 옵션
+ * @param options - 생성 옵션 (seed 미지정 시 고정 기본 시드)
  * @returns Mock 분석 결과
  *
  * @example
- * const mockResult = generateMockResult();
- * // AI 실패 시 fallback으로 사용
+ * // 같은 사용자·같은 사진이면 항상 같은 결과
+ * const mockResult = generateMockResult({ seed: buildFallbackSeed(userId, 'personal-color', img) });
  */
 export function generateMockResult(options?: {
   preferredTone?: TwelveTone;
   includeDetailedAnalysis?: boolean;
+  seed?: string;
 }): PersonalColorV2Result {
+  const baseSeed = options?.seed ?? DEFAULT_SEED;
   const classification = generateMockClassification({
     preferredTone: options?.preferredTone,
+    seed: baseSeed,
   });
 
   const palette = TONE_PALETTES[classification.tone];
 
+  // 레코드 ID는 재현 대상이 아니다 — 저장 레코드마다 고유해야 하므로 UUID 사용
+  // (분석 내용은 시드 결정론, 식별자는 고유: 두 계약이 서로 다른 층위).
   const result: PersonalColorV2Result = {
-    id: `mock_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: `mock_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
     classification,
     palette,
     stylingRecommendations: {
@@ -333,17 +359,20 @@ export function generateMockResult(options?: {
 
   // 상세 분석 포함 옵션
   if (options?.includeDetailedAnalysis) {
+    // 모발·눈동자 Lab도 같은 시드에서 결정론적으로 — 재분석 때마다 흔들리면
+    // 대비(contrast) 해석이 회차마다 달라진다.
+    const detailRng = createSeededRandom(`${baseSeed}:detail`);
     result.detailedAnalysis = {
       skinToneLab: classification.measuredLab,
       hairColorLab: {
-        L: 30 + Math.random() * 20,
-        a: 2 + Math.random() * 4,
-        b: 5 + Math.random() * 10,
+        L: 30 + detailRng() * 20,
+        a: 2 + detailRng() * 4,
+        b: 5 + detailRng() * 10,
       },
       eyeColorLab: {
-        L: 25 + Math.random() * 15,
-        a: 1 + Math.random() * 3,
-        b: 3 + Math.random() * 7,
+        L: 25 + detailRng() * 15,
+        a: 1 + detailRng() * 3,
+        b: 3 + detailRng() * 7,
       },
       // contrastLevel(퍼스널 대비)은 모발-피부 명도 실측값 — Mock 폴백에서는 지어내지 않고
       // 생략한다(ADR-116 결정 2, FORCE_MOCK_AI 경로). 서브타입으로 추정하던 하드코딩 제거.

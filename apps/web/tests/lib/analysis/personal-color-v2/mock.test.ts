@@ -238,13 +238,22 @@ describe('generateMockClassification', () => {
   });
 
   describe('confidence 값', () => {
-    it('confidence가 75-90 범위이다', () => {
-      // 여러 번 실행하여 범위 확인
+    it('confidence가 75-90 범위이며 호출마다 흔들리지 않는다', () => {
+      // 시드 미지정 = 고정 기본 시드 → 반복 호출해도 항상 같은 값 (Math.random 없음)
+      const first = generateMockClassification().confidence;
       for (let i = 0; i < 10; i++) {
         const result = generateMockClassification();
+        expect(result.confidence).toBe(first);
         expect(result.confidence).toBeGreaterThanOrEqual(75);
         expect(result.confidence).toBeLessThanOrEqual(90);
       }
+    });
+
+    it('시드가 다르면 confidence도 달라질 수 있다 (상수 고정이 아님)', () => {
+      const values = ['s1', 's2', 's3', 's4', 's5', 's6'].map(
+        (seed) => generateMockClassification({ seed }).confidence
+      );
+      expect(new Set(values).size).toBeGreaterThan(1);
     });
   });
 
@@ -278,6 +287,8 @@ describe('generateMockClassification', () => {
 
       expect(selectedScore).toBeGreaterThanOrEqual(85);
       expect(selectedScore).toBeLessThanOrEqual(95);
+      // 12톤 전체에서 최댓값이어야 한다 (시드가 바뀌어도 순위는 깨지지 않는다)
+      expect(selectedScore).toBe(Math.max(...Object.values(result.toneScores)));
     });
 
     it('같은 시즌 내 다른 톤의 점수는 55-75 범위이다', () => {
@@ -441,6 +452,87 @@ describe('generateMockResult', () => {
       });
       expect(deepResult.detailedAnalysis?.valueLevel).toBe('deep');
     });
+  });
+});
+
+/**
+ * 시드 결정론 (재현성 계약).
+ *
+ * 퍼스널컬러는 "나의 고정된 속성"으로 팔리는 판정이다. 폴백 Mock이 Math.random을 쓰면
+ * 같은 사진을 재분석할 때마다 시즌·서브타입이 널뛰어 제품 계약 자체가 깨진다.
+ * 같은 시드 = 같은 판정, 시드가 다르면 판정도 갈릴 수 있음(상수 고정 아님)을 고정한다.
+ */
+describe('시드 결정론 (재현성 계약)', () => {
+  const SEED = 'user-42:personal-color:image-abc';
+
+  it('같은 시드는 분류 결과 전체를 재현한다', () => {
+    const a = generateMockClassification({ seed: SEED });
+    const b = generateMockClassification({ seed: SEED });
+
+    expect(a).toEqual(b);
+    // 시즌·서브타입·신뢰도까지 동일 (표시되는 정체성 값 전부)
+    expect(a.tone).toBe(b.tone);
+    expect(a.season).toBe(b.season);
+    expect(a.subtype).toBe(b.subtype);
+    expect(a.confidence).toBe(b.confidence);
+    expect(a.measuredLab).toEqual(b.measuredLab);
+  });
+
+  it('시드 미지정 시 고정 기본 시드로 항상 같은 결과 (Math.random 없음)', () => {
+    expect(generateMockClassification()).toEqual(generateMockClassification());
+  });
+
+  it('서로 다른 시드는 서로 다른 톤을 낼 수 있다 (한 톤으로 고정되지 않음)', () => {
+    const tones = Array.from(
+      { length: 24 },
+      (_, i) => generateMockClassification({ seed: `seed-${i}` }).tone
+    );
+    expect(new Set(tones).size).toBeGreaterThan(1);
+  });
+
+  it('시즌 가중 추첨이 유지된다 (네 시즌 모두 뽑힐 수 있다)', () => {
+    // 특정 시즌으로 상수 고정하면 Mock 사용자 전원이 같은 시즌으로 몰린다
+    const seasons = Array.from(
+      { length: 120 },
+      (_, i) => generateMockClassification({ seed: `dist-${i}` }).season
+    );
+    expect(new Set(seasons)).toEqual(new Set(['spring', 'summer', 'autumn', 'winter']));
+  });
+
+  it('preferredTone을 지정해도 confidence는 시드로만 결정된다 (항목 독립)', () => {
+    const free = generateMockClassification({ seed: SEED }).confidence;
+    const fixed = generateMockClassification({
+      seed: SEED,
+      preferredTone: 'deep-winter',
+    }).confidence;
+    expect(fixed).toBe(free);
+  });
+
+  it('generateMockResult: 같은 시드는 분석 내용을 재현하되 레코드 ID는 고유하다', () => {
+    const a = generateMockResult({ seed: SEED, includeDetailedAnalysis: true });
+    const b = generateMockResult({ seed: SEED, includeDetailedAnalysis: true });
+
+    expect(a.classification).toEqual(b.classification);
+    expect(a.palette).toEqual(b.palette);
+    expect(a.stylingRecommendations).toEqual(b.stylingRecommendations);
+    // 모발·눈동자 Lab까지 결정론 (대비 해석이 회차마다 달라지면 안 된다)
+    expect(a.detailedAnalysis).toEqual(b.detailedAnalysis);
+
+    // 레코드 ID는 재현 대상이 아니라 레코드마다 고유
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('generateMockResult: 시드가 다르면 팔레트도 갈릴 수 있다', () => {
+    const palettes = Array.from(
+      { length: 24 },
+      (_, i) => generateMockResult({ seed: `pal-${i}` }).palette.tone
+    );
+    expect(new Set(palettes).size).toBeGreaterThan(1);
+  });
+
+  it('usedFallback은 시드와 무관하게 항상 true (정직성 계약)', () => {
+    expect(generateMockResult({ seed: SEED }).usedFallback).toBe(true);
+    expect(generateMockResult().usedFallback).toBe(true);
   });
 });
 
