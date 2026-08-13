@@ -1799,13 +1799,17 @@ export interface PersonalColorMultiAngleInput {
  *
  * @param faceImageBase64 - 정면 얼굴 이미지 또는 MultiAngleInput 객체
  * @param wristImageBase64 - 손목 이미지 (선택, 하위 호환용)
+ * @param locale - 결과 자유 텍스트 언어
+ * @param fallbackSeed - 폴백 Mock 결정론 시드. 같은 사용자·같은 사진이면 폴백 시즌도 같아야
+ *   재현성 계약이 지켜진다(미지정 시 고정 기본 시드 — 난수는 어느 경우에도 쓰지 않는다).
  * @returns 퍼스널 컬러 분석 결과
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 export async function analyzePersonalColor(
   faceImageBase64: string | PersonalColorMultiAngleInput,
   wristImageBase64?: string,
-  locale: OutputLocale = 'ko'
+  locale: OutputLocale = 'ko',
+  fallbackSeed?: string
 ): Promise<GeminiPersonalColorResult> {
   // 입력 정규화: 다각도 객체 또는 단일 이미지
   let input: PersonalColorMultiAngleInput;
@@ -1828,7 +1832,9 @@ export async function analyzePersonalColor(
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
     geminiLogger.info('[PC-1] Using mock (FORCE_MOCK_AI=true)');
-    const mockResult = generateMockPersonalColorResult() as unknown as GeminiPersonalColorResult;
+    const mockResult = generateMockPersonalColorResult(undefined, {
+      seed: fallbackSeed,
+    }) as unknown as GeminiPersonalColorResult;
     // 다각도 분석 시 신뢰도 향상
     if (hasMultiAngle && mockResult.imageQuality) {
       mockResult.imageQuality.analysisReliability = 'high';

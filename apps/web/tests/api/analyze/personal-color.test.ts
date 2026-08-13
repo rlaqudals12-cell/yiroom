@@ -46,6 +46,8 @@ import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzePersonalColor } from '@/lib/gemini';
 import { generateMockPersonalColorResult } from '@/lib/mock/personal-color';
+// 시드 유틸은 모킹하지 않는다 — 라우트가 실제로 만드는 시드와 동일한 값을 테스트에서 재계산해 대조
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { NextRequest } from 'next/server';
 
 // Mock 요청 헬퍼 (NextRequest 호환)
@@ -297,6 +299,87 @@ describe('POST /api/analyze/personal-color', () => {
 
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
+    });
+  });
+
+  // 재현성 계약: 폴백 Mock은 난수가 아니라 "사용자 + 축 + 사진 지문" 시드로 결정되어야 한다.
+  // 시드 배선이 끊기면 같은 사진 재분석마다 시즌이 널뛴다 (V1이 웹·모바일 주력 경로).
+  describe('폴백 시드 배선', () => {
+    it('Mock 모드에서 buildFallbackSeed(userId, personal-color, 이미지) 시드를 전달한다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64, useMock: true }));
+
+      expect(generateMockPersonalColorResult).toHaveBeenCalledWith(undefined, {
+        seed: buildFallbackSeed('user_test123', 'personal-color', MOCK_BASE64),
+      });
+    });
+
+    it('AI 호출에도 같은 폴백 시드를 넘긴다 (gemini 내부 Mock 경로 대비)', async () => {
+      vi.mocked(analyzePersonalColor).mockResolvedValue(mockPersonalColorResult);
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+
+      expect(analyzePersonalColor).toHaveBeenCalledWith(
+        expect.objectContaining({ frontImageBase64: MOCK_BASE64 }),
+        undefined,
+        'ko',
+        buildFallbackSeed('user_test123', 'personal-color', MOCK_BASE64)
+      );
+    });
+
+    it('AI 실패 폴백에도 같은 시드를 전달한다', async () => {
+      vi.mocked(analyzePersonalColor).mockRejectedValue(new Error('API Error'));
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+
+      expect(generateMockPersonalColorResult).toHaveBeenCalledWith(undefined, {
+        seed: buildFallbackSeed('user_test123', 'personal-color', MOCK_BASE64),
+      });
+    });
+
+    it('다각도 요청은 정면 이미지를 시드 재료로 쓴다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(
+        createMockPostRequest({
+          frontImageBase64: MOCK_BASE64_FRONT,
+          leftImageBase64: MOCK_BASE64_LEFT,
+          useMock: true,
+        })
+      );
+
+      expect(generateMockPersonalColorResult).toHaveBeenCalledWith(undefined, {
+        seed: buildFallbackSeed('user_test123', 'personal-color', MOCK_BASE64_FRONT),
+      });
+    });
+
+    it('같은 사진을 다시 분석하면 같은 시드가 전달된다 (시즌 널뜀 방지)', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64, useMock: true }));
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64, useMock: true }));
+
+      const seeds = vi
+        .mocked(generateMockPersonalColorResult)
+        .mock.calls.map((call) => (call[1] as { seed?: string } | undefined)?.seed);
+      expect(seeds).toHaveLength(2);
+      expect(seeds[0]).toBe(seeds[1]);
+      expect(seeds[0]).toBeDefined();
+    });
+
+    it('다른 사진은 다른 시드를 만든다', async () => {
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64, useMock: true }));
+      await POST(createMockPostRequest({ imageBase64: MOCK_BASE64_WRIST, useMock: true }));
+
+      const seeds = vi
+        .mocked(generateMockPersonalColorResult)
+        .mock.calls.map((call) => (call[1] as { seed?: string } | undefined)?.seed);
+      expect(seeds[0]).not.toBe(seeds[1]);
     });
   });
 

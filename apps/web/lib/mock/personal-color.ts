@@ -1,5 +1,10 @@
 // PC-1 퍼스널 컬러 진단 Mock 데이터 및 타입 정의
 
+// 왜 시드 PRNG인가: 폴백 Mock이 호출마다 새 난수를 뽑으면 같은 사진을 재분석할 때마다
+// 시즌이 널뛰어 "재현성"(이룸의 핵심 계약)이 깨진다. V2와 같은 시드 규약을 쓰므로
+// 같은 사용자·같은 사진이면 V1/V2 경로와 무관하게 같은 폴백 결과가 나온다.
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
+
 // 4계절 타입
 export type SeasonType = 'spring' | 'summer' | 'autumn' | 'winter';
 
@@ -1294,11 +1299,29 @@ export const calculateSeasonType = (
   return { seasonType, tone, depth, confidence: Math.round(confidence) };
 };
 
-// Mock 분석 결과 생성
+/**
+ * Mock 분석 결과 생성 (폴백 전용)
+ *
+ * 같은 시드 → 항상 같은 시즌·confidence·인사이트 (재현성 계약).
+ * 항목별로 파생 시드를 쓰는 이유: 시즌 추첨 시퀀스와 confidence·인사이트 시퀀스를
+ * 서로 독립시켜야 문진 응답 유무에 따라 값이 연쇄로 흔들리지 않는다.
+ *
+ * @param answers - 문진 응답 (있으면 계산, 없으면 시드 기반 가중 추첨)
+ * @param options - 생성 옵션 (seed 미지정 시 고정 기본 시드 — 난수는 어느 경우에도 쓰지 않는다)
+ *
+ * @example
+ * // 같은 사용자·같은 사진이면 항상 같은 결과
+ * generateMockPersonalColorResult(undefined, {
+ *   seed: buildFallbackSeed(userId, 'personal-color', imageBase64),
+ * });
+ */
 export const generateMockPersonalColorResult = (
-  answers?: QuestionnaireAnswer[]
+  answers?: QuestionnaireAnswer[],
+  options?: { seed?: string }
 ): PersonalColorResult => {
-  // 응답이 있으면 계산, 없으면 랜덤
+  const baseSeed = options?.seed ?? DEFAULT_SEED;
+
+  // 응답이 있으면 계산, 없으면 시드 기반 가중 추첨
   let seasonType: SeasonType;
   let tone: ToneType;
   let depth: DepthType;
@@ -1311,8 +1334,9 @@ export const generateMockPersonalColorResult = (
     depth = result.depth;
     confidence = result.confidence;
   } else {
-    // 통계적 비율에 따른 랜덤 선택
-    const rand = Math.random() * 100;
+    // 통계적 비율(한국인 시즌 분포)에 따른 가중 추첨 — 분포는 그대로 두고 난수원만 시드 PRNG로 교체.
+    // 상수로 고정하지 않는 이유: 시드가 다르면(=다른 사용자·다른 사진) 4시즌이 분포대로 나와야 한다.
+    const rand = createSeededRandom(`${baseSeed}:season`)() * 100;
     if (rand < 25) {
       seasonType = 'spring';
       tone = 'warm';
@@ -1332,7 +1356,7 @@ export const generateMockPersonalColorResult = (
       tone = 'cool';
       depth = 'deep';
     }
-    confidence = Math.floor(Math.random() * 11) + 85; // 85~95%
+    confidence = Math.floor(createSeededRandom(`${baseSeed}:confidence`)() * 11) + 85; // 85~95%
   }
 
   const info = SEASON_INFO[seasonType];
@@ -1352,8 +1376,13 @@ export const generateMockPersonalColorResult = (
     foundationRecommendations: FOUNDATION_RECOMMENDATIONS[seasonType],
     clothingRecommendations: generateClothingRecommendations(seasonType),
     styleDescription: STYLE_DESCRIPTIONS[seasonType],
-    insight: insights[Math.floor(Math.random() * insights.length)],
-    easyInsight: easyInsights[Math.floor(Math.random() * easyInsights.length)],
+    // 인사이트도 시드 결정 — 같은 사진을 다시 올렸는데 설명 문구가 바뀌면
+    // 사용자에겐 "분석이 매번 달라진다"로 읽힌다(재현성 계약 위반).
+    insight: insights[Math.floor(createSeededRandom(`${baseSeed}:insight`)() * insights.length)],
+    easyInsight:
+      easyInsights[
+        Math.floor(createSeededRandom(`${baseSeed}:easy-insight`)() * easyInsights.length)
+      ],
     analyzedAt: new Date(),
   };
 };
@@ -1529,10 +1558,17 @@ export const COLOR_COMPARISON_SETS: ColorComparisonSet[] = [
   },
 ];
 
-// 배경색 비교 결과로 시즌 타입 계산
+/**
+ * 배경색 비교 결과로 시즌 타입 계산
+ *
+ * @param answers - 배경색 비교 응답
+ * @param options - 생성 옵션 (seed 미지정 시 고정 기본 시드)
+ */
 export const calculateSeasonFromComparison = (
-  answers: ColorComparisonAnswer[]
+  answers: ColorComparisonAnswer[],
+  options?: { seed?: string }
 ): { seasonType: SeasonType; tone: ToneType; depth: DepthType; confidence: number } => {
+  const baseSeed = options?.seed ?? DEFAULT_SEED;
   let tone: ToneType = 'warm';
   let depth: DepthType = 'light';
 
@@ -1559,8 +1595,8 @@ export const calculateSeasonFromComparison = (
   };
   const seasonType = seasonMap[`${tone}-${depth}`];
 
-  // 신뢰도: 배경색 비교는 AI 분석과 결합하여 높은 신뢰도 제공
-  const confidence = 88 + Math.floor(Math.random() * 7); // 88~94%
+  // 신뢰도: 배경색 비교는 AI 분석과 결합하여 높은 신뢰도 제공 (난수 아닌 시드 결정)
+  const confidence = 88 + Math.floor(createSeededRandom(`${baseSeed}:comparison-confidence`)() * 7); // 88~94%
 
   return { seasonType, tone, depth, confidence };
 };

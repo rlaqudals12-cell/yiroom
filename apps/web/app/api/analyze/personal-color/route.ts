@@ -21,6 +21,7 @@ import {
   STYLE_DESCRIPTIONS,
   type SeasonType,
 } from '@/lib/mock/personal-color';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
@@ -137,6 +138,15 @@ export async function POST(req: NextRequest) {
       wristImageBase64,
     };
 
+    // 폴백 Mock 시드 — 같은 사용자·같은 얼굴 사진이면 폴백 시즌도 항상 같아야 한다(재현성 계약).
+    // 축 이름은 v2 라우트와 동일한 'personal-color': V1/V2 경로가 달라도 같은 시드가 나온다.
+    // 타임스탬프·세션 ID처럼 회차마다 바뀌는 값은 시드 재료로 쓰지 않는다.
+    const fallbackSeed = buildFallbackSeed(
+      userId,
+      'personal-color',
+      frontImageBase64 || imageBase64
+    );
+
     // 다각도 분석 여부 (신뢰도 결정에 사용)
     const hasMultiAngle = !!(leftImageBase64 || rightImageBase64);
     const imagesCount = 1 + (leftImageBase64 ? 1 : 0) + (rightImageBase64 ? 1 : 0);
@@ -156,8 +166,8 @@ export async function POST(req: NextRequest) {
     let usedMock = false;
 
     if (FORCE_MOCK || useMock) {
-      // Mock 모드
-      const mockResult = generateMockPersonalColorResult();
+      // Mock 모드 (같은 사진이면 같은 Mock 결과)
+      const mockResult = generateMockPersonalColorResult(undefined, { seed: fallbackSeed });
       const isCool = mockResult.tone === 'cool';
       const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
       aiResult = {
@@ -193,7 +203,8 @@ export async function POST(req: NextRequest) {
     } else {
       // Real AI 분석
       try {
-        aiResult = await analyzePersonalColor(analysisInput);
+        // 4번째 인자 = 폴백 시드: gemini 내부 Mock 경로(FORCE_MOCK_AI·키 부재)도 같은 시드를 쓴다
+        aiResult = await analyzePersonalColor(analysisInput, undefined, 'ko', fallbackSeed);
 
         // AI 결과에 analysisEvidence/imageQuality가 없으면 기본값 제공
         const isCool = aiResult.tone === 'cool';
@@ -299,7 +310,7 @@ export async function POST(req: NextRequest) {
       } catch (aiError) {
         // AI 실패 시 Mock Fallback — 데모/안정성 보장
         console.error('[PC-1] Gemini error, falling back to mock:', aiError);
-        const mockResult = generateMockPersonalColorResult();
+        const mockResult = generateMockPersonalColorResult(undefined, { seed: fallbackSeed });
         const isCool = mockResult.tone === 'cool';
         const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
         aiResult = {

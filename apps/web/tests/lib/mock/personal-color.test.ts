@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   generateMockPersonalColorResult,
+  calculateSeasonFromComparison,
   calculateSeasonType,
   SEASON_INFO,
   BEST_COLORS,
@@ -22,7 +23,7 @@ import {
 
 describe('PC-1 퍼스널 컬러 Mock', () => {
   describe('generateMockPersonalColorResult', () => {
-    it('응답 없이 호출하면 랜덤 결과를 반환한다', () => {
+    it('응답 없이 호출하면 시드 기반 결과를 반환한다', () => {
       const result = generateMockPersonalColorResult();
 
       expect(result).toBeDefined();
@@ -96,6 +97,156 @@ describe('PC-1 퍼스널 컬러 Mock', () => {
     it('분석 시간을 반환한다', () => {
       const result = generateMockPersonalColorResult();
       expect(result.analyzedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  // 재현성 계약: 같은 사용자·같은 사진이면 폴백 결과도 항상 같아야 한다.
+  // (Math.random 시절엔 같은 사진 재분석마다 시즌이 널뛰었다)
+  describe('폴백 결정론 (시드)', () => {
+    // buildFallbackSeed(userId, axis, image)와 동일한 규약의 테스트용 시드
+    const seedA = 'user_a:personal-color:1234-abc';
+    const seedB = 'user_b:personal-color:1234-abc';
+
+    it('같은 시드는 시즌·톤·깊이·confidence·인사이트까지 동일하게 재현한다', () => {
+      const first = generateMockPersonalColorResult(undefined, { seed: seedA });
+      const second = generateMockPersonalColorResult(undefined, { seed: seedA });
+
+      expect(second.seasonType).toBe(first.seasonType);
+      expect(second.tone).toBe(first.tone);
+      expect(second.depth).toBe(first.depth);
+      expect(second.confidence).toBe(first.confidence);
+      expect(second.insight).toBe(first.insight);
+      expect(second.easyInsight).toEqual(first.easyInsight);
+    });
+
+    it('시드를 지정하지 않아도 고정 기본 시드로 항상 같은 결과를 낸다 (난수 아님)', () => {
+      const results = Array.from({ length: 5 }, () => generateMockPersonalColorResult());
+
+      results.forEach((result) => {
+        expect(result.seasonType).toBe(results[0].seasonType);
+        expect(result.confidence).toBe(results[0].confidence);
+        expect(result.insight).toBe(results[0].insight);
+      });
+    });
+
+    it('사용자가 다르면(시드가 다르면) 결과가 고정 상수로 굳지 않는다', () => {
+      const seeds = Array.from({ length: 120 }, (_, i) => `user_${i}:personal-color:img-${i}`);
+      const seasons = new Set(
+        seeds.map((seed) => generateMockPersonalColorResult(undefined, { seed }).seasonType)
+      );
+
+      // 4시즌이 모두 등장해야 한다 — 특정 시즌으로 상수 고정된 게 아님을 실증
+      expect(seasons).toEqual(new Set(['spring', 'summer', 'autumn', 'winter']));
+    });
+
+    it('시즌 가중 분포(봄25·여름18·가을30·겨울27)를 유지한다', () => {
+      const counts: Record<SeasonType, number> = { spring: 0, summer: 0, autumn: 0, winter: 0 };
+      const sampleSize = 600;
+
+      for (let i = 0; i < sampleSize; i++) {
+        const result = generateMockPersonalColorResult(undefined, {
+          seed: `dist_user_${i}:personal-color:img`,
+        });
+        counts[result.seasonType] += 1;
+      }
+
+      // 가중치가 살아있는지: 가을(30%) > 여름(18%) — 12%p 격차라 표본 600에서 안정적
+      expect(counts.autumn).toBeGreaterThan(counts.summer);
+      // 각 시즌이 명목 비율 ±10%p 이내
+      expect(counts.spring / sampleSize).toBeCloseTo(0.25, 1);
+      expect(counts.summer / sampleSize).toBeCloseTo(0.18, 1);
+      expect(counts.autumn / sampleSize).toBeCloseTo(0.3, 1);
+      expect(counts.winter / sampleSize).toBeCloseTo(0.27, 1);
+    });
+
+    it('시드마다 confidence는 85~95 범위를 지킨다', () => {
+      for (let i = 0; i < 50; i++) {
+        const result = generateMockPersonalColorResult(undefined, {
+          seed: `conf_user_${i}:personal-color:img`,
+        });
+        expect(result.confidence).toBeGreaterThanOrEqual(85);
+        expect(result.confidence).toBeLessThanOrEqual(95);
+      }
+    });
+
+    it('인사이트도 상수 고정이 아니라 시드로 갈린다', () => {
+      const insights = new Set(
+        Array.from({ length: 60 }, (_, i) =>
+          generateMockPersonalColorResult(undefined, {
+            seed: `insight_user_${i}:personal-color:img`,
+          })
+        ).map((result) => result.insight)
+      );
+
+      expect(insights.size).toBeGreaterThan(1);
+    });
+
+    it('같은 사진이라도 사용자가 다르면 시드가 달라 결과가 각자 재현된다', () => {
+      const a1 = generateMockPersonalColorResult(undefined, { seed: seedA });
+      const a2 = generateMockPersonalColorResult(undefined, { seed: seedA });
+      const b1 = generateMockPersonalColorResult(undefined, { seed: seedB });
+      const b2 = generateMockPersonalColorResult(undefined, { seed: seedB });
+
+      expect(a1.seasonType).toBe(a2.seasonType);
+      expect(b1.seasonType).toBe(b2.seasonType);
+      expect(a1.insight).toBe(a2.insight);
+      expect(b1.insight).toBe(b2.insight);
+    });
+
+    it('문진 응답 경로에서도 인사이트가 시드로 결정된다 (시즌은 응답이 결정)', () => {
+      const answers: QuestionnaireAnswer[] = [
+        { questionId: 'vein_color', optionId: 'blue' },
+        { questionId: 'jewelry', optionId: 'silver' },
+      ];
+
+      const first = generateMockPersonalColorResult(answers, { seed: seedA });
+      const second = generateMockPersonalColorResult(answers, { seed: seedA });
+
+      expect(first.seasonType).toBe(second.seasonType);
+      expect(first.insight).toBe(second.insight);
+      expect(first.confidence).toBe(second.confidence);
+    });
+  });
+
+  describe('calculateSeasonFromComparison', () => {
+    const comparisonAnswers = [
+      { setId: 'warm_cool', selectedOptionId: 'cool' },
+      { setId: 'light_deep', selectedOptionId: 'deep' },
+    ];
+
+    it('같은 시드는 같은 confidence를 재현한다 (88~94)', () => {
+      const seed = 'user_a:personal-color:cmp';
+      const first = calculateSeasonFromComparison(comparisonAnswers, { seed });
+      const second = calculateSeasonFromComparison(comparisonAnswers, { seed });
+
+      // 시즌 판정은 응답이 결정 (쿨 + 딥 = 겨울)
+      expect(first.seasonType).toBe('winter');
+      expect(first.confidence).toBe(second.confidence);
+      expect(first.confidence).toBeGreaterThanOrEqual(88);
+      expect(first.confidence).toBeLessThanOrEqual(94);
+    });
+
+    it('시드를 지정하지 않아도 호출마다 같은 confidence를 낸다 (난수 아님)', () => {
+      const values = Array.from(
+        { length: 5 },
+        () => calculateSeasonFromComparison(comparisonAnswers).confidence
+      );
+
+      values.forEach((value) => expect(value).toBe(values[0]));
+    });
+
+    it('시드가 다르면 confidence가 상수로 굳지 않는다', () => {
+      const values = new Set(
+        Array.from(
+          { length: 40 },
+          (_, i) =>
+            calculateSeasonFromComparison(comparisonAnswers, {
+              seed: `cmp_user_${i}:personal-color:img`,
+            }).confidence
+        )
+      );
+
+      expect(values.size).toBeGreaterThan(1);
     });
   });
 
