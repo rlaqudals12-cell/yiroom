@@ -390,13 +390,42 @@ describe('uniformity-measure', () => {
       expect(mock.spotCount).toBeLessThanOrEqual(5);
     });
 
-    it('여러 번 호출 시 다른 결과를 생성해야 함', () => {
-      const results = Array.from({ length: 10 }, () => generateMockUniformityResult());
-      const scores = results.map((r) => r.overallScore);
-      const uniqueScores = new Set(scores);
+    it('같은 시드는 항상 같은 결과를 재현해야 함', () => {
+      // 재현성 계약: 같은 사용자·같은 사진을 재분석해도 폴백 값이 흔들리면 안 된다
+      const first = generateMockUniformityResult('user_1:skin:img_a');
+      const second = generateMockUniformityResult('user_1:skin:img_a');
 
-      // 10번 호출 시 최소 2개 이상 다른 점수가 있어야 함
-      expect(uniqueScores.size).toBeGreaterThan(1);
+      expect(second).toEqual(first);
+    });
+
+    it('시드를 생략해도 항상 같은 결과여야 함 (무작위 아님)', () => {
+      const results = Array.from({ length: 10 }, () => generateMockUniformityResult());
+
+      for (const result of results) {
+        expect(result).toEqual(results[0]);
+      }
+    });
+
+    it('다른 시드는 서로 다른 결과를 만들어야 함 (다양성 유지)', () => {
+      // 결정론이 "모두 같은 값"으로 퇴화하지 않았는지 확인
+      const scores = Array.from({ length: 10 }, (_, i) =>
+        generateMockUniformityResult(`user_${i}:skin:img_${i}`)
+      ).map((r) => r.overallScore);
+
+      expect(new Set(scores).size).toBeGreaterThan(1);
+    });
+
+    it('시드를 줘도 유효 범위를 유지해야 함', () => {
+      for (let i = 0; i < 20; i++) {
+        const mock = generateMockUniformityResult(`seed-${i}`);
+
+        expect(mock.overallScore).toBeGreaterThanOrEqual(65);
+        expect(mock.overallScore).toBeLessThanOrEqual(90);
+        expect(mock.spotCount).toBeGreaterThanOrEqual(0);
+        expect(mock.spotCount).toBeLessThanOrEqual(5);
+        expect(mock.grade).toBeDefined();
+        expect(mock.description).toBeTruthy();
+      }
     });
   });
 

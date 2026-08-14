@@ -10,6 +10,7 @@
  */
 
 import type { PigmentMaps, FaceLandmark } from '@/types/visual-analysis';
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
 
 // ============================================
 // 균일도 결과 타입 정의
@@ -604,17 +605,28 @@ export function uniformityToDbFormat(result: SkinUniformityResult): {
 // ============================================
 
 /**
- * Mock 균일도 결과 생성
+ * Mock 균일도 결과 생성 (시드 기반 결정론)
+ *
+ * 재현성 계약: 폴백 Mock은 시드(사용자·이미지 식별자 등)로부터 결정론적으로
+ * 생성한다. Math.random() 금지 — 같은 시드는 항상 같은 균일도 점수를 낸다.
+ * 시드 미지정 시 고정 기본 시드로 항상 동일한 결과.
+ *
+ * 파생 시드를 쓰지 않고 단일 rng 시퀀스를 쓰는 이유: 모든 값이 이 함수 안에서
+ * 정해진 순서로 소비되므로 시퀀스 하나로 전체 결과가 재현된다(P4 단순화).
+ *
+ * @param seed - 결정론 시드 (미지정 시 고정 기본 시드)
  */
-export function generateMockUniformityResult(): SkinUniformityResult {
-  const score = 65 + Math.floor(Math.random() * 25); // 65~90
+export function generateMockUniformityResult(seed?: string): SkinUniformityResult {
+  const rng = createSeededRandom(seed ?? DEFAULT_SEED);
+
+  const score = 65 + Math.floor(rng() * 25); // 65~89
   return {
     overallScore: score,
-    colorUniformity: score + Math.floor(Math.random() * 10) - 5,
-    melaninUniformity: score + Math.floor(Math.random() * 10) - 5,
-    hemoglobinUniformity: score + Math.floor(Math.random() * 10) - 5,
-    textureUniformity: score + Math.floor(Math.random() * 10) - 5,
-    spotCount: Math.floor(Math.random() * 5),
+    colorUniformity: score + Math.floor(rng() * 10) - 5,
+    melaninUniformity: score + Math.floor(rng() * 10) - 5,
+    hemoglobinUniformity: score + Math.floor(rng() * 10) - 5,
+    textureUniformity: score + Math.floor(rng() * 10) - 5,
+    spotCount: Math.floor(rng() * 5),
     problemAreas: [],
     grade: determineGrade(score),
     description: '피부 상태 분석이 완료됐어요.',
