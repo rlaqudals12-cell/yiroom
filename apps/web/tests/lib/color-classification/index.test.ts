@@ -15,7 +15,7 @@ import {
   getChroma,
   getHue,
 } from '@/lib/color-classification/color-utils';
-import { kMeansClustering } from '@/lib/color-classification/extract-colors';
+import { kMeansClustering, hashPixelsToSeed } from '@/lib/color-classification/extract-colors';
 import {
   isBackgroundColor,
   filterBackgroundColors,
@@ -39,14 +39,15 @@ import { createSeededRandom } from '@/lib/utils/seeded-random';
 /**
  * 결정론적 픽셀 블롭 생성 (테스트 픽스처)
  *
- * 왜 Math.random을 쓰지 않나: 픽셀이 실행마다 달라지면 K-means 대표색도 흔들려
+ * 왜 전역 난수를 쓰지 않나: 픽셀이 실행마다 달라지면 K-means 대표색도 흔들려
  * `seasonMatch.spring > 50` 같은 임계 단언이 경계를 넘나든다
  * (실측: 20회 중 5회 "expected 49 to be greater than 50" 실패).
  * 시드 PRNG로 "항상 같은 픽셀"을 만들어 재현성을 확보한다.
  *
- * 주의: 프로덕션 K-means는 초기 중심점 선택에 Math.random을 쓴다(extract-colors.ts).
- * 따라서 픽셀만 고정해서는 부족하고, 블롭 범위를 "어느 클러스터가 대표색이 되어도
- * 판정이 같은" 좁은 영역으로 잡아야 단언이 확정적으로 성립한다.
+ * 참고: 프로덕션 K-means도 이제 입력 픽셀에서 파생한 시드로 초기화한다
+ * (extract-colors.ts `hashPixelsToSeed`). 그래도 블롭 범위는 "어느 클러스터가
+ * 대표색이 되어도 판정이 같은" 좁은 영역으로 유지한다 — 판정이 초기화 운에
+ * 기대지 않아야 알고리즘 튜닝 시에도 단언이 깨지지 않는다.
  *
  * @param seed - 시드 문자열 (같은 시드 = 같은 픽셀)
  * @param base - 블롭 중심 RGB
@@ -183,6 +184,104 @@ describe('Color Classification', () => {
 
         const clusters = kMeansClustering(pixels, { k: 5 });
         expect(clusters).toHaveLength(2);
+      });
+
+      // ----------------------------------------------------------------------
+      // 결정론 (재현성 계약)
+      //
+      // 왜 중요한가: 초기 중심점이 실행마다 달라지면 같은 사진의 대표색이 바뀌고,
+      // 그 결과 톤·시즌 판정까지 흔들린다. "같은 사진 = 같은 결과"는 이룸의 계약이다.
+      // ----------------------------------------------------------------------
+      it('같은 입력을 20회 돌려도 클러스터가 완전히 동일해야 함', () => {
+        // 초기화 운에 따라 결과가 갈릴 수 있도록 여러 색 덩어리를 섞는다
+        const pixels: RGBColor[] = [
+          ...makePixelBlob('det-red', { r: 210, g: 60, b: 55 }, { r: 20, g: 20, b: 20 }, 60),
+          ...makePixelBlob('det-blue', { r: 60, g: 80, b: 200 }, { r: 20, g: 20, b: 20 }, 60),
+          ...makePixelBlob('det-green', { r: 70, g: 190, b: 90 }, { r: 20, g: 20, b: 20 }, 60),
+          ...makePixelBlob('det-beige', { r: 220, g: 200, b: 175 }, { r: 15, g: 15, b: 15 }, 60),
+        ];
+
+        const baseline = JSON.stringify(kMeansClustering(pixels, { k: 5, iterations: 10 }));
+
+        for (let run = 0; run < 20; run++) {
+          expect(JSON.stringify(kMeansClustering(pixels, { k: 5, iterations: 10 }))).toBe(baseline);
+        }
+      });
+
+      it('빈 클러스터 재초기화 경로에서도 반복 실행이 동일해야 함', () => {
+        // 서로 다른 색이 k보다 적으면 빈 클러스터가 생겨 재초기화 경로를 탄다
+        const pixels: RGBColor[] = [
+          ...Array(30).fill({ r: 200, g: 30, b: 30 }),
+          ...Array(30).fill({ r: 30, g: 30, b: 200 }),
+        ];
+
+        const baseline = JSON.stringify(kMeansClustering(pixels, { k: 5, iterations: 10 }));
+
+        for (let run = 0; run < 20; run++) {
+          expect(JSON.stringify(kMeansClustering(pixels, { k: 5, iterations: 10 }))).toBe(baseline);
+        }
+      });
+    });
+
+    describe('hashPixelsToSeed', () => {
+      it('같은 픽셀 배열은 항상 같은 시드를 낸다', () => {
+        const pixels = makePixelBlob(
+          'seed-same',
+          { r: 120, g: 140, b: 160 },
+          {
+            r: 30,
+            g: 30,
+            b: 30,
+          }
+        );
+        const copy = pixels.map((p) => ({ ...p }));
+
+        expect(hashPixelsToSeed(copy)).toBe(hashPixelsToSeed(pixels));
+      });
+
+      it('픽셀이 하나라도 다르면 다른 시드를 낸다 (초기화 경로 분기)', () => {
+        const pixels = makePixelBlob(
+          'seed-diff',
+          { r: 120, g: 140, b: 160 },
+          {
+            r: 30,
+            g: 30,
+            b: 30,
+          }
+        );
+        const mutated = pixels.map((p) => ({ ...p }));
+        mutated[42] = { ...mutated[42], r: mutated[42].r + 1 };
+
+        expect(hashPixelsToSeed(mutated)).not.toBe(hashPixelsToSeed(pixels));
+      });
+
+      it('앞부분이 같아도 길이가 다르면 다른 시드를 낸다', () => {
+        const pixels = makePixelBlob(
+          'seed-len',
+          { r: 90, g: 100, b: 110 },
+          {
+            r: 20,
+            g: 20,
+            b: 20,
+          }
+        );
+
+        expect(hashPixelsToSeed(pixels.slice(0, 99))).not.toBe(hashPixelsToSeed(pixels));
+      });
+
+      it('픽셀 순서가 다르면 다른 시드를 낸다', () => {
+        const pixels = makePixelBlob(
+          'seed-order',
+          { r: 150, g: 90, b: 60 },
+          {
+            r: 40,
+            g: 40,
+            b: 40,
+          }
+        );
+        const reversed = [...pixels].reverse();
+
+        expect(hashPixelsToSeed(reversed)).not.toBe(hashPixelsToSeed(pixels));
       });
     });
   });
@@ -417,6 +516,28 @@ describe('Color Classification', () => {
 
       expect(result.tone).toBe('neutral');
       expect(result.confidence).toBe(0);
+    });
+
+    it('색이 넓게 퍼진 픽셀도 20회 반복에서 같은 판정을 내야 함', () => {
+      // 폭이 넓은 블롭 = 클러스터가 여러 개로 갈라져 "어느 게 대표색이냐"가 결과를 가른다.
+      // 초기화가 비결정적이던 시절에는 이런 입력에서 시즌 점수가 크게 흔들렸다.
+      const widePixels = makePixelBlob(
+        'wide-spread',
+        { r: 170, g: 140, b: 120 },
+        { r: 70, g: 70, b: 70 },
+        200
+      );
+
+      const baseline = classifyFromPixels(widePixels);
+
+      for (let run = 0; run < 20; run++) {
+        const result = classifyFromPixels(widePixels);
+
+        expect(result.tone).toBe(baseline.tone);
+        expect(result.dominantColor.hex).toBe(baseline.dominantColor.hex);
+        expect(result.seasonMatch).toEqual(baseline.seasonMatch);
+        expect(result.confidence).toBe(baseline.confidence);
+      }
     });
 
     it('should extract dominant color', () => {

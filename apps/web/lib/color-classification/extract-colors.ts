@@ -8,6 +8,7 @@
 
 import type { RGBColor, ColorCluster, KMeansOptions } from './types';
 import { rgbDistance } from './color-utils';
+import { createSeededRandom } from '@/lib/utils/seeded-random';
 
 /** 기본 K-means 옵션 */
 const DEFAULT_KMEANS_OPTIONS: Required<KMeansOptions> = {
@@ -16,19 +17,58 @@ const DEFAULT_KMEANS_OPTIONS: Required<KMeansOptions> = {
   convergenceThreshold: 1,
 };
 
+/** FNV-1a 해시 상수 (seeded-random의 hashStringToSeed와 동일 계열) */
+const FNV_OFFSET_BASIS = 0x811c9dc5;
+const FNV_PRIME = 0x01000193;
+
+/**
+ * 픽셀 배열에서 결정론적 시드 파생
+ *
+ * 왜: K-means++ 초기화가 전역 난수원을 쓰면 같은 사진도 실행마다 다른 중심점에서
+ * 출발해 대표색이 흔들리고, 그 결과 톤·시즌 판정까지 바뀐다
+ * ("같은 사진 = 같은 결과"라는 이룸의 재현성 계약 위반).
+ * 시드를 입력 픽셀 자체에서 뽑으면 같은 이미지는 항상 같은 초기화를 얻고,
+ * 다른 이미지는 다른 초기화를 얻어 K-means++의 확률적 탐색 성격은 그대로 유지된다.
+ *
+ * 왜 문자열을 만들지 않나: 256x256 이미지는 채널이 20만 개 규모라 문자열 조립은
+ * 불필요한 메모리·GC 비용이다. 채널값을 바로 해싱하면 O(n) 한 번으로 끝나고,
+ * 이는 K-means 본체(O(n·k·iterations))에 비해 무시할 수준이다.
+ *
+ * @internal 이 모듈과 테스트 전용 — 외부 모듈에서 직접 사용 금지
+ */
+export function hashPixelsToSeed(pixels: RGBColor[]): number {
+  // 길이를 섞어 넣어 "앞부분이 같고 길이만 다른" 입력도 다른 시드를 받게 한다
+  let hash = FNV_OFFSET_BASIS ^ pixels.length;
+
+  for (let i = 0; i < pixels.length; i++) {
+    const pixel = pixels[i];
+    hash = Math.imul(hash ^ pixel.r, FNV_PRIME);
+    hash = Math.imul(hash ^ pixel.g, FNV_PRIME);
+    hash = Math.imul(hash ^ pixel.b, FNV_PRIME);
+  }
+
+  return hash >>> 0;
+}
+
 /**
  * K-means++ 초기화
  * 더 나은 초기 중심점 선택
+ *
+ * @param random - 결정론적 난수원 (입력 픽셀에서 파생된 시드 PRNG)
  */
-function initializeCentroidsKMeansPlusPlus(pixels: RGBColor[], k: number): RGBColor[] {
+function initializeCentroidsKMeansPlusPlus(
+  pixels: RGBColor[],
+  k: number,
+  random: () => number
+): RGBColor[] {
   if (pixels.length === 0) {
     return [];
   }
 
   const centroids: RGBColor[] = [];
 
-  // 첫 번째 중심점: 무작위 선택
-  const firstIndex = Math.floor(Math.random() * pixels.length);
+  // 첫 번째 중심점: 시드 기반 선택 (같은 입력이면 항상 같은 픽셀)
+  const firstIndex = Math.floor(random() * pixels.length);
   centroids.push({ ...pixels[firstIndex] });
 
   // 나머지 중심점: 거리 기반 확률적 선택
@@ -45,9 +85,9 @@ function initializeCentroidsKMeansPlusPlus(pixels: RGBColor[], k: number): RGBCo
       return minDist * minDist; // 거리 제곱
     });
 
-    // 거리에 비례한 확률로 선택
+    // 거리에 비례한 확률로 선택 (확률 분포는 그대로, 난수원만 시드 PRNG로 교체)
     const totalDist = distances.reduce((sum, d) => sum + d, 0);
-    let randomValue = Math.random() * totalDist;
+    let randomValue = random() * totalDist;
 
     for (let j = 0; j < pixels.length; j++) {
       randomValue -= distances[j];
@@ -88,8 +128,15 @@ function assignPixelsToClusters(pixels: RGBColor[], centroids: RGBColor[]): numb
 
 /**
  * 클러스터 중심점 업데이트
+ *
+ * @param random - 결정론적 난수원 (빈 클러스터 재초기화에 사용)
  */
-function updateCentroids(pixels: RGBColor[], assignments: number[], k: number): RGBColor[] {
+function updateCentroids(
+  pixels: RGBColor[],
+  assignments: number[],
+  k: number,
+  random: () => number
+): RGBColor[] {
   const sums: { r: number; g: number; b: number; count: number }[] = Array(k)
     .fill(null)
     .map(() => ({ r: 0, g: 0, b: 0, count: 0 }));
@@ -104,9 +151,9 @@ function updateCentroids(pixels: RGBColor[], assignments: number[], k: number): 
 
   return sums.map((sum) => {
     if (sum.count === 0) {
-      // 빈 클러스터: 랜덤 픽셀로 재초기화
-      const randomPixel = pixels[Math.floor(Math.random() * pixels.length)];
-      return { ...randomPixel };
+      // 빈 클러스터: 시드 기반으로 뽑은 픽셀로 재초기화 (재현성 유지)
+      const seededPixel = pixels[Math.floor(random() * pixels.length)];
+      return { ...seededPixel };
     }
     return {
       r: Math.round(sum.r / sum.count),
@@ -158,8 +205,12 @@ export function kMeansClustering(pixels: RGBColor[], options: KMeansOptions = {}
     }));
   }
 
+  // 난수원: 입력 픽셀에서 파생된 시드 PRNG.
+  // 같은 픽셀 배열이면 항상 같은 초기화 → 같은 사진은 언제 돌려도 같은 대표색이 나온다.
+  const random = createSeededRandom(hashPixelsToSeed(pixels));
+
   // K-means++ 초기화
-  let centroids = initializeCentroidsKMeansPlusPlus(pixels, k);
+  let centroids = initializeCentroidsKMeansPlusPlus(pixels, k, random);
   let assignments: number[] = [];
 
   // 반복 수행
@@ -168,7 +219,7 @@ export function kMeansClustering(pixels: RGBColor[], options: KMeansOptions = {}
     assignments = assignPixelsToClusters(pixels, centroids);
 
     // 중심점 업데이트
-    const newCentroids = updateCentroids(pixels, assignments, k);
+    const newCentroids = updateCentroids(pixels, assignments, k, random);
 
     // 수렴 확인
     if (hasConverged(centroids, newCentroids, convergenceThreshold)) {

@@ -12,9 +12,15 @@ import {
   type SkinUniformityResult,
 } from '@/lib/analysis/uniformity-measure';
 import type { PigmentMaps, FaceLandmark } from '@/types/visual-analysis';
+import { createSeededRandom } from '@/lib/utils/seeded-random';
 
 // ============================================
 // 테스트 헬퍼
+//
+// 왜 시드 PRNG인가: 노이즈·잡티 위치가 실행마다 달라지면 균일도 점수도 흔들려
+// `overallScore < 70`, `spotCount > 0` 같은 임계 단언이 경계를 넘나든다.
+// 시드를 고정하면 "항상 같은 픽셀 → 항상 같은 점수"가 되어 임계를 완화하지 않고도
+// 단언이 확정적으로 성립한다.
 // ============================================
 
 /**
@@ -44,8 +50,11 @@ function createUniformImageData(
 
 /**
  * 불균일한 이미지 데이터 생성 (노이즈 포함)
+ *
+ * @param seed - 시드 문자열 (같은 시드 = 같은 노이즈 패턴)
  */
 function createUnevenImageData(
+  seed: string,
   width: number,
   height: number,
   baseR: number,
@@ -53,9 +62,10 @@ function createUnevenImageData(
   baseB: number,
   noiseLevel: number
 ): ImageData {
+  const rand = createSeededRandom(seed);
   const data = new Uint8ClampedArray(width * height * 4);
   for (let i = 0; i < width * height; i++) {
-    const noise = (Math.random() - 0.5) * 2 * noiseLevel;
+    const noise = (rand() - 0.5) * 2 * noiseLevel;
     data[i * 4] = Math.max(0, Math.min(255, baseR + noise));
     data[i * 4 + 1] = Math.max(0, Math.min(255, baseG + noise * 0.8));
     data[i * 4 + 2] = Math.max(0, Math.min(255, baseB + noise * 0.6));
@@ -85,20 +95,24 @@ function createUniformPigmentMaps(
 
 /**
  * 잡티가 있는 색소 맵 생성
+ *
+ * @param seed - 시드 문자열 (같은 시드 = 같은 잡티 좌표)
  */
 function createSpottedPigmentMaps(
+  seed: string,
   length: number,
   baseMelanin: number,
   baseHemoglobin: number,
   spotCount: number,
   spotIntensity: number
 ): PigmentMaps {
+  const rand = createSeededRandom(seed);
   const melanin = new Float32Array(length).fill(baseMelanin);
   const hemoglobin = new Float32Array(length).fill(baseHemoglobin);
 
-  // 랜덤 위치에 잡티 추가
+  // 시드에서 파생한 위치에 잡티 추가 (중복 좌표가 나와도 같은 시드면 항상 동일)
   for (let i = 0; i < spotCount; i++) {
-    const spotIndex = Math.floor(Math.random() * length);
+    const spotIndex = Math.floor(rand() * length);
     melanin[spotIndex] = baseMelanin + spotIntensity;
   }
 
@@ -143,10 +157,10 @@ describe('uniformity-measure', () => {
       const length = width * height;
 
       // 높은 노이즈로 불균일한 이미지
-      const imageData = createUnevenImageData(width, height, 180, 160, 150, 50);
+      const imageData = createUnevenImageData('uneven-low-score', width, height, 180, 160, 150, 50);
       const faceMask = createFullMask(length);
       // 잡티가 많은 색소 맵
-      const pigmentMaps = createSpottedPigmentMaps(length, 0.4, 0.3, 500, 0.4);
+      const pigmentMaps = createSpottedPigmentMaps('spots-low-score', length, 0.4, 0.3, 500, 0.4);
 
       const result = analyzeSkinUniformity(imageData, faceMask, pigmentMaps);
 
@@ -238,9 +252,17 @@ describe('uniformity-measure', () => {
       const length = width * height;
 
       // 매우 불균일한 데이터
-      const imageData = createUnevenImageData(width, height, 180, 160, 150, 80);
+      const imageData = createUnevenImageData(
+        'uneven-poor-grade',
+        width,
+        height,
+        180,
+        160,
+        150,
+        80
+      );
       const faceMask = createFullMask(length);
-      const pigmentMaps = createSpottedPigmentMaps(length, 0.4, 0.3, 1000, 0.5);
+      const pigmentMaps = createSpottedPigmentMaps('spots-poor-grade', length, 0.4, 0.3, 1000, 0.5);
 
       const result = analyzeSkinUniformity(imageData, faceMask, pigmentMaps);
 
@@ -262,8 +284,17 @@ describe('uniformity-measure', () => {
 
       const imageData = createUniformImageData(width, height, 200, 180, 170);
       const faceMask = createFullMask(length);
-      // 많은 잡티
-      const pigmentMaps = createSpottedPigmentMaps(length, 0.3, 0.2, 800, 0.6);
+      // 많은 잡티. 강도 1.0인 이유: 시드 고정 후 실측하니 0.6에서는
+      // melaninUniformity=54로 아래 분기가 영영 실행되지 않는 죽은 단언이 된다.
+      // 강도만 올리면(잡티 수는 그대로) 43이 되어 분기가 확정적으로 실행된다.
+      const pigmentMaps = createSpottedPigmentMaps(
+        'spots-melanin-outliers',
+        length,
+        0.3,
+        0.2,
+        800,
+        1.0
+      );
 
       const result = analyzeSkinUniformity(imageData, faceMask, pigmentMaps);
 
@@ -278,9 +309,24 @@ describe('uniformity-measure', () => {
       const height = 100;
       const length = width * height;
 
-      const imageData = createUnevenImageData(width, height, 180, 160, 150, 60);
+      const imageData = createUnevenImageData(
+        'uneven-severity-sort',
+        width,
+        height,
+        180,
+        160,
+        150,
+        60
+      );
       const faceMask = createFullMask(length);
-      const pigmentMaps = createSpottedPigmentMaps(length, 0.3, 0.3, 500, 0.5);
+      const pigmentMaps = createSpottedPigmentMaps(
+        'spots-severity-sort',
+        length,
+        0.3,
+        0.3,
+        500,
+        0.5
+      );
 
       const result = analyzeSkinUniformity(imageData, faceMask, pigmentMaps);
 
