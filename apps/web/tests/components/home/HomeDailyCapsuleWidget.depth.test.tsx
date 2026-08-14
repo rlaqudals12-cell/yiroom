@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('@clerk/nextjs', () => ({
   useUser: () => ({ user: { id: 'u1' }, isLoaded: true, isSignedIn: true }),
@@ -89,9 +89,15 @@ describe('HomeDailyCapsuleWidget — 제품 칩 depth 무관 (U2)', () => {
 
   it('depth=minimal이면 reason/solution 텍스트는 숨긴다 (칩만 노출)', async () => {
     render(<HomeDailyCapsuleWidget />);
-    await screen.findByTestId('capsule-owned-chip'); // 로드 대기
-    // reason/solution 텍스트는 depth 게이팅으로 미노출
-    expect(screen.queryByText('노폐물 제거')).not.toBeInTheDocument();
+    await screen.findByTestId('capsule-owned-chip'); // 캡슐 로드 대기
+
+    // 왜 waitFor인가: depth는 캡슐 로드와 "별개의" 비동기 effect(exposeConnection)로
+    // 적용된다. 로드 직후엔 아직 기본값 'full'이라 reason이 잠시 보이고, 즉시 단언하면
+    // 마이크로태스크 타이밍에 따라 실패한다(실측: 20회 중 4회 "노폐물 제거" 잔존 실패).
+    // depth 게이팅이 실제로 적용될 때까지 기다린 뒤 검증한다.
+    await waitFor(() => {
+      expect(screen.queryByText('노폐물 제거')).not.toBeInTheDocument();
+    });
     expect(screen.queryByText('거품 내어 30초')).not.toBeInTheDocument();
     // 스펙명(아이템 name)은 노출
     expect(screen.getByText('약산성 클렌저')).toBeInTheDocument();

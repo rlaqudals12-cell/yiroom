@@ -15,9 +15,7 @@ import {
   getChroma,
   getHue,
 } from '@/lib/color-classification/color-utils';
-import {
-  kMeansClustering,
-} from '@/lib/color-classification/extract-colors';
+import { kMeansClustering } from '@/lib/color-classification/extract-colors';
 import {
   isBackgroundColor,
   filterBackgroundColors,
@@ -36,6 +34,40 @@ import {
 } from '@/lib/color-classification/season-matcher';
 import { classifyFromPixels } from '@/lib/color-classification';
 import type { RGBColor, LabColor } from '@/lib/color-classification';
+import { createSeededRandom } from '@/lib/utils/seeded-random';
+
+/**
+ * 결정론적 픽셀 블롭 생성 (테스트 픽스처)
+ *
+ * 왜 Math.random을 쓰지 않나: 픽셀이 실행마다 달라지면 K-means 대표색도 흔들려
+ * `seasonMatch.spring > 50` 같은 임계 단언이 경계를 넘나든다
+ * (실측: 20회 중 5회 "expected 49 to be greater than 50" 실패).
+ * 시드 PRNG로 "항상 같은 픽셀"을 만들어 재현성을 확보한다.
+ *
+ * 주의: 프로덕션 K-means는 초기 중심점 선택에 Math.random을 쓴다(extract-colors.ts).
+ * 따라서 픽셀만 고정해서는 부족하고, 블롭 범위를 "어느 클러스터가 대표색이 되어도
+ * 판정이 같은" 좁은 영역으로 잡아야 단언이 확정적으로 성립한다.
+ *
+ * @param seed - 시드 문자열 (같은 시드 = 같은 픽셀)
+ * @param base - 블롭 중심 RGB
+ * @param spread - 채널별 반경 (base ± spread)
+ * @param count - 픽셀 수
+ */
+function makePixelBlob(
+  seed: string,
+  base: RGBColor,
+  spread: RGBColor,
+  count: number = 100
+): RGBColor[] {
+  const rand = createSeededRandom(seed);
+  const jitter = (radius: number): number => Math.round((rand() - 0.5) * 2 * radius);
+
+  return Array.from({ length: count }, () => ({
+    r: base.r + jitter(spread.r),
+    g: base.g + jitter(spread.g),
+    b: base.b + jitter(spread.b),
+  }));
+}
 
 describe('Color Classification', () => {
   // ==========================================================================
@@ -352,11 +384,14 @@ describe('Color Classification', () => {
   // ==========================================================================
   describe('classifyFromPixels', () => {
     it('should classify warm-toned pixels', () => {
-      const warmPixels: RGBColor[] = Array(100).fill(null).map(() => ({
-        r: 230 + Math.floor(Math.random() * 25),
-        g: 150 + Math.floor(Math.random() * 30),
-        b: 100 + Math.floor(Math.random() * 30),
-      }));
+      // 웜 계열 블롭 r[222,238] g[156,172] b[121,137].
+      // 이 범위의 모든 색은 tone=warm이고 spring >= 73이라(SEASON_LAB_RANGES 기준
+      // 전수 계산), 대표색이 어느 클러스터로 잡히든 아래 두 단언이 확정적으로 성립한다.
+      const warmPixels = makePixelBlob(
+        'warm-spring',
+        { r: 230, g: 164, b: 129 },
+        { r: 8, g: 8, b: 8 }
+      );
 
       const result = classifyFromPixels(warmPixels);
 
@@ -365,11 +400,12 @@ describe('Color Classification', () => {
     });
 
     it('should classify cool-toned pixels', () => {
-      const coolPixels: RGBColor[] = Array(100).fill(null).map(() => ({
-        r: 100 + Math.floor(Math.random() * 30),
-        g: 120 + Math.floor(Math.random() * 30),
-        b: 200 + Math.floor(Math.random() * 55),
-      }));
+      // 쿨 계열 블롭 r[101,129] g[121,149] b[200,254] — 범위 전체가 tone=cool.
+      const coolPixels = makePixelBlob(
+        'cool-blue',
+        { r: 115, g: 135, b: 227 },
+        { r: 14, g: 14, b: 27 }
+      );
 
       const result = classifyFromPixels(coolPixels);
 
@@ -386,8 +422,12 @@ describe('Color Classification', () => {
     it('should extract dominant color', () => {
       // 대부분 빨간색
       const pixels: RGBColor[] = [
-        ...Array(80).fill(null).map(() => ({ r: 200, g: 50, b: 50 })),
-        ...Array(20).fill(null).map(() => ({ r: 50, g: 50, b: 200 })),
+        ...Array(80)
+          .fill(null)
+          .map(() => ({ r: 200, g: 50, b: 50 })),
+        ...Array(20)
+          .fill(null)
+          .map(() => ({ r: 50, g: 50, b: 200 })),
       ];
 
       const result = classifyFromPixels(pixels);
