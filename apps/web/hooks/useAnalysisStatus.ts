@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { computeSkinTrend } from '@yiroom/shared';
 import { getBodyShapeLabel } from '@/lib/body';
+import { getPersonalColorSeasonLabel } from '@/lib/color-recommendations';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 // computeSkinTrend는 @yiroom/shared로 승격 (웹·앱 공유 — ADR-109 Phase 4A).
@@ -94,7 +95,7 @@ function buildPersonalColorSummary(row: {
     id: row.id,
     type: 'personal-color',
     createdAt: new Date(row.created_at),
-    summary: getSeasonLabel(row.season),
+    summary: getPersonalColorSeasonLabel(row.season),
     seasonType: row.season,
     ...(bestColors.length > 0 ? { bestColors } : {}),
     ...(contrastLevel ? { contrastLevel } : {}),
@@ -221,20 +222,7 @@ export interface AnalysisStatus {
   refetch: () => void;
 }
 
-// 헬퍼 함수들
-function getSeasonLabel(season: string): string {
-  const labels: Record<string, string> = {
-    Spring: '봄 웜톤',
-    Summer: '여름 쿨톤',
-    Autumn: '가을 웜톤',
-    Winter: '겨울 쿨톤',
-    spring: '봄 웜톤',
-    summer: '여름 쿨톤',
-    autumn: '가을 웜톤',
-    winter: '겨울 쿨톤',
-  };
-  return labels[season] || '기타';
-}
+// 시즌 라벨은 lib 공용 헬퍼로 일원화 (옷장 추천·조립기 문구와 같은 표기 사용)
 
 // 체형 라벨은 lib/body 공용 헬퍼로 일원화 (S/W/N 골격 + body-v2 5형 + 레거시).
 // 초보자는 "웨이브"가 골격 용어인 걸 모르므로 짧은 풀이를 병기한다.

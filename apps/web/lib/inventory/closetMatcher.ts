@@ -17,7 +17,7 @@ import type {
 import { toClothingItem, OCCASION_LABELS } from '@/types/inventory';
 import { resolveClothingCategory } from './clothingCategory';
 import { assessOutfitHarmony, type OutfitHarmony } from './color-bridge';
-import type { PersonalColorSeason } from '@/lib/color-recommendations';
+import { getPersonalColorSeasonLabel, type PersonalColorSeason } from '@/lib/color-recommendations';
 import {
   type StyleCategory,
   STYLE_CATEGORY_KEYWORDS,
@@ -493,7 +493,8 @@ export function recommendFromCloset(
 
     // 추천 이유 생성
     if (score.colorScore >= 70 && options.personalColor) {
-      reasons.push(`${options.personalColor} 컬러와 잘 어울려요`);
+      // 매칭은 코드값('Spring')으로, 문구는 라벨('봄 웜톤')로 — 원시 영문값 노출 금지
+      reasons.push(`${getPersonalColorSeasonLabel(options.personalColor)} 컬러와 잘 어울려요`);
     }
     if (score.bodyTypeScore >= 70 && options.bodyType) {
       const bodyTypeNames: Record<BodyType3, string> = {
@@ -644,7 +645,7 @@ function buildOutfitTips(
   }
 
   if (options.personalColor) {
-    tips.push(`${options.personalColor} 톤의 색상을 중심으로 코디했어요`);
+    tips.push(`${getPersonalColorSeasonLabel(options.personalColor)} 색상을 중심으로 코디했어요`);
   }
 
   if (options.bodyType) {
@@ -867,7 +868,9 @@ export function getRecommendationSummary(
   }
 
   if (options.personalColor && wellMatched < closetItems.length * 0.3) {
-    suggestions.push(`${options.personalColor} 톤에 어울리는 옷을 추가해보세요`);
+    suggestions.push(
+      `${getPersonalColorSeasonLabel(options.personalColor)}에 어울리는 옷을 추가해보세요`
+    );
   }
 
   return {

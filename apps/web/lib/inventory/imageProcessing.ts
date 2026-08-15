@@ -195,10 +195,21 @@ export interface ClothingClassificationResult {
   /** AI 추정 착용 상황 (판단 불가 시 빈 배열) */
   occasions?: Occasion[];
   confidence: number;
+  /**
+   * AI 판정이 아니라 폴백(자리표시자)임을 알리는 표식.
+   *
+   * true면 필드 값은 "지어낸 기본값"이므로 저장·자동 채택 금지 — 사용자에게
+   * 자동 분류 실패를 알리고 직접 입력받아야 한다. 신뢰도(confidence) 수치로
+   * 유추하지 않고 명시 불리언 하나로 규약을 통일한다(소비처마다 임계값이 달라지는 것 방지).
+   */
+  usedFallback?: boolean;
 }
 
 /**
  * AI로 의류 분류 (Gemini Vision)
+ *
+ * 반환값의 `usedFallback: true`는 "AI가 판정하지 못했다"는 뜻 — 호출측은 그 값을
+ * 자동 채택·저장하지 말고 사용자에게 직접 입력받아야 한다(지어낸 분류 영구 저장 방지).
  */
 export async function classifyClothing(imageUrl: string): Promise<ClothingClassificationResult> {
   try {
@@ -212,16 +223,18 @@ export async function classifyClothing(imageUrl: string): Promise<ClothingClassi
       throw new Error('Classification API failed');
     }
 
-    return await response.json();
+    // 서버가 폴백을 반환했을 수 있으므로 표식을 그대로 통과시킨다(여기서 지우지 않는다)
+    return (await response.json()) as ClothingClassificationResult;
   } catch (error) {
     inventoryLogger.error('Classification failed:', error);
-    // Fallback: 기본값 반환
+    // Fallback: 판정 불가 표식과 함께 자리표시자 반환 (confidence 수치가 아닌 명시 불리언)
     return {
       category: 'top',
       subCategory: '기타',
       suggestedName: '의류',
       colors: [],
       confidence: 0,
+      usedFallback: true,
     };
   }
 }

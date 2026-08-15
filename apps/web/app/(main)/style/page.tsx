@@ -258,9 +258,12 @@ export default function StylePage() {
 
   const dailyOutfit = useMemo((): OutfitItem[] => {
     if (!realOutfit) return [];
+    // 원피스는 상·하의와 동시에 채워지지 않는다(조립기 계약) — 슬롯에서 빠지면
+    // 원피스 코디의 주인공이 사라져 "신발 1개 코디"가 되므로 반드시 포함한다
     const slots: Array<{ category: string; rec: ClosetRecommendation | undefined }> = [
       { category: 'top', rec: realOutfit.top },
       { category: 'bottom', rec: realOutfit.bottom },
+      { category: 'dress', rec: realOutfit.dress },
       { category: 'outer', rec: realOutfit.outer },
       { category: 'shoes', rec: realOutfit.shoes },
     ];

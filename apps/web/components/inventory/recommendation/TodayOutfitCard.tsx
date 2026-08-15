@@ -12,10 +12,7 @@ import { Sparkles, Thermometer, Sun, CloudRain, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CollageView } from '@/components/inventory';
-import {
-  suggestOutfitFromCloset,
-  type OutfitSuggestion,
-} from '@/lib/inventory/client';
+import { suggestOutfitFromCloset, type OutfitSuggestion } from '@/lib/inventory/client';
 import type { InventoryItem } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
@@ -58,6 +55,9 @@ export function TodayOutfitCard({
 
     const result: InventoryItem[] = [];
     if (suggestion.outer) result.push(suggestion.outer.item);
+    // 원피스 경로에서는 top/bottom이 비고 dress만 채워진다 — 빠뜨리면 콜라주가 비어
+    // "아이템을 추가하세요" 빈 상태로 오인된다
+    if (suggestion.dress) result.push(suggestion.dress.item);
     if (suggestion.top) result.push(suggestion.top.item);
     if (suggestion.bottom) result.push(suggestion.bottom.item);
     if (suggestion.shoes) result.push(suggestion.shoes.item);
@@ -78,11 +78,7 @@ export function TodayOutfitCard({
         <p className="text-sm text-muted-foreground mb-4">
           옷장에 아이템을 추가하면 맞춤 코디를 추천해드려요
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/closet/add')}
-        >
+        <Button variant="outline" size="sm" onClick={() => router.push('/closet/add')}>
           옷 추가하기
         </Button>
       </div>
@@ -90,8 +86,7 @@ export function TodayOutfitCard({
   }
 
   // 날씨 아이콘
-  const WeatherIcon =
-    weather?.precipitation && weather.precipitation > 50 ? CloudRain : Sun;
+  const WeatherIcon = weather?.precipitation && weather.precipitation > 50 ? CloudRain : Sun;
 
   return (
     <div
@@ -133,9 +128,7 @@ export function TodayOutfitCard({
 
       {/* 팁 */}
       {suggestion.tips.length > 0 && (
-        <p className="text-sm text-muted-foreground text-center mb-4">
-          {suggestion.tips[0]}
-        </p>
+        <p className="text-sm text-muted-foreground text-center mb-4">{suggestion.tips[0]}</p>
       )}
 
       {/* 액션 */}
@@ -148,11 +141,7 @@ export function TodayOutfitCard({
         >
           코디 저장
         </Button>
-        <Button
-          size="sm"
-          className="flex-1"
-          onClick={() => router.push('/closet')}
-        >
+        <Button size="sm" className="flex-1" onClick={() => router.push('/closet')}>
           옷장 보기
           <ArrowRight className="w-4 h-4 ml-1" />
         </Button>

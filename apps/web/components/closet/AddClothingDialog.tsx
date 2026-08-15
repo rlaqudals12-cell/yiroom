@@ -38,6 +38,7 @@ import {
   Occasion,
   OCCASION_LABELS,
 } from '@/types/inventory';
+import type { ClothingClassificationResult } from '@/lib/inventory/client';
 
 const CATEGORY_LABELS: Record<ClothingCategory, string> = {
   outer: '아우터',
@@ -92,6 +93,9 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
   const [step, setStep] = useState<ProcessingStep>('idle');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // AI 자동 분류 결과 적용 여부 — 폴백/실패 시 'AI' 배지를 띄우지 않는다(정직성)
+  const [aiApplied, setAiApplied] = useState(false);
+  const [classifyNotice, setClassifyNotice] = useState<string | null>(null);
 
   // 이미지
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -114,6 +118,8 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
   const resetForm = useCallback(() => {
     setStep('idle');
     setError(null);
+    setAiApplied(false);
+    setClassifyNotice(null);
     setPreviewUrl(null);
     setImageBase64('');
     setName('');
@@ -179,15 +185,29 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
         });
 
         if (response.ok) {
-          const classification = await response.json();
-          // AI 결과 자동 적용
-          if (classification.suggestedName) setName(classification.suggestedName);
-          if (classification.category) setCategory(classification.category);
-          if (classification.subCategory) setSubCategory(classification.subCategory);
-          if (classification.colors) setColors(classification.colors);
+          const classification = (await response.json()) as ClothingClassificationResult;
+          // 폴백 응답(AI 미가용·파싱 실패)은 지어낸 값이라 채택하지 않는다 —
+          // 자동 채우기 대신 실패를 알리고 사용자가 직접 입력하게 한다
+          if (classification.usedFallback) {
+            setAiApplied(false);
+            setClassifyNotice('자동 분류에 실패했어요 — 아래 정보를 직접 입력해주세요');
+          } else {
+            // AI 결과 자동 적용
+            if (classification.suggestedName) setName(classification.suggestedName);
+            if (classification.category) setCategory(classification.category);
+            if (classification.subCategory) setSubCategory(classification.subCategory);
+            if (classification.colors) setColors(classification.colors);
+            setAiApplied(true);
+            setClassifyNotice(null);
+          }
+        } else {
+          setAiApplied(false);
+          setClassifyNotice('자동 분류에 실패했어요 — 아래 정보를 직접 입력해주세요');
         }
       } catch (classifyError) {
         console.warn('[AddClothingDialog] Classification failed:', classifyError);
+        setAiApplied(false);
+        setClassifyNotice('자동 분류에 실패했어요 — 아래 정보를 직접 입력해주세요');
       }
 
       setStep('done');
@@ -372,12 +392,26 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
               <div className="flex justify-center">
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted">
                   <Image src={previewUrl} alt="Preview" fill className="object-contain" />
-                  <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 bg-green-500 text-white text-[10px] rounded-full">
-                    <Wand2 className="w-2.5 h-2.5" />
-                    <span>AI</span>
-                  </div>
+                  {/* AI 배지는 실제로 AI 결과를 적용했을 때만 — 폴백에 'AI' 배지를 붙이지 않는다 */}
+                  {aiApplied && (
+                    <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 bg-green-500 text-white text-[10px] rounded-full">
+                      <Wand2 className="w-2.5 h-2.5" />
+                      <span>AI</span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* 자동 분류 실패 안내 — 지어낸 값을 채우지 않았음을 알리고 직접 입력을 요청 */}
+              {classifyNotice && (
+                <p
+                  data-testid="classify-fallback-notice"
+                  role="status"
+                  className="rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200"
+                >
+                  {classifyNotice}
+                </p>
+              )}
 
               {/* 이름 */}
               <div className="space-y-1.5">

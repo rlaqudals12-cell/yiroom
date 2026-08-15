@@ -78,6 +78,8 @@ export function ItemUploader({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [processedUrl, setProcessedUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // AI 자동 분류 실패(폴백 포함) — 'AI 분석 완료' 배지를 거짓으로 띄우지 않기 위한 상태
+  const [classifyFailed, setClassifyFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 파일 처리
@@ -124,6 +126,7 @@ export function ItemUploader({
 
         // 4. AI 분류 (옵션)
         let classification: ClothingClassificationResult | undefined;
+        let classifyFallback = false;
         if (autoClassify) {
           setStep('classifying');
           try {
@@ -133,12 +136,20 @@ export function ItemUploader({
               body: JSON.stringify({ imageBase64: processedDataUrl }),
             });
             if (response.ok) {
-              classification = await response.json();
+              const result = (await response.json()) as ClothingClassificationResult;
+              // 폴백 응답(AI 미가용·파싱 실패)은 지어낸 값 — 넘겨주지 않고 실패로 처리한다
+              // (소비처가 그대로 저장하면 옷장에 가짜 분류가 영구 기록된다)
+              if (result.usedFallback) classifyFallback = true;
+              else classification = result;
+            } else {
+              classifyFallback = true;
             }
           } catch (classifyError) {
             console.warn('[ItemUploader] Classification failed:', classifyError);
+            classifyFallback = true;
             // 분류 실패해도 계속 진행
           }
+          setClassifyFailed(classifyFallback);
         }
 
         // 5. 완료
@@ -199,6 +210,7 @@ export function ItemUploader({
   const handleReset = () => {
     setStep('idle');
     setError(null);
+    setClassifyFailed(false);
     setPreviewUrl(null);
     setProcessedUrl(null);
     if (inputRef.current) {
@@ -254,11 +266,20 @@ export function ItemUploader({
               </div>
             )}
 
-            {/* 완료 후 배지 */}
+            {/* 완료 후 배지 — 실제 AI 판정일 때만 'AI 분석 완료',
+                폴백·실패면 정직하게 확인을 요청한다 */}
             {step === 'done' && (
-              <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+              <div
+                data-testid={classifyFailed ? 'classify-failed-badge' : 'classify-done-badge'}
+                className={cn(
+                  'absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-white text-xs rounded-full',
+                  classifyFailed ? 'bg-amber-500' : 'bg-green-500'
+                )}
+              >
                 <Wand2 className="w-3 h-3" />
-                <span>AI 분석 완료</span>
+                <span>
+                  {classifyFailed ? '자동 분류 실패 — 직접 확인해주세요' : 'AI 분석 완료'}
+                </span>
               </div>
             )}
           </div>
@@ -273,9 +294,7 @@ export function ItemUploader({
             <p className="text-sm text-muted-foreground text-center mb-2">
               이미지를 드래그하거나 클릭하여 업로드
             </p>
-            <p className="text-xs text-muted-foreground">
-              JPG, PNG, WebP, HEIC (최대 10MB)
-            </p>
+            <p className="text-xs text-muted-foreground">JPG, PNG, WebP, HEIC (최대 10MB)</p>
           </>
         )}
       </div>
@@ -284,9 +303,7 @@ export function ItemUploader({
       {isProcessing && (
         <div className="space-y-2">
           <Progress value={STEP_PROGRESS[step]} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            {STEP_LABELS[step]}
-          </p>
+          <p className="text-xs text-muted-foreground text-center">{STEP_LABELS[step]}</p>
         </div>
       )}
 
@@ -313,11 +330,7 @@ export function ItemUploader({
         )}
 
         {onCancel && (
-          <Button
-            variant="ghost"
-            onClick={onCancel}
-            disabled={isProcessing}
-          >
+          <Button variant="ghost" onClick={onCancel} disabled={isProcessing}>
             취소
           </Button>
         )}

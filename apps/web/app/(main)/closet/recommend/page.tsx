@@ -35,7 +35,7 @@ import {
 } from '@/lib/inventory/client';
 import { OCCASION_LABELS, type Occasion } from '@/types/inventory';
 import type { InventoryItem, InventoryItemDB, Season } from '@/types/inventory';
-import type { PersonalColorSeason } from '@/lib/color-recommendations';
+import { getPersonalColorSeasonLabel, type PersonalColorSeason } from '@/lib/color-recommendations';
 import { getBodyShapeLabel } from '@/lib/body';
 import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
 import { assessOutfitHarmony } from '@/lib/inventory/color-bridge';
@@ -408,9 +408,10 @@ export default function ClosetRecommendPage() {
     try {
       const today = new Date();
       const currentSeason = getSeasonFromMonth(today.getMonth());
-      // 설명은 추천 근거를 그대로 — 없는 진단은 적지 않는다
+      // 설명은 추천 근거를 그대로 — 없는 진단은 적지 않는다.
+      // DB에 영속되는 문자열이라 원시 코드값('Autumn') 대신 라벨('가을 웜톤')로 저장한다
       const description = [
-        personalColor,
+        personalColor ? getPersonalColorSeasonLabel(personalColor) : null,
         bodyType ? getBodyShapeLabel(bodyType) : null,
         `${temp}°C`,
       ]
@@ -810,7 +811,7 @@ export default function ClosetRecommendPage() {
             <div className="flex flex-wrap gap-2">
               {personalColor && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {personalColor}
+                  {getPersonalColorSeasonLabel(personalColor)}
                 </Badge>
               )}
               {bodyType && (
@@ -988,7 +989,7 @@ export default function ClosetRecommendPage() {
                     ))}
                   </div>
                   <p className="mt-2 text-[10px] text-muted-foreground">
-                    내 퍼스널컬러({personalColor}) 기준 추천이에요
+                    내 퍼스널컬러({getPersonalColorSeasonLabel(personalColor)}) 기준 추천이에요
                   </p>
                 </CardContent>
               </Card>

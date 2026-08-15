@@ -10,6 +10,11 @@ import type { ClothingCategory, Pattern, Season, Occasion } from '@/types/invent
 import { extractJsonObject } from '@/lib/utils/json-extract';
 
 // 의류 분류 Mock 결과
+//
+// ⚠️ 이 값은 "AI가 판정하지 못했다"는 자리표시자이지 분류 결과가 아니다.
+// 그대로 저장되면 사용자 옷장에 지어낸 분류('티셔츠/화이트')가 영구 기록되므로,
+// 응답에는 반드시 usedFallback: true를 실어 소비처가 채택하지 않도록 한다
+// (설계 계약: AI 호출 불변식 — 폴백은 표식과 함께 정직하게 노출).
 const generateMockClassification = () => ({
   category: 'top' as ClothingCategory,
   subCategory: '티셔츠',
@@ -19,6 +24,7 @@ const generateMockClassification = () => ({
   seasons: [] as Season[],
   occasions: [] as Occasion[],
   confidence: 0.5,
+  usedFallback: true as const,
 });
 
 const VALID_SEASONS: ReadonlySet<string> = new Set(['spring', 'summer', 'autumn', 'winter']);
@@ -171,6 +177,8 @@ Only return the JSON object, no other text.`;
           ? classification.occasions.filter((o: string) => VALID_OCCASIONS.has(o))
           : [],
         confidence: classification.confidence || 0.8,
+        // 실제 AI 판정 — 소비처가 안심하고 채택해도 되는 결과
+        usedFallback: false,
       });
     } catch (aiError) {
       console.error('[Classify] Gemini error, using mock:', aiError);

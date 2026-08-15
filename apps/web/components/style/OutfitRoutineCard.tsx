@@ -14,16 +14,34 @@ type Occasion = 'daily' | 'work' | 'date' | 'travel';
 
 // 상황별 정보
 const OCCASION_INFO: Record<Occasion, { label: string; icon: React.ReactNode; color: string }> = {
-  daily: { label: '데일리', icon: <Coffee className="h-4 w-4" aria-hidden="true" />, color: 'bg-green-500' },
-  work: { label: '출근', icon: <Briefcase className="h-4 w-4" aria-hidden="true" />, color: 'bg-blue-500' },
-  date: { label: '데이트', icon: <Heart className="h-4 w-4" aria-hidden="true" />, color: 'bg-pink-500' },
-  travel: { label: '여행', icon: <Plane className="h-4 w-4" aria-hidden="true" />, color: 'bg-amber-500' },
+  daily: {
+    label: '데일리',
+    icon: <Coffee className="h-4 w-4" aria-hidden="true" />,
+    color: 'bg-green-500',
+  },
+  work: {
+    label: '출근',
+    icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
+    color: 'bg-blue-500',
+  },
+  date: {
+    label: '데이트',
+    icon: <Heart className="h-4 w-4" aria-hidden="true" />,
+    color: 'bg-pink-500',
+  },
+  travel: {
+    label: '여행',
+    icon: <Plane className="h-4 w-4" aria-hidden="true" />,
+    color: 'bg-amber-500',
+  },
 };
 
-// 의류 카테고리
+// 의류 카테고리 — 조립기(closetMatcher) 슬롯과 1:1로 맞춘다.
+// dress가 빠져 있으면 원피스 코디가 "dress 📦"로 표기된다(라벨 누수)
 const CLOTHING_CATEGORIES = [
   { value: 'top', label: '상의', emoji: '👕' },
   { value: 'bottom', label: '하의', emoji: '👖' },
+  { value: 'dress', label: '원피스', emoji: '👗' },
   { value: 'outer', label: '아우터', emoji: '🧥' },
   { value: 'shoes', label: '신발', emoji: '👟' },
   { value: 'accessory', label: '액세서리', emoji: '👜' },
@@ -74,7 +92,9 @@ export function OutfitRoutineCard({
 
   // 카테고리 라벨 가져오기
   const getCategoryInfo = (category: string) => {
-    return CLOTHING_CATEGORIES.find((c) => c.value === category) || { label: category, emoji: '📦' };
+    return (
+      CLOTHING_CATEGORIES.find((c) => c.value === category) || { label: category, emoji: '📦' }
+    );
   };
 
   // 컬러 팔레트 추출
@@ -94,16 +114,17 @@ export function OutfitRoutineCard({
           </CardTitle>
 
           {matchRate !== undefined && (
-            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+            <Badge
+              variant="secondary"
+              className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+            >
               매칭 {matchRate}%
             </Badge>
           )}
         </div>
 
         {/* 매칭률 프로그레스 */}
-        {matchRate !== undefined && (
-          <Progress value={matchRate} className="h-1.5 mt-2" />
-        )}
+        {matchRate !== undefined && <Progress value={matchRate} className="h-1.5 mt-2" />}
       </CardHeader>
 
       <CardContent className="p-4">
@@ -113,11 +134,7 @@ export function OutfitRoutineCard({
             <p className="text-xs text-muted-foreground mb-2">컬러 조합</p>
             <div className="flex gap-2">
               {colorPalette.map((color, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center gap-1"
-                  title={color.name}
-                >
+                <div key={idx} className="flex flex-col items-center gap-1" title={color.name}>
                   <div
                     className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
                     style={{ backgroundColor: color.hex }}
@@ -208,11 +225,7 @@ export function OutfitRoutineCard({
 
         {/* 추가 버튼 */}
         {editable && onAddItem && (
-          <Button
-            variant="outline"
-            className="w-full mt-4 gap-2"
-            onClick={onAddItem}
-          >
+          <Button variant="outline" className="w-full mt-4 gap-2" onClick={onAddItem}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             아이템 추가
           </Button>

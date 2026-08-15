@@ -50,11 +50,22 @@ interface BatchItem {
   name: string;
   category: ClothingCategory;
   classification?: ClothingClassificationResult;
+  /** AI 자동 분류가 실패해 사용자 확인이 필요한 상태 (지어낸 분류를 채택하지 않았음) */
+  classifyFailed?: boolean;
   errorMessage?: string;
 }
 
 // 동시 처리 수 — 분류(Gemini)·저장 모두 3개씩 (rate limit·브라우저 부하 균형)
 const CONCURRENCY = 3;
+
+// 자동 분류 실패 시 적용하는 패치 — AI가 판정하지 못했으면 지어낸 분류를 채우지 않고
+// 중립 기본값 + 실패 표식만 남긴다 (classification 미설정 → 저장 시 빈 metadata)
+const CLASSIFY_FAILED_PATCH = {
+  status: 'ready',
+  name: '의류',
+  category: 'top',
+  classifyFailed: true,
+} satisfies Partial<BatchItem>;
 
 async function runPool<T>(tasks: Array<() => Promise<T>>, limit: number): Promise<void> {
   let next = 0;
@@ -133,6 +144,12 @@ export default function BatchAddClothingPage() {
             });
             if (!res.ok) throw new Error(`classify ${res.status}`);
             const classification = (await res.json()) as ClothingClassificationResult;
+            // 폴백 응답(AI 미가용·파싱 실패)은 지어낸 값이므로 채택하지 않고
+            // 아래 catch와 동일한 '정직 실패 경로'로 합류한다 — 사용자가 직접 확인한다
+            if (classification.usedFallback) {
+              updateItem(item.id, { ...CLASSIFY_FAILED_PATCH });
+              return;
+            }
             updateItem(item.id, {
               status: 'ready',
               classification,
@@ -140,7 +157,7 @@ export default function BatchAddClothingPage() {
               category: classification.category || 'top',
             });
           } catch {
-            updateItem(item.id, { status: 'ready', name: '의류', category: 'top' });
+            updateItem(item.id, { ...CLASSIFY_FAILED_PATCH });
           }
         }),
         CONCURRENCY
@@ -347,6 +364,16 @@ export default function BatchAddClothingPage() {
                       {item.classification.seasons?.length
                         ? ` · ${item.classification.seasons.length}계절`
                         : ''}
+                    </p>
+                  )}
+                  {/* 자동 분류 실패 — 지어낸 분류를 채우지 않았음을 알리고 확인을 요청한다 */}
+                  {item.classifyFailed && (
+                    <p
+                      data-testid="batch-classify-failed"
+                      className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400"
+                    >
+                      <AlertTriangle className="h-3 w-3 shrink-0" />
+                      자동 분류 실패 — 직접 확인해주세요
                     </p>
                   )}
                   {item.status === 'error' && (
