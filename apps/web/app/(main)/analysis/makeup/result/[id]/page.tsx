@@ -307,6 +307,19 @@ export default function MakeupAnalysisResultPage() {
     return t('confidenceLow');
   })();
 
+  // 미측정 항목 고지 — 통합분석 M-1(조합 레이어)은 얼굴 상세·피부 세부 지표를 측정하지 않는다.
+  // 빈자리를 침묵으로 두면 "왜 없지?"가 되고, 채우면 지어낸 진단이 된다 → 사실대로 밝힌다.
+  const unmeasuredNote = (() => {
+    if (!result) return null;
+    const missing: string[] = [];
+    if (!result.measured.faceShape) missing.push('얼굴형');
+    if (!result.measured.eyeShape) missing.push('눈');
+    if (!result.measured.lipShape) missing.push('입술');
+    if (result.metrics.length === 0) missing.push('피부 세부 지표');
+    if (missing.length === 0) return null;
+    return `${missing.join(' · ')} 항목은 이번 분석에서 측정하지 않아 표시하지 않았어요.`;
+  })();
+
   return (
     <div
       className="min-h-[calc(100vh-80px)] bg-surface-ground"
@@ -386,23 +399,38 @@ export default function MakeupAnalysisResultPage() {
               <section className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="px-5 pb-6 pt-6 sm:px-7">
                   <ReportEyebrow>MAKEUP REPORT</ReportEyebrow>
+                  {/* 헤드라인은 실측 항목만 — 미측정 얼굴형을 진단명처럼 쓰지 않는다 */}
                   <h2 className="mt-3 break-keep font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground">
-                    {[result.undertoneLabel, result.faceShapeLabel].filter(Boolean).join(' · ')}
+                    {[result.undertoneLabel, result.measured.faceShape ? result.faceShapeLabel : '']
+                      .filter(Boolean)
+                      .join(' · ')}
                   </h2>
-                  {(result.eyeShapeLabel || result.lipShapeLabel) && (
-                    <p className="mt-2 break-keep text-sm text-muted-foreground">
-                      {[result.eyeShapeLabel, result.lipShapeLabel].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
+                  {(() => {
+                    const subLabels = [
+                      result.measured.eyeShape ? result.eyeShapeLabel : '',
+                      result.measured.lipShape ? result.lipShapeLabel : '',
+                    ].filter(Boolean);
+                    return subLabels.length > 0 ? (
+                      <p className="mt-2 break-keep text-sm text-muted-foreground">
+                        {subLabels.join(' · ')}
+                      </p>
+                    ) : null;
+                  })()}
 
                   <div className="mt-6">
                     <SectionHeader no={1} title="진단 속성" />
                     <div className="mt-4">
                       <RowTable testId="makeup-report-attrs">
                         <AttrRow icon={Droplets} label="언더톤" value={result.undertoneLabel} />
-                        <AttrRow icon={ScanFace} label="얼굴형" value={result.faceShapeLabel} />
-                        <AttrRow icon={Eye} label="눈" value={result.eyeShapeLabel} />
-                        <AttrRow icon={Smile} label="입술" value={result.lipShapeLabel} />
+                        {result.measured.faceShape && (
+                          <AttrRow icon={ScanFace} label="얼굴형" value={result.faceShapeLabel} />
+                        )}
+                        {result.measured.eyeShape && (
+                          <AttrRow icon={Eye} label="눈" value={result.eyeShapeLabel} />
+                        )}
+                        {result.measured.lipShape && (
+                          <AttrRow icon={Smile} label="입술" value={result.lipShapeLabel} />
+                        )}
                         <AttrRow
                           icon={Activity}
                           label="피부 컨디션"
@@ -412,22 +440,25 @@ export default function MakeupAnalysisResultPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6">
-                    <SectionHeader no={2} title="피부 상태" />
-                    <div className="mt-4">
-                      <RowTable testId="makeup-report-metrics">
-                        {result.metrics.map((metric) => (
-                          // progressbar aria는 SpectrumRow가 소유한다(래핑하면 상태 텍스트가 소실)
-                          <SpectrumRow
-                            key={metric.id}
-                            label={metric.name}
-                            pos={metric.value / 100}
-                            status={`${metric.value}점 · ${STATUS_LABELS[metric.status]}`}
-                          />
-                        ))}
-                      </RowTable>
+                  {/* 측정된 지표가 없으면 섹션 자체를 내린다 (빈 표·0점 위장 금지) */}
+                  {result.metrics.length > 0 && (
+                    <div className="mt-6">
+                      <SectionHeader no={2} title="피부 상태" />
+                      <div className="mt-4">
+                        <RowTable testId="makeup-report-metrics">
+                          {result.metrics.map((metric) => (
+                            // progressbar aria는 SpectrumRow가 소유한다(래핑하면 상태 텍스트가 소실)
+                            <SpectrumRow
+                              key={metric.id}
+                              label={metric.name}
+                              pos={metric.value / 100}
+                              status={`${metric.value}점 · ${STATUS_LABELS[metric.status]}`}
+                            />
+                          ))}
+                        </RowTable>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* 푸터 신뢰 블록 — 등급→% 매핑은 전문가 패널과 동일 (진단서의 직인) */}
                   <TrustFooter
@@ -442,6 +473,8 @@ export default function MakeupAnalysisResultPage() {
                         timeStyle: 'short',
                       })}
                     </p>
+                    {/* 왜 항목이 비었는지 정직하게 밝힌다 — 빈 자리를 추측으로 채우지 않는다 */}
+                    {unmeasuredNote && <p data-testid="makeup-unmeasured-note">{unmeasuredNote}</p>}
                   </TrustFooter>
                 </div>
               </section>

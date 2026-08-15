@@ -7,9 +7,40 @@
  * @note internal import는 테스트 예외로 허용 (BOUNDARIES.md 참조)
  */
 
-import { describe, it, expect } from 'vitest';
-import { composeMakeupData } from '@/lib/analysis/integrated/internal/makeup-composer';
-import type { PersonalColorAxisData, SkinAxisData } from '@/lib/analysis/integrated';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// 저장 직전 INSERT 페이로드 캡처 (axis-adapters.test.ts와 동일 기법)
+const { capturedInserts } = vi.hoisted(() => ({
+  capturedInserts: [] as Array<{ table: string; payload: Record<string, unknown> }>,
+}));
+
+vi.mock('@/lib/supabase/service-role', () => ({
+  createServiceRoleClient: () => ({
+    from(table: string) {
+      return {
+        insert(payload: Record<string, unknown>) {
+          capturedInserts.push({ table, payload });
+          return {
+            select: () => ({
+              single: async () => ({ data: { id: 'makeup-id-123' }, error: null }),
+            }),
+          };
+        },
+      };
+    },
+  }),
+}));
+
+import {
+  composeMakeupData,
+  runMakeupComposer,
+} from '@/lib/analysis/integrated/internal/makeup-composer';
+import type {
+  AxisResult,
+  HairAxisData,
+  PersonalColorAxisData,
+  SkinAxisData,
+} from '@/lib/analysis/integrated';
 
 // ============================================
 // Fixtures
@@ -126,5 +157,130 @@ describe('composeMakeupData — 순수 조합 로직', () => {
 
       expect(Object.keys(warmResult).sort()).toEqual(Object.keys(coolResult).sort());
     });
+  });
+});
+
+// ============================================
+// DB 저장 규격 — "지어낸 진단" 회귀 방지 (2026-08 수리)
+// ============================================
+
+/**
+ * 배경: composer가 얼굴형·눈·입술을 측정 없이 상수('oval'/'almond'/'full')로 저장하고
+ * usedFallback:false로 고정해, 결과 페이지가 이를 개인 판정처럼 렌더했다.
+ * 이제 얼굴형은 H-1 실측만 승계하고, 나머지는 measured=false로 표시를 차단한다.
+ */
+function axisOk<T>(data: T, usedFallback = false): AxisResult<T> {
+  return { success: true, data, usedFallback };
+}
+
+const hairMeasured: AxisResult<HairAxisData> = axisOk<HairAxisData>({
+  faceShape: 'heart',
+  recommendedStyles: ['레이어드 컷'],
+});
+
+function lastMakeupPayload(): Record<string, unknown> {
+  const insert = capturedInserts.find((i) => i.table === 'makeup_analyses');
+  expect(insert).toBeDefined();
+  return insert!.payload;
+}
+
+function recommendations(): Record<string, unknown> {
+  return lastMakeupPayload().recommendations as Record<string, unknown>;
+}
+
+describe('runMakeupComposer — 측정하지 않은 값을 진단으로 저장하지 않는다', () => {
+  beforeEach(() => {
+    capturedInserts.length = 0;
+  });
+
+  it('헤어 축이 실측 얼굴형을 주면 승계하고 measured.faceShape=true', async () => {
+    const result = await runMakeupComposer(
+      'session-1',
+      'user_1',
+      axisOk(pcWarm),
+      axisOk(skinDryHigh),
+      hairMeasured
+    );
+
+    expect(result.success).toBe(true);
+    expect(lastMakeupPayload().face_shape).toBe('heart');
+    expect((recommendations().measured as Record<string, boolean>).faceShape).toBe(true);
+  });
+
+  it('헤어 축이 폴백이면 얼굴형을 실측으로 표시하지 않는다', async () => {
+    const hairFallback = axisOk<HairAxisData>({ faceShape: 'diamond' }, true);
+    await runMakeupComposer(
+      'session-2',
+      'user_1',
+      axisOk(pcWarm),
+      axisOk(skinDryHigh),
+      hairFallback
+    );
+
+    const measured = recommendations().measured as Record<string, boolean>;
+    expect(measured.faceShape).toBe(false);
+    // NOT NULL CHECK 컬럼이므로 값은 있어야 한다 (스키마 유효 placeholder)
+    expect(lastMakeupPayload().face_shape).toBe('oval');
+  });
+
+  it('헤어 축이 없으면(미실행) 얼굴형 미측정', async () => {
+    await runMakeupComposer('session-3', 'user_1', axisOk(pcWarm), axisOk(skinDryHigh));
+
+    expect((recommendations().measured as Record<string, boolean>).faceShape).toBe(false);
+  });
+
+  it('눈·입술은 항상 미측정으로 표시된다 (통합 플로우엔 측정이 없다)', async () => {
+    await runMakeupComposer(
+      'session-4',
+      'user_1',
+      axisOk(pcWarm),
+      axisOk(skinDryHigh),
+      hairMeasured
+    );
+
+    const measured = recommendations().measured as Record<string, boolean>;
+    expect(measured.eyeShape).toBe(false);
+    expect(measured.lipShape).toBe(false);
+  });
+
+  it('피부 세부 지표는 상수 대신 null로 저장한다', async () => {
+    await runMakeupComposer('session-5', 'user_1', axisOk(pcWarm), axisOk(skinDryHigh));
+
+    const payload = lastMakeupPayload();
+    expect(payload.hydration).toBeNull();
+    expect(payload.pore_visibility).toBeNull();
+    expect(payload.oil_balance).toBeNull();
+    expect(payload.skin_texture).toBeNull();
+    expect(payload.skin_tone_uniformity).toBeNull();
+    // 실측값(S축 종합 점수)은 그대로 저장
+    expect(payload.overall_score).toBe(85);
+  });
+
+  it('PC/S가 폴백이면 usedMock 고지 + 낮은 신뢰도를 승계한다', async () => {
+    const result = await runMakeupComposer(
+      'session-6',
+      'user_1',
+      axisOk(pcWarm, true),
+      axisOk(skinDryHigh),
+      hairMeasured
+    );
+
+    expect(result.success && result.usedFallback).toBe(true);
+    expect(recommendations().usedMock).toBe(true);
+    expect(lastMakeupPayload().analysis_reliability).toBe('low');
+  });
+
+  it('입력 축이 전부 실측이면 Mock 고지를 켜지 않는다', async () => {
+    const result = await runMakeupComposer(
+      'session-7',
+      'user_1',
+      axisOk(pcWarm),
+      axisOk(skinDryHigh),
+      hairMeasured
+    );
+
+    expect(result.success && result.usedFallback).toBe(false);
+    expect(recommendations().usedMock).toBe(false);
+    expect(lastMakeupPayload().analysis_reliability).toBe('medium');
   });
 });

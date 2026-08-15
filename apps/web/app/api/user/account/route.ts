@@ -8,71 +8,38 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { purgeUserStorage } from '@/lib/api/storage-purge';
+import { purgeUserRows } from '@/lib/api/user-rows-purge';
 import type { DeleteAccountRequest, DeleteAccountResponse } from '@/types/user-data';
 
-// 삭제할 테이블 순서 (외래키 제약 고려)
-// ⚠️ 5축(PC·S·C·H·M) 분석·트윈·통합세션이 누락되면 생체·개인정보가 잔존하므로 전부 포함한다.
-//    존재하지 않는 테이블/컬럼은 아래 삭제 루프가 'does not exist' 에러로 무시한다.
-const TABLES_TO_DELETE = [
-  'challenge_participations',
-  'daily_checkins',
-  'user_badges',
-  'user_levels',
-  'wellness_scores',
-  'friendships',
-  'user_wishlists',
-  'wishlist',
-  'daily_nutrition_summary',
-  'water_records',
-  'meal_records',
-  'workout_logs',
-  'workout_plans',
-  'workout_analyses',
-  // 5축 분석 (생체 데이터)
-  'personal_color_assessments', // PC축
-  'skin_analyses', // S축
-  'skin_diary_entries', // S축 다이어리
-  'body_analyses', // C축
-  'posture_assessments', // C축 자세
-  'hair_analyses', // H축 (누락되어 있던 생체 분석)
-  'makeup_analyses', // M축 (누락되어 있던 분석)
-  'integrated_analysis_sessions', // 통합분석 온보딩 세션 (얼굴·체형 생체)
-  'user_twins', // AI 아바타/트윈 (얼굴 유래 생체)
-  // 취향·옷장·코치
-  'user_preferences',
-  'user_preference_items',
-  'saved_outfits',
-  'user_inventory',
-  'coach_chat_history',
-  'nutrition_settings',
-  'feedback',
-  'image_consents', // 생체 이미지 동의 기록 (BIPA/PIPA 파기의무)
-  'user_agreements', // 가입 동의 기록
-  'users', // 마지막에 삭제 (FK 제약)
-];
-
 /**
- * 사용자 소유 DB 행을 테이블별로 삭제한다.
- * 테이블/컬럼 부재('does not exist')는 무시하고, 그 외 실패만 errors로 반환한다.
+ * 사용자 소유 DB 행을 파기한다.
+ *
+ * 대상 목록은 `types/gdpr.ts`의 DELETION_TABLES **단일 정본**을 쓴다 — 예전엔 이 라우트와
+ * 하드삭제 크론이 서로 다른 목록을 들고 있어, 양쪽 어디에도 없는 테이블(옷장·캡슐·
+ * 안전프로필·알림·쇼핑 취향 등)의 데이터가 계정 삭제 후에도 영구 잔존했다.
+ *
+ * `users` 행은 마지막에 별도 삭제한다 — 자식 테이블 FK CASCADE의 기점이라
+ * 먼저 지우면 나머지 삭제 결과를 확인할 수 없다.
  */
 async function deleteUserTables(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string
 ): Promise<string[]> {
-  const errors: string[] = [];
-  for (const table of TABLES_TO_DELETE) {
-    try {
-      const { error } = await supabase.from(table).delete().eq('clerk_user_id', userId);
-      if (error && !error.message.includes('does not exist')) {
-        console.error(`[ACCOUNT-DELETE] Failed to delete from ${table}:`, error);
-        errors.push(table);
-      }
-    } catch (tableError) {
-      console.error(`[ACCOUNT-DELETE] Error deleting from ${table}:`, tableError);
-      errors.push(table);
+  const { failedTables } = await purgeUserRows(supabase, userId, '[ACCOUNT-DELETE]');
+
+  // 계정 행 (FK CASCADE로 clerk_user_id 없는 자식들까지 함께 정리)
+  try {
+    const { error } = await supabase.from('users').delete().eq('clerk_user_id', userId);
+    if (error) {
+      console.error('[ACCOUNT-DELETE] Failed to delete from users:', error);
+      failedTables.push('users');
     }
+  } catch (userError) {
+    console.error('[ACCOUNT-DELETE] Error deleting from users:', userError);
+    failedTables.push('users');
   }
-  return errors;
+
+  return failedTables;
 }
 
 export async function DELETE(request: Request) {

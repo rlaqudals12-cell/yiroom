@@ -46,6 +46,18 @@ export interface DbMakeupAnalysis {
     };
     analysisReliability?: ReliabilityLevel;
     usedMock?: boolean;
+    /** 저장 출처 ('integrated' = 통합분석 M-1 composer) */
+    source?: string;
+    /**
+     * 실측 여부. 통합분석 경로는 얼굴 상세(눈·입술)를 측정하지 않고,
+     * NOT NULL 컬럼 제약 탓에 placeholder를 저장한다 — 이 플래그가 false면 표시하지 않는다.
+     * 미표기(undefined)면 단독 M-1 분석 = 전부 실측 (하위호환).
+     */
+    measured?: {
+      faceShape?: boolean;
+      eyeShape?: boolean;
+      lipShape?: boolean;
+    };
   } | null;
   analysis_reliability: ReliabilityLevel | null;
   created_at: string;
@@ -84,6 +96,15 @@ export interface MakeupResultView {
   };
   analysisReliability: 'high' | 'medium' | 'low';
   analyzedAt: Date;
+  /**
+   * 항목별 실측 여부 — false면 화면에서 해당 행을 렌더하지 않는다.
+   * (통합분석 M-1은 조합 레이어라 언더톤·종합점수·얼굴형만 다른 축에서 승계한다)
+   */
+  measured: {
+    faceShape: boolean;
+    eyeShape: boolean;
+    lipShape: boolean;
+  };
 }
 
 // 점수 → 상태
@@ -102,19 +123,25 @@ function getDescription(name: string, value: number): string {
 
 // DB 데이터 → 뷰 데이터 변환
 export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView {
-  const createMetric = (id: string, name: string, value: number | null): MakeupMetric => ({
-    id,
-    name,
-    value: value ?? 50,
-    status: getStatus(value ?? 50),
-    description: getDescription(name, value ?? 50),
-  });
+  // 미측정(null) 지표는 제외 — 예전엔 null을 50점으로 채워 "없는 진단"을 만들어냈다.
+  const createMetric = (id: string, name: string, value: number | null): MakeupMetric | null =>
+    value === null || value === undefined
+      ? null
+      : {
+          id,
+          name,
+          value,
+          status: getStatus(value),
+          description: getDescription(name, value),
+        };
 
   // A1: 영어 raw value 노출 방지 — fallback은 한글 기본값
   const undertoneLabel = UNDERTONES.find((t) => t.id === dbData.undertone)?.label || '알 수 없음';
   const eyeShapeLabel = EYE_SHAPES.find((t) => t.id === dbData.eye_shape)?.label || '알 수 없음';
   const lipShapeLabel = LIP_SHAPES.find((t) => t.id === dbData.lip_shape)?.label || '알 수 없음';
   const faceShapeLabel = FACE_SHAPES.find((t) => t.id === dbData.face_shape)?.label || '알 수 없음';
+
+  const measuredFlags = dbData.recommendations?.measured;
 
   return {
     overallScore: dbData.overall_score,
@@ -124,7 +151,7 @@ export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView 
       createMetric('hydration', '수분감', dbData.hydration),
       createMetric('poreVisibility', '모공 상태', dbData.pore_visibility),
       createMetric('oilBalance', '유수분 균형', dbData.oil_balance),
-    ],
+    ].filter((metric): metric is MakeupMetric => metric !== null),
     undertone: dbData.undertone,
     undertoneLabel,
     eyeShape: dbData.eye_shape,
@@ -142,5 +169,11 @@ export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView 
     analysisReliability:
       dbData.analysis_reliability || dbData.recommendations?.analysisReliability || 'medium',
     analyzedAt: new Date(dbData.created_at),
+    // 미표기 = 단독 M-1 분석(전부 실측). 통합분석만 명시적으로 false를 실어 보낸다.
+    measured: {
+      faceShape: measuredFlags?.faceShape ?? true,
+      eyeShape: measuredFlags?.eyeShape ?? true,
+      lipShape: measuredFlags?.lipShape ?? true,
+    },
   };
 }

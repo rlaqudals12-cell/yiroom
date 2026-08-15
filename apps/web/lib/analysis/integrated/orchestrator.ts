@@ -171,10 +171,11 @@ export async function runIntegratedAnalysis(
 
     // 3. M-1 composer (PC+S 의존). update에서 makeup 미선택이거나 skipMakeup이면 실행 안 함
     // (makeup 선택했어도 pc/skin이 이번에 재실행 안 됐으면 composer가 REQUIRES_PC_AND_S로 자연 스킵)
+    // hair를 함께 넘기는 이유: 얼굴형은 H-1(Gemini)만 실측한다 — composer가 상수로 지어내지 않고 승계.
     const makeup =
       !selected.has('makeup') || input.options.skipMakeup
         ? SKIPPED_AXIS
-        : await runMakeupComposer(sessionId, clerkUserId, pc, skin);
+        : await runMakeupComposer(sessionId, clerkUserId, pc, skin, hair);
 
     // 4. 축 집계
     const axesCompleted: AxisCode[] = [];

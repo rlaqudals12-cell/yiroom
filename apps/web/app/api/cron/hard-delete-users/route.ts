@@ -20,14 +20,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
-import {
-  GDPR_CONFIG,
-  DELETION_TABLES,
-  type CronJobResult,
-  type DeletionAuditAction,
-} from '@/types/gdpr';
+import { GDPR_CONFIG, type CronJobResult, type DeletionAuditAction } from '@/types/gdpr';
 import { redactPii } from '@/lib/utils/redact-pii';
 import { purgeUserStorage } from '@/lib/api/storage-purge';
+import { purgeUserRows } from '@/lib/api/user-rows-purge';
 // Vercel Hobby 크론 2개 상한 대응: 스케줄되지 않는 정리 크론들을 매일 도는 이 크론 말미에 병합 호출.
 import { GET as runCleanupAuditLogs } from '@/app/api/cron/cleanup-audit-logs/route';
 import { GET as runCleanupImages } from '@/app/api/cron/cleanup-images/route';
@@ -77,8 +73,8 @@ async function logDeletionAudit(
 
 /**
  * 사용자 데이터 완전 삭제 (Hard Delete)
+ * 테이블 파기는 공용 유틸(purgeUserRows)에 위임 — 계정 즉시삭제와 목록·로직 공유.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- multi-table cascade delete
 async function hardDeleteUser(
   supabase: ReturnType<typeof createServiceRoleClient>,
   user: {
@@ -94,34 +90,10 @@ async function hardDeleteUser(
   try {
     console.info(`[GDPR-HARD-DELETE] Processing user ${redactPii.userId(clerkUserId)}`);
 
-    // 1. 모든 관련 테이블에서 데이터 삭제 (의존성 순서대로)
-    for (const tableName of DELETION_TABLES) {
-      try {
-        // clerk_user_id 또는 user_id 컬럼 확인하여 삭제
-        const { error: deleteError } = await supabase
-          .from(tableName)
-          .delete()
-          .eq('clerk_user_id', clerkUserId);
-
-        if (deleteError) {
-          // 테이블이 없거나 컬럼이 없는 경우
-          if (
-            deleteError.message.includes('does not exist') ||
-            deleteError.message.includes('column')
-          ) {
-            console.info(`[GDPR-HARD-DELETE] Skipping ${tableName} - not applicable`);
-          } else {
-            console.error(`[GDPR-HARD-DELETE] Failed to delete from ${tableName}:`, deleteError);
-            failedTables.push(tableName);
-          }
-        } else {
-          deletedTables.push(tableName);
-        }
-      } catch (tableError) {
-        console.error(`[GDPR-HARD-DELETE] Error with table ${tableName}:`, tableError);
-        failedTables.push(tableName);
-      }
-    }
+    // 1. 모든 관련 테이블에서 데이터 삭제 (공용 파기 유틸 — 계정 즉시삭제와 동일 목록·동일 로직)
+    const rowsPurge = await purgeUserRows(supabase, clerkUserId, '[GDPR-HARD-DELETE]');
+    deletedTables.push(...rowsPurge.deletedTables);
+    failedTables.push(...rowsPurge.failedTables);
 
     // 2. 스토리지 완전 삭제 (이미 soft delete에서 처리되었을 수 있음)
     //    공유 유틸로 재귀 수집 + 전체 버킷(integrated-sessions·twins 등) 파기.

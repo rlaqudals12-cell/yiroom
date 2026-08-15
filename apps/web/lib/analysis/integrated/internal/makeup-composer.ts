@@ -17,7 +17,55 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { skinTypeKo, finishKo, coverageKo } from '../labels';
-import type { AxisResult, MakeupAxisData, PersonalColorAxisData, SkinAxisData } from '../types';
+import type {
+  AxisResult,
+  HairAxisData,
+  MakeupAxisData,
+  PersonalColorAxisData,
+  SkinAxisData,
+} from '../types';
+
+/**
+ * makeup_analyses NOT NULL + CHECK 제약을 만족시키기 위한 스키마 유효 placeholder.
+ *
+ * 왜 필요한가: eye_shape/lip_shape/face_shape는 NOT NULL CHECK 컬럼(202601070400)이라
+ * "미측정"을 null로 표현할 수 없다. 그래서 값은 넣되, **무엇이 실측인지**를
+ * recommendations.measured에 함께 남겨 결과 페이지가 미측정 항목을 아예 표시하지 않게 한다.
+ * (과거엔 placeholder를 그대로 개인 판정처럼 렌더 — "지어낸 진단"의 원인)
+ */
+const EYE_SHAPE_PLACEHOLDER = 'almond';
+const LIP_SHAPE_PLACEHOLDER = 'full';
+const FACE_SHAPE_PLACEHOLDER = 'oval';
+
+/** makeup_analyses.face_shape CHECK 허용값 — H-1 FaceShapeType과 동일 taxonomy */
+const VALID_FACE_SHAPES: readonly string[] = [
+  'oval',
+  'round',
+  'square',
+  'heart',
+  'oblong',
+  'diamond',
+];
+
+/**
+ * H-1(헤어) 축이 판정한 얼굴형을 승계한다.
+ *
+ * 통합 플로우에서 얼굴형을 실제로 판정하는 곳은 H-1(Gemini)뿐이다.
+ * 헤어가 실패했거나 폴백(Mock)이면 실측이 아니므로 measured=false로 표시하고
+ * 스키마 유효 placeholder만 저장한다 — 판정으로 렌더되지 않는다.
+ */
+function inheritFaceShape(hairResult?: AxisResult<HairAxisData>): {
+  value: string;
+  measured: boolean;
+} {
+  if (hairResult?.success && !hairResult.usedFallback) {
+    const shape = String(hairResult.data.faceShape ?? '').toLowerCase();
+    if (VALID_FACE_SHAPES.includes(shape)) {
+      return { value: shape, measured: true };
+    }
+  }
+  return { value: FACE_SHAPE_PLACEHOLDER, measured: false };
+}
 
 /** PC 결과에서 립 팔레트 도출 */
 function deriveLipPalette(pc: PersonalColorAxisData): string[] {
@@ -95,7 +143,8 @@ export async function runMakeupComposer(
   sessionId: string,
   clerkUserId: string,
   pcResult: AxisResult<PersonalColorAxisData>,
-  skinResult: AxisResult<SkinAxisData>
+  skinResult: AxisResult<SkinAxisData>,
+  hairResult?: AxisResult<HairAxisData>
 ): Promise<AxisResult<MakeupAxisData>> {
   // 가드: PC 또는 S가 실패했으면 M-1 실행 불가
   if (!pcResult.success || !skinResult.success) {
@@ -118,6 +167,16 @@ export async function runMakeupComposer(
     const normalizedUndertone: 'warm' | 'cool' | 'neutral' =
       undertone === 'warm' || undertone === 'cool' ? undertone : 'neutral';
 
+    // 얼굴형만 실측 승계 가능 (H-1 Gemini). 눈·입술·피부 세부 지표는 통합 플로우에 측정이 없다.
+    const faceShape = inheritFaceShape(hairResult);
+
+    /**
+     * M-1은 독립 AI 호출이 없는 조합 레이어다. 따라서 "폴백 여부"는 입력 축에서 승계한다.
+     * 과거엔 usedFallback:false로 하드코딩돼, PC/S가 Mock이어도 결과 페이지가
+     * 아무 고지 없이 개인 판정처럼 보였다 (정직성 계약 위반).
+     */
+    const usedFallback = pcResult.usedFallback || skinResult.usedFallback;
+
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from('makeup_analyses')
@@ -126,18 +185,34 @@ export async function runMakeupComposer(
         session_id: sessionId,
         image_url: `integrated://face/${sessionId}`,
         undertone: normalizedUndertone,
-        // 기본값: 통합 플로우에서는 얼굴 상세 측정 생략
-        eye_shape: 'almond',
-        lip_shape: 'full',
-        face_shape: 'oval',
-        skin_texture: skinResult.data.overallScore ?? 70,
-        skin_tone_uniformity: skinResult.data.overallScore ?? 70,
-        hydration: 70,
-        pore_visibility: 50,
-        oil_balance: 50,
-        overall_score: skinResult.data.overallScore ?? 70,
+        // NOT NULL 컬럼 — placeholder 저장 + measured 플래그로 표시 차단 (위 상수 주석 참조)
+        eye_shape: EYE_SHAPE_PLACEHOLDER,
+        lip_shape: LIP_SHAPE_PLACEHOLDER,
+        face_shape: faceShape.value,
+        // 피부 세부 지표는 통합 경로에 측정값이 없다 → null(미측정). 상수(70/50)를 넣으면
+        // 결과 페이지가 "수분감 70점" 같은 없는 진단을 만들어낸다.
+        skin_texture: null,
+        skin_tone_uniformity: null,
+        hydration: null,
+        pore_visibility: null,
+        oil_balance: null,
+        // 실측값: S축 종합 점수(vitalityScore)
+        overall_score: skinResult.data.overallScore ?? null,
         concerns: [],
-        recommendations: composed,
+        recommendations: {
+          ...composed,
+          source: 'integrated',
+          /** 결과 페이지의 Mock 고지 분기 — 입력 축 폴백을 그대로 승계 */
+          usedMock: usedFallback,
+          /** 무엇이 실측인지 (미표기 = 단독 M-1 경로 → 전부 실측으로 간주, 하위호환) */
+          measured: {
+            faceShape: faceShape.measured,
+            eyeShape: false,
+            lipShape: false,
+          },
+        },
+        // 폴백 승계 시 신뢰도도 낮춰 표기 (ADR-007 "낮은 신뢰도 + 정직한 노출")
+        analysis_reliability: usedFallback ? 'low' : 'medium',
       })
       .select('id')
       .single();
@@ -156,7 +231,8 @@ export async function runMakeupComposer(
 
     return {
       success: true,
-      usedFallback: false, // composer는 AI 호출 없이 순수 조합이므로 fallback 개념 없음
+      // 조합 레이어 — 입력(PC·S)이 폴백이면 결과도 폴백이다 (세션 used_fallback 집계에 반영)
+      usedFallback,
       data: {
         id: data?.id as string | undefined,
         ...composed,
