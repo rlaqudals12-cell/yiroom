@@ -276,6 +276,331 @@ describe('closetMatcher', () => {
     });
   });
 
+  // ============================================================================
+  // T3: 원피스 슬롯 수용 (상·하의 부재 시 한 벌 조립)
+  // ============================================================================
+
+  describe('원피스 조립 경로', () => {
+    const dressOnly: InventoryItem[] = [
+      createMockItem({
+        id: 'dress-1',
+        name: '네이비 원피스',
+        subCategory: 'dress',
+        metadata: { color: ['네이비'], season: ['spring'], occasion: ['formal'] },
+      }),
+      createMockItem({
+        id: 'dress-2',
+        name: '블랙 원피스',
+        subCategory: '원피스',
+        metadata: { color: ['블랙'], season: ['spring'], occasion: ['date'] },
+      }),
+    ];
+
+    it('원피스 2벌만 있어도 코디가 조립되어야 한다', () => {
+      const suggestion = suggestOutfitFromCloset(dressOnly, {});
+
+      expect(suggestion).not.toBeNull();
+      expect(suggestion?.dress).toBeDefined();
+      expect(suggestion?.top).toBeUndefined();
+      expect(suggestion?.bottom).toBeUndefined();
+      expect(suggestion?.tips.some((t) => t.includes('원피스'))).toBe(true);
+    });
+
+    it('상·하의가 모두 있으면 원피스 경로를 쓰지 않아야 한다', () => {
+      const withPair: InventoryItem[] = [
+        ...dressOnly,
+        createMockItem({ id: 'pair-top', subCategory: 'top' }),
+        createMockItem({ id: 'pair-bottom', subCategory: 'bottom' }),
+      ];
+      const suggestion = suggestOutfitFromCloset(withPair, {});
+
+      expect(suggestion?.top).toBeDefined();
+      expect(suggestion?.bottom).toBeDefined();
+      expect(suggestion?.dress).toBeUndefined();
+    });
+
+    it('짝 없는 상의 + 원피스면 상의를 끼워넣지 않아야 한다', () => {
+      const lonelyTop: InventoryItem[] = [
+        ...dressOnly,
+        createMockItem({ id: 'lonely-top', subCategory: 'top' }),
+      ];
+      const suggestion = suggestOutfitFromCloset(lonelyTop, {});
+
+      expect(suggestion?.dress).toBeDefined();
+      expect(suggestion?.top).toBeUndefined();
+    });
+
+    it('원피스 보유 시 상·하의 부재를 "없어요"로 안내하지 않아야 한다', () => {
+      const summary = getRecommendationSummary(dressOnly, {});
+
+      const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+      expect(absentMessage).not.toContain('상의');
+      expect(absentMessage).not.toContain('하의');
+      // 대신 원피스로 조립 가능하다는 사실 + 확장 경로를 안내
+      expect(
+        summary.suggestions.some((s) => s.includes('원피스 2벌로 코디를 조립할 수 있어요'))
+      ).toBe(true);
+    });
+  });
+
+  // ============================================================================
+  // T4: 계절 하드 가드 + 정직한 예외 문구
+  // ============================================================================
+
+  describe('계절 하드 가드', () => {
+    const winterPadding = createMockItem({
+      id: 'winter-top',
+      name: '패딩 점퍼',
+      subCategory: 'top',
+      // 색 점수까지 높게(Spring 적합) 줘서, 가드가 없으면 점수 역전이 일어나는 조건을 만든다
+      metadata: { color: ['아이보리', '코랄', '베이지'], season: ['winter'], occasion: [] },
+    });
+    const summerTee = createMockItem({
+      id: 'summer-top',
+      name: '반팔 티셔츠',
+      subCategory: 'top',
+      metadata: { color: ['블랙'], season: ['summer'], occasion: [] },
+    });
+    const bottom = createMockItem({
+      id: 'any-bottom',
+      name: '면바지',
+      subCategory: 'bottom',
+      metadata: { color: ['베이지'], season: ['spring', 'summer'], occasion: [] },
+    });
+
+    it('한여름(27도)에는 겨울 전용 아이템을 후보에서 제외해야 한다', () => {
+      const recs = recommendFromCloset([winterPadding, summerTee], {
+        category: 'top',
+        temp: 27,
+        personalColor: 'Spring',
+      });
+
+      expect(recs).toHaveLength(1);
+      expect(recs[0].item.id).toBe('summer-top');
+      expect(recs[0].seasonRelaxed).toBeUndefined();
+    });
+
+    it('대체 후보가 없으면 완화하되 사유를 결과에 동봉해야 한다', () => {
+      const suggestion = suggestOutfitFromCloset([winterPadding, bottom], { temp: 27 });
+
+      expect(suggestion).not.toBeNull();
+      expect(suggestion?.top?.item.id).toBe('winter-top');
+      expect(suggestion?.top?.seasonRelaxed).toBe(true);
+      expect(suggestion?.top?.reasons.some((r) => r.includes('계절이 안 맞지만'))).toBe(true);
+      // UI가 그대로 노출할 수 있게 결과 객체에 고지 문구가 실린다
+      expect(suggestion?.warnings.some((w) => w.includes('상의') && w.includes('계절'))).toBe(true);
+    });
+
+    it('인접 계절(가을 아이템/겨울 기온)은 제외하지 않아야 한다', () => {
+      const autumnCoat = createMockItem({
+        id: 'autumn-top',
+        name: '니트',
+        subCategory: 'top',
+        metadata: { color: ['그레이'], season: ['autumn'], occasion: [] },
+      });
+      const recs = recommendFromCloset([autumnCoat], { category: 'top', temp: 0 });
+
+      expect(recs).toHaveLength(1);
+      expect(recs[0].seasonRelaxed).toBeUndefined();
+    });
+
+    it('시즌 태그가 없는 아이템은 계절 가드로 제외하지 않아야 한다 (추측 금지)', () => {
+      const noSeason = createMockItem({
+        id: 'no-season-top',
+        name: '무지 티셔츠',
+        subCategory: 'top',
+        metadata: { color: ['화이트'], season: [], occasion: [] },
+      });
+      const recs = recommendFromCloset([noSeason, winterPadding], { category: 'top', temp: 27 });
+
+      expect(recs.map((r) => r.item.id)).toEqual(['no-season-top']);
+    });
+
+    it('계절 완화가 없으면 warnings가 비어 있어야 한다', () => {
+      const suggestion = suggestOutfitFromCloset([summerTee, bottom], { temp: 27 });
+
+      expect(suggestion?.warnings).toEqual([]);
+    });
+  });
+
+  // ============================================================================
+  // T6: TPO 칩 실동작화 (태그 보유 우선 필터 + 무태그 폴백 고지)
+  // ============================================================================
+
+  describe('상황(TPO) 필터', () => {
+    // 무태그 상의에 색 점수 우위를 줘서, 보너스(+10)만으로는 태그 상의가 못 이기는 조건
+    const formalTop = createMockItem({
+      id: 'formal-top',
+      name: '셔츠',
+      subCategory: 'top',
+      metadata: { color: ['블랙'], season: [], occasion: ['formal'] },
+    });
+    const untaggedTop = createMockItem({
+      id: 'untagged-top',
+      name: '니트',
+      subCategory: 'top',
+      metadata: { color: ['코랄', '피치'], season: [], occasion: [] },
+    });
+    const casualTop = createMockItem({
+      id: 'casual-top',
+      name: '맨투맨',
+      subCategory: 'top',
+      metadata: { color: ['코랄', '피치'], season: [], occasion: ['casual'] },
+    });
+    const bottom = createMockItem({
+      id: 'tpo-bottom',
+      name: '슬랙스',
+      subCategory: 'bottom',
+      metadata: { color: ['네이비'], season: [], occasion: ['formal', 'casual'] },
+    });
+
+    it('상황을 고르면 해당 태그를 가진 아이템만 후보가 되어야 한다', () => {
+      const recs = recommendFromCloset([formalTop, untaggedTop], {
+        category: 'top',
+        occasion: 'formal',
+        personalColor: 'Spring',
+      });
+
+      expect(recs).toHaveLength(1);
+      expect(recs[0].item.id).toBe('formal-top');
+      expect(recs[0].occasionRelaxed).toBeUndefined();
+    });
+
+    it('칩을 전환하면 결과가 실제로 바뀌어야 한다', () => {
+      const closet = [formalTop, casualTop, bottom];
+
+      const formalOutfit = suggestOutfitFromCloset(closet, { occasion: 'formal' });
+      const casualOutfit = suggestOutfitFromCloset(closet, { occasion: 'casual' });
+
+      expect(formalOutfit?.top?.item.id).toBe('formal-top');
+      expect(casualOutfit?.top?.item.id).toBe('casual-top');
+    });
+
+    it('태그 보유 아이템이 없으면 전체 폴백 + 고지해야 한다', () => {
+      const suggestion = suggestOutfitFromCloset([untaggedTop, bottom], { occasion: 'workout' });
+
+      expect(suggestion?.top?.item.id).toBe('untagged-top');
+      expect(suggestion?.top?.occasionRelaxed).toBe(true);
+      expect(suggestion?.top?.reasons.some((r) => r.includes('태그가 없어'))).toBe(true);
+      expect(suggestion?.warnings.some((w) => w.includes('운동') && w.includes('태그'))).toBe(true);
+    });
+
+    it('상황을 고르지 않으면 필터도 고지도 없어야 한다', () => {
+      const recs = recommendFromCloset([formalTop, untaggedTop], { category: 'top' });
+
+      expect(recs).toHaveLength(2);
+      expect(recs.every((r) => !r.occasionRelaxed)).toBe(true);
+    });
+  });
+
+  // ============================================================================
+  // T5: 상·하의 쌍 재랭킹 (색 조화가 설명이 아니라 선택에 반영되는지)
+  // ============================================================================
+
+  describe('상·하의 쌍 재랭킹', () => {
+    const navyBottom = createMockItem({
+      id: 'navy-bottom',
+      name: '네이비 슬랙스',
+      subCategory: 'bottom',
+      metadata: { color: ['네이비'], season: [], occasion: [] },
+    });
+
+    it('기본 점수가 같으면 색 조화가 좋은 쌍을 골라야 한다', () => {
+      // Winter 기준 화이트·네이비 모두 베스트 컬러 → 기본 점수 동점.
+      // 톤온톤(네이비+네이비)이 무채색+컬러(화이트+네이비)보다 조화 가점이 높다
+      const whiteTop = createMockItem({
+        id: 'white-top',
+        name: '화이트 블라우스',
+        subCategory: 'top',
+        metadata: { color: ['화이트'], season: [], occasion: [] },
+      });
+      const navyTop = createMockItem({
+        id: 'navy-top',
+        name: '네이비 블라우스',
+        subCategory: 'top',
+        metadata: { color: ['네이비'], season: [], occasion: [] },
+      });
+
+      const options = { personalColor: 'Winter' as const };
+      // 재랭킹이 없으면 동점 상위(입력 순서상 먼저인 화이트)가 뽑힌다
+      const topOnly = recommendFromCloset([whiteTop, navyTop, navyBottom], {
+        ...options,
+        category: 'top',
+      });
+      expect(topOnly[0].item.id).toBe('white-top');
+      expect(topOnly[0].score.total).toBe(topOnly[1].score.total);
+
+      const suggestion = suggestOutfitFromCloset([whiteTop, navyTop, navyBottom], options);
+      expect(suggestion?.top?.item.id).toBe('navy-top');
+      expect(suggestion?.bottom?.item.id).toBe('navy-bottom');
+    });
+
+    it('색상명이 hex로 안 풀리면 기존 순위와 동일해야 한다 (회귀 없음)', () => {
+      const unknownColorTop = createMockItem({
+        id: 'unknown-top-a',
+        name: '무지 블라우스',
+        subCategory: 'top',
+        metadata: { color: ['형광'], season: [], occasion: [] },
+      });
+      const unknownColorTop2 = createMockItem({
+        id: 'unknown-top-b',
+        name: '체크 블라우스',
+        subCategory: 'top',
+        metadata: { color: ['체크무늬'], season: [], occasion: [] },
+      });
+      const unknownBottom = createMockItem({
+        id: 'unknown-bottom',
+        name: '무지 슬랙스',
+        subCategory: 'bottom',
+        metadata: { color: ['형광'], season: [], occasion: [] },
+      });
+
+      const closet = [unknownColorTop, unknownColorTop2, unknownBottom];
+      const baseTop = recommendFromCloset(closet, { category: 'top' })[0];
+      const suggestion = suggestOutfitFromCloset(closet, {});
+
+      expect(suggestion?.top?.item.id).toBe(baseTop.item.id);
+      expect(suggestion?.bottom?.item.id).toBe('unknown-bottom');
+    });
+
+    it('같은 입력이면 항상 같은 조합을 반환해야 한다 (결정론)', () => {
+      const closet = [
+        createMockItem({
+          id: 'det-top-1',
+          name: '코랄 블라우스',
+          subCategory: 'top',
+          metadata: { color: ['코랄'], season: ['spring'], occasion: ['casual'] },
+        }),
+        createMockItem({
+          id: 'det-top-2',
+          name: '민트 니트',
+          subCategory: 'top',
+          metadata: { color: ['민트'], season: ['spring'], occasion: ['casual'] },
+        }),
+        createMockItem({
+          id: 'det-bottom-1',
+          name: '베이지 면바지',
+          subCategory: 'bottom',
+          metadata: { color: ['베이지'], season: ['spring'], occasion: ['casual'] },
+        }),
+        createMockItem({
+          id: 'det-bottom-2',
+          name: '데님 청바지',
+          subCategory: 'bottom',
+          metadata: { color: ['데님'], season: ['spring'], occasion: ['casual'] },
+        }),
+      ];
+      const options = { personalColor: 'Spring' as const, bodyType: 'N' as const, temp: 18 };
+
+      const first = suggestOutfitFromCloset(closet, options);
+      const second = suggestOutfitFromCloset(closet, options);
+
+      expect(first?.top?.item.id).toBe(second?.top?.item.id);
+      expect(first?.bottom?.item.id).toBe(second?.bottom?.item.id);
+      expect(first?.totalScore).toBe(second?.totalScore);
+    });
+  });
+
   describe('getRecommendationSummary', () => {
     const items: InventoryItem[] = [
       createMockItem({

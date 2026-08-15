@@ -14,8 +14,9 @@ import type {
   Season,
   Occasion,
 } from '@/types/inventory';
-import { toClothingItem } from '@/types/inventory';
+import { toClothingItem, OCCASION_LABELS } from '@/types/inventory';
 import { resolveClothingCategory } from './clothingCategory';
+import { assessOutfitHarmony, type OutfitHarmony } from './color-bridge';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 import {
   type StyleCategory,
@@ -210,6 +211,14 @@ const SEASON_MATERIAL_KEYWORDS: Record<Season, string[]> = {
   winter: ['울', '캐시미어', '패딩', '플리스', 'wool', 'cashmere', 'padded', 'fleece'],
 };
 
+// 인접 계절 — 명시 시즌이 대상과 다르더라도 "그럭저럭 입을 수 있는" 범위
+const ADJACENT_SEASONS: Record<Season, Season[]> = {
+  spring: ['summer', 'autumn'],
+  summer: ['spring'],
+  autumn: ['spring', 'winter'],
+  winter: ['autumn'],
+};
+
 // 기온별 추천 계절
 function getSeasonFromTemp(temp: number): Season {
   if (temp >= 23) return 'summer';
@@ -286,13 +295,7 @@ function calculateSeasonMatchScore(item: ClothingItem, targetSeason: Season): nu
   if (metadata.season && metadata.season.length > 0) {
     if (metadata.season.includes(targetSeason)) return 100;
     // 인접 계절이면 부분 점수
-    const adjacentSeasons: Record<Season, Season[]> = {
-      spring: ['summer', 'autumn'],
-      summer: ['spring'],
-      autumn: ['spring', 'winter'],
-      winter: ['autumn'],
-    };
-    if (metadata.season.some((s) => adjacentSeasons[targetSeason].includes(s))) {
+    if (metadata.season.some((s) => ADJACENT_SEASONS[targetSeason].includes(s))) {
       return 70;
     }
     return 30;
@@ -363,8 +366,9 @@ export function calculateMatchScore(
     ? calculateBodyTypeMatchScore(clothingItem, options.bodyType, resolveClothingCategory(item))
     : 50;
 
-  // 계절 점수
-  const targetSeason = options.season || (options.temp ? getSeasonFromTemp(options.temp) : null);
+  // 계절 점수 (0°C도 유효한 기온이므로 truthy가 아닌 null 검사)
+  const targetSeason =
+    options.season || (options.temp != null ? getSeasonFromTemp(options.temp) : null);
   const seasonScore = targetSeason ? calculateSeasonMatchScore(clothingItem, targetSeason) : 50;
 
   // 스타일 점수 (K-2 확장)
@@ -412,6 +416,23 @@ export interface ClosetRecommendation {
   item: InventoryItem;
   score: MatchScore;
   reasons: string[];
+  /** 계절이 맞는 대체 후보가 없어 계절 가드를 완화하고 고른 아이템 */
+  seasonRelaxed?: boolean;
+  /** 선택한 상황(TPO) 태그를 가진 아이템이 없어 전체에서 고른 아이템 */
+  occasionRelaxed?: boolean;
+}
+
+/**
+ * 명시된 시즌 태그가 대상 계절과 어긋나는지 판정 (인접 계절은 어긋남으로 보지 않는다)
+ *
+ * 점수만으로는 한여름에 겨울 패딩이 색 점수로 역전해 뽑히는 일이 생겨,
+ * 조립 후보 단계에서 하드하게 거른다. 시즌 태그가 비어 있으면 판단하지 않는다(추측 금지).
+ */
+function hasExplicitSeasonMismatch(item: InventoryItem, targetSeason: Season): boolean {
+  const seasons = toClothingItem(item).metadata.season;
+  if (!seasons || seasons.length === 0) return false;
+  if (seasons.includes(targetSeason)) return false;
+  return !seasons.some((s) => ADJACENT_SEASONS[targetSeason].includes(s));
 }
 
 export function recommendFromCloset(
@@ -432,6 +453,37 @@ export function recommendFromCloset(
   let filtered = items.filter((item) => item.category === 'closet');
   if (options.category) {
     filtered = filtered.filter((item) => resolveClothingCategory(item) === options.category);
+  }
+
+  // 계절 하드 가드 — 명시 시즌이 대상 계절과 어긋나는 아이템은 후보에서 제외한다.
+  // (기존엔 30점 감점뿐이라 색 점수가 높은 한겨울 패딩이 한여름 추천을 이기는 역전이 생겼다)
+  // 단, 대체 후보가 하나도 없으면 완화한다 — 대신 그 사실을 결과에 실어 UI가 정직하게 알린다.
+  const targetSeason =
+    options.season || (options.temp != null ? getSeasonFromTemp(options.temp) : null);
+  let seasonRelaxed = false;
+  if (targetSeason && filtered.length > 0) {
+    const inSeason = filtered.filter((item) => !hasExplicitSeasonMismatch(item, targetSeason));
+    if (inSeason.length > 0) {
+      filtered = inSeason;
+    } else {
+      seasonRelaxed = true;
+    }
+  }
+
+  // 상황(TPO) 우선 필터 — 칩을 고르면 해당 태그를 가진 옷 안에서 고른다.
+  // (+10 보너스만으로는 다른 점수에 묻혀 칩을 바꿔도 결과가 그대로였다)
+  // 태그를 가진 옷이 없으면 전체로 폴백하고, 그 사실을 결과에 실어 UI가 고지한다.
+  const targetOccasion = options.occasion;
+  let occasionRelaxed = false;
+  if (targetOccasion && filtered.length > 0) {
+    const tagged = filtered.filter((item) =>
+      toClothingItem(item).metadata.occasion?.includes(targetOccasion)
+    );
+    if (tagged.length > 0) {
+      filtered = tagged;
+    } else {
+      occasionRelaxed = true;
+    }
   }
 
   // 점수 계산 및 정렬
@@ -475,11 +527,22 @@ export function recommendFromCloset(
       reasons.push('2026 트렌드 아이템이에요');
     }
 
+    // 완화 사유는 지어내지 않고 있는 그대로 — "이것뿐이라 골랐다"는 사실을 이유에 남긴다
+    if (seasonRelaxed) {
+      reasons.push('계절이 안 맞지만 지금 가진 옷 중에는 이것뿐이에요');
+    }
+    if (occasionRelaxed && targetOccasion) {
+      reasons.push(`'${OCCASION_LABELS[targetOccasion]}' 태그가 없어 전체에서 골랐어요`);
+    }
+
     if (reasons.length === 0) {
       reasons.push('기본 추천');
     }
 
-    return { item, score, reasons };
+    const recommendation: ClosetRecommendation = { item, score, reasons };
+    if (seasonRelaxed) recommendation.seasonRelaxed = true;
+    if (occasionRelaxed) recommendation.occasionRelaxed = true;
+    return recommendation;
   });
 
   // 점수 내림차순 정렬
@@ -494,61 +557,91 @@ export function recommendFromCloset(
  */
 export interface OutfitSuggestion {
   outer?: ClosetRecommendation;
-  top: ClosetRecommendation;
-  bottom: ClosetRecommendation;
+  // 상·하의 조합 또는 원피스 단독 — 둘 중 하나의 경로로 조립된다(둘 다 없으면 조립 불가)
+  top?: ClosetRecommendation;
+  bottom?: ClosetRecommendation;
+  dress?: ClosetRecommendation;
   shoes?: ClosetRecommendation;
   bag?: ClosetRecommendation;
   accessory?: ClosetRecommendation;
   totalScore: number;
   tips: string[];
+  /** 조립 과정에서 조건을 완화한 사실(계절·상황) — UI에 정직하게 노출한다 */
+  warnings: string[];
 }
 
-export function suggestOutfitFromCloset(
-  items: InventoryItem[],
+/**
+ * 상·하의 쌍 재랭킹에 쓰는 색 조화 가점 (ADR-105 LCh 판정 결과별)
+ *
+ * 슬롯별 top-1을 따로 뽑으면 각자 점수는 높아도 같이 입으면 어색한 쌍이 나온다.
+ * 색 조화를 "선택 후 설명"이 아니라 "선택"에 반영하기 위한 소폭 보정 — 기본 점수 체계
+ * (ADR-050 가중치)는 그대로 두고, 비슷한 점수의 후보 사이 순서만 바꾼다.
+ */
+const PAIR_HARMONY_BONUS: Record<OutfitHarmony['kind'], number> = {
+  'tone-on-tone': 6,
+  analogous: 5,
+  complementary: 4,
+  'neutral-base': 3,
+  accent: 2,
+};
+
+/** 쌍 재랭킹에 넣을 슬롯별 후보 수 */
+const PAIR_CANDIDATE_LIMIT = 5;
+
+interface RankedPair {
+  top: ClosetRecommendation;
+  bottom: ClosetRecommendation;
+  pairScore: number;
+}
+
+/**
+ * 상의 후보 × 하의 후보를 조합해 "기본 점수 + 색 조화 보정"으로 최적 쌍을 고른다.
+ *
+ * 결정론 보장: 난수를 쓰지 않고, 동점이면 먼저 온 후보(=기본 점수 순)를 유지한다.
+ * 색상명이 hex로 풀리지 않으면 보정 0 → 기존 top-1 조합과 동일한 결과가 된다.
+ */
+function selectBestPair(
+  tops: ClosetRecommendation[],
+  bottoms: ClosetRecommendation[]
+): RankedPair | null {
+  let best: RankedPair | null = null;
+
+  for (const top of tops) {
+    const topColors = toClothingItem(top.item).metadata.color;
+    for (const bottom of bottoms) {
+      const bottomColors = toClothingItem(bottom.item).metadata.color;
+      const harmony = assessOutfitHarmony(topColors, bottomColors);
+      const pairScore =
+        (top.score.total + bottom.score.total) / 2 +
+        (harmony ? PAIR_HARMONY_BONUS[harmony.kind] : 0);
+
+      // 엄격 부등호 — 동점이면 먼저 온(기본 점수가 더 높은) 쌍을 유지한다
+      if (!best || pairScore > best.pairScore) {
+        best = { top, bottom, pairScore };
+      }
+    }
+  }
+
+  return best;
+}
+
+/** 코디 슬롯 — [표시 이름, 선택된 추천] */
+type OutfitSlot = [string, ClosetRecommendation | null | undefined];
+
+/** 코디 팁 생성 — 진단·날씨가 있을 때만, 없는 근거는 지어내지 않는다 */
+function buildOutfitTips(
   options: {
     personalColor?: PersonalColorSeason | null;
     bodyType?: BodyType3 | null;
     temp?: number | null;
-    occasion?: Occasion | null;
-  }
-): OutfitSuggestion | null {
-  const closetItems = items.filter((item) => item.category === 'closet');
-
-  if (closetItems.length === 0) return null;
-
-  const season = options.temp ? getSeasonFromTemp(options.temp) : null;
-  const needsOuter = options.temp != null && options.temp < 15;
-
-  // 각 카테고리별 추천
-  const getTopRecommendation = (category: ClothingCategory) => {
-    const recs = recommendFromCloset(closetItems, {
-      ...options,
-      season,
-      category,
-      limit: 1,
-    });
-    return recs[0] || null;
-  };
-
-  const top = getTopRecommendation('top');
-  const bottom = getTopRecommendation('bottom');
-
-  if (!top || !bottom) return null;
-
-  const outer = needsOuter ? getTopRecommendation('outer') : undefined;
-  const shoes = getTopRecommendation('shoes');
-  const bag = getTopRecommendation('bag');
-  const accessory = getTopRecommendation('accessory');
-
-  // 종합 점수
-  const scores = [top.score.total, bottom.score.total];
-  if (outer) scores.push(outer.score.total);
-  if (shoes) scores.push(shoes.score.total);
-
-  const totalScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-
-  // 팁 생성
+  },
+  isDressOutfit: boolean
+): string[] {
   const tips: string[] = [];
+
+  if (isDressOutfit) {
+    tips.push('원피스 한 벌로 코디를 완성했어요');
+  }
 
   if (options.personalColor) {
     tips.push(`${options.personalColor} 톤의 색상을 중심으로 코디했어요`);
@@ -571,15 +664,123 @@ export function suggestOutfitFromCloset(
     }
   }
 
+  return tips;
+}
+
+/** 완화 고지 — 무엇을(슬롯) 어떻게(계절·상황) 완화했는지 정직하게 남긴다 */
+function buildRelaxationWarnings(picked: OutfitSlot[], occasion: Occasion | null): string[] {
+  const warnings: string[] = [];
+
+  const seasonRelaxedSlots = picked.filter(([, rec]) => rec?.seasonRelaxed).map(([label]) => label);
+  if (seasonRelaxedSlots.length > 0) {
+    warnings.push(
+      `${seasonRelaxedSlots.join('·')}는 계절이 안 맞지만, 지금 가진 옷 중에는 이것뿐이에요`
+    );
+  }
+
+  const occasionRelaxedSlots = picked
+    .filter(([, rec]) => rec?.occasionRelaxed)
+    .map(([label]) => label);
+  if (occasionRelaxedSlots.length > 0 && occasion) {
+    warnings.push(
+      `${occasionRelaxedSlots.join('·')}는 '${OCCASION_LABELS[occasion]}' 상황 태그가 붙은 옷이 없어 전체에서 골랐어요`
+    );
+  }
+
+  return warnings;
+}
+
+export function suggestOutfitFromCloset(
+  items: InventoryItem[],
+  options: {
+    personalColor?: PersonalColorSeason | null;
+    bodyType?: BodyType3 | null;
+    temp?: number | null;
+    occasion?: Occasion | null;
+  }
+): OutfitSuggestion | null {
+  const closetItems = items.filter((item) => item.category === 'closet');
+
+  if (closetItems.length === 0) return null;
+
+  // 0°C도 유효한 기온 — truthy 검사는 한겨울(0도)을 '기온 정보 없음'으로 흘려보낸다
+  const season = options.temp != null ? getSeasonFromTemp(options.temp) : null;
+  const needsOuter = options.temp != null && options.temp < 15;
+
+  // 각 카테고리별 추천
+  const getRecommendations = (category: ClothingCategory, limit: number) =>
+    recommendFromCloset(closetItems, {
+      ...options,
+      season,
+      category,
+      limit,
+    });
+
+  const getTopRecommendation = (category: ClothingCategory) =>
+    getRecommendations(category, 1)[0] || null;
+
+  // 상·하의는 각자 1등을 뽑지 않고, 상위 후보끼리 조합해 색 조화까지 반영해 고른다
+  const topCandidates = getRecommendations('top', PAIR_CANDIDATE_LIMIT);
+  const bottomCandidates = getRecommendations('bottom', PAIR_CANDIDATE_LIMIT);
+  const bestPair = selectBestPair(topCandidates, bottomCandidates);
+
+  // 쌍이 성립하지 않으면(한쪽이 비었으면) 있는 쪽 1등만 남는다 — 이후 원피스 경로로 넘어간다
+  const top = bestPair?.top ?? topCandidates[0] ?? null;
+  const bottom = bestPair?.bottom ?? bottomCandidates[0] ?? null;
+
+  // 원피스 경로 — 상·하의 쌍이 성립하지 않을 때만 한 벌로 조립한다.
+  // (원피스만 가진 옷장이 "상의와 하의가 필요해요"로 영구 불발되던 결함 수리)
+  let dress: ClosetRecommendation | null = null;
+  // 코디의 본체(상·하의 두 벌 또는 원피스 한 벌) — 종합 점수의 기준
+  let coreScores: number[];
+
+  if (top && bottom) {
+    coreScores = [top.score.total, bottom.score.total];
+  } else {
+    const dressRec = getTopRecommendation('dress');
+    if (!dressRec) return null;
+    dress = dressRec;
+    coreScores = [dressRec.score.total];
+  }
+
+  const outer = needsOuter ? getTopRecommendation('outer') : undefined;
+  const shoes = getTopRecommendation('shoes');
+  const bag = getTopRecommendation('bag');
+  const accessory = getTopRecommendation('accessory');
+
+  // 종합 점수
+  const scores = [...coreScores];
+  if (outer) scores.push(outer.score.total);
+  if (shoes) scores.push(shoes.score.total);
+
+  const totalScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+  const tips = buildOutfitTips(options, !!dress);
+
+  const picked: OutfitSlot[] = [
+    ['아우터', outer],
+    ['원피스', dress],
+    ['상의', dress ? null : top],
+    ['하의', dress ? null : bottom],
+    ['신발', shoes],
+    ['가방', bag],
+    ['액세서리', accessory],
+  ];
+
+  const warnings = buildRelaxationWarnings(picked, options.occasion ?? null);
+
   return {
     outer: outer || undefined,
-    top,
-    bottom,
+    // 원피스 경로에서는 짝이 없는 상의/하의를 끼워넣지 않는다(상의+원피스 같은 억지 조합 방지)
+    top: dress ? undefined : top || undefined,
+    bottom: dress ? undefined : bottom || undefined,
+    dress: dress || undefined,
     shoes: shoes || undefined,
     bag: bag || undefined,
     accessory: accessory || undefined,
     totalScore,
     tips,
+    warnings,
   };
 }
 
@@ -620,7 +821,10 @@ export function getRecommendationSummary(
 
   // 부족한 카테고리 확인 — 0벌(부재)과 1벌(빈약)을 분리한다.
   // 1벌만 있어도 코디 조립은 진행되므로(진행 안내와 정합) '없어요'로 뭉뚱그리면 자기모순이 된다
-  const essentialCategories: ClothingCategory[] = ['outer', 'top', 'bottom', 'shoes'];
+  // 원피스 보유 시: 한 벌로 코디가 성립하므로 상·하의 부재를 '없어요'로 단정하지 않는다(조립기와 정합)
+  const dressCount = categoryCount['dress'] || 0;
+  const essentialCategories: ClothingCategory[] =
+    dressCount > 0 ? ['outer', 'shoes'] : ['outer', 'top', 'bottom', 'shoes'];
   const absentCategories: ClothingCategory[] = [];
   const thinCategories: ClothingCategory[] = [];
   for (const cat of essentialCategories) {
@@ -649,6 +853,16 @@ export function getRecommendationSummary(
   if (thinCategories.length > 0) {
     suggestions.push(
       `${thinCategories.map((c) => categoryNames[c]).join(', ')}은 1벌뿐이에요 — 1벌씩 더 있으면 조합이 다양해져요`
+    );
+  }
+
+  // 원피스로만 조립 가능한 상태 — 지금도 코디가 되지만 조합 폭을 넓히는 길을 정직하게 안내
+  if (
+    dressCount > 0 &&
+    ((categoryCount['top'] || 0) === 0 || (categoryCount['bottom'] || 0) === 0)
+  ) {
+    suggestions.push(
+      `원피스 ${dressCount}벌로 코디를 조립할 수 있어요 — 상의·하의를 더하면 조합이 더 늘어나요`
     );
   }
 

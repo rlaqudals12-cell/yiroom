@@ -9,7 +9,16 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, RefreshCw, Thermometer, ChevronRight, Images, MapPin } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Thermometer,
+  ChevronRight,
+  Images,
+  MapPin,
+  Bookmark,
+  Check,
+} from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +34,7 @@ import {
   type ClosetRecommendation,
 } from '@/lib/inventory/client';
 import { OCCASION_LABELS, type Occasion } from '@/types/inventory';
-import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
+import type { InventoryItem, InventoryItemDB, Season } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 import { getBodyShapeLabel } from '@/lib/body';
 import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
@@ -39,6 +48,21 @@ function readContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined 
   if (typeof raw !== 'object' || raw === null) return undefined;
   const v = (raw as { contrastLevel?: unknown }).contrastLevel;
   return v === 'low' || v === 'medium' || v === 'high' ? v : undefined;
+}
+
+/** 저장·착용 기록 피드백 색 — 성공/안내/실패를 시각적으로도 구분 */
+const ACTION_MESSAGE_TONE_CLASS: Record<'success' | 'info' | 'error', string> = {
+  success: 'text-emerald-600',
+  info: 'text-muted-foreground',
+  error: 'text-destructive',
+};
+
+/** 저장할 코디의 계절 — 월 기준(0=1월). 날씨 실측이 없어도 기록이 비지 않게 한다. */
+function getSeasonFromMonth(month: number): Season {
+  if (month >= 2 && month <= 4) return 'spring';
+  if (month >= 5 && month <= 7) return 'summer';
+  if (month >= 8 && month <= 10) return 'autumn';
+  return 'winter';
 }
 
 /** 통합 큐레이션 맥락(source·session)을 옷장 등록 경로에 이어붙인다(맥락 유지). */
@@ -90,6 +114,16 @@ export default function ClosetRecommendPage() {
 
   // 상황(TPO) 선택 — null = 상황 무관
   const [occasion, setOccasion] = useState<Occasion | null>(null);
+
+  // 저장된 코디의 아이템 구성 키(정렬 후 join) — 같은 조합 중복 저장 차단용
+  const [savedOutfitKeys, setSavedOutfitKeys] = useState<string[]>([]);
+  const [savingOutfit, setSavingOutfit] = useState(false);
+  const [recordingWear, setRecordingWear] = useState(false);
+  // 저장·착용 기록 피드백 — 성공/차단/실패를 화면에서 정직하게 알린다
+  const [actionMessage, setActionMessage] = useState<{
+    tone: 'success' | 'info' | 'error';
+    text: string;
+  } | null>(null);
 
   // 사용자 프로필 조회
   useEffect(() => {
@@ -228,6 +262,26 @@ export default function ClosetRecommendPage() {
     fetchItems();
   }, [fetchItems]);
 
+  // 저장된 코디 조회 — 같은 조합을 두 번 저장하지 않기 위한 사전 조회.
+  // 실패해도 화면은 정상 동작한다(저장 시점에 서버 응답으로 다시 판단).
+  const fetchSavedOutfits = useCallback(async () => {
+    try {
+      const res = await fetch('/api/inventory/outfits?limit=100');
+      if (!res.ok) return;
+      const json = (await res.json()) as { outfits?: Array<{ itemIds?: string[] }> };
+      const keys = (json.outfits ?? [])
+        .map((o) => [...(o.itemIds ?? [])].sort().join(','))
+        .filter(Boolean);
+      setSavedOutfitKeys(keys);
+    } catch (error) {
+      console.warn('[Recommend] Saved outfits fetch error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSavedOutfits();
+  }, [fetchSavedOutfits]);
+
   // 코디 추천
   const outfit = useMemo((): OutfitSuggestion | null => {
     if (items.length === 0) return null;
@@ -239,6 +293,29 @@ export default function ClosetRecommendPage() {
       occasion,
     });
   }, [items, personalColor, bodyType, temp, occasion]);
+
+  // 이 코디를 구성하는 아이템 ID — 저장·착용 기록의 대상(슬롯 순서 고정 → 결정론)
+  const outfitItemIds = useMemo((): string[] => {
+    if (!outfit) return [];
+    return [
+      outfit.outer,
+      outfit.dress,
+      outfit.top,
+      outfit.bottom,
+      outfit.shoes,
+      outfit.bag,
+      outfit.accessory,
+    ]
+      .filter((rec): rec is ClosetRecommendation => !!rec)
+      .map((rec) => rec.item.id);
+  }, [outfit]);
+
+  // 이미 저장된 조합인지 판정 — 아이템 구성이 같으면 같은 코디로 본다(모바일 규칙 미러)
+  const isOutfitAlreadySaved = useMemo((): boolean => {
+    if (outfitItemIds.length === 0) return false;
+    const key = [...outfitItemIds].sort().join(',');
+    return savedOutfitKeys.includes(key);
+  }, [outfitItemIds, savedOutfitKeys]);
 
   // 코디 색 조화 판정 (ADR-105 LCh) — 상·하의 색상명이 hex로 풀릴 때만
   const harmony = useMemo(() => {
@@ -265,10 +342,11 @@ export default function ClosetRecommendPage() {
   // 미매핑 아이템(목록 밖 한글 세부종류 등)은 조립 슬롯에서 빠지므로 집계에도 넣지 않는다
   // (등록했는데 집계에 없다고 카피가 거짓말하지 않게, 코드와 같은 기준 사용).
   const slotCounts = useMemo(() => {
-    const counts = { top: 0, bottom: 0 };
+    const counts = { top: 0, bottom: 0, dress: 0 };
     for (const item of items) {
       const category = resolveClothingCategory(item);
-      if (category === 'top' || category === 'bottom') counts[category] += 1;
+      if (category === 'top' || category === 'bottom' || category === 'dress')
+        counts[category] += 1;
     }
     return counts;
   }, [items]);
@@ -277,12 +355,12 @@ export default function ClosetRecommendPage() {
   // 미매핑 아이템은 집계에 없으므로 "등록하면 된다"는 약속이 코드 기준과 어긋나지 않는다.
   const missingSlotMessage = ((): string => {
     if (slotCounts.top > 0 && slotCounts.bottom === 0) {
-      return `상의 ${slotCounts.top}벌 있어요 — 하의를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
+      return `상의 ${slotCounts.top}벌 있어요 — 하의나 원피스를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
     }
     if (slotCounts.bottom > 0 && slotCounts.top === 0) {
-      return `하의 ${slotCounts.bottom}벌 있어요 — 상의를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
+      return `하의 ${slotCounts.bottom}벌 있어요 — 상의나 원피스를 1벌 등록하면 내 옷으로 코디를 조립해드려요`;
     }
-    return '코디를 조립하려면 상의와 하의가 각각 1벌 이상 필요해요';
+    return '코디를 조립하려면 상의와 하의가 각각 1벌 이상, 또는 원피스 1벌이 필요해요';
   })();
 
   // 빈 옷장 콜드스타트 — 진단 기반 코디 "방향"(실제 옷을 지어내지 않고 색·역할·스타일 가이드만).
@@ -302,10 +380,101 @@ export default function ClosetRecommendPage() {
   // BODY_TYPES_3[bodyType] 조회가 undefined가 될 수 있다 → null로 정규화(빈 진단 카드 방지).
   const coldStartBody = (bodyType && BODY_TYPES_3[bodyType]) ?? null;
 
+  // 저장 버튼 라벨 — 저장됨/진행 중/기본 세 상태
+  const saveButtonLabel = ((): string => {
+    if (isOutfitAlreadySaved) return '저장됨';
+    if (savingOutfit) return '저장 중...';
+    return '이 코디 저장';
+  })();
+
   // 새로고침
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchItems();
+  };
+
+  // 이 코디 저장 — 같은 아이템 구성은 중복 저장하지 않는다(모바일 규칙 미러)
+  const handleSaveOutfit = async () => {
+    if (!outfit || savingOutfit || outfitItemIds.length === 0) return;
+
+    if (isOutfitAlreadySaved) {
+      setActionMessage({ tone: 'info', text: '이미 저장된 코디예요' });
+      return;
+    }
+
+    setSavingOutfit(true);
+    setActionMessage(null);
+
+    try {
+      const today = new Date();
+      const currentSeason = getSeasonFromMonth(today.getMonth());
+      // 설명은 추천 근거를 그대로 — 없는 진단은 적지 않는다
+      const description = [
+        personalColor,
+        bodyType ? getBodyShapeLabel(bodyType) : null,
+        `${temp}°C`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+
+      const res = await fetch('/api/inventory/outfits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${today.getMonth() + 1}월 ${today.getDate()}일 추천 코디`,
+          description,
+          itemIds: outfitItemIds,
+          occasion: occasion ?? undefined,
+          season: [currentSeason],
+        }),
+      });
+
+      if (!res.ok) throw new Error(`save failed: ${res.status}`);
+
+      setSavedOutfitKeys((prev) => [...prev, [...outfitItemIds].sort().join(',')]);
+      setActionMessage({ tone: 'success', text: '내 코디에 저장했어요' });
+    } catch (error) {
+      console.error('[Recommend] Save outfit error:', error);
+      setActionMessage({
+        tone: 'error',
+        text: '코디를 저장하지 못했어요. 잠시 후 다시 시도해주세요',
+      });
+    } finally {
+      setSavingOutfit(false);
+    }
+  };
+
+  // 오늘 입었어요 — 구성 아이템의 착용 횟수·최근 착용일을 갱신한다(고객 노트 축적)
+  const handleRecordWear = async () => {
+    if (!outfit || recordingWear || outfitItemIds.length === 0) return;
+
+    setRecordingWear(true);
+    setActionMessage(null);
+
+    try {
+      const results = await Promise.all(
+        outfitItemIds.map((id) =>
+          fetch(`/api/inventory/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'recordUsage' }),
+          })
+        )
+      );
+
+      if (results.some((res) => !res.ok)) throw new Error('일부 아이템 기록 실패');
+
+      setActionMessage({ tone: 'success', text: '오늘 입은 옷으로 기록했어요' });
+      await fetchItems();
+    } catch (error) {
+      console.error('[Recommend] Record wear error:', error);
+      setActionMessage({
+        tone: 'error',
+        text: '착용 기록을 저장하지 못했어요. 잠시 후 다시 시도해주세요',
+      });
+    } finally {
+      setRecordingWear(false);
+    }
   };
 
   // 아이템 렌더링 헬퍼
@@ -702,12 +871,71 @@ export default function ClosetRecommendPage() {
             {/* 아이템 그리드 */}
             <div className="grid grid-cols-2 gap-3">
               {renderOutfitItem('아우터', outfit.outer)}
+              {renderOutfitItem('원피스', outfit.dress)}
               {renderOutfitItem('상의', outfit.top)}
               {renderOutfitItem('하의', outfit.bottom)}
               {renderOutfitItem('신발', outfit.shoes)}
               {renderOutfitItem('가방', outfit.bag)}
               {renderOutfitItem('액세서리', outfit.accessory)}
             </div>
+
+            {/* 저장·착용 기록 — 추천이 기록으로 남아야 다음 추천이 좋아진다(고객 노트 폐루프) */}
+            <div className="space-y-2" data-testid="outfit-actions">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleSaveOutfit}
+                  disabled={savingOutfit}
+                  data-testid="outfit-save-button"
+                >
+                  <Bookmark className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  {saveButtonLabel}
+                </Button>
+                <Button
+                  onClick={handleRecordWear}
+                  disabled={recordingWear}
+                  data-testid="outfit-wear-button"
+                >
+                  <Check className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  {recordingWear ? '기록 중...' : '오늘 입었어요'}
+                </Button>
+              </div>
+              {actionMessage && (
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    className={`text-xs ${ACTION_MESSAGE_TONE_CLASS[actionMessage.tone]}`}
+                    data-testid="outfit-action-message"
+                  >
+                    {actionMessage.text}
+                  </p>
+                  <Link
+                    href="/closet/outfits"
+                    className="shrink-0 text-xs font-medium text-primary hover:text-primary/80"
+                  >
+                    내 코디 보기
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 조립 완화 고지 — 계절·상황 조건을 완화해 골랐다면 숨기지 않고 먼저 알린다 */}
+            {outfit.warnings.length > 0 && (
+              <div
+                className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5"
+                data-testid="outfit-warnings"
+              >
+                <ul className="space-y-1">
+                  {outfit.warnings.map((warning, idx) => (
+                    <li
+                      key={idx}
+                      className="text-xs leading-relaxed text-amber-700 dark:text-amber-300"
+                    >
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* 코디 팁 — 색 조화(LCh 판정)·날씨 팁을 앞에 */}
             {(outfit.tips.length > 0 || harmony || (weather && weather.precipitation > 0)) && (
