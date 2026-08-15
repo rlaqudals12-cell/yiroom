@@ -3,6 +3,7 @@
  * @description Phase K - 옷장 인벤토리 기반 코디 추천을 위한 RAG 시스템
  */
 
+import { resolveClothingCategory, type ClothingCategory } from '@/lib/inventory';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
 
@@ -264,8 +265,18 @@ function generateStylingTips(
 
   // 보유 아이템 기반 팁
   if (items.length > 0) {
-    const hasTop = items.some((i) => i.subCategory === 'top' || i.subCategory === 'outer');
-    const hasBottom = items.some((i) => i.subCategory === 'bottom' || i.subCategory === 'dress');
+    // sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어 완전일치는 항상 빗나간다.
+    // 조립기(closetMatcher)와 같은 정규화를 써서 "하의를 추가하세요" 같은 거짓 안내를 막는다
+    const categoryOf = (item: FashionItem): ClothingCategory | null =>
+      resolveClothingCategory({ subCategory: item.subCategory });
+    const hasTop = items.some((i) => {
+      const category = categoryOf(i);
+      return category === 'top' || category === 'outer';
+    });
+    const hasBottom = items.some((i) => {
+      const category = categoryOf(i);
+      return category === 'bottom' || category === 'dress';
+    });
 
     if (hasTop && !hasBottom) {
       tips.push('하의 아이템을 추가하면 코디가 완성돼요');

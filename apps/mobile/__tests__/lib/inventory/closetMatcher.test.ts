@@ -225,6 +225,21 @@ describe('한글 sub_category 실데이터 형상', () => {
     expect(score.bodyTypeScore).toBeGreaterThan(50);
   });
 
+  it('한글 sub_category 원피스만으로도 코디가 조립되어야 한다', () => {
+    // 웹 저장 형상('원피스')이 대분류 완전일치에 걸려 조립 불발되던 경로의 회귀 방지
+    const dressOnly: InventoryItem[] = [
+      createMockItem({
+        id: 'ko-dress-1',
+        name: '네이비 원피스',
+        subCategory: '원피스',
+        metadata: { color: ['네이비'], season: ['spring'], occasion: ['date'] },
+      }),
+    ];
+    const suggestion = suggestOutfitFromCloset(dressOnly, {});
+
+    expect(suggestion?.dress?.item.id).toBe('ko-dress-1');
+  });
+
   it('getRecommendationSummary가 한글 sub_category를 대분류로 집계해야 한다', () => {
     // top('티셔츠')·bottom('청바지')·shoes('스니커즈') 각 1벌 → '1벌뿐' 안내에 포함,
     // 단 '상의가 없다'류의 오집계(unknown 처리·0벌 취급)는 아니어야 한다
@@ -236,5 +251,167 @@ describe('한글 sub_category 실데이터 형상', () => {
     );
     // 보유 1벌인 상의는 부재가 아니라 '1벌뿐' 안내로 분류
     expect(summary.suggestions.some((s) => s.includes('상의') && s.includes('1벌뿐'))).toBe(true);
+  });
+});
+
+// ============================================================
+// T3: 원피스 슬롯 수용 (상·하의 부재 시 한 벌 조립)
+// — 웹 tests/lib/inventory/closetMatcher.test.ts 미러
+// ============================================================
+
+describe('원피스 조립 경로', () => {
+  const dressOnly: InventoryItem[] = [
+    createMockItem({
+      id: 'dress-1',
+      name: '네이비 원피스',
+      subCategory: 'dress',
+      metadata: { color: ['네이비'], season: ['spring'], occasion: ['formal'] },
+    }),
+    createMockItem({
+      id: 'dress-2',
+      name: '블랙 원피스',
+      subCategory: '원피스',
+      metadata: { color: ['블랙'], season: ['spring'], occasion: ['date'] },
+    }),
+  ];
+
+  it('원피스 2벌만 있어도 코디가 조립되어야 한다', () => {
+    const suggestion = suggestOutfitFromCloset(dressOnly, {});
+
+    expect(suggestion).not.toBeNull();
+    expect(suggestion?.dress).toBeDefined();
+    expect(suggestion?.top).toBeUndefined();
+    expect(suggestion?.bottom).toBeUndefined();
+    expect(suggestion?.tips.some((t) => t.includes('원피스'))).toBe(true);
+  });
+
+  it('상·하의가 모두 있으면 원피스 경로를 쓰지 않아야 한다', () => {
+    const withPair: InventoryItem[] = [
+      ...dressOnly,
+      createMockItem({ id: 'pair-top', subCategory: 'top' }),
+      createMockItem({ id: 'pair-bottom', subCategory: 'bottom' }),
+    ];
+    const suggestion = suggestOutfitFromCloset(withPair, {});
+
+    expect(suggestion?.top).toBeDefined();
+    expect(suggestion?.bottom).toBeDefined();
+    expect(suggestion?.dress).toBeUndefined();
+  });
+
+  it('짝 없는 상의 + 원피스면 상의를 끼워넣지 않아야 한다', () => {
+    const lonelyTop: InventoryItem[] = [
+      ...dressOnly,
+      createMockItem({ id: 'lonely-top', subCategory: 'top' }),
+    ];
+    const suggestion = suggestOutfitFromCloset(lonelyTop, {});
+
+    expect(suggestion?.dress).toBeDefined();
+    expect(suggestion?.top).toBeUndefined();
+  });
+
+  it('원피스 보유 시 상·하의 부재를 "없어요"로 안내하지 않아야 한다', () => {
+    const summary = getRecommendationSummary(dressOnly, {});
+
+    const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+    expect(absentMessage).not.toContain('상의');
+    expect(absentMessage).not.toContain('하의');
+    // 대신 원피스로 조립 가능하다는 사실 + 확장 경로를 안내
+    expect(summary.suggestions.some((s) => s.includes('원피스 2벌로 코디를 조립할 수 있어요'))).toBe(
+      true
+    );
+  });
+});
+
+// ============================================================
+// T4: 계절 하드 가드 + 정직한 예외 문구
+// ============================================================
+
+describe('계절 하드 가드', () => {
+  const winterPadding = createMockItem({
+    id: 'winter-top',
+    name: '패딩 점퍼',
+    subCategory: 'top',
+    // 색 점수까지 높게(Spring 적합) 줘서, 가드가 없으면 점수 역전이 일어나는 조건을 만든다
+    metadata: { color: ['아이보리', '코랄', '베이지'], season: ['winter'], occasion: [] },
+  });
+  const summerTee = createMockItem({
+    id: 'summer-top',
+    name: '반팔 티셔츠',
+    subCategory: 'top',
+    metadata: { color: ['블랙'], season: ['summer'], occasion: [] },
+  });
+  const bottom = createMockItem({
+    id: 'any-bottom',
+    name: '면바지',
+    subCategory: 'bottom',
+    metadata: { color: ['베이지'], season: ['spring', 'summer'], occasion: [] },
+  });
+
+  it('한여름(27도)에는 겨울 전용 아이템을 후보에서 제외해야 한다', () => {
+    const recs = recommendFromCloset([winterPadding, summerTee], {
+      category: 'top',
+      temp: 27,
+      personalColor: 'Spring',
+    });
+
+    expect(recs).toHaveLength(1);
+    expect(recs[0].item.id).toBe('summer-top');
+    expect(recs[0].seasonRelaxed).toBeUndefined();
+  });
+
+  it('대체 후보가 없으면 완화하되 사유를 결과에 동봉해야 한다', () => {
+    const suggestion = suggestOutfitFromCloset([winterPadding, bottom], { temp: 27 });
+
+    expect(suggestion).not.toBeNull();
+    expect(suggestion?.top?.item.id).toBe('winter-top');
+    expect(suggestion?.top?.seasonRelaxed).toBe(true);
+    expect(suggestion?.top?.reasons.some((r) => r.includes('계절이 안 맞지만'))).toBe(true);
+    // UI가 그대로 노출할 수 있게 결과 객체에 고지 문구가 실린다
+    expect(suggestion?.warnings.some((w) => w.includes('상의') && w.includes('계절'))).toBe(true);
+  });
+
+  it('인접 계절(가을 아이템/겨울 기온)은 제외하지 않아야 한다', () => {
+    const autumnKnit = createMockItem({
+      id: 'autumn-top',
+      name: '니트',
+      subCategory: 'top',
+      metadata: { color: ['그레이'], season: ['autumn'], occasion: [] },
+    });
+    // 0°C — truthy 검사였다면 '기온 정보 없음'으로 흘러가 계절 판정 자체가 사라진다
+    const recs = recommendFromCloset([autumnKnit], { category: 'top', temp: 0 });
+
+    expect(recs).toHaveLength(1);
+    expect(recs[0].seasonRelaxed).toBeUndefined();
+  });
+
+  it('시즌 태그가 없는 아이템은 계절 가드로 제외하지 않아야 한다 (추측 금지)', () => {
+    const noSeason = createMockItem({
+      id: 'no-season-top',
+      name: '무지 티셔츠',
+      subCategory: 'top',
+      metadata: { color: ['화이트'], season: [], occasion: [] },
+    });
+    const recs = recommendFromCloset([noSeason, winterPadding], { category: 'top', temp: 27 });
+
+    expect(recs.map((r) => r.item.id)).toEqual(['no-season-top']);
+  });
+
+  it('계절 완화가 없으면 warnings가 비어 있어야 한다', () => {
+    const suggestion = suggestOutfitFromCloset([summerTee, bottom], { temp: 27 });
+
+    expect(suggestion?.warnings).toEqual([]);
+  });
+
+  it('0°C에서도 계절 점수가 겨울 기준으로 계산되어야 한다', () => {
+    // temp가 truthy 검사면 0°C가 통째로 무시돼 계절 점수가 중립 50으로 주저앉는다
+    const winterCoat = createMockItem({
+      id: 'winter-coat',
+      name: '울 코트',
+      subCategory: 'outer',
+      metadata: { color: ['차콜'], season: ['winter'], occasion: [] },
+    });
+    const score = calculateMatchScore(winterCoat, { temp: 0 });
+
+    expect(score.seasonScore).toBe(100);
   });
 });

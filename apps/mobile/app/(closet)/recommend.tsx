@@ -14,8 +14,9 @@ import {
   Sun,
   Cloud,
   ChevronRight,
+  Info,
 } from 'lucide-react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -24,7 +25,8 @@ import { TIMING } from '@/lib/animations';
 import { useTheme, typography, radii, spacing, coloredShadow, moduleColors } from '@/lib/theme';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import type { Season as ClothingSeason } from '../../lib/inventory/types';
+import { resolveClothingCategory } from '../../lib/inventory/clothingCategory';
+import type { ClothingCategory, Season as ClothingSeason } from '../../lib/inventory/types';
 import {
   useClosetMatcher,
   type OutfitSuggestion,
@@ -155,18 +157,33 @@ export default function RecommendScreen() {
     router.push('/(analysis)/integrated' as never);
   }, [router]);
 
-  // 현재 코디의 아이템 ID 수집
+  // 현재 코디의 아이템 ID 수집 (원피스 경로 포함 — 빠뜨리면 저장·중복판정에서 코디가 어긋난다)
   const getOutfitItemIds = useCallback((): string[] => {
     if (!outfit) return [];
     const ids: string[] = [];
     if (outfit.top) ids.push(outfit.top.item.id);
     if (outfit.bottom) ids.push(outfit.bottom.item.id);
+    if (outfit.dress) ids.push(outfit.dress.item.id);
     if (outfit.outer) ids.push(outfit.outer.item.id);
     if (outfit.shoes) ids.push(outfit.shoes.item.id);
     if (outfit.bag) ids.push(outfit.bag.item.id);
     if (outfit.accessory) ids.push(outfit.accessory.item.id);
     return ids;
   }, [outfit]);
+
+  // 조립 불발 사유는 옷장 구성에 따라 정직하게 — 조립 조건은 '상·하의 쌍' 또는 '원피스 한 벌'
+  const noOutfitHint = useMemo((): string => {
+    const has = (category: ClothingCategory): boolean =>
+      items.some((item) => resolveClothingCategory(item) === category);
+    const hasTop = has('top');
+    const hasBottom = has('bottom');
+
+    if (hasTop && !hasBottom) return '하의 또는 원피스를 추가하면 코디를 만들 수 있어요';
+    if (!hasTop && hasBottom) return '상의 또는 원피스를 추가하면 코디를 만들 수 있어요';
+    if (!hasTop && !hasBottom) return '상의·하의 또는 원피스를 추가하면 코디를 만들 수 있어요';
+    // 상·하의가 모두 있는데도 불발이면 분류가 인식되지 않은 아이템이 있다는 뜻
+    return '옷장 아이템의 카테고리를 확인해주세요';
+  }, [items]);
 
   // 현재 코디가 이미 저장되었는지 확인
   const isOutfitAlreadySaved = useCallback((): boolean => {
@@ -394,12 +411,33 @@ export default function RecommendScreen() {
 
           <View style={styles.outfitGrid}>
             {renderOutfitItem('아우터', outfit.outer)}
+            {renderOutfitItem('원피스', outfit.dress)}
             {renderOutfitItem('상의', outfit.top)}
             {renderOutfitItem('하의', outfit.bottom)}
             {renderOutfitItem('신발', outfit.shoes)}
             {renderOutfitItem('가방', outfit.bag)}
             {renderOutfitItem('악세서리', outfit.accessory)}
           </View>
+
+          {/* 완화 고지 — 계절이 안 맞는데도 고른 슬롯이 있으면 숨기지 않고 알린다 */}
+          {outfit.warnings.length > 0 && (
+            <Animated.View entering={FadeInUp.delay(40).duration(TIMING.normal)}>
+              <GlassCard
+                shadowSize="md"
+                style={{ ...styles.warningsCard }}
+                testID="outfit-warnings"
+              >
+                {outfit.warnings.map((warning, index) => (
+                  <View key={index} style={styles.warningRow}>
+                    <Info size={14} color={status.warning} />
+                    <Text style={[styles.warningText, { color: colors.mutedForeground }]}>
+                      {warning}
+                    </Text>
+                  </View>
+                ))}
+              </GlassCard>
+            </Animated.View>
+          )}
 
           {/* 코디 팁 */}
           {outfit.tips.length > 0 && (
@@ -452,12 +490,12 @@ export default function RecommendScreen() {
           </Pressable>
         </View>
       ) : (
-        <View style={styles.noOutfitContainer}>
+        <View style={styles.noOutfitContainer} testID="no-outfit">
           <Text style={[styles.noOutfitText, { color: colors.mutedForeground }]}>
             추천할 코디를 찾지 못했어요
           </Text>
           <Text style={[styles.noOutfitSubtext, { color: colors.mutedForeground }]}>
-            상의와 하의가 필요해요
+            {noOutfitHint}
           </Text>
         </View>
       )}
@@ -658,6 +696,22 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     padding: spacing.md,
     marginTop: spacing.md,
+  },
+  warningsCard: {
+    borderRadius: radii.xl,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 20,
   },
   tipsTitle: {
     fontSize: 15,

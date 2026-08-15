@@ -119,6 +119,7 @@ function createMockOutfitSuggestion(): OutfitSuggestion {
     outer: createMockRecommendation(outer),
     totalScore: 87,
     tips: ['오늘 날씨에 딱 맞는 코디예요'],
+    warnings: [],
   };
 }
 

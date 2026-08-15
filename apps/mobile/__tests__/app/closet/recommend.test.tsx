@@ -163,8 +163,11 @@ const mockOutfit = {
   },
   bag: null,
   accessory: null,
+  dress: null,
   totalScore: 78,
   tips: ['밝은 색상 상의를 추천해요'],
+  // 조립기가 항상 동봉하는 완화 고지 (계절 가드) — 기본은 빈 배열
+  warnings: [] as string[],
 };
 
 // 3개 아이템 (top, bottom, shoes)

@@ -8,6 +8,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { resolveClothingCategory } from './clothingCategory';
 import type {
   InventoryItem,
   InventoryCategory,
@@ -234,7 +235,9 @@ export function useCloset(): UseClosetResult {
 
   const getByCategory = useCallback(
     (category: ClothingCategory) => {
-      return inventory.items.filter((item) => item.subCategory === category);
+      // sub_category에 한글 세부종류('티셔츠')가 저장된 실데이터가 있어 완전일치는 항상 0건이 된다.
+      // 조립기(closetMatcher)와 같은 정규화를 써서 두 경로가 같은 옷을 본다
+      return inventory.items.filter((item) => resolveClothingCategory(item) === category);
     },
     [inventory.items]
   );

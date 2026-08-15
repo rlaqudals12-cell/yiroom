@@ -26,7 +26,12 @@ import { SkeletonText, SkeletonCard } from '@/components/ui/SkeletonLoader';
 import { staggeredEntry } from '@/lib/animations';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
-import { useCloset, type ClothingCategory, CLOTHING_CATEGORY_LABELS } from '../../lib/inventory';
+import {
+  useCloset,
+  resolveClothingCategory,
+  type ClothingCategory,
+  CLOTHING_CATEGORY_LABELS,
+} from '../../lib/inventory';
 
 type FilterCategory = ClothingCategory | 'all';
 
@@ -65,12 +70,22 @@ export default function ClosetScreen() {
     setIsSortSheetOpen(false);
   }, []);
 
+  // 대분류 정규화 — 웹에서 등록한 아이템은 sub_category에 한글 세부종류('티셔츠')가 들어와,
+  // 영문 대분류 완전일치로 거르면 어느 필터 탭에도 안 잡힌다. 한 번만 정규화해 필터·통계에 쓴다.
+  // (표시 라벨은 원본 sub_category를 그대로 두어 사용자가 등록한 어휘를 유지)
+  const itemsWithCategory = useMemo(
+    () => items.map((item) => ({ item, resolvedCategory: resolveClothingCategory(item) })),
+    [items]
+  );
+
   // 카테고리별 필터링 + 정렬
   const filteredItems = useMemo(() => {
     let result =
       selectedCategory === 'all'
-        ? [...items]
-        : items.filter((item) => item.subCategory === selectedCategory);
+        ? itemsWithCategory.map(({ item }) => item)
+        : itemsWithCategory
+            .filter(({ resolvedCategory }) => resolvedCategory === selectedCategory)
+            .map(({ item }) => item);
 
     // 정렬 적용
     if (sortOrder === 'name') {
@@ -83,14 +98,19 @@ export default function ClosetScreen() {
     // 'newest'는 기본 순서 (최신순)
 
     return result;
-  }, [items, selectedCategory, sortOrder]);
+  }, [itemsWithCategory, selectedCategory, sortOrder]);
 
-  // 통계
+  // 통계 — 카테고리 수는 정규화된 대분류 기준(같은 상의를 '티셔츠'/'top'으로 이중 집계하지 않는다).
+  // 미매핑 아이템은 추측하지 않고 집계에서 제외한다
   const stats = useMemo(() => {
     const favorites = items.filter((item) => item.isFavorite).length;
-    const categories = new Set(items.map((item) => item.subCategory)).size;
+    const categories = new Set(
+      itemsWithCategory
+        .map(({ resolvedCategory }) => resolvedCategory)
+        .filter((category): category is ClothingCategory => category !== null)
+    ).size;
     return { total: items.length, favorites, categories };
-  }, [items]);
+  }, [items, itemsWithCategory]);
 
   const handleCategoryPress = (category: FilterCategory) => {
     Haptics.selectionAsync();

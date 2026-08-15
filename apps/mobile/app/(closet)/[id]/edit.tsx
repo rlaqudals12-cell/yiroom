@@ -21,25 +21,35 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import {
+  CLOTHING_CATEGORY_LABELS,
   OCCASION_LABELS,
   SEASON_LABELS,
+  resolveClothingCategory,
   useCloset,
+  type ClothingCategory,
   type ClothingMetadata,
   type Occasion,
   type Season,
 } from '@/lib/inventory';
 import { useTheme } from '@/lib/theme';
 
-const CATEGORIES = [
-  { key: 'top', label: '상의' },
-  { key: 'bottom', label: '하의' },
-  { key: 'outer', label: '아우터' },
-  { key: 'dress', label: '원피스' },
-  { key: 'shoes', label: '신발' },
-  { key: 'bag', label: '가방' },
-  { key: 'accessory', label: '악세서리' },
-  { key: 'other', label: '기타' },
+// 카테고리 선택지 — 값은 웹 계약(영문 대분류), 라벨은 정본 상수 재사용.
+// 타입을 박아 'other' 같은 조립기가 모르는 값이 다시 새어 들어오는 걸 컴파일에서 막는다
+// (등록 화면 add.tsx와 동일한 7종 계약)
+const CATEGORIES: { key: ClothingCategory; label: string }[] = [
+  { key: 'top', label: CLOTHING_CATEGORY_LABELS.top },
+  { key: 'bottom', label: CLOTHING_CATEGORY_LABELS.bottom },
+  { key: 'outer', label: CLOTHING_CATEGORY_LABELS.outer },
+  { key: 'dress', label: CLOTHING_CATEGORY_LABELS.dress },
+  { key: 'shoes', label: CLOTHING_CATEGORY_LABELS.shoes },
+  { key: 'bag', label: CLOTHING_CATEGORY_LABELS.bag },
+  { key: 'accessory', label: CLOTHING_CATEGORY_LABELS.accessory },
 ];
+
+/** 선택값이 조립기가 아는 대분류인지 판정 (무효값을 metadata에 남기지 않기 위한 게이트) */
+function isClothingCategory(value: string): value is ClothingCategory {
+  return CATEGORIES.some((category) => category.key === value);
+}
 
 // 저장 값은 웹 계약 어휘(영문), 화면에는 라벨만 보여준다.
 // 한글을 그대로 저장하면 매칭 로직이 못 읽어 계절·TPO 점수가 기본값으로 주저앉는다
@@ -65,7 +75,9 @@ export default function EditClosetItemScreen(): React.JSX.Element {
   useEffect(() => {
     if (item) {
       setName(item.name || '');
-      setCategory(item.subCategory || '');
+      // 칩은 정규화된 대분류를 보여준다 — 저장된 값이 한글 세부종류('티셔츠')여도
+      // 조립기가 실제로 쓰는 분류와 화면이 어긋나지 않게 한다 (미매핑이면 미선택)
+      setCategory(resolveClothingCategory(item) ?? '');
       setItemBrand(item.brand || '');
       setSize(meta.size || '');
       setSelectedSeasons(meta.season || []);
@@ -95,16 +107,34 @@ export default function EditClosetItemScreen(): React.JSX.Element {
 
     setIsSaving(true);
     try {
+      const isValidCategory = isClothingCategory(category);
+
+      // 정규화 1순위 키(metadata.clothingCategory)를 함께 갱신하지 않으면,
+      // 카테고리를 바꿔도 코디 슬롯·필터가 옛 대분류를 계속 따라간다.
+      const nextMetadata: Record<string, unknown> = {
+        ...(item?.metadata ?? {}),
+        size: size.trim() || undefined,
+        season: selectedSeasons,
+        occasion: selectedOccasions,
+      };
+      if (isValidCategory) {
+        nextMetadata.clothingCategory = category;
+      } else {
+        // 무효값을 대신 심으면 그 아이템은 어느 슬롯에도 안 잡힌다 —
+        // 키를 지워 sub_category 폴백(한글 세부종류 역매핑)이 살아나게 한다
+        delete nextMetadata.clothingCategory;
+      }
+
+      // 칩을 실제로 바꿨을 때만 sub_category를 새 대분류로 덮는다.
+      // (안 바꿨는데 덮으면 '티셔츠' 같은 사용자 어휘가 'top'으로 소실된다)
+      const storedCategory = item ? resolveClothingCategory(item) : null;
+      const categoryChanged = isValidCategory && category !== storedCategory;
+
       await updateItem(id, {
         name: name.trim(),
-        subCategory: category,
+        subCategory: categoryChanged ? category : (item?.subCategory ?? null),
         brand: itemBrand.trim() || null,
-        metadata: {
-          ...meta,
-          size: size.trim() || undefined,
-          season: selectedSeasons,
-          occasion: selectedOccasions,
-        } as unknown as Record<string, unknown>,
+        metadata: nextMetadata,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
@@ -113,7 +143,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
     } finally {
       setIsSaving(false);
     }
-  }, [id, name, category, itemBrand, size, selectedSeasons, selectedOccasions, updateItem]);
+  }, [id, item, name, category, itemBrand, size, selectedSeasons, selectedOccasions, updateItem]);
 
   if (!item) {
     return (

@@ -16,6 +16,7 @@ import { useTheme, spacing } from '../../lib/theme';
 // 슬롯명 → 한국어 라벨
 const SLOT_LABELS: Record<string, string> = {
   outer: '아우터',
+  dress: '원피스',
   top: '상의',
   bottom: '하의',
   shoes: '신발',
@@ -24,9 +25,10 @@ const SLOT_LABELS: Record<string, string> = {
 };
 
 // OutfitSuggestion 슬롯에서 아이템 목록 추출
+// (원피스 경로로 조립된 코디는 top/bottom이 비므로 dress를 빠뜨리면 카드가 텅 빈다)
 function extractSlots(suggestion: OutfitSuggestion): { slot: string; rec: ClosetRecommendation }[] {
   const slots: { slot: string; rec: ClosetRecommendation }[] = [];
-  const keys = ['outer', 'top', 'bottom', 'shoes', 'bag', 'accessory'] as const;
+  const keys = ['outer', 'dress', 'top', 'bottom', 'shoes', 'bag', 'accessory'] as const;
   for (const key of keys) {
     const rec = suggestion[key];
     if (rec) slots.push({ slot: key, rec });
