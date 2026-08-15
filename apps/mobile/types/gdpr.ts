@@ -85,7 +85,8 @@ export const DELETION_TABLES = [
   'skin_diary_entries',
   'saved_outfits',
   'wishlist',
-  'inventory_items',
+  // 옷장/화장대 인벤토리 정본 (구 오타 테이블명은 실재하지 않아 교체)
+  'user_inventory',
   'user_agreements',
   'coach_chat_history',
   'daily_checkins',

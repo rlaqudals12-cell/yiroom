@@ -15,7 +15,13 @@ import type {
   SavedOutfit,
   SavedOutfitRow,
 } from './types';
-import { rowToInventoryItem, rowToSavedOutfit, toClothingItems } from './types';
+import {
+  INVENTORY_TABLE,
+  SAVED_OUTFITS_TABLE,
+  rowToInventoryItem,
+  rowToSavedOutfit,
+  toClothingItems,
+} from './types';
 import { closetLogger } from '../utils/logger';
 
 // ============================================================
@@ -51,7 +57,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
     try {
       let query = supabase
-        .from('inventory_items')
+        .from(INVENTORY_TABLE)
         .select('*')
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false });
@@ -85,7 +91,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
       try {
         const { data, error: insertError } = await supabase
-          .from('inventory_items')
+          .from(INVENTORY_TABLE)
           .insert({
             clerk_user_id: user.id,
             category: item.category,
@@ -132,7 +138,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
         if (updates.metadata !== undefined) updateData.metadata = updates.metadata;
 
         const { error: updateError } = await supabase
-          .from('inventory_items')
+          .from(INVENTORY_TABLE)
           .update(updateData)
           .eq('id', id);
 
@@ -153,7 +159,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
       if (!supabase) return false;
 
       try {
-        const { error: deleteError } = await supabase.from('inventory_items').delete().eq('id', id);
+        const { error: deleteError } = await supabase.from(INVENTORY_TABLE).delete().eq('id', id);
 
         if (deleteError) throw deleteError;
 
@@ -259,7 +265,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('saved_outfits')
+        .from(SAVED_OUTFITS_TABLE)
         .select('*')
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false });
@@ -287,7 +293,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
       try {
         const { data, error: insertError } = await supabase
-          .from('saved_outfits')
+          .from(SAVED_OUTFITS_TABLE)
           .insert({
             clerk_user_id: user.id,
             name: outfit.name,
@@ -320,7 +326,10 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
       if (!supabase) return false;
 
       try {
-        const { error: deleteError } = await supabase.from('saved_outfits').delete().eq('id', id);
+        const { error: deleteError } = await supabase
+          .from(SAVED_OUTFITS_TABLE)
+          .delete()
+          .eq('id', id);
 
         if (deleteError) throw deleteError;
 
@@ -352,7 +361,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         if (updates.season !== undefined) updateData.season = updates.season;
 
         const { error: updateError } = await supabase
-          .from('saved_outfits')
+          .from(SAVED_OUTFITS_TABLE)
           .update(updateData)
           .eq('id', id);
 
@@ -377,7 +386,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         if (!outfit) return false;
 
         const { error: updateError } = await supabase
-          .from('saved_outfits')
+          .from(SAVED_OUTFITS_TABLE)
           .update({
             wear_count: outfit.wearCount + 1,
             last_worn_at: new Date().toISOString(),

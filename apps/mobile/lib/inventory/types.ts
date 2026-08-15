@@ -9,6 +9,23 @@
 
 export type InventoryCategory = 'closet' | 'beauty' | 'equipment' | 'supplement' | 'pantry';
 
+// ============================================================
+// DB 테이블 (정본)
+// ============================================================
+
+/**
+ * 인벤토리 정본 테이블명.
+ *
+ * 왜 상수인가: 모바일이 실재하지 않는 테이블명을 조회해 옷장·코디가 항상 빈 상태였다.
+ * (마이그레이션 정본 = supabase/migrations/20260711_user_inventory_closet.sql,
+ *  웹 전 경로 = apps/web/lib/inventory/repository.ts 모두 user_inventory)
+ * 테이블명을 한 곳에 고정해 같은 오타가 재발하지 않게 한다.
+ */
+export const INVENTORY_TABLE = 'user_inventory';
+
+/** 저장된 코디 테이블 (동일 마이그레이션에서 생성) */
+export const SAVED_OUTFITS_TABLE = 'saved_outfits';
+
 export type ClothingCategory = 'outer' | 'top' | 'bottom' | 'dress' | 'shoes' | 'bag' | 'accessory';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';

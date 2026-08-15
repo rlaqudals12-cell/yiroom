@@ -23,6 +23,7 @@ import {
 import Animated from 'react-native-reanimated';
 
 import { staggeredEntry } from '@/lib/animations';
+import { INVENTORY_TABLE, resolveClothingCategory, type ClothingCategory } from '@/lib/inventory';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing } from '@/lib/theme';
 
@@ -38,6 +39,8 @@ interface ClosetItem {
   brand: string | null;
   color: string | null;
   isFavorite: boolean;
+  /** 정규화된 영문 대분류 (한글 세부종류·웹 등록분 호환) — 카테고리 필터 기준 */
+  resolvedCategory: ClothingCategory | null;
 }
 
 const CATEGORIES = [
@@ -65,17 +68,15 @@ export default function StyleGalleryScreen(): React.JSX.Element {
   const fetchItems = useCallback(async () => {
     setIsLoading(true);
     try {
-      let query = supabase
-        .from('inventory_items')
+      // 카테고리 필터는 서버 eq('sub_category')로 걸 수 없다 — sub_category에는 한글
+      // 세부종류('티셔츠')가 저장된 실데이터가 있어 영문 대분류 완전일치가 항상 빗나간다.
+      // 전체를 받아 resolveClothingCategory로 정규화한 뒤 클라이언트에서 거른다.
+      const { data, error } = await supabase
+        .from(INVENTORY_TABLE)
         .select('id, name, category, sub_category, image_url, brand, tags, is_favorite, metadata')
         .eq('category', 'closet')
-        .order('created_at', { ascending: false });
-
-      if (selectedCategory !== 'all') {
-        query = query.eq('sub_category', selectedCategory);
-      }
-
-      const { data, error } = await query.limit(100);
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) {
         closetLogger.error('Gallery fetch failed:', error);
@@ -85,6 +86,8 @@ export default function StyleGalleryScreen(): React.JSX.Element {
 
       const mapped: ClosetItem[] = (data ?? []).map((item) => {
         const meta = (item.metadata ?? {}) as Record<string, unknown>;
+        // metadata.color는 계약상 배열(string[]) — 대표색 1개만 표시한다
+        const colorValue = Array.isArray(meta.color) ? meta.color[0] : meta.color;
         return {
           id: item.id,
           name: item.name,
@@ -92,12 +95,20 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           subCategory: item.sub_category,
           imageUrl: item.image_url,
           brand: item.brand,
-          color: typeof meta.color === 'string' ? meta.color : null,
+          color: typeof colorValue === 'string' ? colorValue : null,
           isFavorite: item.is_favorite ?? false,
+          resolvedCategory: resolveClothingCategory({
+            subCategory: item.sub_category,
+            metadata: item.metadata,
+          }),
         };
       });
 
-      setItems(mapped);
+      setItems(
+        selectedCategory === 'all'
+          ? mapped
+          : mapped.filter((item) => item.resolvedCategory === selectedCategory)
+      );
     } catch (err) {
       closetLogger.error('Gallery load error:', err);
       setItems([]);

@@ -20,7 +20,14 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useCloset, type ClothingMetadata } from '@/lib/inventory';
+import {
+  OCCASION_LABELS,
+  SEASON_LABELS,
+  useCloset,
+  type ClothingMetadata,
+  type Occasion,
+  type Season,
+} from '@/lib/inventory';
 import { useTheme } from '@/lib/theme';
 
 const CATEGORIES = [
@@ -34,8 +41,10 @@ const CATEGORIES = [
   { key: 'other', label: '기타' },
 ];
 
-const SEASONS = ['봄', '여름', '가을', '겨울'];
-const OCCASIONS = ['데일리', '출근', '데이트', '운동', '여행', '포멀'];
+// 저장 값은 웹 계약 어휘(영문), 화면에는 라벨만 보여준다.
+// 한글을 그대로 저장하면 매칭 로직이 못 읽어 계절·TPO 점수가 기본값으로 주저앉는다
+const SEASONS = Object.keys(SEASON_LABELS) as Season[];
+const OCCASIONS = Object.keys(OCCASION_LABELS) as Occasion[];
 
 export default function EditClosetItemScreen(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand } = useTheme();
@@ -49,8 +58,8 @@ export default function EditClosetItemScreen(): React.JSX.Element {
   const [category, setCategory] = useState('');
   const [itemBrand, setItemBrand] = useState('');
   const [size, setSize] = useState('');
-  const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
-  const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
+  const [selectedSeasons, setSelectedSeasons] = useState<Season[]>([]);
+  const [selectedOccasions, setSelectedOccasions] = useState<Occasion[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -64,14 +73,14 @@ export default function EditClosetItemScreen(): React.JSX.Element {
     }
   }, [item, meta.size, meta.season, meta.occasion]);
 
-  const toggleSeason = useCallback((season: string) => {
+  const toggleSeason = useCallback((season: Season) => {
     Haptics.selectionAsync();
     setSelectedSeasons((prev) =>
       prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]
     );
   }, []);
 
-  const toggleOccasion = useCallback((occasion: string) => {
+  const toggleOccasion = useCallback((occasion: Occasion) => {
     Haptics.selectionAsync();
     setSelectedOccasions((prev) =>
       prev.includes(occasion) ? prev.filter((o) => o !== occasion) : [...prev, occasion]
@@ -330,7 +339,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
                     ]}
                     onPress={() => toggleSeason(season)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={season}
+                    accessibilityLabel={SEASON_LABELS[season]}
                     accessibilityState={{ checked: isSelected }}
                   >
                     <Text
@@ -381,7 +390,7 @@ export default function EditClosetItemScreen(): React.JSX.Element {
                     ]}
                     onPress={() => toggleOccasion(occasion)}
                     accessibilityRole="checkbox"
-                    accessibilityLabel={occasion}
+                    accessibilityLabel={OCCASION_LABELS[occasion]}
                     accessibilityState={{ checked: isSelected }}
                   >
                     <Text

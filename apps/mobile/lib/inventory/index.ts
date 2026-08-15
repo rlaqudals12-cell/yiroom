@@ -23,6 +23,9 @@ export {
   PATTERN_LABELS,
   MATERIAL_LABELS,
   CLOTHING_SUB_CATEGORIES,
+  // DB 테이블 정본
+  INVENTORY_TABLE,
+  SAVED_OUTFITS_TABLE,
   // 메타데이터 타입
   type ClothingMetadata,
   type BeautyMetadata,
@@ -48,6 +51,13 @@ export {
 // ============================================================
 
 export { resolveClothingCategory } from './clothingCategory';
+
+// ============================================================
+// 옷장 등록 메타데이터 계약 (웹 키·어휘 정본)
+// ============================================================
+
+export { buildClosetMetadata } from './closetMetadata';
+export type { ClosetItemMetadata, ClosetMetadataInput } from './closetMetadata';
 
 // ============================================================
 // 훅 Re-export

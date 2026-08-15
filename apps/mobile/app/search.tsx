@@ -37,6 +37,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer, GlassCard } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { INVENTORY_TABLE } from '@/lib/inventory';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { moduleColors, statusColors, useTheme, typography, spacing } from '@/lib/theme';
 
@@ -133,7 +134,7 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
 
         // 옷장 아이템 검색
         const { data: closetItems } = await supabase
-          .from('inventory_items')
+          .from(INVENTORY_TABLE)
           .select('id, name, brand, sub_category')
           .eq('category', 'closet')
           .or(`name.ilike.%${trimmed}%,brand.ilike.%${trimmed}%`)

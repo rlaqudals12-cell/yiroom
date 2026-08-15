@@ -22,13 +22,19 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useCloset, type ClothingCategory, type Season } from '@/lib/inventory';
+import {
+  buildClosetMetadata,
+  useCloset,
+  type ClothingCategory,
+  type Occasion,
+  type Season,
+} from '@/lib/inventory';
 import { useAppPreferencesStore } from '@/lib/stores';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { closetLogger } from '@/lib/utils/logger';
 
-// 카테고리 옵션
-const CATEGORIES = [
+// 카테고리 옵션 — 값은 웹 계약(영문 대분류). 타입을 박아 오탈자가 컴파일에서 걸리게 한다
+const CATEGORIES: { value: ClothingCategory; label: string; icon: string }[] = [
   { value: 'top', label: '상의', icon: '👕' },
   { value: 'bottom', label: '하의', icon: '👖' },
   { value: 'outer', label: '아우터', icon: '🧥' },
@@ -54,32 +60,38 @@ const COLORS = [
   { value: 'purple', label: '퍼플', hex: '#9C27B0' },
 ];
 
-// 시즌 옵션
-const SEASONS = [
+// 시즌 옵션 — 어휘는 웹 계약(가을 = autumn). Season 타입이 'fall' 같은 이탈을 막는다
+const SEASONS: { value: Season; label: string; icon: string }[] = [
   { value: 'spring', label: '봄', icon: '🌸' },
   { value: 'summer', label: '여름', icon: '☀️' },
-  { value: 'fall', label: '가을', icon: '🍂' },
+  { value: 'autumn', label: '가을', icon: '🍂' },
   { value: 'winter', label: '겨울', icon: '❄️' },
 ];
 
-// 상황 옵션
-const OCCASIONS = [
-  { value: 'daily', label: '데일리' },
-  { value: 'work', label: '출근' },
+// 상황 옵션 — 웹 어휘 5종(casual/formal/workout/date/travel)과 1:1.
+// 이전의 daily/work/sports는 매칭 로직이 모르는 값이라 TPO 점수가 항상 무시됐다
+const OCCASIONS: { value: Occasion; label: string }[] = [
+  { value: 'casual', label: '캐주얼' },
+  { value: 'formal', label: '포멀' },
+  { value: 'workout', label: '운동' },
   { value: 'date', label: '데이트' },
   { value: 'travel', label: '여행' },
-  { value: 'formal', label: '포멀' },
-  { value: 'sports', label: '운동' },
 ];
+
+/** 다중 선택 토글 (순수) — 이미 있으면 빼고, 없으면 더한다 */
+function toggleValue<T>(list: T[], value: T): T[] {
+  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+}
 
 interface FormData {
   imageUri: string | null;
   name: string;
   brand: string;
-  category: string;
+  /** 영문 대분류 — 미선택 상태를 빈 문자열로 표현 */
+  category: ClothingCategory | '';
   colors: string[];
-  seasons: string[];
-  occasions: string[];
+  seasons: Season[];
+  occasions: Occasion[];
   notes: string;
 }
 
@@ -144,27 +156,40 @@ export default function ClosetAddScreen() {
     }
   };
 
-  // 다중 선택 토글
-  const toggleSelection = useCallback(
-    (field: 'colors' | 'seasons' | 'occasions', value: string) => {
+  // 다중 선택 토글 — 필드별 어휘 타입(Season/Occasion)을 잃지 않도록 핸들러를 분리한다
+  const toggleColor = useCallback(
+    (value: string) => {
       if (hapticEnabled) {
         Haptics.selectionAsync();
       }
+      setFormData((prev) => ({ ...prev, colors: toggleValue(prev.colors, value) }));
+    },
+    [hapticEnabled]
+  );
 
-      setFormData((prev) => {
-        const current = prev[field];
-        const updated = current.includes(value)
-          ? current.filter((v) => v !== value)
-          : [...current, value];
-        return { ...prev, [field]: updated };
-      });
+  const toggleSeason = useCallback(
+    (value: Season) => {
+      if (hapticEnabled) {
+        Haptics.selectionAsync();
+      }
+      setFormData((prev) => ({ ...prev, seasons: toggleValue(prev.seasons, value) }));
+    },
+    [hapticEnabled]
+  );
+
+  const toggleOccasion = useCallback(
+    (value: Occasion) => {
+      if (hapticEnabled) {
+        Haptics.selectionAsync();
+      }
+      setFormData((prev) => ({ ...prev, occasions: toggleValue(prev.occasions, value) }));
     },
     [hapticEnabled]
   );
 
   // 카테고리 선택
   const selectCategory = useCallback(
-    (value: string) => {
+    (value: ClothingCategory) => {
       if (hapticEnabled) {
         Haptics.selectionAsync();
       }
@@ -195,25 +220,32 @@ export default function ClosetAddScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
+    // isValid()가 이미 검증하지만 타입 좁히기를 위해 다시 확인 (non-null 단언 제거)
+    const { imageUri, category } = formData;
+    if (!imageUri || !category) {
+      Alert.alert('입력 확인', '필수 항목을 모두 입력해주세요.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // 메타데이터 구성 (옷장 아이템 형식)
-      const metadata = {
+      // 메타데이터 = 웹 계약(단수 키 color/season/occasion + 영문 대분류 보존)
+      const metadata = buildClosetMetadata({
         colors: formData.colors,
-        seasons: formData.seasons as Season[],
+        seasons: formData.seasons,
         occasions: formData.occasions,
+        clothingCategory: category,
         notes: formData.notes,
-      };
+      });
 
       // API 연동 - useCloset().addItem() 호출
-      // imageUri는 isValid()에서 이미 검증됨
       const result = await addItem({
         category: 'closet',
-        subCategory: formData.category as ClothingCategory,
+        subCategory: category,
         name: formData.name.trim(),
-        imageUrl: formData.imageUri!,
-        originalImageUrl: formData.imageUri,
+        imageUrl: imageUri,
+        originalImageUrl: imageUri,
         brand: formData.brand.trim() || null,
         tags: [...formData.colors, ...formData.seasons, ...formData.occasions],
         isFavorite: false,
@@ -348,7 +380,7 @@ export default function ClosetAddScreen() {
                 {COLORS.map((color) => (
                   <Pressable
                     key={color.value}
-                    onPress={() => toggleSelection('colors', color.value)}
+                    onPress={() => toggleColor(color.value)}
                     style={[
                       styles.colorButton,
                       formData.colors.includes(color.value) && styles.colorButtonSelected,
@@ -377,7 +409,7 @@ export default function ClosetAddScreen() {
                 {SEASONS.map((season) => (
                   <Pressable
                     key={season.value}
-                    onPress={() => toggleSelection('seasons', season.value)}
+                    onPress={() => toggleSeason(season.value)}
                     style={[
                       styles.seasonButton,
                       formData.seasons.includes(season.value) && styles.seasonButtonSelected,
@@ -406,7 +438,7 @@ export default function ClosetAddScreen() {
                 {OCCASIONS.map((occ) => (
                   <Pressable
                     key={occ.value}
-                    onPress={() => toggleSelection('occasions', occ.value)}
+                    onPress={() => toggleOccasion(occ.value)}
                     style={[
                       styles.chip,
                       formData.occasions.includes(occ.value) && styles.chipSelected,
