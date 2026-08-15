@@ -10,8 +10,6 @@ import {
   getGreetingWithEmoji,
   TIME_GREETINGS,
   TIME_EMOJIS,
-  TIME_GRADIENTS,
-  TIME_ACCENT_COLORS,
   type TimeOfDay,
 } from '@/lib/utils/greeting';
 
@@ -119,26 +117,5 @@ describe('TIME_EMOJIS', () => {
     expect(TIME_EMOJIS.afternoon).toBe('☀️');
     expect(TIME_EMOJIS.evening).toBe('🌆');
     expect(TIME_EMOJIS.night).toBe('🌙');
-  });
-});
-
-describe('TIME_GRADIENTS', () => {
-  it('모든 시간대에 그라데이션 클래스가 정의되어 있다', () => {
-    const timeOfDays: TimeOfDay[] = ['morning', 'afternoon', 'evening', 'night'];
-    for (const tod of timeOfDays) {
-      expect(TIME_GRADIENTS[tod]).toBeDefined();
-      expect(TIME_GRADIENTS[tod]).toContain('from-');
-      expect(TIME_GRADIENTS[tod]).toContain('to-');
-    }
-  });
-});
-
-describe('TIME_ACCENT_COLORS', () => {
-  it('모든 시간대에 액센트 색상이 정의되어 있다', () => {
-    const timeOfDays: TimeOfDay[] = ['morning', 'afternoon', 'evening', 'night'];
-    for (const tod of timeOfDays) {
-      expect(TIME_ACCENT_COLORS[tod]).toBeDefined();
-      expect(TIME_ACCENT_COLORS[tod]).toContain('text-');
-    }
   });
 });

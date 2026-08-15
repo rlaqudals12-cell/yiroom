@@ -86,23 +86,3 @@ export function getGreetingWithEmoji(
 
   return { greeting, emoji, timeOfDay };
 }
-
-/**
- * 시간대별 배경 그라데이션 클래스
- */
-export const TIME_GRADIENTS: Record<TimeOfDay, string> = {
-  morning: 'from-amber-100 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20',
-  afternoon: 'from-sky-100 to-blue-100 dark:from-sky-900/20 dark:to-blue-900/20',
-  evening: 'from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20',
-  night: 'from-indigo-100 to-slate-100 dark:from-indigo-900/20 dark:to-slate-900/20',
-};
-
-/**
- * 시간대별 액센트 색상
- */
-export const TIME_ACCENT_COLORS: Record<TimeOfDay, string> = {
-  morning: 'text-amber-600 dark:text-amber-400',
-  afternoon: 'text-sky-600 dark:text-sky-400',
-  evening: 'text-purple-600 dark:text-purple-400',
-  night: 'text-indigo-600 dark:text-indigo-400',
-};

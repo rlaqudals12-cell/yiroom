@@ -67,12 +67,6 @@ vi.mock('@/lib/utils/greeting', () => ({
     emoji: 'wave',
     timeOfDay: 'morning',
   })),
-  TIME_GRADIENTS: {
-    morning: 'from-yellow-50 to-orange-50',
-    afternoon: 'from-blue-50 to-cyan-50',
-    evening: 'from-purple-50 to-pink-50',
-    night: 'from-indigo-900 to-purple-900',
-  },
 }));
 
 // Mock challenges

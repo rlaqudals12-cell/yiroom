@@ -29,33 +29,3 @@ export function generateMockFaceValidation(expectedAngle: FaceAngle): ValidateFa
     },
   };
 }
-
-/**
- * 항상 적합한 결과 반환 (테스트용)
- * @description generateMockFaceValidation과 동일한 결과를 반환 (별칭)
- */
-export function generateMockFaceValidationSuccess(
-  expectedAngle: FaceAngle
-): ValidateFaceImageResponse {
-  return generateMockFaceValidation(expectedAngle);
-}
-
-/**
- * 항상 부적합한 결과 반환 (테스트용)
- */
-export function generateMockFaceValidationFailure(
-  _expectedAngle: FaceAngle,
-  reason: string = '테스트 실패'
-): ValidateFaceImageResponse {
-  return {
-    suitable: false,
-    reason,
-    detectedAngle: 'unknown',
-    quality: {
-      lighting: 'good',
-      makeupDetected: false,
-      faceDetected: false,
-      blur: false,
-    },
-  };
-}
