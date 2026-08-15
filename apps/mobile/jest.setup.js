@@ -24,7 +24,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(() => ({})),
   useSegments: jest.fn(() => []),
   usePathname: jest.fn(() => '/'),
-  useFocusEffect: jest.fn((callback) => callback()),
+  // 실제 useFocusEffect는 포커스 시점(마운트 포함)에 콜백을 실행한다.
+  // 렌더 중 동기 실행하면 렌더 단계 setState + 매 렌더 재실행(무한 재조회)이 되므로
+  // useEffect로 미뤄 실제 동작(콜백 identity 변경 시에만 재실행)에 맞춘다.
+  useFocusEffect: jest.fn((callback) => {
+    const React = require('react');
+    React.useEffect(callback, [callback]);
+  }),
   Link: 'Link',
   Stack: {
     Screen: 'Screen',

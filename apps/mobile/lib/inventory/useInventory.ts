@@ -4,7 +4,8 @@
  */
 
 import { useUser } from '@clerk/clerk-expo';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
 import type {
@@ -30,7 +31,10 @@ import { closetLogger } from '../utils/logger';
 
 interface UseInventoryResult {
   items: InventoryItem[];
+  /** 최초 로드 중 — 스켈레톤/로딩 화면 게이팅용 */
   isLoading: boolean;
+  /** 재조회 중 — 포커스 복귀·당겨서 새로고침 (기존 목록은 그대로 유지) */
+  isRefreshing: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   addItem: (
@@ -47,12 +51,21 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 최초 로드 성공 여부 — 포커스 복귀마다 전체 스켈레톤이 번쩍이지 않도록
+  // "첫 로드(isLoading)"와 "조용한 재조회(isRefreshing)"를 구분한다
+  const hasLoadedRef = useRef(false);
 
   const fetchItems = useCallback(async () => {
     if (!user?.id || !supabase) return;
 
-    setIsLoading(true);
+    if (hasLoadedRef.current) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
@@ -71,17 +84,26 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
       if (fetchError) throw fetchError;
 
       setItems((data as InventoryItemRow[]).map(rowToInventoryItem));
+      // 성공한 로드만 "이미 봤다"로 인정 — 첫 로드가 실패하면 다음 시도도 정식 로딩으로 처리
+      hasLoadedRef.current = true;
     } catch (err) {
       closetLogger.error(' useInventory error:', err);
       setError('아이템을 불러올 수 없습니다');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [user?.id, supabase, category]);
 
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+  // 화면에 포커스될 때마다 재조회 — 등록/수정/삭제 화면에서 돌아오면 목록이 즉시 최신화된다.
+  // (마운트 전용 useEffect는 이미 마운트된 목록을 낡은 채로 남겨, 등록에 성공해도 목록에
+  //  안 보여 "등록 실패"로 오인시켰다. 삭제 후 복귀 시 유령 아이템 잔존도 같은 원인)
+  useFocusEffect(
+    useCallback(() => {
+      // 콜백이 Promise를 반환하면 정리(cleanup) 함수로 오인되므로 void로 끊는다
+      void fetchItems();
+    }, [fetchItems])
+  );
 
   const addItem = useCallback(
     async (
@@ -186,6 +208,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
   return {
     items,
     isLoading,
+    isRefreshing,
     error,
     refetch: fetchItems,
     addItem,

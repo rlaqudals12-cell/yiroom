@@ -6,7 +6,15 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Bookmark, RefreshCw, Thermometer, CloudRain, Sun, Cloud } from 'lucide-react-native';
+import {
+  Bookmark,
+  RefreshCw,
+  Thermometer,
+  CloudRain,
+  Sun,
+  Cloud,
+  ChevronRight,
+} from 'lucide-react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -26,8 +34,17 @@ import {
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
 import { useWeather } from '../../lib/weather';
 
-// DB 체형 → 3타입 매핑
-function mapBodyType(dbBodyType: string | undefined): BodyType3 {
+// 3타입 체형 한글 라벨
+const BODY_TYPE_LABELS: Record<BodyType3, string> = {
+  S: '스트레이트',
+  W: '웨이브',
+  N: '내추럴',
+};
+
+// DB 체형 → 3타입 매핑.
+// 미진단(undefined)·미매핑 값은 null — 없는 진단을 기본값으로 지어내지 않는다.
+// (매칭 로직은 null을 중립 50점으로 처리하고, 체형 기반 사유/팁은 자동으로 빠진다)
+function mapBodyType(dbBodyType: string | undefined): BodyType3 | null {
   const mapping: Record<string, BodyType3> = {
     hourglass: 'S',
     rectangle: 'S',
@@ -35,11 +52,11 @@ function mapBodyType(dbBodyType: string | undefined): BodyType3 {
     pear: 'W',
     apple: 'N',
   };
-  return mapping[dbBodyType ?? ''] ?? 'S';
+  return mapping[dbBodyType ?? ''] ?? null;
 }
 
-// DB 시즌 → PersonalColorSeason 매핑
-function mapSeason(dbSeason: string | undefined): PersonalColorSeason {
+// DB 시즌 → PersonalColorSeason 매핑. 미진단·미매핑이면 null (위와 동일한 이유)
+function mapSeason(dbSeason: string | undefined): PersonalColorSeason | null {
   const mapping: Record<string, PersonalColorSeason> = {
     spring: 'Spring',
     Spring: 'Spring',
@@ -50,7 +67,7 @@ function mapSeason(dbSeason: string | undefined): PersonalColorSeason {
     winter: 'Winter',
     Winter: 'Winter',
   };
-  return mapping[dbSeason ?? ''] ?? 'Spring';
+  return mapping[dbSeason ?? ''] ?? null;
 }
 
 // 날씨 아이콘 컴포넌트
@@ -81,6 +98,9 @@ export default function RecommendScreen() {
   const { personalColor: pcResult, bodyAnalysis } = useUserAnalyses();
   const personalColor = mapSeason(pcResult?.season);
   const bodyType = mapBodyType(bodyAnalysis?.bodyType);
+  const bodyTypeLabel = bodyType ? BODY_TYPE_LABELS[bodyType] : null;
+  // 진단이 하나도 없으면 태그 대신 분석 유도 — 있지도 않은 진단을 보여주지 않는다
+  const hasDiagnosis = personalColor !== null || bodyType !== null;
 
   // 날씨 서비스 연동
   const {
@@ -128,6 +148,12 @@ export default function RecommendScreen() {
     Haptics.selectionAsync();
     router.push(`/(closet)/${id}`);
   };
+
+  // 미진단 사용자를 통합 분석으로 유도 (진단이 생기면 이 화면이 실제 근거로 채워진다)
+  const handleAnalyzePress = useCallback((): void => {
+    Haptics.selectionAsync();
+    router.push('/(analysis)/integrated' as never);
+  }, [router]);
 
   // 현재 코디의 아이템 ID 수집
   const getOutfitItemIds = useCallback((): string[] => {
@@ -177,7 +203,8 @@ export default function RecommendScreen() {
 
     const result = await saveOutfit({
       name: `${today} 추천 코디`,
-      description: `${personalColor} / ${bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'} / ${temp}°C`,
+      // 설명은 실제 추천 근거만 — 없는 진단은 적지 않는다 (웹 패턴 미러)
+      description: [personalColor, bodyTypeLabel, `${temp}°C`].filter(Boolean).join(' · '),
       itemIds,
       collageImageUrl: null,
       occasion: 'casual',
@@ -323,16 +350,32 @@ export default function RecommendScreen() {
             )}
           </View>
           <View style={styles.weatherTags}>
-            <View style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
-              <Text style={[styles.tagText, { color: moduleTheme.body.dark }]}>
-                {personalColor}
-              </Text>
-            </View>
-            <View style={[styles.tag, { backgroundColor: status.info + '20' }]}>
-              <Text style={[styles.tagText, { color: status.info }]}>
-                {bodyType === 'S' ? '스트레이트' : bodyType === 'W' ? '웨이브' : '내추럴'}
-              </Text>
-            </View>
+            {personalColor && (
+              <View style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
+                <Text style={[styles.tagText, { color: moduleTheme.body.dark }]}>
+                  {personalColor}
+                </Text>
+              </View>
+            )}
+            {bodyTypeLabel && (
+              <View style={[styles.tag, { backgroundColor: status.info + '20' }]}>
+                <Text style={[styles.tagText, { color: status.info }]}>{bodyTypeLabel}</Text>
+              </View>
+            )}
+            {!hasDiagnosis && (
+              <Pressable
+                style={styles.analyzeCta}
+                onPress={handleAnalyzePress}
+                testID="recommend-analyze-cta"
+                accessibilityRole="button"
+                accessibilityLabel="분석하고 맞춤 추천 받기"
+              >
+                <Text style={[styles.analyzeCtaText, { color: colors.mutedForeground }]}>
+                  분석하고 맞춤 추천 받기
+                </Text>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+            )}
           </View>
         </GlassCard>
       </Animated.View>
@@ -528,6 +571,16 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold,
+  },
+  analyzeCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+    paddingVertical: 6,
+  },
+  analyzeCtaText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
   },
   outfitSection: {
     marginBottom: spacing.md,

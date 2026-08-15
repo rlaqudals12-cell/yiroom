@@ -8,10 +8,7 @@ import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -140,9 +137,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -239,6 +234,10 @@ function setupDefaultMocks(overrides?: {
   outfitSuggestion?: typeof mockOutfit | null;
   isLoading?: boolean;
   items?: typeof mockItems;
+  /** null이면 퍼스널컬러 미진단 상태 */
+  personalColorResult?: { season: string } | null;
+  /** null이면 체형 미진단 상태 */
+  bodyAnalysisResult?: { bodyType: string } | null;
 }) {
   const {
     savedOutfits = [],
@@ -246,11 +245,26 @@ function setupDefaultMocks(overrides?: {
     outfitSuggestion = mockOutfit,
     isLoading = false,
     items = mockItems,
+    personalColorResult = {
+      season: 'Spring',
+      tone: 'warm',
+      colorPalette: [],
+      id: 'pc1',
+      createdAt: new Date(),
+    },
+    bodyAnalysisResult = {
+      bodyType: 'rectangle',
+      id: 'b1',
+      height: 170,
+      weight: 65,
+      bmi: 22.5,
+      createdAt: new Date(),
+    },
   } = overrides ?? {};
 
   mockUseUserAnalyses.mockReturnValue({
-    personalColor: { season: 'Spring', tone: 'warm', colorPalette: [], id: 'pc1', createdAt: new Date() },
-    bodyAnalysis: { bodyType: 'rectangle', id: 'b1', height: 170, weight: 65, bmi: 22.5, createdAt: new Date() },
+    personalColor: personalColorResult,
+    bodyAnalysis: bodyAnalysisResult,
     skinAnalysis: null,
     hairAnalysis: null,
     makeupAnalysis: null,
@@ -424,6 +438,79 @@ describe('RecommendScreen 코디 저장 기능', () => {
       const { getByText, queryByTestId } = renderWithTheme(<RecommendScreen />);
       expect(getByText('옷장에 아이템이 없어요')).toBeTruthy();
       expect(queryByTestId('save-outfit-button')).toBeNull();
+    });
+  });
+
+  // -----------------------------------------------------------------
+  // 정직성 회귀: 진단이 없으면 지어내지 않는다
+  // (이전엔 mapSeason/mapBodyType이 'Spring'/'S'로 폴백해, 분석을 한 적 없는
+  //  사용자에게 진단인 척 태그를 노출하고 저장 코디 설명에도 허위로 기록했다)
+  // -----------------------------------------------------------------
+  describe('미진단 사용자 — 지어낸 진단 금지', () => {
+    beforeEach(() => {
+      setupDefaultMocks({ personalColorResult: null, bodyAnalysisResult: null });
+    });
+
+    it('진단이 0건이면 시즌·체형 태그를 렌더하지 않는다', () => {
+      const { queryByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(queryByText('Spring')).toBeNull();
+      expect(queryByText('스트레이트')).toBeNull();
+      expect(queryByText('웨이브')).toBeNull();
+      expect(queryByText('내추럴')).toBeNull();
+    });
+
+    it('진단이 0건이면 분석 유도 CTA를 표시한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('recommend-analyze-cta')).toBeTruthy();
+      expect(getByText('분석하고 맞춤 추천 받기')).toBeTruthy();
+    });
+
+    it('매칭 훅에 기본값 대신 null을 전달한다', () => {
+      renderWithTheme(<RecommendScreen />);
+
+      expect(mockUseClosetMatcher).toHaveBeenCalledWith({
+        personalColor: null,
+        bodyType: null,
+      });
+    });
+
+    it('저장 코디 설명에 없는 진단을 적지 않는다', async () => {
+      const { getByTestId } = renderWithTheme(<RecommendScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('save-outfit-button'));
+      });
+
+      const callArg = mockSaveOutfit.mock.calls[0][0];
+      expect(callArg.description).toBe('15°C');
+      expect(callArg.description).not.toContain('Spring');
+      expect(callArg.description).not.toContain('스트레이트');
+    });
+  });
+
+  describe('진단이 있는 사용자 — 실제 진단은 그대로 노출', () => {
+    it('시즌·체형 태그를 표시하고 CTA는 숨긴다', () => {
+      setupDefaultMocks(); // Spring + rectangle(→S)
+
+      const { getByText, queryByTestId } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByText('Spring')).toBeTruthy();
+      expect(getByText('스트레이트')).toBeTruthy();
+      expect(queryByTestId('recommend-analyze-cta')).toBeNull();
+    });
+
+    it('저장 코디 설명에 실제 진단을 기록한다', async () => {
+      setupDefaultMocks();
+
+      const { getByTestId } = renderWithTheme(<RecommendScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('save-outfit-button'));
+      });
+
+      expect(mockSaveOutfit.mock.calls[0][0].description).toBe('Spring · 스트레이트 · 15°C');
     });
   });
 });

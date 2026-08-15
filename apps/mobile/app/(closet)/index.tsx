@@ -8,7 +8,15 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Plus, Heart, SlidersHorizontal } from 'lucide-react-native';
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
@@ -37,7 +45,7 @@ export default function ClosetScreen() {
   const { colors, module: moduleTheme, shadows: themeShadows, typography, spacing } = useTheme();
   const router = useRouter();
 
-  const { items, isLoading, error: _error, toggleFavorite, refetch } = useCloset();
+  const { items, isLoading, isRefreshing, error: _error, toggleFavorite, refetch } = useCloset();
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [isSortSheetOpen, setIsSortSheetOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
@@ -186,7 +194,14 @@ export default function ClosetScreen() {
 
       {/* 아이템 목록 */}
       {filteredItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
+        // 빈 상태에도 당겨서 새로고침을 얹는다 — 등록 직후 목록이 비어 보이면
+        // 사용자가 스스로 회복할 수단이 있어야 한다
+        <ScrollView
+          style={styles.emptyScroll}
+          contentContainerStyle={styles.emptyContainer}
+          testID="closet-empty-scroll"
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refetch} />}
+        >
           <Text style={styles.emptyIcon}>👗</Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {selectedCategory === 'all'
@@ -201,7 +216,7 @@ export default function ClosetScreen() {
               아이템 추가하기
             </Text>
           </Pressable>
-        </View>
+        </ScrollView>
       ) : (
         <FlatList
           data={filteredItems}
@@ -209,7 +224,7 @@ export default function ClosetScreen() {
           numColumns={2}
           contentContainerStyle={styles.gridContent}
           columnWrapperStyle={styles.gridRow}
-          refreshing={isLoading}
+          refreshing={isRefreshing}
           onRefresh={refetch}
           renderItem={({ item }) => (
             <Pressable
@@ -416,8 +431,12 @@ const styles = StyleSheet.create({
   itemCategory: {
     fontSize: typography.size.xs,
   },
-  emptyContainer: {
+  emptyScroll: {
     flex: 1,
+  },
+  emptyContainer: {
+    // ScrollView contentContainerStyle — flexGrow로 남은 공간을 채워 중앙 정렬 유지
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
