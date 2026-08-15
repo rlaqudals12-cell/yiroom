@@ -42,3 +42,21 @@ export async function downscaleToDataUrl(
   const base64 = await downscaleToBase64(uri, maxWidth);
   return `data:image/jpeg;base64,${base64}`;
 }
+
+/**
+ * 이미지 URI를 축소한 **파일 URI**로 반환한다.
+ *
+ * 왜 base64가 아니라 uri인가: multipart(FormData) 업로드는 파일 파트로 `{ uri, name, type }`를
+ * 요구한다. base64로 만들면 바디가 ~33% 부풀어 Vercel 본문 제한(4.5MB)에 더 빨리 걸린다.
+ * 축소 규칙(1024px·JPEG 0.8)은 위 함수들과 동일하게 공유한다.
+ */
+export async function downscaleToUri(
+  uri: string,
+  maxWidth: number = DEFAULT_MAX_WIDTH
+): Promise<string> {
+  const result = await manipulateAsync(uri, [{ resize: { width: maxWidth } }], {
+    compress: DEFAULT_COMPRESS,
+    format: SaveFormat.JPEG,
+  });
+  return result.uri;
+}

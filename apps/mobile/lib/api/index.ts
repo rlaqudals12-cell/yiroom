@@ -105,6 +105,14 @@ export type { TwinStatus, TwinRecord, TwinGenerateInput, TwinComposeOutput } fro
 // 성분표 OCR HTTP 클라이언트 (웹 API 재사용) — 2026-07-16 감사 수리 (APK 키 내장 제거)
 export { fetchIngredientOcr, ScanOcrApiError } from './scan';
 
+// 인벤토리 이미지 업로드 HTTP 클라이언트 (웹 API 재사용) — 로컬 file:// 저장으로 인한 사진 유실 수리
+export { uploadInventoryImage, createUploadItemId, InventoryUploadError } from './inventory-upload';
+export type {
+  InventoryUploadOptions,
+  InventoryUploadCategory,
+  InventoryUploadType,
+} from './inventory-upload';
+
 // 공유카드 발급 번호 HTTP 클라이언트 (웹 API 재사용) — E+ 카드 실측 순번
 export { fetchIssueNo } from './issue-no';
 

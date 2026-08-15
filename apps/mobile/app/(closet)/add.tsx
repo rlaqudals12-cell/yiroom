@@ -3,6 +3,7 @@
  * @description 새 옷 아이템 등록 (사진 + 메타데이터)
  */
 
+import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
@@ -22,6 +23,8 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { uploadInventoryImage, InventoryUploadError } from '@/lib/api';
+import { downscaleToUri } from '@/lib/image/downscale';
 import {
   buildClosetMetadata,
   useCloset,
@@ -98,6 +101,7 @@ interface FormData {
 export default function ClosetAddScreen() {
   const router = useRouter();
   const hapticEnabled = useAppPreferencesStore((state) => state.hapticEnabled);
+  const { getToken } = useAuth();
   const { addItem } = useCloset();
   const { colors } = useTheme();
   const styles = useStyles();
@@ -230,6 +234,15 @@ export default function ClosetAddScreen() {
     setIsSubmitting(true);
 
     try {
+      // 사진을 먼저 서버 스토리지에 올린다.
+      // 기기 로컬 URI(file://)를 image_url에 저장하면 웹·다른 기기에서 사진이 깨지고
+      // 앱 캐시가 정리되는 순간 영구 유실된다. 업로드가 실패하면 등록도 실패시킨다
+      // (로컬 URI로 몰래 저장하면 "저장됐다"고 보이지만 실제로는 사라지기 때문).
+      const token = await getToken();
+      // 전송 전 축소 — 원본 해상도는 Vercel 본문 제한(4.5MB)에 걸려 413이 난다 (웹과 동일 대응)
+      const uploadUri = await downscaleToUri(imageUri);
+      const publicImageUrl = await uploadInventoryImage(uploadUri, token, { category: 'closet' });
+
       // 메타데이터 = 웹 계약(단수 키 color/season/occasion + 영문 대분류 보존)
       const metadata = buildClosetMetadata({
         colors: formData.colors,
@@ -244,8 +257,8 @@ export default function ClosetAddScreen() {
         category: 'closet',
         subCategory: category,
         name: formData.name.trim(),
-        imageUrl: imageUri,
-        originalImageUrl: imageUri,
+        imageUrl: publicImageUrl,
+        originalImageUrl: publicImageUrl,
         brand: formData.brand.trim() || null,
         tags: [...formData.colors, ...formData.seasons, ...formData.occasions],
         isFavorite: false,
@@ -262,7 +275,12 @@ export default function ClosetAddScreen() {
       }
     } catch (error) {
       closetLogger.error('Add item error:', error);
-      Alert.alert('오류', '저장 중 문제가 발생했습니다.');
+      // 업로드 실패는 원인별 안내(용량 초과·로그인 만료 등)를 그대로 보여준다
+      if (error instanceof InventoryUploadError) {
+        Alert.alert('사진 업로드 실패', error.message);
+      } else {
+        Alert.alert('오류', '저장 중 문제가 발생했습니다.');
+      }
     } finally {
       setIsSubmitting(false);
     }

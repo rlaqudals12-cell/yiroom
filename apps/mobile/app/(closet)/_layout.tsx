@@ -56,8 +56,9 @@ export default function ClosetLayout() {
           title: '스타일 갤러리',
         }}
       />
+      {/* 실제 편집 경로는 [id]/edit — 중복 목업이던 edit/[id]는 폐기(2026-08) */}
       <Stack.Screen
-        name="edit/[id]"
+        name="[id]/edit"
         options={{
           title: '아이템 편집',
         }}

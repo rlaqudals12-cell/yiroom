@@ -11,7 +11,7 @@ jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
 }));
 
-import { downscaleToBase64, downscaleToDataUrl } from '@/lib/image/downscale';
+import { downscaleToBase64, downscaleToDataUrl, downscaleToUri } from '@/lib/image/downscale';
 
 describe('downscaleToBase64', () => {
   beforeEach(() => {
@@ -52,5 +52,29 @@ describe('downscaleToDataUrl', () => {
 
   it('data:image/jpeg;base64, 접두를 붙인 data URL을 반환한다', async () => {
     expect(await downscaleToDataUrl('file://in.jpg')).toBe('data:image/jpeg;base64,BASE64DATA');
+  });
+});
+
+describe('downscaleToUri', () => {
+  beforeEach(() => {
+    mockManipulate.mockReset();
+    mockManipulate.mockResolvedValue({ uri: 'file://out.jpg', base64: 'BASE64DATA' });
+  });
+
+  it('같은 축소 규칙(1024px·JPEG 0.8)으로 파일 URI를 반환한다', async () => {
+    const result = await downscaleToUri('file://in.jpg');
+
+    expect(mockManipulate).toHaveBeenCalledWith(
+      'file://in.jpg',
+      [{ resize: { width: 1024 } }],
+      expect.objectContaining({ compress: 0.8, format: 'jpeg' })
+    );
+    expect(result).toBe('file://out.jpg');
+  });
+
+  it('multipart 업로드용이므로 base64를 만들지 않는다 (바디 33% 팽창 방지)', async () => {
+    await downscaleToUri('file://in.jpg');
+    const saveOptions = mockManipulate.mock.calls[0][2] as { base64?: boolean };
+    expect(saveOptions.base64).toBeUndefined();
   });
 });
