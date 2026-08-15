@@ -17,6 +17,8 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { getApiBaseUrl } from './base-url';
+
 // ============================================
 // 1. 타입 (웹 라우트 응답 data와 동기화)
 // ============================================
@@ -157,7 +159,7 @@ async function readCache(): Promise<DailyRoutineData | null> {
  * 오늘의 맞춤 루틴 조회.
  *
  * @param clerkToken Clerk JWT (getToken()으로 획득)
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @returns 신선한 루틴(stale:false) 또는 오프라인 캐시(stale:true)
  * @throws RoutineApiError 설정 누락·캐시 없는 네트워크/서버 실패
  */
@@ -165,14 +167,7 @@ export async function fetchDailyRoutine(
   clerkToken: string,
   baseUrl?: string
 ): Promise<DailyRoutineResult> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new RoutineApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

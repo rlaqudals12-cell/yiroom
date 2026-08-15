@@ -5,6 +5,7 @@
  * 검증: 성공 응답 반환, 요청 헤더(Bearer + x-yiroom-client), 토큰/설정 누락·서버 실패 throw.
  */
 
+import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { fetchIngredientOcr, ScanOcrApiError } from '@/lib/api/scan';
 import type { OcrResult } from '@/lib/scan/ingredient-ocr';
 
@@ -65,15 +66,26 @@ describe('fetchIngredientOcr', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('base URL 설정이 없으면 CONFIG_ERROR를 던진다', async () => {
-    const original = process.env.EXPO_PUBLIC_YIROOM_API_URL;
+  it('base URL 미설정이면 CONFIG_ERROR 대신 프로덕션 웹으로 폴백한다', async () => {
+    // 왜: 두 env 어느 것도 실제 빌드에 설정된 적이 없다. 설정 누락을 에러로 처리하던
+    // 옛 계약은 EAS 빌드에서 분석을 전멸시켰다 — 이제는 프로덕션 웹으로 붙는다.
+    const originalYiroom = process.env.EXPO_PUBLIC_YIROOM_API_URL;
+    const originalApi = process.env.EXPO_PUBLIC_API_URL;
     delete process.env.EXPO_PUBLIC_YIROOM_API_URL;
+    delete process.env.EXPO_PUBLIC_API_URL;
+
+    // 네트워크 단계에서 끊어 URL만 관찰한다 (응답 형태는 이 테스트의 관심사가 아님)
+    const fetchMock = jest.fn().mockRejectedValue(new Error('stop-after-url'));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
     try {
-      await expect(fetchIngredientOcr('token-1', 'IMG64')).rejects.toMatchObject({
-        code: 'CONFIG_ERROR',
-      });
+      await Promise.resolve(fetchIngredientOcr('token-1', 'IMG64')).catch(() => undefined);
+
+      const calledUrl = String(fetchMock.mock.calls[0][0]);
+      expect(calledUrl.startsWith(`${DEFAULT_API_BASE_URL}/api/`)).toBe(true);
     } finally {
-      if (original !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = original;
+      if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
+      if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
   });
 

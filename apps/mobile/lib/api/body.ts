@@ -12,6 +12,7 @@
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
 
+import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
 // ============================================
@@ -123,14 +124,7 @@ export async function requestBodyAnalysis(
   clerkToken: string,
   baseUrl?: string
 ): Promise<BodyAnalysisApiResult> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new BodyApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

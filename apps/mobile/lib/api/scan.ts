@@ -17,6 +17,8 @@
 
 import type { OcrResult } from '@/lib/scan/ingredient-ocr';
 
+import { getApiBaseUrl } from './base-url';
+
 export class ScanOcrApiError extends Error {
   public readonly status: number;
   public readonly code: string | undefined;
@@ -34,7 +36,7 @@ export class ScanOcrApiError extends Error {
  *
  * @param clerkToken Clerk JWT (getToken()으로 획득) — 없으면 즉시 실패
  * @param imageBase64 다운스케일된 성분표 base64
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws ScanOcrApiError 설정 누락·미인증·네트워크/서버 실패
  */
 export async function fetchIngredientOcr(
@@ -42,14 +44,7 @@ export async function fetchIngredientOcr(
   imageBase64: string,
   baseUrl?: string
 ): Promise<OcrResult> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new ScanOcrApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
+  const url = getApiBaseUrl(baseUrl);
   if (!clerkToken) {
     throw new ScanOcrApiError('로그인이 필요해요.', 401, 'AUTH_ERROR');
   }

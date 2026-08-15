@@ -3,6 +3,10 @@
  *
  * @module lib/api
  */
+
+// 웹 API base URL 해석 정본 — 모바일 전체(lib/api·capsule·coach·push·화면)가 여기만 쓴다
+export { getApiBaseUrl, getWebHostLabel, DEFAULT_API_BASE_URL } from './base-url';
+
 export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-limit';
 
 // 통합 분석 HTTP 클라이언트 (웹 API 재사용) — ADR-102

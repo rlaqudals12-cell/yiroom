@@ -6,7 +6,7 @@
  * @see docs/adr/ADR-073-one-button-daily.md
  */
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://yiroom.vercel.app';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 
 // =============================================================================
 // 타입 정의
@@ -87,7 +87,8 @@ async function apiRequest<T>(
       headers['Authorization'] = `Bearer ${authToken}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    // 모듈 로드 시점이 아니라 호출 시점에 해석한다 (env 주입 타이밍에 흔들리지 않게)
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
       ...options,
       headers: { ...headers, ...options.headers },
     });

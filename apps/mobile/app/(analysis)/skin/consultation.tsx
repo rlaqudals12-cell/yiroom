@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 
 import { ScreenContainer, GlassCard } from '@/components/ui';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
@@ -129,10 +130,7 @@ export default function SkinConsultationScreen(): React.JSX.Element {
   const generateResponse = useCallback(
     async (question: string): Promise<ChatMessage> => {
       try {
-        const apiBase = process.env.EXPO_PUBLIC_API_URL;
-        if (!apiBase) throw new Error('API URL not configured');
-
-        const response = await fetch(`${apiBase}/api/coach`, {
+        const response = await fetch(`${getApiBaseUrl()}/api/coach`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

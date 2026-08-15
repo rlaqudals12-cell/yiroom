@@ -21,6 +21,7 @@
  * @see docs/adr/ADR-119-legal-compliance-gates.md
  */
 
+import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
 // ============================================
@@ -107,30 +108,18 @@ export function evaluateAgreementGate(
 // 4. HTTP 클라이언트
 // ============================================
 
-function resolveBaseUrl(baseUrl?: string): string {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new AgreementApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
-  return url;
-}
-
 /**
  * 현재 사용자의 필수 동의 완료 여부 조회.
  *
  * @param clerkToken Clerk JWT (getToken()으로 획득)
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws AgreementApiError 설정 누락·네트워크·서버 오류
  */
 export async function fetchAgreementStatus(
   clerkToken: string,
   baseUrl?: string
 ): Promise<AgreementStatus> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -171,7 +160,7 @@ export async function fetchAgreementStatus(
  *
  * @param params gender(서버 필수) + marketingAgreed(선택)
  * @param clerkToken Clerk JWT
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws AgreementApiError 검증(400)·네트워크·서버 오류 — message는 사용자 대면 한국어
  */
 export async function saveAgreement(
@@ -179,7 +168,7 @@ export async function saveAgreement(
   clerkToken: string,
   baseUrl?: string
 ): Promise<void> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

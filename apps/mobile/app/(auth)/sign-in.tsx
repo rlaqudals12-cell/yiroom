@@ -19,6 +19,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { getWebHostLabel } from '@/lib/api/base-url';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignInScreen() {
@@ -100,7 +101,7 @@ export default function SignInScreen() {
       //    무반응(조용한 무시) 대신 정직하게 웹 로그인으로 안내한다.
       Alert.alert(
         '추가 인증 필요',
-        '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+        `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`
       );
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
@@ -137,7 +138,7 @@ export default function SignInScreen() {
       // 코드는 맞았지만 여전히 추가 인증이 남은 경우 — 정직하게 웹 로그인 안내
       Alert.alert(
         '추가 인증 필요',
-        '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+        `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`
       );
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };

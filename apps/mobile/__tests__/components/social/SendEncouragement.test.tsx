@@ -8,18 +8,40 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
-  brand, lightColors, darkColors, moduleColors, statusColors,
-  gradeColors, nutrientColors, scoreColors, trustColors,
-  spacing, radii, shadows, typography,
+  brand,
+  lightColors,
+  darkColors,
+  moduleColors,
+  statusColors,
+  gradeColors,
+  nutrientColors,
+  scoreColors,
+  trustColors,
+  spacing,
+  radii,
+  shadows,
+  typography,
 } from '../../../lib/theme/tokens';
 import { SendEncouragement } from '../../../components/social/SendEncouragement';
 
 function createThemeValue(isDark = false): ThemeContextValue {
   return {
-    colors: isDark ? darkColors : lightColors, brand, module: moduleColors,
-    status: statusColors, grade: gradeColors, nutrient: nutrientColors,
-    score: scoreColors, trust: trustColors, spacing, radii, shadows, typography,
-    isDark, colorScheme: isDark ? 'dark' : 'light', themeMode: 'system', setThemeMode: jest.fn(),
+    colors: isDark ? darkColors : lightColors,
+    brand,
+    module: moduleColors,
+    status: statusColors,
+    grade: gradeColors,
+    nutrient: nutrientColors,
+    score: scoreColors,
+    trust: trustColors,
+    spacing,
+    radii,
+    shadows,
+    typography,
+    isDark,
+    colorScheme: isDark ? 'dark' : 'light',
+    themeMode: 'system',
+    setThemeMode: jest.fn(),
   };
 }
 
@@ -40,6 +62,8 @@ const defaultProps = {
 // global.fetch mock
 const mockFetch = jest.fn();
 
+const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
+
 beforeAll(() => {
   (global as unknown as Record<string, unknown>).fetch = mockFetch;
   process.env.EXPO_PUBLIC_API_URL = 'https://api.test.com';
@@ -47,6 +71,10 @@ beforeAll(() => {
 
 afterAll(() => {
   delete (global as unknown as Record<string, unknown>).fetch;
+  // 왜 되돌리는가: 같은 워커의 뒤 테스트 파일로 env가 새면 base URL 해석 결과가 달라진다
+  // (getApiBaseUrl은 호출 시점의 process.env를 읽는다)
+  if (originalApiUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL;
+  else process.env.EXPO_PUBLIC_API_URL = originalApiUrl;
 });
 
 describe('SendEncouragement', () => {
@@ -62,25 +90,19 @@ describe('SendEncouragement', () => {
 
   describe('트리거 버튼', () => {
     it('응원 버튼이 렌더링된다', () => {
-      const { getByTestId } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId } = renderWithTheme(<SendEncouragement {...defaultProps} />);
       expect(getByTestId('send-encouragement-button')).toBeTruthy();
     });
 
     it('응원 텍스트가 표시된다', () => {
-      const { getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
       expect(getByText('응원')).toBeTruthy();
     });
   });
 
   describe('모달 열기', () => {
     it('버튼을 누르면 바텀시트가 열린다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
 
@@ -88,9 +110,7 @@ describe('SendEncouragement', () => {
     });
 
     it('안내 문구가 표시된다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
 
@@ -100,9 +120,7 @@ describe('SendEncouragement', () => {
 
   describe('프리셋 메시지', () => {
     it('5종 프리셋 메시지가 모두 표시된다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
 
@@ -114,9 +132,7 @@ describe('SendEncouragement', () => {
     });
 
     it('프리셋 메시지를 누르면 API가 올바른 payload로 호출된다', async () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
       fireEvent.press(getByText('멋져요!'));
@@ -142,9 +158,7 @@ describe('SendEncouragement', () => {
 
   describe('API 호출 성공', () => {
     it('성공 시 onSuccess 콜백이 호출된다', async () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
       fireEvent.press(getByText('오늘도 화이팅!'));
@@ -155,9 +169,7 @@ describe('SendEncouragement', () => {
     });
 
     it('성공 시 "응원을 보냈어요!" 메시지가 표시된다', async () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
       fireEvent.press(getByText('잘하고 있어요!'));
@@ -176,15 +188,11 @@ describe('SendEncouragement', () => {
 
       fireEvent.press(getByTestId('send-encouragement-button'));
 
-      expect(
-        getByPlaceholderText('직접 응원 메시지를 작성해보세요')
-      ).toBeTruthy();
+      expect(getByPlaceholderText('직접 응원 메시지를 작성해보세요')).toBeTruthy();
     });
 
     it('빈 메시지로는 전송 버튼이 비활성화된다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <SendEncouragement {...defaultProps} />
-      );
+      const { getByTestId, getByText } = renderWithTheme(<SendEncouragement {...defaultProps} />);
 
       fireEvent.press(getByTestId('send-encouragement-button'));
 

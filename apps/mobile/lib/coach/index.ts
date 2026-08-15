@@ -7,6 +7,8 @@
 // 타입 정의
 // ============================================
 
+import { getApiBaseUrl } from '@/lib/api/base-url';
+
 // RAG 모듈
 import { getRAGContext, classifyQuestion } from './rag';
 
@@ -100,8 +102,6 @@ export type QuestionCategory = keyof typeof QUICK_QUESTIONS;
 // API 함수
 // ============================================
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://yiroom.vercel.app';
-
 /**
  * AI 코치에게 메시지 전송
  */
@@ -111,7 +111,7 @@ export async function sendCoachMessage(
   authToken?: string,
   userContext?: UserContext
 ): Promise<CoachChatResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/coach/chat`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/coach/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

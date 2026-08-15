@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
+import { getApiBaseUrl } from '../../lib/api/base-url';
 import { useTheme, brand } from '../../lib/theme';
 
 const PRESET_MESSAGES = [
@@ -55,7 +56,7 @@ export function SendEncouragement({
       setIsLoading(true);
 
       // Thin Client: 웹 API 호출
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/encouragements`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/encouragements`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

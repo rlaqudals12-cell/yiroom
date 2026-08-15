@@ -9,6 +9,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { PushTokenInfo } from './types';
+import { getApiBaseUrl } from '../api/base-url';
 import { pushLogger } from '../utils/logger';
 
 // 저장 키
@@ -122,7 +123,7 @@ export async function registerPushTokenWithServer(token: string, userId: string)
 
   try {
     // API 엔드포인트로 토큰 전송
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/push/register`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/push/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -154,7 +155,7 @@ export async function unregisterPushTokenFromServer(userId: string): Promise<boo
   const deviceId = await getDeviceId();
 
   try {
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/push/unregister`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/push/unregister`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -18,6 +18,8 @@
  * @see docs/adr/ADR-118-mobile-parity-thin-client.md
  */
 
+import { getApiBaseUrl } from './base-url';
+
 // ============================================
 // 1. 타입 (웹 lib/visual-expression/twin/types.ts와 동기화)
 // ============================================
@@ -127,18 +129,6 @@ export function approvedOnly(record: TwinRecord | null): TwinRecord | null {
 // 4. 공통 HTTP 헬퍼
 // ============================================
 
-function resolveBaseUrl(baseUrl?: string): string {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new TwinApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
-  return url;
-}
-
 function authHeaders(clerkToken: string, withBody: boolean): Record<string, string> {
   return {
     ...(withBody ? { 'Content-Type': 'application/json' } : {}),
@@ -186,7 +176,7 @@ export async function fetchMyTwin(
   clerkToken: string,
   baseUrl?: string
 ): Promise<TwinRecord | null> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -220,7 +210,7 @@ export async function generateTwin(
   clerkToken: string,
   baseUrl?: string
 ): Promise<TwinRecord> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -267,7 +257,7 @@ export async function setTwinStatus(
   clerkToken: string,
   baseUrl?: string
 ): Promise<TwinRecord> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -296,7 +286,7 @@ export async function setTwinStatus(
 
 /** 트윈 삭제. DELETE /api/visual/twin/[id]. Storage 파일 + DB 행 동시 삭제(서버). */
 export async function deleteTwin(id: string, clerkToken: string, baseUrl?: string): Promise<void> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -327,7 +317,7 @@ export async function composeOnTwin(
   clerkToken: string,
   baseUrl?: string
 ): Promise<TwinComposeOutput> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

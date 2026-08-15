@@ -3,13 +3,7 @@
  * 웹 API를 호출하여 사이즈 추천 등 스마트 매칭 기능 제공
  */
 
-import Constants from 'expo-constants';
-
-// API 베이스 URL (환경변수 또는 기본값)
-const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl ||
-  process.env.EXPO_PUBLIC_API_URL ||
-  'https://yiroom.vercel.app';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 
 // ============================================
 // 타입 정의
@@ -67,7 +61,7 @@ export async function getSizeRecommendation(
     productId?: string;
   }
 ): Promise<SizeRecommendation> {
-  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-recommend`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/smart-matching/size-recommend`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +83,7 @@ export async function getSizeRecommendation(
  * 사용자 신체 치수 조회
  */
 export async function getMeasurements(token: string): Promise<UserBodyMeasurements | null> {
-  const response = await fetch(`${API_BASE_URL}/api/smart-matching/measurements`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/smart-matching/measurements`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -112,7 +106,7 @@ export async function saveMeasurements(
   token: string,
   measurements: Partial<UserBodyMeasurements>
 ): Promise<UserBodyMeasurements> {
-  const response = await fetch(`${API_BASE_URL}/api/smart-matching/measurements`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/smart-matching/measurements`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -134,7 +128,7 @@ export async function saveMeasurements(
  * 사이즈 기록 조회
  */
 export async function getSizeHistory(token: string): Promise<SizeHistoryItem[]> {
-  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-history`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/smart-matching/size-history`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -163,7 +157,7 @@ export async function addSizeHistory(
     productId?: string;
   }
 ): Promise<SizeHistoryItem> {
-  const response = await fetch(`${API_BASE_URL}/api/smart-matching/size-history`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/smart-matching/size-history`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

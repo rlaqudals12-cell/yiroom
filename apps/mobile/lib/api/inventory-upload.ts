@@ -19,12 +19,11 @@
  * @see apps/web/app/(main)/closet/add/page.tsx (웹 호출 순서 정본 — 업로드 → 공개 URL 저장)
  */
 
+import { getApiBaseUrl } from './base-url';
+
 /** 서버 zod 화이트리스트와 1:1 (경로 조작 차단용) */
 export type InventoryUploadCategory = 'closet' | 'beauty' | 'equipment' | 'supplement' | 'pantry';
 export type InventoryUploadType = 'processed' | 'original';
-
-/** 다른 lib/api 클라이언트가 사용하지 않을 때의 최종 폴백 — 프로덕션 웹 */
-const DEFAULT_API_BASE_URL = 'https://yiroom.vercel.app';
 
 export interface InventoryUploadOptions {
   /** 스토리지 경로 대분류 (기본 closet) */
@@ -47,23 +46,6 @@ export class InventoryUploadError extends Error {
     this.status = status;
     this.code = code;
   }
-}
-
-/**
- * API base URL 결정.
- *
- * 왜 세 단계인가: lib/api 계열은 `EXPO_PUBLIC_YIROOM_API_URL`을, 캡슐·코치 계열은
- * `EXPO_PUBLIC_API_URL`을 쓰는데 현재 빌드에는 **둘 다 설정돼 있지 않다**(.env.local·eas.json 실측).
- * 여기서 설정 누락을 에러로 처리하면 옷 등록이 출시 빌드에서 통째로 죽으므로,
- * 어느 쪽이 설정되든 존중하고 없으면 프로덕션 웹으로 폴백한다.
- */
-function resolveBaseUrl(baseUrl?: string): string {
-  return (
-    baseUrl ??
-    process.env.EXPO_PUBLIC_YIROOM_API_URL ??
-    process.env.EXPO_PUBLIC_API_URL ??
-    DEFAULT_API_BASE_URL
-  );
 }
 
 /**
@@ -141,7 +123,7 @@ export async function uploadInventoryImage(
     throw new InventoryUploadError('업로드할 사진이 없어요.', 0, 'VALIDATION_ERROR');
   }
 
-  const url = resolveBaseUrl(options.baseUrl);
+  const url = getApiBaseUrl(options.baseUrl);
   const category = options.category ?? 'closet';
   const itemId = options.itemId ?? createUploadItemId();
   const type = options.type ?? 'processed';

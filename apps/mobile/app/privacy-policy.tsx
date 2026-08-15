@@ -12,12 +12,13 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-na
 
 import { ScreenContainer } from '@/components/ui';
 
+import { getApiBaseUrl } from '../lib/api/base-url';
 import { useTheme, typography, spacing, brand, radii } from '../lib/theme';
 
 type Lang = 'ko' | 'en';
 
-// 웹 개인정보처리방침 URL (전문 정본 — 드리프트 가드)
-const WEB_PRIVACY_URL = 'https://yiroom.vercel.app/privacy';
+// 웹 개인정보처리방침 URL (전문 정본 — 드리프트 가드). 호스트는 실제 붙는 서버에서 파생시킨다
+const WEB_PRIVACY_URL = `${getApiBaseUrl()}/privacy`;
 
 export default function PrivacyPolicyScreen() {
   const { colors, brand: brandColors } = useTheme();

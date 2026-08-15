@@ -11,6 +11,7 @@ import { Camera, Palette, Sparkles, Droplets, Eye } from 'lucide-react-native';
 import { useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 
+import { getApiBaseUrl } from '../../../lib/api/base-url';
 import { useTheme, brand } from '../../../lib/theme';
 import {
   LIP_PRESETS,
@@ -144,19 +145,16 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
 
         const apiType = CATEGORY_TO_API_TYPE[category];
 
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL ?? ''}/api/fitting/try-on`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              imageBase64: `data:image/jpeg;base64,${base64}`,
-              type: apiType,
-              color: { r: color.r, g: color.g, b: color.b, a: color.a },
-            }),
-            signal: controller.signal,
-          }
-        );
+        const response = await fetch(`${getApiBaseUrl()}/api/fitting/try-on`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: `data:image/jpeg;base64,${base64}`,
+            type: apiType,
+            color: { r: color.r, g: color.g, b: color.b, a: color.a },
+          }),
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);

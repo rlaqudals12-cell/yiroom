@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { AnalyticsEventType, AnalyticsEventProperties, UserProperties } from './types';
+import { getApiBaseUrl } from '../api/base-url';
 import { analyticsLogger } from '../utils/logger';
 
 // 개발 모드 여부
@@ -144,7 +145,7 @@ export async function setUserProperties(properties: UserProperties): Promise<voi
 
   try {
     // 서버에 사용자 속성 전송
-    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/analytics/user`, {
+    await fetch(`${getApiBaseUrl()}/api/analytics/user`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(properties),
@@ -216,7 +217,7 @@ async function sendEvent(
   timestamp?: string
 ): Promise<boolean> {
   try {
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/analytics/event`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/analytics/event`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

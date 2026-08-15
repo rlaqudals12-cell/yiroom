@@ -10,6 +10,8 @@
  * @see docs/specs/SDD-MOBILE-INTEGRATED.md §2
  */
 
+import { getApiBaseUrl } from './base-url';
+
 // ============================================
 // 1. 타입 (웹 apps/web/lib/analysis/integrated/types.ts와 동기화)
 // ============================================
@@ -165,7 +167,7 @@ function extractApiError(json: unknown): { message?: string; code?: string } {
  *
  * @param input 통합 분석 입력
  * @param clerkToken Clerk JWT (getToken()으로 획득)
- * @param baseUrl 웹 API base URL (기본: process.env.EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws IntegratedApiError 인증/검증/서버 에러
  */
 export async function requestIntegratedAnalysis(
@@ -173,14 +175,7 @@ export async function requestIntegratedAnalysis(
   clerkToken: string,
   baseUrl?: string
 ): Promise<IntegratedAnalysisResult> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new IntegratedApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

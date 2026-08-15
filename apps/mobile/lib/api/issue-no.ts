@@ -10,13 +10,15 @@
  * @see apps/web/app/api/share/issue-no/route.ts
  */
 
+import { getApiBaseUrl } from './base-url';
+
 export async function fetchIssueNo(
   clerkToken: string | null,
   sessionId: string,
   baseUrl?: string
 ): Promise<number | null> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url || !clerkToken) return null;
+  if (!clerkToken) return null;
+  const url = getApiBaseUrl(baseUrl);
 
   try {
     const response = await fetch(

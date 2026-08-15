@@ -15,6 +15,7 @@ import type { SkinType } from '@yiroom/shared';
 
 import type { SkinMetrics } from '@/lib/skincare';
 
+import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
 // ============================================
@@ -122,14 +123,7 @@ export async function requestSkinAnalysis(
   clerkToken: string,
   baseUrl?: string
 ): Promise<SkinAnalysisApiResult> {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new SkinApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {

@@ -20,6 +20,7 @@
 
 import { isValidBirthDate, parseBirthDate, isMinor, MINIMUM_AGE } from '@/lib/age-verification';
 
+import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
 // ============================================
@@ -102,30 +103,18 @@ export function evaluateBirthdateGate(hasStoredBirthdate: boolean, input: string
 // 4. HTTP 클라이언트
 // ============================================
 
-function resolveBaseUrl(baseUrl?: string): string {
-  const url = baseUrl ?? process.env.EXPO_PUBLIC_YIROOM_API_URL;
-  if (!url) {
-    throw new BirthdateApiError(
-      'API 서버 주소가 설정되지 않았어요. 앱 설정을 확인해주세요.',
-      0,
-      'CONFIG_ERROR'
-    );
-  }
-  return url;
-}
-
 /**
  * 현재 사용자의 생년월일 저장 여부 조회.
  *
  * @param clerkToken Clerk JWT (getToken()으로 획득)
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws BirthdateApiError 설정 누락·네트워크·서버 오류
  */
 export async function fetchBirthdate(
   clerkToken: string,
   baseUrl?: string
 ): Promise<BirthdateStatus> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
@@ -176,7 +165,7 @@ export async function fetchBirthdate(
  *
  * @param birthDate YYYY-MM-DD
  * @param clerkToken Clerk JWT
- * @param baseUrl 웹 API base URL (기본: EXPO_PUBLIC_YIROOM_API_URL)
+ * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @throws BirthdateApiError 검증(400)·연령제한(403)·네트워크·서버 오류 — message는 사용자 대면 한국어
  */
 export async function saveBirthdate(
@@ -184,7 +173,7 @@ export async function saveBirthdate(
   clerkToken: string,
   baseUrl?: string
 ): Promise<void> {
-  const url = resolveBaseUrl(baseUrl);
+  const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
   try {
