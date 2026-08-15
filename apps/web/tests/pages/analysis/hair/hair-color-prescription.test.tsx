@@ -170,6 +170,23 @@ describe('HairAnalysisResultPage — 염색 컬러 처방', () => {
     expect(screen.queryByTestId('hair-color-empty')).not.toBeInTheDocument();
   });
 
+  it('적합도를 %로 표기하지 않고 추천 순위로만 노출한다(조작된 정밀도 금지)', async () => {
+    render(<HairAnalysisResultPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('hair-color-swatches')).toBeInTheDocument();
+    });
+
+    // 4시즌 공통 사다리(90/85/80/75)를 개인 적합도처럼 % 표기하던 회귀 방지
+    const section = screen.getByTestId('hair-color-prescription');
+    expect(section).not.toHaveTextContent('어울림');
+    expect(section.textContent).not.toMatch(/\d+%/);
+
+    // 서열은 유지 — 순위 라벨이 카탈로그 순서대로 렌더된다
+    const ranks = screen.getAllByTestId('hair-color-rank').map((el) => el.textContent);
+    expect(ranks).toEqual(['추천 1순위', '추천 2순위', '추천 3순위', '추천 4순위']);
+  });
+
   it('퍼컬 미진단이면 색을 지어내지 않고 빈 상태(퍼컬 진단 유도)를 렌더한다', async () => {
     pcResponse = { data: null, error: { message: 'no rows' } };
 

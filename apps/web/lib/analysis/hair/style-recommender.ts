@@ -7,7 +7,6 @@
  * @see docs/specs/SDD-HAIR-ANALYSIS.md
  */
 
-import type { LabColor } from '@/lib/color';
 import type {
   FaceShapeType,
   HairstyleRecommendation,
@@ -708,11 +707,15 @@ function adjustSuitabilityByFaceShape(
 
 /**
  * 퍼스널컬러 기반 헤어컬러 추천
+ *
+ * ⚠️ suitability는 "개인 적합도"가 아니라 **시즌 팔레트 안의 추천 순서**다.
+ * 4시즌 모두 90/85/80/75 사다리를 공유하며 개인 모발색·상태를 반영하지 않으므로,
+ * UI에서 % 로 표기하지 말고 순위(1·2·3…)로만 노출한다.
+ * (개인 모발색 반영을 암시하던 미사용 currentColorLab 옵션은 제거됨)
  */
 export function recommendHairColors(
   personalColorSeason?: string,
   options?: {
-    currentColorLab?: LabColor;
     maxResults?: number;
   }
 ): HairColorRecommendation[] {

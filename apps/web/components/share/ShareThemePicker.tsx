@@ -46,9 +46,10 @@ export function ShareThemePicker({
               aria-checked={format === id}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                // 다크 계약 — 하드코딩 팔레트 금지, 테마 토큰만 사용
                 format === id
-                  ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -71,7 +72,7 @@ export function ShareThemePicker({
               'relative w-10 h-10 rounded-lg transition-all',
               option.preview,
               value === option.id
-                ? 'ring-2 ring-violet-500 ring-offset-2 scale-110'
+                ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110'
                 : 'hover:scale-105 opacity-70 hover:opacity-100'
             )}
           >

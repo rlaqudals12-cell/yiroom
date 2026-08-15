@@ -416,6 +416,46 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.data).toBeDefined();
     });
 
+    it('AI 실패 폴백은 Mock의 높은 신뢰도를 쓰지 않고 저신뢰(≤50)로 저장한다', async () => {
+      // Mock 생성기는 데모 realism용으로 85~95를 낸다 — 폴백이 그대로 저장하면
+      // 결과 화면이 '현재 92%'가 되고 저신뢰 경고(<70)가 영원히 안 뜬다.
+      vi.mocked(generateMockPersonalColorResult).mockReturnValue({
+        ...mockPersonalColorResult,
+        confidence: 92,
+      });
+      vi.mocked(analyzePersonalColor).mockRejectedValue(new Error('API Error'));
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+      const json = await response.json();
+
+      // 응답 결과
+      expect(json.result.confidence).toBeLessThanOrEqual(50);
+      expect(json.result.confidence).toBeGreaterThan(0);
+
+      // DB 저장 페이로드(confidence + season_scores 모두 저신뢰 대역)
+      const insertPayload = vi.mocked(mockSupabase.insert).mock.calls[0][0] as {
+        confidence: number;
+        season_scores: Record<string, number>;
+      };
+      expect(insertPayload.confidence).toBeLessThanOrEqual(50);
+      expect(insertPayload.season_scores.spring).toBeLessThanOrEqual(50);
+    });
+
+    it('AI 성공 경로의 신뢰도는 폴백 값으로 덮어쓰지 않는다', async () => {
+      vi.mocked(analyzePersonalColor).mockResolvedValue({
+        ...mockPersonalColorResult,
+        confidence: 88,
+      });
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+      const json = await response.json();
+
+      expect(json.usedMock).toBe(false);
+      expect(json.result.confidence).toBe(88);
+    });
+
     it('veinColor가 blue인데 tone이 warm이면 cool로 수정한다', async () => {
       // AI가 잘못된 결과 반환 시 서버 측 보정
       const inconsistentResult = {

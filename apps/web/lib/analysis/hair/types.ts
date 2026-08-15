@@ -102,6 +102,10 @@ export interface HairColorRecommendation {
   name: string;
   hexColor: string;
   labColor?: LabColor;
+  /**
+   * 시즌 팔레트 내 추천 순서(서열). 개인 적합도 %가 아니다 —
+   * 4시즌 모두 동일한 사다리(90/85/80/75)를 쓰므로 UI에서 % 표기 금지, 순위로만 노출.
+   */
   suitability: number;
   seasonMatch: string; // 퍼스널컬러 시즌 연계
   tags: string[];

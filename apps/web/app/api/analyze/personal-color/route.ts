@@ -35,6 +35,12 @@ const XP_ANALYSIS_COMPLETE = 10;
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
+// AI 실패 폴백 시 저장할 신뢰도(0~100).
+// Mock 생성기는 데모 realism을 위해 85~95를 내지만, 그건 "이 사진을 판정한 확신"이 아니다.
+// 그대로 저장하면 결과 화면이 '현재 92%'로 표시되고 저신뢰 경고(<70)가 영원히 안 뜬다.
+// 폴백은 사진을 못 본 결과이므로 저신뢰 대역으로 낮춰 저장한다(정직성 계약).
+const FALLBACK_CONFIDENCE = 45;
+
 // Base64 이미지 검증
 const base64ImageSchema = z.string().min(100, '이미지 데이터가 너무 짧아요');
 
@@ -319,7 +325,9 @@ export async function POST(req: NextRequest) {
           seasonDescription: mockResult.seasonDescription,
           tone: mockResult.tone,
           depth: mockResult.depth,
-          confidence: mockResult.confidence,
+          // ⚠️ Mock의 신뢰도(85~95)를 쓰지 않는다 — 폴백은 사진을 판정하지 못한 결과다.
+          // 저신뢰 대역으로 저장해야 DB·history·공유 카드·저신뢰 경고가 모두 정직해진다.
+          confidence: FALLBACK_CONFIDENCE,
           bestColors: mockResult.bestColors,
           worstColors: mockResult.worstColors,
           lipstickRecommendations: mockResult.lipstickRecommendations,

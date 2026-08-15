@@ -378,6 +378,24 @@ describe('HairAnalysisResultPage', () => {
 
       expect(mockShare).toHaveBeenCalled();
     });
+
+    it('카드 스타일 선택기는 인라인이 아니라 팝오버 안에 있다 (좁은 화면 오버플로 방지)', async () => {
+      const user = userEvent.setup();
+      render(<HairAnalysisResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('share-style-trigger')).toBeInTheDocument();
+      });
+
+      // 상시 인라인 노출 금지 — 트리거를 누르기 전에는 선택기가 렌더되지 않는다
+      expect(screen.queryByTestId('share-theme-picker')).not.toBeInTheDocument();
+
+      await user.click(screen.getByTestId('share-style-trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('share-theme-picker')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('로딩 상태', () => {
@@ -522,12 +540,16 @@ describe('HairAnalysisResultPage', () => {
       });
     });
 
-    it('컷·염색은 통합 분석으로 정직하게 유도한다', async () => {
+    it('컷은 통합 분석으로 유도하되 염색은 약속하지 않는다(통합 결과에 염색 컬러 없음)', async () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('어울리는 컷·염색은 통합 분석에서 확인하세요')).toBeInTheDocument();
+        expect(screen.getByText('어울리는 컷은 얼굴형을 함께 봐야 정확해요')).toBeInTheDocument();
       });
+
+      // 통합 분석 유도 문구에 '염색'이 남아 있으면 빈 약속(통합 결과는 염색 컬러를 렌더하지 않음)
+      expect(screen.getByTestId('top-actions-card')).not.toHaveTextContent('염색');
+      expect(screen.getByTestId('hair-style-consult-cta')).not.toHaveTextContent('염색');
     });
   });
 });

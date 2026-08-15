@@ -16,9 +16,11 @@ import {
   Lightbulb,
   PersonStanding,
   Ruler,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { BodyAnalysisResult, BodyType3 } from '@/lib/mock/body-analysis';
 import type {
@@ -666,15 +668,34 @@ export default function BodyAnalysisResultPage() {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 {t('reanalyze')}
               </Button>
-              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-              <ShareThemePicker
-                value={shareTheme}
-                onChange={setShareTheme}
-                format={shareFormat}
-                onFormatChange={setShareFormat}
-                className="mt-2"
+              <ShareButton
+                onShare={share}
+                loading={shareLoading}
+                variant="outline"
+                className="flex-1"
               />
-              <PrintButton title={t('printTitle.body')} variant="outline" />
+              {/* 카드 스타일 선택은 공유 인터랙션 시에만 — 인라인 노출은 좁은 화면(360px)에서 넘침 */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="공유 카드 스타일 선택"
+                    data-testid="share-style-trigger"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" side="top" className="w-auto">
+                  <ShareThemePicker
+                    value={shareTheme}
+                    onChange={setShareTheme}
+                    format={shareFormat}
+                    onFormatChange={setShareFormat}
+                  />
+                </PopoverContent>
+              </Popover>
+              <PrintButton title={t('printTitle.body')} variant="outline" size="icon" />
             </div>
             {/*
               URL 공유는 제거 — 결과 페이지는 로그인+본인 소유(RLS)라 친구가 열면 로그인 벽/404.

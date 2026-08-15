@@ -6,8 +6,9 @@ import { ScoreTrendChip } from '@/components/analysis/ScoreTrendChip';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { ArrowLeft, RefreshCw, Sparkles, ClipboardList } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, ClipboardList, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ShareButton, PrintButton, ShareThemePicker } from '@/components/share';
 import type { ShareCardFormat, ShareCardTheme } from '@/components/share';
 import { useAnalysisShare, createHairShareData } from '@/hooks/useAnalysisShare';
@@ -483,9 +484,11 @@ export default function HairAnalysisResultPage() {
                       title: `${result.recommendedIngredients[0]} 성분이 든 샴푸를 골라보세요`,
                     });
                   }
-                  // 컷(×얼굴형)·염색(×퍼스널컬러)은 이 페이지에 데이터가 없어 통합 분석으로 정직하게 유도
+                  // 컷(×얼굴형)은 이 페이지에 데이터가 없어 통합 분석으로 정직하게 유도.
+                  // 염색은 아래 "염색 컬러 처방" 섹션이 이 페이지에서 이미 답하므로 여기서 언급하지 않는다
+                  // (통합 결과는 염색 컬러를 렌더하지 않아 빈 약속이 된다).
                   actions.push({
-                    title: '어울리는 컷·염색은 통합 분석에서 확인하세요',
+                    title: '어울리는 컷은 얼굴형을 함께 봐야 정확해요',
                     href: '/analysis/integrated',
                     hrefLabel: '통합 분석 보기',
                   });
@@ -641,10 +644,10 @@ export default function HairAnalysisResultPage() {
               {hairColors.length > 0 ? (
                 <>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    퍼스널컬러 시즌을 기준으로 어울리는 헤어 컬러예요
+                    퍼스널컬러 시즌을 기준으로 어울리는 순서대로 정리했어요
                   </p>
                   <ul className="mt-4 space-y-2" data-testid="hair-color-swatches">
-                    {hairColors.map((color) => (
+                    {hairColors.map((color, index) => (
                       <li
                         key={color.name}
                         className="flex items-center gap-3"
@@ -660,8 +663,13 @@ export default function HairAnalysisResultPage() {
                           <p className="text-sm font-medium text-foreground">{color.name}</p>
                           <p className="text-xs text-muted-foreground">{color.tags.join(' · ')}</p>
                         </div>
-                        <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                          어울림 {color.suitability}%
+                        {/* 순위만 표기 — 시즌 팔레트는 4시즌 공통 사다리(90/85/80/75)라
+                            개인 적합도 %가 아니다. 조작된 정밀도 금지(진단지 문법) */}
+                        <span
+                          className="shrink-0 text-xs font-medium text-muted-foreground"
+                          data-testid="hair-color-rank"
+                        >
+                          추천 {index + 1}순위
                         </span>
                       </li>
                     ))}
@@ -685,17 +693,18 @@ export default function HairAnalysisResultPage() {
             </section>
           )}
 
-          {/* 헤어 스타일·염색 추천 안내 — 컷(×얼굴형)·염색(×퍼스널컬러)은 크로스축이라 종합 분석으로 유도 (ADR-107) */}
+          {/* 헤어스타일(컷) 추천 안내 — 컷은 얼굴형과의 크로스축이라 통합 분석으로 유도 (ADR-107).
+              염색은 위 "염색 컬러 처방" 섹션이 이 페이지에서 답하므로 여기서 약속하지 않는다 */}
           {result && (
             <button
               onClick={() => router.push('/analysis/integrated')}
               className="mt-6 w-full text-left bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow"
               data-testid="hair-style-consult-cta"
             >
-              <h3 className="font-semibold mb-1">어울리는 헤어스타일·염색 컬러는?</h3>
+              <h3 className="font-semibold mb-1">어울리는 헤어스타일(컷)은?</h3>
               <p className="text-sm text-muted-foreground">
-                컷은 얼굴형, 염색은 퍼스널컬러를 함께 봐야 정확해요. 통합 분석에서 나에게 맞는 헤어
-                스타일과 염색 컬러를 확인해보세요. →
+                컷은 얼굴형을 함께 봐야 정확해요. 통합 분석에서 나에게 맞는 헤어스타일을
+                확인해보세요. →
               </p>
             </button>
           )}
@@ -726,15 +735,34 @@ export default function HairAnalysisResultPage() {
                 <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                 {t('reanalyze')}
               </Button>
-              <ShareButton onShare={share} loading={shareLoading} variant="outline" />
-              <ShareThemePicker
-                value={shareTheme}
-                onChange={setShareTheme}
-                format={shareFormat}
-                onFormatChange={setShareFormat}
-                className="mt-2"
+              <ShareButton
+                onShare={share}
+                loading={shareLoading}
+                variant="outline"
+                className="flex-1"
               />
-              <PrintButton title={t('printTitle.hair')} variant="outline" />
+              {/* 카드 스타일 선택은 공유 인터랙션 시에만 — 인라인 노출은 좁은 화면(360px)에서 넘침 */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="공유 카드 스타일 선택"
+                    data-testid="share-style-trigger"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" side="top" className="w-auto">
+                  <ShareThemePicker
+                    value={shareTheme}
+                    onChange={setShareTheme}
+                    format={shareFormat}
+                    onFormatChange={setShareFormat}
+                  />
+                </PopoverContent>
+              </Popover>
+              <PrintButton title={t('printTitle.hair')} variant="outline" size="icon" />
             </div>
           </div>
         </div>
