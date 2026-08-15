@@ -30,7 +30,7 @@ interface BeautifyOutput {
 async function beautifyForShare(input: BeautifyInput): Promise<BeautifyOutput>;
 ```
 
-- 모델: Gemini 이미지 편집(환경변수 `GEMINI_IMAGE_MODEL`, 기본 `gemini-2.5-flash-image`), 기존 API 키 재사용.
+- 모델: Gemini 이미지 편집(환경변수 `GEMINI_IMAGE_MODEL`, 기본 `gemini-3.1-flash-lite-image`), 기존 API 키 재사용. 모델 ID 정본 = `lib/visual-expression/internal/image-model.ts`(보정·트윈 공용). 구 기본값 `gemini-2.5-flash-image`는 2026-10-02 종료 확정이라 사용 금지.
 - 프롬프트 고정(코드 상수): 피부 결·잡티·조명 정돈만. **"이목구비·얼굴형·체형을 변형하지 말 것" 명시**. 프롬프트 문자열 테스트로 고정.
 - 실패 시: 원본 그대로 반환 + `aiEdited` 없음 (보정 실패를 숨기지 않음, Mock 보정 금지).
 - API: `POST /api/visual/beautify` (인증 필수, rate limit 기존 패턴).
