@@ -2,7 +2,11 @@
 
 > 이 파일은 OpenAI Codex 등 비-Claude 에이전트용 진입점이다. 정본 규칙은
 > [CLAUDE.md](CLAUDE.md)와 `.claude/rules/`에 있으며, 이 파일은 그중 **자동
-> 로딩되지 않는 필수 계약**을 인라인한 요약이다. 충돌 시 CLAUDE.md가 우선.
+> 로딩되지 않는 필수 계약**을 인라인한 요약이다.
+>
+> **정본 서열(충돌 시)**: `.claude/rules/00-first-principles.md` >
+> CLAUDE.md > 개별 rules > 이 파일(요약). docs/FIRST-PRINCIPLES.md는
+> 00 문서로의 리다이렉트다.
 
 ## 시작하기 전에 반드시 읽을 것
 
@@ -14,10 +18,14 @@
 
 ## 완료의 정의 (Verify-Loop — 어길 수 없음)
 
-- `cd apps/web && npx tsc --noEmit` 0 에러
+- `cd apps/web && npx tsc --noEmit` 0 에러 (웹 typecheck는 **항상 전체** — Stop 훅이 강제)
 - `cd apps/mobile && npx tsc --noEmit` 0 에러 (모바일 수정 시)
-- 변경 파일 eslint 0 error · 변경 범위 테스트 그린 (웹 vitest·모바일 jest)
+- 변경 파일 eslint 0 error · **테스트는 변경 범위가 최소선**, 4파일+ 대규모
+  변경이면 전체 스위트 1회 권장 (문서만 변경 시 테스트 생략 가능)
 - 새/변경 로직에는 테스트 필수. 검증 안 한 것을 했다고 보고 금지.
+- P7(리서치→원리→ADR→스펙→구현)은 "산출물이 **존재**해야 한다"는 뜻 —
+  기존 ADR/스펙이 커버하는 범위의 수정은 그 문서 참조로 충족되며,
+  새 도메인/모듈/패턴일 때만 새로 작성한다(doc-sync.md 예외 기준 참조).
 
 ## 하드 룰 (전부 실사고 이력 기반)
 
