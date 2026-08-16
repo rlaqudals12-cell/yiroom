@@ -70,9 +70,10 @@
 #### 1.4 이미지 저장소
 
 - **Supabase Storage** 사용 (기존 인프라 활용)
-- 버킷: `inventory-images`
+- 버킷: `inventory-images` — **비공개**(개인 사진 + 경로 첫 세그먼트가 userId)
 - 경로: `{userId}/{category}/{itemId}.png`
 - 원본/배경제거 이미지 모두 저장
+- DB에는 **경로만** 저장하고, 조회 시 서명 URL로 해석 (`lib/inventory/image-url.ts`)
 
 #### 1.5 공통 UI 컴포넌트
 
@@ -886,11 +887,11 @@ REMOVE_BG_API_KEY=your_api_key_here  # 50장/월 무료
 ```sql
 -- supabase/migrations/202512290001_inventory.sql
 
--- Storage 버킷 생성
+-- Storage 버킷 생성 (⚠️ public = false 필수 — 개인 사진 + 경로에 userId 노출)
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('inventory-images', 'inventory-images', true);
+VALUES ('inventory-images', 'inventory-images', false);
 
--- Storage 정책
+-- Storage 정책 (본인 폴더만)
 CREATE POLICY "Users can upload own images"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'inventory-images' AND auth.uid()::text = (storage.foldername(name))[1]);
@@ -899,10 +900,12 @@ CREATE POLICY "Users can view own images"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'inventory-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
-CREATE POLICY "Public can view inventory images"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'inventory-images');
+-- ❌ 폐기: "Public can view inventory images" (bucket_id만 보고 전원 허용)
+--    로그인 없이 남의 옷장 사진이 열리는 정책이었다. 조회는 서명 URL로만 한다.
 ```
+
+> 정본 마이그레이션은 `supabase/migrations/20260711_user_inventory_closet.sql`
+> (prod 구패턴 `auth.jwt()->>'sub'` 사용, 위 `auth.uid()`는 원안 스케치).
 
 ---
 

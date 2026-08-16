@@ -45,6 +45,8 @@ import {
   Season,
   Occasion,
 } from '@/types/inventory';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import { SizeRecommendationCard } from '@/components/smart-matching';
 import { getSizeRecommendation } from '@/lib/smart-matching/size-recommend';
 import type { SizeRecommendation } from '@/types/smart-matching';
@@ -104,7 +106,19 @@ export default function ClothingDetailPage() {
         return;
       }
 
-      setItem(data as InventoryItemDB);
+      // 비공개 버킷 — 렌더는 row의 snake_case 값을 그대로 쓰므로, 상태에 넣기 전에
+      // 스토리지 경로를 서명 URL로 해석해둔다(해석 지점을 이 한 곳으로 고정).
+      const row = data as InventoryItemDB;
+      const signedImages = await signInventoryImagePaths(supabase, [
+        row.image_url,
+        row.original_image_url,
+      ]);
+
+      setItem({
+        ...row,
+        image_url: resolveInventoryImageUrl(row.image_url, signedImages),
+        original_image_url: resolveInventoryImageUrl(row.original_image_url, signedImages),
+      });
       setLoading(false);
     }
 

@@ -30,7 +30,9 @@ export function getRateLimitCategory(pathname: string): RateLimitCategory {
   )
     return 'analyze';
   if (/^\/api\/auth/.test(pathname)) return 'auth';
-  if (/^\/api\/upload/.test(pathname)) return 'upload';
+  // /api/upload는 존재하지 않는 경로다(스펙 잔재). 실제 업로드 라우트인
+  // /api/inventory/upload가 여기 걸리지 않아 default(100/분) 버킷으로 새던 것을 수리.
+  if (/^\/api\/(upload|inventory\/upload)/.test(pathname)) return 'upload';
   // 제품 Q&A는 Gemini 대화형이므로 coach 버킷(일일 한도 적용)으로 분류
   if (/^\/api\/(coach|chat)/.test(pathname) || pathname === '/api/products/qa') return 'coach';
   if (/^\/api\/feedback/.test(pathname)) return 'feedback';

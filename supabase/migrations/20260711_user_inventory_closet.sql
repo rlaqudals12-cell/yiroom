@@ -160,24 +160,34 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE saved_outfits TO authenticated;
 GRANT ALL ON TABLE saved_outfits TO service_role;
 
 -- ============================================================
--- Step 3: Storage 버킷 'inventory-images' (공개 — getPublicUrl 사용)
+-- Step 3: Storage 버킷 'inventory-images' (비공개 — 서명 URL로만 열람)
 --   경로 규약: ${userId}/${category}/${itemId}_${type}.png
 --   (참조: 20260710_user_twins.sql 버킷 패턴, 202601080500 분석 버킷 RLS 패턴)
+--
+--   ⚠️ public = false 필수 (2026-08-16 보안 수리).
+--   이 버킷에는 사용자가 올린 옷장·화장대 개인 사진이 들어가고, 경로 첫 세그먼트가
+--   Clerk userId다. public = true면 URL을 아는 누구나(로그인 없이, 영구히) 열람 가능하고
+--   userId까지 URL에 노출된다. 다른 생체·분석 이미지 버킷은 전부 비공개이므로
+--   옷장만 공개인 것은 자체 보안 규칙(비공개 버킷 + 서명 URL) 위반이었다.
+--   조회는 /api/storage/signed-url(경로 첫 세그먼트 == 요청자 userId 검증)이 담당한다.
 -- ============================================================
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'inventory-images',
   'inventory-images',
-  true,
+  false,
   10485760, -- 10MB
   ARRAY['image/jpeg', 'image/png', 'image/webp']
 )
+-- ON CONFLICT도 반드시 false로 유지한다. true로 두면 이 마이그레이션을 재적용할 때마다
+-- 버킷이 다시 공개로 되돌아간다(수리가 조용히 무효화되는 경로).
 ON CONFLICT (id) DO UPDATE SET
-  public = true,
+  public = false,
   file_size_limit = 10485760,
   allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp'];
 
--- 쓰기(INSERT/UPDATE/DELETE)는 본인 폴더에만. 읽기는 공개 버킷이라 getPublicUrl로 열림.
+-- 쓰기(INSERT/UPDATE/DELETE)·읽기(SELECT) 모두 본인 폴더에만.
+-- 비공개 버킷이므로 SELECT 정책이 실제 열람 가드로 동작한다(공개였을 땐 무의미했음).
 -- upsert:true 업로드는 INSERT + UPDATE 둘 다 필요.
 DROP POLICY IF EXISTS "Users can upload inventory images" ON storage.objects;
 CREATE POLICY "Users can upload inventory images"

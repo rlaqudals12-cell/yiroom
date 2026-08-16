@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CollageView, OutfitBuilder } from '@/components/inventory';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import type { InventoryItem, InventoryItemDB, Season, Occasion } from '@/types/inventory';
 import { SEASON_LABELS, OCCASION_LABELS } from '@/types/inventory';
 
@@ -105,14 +107,20 @@ export default function EditOutfitPage() {
       .order('created_at', { ascending: false });
 
     if (!allItemsError && allItemsData) {
-      const clientItems = (allItemsData as InventoryItemDB[]).map((row) => ({
+      const rows = allItemsData as InventoryItemDB[];
+      // 비공개 버킷 — 아이템 선택 그리드용 이미지 경로를 한 번에 서명한다(아이템별 서명 = N+1 요청)
+      const signedImages = await signInventoryImagePaths(supabase, [
+        ...rows.flatMap((r) => [r.image_url, r.original_image_url]),
+      ]);
+
+      const clientItems = rows.map((row) => ({
         id: row.id,
         clerkUserId: row.clerk_user_id,
         category: row.category,
         subCategory: row.sub_category,
         name: row.name,
-        imageUrl: row.image_url,
-        originalImageUrl: row.original_image_url,
+        imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+        originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
         brand: row.brand,
         tags: row.tags,
         isFavorite: row.is_favorite,

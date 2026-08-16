@@ -4,19 +4,25 @@
  * @module lib/api/inventory-upload
  * @description
  *   웹 POST /api/inventory/upload를 모바일에서 호출해 Supabase Storage(inventory-images)에
- *   올리고 공개 URL을 받는다.
+ *   올리고 **스토리지 경로**를 받는다.
+ *
+ *   왜 URL이 아니라 경로인가 (2026-08-16 보안 수리):
+ *   inventory-images는 비공개 버킷이다. 예전엔 영구 공개 URL을 받아 그대로 image_url에
+ *   저장했는데, 그러면 URL만 알면 로그인 없이 개인 사진이 열리고 경로 첫 세그먼트인
+ *   Clerk userId까지 노출된다. 이제 경로만 저장하고, 목록/상세를 읽을 때
+ *   resolveInventoryImageUrl()이 서명 URL로 바꿔 렌더한다.
  *
  *   왜 필요한가 (2026-08 실측 수리):
  *   모바일 옷 등록은 ImagePicker가 준 **기기 로컬 URI(file://...)**를 그대로 image_url에
  *   저장했다. 그 URI는 이 기기·이 앱 캐시에서만 유효하다 — 웹이나 다른 기기에서는 사진이
  *   깨지고, 앱 캐시가 정리되면 영구 유실된다. 저장 자체가 이제 성공하게 되면서 이 결함이
- *   실제로 발현되므로, 웹과 동일하게 스토리지에 올린 공개 URL만 저장한다.
+ *   실제로 발현되므로, 웹과 동일하게 스토리지에 올린 값만 저장한다.
  *
  *   업로드가 실패하면 등록도 실패시킨다. 로컬 URI를 몰래 저장하는 폴백은 두지 않는다
  *   (사용자에게는 "사진이 저장됐다"고 보이지만 실제로는 유실되는 거짓말이 되기 때문).
  *
  * @see apps/web/app/api/inventory/upload/route.ts (계약 정본)
- * @see apps/web/app/(main)/closet/add/page.tsx (웹 호출 순서 정본 — 업로드 → 공개 URL 저장)
+ * @see apps/web/app/(main)/closet/add/page.tsx (웹 호출 순서 정본 — 업로드 → 경로 저장)
  */
 
 import { getApiBaseUrl } from './base-url';
@@ -105,11 +111,14 @@ function extractApiError(json: unknown): { message?: string; code?: string } {
 }
 
 /**
- * 이미지를 서버 스토리지에 올리고 **공개 URL**을 반환한다.
+ * 이미지를 서버 스토리지에 올리고 **스토리지 경로**를 반환한다.
+ *
+ * 반환값은 `${userId}/${category}/${itemId}_${type}.png` 형태이며 그대로 image_url에 저장한다.
+ * 렌더 시점에 서명 URL로 해석된다(lib/inventory/image-url.ts).
  *
  * @param imageUri 업로드할 로컬 이미지 URI (전송 전 downscaleToUri로 축소해 넘길 것)
  * @param clerkToken Clerk JWT (getToken()) — 없으면 요청 없이 401
- * @throws InventoryUploadError 미인증(401)·용량초과(413)·서버(5xx)·네트워크·응답 URL 누락
+ * @throws InventoryUploadError 미인증(401)·용량초과(413)·서버(5xx)·네트워크·응답 경로 누락
  */
 export async function uploadInventoryImage(
   imageUri: string,
@@ -164,9 +173,14 @@ export async function uploadInventoryImage(
     throw new InventoryUploadError(statusMessage(response.status, message), response.status, code);
   }
 
-  const publicUrl = (json as { url?: unknown }).url;
-  // 서버가 URL을 안 줬는데 성공으로 취급하면 결국 로컬 URI가 저장된다 — 여기서 끊는다
-  if (typeof publicUrl !== 'string' || !/^https?:\/\//.test(publicUrl)) {
+  const storagePath = (json as { path?: unknown }).path;
+  // 서버가 경로를 안 줬는데 성공으로 취급하면 결국 로컬 URI가 저장된다 — 여기서 끊는다.
+  // 스킴이 붙은 값(file://, https:// 등)이나 절대경로는 스토리지 경로가 아니므로 같이 거른다.
+  if (
+    typeof storagePath !== 'string' ||
+    storagePath.length === 0 ||
+    /^([a-z][a-z0-9+.-]*:|\/)/i.test(storagePath)
+  ) {
     throw new InventoryUploadError(
       '사진 업로드 응답이 올바르지 않아요. 잠시 후 다시 시도해주세요.',
       response.status,
@@ -174,5 +188,5 @@ export async function uploadInventoryImage(
     );
   }
 
-  return publicUrl;
+  return storagePath;
 }

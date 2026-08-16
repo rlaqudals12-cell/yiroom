@@ -209,7 +209,7 @@ describe('ClosetAddScreen 렌더링', () => {
 describe('ClosetAddScreen 사진 업로드', () => {
   const LOCAL_URI = 'file:///cache/picked.jpg';
   const SMALL_URI = 'file:///cache/picked-small.jpg';
-  const PUBLIC_URL = 'https://storage.test/inventory-images/u1/closet/x_processed.png';
+  const STORAGE_PATH = 'u1/closet/x_processed.png';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -235,8 +235,8 @@ describe('ClosetAddScreen 사진 업로드', () => {
     fireEvent.press(getByText('옷장에 추가'));
   }
 
-  it('업로드 성공 시 서버 공개 URL로 저장한다 (로컬 file:// 저장 금지)', async () => {
-    mockUploadInventoryImage.mockResolvedValue(PUBLIC_URL);
+  it('업로드 성공 시 서버 스토리지 경로로 저장한다 (로컬 file:// 저장 금지)', async () => {
+    mockUploadInventoryImage.mockResolvedValue(STORAGE_PATH);
 
     const utils = renderWithTheme(<ClosetAddScreen />);
     await fillFormAndSubmit(utils);
@@ -253,9 +253,11 @@ describe('ClosetAddScreen 사진 업로드', () => {
       imageUrl: string;
       originalImageUrl: string;
     };
-    expect(saved.imageUrl).toBe(PUBLIC_URL);
-    expect(saved.originalImageUrl).toBe(PUBLIC_URL);
+    expect(saved.imageUrl).toBe(STORAGE_PATH);
+    expect(saved.originalImageUrl).toBe(STORAGE_PATH);
     expect(saved.imageUrl).not.toContain('file://');
+    // 비공개 버킷 — 영구 공개 URL을 저장하면 안 된다
+    expect(saved.imageUrl).not.toMatch(/^https?:\/\//);
   });
 
   it('업로드 실패 시 저장하지 않고 원인을 안내한다', async () => {

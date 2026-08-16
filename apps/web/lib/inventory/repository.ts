@@ -4,7 +4,13 @@
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { inventoryLogger } from '@/lib/utils/logger';
+import {
+  isInventoryStoragePath,
+  resolveInventoryImageUrl,
+  signInventoryImagePaths,
+} from './image-url';
 import {
   InventoryItem,
   InventoryItemDB,
@@ -25,6 +31,55 @@ import {
   toClothingItems,
   getClothingMetadata,
 } from '@/types/inventory';
+
+// =====================================================
+// 비공개 버킷 이미지 서명 (읽기 경계)
+// =====================================================
+
+/**
+ * 아이템의 이미지 경로를 서명 URL로 바꿔서 돌려준다.
+ *
+ * `inventory-images`는 비공개 버킷이라 DB에는 스토리지 경로만 들어 있다.
+ * service role로 서명하는 이유: 서버 기본 Clerk 토큰에는 role claim이 없어
+ * RLS 클라이언트로는 storage.objects의 `TO authenticated` 정책에 걸린다
+ * (업로드 라우트가 service role을 쓰는 것과 동일한 근거). 소유권은 이미
+ * 모든 쿼리의 `.eq('clerk_user_id', userId)` 스코프가 보장한다.
+ *
+ * 레거시로 저장된 절대 공개 URL은 그대로 통과한다(하위호환).
+ */
+async function withSignedImages<T extends InventoryItem>(items: T[]): Promise<T[]> {
+  if (items.length === 0) return items;
+
+  const values = items.flatMap((item) => [item.imageUrl, item.originalImageUrl]);
+
+  // 서명할 경로가 하나도 없으면(전부 레거시 절대 URL) 클라이언트조차 만들지 않는다.
+  // 불필요한 커넥션을 아끼는 동시에, service role 환경변수가 없는 컨텍스트(테스트 등)에서
+  // 목록 조회가 통째로 죽는 것을 막는다.
+  if (!values.some(isInventoryStoragePath)) return items;
+
+  let signed: ReadonlyMap<string, string>;
+  try {
+    signed = await signInventoryImagePaths(createServiceRoleClient(), values);
+  } catch (err) {
+    // 서명 인프라 장애로 목록 전체를 실패시키지 않는다 — 이미지 없이라도 목록은 뜬다
+    inventoryLogger.error(' withSignedImages: 서명 클라이언트를 만들지 못했습니다', err);
+    return items;
+  }
+
+  return items.map((item) => ({
+    ...item,
+    imageUrl: resolveInventoryImageUrl(item.imageUrl, signed),
+    originalImageUrl: item.originalImageUrl
+      ? resolveInventoryImageUrl(item.originalImageUrl, signed)
+      : item.originalImageUrl,
+  }));
+}
+
+/** 단일 아이템용 — withSignedImages의 얇은 래퍼 */
+async function withSignedImage<T extends InventoryItem>(item: T): Promise<T> {
+  const [signed] = await withSignedImages([item]);
+  return signed;
+}
 
 // =====================================================
 // 인벤토리 아이템 CRUD
@@ -108,7 +163,8 @@ export async function getInventoryItems(
     throw error;
   }
 
-  return (data as InventoryItemDB[]).map(dbToClient);
+  // 비공개 버킷 — 경로를 서명 URL로 바꿔서 내보낸다
+  return withSignedImages((data as InventoryItemDB[]).map(dbToClient));
 }
 
 /**
@@ -135,7 +191,7 @@ export async function getInventoryItemById(
     throw error;
   }
 
-  return dbToClient(data as InventoryItemDB);
+  return withSignedImage(dbToClient(data as InventoryItemDB));
 }
 
 /**
@@ -170,7 +226,7 @@ export async function createInventoryItem(
     throw error;
   }
 
-  return dbToClient(data as InventoryItemDB);
+  return withSignedImage(dbToClient(data as InventoryItemDB));
 }
 
 /**
@@ -208,7 +264,7 @@ export async function updateInventoryItem(
     throw error;
   }
 
-  return dbToClient(data as InventoryItemDB);
+  return withSignedImage(dbToClient(data as InventoryItemDB));
 }
 
 /**
@@ -376,7 +432,10 @@ export async function getSavedOutfitById(
       .in('id', outfit.itemIds);
 
     if (items) {
-      outfit.items = (items as InventoryItemDB[]).map((item) => toClothingItem(dbToClient(item)));
+      // 서명은 InventoryItem 단계에서 끝낸다 — ClothingItem은 metadata가 인덱스 시그니처
+      // 없는 인터페이스라 `T extends InventoryItem` 제약을 만족하지 못한다
+      const signedItems = await withSignedImages((items as InventoryItemDB[]).map(dbToClient));
+      outfit.items = signedItems.map(toClothingItem);
     }
   }
 
@@ -602,7 +661,7 @@ export async function getTopUsedItems(
     throw error;
   }
 
-  return (data as InventoryItemDB[]).map(dbToClient);
+  return withSignedImages((data as InventoryItemDB[]).map(dbToClient));
 }
 
 /**
@@ -631,7 +690,7 @@ export async function getUnusedItems(
     throw error;
   }
 
-  return (data as InventoryItemDB[]).map(dbToClient);
+  return withSignedImages((data as InventoryItemDB[]).map(dbToClient));
 }
 
 // =====================================================

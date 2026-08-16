@@ -31,6 +31,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import {
   ClothingCategory,
   CLOTHING_SUB_CATEGORIES,
@@ -100,7 +102,14 @@ export default function EditClothingPage() {
       const item = data as InventoryItemDB;
       const metadata = item.metadata as Partial<ClothingMetadata>;
 
-      setImageUrl(item.image_url);
+      // 비공개 버킷 — 미리보기 <img>에 넣기 전에 스토리지 경로를 서명 URL로 해석한다
+      // (경로를 그대로 넣으면 앱 상대경로로 해석돼 깨진 이미지가 뜬다)
+      const signedImages = await signInventoryImagePaths(supabase, [
+        item.image_url,
+        item.original_image_url,
+      ]);
+
+      setImageUrl(resolveInventoryImageUrl(item.image_url, signedImages));
       setName(item.name);
       setCategory((item.sub_category as ClothingCategory) || 'top');
       setSubCategory(item.sub_category || '');

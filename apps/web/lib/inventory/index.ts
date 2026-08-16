@@ -25,6 +25,15 @@ export {
   getOutfitCandidates,
 } from './repository';
 
+// Image URL (비공개 버킷 서명 URL 해석 — 읽기 경계 한 곳에서만 사용)
+export {
+  INVENTORY_IMAGE_BUCKET,
+  isInventoryStoragePath,
+  signInventoryImagePaths,
+  resolveInventoryImageUrl,
+  type SignedUrlCapableClient,
+} from './image-url';
+
 // Image Processing
 export {
   extractDominantColors,

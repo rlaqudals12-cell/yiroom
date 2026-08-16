@@ -20,12 +20,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { OutfitBuilder, CollageView } from '@/components/inventory';
-import type {
-  InventoryItem,
-  InventoryItemDB,
-  Season,
-  Occasion,
-} from '@/types/inventory';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
+import type { InventoryItem, InventoryItemDB, Season, Occasion } from '@/types/inventory';
 import { SEASON_LABELS, OCCASION_LABELS } from '@/types/inventory';
 
 type Step = 'select' | 'details';
@@ -65,14 +62,20 @@ export default function NewOutfitPage() {
       return;
     }
 
-    const clientItems = (data as InventoryItemDB[]).map((row) => ({
+    const rows = data as InventoryItemDB[];
+    // 비공개 버킷 — 선택 그리드에 뿌릴 이미지 경로를 한 번에 서명한다(아이템별 서명 = N+1 요청)
+    const signedImages = await signInventoryImagePaths(supabase, [
+      ...rows.flatMap((r) => [r.image_url, r.original_image_url]),
+    ]);
+
+    const clientItems = rows.map((row) => ({
       id: row.id,
       clerkUserId: row.clerk_user_id,
       category: row.category,
       subCategory: row.sub_category,
       name: row.name,
-      imageUrl: row.image_url,
-      originalImageUrl: row.original_image_url,
+      imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+      originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
       brand: row.brand,
       tags: row.tags,
       isFavorite: row.is_favorite,
@@ -95,9 +98,7 @@ export default function NewOutfitPage() {
   // 시즌 토글
   const toggleSeason = (season: Season) => {
     setSeasons((prev) =>
-      prev.includes(season)
-        ? prev.filter((s) => s !== season)
-        : [...prev, season]
+      prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]
     );
   };
 
@@ -162,9 +163,7 @@ export default function NewOutfitPage() {
             <div
               key={s}
               className={`flex-1 h-1 rounded-full ${
-                step === s || (step === 'details' && s === 'select')
-                  ? 'bg-primary'
-                  : 'bg-muted'
+                step === s || (step === 'details' && s === 'select') ? 'bg-primary' : 'bg-muted'
               }`}
             />
           ))}
@@ -177,24 +176,14 @@ export default function NewOutfitPage() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-lg font-semibold mb-1">옷을 선택하세요</h2>
-              <p className="text-sm text-muted-foreground">
-                코디에 포함할 옷을 골라주세요
-              </p>
+              <p className="text-sm text-muted-foreground">코디에 포함할 옷을 골라주세요</p>
             </div>
 
-            {loading && (
-              <div className="text-center py-8 text-muted-foreground">
-                로딩 중...
-              </div>
-            )}
+            {loading && <div className="text-center py-8 text-muted-foreground">로딩 중...</div>}
             {!loading && items.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
-                  옷장에 등록된 옷이 없어요
-                </p>
-                <Button onClick={() => router.push('/closet/add')}>
-                  옷 추가하기
-                </Button>
+                <p className="text-muted-foreground mb-4">옷장에 등록된 옷이 없어요</p>
+                <Button onClick={() => router.push('/closet/add')}>옷 추가하기</Button>
               </div>
             )}
             {!loading && items.length > 0 && (
@@ -265,10 +254,7 @@ export default function NewOutfitPage() {
             {/* 상황 */}
             <div className="space-y-2">
               <Label>상황</Label>
-              <Select
-                value={occasion}
-                onValueChange={(v) => setOccasion(v as Occasion)}
-              >
+              <Select value={occasion} onValueChange={(v) => setOccasion(v as Occasion)}>
                 <SelectTrigger>
                   <SelectValue placeholder="상황 선택 (선택)" />
                 </SelectTrigger>

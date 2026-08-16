@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, isGeminiAvailable, FAST_MODEL } from '@/lib/gemini/client';
 import type { ClothingCategory, Pattern, Season, Occasion } from '@/types/inventory';
 import { extractJsonObject } from '@/lib/utils/json-extract';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { INVENTORY_IMAGE_BUCKET, isInventoryStoragePath } from '@/lib/inventory/image-url';
 
 // 의류 분류 Mock 결과
 //
@@ -74,6 +76,95 @@ export function isAllowedImageUrl(rawUrl: string): boolean {
   return false;
 }
 
+/**
+ * 입력값에서 `inventory-images` 버킷의 스토리지 경로를 뽑아낸다.
+ *
+ * 버킷이 비공개가 되면서 `fetch(공개 URL)`은 더 이상 동작하지 않는다.
+ * 저장된 값(=경로)이 그대로 넘어오는 경우와, 레거시로 남은 절대 공개/서명 URL이
+ * 넘어오는 경우를 모두 경로로 환원해 service role 다운로드로 처리한다.
+ *
+ * 경로가 아니면(외부 URL 등) null — 호출측이 기존 SSRF 화이트리스트 경로로 넘긴다.
+ */
+export function extractInventoryStoragePath(rawValue: string): string | null {
+  // DB에 저장된 값 = 스토리지 경로 그 자체
+  if (isInventoryStoragePath(rawValue)) return rawValue;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(rawValue);
+  } catch {
+    return null;
+  }
+
+  // https://<proj>.supabase.co/storage/v1/object/{public|sign|authenticated}/inventory-images/<path>
+  const marker = `/storage/v1/object/`;
+  const markerIndex = parsed.pathname.indexOf(marker);
+  if (markerIndex === -1) return null;
+
+  const afterMarker = parsed.pathname.slice(markerIndex + marker.length);
+  const segments = afterMarker.split('/');
+  // [0] = public|sign|authenticated, [1] = bucket, 나머지 = 경로
+  if (segments.length < 3 || segments[1] !== INVENTORY_IMAGE_BUCKET) return null;
+
+  const path = segments.slice(2).join('/');
+  return path ? decodeURIComponent(path) : null;
+}
+
+/**
+ * 비공개 버킷에서 이미지를 직접 내려받아 base64로 변환한다.
+ *
+ * service role을 쓰되 **경로 첫 세그먼트 == 요청자 userId**를 강제한다 —
+ * 이 검사가 없으면 남의 사진 경로를 넘겨 내용을 훔쳐볼 수 있다
+ * (service role은 RLS를 우회하므로 소유권 가드는 여기가 유일하다).
+ */
+async function downloadInventoryImage(
+  path: string,
+  userId: string
+): Promise<{ data: string; mimeType: string } | null> {
+  if (path.split('/')[0] !== userId) return null;
+
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase.storage.from(INVENTORY_IMAGE_BUCKET).download(path);
+
+  if (error || !data) {
+    console.error('[Classify] Storage download failed:', error?.message);
+    return null;
+  }
+
+  const buffer = Buffer.from(await data.arrayBuffer());
+  return { data: buffer.toString('base64'), mimeType: data.type || 'image/png' };
+}
+
+/** 이미지 로드 결과 — 실패는 사용자 대면 메시지로 돌려준다 */
+type LoadedImage = { data: string; mimeType: string } | { error: string };
+
+/**
+ * imageUrl(경로 또는 URL)에서 이미지를 읽어 base64로 만든다.
+ *
+ * 비공개 버킷 경로면 service role 다운로드(소유권 검사 포함),
+ * 그 외 외부 URL이면 기존 SSRF 화이트리스트 fetch.
+ */
+async function loadImageFromUrlOrPath(imageUrl: string, userId: string): Promise<LoadedImage> {
+  const storagePath = extractInventoryStoragePath(imageUrl);
+
+  if (storagePath) {
+    const downloaded = await downloadInventoryImage(storagePath, userId);
+    return downloaded ?? { error: '이미지를 불러오지 못했습니다.' };
+  }
+
+  // SSRF 방지: 화이트리스트(Supabase Storage) 도메인만 서버 fetch 허용
+  if (!isAllowedImageUrl(imageUrl)) {
+    return { error: '허용되지 않은 이미지 URL입니다.' };
+  }
+
+  const imageResponse = await fetch(imageUrl);
+  const imageBuffer = await imageResponse.arrayBuffer();
+  return {
+    data: Buffer.from(imageBuffer).toString('base64'),
+    mimeType: imageResponse.headers.get('content-type') || 'image/png',
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -125,25 +216,19 @@ Korean color names: 화이트, 블랙, 베이지, 네이비, 그레이, 브라�
 
 Only return the JSON object, no other text.`;
 
-      let imageData: string;
-      let mimeType: string;
+      const loaded = imageBase64
+        ? {
+            data: imageBase64.replace(/^data:image\/\w+;base64,/, ''),
+            mimeType: 'image/png',
+          }
+        : await loadImageFromUrlOrPath(imageUrl, userId);
 
-      if (imageBase64) {
-        imageData = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-        mimeType = 'image/png';
-      } else {
-        // SSRF 방지: 화이트리스트(Supabase Storage) 도메인만 서버 fetch 허용
-        if (!isAllowedImageUrl(imageUrl)) {
-          return NextResponse.json({ error: '허용되지 않은 이미지 URL입니다.' }, { status: 400 });
-        }
-        const imageResponse = await fetch(imageUrl);
-        const imageBuffer = await imageResponse.arrayBuffer();
-        imageData = Buffer.from(imageBuffer).toString('base64');
-        mimeType = imageResponse.headers.get('content-type') || 'image/png';
+      if ('error' in loaded) {
+        return NextResponse.json({ error: loaded.error }, { status: 400 });
       }
 
       const imagePart = {
-        inlineData: { data: imageData, mimeType },
+        inlineData: { data: loaded.data, mimeType: loaded.mimeType },
       };
 
       // 구조화 추출 = FAST_MODEL (2026-07-07 A/B: 판정 동일·3~6초·1/6 가격)

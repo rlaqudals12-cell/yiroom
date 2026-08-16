@@ -24,6 +24,7 @@ import Animated from 'react-native-reanimated';
 
 import { staggeredEntry } from '@/lib/animations';
 import { INVENTORY_TABLE, resolveClothingCategory, type ClothingCategory } from '@/lib/inventory';
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing } from '@/lib/theme';
 
@@ -84,6 +85,12 @@ export default function StyleGalleryScreen(): React.JSX.Element {
         return;
       }
 
+      // 비공개 버킷 — 저장된 스토리지 경로를 렌더 전에 서명 URL로 바꾼다 (한 번에 일괄)
+      const signedImages = await signInventoryImagePaths(
+        supabase,
+        (data ?? []).map((item) => item.image_url)
+      );
+
       const mapped: ClosetItem[] = (data ?? []).map((item) => {
         const meta = (item.metadata ?? {}) as Record<string, unknown>;
         // metadata.color는 계약상 배열(string[]) — 대표색 1개만 표시한다
@@ -93,7 +100,7 @@ export default function StyleGalleryScreen(): React.JSX.Element {
           name: item.name,
           category: item.category,
           subCategory: item.sub_category,
-          imageUrl: item.image_url,
+          imageUrl: resolveInventoryImageUrl(item.image_url, signedImages),
           brand: item.brand,
           color: typeof colorValue === 'string' ? colorValue : null,
           isFavorite: item.is_favorite ?? false,

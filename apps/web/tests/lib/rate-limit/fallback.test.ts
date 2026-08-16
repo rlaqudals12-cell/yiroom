@@ -93,16 +93,18 @@ describe('Rate Limit Fallback', () => {
 
     it('should track remaining requests correctly', async () => {
       const identifier = 'user:test_remaining';
-      const category = 'upload'; // 분당 5회
+      const category = 'upload';
+      // 한도 수치는 설정에서 가져온다 — 숫자를 박아두면 한도를 조정할 때마다 테스트가 썩는다
+      const { minuteLimit } = RATE_LIMIT_CONFIGS[category];
 
       const result1 = await checkRateLimitWithFallback(identifier, category);
-      expect(result1.minuteRemaining).toBe(4);
+      expect(result1.minuteRemaining).toBe(minuteLimit - 1);
 
       const result2 = await checkRateLimitWithFallback(identifier, category);
-      expect(result2.minuteRemaining).toBe(3);
+      expect(result2.minuteRemaining).toBe(minuteLimit - 2);
 
       const result3 = await checkRateLimitWithFallback(identifier, category);
-      expect(result3.minuteRemaining).toBe(2);
+      expect(result3.minuteRemaining).toBe(minuteLimit - 3);
     });
 
     it('should use correct limits for different categories', async () => {

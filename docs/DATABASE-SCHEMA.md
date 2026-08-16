@@ -2637,7 +2637,7 @@ CREATE TABLE IF NOT EXISTS user_inventory (
   category TEXT NOT NULL CHECK (category IN ('closet','beauty','equipment','supplement','pantry')),
   sub_category TEXT,
   name TEXT NOT NULL,
-  image_url TEXT,             -- 업로드 publicUrl (nullable — 방어적)
+  image_url TEXT,             -- 스토리지 **경로** (nullable — 방어적). 레거시 행은 절대 공개 URL
   original_image_url TEXT,
   brand TEXT,
   tags TEXT[] DEFAULT '{}',
@@ -2650,8 +2650,17 @@ CREATE TABLE IF NOT EXISTS user_inventory (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 -- RLS (prod 구패턴 auth.jwt()->>'sub'): select/insert/update/delete 본인만 (4정책)
--- Storage 버킷 'inventory-images' (public), 경로 ${userId}/${category}/${itemId}_${type}.png
+-- Storage 버킷 'inventory-images' (**private**), 경로 ${userId}/${category}/${itemId}_${type}.png
 ```
+
+> 🔒 **이미지 접근 규약 (2026-08-16 보안 수리)**: 버킷은 **비공개**다. 개인 사진이 들어가고
+> 경로 첫 세그먼트가 Clerk userId라, 공개 버킷이면 URL만 아는 누구나 로그인 없이 열람하고
+> userId까지 노출된다(다른 생체·분석 버킷은 전부 비공개 — 옷장만 예외였다).
+> `image_url`에는 **스토리지 경로**만 저장하고, 읽기 경계에서 서명 URL로 해석한다:
+> 서버는 `lib/inventory/repository.ts`(service role), 클라이언트는
+> `lib/inventory/image-url.ts` → 실패 시 `POST /api/storage/signed-url`(일괄 `paths` 모드).
+> 레거시로 저장된 절대 공개 URL은 그대로 통과한다(하위호환) — 백필 SQL은
+> `c:\tmp\yiroom-bucket-private-2026-08-16.sql` 선택 섹션 참조.
 
 ### 관련 테이블 · 소비
 

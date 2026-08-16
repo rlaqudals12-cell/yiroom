@@ -20,6 +20,8 @@ import {
   type ClosetRecommendation,
 } from '@/lib/inventory/client';
 import { colorNameToHex } from '@/lib/inventory/color-bridge';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import { hexToLab, calculateHue } from '@/lib/color';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
@@ -209,15 +211,21 @@ export default function StylePage() {
 
         // 옷장 아이템 매핑 (코디 매칭 계약 InventoryItem으로)
         if (closetResult.data && closetResult.data.length > 0) {
+          const closetRows = closetResult.data as InventoryItemDB[];
+          // 비공개 버킷 — 오늘의 코디 카드에 쓸 이미지 경로를 한 번에 서명한다(아이템별 서명 = N+1 요청)
+          const signedImages = await signInventoryImagePaths(supabase, [
+            ...closetRows.flatMap((r) => [r.image_url, r.original_image_url]),
+          ]);
+
           setClosetItems(
-            (closetResult.data as InventoryItemDB[]).map((row) => ({
+            closetRows.map((row) => ({
               id: row.id,
               clerkUserId: row.clerk_user_id,
               category: row.category,
               subCategory: row.sub_category,
               name: row.name,
-              imageUrl: row.image_url,
-              originalImageUrl: row.original_image_url,
+              imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+              originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
               brand: row.brand,
               tags: row.tags,
               isFavorite: row.is_favorite,

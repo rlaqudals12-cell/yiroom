@@ -241,7 +241,9 @@ export default function ClosetAddScreen() {
       const token = await getToken();
       // 전송 전 축소 — 원본 해상도는 Vercel 본문 제한(4.5MB)에 걸려 413이 난다 (웹과 동일 대응)
       const uploadUri = await downscaleToUri(imageUri);
-      const publicImageUrl = await uploadInventoryImage(uploadUri, token, { category: 'closet' });
+      // 저장하는 값은 공개 URL이 아니라 **스토리지 경로**다 (비공개 버킷 — 2026-08-16 보안 수리).
+      // 렌더 시점에 resolveInventoryImageUrl()이 서명 URL로 바꿔준다.
+      const storedImagePath = await uploadInventoryImage(uploadUri, token, { category: 'closet' });
 
       // 메타데이터 = 웹 계약(단수 키 color/season/occasion + 영문 대분류 보존)
       const metadata = buildClosetMetadata({
@@ -257,8 +259,8 @@ export default function ClosetAddScreen() {
         category: 'closet',
         subCategory: category,
         name: formData.name.trim(),
-        imageUrl: publicImageUrl,
-        originalImageUrl: publicImageUrl,
+        imageUrl: storedImagePath,
+        originalImageUrl: storedImagePath,
         brand: formData.brand.trim() || null,
         tags: [...formData.colors, ...formData.seasons, ...formData.occasions],
         isFavorite: false,

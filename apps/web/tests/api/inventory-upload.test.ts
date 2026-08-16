@@ -25,6 +25,7 @@ const mockGetPublicUrl = vi.fn();
 const mockCreateSignedUploadUrl = vi.fn();
 const mockStorageFrom = vi.fn(() => ({
   upload: mockUpload,
+  // 회귀 감시용으로 남겨둔다 — 라우트가 다시 공개 URL을 만들면 테스트에서 드러난다
   getPublicUrl: mockGetPublicUrl,
   createSignedUploadUrl: mockCreateSignedUploadUrl,
 }));
@@ -164,7 +165,7 @@ describe('POST /api/inventory/upload', () => {
     expect(mockUpload).not.toHaveBeenCalled();
   });
 
-  it('should upload via service role client with server-built path and return url/path', async () => {
+  it('should upload via service role client with server-built path and return the storage path', async () => {
     const res = await POST(makePostRequest(validFields()));
     const body = await res.json();
 
@@ -179,9 +180,19 @@ describe('POST /api/inventory/upload', () => {
       expect.any(ArrayBuffer),
       { contentType: 'image/png', upsert: true }
     );
-    // 클라이언트(closet/add 등)가 파싱하는 성공 계약 { url, path } 유지
-    expect(body.url).toBe('https://cdn.example/inventory-images/user_123/closet/x.png');
+    // 성공 계약 = { path }. 클라이언트(closet/add 등)는 이 경로를 그대로 DB에 저장한다.
     expect(body.path).toBe(`user_123/closet/${VALID_UUID}_processed.png`);
+  });
+
+  // 보안 회귀 감시: inventory-images는 비공개 버킷이다. 영구 공개 URL을 다시 내보내면
+  // URL만 아는 누구나 개인 사진을 열 수 있고 경로 첫 세그먼트인 Clerk userId까지 새어나간다.
+  it('should never return a public URL (private bucket)', async () => {
+    const res = await POST(makePostRequest(validFields()));
+    const body = await res.json();
+
+    expect(mockGetPublicUrl).not.toHaveBeenCalled();
+    expect(body.url).toBeUndefined();
+    expect(JSON.stringify(body)).not.toContain('http');
   });
 
   it('should default type to processed when omitted', async () => {

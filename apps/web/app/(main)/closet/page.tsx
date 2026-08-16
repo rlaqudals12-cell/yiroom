@@ -24,6 +24,8 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { InventoryGrid, CategoryFilter, ItemDetailSheet } from '@/components/inventory';
 import { filterClosetItems } from '@/lib/inventory/client';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 
 export default function ClosetPage() {
@@ -95,14 +97,19 @@ export default function ClosetPage() {
 
         // DB 형식 -> 클라이언트 형식 변환
         const rows = (data ?? []) as InventoryItemDB[];
+        // 비공개 버킷 — DB엔 스토리지 경로만 있으므로 페이지 단위로 한 번에 서명한다
+        // (아이템마다 서명하면 N+1 요청). 레거시 절대 URL은 서명 없이 그대로 통과.
+        const signedImages = await signInventoryImagePaths(supabase, [
+          ...rows.flatMap((r) => [r.image_url, r.original_image_url]),
+        ]);
         const clientItems: InventoryItem[] = rows.map((row) => ({
           id: row.id,
           clerkUserId: row.clerk_user_id,
           category: row.category,
           subCategory: row.sub_category,
           name: row.name,
-          imageUrl: row.image_url,
-          originalImageUrl: row.original_image_url,
+          imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+          originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
           brand: row.brand,
           tags: row.tags,
           isFavorite: row.is_favorite,

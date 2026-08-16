@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { applyRateLimitMiddleware, addRateLimitHeaders } from '@/lib/rate-limit/middleware';
 import { clearMemoryStore } from '@/lib/rate-limit/fallback';
+import { RATE_LIMIT_CONFIGS } from '@/types/rate-limit';
 import { NextResponse } from 'next/server';
 
 // Upstash 모킹 - 인메모리 폴백 사용
@@ -110,8 +111,8 @@ describe('Rate Limit Middleware', () => {
         'x-forwarded-for': '1.2.3.4',
       });
 
-      // 분당 5회 한도 초과 (upload 카테고리)
-      for (let i = 0; i < 5; i++) {
+      // upload 카테고리 분당 한도 초과 (수치는 설정에서 — 한도 조정에 썩지 않게)
+      for (let i = 0; i < RATE_LIMIT_CONFIGS.upload.minuteLimit; i++) {
         await applyRateLimitMiddleware(request, 'user_429_test');
       }
 

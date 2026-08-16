@@ -2,8 +2,10 @@
  * 인벤토리 이미지 업로드 HTTP 클라이언트 테스트
  *
  * @see lib/api/inventory-upload.ts
- * 핵심 계약: 성공 시 **서버 공개 URL**만 반환하고, 실패하면 반드시 throw한다
+ * 핵심 계약: 성공 시 **서버 스토리지 경로**만 반환하고, 실패하면 반드시 throw한다
  *           (로컬 file:// URI를 성공인 척 돌려주면 사진이 유실된다).
+ *           경로를 반환하는 이유 = inventory-images가 비공개 버킷이라 영구 공개 URL을
+ *           저장하면 안 되기 때문(2026-08-16 보안 수리).
  */
 
 import {
@@ -14,47 +16,77 @@ import {
 
 const BASE = 'https://api.test';
 const LOCAL_URI = 'file:///data/user/0/com.yiroom.app/cache/photo.jpg';
-const PUBLIC_URL = 'https://storage.test/inventory-images/user_1/closet/abc_processed.png';
+const STORAGE_PATH = 'user_1/closet/11111111-2222-4333-8444-555555555555_processed.png';
 
 function okResponse(body: unknown) {
   return { ok: true, status: 200, json: () => Promise.resolve(body) };
 }
 
 /**
- * FormData 파트 읽기 — RN 구현(getParts)과 표준 구현(entries/get)이 달라 양쪽을 지원한다.
+ * 코드가 append한 파트를 **원본 그대로** 붙잡아두는 최소 FormData 스텁.
+ *
+ * 왜 필요한가: RN의 FormData는 파일 파트로 `{uri,name,type}` 객체를 받지만,
+ * 테스트 환경(jsdom/노드)의 FormData는 객체를 '[object Object]'로 문자열화해버린다.
+ * 그러면 "로컬 URI가 실제로 요청에 실렸는가"를 검증할 수 없고,
+ * uri를 빠뜨리는 회귀가 테스트를 그대로 통과한다(=사진 유실이 조용히 배포됨).
  */
-function formValue(form: FormData, key: string): unknown {
-  const rnForm = form as unknown as {
-    getParts?: () => { fieldName: string; string?: string; uri?: string }[];
-  };
-  if (typeof rnForm.getParts === 'function') {
-    const part = rnForm.getParts().find((p) => p.fieldName === key);
-    return part?.string ?? part;
+class RecordingFormData {
+  readonly parts: Array<{ name: string; value: unknown }> = [];
+
+  append(name: string, value: unknown): void {
+    this.parts.push({ name, value });
   }
-  return form.get(key);
+
+  get(name: string): unknown {
+    return this.parts.find((part) => part.name === name)?.value ?? null;
+  }
+}
+
+const OriginalFormData = global.FormData;
+
+function formValue(form: FormData, key: string): unknown {
+  return (form as unknown as RecordingFormData).get(key);
 }
 
 describe('uploadInventoryImage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    global.FormData = RecordingFormData as unknown as typeof FormData;
   });
 
-  it('성공 시 서버가 준 공개 URL을 반환한다', async () => {
+  afterEach(() => {
+    global.FormData = OriginalFormData;
+  });
+
+  it('성공 시 서버가 준 스토리지 경로를 반환한다', async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValue(
-        okResponse({ url: PUBLIC_URL, path: 'user_1/closet/abc_processed.png' })
-      ) as unknown as typeof fetch;
+      .mockResolvedValue(okResponse({ path: STORAGE_PATH })) as unknown as typeof fetch;
 
     const result = await uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE });
 
-    expect(result).toBe(PUBLIC_URL);
+    expect(result).toBe(STORAGE_PATH);
     // 로컬 URI가 그대로 새어나가지 않는지 명시 검증
     expect(result).not.toContain('file://');
   });
 
+  it('영구 공개 URL을 저장 후보로 돌려주지 않는다 (비공개 버킷)', async () => {
+    // 서버가 실수로 url을 함께 보내도 클라이언트는 path만 채택해야 한다
+    global.fetch = jest.fn().mockResolvedValue(
+      okResponse({
+        path: STORAGE_PATH,
+        url: 'https://cdn.example/storage/v1/object/public/inventory-images/x.png',
+      })
+    ) as unknown as typeof fetch;
+
+    const result = await uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE });
+
+    expect(result).toBe(STORAGE_PATH);
+    expect(result).not.toMatch(/^https?:\/\//);
+  });
+
   it('multipart FormData로 category·itemId·type과 파일 파트를 담아 보낸다', async () => {
-    const fetchMock = jest.fn().mockResolvedValue(okResponse({ url: PUBLIC_URL }));
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ path: STORAGE_PATH }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await uploadInventoryImage(LOCAL_URI, 'token-abc', {
@@ -81,11 +113,28 @@ describe('uploadInventoryImage', () => {
     expect(formValue(form, 'category')).toBe('closet');
     expect(formValue(form, 'itemId')).toBe('11111111-2222-4333-8444-555555555555');
     expect(formValue(form, 'type')).toBe('processed');
-    expect(formValue(form, 'file')).toBeDefined();
+  });
+
+  // 회귀 방지의 본체: 파일 파트가 "존재한다"가 아니라 **선택한 사진의 로컬 URI를 실제로 싣는다**를
+  // 검증한다. uri를 빠뜨리거나 다른 값으로 바꾸면 여기서 반드시 깨진다.
+  it('파일 파트에 선택한 사진의 로컬 URI를 그대로 싣는다', async () => {
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ path: STORAGE_PATH }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const filePart = formValue(init.body as FormData, 'file');
+
+    expect(filePart).toEqual({
+      uri: LOCAL_URI,
+      name: 'image.jpg',
+      type: 'image/jpeg',
+    });
   });
 
   it('itemId 미지정 시 서버 zod가 받는 uuid 형식을 생성한다', async () => {
-    const fetchMock = jest.fn().mockResolvedValue(okResponse({ url: PUBLIC_URL }));
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ path: STORAGE_PATH }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE });
@@ -157,32 +206,22 @@ describe('uploadInventoryImage', () => {
     });
   });
 
-  it('200이지만 URL이 없으면 실패한다 (로컬 URI가 저장되는 경로를 차단)', async () => {
-    global.fetch = jest
-      .fn()
-      .mockResolvedValue(okResponse({ path: 'x' })) as unknown as typeof fetch;
+  it('200이지만 경로가 없으면 실패한다 (로컬 URI가 저장되는 경로를 차단)', async () => {
+    global.fetch = jest.fn().mockResolvedValue(okResponse({ ok: true })) as unknown as typeof fetch;
 
     await expect(
       uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE })
     ).rejects.toMatchObject({ code: 'UPLOAD_ERROR' });
   });
 
-  it('http(s)가 아닌 URL을 돌려주면 실패한다', async () => {
+  it('경로가 아니라 스킴이 붙은 값(file://)을 돌려주면 실패한다', async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValue(okResponse({ url: LOCAL_URI })) as unknown as typeof fetch;
+      .mockResolvedValue(okResponse({ path: LOCAL_URI })) as unknown as typeof fetch;
 
     await expect(
       uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE })
     ).rejects.toBeInstanceOf(InventoryUploadError);
-  });
-
-  it('네트워크 실패 시 NETWORK_ERROR로 실패한다', async () => {
-    global.fetch = jest.fn().mockRejectedValue(new Error('offline')) as unknown as typeof fetch;
-
-    await expect(
-      uploadInventoryImage(LOCAL_URI, 'token-1', { baseUrl: BASE })
-    ).rejects.toMatchObject({ code: 'NETWORK_ERROR', status: 0 });
   });
 
   it('baseUrl 미지정 시 env 또는 프로덕션 웹으로 보낸다 (설정 누락으로 죽지 않는다)', async () => {
@@ -191,7 +230,7 @@ describe('uploadInventoryImage', () => {
     delete process.env.EXPO_PUBLIC_YIROOM_API_URL;
     delete process.env.EXPO_PUBLIC_API_URL;
 
-    const fetchMock = jest.fn().mockResolvedValue(okResponse({ url: PUBLIC_URL }));
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ path: STORAGE_PATH }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
     try {

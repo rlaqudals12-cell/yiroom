@@ -94,11 +94,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: '파일 업로드에 실패했습니다.' }, { status: 500 });
     }
 
-    // Public URL 생성
-    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(data.path);
-
+    // 스토리지 **경로**만 반환한다 (2026-08-16 보안 수리).
+    // 이전에는 getPublicUrl로 만든 영구 공개 URL을 돌려주고 호출측이 그대로 DB에 저장했다.
+    // 버킷이 비공개가 된 지금 그 URL은 열리지도 않을뿐더러, 애초에 개인 사진을 로그인 없이
+    // 영구 노출하고 URL에 Clerk userId까지 새게 하는 구조였다.
+    // 조회는 렌더 시점에 resolveInventoryImageUrl()이 서명 URL로 해석한다.
+    // (미리보기는 호출측이 이미 로컬 dataURL/URI를 들고 있으므로 서버 URL이 필요 없다)
     return NextResponse.json({
-      url: urlData.publicUrl,
       path: data.path,
     });
   } catch (error) {

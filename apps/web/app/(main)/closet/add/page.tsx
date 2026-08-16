@@ -143,7 +143,11 @@ export default function AddClothingPage() {
         throw new Error(uploadErrorMessage(uploadResponse.status));
       }
 
-      const { url: imageUrl } = await uploadResponse.json();
+      // 저장하는 값은 **스토리지 경로**다 (2026-08-16 보안 수리).
+      // 예전엔 영구 공개 URL을 그대로 DB에 넣었는데, 그러면 URL만 알면 로그인 없이
+      // 개인 사진이 열리고 경로 첫 세그먼트인 Clerk userId까지 노출된다.
+      // 렌더 시점에 resolveInventoryImageUrl()이 서명 URL로 바꿔준다.
+      const { path: imageUrl } = await uploadResponse.json();
 
       // DB에 아이템 저장 — API 경유 (직접 insert는 clerk_user_id NOT NULL/RLS에
       // 걸려 항상 실패하던 잠복 버그, 2026-07-08 수정)

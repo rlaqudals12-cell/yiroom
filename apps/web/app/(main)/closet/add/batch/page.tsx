@@ -189,7 +189,8 @@ export default function BatchAddClothingPage() {
             body: formData,
           });
           if (!uploadRes.ok) throw new Error(uploadErrorMessage(uploadRes.status));
-          const { url: imageUrl } = await uploadRes.json();
+          // 공개 URL이 아니라 스토리지 경로를 저장한다 (비공개 버킷 — closet/add와 동일 계약)
+          const { path: imageUrl } = await uploadRes.json();
 
           const c = item.classification;
           const saveRes = await fetch('/api/inventory', {

@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
 import { resolveClothingCategory } from './clothingCategory';
+import { resolveInventoryImageUrl, signInventoryImagePaths } from './image-url';
 import type {
   InventoryItem,
   InventoryCategory,
@@ -84,7 +85,25 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
 
       if (fetchError) throw fetchError;
 
-      setItems((data as InventoryItemRow[]).map(rowToInventoryItem));
+      // 비공개 버킷(inventory-images) — DB에는 스토리지 경로만 있으므로
+      // 화면에 넘기기 전에 한 번에 서명 URL로 바꾼다 (레거시 절대 URL은 그대로 통과)
+      const rows = data as InventoryItemRow[];
+      const signedImages = await signInventoryImagePaths(
+        supabase,
+        rows.flatMap((row) => [row.image_url, row.original_image_url])
+      );
+      setItems(
+        rows.map((row) => {
+          const item = rowToInventoryItem(row);
+          return {
+            ...item,
+            imageUrl: resolveInventoryImageUrl(item.imageUrl, signedImages),
+            originalImageUrl: item.originalImageUrl
+              ? resolveInventoryImageUrl(item.originalImageUrl, signedImages)
+              : item.originalImageUrl,
+          };
+        })
+      );
       // 성공한 로드만 "이미 봤다"로 인정 — 첫 로드가 실패하면 다음 시도도 정식 로딩으로 처리
       hasLoadedRef.current = true;
     } catch (err) {

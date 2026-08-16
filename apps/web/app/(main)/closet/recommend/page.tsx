@@ -39,6 +39,8 @@ import { getPersonalColorSeasonLabel, type PersonalColorSeason } from '@/lib/col
 import { getBodyShapeLabel } from '@/lib/body';
 import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
 import { assessOutfitHarmony } from '@/lib/inventory/color-bridge';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import { BEST_COLORS, LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
 import { composeDailyOutfit } from '@/lib/color/daily-outfit';
@@ -228,14 +230,20 @@ export default function ClosetRecommendPage() {
 
       if (error) throw error;
 
-      const clientItems = (data as InventoryItemDB[]).map((row) => ({
+      const rows = data as InventoryItemDB[];
+      // 비공개 버킷 — 코디 카드 썸네일에 쓸 이미지 경로를 한 번에 서명한다(아이템별 서명 = N+1 요청)
+      const signedImages = await signInventoryImagePaths(supabase, [
+        ...rows.flatMap((r) => [r.image_url, r.original_image_url]),
+      ]);
+
+      const clientItems = rows.map((row) => ({
         id: row.id,
         clerkUserId: row.clerk_user_id,
         category: row.category,
         subCategory: row.sub_category,
         name: row.name,
-        imageUrl: row.image_url,
-        originalImageUrl: row.original_image_url,
+        imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+        originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
         brand: row.brand,
         tags: row.tags,
         isFavorite: row.is_favorite,

@@ -8,8 +8,65 @@ import { redactPii } from '@/lib/utils/redact-pii';
  * Private bucket의 이미지에 접근하기 위한 signed URL 생성
  *
  * POST /api/storage/signed-url
- * Body: { bucket: string, path: string, expiresIn?: number }
+ * Body: { bucket: string, path: string, expiresIn?: number }        → { signedUrl }
+ *       { bucket: string, paths: string[], expiresIn?: number }     → { signedUrls: Record<path, url> }
+ *
+ * 일괄(paths) 모드가 있는 이유: 옷장 목록은 한 화면에 수십 장이라 장당 요청이면
+ * N+1이 된다. 소유권 검사는 단건과 동일하게 **경로마다** 적용한다.
  */
+
+/** 한 번에 서명할 수 있는 최대 경로 수 (남용 방어) */
+const MAX_BATCH_PATHS = 200;
+
+/** 경로 첫 세그먼트가 요청자 userId인지 — 유일한 소유권 가드(service role은 RLS를 우회한다) */
+function isOwnedPath(path: unknown, userId: string): path is string {
+  return typeof path === 'string' && path.length > 0 && path.split('/')[0] === userId;
+}
+
+/** 일괄 서명 — 소유권 검사는 단건과 동일하게 경로마다 적용한다 */
+async function handleBatch(
+  bucket: unknown,
+  paths: unknown[],
+  expiresIn: number,
+  userId: string
+): Promise<NextResponse> {
+  if (!bucket || typeof bucket !== 'string') {
+    return NextResponse.json({ error: 'bucket is required' }, { status: 400 });
+  }
+  if (paths.length === 0) {
+    return NextResponse.json({ signedUrls: {} });
+  }
+  if (paths.length > MAX_BATCH_PATHS) {
+    return NextResponse.json({ error: 'too many paths' }, { status: 400 });
+  }
+  // 하나라도 남의 경로가 섞여 있으면 전체를 거절한다 (부분 성공은 경로 탐색을 도와준다)
+  if (!paths.every((candidate) => isOwnedPath(candidate, userId))) {
+    console.warn(
+      `[signed-url] Unauthorized batch attempt by ${redactPii.userId(userId)} (${paths.length} paths)`
+    );
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const ownedPaths = paths as string[];
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrls(ownedPaths, expiresIn);
+
+  if (error || !data) {
+    console.error('[signed-url] Error creating signed URLs:', error);
+    return NextResponse.json({ error: 'Failed to create signed URLs' }, { status: 500 });
+  }
+
+  const signedUrls: Record<string, string> = {};
+  data.forEach((entry, index) => {
+    const entryPath = entry.path ?? ownedPaths[index];
+    if (entryPath && entry.signedUrl) signedUrls[entryPath] = entry.signedUrl;
+  });
+
+  return NextResponse.json({ signedUrls });
+}
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -19,7 +76,12 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { bucket, path, expiresIn = 3600 } = body;
+    const { bucket, path, paths, expiresIn = 3600 } = body;
+
+    // 일괄 모드
+    if (Array.isArray(paths)) {
+      return handleBatch(bucket, paths, expiresIn, userId);
+    }
 
     if (!bucket || !path) {
       return NextResponse.json({ error: 'bucket and path are required' }, { status: 400 });

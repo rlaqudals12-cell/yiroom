@@ -12,7 +12,7 @@ import {
   extractIpAddress,
   createRateLimitHeaders,
 } from '@/lib/rate-limit/limiter';
-import { RateLimitCategory } from '@/types/rate-limit';
+import { RateLimitCategory, RATE_LIMIT_CONFIGS } from '@/types/rate-limit';
 
 describe('Rate Limiter', () => {
   describe('getRateLimitCategory', () => {
@@ -50,9 +50,23 @@ describe('Rate Limiter', () => {
       expect(getRateLimitCategory('/api/auth/callback')).toBe('auth');
     });
 
-    it('should return "upload" for /api/upload/* paths', () => {
+    // 실경로 회귀 감시: /api/upload는 저장소에 존재하지 않는 경로(스펙 잔재)이고,
+    // 실제 업로드 라우트는 /api/inventory/upload 하나뿐이다. 죽은 경로만 검증하면
+    // 업로드 한도가 통째로 새는 것을 테스트가 잡지 못한다.
+    it('should return "upload" for the real upload route /api/inventory/upload', () => {
+      expect(getRateLimitCategory('/api/inventory/upload')).toBe('upload');
+    });
+
+    it('should still classify legacy /api/upload/* paths as "upload"', () => {
       expect(getRateLimitCategory('/api/upload/image')).toBe('upload');
       expect(getRateLimitCategory('/api/upload/avatar')).toBe('upload');
+    });
+
+    it('should give the upload bucket a limit that survives batch closet registration', () => {
+      // 일괄 등록은 동시 3개로 N장을 연속 업로드한다 — 한 자리 수 분당 한도면 정상 사용이 429가 된다
+      const uploadConfig = RATE_LIMIT_CONFIGS.upload;
+      expect(uploadConfig.minuteLimit).toBeGreaterThanOrEqual(20);
+      expect(uploadConfig.dailyLimit).toBeGreaterThanOrEqual(100);
     });
 
     it('should return "coach" for /api/coach/* and /api/chat/* paths', () => {

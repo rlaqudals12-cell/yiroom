@@ -12,12 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OutfitCard } from '@/components/inventory';
-import type {
-  SavedOutfit,
-  SavedOutfitDB,
-  InventoryItem,
-  InventoryItemDB,
-} from '@/types/inventory';
+// 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
+import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
+import type { SavedOutfit, SavedOutfitDB, InventoryItem, InventoryItemDB } from '@/types/inventory';
 
 export default function OutfitsPage() {
   const router = useRouter();
@@ -62,6 +59,7 @@ export default function OutfitsPage() {
         name: row.name,
         description: row.description,
         itemIds: row.item_ids,
+        // 콜라주는 inventory-images(비공개 버킷)에 저장되지 않는다 — 서명 대상이 아니라 원본 그대로
         collageImageUrl: row.collage_image_url,
         occasion: row.occasion,
         season: row.season,
@@ -72,14 +70,20 @@ export default function OutfitsPage() {
         updatedAt: row.updated_at,
       }));
 
-      const clientItems = (itemData as InventoryItemDB[] || []).map((row) => ({
+      const itemRows = (itemData ?? []) as InventoryItemDB[];
+      // 비공개 버킷 — 코디 카드 썸네일용 아이템 이미지를 한 번에 서명한다(아이템별 서명 = N+1 요청)
+      const signedImages = await signInventoryImagePaths(supabase, [
+        ...itemRows.flatMap((r) => [r.image_url, r.original_image_url]),
+      ]);
+
+      const clientItems = itemRows.map((row) => ({
         id: row.id,
         clerkUserId: row.clerk_user_id,
         category: row.category,
         subCategory: row.sub_category,
         name: row.name,
-        imageUrl: row.image_url,
-        originalImageUrl: row.original_image_url,
+        imageUrl: resolveInventoryImageUrl(row.image_url, signedImages),
+        originalImageUrl: resolveInventoryImageUrl(row.original_image_url, signedImages),
         brand: row.brand,
         tags: row.tags,
         isFavorite: row.is_favorite,
@@ -133,10 +137,7 @@ export default function OutfitsPage() {
   const handleDelete = async (outfit: SavedOutfit) => {
     if (!supabase || !confirm('이 코디를 삭제하시겠습니까?')) return;
 
-    const { error } = await supabase
-      .from('saved_outfits')
-      .delete()
-      .eq('id', outfit.id);
+    const { error } = await supabase.from('saved_outfits').delete().eq('id', outfit.id);
 
     if (!error) {
       setOutfits((prev) => prev.filter((o) => o.id !== outfit.id));
@@ -159,8 +160,7 @@ export default function OutfitsPage() {
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xl font-bold">내 코디</h1>
             <Button size="sm" onClick={() => router.push('/closet/outfits/new')}>
-              <Plus className="w-4 h-4 mr-1" />
-              새 코디
+              <Plus className="w-4 h-4 mr-1" />새 코디
             </Button>
           </div>
 
