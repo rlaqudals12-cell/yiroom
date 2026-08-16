@@ -456,16 +456,17 @@ function RecommendTab({
 }: TabProps & { imageUri?: string }): React.JSX.Element {
   return (
     <View style={localStyles.tabContent}>
-      {/* 드레이핑 프리뷰 — 내 사진에 색상 입혀보기 */}
+      {/* 드레이핑 비교 — 내 사진 아래에 베스트/회피 색천을 대보고 차이를 본다 (웹 패리티) */}
       {imageUri && (
         <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
           <GradientCard variant="personalColor" style={localStyles.sectionCard}>
             <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-              이 색상 입혀보기
+              드레이핑 비교
             </Text>
             <DrapingPreview
               imageUri={imageUri}
               palette={season.bestColors}
+              avoidPalette={season.worstColors}
               seasonName={season.name}
               seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
               testID="draping-preview"
