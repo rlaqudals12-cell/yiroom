@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { koKR, enUS } from '@clerk/localizations';
 import { Inter, Noto_Sans_KR, Noto_Serif_KR } from 'next/font/google';
 import { DynamicToaster } from '@/components/providers/DynamicToaster';
@@ -62,11 +63,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     // ADR-098 정체성 재정의 v2 — 5축 AI 분석 (대중 카피: 셀카 한 장)
-    default: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
+    default: '이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 AI 분석',
     template: '%s | 이룸',
   },
   description:
-    '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 다섯 가지를 AI가 분석하고, 오늘 입을 옷까지 추천해줘요.',
+    '셀카 한 장으로 퍼스널컬러·피부·헤어·메이크업을, 전신 사진을 더하면 체형까지 AI가 분석하고 오늘 입을 옷까지 추천해줘요.',
   keywords: [
     '퍼스널컬러',
     '피부분석',
@@ -86,21 +87,23 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     url: siteUrl,
     siteName: '이룸',
-    title: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
-    description: '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 다섯 가지를 AI가 분석해요.',
+    title: '이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 AI 분석',
+    description:
+      '셀카 한 장으로 퍼스널컬러·피부·헤어·메이크업을, 전신 사진을 더하면 체형까지 AI가 분석해요.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
+        alt: '이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 AI 분석',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '이룸 - 셀카 한 장으로 색·피부·체형·헤어 AI 분석',
-    description: '셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 다섯 가지를 AI가 분석해요.',
+    title: '이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 AI 분석',
+    description:
+      '셀카 한 장으로 퍼스널컬러·피부·헤어·메이크업을, 전신 사진을 더하면 체형까지 AI가 분석해요.',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.webmanifest', // PWA manifest - middleware에서 제외됨
@@ -138,6 +141,12 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   const clerkLocalization = clerkLocalizations[locale as keyof typeof clerkLocalizations] || koKR;
+
+  // 하단 탭바는 로그인 사용자 전용 앱 셸이다. 5탭 목적지가 모두 로그인 게이트라
+  // 비로그인(랜딩 `/` 포함)에 띄우면 "가입도 안 했는데 앱 안에 있는" 오독을 만든다.
+  // 탭바를 감출 땐 본문 하단 패딩(pb-bottom-nav)도 같이 풀어야 빈 여백이 남지 않는다.
+  const { userId } = await auth();
+  const showBottomNav = Boolean(userId);
 
   return (
     <ClerkProvider localization={clerkLocalization}>
@@ -193,10 +202,13 @@ export default async function RootLayout({
                 <GenderProvider>
                   <GamificationProvider>
                     <Navbar />
-                    <main id="main-content" className="pb-bottom-nav md:pb-0">
+                    <main
+                      id="main-content"
+                      className={showBottomNav ? 'pb-bottom-nav md:pb-0' : undefined}
+                    >
                       {children}
                     </main>
-                    <BottomNav />
+                    {showBottomNav && <BottomNav />}
                     <PWAInstallPrompt />
                   </GamificationProvider>
                 </GenderProvider>

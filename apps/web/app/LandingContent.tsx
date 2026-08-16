@@ -33,7 +33,7 @@ import {
 import { PersonaShareCard } from '@/components/share/PersonaShareCard';
 import { PhotocardTilt } from '@/components/share/PhotocardTilt';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
-import { getCardPalette, type CardPalette } from '@/lib/share/tone-palettes';
+import { getCardPalette } from '@/lib/share/tone-palettes';
 import type { OutputLocale } from '@/lib/gemini/client';
 
 // 지면 고정 팔레트 — 공유카드·리포트와 동일 계열(cream/ink/rose)
@@ -127,9 +127,22 @@ export function LandingContent(): React.JSX.Element {
   const observe = useScrollReveal();
 
   const heroPalette = getCardPalette('muted-summer', locale);
-  const samplePalettes = SAMPLE_TONES.map((tone) => getCardPalette(tone, locale)).filter(
-    (p): p is CardPalette => p !== null
-  );
+  // 톤·문구키·회전을 한 객체로 묶은 뒤 필터한다 — 팔레트가 하나라도 없으면
+  // 인덱스가 밀려 다른 톤의 문구가 붙던 잠복 결함(map 후 filter) 봉합
+  const sampleCards = SAMPLE_TONES.flatMap((tone, i) => {
+    const palette = getCardPalette(tone, locale);
+    return palette
+      ? [
+          {
+            tone,
+            palette,
+            toneKey: `sample${i + 2}Tone`,
+            lineKey: `sample${i + 2}Line`,
+            rotation: SAMPLE_ROTATIONS[i],
+          },
+        ]
+      : [];
+  });
   // 12톤 스펙트럼 — 각 톤의 대표색(베스트 1번). 장식이 아니라 실제 판정 기준 팔레트
   const spectrum = SPECTRUM_TONES.flatMap((tone) => {
     const p = getCardPalette(tone, locale);
@@ -205,7 +218,7 @@ export function LandingContent(): React.JSX.Element {
                       worstPalette={heroPalette.avoid}
                       inviteText={t('sampleInvite')}
                       format="square"
-                      className="shadow-xl md:rotate-1"
+                      className="shadow-xl"
                     />
                   </PhotocardTilt>
                 </div>
@@ -253,33 +266,48 @@ export function LandingContent(): React.JSX.Element {
               {t('paletteTitle')}
             </h2>
             <p className={`mt-1.5 text-sm ${MUTED}`}>{t('paletteNote')}</p>
-            <div
-              className="mt-5 flex h-24 overflow-hidden rounded-2xl md:h-28"
+            {/* 시맨틱 리스트 — 12개 색은 장식이 아니라 목록이다(스크린리더는 aria-label로 색이름을 읽음).
+                sm 미만은 12등분 시 칸이 27px 슬라이버가 되므로 최소 52px로 분절 + 가로 스크롤 */}
+            <ul
+              className="scrollbar-hide mt-5 flex h-24 overflow-x-auto rounded-2xl sm:overflow-hidden md:h-28"
               data-testid="landing-spectrum"
             >
               {spectrum.map((s) => (
-                <div
+                <li
                   key={s.tone}
+                  aria-label={s.color.name}
                   title={s.color.name}
-                  className="group relative flex-1 transition-all duration-300 hover:flex-[2.2]"
+                  className="group relative min-w-[52px] flex-1 transition-all duration-300 hover:flex-[2.2] sm:min-w-0"
                   style={{ backgroundColor: s.color.hex }}
                 >
-                  {/* 호버 시 색이름 — CSS만으로 인터랙션(JS 0) */}
-                  <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2B2320]/70 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  {/* 색이름은 sm+에서 상시 노출(호버는 확대만) — 호버가 없는 터치 기기 배려 */}
+                  <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2B2320]/70 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100">
                     {s.color.name}
                   </span>
-                </div>
+                </li>
               ))}
-            </div>
-            <div className="mt-4 flex justify-center">
+            </ul>
+            {/* 같은 목적지(/analysis/integrated) 솔리드 버튼은 히어로·하단 둘뿐 —
+                중간 CTA는 텍스트 링크로 강등해 위계를 지킨다(문구는 3곳 통일) */}
+            <div className="mt-5 flex justify-center">
               <SignedOut>
                 <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
-                  <Button className={`h-10 px-6 text-sm ${CTA_SOLID}`}>{t('paletteCta')}</Button>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-sm font-medium text-[#C56A84] transition-colors hover:text-[#A85870]"
+                  >
+                    {t('paletteCta')}
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <Link href="/analysis/integrated">
-                  <Button className={`h-10 px-6 text-sm ${CTA_SOLID}`}>{t('paletteCta')}</Button>
+                <Link
+                  href="/analysis/integrated"
+                  className="flex items-center gap-1 text-sm font-medium text-[#C56A84] transition-colors hover:text-[#A85870]"
+                >
+                  {t('paletteCta')}
+                  <ChevronRight className="h-4 w-4" />
                 </Link>
               </SignedIn>
             </div>
@@ -287,7 +315,7 @@ export function LandingContent(): React.JSX.Element {
 
           {/* How it Works 3-Step */}
           <div ref={observe} className="landing-reveal pt-12">
-            <h2 className="pb-5 text-[22px] font-bold leading-tight tracking-[-0.015em]">
+            <h2 className="pb-5 font-serif text-2xl font-semibold tracking-tight md:text-3xl">
               {t('howItWorksTitle')}
             </h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -317,7 +345,7 @@ export function LandingContent(): React.JSX.Element {
           </div>
 
           {/* [4] 5축 프로파일 그리드 */}
-          <h2 className="pb-3 pt-12 text-[22px] font-bold leading-tight tracking-[-0.015em]">
+          <h2 className="pb-3 pt-12 font-serif text-2xl font-semibold tracking-tight md:text-3xl">
             {t('modulesTitle')}
           </h2>
           <div className="grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 md:grid-cols-5">
@@ -339,24 +367,31 @@ export function LandingContent(): React.JSX.Element {
           </div>
 
           {/* [5] 결과물 미리보기 — 실카드 부유 + 게이트 카피(미리보기→가입 보상 프레이밍) */}
-          <h2 className="pb-1 pt-12 text-[22px] font-bold leading-tight tracking-[-0.015em]">
+          <h2 className="pb-1 pt-12 font-serif text-2xl font-semibold tracking-tight md:text-3xl">
             {t('previewTitle')}
           </h2>
           <p className={`text-sm ${MUTED}`}>{t('previewRealNote')}</p>
-          <div ref={observe} className="landing-reveal mt-6 flex snap-x gap-8 overflow-x-auto pb-4">
-            {samplePalettes.map((palette, i) => (
-              <div key={SAMPLE_TONES[i]} className={`shrink-0 snap-center ${SAMPLE_ROTATIONS[i]}`}>
-                <PersonaShareCard
-                  oneLine={t(`sample${i + 2}Line`)}
-                  toneName={t(`sample${i + 2}Tone`)}
-                  badges={[]}
-                  palette={palette.best}
-                  worstPalette={palette.avoid}
-                  inviteText={t('sampleInvite')}
-                  format="square"
-                />
-              </div>
-            ))}
+          {/* 스크롤 컨테이너의 overflow-x-auto는 y축도 auto로 승격시켜 그림자·회전을 상하로 잘라낸다.
+              py-6 -my-6 = 여백은 벌되 바깥 간격은 그대로(잘림만 해소).
+              카드 캡처 규격 400px은 불변이므로, 360px 뷰포트에서는 scale로만 줄여 담는다 */}
+          <div ref={observe} className="landing-reveal mt-6">
+            <div className="-my-6 flex snap-x gap-8 overflow-x-auto py-6">
+              {sampleCards.map((card) => (
+                <div key={card.tone} className={`shrink-0 snap-center ${card.rotation}`}>
+                  <div className="w-[320px] origin-top-left scale-[0.8] sm:w-auto sm:scale-100">
+                    <PersonaShareCard
+                      oneLine={t(card.lineKey)}
+                      toneName={t(card.toneKey)}
+                      badges={[]}
+                      palette={card.palette.best}
+                      worstPalette={card.palette.avoid}
+                      inviteText={t('sampleInvite')}
+                      format="square"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <p className={`mt-2 text-center text-[13px] ${MUTED}`}>{t('gateNote')}</p>
 

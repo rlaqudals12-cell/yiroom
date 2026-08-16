@@ -12,6 +12,12 @@
 
 import { useRef, useState, useCallback } from 'react';
 
+/** 접근성: 모션 축소 선호 시 틸트를 아예 걸지 않는다(전정 자극 회피 — WCAG 2.3.3) */
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+}
+
 interface PhotocardTiltProps {
   children: React.ReactNode;
   /** 최대 기울기(도) — 기본 6 */
@@ -29,6 +35,7 @@ export function PhotocardTilt({
 
   const handleMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if (prefersReducedMotion()) return;
       const el = frameRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();

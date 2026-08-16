@@ -191,7 +191,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
           <h1 className="text-2xl font-bold text-foreground md:text-3xl">
             셀카 한 장으로
             <br />
-            색·피부·체형·헤어 한 번에
+            색·피부·헤어·메이크업 한 번에
           </h1>
           <p className="text-sm text-muted-foreground">
             약 2분이면 완료돼요. 자연광에서 찍은 정면 사진이 가장 정확해요.

@@ -1,7 +1,7 @@
 {
-  "name": "이룸 - 셀카 한 장으로 색·피부·체형·헤어 분석",
+  "name": "이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 분석",
   "short_name": "이룸",
-  "description": "셀카 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업 5축을 AI가 분석하고, 오늘 입을 옷까지 추천해주는 뷰티 플랫폼",
+  "description": "셀카 한 장으로 퍼스널컬러·피부·헤어·메이크업을, 전신 사진을 더하면 체형까지 AI가 분석하고 오늘 입을 옷까지 추천해주는 뷰티 플랫폼",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -31,7 +31,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["health", "lifestyle", "beauty"],
+  "categories": [
+    "health",
+    "lifestyle",
+    "beauty"
+  ],
   "lang": "ko",
   "dir": "ltr"
 }

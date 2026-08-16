@@ -200,4 +200,46 @@ describe('i18n messages', () => {
       checkNonEmptyStrings(zhMessages);
     });
   });
+
+  // 2026-08 랜딩 리뷰 확정 수리 — 히어로 과약속 제거 + 같은 목적지 CTA 문구 통일
+  describe('랜딩 카피 계약', () => {
+    const locales = () =>
+      [
+        ['ko', koMessages],
+        ['en', enMessages],
+        ['ja', jaMessages],
+        ['zh', zhMessages],
+      ] as const;
+
+    /** 체형은 전신 사진이 필요하다(landing.step0Desc가 근거) — 셀카 한 장 약속에서 제외 */
+    const BODY_TERMS = ['체형', 'body', '体型', '体形'];
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 히어로 제목이 셀카 한 장으로 체형까지 약속하지 않는다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        const heroTitle = messages[locale].landing.heroTitle;
+        expect(heroTitle).toBeDefined();
+        BODY_TERMS.forEach((term) => {
+          expect(heroTitle.toLowerCase()).not.toContain(term.toLowerCase());
+        });
+      }
+    );
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 통합분석(/analysis/integrated)행 CTA 3곳 문구가 동일하다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        const { startFree, paletteCta, bottomCtaSignUp } = messages[locale].landing;
+        expect(paletteCta).toBe(startFree);
+        expect(bottomCtaSignUp).toBe(startFree);
+      }
+    );
+  });
 });
