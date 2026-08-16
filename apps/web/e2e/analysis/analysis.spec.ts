@@ -451,7 +451,10 @@ test.describe('분석 결과 - 탭 UI (S-1+, PC-1+)', () => {
 
     if (!page.url().includes('sign-in')) {
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-      const isVisible = await drapingTab.isVisible().catch(() => false);
+      // 분석 사진이 없는 결과는 드레이핑 탭이 비활성(진입 차단) — 클릭 대상이 아니다
+      const isVisible =
+        (await drapingTab.isVisible().catch(() => false)) &&
+        (await drapingTab.isEnabled().catch(() => false));
 
       if (isVisible) {
         await drapingTab.click();

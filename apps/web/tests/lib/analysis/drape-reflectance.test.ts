@@ -126,34 +126,40 @@ describe('lib/analysis/drape-reflectance', () => {
       return { ctx: ctx as unknown as CanvasRenderingContext2D, read };
     }
 
-    it('드레이프 시작선(72%)보다 위 픽셀은 원본 유지된다 (기존 65%에서 하향)', () => {
-      const W = 10;
-      const H = 100;
+    // 정본 호출 경로(DrapingSection)는 항상 zero-mask를 넘긴다 — 얼굴 보존은 마스크가 아니라
+    // "드레이프가 하단 밴드를 벗어나지 않는다"는 기하 계약이 담당한다. 따라서 회귀 가드도
+    // 실제 입력(zero-mask)으로 밴드 경계를 검증한다.
+    const W = 10;
+    const H = 100; // 1픽셀 = 프레임 1%
+
+    it('zero-mask에서도 드레이프는 하단 13% 밴드(87%~)를 벗어나지 않는다', () => {
       const { ctx, read } = makeFakeCtx(W, H);
       const faceMask = new Uint8Array(W * H).fill(0);
 
       applyDrapeColor(ctx, '#FF0000', faceMask, H);
 
-      // y=10: 확실히 위 → 흰색 유지
-      expect(read(5, 10)).toEqual([255, 255, 255, 255]);
-      // y=68: 옛 시작선(65%)에선 물들었지만 새 시작선(72%) 아래가 아니므로 원본 유지
-      expect(read(5, 68)).toEqual([255, 255, 255, 255]);
+      // 시작선 바로 위(86%)까지는 원본 그대로 — 턱끝(≈88%)이 물들지 않는다
+      expect(read(5, 86)).toEqual([255, 255, 255, 255]);
+      // 시작선(87%)부터는 드레이프가 칠해진다 → 빨강 > 파랑
+      const bandTop = read(5, 87);
+      expect(bandTop[0]).toBeGreaterThan(bandTop[2]);
+      // 밴드 하단(99%)도 칠해진다
+      const bandBottom = read(5, 99);
+      expect(bandBottom[0]).toBeGreaterThan(bandBottom[2]);
     });
 
-    it('얼굴 마스크 픽셀은 하단이어도 원본 유지되고, 비마스크는 물든다', () => {
-      const W = 10;
-      const H = 100;
+    it('상단 72% 이하 구간은 전 픽셀 원본 무변조다 (구 시작선 72% 회귀 가드)', () => {
       const { ctx, read } = makeFakeCtx(W, H);
       const faceMask = new Uint8Array(W * H).fill(0);
-      faceMask[90 * W + 5] = 1; // 하단 한 픽셀을 얼굴로 마스킹
 
       applyDrapeColor(ctx, '#FF0000', faceMask, H);
 
-      // 마스크된 픽셀은 흰색 유지 (얼굴 변조 금지)
-      expect(read(5, 90)).toEqual([255, 255, 255, 255]);
-      // 인접 비마스크 픽셀은 드레이프 색(빨강)으로 변함 → 빨강 > 파랑
-      const draped = read(4, 90);
-      expect(draped[0]).toBeGreaterThan(draped[2]);
+      // 구 시작선(72%)·그 위 얼굴 영역이 모두 흰색이어야 한다 (드레이프 상향 이동 방지)
+      for (let y = 0; y <= 72; y++) {
+        for (let x = 0; x < W; x++) {
+          expect(read(x, y)).toEqual([255, 255, 255, 255]);
+        }
+      }
     });
   });
 });

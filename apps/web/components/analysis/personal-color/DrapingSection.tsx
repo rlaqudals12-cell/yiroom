@@ -8,10 +8,11 @@
  * 재현)이라 원가 0이고, 얼굴을 변형하지 않는다.
  *
  * 기술: applyDrapeColor는 faceMask=0인 픽셀에만 드레이프를 칠하므로 zero-mask
- * (전부 0)를 넘기면 MediaPipe/얼굴 검출 없이 하단(72%~)에 천이 그려진다 —
+ * (전부 0)를 넘기면 MediaPipe/얼굴 검출 없이 하단(87%~, 턱끝 아래)에 천이 그려진다 —
  * 구 DrapingSimulationTab(MediaPipe 의존)은 CSP가 CDN을 막아 항상 Mock 마스크로
  * 폴백해 "유령 가면"을 그렸기에 삭제됐고(2026-07), 이 zero-mask 방식이 정본이다.
- * 이미지 처리는 전부 이 기기(브라우저)에서만 일어나고 서버로 전송되지 않는다.
+ * 합성은 전부 이 기기(브라우저)에서 일어나고 결과물은 어디에도 저장되지 않는다. 단, 원본 사진은
+ * 이미 서버의 분석 기록에 보관돼 있으므로 고지 문구를 "사진이 서버에 안 간다"로 쓰면 안 된다.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -19,6 +20,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
 import { applyDrapeColor } from '@/lib/analysis/drape-reflectance';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 import type { PaletteColor } from '@/components/share/PersonaShareCard';
 
 export interface DrapingSectionProps {
@@ -28,6 +30,12 @@ export interface DrapingSectionProps {
   bestColors: PaletteColor[];
   /** 피해야 할 색 */
   worstColors: PaletteColor[];
+  /**
+   * 재시도 시 부모가 분석을 재조회해 **새 서명 URL**을 발급하도록 하는 훅.
+   * 로드 실패의 주원인이 서명 URL 1h 만료라, 같은 URL로 다시 시도하면 반드시 또 실패한다.
+   * 미제공 시에는 기존 동작(로컬 재로드)만 수행한다.
+   */
+  onRetry?: () => void;
 }
 
 // 캔버스 최대 변 — 결과 페이지 2열 병치 기준 충분한 해상도(레티나 감안)
@@ -75,8 +83,10 @@ function DrapeFigure({
 
   return (
     <figure className="min-w-0 flex-1 space-y-2">
+      {/* 캔버스는 기본 role이 없어 보조기술에 '빈 요소'로 읽힌다 → 합성 결과 이미지임을 명시 */}
       <canvas
         ref={canvasRef}
+        role="img"
         className="w-full rounded-xl border"
         data-testid={`draping-canvas-${tone}`}
         aria-label={captionText}
@@ -86,7 +96,8 @@ function DrapeFigure({
           {captionText}
         </span>
       </figcaption>
-      {/* 색 스와치 — 탭해서 다른 진단 색으로 드레이프 교체 */}
+      {/* 색 스와치 — 탭해서 다른 진단 색으로 드레이프 교체.
+          색만 칠한 버튼은 접근 가능한 이름이 없다 → 진단 색명(없으면 hex 기반 색명)으로 라벨링 */}
       <div className="flex flex-wrap gap-1.5" role="group" aria-label={label}>
         {colors.map((c, i) => (
           <button
@@ -94,7 +105,8 @@ function DrapeFigure({
             type="button"
             onClick={() => onSelect(i)}
             aria-pressed={selected === i}
-            title={c.name}
+            aria-label={c.name ?? getKoreanColorName(c.hex)}
+            title={c.name ?? getKoreanColorName(c.hex)}
             className={cn(
               'h-6 w-6 rounded-full border transition-transform',
               selected === i ? 'ring-2 ring-primary ring-offset-1 scale-110' : 'hover:scale-105'
@@ -112,6 +124,7 @@ export function DrapingSection({
   imageUrl,
   bestColors,
   worstColors,
+  onRetry,
 }: DrapingSectionProps): React.JSX.Element | null {
   const t = useTranslations('analysis.integratedResult');
   const [img, setImg] = useState<HTMLImageElement | null>(null);
@@ -133,20 +146,32 @@ export function DrapingSection({
     load();
   }, [load]);
 
+  // 재시도 = 부모 재조회(새 서명 URL) + 로컬 재로드. URL이 그대로 돌아와도 한 번 더 시도한다.
+  const handleRetry = useCallback(() => {
+    onRetry?.();
+    load();
+  }, [onRetry, load]);
+
   if (bestColors.length === 0) return null;
   const best = bestColors[Math.min(bestIdx, bestColors.length - 1)];
   const worst = worstColors[Math.min(worstIdx, Math.max(0, worstColors.length - 1))];
 
   return (
+    // 인쇄물에는 얼굴 사진을 넣지 않는다 — PDF는 파일로 남아 손을 떠난다(진단지 인쇄 계약)
     <section
       className="rounded-2xl border bg-card p-5 md:p-6"
       data-testid="draping-section"
       aria-label={t('draping.heading')}
+      data-print-hide
     >
       <div className="space-y-1">
         <p className="font-serif text-[13px] italic text-primary">Draping</p>
         <h2 className="text-sm font-semibold text-foreground">{t('draping.heading')}</h2>
         <p className="text-xs text-muted-foreground">{t('draping.subtitle')}</p>
+        {/* 무엇을 볼지 알려주지 않으면 "그림 두 장"으로 끝난다 — 판정이 아닌 관찰 지시 */}
+        <p className="text-xs text-muted-foreground" data-testid="draping-observe-hint">
+          {t('draping.observeHint')}
+        </p>
       </div>
 
       {/* 실패 → 정직한 실패 문구(조용한 숨김 금지) / 로딩 → 스켈레톤 / 성공 → 병치 비교 */}
@@ -157,7 +182,7 @@ export function DrapingSection({
           </p>
           <button
             type="button"
-            onClick={load}
+            onClick={handleRetry}
             className="rounded-full border px-3 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             {t('draping.retry')}
@@ -168,7 +193,8 @@ export function DrapingSection({
         <div className="mt-4 h-48 animate-pulse rounded-xl bg-secondary" aria-hidden="true" />
       )}
       {!failed && img && (
-        <div className="mt-4 flex gap-3">
+        // 360px 폭에서 2열은 각 ~150px로 압착돼 비교가 불가능하다 → 좁은 화면은 세로 스택
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <DrapeFigure
             img={img}
             color={best}
@@ -192,7 +218,8 @@ export function DrapingSection({
         </div>
       )}
 
-      {/* 정직 표기 — 생성이 아닌 합성임을 명시 + 기기 내 처리(법④ 인라인 고지의 절반) */}
+      {/* 정직 표기 — 생성이 아닌 합성임을 명시 + "기기 내 처리"의 범위를 합성물로 한정한다.
+          (원본 사진은 분석 기록으로 서버에 보관 중이므로 "서버로 안 보낸다"는 표현은 오독을 낳는다) */}
       <p className="mt-3 text-[11px] text-muted-foreground">{t('draping.honestNote')}</p>
     </section>
   );

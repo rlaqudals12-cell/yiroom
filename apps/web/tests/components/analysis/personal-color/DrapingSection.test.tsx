@@ -54,6 +54,48 @@ describe('DrapingSection — 드레이핑 비교(기기 내 캔버스 합성)', 
     expect(screen.getByText('draping.honestNote')).toBeInTheDocument();
   });
 
+  it('무엇을 볼지 알려주는 관찰 지시를 노출한다 (판정이 아닌 체험)', () => {
+    render(<DrapingSection imageUrl="https://x/sig.jpg" bestColors={BEST} worstColors={WORST} />);
+    expect(screen.getByTestId('draping-observe-hint')).toHaveTextContent('draping.observeHint');
+  });
+
+  it('인쇄물에서 제외된다 (얼굴 사진 0장 계약)', () => {
+    render(<DrapingSection imageUrl="https://x/sig.jpg" bestColors={BEST} worstColors={WORST} />);
+    expect(screen.getByTestId('draping-section')).toHaveAttribute('data-print-hide');
+  });
+
+  it('캔버스는 role="img"이고, 스와치는 색명으로 라벨링된다 (name 없으면 hex 기반 색명)', async () => {
+    render(<DrapingSection imageUrl="https://x/sig.jpg" bestColors={BEST} worstColors={WORST} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('draping-canvas-best')).toHaveAttribute('role', 'img');
+    });
+    // 진단 색명이 있으면 그대로
+    expect(screen.getByTestId('draping-swatch-best-0')).toHaveAttribute(
+      'aria-label',
+      '더스티 로즈'
+    );
+    // 색명이 없으면 hex → 한국어 색명 (#FF5A4E = 레드 계열)
+    expect(screen.getByTestId('draping-swatch-worst-0')).toHaveAttribute('aria-label', '레드');
+  });
+
+  it('재시도는 부모 재조회(onRetry)를 호출한다 — 만료된 서명 URL은 새로 발급받아야 산다', async () => {
+    imageShouldFail = true;
+    const onRetry = vi.fn();
+    render(
+      <DrapingSection
+        imageUrl="https://x/expired.jpg"
+        bestColors={BEST}
+        worstColors={WORST}
+        onRetry={onRetry}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('draping-load-error')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('draping.retry'));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
   it('사진 로드 실패 시 정직한 실패 문구 + 재시도를 보여준다 (조용한 숨김 금지)', async () => {
     imageShouldFail = true;
     render(

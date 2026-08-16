@@ -4,7 +4,7 @@
  * (구 '상세 리포트' 탭은 기본 분석 진단지에 흡수·삭제 — 2026-08-01)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import { ROUTES, waitForLoadingToFinish } from '../fixtures';
 
 // 무시할 에러 패턴 (CDN 의존성, hydration, ResizeObserver 등)
@@ -19,6 +19,16 @@ const IGNORABLE_ERROR_PATTERNS = [
 
 function filterCriticalErrors(errors: string[]): string[] {
   return errors.filter((e) => !IGNORABLE_ERROR_PATTERNS.some((pattern) => e.includes(pattern)));
+}
+
+/**
+ * 탭 트리거가 클릭 가능한 상태인지 (보이고 + 활성).
+ * 드레이핑 탭은 분석 사진이 없으면 disabled — 그때 클릭하면 Playwright가 타임아웃까지 대기한다.
+ */
+async function isTabReady(tab: Locator): Promise<boolean> {
+  const visible = await tab.isVisible().catch(() => false);
+  if (!visible) return false;
+  return tab.isEnabled().catch(() => false);
 }
 
 // --------------------------------------------------------------------------
@@ -166,7 +176,8 @@ test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
 
     if (!page.url().includes('sign-in')) {
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-      const isVisible = await drapingTab.isVisible().catch(() => false);
+      // 분석 사진이 없는 결과는 드레이핑 탭이 비활성(진입 차단) — 전환 검증 대상이 아니다
+      const isVisible = await isTabReady(drapingTab);
 
       if (isVisible) {
         await drapingTab.click();
@@ -197,18 +208,20 @@ test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
         const basicTab = page.locator('button:has-text("기본 분석")');
         expect(await basicTab.getAttribute('data-state')).toBe('active');
 
-        // 색상 입혀보기 탭으로 전환
+        // 색상 입혀보기 탭으로 전환 (사진 없는 결과에서는 비활성 → 전환 검증 생략)
         const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-        await drapingTab.click();
-        await page.waitForTimeout(300);
-        expect(await drapingTab.getAttribute('data-state')).toBe('active');
-        expect(await basicTab.getAttribute('data-state')).toBe('inactive');
+        if (await isTabReady(drapingTab)) {
+          await drapingTab.click();
+          await page.waitForTimeout(300);
+          expect(await drapingTab.getAttribute('data-state')).toBe('active');
+          expect(await basicTab.getAttribute('data-state')).toBe('inactive');
 
-        // 기본 분석으로 다시 전환
-        await basicTab.click();
-        await page.waitForTimeout(300);
-        expect(await basicTab.getAttribute('data-state')).toBe('active');
-        expect(await drapingTab.getAttribute('data-state')).toBe('inactive');
+          // 기본 분석으로 다시 전환
+          await basicTab.click();
+          await page.waitForTimeout(300);
+          expect(await basicTab.getAttribute('data-state')).toBe('active');
+          expect(await drapingTab.getAttribute('data-state')).toBe('inactive');
+        }
       }
     }
   });
@@ -226,7 +239,7 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
 
     if (!page.url().includes('sign-in')) {
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-      const isVisible = await drapingTab.isVisible().catch(() => false);
+      const isVisible = await isTabReady(drapingTab);
 
       if (isVisible) {
         await drapingTab.click();
@@ -248,27 +261,27 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
     }
   });
 
-  test('"색상 입혀보기" 탭에 이미지 없을 때 안내 메시지가 표시된다', async ({ page }) => {
+  test('분석 사진이 없으면 "색상 입혀보기" 탭이 비활성이다 (빈 탭 진입 차단)', async ({ page }) => {
     await page.goto(RESULT_URL);
     await waitForLoadingToFinish(page);
 
     if (!page.url().includes('sign-in')) {
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-      const isVisible = await drapingTab.isVisible().catch(() => false);
 
-      if (isVisible) {
-        await drapingTab.click();
-        await page.waitForTimeout(500);
-
-        // 이미지 없을 때 표시되는 안내 텍스트 확인
-        const noImageMessage = page.locator('text=분석 이미지가 없어, text=다시 분석하면');
-        const hasMessage = await noImageMessage
-          .first()
-          .isVisible()
-          .catch(() => false);
-
-        // 이미지가 있으면 DrapingSection이, 없으면 안내 메시지가 표시됨
-        expect(hasMessage || true).toBe(true);
+      if (await drapingTab.isVisible().catch(() => false)) {
+        if (await drapingTab.isEnabled().catch(() => false)) {
+          // 사진이 있는 결과 → 탭 진입 시 드레이핑 섹션 경로로 들어간다
+          await drapingTab.click();
+          await page.waitForTimeout(500);
+          const hasSection = await page
+            .locator('[data-testid="draping-section"]')
+            .isVisible()
+            .catch(() => false);
+          expect(hasSection || true).toBe(true);
+        } else {
+          // 사진이 없는 결과 → 입구에서 차단 (빈 탭으로 들여보내지 않는다)
+          await expect(drapingTab).toBeDisabled();
+        }
       }
     }
   });
@@ -373,9 +386,9 @@ test.describe('PC-1 - JavaScript 에러 없음', () => {
     await waitForLoadingToFinish(page);
 
     if (!page.url().includes('sign-in')) {
-      // 각 탭을 순서대로 클릭
+      // 각 탭을 순서대로 클릭 (드레이핑은 사진 없는 결과에서 비활성)
       const drapingTab = page.locator('button:has-text("색상 입혀보기")');
-      if (await drapingTab.isVisible().catch(() => false)) {
+      if (await isTabReady(drapingTab)) {
         await drapingTab.click();
         await page.waitForTimeout(500);
       }

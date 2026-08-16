@@ -693,15 +693,21 @@ export default function PersonalColorResultPage() {
                 <Palette className="w-4 h-4" />
                 {t('basicAnalysis')}
               </TabsTrigger>
-              <TabsTrigger value="draping" className="gap-1">
+              {/* 사진이 없으면 드레이핑은 성립하지 않는다 — 빈 탭으로 들어가게 두지 않고 입구에서 차단
+                  (탭 안의 빈 상태 안내는 방어용으로 유지) */}
+              <TabsTrigger value="draping" className="gap-1" disabled={!imageUrl}>
                 <Shirt className="w-4 h-4" />
                 {t('colorDraping')}
               </TabsTrigger>
             </TabsList>
 
-            {/* 기본 분석 탭 */}
+            {/* 기본 분석 탭 — forceMount: 인쇄물은 탭 상태와 무관하게 '진단지'여야 한다.
+                Radix는 비활성 탭의 자식을 언마운트하므로, 강제 마운트해두지 않으면 드레이핑 탭에서
+                인쇄할 때 진단지가 통째로 빠진다(화면 숨김은 data-[state=inactive]:hidden이 담당,
+                인쇄 시 강제 노출은 globals.css @media print). */}
             <TabsContent
               value="basic"
+              forceMount
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="basic-tab"
             >
@@ -829,10 +835,12 @@ export default function PersonalColorResultPage() {
             </TabsContent>
 
             {/* 드레이핑 시뮬레이션 탭 - 조건부 렌더링으로 canvas 오버플로우 방지 */}
+            {/* 드레이핑 탭은 인쇄물에서 통째로 빠진다 — 인쇄 계약은 "진단지만, 얼굴 0장" */}
             <TabsContent
               value="draping"
               className="mt-0 data-[state=inactive]:hidden"
               data-testid="draping-tab"
+              data-print-hide
             >
               {/* 통합결과 정본과 동일한 zero-mask 캔버스 합성 — 구 MediaPipe 경로(CSP 차단→Mock 가면)는 삭제됨 */}
               {activeTab === 'draping' && imageUrl && (
@@ -840,6 +848,8 @@ export default function PersonalColorResultPage() {
                   imageUrl={imageUrl}
                   bestColors={result.bestColors}
                   worstColors={result.worstColors}
+                  // 서명 URL 1h 만료가 로드 실패의 주원인 — 재시도는 분석 재조회로 새 URL을 받아야 산다
+                  onRetry={handleRetry}
                 />
               )}
               {activeTab === 'draping' && !imageUrl && (
@@ -854,16 +864,20 @@ export default function PersonalColorResultPage() {
                   </Button>
                 </div>
               )}
-              {/* 가상 메이크업 진입 — 구 sticky 보조 버튼을 드레이핑 경유 텍스트 링크로 격하 (primary 1개 원칙) */}
-              <div className="mt-4 text-center">
-                <Link
-                  href={`/style/virtual-try-on?season=${result.seasonType}`}
-                  className="text-sm text-primary hover:underline underline-offset-2"
-                  data-testid="draping-to-makeup-link"
-                >
-                  메이크업으로도 입혀보기 →
-                </Link>
-              </div>
+              {/* 가상 메이크업 진입 — 구 sticky 보조 버튼을 드레이핑 경유 텍스트 링크로 격하 (primary 1개 원칙).
+                  "입혀보기"는 이 사진에 바로 발린다는 기대를 주지만 실제로는 사진을 다시 고르는 별도 화면이다 →
+                  기대를 문구에 맞췄고, 사진이 없으면(=드레이핑 불가) 링크도 감춘다 */}
+              {imageUrl && (
+                <div className="mt-4 text-center">
+                  <Link
+                    href={`/style/virtual-try-on?season=${result.seasonType}`}
+                    className="text-sm text-primary hover:underline underline-offset-2"
+                    data-testid="draping-to-makeup-link"
+                  >
+                    메이크업 가상 체험 (사진 다시 선택) →
+                  </Link>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         )}

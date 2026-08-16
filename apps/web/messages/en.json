@@ -587,9 +587,10 @@
       "draping": {
         "heading": "Draping comparison",
         "subtitle": "Hold your diagnosed colors up to your photo — see the difference between best and avoid",
+        "observeHint": "Notice how your complexion, under-eye shadows, and facial contours shift with each color.",
         "bestLabel": "Best",
         "worstLabel": "Avoid",
-        "honestNote": "This is a virtual drape composite, not real fabric. Your photo is processed on this device only and never sent to a server.",
+        "honestNote": "This is a virtual drape composite, not real fabric. The composite is created on this device only and is never saved — your original photo stays in your analysis records.",
         "loadError": "Couldn't load your photo. Please try again in a moment.",
         "retry": "Retry"
       },

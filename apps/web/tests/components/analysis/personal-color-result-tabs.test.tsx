@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
 
 // 페이지 소스에서 추출한 순수 함수 재구현 (export되지 않은 함수 테스트)
@@ -776,6 +776,89 @@ describe('PC-1 결과 페이지 렌더링', () => {
       // draping 탭 콘텐츠가 비활성 상태 (activeTab !== 'draping'이므로 내용이 null)
       const drapingContent = screen.getByTestId('draping-tab');
       expect(drapingContent).toHaveAttribute('data-state', 'inactive');
+    });
+
+    it('사진이 없으면 드레이핑 탭 트리거가 비활성화된다 (빈 탭 진입 차단)', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+
+      render(<PersonalColorResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('colorDraping')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('tab', { name: /colorDraping/ })).toBeDisabled();
+    });
+
+    it('사진이 있으면 드레이핑 탭 트리거가 활성화된다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch();
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+
+      render(<PersonalColorResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('colorDraping')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('tab', { name: /colorDraping/ })).toBeEnabled();
+    });
+  });
+
+  // ==========================================================================
+  // 인쇄 계약 — "인쇄물은 항상 진단지, 얼굴 0장"
+  // ==========================================================================
+
+  describe('인쇄 계약', () => {
+    it('드레이핑 탭으로 전환해도 기본 진단지는 DOM에 남는다 (forceMount — 인쇄 시 강제 노출 전제)', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch();
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+
+      render(<PersonalColorResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-analysis-result')).toBeInTheDocument();
+      });
+
+      // Radix 탭 트리거는 mousedown으로 활성화된다
+      fireEvent.mouseDown(screen.getByRole('tab', { name: /colorDraping/ }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('draping-tab')).toHaveAttribute('data-state', 'active');
+      });
+
+      // 비활성이 된 basic 탭 콘텐츠와 그 안의 진단지가 언마운트되지 않아야 인쇄에 실린다
+      expect(screen.getByTestId('basic-tab')).toHaveAttribute('data-state', 'inactive');
+      expect(screen.getByTestId('mock-analysis-result')).toBeInTheDocument();
+    });
+
+    it('드레이핑 탭 콘텐츠는 인쇄에서 제외된다 (data-print-hide)', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch();
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+
+      render(<PersonalColorResultPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('draping-tab')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('draping-tab')).toHaveAttribute('data-print-hide');
     });
   });
 });
