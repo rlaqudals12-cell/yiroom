@@ -23,6 +23,9 @@ export const hairEngine: CapsuleEngine<HairProduct> = {
 
   async curate(profile: BeautyProfile, options?: CurateOptions): Promise<HairProduct[]> {
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
+    // 헤어 진단이 없으면 'normal' placeholder로 큐레이션한다 — 이 경우 표시명이
+    // "두피 타입 맞춤"처럼 없는 진단을 내세우지 않도록 일반 명칭을 쓴다 (2026-08-17 정직화)
+    const hasHairDiagnosis = Boolean(profile.hair?.type);
     const hairType = profile.hair?.type ?? 'normal';
     const scalpType = profile.hair?.scalp ?? 'normal';
 
@@ -37,11 +40,11 @@ export const hairEngine: CapsuleEngine<HairProduct> = {
 
     // 카테고리별 헤어 케어명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
     const CATEGORY_NAMES: Record<HairProduct['category'], string> = {
-      shampoo: '두피 타입 맞춤 샴푸',
+      shampoo: hasHairDiagnosis ? '두피 타입 맞춤 샴푸' : '두피 세정 샴푸',
       conditioner: '모발 끝 컨디셔너 케어',
       treatment: '집중 트리트먼트',
       'scalp-care': '두피 스케일링 케어',
-      styling: '얼굴형 맞춤 스타일링',
+      styling: hasHairDiagnosis ? '얼굴형 맞춤 스타일링' : '오늘의 헤어 스타일링',
       'hair-oil': '헤어 오일로 마무리',
     };
 

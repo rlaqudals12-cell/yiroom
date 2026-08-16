@@ -243,6 +243,107 @@ describe('DailyCapsulePage — 지금 블록 / 완주 / 체크 저장', () => {
     releases[1]();
   });
 
+  // ── 제품 출처 표시 (ADR-117 수용기준, 2026-08-17 리뷰 #1) ──────────────────
+  describe('제품 칩 출처 분기', () => {
+    it('내 제품함(shelf) 제품은 링크 없는 "내 ○○" 배지로 노출한다 (죽은 링크 방지)', async () => {
+      stubFetch(
+        makeCapsule([
+          makeItem('m1', {
+            solutionProduct: {
+              id: 'shelf-uuid-1',
+              name: '수분 토너',
+              brand: '마이브랜드',
+              source: 'shelf',
+              shelfItemId: 'shelf-uuid-1',
+            },
+          }),
+        ])
+      );
+      render(<DailyCapsulePage />);
+
+      const chip = await screen.findByTestId('daily-owned-chip-m1');
+      expect(chip).toHaveTextContent('내 수분 토너');
+      // shelf id는 user_product_shelf UUID — /beauty/{id}로 링크되면 안 된다
+      expect(chip.closest('a')).toBeNull();
+      expect(document.querySelector('a[href="/beauty/shelf-uuid-1"]')).toBeNull();
+    });
+
+    it('카탈로그(catalog) 제품만 화장품 상세로 연결한다', async () => {
+      stubFetch(
+        makeCapsule([
+          makeItem('m1', {
+            solutionProduct: {
+              id: 'cosmetic-1',
+              name: '수분 토너',
+              brand: '브랜드A',
+              priceKrw: 15000,
+              source: 'catalog',
+            },
+          }),
+        ])
+      );
+      render(<DailyCapsulePage />);
+
+      const chip = await screen.findByTestId('daily-catalog-chip-m1');
+      expect(chip).toHaveAttribute('href', '/beauty/cosmetic-1');
+      expect(chip).toHaveTextContent('브랜드A');
+      expect(chip).toHaveTextContent('₩15,000');
+    });
+
+    it('매칭 제품이 없는 제품 축(S/M/H) 스텝엔 탐색 폴백을 보여준다', async () => {
+      stubFetch(makeCapsule([makeItem('m1'), makeItem('pc1', { moduleCode: 'PC' })]));
+      render(<DailyCapsulePage />);
+
+      const fallback = await screen.findByTestId('daily-product-fallback-m1');
+      expect(fallback).toHaveAttribute('href', '/beauty');
+      // 제품 카탈로그가 없는 축(퍼스널컬러)엔 폴백을 달지 않는다
+      expect(screen.queryByTestId('daily-product-fallback-pc1')).not.toBeInTheDocument();
+    });
+
+    it('출처가 없는 구 캐시 제품은 표시하지 않는다 (링크 안전)', async () => {
+      stubFetch(
+        makeCapsule([
+          makeItem('m1', {
+            solutionProduct: { id: 'unknown-1', name: '토너', brand: '브랜드A' },
+          }),
+        ])
+      );
+      render(<DailyCapsulePage />);
+
+      await screen.findByTestId('daily-now-block');
+      expect(screen.queryByTestId('daily-catalog-chip-m1')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('daily-owned-chip-m1')).not.toBeInTheDocument();
+      expect(document.querySelector('a[href="/beauty/unknown-1"]')).toBeNull();
+    });
+  });
+
+  // ── 빈 캡슐 백지 방지 (2026-08-17 리뷰 #3) ────────────────────────────────
+  it('아이템이 0개인 캡슐도 빈 상태 안내를 보여준다 (헤더만 남는 백지 방지)', async () => {
+    stubFetch(makeCapsule([]));
+    render(<DailyCapsulePage />);
+
+    const empty = await screen.findByTestId('daily-empty');
+    expect(empty).toHaveTextContent('아직 오늘의 루틴이 없어요');
+    // 같은 빈 캡슐이 다시 나올 '만들기'가 아니라 분석으로 안내
+    expect(empty.querySelector('a')).toHaveAttribute('href', '/analysis/integrated');
+    expect(screen.queryByTestId('daily-now-block')).not.toBeInTheDocument();
+  });
+
+  // ── 체크 접근성 (2026-08-17 리뷰 #7) ──────────────────────────────────────
+  it('체크 버튼이 aria-pressed로 상태를 알린다', async () => {
+    stubFetch(makeCapsule([makeItem('m1'), makeItem('m2', { isChecked: true })]));
+    render(<DailyCapsulePage />);
+
+    await screen.findByTestId('daily-now-block');
+    expect(screen.getByTestId('daily-check-m1')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('daily-check-m2')).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByTestId('daily-check-m1'));
+    await waitFor(() => {
+      expect(screen.getByTestId('daily-check-m1')).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
+
   it("'모두 완료' 저장 실패 시 일괄 체크를 롤백하고 안내한다", async () => {
     stubFetch(makeCapsule([makeItem('m1'), makeItem('m2'), makeItem('m3')]), false);
     render(<DailyCapsulePage />);

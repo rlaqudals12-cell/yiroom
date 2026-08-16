@@ -6,6 +6,7 @@
  */
 
 import type {
+  BeautyProfile,
   DailyCapsule,
   DailyCapsuleStatus,
   DailyItem,
@@ -176,24 +177,8 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
     // 미니멀리즘 적용
     const minimized = engine.minimize(personalized);
 
-    const moduleCode = DOMAIN_TO_MODULE[engine.domainId] ?? 'S';
-
     // DailyItem으로 변환
-    for (const item of minimized) {
-      const typedItem = item as { id?: string; name?: string; category?: string };
-      const solution = buildItemSolution(engine.domainId, typedItem.category, profile);
-      dailyItems.push({
-        id: typedItem.id ?? `daily-${engine.domainId}-${dailyItems.length}`,
-        moduleCode,
-        name: typedItem.name ?? `${engine.domainName} 아이템`,
-        reason: generateReason(engine.domainId, context, typedItem.category),
-        compatibilityScore: 0, // Step 4에서 업데이트
-        isChecked: false,
-        timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
-        ...(typedItem.category ? { category: typedItem.category } : {}),
-        ...(solution ? { solution } : {}),
-      });
-    }
+    dailyItems.push(...buildDomainItems(engine, minimized, profile, context, dailyItems.length));
 
     // CCS 계산용 그룹
     domainGroups.push({
@@ -260,6 +245,43 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
   daily.skinEveningChange = eveningChange?.message;
 
   return daily;
+}
+
+/**
+ * 도메인 큐레이션 결과 → DailyItem 목록 (근거·솔루션·시간대·유도 문구 조립).
+ *
+ * 진단이 없는 축은 근거에서 진단을 인용하지 않고(정직성) 그룹 첫 아이템에 분석 유도 1행을
+ * 단다. 판정은 이미 로드된 프로필로만 — 추가 쿼리 없음.
+ *
+ * @param startIndex 아이템 id 폴백용 시작 번호 (전체 목록에서의 위치)
+ */
+function buildDomainItems(
+  engine: { domainId: string; domainName: string },
+  curated: unknown[],
+  profile: BeautyProfile,
+  context: DailyContext,
+  startIndex: number
+): DailyItem[] {
+  const moduleCode = DOMAIN_TO_MODULE[engine.domainId] ?? 'S';
+  const hasDiagnosis = hasAxisDiagnosis(engine.domainId, profile);
+  const nudge = hasDiagnosis ? undefined : AXIS_NUDGE[engine.domainId];
+
+  return curated.map((item, index) => {
+    const typedItem = item as { id?: string; name?: string; category?: string };
+    const solution = buildItemSolution(engine.domainId, typedItem.category, profile);
+    return {
+      id: typedItem.id ?? `daily-${engine.domainId}-${startIndex + index}`,
+      moduleCode,
+      name: typedItem.name ?? `${engine.domainName} 아이템`,
+      reason: generateReason(engine.domainId, context, typedItem.category, hasDiagnosis),
+      compatibilityScore: 0, // Step 4에서 업데이트
+      isChecked: false,
+      timeOfDay: resolveTimeOfDay(engine.domainId, typedItem.category),
+      ...(typedItem.category ? { category: typedItem.category } : {}),
+      ...(solution ? { solution } : {}),
+      ...(index === 0 && nudge ? { groupNote: nudge } : {}),
+    };
+  });
 }
 
 /**
@@ -626,7 +648,9 @@ function buildSkinRoutineItems(
         moduleCode: 'S',
         // U2: 상태 기반 성분 스펙명이 있으면 우선("약산성 클렌저"), 없으면 일반 명칭
         name: step.specName ?? step.name,
-        reason: step.purpose,
+        // 스펙 근거("왜 세라마이드 크림인지")가 있으면 그것이 이 스텝의 이유다.
+        // 없을 때만 일반 목적(purpose)으로 폴백 — 이름은 스펙인데 이유는 일반론이던 어긋남 수리.
+        reason: step.specReason ?? step.purpose,
         compatibilityScore: 0,
         isChecked: false,
         timeOfDay,
@@ -812,19 +836,81 @@ function resolveTimeOfDay(domainId: string, category?: string): DailyItem['timeO
 }
 
 /**
+ * 축(도메인)별 진단 존재 여부 — 큐레이션이 placeholder로 돌아가는 축을 식별한다.
+ *
+ * 미진단 축은 엔진이 기본값(hair 'normal'·body 'standard'·팔레트 #808080)으로 큐레이션하는데,
+ * 근거 문구가 "퍼스널컬러에 어울리는 톤이에요"처럼 없는 진단을 인용하면 거짓말이 된다.
+ * 루틴 자체는 유지(신규 사용자의 빈 루틴 방지)하되 문구만 정직하게 바꾼다.
+ */
+function hasAxisDiagnosis(domainId: string, profile: BeautyProfile): boolean {
+  switch (domainId) {
+    case 'makeup':
+      // 메이크업 큐레이션의 개인화 입력 = 퍼스널컬러 시즌
+      return Boolean(profile.personalColor?.season);
+    case 'fashion':
+      // 코디 = 팔레트(퍼스널컬러) 또는 체형 중 하나라도 있으면 개인화됨
+      return Boolean(profile.personalColor?.palette?.length) || Boolean(profile.body?.shape);
+    case 'hair':
+      return Boolean(profile.hair?.type);
+    case 'body':
+      return Boolean(profile.body?.shape);
+    default:
+      return true;
+  }
+}
+
+/** 미진단 축 유도 1행 — 그룹 첫 아이템의 groupNote로 노출 */
+const AXIS_NUDGE: Record<string, string> = {
+  makeup: '퍼스널 컬러를 분석하면 내 톤에 맞는 컬러로 바뀌어요',
+  fashion: '퍼스널 컬러·체형을 분석하면 내게 맞는 코디로 바뀌어요',
+  hair: '헤어를 분석하면 내 모발·두피에 맞게 바뀌어요',
+  body: '체형을 분석하면 내 체형에 맞는 스타일링으로 바뀌어요',
+};
+
+/** 미진단 축의 일반 근거 — 없는 진단을 언급하지 않는다 */
+const GENERIC_AXIS_REASONS: Record<string, string> = {
+  makeup: '기본 메이크업 순서예요',
+  hair: '기본 두피·모발 케어 기준이에요',
+  body: '옷 입기 전 거울로 점검하는 기본 습관이에요',
+  fashion: '오늘 코디를 정리하는 기본 기준이에요',
+};
+
+/**
+ * 카테고리 단위 이유. requiresDiagnosis가 붙은 문구는 해당 축 진단이 있을 때만 쓴다
+ * (없으면 "두피 타입에 맞춘"·"체형 분석 결과를"이 지어낸 근거가 된다).
+ */
+const CATEGORY_REASONS: Record<string, { text: string; requiresDiagnosis?: boolean }> = {
+  shampoo: { text: '두피 타입에 맞춘 세정이 모발 건강의 기본이에요', requiresDiagnosis: true },
+  conditioner: { text: '모발 끝 손상을 막아줘요' },
+  // body — ADR-098: 스타일링 행동 (자세교정/운동류 문구 금지)
+  'posture-correction': {
+    text: '체형 분석 결과를 오늘 옷차림에 적용하는 습관이에요',
+    requiresDiagnosis: true,
+  },
+  'stretching-routine': { text: '입은 모습을 객관적으로 보면 코디 감각이 늘어요' },
+};
+
+/**
  * 아이템별 추천 이유 생성 — 카테고리 이유 우선, 없으면 도메인 이유
  * (클렌징에 "자외선 차단이 중요한 계절이에요"가 붙던 어긋남 방지)
+ *
+ * @param hasDiagnosis 해당 축 진단 보유 여부 — false면 진단을 인용하는 문구를 쓰지 않는다
  */
-function generateReason(domainId: string, context: DailyContext, category?: string): string {
-  // skin 이유는 루틴 엔진 step.purpose가 담당 (buildSkinRoutineItems) — 여기선 나머지 도메인만
-  const categoryReasons: Record<string, string> = {
-    shampoo: '두피 타입에 맞춘 세정이 모발 건강의 기본이에요',
-    conditioner: '모발 끝 손상을 막아줘요',
-    // body — ADR-098: 스타일링 행동 (자세교정/운동류 문구 금지)
-    'posture-correction': '체형 분석 결과를 오늘 옷차림에 적용하는 습관이에요',
-    'stretching-routine': '입은 모습을 객관적으로 보면 코디 감각이 늘어요',
-  };
-  if (category && categoryReasons[category]) return categoryReasons[category];
+function generateReason(
+  domainId: string,
+  context: DailyContext,
+  category?: string,
+  hasDiagnosis = true
+): string {
+  // skin 이유는 루틴 엔진 step.specReason/purpose가 담당 (buildSkinRoutineItems) — 여기선 나머지 도메인만
+  const categoryReason = category ? CATEGORY_REASONS[category] : undefined;
+  if (categoryReason && (hasDiagnosis || !categoryReason.requiresDiagnosis)) {
+    return categoryReason.text;
+  }
+
+  if (!hasDiagnosis) {
+    return GENERIC_AXIS_REASONS[domainId] ?? '오늘의 루틴에 추천드려요';
+  }
 
   return generateDomainReason(domainId, context);
 }

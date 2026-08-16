@@ -35,10 +35,12 @@ export const makeupEngine: CapsuleEngine<MakeupProduct> = {
     ];
 
     // 카테고리별 메이크업 스텝명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
+    // 립은 퍼스널컬러 진단이 있을 때만 "시즌 컬러"를 내건다 — 미진단자에게 없는 진단을
+    // 내세우지 않기 위함(2026-08-17 정직화). 진단이 붙으면 자동으로 시즌 문구가 살아난다.
     const CATEGORY_NAMES: Record<MakeupProduct['category'], string> = {
       base: '톤 보정 베이스 메이크업',
       eye: '데일리 아이 메이크업',
-      lip: '시즌 컬러 립 포인트',
+      lip: season ? '시즌 컬러 립 포인트' : '데일리 립 포인트',
       cheek: '생기 블러셔 터치',
       brow: '자연스러운 눈썹 정리',
       setting: '픽서로 메이크업 고정',

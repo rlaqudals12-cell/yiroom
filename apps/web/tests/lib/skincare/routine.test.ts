@@ -518,7 +518,67 @@ describe('generateRoutine — specName 부착 (U2)', () => {
     const oilCleanser = routine.find((s) => s.name.includes('오일') && s.category === 'cleanser');
     const foamCleanser = routine.find((s) => s.name.includes('폼') && s.category === 'cleanser');
     expect(oilCleanser?.specName).toBeUndefined(); // 원 명칭 유지
-    expect(foamCleanser?.specName).toBe('약산성 젤 클렌저'); // 지성 = 젤 제형 안내
+    // 저녁 2차 세안은 시간대 정체성(2차 세안)을 앞세운다 — 아침 클렌저와 같은 이름이 되지 않도록
+    expect(foamCleanser?.specName).toBe('2차 세안 · 약산성 젤 클렌저'); // 지성 = 젤 제형 안내
+  });
+
+  // ── 아침/저녁 이름 중복 수리 (2026-08-17 리뷰 #4) ─────────────────────────
+  describe('시간대 정체성 보존 — 아침/저녁 스펙명이 겹치지 않는다', () => {
+    it('저녁 2차 세안·나이트 크림은 시간대 정체성을 앞세워 아침과 구분된다 (건성)', () => {
+      const morning = generateRoutine({ skinType: 'dry', concerns: [], timeOfDay: 'morning' });
+      const evening = generateRoutine({ skinType: 'dry', concerns: [], timeOfDay: 'evening' });
+
+      const displayName = (step: RoutineStep): string => step.specName ?? step.name;
+      const morningCleanser = morning.routine.find((s) => s.category === 'cleanser');
+      const morningCream = morning.routine.find((s) => s.category === 'cream');
+      const eveningCleanser = evening.routine.find(
+        (s) => s.category === 'cleanser' && !s.name.includes('오일')
+      );
+      const eveningCream = evening.routine.find((s) => s.category === 'cream');
+
+      // 아침은 스펙명 그대로
+      expect(displayName(morningCleanser!)).toBe('촉촉한 약산성 클렌저(크림·로션 제형)');
+      expect(displayName(morningCream!)).toBe('세라마이드 크림');
+      // 저녁은 정체성 라벨이 앞에 — 같은 이름이 두 번 뜨지 않는다
+      expect(displayName(eveningCleanser!)).toBe('2차 세안 · 촉촉한 약산성 클렌저(크림·로션 제형)');
+      expect(displayName(eveningCream!)).toBe('나이트 크림 · 세라마이드');
+      expect(displayName(eveningCleanser!)).not.toBe(displayName(morningCleanser!));
+      expect(displayName(eveningCream!)).not.toBe(displayName(morningCream!));
+    });
+
+    it('스펙이 없는 피부 타입(중성 크림)은 원 명칭이 유지되어 이미 구분된다', () => {
+      const morning = generateRoutine({ skinType: 'normal', concerns: [], timeOfDay: 'morning' });
+      const evening = generateRoutine({ skinType: 'normal', concerns: [], timeOfDay: 'evening' });
+
+      const morningCream = morning.routine.find((s) => s.category === 'cream');
+      const eveningCream = evening.routine.find((s) => s.category === 'cream');
+      expect(morningCream?.specName).toBeUndefined();
+      expect(eveningCream?.specName).toBeUndefined();
+      expect(morningCream?.name).toBe('크림');
+      expect(eveningCream?.name).toBe('나이트 크림');
+    });
+
+    it('원 명칭이 다른 스텝(클렌저·크림)은 스펙 부착 후에도 아침/저녁이 다르다 (전 피부타입)', () => {
+      // 토너는 템플릿 원 명칭부터 아침·저녁이 같아 대상이 아니다 — 여기선 원래 구분이
+      // 있었는데 스펙명이 덮어 사라졌던 두 스텝만 검증한다.
+      const skinTypes: SkinTypeId[] = ['dry', 'oily', 'combination', 'normal', 'sensitive'];
+      const displayName = (step: RoutineStep): string => step.specName ?? step.name;
+
+      for (const skinType of skinTypes) {
+        const morning = generateRoutine({ skinType, concerns: [], timeOfDay: 'morning' }).routine;
+        const evening = generateRoutine({ skinType, concerns: [], timeOfDay: 'evening' }).routine;
+
+        const morningCleanser = morning.find((s) => s.category === 'cleanser');
+        const eveningCleanser = evening.find(
+          (s) => s.category === 'cleanser' && !s.name.includes('오일')
+        );
+        const morningCream = morning.find((s) => s.category === 'cream');
+        const eveningCream = evening.find((s) => s.category === 'cream');
+
+        expect(displayName(eveningCleanser!)).not.toBe(displayName(morningCleanser!));
+        expect(displayName(eveningCream!)).not.toBe(displayName(morningCream!));
+      }
+    });
   });
 
   it('대응 없는 카테고리(에센스 등)엔 specName을 붙이지 않는다', () => {

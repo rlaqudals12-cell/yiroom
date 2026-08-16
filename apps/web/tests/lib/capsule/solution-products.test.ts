@@ -286,6 +286,66 @@ describe('attachSolutionProducts', () => {
     expect(items[0].solutionProduct?.source).toBe('catalog');
   });
 
+  // ── 헤어: conditioner 영구 무제품 수리 (2026-08-17 리뷰 #6) ─────────────────
+
+  it("컨디셔너 스텝은 실데이터가 없는 'conditioner' 대신 hair-treatment로 폴백한다", async () => {
+    // prod 실측(2026-08-17): cosmetic_products의 conditioner 카테고리 = 0건,
+    // hair-treatment = 15건. 폴백이 없으면 매일 뜨는 컨디셔너 스텝이 영구 무제품이었다.
+    mockRows.push(
+      makeRow({
+        id: 'p-treat',
+        category: 'hair-treatment',
+        subcategory: 'hair-treatment',
+        name: '데미지 리페어 트리트먼트',
+        hair_types: ['wavy'],
+      })
+    );
+    const items = [
+      makeItem({ moduleCode: 'H', category: 'conditioner', name: '모발 끝 컨디셔너 케어' }),
+    ];
+
+    await attachSolutionProducts(items, makeProfile());
+
+    expect(items[0].solutionProduct?.id).toBe('p-treat');
+    expect(items[0].solutionProduct?.source).toBe('catalog');
+  });
+
+  it('컨디셔너 스텝에 염색약·헹구지 않는 오일 계열은 붙지 않는다', async () => {
+    mockRows.push(
+      makeRow({
+        id: 'p-color',
+        category: 'hair-treatment',
+        subcategory: 'hair-color',
+        rating: 5.0,
+      }),
+      makeRow({ id: 'p-oil', category: 'hair-treatment', subcategory: 'hair-oil', rating: 4.9 }),
+      makeRow({ id: 'p-mask', category: 'hair-treatment', subcategory: 'hair-mask', rating: 4.0 })
+    );
+    const items = [makeItem({ moduleCode: 'H', category: 'conditioner' })];
+
+    await attachSolutionProducts(items, makeProfile());
+
+    // 평점이 더 높아도 염색약/오일은 제외 — 헹궈내는 케어 제품만 남는다
+    expect(items[0].solutionProduct?.id).toBe('p-mask');
+  });
+
+  it('트리트먼트 스텝에도 염색약은 붙지 않는다', async () => {
+    mockRows.push(
+      makeRow({
+        id: 'p-color',
+        category: 'hair-treatment',
+        subcategory: 'hair-color',
+        rating: 5.0,
+      }),
+      makeRow({ id: 'p-treat', category: 'hair-treatment', subcategory: 'hair-treatment' })
+    );
+    const items = [makeItem({ moduleCode: 'H', category: 'treatment' })];
+
+    await attachSolutionProducts(items, makeProfile());
+
+    expect(items[0].solutionProduct?.id).toBe('p-treat');
+  });
+
   it('감지 불가(unknown) 보유 제품은 shelf 배치하지 않고 카탈로그로 간다', async () => {
     mockShelfRows.push(
       makeShelfRow({ id: 'shelf-x', product_name: '정체불명 아이템', product_brand: '' })

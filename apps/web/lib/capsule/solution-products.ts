@@ -70,13 +70,22 @@ const MAKEUP_TO_SUB: Record<string, string[]> = {
   setting: ['setting-spray', 'powder'],
 };
 
-// 헤어 캡슐 카테고리 → DB 카테고리 (styling은 제품 아닌 행동이라 미연결)
-const HAIR_TO_DB: Record<string, string[]> = {
-  shampoo: ['shampoo'],
-  conditioner: ['conditioner'],
-  treatment: ['hair-treatment'],
-  'scalp-care': ['scalp-care'],
-  'hair-oil': ['hair-treatment'],
+// 헤어 캡슐 카테고리 → 검색 조건 (styling은 제품 아닌 행동이라 미연결)
+//
+// conditioner: cosmetic_products에 'conditioner' 카테고리 행이 0건이라(2026-08-17 prod 실측)
+//   매일 뜨는 컨디셔너 스텝이 영구 무제품이었다. 인접 카테고리 'hair-treatment'(15건)로 폴백하되,
+//   그 풀에 섞인 염색약(hair-color)과 씻어내지 않는 오일/세럼/미스트는 제외해
+//   "모발 끝에 바르고 헹구는" 스텝에 맞는 후보만 남긴다. 'conditioner' 행이 생기면 자동 우선.
+// treatment/hair-oil: 같은 풀을 쓰므로 염색약만 제외.
+const HAIR_SPECS: Record<string, ProductSpec> = {
+  shampoo: { categories: ['shampoo'] },
+  conditioner: {
+    categories: ['conditioner', 'hair-treatment'],
+    excludeSubcategories: ['hair-color', 'hair-oil', 'hair-serum', 'hair-mist'],
+  },
+  treatment: { categories: ['hair-treatment'], excludeSubcategories: ['hair-color'] },
+  'scalp-care': { categories: ['scalp-care'] },
+  'hair-oil': { categories: ['hair-treatment'], excludeSubcategories: ['hair-color'] },
 };
 
 /** (moduleCode, category) → 검색 조건. 대응 없으면 null (연결 안 함) */
@@ -116,10 +125,8 @@ function specForItem(item: DailyItem): ProductSpec | null {
           }
         : null;
     }
-    case 'H': {
-      const dbCats = HAIR_TO_DB[category];
-      return dbCats ? { categories: dbCats } : null;
-    }
+    case 'H':
+      return HAIR_SPECS[category] ?? null;
     // Fashion/C(체형)는 화장품 테이블에 대응 제품이 없음
     default:
       return null;
@@ -192,6 +199,44 @@ async function attachShelfProducts(items: DailyItem[], userId: string): Promise<
   }
 }
 
+/** 후보 조회 컬럼 — 선별에 필요한 최소 집합 */
+const CANDIDATE_COLUMNS =
+  'id, name, brand, category, subcategory, price_krw, image_url, rating, skin_types, personal_color_seasons, hair_types, scalp_types';
+
+/** 카테고리별 후보 상한 — makeup은 서브카테고리 분화가 커서 넉넉히, 나머지는 전량 커버 */
+const CANDIDATE_LIMIT_DEFAULT = 60;
+const CANDIDATE_LIMIT_BY_CATEGORY: Record<string, number> = { makeup: 300 };
+
+/**
+ * 카테고리별 후보 풀 조회 (병렬).
+ *
+ * 왜 카테고리마다 따로 조회하나: 예전엔 `.in('category', [...]).limit(300)` 한 방이었는데,
+ * makeup이 2,400건대라 평점 정렬 상위 300이 전부 makeup으로 채워졌다(2026-08-17 prod 실측).
+ * 그 결과 스킨케어·헤어 스텝은 조건에 맞는 행이 후보에 아예 없어 제품이 붙지 않았다.
+ * 카테고리별 상한을 두면 각 축이 자기 후보를 확보한다. 한 카테고리 실패는 나머지에 영향 없음.
+ */
+async function loadCandidates(categories: string[]): Promise<CandidateRow[]> {
+  const supabase = createServiceRoleClient();
+  const perCategory = await Promise.all(
+    categories.map(async (category) => {
+      const { data, error } = await supabase
+        .from('cosmetic_products')
+        .select(CANDIDATE_COLUMNS)
+        .eq('is_active', true)
+        .eq('category', category)
+        .order('rating', { ascending: false, nullsFirst: false })
+        .limit(CANDIDATE_LIMIT_BY_CATEGORY[category] ?? CANDIDATE_LIMIT_DEFAULT);
+
+      if (error) {
+        console.error(`[SolutionProducts] 후보 조회 실패 (${category}):`, error);
+        return [];
+      }
+      return (data ?? []) as CandidateRow[];
+    })
+  );
+  return perCategory.flat();
+}
+
 /**
  * 데일리 아이템들에 실제 제품 부착 (in-place)
  *
@@ -216,19 +261,8 @@ export async function attachSolutionProducts(
 
   const allCategories = [...new Set([...specs.values()].flatMap((s) => s.categories))];
 
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase
-    .from('cosmetic_products')
-    .select(
-      'id, name, brand, category, subcategory, price_krw, image_url, rating, skin_types, personal_color_seasons, hair_types, scalp_types'
-    )
-    .eq('is_active', true)
-    .in('category', allCategories)
-    .order('rating', { ascending: false, nullsFirst: false })
-    .limit(300);
-
-  if (error || !data?.length) return;
-  const candidates = data as CandidateRow[];
+  const candidates = await loadCandidates(allCategories);
+  if (candidates.length === 0) return;
 
   const skinType = profile.skin?.type;
   const season = toDbSeason(profile.personalColor?.season);

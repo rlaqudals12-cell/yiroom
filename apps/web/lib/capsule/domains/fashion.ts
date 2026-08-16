@@ -71,6 +71,9 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
 
   async curate(profile: BeautyProfile, options?: CurateOptions): Promise<FashionItem[]> {
     const maxItems = options?.maxItems ?? this.getOptimalN(profile);
+    // 퍼스널컬러 진단이 없으면 팔레트가 없어 회색(#808080) placeholder로 큐레이션한다 —
+    // 이때 표시명이 "팔레트 톤"처럼 없는 진단을 내세우지 않게 한다 (2026-08-17 정직화)
+    const hasPalette = Boolean(profile.personalColor?.palette?.length);
     const seasonHex = profile.personalColor?.palette?.[0] ?? '#808080';
 
     // 데일리 캡슐(1개 요청): 코디는 상의/하의를 따로 체크하는 게 아니라 원자적 행동 1개
@@ -78,7 +81,7 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
       return [
         {
           id: 'fashion-daily-outfit',
-          name: '팔레트 톤으로 오늘의 코디 완성',
+          name: hasPalette ? '팔레트 톤으로 오늘의 코디 완성' : '오늘의 코디 완성',
           category: 'top',
           color: { name: 'palette', hex: seasonHex },
           tags: [],
@@ -88,7 +91,7 @@ export const fashionEngine: CapsuleEngine<FashionItem> = {
 
     // 카테고리별 코디 액션명 — "오늘의 루틴" 위젯에 노출되므로 행동 단위 한국어로
     const CATEGORY_NAMES: Record<FashionItem['category'], string> = {
-      top: '퍼스널 톤 상의 매치',
+      top: hasPalette ? '퍼스널 톤 상의 매치' : '오늘의 상의 매치',
       bottom: '뉴트럴 하의로 밸런스',
       outer: '톤온톤 아우터 레이어링',
       dress: '원피스 하나로 톤 완성',

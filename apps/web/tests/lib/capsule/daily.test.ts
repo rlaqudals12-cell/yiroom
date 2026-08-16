@@ -386,6 +386,196 @@ describe('Daily Capsule', () => {
       }
     });
 
+    // ── 정직화: 미진단 축의 지어낸 근거 제거 (2026-08-17 리뷰 #2) ────────────
+    describe('미진단 축 근거 정직화', () => {
+      /** 실제 도메인 엔진으로 캡슐을 만들고 저장 payload의 items를 돌려준다 */
+      async function captureItems(profile: BeautyProfile): Promise<DailyItem[]> {
+        vi.mocked(getBeautyProfile).mockResolvedValue(profile);
+
+        const upsertSpy = vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: 'daily-honesty',
+                clerk_user_id: 'user_test',
+                date: '2026-08-17',
+                items: [],
+                total_ccs: 0,
+                estimated_minutes: 0,
+                status: 'pending',
+                completed_at: null,
+                created_at: new Date().toISOString(),
+              },
+              error: null,
+            }),
+          }),
+        });
+
+        mockSupabaseFrom.mockImplementation((table: string) => {
+          if (table === 'daily_capsules') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                  }),
+                }),
+              }),
+              upsert: upsertSpy,
+            };
+          }
+          if (table === 'cross_domain_rules') {
+            return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+          }
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+          };
+        });
+
+        await generateDailyCapsule('user_test');
+        return (upsertSpy.mock.calls[0][0] as { items: DailyItem[] }).items;
+      }
+
+      /** 피부 분석만 있는 사용자 — PC·헤어·체형 미진단 */
+      function skinOnlyProfile(): BeautyProfile {
+        return {
+          userId: 'user_test',
+          updatedAt: new Date().toISOString(),
+          completedModules: ['S'],
+          personalizationLevel: 1,
+          lastFullUpdate: new Date().toISOString(),
+          skin: { type: 'combination', concerns: [], scores: {} },
+        };
+      }
+
+      it('진단 없는 축의 근거가 없는 진단을 인용하지 않는다', async () => {
+        const items = await captureItems(skinOnlyProfile());
+        const nonSkin = items.filter((i) => i.moduleCode !== 'S');
+        expect(nonSkin.length).toBeGreaterThan(0);
+
+        for (const item of nonSkin) {
+          expect(item.reason).not.toMatch(/퍼스널컬러|퍼스널 컬러|두피 타입|체형 분석|얼굴형/);
+        }
+      });
+
+      it('진단 없는 축 아이템 이름도 없는 진단(시즌·두피 타입·팔레트)을 내걸지 않는다', async () => {
+        const items = await captureItems(skinOnlyProfile());
+        const nonSkin = items.filter((i) => i.moduleCode !== 'S');
+
+        for (const item of nonSkin) {
+          expect(item.name).not.toMatch(/시즌 컬러|두피 타입|얼굴형|팔레트/);
+        }
+      });
+
+      it('진단 없는 축 그룹 첫 아이템에 분석 유도 1행을 단다', async () => {
+        const items = await captureItems(skinOnlyProfile());
+
+        for (const moduleCode of ['M', 'H', 'C', 'Fashion'] as const) {
+          const group = items.filter((i) => i.moduleCode === moduleCode);
+          expect(group.length).toBeGreaterThan(0);
+          const notes = group.filter((i) => i.groupNote);
+          // 그룹당 정확히 1행 (첫 아이템에만)
+          expect(notes).toHaveLength(1);
+          expect(notes[0].groupNote).toMatch(/분석하면/);
+        }
+      });
+
+      it('진단이 있으면 기존 개인화 근거를 그대로 쓰고 유도 문구는 달지 않는다', async () => {
+        const items = await captureItems({
+          userId: 'user_test',
+          updatedAt: new Date().toISOString(),
+          completedModules: ['S', 'PC', 'C', 'H'],
+          personalizationLevel: 2,
+          lastFullUpdate: new Date().toISOString(),
+          personalColor: { season: 'summer', subType: 'light', palette: ['#AABBCC'] },
+          skin: { type: 'combination', concerns: [], scores: {} },
+          body: { shape: 'pear', measurements: {} },
+          hair: { type: 'wavy', scalp: 'oily', concerns: [] },
+        });
+
+        const shampoo = items.find((i) => i.category === 'shampoo');
+        expect(shampoo?.reason).toContain('두피 타입');
+        const makeup = items.find((i) => i.moduleCode === 'M');
+        expect(makeup?.reason).toContain('퍼스널컬러');
+        // 진단이 있으므로 유도 문구 없음 (스킨 그룹 노트는 별개 — 피부 개인화 노트)
+        const nudges = items.filter((i) => i.moduleCode !== 'S' && i.groupNote);
+        expect(nudges).toHaveLength(0);
+      });
+    });
+
+    // ── 스텝별 근거: specReason 우선 (2026-08-17 리뷰 #5) ────────────────────
+    it('스킨 스텝 이유는 스펙 근거(specReason)를 우선한다', async () => {
+      vi.mocked(getBeautyProfile).mockResolvedValue(createProfile());
+
+      const upsertSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'daily-specreason',
+              clerk_user_id: 'user_test',
+              date: '2026-08-17',
+              items: [],
+              total_ccs: 0,
+              estimated_minutes: 0,
+              status: 'pending',
+              completed_at: null,
+              created_at: new Date().toISOString(),
+            },
+            error: null,
+          }),
+        }),
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'daily_capsules') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+            upsert: upsertSpy,
+          };
+        }
+        if (table === 'cross_domain_rules') {
+          return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      await generateDailyCapsule('user_test');
+      const items = (upsertSpy.mock.calls[0][0] as { items: DailyItem[] }).items;
+
+      // 복합성 아침 클렌저 = "약산성 폼 클렌저" → 이유도 그 스펙의 근거여야 한다
+      const cleanser = items.find(
+        (i) => i.moduleCode === 'S' && i.timeOfDay === 'morning' && i.category === 'cleanser'
+      );
+      expect(cleanser?.name).toBe('약산성 폼 클렌저');
+      expect(cleanser?.reason).toContain('약산성');
+      // 일반 목적 문구(purpose)로 폴백하지 않았다
+      expect(cleanser?.reason).not.toBe('밤사이 분비된 피지와 노폐물 제거');
+
+      // 스펙이 없는 스텝은 기존대로 purpose 유지 (지어내지 않음)
+      const essenceOrSerum = items.find((i) => i.moduleCode === 'S' && i.category === 'serum');
+      expect(essenceOrSerum?.reason).toBe('피부 고민에 맞는 집중 케어');
+    });
+
     it('should return cached capsule if exists', async () => {
       const cachedData = {
         id: 'daily-cached',

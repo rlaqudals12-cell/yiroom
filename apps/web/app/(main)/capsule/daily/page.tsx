@@ -40,15 +40,25 @@ interface DailyItem {
   groupNote?: string;
   /** 실행 솔루션 한 줄 — 내 진단 데이터 기반 "무엇으로/어떤 색으로" */
   solution?: string;
-  /** 솔루션 대응 실제 제품 — 있으면 제품 링크 칩 노출 */
+  /** 솔루션 대응 실제 제품 — 있으면 제품 칩 노출 (출처에 따라 배지/링크 분기) */
   solutionProduct?: {
     id: string;
     name: string;
     brand: string;
     priceKrw?: number;
     imageUrl?: string;
+    /**
+     * 제품 출처 (ADR-117) — 'shelf'는 내 제품함 보유 제품(id가 user_product_shelf UUID),
+     * 'catalog'는 cosmetic_products 추천(id가 화장품 id). 없으면(구 캐시) 미표시.
+     */
+    source?: 'shelf' | 'catalog';
+    /** source가 'shelf'일 때 user_product_shelf 아이템 ID */
+    shelfItemId?: string;
   };
 }
+
+/** 제품 카탈로그가 존재하는 축 — 매칭이 없을 때 탐색 폴백을 붙인다 */
+const PRODUCT_MODULES: ReadonlySet<string> = new Set(['S', 'M', 'H']);
 
 /**
  * 체크 저장 PATCH 바디 — 단수(itemId)는 단건 토글, 복수(itemIds)는 "모두 완료" 배치.
@@ -119,6 +129,65 @@ function SolutionLine({
 }
 
 /**
+ * 아이템에 붙은 실제 제품 칩 — 출처에 따라 분기 (ADR-117 수용기준).
+ *
+ * 왜 분기가 필요한가: shelf 제품의 id는 user_product_shelf UUID라 /beauty/{id}로 보내면
+ * 존재하지 않는 화장품 상세로 가는 죽은 링크가 된다. 보유 제품은 링크 없는 "내 ○○" 배지로,
+ * 카탈로그 제품만 화장품 상세로 잇는다. 출처가 없는 구 캐시 데이터는 표시하지 않는다.
+ * 매칭이 없는 스텝은 칩 유무가 들쭉날쭉해 보이지 않도록 탐색 폴백 1줄을 둔다(홈 위젯과 동일).
+ */
+function SolutionProductChip({ item }: { item: DailyItem }): React.ReactElement | null {
+  const product = item.solutionProduct;
+
+  if (product?.source === 'shelf') {
+    return (
+      <span
+        className="mb-2 ml-11 mr-1 inline-flex max-w-[calc(100%-3rem)] items-center gap-1.5 truncate rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
+        data-testid={`daily-owned-chip-${item.id}`}
+        title={`내 ${product.name}`}
+      >
+        <Package className="h-3.5 w-3.5 shrink-0" />내 {product.name}
+      </span>
+    );
+  }
+
+  if (product?.source === 'catalog') {
+    return (
+      <Link
+        href={`/beauty/${product.id}`}
+        className="mb-2 ml-11 mr-1 flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 transition-colors hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800"
+        data-testid={`daily-catalog-chip-${item.id}`}
+      >
+        <ShoppingBag className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <span className="min-w-0 flex-1 truncate text-[11px] text-slate-600 dark:text-slate-300">
+          <span className="font-medium">{product.brand}</span> {product.name}
+        </span>
+        {product.priceKrw != null && (
+          <span className="shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            ₩{product.priceKrw.toLocaleString('ko-KR')}
+          </span>
+        )}
+        <ChevronRight className="h-3 w-3 shrink-0 text-slate-400" />
+      </Link>
+    );
+  }
+
+  if (!product && PRODUCT_MODULES.has(item.moduleCode)) {
+    return (
+      <Link
+        href="/beauty"
+        className="mb-2 ml-11 inline-block text-[11px] text-muted-foreground transition-colors hover:text-primary"
+        data-testid={`daily-product-fallback-${item.id}`}
+      >
+        이 단계에 맞는 제품 찾기 →
+      </Link>
+    );
+  }
+
+  return null;
+}
+
+/**
  * 아이템 행 — 기본형은 체크+번호+이름 1줄. reason/solution은 자동 펼침(지금 블록 아이템)
  * 또는 행 탭 시 전개. 체크 타깃과 행 탭(펼침) 영역을 분리해 오탭 방지, 둘 다 44px 보장.
  */
@@ -150,6 +219,8 @@ function RoutineItemRow({
           type="button"
           onClick={() => onToggleCheck(item.id)}
           aria-label={`${item.name} 완료 체크`}
+          // 체크 상태를 보조기술에 전달 — 시각적 체크 표시만으로는 상태를 알 수 없다
+          aria-pressed={isChecked}
           className="flex min-h-[44px] w-11 shrink-0 items-center justify-center"
           data-testid={`daily-check-${item.id}`}
         >
@@ -185,25 +256,8 @@ function RoutineItemRow({
           {item.solution && <SolutionLine item={item} className="text-[11px]" />}
         </div>
       )}
-      {/* 솔루션 대응 실제 제품 — 체크 토글(button)과 분리된 링크 */}
-      {item.solutionProduct && (
-        <Link
-          href={`/beauty/${item.solutionProduct.id}`}
-          className="flex items-center gap-2 mb-2 ml-11 mr-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <ShoppingBag className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <span className="flex-1 min-w-0 text-[11px] text-slate-600 dark:text-slate-300 truncate">
-            <span className="font-medium">{item.solutionProduct.brand}</span>{' '}
-            {item.solutionProduct.name}
-          </span>
-          {item.solutionProduct.priceKrw != null && (
-            <span className="shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              ₩{item.solutionProduct.priceKrw.toLocaleString('ko-KR')}
-            </span>
-          )}
-          <ChevronRight className="h-3 w-3 shrink-0 text-slate-400" />
-        </Link>
-      )}
+      {/* 솔루션 대응 실제 제품 — 체크 토글(button)과 분리 (보유 배지 / 카탈로그 링크 / 폴백) */}
+      <SolutionProductChip item={item} />
     </div>
   );
 }
@@ -491,24 +545,39 @@ export default function DailyCapsulePage(): React.ReactElement {
         </div>
       )}
 
-      {/* 빈 상태: 오늘 캡슐 없음 */}
-      {!isLoading && !error && !daily && (
-        <div className="text-center py-12">
+      {/* 빈 상태: 오늘 캡슐이 없거나, 있어도 아이템이 0개(본문 조건과 통일 — 헤더만 남는 백지 방지) */}
+      {!isLoading && !error && (!daily || totalCount === 0) && (
+        <div className="text-center py-12" data-testid="daily-empty">
           <CalendarCheck className="h-12 w-12 mx-auto mb-4 text-slate-400" />
           <h3 className="font-semibold mb-2">아직 오늘의 루틴이 없어요</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            버튼을 눌러 오늘의 뷰티·스타일 루틴을 만들어보세요.
-          </p>
-          <Button onClick={generateDaily} disabled={isGenerating}>
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                만드는 중...
-              </>
-            ) : (
-              '오늘의 루틴 만들기'
-            )}
-          </Button>
+          {daily ? (
+            // 캡슐은 만들어졌는데 아이템이 0개 = 재료(분석)가 없는 상태.
+            // 여기서 '만들기'를 다시 눌러도 같은 빈 캡슐이라 분석으로 안내한다.
+            <>
+              <p className="text-sm text-muted-foreground mb-4">
+                분석을 완료하면 내게 맞는 루틴을 만들어드려요.
+              </p>
+              <Button asChild>
+                <Link href="/analysis/integrated">분석 시작하기</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-4">
+                버튼을 눌러 오늘의 뷰티·스타일 루틴을 만들어보세요.
+              </p>
+              <Button onClick={generateDaily} disabled={isGenerating}>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    만드는 중...
+                  </>
+                ) : (
+                  '오늘의 루틴 만들기'
+                )}
+              </Button>
+            </>
+          )}
         </div>
       )}
 

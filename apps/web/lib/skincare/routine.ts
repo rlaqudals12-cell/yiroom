@@ -95,7 +95,14 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
   adjustedSteps = adjustedSteps.map((step) => {
     if (step.category === 'cleanser' && step.name.includes('오일')) return step;
     const spec = getStepSpec(step.category, skinType, concerns, carePhase);
-    return spec ? { ...step, specName: spec.specName, specReason: spec.specReason } : step;
+    if (!spec) return step;
+    // 저녁 스텝은 시간대 정체성을 앞세워 아침 스텝과 이름이 겹치지 않게 한다
+    const label = timeIdentityLabel(step, timeOfDay);
+    return {
+      ...step,
+      specName: label ? composeSpecName(label, spec.specName) : spec.specName,
+      specReason: spec.specReason,
+    };
   });
 
   // 6. 소요 시간 계산
@@ -109,6 +116,37 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
     estimatedTime: Math.round(estimatedTime),
     personalizationNote,
   };
+}
+
+/**
+ * 저녁 스텝의 시간대 정체성 라벨 — 없으면 null(스펙명을 그대로 사용).
+ *
+ * 왜 필요한가: 스펙명이 원 명칭을 통째로 덮으면 하루 루틴에 같은 이름이 두 번 뜬다.
+ * (아침 '클렌저'와 저녁 '폼 클렌저'가 둘 다 "약산성 폼 클렌저", 아침 '크림'과 저녁
+ *  '나이트 크림'이 둘 다 "세라마이드 크림" — 아침/저녁 구분이 사라졌음)
+ *
+ * 2차 세안은 원 명칭('폼 클렌저')을 라벨로 쓰지 않는다: 건성 스펙이 크림·로션 제형이라
+ * "폼"과 제형이 모순된다. 이 스텝의 시간대 정체성은 제형이 아니라 역할(2차 세안)이다.
+ */
+function timeIdentityLabel(step: RoutineStep, timeOfDay: TimeOfDay): string | null {
+  if (timeOfDay !== 'evening') return null;
+  // 오일 클렌저(1차)는 호출부에서 이미 제외됨 → 여기 오는 cleanser는 2차 세안
+  if (step.category === 'cleanser') return '2차 세안';
+  if (step.category === 'cream') return step.name; // "나이트 크림"
+  return null;
+}
+
+/**
+ * 라벨 + 스펙 병기 ("나이트 크림 · 세라마이드").
+ * 라벨에 이미 있는 단어는 빼서 "나이트 크림 · 세라마이드 크림" 같은 중복을 없앤다.
+ */
+function composeSpecName(label: string, specName: string): string {
+  const labelTokens = new Set(label.split(/\s+/));
+  const rest = specName
+    .split(/\s+/)
+    .filter((token) => !labelTokens.has(token))
+    .join(' ');
+  return rest ? `${label} · ${rest}` : label;
 }
 
 /**

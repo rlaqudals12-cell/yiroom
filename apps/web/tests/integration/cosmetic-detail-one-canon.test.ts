@@ -61,7 +61,9 @@ describe('화장품 상세 링크 진입점 — /products/cosmetic 분열 재발
     const src = read('app/(main)/capsule/daily/page.tsx');
     // 예전 /products/cosmetic 하드코딩이 다시 들어오면 분열 재발
     expect(src).not.toMatch(/\/products\/cosmetic\//);
-    expect(src).toMatch(/href=\{`\/beauty\/\$\{item\.solutionProduct\.id\}`\}/);
+    // 제품 칩이 출처(shelf/catalog) 분기로 분리되며 변수명이 바뀌었다(2026-08-17) —
+    // 검증 의도는 "화장품 상세는 /beauty 정본으로 간다"이므로 경로만 확인한다.
+    expect(src).toMatch(/href=\{`\/beauty\/\$\{/);
   });
 });
 
