@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import {
   generateColorRecommendations,
   getColorTipsForBodyType,
+  getPersonalColorSeasonLabel,
   type PersonalColorSeason,
 } from '@/lib/color-recommendations';
 import type { BodyType } from '@/lib/mock/body-analysis';
@@ -230,6 +231,44 @@ describe('코디 색상 추천 시스템', () => {
         expect(hasSlimTip).toBe(true);
       });
     });
+  });
+});
+
+/**
+ * 시즌 라벨 헬퍼 (getPersonalColorSeasonLabel)
+ *
+ * 배경: 화면·저장 문구에 원시 코드값('Spring')이 그대로 새어나갔다.
+ * 스코어링은 코드값을 유지하고, 문구를 만드는 시점에만 라벨로 바꾼다.
+ * DB에는 대문자('Spring')와 소문자('spring')가 섞여 있어 양쪽을 모두 받아야 한다.
+ */
+describe('getPersonalColorSeasonLabel', () => {
+  it('대문자 코드값을 한국어 라벨로 바꾼다', () => {
+    expect(getPersonalColorSeasonLabel('Spring')).toBe('봄 웜톤');
+    expect(getPersonalColorSeasonLabel('Summer')).toBe('여름 쿨톤');
+    expect(getPersonalColorSeasonLabel('Autumn')).toBe('가을 웜톤');
+    expect(getPersonalColorSeasonLabel('Winter')).toBe('겨울 쿨톤');
+  });
+
+  it('소문자 코드값도 같은 라벨로 바꾼다 (DB 표기 혼재 대응)', () => {
+    expect(getPersonalColorSeasonLabel('spring')).toBe('봄 웜톤');
+    expect(getPersonalColorSeasonLabel('winter')).toBe('겨울 쿨톤');
+  });
+
+  it('null·undefined·빈 문자열은 기타로 처리한다', () => {
+    expect(getPersonalColorSeasonLabel(null)).toBe('기타');
+    expect(getPersonalColorSeasonLabel(undefined)).toBe('기타');
+    expect(getPersonalColorSeasonLabel('')).toBe('기타');
+  });
+
+  it('모르는 값은 원시 영문값을 흘리지 않고 기타로 처리한다', () => {
+    expect(getPersonalColorSeasonLabel('Unknown')).toBe('기타');
+    expect(getPersonalColorSeasonLabel('SPRING TONE')).toBe('기타');
+  });
+
+  it('어떤 입력에도 영문 시즌명을 그대로 반환하지 않는다', () => {
+    for (const raw of ['Spring', 'Summer', 'Autumn', 'Winter', 'spring', 'Unknown']) {
+      expect(getPersonalColorSeasonLabel(raw)).not.toContain(raw);
+    }
   });
 });
 

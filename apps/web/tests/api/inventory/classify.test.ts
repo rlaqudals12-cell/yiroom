@@ -138,3 +138,84 @@ describe('POST /api/inventory/classify', () => {
     expect(generateContent).toHaveBeenCalled();
   });
 });
+
+/**
+ * Mock 폴백 정직 고지 (설계 계약: AI 호출 불변식)
+ *
+ * 배경: 폴백 자리표시자('티셔츠/화이트')가 표식 없이 200으로 나가 소비처가
+ * 진짜 판정으로 저장했다. 세 분기(Gemini 미가용·파싱 실패·호출 예외) 모두
+ * usedFallback: true를 실어야 하고, 실제 판정만 false여야 한다.
+ */
+describe('POST /api/inventory/classify — 폴백 표식(usedFallback)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isGeminiAvailable).mockReturnValue(true);
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_1' } as never);
+  });
+
+  function classifyRequest(): NextRequest {
+    return new NextRequest('http://localhost/api/inventory/classify', {
+      method: 'POST',
+      body: JSON.stringify({ imageBase64: 'data:image/png;base64,AAAA' }),
+    });
+  }
+
+  it('Gemini 미가용 폴백에 usedFallback: true를 실어 보낸다', async () => {
+    vi.mocked(isGeminiAvailable).mockReturnValue(false);
+
+    const response = await POST(classifyRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.usedFallback).toBe(true);
+    // 자리표시자 값 자체는 유지되지만, 표식이 있어 소비처가 채택하지 않는다
+    expect(data.subCategory).toBe('티셔츠');
+    expect(generateContent).not.toHaveBeenCalled();
+  });
+
+  it('AI 응답 파싱 실패 폴백에 usedFallback: true를 실어 보낸다', async () => {
+    // JSON 객체가 없는 응답 — extractJsonObject가 null을 반환하는 경로
+    vi.mocked(generateContent).mockResolvedValue({
+      text: '죄송해요, 이미지를 분류할 수 없습니다.',
+    } as never);
+
+    const response = await POST(classifyRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.usedFallback).toBe(true);
+    expect(data.confidence).toBe(0.5);
+  });
+
+  it('Gemini 호출 예외 폴백에 usedFallback: true를 실어 보낸다', async () => {
+    vi.mocked(generateContent).mockRejectedValue(new Error('gemini down'));
+
+    const response = await POST(classifyRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.usedFallback).toBe(true);
+  });
+
+  it('실제 AI 판정에는 usedFallback: false를 실어 소비처가 채택하게 한다', async () => {
+    vi.mocked(generateContent).mockResolvedValue({
+      text: JSON.stringify({
+        category: 'bottom',
+        subCategory: '청바지',
+        suggestedName: '연청 데님',
+        colors: ['블루'],
+        pattern: 'solid',
+        seasons: ['spring'],
+        occasions: ['casual'],
+        confidence: 0.92,
+      }),
+    } as never);
+
+    const response = await POST(classifyRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.usedFallback).toBe(false);
+    expect(data.subCategory).toBe('청바지');
+  });
+});

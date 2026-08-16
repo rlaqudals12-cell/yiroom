@@ -24,34 +24,19 @@ describe('OutfitRoutineCard', () => {
   ];
 
   it('renders the card with test id', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} />);
 
     expect(screen.getByTestId('outfit-routine-card')).toBeInTheDocument();
   });
 
   it('displays occasion label for daily', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} />);
 
     expect(screen.getByText('데일리 코디')).toBeInTheDocument();
   });
 
   it('displays all outfit items', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} />);
 
     expect(screen.getByText('크롭 니트')).toBeInTheDocument();
     expect(screen.getByText('슬랙스')).toBeInTheDocument();
@@ -59,12 +44,7 @@ describe('OutfitRoutineCard', () => {
   });
 
   it('shows category labels', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} />);
 
     expect(screen.getByText('상의')).toBeInTheDocument();
     expect(screen.getByText('하의')).toBeInTheDocument();
@@ -72,24 +52,13 @@ describe('OutfitRoutineCard', () => {
   });
 
   it('displays match rate when provided', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-        matchRate={92}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} matchRate={92} />);
 
     expect(screen.getByText('매칭 92%')).toBeInTheDocument();
   });
 
   it('displays color names', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={dailyItems}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} />);
 
     expect(screen.getByText('아이보리')).toBeInTheDocument();
     expect(screen.getByText('베이지')).toBeInTheDocument();
@@ -110,14 +79,26 @@ describe('OutfitRoutineCard', () => {
   });
 
   it('shows empty state when no items', () => {
-    render(
-      <OutfitRoutineCard
-        occasion="daily"
-        items={[]}
-      />
-    );
+    render(<OutfitRoutineCard occasion="daily" items={[]} />);
 
     expect(screen.getByText(/코디가 없습니다/)).toBeInTheDocument();
+  });
+
+  // 원피스 슬롯 회귀: CLOTHING_CATEGORIES에 dress가 없어 원피스 코디가
+  // 라벨 'dress' + 폴백 이모지 '📦'로 새어나갔다 (조립기 슬롯과 1:1이어야 한다)
+  it('원피스 슬롯을 한국어 라벨로 표시한다 (dress 📦 누수 금지)', () => {
+    const dressOutfit: OutfitItem[] = [
+      { order: 1, category: 'dress', productName: '플로럴 원피스', color: '아이보리' },
+      { order: 2, category: 'shoes', productName: '로퍼', color: '브라운' },
+    ];
+
+    render(<OutfitRoutineCard occasion="daily" items={dressOutfit} />);
+
+    expect(screen.getByText('원피스')).toBeInTheDocument();
+    expect(screen.getByText('플로럴 원피스')).toBeInTheDocument();
+    expect(screen.getByText('👗')).toBeInTheDocument();
+    expect(screen.queryByText('dress')).not.toBeInTheDocument();
+    expect(screen.queryByText('📦')).not.toBeInTheDocument();
   });
 
   it('shows add button in edit mode', () => {

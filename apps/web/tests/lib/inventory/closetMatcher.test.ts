@@ -1088,3 +1088,62 @@ describe('closetMatcher', () => {
     });
   });
 });
+
+// ============================================================================
+// 시즌 라벨 한국어화 — 사용자 대면 문구에 원시 코드값('Spring')을 흘리지 않는다.
+// 매칭·스코어링은 코드값 그대로 두고 문구 생성 시점에만 라벨로 바꾼다.
+// ============================================================================
+
+describe('closetMatcher 문구 — 퍼스널컬러 라벨', () => {
+  it('추천 이유에 영문 시즌명 대신 한국어 라벨을 쓴다', () => {
+    const item = createMockItem({
+      id: 'spring-top',
+      subCategory: '티셔츠',
+      metadata: { color: ['아이보리', '코랄'], season: ['spring'], occasion: [] },
+    });
+
+    const [recommendation] = recommendFromCloset([item], {
+      personalColor: 'Spring',
+      category: 'top',
+    });
+
+    expect(recommendation.reasons).toContain('봄 웜톤 컬러와 잘 어울려요');
+    expect(recommendation.reasons.join(' ')).not.toContain('Spring');
+  });
+
+  it('코디 팁에 영문 시즌명 대신 한국어 라벨을 쓴다', () => {
+    const items = [
+      createMockItem({
+        id: 'top-1',
+        subCategory: '티셔츠',
+        metadata: { color: ['블랙'], season: [], occasion: [] },
+      }),
+      createMockItem({
+        id: 'bottom-1',
+        subCategory: '슬랙스',
+        metadata: { color: ['차콜'], season: [], occasion: [] },
+      }),
+    ];
+
+    const suggestion = suggestOutfitFromCloset(items, { personalColor: 'Winter' });
+
+    expect(suggestion?.tips).toContain('겨울 쿨톤 색상을 중심으로 코디했어요');
+    expect(suggestion?.tips.join(' ')).not.toContain('Winter');
+  });
+
+  it('요약 제안에 영문 시즌명 대신 한국어 라벨을 쓴다', () => {
+    // 색 정보가 없어 잘 맞는 옷이 0벌 → 퍼스널컬러 기반 보완 제안이 뜬다
+    const items = [
+      createMockItem({
+        id: 'plain-1',
+        subCategory: '티셔츠',
+        metadata: { color: [], season: [], occasion: [] },
+      }),
+    ];
+
+    const summary = getRecommendationSummary(items, { personalColor: 'Autumn' });
+
+    expect(summary.suggestions).toContain('가을 웜톤에 어울리는 옷을 추가해보세요');
+    expect(summary.suggestions.join(' ')).not.toContain('Autumn');
+  });
+});
