@@ -21,6 +21,11 @@ import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { IngredientFavoriteFilter } from '@/components/beauty/IngredientFavoriteFilter';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { AgeGroupFilter } from '@/components/beauty/AgeGroupFilter';
+import {
+  expandConcernsToDbValues,
+  mapAgeGroupsToDbValues,
+  type BeautyConcernId,
+} from '@/lib/products/vocabulary';
 import type { FavoriteItem, AgeGroup } from '@/types/hybrid';
 import type { MatchReason, AnyProduct, ProductWithMatch } from '@/types/product';
 
@@ -34,15 +39,8 @@ const skinTypes: { id: SkinType; label: string }[] = [
   { id: 'normal', label: '중성' },
 ];
 
-// 피부 고민
-type SkinConcern =
-  | 'hydration'
-  | 'whitening'
-  | 'pore'
-  | 'soothing'
-  | 'acne'
-  | 'wrinkle'
-  | 'elasticity';
+// 피부 고민 — 어휘 정본은 lib/products/vocabulary (UI 칩 ↔ DB 실값 브리지)
+type SkinConcern = BeautyConcernId;
 const skinConcerns: { id: SkinConcern; label: string; icon: React.ReactNode }[] = [
   { id: 'hydration', label: '보습', icon: <Droplets className="w-3.5 h-3.5" /> },
   { id: 'whitening', label: '미백', icon: <Sun className="w-3.5 h-3.5" /> },
@@ -52,28 +50,6 @@ const skinConcerns: { id: SkinConcern; label: string; icon: React.ReactNode }[] 
   { id: 'wrinkle', label: '주름', icon: <Sparkles className="w-3.5 h-3.5" /> },
   { id: 'elasticity', label: '탄력', icon: <Flame className="w-3.5 h-3.5" /> },
 ];
-
-// UI 고민 칩 → cosmetic_products.concerns DB 실값 집합 (2026-07-10 prod 실쿼리 검증).
-//
-// 근본 문제: 스킨케어 제품은 concerns가 100% 태깅돼 있어(null 0건) `concerns.is.null` 탈출구가
-// 스킨케어에선 절대 적용되지 않는다. 그런데 기존 쿼리는 UI id 1개("soothing")만 그대로 매칭해
-// DB의 동의어·변형(redness/atopy/barrier 등)을 놓쳐 여러 고민이 near-0로 붕괴했다
-// (soothing 4개·wrinkle 12개 등). 점수 조작이 아니라 어휘 매핑 정합으로 도달 가능하게 만든다.
-// ⚠️ 값은 전부 DB concern vocab에 실재하는 것만 — 유령 값 금지(오버랩 시 무의미 매칭 방지).
-const CONCERN_DB_SYNONYMS: Record<SkinConcern, string[]> = {
-  hydration: ['hydration', 'barrier', 'barrier_repair'],
-  whitening: ['whitening', 'tone-up', 'dark_circles', 'dark-circle'],
-  pore: ['pore', 'blackhead', 'sebum', 'oil-control'],
-  soothing: ['soothing', 'redness', 'atopy', 'barrier', 'barrier_repair'],
-  acne: ['acne', 'acne-scar', 'blemish', 'sebum', 'blackhead'],
-  wrinkle: ['wrinkle', 'wrinkles', 'aging', 'anti-aging', 'firming'],
-  elasticity: ['elasticity', 'firming', 'anti-aging'],
-};
-
-/** 선택된 UI 고민들을 DB concern 실값 집합으로 확장 (중복 제거) — 쿼리 필터용 */
-export function expandConcernsToDbValues(concerns: SkinConcern[]): string[] {
-  return [...new Set(concerns.flatMap((c) => CONCERN_DB_SYNONYMS[c] ?? [c]))];
-}
 
 // 대분류 카테고리
 // DB(cosmetic_products)의 category 컬럼은 이미 세분류 값(serum/toner/moisturizer/...)이라
@@ -342,10 +318,11 @@ export function BeautyRecommendTab({
       try {
         let query = supabase
           .from('cosmetic_products')
-          // target_age_groups는 select에서 제외 — prod에 컬럼이 아직 없어(SQL 미적용) 42703으로
-          // 기본 쿼리 전체가 죽었다. 소비처도 0곳(rawProducts 매핑 미사용, 아래 연령 or-필터만 참조).
+          // target_age_groups는 prod에 실재한다(2026-08-17 실쿼리 재검증 — "컬럼 없음 42703"
+          // 주석은 이후 gap-apply로 해소된 stale 정보였다). 아래 연령 or-필터가 이 컬럼을
+          // 쓰므로 select에도 포함해 필터 결과를 확인할 수 있게 되돌린다.
           .select(
-            'id, name, brand, category, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients'
+            'id, name, brand, category, subcategory, price_krw, rating, review_count, image_url, skin_types, concerns, personal_color_seasons, key_ingredients, target_age_groups'
           )
           .eq('is_active', true)
           .limit(40);
@@ -395,9 +372,9 @@ export function BeautyRecommendTab({
         }
 
         if (selectedAgeGroups.length > 0) {
-          // 주의: prod에 target_age_groups 컬럼이 없으면 이 or-필터만 400으로 실패한다.
-          // 이는 의도된 동작 — 기본 쿼리는 살리고, 연령대 필터 선택 시에만 에러 UI가 정직하게 노출된다.
-          const dbAgeGroups = selectedAgeGroups.map((age) => (age === '50plus' ? '50s' : age));
+          // UI 어휘(50plus)와 DB 어휘(50s)가 달라, 매핑 표를 정본(lib/products/vocabulary)에 두고
+          // 전 값을 명시한다 — 어느 한쪽 어휘가 늘어나도 조용히 0건이 되지 않도록.
+          const dbAgeGroups = mapAgeGroupsToDbValues(selectedAgeGroups);
           query = query.or(
             `target_age_groups.ov.{${dbAgeGroups.join(',')}},target_age_groups.is.null,target_age_groups.eq.{}`
           );

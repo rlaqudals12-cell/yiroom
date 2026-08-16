@@ -370,7 +370,10 @@ describe('BeautyRecommendTab', () => {
       expect(screen.queryByText('네트워크 연결을 확인해 보세요')).not.toBeInTheDocument();
     });
 
-    it('기본 select에 prod 미존재 컬럼(target_age_groups)을 포함하지 않는다 — 42703 방어', async () => {
+    // A8(2026-08-17): "prod에 target_age_groups 컬럼이 없다(42703)"는 전제는 이후 gap-apply로
+    // 해소된 stale 정보였다(실쿼리 재검증: 컬럼 실재, 값 어휘 10s|20s|30s|40s|50s).
+    // 연령 or-필터가 이 컬럼을 쓰므로 select에도 되돌린다.
+    it('기본 select에 target_age_groups를 포함한다 (prod 실재 — stale 제외 복구)', async () => {
       renderTab();
       await screen.findByText('히알루론 수분 크림');
 
@@ -381,7 +384,7 @@ describe('BeautyRecommendTab', () => {
           (c) =>
             typeof c.args[0] === 'string' && (c.args[0] as string).includes('target_age_groups')
         )
-      ).toBe(false);
+      ).toBe(true);
     });
   });
 

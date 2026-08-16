@@ -72,6 +72,28 @@ describe('product-ranking', () => {
     it('점수는 반올림하며 빈/공백 이유는 무시한다', () => {
       expect(buildRankReasonLine(84.6, ['  ', '지성'])).toBe('나와의 적합도 85점 — 지성에 맞아요');
     });
+
+    // A5(2026-08 매칭 감사): 47점의 구성이 기본20+가격15+브랜드12 = 나와 무관 100%인데도
+    // "나와의 적합도 47점"이라 적어, 하지 않은 개인화를 했다고 말하고 있었다.
+    it('개인 축 근거가 없으면(hasPersonalMatch=false) 적합도 문구를 만들지 않는다', () => {
+      expect(
+        buildRankReasonLine(47, ['가성비 좋음', '인기 브랜드'], { hasPersonalMatch: false })
+      ).toBe('');
+      expect(buildRankReasonLine(47, [], { hasPersonalMatch: false })).toBe('');
+    });
+
+    it('개인 축 근거가 있으면(hasPersonalMatch=true) 기존대로 조립한다', () => {
+      expect(buildRankReasonLine(92, ['겨울 쿨톤'], { hasPersonalMatch: true })).toBe(
+        '나와의 적합도 92점 — 겨울 쿨톤에 맞아요'
+      );
+    });
+
+    it('옵션을 모르면(undefined) 기존 동작을 유지한다 — 구버전 캐시 호환', () => {
+      expect(buildRankReasonLine(80, ['건성'], {})).toBe('나와의 적합도 80점 — 건성에 맞아요');
+      expect(buildRankReasonLine(80, ['건성'], { hasPersonalMatch: undefined })).toBe(
+        '나와의 적합도 80점 — 건성에 맞아요'
+      );
+    });
   });
 
   describe('buildRankComparisonLine', () => {

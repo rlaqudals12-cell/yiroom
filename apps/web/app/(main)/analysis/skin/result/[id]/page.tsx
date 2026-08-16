@@ -31,6 +31,7 @@ import {
   generateSkinIdentityLabelFromMetrics,
 } from '@/lib/analysis/skin-v2';
 import { generateSynergyFromGeminiResult } from '@/lib/analysis';
+import { mapSkinMetricsToConcerns } from '@/lib/products/vocabulary';
 import type { SynergyInsight } from '@/types/visual-analysis';
 import AnalysisResult from '../../_components/AnalysisResult';
 // 하단 섹션 — 스크롤 시 지연 로드 (초기 번들 -30KB)
@@ -1188,9 +1189,13 @@ export default function SkinAnalysisResultPage() {
                     <AnalysisMatchedProducts
                       analysisType="skin"
                       skinType={skinType ?? undefined}
-                      skinConcerns={result?.metrics
-                        ?.filter((m) => m.status === 'warning')
-                        .map((m) => m.id)}
+                      // 결과 지표 id(pores·wrinkles·pigmentation…)를 그대로 넘기면 제품 DB 어휘
+                      // (pore·aging·whitening)와 겹치는 게 hydration 하나뿐이라 개인화가 죽는다
+                      // → 정본 고민 어휘로 브리지 (2026-08 매칭 감사 A6)
+                      skinConcerns={mapSkinMetricsToConcerns(
+                        result?.metrics?.filter((m) => m.status === 'warning').map((m) => m.id) ??
+                          []
+                      )}
                     />
                   </div>
 

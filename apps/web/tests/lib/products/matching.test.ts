@@ -26,6 +26,8 @@ import {
   calculateMatchScore,
   addMatchInfo,
   addMatchInfoToProducts,
+  isBlanketTag,
+  hasPersonalMatch,
   type UserProfile,
 } from '@/lib/products/matching';
 
@@ -213,16 +215,46 @@ describe('calculateMatchScore', () => {
       expect(scoreMatch - scoreNoMatch).toBe(20);
     });
 
-    it('제품에 faceShapes 데이터가 없으면 프로필 완성도 보너스 +5점을 준다', () => {
+    // A4(2026-08 매칭 감사): 이전엔 데이터가 없을수록 "프로필 완성도 보너스" +5로 점수가
+    // 올라, 아무 정보 없는 제품이 실제로 맞는 제품보다 위로 올라갈 수 있었다.
+    it('제품에 faceShapes 데이터가 없으면 점수도 근거도 만들지 않는다', () => {
       const productNoFace: CosmeticProduct = {
         ...makeupProduct,
         faceShapes: undefined,
       };
       const profile: UserProfile = { faceShape: 'oval' };
       const result = calculateMatchScore(productNoFace, profile);
-      const faceReason = result.reasons.find((r) => r.type === 'faceShape');
-      expect(faceReason).toBeDefined();
-      expect(faceReason?.matched).toBe(false);
+      expect(result.reasons.find((r) => r.type === 'faceShape')).toBeUndefined();
+      // 무데이터 제품이 프로필 유무로 점수가 달라지지 않는다
+      expect(result.score).toBe(calculateMatchScore(productNoFace, {}).score);
+    });
+
+    it('faceShapes가 블랭킷(5종 전부)이면 변별력 0으로 보고 근거를 만들지 않는다', () => {
+      const blanketProduct: CosmeticProduct = {
+        ...makeupProduct,
+        faceShapes: ['oval', 'round', 'square', 'heart', 'oblong'],
+      };
+      const result = calculateMatchScore(blanketProduct, { faceShape: 'oval' });
+      expect(result.reasons.find((r) => r.type === 'faceShape')).toBeUndefined();
+      expect(result.score).toBe(calculateMatchScore(blanketProduct, {}).score);
+    });
+
+    it('undertones가 블랭킷(3종 전부)이면 근거·가점이 없다', () => {
+      const blanketProduct: CosmeticProduct = {
+        ...makeupProduct,
+        undertones: ['warm', 'cool', 'neutral'],
+      };
+      const result = calculateMatchScore(blanketProduct, { undertone: 'warm' });
+      expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
+      expect(result.score).toBe(calculateMatchScore(blanketProduct, {}).score);
+    });
+
+    it('일부 값만 가진 undertones는 변별력이 있어 그대로 매칭한다', () => {
+      const partial: CosmeticProduct = { ...makeupProduct, undertones: ['warm', 'cool'] };
+      const matched = calculateMatchScore(partial, { undertone: 'warm' });
+      const notMatched = calculateMatchScore(partial, { undertone: 'neutral' });
+      expect(matched.reasons.find((r) => r.type === 'undertone')?.matched).toBe(true);
+      expect(matched.score - notMatched.score).toBe(15);
     });
 
     it('언더톤이 일치하면 +15점을 받는다', () => {
@@ -234,16 +266,15 @@ describe('calculateMatchScore', () => {
       expect(scoreMatch - scoreNoMatch).toBe(15);
     });
 
-    it('제품에 undertones 데이터가 없으면 프로필 완성도 보너스 +5점을 준다', () => {
+    it('제품에 undertones 데이터가 없으면 점수도 근거도 만들지 않는다', () => {
       const productNoUndertone: CosmeticProduct = {
         ...makeupProduct,
         undertones: undefined,
       };
       const profile: UserProfile = { undertone: 'warm' };
       const result = calculateMatchScore(productNoUndertone, profile);
-      const undertoneReason = result.reasons.find((r) => r.type === 'undertone');
-      expect(undertoneReason).toBeDefined();
-      expect(undertoneReason?.matched).toBe(false);
+      expect(result.reasons.find((r) => r.type === 'undertone')).toBeUndefined();
+      expect(result.score).toBe(calculateMatchScore(productNoUndertone, {}).score);
     });
 
     it('스킨케어 제품은 퍼스널컬러 보너스를 받지 않는다', () => {
@@ -267,16 +298,39 @@ describe('calculateMatchScore', () => {
       expect(scoreMatch - scoreNoMatch).toBe(30);
     });
 
-    it('제품에 hairTypes 없으면 프로필 완성도 보너스 +10점을 준다', () => {
+    it('제품에 hairTypes 없으면 점수도 근거도 만들지 않는다', () => {
       const productNoHair: CosmeticProduct = {
         ...haircareProduct,
         hairTypes: undefined,
       };
       const profile: UserProfile = { hairType: 'straight' };
       const result = calculateMatchScore(productNoHair, profile);
-      const hairReason = result.reasons.find((r) => r.type === 'hairType');
-      expect(hairReason).toBeDefined();
-      expect(hairReason?.matched).toBe(false);
+      expect(result.reasons.find((r) => r.type === 'hairType')).toBeUndefined();
+      expect(result.score).toBe(calculateMatchScore(productNoHair, {}).score);
+    });
+
+    // A3(2026-08 매칭 감사): prod 헤어케어 26건은 hair_types·scalp_types가 전건 도메인 전체라
+    // 모든 사용자에게 "직모 적합"이 떴다 — 실재하지 않는 개인화 근거.
+    it('hairTypes가 블랭킷(4종 전부)이면 "직모 적합" 근거를 만들지 않는다', () => {
+      const blanketProduct: CosmeticProduct = {
+        ...haircareProduct,
+        hairTypes: ['straight', 'wavy', 'curly', 'coily'],
+      };
+      const result = calculateMatchScore(blanketProduct, { hairType: 'straight' });
+      expect(result.reasons.find((r) => r.type === 'hairType')).toBeUndefined();
+      expect(result.reasons.some((r) => r.label.includes('직모'))).toBe(false);
+      expect(result.score).toBe(calculateMatchScore(blanketProduct, {}).score);
+    });
+
+    it('scalpTypes가 블랭킷(4종 전부)이면 두피 근거·가점이 없다', () => {
+      const blanketProduct: CosmeticProduct = {
+        ...haircareProduct,
+        scalpTypes: ['dry', 'oily', 'sensitive', 'normal'],
+        skinTypes: undefined,
+      };
+      const result = calculateMatchScore(blanketProduct, { scalpType: 'oily' });
+      expect(result.reasons.find((r) => r.type === 'scalpType')).toBeUndefined();
+      expect(result.score).toBe(calculateMatchScore(blanketProduct, {}).score);
     });
 
     it('두피 타입이 일치하면 +30점을 받는다', () => {
@@ -754,5 +808,77 @@ describe('avoidIngredients 필터링', () => {
     const avoidReason = result.reasons.find((r) => r.label.includes('기피 성분'));
     expect(avoidReason).toBeDefined();
     expect(avoidReason?.matched).toBe(false);
+  });
+});
+
+// ================================================
+// 블랭킷 태그 / 개인 축 판정 (2026-08 매칭 감사 A3·A5)
+// ================================================
+
+describe('isBlanketTag (변별력 0 판정)', () => {
+  const HAIR_DOMAIN = ['straight', 'wavy', 'curly', 'coily'];
+
+  it('도메인 전체 값을 품으면 블랭킷이다', () => {
+    expect(isBlanketTag(['straight', 'wavy', 'curly', 'coily'], HAIR_DOMAIN)).toBe(true);
+    // 순서가 달라도 동일 판정
+    expect(isBlanketTag(['coily', 'curly', 'wavy', 'straight'], HAIR_DOMAIN)).toBe(true);
+  });
+
+  it('한 값이라도 빠지면 변별력이 있다', () => {
+    expect(isBlanketTag(['straight', 'wavy', 'curly'], HAIR_DOMAIN)).toBe(false);
+    expect(isBlanketTag(['straight'], HAIR_DOMAIN)).toBe(false);
+  });
+
+  it('빈 배열·null·undefined는 블랭킷이 아니다 (무데이터와 구분)', () => {
+    expect(isBlanketTag([], HAIR_DOMAIN)).toBe(false);
+    expect(isBlanketTag(null, HAIR_DOMAIN)).toBe(false);
+    expect(isBlanketTag(undefined, HAIR_DOMAIN)).toBe(false);
+  });
+});
+
+describe('hasPersonalMatch (개인 축 근거 유무)', () => {
+  it('개인 축이 일치하면 true', () => {
+    expect(hasPersonalMatch([{ type: 'personalColor', label: '겨울 쿨톤', matched: true }])).toBe(
+      true
+    );
+  });
+
+  it('가격·브랜드·리뷰·평점만 있으면 false (나와 무관한 대중성 신호)', () => {
+    expect(
+      hasPersonalMatch([
+        { type: 'price', label: '가성비 좋음', matched: true },
+        { type: 'brand', label: '인기 브랜드', matched: true },
+        { type: 'popularity', label: '베스트셀러 (10천+ 리뷰)', matched: true },
+        { type: 'rating', label: '★4.6 높은 평점', matched: true },
+      ])
+    ).toBe(false);
+  });
+
+  it('개인 축이 있어도 matched=false면 근거가 아니다', () => {
+    expect(hasPersonalMatch([{ type: 'personalColor', label: '겨울 쿨톤', matched: false }])).toBe(
+      false
+    );
+  });
+
+  it('근거가 없으면 false', () => {
+    expect(hasPersonalMatch([])).toBe(false);
+  });
+
+  it('블랭킷 태그만 달린 헤어 제품은 개인 축 근거가 없다', () => {
+    const blanketHaircare: CosmeticProduct = {
+      id: 'h-blanket',
+      name: '두피 샴푸',
+      brand: '무명',
+      category: 'shampoo',
+      hairTypes: ['straight', 'wavy', 'curly', 'coily'],
+      scalpTypes: ['dry', 'oily', 'sensitive', 'normal'],
+      priceRange: 'budget',
+      isActive: true,
+    };
+    const result = calculateMatchScore(blanketHaircare, {
+      hairType: 'straight',
+      scalpType: 'oily',
+    });
+    expect(hasPersonalMatch(result.reasons)).toBe(false);
   });
 });

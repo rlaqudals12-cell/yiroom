@@ -30,6 +30,12 @@ interface MatchedProduct {
   product: AnyProduct;
   matchScore: number;
   matchReasons: string[];
+  /**
+   * 개인 축(퍼스널컬러·피부·모발 등)에서 실제로 일치한 근거가 있는가.
+   * 명시적으로 false일 때만 "나와의 적합도 N점" 문구를 생략한다
+   * (구버전 sessionStorage 캐시에는 이 필드가 없어 undefined로 올 수 있다).
+   */
+  personalMatched?: boolean;
 }
 
 interface AnalysisMatchedProductsProps {
@@ -221,7 +227,9 @@ export function AnalysisMatchedProducts({
                 className="mt-1.5 min-h-[2rem] text-[11px] leading-snug text-zinc-400"
                 data-testid="rank-reason"
               >
-                {buildRankReasonLine(mp.matchScore, mp.matchReasons)}
+                {buildRankReasonLine(mp.matchScore, mp.matchReasons, {
+                  hasPersonalMatch: mp.personalMatched,
+                })}
               </p>
             </li>
           );

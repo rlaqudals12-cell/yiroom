@@ -10,6 +10,7 @@ import type {
   WorkoutEquipment,
   HealthFood,
   MatchReason,
+  MatchReasonType,
   ProductWithMatch,
   SkinType,
   SkinConcern,
@@ -20,6 +21,76 @@ import type {
   Undertone,
 } from '@/types/product';
 import { getProductType } from './services/search';
+
+// ================================================
+// 블랭킷 태그 (변별력 0) 판정
+// ================================================
+
+/** 각 태그 축의 도메인 전체 값 — 이걸 다 품은 태그는 아무도 걸러내지 못한다 */
+const TAG_DOMAINS = {
+  hairTypes: ['straight', 'wavy', 'curly', 'coily'],
+  scalpTypes: ['dry', 'oily', 'sensitive', 'normal'],
+  skinTypes: ['dry', 'oily', 'combination', 'sensitive', 'normal'],
+  undertones: ['warm', 'cool', 'neutral'],
+  faceShapes: ['oval', 'round', 'square', 'heart', 'oblong'],
+} as const;
+
+/**
+ * "블랭킷 태그" = 해당 축의 값을 전부 달고 있는 태그.
+ *
+ * 배경(2026-08 매칭 감사): prod 헤어케어 26개는 hair_types·scalp_types가 **전건** 4종 전부,
+ * undertones 42개·face_shapes 38개도 도메인 전체를 달고 있다. 이런 태그는 누구와도 "일치"하므로
+ * 점수를 올리고 "직모 적합" 같은 근거 문구까지 만들어내지만, 실제로는 개인화 신호가 0이다.
+ * 지어낸 근거를 노출하지 않기 위해 이 경우는 **데이터 없음과 동일하게** 취급한다.
+ *
+ * @param tags 제품에 달린 태그 배열
+ * @param domain 해당 축의 전체 값 목록
+ * @returns 도메인 전체를 품고 있으면 true (= 변별력 0)
+ */
+export function isBlanketTag(
+  tags: readonly string[] | undefined | null,
+  domain: readonly string[]
+): boolean {
+  if (!tags || tags.length === 0) return false;
+  return domain.every((value) => tags.includes(value));
+}
+
+/**
+ * 변별력 있는 태그만 돌려준다. 태그가 없거나 블랭킷이면 `undefined`
+ * (= "이 축으로는 판단할 근거가 없다").
+ */
+function discriminatingTags<T extends string>(
+  tags: readonly T[] | undefined,
+  domain: readonly string[]
+): readonly T[] | undefined {
+  if (!tags || tags.length === 0) return undefined;
+  return isBlanketTag(tags, domain) ? undefined : tags;
+}
+
+// ================================================
+// 개인 축 판정 (표현 레이어용)
+// ================================================
+
+/** 사용자 프로필에서 파생된(= "나와 맞다"고 말할 수 있는) 매칭 근거 타입 */
+export const PERSONAL_MATCH_REASON_TYPES: readonly MatchReasonType[] = [
+  'skinType',
+  'concern',
+  'personalColor',
+  'goal',
+  'hairType',
+  'scalpType',
+  'undertone',
+  'faceShape',
+];
+
+/**
+ * 개인 축에서 실제로 일치한 근거가 하나라도 있는가.
+ * 가격·브랜드·리뷰·평점은 누구에게나 동일한 대중성 신호이므로 개인 축이 아니다.
+ * "나와의 적합도 N점" 같은 개인화 문구는 이 값이 true일 때만 정직하다.
+ */
+export function hasPersonalMatch(reasons: readonly MatchReason[]): boolean {
+  return reasons.some((r) => r.matched && PERSONAL_MATCH_REASON_TYPES.includes(r.type));
+}
 
 /**
  * 사용자 프로필 인터페이스
@@ -140,9 +211,12 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
   }
 
   // 얼굴형 매칭 - 메이크업 (20점, M-1)
+  // 데이터가 없거나 블랭킷(5종 전부)이면 판단 근거가 없다 → 점수·근거 문구 모두 만들지 않는다.
+  // (이전엔 "프로필 완성도 보너스" +5를 줘서 데이터가 없는 제품일수록 점수가 오르는 역설이 있었다)
   if (product.category === 'makeup' && profile.faceShape) {
-    if (product.faceShapes && product.faceShapes.length > 0) {
-      const faceMatched = product.faceShapes.includes(profile.faceShape);
+    const faceShapes = discriminatingTags(product.faceShapes, TAG_DOMAINS.faceShapes);
+    if (faceShapes) {
+      const faceMatched = faceShapes.includes(profile.faceShape);
       reasons.push({
         type: 'faceShape',
         label: getFaceShapeLabel(profile.faceShape),
@@ -151,39 +225,22 @@ function calculateCosmeticMatchScore(product: CosmeticProduct, profile: UserProf
       if (faceMatched) {
         score += 20;
       }
-    } else {
-      // 제품에 faceShapes 데이터 없으면 프로필 완성도 보너스 (5점)
-      reasons.push({
-        type: 'faceShape',
-        label: getFaceShapeLabel(profile.faceShape),
-        matched: false,
-      });
-      score += 5;
     }
   }
 
-  // 언더톤 매칭 - 메이크업 (15점, M-1)
+  // 언더톤 매칭 - 메이크업 (15점, M-1) — 위와 동일 원칙(무데이터·블랭킷 = 근거 없음)
   if (product.category === 'makeup' && profile.undertone) {
-    const undertoneLabel = getUndertoneLabel(profile.undertone);
-    if (product.undertones && product.undertones.length > 0) {
-      // 제품에 undertones 데이터가 있으면 실매칭
-      const undertoneMatched = product.undertones.includes(profile.undertone);
+    const undertones = discriminatingTags(product.undertones, TAG_DOMAINS.undertones);
+    if (undertones) {
+      const undertoneMatched = undertones.includes(profile.undertone);
       reasons.push({
         type: 'undertone',
-        label: undertoneLabel,
+        label: getUndertoneLabel(profile.undertone),
         matched: undertoneMatched,
       });
       if (undertoneMatched) {
         score += 15;
       }
-    } else {
-      // 제품에 undertones 데이터 없으면 프로필 완성도 보너스 (5점)
-      reasons.push({
-        type: 'undertone',
-        label: undertoneLabel,
-        matched: false,
-      });
-      score += 5;
     }
   }
 
@@ -230,42 +287,33 @@ function calculateHaircareMatchScore(
 ): MatchResult {
   let score = baseScore;
 
-  // 모발 타입 매칭 (30점) — 제품 hairTypes 배열과 비교
+  // 모발 타입 매칭 (30점) — 제품 hairTypes 배열과 비교.
+  // 무데이터/블랭킷(4종 전부)이면 개인화 신호가 0 → 점수·근거 문구 모두 만들지 않는다.
+  // (prod 헤어케어 26건은 전건 블랭킷이라, 이전 구현은 모두에게 "직모 적합"을 표시했다)
   if (profile.hairType) {
-    const hairTypeLabel = getHairTypeLabel(profile.hairType);
-    if (product.hairTypes && product.hairTypes.length > 0) {
-      // 제품에 hairTypes 데이터가 있으면 실매칭
-      const hairMatched = product.hairTypes.includes(profile.hairType);
+    const hairTypes = discriminatingTags(product.hairTypes, TAG_DOMAINS.hairTypes);
+    if (hairTypes) {
+      const hairMatched = hairTypes.includes(profile.hairType);
       reasons.push({
         type: 'hairType',
-        label: hairTypeLabel,
+        label: getHairTypeLabel(profile.hairType),
         matched: hairMatched,
       });
       if (hairMatched) {
         score += 30;
       }
-    } else {
-      // 제품에 hairTypes 데이터가 없으면 프로필 완성도 보너스 (10점)
-      reasons.push({
-        type: 'hairType',
-        label: hairTypeLabel,
-        matched: false,
-      });
-      score += 10;
     }
   }
 
-  // 두피 타입 매칭 (30점) — scalpTypes 우선, skinTypes 폴백
+  // 두피 타입 매칭 (30점) — scalpTypes 우선, skinTypes 폴백 (둘 다 블랭킷 판정 적용)
   if (profile.scalpType) {
-    const scalpLabel = getScalpTypeLabel(profile.scalpType);
-    // scalpTypes가 있으면 사용, 없으면 skinTypes로 폴백 (dry/oily/sensitive 호환)
-    const targetTypes =
-      product.scalpTypes && product.scalpTypes.length > 0 ? product.scalpTypes : product.skinTypes;
-    if (targetTypes && targetTypes.length > 0) {
+    const scalpTypes = discriminatingTags(product.scalpTypes, TAG_DOMAINS.scalpTypes);
+    const targetTypes = scalpTypes ?? discriminatingTags(product.skinTypes, TAG_DOMAINS.skinTypes);
+    if (targetTypes) {
       const scalpMatched = targetTypes.includes(profile.scalpType as ScalpType & SkinType);
       reasons.push({
         type: 'scalpType',
-        label: scalpLabel,
+        label: getScalpTypeLabel(profile.scalpType),
         matched: scalpMatched,
       });
       if (scalpMatched) {

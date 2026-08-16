@@ -29,6 +29,7 @@ interface MatchedRow {
   product: CosmeticProduct;
   matchScore: number;
   matchReasons: string[];
+  personalMatched?: boolean;
 }
 
 function mockFetchProducts(rows: MatchedRow[]): void {
@@ -74,6 +75,41 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
     const reasons = await screen.findAllByTestId('rank-reason');
     expect(reasons[0]).toHaveTextContent('나와의 적합도 92점 — 여름 쿨톤·건성에 모두 맞아요');
     expect(reasons[1]).toHaveTextContent('나와의 적합도 81점 — 저자극에 맞아요');
+  });
+
+  // A5(2026-08 매칭 감사): 개인 축 0점인데 가격·브랜드 보너스만으로 쌓인 점수를
+  // "나와의 적합도 N점"이라 적으면 하지 않은 개인화를 했다고 말하는 것이 된다.
+  it('개인 축 근거가 없는 제품(personalMatched=false)은 적합도 문구를 표시하지 않는다', async () => {
+    mockFetchProducts([
+      {
+        product: makeCosmetic('p1', '세럼A'),
+        matchScore: 47,
+        matchReasons: ['가성비 좋음', '인기 브랜드'],
+        personalMatched: false,
+      },
+    ]);
+
+    render(<AnalysisMatchedProducts analysisType="personal-color" />);
+
+    const reasons = await screen.findAllByTestId('rank-reason');
+    expect(reasons[0]).toHaveTextContent('');
+    expect(screen.queryByText(/나와의 적합도/)).not.toBeInTheDocument();
+  });
+
+  it('personalMatched=true면 기존대로 적합도 문구를 표시한다', async () => {
+    mockFetchProducts([
+      {
+        product: makeCosmetic('p1', '틴트A'),
+        matchScore: 55,
+        matchReasons: ['겨울 쿨톤'],
+        personalMatched: true,
+      },
+    ]);
+
+    render(<AnalysisMatchedProducts analysisType="personal-color" />);
+
+    const reasons = await screen.findAllByTestId('rank-reason');
+    expect(reasons[0]).toHaveTextContent('나와의 적합도 55점 — 겨울 쿨톤에 맞아요');
   });
 
   it('BEST 1·2 고유 이유가 다르면 비교 캡션을 표시한다', async () => {

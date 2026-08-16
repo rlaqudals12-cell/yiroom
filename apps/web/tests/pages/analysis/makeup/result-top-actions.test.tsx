@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 
 const mockPush = vi.fn();
 const mockParams = { id: 'makeup-123' };
@@ -149,5 +149,17 @@ describe('MakeupAnalysisResultPage — 결론 액션 카드', () => {
         screen.getByText('봄 웜톤이라 코랄 계열이 얼굴을 화사하게 살려줘요')
       ).toBeInTheDocument();
     });
+  });
+
+  // A8(2026-08 매칭 감사): 기존 CTA는 `/products?undertone=…&category=makeup`였는데
+  // /products는 /beauty로 308 리다이렉트되며 파라미터가 유실됐다(수신 페이지가 읽지도 않음).
+  it('"맞춤 화장품 보기"는 /beauty로 직행하며 언더톤을 tone 파라미터로 넘긴다', async () => {
+    render(<MakeupAnalysisResultPage />);
+
+    const cta = await screen.findByRole('button', { name: '맞춤 화장품 보기' });
+    fireEvent.click(cta);
+
+    expect(mockPush).toHaveBeenCalledWith('/beauty?filter=personal-color&tone=warm');
+    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('/products'));
   });
 });

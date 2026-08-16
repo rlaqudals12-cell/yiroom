@@ -671,9 +671,18 @@ export default function MakeupAnalysisResultPage() {
           <div className="max-w-md mx-auto space-y-2">
             <Button
               className="w-full"
-              onClick={() =>
-                router.push(`/products?undertone=${result.undertone || ''}&category=makeup`)
-              }
+              onClick={() => {
+                // 기존 `/products?undertone=…&category=makeup`는 죽은 CTA였다:
+                // `/products`는 `/beauty`로 308 영구 리다이렉트되며 파라미터가 유실되고,
+                // 수신 페이지가 `undertone`/`category=makeup`을 읽지도 않았다.
+                // → 화장품 정본(/beauty)으로 직접 보내고, /beauty가 실제로 해석하는
+                //   `filter`(대분류=메이크업)·`tone`(시즌 필터)으로 프리셋한다.
+                const tone =
+                  result.undertone === 'warm' || result.undertone === 'cool'
+                    ? `&tone=${result.undertone}`
+                    : '';
+                router.push(`/beauty?filter=personal-color${tone}`);
+              }}
             >
               맞춤 화장품 보기
             </Button>

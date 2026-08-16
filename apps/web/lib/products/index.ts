@@ -102,8 +102,30 @@ export {
 // ================================================
 // 매칭 서비스 (Matching)
 // ================================================
-export { calculateMatchScore, addMatchInfo, addMatchInfoToProducts } from './matching';
+export {
+  calculateMatchScore,
+  addMatchInfo,
+  addMatchInfoToProducts,
+  isBlanketTag,
+  hasPersonalMatch,
+  PERSONAL_MATCH_REASON_TYPES,
+} from './matching';
 export type { UserProfile, MatchResult } from './matching';
+
+// ================================================
+// 필터 어휘 브리지 (UI·분석 결과 어휘 ↔ DB 실값)
+// ================================================
+export {
+  CONCERN_DB_SYNONYMS,
+  expandConcernsToDbValues,
+  SKIN_METRIC_TO_CONCERNS,
+  mapSkinMetricsToConcerns,
+  expandSkinConcernsToDbValues,
+  AGE_GROUP_TO_DB,
+  mapAgeGroupsToDbValues,
+  PERSONAL_COLOR_MAKEUP_SUBCATEGORIES,
+} from './vocabulary';
+export type { BeautyConcernId } from './vocabulary';
 
 // ================================================
 // 추천 순위 표현 (Ranking — BEST 1/2/3 배지·이유·비교)
@@ -116,7 +138,7 @@ export {
   buildRankComparisonLine,
   diversifyBySubcategory,
 } from './product-ranking';
-export type { RankBadge } from './product-ranking';
+export type { RankBadge, RankReasonOptions } from './product-ranking';
 
 // ================================================
 // 어필리에이트 서비스 (Affiliate)

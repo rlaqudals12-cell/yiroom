@@ -196,8 +196,10 @@ function MakeupAnalysisResultPage({ params }: { params: { id: string } }) {
 
           <button onClick={() => alert('공유')}>공유하기</button>
           <button
+            // 실제 페이지와 동일한 도착지 — /products는 /beauty로 308 리다이렉트되며
+            // 파라미터가 유실돼 죽은 CTA였다 (2026-08 매칭 감사 A8)
             onClick={() =>
-              (window.location.href = `/products?undertone=${result.undertone}&category=makeup`)
+              (window.location.href = `/beauty?filter=personal-color&tone=${result.undertone}`)
             }
           >
             맞춤 화장품 보기
@@ -362,7 +364,7 @@ describe('MakeupAnalysisResultPage', () => {
       const productButton = screen.getByText('맞춤 화장품 보기');
       fireEvent.click(productButton);
 
-      expect(window.location.href).toBe('/products?undertone=warm&category=makeup');
+      expect(window.location.href).toBe('/beauty?filter=personal-color&tone=warm');
     });
   });
 

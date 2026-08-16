@@ -96,8 +96,23 @@ function cleanReasons(reasons?: readonly string[]): string[] {
   return out;
 }
 
+/** buildRankReasonLine 표현 옵션 */
+export interface RankReasonOptions {
+  /**
+   * 개인 축(퍼스널컬러·피부·모발·언더톤 등 프로필 매칭)에서 실제로 일치한 근거가 있는가.
+   * `false`면 "나와의 적합도 N점"은 거짓이 되므로 문구를 만들지 않는다(빈 문자열).
+   * 생략하면 기존 동작 유지(정보를 모르면 판단하지 않는다).
+   */
+  hasPersonalMatch?: boolean;
+}
+
 /**
  * "왜 이 순위인지" 한 줄. 점수는 실측이므로 그대로 사용(별점 금지).
+ *
+ * ⚠️ 정직 가드(2026-08 매칭 감사): matchScore는 개인 축이 0점이어도 기본점수 20 + 가격 15 +
+ * 브랜드 12처럼 **나와 무관한 대중성 보너스**만으로 47점이 될 수 있다. 그 상태로 "나와의 적합도
+ * 47점"이라 적으면 개인화를 하지 않았는데 했다고 말하는 것 → `hasPersonalMatch: false`면 침묵한다.
+ * (가격·브랜드 근거는 제품 카드의 근거 칩이 따로 표시한다.)
  *
  * @example buildRankReasonLine(92, ['여름 쿨톤', '건성'])
  *   → "나와의 적합도 92점 — 여름 쿨톤·건성에 모두 맞아요"
@@ -105,8 +120,15 @@ function cleanReasons(reasons?: readonly string[]): string[] {
  *   → "나와의 적합도 88점 — 건성에 맞아요"
  * @example buildRankReasonLine(80, [])
  *   → "나와의 적합도 80점"
+ * @example buildRankReasonLine(47, ['가성비 좋음'], { hasPersonalMatch: false })
+ *   → "" (개인 축 근거 없음 → 적합도 주장 금지)
  */
-export function buildRankReasonLine(matchScore: number, matchReasons?: readonly string[]): string {
+export function buildRankReasonLine(
+  matchScore: number,
+  matchReasons?: readonly string[],
+  options?: RankReasonOptions
+): string {
+  if (options?.hasPersonalMatch === false) return '';
   const base = `나와의 적합도 ${Math.round(matchScore)}점`;
   const reasons = cleanReasons(matchReasons);
   if (reasons.length === 0) return base;

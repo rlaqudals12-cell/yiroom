@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { expandConcernsToDbValues } from '@/components/beauty/BeautyRecommendTab';
+import { expandConcernsToDbValues } from '@/lib/products/vocabulary';
 
 /**
  * 뷰티 추천 고민 필터 어휘 매핑 (near-0 붕괴 근본 수리, 2026-07-10)
@@ -7,6 +7,9 @@ import { expandConcernsToDbValues } from '@/components/beauty/BeautyRecommendTab
  * 스킨케어 제품은 concerns가 100% 태깅(null 0건)이라 UI 고민 id와 DB 값 어휘가 어긋나면
  * 여러 고민 선택이 near-0로 붕괴한다. 확장 매핑이 (1) 전 고민을 커버하고 (2) DB 실재 값만
  * 쓰는지(유령 값 0) 검증한다.
+ *
+ * 2026-08-17(A6): 매핑을 컴포넌트에서 lib/products/vocabulary로 승격 — matched 라우트도
+ * 같은 어휘를 쓰도록 정본화했다.
  */
 
 // cosmetic_products.concerns DB 실 vocab (2026-07-10 prod 실쿼리 스냅샷)
