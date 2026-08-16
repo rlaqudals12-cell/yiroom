@@ -1,13 +1,30 @@
 import { shareLogger } from '@/lib/utils/logger';
 
 /**
+ * 카드가 돌아다닐 때 "돌아올 길" — 공유의 유일한 존재 이유.
+ *
+ * 왜 필요한가: 이미지만 공유하면 클릭 가능한 링크가 없어 **공유 100건 = 유입 0건**이 된다
+ * (바이럴 루프 단절). 카드에 구운 워터마크는 텍스트라 클릭이 안 된다.
+ *
+ * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.app` — kakao/qr/metadata와 동일).
+ * `?ref=card`로 카드발 유입을 귀속한다.
+ */
+export const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
+
+/**
  * 이미지를 Web Share API로 공유하거나 다운로드
  * @param blob 공유할 이미지 Blob
  * @param title 공유 제목
  * @param text 공유 텍스트 (선택)
+ * @param url 돌아올 링크 (선택) — 공유 시트의 url + text 양쪽에 실린다
  * @returns 공유 성공 여부
  */
-export async function shareImage(blob: Blob, title: string, text?: string): Promise<boolean> {
+export async function shareImage(
+  blob: Blob,
+  title: string,
+  text?: string,
+  url?: string
+): Promise<boolean> {
   const file = new File([blob], `${title}.png`, { type: 'image/png' });
 
   // Web Share API 지원 확인 (파일 공유 가능 여부)
@@ -17,9 +34,13 @@ export async function shareImage(blob: Blob, title: string, text?: string): Prom
     navigator.canShare?.({ files: [file] })
   ) {
     try {
+      const baseText = text || `${title} - 이룸에서 확인하세요!`;
       await navigator.share({
         title,
-        text: text || `${title} - 이룸에서 확인하세요!`,
+        // 링크를 text에도 싣는다 — files가 동반되면 url을 버리는 공유 타깃이 실재한다(유입 0 방지).
+        // 링크 중복 노출의 손해보다 링크가 아예 없는 손해가 크다.
+        text: url ? `${baseText}\n${url}` : baseText,
+        ...(url ? { url } : {}),
         files: [file],
       });
       return true;

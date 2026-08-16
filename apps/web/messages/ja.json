@@ -805,6 +805,8 @@
     "saveForInstagram": "Instagram用に画像を保存",
     "kakaoViewMore": "詳しく見る",
     "checkOnYiroom": "{title} - Yiroomで確認！",
+    "photoOptIn": "カードにプロフィール写真を載せる",
+    "photoOptInNotice": "初期設定では写真なしで作成されます。顔が写った画像を共有するかどうかはご自身で決めてください。",
     "aiAnalysisSubtitle": "Yiroom AI分析結果",
     "badgeSubtitle": "Yiroomバッジ",
     "badgeAcquired": "🏆 {name} 獲得！",

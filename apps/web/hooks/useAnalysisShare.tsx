@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils/date-format';
 import { AnalysisShareCard } from '@/components/share';
 import type { ShareCardData, ShareCardTheme } from '@/components/share/AnalysisShareCard';
-import { captureElementAsImage, shareImage } from '@/lib/share';
+import { captureElementAsImage, shareImage, SHARE_LANDING_URL } from '@/lib/share';
 import { THEME_STYLES } from '@/components/share/AnalysisShareCard';
 
 export type { ShareCardData, ShareCardTheme };
@@ -33,6 +33,12 @@ interface ShareProfileOptions {
 interface PersonalColorData {
   seasonType: string;
   seasonLabel: string;
+  /**
+   * 12톤 진단명(예: "여름 쿨 뮤트") — 결과 시트 히어로와 동일 소스.
+   * 있으면 카드 진단명으로 승격한다. 4계절 라벨("봄 웜")만 내보내면
+   * 화면이 말하는 진단(12톤)과 공유물이 말하는 진단이 어긋난다.
+   */
+  toneLabel?: string;
   bestColors?: Array<{ hex: string }>;
 }
 
@@ -51,7 +57,7 @@ export function createPersonalColorShareData(
     analysisType: 'personal-color',
     title: '나의 퍼스널 컬러',
     subtitle: '이룸 AI 분석 결과',
-    typeLabel: result.seasonLabel,
+    typeLabel: result.toneLabel || result.seasonLabel,
     typeEmoji: seasonEmoji[result.seasonType] || '🎨',
     colors: result.bestColors?.slice(0, 5).map((c) => c.hex),
     profileImage: profile?.profileImage,
@@ -366,8 +372,13 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
         throw new Error('이미지 생성에 실패했습니다');
       }
 
-      // 공유
-      const success = await shareImage(blob, title, t('checkOnYiroom', { title }));
+      // 공유 — 돌아올 링크(SHARE_LANDING_URL) 동반. 이미지만 공유하면 유입 경로가 없다
+      const success = await shareImage(
+        blob,
+        title,
+        t('checkOnYiroom', { title }),
+        SHARE_LANDING_URL
+      );
 
       if (success && !navigator.share) {
         toast.success(t('imageSaved'));

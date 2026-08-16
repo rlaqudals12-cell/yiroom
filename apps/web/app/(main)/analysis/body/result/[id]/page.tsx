@@ -130,6 +130,8 @@ export default function BodyAnalysisResultPage() {
   // 공유 카드 데이터 (테마/포맷은 ShareThemePicker에서 선택)
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
+  // 사진 옵트인 — 기본 OFF. 켜야만 프로필 사진이 카드에 담긴다(통합 리포트와 동일 계약)
+  const [sharePhotoOptIn, setSharePhotoOptIn] = useState(false);
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -139,12 +141,23 @@ export default function BodyAnalysisResultPage() {
           bodyTypeLabel: result.bodyTypeLabel,
           strengths: result.strengths,
         },
-        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+        {
+          profileImage: sharePhotoOptIn ? user?.imageUrl : undefined,
+          userName: user?.firstName ?? user?.username ?? undefined,
+        }
       ),
       format: shareFormat,
       theme: shareTheme,
     };
-  }, [result, shareFormat, shareTheme, user?.firstName, user?.imageUrl, user?.username]);
+  }, [
+    result,
+    shareFormat,
+    shareTheme,
+    sharePhotoOptIn,
+    user?.firstName,
+    user?.imageUrl,
+    user?.username,
+  ]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -692,6 +705,8 @@ export default function BodyAnalysisResultPage() {
                     onChange={setShareTheme}
                     format={shareFormat}
                     onFormatChange={setShareFormat}
+                    photoOptIn={sharePhotoOptIn}
+                    onPhotoOptInChange={setSharePhotoOptIn}
                   />
                 </PopoverContent>
               </Popover>

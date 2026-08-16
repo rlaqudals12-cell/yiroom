@@ -805,6 +805,8 @@
     "saveForInstagram": "保存Instagram图片",
     "kakaoViewMore": "查看详情",
     "checkOnYiroom": "{title} - 在Yiroom查看！",
+    "photoOptIn": "在卡片中加入我的头像",
+    "photoOptInNotice": "默认不含照片。是否分享包含面部的图片完全由你决定。",
     "aiAnalysisSubtitle": "Yiroom AI分析结果",
     "badgeSubtitle": "Yiroom徽章",
     "badgeAcquired": "🏆 {name} 获得！",

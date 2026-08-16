@@ -805,6 +805,8 @@
     "saveForInstagram": "Save image for Instagram",
     "kakaoViewMore": "View more",
     "checkOnYiroom": "{title} - Check it on Yiroom!",
+    "photoOptIn": "Include my profile photo on the card",
+    "photoOptInNotice": "Cards are created without your photo by default. Whether to share an image with your face is entirely your decision.",
     "aiAnalysisSubtitle": "Yiroom AI Analysis Result",
     "badgeSubtitle": "Yiroom Badge",
     "badgeAcquired": "🏆 {name} Earned!",

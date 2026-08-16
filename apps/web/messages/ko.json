@@ -805,6 +805,8 @@
     "saveForInstagram": "Instagram용 이미지 저장",
     "kakaoViewMore": "자세히 보기",
     "checkOnYiroom": "{title} - 이룸에서 확인하세요!",
+    "photoOptIn": "카드에 내 프로필 사진 담기",
+    "photoOptInNotice": "기본은 사진 없이 만들어져요. 얼굴이 담긴 이미지의 공유 여부는 직접 결정하세요.",
     "aiAnalysisSubtitle": "이룸 AI 분석 결과",
     "badgeSubtitle": "이룸 배지",
     "badgeAcquired": "🏆 {name} 획득!",

@@ -368,6 +368,8 @@ export default function PersonalColorResultPage() {
   // 공유 카드 데이터
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
+  // 사진 옵트인 — 기본 OFF. 켜야만 프로필 사진이 카드에 담긴다(통합 리포트와 동일 계약)
+  const [sharePhotoOptIn, setSharePhotoOptIn] = useState(false);
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -375,14 +377,27 @@ export default function PersonalColorResultPage() {
         {
           seasonType: result.seasonType,
           seasonLabel: result.seasonLabel,
+          // 카드 진단명도 시트 히어로와 같은 12톤 라벨을 쓴다 ("봄 웜" → "여름 쿨 뮤트")
+          toneLabel: result.undertoneLabel,
           bestColors: result.bestColors,
         },
-        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+        {
+          profileImage: sharePhotoOptIn ? user?.imageUrl : undefined,
+          userName: user?.firstName ?? user?.username ?? undefined,
+        }
       ),
       format: shareFormat,
       theme: shareTheme,
     };
-  }, [result, shareFormat, shareTheme, user?.firstName, user?.imageUrl, user?.username]);
+  }, [
+    result,
+    shareFormat,
+    shareTheme,
+    sharePhotoOptIn,
+    user?.firstName,
+    user?.imageUrl,
+    user?.username,
+  ]);
 
   // 공유 훅
   const { share, loading: shareLoading } = useAnalysisShare(
@@ -572,8 +587,8 @@ export default function PersonalColorResultPage() {
       {/* 호스트 확폭 — md+에서 진단지 2단 밀도(01|02, 03 내부 2열, 05|06 병치)를 담기 위해
           ~880px (R5). 모바일은 max-w-lg 그대로(1열 불변). 탭바·헤더도 같은 폭을 따라간다 */}
       <div className="max-w-lg md:max-w-[880px] mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <header className="flex items-center justify-between mb-6">
+        {/* 헤더 — 인쇄물에는 빼기(PDF가 뒤로가기·재분석 버튼으로 시작하지 않게) */}
+        <header className="flex items-center justify-between mb-6" data-print-hide>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-1" />
@@ -670,7 +685,10 @@ export default function PersonalColorResultPage() {
         {result && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* 구 3탭 중 'detailed'는 진단지에 흡수·삭제(세대 정합, 2026-08-01) — 2탭 */}
-            <TabsList className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted">
+            <TabsList
+              className="grid w-full grid-cols-2 mb-4 sticky top-0 z-10 bg-muted"
+              data-print-hide
+            >
               <TabsTrigger value="basic" className="gap-1">
                 <Palette className="w-4 h-4" />
                 {t('basicAnalysis')}
@@ -853,7 +871,10 @@ export default function PersonalColorResultPage() {
 
       {/* P14: 하단 액션 바 — primary는 "다음 행동" 1개만, 공유는 보조 클러스터 (verdict-first 위계) */}
       {result && (
-        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
+        <div
+          className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10"
+          data-print-hide
+        >
           <div className="max-w-md mx-auto space-y-2">
             <Button
               className="w-full"
@@ -886,6 +907,8 @@ export default function PersonalColorResultPage() {
                     onChange={setShareTheme}
                     format={shareFormat}
                     onFormatChange={setShareFormat}
+                    photoOptIn={sharePhotoOptIn}
+                    onPhotoOptInChange={setSharePhotoOptIn}
                   />
                 </PopoverContent>
               </Popover>
@@ -912,9 +935,11 @@ export default function PersonalColorResultPage() {
           >
             <ResultPageInsights currentModule="personal-color" className="mt-0" />
           </ProgressiveDisclosure>
+          {/* sticky primary("내 색상에 맞는 제품" = 제품 페이지 이동)와 역할 분화 —
+              여기는 페이지를 떠나지 않고 보는 인라인 미리보기 */}
           <ProgressiveDisclosure
-            title="내 색에 맞는 제품 추천"
-            summary="퍼스널 컬러와 매칭된 제품을 확인해보세요"
+            title="이 색과 어울리는 제품 미리보기"
+            summary="이 자리에서 바로 몇 가지만 훑어보세요"
             icon={<Palette className="w-4 h-4 text-primary" />}
           >
             <AnalysisMatchedProducts

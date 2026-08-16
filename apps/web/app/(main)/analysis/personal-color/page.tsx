@@ -419,11 +419,16 @@ export default function PersonalColorPage() {
       }
 
       const data = await response.json();
-      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용).
+      // face_image_url(얼굴 사진 서명 URL)은 캐시에서 제외한다 — 브라우저 스토리지에
+      // 얼굴 사진 접근 링크를 남기지 않기 위해. 사진은 항상 API(DB) 경유로만 받는다.
+      // 결과 페이지 복원 경로는 face_image_url 부재를 이미 안전 처리한다(드레이핑 미제공 안내).
       try {
+        const cacheSafeDbData = { ...data.data };
+        delete cacheSafeDbData.face_image_url;
         sessionStorage.setItem(
           `pc-result-${data.data.id}`,
-          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+          JSON.stringify({ dbData: cacheSafeDbData, cachedAt: new Date().toISOString() })
         );
       } catch {
         /* sessionStorage 실패 무시 */

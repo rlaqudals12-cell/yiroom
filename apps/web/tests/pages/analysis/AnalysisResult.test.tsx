@@ -605,6 +605,38 @@ describe('AnalysisResult', () => {
     });
   });
 
+  // 인쇄/PDF는 파일로 손을 떠나는 산출물 — 고지 없이 얼굴 사진을 실어 보내지 않는다.
+  describe('인쇄/PDF 얼굴 사진 제외', () => {
+    it('히어로 사진에 data-print-hide가 붙는다', () => {
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/face.jpg" />);
+
+      expect(screen.getByTestId('pc-hero-photo')).toHaveAttribute('data-print-hide');
+    });
+
+    it('사진이 있을 때 인쇄 전용 색면 스택을 같은 자리에 병치한다', () => {
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/face.jpg" />);
+
+      const printStack = screen.getByTestId('pc-hero-draping-print');
+      expect(printStack).toHaveAttribute('data-print-only');
+      expect(printStack.querySelectorAll('span').length).toBe(5);
+    });
+
+    it('사진이 없으면 인쇄 전용 사본 없이 화면용 스택 하나만 렌더한다', () => {
+      render(<AnalysisResult result={mockResult} />);
+
+      expect(screen.getByTestId('pc-hero-draping')).toBeInTheDocument();
+      expect(screen.queryByTestId('pc-hero-draping-print')).not.toBeInTheDocument();
+    });
+
+    it('사진 로드 실패 후에는 인쇄 전용 사본이 남지 않는다', () => {
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/broken.jpg" />);
+
+      fireEvent.error(screen.getByTestId('pc-hero-photo'));
+      expect(screen.queryByTestId('pc-hero-draping-print')).not.toBeInTheDocument();
+      expect(screen.getByTestId('pc-hero-draping')).toBeInTheDocument();
+    });
+  });
+
   describe('톤 팔레트 총람 질감 스와치 (R4)', () => {
     it('총람 3행을 발색 질감으로 렌더한다 (립→lip, 아이섀도·블러셔→powder)', () => {
       render(<AnalysisResult result={{ ...mockResult, paletteToneKey: 'true-spring' }} />);

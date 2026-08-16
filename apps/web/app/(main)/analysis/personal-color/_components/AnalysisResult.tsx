@@ -1153,11 +1153,41 @@ interface ReportSection {
   half?: boolean;
 }
 
+/** 무사진 히어로 앵커 — 베스트 컬러 색면 스택. 사진 부재 폴백 + 인쇄 대체본으로 공용 */
+function HeroDrapingStack({
+  bestColors,
+  printOnly = false,
+}: {
+  bestColors: ColorInfo[];
+  printOnly?: boolean;
+}): React.JSX.Element {
+  return (
+    <div
+      className="col-start-1 row-start-1 flex aspect-[3/4] w-full flex-col overflow-hidden rounded-xl border border-border md:row-span-2"
+      data-testid={printOnly ? 'pc-hero-draping-print' : 'pc-hero-draping'}
+      aria-hidden="true"
+      {...(printOnly ? { 'data-print-only': '' } : {})}
+    >
+      {bestColors.slice(0, 5).map((color, index) => (
+        <span
+          key={`${color.hex}-${index}`}
+          className="block w-full flex-1"
+          style={{ backgroundColor: color.hex }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /**
  * 히어로 좌측 앵커 — 분석 원본 사진이 있으면 사진(같은 페이지 드레이핑 탭이 이미 표시하는
  * 이미지라 신규 프라이버시 노출 없음), 없거나 로드 실패면 드레이핑 색면 스택을 같은 자리에
  * (데모 포함 — 생성 인물 사진 배제 정본). md+는 두 행(타이틀+속성표) 옆을 세로로 채우는
  * row-span-2 (G1). 본체 분기 이관 — cognitive complexity 절감.
+ *
+ * 인쇄/PDF에는 얼굴 사진을 넣지 않는다(data-print-hide). PDF는 파일로 남아 손을 떠나는
+ * 산출물이라 화면 열람과 프라이버시 성격이 다르고, 어디에도 그 사실을 고지하지 않았다.
+ * 대신 같은 자리에 색면 스택(data-print-only)을 병치해 지면 레이아웃 구멍을 막는다.
  */
 function HeroAnchor({
   photoUrl,
@@ -1172,32 +1202,22 @@ function HeroAnchor({
 }): React.JSX.Element | null {
   if (photoUrl && !photoError) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- 서명 URL 원본(최적화 프록시 비대상)
-      <img
-        src={photoUrl}
-        alt="분석에 사용한 내 사진"
-        onError={onPhotoError}
-        className="col-start-1 row-start-1 aspect-[3/4] w-full rounded-xl border border-border object-cover md:row-span-2"
-        data-testid="pc-hero-photo"
-      />
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element -- 서명 URL 원본(최적화 프록시 비대상) */}
+        <img
+          src={photoUrl}
+          alt="분석에 사용한 내 사진"
+          onError={onPhotoError}
+          className="col-start-1 row-start-1 aspect-[3/4] w-full rounded-xl border border-border object-cover md:row-span-2"
+          data-testid="pc-hero-photo"
+          data-print-hide
+        />
+        {bestColors.length > 0 && <HeroDrapingStack bestColors={bestColors} printOnly />}
+      </>
     );
   }
   if (bestColors.length === 0) return null;
-  return (
-    <div
-      className="col-start-1 row-start-1 flex aspect-[3/4] w-full flex-col overflow-hidden rounded-xl border border-border md:row-span-2"
-      data-testid="pc-hero-draping"
-      aria-hidden="true"
-    >
-      {bestColors.slice(0, 5).map((color, index) => (
-        <span
-          key={`${color.hex}-${index}`}
-          className="block w-full flex-1"
-          style={{ backgroundColor: color.hex }}
-        />
-      ))}
-    </div>
-  );
+  return <HeroDrapingStack bestColors={bestColors} />;
 }
 
 /**

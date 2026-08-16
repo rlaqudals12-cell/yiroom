@@ -429,6 +429,8 @@ export default function SkinAnalysisResultPage() {
   // 공유 카드 데이터
   const [shareFormat, setShareFormat] = useState<ShareCardFormat>('1:1');
   const [shareTheme, setShareTheme] = useState<ShareCardTheme>('default');
+  // 사진 옵트인 — 기본 OFF. 켜야만 프로필 사진이 카드에 담긴다(통합 리포트와 동일 계약)
+  const [sharePhotoOptIn, setSharePhotoOptIn] = useState(false);
   const shareData = useMemo(() => {
     if (!result) return null;
     return {
@@ -438,7 +440,10 @@ export default function SkinAnalysisResultPage() {
           identityLabel: skinIdentityLabel ?? undefined,
           metrics: result.metrics.map((m) => ({ name: m.name, value: m.value })),
         },
-        { profileImage: user?.imageUrl, userName: user?.firstName ?? user?.username ?? undefined }
+        {
+          profileImage: sharePhotoOptIn ? user?.imageUrl : undefined,
+          userName: user?.firstName ?? user?.username ?? undefined,
+        }
       ),
       format: shareFormat,
       theme: shareTheme,
@@ -448,6 +453,7 @@ export default function SkinAnalysisResultPage() {
     skinIdentityLabel,
     shareFormat,
     shareTheme,
+    sharePhotoOptIn,
     user?.firstName,
     user?.imageUrl,
     user?.username,
@@ -1531,6 +1537,8 @@ export default function SkinAnalysisResultPage() {
                 onChange={setShareTheme}
                 format={shareFormat}
                 onFormatChange={setShareFormat}
+                photoOptIn={sharePhotoOptIn}
+                onPhotoOptInChange={setSharePhotoOptIn}
               />
 
               {/* 내 사진으로 공유 (AI 자연 보정) — 기존 익명 일러스트 공유와 별개 옵션 */}

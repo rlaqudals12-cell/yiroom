@@ -5,8 +5,10 @@
  * - 포맷 토글: 정사각형(1:1) / 스토리(9:16)
  * - 5개 테마 프리뷰 (기본/미드나잇/선셋/포레스트/미니멀)
  * - 선택된 항목에 체크/활성 표시
+ * - 사진 옵트인(기본 OFF): 켜야만 프로필 사진이 카드에 담긴다
  */
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Check, Square, RectangleVertical } from 'lucide-react';
 import { SHARE_THEME_OPTIONS } from './AnalysisShareCard';
@@ -17,6 +19,9 @@ interface ShareThemePickerProps {
   onChange: (theme: ShareCardTheme) => void;
   format?: ShareCardFormat;
   onFormatChange?: (format: ShareCardFormat) => void;
+  /** 사진 포함 여부 — 기본 OFF. onPhotoOptInChange가 있어야 체크박스가 노출된다 */
+  photoOptIn?: boolean;
+  onPhotoOptInChange?: (optIn: boolean) => void;
   className?: string;
 }
 
@@ -31,8 +36,12 @@ export function ShareThemePicker({
   onChange,
   format = '1:1',
   onFormatChange,
+  photoOptIn = false,
+  onPhotoOptInChange,
   className,
 }: ShareThemePickerProps) {
+  const t = useTranslations('share');
+
   return (
     <div className={cn('flex flex-col gap-3', className)} data-testid="share-theme-picker">
       {/* 포맷 토글 */}
@@ -85,6 +94,24 @@ export function ShareThemePicker({
           </button>
         ))}
       </div>
+
+      {/* 사진 옵트인 — 기본 OFF. 얼굴이 담긴 이미지의 공유 여부는 사용자가 명시적으로 결정한다
+          (통합 리포트 PersonaShareSection과 동일 계약) */}
+      {onPhotoOptInChange && (
+        <div className="max-w-[220px]">
+          <label className="flex cursor-pointer items-start gap-2">
+            <input
+              type="checkbox"
+              checked={photoOptIn}
+              onChange={(e) => onPhotoOptInChange(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
+              data-testid="share-photo-optin"
+            />
+            <span className="text-xs text-foreground">{t('photoOptIn')}</span>
+          </label>
+          <p className="mt-1.5 text-[11px] text-muted-foreground">{t('photoOptInNotice')}</p>
+        </div>
+      )}
     </div>
   );
 }

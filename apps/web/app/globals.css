@@ -1150,6 +1150,16 @@ html:not(.dark)
    인쇄/PDF 내보내기 스타일
    ======================================== */
 
+/* 인쇄 전용 요소는 화면에서 숨긴다.
+   왜 @media screen인가: 인쇄 시엔 이 규칙 자체가 적용되지 않아 요소의 원래 display
+   (flex/grid 등 유틸리티 클래스)가 그대로 살아난다. 인쇄 쪽에서 display:block을 강제하면
+   flex 레이아웃(예: 드레이핑 색면 스택)이 무너진다. */
+@media screen {
+  [data-print-only] {
+    display: none !important;
+  }
+}
+
 @media print {
   /* 네비게이션/UI 숨김 */
   header[role='banner'],
@@ -1181,10 +1191,7 @@ html:not(.dark)
     break-inside: avoid;
   }
 
-  /* 인쇄 전용 요소 표시 */
-  [data-print-only] {
-    display: block !important;
-  }
+  /* 인쇄 전용 요소는 위 @media screen 규칙이 빠지면서 자동 노출된다 (display 강제 금지) */
 
   /* 그림자/테두리 제거 (잉크 절약) */
   .shadow-sm,
