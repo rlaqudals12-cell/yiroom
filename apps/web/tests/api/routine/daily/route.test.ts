@@ -41,6 +41,29 @@ vi.mock('@/lib/supabase/server', () => ({
 
 import { GET } from '@/app/api/routine/daily/route';
 import { auth } from '@clerk/nextjs/server';
+import { getShelfItems } from '@/lib/scan/product-shelf';
+import { getRoutineProductsByCategory } from '@/lib/skincare/routine-products';
+
+/** 카탈로그 추천 제품 (cosmetic_products → AffiliateProduct 형태, 선별에 쓰는 필드만) */
+const catalogProduct = {
+  id: 'cosmetic-1',
+  name: '약산성 클렌징 폼',
+  brand: '테스트브랜드',
+};
+
+/** 내 화장대 보유 클렌저 (productName 키워드로 cleanser 카테고리 감지) */
+const ownedCleanser = {
+  id: 'shelf-1',
+  clerkUserId: 'user-123',
+  productName: '순한 클렌징 폼',
+  productBrand: '내브랜드',
+  productIngredients: [],
+  status: 'owned',
+  scanMethod: 'manual',
+  scannedAt: new Date('2026-07-01'),
+  createdAt: new Date('2026-07-01'),
+  updatedAt: new Date('2026-07-01'),
+};
 
 const skinRow = {
   id: 'skin-1',
@@ -59,6 +82,9 @@ describe('GET /api/routine/daily', () => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);
     mockSingle.mockResolvedValue({ data: skinRow, error: null });
+    // clearAllMocks는 구현을 지우지 않는다 — 제품/화장대 기본값을 매 테스트 초기화해 순서 의존을 없앤다
+    vi.mocked(getShelfItems).mockResolvedValue({ items: [], total: 0 } as never);
+    vi.mocked(getRoutineProductsByCategory).mockResolvedValue([]);
   });
 
   it('인증되지 않은 요청은 401을 반환한다', async () => {
@@ -119,5 +145,69 @@ describe('GET /api/routine/daily', () => {
 
     // 목표 — 저장된 목표 없으므로 빈 배열
     expect(data.goals).toEqual([]);
+  });
+
+  // ── 스텝 제품 (ADR-117 shelf-우선 + 빈 슬롯 구매 연결) ──────────────────
+
+  it('보유 제품도 카탈로그 추천도 없으면 recommendedProducts를 생략한다(하위호환)', async () => {
+    const response = await GET();
+    const { data } = await response.json();
+
+    const cleanser = data.morning.find((s: { category: string }) => s.category === 'cleanser');
+    expect(cleanser.recommendedProducts).toBeUndefined();
+  });
+
+  it('보유 제품이 없는 스텝에는 카탈로그 추천(source:catalog + productId)을 싣는다', async () => {
+    vi.mocked(getRoutineProductsByCategory).mockResolvedValue([catalogProduct] as never);
+
+    const response = await GET();
+    const { data } = await response.json();
+
+    const cleanser = data.morning.find((s: { category: string }) => s.category === 'cleanser');
+    expect(cleanser.ownedProduct).toBeUndefined();
+    expect(cleanser.recommendedProducts).toEqual([
+      {
+        source: 'catalog',
+        name: '약산성 클렌징 폼',
+        brand: '테스트브랜드',
+        productId: 'cosmetic-1',
+      },
+    ]);
+  });
+
+  it('보유 제품이 있으면 shelf 항목만 싣는다(빈 슬롯에만 구매 연결)', async () => {
+    vi.mocked(getShelfItems).mockResolvedValue({ items: [ownedCleanser], total: 1 } as never);
+    vi.mocked(getRoutineProductsByCategory).mockResolvedValue([catalogProduct] as never);
+
+    const response = await GET();
+    const { data } = await response.json();
+
+    const cleanser = data.morning.find((s: { category: string }) => s.category === 'cleanser');
+    expect(cleanser.ownedProduct).toEqual({ name: '순한 클렌징 폼', brand: '내브랜드' });
+    expect(cleanser.recommendedProducts).toEqual([
+      { source: 'shelf', name: '순한 클렌징 폼', brand: '내브랜드' },
+    ]);
+    // shelf 항목에는 구매 연결 키가 없어야 한다 (제품 상세로 보내지 않음)
+    expect(cleanser.recommendedProducts[0].productId).toBeUndefined();
+
+    // 보유가 없는 다른 스텝은 그대로 카탈로그 추천을 받는다
+    const other = data.morning.find((s: { category: string }) => s.category !== 'cleanser');
+    expect(other.recommendedProducts[0].source).toBe('catalog');
+  });
+
+  it('카탈로그 추천은 스텝당 최대 3개까지만 싣는다', async () => {
+    vi.mocked(getRoutineProductsByCategory).mockResolvedValue(
+      Array.from({ length: 5 }, (_, i) => ({
+        id: `cosmetic-${i}`,
+        name: `제품 ${i}`,
+        brand: '테스트브랜드',
+      })) as never
+    );
+
+    const response = await GET();
+    const { data } = await response.json();
+
+    const cleanser = data.morning.find((s: { category: string }) => s.category === 'cleanser');
+    expect(cleanser.recommendedProducts).toHaveLength(3);
   });
 });

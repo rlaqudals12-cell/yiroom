@@ -4,8 +4,8 @@
  * @description
  *   고민 파생·케어 단계·shelf-우선 배치·스킨 사이클링은 웹 /api/routine/daily가 조립한다(정본 1곳).
  *   이 화면은 결과를 렌더만 한다 — 로컬 루틴 생성 로직 없음. 웹 루틴 페이지 구성을 미러링:
- *   케어 단계 카드 · 목표 칩(읽기) · 아침/저녁 스텝(스펙명·이유·"어떻게 하나요?" how-to·"내 ○○" 보유 배지)
- *   · 저녁 포커스 · 주간 7칸 사이클.
+ *   케어 단계 카드 · 목표 칩(읽기) · 아침/저녁 스텝(스펙명·이유·"어떻게 하나요?" how-to·"내 ○○" 보유 배지
+ *   · 보유가 없는 빈 슬롯의 "맞는 제품 보기" 구매 연결 — ADR-117) · 저녁 포커스 · 주간 7칸 사이클.
  *
  *   분석 0건이면 지어내지 않고 CTA로 유도한다. 오프라인이면 마지막 루틴을 stale 배너와 함께 보여준다.
  *
@@ -26,7 +26,12 @@ import { ProgressiveDisclosure } from '../../../components/common';
 import { ScreenContainer, GlassCard, DataStateWrapper } from '../../../components/ui';
 import { useDailyRoutine } from '../../../hooks/useDailyRoutine';
 import { TIMING } from '../../../lib/animations';
-import type { DailyRoutineData, RoutineStepData, WeeklyCycleDay } from '../../../lib/api/routine';
+import type {
+  DailyRoutineData,
+  RoutineProductData,
+  RoutineStepData,
+  WeeklyCycleDay,
+} from '../../../lib/api/routine';
 
 const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
@@ -268,12 +273,52 @@ function WeeklyCell({ day }: { day: WeeklyCycleDay }) {
 }
 
 /**
+ * 빈 슬롯 구매 연결 칩 — 카탈로그 추천 제품을 제품 상세로 연결한다(웹 "맞는 제품 보기" 문법).
+ * productId가 없으면(구 응답·비정상 데이터) 죽은 링크 대신 제품명만 표시한다.
+ */
+function CatalogProductChip({ product }: { product: RoutineProductData }) {
+  const { colors, brand } = useTheme();
+  const label = product.brand ? `${product.brand} ${product.name}` : product.name;
+  const productId = product.productId;
+
+  if (!productId) {
+    return (
+      <View
+        style={[styles.catalogChip, { backgroundColor: colors.muted }]}
+        testID="routine-catalog-chip"
+      >
+        <Text numberOfLines={1} style={[styles.catalogName, { color: colors.mutedForeground }]}>
+          {label}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      onPress={() => router.push(`/products/${productId}`)}
+      style={[styles.catalogChip, { backgroundColor: colors.muted }]}
+      testID="routine-catalog-chip"
+      accessibilityRole="button"
+      accessibilityLabel={`${label} 맞는 제품 보기`}
+    >
+      <Text numberOfLines={1} style={[styles.catalogName, { color: colors.foreground }]}>
+        {label}
+      </Text>
+      <Text style={[styles.catalogCta, { color: brand.primary }]}>맞는 제품 보기 ›</Text>
+    </Pressable>
+  );
+}
+
+/**
  * 루틴 단계 카드 — 스펙명·이유·보유 배지 + "어떻게 하나요?" how-to(ProgressiveDisclosure).
  */
 function RoutineStepCard({ step }: { step: RoutineStepData }) {
   const { colors, brand } = useTheme();
   const categoryInfo = getCategoryInfo(step.category as ProductCategory);
   const title = step.specName || step.name;
+  // 구버전 서버 응답에는 recommendedProducts가 없다 — 없으면 제품 줄 없이 렌더(하위호환).
+  const catalogPick = (step.recommendedProducts ?? []).find((p) => p.source === 'catalog');
 
   const summary = (
     <View style={styles.stepHeader}>
@@ -305,6 +350,9 @@ function RoutineStepCard({ step }: { step: RoutineStepData }) {
             <Text style={styles.ownedText}>내 {step.ownedProduct.name}</Text>
           </View>
         ) : null}
+        {/* 빈 슬롯 구매 연결 (ADR-117) — 보유 제품이 없는 스텝에만 서버가 catalog 추천을 싣는다.
+            체크리스트 실행 마찰을 늘리지 않도록 상위 1개만 한 줄 칩으로 노출. */}
+        {catalogPick ? <CatalogProductChip product={catalogPick} /> : null}
       </View>
     </View>
   );
@@ -553,6 +601,25 @@ const styles = StyleSheet.create({
   },
   ownedText: {
     color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: typography.weight.semibold,
+  },
+  catalogChip: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    maxWidth: '100%',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.full,
+    marginTop: spacing.xxs,
+  },
+  catalogName: {
+    flexShrink: 1,
+    fontSize: 11,
+  },
+  catalogCta: {
     fontSize: 11,
     fontWeight: typography.weight.semibold,
   },

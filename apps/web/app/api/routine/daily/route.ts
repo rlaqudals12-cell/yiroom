@@ -58,6 +58,22 @@ interface StepHowToDTO {
   tips?: string[];
 }
 
+/**
+ * 스텝에 배치된 제품 (ADR-117 "shelf-우선 + 빈 슬롯 구매 연결").
+ * 'shelf'는 내 화장대 보유 제품이라 구매 연결이 없고("내 ○○" 배지),
+ * 'catalog'는 보유가 없는 빈 슬롯을 채우는 카탈로그 추천이라 제품 상세로 연결된다.
+ */
+interface RoutineProductDTO {
+  source: 'shelf' | 'catalog';
+  name: string;
+  brand?: string;
+  /** catalog일 때만 — cosmetic_products.id (표면의 제품 상세 경로 키) */
+  productId?: string;
+}
+
+/** 스텝당 노출 상한 — enrichRoutineWithProducts가 채우는 개수와 동일 */
+const MAX_STEP_PRODUCTS = 3;
+
 interface RoutineStepDTO {
   order: number;
   category: string;
@@ -75,6 +91,12 @@ interface RoutineStepDTO {
   howto: StepHowToDTO | null;
   /** 내 화장대 보유 제품 ("내 ○○" 배지) — 없으면 생략 */
   ownedProduct?: { name: string; brand?: string };
+  /**
+   * 이 스텝에 배치된 제품(최대 3개) — 보유 제품이 있으면 그것만(source:'shelf'),
+   * 없으면 카탈로그 추천(source:'catalog')이 빈 슬롯의 구매 연결이 된다.
+   * 비어 있으면 생략 — 구 클라이언트는 이 필드를 무시해도 그대로 동작한다(하위호환).
+   */
+  recommendedProducts?: RoutineProductDTO[];
 }
 
 /** 피부 분석 행 (skin_analyses 실존 컬럼) */
@@ -90,9 +112,36 @@ interface SkinAnalysisRow {
   created_at: string;
 }
 
+/**
+ * 스텝 제품 목록 — assembleDailyRoutine이 이미 돌린 enrichRoutineWithProducts 산출물
+ * (ownedProduct + recommendedProducts)을 그대로 옮긴다. 여기서 새로 조립하지 않는다.
+ *
+ * shelf-우선(ADR-117): 보유 제품이 있으면 그 스텝은 이미 채워진 슬롯이라
+ * 카탈로그 구매 연결을 덧붙이지 않는다(빈 슬롯에만 구매 연결).
+ */
+function toStepProducts(step: RoutineStep): RoutineProductDTO[] {
+  if (step.ownedProduct) {
+    return [
+      {
+        source: 'shelf',
+        name: step.ownedProduct.name,
+        ...(step.ownedProduct.brand ? { brand: step.ownedProduct.brand } : {}),
+      },
+    ];
+  }
+
+  return (step.recommendedProducts ?? []).slice(0, MAX_STEP_PRODUCTS).map((product) => ({
+    source: 'catalog' as const,
+    name: product.name,
+    ...(product.brand ? { brand: product.brand } : {}),
+    productId: product.id,
+  }));
+}
+
 /** RoutineStep(정본) → 모바일 DTO. howto는 카테고리 조회(getStepHowTo)로 부착 */
 function toStepDTO(step: RoutineStep): RoutineStepDTO {
   const howto = getStepHowTo(step.category);
+  const products = toStepProducts(step);
   return {
     order: step.order,
     category: step.category,
@@ -119,6 +168,7 @@ function toStepDTO(step: RoutineStep): RoutineStepDTO {
           },
         }
       : {}),
+    ...(products.length > 0 ? { recommendedProducts: products } : {}),
   };
 }
 

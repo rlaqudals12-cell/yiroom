@@ -48,16 +48,26 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
 const mockItems = [
-  { id: '1', moduleCode: 'skin', name: '수분 크림', reason: '건조한 피부에 수분 공급', isChecked: false },
+  {
+    id: '1',
+    moduleCode: 'skin',
+    name: '수분 크림',
+    reason: '건조한 피부에 수분 공급',
+    isChecked: false,
+  },
   { id: '2', moduleCode: 'nutrition', name: '비타민 C', reason: '피부 톤 개선', isChecked: true },
-  { id: '3', moduleCode: 'workout', name: '요가 스트레칭', reason: '혈액순환 개선', isChecked: false },
+  {
+    id: '3',
+    moduleCode: 'workout',
+    name: '요가 스트레칭',
+    reason: '혈액순환 개선',
+    isChecked: false,
+  },
 ];
 
 const mockCapsule = {
@@ -273,6 +283,86 @@ describe('DailyCapsuleCard', () => {
 
       fireEvent.press(getByLabelText('캡슐 펼치기'));
       expect(getByText('건조한 피부에 수분 공급')).toBeTruthy();
+    });
+  });
+
+  // 실제 제품 연결 (ADR-117) — shelf=배지(구매 연결 없음) / catalog=제품 상세 링크
+  describe('아이템 제품 칩', () => {
+    function renderExpanded(items: unknown[]) {
+      const result = renderWithTheme(
+        <DailyCapsuleCard
+          capsule={{ id: 'c', items: items as never, totalCcs: 70, status: 'active' }}
+          completionRate={0}
+          onGenerate={onGenerate}
+          onCheckItem={onCheckItem}
+        />
+      );
+      fireEvent.press(result.getByLabelText('캡슐 펼치기'));
+      return result;
+    }
+
+    it('보유(shelf) 제품은 "내 ○○" 배지로 표시하고 링크하지 않는다', () => {
+      const { getByTestId, getByText, queryByTestId } = renderExpanded([
+        {
+          id: '1',
+          moduleCode: 'skin',
+          name: '수분 크림 바르기',
+          reason: '건조한 피부',
+          isChecked: false,
+          solutionProduct: {
+            id: 'shelf-1',
+            name: '세라마이드 크림',
+            brand: '내브랜드',
+            source: 'shelf',
+            shelfItemId: 'shelf-1',
+          },
+        },
+      ]);
+
+      expect(getByTestId('capsule-owned-chip')).toBeTruthy();
+      expect(getByText('🧴 내 세라마이드 크림')).toBeTruthy();
+      expect(queryByTestId('capsule-catalog-chip')).toBeNull();
+    });
+
+    it('카탈로그 제품은 "맞는 제품 보기"로 제품 상세에 연결한다', () => {
+      const { getByTestId, getByText } = renderExpanded([
+        {
+          id: '1',
+          moduleCode: 'skin',
+          name: '세럼 바르기',
+          reason: '수분 부족',
+          isChecked: false,
+          solutionProduct: {
+            id: 'cosmetic-9',
+            name: '그린티 세럼',
+            brand: '이니스프리',
+            source: 'catalog',
+          },
+        },
+      ]);
+
+      expect(getByText('이니스프리 그린티 세럼')).toBeTruthy();
+      fireEvent.press(getByTestId('capsule-catalog-chip'));
+
+      const { router } = require('expo-router');
+      expect(router.push).toHaveBeenCalledWith('/products/cosmetic-9');
+    });
+
+    it('제품이 없거나 출처를 모르는 구 데이터는 칩을 띄우지 않는다', () => {
+      const { queryByTestId } = renderExpanded([
+        { id: '1', moduleCode: 'skin', name: '세안하기', reason: '아침 루틴', isChecked: false },
+        {
+          id: '2',
+          moduleCode: 'skin',
+          name: '토너 바르기',
+          reason: '수분 공급',
+          isChecked: false,
+          solutionProduct: { id: 'x', name: '옛 제품', brand: '옛브랜드' },
+        },
+      ]);
+
+      expect(queryByTestId('capsule-owned-chip')).toBeNull();
+      expect(queryByTestId('capsule-catalog-chip')).toBeNull();
     });
   });
 

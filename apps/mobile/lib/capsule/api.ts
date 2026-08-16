@@ -12,6 +12,22 @@ import { getApiBaseUrl } from '@/lib/api/base-url';
 // 타입 정의
 // =============================================================================
 
+/**
+ * 데일리 아이템에 붙는 실제 제품 (ADR-117 "shelf-우선 + 빈 슬롯 구매 연결").
+ * 서버(lib/capsule/solution-products)가 이미 실어 보내던 필드 — 모바일 타입에만 없었다.
+ * 'shelf'면 내 제품함 보유 제품이라 id가 shelf 아이템 ID이므로 제품 상세로 연결하지 않는다.
+ */
+export interface DailySolutionProduct {
+  id: string;
+  name: string;
+  brand: string;
+  priceKrw?: number;
+  imageUrl?: string;
+  /** 하위호환: 없으면 출처 불명 — 표면은 칩을 노출하지 않는다(지어내지 않음) */
+  source?: 'shelf' | 'catalog';
+  shelfItemId?: string;
+}
+
 export interface DailyItem {
   id: string;
   moduleCode: string;
@@ -19,6 +35,8 @@ export interface DailyItem {
   reason: string;
   compatibilityScore: number;
   isChecked: boolean;
+  /** 솔루션에 대응하는 실제 제품 — 매칭 실패 시 서버가 싣지 않는다 */
+  solutionProduct?: DailySolutionProduct;
 }
 
 export interface DailyCapsule {

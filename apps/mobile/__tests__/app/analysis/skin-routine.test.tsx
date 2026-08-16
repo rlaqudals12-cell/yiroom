@@ -198,6 +198,66 @@ describe('SkincareRoutineScreen (thin client)', () => {
     expect(getByTestId('routine-care-phase')).toBeTruthy();
   });
 
+  // ── 스텝 제품 (ADR-117 shelf-우선 + 빈 슬롯 구매 연결) ──────────────────
+
+  it('보유 제품이 있는 스텝은 "내 ○○"만 보여주고 구매 칩을 띄우지 않는다', () => {
+    mockHook.data = {
+      ...fullData,
+      morning: [
+        makeStep({
+          ownedProduct: { name: '수분 크림', brand: '테스트' },
+          recommendedProducts: [{ source: 'shelf', name: '수분 크림', brand: '테스트' }],
+        }),
+      ],
+    };
+    const { getByTestId, queryByTestId } = renderWithTheme(<SkincareRoutineScreen />);
+
+    expect(getByTestId('routine-owned-badge')).toBeTruthy();
+    expect(queryByTestId('routine-catalog-chip')).toBeNull();
+  });
+
+  it('빈 슬롯에는 카탈로그 제품 칩을 띄우고 제품 상세로 보낸다', () => {
+    mockHook.data = {
+      ...fullData,
+      morning: [
+        makeStep({
+          recommendedProducts: [
+            { source: 'catalog', name: '그린티 세럼', brand: '이니스프리', productId: 'prod-1' },
+          ],
+        }),
+      ],
+    };
+    const { getByTestId, getByText } = renderWithTheme(<SkincareRoutineScreen />);
+
+    expect(getByText('이니스프리 그린티 세럼')).toBeTruthy();
+    expect(getByText('맞는 제품 보기 ›')).toBeTruthy();
+
+    fireEvent.press(getByTestId('routine-catalog-chip'));
+    const { router } = require('expo-router');
+    expect(router.push).toHaveBeenCalledWith('/products/prod-1');
+  });
+
+  it('productId가 없는 추천은 죽은 링크 대신 제품명만 보여준다', () => {
+    mockHook.data = {
+      ...fullData,
+      morning: [
+        makeStep({ recommendedProducts: [{ source: 'catalog', name: '이름만 있는 제품' }] }),
+      ],
+    };
+    const { getByText, queryByText } = renderWithTheme(<SkincareRoutineScreen />);
+
+    expect(getByText('이름만 있는 제품')).toBeTruthy();
+    expect(queryByText('맞는 제품 보기 ›')).toBeNull();
+  });
+
+  it('구버전 응답(recommendedProducts 없음)도 제품 칩 없이 안전하게 렌더된다', () => {
+    mockHook.data = { ...fullData, morning: [makeStep()] };
+    const { getByText, queryByTestId } = renderWithTheme(<SkincareRoutineScreen />);
+
+    expect(getByText('약산성 클렌저')).toBeTruthy();
+    expect(queryByTestId('routine-catalog-chip')).toBeNull();
+  });
+
   it('저녁 탭으로 전환하면 주간 7칸 사이클을 표시한다', () => {
     mockHook.data = fullData;
     const { getByTestId, getAllByTestId } = renderWithTheme(<SkincareRoutineScreen />);

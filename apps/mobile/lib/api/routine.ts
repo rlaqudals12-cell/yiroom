@@ -34,6 +34,19 @@ export interface StepHowToData {
   tips?: string[];
 }
 
+/**
+ * 스텝에 배치된 제품 (ADR-117 "shelf-우선 + 빈 슬롯 구매 연결").
+ * 'shelf'는 내 화장대 보유 제품 — 구매 연결 없이 "내 ○○"로만 표시한다.
+ * 'catalog'는 보유가 없는 빈 슬롯의 추천 — productId로 제품 상세에 연결한다.
+ */
+export interface RoutineProductData {
+  source: 'shelf' | 'catalog';
+  name: string;
+  brand?: string;
+  /** catalog일 때만 — cosmetic_products.id */
+  productId?: string;
+}
+
 /** 루틴 개별 스텝 */
 export interface RoutineStepData {
   order: number;
@@ -52,6 +65,11 @@ export interface RoutineStepData {
   howto: StepHowToData | null;
   /** 내 화장대 보유 제품 ("내 ○○" 배지) — 없으면 생략 */
   ownedProduct?: { name: string; brand?: string };
+  /**
+   * 이 스텝에 배치된 제품(최대 3개). 구버전 서버 응답에는 없으므로 optional —
+   * 없으면 제품 줄 없이 스텝만 렌더한다.
+   */
+  recommendedProducts?: RoutineProductData[];
 }
 
 /** 케어 단계 (barrier=장벽 회복 우선 / goal=목표 집중) */

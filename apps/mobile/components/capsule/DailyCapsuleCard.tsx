@@ -10,11 +10,13 @@
  * @see docs/adr/ADR-073-one-button-daily.md
  */
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CapsuleProgressBar } from './CapsuleProgressBar';
 import { useConnectionExposure } from '../../hooks/useConnectionExposure';
+import type { DailySolutionProduct } from '../../lib/capsule/api';
 import { capsuleItemToExposeRequest } from '../../lib/connection-awareness';
 import { useTheme } from '../../lib/theme';
 import type { ModuleCode } from '../../types/capsule';
@@ -26,6 +28,8 @@ interface DailyItem {
   name: string;
   reason: string;
   isChecked: boolean;
+  /** 아이템에 붙은 실제 제품 (ADR-117) — 없으면 제품 줄 미노출 */
+  solutionProduct?: DailySolutionProduct;
 }
 
 interface DailyCapsuleCardProps {
@@ -204,6 +208,81 @@ export function DailyCapsuleCard({
 }
 
 /**
+ * 아이템에 붙은 실제 제품 칩 (ADR-117 웹 문법과 동일).
+ * shelf = 내 제품함 보유 → "내 ○○" 배지(구매 연결 없음, id가 shelf 아이템 ID라 제품 상세로 못 감).
+ * catalog = 빈 슬롯 추천 → 제품 상세("맞는 제품 보기")로 연결.
+ */
+function CapsuleProductChip({
+  product,
+}: {
+  product: DailySolutionProduct;
+}): React.JSX.Element | null {
+  const { colors, brand, spacing, radii, typography, isDark } = useTheme();
+
+  if (product.source === 'shelf') {
+    return (
+      <View
+        testID="capsule-owned-chip"
+        style={[
+          styles.productChip,
+          {
+            marginLeft: 32,
+            paddingHorizontal: spacing.sm,
+            paddingVertical: 3,
+            borderRadius: radii.full,
+            backgroundColor: isDark ? 'rgba(34,197,94,0.14)' : 'rgba(34,197,94,0.10)',
+          },
+        ]}
+      >
+        <Text numberOfLines={1} style={{ color: colors.foreground, fontSize: typography.size.xs }}>
+          🧴 내 {product.name}
+        </Text>
+      </View>
+    );
+  }
+
+  // catalog: 제품 상세로 연결 (id = cosmetic_products.id). id가 없으면 죽은 링크 대신 미노출.
+  if (!product.id) return null;
+
+  const label = product.brand ? `${product.brand} ${product.name}` : product.name;
+
+  return (
+    <Pressable
+      testID="capsule-catalog-chip"
+      accessibilityRole="button"
+      accessibilityLabel={`${label} 맞는 제품 보기`}
+      onPress={() => router.push(`/products/${product.id}`)}
+      style={[
+        styles.productChip,
+        {
+          marginLeft: 32,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: 3,
+          borderRadius: radii.full,
+          backgroundColor: colors.muted,
+        },
+      ]}
+    >
+      <Text
+        numberOfLines={1}
+        style={[styles.productName, { color: colors.foreground, fontSize: typography.size.xs }]}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: brand.primary,
+          fontSize: typography.size.xs,
+          fontWeight: typography.weight.semibold,
+        }}
+      >
+        맞는 제품 보기 ›
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
  * 캡슐 아이템 개별 렌더링 — CA expose/confirm 통합
  *
  * depth에 따라 reason 표시 방식 분기:
@@ -238,72 +317,80 @@ function CapsuleItemWithCA({
     }
   }
 
+  // 제품 칩 — 출처(source)가 없는 구 데이터는 노출하지 않는다(shelf/catalog 구분 불가 = 지어내지 않음)
+  const product = item.solutionProduct;
+
   return (
-    <Pressable
-      onPress={handlePress}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: item.isChecked }}
-      accessibilityLabel={`${item.name} ${item.isChecked ? '완료' : '미완료'}`}
-      style={[
-        styles.itemRow,
-        {
-          backgroundColor: item.isChecked
-            ? isDark
-              ? 'rgba(34,197,94,0.08)'
-              : 'rgba(34,197,94,0.06)'
-            : 'transparent',
-          borderRadius: radii.md,
-          padding: spacing.sm,
-        },
-      ]}
-    >
-      {/* 체크 아이콘 */}
-      <View
+    <View>
+      <Pressable
+        onPress={handlePress}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: item.isChecked }}
+        accessibilityLabel={`${item.name} ${item.isChecked ? '완료' : '미완료'}`}
         style={[
-          styles.checkbox,
+          styles.itemRow,
           {
-            borderColor: item.isChecked ? '#22C55E' : colors.border,
-            backgroundColor: item.isChecked ? '#22C55E' : 'transparent',
-            borderRadius: radii.sm,
+            backgroundColor: item.isChecked
+              ? isDark
+                ? 'rgba(34,197,94,0.08)'
+                : 'rgba(34,197,94,0.06)'
+              : 'transparent',
+            borderRadius: radii.md,
+            padding: spacing.sm,
           },
         ]}
       >
-        {item.isChecked ? <Text style={styles.checkmark}>✓</Text> : null}
-      </View>
-
-      {/* 모듈 이모지 + 이름 + 이유 */}
-      <View style={styles.itemContent}>
-        <View style={styles.itemTitleRow}>
-          <Text style={styles.moduleEmoji}>{MODULE_EMOJI[item.moduleCode] ?? '✨'}</Text>
-          <Text
-            style={[
-              styles.itemName,
-              {
-                color: colors.foreground,
-                fontSize: typography.size.sm,
-                fontWeight: typography.weight.medium,
-                textDecorationLine: item.isChecked ? 'line-through' : 'none',
-                opacity: item.isChecked ? 0.6 : 1,
-              },
-            ]}
-          >
-            {item.name}
-          </Text>
+        {/* 체크 아이콘 */}
+        <View
+          style={[
+            styles.checkbox,
+            {
+              borderColor: item.isChecked ? '#22C55E' : colors.border,
+              backgroundColor: item.isChecked ? '#22C55E' : 'transparent',
+              borderRadius: radii.sm,
+            },
+          ]}
+        >
+          {item.isChecked ? <Text style={styles.checkmark}>✓</Text> : null}
         </View>
-        {showReason ? (
-          <Text
-            style={{
-              color: colors.mutedForeground,
-              fontSize: typography.size.xs,
-              marginTop: 2,
-            }}
-            numberOfLines={reasonLines}
-          >
-            {item.reason}
-          </Text>
-        ) : null}
-      </View>
-    </Pressable>
+
+        {/* 모듈 이모지 + 이름 + 이유 */}
+        <View style={styles.itemContent}>
+          <View style={styles.itemTitleRow}>
+            <Text style={styles.moduleEmoji}>{MODULE_EMOJI[item.moduleCode] ?? '✨'}</Text>
+            <Text
+              style={[
+                styles.itemName,
+                {
+                  color: colors.foreground,
+                  fontSize: typography.size.sm,
+                  fontWeight: typography.weight.medium,
+                  textDecorationLine: item.isChecked ? 'line-through' : 'none',
+                  opacity: item.isChecked ? 0.6 : 1,
+                },
+              ]}
+            >
+              {item.name}
+            </Text>
+          </View>
+          {showReason ? (
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.xs,
+                marginTop: 2,
+              }}
+              numberOfLines={reasonLines}
+            >
+              {item.reason}
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
+
+      {/* 실제 제품 연결 — 체크 토글(Pressable) 밖에 두어 터치 중첩 방지 (웹 위젯과 동일 구조) */}
+      {product?.source ? <CapsuleProductChip product={product} /> : null}
+    </View>
   );
 }
 
@@ -364,4 +451,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   itemName: {},
+  productChip: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '100%',
+  },
+  productName: {
+    flexShrink: 1,
+  },
 });
