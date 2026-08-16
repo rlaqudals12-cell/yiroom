@@ -4,12 +4,7 @@
  * 체감온도 기반 레이어링 + 강수/UV 대응 + 체형/퍼스널컬러 적용
  */
 
-import type {
-  WeatherData,
-  OutfitRecommendation,
-  LayerItem,
-  TempLayerInfo,
-} from '@/types/weather';
+import type { WeatherData, OutfitRecommendation, LayerItem, TempLayerInfo } from '@/types/weather';
 import { TEMP_LAYERS, BODY_TYPE_ADJUSTMENTS } from '@/types/weather';
 import { selectByKey, classifyByRange } from '@/lib/utils/conditional-helpers';
 
@@ -85,10 +80,7 @@ function determineLayer(feelsLike: number): {
 /**
  * 체형별 아이템 선택
  */
-function selectByBodyType(
-  items: Record<string, string[]>,
-  bodyType: string
-): string {
+function selectByBodyType(items: Record<string, string[]>, bodyType: string): string {
   const options = items[bodyType] || items.N;
   return options[Math.floor(Math.random() * options.length)];
 }
@@ -104,9 +96,7 @@ function getColorPalette(personalColor: string): string[] {
 
   // 시즌만 있을 때 (예: "Spring", "Summer")
   const season = personalColor.toLowerCase();
-  const matchingKey = Object.keys(COLOR_PALETTES).find((key) =>
-    key.startsWith(season)
-  );
+  const matchingKey = Object.keys(COLOR_PALETTES).find((key) => key.startsWith(season));
 
   if (matchingKey) {
     return COLOR_PALETTES[matchingKey];
@@ -118,11 +108,7 @@ function getColorPalette(personalColor: string): string[] {
 /**
  * 레이어 아이템 생성
  */
-function generateLayers(
-  tempKey: string,
-  bodyType: string,
-  feelsLike: number
-): LayerItem[] {
+function generateLayers(tempKey: string, bodyType: string, feelsLike: number): LayerItem[] {
   const layers: LayerItem[] = [];
   const layerInfo = TEMP_LAYERS[tempKey];
 
@@ -201,9 +187,7 @@ function generateTips(
     if (diff > 5) {
       tips.push('오후에 기온이 올라갈 예정이에요. 가벼운 레이어드를 추천해요.');
     } else if (diff < -5) {
-      tips.push(
-        '오후에 기온이 떨어질 예정이에요. 겉옷을 꼭 챙기세요.'
-      );
+      tips.push('오후에 기온이 떨어질 예정이에요. 겉옷을 꼭 챙기세요.');
     }
   }
 
@@ -254,6 +238,8 @@ export function recommendOutfit(
   const { key: tempKey } = determineLayer(feelsLike);
 
   // 2. 강수 대응 아이템
+  // 주의: 여기의 precipitation은 **예보 강수 확률(%)**이다(OpenWeather pop×100, lib/style/weatherService).
+  // lib/weather의 관측 강수량(precipitationMm)과는 다른 축이라 임계값(50/30%)을 공유하지 않는다.
   const rainItems: string[] = [];
   if (precipitation > 50) {
     rainItems.push('우산', '방수 아우터');
@@ -284,12 +270,7 @@ export function recommendOutfit(
   const materials = MATERIALS_BY_TEMP[tempKey] || MATERIALS_BY_TEMP.mild;
 
   // 7. 팁 생성
-  const tips = generateTips(
-    weather,
-    tempKey,
-    rainItems.length > 0,
-    sunItems.length > 0
-  );
+  const tips = generateTips(weather, tempKey, rainItems.length > 0, sunItems.length > 0);
 
   // 8. 날씨 요약
   const weatherSummary = `${weather.location} ${current.description}, ${current.temp}°C (체감 ${feelsLike}°C)`;
@@ -328,10 +309,7 @@ export function adjustForOccasion(
         }
         return layer;
       });
-      adjusted.tips = [
-        ...adjusted.tips,
-        '포멀한 자리에는 액세서리를 최소화하세요.',
-      ];
+      adjusted.tips = [...adjusted.tips, '포멀한 자리에는 액세서리를 최소화하세요.'];
       break;
 
     case 'workout':

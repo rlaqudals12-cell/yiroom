@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CollageView } from '@/components/inventory';
 import { suggestOutfitFromCloset, type OutfitSuggestion } from '@/lib/inventory/client';
+import { RAIN_THRESHOLD_MM } from '@/lib/weather';
 import type { InventoryItem } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
@@ -22,7 +23,8 @@ interface TodayOutfitCardProps {
   bodyType?: 'S' | 'W' | 'N' | null;
   weather?: {
     temp: number;
-    precipitation?: number;
+    /** 강수량 (mm) — lib/weather의 관측값. 확률(%)이 아니다 */
+    precipitationMm?: number;
     condition?: string;
   } | null;
   className?: string;
@@ -85,8 +87,8 @@ export function TodayOutfitCard({
     );
   }
 
-  // 날씨 아이콘
-  const WeatherIcon = weather?.precipitation && weather.precipitation > 50 ? CloudRain : Sun;
+  // 날씨 아이콘 — mm 관측값 기준(과거 ">50"은 mm를 %로 오해한 임계라 비가 와도 해가 떴다)
+  const WeatherIcon = (weather?.precipitationMm ?? 0) >= RAIN_THRESHOLD_MM ? CloudRain : Sun;
 
   return (
     <div

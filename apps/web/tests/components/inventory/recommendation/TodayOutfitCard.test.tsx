@@ -81,12 +81,7 @@ describe('TodayOutfitCard', () => {
       createMockItem({ subCategory: 'bottom' }),
     ];
 
-    render(
-      <TodayOutfitCard
-        items={items}
-        weather={{ temp: 18, precipitation: 10 }}
-      />
-    );
+    render(<TodayOutfitCard items={items} weather={{ temp: 18, precipitationMm: 0.5 }} />);
 
     expect(screen.getByText('18°C')).toBeInTheDocument();
   });

@@ -6,7 +6,8 @@
  * 사용자의 퍼스널컬러 대표색을 토대로 오늘의 코디 배색을 계산한다.
  *  - 상의(base)  = 베스트 컬러(날짜 기준 회전 선택)
  *  - 하의(bottom) = 유사색(analogous) — 조화로운 기본 배색
- *  - 신발(shoes)  = 중립색(명도로 결정) — 배색을 받쳐주는 뉴트럴
+ *  - 신발(shoes)  = 중립색(명도 + 언더톤으로 결정) — 배색을 받쳐주는 뉴트럴
+ *    (웜=아이보리/에스프레소, 쿨=오프화이트/차콜 — 시즌 미상이면 팔레트 b* 평균으로 폴백)
  *  - 가방(bag)    = 유사색(다른 이웃) — 배색 파생 소품
  *  - 포인트(point) = 진단 팔레트 중 최고 채도 색(하의·가방에 이미 배정된 hex는 배제) — 액세서리 한 점 악센트
  *    (보색 합성 폐지: 합성색은 저채도 베이스에서 흐릿한 비진단색으로 수렴해
@@ -138,19 +139,73 @@ function colorFamilyName(hex: string): string {
   return `${tone}${family} 계열`;
 }
 
+/** 배색 언더톤 — 뉴트럴(신발) 선택 축. 진단 시즌이 있으면 시즌이, 없으면 팔레트가 결정한다 */
+type OutfitUndertone = 'warm' | 'cool';
+
+/**
+ * 언더톤별 뉴트럴 신발 팔레트.
+ * 웜(봄·가을)에게 쿨 오프화이트/차콜을, 쿨(여름·겨울)에게 웜 아이보리를 신기면
+ * 배색 전체가 어긋난다 — 뉴트럴도 언더톤을 따른다.
+ * 전부 저채도(C*<12) 무채~근사무채 — 색을 지어내지 않는다.
+ */
+const NEUTRAL_SHOES: Record<
+  OutfitUndertone,
+  { light: { hex: string; name: string }; dark: { hex: string; name: string }; midGray: string }
+> = {
+  warm: {
+    light: { hex: '#ECE6DC', name: '아이보리' },
+    dark: { hex: '#3B302A', name: '에스프레소' },
+    midGray: '#9A9187', // 웜 그레이(L*≈61)
+  },
+  cool: {
+    light: { hex: '#F0F0F2', name: '오프화이트' },
+    dark: { hex: '#3A3A3C', name: '차콜' },
+    midGray: '#8E939B', // 쿨 그레이(L*≈61)
+  },
+};
+
+/**
+ * 진단 시즌 → 언더톤. 봄·가을=웜, 여름·겨울=쿨.
+ * DB season은 대소문자가 섞여 있고(‘Spring’/‘spring’) 한국어 라벨이 들어올 수도 있어 양쪽을 받는다.
+ * 판정 불가면 null → 팔레트 폴백(paletteUndertone).
+ */
+function seasonUndertone(season?: string | null): OutfitUndertone | null {
+  if (!season) return null;
+  const s = season.toLowerCase();
+  if (s.includes('spring') || s.includes('autumn') || s.includes('fall')) return 'warm';
+  if (s.includes('summer') || s.includes('winter')) return 'cool';
+  if (s.includes('봄') || s.includes('가을')) return 'warm';
+  if (s.includes('여름') || s.includes('겨울')) return 'cool';
+  return null;
+}
+
+/**
+ * 팔레트 언더톤 폴백 — 진단 시즌이 없을 때(구 데이터 등) 팔레트의 b*(노랑–파랑 축) 평균 부호로 판정.
+ * Lab의 b*는 웜/쿨의 1차 축이라 저채도 팔레트에서도 부호가 남는다. 평균>0이면 노랑 기울기(웜).
+ */
+function paletteUndertone(valid: ReadonlyArray<{ hex?: string }>): OutfitUndertone {
+  const meanB =
+    valid.reduce((sum, c) => sum + hexToLab(c.hex as string).b, 0) / Math.max(1, valid.length);
+  return meanB > 0 ? 'warm' : 'cool';
+}
+
 /**
  * 배색을 받쳐주는 중립 신발색 — 밝은 상의는 어두운 신발, 어두운 상의는 밝은 신발(결정론).
- * 저대비(low) 퍼스널 대비에서 밝은 베이스일 때만 차콜 대신 중명도 그레이(L*≈61 무채) —
- * 톤온톤으로 좁힌 상·하의 옆에서 차콜의 강한 명암 점프가 저대비 처방을 깨기 때문.
- * 그 외 전 경로는 현행(차콜/아이보리) 유지 — 뉴트럴 정직 계약(색 지어내기 없음).
+ * 언더톤 분기(2026-08): 웜=아이보리/에스프레소, 쿨=오프화이트/차콜.
+ * 저대비(low) 퍼스널 대비에서 밝은 베이스일 때만 어두운 신발 대신 중명도 그레이(L*≈61 무채) —
+ * 톤온톤으로 좁힌 상·하의 옆에서 어두운 신발의 강한 명암 점프가 저대비 처방을 깨기 때문.
  */
-function neutralShoes(baseL: number, contrast?: OutfitContrast): OutfitColor {
+function neutralShoes(
+  baseL: number,
+  undertone: OutfitUndertone,
+  contrast?: OutfitContrast
+): OutfitColor {
+  const palette = NEUTRAL_SHOES[undertone];
   if (contrast === 'low' && baseL > 55) {
-    return { hex: '#8E939B', role: '신발', name: '그레이' };
+    return { hex: palette.midGray, role: '신발', name: '그레이' };
   }
-  return baseL > 55
-    ? { hex: '#3A3A3C', role: '신발', name: '차콜' }
-    : { hex: '#ECE6DC', role: '신발', name: '아이보리' };
+  const pick = baseL > 55 ? palette.dark : palette.light;
+  return { hex: pick.hex, role: '신발', name: pick.name };
 }
 
 /**
@@ -277,14 +332,20 @@ function pickMutedBag(
  * @param date 기준 날짜(기본 오늘) — 테스트에서 고정 주입
  * @param contrast 퍼스널 대비(ADR-116, 선택) — high면 상·하의 명도 격차를 키우고,
  *   low면 인접 명도(톤온톤)로 좁힌다. 미지정/medium이면 기존 동작(유사색) 유지(하위호환).
+ * @param season 진단 시즌(선택, 예 'spring'·'여름 쿨톤') — 뉴트럴(신발) 언더톤 결정에 사용.
+ *   미지정이면 팔레트 b* 평균으로 폴백(결정론 유지).
  */
 export function composeDailyOutfit(
   bestColors: ReadonlyArray<{ name?: string; hex?: string }>,
   date: Date = new Date(),
-  contrast?: OutfitContrast
+  contrast?: OutfitContrast,
+  season?: string | null
 ): DailyOutfitPalette | null {
   const valid = bestColors.filter((c) => isHex(c?.hex));
   if (valid.length === 0) return null;
+
+  // 뉴트럴 언더톤 — 진단 시즌 우선, 없으면 팔레트에서 폴백(둘 다 결정론)
+  const undertone = seasonUndertone(season) ?? paletteUndertone(valid);
 
   const seed = dateSeed(date);
   const base = valid[seed % valid.length];
@@ -330,8 +391,8 @@ export function composeDailyOutfit(
       { hex: baseHex, role: '상의', name: base.name?.trim() || colorFamilyName(baseHex) },
       // 하의: 뮤트=진단 원본 유지 / 유채=배색 파생 계열명(지어내지 않음)
       bottom,
-      // 신발: 배색을 받쳐주는 중립색(저대비+밝은 베이스만 그레이 분기 — 위 neutralShoes 주석)
-      neutralShoes(baseL, contrast),
+      // 신발: 배색을 받쳐주는 중립색(언더톤 분기 + 저대비·밝은 베이스는 그레이 — neutralShoes 주석)
+      neutralShoes(baseL, undertone, contrast),
       // 가방: 뮤트=진단 원본 유지 / 유채=다른 유사색 계열명
       bag,
       // 포인트: 진단 팔레트 내 최고 채도 색(원본 이름 유지)

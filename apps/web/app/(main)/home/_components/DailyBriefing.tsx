@@ -9,7 +9,7 @@
  *
  * 구성:
  *  1) 브리핑 레터 — 인사 · 관찰 · 조언 · 맺음말
- *  2) 오늘의 실행 3개 — ① 오늘의 루틴 ② 오늘의 스타일 ③ 내 상태
+ *  2) 오늘의 실행 3개 — ① 오늘의 루틴 ② 오늘의 코디 ③ 내 상태
  *  3) 물어보기 프리뷰 인풋 → /coach?q=...
  *  4) 최신 통합 결과 링크
  */
@@ -42,38 +42,78 @@ import {
 import { generateInsights, analysisToDataBundle } from '@/lib/insights';
 import {
   getCurrentWeather,
+  getWeatherWithGeolocation,
   generateEnvironmentAdvice,
   type EnvironmentAdvice,
+  type WeatherData,
+  type WeatherLocationSource,
 } from '@/lib/weather';
 import HomeDailyCapsuleWidget from './HomeDailyCapsuleWidget';
 import { IntegratedSessionPromptCard } from './IntegratedSessionPromptCard';
 
 /**
+ * 위치 사용 동의 플래그 — 코디 추천(/closet/recommend)이 저장하는 키를 그대로 재사용한다.
+ * 홈은 새 동의 UI를 만들지 않는다(브리핑 톤 보호): 이미 동의한 사용자만 실제 위치로 조회하고,
+ * 미동의면 서울 기본 좌표 + "서울 기준" 고지로 정직하게 표시한다.
+ */
+const LOCATION_CONSENT_KEY = 'location_consent';
+
+function hasLocationConsent(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(LOCATION_CONSENT_KEY) === 'granted';
+  } catch {
+    return false; // 스토리지 비활성(사생활 모드) — 동의 없음으로 간주
+  }
+}
+
+/** 홈 브리핑이 쓰는 날씨 상태 — 조언 + 좌표 출처(위치 고지용) */
+interface BriefingWeather {
+  advice: EnvironmentAdvice | null;
+  /** 조회 전이면 null. 'default'면 서울 기본 좌표 → 문구에 "서울 기준" 고지 */
+  locationSource: WeatherLocationSource | null;
+}
+
+/**
  * 환경 조언 로드 — EnvironmentAdviceCard와 동일한 30분 sessionStorage 캐시 재사용.
  * (홈에서 날씨는 단일 소스 — 브리핑이 EnvironmentAdviceCard를 흡수)
+ *
+ * 캐시 키는 좌표 출처별로 분리한다 — 동의 전에 담아둔 서울 값이 동의 후에도 재사용되면
+ * "현재 위치 날씨"라고 잘못 말하게 된다.
  */
-function useEnvironmentAdvice(): EnvironmentAdvice | null {
-  const [advice, setAdvice] = useState<EnvironmentAdvice | null>(null);
+function useEnvironmentAdvice(): BriefingWeather {
+  const [weather, setWeather] = useState<BriefingWeather>({ advice: null, locationSource: null });
 
   useEffect(() => {
     let cancelled = false;
+    function apply(data: WeatherData): void {
+      if (cancelled) return;
+      setWeather({
+        advice: generateEnvironmentAdvice(data),
+        // 구버전 캐시(필드 없음)는 서울 기본값으로 간주 — 위치를 과장하지 않는다
+        locationSource: data.locationSource ?? 'default',
+      });
+    }
+
     async function load(): Promise<void> {
-      const cacheKey = 'env-weather';
+      const consented = hasLocationConsent();
+      const cacheKey = consented ? 'env-weather-geo' : 'env-weather';
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
           const { data, timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < 30 * 60 * 1000) {
-            if (!cancelled) setAdvice(generateEnvironmentAdvice(data));
+            apply(data);
             return;
           }
         } catch {
           /* 캐시 파싱 실패 — 새로 조회 */
         }
       }
-      const data = await getCurrentWeather();
+      // 동의한 사용자만 위치 조회(브라우저 권한 프롬프트) — 그 외에는 서울 기본 좌표
+      const data = consented ? await getWeatherWithGeolocation() : await getCurrentWeather();
       if (data && !cancelled) {
-        setAdvice(generateEnvironmentAdvice(data));
+        apply(data);
         try {
           sessionStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
         } catch {
@@ -87,7 +127,7 @@ function useEnvironmentAdvice(): EnvironmentAdvice | null {
     };
   }, []);
 
-  return advice;
+  return weather;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -106,14 +146,39 @@ const OUTFIT_BAND: ReadonlyArray<{ role: OutfitRole; widthPct: number }> = [
   { role: '신발', widthPct: 13 }, // 뉴트럴 끝단 — 배색을 받쳐주며 바를 닫는다
 ];
 
+/** 밴드에서 "뉴트럴"로 취급하는 역할 — 진단 팔레트가 아니라 배색을 받쳐주는 중립색 */
+const OUTFIT_NEUTRAL_ROLES: ReadonlySet<OutfitRole> = new Set<OutfitRole>(['신발']);
+
+/**
+ * 범례에 색 이름까지 노출할 최소 폭(%). 이 미만 세그먼트는 역할만 보이고
+ * 색 이름은 접근성 텍스트(sr-only)로만 남긴다 — 13% 폭에 이름을 우겨넣으면 둘 다 안 읽힌다.
+ */
+const LEGEND_NAME_MIN_PCT = 15;
+
+type OutfitBandSegment = { color: OutfitColor; widthPct: number };
+
 /** 배색 5색을 표시 순서(상의→하의→가방→포인트→신발)로 재배열 + 폭 비율 결합 */
-function orderOutfitBand(
-  colors: ReadonlyArray<OutfitColor>
-): Array<{ color: OutfitColor; widthPct: number }> {
+function orderOutfitBand(colors: ReadonlyArray<OutfitColor>): OutfitBandSegment[] {
   return OUTFIT_BAND.flatMap(({ role, widthPct }) => {
     const color = colors.find((c) => c.role === role);
     return color ? [{ color, widthPct }] : [];
   });
+}
+
+/**
+ * 밴드 캡션 — 폭이 "면적 비율"이라는 의도를 말로 전달한다(그림만으로는 안 읽힘).
+ * 개수는 실제 렌더 세그먼트에서 세서 표기 — 밴드가 줄어도 문구가 거짓말하지 않는다.
+ */
+function outfitBandCaption(band: ReadonlyArray<OutfitBandSegment>): string {
+  const neutral = band.filter((s) => OUTFIT_NEUTRAL_ROLES.has(s.color.role)).length;
+  const fromPalette = band.length - neutral;
+  return `베스트 컬러에서 뽑은 ${fromPalette}색 + 받쳐주는 뉴트럴 ${neutral}색 — 폭은 실제 착장 면적 비율이에요`;
+}
+
+/** 밴드 전체를 한 장의 그림으로 읽어주는 aria-label(세그먼트별 aria-label 나열 대신 1개) */
+function outfitBandLabel(band: ReadonlyArray<OutfitBandSegment>): string {
+  const parts = band.map((s) => `${s.color.role} ${s.color.name}`).join(', ');
+  return `오늘의 배색: ${parts}`;
 }
 
 /** "기억한다" 화법 입력(제품함 후속 + 오늘 캡슐 우선) */
@@ -207,7 +272,7 @@ interface DailyBriefingProps {
 export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   const { user } = useUser();
   const router = useRouter();
-  const env = useEnvironmentAdvice();
+  const { advice: env, locationSource: weatherLocationSource } = useEnvironmentAdvice();
   const memory = useBriefingMemory(!!user);
   const [question, setQuestion] = useState('');
   // 제품함 후속 응답을 이 세션에서 이미 보냈는지 — 낙관적 "기억해둘게요" 표시용
@@ -249,6 +314,11 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
   const dailyOutfit = payload.todayStyle.outfit;
   const fashionTip = payload.todayStyle.fashionTip;
+  // 배색 밴드 세그먼트(폭 비율 결합) — 밴드·범례·캡션·aria-label이 같은 배열을 공유
+  const outfitBand = useMemo(
+    () => (dailyOutfit ? orderOutfitBand(dailyOutfit.colors) : []),
+    [dailyOutfit]
+  );
   // 응답 대기 중인 제품함 후속(미응답 질문일 때만 존재) — 로컬 const라 클로저에서 좁힘이 유지된다
   const shelfFollowup = briefing.shelfFollowup;
 
@@ -389,15 +459,22 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                   </span>
                 )}
               </div>
-              {/* 색면 밴드 — 이어붙은 색면(간격 0), 높이 48px. 명도 내림차순 표시(위 정렬 주석) */}
-              <div className="mt-3 flex h-12 overflow-hidden rounded-lg">
+              {/* 색면 밴드 — 이어붙은 색면(간격 0), 높이 48px. 명도 내림차순 표시(위 정렬 주석).
+                  경계 링: 흰 카드에서 밝은 색면이 배경에 녹는 것을 막는다.
+                  접근성: 밴드 1장을 그림으로 읽어준다(세그먼트마다 aria-label을 걸면 소음) */}
+              <div
+                className="mt-3 flex h-12 overflow-hidden rounded-lg ring-1 ring-black/5 dark:ring-white/10"
+                role="img"
+                aria-label={`나의 퍼스널컬러 팔레트: ${sortedMyColors
+                  .map((c) => c.name || c.hex)
+                  .join(', ')}`}
+              >
                 {sortedMyColors.map((c, i) => (
                   <span
                     key={`${c.hex}-${i}`}
                     className="h-full min-w-0 flex-1"
                     style={{ backgroundColor: c.hex }}
                     title={c.name || c.hex}
-                    aria-label={c.name || c.hex}
                     data-testid="briefing-color-swatch"
                   />
                 ))}
@@ -427,46 +504,64 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
           <HomeDailyCapsuleWidget />
         </section>
 
-        {/* ② 오늘의 스타일 — 역할별 폭 비율 배색 바(색 질량) + 날씨 팁 */}
-        <section aria-label="오늘의 스타일" data-testid="briefing-style">
-          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 스타일</h3>
+        {/* ② 오늘의 코디 — 역할별 폭 비율 배색 바(색 질량) + 날씨 팁.
+            제목은 목적지(/closet/recommend의 h1 "오늘의 코디")와 같은 말을 쓴다 — 같은 개념의 이름 드리프트 해소 */}
+        <section aria-label="오늘의 코디" data-testid="briefing-style">
+          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 코디</h3>
           <Link
             href="/closet/recommend"
             className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
           >
             {/* 오늘의 배색 (베스트 컬러가 있을 때만 — 결정론). 착장 면적 비율 배색 바 */}
             {dailyOutfit && (
-              <div
-                className="mb-3"
-                data-testid="briefing-outfit-palette"
-                aria-label={`오늘의 배색: ${dailyOutfit.baseName} 기반`}
-              >
-                <div className="flex h-10 overflow-hidden rounded-lg">
-                  {orderOutfitBand(dailyOutfit.colors).map(({ color, widthPct }) => (
+              <div className="mb-3" data-testid="briefing-outfit-palette">
+                {/* 경계 링: 흰 카드에서 밝은 색면이 녹지 않게. 접근성: 밴드 1장 = 그림 1개 */}
+                <div
+                  className="flex h-10 overflow-hidden rounded-lg ring-1 ring-black/5 dark:ring-white/10"
+                  role="img"
+                  aria-label={outfitBandLabel(outfitBand)}
+                >
+                  {outfitBand.map(({ color, widthPct }) => (
                     <span
                       key={color.role}
                       className="h-full"
                       style={{ backgroundColor: color.hex, width: `${widthPct}%` }}
                       title={`${color.role} · ${color.name}`}
-                      aria-label={`${color.role} ${color.name}`}
                       data-testid="briefing-outfit-block"
                     />
                   ))}
                 </div>
-                {/* 범례 — 역할 · 색 이름(파생색은 계열명, 지어내지 않음) */}
-                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
-                  {orderOutfitBand(dailyOutfit.colors).map(({ color }) => (
-                    <span key={color.role} className="text-[10px] text-muted-foreground">
-                      {color.role}{' '}
-                      <span
-                        className="font-medium text-foreground/80"
-                        data-testid="briefing-outfit-name"
-                      >
-                        {color.name}
+                {/* 범례 — 세그먼트와 같은 폭 배분으로 색 아래에 붙는다(wrap 나열이면 어느 색인지 안 읽힘).
+                    좁은 세그먼트(13%)는 역할만 — 색 이름은 위 밴드의 aria-label·title이 전한다.
+                    시각 보조 표기라 aria-hidden(밴드 aria-label과 중복 낭독 방지) */}
+                <div className="mt-1.5 flex" aria-hidden="true">
+                  {outfitBand.map(({ color, widthPct }) => (
+                    <span
+                      key={color.role}
+                      className="min-w-0 px-0.5 text-center"
+                      style={{ width: `${widthPct}%` }}
+                    >
+                      <span className="block text-[11px] leading-tight text-muted-foreground">
+                        {color.role}
                       </span>
+                      {widthPct >= LEGEND_NAME_MIN_PCT && (
+                        <span
+                          className="block break-keep text-[11px] font-medium leading-tight text-foreground/80 line-clamp-2"
+                          data-testid="briefing-outfit-name"
+                        >
+                          {color.name}
+                        </span>
+                      )}
                     </span>
                   ))}
                 </div>
+                {/* 배색 캡션 — 밴드에 소속된 설명(날씨 팁과 경쟁하지 않게 분리) */}
+                <p
+                  className="mt-1.5 break-keep text-[11px] leading-relaxed text-muted-foreground"
+                  data-testid="briefing-outfit-caption"
+                >
+                  {outfitBandCaption(outfitBand)}
+                </p>
               </div>
             )}
             <div className="flex items-center gap-3">
@@ -474,11 +569,21 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                 <Shirt className="h-5 w-5 text-primary" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-foreground/90 leading-snug">
-                  {fashionTip ??
-                    (dailyOutfit
-                      ? '내 베스트 컬러로 짠 오늘의 배색이에요'
-                      : '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요')}
+                {/* 날씨 팁 — 배색 캡션과 별개 줄. 위치는 동의한 사용자만 실제 좌표,
+                    그 외에는 서울 기본값이므로 "서울 기준"을 함께 밝힌다 */}
+                <p
+                  className="text-sm leading-snug text-foreground/90"
+                  data-testid="briefing-weather-tip"
+                >
+                  {fashionTip ?? '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요'}
+                  {fashionTip && weatherLocationSource === 'default' && (
+                    <span
+                      className="ml-1.5 text-xs text-muted-foreground"
+                      data-testid="briefing-weather-location"
+                    >
+                      서울 기준
+                    </span>
+                  )}
                 </p>
                 <p className="mt-0.5 text-xs font-medium text-primary">코디 추천 받기</p>
               </div>

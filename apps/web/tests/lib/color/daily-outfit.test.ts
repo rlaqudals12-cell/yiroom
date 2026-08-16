@@ -61,44 +61,55 @@ describe('composeDailyOutfit', () => {
     expect(point.name).toBe('코랄');
   });
 
-  it('신발은 중립색(차콜/아이보리 뉴트럴)으로 배색을 받쳐준다', () => {
+  it('신발은 중립색 뉴트럴로 배색을 받쳐준다', () => {
     const out = composeDailyOutfit(palette, new Date('2026-07-08'))!;
     const shoes = out.colors.find((c) => c.role === '신발')!;
-    expect(['차콜', '아이보리']).toContain(shoes.name);
+    expect(['차콜', '아이보리', '에스프레소', '오프화이트']).toContain(shoes.name);
   });
 
-  it('저대비(low)+밝은 베이스면 신발은 차콜 대신 중명도 그레이(무채)', () => {
-    // 골드 L*≈87(>55) + low — 톤온톤 처방에서 차콜의 명암 점프를 피한다
+  it('저대비(low)+밝은 베이스면 어두운 신발 대신 중명도 그레이(무채)', () => {
+    // 골드 L*≈87(>55) + low — 톤온톤 처방에서 어두운 신발의 명암 점프를 피한다.
+    // 웜 팔레트(골드)이므로 웜 그레이
     const out = composeDailyOutfit(
       [{ name: '골드', hex: '#FFD700' }],
       new Date('2026-07-08'),
       'low'
     )!;
     const shoes = out.colors.find((c) => c.role === '신발')!;
-    expect(shoes.hex).toBe('#8E939B');
+    expect(shoes.hex).toBe('#9A9187');
     expect(shoes.name).toBe('그레이');
     // 무채 뉴트럴 계약 — 채도 C*<12 (색 지어내기 없음)
     expect(calculateChroma(hexToLab(shoes.hex))).toBeLessThan(12);
+
+    // 쿨 팔레트(더스티 블루)에서는 쿨 그레이
+    const cool = composeDailyOutfit(
+      [{ name: '아이스 블루', hex: '#BFD3E6' }],
+      new Date('2026-07-08'),
+      'low'
+    )!;
+    const coolShoes = cool.colors.find((c) => c.role === '신발')!;
+    expect(coolShoes.hex).toBe('#8E939B');
+    expect(calculateChroma(hexToLab(coolShoes.hex))).toBeLessThan(12);
   });
 
-  it('그레이 분기는 low+밝은 베이스에서만 — 그 외 경로는 현행 차콜/아이보리 유지', () => {
-    // low + 어두운 베이스(잉크 블랙 L*≈9) → 아이보리(현행)
+  it('그레이 분기는 low+밝은 베이스에서만 — 그 외 경로는 명도 규칙 유지', () => {
+    // low + 어두운 베이스(잉크 블랙 L*≈9, 쿨) → 밝은 뉴트럴(오프화이트)
     const dark = composeDailyOutfit(
       [{ name: '잉크 블랙', hex: '#1A1A1E' }],
       new Date('2026-07-08'),
       'low'
     )!;
-    expect(dark.colors.find((c) => c.role === '신발')!.name).toBe('아이보리');
-    // high + 밝은 베이스 → 차콜(현행)
+    expect(dark.colors.find((c) => c.role === '신발')!.name).toBe('오프화이트');
+    // high + 밝은 베이스(골드, 웜) → 어두운 뉴트럴(에스프레소)
     const high = composeDailyOutfit(
       [{ name: '골드', hex: '#FFD700' }],
       new Date('2026-07-08'),
       'high'
     )!;
-    expect(high.colors.find((c) => c.role === '신발')!.name).toBe('차콜');
-    // 대비 미지정 + 밝은 베이스 → 차콜(하위호환)
+    expect(high.colors.find((c) => c.role === '신발')!.name).toBe('에스프레소');
+    // 대비 미지정 + 밝은 베이스 → 어두운 뉴트럴(하위호환)
     const plain = composeDailyOutfit([{ name: '골드', hex: '#FFD700' }], new Date('2026-07-08'))!;
-    expect(plain.colors.find((c) => c.role === '신발')!.name).toBe('차콜');
+    expect(plain.colors.find((c) => c.role === '신발')!.name).toBe('에스프레소');
   });
 
   it('같은 날짜+같은 팔레트면 항상 같은 조합(결정론)', () => {
@@ -129,6 +140,91 @@ describe('composeDailyOutfit', () => {
     expect(named!.baseName).toBe('코랄');
     const unnamed = composeDailyOutfit([{ hex: '#FF7F50' }], new Date('2026-07-08'));
     expect(unnamed!.baseName).toBe('베스트 컬러');
+  });
+});
+
+/**
+ * 뉴트럴(신발) 언더톤 분기 — 쿨(여름·겨울)에게 웜 아이보리를 신기면 배색 전체가 어긋난다.
+ * 진단 시즌이 있으면 시즌이, 없으면 팔레트 b* 평균이 결정한다(둘 다 결정론).
+ */
+describe('composeDailyOutfit — 뉴트럴 시즌(언더톤) 분기', () => {
+  const LIGHT_BASE = [{ name: '라이트 베이스', hex: '#E8DCC8' }]; // L*≈87(>55) → 어두운 뉴트럴 경로
+  const DARK_BASE = [{ name: '다크 베이스', hex: '#2E3138' }]; // L*≈20(<55) → 밝은 뉴트럴 경로
+  const DATE = new Date('2026-07-08');
+
+  function shoes(out: ReturnType<typeof composeDailyOutfit>): { hex: string; name: string } {
+    const s = out!.colors.find((c) => c.role === '신발')!;
+    return { hex: s.hex, name: s.name };
+  }
+
+  it('쿨(여름·겨울)은 오프화이트/차콜을 신는다', () => {
+    expect(shoes(composeDailyOutfit(DARK_BASE, DATE, undefined, 'summer'))).toEqual({
+      hex: '#F0F0F2',
+      name: '오프화이트',
+    });
+    expect(shoes(composeDailyOutfit(LIGHT_BASE, DATE, undefined, 'winter'))).toEqual({
+      hex: '#3A3A3C',
+      name: '차콜',
+    });
+  });
+
+  it('웜(봄·가을)은 아이보리/에스프레소를 신는다', () => {
+    expect(shoes(composeDailyOutfit(DARK_BASE, DATE, undefined, 'spring'))).toEqual({
+      hex: '#ECE6DC',
+      name: '아이보리',
+    });
+    expect(shoes(composeDailyOutfit(LIGHT_BASE, DATE, undefined, 'autumn'))).toEqual({
+      hex: '#3B302A',
+      name: '에스프레소',
+    });
+  });
+
+  it('시즌 표기 흔들림(대문자·한국어 라벨)도 같은 언더톤으로 읽는다', () => {
+    const upper = shoes(composeDailyOutfit(LIGHT_BASE, DATE, undefined, 'Winter'));
+    const korean = shoes(composeDailyOutfit(LIGHT_BASE, DATE, undefined, '겨울 쿨톤'));
+    expect(upper.name).toBe('차콜');
+    expect(korean.name).toBe('차콜');
+  });
+
+  it('시즌이 없으면 팔레트 b* 평균으로 폴백한다(웜 팔레트=웜 뉴트럴)', () => {
+    // 코랄·골드·오렌지 = b* 평균 크게 양수(노랑 기울기) → 웜
+    const warm = shoes(composeDailyOutfit(palette, DATE));
+    expect(['아이보리', '에스프레소']).toContain(warm.name);
+    // 쿨 팔레트(블루·라벤더) → 쿨 뉴트럴
+    const cool = shoes(
+      composeDailyOutfit(
+        [
+          { name: '아이스 블루', hex: '#9DBEDC' },
+          { name: '라벤더', hex: '#B9AEDC' },
+        ],
+        DATE
+      )
+    );
+    expect(['오프화이트', '차콜']).toContain(cool.name);
+  });
+
+  it('시즌 분기 후에도 결정론 — 같은 입력이면 같은 조합', () => {
+    const a = composeDailyOutfit(LIGHT_BASE, DATE, 'high', 'autumn');
+    const b = composeDailyOutfit(LIGHT_BASE, DATE, 'high', 'autumn');
+    expect(a).toEqual(b);
+    // 시즌만 달라지면 신발만 달라진다(나머지 배색은 불변 — 시즌은 뉴트럴 축에만 개입)
+    const cool = composeDailyOutfit(LIGHT_BASE, DATE, 'high', 'winter')!;
+    const warm = composeDailyOutfit(LIGHT_BASE, DATE, 'high', 'autumn')!;
+    expect(cool.colors.filter((c) => c.role !== '신발')).toEqual(
+      warm.colors.filter((c) => c.role !== '신발')
+    );
+    expect(cool.colors.find((c) => c.role === '신발')!.hex).not.toBe(
+      warm.colors.find((c) => c.role === '신발')!.hex
+    );
+  });
+
+  it('뉴트럴은 저채도 계약을 지킨다(C*<12 — 색 지어내기 없음)', () => {
+    for (const season of ['spring', 'summer', 'autumn', 'winter']) {
+      for (const base of [LIGHT_BASE, DARK_BASE]) {
+        const s = shoes(composeDailyOutfit(base, DATE, undefined, season));
+        expect(calculateChroma(hexToLab(s.hex))).toBeLessThan(12);
+      }
+    }
   });
 });
 

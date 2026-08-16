@@ -86,7 +86,8 @@ export function assembleBriefing(
   // 나의 컬러 + 오늘의 배색 — PC 분석의 베스트 컬러에서 파생
   const pcEntry = analyses.find((a) => a.type === 'personal-color');
   const bestColors = pcEntry?.bestColors ?? [];
-  const outfit = composeDailyOutfit(bestColors, now, pcEntry?.contrastLevel);
+  // 시즌(seasonType)까지 넘겨 뉴트럴(신발)이 언더톤을 따르게 한다 — 쿨에게 웜 아이보리를 신기지 않는다
+  const outfit = composeDailyOutfit(bestColors, now, pcEntry?.contrastLevel, pcEntry?.seasonType);
 
   // 브리핑 문장 — 피부 추이 + 마지막 분석 경과 + 날씨 팁을 규칙 조립(composeBriefing)
   const skinEntry = analyses.find((a) => a.type === 'skin');

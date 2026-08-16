@@ -61,7 +61,9 @@ export interface CurrentWeather {
   uvi: number; // UV 지수 (0-11+)
   description: string; // "맑음", "흐림" 등
   icon: string; // 아이콘 코드
-  precipitation: number; // 강수 확률 (%)
+  // 강수 확률 (%) — OpenWeather 예보의 pop×100(lib/style/weatherService).
+  // lib/weather의 `precipitationMm`(관측 강수량 mm)과는 단위·의미가 다른 값이다.
+  precipitation: number;
 }
 
 // 시간별 예보

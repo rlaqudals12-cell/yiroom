@@ -17,11 +17,13 @@ vi.mock('@clerk/nextjs', () => ({
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
 }));
-// 날씨/인사이트는 부작용 훅 — 비어있는 결과로 stub (레터 문장은 분석 데이터로 생성)
-vi.mock('@/lib/weather', () => ({
-  getCurrentWeather: vi.fn().mockResolvedValue(null),
-  generateEnvironmentAdvice: vi.fn().mockReturnValue({ skin: [], fashion: [] }),
+// 날씨/인사이트는 부작용 훅 — 기본은 비어있는 결과로 stub (레터 문장은 분석 데이터로 생성)
+const weatherMocks = vi.hoisted(() => ({
+  getCurrentWeather: vi.fn(),
+  getWeatherWithGeolocation: vi.fn(),
+  generateEnvironmentAdvice: vi.fn(),
 }));
+vi.mock('@/lib/weather', () => weatherMocks);
 vi.mock('@/lib/insights', () => ({
   generateInsights: () => ({ insights: [] }),
   analysisToDataBundle: () => ({}),
@@ -64,6 +66,20 @@ const analysesWithColors = [
   },
 ] as AnalysisSummary[];
 
+/** 날씨 응답 팩토리 — lib/weather의 WeatherData 형태(강수는 mm, 좌표 출처 포함) */
+function createWeather(overrides: Record<string, unknown> = {}) {
+  return {
+    temp: 22,
+    precipitationMm: 0,
+    precipitation: 0,
+    condition: '맑음',
+    uvIndex: 3,
+    humidity: 50,
+    locationSource: 'default',
+    ...overrides,
+  };
+}
+
 describe('DailyBriefing', () => {
   beforeEach(() => {
     pushMock.mockClear();
@@ -71,6 +87,13 @@ describe('DailyBriefing', () => {
     // 기본: 제품함/캡슐 비어 있음 → 화법 미주입(기존 렌더 단언에 영향 없음)
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
     vi.stubGlobal('fetch', fetchMock);
+    // 날씨 기본값: 조회 실패(null) → 팁 미주입
+    weatherMocks.getCurrentWeather.mockReset().mockResolvedValue(null);
+    weatherMocks.getWeatherWithGeolocation.mockReset().mockResolvedValue(null);
+    weatherMocks.generateEnvironmentAdvice.mockReset().mockReturnValue({ skin: [], fashion: [] });
+    // 위치 동의 플래그·30분 날씨 캐시는 테스트 간 누수 금지
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -156,12 +179,50 @@ describe('DailyBriefing', () => {
     expect(screen.getAllByTestId('briefing-outfit-block')).toHaveLength(5);
   });
 
-  it('각 배색 블록에 색 이름을 표시한다(상의=원본, 파생=계열명)', () => {
+  // 범례 정렬 수리: 좁은 세그먼트(13%)는 역할만 — 색 이름은 폭이 넉넉한 3칸에만 붙는다
+  it('범례 색 이름은 폭 15% 이상 세그먼트에만 표시한다(상의·하의·가방)', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const names = screen.getAllByTestId('briefing-outfit-name');
-    expect(names).toHaveLength(5);
+    expect(names).toHaveLength(3);
     // 상의는 진단된 원본 이름 중 하나(코랄/골드/오렌지), 파생 블록엔 '계열' 표기가 존재
     expect(names.some((n) => /계열/.test(n.textContent ?? ''))).toBe(true);
+  });
+
+  // 범례는 세그먼트 폭에 맞춰 배치(wrap 나열이면 어느 색의 이름인지 못 읽음)
+  it('범례 셀 폭이 대응 세그먼트 폭과 같다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const blockWidths = (screen.getAllByTestId('briefing-outfit-block') as HTMLElement[]).map(
+      (el) => parseFloat(el.style.width)
+    );
+    const legendCells = Array.from(
+      screen.getByTestId('briefing-outfit-palette').querySelectorAll('div[aria-hidden] > span')
+    ) as HTMLElement[];
+    expect(legendCells.map((el) => parseFloat(el.style.width))).toEqual(blockWidths);
+  });
+
+  // 접근성: 밴드는 그림 1개(role=img) + 라벨 1개 — 색면마다 aria-label을 걸면 소음이 된다
+  it('배색 밴드를 role="img" + 단일 aria-label로 읽어준다(색 이름 5개 모두 포함)', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const band = screen.getByRole('img', { name: /오늘의 배색/ });
+    const label = band.getAttribute('aria-label') ?? '';
+    for (const role of ['상의', '하의', '가방', '포인트', '신발']) {
+      expect(label).toContain(role);
+    }
+    // 색면(세그먼트)에는 개별 aria-label이 남아 있지 않다
+    const blocks = screen.getAllByTestId('briefing-outfit-block');
+    expect(blocks.every((el) => !el.hasAttribute('aria-label'))).toBe(true);
+    // 경계 링 — 흰 카드에서 밝은 색면이 배경에 녹지 않게
+    expect(band.className).toContain('ring-1');
+  });
+
+  // 퍼스널컬러 밴드도 같은 계약(경계 링 + 그림 1개)
+  it('퍼스널컬러 밴드도 role="img" + 경계 링을 갖는다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    const band = screen.getByRole('img', { name: /나의 퍼스널컬러 팔레트/ });
+    expect(band.className).toContain('ring-1');
+    expect(
+      screen.getAllByTestId('briefing-color-swatch').every((el) => !el.hasAttribute('aria-label'))
+    ).toBe(true);
   });
 
   // 포인트 6%→13% 상향(지각 한계 미만 수리) — 합 100% 유지
@@ -338,5 +399,78 @@ describe('DailyBriefing', () => {
     // 회고 문장(긍정)만 노출, 응답 버튼은 없음
     expect(await screen.findByText(/잘 맞는다고/)).toBeInTheDocument();
     expect(screen.queryByTestId('shelf-feedback-actions')).not.toBeInTheDocument();
+  });
+
+  // ── 명칭 통일: 목적지(/closet/recommend h1)와 같은 말을 쓴다 ──
+  it('섹션 제목은 "오늘의 코디"다(목적지 h1과 일치)', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+    expect(screen.getByRole('heading', { name: '오늘의 코디' })).toBeInTheDocument();
+    expect(screen.queryByText('오늘의 스타일')).not.toBeInTheDocument();
+  });
+
+  // ── 캡션 병렬화: 날씨 팁이 배색 설명을 덮어쓰지 않는다(이전엔 fashionTip ?? 배색설명) ──
+  it('날씨 팁이 있어도 배색 캡션을 함께 보여준다(2줄 병렬)', async () => {
+    weatherMocks.getCurrentWeather.mockResolvedValue(createWeather({ precipitationMm: 1 }));
+    weatherMocks.generateEnvironmentAdvice.mockReturnValue({
+      skin: ['보습 강화 필요'],
+      fashion: ['지금 비가 내리고 있어요 — 우산을 챙기세요'],
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    // 날씨 팁(아이콘 행)
+    expect(await screen.findByTestId('briefing-weather-tip')).toHaveTextContent('우산');
+    // 배색 캡션(밴드 소속) — 면적 비율 의도를 말로 전달
+    const caption = screen.getByTestId('briefing-outfit-caption');
+    expect(caption).toHaveTextContent('착장 면적 비율');
+    // 개수는 실제 렌더 세그먼트에서 센다(뉴트럴=신발 1칸)
+    expect(caption).toHaveTextContent('4색');
+    expect(caption).toHaveTextContent('뉴트럴 1색');
+  });
+
+  // ── 위치 정직화: 동의 전에는 서울 기본 좌표 + "서울 기준" 고지 ──
+  it('위치 동의가 없으면 서울 기본 좌표로 조회하고 "서울 기준"을 밝힌다', async () => {
+    weatherMocks.getCurrentWeather.mockResolvedValue(createWeather());
+    weatherMocks.generateEnvironmentAdvice.mockReturnValue({
+      skin: [],
+      fashion: ['쾌적한 날씨 — 자유로운 스타일링 가능'],
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-weather-location')).toHaveTextContent('서울 기준');
+    expect(weatherMocks.getCurrentWeather).toHaveBeenCalled();
+    // 동의 없이 브라우저 위치 권한을 요청하지 않는다(홈에 새 동의 UI도 만들지 않는다)
+    expect(weatherMocks.getWeatherWithGeolocation).not.toHaveBeenCalled();
+  });
+
+  it('코디 페이지에서 이미 위치에 동의했으면 실제 위치로 조회하고 "서울 기준"을 붙이지 않는다', async () => {
+    localStorage.setItem('location_consent', 'granted');
+    weatherMocks.getWeatherWithGeolocation.mockResolvedValue(
+      createWeather({ locationSource: 'geolocation' })
+    );
+    weatherMocks.generateEnvironmentAdvice.mockReturnValue({
+      skin: [],
+      fashion: ['쾌적한 날씨 — 자유로운 스타일링 가능'],
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    await waitFor(() => expect(weatherMocks.getWeatherWithGeolocation).toHaveBeenCalledTimes(1));
+    expect(weatherMocks.getCurrentWeather).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.getByTestId('briefing-weather-tip')).toHaveTextContent('쾌적한 날씨')
+    );
+    expect(screen.queryByTestId('briefing-weather-location')).not.toBeInTheDocument();
+  });
+
+  it('날씨를 못 받으면 위치 고지 없이 기본 안내만 보여준다', async () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    await waitFor(() => expect(weatherMocks.getCurrentWeather).toHaveBeenCalled());
+    expect(screen.getByTestId('briefing-weather-tip')).toHaveTextContent(
+      '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요'
+    );
+    expect(screen.queryByTestId('briefing-weather-location')).not.toBeInTheDocument();
   });
 });

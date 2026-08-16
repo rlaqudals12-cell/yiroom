@@ -43,8 +43,38 @@ describe('lib/weather', () => {
 
       expect(result).not.toBeNull();
       expect(result?.temp).toBe(16); // 반올림
-      expect(result?.precipitation).toBe(20); // 0.2 * 100
       expect(result?.condition).toBe('맑음');
+    });
+
+    // 단위 계약(회귀 방지): Open-Meteo current.precipitation은 mm.
+    // 과거 구현은 mm×100을 "%"로 사칭해 0.2mm를 "20%"로 표시했다 — 그 변환은 폐지됐다.
+    it('강수량을 mm 그대로 반환한다(×100 % 사칭 금지)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temperature_2m: 15.5, precipitation: 0.24, weather_code: 61 },
+          }),
+      });
+
+      const result = await getCurrentWeather();
+
+      expect(result?.precipitationMm).toBe(0.2); // 소수 1자리 반올림, ×100 아님
+      expect(result?.precipitation).toBe(result?.precipitationMm); // 하위호환 별칭도 같은 mm 값
+    });
+
+    it('기본 좌표 조회는 locationSource="default"로 표시한다(위치 과장 금지)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temperature_2m: 10, precipitation: 0, weather_code: 0 },
+          }),
+      });
+
+      const result = await getCurrentWeather();
+
+      expect(result?.locationSource).toBe('default');
     });
 
     it('API 에러 시 null을 반환한다', async () => {
@@ -290,9 +320,42 @@ describe('lib/weather', () => {
       const result = await getWeatherWithGeolocation();
 
       expect(result).not.toBeNull();
+      // 실제 사용자 좌표로 조회했을 때만 'geolocation' — UI의 "서울 기준" 고지 분기 근거
+      expect(result?.locationSource).toBe('geolocation');
       const calledUrl = mockFetch.mock.calls[0][0] as string;
       expect(calledUrl).toContain('latitude=35.1796');
       expect(calledUrl).toContain('longitude=129.0756');
+    });
+
+    it('권한 거부로 서울 기본값을 쓰면 locationSource는 default로 남는다', async () => {
+      (global as Record<string, unknown>).window = {};
+      (global as Record<string, unknown>).navigator = {
+        geolocation: {
+          getCurrentPosition: (_success: PositionCallback, error: PositionErrorCallback | null) => {
+            error?.({
+              code: 1,
+              message: 'Permission denied',
+              PERMISSION_DENIED: 1,
+              POSITION_UNAVAILABLE: 2,
+              TIMEOUT: 3,
+            });
+          },
+          clearWatch: () => {},
+          watchPosition: () => 0,
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            current: { temperature_2m: 10, precipitation: 0, weather_code: 0 },
+          }),
+      });
+
+      const result = await getWeatherWithGeolocation();
+
+      expect(result?.locationSource).toBe('default');
     });
   });
 });
