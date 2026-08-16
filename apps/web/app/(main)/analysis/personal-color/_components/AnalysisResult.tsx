@@ -29,6 +29,7 @@ import {
   MALE_STYLE_DESCRIPTIONS,
 } from '@/lib/mock/personal-color';
 import { ScaleIn } from '@/components/animations';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import { getKoreanColorName } from '@/lib/utils/color-names';
@@ -371,12 +372,16 @@ interface AnalysisEvidence {
 
 interface AnalysisResultProps {
   result: PersonalColorResult;
-  onRetry?: () => void;
   evidence?: AnalysisEvidence | null;
   /** 퍼스널 대비 실측값(ADR-116) — 호스트가 저장값이 있을 때만 전달(없으면 행 미렌더) */
   contrastLevel?: 'low' | 'medium' | 'high' | null;
   /** 분석 원본 사진 URL — 있으면 md+ 히어로를 2단(사진|진단명)으로. 없으면 현 레이아웃(데모·구 데이터 폴백) */
   photoUrl?: string;
+  /**
+   * 공개 데모 등 "내 사진이 아닌 예시 결과"일 때 true — 시트 안에 샘플 고지 배지를 인쇄한다.
+   * (시트만 캡처되면 진짜 진단과 구분할 수 없으므로 고지는 시트 내부에 있어야 한다)
+   */
+  isSample?: boolean;
 }
 
 // "그래서, 이렇게 하세요" 액션 조립 — 규칙 기반 (새 fetch/AI 없음). 컴포넌트 복잡도 절감 위해 분리.
@@ -1206,10 +1211,10 @@ function HeroAnchor({
  */
 export default function AnalysisResult({
   result,
-  onRetry: _onRetry,
   evidence,
   contrastLevel,
   photoUrl,
+  isSample = false,
 }: AnalysisResultProps) {
   // 사진 앵커 로드 실패 시 무사진 히어로로 폴백 (만료된 서명 URL 등 — 깨진 이미지 노출 금지)
   const [photoError, setPhotoError] = useState(false);
@@ -1310,21 +1315,21 @@ export default function AnalysisResult({
 
   const sections: ReportSection[] = [];
 
-  // 01 그래서 이렇게 — 기존 TopActionsCard 그대로 (내부 제목은 섹션 헤더와 중복이라 시각만 숨김).
+  // 01 그래서 이렇게 — 기존 TopActionsCard 그대로. 내부 제목은 섹션 헤더와 같은 문구라
+  // headingHidden으로 아예 렌더하지 않는다(sr-only는 낭독이 남아 제목이 3중으로 읽혔음).
   // 속성표 흡수 후 홀로 남은 half는 md 우측 공백을 만들어 풀폭 밴드로 전환(G1)
   if (topActions.length > 0) {
     sections.push({
       key: 'actions',
       title: '그래서, 이렇게 하세요',
       body: (
-        <div className="[&_h2]:sr-only">
-          {/* G9 액션 존 배경 — 핑크 틴트 카드를 딥크림 지면으로 교체(핑크는 결론·TIP 악센트만 잔류).
-              다크는 딥크림 토큰이 카드와 동색이라 단차 소멸 — 백색 3% 오버레이로 명도 단차 복원 */}
-          <TopActionsCard
-            actions={topActions}
-            className="border-border bg-surface-ground-deep dark:bg-white/[0.03]"
-          />
-        </div>
+        // G9 액션 존 배경 — 핑크 틴트 카드를 딥크림 지면으로 교체(핑크는 결론·TIP 악센트만 잔류).
+        // 다크는 딥크림 토큰이 카드와 동색이라 단차 소멸 — 백색 3% 오버레이로 명도 단차 복원
+        <TopActionsCard
+          actions={topActions}
+          headingHidden
+          className="border-border bg-surface-ground-deep dark:bg-white/[0.03]"
+        />
       ),
     });
   }
@@ -1436,7 +1441,11 @@ export default function AnalysisResult({
           <div className="px-5 pb-6 pt-6 sm:px-7">
             {/* 마스트헤드 — 아이브로우 + 이중 헤어라인(신문 마스트헤드 관례, R6).
                 md+에선 라벨이 히어로 캡션(리포트명·진단일 병치)으로 내려가므로 괘선만 남긴다(G1) */}
-            <ReportEyebrow className="md:hidden">PERSONAL COLOR REPORT</ReportEyebrow>
+            <div className="flex items-center justify-between gap-2">
+              <ReportEyebrow className="md:hidden">PERSONAL COLOR REPORT</ReportEyebrow>
+              {/* 샘플 고지 — 시트를 그대로 캡처해도 예시임이 남도록 지면 안(마스트헤드)에 인쇄 */}
+              {isSample && <MockDataNotice compact className="ml-auto" />}
+            </div>
             <div aria-hidden="true" className="mt-2.5 md:mt-0">
               <div className="border-t border-border" />
               <div className="mt-[3px] border-t border-border" />
@@ -1556,11 +1565,9 @@ export default function AnalysisResult({
                 내장 상단 괘선이 두 번째 줄(3px 간격) */}
             <div aria-hidden="true" className="mt-6 border-t border-border" />
 
-            {/* 푸터 신뢰 블록 — 신뢰도(진단의 점수) + 통계 + 분석 시간 (진단서의 직인) */}
+            {/* 푸터 신뢰 블록 — 신뢰도(진단의 점수) + 분석 시간 (진단서의 직인).
+                구 "전체 사용자 중 N%" 줄은 출처 없는 자사 통계라 삭제(실집계 배선 전까지 미표시) */}
             <TrustFooter confidence={confidence} testId="pc-trust-footer" className="mt-[3px]">
-              <p>
-                전체 사용자 중 {info.percentage}%가 {seasonLabel}이에요
-              </p>
               {/* 초 단위는 발행 정보(콜로폰)에 과잉 — 분까지만 (재현성 직인 인상) */}
               <p>
                 분석 시간:{' '}

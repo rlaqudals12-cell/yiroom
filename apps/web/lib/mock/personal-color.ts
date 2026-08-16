@@ -338,6 +338,7 @@ export interface PersonalColorResult {
 }
 
 // 계절별 정보
+// percentage(계절별 사용자 비율)는 출처 없는 자사 통계라 2026-08-17 삭제 — 실집계 배선 시 재도입
 export const SEASON_INFO: Record<
   SeasonType,
   {
@@ -345,7 +346,6 @@ export const SEASON_INFO: Record<
     emoji: string;
     description: string;
     characteristics: string;
-    percentage: number; // 통계적 비율
   }
 > = {
   spring: {
@@ -353,28 +353,24 @@ export const SEASON_INFO: Record<
     emoji: '🌸',
     description: '밝고 화사한 웜톤',
     characteristics: '피부에 황금빛 광채가 있고, 밝고 맑은 컬러가 잘 어울려요',
-    percentage: 25,
   },
   summer: {
     label: '여름 쿨톤',
     emoji: '🌊',
     description: '부드럽고 우아한 쿨톤',
     characteristics: '피부에 핑크빛이 감돌고, 뮤트하고 소프트한 컬러가 잘 어울려요',
-    percentage: 18,
   },
   autumn: {
     label: '가을 웜톤',
     emoji: '🍂',
     description: '깊고 풍부한 웜톤',
     characteristics: '피부에 따뜻한 베이지톤이 있고, 차분하고 깊은 컬러가 잘 어울려요',
-    percentage: 30,
   },
   winter: {
     label: '겨울 쿨톤',
     emoji: '❄️',
     description: '선명하고 시크한 쿨톤',
     characteristics: '피부에 차가운 느낌이 있고, 비비드하고 강렬한 컬러가 잘 어울려요',
-    percentage: 27,
   },
 };
 

@@ -28,12 +28,18 @@ export interface TopActionsCardProps {
   actions: TopAction[];
   /** 카드 제목 (기본 "그래서, 이렇게 하세요") */
   heading?: string;
+  /**
+   * 호스트가 이미 같은 제목을 붙였을 때 true — 카드 내부 제목·aria-label을 모두 생략한다.
+   * (시각만 숨기면 스크린리더에 제목이 3중으로 읽히므로 낭독까지 단일화)
+   */
+  headingHidden?: boolean;
   className?: string;
 }
 
 export function TopActionsCard({
   actions,
   heading = '그래서, 이렇게 하세요',
+  headingHidden = false,
   className,
 }: TopActionsCardProps) {
   const visible = actions.filter((a) => a.title.trim().length > 0).slice(0, 3);
@@ -43,9 +49,10 @@ export function TopActionsCard({
     <section
       data-testid="top-actions-card"
       className={cn('rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5', className)}
-      aria-label={heading}
+      // 이름 없는 section은 landmark가 되지 않는다 — 호스트 헤더가 이 블록의 유일한 제목
+      aria-label={headingHidden ? undefined : heading}
     >
-      <h2 className="mb-3 text-base font-bold text-foreground">{heading}</h2>
+      {!headingHidden && <h2 className="mb-3 text-base font-bold text-foreground">{heading}</h2>}
       <ol className="space-y-3">
         {visible.map((action, i) => (
           <li key={`${action.title}-${i}`} className="flex items-start gap-3">

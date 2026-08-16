@@ -51,7 +51,8 @@ export function PersonalColorEvidenceSummary({
         )}
       >
         <Info className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-        <span className="text-muted-foreground">{isCool ? '쿨톤' : '웜톤'} 특성이 분석됐어요</span>
+        {/* 근거 데이터가 없는 건 — "분석됐어요"는 하지 않은 판정을 주장하므로 상태 서술로만 */}
+        <span className="text-muted-foreground">{isCool ? '쿨톤' : '웜톤'} 계열이에요</span>
       </div>
     );
   }

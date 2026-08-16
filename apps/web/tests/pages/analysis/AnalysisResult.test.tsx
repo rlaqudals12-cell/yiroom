@@ -91,10 +91,7 @@ describe('AnalysisResult', () => {
     analyzedAt: new Date('2025-12-09T10:00:00'),
   };
 
-  const mockOnRetry = vi.fn();
-
   beforeEach(() => {
-    mockOnRetry.mockClear();
     // clipboard mock
     Object.assign(navigator, {
       clipboard: {
@@ -105,32 +102,32 @@ describe('AnalysisResult', () => {
 
   describe('퍼스널 컬러 타입 표시 (진단지 히어로)', () => {
     it('시즌 타입 레이블을 표시한다 (히어로 진단명 + 속성표 계절 행)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 진단지 문법: 히어로 세리프 진단명과 01 진단 속성표의 계절 행이 함께 존재
       expect(screen.getAllByText('봄 웜톤').length).toBeGreaterThanOrEqual(1);
     });
 
     it('시즌 설명을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText('밝고 따뜻한 느낌의 색상이 잘 어울려요')).toBeInTheDocument();
     });
 
     it('신뢰도를 푸터 신뢰 블록에 텍스트 라인으로 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText('분석 신뢰도 85%')).toBeInTheDocument();
     });
 
     it('진단지 아이브로우를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText('PERSONAL COLOR REPORT')).toBeInTheDocument();
     });
 
     it('계절 인장 스탬프를 표시한다 (모바일 스트립 오버랩 + md 히어로 병치 — 반응형 2노드, G1)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 두 노드는 display 게이팅(md:hidden / hidden md:flex)이라 화면·스크린리더엔 항상 1개만 노출
       const seals = screen.getAllByTestId('pc-season-seal');
@@ -139,13 +136,13 @@ describe('AnalysisResult', () => {
     });
 
     it('히어로 풀블리드 팔레트 스트립을 렌더한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByTestId('pc-hero-strip')).toBeInTheDocument();
     });
 
     it('진단 속성표를 렌더한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByTestId('pc-report-attrs')).toBeInTheDocument();
       expect(screen.getByText('계절')).toBeInTheDocument();
@@ -153,7 +150,7 @@ describe('AnalysisResult', () => {
     });
 
     it('퍼스널 대비 실측값이 있으면 속성표 행 + 풀이 한 줄을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} contrastLevel="low" />);
+      render(<AnalysisResult result={mockResult} contrastLevel="low" />);
 
       expect(screen.getByText('대비')).toBeInTheDocument();
       expect(screen.getByText('낮은 대비')).toBeInTheDocument();
@@ -161,7 +158,7 @@ describe('AnalysisResult', () => {
     });
 
     it('퍼스널 대비 실측값이 없으면 대비 행을 렌더하지 않는다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByText('대비')).not.toBeInTheDocument();
       expect(screen.queryByTestId('pc-contrast-note')).not.toBeInTheDocument();
@@ -170,7 +167,7 @@ describe('AnalysisResult', () => {
 
   describe('결론 먼저 (TopActionsCard)', () => {
     it('"그래서, 이렇게 하세요" 결론 카드를 렌더한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByTestId('top-actions-card')).toBeInTheDocument();
       // ① 베스트 컬러 액션은 데이터가 있으면 항상 노출
@@ -178,7 +175,7 @@ describe('AnalysisResult', () => {
     });
 
     it('여성 프로필에서 첫 립 추천을 결론 액션으로 노출한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // ② 립스틱 추천 첫 항목이 명령형 액션으로 조립됨
       expect(screen.getByText('코랄 핑크 립부터 발라보세요')).toBeInTheDocument();
@@ -187,7 +184,7 @@ describe('AnalysisResult', () => {
 
   describe('베스트/워스트 컬러', () => {
     it('베스트 컬러 섹션을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 베스트 컬러 헤더
       const bestColorElements = screen.getAllByText('베스트 컬러');
@@ -195,7 +192,7 @@ describe('AnalysisResult', () => {
     });
 
     it('베스트 컬러는 제공된 색이름을 우선 표시한다 (없을 때만 hex 근사 명명)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 저장/큐레이션 이름이 있으면 그대로(정직) — 픽스처 name '피치'가 hex 근사명 대신 노출
       expect(screen.getAllByText('코랄').length).toBeGreaterThan(0);
@@ -203,7 +200,7 @@ describe('AnalysisResult', () => {
     });
 
     it('피하면 좋은 색을 취소선 칩으로 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 구 "컬러 비교" 아코디언은 03 컬러 팔레트의 회피 칩 그룹으로 흡수됨 (접힘 없이 노출)
       expect(screen.getByText('피하면 좋은 색')).toBeInTheDocument();
@@ -211,20 +208,20 @@ describe('AnalysisResult', () => {
     });
 
     it('워스트 컬러도 제공된 색이름을 우선 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 픽스처 worstColors의 저장 이름이 회피 칩 캡션으로 직접 노출
       expect(screen.getByTestId('pc-avoid-chips')).toHaveTextContent('블랙');
     });
 
     it('피하는 이유 한 줄(avoidNote)을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByTestId('pc-avoid-note')).toBeInTheDocument();
     });
 
     it('포인트 컬러·액세서리 금속 큐레이션을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // getCardPalette 톤 표준 큐레이션 (공유카드와 동일 소스)
       expect(screen.getByText('포인트 컬러')).toBeInTheDocument();
@@ -236,14 +233,14 @@ describe('AnalysisResult', () => {
 
   describe('컨설턴트 TIP (구 스타일 인사이트)', () => {
     it('컨설턴트 TIP 밴드를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText('컨설턴트 TIP')).toBeInTheDocument();
       expect(screen.getByTestId('pc-insight-note')).toBeInTheDocument();
     });
 
     it('insight 텍스트를 표시한다 (easyInsight가 없을 때)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // easyInsight가 없으므로 insight 필드의 텍스트가 표시됨
       expect(screen.getByText(/밝고 따뜻한 색상이 잘 어울리는/)).toBeInTheDocument();
@@ -252,14 +249,14 @@ describe('AnalysisResult', () => {
 
   describe('스타일 가이드', () => {
     it('스타일 키워드 카드를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 구 아코디언 → 04 스타일 가이드의 2열 미니카드로 흡수 (접힘 없이 노출)
       expect(screen.getByText('스타일 키워드')).toBeInTheDocument();
     });
 
     it('스타일 키워드를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // female 성별이므로 getGenderAdaptiveTerm이 원래 값을 그대로 반환
       expect(screen.getByText('화사한')).toBeInTheDocument();
@@ -267,13 +264,13 @@ describe('AnalysisResult', () => {
     });
 
     it('스타일 가이드 섹션 제목을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText('스타일 가이드')).toBeInTheDocument();
     });
 
     it('메이크업 스타일을 표시한다 (여성 프로필)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 여성: makeupStyle fallback 텍스트 (easyMakeup이 없을 때)
       expect(screen.getByText(/코랄, 피치 계열의 따뜻한 컬러 메이크업/)).toBeInTheDocument();
@@ -282,14 +279,14 @@ describe('AnalysisResult', () => {
 
   describe('립스틱 추천', () => {
     it('추천 립스틱 섹션 제목을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // G10 이후 라벨은 인쇄된 첫 립 항목 위에 존재 (여성 프로필)
       expect(screen.getByText('추천 립스틱')).toBeInTheDocument();
     });
 
     it('첫 립 추천은 접힘 없이 지면에 인쇄된다 — 제품명+이유 1줄 (G10)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const first = screen.getByTestId('pc-product-first');
       expect(within(first).getByText('코랄 핑크')).toBeInTheDocument();
@@ -299,7 +296,7 @@ describe('AnalysisResult', () => {
     });
 
     it('나머지 립스틱 컬러명을 표시한다 (펼침 후)', async () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 첫 립을 제외한 나머지가 접힘 — 펼친 뒤 확인 (G10)
       openSection('다른 추천 더 보기');
@@ -310,7 +307,7 @@ describe('AnalysisResult', () => {
     });
 
     it('브랜드 예시를 표시한다 (결론 카드)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 첫 립 추천 브랜드는 "그래서, 이렇게 하세요" 결론 카드에 노출됨
       // (인쇄된 첫 립 항목에도 같은 문구가 실리므로 카드 스코프로 확인)
@@ -321,21 +318,21 @@ describe('AnalysisResult', () => {
 
   describe('의류 추천', () => {
     it('추천 스타일링 섹션 제목을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // <details> summary 안에 존재
       expect(screen.getByText('추천 스타일링')).toBeInTheDocument();
     });
 
     it('의류 아이템과 색상을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText(/블라우스/)).toBeInTheDocument();
       expect(screen.getAllByText(/아이보리/).length).toBeGreaterThan(0);
     });
 
     it('추천 이유를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 05 추천 스타일링은 번호 섹션 — 접힘 없이 이유까지 노출
       expect(screen.getByText('얼굴이 환하게 보여요')).toBeInTheDocument();
@@ -352,7 +349,7 @@ describe('AnalysisResult', () => {
         tone: 'cool',
       };
 
-      render(<AnalysisResult result={summerResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={summerResult} />);
 
       expect(screen.getAllByText('여름 쿨톤').length).toBeGreaterThanOrEqual(1);
     });
@@ -365,7 +362,7 @@ describe('AnalysisResult', () => {
         seasonDescription: '깊고 따뜻한 색상이 어울려요',
       };
 
-      render(<AnalysisResult result={autumnResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={autumnResult} />);
 
       expect(screen.getAllByText('가을 웜톤').length).toBeGreaterThanOrEqual(1);
     });
@@ -379,7 +376,7 @@ describe('AnalysisResult', () => {
         tone: 'cool',
       };
 
-      render(<AnalysisResult result={winterResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={winterResult} />);
 
       expect(screen.getAllByText('겨울 쿨톤').length).toBeGreaterThanOrEqual(1);
     });
@@ -387,13 +384,7 @@ describe('AnalysisResult', () => {
 
   describe('사진 앵커 (A1)', () => {
     it('photoUrl이 있으면 히어로에 원본 사진을 렌더한다', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          photoUrl="https://example.com/face.jpg"
-        />
-      );
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/face.jpg" />);
 
       const photo = screen.getByTestId('pc-hero-photo');
       expect(photo).toBeInTheDocument();
@@ -402,20 +393,14 @@ describe('AnalysisResult', () => {
     });
 
     it('photoUrl이 없으면 사진 없이 현 레이아웃을 유지한다 (데모·구 데이터 폴백)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
       expect(screen.getByTestId('pc-hero-title')).toBeInTheDocument();
     });
 
     it('사진 로드 실패 시 무사진 히어로로 폴백한다', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          photoUrl="https://example.com/broken.jpg"
-        />
-      );
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/broken.jpg" />);
 
       fireEvent.error(screen.getByTestId('pc-hero-photo'));
       expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
@@ -438,7 +423,7 @@ describe('AnalysisResult', () => {
     });
 
     it('회피 칩 DOM에 명도 적응 스트로크가 배선된다 (어두운 픽스처 → 흰색)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 픽스처 worstColors 첫 칩 = #000000 → 흰 스트로크가 gradient 문자열에 포함
       const chips = screen.getByTestId('pc-avoid-chips');
@@ -450,12 +435,7 @@ describe('AnalysisResult', () => {
 
   describe('12톤 속성표 확장 (A3)', () => {
     it('paletteToneKey가 12톤 키면 명도·채도 정의 행을 렌더한다', () => {
-      render(
-        <AnalysisResult
-          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
-          onRetry={mockOnRetry}
-        />
-      );
+      render(<AnalysisResult result={{ ...mockResult, paletteToneKey: 'true-spring' }} />);
 
       expect(screen.getByText('명도')).toBeInTheDocument();
       expect(screen.getByText('채도')).toBeInTheDocument();
@@ -465,14 +445,14 @@ describe('AnalysisResult', () => {
     });
 
     it('서브타입 미저장(시즌 키) 건은 명도·채도 행을 렌더하지 않는다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByText('명도')).not.toBeInTheDocument();
       expect(screen.queryByText('채도')).not.toBeInTheDocument();
     });
 
     it('특성 문단을 결론 라벨 블록으로 승격한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const conclusion = screen.getByTestId('pc-attrs-conclusion');
       expect(within(conclusion).getByText('결론')).toBeInTheDocument();
@@ -481,7 +461,7 @@ describe('AnalysisResult', () => {
 
   describe('시즌 인장 보강 (A4)', () => {
     it('인장에 영문 시즌 + 한국어 타입명을 병기한다 (점수 없음)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 반응형 2노드(G1) 모두 동일 내용이어야 한다
       const seals = screen.getAllByTestId('pc-season-seal');
@@ -496,12 +476,7 @@ describe('AnalysisResult', () => {
 
   describe('톤 팔레트 총람 (A7)', () => {
     it('paletteToneKey가 12톤 키면 총람 소섹션을 렌더한다', () => {
-      render(
-        <AnalysisResult
-          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
-          onRetry={mockOnRetry}
-        />
-      );
+      render(<AnalysisResult result={{ ...mockResult, paletteToneKey: 'true-spring' }} />);
 
       const overview = screen.getByTestId('pc-tone-palette-overview');
       expect(overview).toBeInTheDocument();
@@ -512,7 +487,7 @@ describe('AnalysisResult', () => {
     });
 
     it('paletteToneKey가 없거나 시즌 키면 총람을 렌더하지 않는다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByTestId('pc-tone-palette-overview')).not.toBeInTheDocument();
     });
@@ -546,7 +521,7 @@ describe('AnalysisResult', () => {
     });
 
     it('스타일링 색 제안에 결과 데이터의 실색 스와치를 전치한다 (아이보리=베스트 컬러)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 픽스처: 블라우스—아이보리, 아이보리는 bestColors에 #FFFFF0으로 존재
       const list = screen.getByTestId('pc-clothing-list');
@@ -569,7 +544,7 @@ describe('AnalysisResult', () => {
           },
         },
       };
-      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={withFashion} />);
 
       const chips = screen.getByTestId('pc-fashion-color-chips');
       // '코랄'은 bestColors #FF7F50 매핑 → 스와치 존재
@@ -583,7 +558,7 @@ describe('AnalysisResult', () => {
 
   describe('시즌 인장 오브젝트 승격 (R2)', () => {
     it('인장은 라이트 시즌색 채움 + 다크 전경 텍스트를 쓴다 (백색 텍스트 금지)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const seal = screen.getAllByTestId('pc-season-seal')[0];
       // spring 도장 잉크 — 라이트 채움 #F9E4D4
@@ -594,7 +569,7 @@ describe('AnalysisResult', () => {
     });
 
     it('베스트 컬러가 있으면 모바일 인장은 스트립 오버랩 위치에 렌더된다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const seals = screen.getAllByTestId('pc-season-seal');
       const strip = screen.getByTestId('pc-hero-strip');
@@ -606,7 +581,7 @@ describe('AnalysisResult', () => {
 
   describe('드레이핑 색면 스택 폴백 (R3)', () => {
     it('photoUrl이 없으면 같은 자리에 드레이핑 색면 스택을 렌더한다 (인물 배제 정본)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const draping = screen.getByTestId('pc-hero-draping');
       expect(draping).toBeInTheDocument();
@@ -615,26 +590,14 @@ describe('AnalysisResult', () => {
     });
 
     it('photoUrl이 있으면 드레이핑 스택 대신 사진 앵커를 렌더한다', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          photoUrl="https://example.com/face.jpg"
-        />
-      );
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/face.jpg" />);
 
       expect(screen.getByTestId('pc-hero-photo')).toBeInTheDocument();
       expect(screen.queryByTestId('pc-hero-draping')).not.toBeInTheDocument();
     });
 
     it('사진 로드 실패 시 드레이핑 스택으로 폴백한다', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          photoUrl="https://example.com/broken.jpg"
-        />
-      );
+      render(<AnalysisResult result={mockResult} photoUrl="https://example.com/broken.jpg" />);
 
       fireEvent.error(screen.getByTestId('pc-hero-photo'));
       expect(screen.queryByTestId('pc-hero-photo')).not.toBeInTheDocument();
@@ -644,12 +607,7 @@ describe('AnalysisResult', () => {
 
   describe('톤 팔레트 총람 질감 스와치 (R4)', () => {
     it('총람 3행을 발색 질감으로 렌더한다 (립→lip, 아이섀도·블러셔→powder)', () => {
-      render(
-        <AnalysisResult
-          result={{ ...mockResult, paletteToneKey: 'true-spring' }}
-          onRetry={mockOnRetry}
-        />
-      );
+      render(<AnalysisResult result={{ ...mockResult, paletteToneKey: 'true-spring' }} />);
 
       const overview = screen.getByTestId('pc-tone-palette-overview');
       // 립 행은 lip 질감 — 포인트 컬러(pc-accent-chips)의 lip과 별개로 총람 안에도 존재
@@ -690,9 +648,7 @@ describe('AnalysisResult', () => {
     });
 
     it('veinScore 실측이 있으면 속성표에 톤 경향 행 + 풀이 1줄을 렌더한다', () => {
-      render(
-        <AnalysisResult result={mockResult} onRetry={mockOnRetry} evidence={{ veinScore: 25 }} />
-      );
+      render(<AnalysisResult result={mockResult} evidence={{ veinScore: 25 }} />);
 
       expect(screen.getByText('톤 경향')).toBeInTheDocument();
       expect(screen.getByText('웜톤 경향 75%')).toBeInTheDocument();
@@ -700,39 +656,27 @@ describe('AnalysisResult', () => {
     });
 
     it('evidence가 없으면 톤 경향 행을 렌더하지 않는다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByText('톤 경향')).not.toBeInTheDocument();
       expect(screen.queryByTestId('pc-tone-tendency-note')).not.toBeInTheDocument();
     });
 
     it('입술 자연색이 coral/pink면 판정 근거 보조 1줄을 렌더한다', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          evidence={{ lipNaturalColor: 'coral' }}
-        />
-      );
+      render(<AnalysisResult result={mockResult} evidence={{ lipNaturalColor: 'coral' }} />);
 
       const note = screen.getByTestId('pc-lip-evidence-note');
       expect(note).toHaveTextContent('입술 자연색이 코랄빛이라 웜톤 근거가 돼요.');
     });
 
     it('입술 자연색이 neutral이면 근거 줄을 렌더하지 않는다 (어느 톤의 근거도 아님)', () => {
-      render(
-        <AnalysisResult
-          result={mockResult}
-          onRetry={mockOnRetry}
-          evidence={{ lipNaturalColor: 'neutral' }}
-        />
-      );
+      render(<AnalysisResult result={mockResult} evidence={{ lipNaturalColor: 'neutral' }} />);
 
       expect(screen.queryByTestId('pc-lip-evidence-note')).not.toBeInTheDocument();
     });
 
     it('팔레트 "왜" 문구가 언더톤 근거를 담은 시즌 설명(whyThisColor 이관)이다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const why = screen.getByTestId('pc-palette-why');
       expect(why).toHaveTextContent('봄 웜톤은 피부에 노란 언더톤이 있어서');
@@ -741,7 +685,7 @@ describe('AnalysisResult', () => {
 
   describe('히어로 만석 — 속성표 흡수·캡션·번호 재부여 (G1)', () => {
     it('md 히어로 캡션에 리포트명·진단일이 병치된다 (단일 텍스트 노드)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const caption = screen.getByTestId('pc-hero-caption');
       expect(caption).toHaveTextContent(/PERSONAL COLOR REPORT ·/);
@@ -750,14 +694,14 @@ describe('AnalysisResult', () => {
     });
 
     it('구 01 진단 속성 섹션 헤더가 사라지고 속성표는 1회만 렌더된다 (히어로 흡수)', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.queryByText('진단 속성')).not.toBeInTheDocument();
       expect(screen.getAllByTestId('pc-report-attrs')).toHaveLength(1);
     });
 
     it('번호 섹션은 01부터 결번 없이 재부여된다 — 01은 "그래서, 이렇게 하세요"', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       // 문서 순서상 첫 '01'은 첫 섹션 헤더의 러닝넘버 (의류 목록 번호보다 앞)
       const firstNo = screen.getAllByText('01')[0];
@@ -767,7 +711,7 @@ describe('AnalysisResult', () => {
 
   describe('베스트 컬러 연속 페인트 스트립 (G3)', () => {
     it('셀 아래 이름·hex 캡션이 병기되고 클릭 복사 버튼 수가 색 수와 같다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       const grid = screen.getByTestId('pc-best-grid');
       expect(within(grid).getByText('#FF7F50')).toBeInTheDocument();
@@ -779,9 +723,7 @@ describe('AnalysisResult', () => {
         name: `컬러${i + 1}`,
         hex: `#00000${i}`,
       }));
-      render(
-        <AnalysisResult result={{ ...mockResult, bestColors: tenColors }} onRetry={mockOnRetry} />
-      );
+      render(<AnalysisResult result={{ ...mockResult, bestColors: tenColors }} />);
 
       const grid = screen.getByTestId('pc-best-grid');
       expect(within(grid).getAllByRole('button')).toHaveLength(6);
@@ -825,7 +767,7 @@ describe('AnalysisResult', () => {
           },
         },
       };
-      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={withFashion} />);
 
       expect(screen.getByText('검정').querySelector('[aria-hidden="true"]')).not.toBeNull();
       expect(screen.getByText('남색').querySelector('[aria-hidden="true"]')).not.toBeNull();
@@ -844,7 +786,7 @@ describe('AnalysisResult', () => {
           },
         },
       };
-      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={withFashion} />);
 
       // '검정'은 매핑 가능하지만 '무지개색' 실패 → 행 단위 전무
       expect(screen.getByText('검정').querySelector('[aria-hidden="true"]')).toBeNull();
@@ -882,7 +824,7 @@ describe('AnalysisResult', () => {
           },
         },
       };
-      render(<AnalysisResult result={withFashion} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={withFashion} />);
 
       const chips = screen.getByTestId('pc-fashion-color-chips');
       // 표준 사전 매핑 — 하늘색 #87CEEB
@@ -896,17 +838,44 @@ describe('AnalysisResult', () => {
   });
 
   describe('통계 및 메타 정보 (푸터 신뢰 블록)', () => {
-    it('통계 정보를 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+    it('출처 없는 자사 통계("전체 사용자 중 N%")를 표시하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} />);
 
-      // 구 "통계" 아코디언 → 푸터 신뢰 블록 텍스트 라인으로 통합
-      expect(screen.getByText(/봄 웜톤이에요/)).toBeInTheDocument();
+      // 실집계 배선 전까지 미표시 — 날조 통계 회귀 가드
+      expect(screen.queryByText(/전체 사용자 중/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/봄 웜톤이에요/)).not.toBeInTheDocument();
     });
 
     it('분석 시간을 표시한다', () => {
-      render(<AnalysisResult result={mockResult} onRetry={mockOnRetry} />);
+      render(<AnalysisResult result={mockResult} />);
 
       expect(screen.getByText(/분석 시간:/)).toBeInTheDocument();
+    });
+  });
+
+  describe('샘플 고지 (데모 전용 배지)', () => {
+    it('isSample이면 시트 안에 샘플 결과 배지를 인쇄한다', () => {
+      render(<AnalysisResult result={mockResult} isSample />);
+
+      expect(screen.getByTestId('mock-data-notice-compact')).toBeInTheDocument();
+    });
+
+    it('실결과(기본값)에는 샘플 배지를 렌더하지 않는다', () => {
+      render(<AnalysisResult result={mockResult} />);
+
+      expect(screen.queryByTestId('mock-data-notice-compact')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('결론 카드 제목 단일화 (h2 3중 노출 수리)', () => {
+    it('섹션 헤더가 유일한 제목 — 카드 내부 h2·aria-label이 사라진다', () => {
+      render(<AnalysisResult result={mockResult} />);
+
+      const card = screen.getByTestId('top-actions-card');
+      expect(card.querySelector('h2')).toBeNull();
+      expect(card).not.toHaveAttribute('aria-label');
+      // 지면에는 섹션 헤더 1개만 남는다
+      expect(screen.getAllByText('그래서, 이렇게 하세요')).toHaveLength(1);
     });
   });
 });

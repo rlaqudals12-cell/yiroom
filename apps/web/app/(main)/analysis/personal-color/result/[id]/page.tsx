@@ -691,7 +691,6 @@ export default function PersonalColorResultPage() {
                   신뢰 블록이 담당(정보 손실 0). 퍼스널 대비(ADR-116)도 속성표 행으로 흡수 */}
               <AnalysisResult
                 result={result}
-                onRetry={handleNewAnalysis}
                 evidence={analysisEvidence}
                 contrastLevel={contrastLevel}
                 photoUrl={imageUrl ?? undefined}

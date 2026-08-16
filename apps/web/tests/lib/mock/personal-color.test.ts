@@ -337,7 +337,8 @@ describe('PC-1 퍼스널 컬러 Mock', () => {
         expect(SEASON_INFO[season].emoji).toBeDefined();
         expect(SEASON_INFO[season].description).toBeDefined();
         expect(SEASON_INFO[season].characteristics).toBeDefined();
-        expect(SEASON_INFO[season].percentage).toBeGreaterThan(0);
+        // percentage(자사 통계)는 출처 부재로 삭제됨 — 되살아나면 날조 통계 재발
+        expect(SEASON_INFO[season]).not.toHaveProperty('percentage');
       });
     });
 
