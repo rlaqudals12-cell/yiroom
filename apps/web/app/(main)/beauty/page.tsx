@@ -9,6 +9,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useUserMatching } from '@/hooks/useUserMatching';
+import { useLatestIntegratedSession } from '@/hooks/useLatestIntegratedSession';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { generateRoutine } from '@/lib/skincare';
@@ -153,26 +154,36 @@ export default function BeautyPage() {
   // 탭 상태를 URL ?tab= 과 동기화 — 링크로 나갔다 뒤로가기 해도 탭 유지
   const [activeTab, setActiveTab] = useUrlTab(BEAUTY_TABS, 'recommend');
 
+  // "분석 결과" 버튼 착지용 최신 통합 세션 (없으면 버튼 자체를 숨긴다 —
+  // 입력 폼(/analysis/integrated)으로 보내면 "결과 보기"라는 약속을 어기는 것)
+  const { session: latestSession } = useLatestIntegratedSession();
+
   // useUserMatching 훅으로 분석 결과 자동 로드
   const {
     skinType: userSkinTypeFromHook,
     skinConcerns: userSkinConcernsFromHook,
     personalColor,
     hasAnalysis,
+    hasSkinAnalysis,
     getMatchedProducts,
   } = useUserMatching();
 
-  // 훅에서 받은 값을 SkinType으로 변환
-  const userSkinType: SkinType = (userSkinTypeFromHook as SkinType) || 'combination';
+  // 훅에서 받은 값을 SkinType으로 변환.
+  // 미분석자에게 기본값('복합성')을 채우지 않는다 — 없는 진단을 지어내는 것이기 때문(정직 원칙).
+  // null이면 피부타입 칩·루틴·자동 필터를 모두 숨기고 분석 CTA를 노출한다.
+  const userSkinType: SkinType | null = hasSkinAnalysis
+    ? ((userSkinTypeFromHook as SkinType | null) ?? null)
+    : null;
   const userSkinConcerns: SkinConcern[] = useMemo(
     () => (userSkinConcernsFromHook as SkinConcern[]) || [],
     [userSkinConcernsFromHook]
   );
 
   // 스킨케어 루틴 — 정본 엔진(lib/skincare generateRoutine, 캡슐 데일리와 동일) 파생.
-  // 하드코딩 제품명 루틴 대신 피부타입 기반 실제 루틴 스텝을 사용 (미분석 시 케어 탭이 CTA 표시)
+  // 하드코딩 제품명 루틴 대신 피부타입 기반 실제 루틴 스텝을 사용.
+  // 피부 분석이 없으면(퍼컬만 한 경우 포함) 루틴을 만들지 않는다 — 지어낸 타입 기반 루틴 금지.
   const { morningRoutine, eveningRoutine } = useMemo(() => {
-    if (!hasAnalysis || !userSkinTypeFromHook) {
+    if (!userSkinType) {
       return { morningRoutine: [] as RoutineItem[], eveningRoutine: [] as RoutineItem[] };
     }
     const morning = generateRoutine({
@@ -189,7 +200,7 @@ export default function BeautyPage() {
       morningRoutine: toRoutineItems(morning.routine, 'morning'),
       eveningRoutine: toRoutineItems(evening.routine, 'evening'),
     };
-  }, [hasAnalysis, userSkinTypeFromHook, userSkinType]);
+  }, [userSkinType]);
 
   // 피부나이 계산용 실지표 — 최신 skin_analyses에서 로드.
   // 세부 지표가 일부 null이어도(통합 분석 경로 등) overall_score가 있으면
@@ -282,35 +293,59 @@ export default function BeautyPage() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">내 피부</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <Palette className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
-                    <span className="text-sm text-muted-foreground">{seasonKo(personalColor)}</span>
-                  </div>
+                  {/* 퍼컬 미분석이면 seasonKo(null)=''로 빈 행이 생긴다 — 값이 있을 때만 렌더 */}
+                  {personalColor && (
+                    <div
+                      className="flex items-center gap-2 mt-0.5"
+                      data-testid="beauty-profile-season"
+                    >
+                      <Palette className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                      <span className="text-sm text-muted-foreground">
+                        {seasonKo(personalColor)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-              {/* B2: 터치 타겟 44px+ */}
-              <button
-                onClick={() => router.push('/analysis/integrated')}
-                className="text-sm text-primary hover:underline px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-primary/5 transition-colors"
-                aria-label="내 분석 결과 보기"
-              >
-                분석 결과
-              </button>
-            </div>
-            {/* AI 진단 결과: 피부타입 및 피부고민 */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
-                {getSkinTypeLabel(userSkinType)}
-              </span>
-              {userSkinConcerns.map((concern) => (
-                <span
-                  key={concern}
-                  className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full"
+              {/* B2: 터치 타겟 44px+.
+                  최신 통합 세션이 있을 때만 노출 — 결과가 없으면 "분석 결과" 버튼이
+                  입력 폼으로 착지해 사용자를 속이게 된다 (없으면 아예 숨김) */}
+              {latestSession && (
+                <button
+                  onClick={() => router.push(`/analysis/integrated/result/${latestSession.id}`)}
+                  className="text-sm text-primary hover:underline px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-primary/5 transition-colors"
+                  aria-label="내 분석 결과 보기"
+                  data-testid="beauty-profile-result-link"
                 >
-                  {getSkinConcernLabel(concern)}
-                </span>
-              ))}
+                  분석 결과
+                </button>
+              )}
             </div>
+            {/* AI 진단 결과: 피부타입 및 피부고민.
+                피부 분석이 없으면 타입 칩을 지어내지 않고 분석 CTA만 보여준다 */}
+            {userSkinType ? (
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
+                  {getSkinTypeLabel(userSkinType)}
+                </span>
+                {userSkinConcerns.map((concern) => (
+                  <span
+                    key={concern}
+                    className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full"
+                  >
+                    {getSkinConcernLabel(concern)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <button
+                onClick={() => router.push('/analysis/skin')}
+                className="text-sm text-primary hover:underline min-h-[44px] inline-flex items-center"
+                data-testid="beauty-skin-analysis-cta"
+              >
+                피부 분석하면 맞춤으로 바뀌어요
+              </button>
+            )}
           </section>
         </FadeInUp>
       ) : (

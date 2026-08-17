@@ -96,4 +96,13 @@ describe('SkincareRoutineCard', () => {
     expect(screen.getByText(/총/)).toBeInTheDocument();
     expect(screen.getByText(/단계/)).toBeInTheDocument();
   });
+
+  // ADR-120: 케어 탭 그라데이션 벽면 폐지 — 헤더도 솔리드여야 한다
+  it('헤더에 그라데이션 배경을 쓰지 않는다', () => {
+    const { container } = render(
+      <SkincareRoutineCard morningRoutine={morningRoutine} eveningRoutine={eveningRoutine} />
+    );
+
+    expect(container.querySelectorAll('[class*="bg-gradient"]').length).toBe(0);
+  });
 });

@@ -135,7 +135,7 @@ describe('BeautyCareTab', () => {
     const user = userEvent.setup();
     renderTab({ skinAnalysisId: 'skin-abc-123' });
 
-    await user.click(screen.getByText(/내 분석 결과에서 확인하기/));
+    await user.click(screen.getByTestId('beauty-warnings-result-link'));
     expect(mockPush).toHaveBeenCalledWith('/analysis/skin/result/skin-abc-123');
   });
 
@@ -143,7 +143,7 @@ describe('BeautyCareTab', () => {
     const user = userEvent.setup();
     renderTab({ skinAnalysisId: null });
 
-    await user.click(screen.getByText(/내 분석 결과에서 확인하기/));
+    await user.click(screen.getByTestId('beauty-warnings-analyze-cta'));
     expect(mockPush).toHaveBeenCalledWith('/analysis/skin');
   });
 
@@ -163,5 +163,66 @@ describe('BeautyCareTab', () => {
   it('주의 성분 알림 섹션이 표시된다', () => {
     renderTab({ hasAnalysis: false, skinMetrics: null });
     expect(screen.getByTestId('beauty-warnings')).toBeInTheDocument();
+  });
+});
+
+// 수리 4 — 그라데이션 벽면 폐지 (ADR-120: 솔리드 카드 + 색은 아이콘만)
+describe('BeautyCareTab 그라데이션 벽면 폐지', () => {
+  it('영양제·주의 성분·미분석 안내 카드에 그라데이션 배경이 없다', () => {
+    const { container } = renderTab({ hasAnalysis: false, skinMetrics: null });
+
+    expect(container.querySelectorAll('[class*="bg-gradient"]').length).toBe(0);
+    expect(screen.getByTestId('beauty-supplements').className).toContain('bg-card');
+    expect(screen.getByTestId('beauty-warnings').className).toContain('bg-card');
+  });
+
+  it('분석 완료 상태에서도 그라데이션 배경이 없다', () => {
+    const { container } = renderTab({ skinAnalysisId: 'skin-abc-123' });
+    expect(container.querySelectorAll('[class*="bg-gradient"]').length).toBe(0);
+  });
+
+  it('색 정체성은 아이콘에만 남긴다 (초록/주황 아이콘 유지)', () => {
+    const { container } = renderTab({ hasAnalysis: false, skinMetrics: null });
+    expect(container.querySelector('.bg-green-500\\/10')).not.toBeNull();
+    expect(container.querySelector('.bg-orange-500\\/10')).not.toBeNull();
+  });
+});
+
+// 수리 6 — 주의 성분 카피는 실제 제공(결과 링크)에 맞춘다
+describe('BeautyCareTab 주의 성분 카피 정직화', () => {
+  it('알림·자동 필터링을 약속하지 않는다', () => {
+    renderTab({ skinAnalysisId: 'skin-abc-123' });
+
+    expect(
+      screen.queryByText('내 피부에 맞지 않는 성분이 포함된 제품을 알려드려요')
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/자동으로 걸러줘요/)).not.toBeInTheDocument();
+    expect(screen.getByText('내 분석 결과에서 주의 성분을 확인하세요')).toBeInTheDocument();
+  });
+
+  it('미분석 상태에서도 알림 약속 대신 조건부 안내를 보여준다', () => {
+    renderTab({ hasAnalysis: false, skinMetrics: null, skinAnalysisId: null });
+
+    // 주의 성분 섹션 안에서 "알려드려요/걸러줘요" 류의 약속을 하지 않는다
+    // (피부나이 섹션의 "알려드려요"는 실제로 계산해 주는 값이라 대상 아님)
+    const warnings = screen.getByTestId('beauty-warnings');
+    expect(warnings.textContent ?? '').not.toMatch(/알려드려요|걸러줘요/);
+    expect(
+      screen.getByText('피부 분석을 하면 내 결과에서 주의 성분을 확인할 수 있어요')
+    ).toBeInTheDocument();
+    // 미분석 전체 상태에서는 상단 CTA와 중복되는 버튼을 만들지 않는다
+    expect(screen.queryByTestId('beauty-warnings-analyze-cta')).not.toBeInTheDocument();
+  });
+});
+
+// 수리 1 연계 — 피부 미분석(퍼컬만 분석)이면 지어낸 루틴을 렌더하지 않는다
+describe('BeautyCareTab 루틴 게이팅', () => {
+  it('루틴 스텝이 비어 있으면 루틴 카드 대신 안내를 보여준다', () => {
+    renderTab({ morningRoutine: [], eveningRoutine: [], skinAnalysisId: null });
+
+    expect(screen.queryByTestId('skincare-routine-card')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('피부 분석을 하면 아침·저녁 맞춤 루틴을 추천해 드려요')
+    ).toBeInTheDocument();
   });
 });

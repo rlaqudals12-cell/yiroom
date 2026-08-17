@@ -46,7 +46,8 @@ export default function BeautyCareTab({
       {/* 분석 미완료 시 탭 상단 1개 통합 안내 (F2: CTA 중복 제거) */}
       {!hasAnalysis && (
         <FadeInUp>
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-900/20 rounded-2xl border p-4 text-center">
+          {/* ADR-120: 그라데이션 벽면 대신 솔리드 카드 — 색은 아이콘/포인트에만 */}
+          <div className="bg-card rounded-2xl border p-4 text-center">
             <p className="text-sm text-muted-foreground mb-2">
               피부 분석을 하면 나에게 맞는 루틴과 성분 정보를 받을 수 있어요
             </p>
@@ -61,9 +62,10 @@ export default function BeautyCareTab({
         </FadeInUp>
       )}
 
-      {/* 스킨케어 루틴 */}
+      {/* 스킨케어 루틴 — 실제 루틴 스텝이 있을 때만.
+          피부 미분석(퍼컬만 분석 등)이면 상위에서 빈 배열이 내려온다 = 지어낸 루틴 없음 */}
       <FadeInUp delay={1}>
-        {hasAnalysis ? (
+        {morningRoutine.length > 0 || eveningRoutine.length > 0 ? (
           <div data-testid="beauty-routine">
             <SkincareRoutineCard morningRoutine={morningRoutine} eveningRoutine={eveningRoutine} />
           </div>
@@ -124,7 +126,9 @@ export default function BeautyCareTab({
               피부나이 측정
             </h2>
             <p className="text-sm text-muted-foreground">
-              {hasAnalysis
+              {/* "새로 하면"은 이미 피부 분석을 한 사람에게만 맞는 말 — 분석 유무는 hasAnalysis(5축)가
+                  아니라 피부 분석 id 유무로 판단한다 (퍼컬만 분석한 사용자 오인 방지) */}
+              {skinAnalysisId
                 ? '피부 분석을 새로 하면 수분·유분 등 세부 지표로 피부나이를 알려드려요'
                 : '피부 분석 후 수분·유분·주름 지표로 피부나이를 알려드려요'}
             </p>
@@ -134,10 +138,8 @@ export default function BeautyCareTab({
 
       {/* 영양제 추천 (D9: 지시형 → 제안형) */}
       <FadeInUp delay={3}>
-        <section
-          className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-900/20 rounded-2xl border border-green-200 dark:border-green-800/30 p-4"
-          data-testid="beauty-supplements"
-        >
+        {/* ADR-120: 그라데이션 벽면 폐지 — 색 정체성은 아이콘만 */}
+        <section className="bg-card rounded-2xl border p-4" data-testid="beauty-supplements">
           <h2 className="font-semibold mb-2 flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
               <Pill className="w-4 h-4 text-green-600" aria-hidden="true" />
@@ -159,47 +161,48 @@ export default function BeautyCareTab({
         </section>
       </FadeInUp>
 
-      {/* 주의 성분 알림 */}
+      {/* 주의 성분 — 실제 제공은 "분석 결과로 가는 링크"뿐이므로 알림·자동 필터링을 약속하지 않는다.
+          (ADR-120: 그라데이션 벽면 폐지 — 색은 아이콘만) */}
       <FadeInUp delay={4}>
-        {hasAnalysis ? (
-          <section
-            className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-900/20 rounded-2xl border border-orange-200 dark:border-orange-800/30 p-4"
-            data-testid="beauty-warnings"
-          >
-            <h2 className="font-semibold mb-2 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-orange-600" aria-hidden="true" />
-              </div>
-              주의 성분 알림
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              내 피부에 맞지 않는 성분이 포함된 제품을 알려드려요
-            </p>
-            {/* 최신 피부 분석 결과의 성분 경고 섹션으로 딥링크 (id 없으면 피부 분석 시작으로) */}
-            <button
-              onClick={() =>
-                router.push(
-                  skinAnalysisId ? `/analysis/skin/result/${skinAnalysisId}` : '/analysis/skin'
-                )
-              }
-              className="mt-3 text-sm text-orange-700 dark:text-orange-400 font-medium hover:underline min-h-[44px] inline-flex items-center"
-            >
-              내 분석 결과에서 확인하기 →
-            </button>
-          </section>
-        ) : (
-          <section className="bg-card rounded-2xl border p-4" data-testid="beauty-warnings">
-            <h2 className="font-semibold mb-2 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-orange-600" aria-hidden="true" />
-              </div>
-              성분 안전 체크
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              분석 후 내 피부에 맞지 않는 성분을 자동으로 걸러줘요
-            </p>
-          </section>
-        )}
+        <section className="bg-card rounded-2xl border p-4" data-testid="beauty-warnings">
+          <h2 className="font-semibold mb-2 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-orange-600" aria-hidden="true" />
+            </div>
+            주의 성분 확인
+          </h2>
+          {skinAnalysisId ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                내 분석 결과에서 주의 성분을 확인하세요
+              </p>
+              {/* 최신 피부 분석 결과의 성분 경고 섹션으로 딥링크 */}
+              <button
+                onClick={() => router.push(`/analysis/skin/result/${skinAnalysisId}`)}
+                className="mt-3 text-sm text-primary font-medium hover:underline min-h-[44px] inline-flex items-center"
+                data-testid="beauty-warnings-result-link"
+              >
+                내 분석 결과 보기 →
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                피부 분석을 하면 내 결과에서 주의 성분을 확인할 수 있어요
+              </p>
+              {/* 미분석 전체 상태에서는 탭 상단 CTA가 이미 있으므로 버튼 중복을 만들지 않는다 (F2) */}
+              {hasAnalysis && (
+                <button
+                  onClick={() => router.push('/analysis/skin')}
+                  className="mt-3 text-sm text-primary font-medium hover:underline min-h-[44px] inline-flex items-center"
+                  data-testid="beauty-warnings-analyze-cta"
+                >
+                  피부 분석하기
+                </button>
+              )}
+            </>
+          )}
+        </section>
       </FadeInUp>
     </div>
   );

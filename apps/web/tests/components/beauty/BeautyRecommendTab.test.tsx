@@ -271,11 +271,13 @@ describe('BeautyRecommendTab', () => {
       renderTab({ userSkinType: 'combination', getMatchedProducts: mockRealisticSkincare });
       await screen.findByText('히알루론 수분 크림');
 
-      // 복합성 자동 선택 + 보습 기본 선택 (창업자 스크린샷 조합)
+      // 복합성은 분석 결과라 자동 선택. 보습은 하드코딩 기본값을 폐지했으므로(위장 필터 수리)
+      // 창업자 스크린샷 조합을 재현하려면 사용자가 직접 고른다.
       expect(screen.getByTestId('beauty-chip-skin-combination')).toHaveAttribute(
         'aria-pressed',
         'true'
       );
+      await user.click(screen.getByTestId('beauty-chip-concern-hydration'));
       expect(screen.getByTestId('beauty-chip-concern-hydration')).toHaveAttribute(
         'aria-pressed',
         'true'
@@ -330,10 +332,16 @@ describe('BeautyRecommendTab', () => {
     });
 
     it('피부고민(보습) 필터도 미태깅(null) 제품을 배제하지 않는다 (concerns or-null)', async () => {
+      const user = userEvent.setup();
       renderTab();
       await screen.findByText('히알루론 수분 크림');
+
+      // 보습은 더 이상 기본 선택이 아니므로(위장 필터 수리) 사용자가 직접 고른 뒤 검증
+      queryCalls.length = 0;
+      await user.click(screen.getByTestId('beauty-chip-concern-hydration'));
+
       // 미태깅 concern 제품(prod-3)도 렌더링
-      expect(screen.getByText('비타민C 세럼')).toBeInTheDocument();
+      expect(await screen.findByText('비타민C 세럼')).toBeInTheDocument();
       const orCalls = queryCalls.filter((c) => c.method === 'or');
       expect(
         orCalls.some(
@@ -466,6 +474,90 @@ describe('BeautyRecommendTab', () => {
       await screen.findByText('히알루론 수분 크림');
 
       expect(screen.queryByTestId('beauty-skin-type-hint')).not.toBeInTheDocument();
+    });
+  });
+
+  // 수리 1 — 피부 미분석자에게 "분석 결과상 복합성이에요"라고 말하지 않는다
+  describe('피부 미분석 시 진단 진술 금지', () => {
+    it('퍼컬만 분석한 사용자(userSkinType=null)에게 분석 결과 진술을 하지 않는다', async () => {
+      renderTab({ hasAnalysis: true, userSkinType: null });
+      await screen.findByText('히알루론 수분 크림');
+
+      expect(screen.queryByTestId('beauty-skin-type-hint')).not.toBeInTheDocument();
+      expect(screen.queryByText(/분석 결과상/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/분석 결과상 복합성이에요/)).not.toBeInTheDocument();
+      // 대신 정직한 안내
+      expect(screen.getByTestId('beauty-skin-type-unknown-hint')).toHaveTextContent(
+        '피부 분석을 하면 내 피부타입이 자동으로 선택돼요'
+      );
+    });
+
+    it('발견 텍스트도 "피부 분석 결과"를 주장하지 않는다', async () => {
+      renderTab({ hasAnalysis: true, userSkinType: null });
+      await screen.findByText('히알루론 수분 크림');
+
+      const discovery = await screen.findByTestId('beauty-discovery-text');
+      expect(discovery).toHaveTextContent('오늘의 추천은 내 분석 결과에 맞춰 골랐어요');
+      expect(discovery.textContent ?? '').not.toContain('피부 분석 결과');
+    });
+
+    it('피부 분석이 있으면 발견 텍스트가 피부 기준임을 밝힌다', async () => {
+      renderTab({ hasAnalysis: true, userSkinType: 'dry' });
+      await screen.findByText('히알루론 수분 크림');
+
+      expect(await screen.findByTestId('beauty-discovery-text')).toHaveTextContent(
+        '오늘의 추천은 내 피부 분석 결과에 맞춰 골랐어요'
+      );
+    });
+  });
+
+  // 수리 5 — 초기 필터 위장 금지 (사용자가 고른 적 없는 복합성/보습 선택 상태)
+  describe('초기 필터 선택 정합', () => {
+    it('분석이 없으면 피부타입·고민 칩이 아무것도 선택되지 않는다 (전체 표시)', async () => {
+      renderTab({ hasAnalysis: false, userSkinType: null, userSkinConcerns: [] });
+      await screen.findByText('히알루론 수분 크림');
+
+      for (const id of ['dry', 'oily', 'combination', 'sensitive', 'normal']) {
+        expect(screen.getByTestId(`beauty-chip-skin-${id}`)).toHaveAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+      for (const id of ['hydration', 'whitening', 'pore', 'soothing']) {
+        expect(screen.getByTestId(`beauty-chip-concern-${id}`)).toHaveAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+    });
+
+    it('피부 분석이 있으면 그 값만 자동 선택된다 (하드코딩 보습 기본값 없음)', async () => {
+      renderTab({ hasAnalysis: true, userSkinType: 'oily', userSkinConcerns: [] });
+      await screen.findByText('히알루론 수분 크림');
+
+      expect(screen.getByTestId('beauty-chip-skin-oily')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('beauty-chip-skin-combination')).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+      expect(screen.getByTestId('beauty-chip-concern-hydration')).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+    });
+
+    it('분석 고민 태그가 있으면 그 값이 선택된다', async () => {
+      renderTab({ hasAnalysis: true, userSkinType: 'dry', userSkinConcerns: ['pore'] });
+      await screen.findByText('히알루론 수분 크림');
+
+      expect(screen.getByTestId('beauty-chip-concern-pore')).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByTestId('beauty-chip-concern-hydration')).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
     });
   });
 });

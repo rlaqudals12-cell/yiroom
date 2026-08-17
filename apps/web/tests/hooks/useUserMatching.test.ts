@@ -170,6 +170,79 @@ describe('useUserMatching', () => {
       expect(result.current.hasAnalysis).toBe(true);
     });
 
+    // 수리 1 — hasAnalysis(5축 OR)로 피부 표면을 게이팅하면 미분석자에게 진단을 지어내게 된다
+    it('퍼컬만 분석하면 hasAnalysis=true여도 hasSkinAnalysis=false', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      // S-1 없음, PC-1만 존재
+      mockSupabaseClient.single
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: { season: '봄 웜톤' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.hasAnalysis).toBe(true);
+      expect(result.current.hasSkinAnalysis).toBe(false);
+      expect(result.current.skinType).toBe(null);
+    });
+
+    it('피부 분석이 있으면 hasSkinAnalysis=true', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      mockSupabaseClient.single
+        .mockResolvedValueOnce({ data: { skin_type: 'oily' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.hasSkinAnalysis).toBe(true);
+    });
+
+    it('피부 행은 있으나 skin_type이 null이면 hasSkinAnalysis=false (타입 지어내기 금지)', async () => {
+      mockUseUser.mockReturnValue({
+        isLoaded: true,
+        user: { id: 'user_123' },
+      });
+
+      mockSupabaseClient.single
+        .mockResolvedValueOnce({ data: { skin_type: null }, error: null })
+        .mockResolvedValueOnce({ data: { season: '봄 웜톤' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.hasSkinAnalysis).toBe(false);
+    });
+
     it('W-1/N-1 운동·영양 데이터를 로드한다', async () => {
       mockUseUser.mockReturnValue({
         isLoaded: true,

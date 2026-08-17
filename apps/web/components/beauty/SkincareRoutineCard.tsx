@@ -66,12 +66,14 @@ export function SkincareRoutineCard({
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="skincare-routine-card">
-      <CardHeader className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 pb-3">
+      {/* ADR-120: 그라데이션 벽면 폐지 — 솔리드 헤더 + 색 정체성은 아이콘/선택 상태만 */}
+      <CardHeader className="bg-secondary border-b pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">스킨케어 루틴</CardTitle>
 
           {/* 아침/저녁 탭 */}
-          <div className="flex bg-white/50 dark:bg-black/20 rounded-lg p-1">
+          {/* 솔리드 헤더 위에서도 대비가 유지되도록 반투명 흰/검 대신 토큰 배경 사용 */}
+          <div className="flex bg-background rounded-lg p-1">
             <button
               onClick={() => setActiveTab('morning')}
               className={cn(

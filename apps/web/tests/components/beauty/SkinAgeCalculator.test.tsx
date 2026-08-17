@@ -93,4 +93,12 @@ describe('SkinAgeCalculator', () => {
     );
     expect(container).toBeEmptyDOMElement();
   });
+
+  // ADR-120: 케어 탭 그라데이션 벽면 폐지 — 헤더도 솔리드여야 한다
+  it('헤더에 그라데이션 배경을 쓰지 않는다', () => {
+    const { container } = render(
+      <SkinAgeCalculator actualAge={30} skinMetrics={goodMetrics} overallScore={70} />
+    );
+    expect(container.querySelectorAll('[class*="bg-gradient"]').length).toBe(0);
+  });
 });

@@ -183,7 +183,8 @@ export function SkinAgeCalculator({
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="skin-age-calculator">
-      <CardHeader className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30">
+      {/* ADR-120: 그라데이션 벽면 폐지 — 솔리드 헤더 + 색 정체성은 아이콘만 */}
+      <CardHeader className="bg-secondary border-b">
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-pink-500" />
           피부나이 분석

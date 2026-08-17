@@ -21,7 +21,14 @@ interface UseUserMatchingResult {
   // 사용자 프로필
   profile: UserProfile | null;
   isLoading: boolean;
+  /** 5축 중 아무거나 하나라도 분석됐는지 (표면 전체 게이팅용) */
   hasAnalysis: boolean;
+  /**
+   * 피부(S-1) 분석으로 피부타입이 확정됐는지.
+   * hasAnalysis는 퍼컬만 분석해도 true라, 피부 관련 표면(피부타입 칩·루틴·자동 필터)을
+   * hasAnalysis로 게이팅하면 미분석자에게 없는 진단을 지어내게 된다 — 별도 플래그로 분리.
+   */
+  hasSkinAnalysis: boolean;
 
   // 분석 결과 요약
   skinType: string | null;
@@ -211,6 +218,10 @@ export function useUserMatching(): UseUserMatchingResult {
     return !!(skinType || personalColor || bodyType || hairType || undertone);
   }, [skinType, personalColor, bodyType, hairType, undertone]);
 
+  // 피부 분석 완료 여부 — skin_analyses에 실제 skin_type이 있을 때만 true.
+  // (행은 있는데 skin_type이 null이면 "타입을 모르는 것"이므로 false — 지어내지 않는다)
+  const hasSkinAnalysis = useMemo(() => !!skinType, [skinType]);
+
   // 단일 제품 매칭 점수 계산
   const calculateProductMatch = useCallback(
     (product: AnyProduct): number => {
@@ -251,6 +262,7 @@ export function useUserMatching(): UseUserMatchingResult {
     profile,
     isLoading,
     hasAnalysis,
+    hasSkinAnalysis,
     skinType,
     skinConcerns,
     personalColor,

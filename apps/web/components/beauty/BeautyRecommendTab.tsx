@@ -227,6 +227,27 @@ function hasMatchingIngredient(ingredients: string[] | undefined | null, names: 
   );
 }
 
+// 피부 분석 유무에 따른 정직한 발견 문구 (없는 진단을 주장하지 않는다)
+function getDiscoveryText(hasSkinAnalysis: boolean): string {
+  return hasSkinAnalysis
+    ? '오늘의 추천은 내 피부 분석 결과에 맞춰 골랐어요'
+    : '오늘의 추천은 내 분석 결과에 맞춰 골랐어요';
+}
+
+// 피부타입 자동 선택 근거 안내 (피부 분석이 있을 때만 호출)
+function getSkinTypeHintText(userSkinType: SkinType | null, manuallyChanged: boolean): string {
+  if (manuallyChanged) return '직접 선택하셨어요';
+  return `분석 결과상 ${skinTypes.find((t) => t.id === userSkinType)?.label ?? ''}이에요`;
+}
+
+// 초기 필터 선택값 — 분석 결과가 있으면 그 값, 없으면 빈 선택(전체 표시)
+function initialSkinTypeSelection(
+  hasSkinAnalysis: boolean,
+  userSkinType: SkinType | null
+): SkinType[] {
+  return hasSkinAnalysis && userSkinType ? [userSkinType] : [];
+}
+
 // E5: 교차 모듈 매칭 서술 생성
 function getMatchNarrative(reasons: MatchReason[]): string | null {
   const matched = reasons.filter((r) => r.matched);
@@ -243,7 +264,8 @@ function getMatchNarrative(reasons: MatchReason[]): string | null {
 
 interface BeautyRecommendTabProps {
   hasAnalysis: boolean;
-  userSkinType: SkinType;
+  /** 피부 분석으로 확정된 타입. 미분석이면 null — 기본값을 지어내지 않는다 */
+  userSkinType: SkinType | null;
   userSkinConcerns: SkinConcern[];
   personalColor: string | null;
   getMatchedProducts: <T extends AnyProduct>(products: T[]) => ProductWithMatch<T>[];
@@ -268,9 +290,19 @@ export function BeautyRecommendTab({
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
 
-  // 필터 상태 (탭 내부)
-  const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(['combination']);
-  const [selectedConcerns, setSelectedConcerns] = useState<SkinConcern[]>(['hydration']);
+  // 피부 분석 확정 여부 — 피부타입 기반 표면(자동 선택·근거 안내)의 유일한 게이트.
+  // hasAnalysis(퍼컬만 해도 true)로 게이팅하면 없는 진단을 말하게 된다.
+  const hasSkinAnalysis = hasAnalysis && userSkinType !== null;
+
+  // 필터 상태 (탭 내부).
+  // 초기 선택은 "분석 결과가 있으면 그 값, 없으면 빈 선택(전체)" — 하드코딩 기본값은
+  // 사용자가 고른 적 없는 필터를 고른 것처럼 위장한다(복합성·보습).
+  const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>(() =>
+    initialSkinTypeSelection(hasSkinAnalysis, userSkinType)
+  );
+  const [selectedConcerns, setSelectedConcerns] = useState<SkinConcern[]>(() =>
+    hasAnalysis ? userSkinConcerns : []
+  );
   const [mainCategory, setMainCategory] = useState<MainCategory>(initialMainCategory);
   // 딥링크 세부 카테고리 프리셋 반영 (예: category=lip → 립)
   const [subCategory, setSubCategory] = useState<string | null>(initialSubCategory);
@@ -295,19 +327,19 @@ export function BeautyRecommendTab({
   const [retryCount, setRetryCount] = useState(0);
 
   // 훅에서 분석 결과 로드 시 필터 상태 동기화 —
-  // 분석 결과가 있으면 피부타입 필터를 자동 선택하고 "분석 자동 선택" 상태로 되돌린다
-  // (이후 사용자가 직접 바꾸면 아래 toggleSkinType에서 수동 상태로 전환)
+  // 피부 분석 결과가 있으면 피부타입 필터를 자동 선택하고 "분석 자동 선택" 상태로 되돌린다
+  // (이후 사용자가 직접 바꾸면 아래 toggleSkinType에서 수동 상태로 전환).
+  // 미분석이면 아무것도 자동 선택하지 않는다 — 위장 필터 방지.
   useEffect(() => {
-    if (hasAnalysis) {
-      if (userSkinType) {
-        setSelectedSkinTypes([userSkinType]);
-        setSkinTypeManuallyChanged(false);
-      }
-      if (userSkinConcerns.length > 0) {
-        setSelectedConcerns(userSkinConcerns);
-      }
-    }
-  }, [hasAnalysis, userSkinType, userSkinConcerns]);
+    if (!hasSkinAnalysis || !userSkinType) return;
+    setSelectedSkinTypes([userSkinType]);
+    setSkinTypeManuallyChanged(false);
+  }, [hasSkinAnalysis, userSkinType]);
+
+  useEffect(() => {
+    if (!hasAnalysis || userSkinConcerns.length === 0) return;
+    setSelectedConcerns(userSkinConcerns);
+  }, [hasAnalysis, userSkinConcerns]);
 
   // 제품 데이터 조회
   useEffect(() => {
@@ -543,10 +575,11 @@ export function BeautyRecommendTab({
 
   return (
     <div data-testid="beauty-recommend-tab">
-      {/* D5: 분석 완료 사용자 대상 발견 텍스트 */}
+      {/* D5: 분석 완료 사용자 대상 발견 텍스트.
+          피부 분석이 없으면 "피부 분석 결과에 맞춰"라고 말하지 않는다 (수리 1과 같은 계열의 허위 진술) */}
       {hasAnalysis && products.length > 0 && !productsLoading && (
         <p className="text-sm text-muted-foreground px-4 pt-3" data-testid="beauty-discovery-text">
-          오늘의 추천은 내 피부 분석 결과에 맞춰 골랐어요
+          {getDiscoveryText(hasSkinAnalysis)}
         </p>
       )}
 
@@ -579,16 +612,22 @@ export function BeautyRecommendTab({
             );
           })}
         </div>
-        {/* 분석 결과가 있으면 피부타입을 자동 선택하고 근거를 한 줄로 안내 (수동 변경 가능) */}
-        {hasAnalysis && (
+        {/* 피부 분석 결과가 있을 때만 자동 선택 + 근거 안내 (수동 변경 가능).
+            미분석자에게 "분석 결과상 복합성이에요"라고 말하지 않는다 — 없는 진단 진술 금지 */}
+        {hasSkinAnalysis ? (
           <p
             className="text-xs text-muted-foreground mt-2"
             role="status"
             data-testid="beauty-skin-type-hint"
           >
-            {skinTypeManuallyChanged
-              ? '직접 선택하셨어요'
-              : `분석 결과상 ${skinTypes.find((t) => t.id === userSkinType)?.label ?? ''}이에요`}
+            {getSkinTypeHintText(userSkinType, skinTypeManuallyChanged)}
+          </p>
+        ) : (
+          <p
+            className="text-xs text-muted-foreground mt-2"
+            data-testid="beauty-skin-type-unknown-hint"
+          >
+            피부 분석을 하면 내 피부타입이 자동으로 선택돼요
           </p>
         )}
       </section>
