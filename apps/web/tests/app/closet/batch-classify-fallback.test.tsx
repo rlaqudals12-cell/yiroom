@@ -11,6 +11,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn(), back: vi.fn() })),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // 이미지 처리 유틸을 제어 가능하게 mock (jsdom엔 createImageBitmap이 없음)

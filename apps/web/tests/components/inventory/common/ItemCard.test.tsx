@@ -133,6 +133,68 @@ describe('ItemCard', () => {
     });
   });
 
+  // 재발 방지(2026-08 외부 리뷰): 카드가 onClick만 달린 div라 키보드로는 상세를 열 수 없었다.
+  // 마우스 없이 옷장을 쓰는 사용자에게 수정·삭제 경로가 통째로 닫혀 있던 셈.
+  describe('키보드 접근', () => {
+    it('누를 수 있는 카드는 버튼 시맨틱과 탭 포커스를 갖는다', () => {
+      render(<ItemCard item={mockItem} onSelect={vi.fn()} />);
+
+      const card = screen.getByTestId('item-card');
+      expect(card).toHaveAttribute('role', 'button');
+      expect(card).toHaveAttribute('tabindex', '0');
+      expect(card).toHaveAccessibleName('테스트 티셔츠 상세 보기');
+    });
+
+    it('Enter와 Space가 클릭과 같은 결과를 낸다', () => {
+      const onSelect = vi.fn();
+      render(<ItemCard item={mockItem} onSelect={onSelect} />);
+
+      const card = screen.getByTestId('item-card');
+      fireEvent.keyDown(card, { key: 'Enter' });
+      fireEvent.keyDown(card, { key: ' ' });
+
+      expect(onSelect).toHaveBeenCalledTimes(2);
+      expect(onSelect).toHaveBeenCalledWith(mockItem);
+    });
+
+    it('다른 키에는 반응하지 않는다', () => {
+      const onSelect = vi.fn();
+      render(<ItemCard item={mockItem} onSelect={onSelect} />);
+
+      fireEvent.keyDown(screen.getByTestId('item-card'), { key: 'a' });
+
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('선택 모드에서는 선택 상태를 aria-pressed로 알린다', () => {
+      render(<ItemCard item={mockItem} onSelect={vi.fn()} selectable selected />);
+
+      expect(screen.getByTestId('item-card')).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('누를 수 없는 카드에는 버튼 시맨틱을 달지 않는다 (거짓 안내 방지)', () => {
+      render(<ItemCard item={mockItem} />);
+
+      const card = screen.getByTestId('item-card');
+      expect(card).not.toHaveAttribute('role');
+      expect(card).not.toHaveAttribute('tabindex');
+    });
+
+    it('즐겨찾기 키 입력이 카드 선택까지 번지지 않는다', () => {
+      const onSelect = vi.fn();
+      const onFavoriteToggle = vi.fn();
+      render(<ItemCard item={mockItem} onSelect={onSelect} onFavoriteToggle={onFavoriteToggle} />);
+
+      // 실제 브라우저는 버튼에서 Enter를 클릭으로 바꾸고, 그 키 이벤트는 카드로 버블링된다
+      fireEvent.keyDown(screen.getByLabelText('즐겨찾기 추가'), {
+        key: 'Enter',
+        bubbles: true,
+      });
+
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+  });
+
   // 재발 방지: 저장값은 대개 한글 색상명인데 '#' 시작만 칠해서 색 표시가 항상 빈 원이었다.
   describe('색상 스와치', () => {
     it('한글 색상명을 대표 hex로 칠한다', () => {

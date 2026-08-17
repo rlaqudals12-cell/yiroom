@@ -12,18 +12,13 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: () => null }),
 }));
 
-vi.mock('lucide-react', () => {
+// 아이콘은 이 테스트의 검증 대상이 아니라 단순 span으로 대체한다.
+// 화이트리스트로 열거하면 페이지가 아이콘을 하나 추가할 때마다 "No export is defined" 위양성으로
+// 깨지므로(2026-08 실제 발생), 실제 모듈의 export 목록을 기반으로 부분 목킹한다.
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
   const Icon = ({ className }: { className?: string }) => <span className={className} />;
-  return {
-    ArrowLeft: Icon,
-    RefreshCw: Icon,
-    Thermometer: Icon,
-    ChevronRight: Icon,
-    Images: Icon,
-    MapPin: Icon,
-    Bookmark: Icon,
-    Check: Icon,
-  };
+  return Object.fromEntries(Object.keys(actual).map((name) => [name, Icon]));
 });
 
 // 날씨는 외부 호출 — 계절 추정 폴백 경로로 고정
@@ -142,7 +137,8 @@ describe('오늘의 코디 — 저장·착용 기록', () => {
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
   });
 
-  it('"오늘 입었어요"가 구성 아이템마다 착용 기록을 남긴다', async () => {
+  // 아이템별 PATCH N회는 중간 실패 시 "일부만 기록됨"으로 남았다 → 배치 1회로 통일
+  it('"오늘 입었어요"가 구성 아이템 전체를 한 번의 배치 요청으로 기록한다', async () => {
     const fetchMock = mockFetch();
     render(<ClosetRecommendPage />);
 
@@ -156,12 +152,35 @@ describe('오늘의 코디 — 저장·착용 기록', () => {
     });
 
     const patchCalls = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH');
-    expect(patchCalls.map(([url]) => String(url))).toEqual([
-      '/api/inventory/top-1',
-      '/api/inventory/bottom-1',
-    ]);
-    for (const [, init] of patchCalls) {
-      expect(JSON.parse(String(init?.body))).toEqual({ action: 'recordUsage' });
-    }
+    expect(patchCalls).toHaveLength(1);
+    expect(String(patchCalls[0][0])).toBe('/api/inventory');
+    expect(JSON.parse(String(patchCalls[0][1]?.body))).toEqual({
+      action: 'recordUsage',
+      itemIds: ['top-1', 'bottom-1'],
+    });
+  });
+
+  it('배치 기록이 실패하면 성공으로 위장하지 않는다', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === '/api/inventory' && init?.method === 'PATCH') {
+        return { ok: false, status: 500, json: async () => ({ error: 'boom' }) } as Response;
+      }
+      if (url.startsWith('/api/inventory/outfits') && (!init || init.method !== 'POST')) {
+        return { ok: true, json: async () => ({ outfits: [] }) } as Response;
+      }
+      return { ok: true, json: async () => ({ success: true }) } as Response;
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    render(<ClosetRecommendPage />);
+
+    fireEvent.click(await screen.findByTestId('outfit-wear-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('outfit-action-message')).toHaveTextContent(
+        '착용 기록을 저장하지 못했어요'
+      );
+    });
   });
 });

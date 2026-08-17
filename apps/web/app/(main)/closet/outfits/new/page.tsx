@@ -27,12 +27,18 @@ import { SEASON_LABELS, OCCASION_LABELS } from '@/types/inventory';
 
 type Step = 'select' | 'details';
 
+// Radix Select는 빈 문자열 value의 Item을 금지한다(렌더 중 throw → 페이지 전체가 죽는다).
+// "선택 안함"은 센티널 값으로 표현하고 저장 직전에 null로 되돌린다.
+const NO_OCCASION = '__none__';
+
 export default function NewOutfitPage() {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
 
   const [step, setStep] = useState<Step>('select');
   const [saving, setSaving] = useState(false);
+  // 저장 실패 안내 — alert()는 화면 밖 모달이라 테스트·접근성 모두에서 사라진다
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // 아이템 목록
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -108,29 +114,33 @@ export default function NewOutfitPage() {
     setStep('details');
   };
 
-  // 저장
+  // 저장 — API 경유 (클라이언트 직접 insert는 clerk_user_id를 채울 수 없어
+  // NOT NULL·RLS INSERT 정책에 항상 걸렸다. 서버가 auth()의 userId를 주입한다)
   const handleSave = async () => {
-    if (!supabase || selectedItems.length === 0) return;
+    if (selectedItems.length === 0) return;
 
     setSaving(true);
+    setSaveError(null);
     try {
-      const { error } = await supabase.from('saved_outfits').insert({
-        name: name || null,
-        description: description || null,
-        item_ids: selectedItems.map((i) => i.id),
-        season: seasons,
-        occasion: occasion || null,
+      const res = await fetch('/api/inventory/outfits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name || undefined,
+          description: description || undefined,
+          itemIds: selectedItems.map((i) => i.id),
+          season: seasons,
+          // 센티널은 onValueChange에서 이미 ''로 되돌아온다 → 여기선 미선택 = 전송 안 함
+          occasion: occasion || undefined,
+        }),
       });
 
-      if (error) {
-        console.error('[NewOutfit] Save error:', error);
-        throw error;
-      }
+      if (!res.ok) throw new Error(`save failed: ${res.status}`);
 
       router.push('/closet/outfits');
     } catch (error) {
-      console.error('[NewOutfit] Error:', error);
-      alert('저장 중 오류가 발생했습니다.');
+      console.error('[NewOutfit] Save error:', error);
+      setSaveError('코디를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setSaving(false);
     }
@@ -254,12 +264,15 @@ export default function NewOutfitPage() {
             {/* 상황 */}
             <div className="space-y-2">
               <Label>상황</Label>
-              <Select value={occasion} onValueChange={(v) => setOccasion(v as Occasion)}>
-                <SelectTrigger>
+              <Select
+                value={occasion}
+                onValueChange={(v) => setOccasion(v === NO_OCCASION ? '' : (v as Occasion))}
+              >
+                <SelectTrigger data-testid="occasion-select">
                   <SelectValue placeholder="상황 선택 (선택)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">선택 안함</SelectItem>
+                  <SelectItem value={NO_OCCASION}>선택 안함</SelectItem>
                   {(Object.keys(OCCASION_LABELS) as Occasion[]).map((o) => (
                     <SelectItem key={o} value={o}>
                       {OCCASION_LABELS[o]}
@@ -268,6 +281,12 @@ export default function NewOutfitPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {saveError && (
+              <p data-testid="outfit-save-error" role="alert" className="text-sm text-destructive">
+                {saveError}
+              </p>
+            )}
 
             {/* 저장 버튼 */}
             <Button

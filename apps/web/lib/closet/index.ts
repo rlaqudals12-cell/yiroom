@@ -1,4 +1,14 @@
 // lib/closet 공개 API
+
+// 통합 큐레이션 맥락 전달 규약 (등록 화면들이 세션을 이어받아 코디 추천으로 복귀)
+export {
+  CURATION_SOURCE,
+  readCurationContext,
+  withCurationContext,
+  curationReturnHref,
+  type CurationContext,
+} from './curation-context';
+
 export {
   CLOTHING_SUB_CATEGORIES,
   SEASON_LABELS,

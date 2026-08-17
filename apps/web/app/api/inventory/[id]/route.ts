@@ -13,6 +13,7 @@ import {
   deleteInventoryItem,
   toggleFavorite,
   recordItemUsage,
+  ITEM_NOT_FOUND,
 } from '@/lib/inventory';
 
 /**
@@ -79,6 +80,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ success: true, item });
   } catch (error) {
     console.error('[Inventory Item API] PATCH error:', error);
+
+    // 내 옷장에 없는 아이템 — 서버 오류가 아니라 잘못된 대상이다
+    if (error instanceof Error && error.message === ITEM_NOT_FOUND) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

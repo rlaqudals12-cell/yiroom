@@ -2,11 +2,19 @@
  * Inventory API
  * GET: 인벤토리 아이템 목록 조회
  * POST: 인벤토리 아이템 생성
+ * PATCH: 여러 아이템 일괄 처리 (착용 기록)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getInventoryItems, createInventoryItem, getInventoryStats } from '@/lib/inventory';
+import { z } from 'zod';
+import {
+  getInventoryItems,
+  createInventoryItem,
+  getInventoryStats,
+  recordItemsUsage,
+  ITEM_NOT_FOUND,
+} from '@/lib/inventory';
 import type { InventoryCategory, InventoryListFilter } from '@/types/inventory';
 
 /**
@@ -109,6 +117,56 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, item }, { status: 201 });
   } catch (error) {
     console.error('[Inventory API] POST error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// 여러 아이템 일괄 착용 기록 — 코디는 아이템 여러 벌이 한 번에 입혀지므로
+// 아이템별 PATCH N회(부분 성공 가능)가 아니라 한 요청으로 처리한다
+const batchActionSchema = z.object({
+  action: z.literal('recordUsage'),
+  itemIds: z.array(z.string().uuid()).min(1).max(30),
+});
+
+/**
+ * PATCH /api/inventory
+ * Body: { action: 'recordUsage', itemIds: string[] }
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => null);
+    const parsed = batchActionSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: parsed.error.issues[0]?.message ?? 'Invalid request body',
+            userMessage: '요청 정보를 확인해주세요.',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    await recordItemsUsage(userId, parsed.data.itemIds);
+
+    return NextResponse.json({ success: true, recorded: parsed.data.itemIds.length });
+  } catch (error) {
+    console.error('[Inventory API] PATCH error:', error);
+
+    // 내 옷장에 없는 아이템 — 서버 오류가 아니라 잘못된 대상이다
+    if (error instanceof Error && error.message === ITEM_NOT_FOUND) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

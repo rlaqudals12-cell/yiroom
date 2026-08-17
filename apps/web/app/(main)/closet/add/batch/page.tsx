@@ -11,7 +11,7 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ImagePlus, Loader2, Check, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ import {
   type ClothingClassificationResult,
 } from '@/lib/inventory/imageProcessing';
 import { prepareUploadBlob, uploadErrorMessage } from '@/lib/image/upload-downscale';
+import { readCurationContext, withCurationContext, curationReturnHref } from '@/lib/closet';
 import type { ClothingCategory } from '@/types/inventory';
 
 const CATEGORY_LABELS: Record<ClothingCategory, string> = {
@@ -53,6 +54,12 @@ interface BatchItem {
   /** AI 자동 분류가 실패해 사용자 확인이 필요한 상태 (지어낸 분류를 채택하지 않았음) */
   classifyFailed?: boolean;
   errorMessage?: string;
+  /**
+   * 업로드까지는 성공한 스토리지 경로.
+   * DB 등록만 실패한 경우 재시도에서 재업로드 없이 이 경로를 그대로 쓴다
+   * (예전에는 경로를 잃어버려 재시도 자체가 불가능했고, 올라간 파일은 고아로 남았다).
+   */
+  uploadedPath?: string;
 }
 
 // 동시 처리 수 — 분류(Gemini)·저장 모두 3개씩 (rate limit·브라우저 부하 균형)
@@ -80,6 +87,9 @@ async function runPool<T>(tasks: Array<() => Promise<T>>, limit: number): Promis
 
 export default function BatchAddClothingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 통합 분석 큐레이션에서 넘어온 맥락 — 등록을 마치면 그 세션의 코디 추천으로 돌아갈 수 있게 한다
+  const curation = readCurationContext(searchParams);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<BatchItem[]>([]);
   const [saving, setSaving] = useState(false);
@@ -167,30 +177,40 @@ export default function BatchAddClothingPage() {
   );
 
   // 일괄 저장: 장당 업로드 → API 등록
+  // 대상에 'error'를 포함한다 — 저장에 실패한 항목을 사진 재선택 없이 다시 시도할 수 있어야 한다
+  // (예전엔 'ready'만 대상이라 한 번 실패하면 그 항목은 영영 저장할 수 없었다)
   const handleSaveAll = async () => {
-    const targets = items.filter((it) => it.status === 'ready');
+    const targets = items.filter((it) => it.status === 'ready' || it.status === 'error');
     if (targets.length === 0) return;
     setSaving(true);
 
     await runPool(
       targets.map((item) => async () => {
-        updateItem(item.id, { status: 'saving' });
+        updateItem(item.id, { status: 'saving', errorMessage: undefined });
+        // 이미 올라간 사진은 다시 올리지 않는다(재업로드 = 중복 트래픽 + 새 고아 파일)
+        let uploadedPath = item.uploadedPath;
         try {
-          const itemId = crypto.randomUUID();
-          const formData = new FormData();
-          // Vercel 본문 제한(4.5MB) 대응 — 전송 전 축소 (2026-07-11 실증 수리)
-          formData.append('file', await prepareUploadBlob(item.previewUrl), 'image.png');
-          formData.append('category', 'closet');
-          formData.append('itemId', itemId);
-          formData.append('type', 'processed');
+          if (!uploadedPath) {
+            const formData = new FormData();
+            // Vercel 본문 제한(4.5MB) 대응 — 전송 전 축소 (2026-07-11 실증 수리)
+            formData.append('file', await prepareUploadBlob(item.previewUrl), 'image.png');
+            formData.append('category', 'closet');
+            // 항목 id를 그대로 쓴다 — 경로가 고정돼야 재시도·보상 삭제가 같은 파일을 가리킨다
+            formData.append('itemId', item.id);
+            formData.append('type', 'processed');
 
-          const uploadRes = await fetch('/api/inventory/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          if (!uploadRes.ok) throw new Error(uploadErrorMessage(uploadRes.status));
-          // 공개 URL이 아니라 스토리지 경로를 저장한다 (비공개 버킷 — closet/add와 동일 계약)
-          const { path: imageUrl } = await uploadRes.json();
+            const uploadRes = await fetch('/api/inventory/upload', {
+              method: 'POST',
+              body: formData,
+            });
+            if (!uploadRes.ok) throw new Error(uploadErrorMessage(uploadRes.status));
+            // 공개 URL이 아니라 스토리지 경로를 저장한다 (비공개 버킷 — closet/add와 동일 계약)
+            const { path } = await uploadRes.json();
+            uploadedPath = path as string;
+            // 업로드 성공 시점에 경로를 항목에 보존 (이후 DB 저장이 실패해도 살아남는다)
+            updateItem(item.id, { uploadedPath });
+          }
+          const imageUrl = uploadedPath;
 
           const c = item.classification;
           const saveRes = await fetch('/api/inventory', {
@@ -218,6 +238,8 @@ export default function BatchAddClothingPage() {
         } catch (e) {
           updateItem(item.id, {
             status: 'error',
+            // 업로드까지 성공했다면 경로를 남겨 재시도가 재업로드를 건너뛰게 한다
+            uploadedPath,
             errorMessage: e instanceof Error ? e.message : '저장 실패',
           });
         }
@@ -228,10 +250,40 @@ export default function BatchAddClothingPage() {
     setSaving(false);
   };
 
+  /**
+   * 목록에서 항목 제외 — 등록을 최종 포기하는 지점이다.
+   * 업로드만 성공하고 DB 등록이 안 된 사진은 아무 행에서도 참조하지 않는 고아가 되므로
+   * 스토리지에서 지우려 시도한다(실패해도 사용자 흐름은 막지 않는다).
+   */
+  const handleRemoveItem = useCallback((item: BatchItem) => {
+    setItems((prev) => prev.filter((i) => i.id !== item.id));
+
+    if (!item.uploadedPath) return;
+    const params = new URLSearchParams({
+      category: 'closet',
+      itemId: item.id,
+      type: 'processed',
+    });
+    void fetch(`/api/inventory/upload?${params.toString()}`, { method: 'DELETE' }).catch(() => {
+      // 보상 삭제 실패는 사용자 흐름을 막지 않는다. 고아 스위퍼는 아직 없으므로
+      // 이 경우 파일은 버킷에 남는다(계정 삭제 시 purgeUserStorage가 함께 지운다).
+    });
+  }, []);
+
   const readyCount = items.filter((i) => i.status === 'ready').length;
+  const errorCount = items.filter((i) => i.status === 'error').length;
   const savedCount = items.filter((i) => i.status === 'saved').length;
   const classifyingCount = items.filter((i) => i.status === 'classifying').length;
   const allDone = items.length > 0 && items.every((i) => i.status === 'saved');
+  // 저장 버튼 대상 = 아직 저장 안 된 항목(실패분 포함 — 재시도 경로)
+  const pendingCount = readyCount + errorCount;
+
+  // 저장 버튼 라벨 — 분류 대기 / 재시도 전용 / 일반 저장
+  const saveButtonLabel = ((): string => {
+    if (classifyingCount > 0) return `AI 분류 중 (${classifyingCount}장 남음)`;
+    if (readyCount === 0 && errorCount > 0) return `${errorCount}벌 다시 시도`;
+    return `${pendingCount}벌 한 번에 저장`;
+  })();
 
   return (
     <div data-testid="batch-add-clothing-page" className="min-h-screen pb-28">
@@ -283,7 +335,7 @@ export default function BatchAddClothingPage() {
 
         {/* 한 벌씩 등록 경로 — 기본은 일괄이지만 단건 경로를 막지 않는다 */}
         <button
-          onClick={() => router.push('/closet/add')}
+          onClick={() => router.push(withCurationContext('/closet/add', curation))}
           data-testid="batch-single-add-link"
           className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
         >
@@ -342,7 +394,7 @@ export default function BatchAddClothingPage() {
                   )}
                   {(item.status === 'ready' || item.status === 'error') && (
                     <button
-                      onClick={() => setItems((prev) => prev.filter((i) => i.id !== item.id))}
+                      onClick={() => handleRemoveItem(item)}
                       className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center"
                       aria-label="제외"
                     >
@@ -405,7 +457,7 @@ export default function BatchAddClothingPage() {
 
       {/* 하단 저장 바 */}
       {items.length > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur-sm border-t px-4 py-3">
+        <div className="fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur-sm border-t px-4 py-3 space-y-2">
           {allDone ? (
             <Button className="w-full" onClick={() => router.push('/closet')}>
               옷장 보러 가기 ({savedCount}벌 등록 완료)
@@ -414,18 +466,29 @@ export default function BatchAddClothingPage() {
             <Button
               className="w-full"
               onClick={handleSaveAll}
-              disabled={saving || readyCount === 0 || classifyingCount > 0}
+              disabled={saving || pendingCount === 0 || classifyingCount > 0}
             >
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   저장 중 ({savedCount}/{items.length})
                 </>
-              ) : classifyingCount > 0 ? (
-                `AI 분류 중 (${classifyingCount}장 남음)`
               ) : (
-                `${readyCount}벌 한 번에 저장`
+                saveButtonLabel
               )}
+            </Button>
+          )}
+
+          {/* 큐레이션에서 왔고 한 벌이라도 등록했다면, 보던 코디 추천으로 돌아가는 길을 연다.
+              강제로 튕기지 않는 이유 = 남은 사진을 이어서 등록하는 흐름을 끊지 않기 위해 */}
+          {curation.isFromIntegrated && savedCount > 0 && (
+            <Button
+              variant={allDone ? 'outline' : 'default'}
+              className="w-full"
+              data-testid="batch-curation-return-cta"
+              onClick={() => router.push(curationReturnHref(curation))}
+            >
+              등록한 옷으로 코디 다시 보기
             </Button>
           )}
         </div>

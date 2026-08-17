@@ -51,22 +51,54 @@ export function ItemCard({
   // 클릭 발화 기준은 onSelect 유무다(selectable 아님).
   // 과거엔 selectable까지 요구해, 선택 모드가 아닌 옷장 목록에서는 카드를 눌러도
   // 아무 일도 일어나지 않았다 — 상세 시트(수정·삭제 포함)가 영구 미개봉이었다.
-  const handleClick = () => {
+  const handleClick = (): void => {
     onSelect?.(item);
   };
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  // 키보드 조작 — 카드는 div라 기본 키 동작이 없다. 버튼 시맨틱(role·tabIndex)을 주는 이상
+  // Enter/Space가 클릭과 같아야 한다(그러지 않으면 마우스 없이는 상세를 열 수 없다).
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (!onSelect) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    // 스페이스의 페이지 스크롤, 엔터의 폼 제출 같은 기본 동작을 막고 선택으로만 쓴다
+    e.preventDefault();
+    onSelect(item);
+  };
+
+  const handleFavoriteClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
     onFavoriteToggle?.(item);
   };
+
+  // 즐겨찾기·더보기는 카드 안의 형제 액션이라 카드 클릭까지 번지면 안 된다
+  const stopKeyPropagation = (e: React.KeyboardEvent): void => {
+    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+  };
+
+  // 누를 수 있는 카드일 때만 버튼 시맨틱을 준다 — 아무 동작도 없는 div에 role=button을 달면
+  // 스크린리더에 "누를 수 있다"는 거짓말이 된다
+  const interactive = !!onSelect;
+  const interactiveProps = interactive
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        'aria-label': `${item.name} 상세 보기`,
+        'aria-pressed': selectable ? selected : undefined,
+      }
+    : {};
 
   return (
     <div
       data-testid="item-card"
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      {...interactiveProps}
       className={cn(
         'group relative overflow-hidden rounded-xl bg-card border transition-all duration-200',
         onSelect && 'cursor-pointer hover:shadow-md',
+        // 키보드 포커스가 보이지 않으면 탭 이동이 미아가 된다
+        interactive &&
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         selected && 'ring-2 ring-primary border-primary'
       )}
     >
@@ -125,6 +157,7 @@ export function ItemCard({
         <button
           type="button"
           onClick={handleFavoriteClick}
+          onKeyDown={stopKeyPropagation}
           className={cn(
             'absolute top-2 right-2 p-1.5 rounded-full transition-all',
             'bg-white/80 backdrop-blur-sm hover:bg-white',
@@ -179,8 +212,10 @@ export function ItemCard({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
+                  aria-label={`${item.name} 더보기`}
                   className="p-1 rounded hover:bg-muted -mr-1"
                   onClick={(e) => e.stopPropagation()}
+                  onKeyDown={stopKeyPropagation}
                 >
                   <MoreVertical className="w-4 h-4 text-muted-foreground" />
                 </button>

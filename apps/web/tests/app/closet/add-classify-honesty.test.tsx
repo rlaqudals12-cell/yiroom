@@ -16,6 +16,7 @@ import type { UploadResult } from '@/components/inventory';
 const pushMock = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, back: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // 업로더는 파일 디코딩(jsdom 미지원)에 의존하므로, 업로드 결과만 주입하는 스텁으로 대체.

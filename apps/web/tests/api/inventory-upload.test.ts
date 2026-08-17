@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { NextRequest } from 'next/server';
-import { POST, GET } from '@/app/api/inventory/upload/route';
+import { POST, GET, DELETE } from '@/app/api/inventory/upload/route';
 
 // ============================================
 // Mocks
@@ -23,11 +23,13 @@ vi.mock('@clerk/nextjs/server', () => ({
 const mockUpload = vi.fn();
 const mockGetPublicUrl = vi.fn();
 const mockCreateSignedUploadUrl = vi.fn();
+const mockRemove = vi.fn();
 const mockStorageFrom = vi.fn(() => ({
   upload: mockUpload,
   // 회귀 감시용으로 남겨둔다 — 라우트가 다시 공개 URL을 만들면 테스트에서 드러난다
   getPublicUrl: mockGetPublicUrl,
   createSignedUploadUrl: mockCreateSignedUploadUrl,
+  remove: mockRemove,
 }));
 const mockCreateServiceRoleClient = vi.fn(() => ({
   storage: { from: mockStorageFrom },
@@ -96,6 +98,7 @@ beforeEach(() => {
     },
     error: null,
   });
+  mockRemove.mockResolvedValue({ data: [], error: null });
 });
 
 // ============================================
@@ -248,5 +251,43 @@ describe('GET /api/inventory/upload', () => {
       `user_123/closet/${VALID_UUID}_processed.png`
     );
     expect(body.signedUrl).toBe('https://cdn.example/signed');
+  });
+});
+
+// ============================================
+// DELETE — 보상 삭제 (DB 등록 전에 포기한 사진 정리)
+// ============================================
+
+describe('DELETE /api/inventory/upload', () => {
+  it('should return 401 when unauthenticated', async () => {
+    mockAuth.mockResolvedValue({ userId: null });
+
+    const res = await DELETE(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
+
+    expect(res.status).toBe(401);
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for invalid params', async () => {
+    const res = await DELETE(makeGetRequest({ category: 'feed', itemId: VALID_UUID }));
+
+    expect(res.status).toBe(400);
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  // 경로는 서버가 userId로 다시 조립한다 — 클라이언트가 남의 파일을 지목할 수 없다
+  it('should remove only the caller-scoped path', async () => {
+    const res = await DELETE(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
+
+    expect(res.status).toBe(200);
+    expect(mockRemove).toHaveBeenCalledWith([`user_123/closet/${VALID_UUID}_processed.png`]);
+  });
+
+  it('should return 500 when storage delete fails', async () => {
+    mockRemove.mockResolvedValue({ data: null, error: { message: 'nope' } });
+
+    const res = await DELETE(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
+
+    expect(res.status).toBe(500);
   });
 });

@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+  // 등록 화면은 큐레이션 맥락(source·session)을 URL에서 읽는다
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // 아이콘은 가벼운 스텁으로 대체 (shadcn ui/select 내부 아이콘 포함)

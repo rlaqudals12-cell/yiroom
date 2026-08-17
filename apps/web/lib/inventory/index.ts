@@ -10,6 +10,8 @@ export {
   updateInventoryItem,
   deleteInventoryItem,
   recordItemUsage,
+  recordItemsUsage,
+  ITEM_NOT_FOUND,
   toggleFavorite,
   getSavedOutfits,
   getSavedOutfitById,

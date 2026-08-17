@@ -18,6 +18,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { calculateMatchScore, hasPersonalMatch, type UserProfile } from '@/lib/products/matching';
 import { diversifyBySubcategory } from '@/lib/products';
@@ -47,6 +48,25 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 /** 1차(프로필 조건부) 패스에서 가져올 최대 행 수 */
 const PROFILE_PASS_LIMIT = 60;
+
+/**
+ * 쿼리 파라미터 검증.
+ *
+ * 예전에는 `Math.min(parseInt(limit), 12)`만 있어서 `limit=-1`이 그대로 통과했고,
+ * 마지막 정렬 단계의 `slice(0, -1)`이 후보 풀 전체(최대 90행)를 뱉었다. `limit=abc`는
+ * NaN이 되어 풀 조회 자체가 깨졌다. 상한(12)·하한(1)을 스키마로 강제한다.
+ */
+const querySchema = z.object({
+  // 'body'는 CATEGORY_MAP에 없어 카테고리 필터 없이 전 품목 풀을 쓴다(체형 결과의 기존 동작 유지)
+  analysisType: z.enum(['skin', 'hair', 'personal-color', 'makeup', 'body']).default('skin'),
+  limit: z.coerce.number().int().min(1).max(12).default(4),
+  personalColorSeason: z.string().nullish(),
+  skinType: z.string().nullish(),
+  skinConcerns: z.string().nullish(),
+  hairType: z.string().nullish(),
+  scalpType: z.string().nullish(),
+  undertone: z.string().nullish(),
+});
 
 // URL 파라미터(lowercase) → DB 시즌 값(Capitalized)
 function toSeason(value: string | null): PersonalColorSeason | undefined {
@@ -165,23 +185,43 @@ async function fetchCandidatePool(
   return [...merged.values()];
 }
 
+/** 표준 실패 봉투 (성공 응답 형상은 기존 소비자 호환을 위해 그대로 둔다) */
+function errorResponse(
+  status: number,
+  code: string,
+  message: string,
+  userMessage: string
+): NextResponse {
+  return NextResponse.json({ success: false, error: { code, message, userMessage } }, { status });
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
-    const analysisType = searchParams.get('analysisType') ?? 'skin';
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '4', 10), 12);
+    const parsedQuery = querySchema.safeParse(Object.fromEntries(searchParams));
+
+    if (!parsedQuery.success) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        parsedQuery.error.issues[0]?.message ?? 'Invalid query',
+        '요청 정보를 확인해주세요.'
+      );
+    }
+
+    const { analysisType, limit } = parsedQuery.data;
 
     const profile: UserProfile = {
-      personalColorSeason: toSeason(searchParams.get('personalColorSeason')),
-      skinType: (searchParams.get('skinType') as SkinType | null) ?? undefined,
+      personalColorSeason: toSeason(parsedQuery.data.personalColorSeason ?? null),
+      skinType: (parsedQuery.data.skinType as SkinType | undefined) ?? undefined,
       // 결과 지표 id(pores/wrinkles/…)와 정본 SkinConcern 어휘가 달라 교집합이 hydration 하나로
       // 붕괴했던 지점 — 어휘 브리지로 정본화(멱등이라 이미 정본 값이 와도 안전).
       skinConcerns: mapSkinMetricsToConcerns(
-        searchParams.get('skinConcerns')?.split(',').filter(Boolean) ?? []
+        parsedQuery.data.skinConcerns?.split(',').filter(Boolean) ?? []
       ),
-      hairType: (searchParams.get('hairType') as HairType | null) ?? undefined,
-      scalpType: (searchParams.get('scalpType') as ScalpType | null) ?? undefined,
-      undertone: (searchParams.get('undertone') as Undertone | null) ?? undefined,
+      hairType: (parsedQuery.data.hairType as HairType | undefined) ?? undefined,
+      scalpType: (parsedQuery.data.scalpType as ScalpType | undefined) ?? undefined,
+      undertone: (parsedQuery.data.undertone as Undertone | undefined) ?? undefined,
     };
 
     const supabase = createServiceRoleClient();
@@ -199,8 +239,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       axis: resolveProfileAxis(analysisType, profile),
     });
 
+    // 조회 실패를 "매칭 0건"으로 위장하지 않는다 — 빈 결과와 장애는 다른 사실이다
     if (!rows) {
-      return NextResponse.json({ success: true, products: [] });
+      return errorResponse(
+        500,
+        'DB_ERROR',
+        'candidate pool query failed',
+        '제품을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'
+      );
     }
 
     const scored = rows
@@ -237,6 +283,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('[Products/Matched] Error:', error);
-    return NextResponse.json({ success: true, products: [] });
+    return errorResponse(
+      500,
+      'UNKNOWN_ERROR',
+      'Internal server error',
+      '제품을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'
+    );
   }
 }

@@ -285,42 +285,86 @@ export async function deleteInventoryItem(userId: string, itemId: string): Promi
   }
 }
 
+/** 소유하지 않았거나 존재하지 않는 아이템을 가리켰을 때의 에러 메시지(라우트가 404로 매핑) */
+export const ITEM_NOT_FOUND = 'Item not found';
+
+/**
+ * 여러 아이템의 착용 기록을 한 번에 반영한다 (useCount +1, lastUsedAt 갱신).
+ *
+ * 2026-08 수리 배경: 예전 구현은 마이그레이션에 존재하지도 않는 RPC
+ * (`increment_inventory_use_count`)를 먼저 호출하고, 실패하면 폴백에서
+ * `use_count: supabase.rpc(...)`—즉 **Promise 객체**를 숫자 컬럼에 넣는 UPDATE를 던졌다.
+ * 그 UPDATE도 실패하면 에러를 통째로 삼켜, 호출측은 성공으로 알고 아무것도 기록되지 않았다.
+ * 여기서는 소유권을 검사한 뒤(=RLS에만 기대지 않음) 배치 UPDATE로 갱신하고,
+ * 실패는 반드시 호출측으로 전파한다.
+ *
+ * 왕복 최소화: 같은 use_count를 가진 아이템끼리 묶어 한 문장으로 갱신한다
+ * (아이템별 UPDATE = N회 왕복 + 부분 성공 위험).
+ *
+ * @param options.requireAll 기본 true — 요청한 아이템 중 하나라도 내 것이 아니면 실패시킨다.
+ *   저장된 코디처럼 **이미 지워진 아이템을 참조할 수 있는** 호출자만 false로 낮춘다.
+ */
+export async function recordItemsUsage(
+  userId: string,
+  itemIds: string[],
+  options: { requireAll?: boolean } = {}
+): Promise<void> {
+  const { requireAll = true } = options;
+  const uniqueIds = [...new Set(itemIds)];
+  if (uniqueIds.length === 0) return;
+
+  const supabase = createClerkSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('user_inventory')
+    .select('id, use_count')
+    .eq('clerk_user_id', userId)
+    .in('id', uniqueIds);
+
+  if (error) {
+    inventoryLogger.error(' recordItemsUsage select error:', error);
+    throw error;
+  }
+
+  const rows = (data ?? []) as Array<{ id: string; use_count: number | null }>;
+
+  // 일부만 내 것이면 "일부만 기록됨"으로 뭉개지 않고 실패로 알린다
+  if (requireAll && rows.length !== uniqueIds.length) {
+    throw new Error(ITEM_NOT_FOUND);
+  }
+  if (rows.length === 0) return;
+
+  const buckets = new Map<number, string[]>();
+  for (const row of rows) {
+    const count = row.use_count ?? 0;
+    const bucket = buckets.get(count);
+    if (bucket) bucket.push(row.id);
+    else buckets.set(count, [row.id]);
+  }
+
+  const now = new Date().toISOString();
+  const results = await Promise.all(
+    [...buckets].map(([count, ids]) =>
+      supabase
+        .from('user_inventory')
+        .update({ use_count: count + 1, last_used_at: now })
+        .eq('clerk_user_id', userId)
+        .in('id', ids)
+    )
+  );
+
+  const failed = results.find((result) => result.error);
+  if (failed?.error) {
+    inventoryLogger.error(' recordItemsUsage update error:', failed.error);
+    throw failed.error;
+  }
+}
+
 /**
  * 아이템 사용 기록 (useCount 증가, lastUsedAt 갱신)
  */
 export async function recordItemUsage(userId: string, itemId: string): Promise<void> {
-  const supabase = createClerkSupabaseClient();
-
-  const { error } = await supabase.rpc('increment_inventory_use_count', {
-    p_user_id: userId,
-    p_item_id: itemId,
-  });
-
-  // RPC가 없으면 직접 업데이트
-  if (error) {
-    const { error: updateError } = await supabase
-      .from('user_inventory')
-      .update({
-        use_count: supabase.rpc('increment_use_count') as unknown as number,
-        last_used_at: new Date().toISOString(),
-      })
-      .eq('clerk_user_id', userId)
-      .eq('id', itemId);
-
-    if (updateError) {
-      // Fallback: 읽고 쓰기
-      const item = await getInventoryItemById(userId, itemId);
-      if (item) {
-        await supabase
-          .from('user_inventory')
-          .update({
-            use_count: item.useCount + 1,
-            last_used_at: new Date().toISOString(),
-          })
-          .eq('id', itemId);
-      }
-    }
-  }
+  await recordItemsUsage(userId, [itemId]);
 }
 
 /**
@@ -531,26 +575,36 @@ export async function deleteOutfit(userId: string, outfitId: string): Promise<vo
 
 /**
  * 코디 착용 기록
+ *
+ * 코디 카운트와 구성 아이템 카운트를 함께 올린다. 예전에는 코디 UPDATE 결과를 확인하지 않고
+ * 아이템도 한 벌씩 순차 기록해, 중간에 실패하면 "일부만 기록된" 상태로 성공을 반환했다.
+ * 지금은 소유권 확인 → 코디 갱신(에러 전파) → 아이템 배치 갱신(에러 전파) 순으로 진행한다.
  */
 export async function recordOutfitWear(userId: string, outfitId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
 
-  // 코디 착용 횟수 증가
+  // 코디 소유권 확인 (없으면 남의 코디이거나 삭제된 코디)
   const outfit = await getSavedOutfitById(userId, outfitId);
   if (!outfit) throw new Error('Outfit not found');
 
-  await supabase
+  const { error } = await supabase
     .from('saved_outfits')
     .update({
       wear_count: outfit.wearCount + 1,
       last_worn_at: new Date().toISOString(),
     })
+    .eq('clerk_user_id', userId)
     .eq('id', outfitId);
 
-  // 구성 아이템들의 착용 횟수도 증가
-  for (const itemId of outfit.itemIds) {
-    await recordItemUsage(userId, itemId);
+  if (error) {
+    inventoryLogger.error(' recordOutfitWear error:', error);
+    throw error;
   }
+
+  // 구성 아이템들의 착용 횟수도 함께 (배치 1회).
+  // 저장된 코디는 나중에 옷장에서 지운 옷을 계속 가리킬 수 있다 — 그 한 벌 때문에
+  // 코디 착용 기록 전체를 실패시키지 않는다(남아 있는 옷만 갱신).
+  await recordItemsUsage(userId, outfit.itemIds, { requireAll: false });
 }
 
 // =====================================================

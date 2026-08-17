@@ -143,6 +143,10 @@ async function call(query: string): Promise<{ products: MatchedItem[] }> {
   return res.json();
 }
 
+async function callRaw(query: string): Promise<Response> {
+  return GET(new NextRequest(`http://localhost/api/products/matched?${query}`));
+}
+
 describe('GET /api/products/matched', () => {
   beforeEach(() => {
     captured.length = 0;
@@ -233,6 +237,51 @@ describe('GET /api/products/matched', () => {
       const untagged = products.find((p) => !p.matchReasons.includes('겨울 쿨톤'));
       // 미태깅 제품은 "모름"이라 매칭되지 않는다 → 적합도 문구를 만들면 거짓
       expect(untagged?.personalMatched).toBe(false);
+    });
+  });
+
+  // 2026-08 외부 리뷰: 입력 미검증 — limit=-1이 slice(0,-1)로 새어 후보 풀 전체가 나갔고,
+  // 숫자가 아닌 limit은 NaN이 되어 풀 조회 자체가 깨졌다.
+  describe('쿼리 검증', () => {
+    it('limit=-1은 400 — 대량 반환으로 새지 않는다', async () => {
+      const res = await callRaw('analysisType=personal-color&limit=-1');
+
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { success: boolean; error: { code: string } };
+      expect(body.success).toBe(false);
+      expect(body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('limit=0·limit=99·limit=abc는 400', async () => {
+      for (const limit of ['0', '99', 'abc']) {
+        const res = await callRaw(`analysisType=skin&limit=${limit}`);
+        expect(res.status).toBe(400);
+      }
+    });
+
+    it('경계값 limit=1·limit=12는 통과하고 개수 상한을 지킨다', async () => {
+      const one = await call('analysisType=personal-color&personalColorSeason=winter&limit=1');
+      expect(one.products).toHaveLength(1);
+
+      const twelve = await call('analysisType=personal-color&personalColorSeason=winter&limit=12');
+      expect(twelve.products.length).toBeLessThanOrEqual(12);
+    });
+
+    it('limit이 없으면 기본 4건', async () => {
+      // 이 스텁 DB는 makeup 재고만 갖고 있어 색조 축으로 확인한다
+      const { products } = await call('analysisType=personal-color&personalColorSeason=winter');
+      expect(products).toHaveLength(4);
+    });
+
+    it('알 수 없는 analysisType은 400', async () => {
+      const res = await callRaw('analysisType=drop-table&limit=4');
+      expect(res.status).toBe(400);
+    });
+
+    it('체형 결과(analysisType=body)는 기존대로 카테고리 필터 없이 통과한다', async () => {
+      const res = await callRaw('analysisType=body&limit=4');
+      expect(res.status).toBe(200);
+      expect(captured.some((q) => q.categories)).toBe(false);
     });
   });
 });

@@ -149,3 +149,45 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+/**
+ * 업로드 보상 삭제 (DB 등록 전에 포기한 사진 정리)
+ *
+ * 일괄 등록은 "업로드 → DB 등록" 두 단계라, DB 등록이 실패한 채 사용자가 포기하면
+ * 아무 행도 참조하지 않는 고아 파일이 버킷에 남는다. 경로는 서버가 userId로 다시
+ * 조립하므로(클라이언트 경로 입력 없음) 남의 파일은 지울 수 없다.
+ */
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const parsed = uploadParamsSchema.safeParse({
+      category: searchParams.get('category'),
+      itemId: searchParams.get('itemId'),
+      type: searchParams.get('type') ?? 'processed',
+    });
+    if (!parsed.success) {
+      return validationError(parsed.error.issues[0]?.message ?? 'Invalid upload params');
+    }
+    const { category, itemId, type } = parsed.data;
+
+    const path = `${userId}/${category}/${itemId}_${type}.png`;
+    const supabase = createServiceRoleClient();
+
+    const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
+
+    if (error) {
+      console.error('[Upload] Storage delete error:', error);
+      return NextResponse.json({ error: '파일 삭제에 실패했습니다.' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[API] DELETE /api/inventory/upload error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

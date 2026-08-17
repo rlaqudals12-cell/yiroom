@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ItemUploader, type UploadResult } from '@/components/inventory';
 import { prepareUploadBlob, uploadErrorMessage } from '@/lib/image/upload-downscale';
+import { readCurationContext, withCurationContext, curationReturnHref } from '@/lib/closet';
 import {
   ClothingCategory,
   CLOTHING_SUB_CATEGORIES,
@@ -48,10 +49,15 @@ type Step = 'upload' | 'details' | 'confirm';
 
 export default function AddClothingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 통합 분석 큐레이션에서 넘어온 맥락 — 등록 후 그 세션의 코디 추천으로 돌아갈 수 있게 유지한다
+  const curation = readCurationContext(searchParams);
 
   // 단계
   const [step, setStep] = useState<Step>('upload');
   const [saving, setSaving] = useState(false);
+  // 저장 완료(큐레이션 복귀 CTA 노출용) — 큐레이션 맥락에서는 강제 이동 대신 선택지를 준다
+  const [savedItemName, setSavedItemName] = useState<string | null>(null);
 
   // 업로드 결과
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
@@ -72,6 +78,24 @@ export default function AddClothingPage() {
   const [pattern, setPattern] = useState<Pattern>('solid');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+
+  // 다음 한 벌을 이어서 등록 — 폼을 처음 상태로 되돌린다(같은 경로 재진입이라 리마운트가 없다)
+  const resetForm = () => {
+    setSavedItemName(null);
+    setStep('upload');
+    setUploadResult(null);
+    setClassifyFailed(false);
+    setName('');
+    setCategory('');
+    setSubCategory('');
+    setBrand('');
+    setColors([]);
+    setSeasons([]);
+    setOccasions([]);
+    setPattern('solid');
+    setTags([]);
+    setTagInput('');
+  };
 
   // 업로드 완료 핸들러
   const handleUploadComplete = (result: UploadResult) => {
@@ -187,6 +211,13 @@ export default function AddClothingPage() {
         throw new Error(err.error ?? 'save failed');
       }
 
+      // 큐레이션에서 넘어왔다면 옷장으로 튕기지 않는다 — 어디로 갈지는 사용자가 고른다
+      // (예전에는 무조건 /closet으로 보내 "코디 보러 왔다가 옷장에 버려지는" 흐름이었다)
+      if (curation.isFromIntegrated) {
+        setSavedItemName(name || '이름 없음');
+        return;
+      }
+
       router.push('/closet');
     } catch (error) {
       console.error('[AddClothing] Error:', error);
@@ -208,7 +239,8 @@ export default function AddClothingPage() {
             variant="ghost"
             size="icon"
             onClick={() => {
-              if (step === 'upload') {
+              // 등록 완료 화면에서는 되돌릴 단계가 없다 — 뒤로가기가 죽은 버튼이 되지 않게 한다
+              if (savedItemName || step === 'upload') {
                 router.back();
               } else {
                 setStep('upload');
@@ -234,8 +266,38 @@ export default function AddClothingPage() {
       </div>
 
       <div className="px-4 py-4">
+        {/* 큐레이션 복귀 CTA — 통합 분석에서 "옷을 넣어야 코디를 받을 수 있어요"로 온 흐름 */}
+        {savedItemName && (
+          <div className="space-y-4 py-6 text-center" data-testid="curation-saved-panel">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
+              <Check className="h-6 w-6 text-emerald-600" aria-hidden="true" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">{savedItemName} 등록 완료</h2>
+              <p className="text-sm text-muted-foreground">
+                보던 코디 추천으로 돌아가거나, 옷을 더 등록할 수 있어요
+              </p>
+            </div>
+            <Button
+              className="w-full"
+              data-testid="curation-return-cta"
+              onClick={() => router.push(curationReturnHref(curation))}
+            >
+              등록한 옷으로 코디 다시 보기
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              data-testid="curation-add-more-cta"
+              onClick={resetForm}
+            >
+              옷 더 등록하기
+            </Button>
+          </div>
+        )}
+
         {/* Step 1: 업로드 */}
-        {step === 'upload' && (
+        {!savedItemName && step === 'upload' && (
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-lg font-semibold mb-1">옷 사진을 올려주세요</h2>
@@ -256,7 +318,7 @@ export default function AddClothingPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => router.push('/closet/add/batch')}
+              onClick={() => router.push(withCurationContext('/closet/add/batch', curation))}
             >
               여러 벌 한 번에 등록하기
             </Button>
@@ -264,7 +326,7 @@ export default function AddClothingPage() {
         )}
 
         {/* Step 2: 상세 정보 */}
-        {step === 'details' && uploadResult && (
+        {!savedItemName && step === 'details' && uploadResult && (
           <div className="space-y-6">
             {/* 자동 분류 실패 상시 배너 — 업로드 배지는 단계 전환과 함께 사라지므로
                 지어낸 분류를 채우지 않았다는 사실을 폼 상단에서 계속 알린다 */}

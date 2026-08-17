@@ -53,6 +53,10 @@ interface SavedOutfitDB {
 
 type Step = 'details' | 'items';
 
+// Radix Select는 빈 문자열 value의 Item을 금지한다(렌더 중 throw → 페이지 전체가 죽는다).
+// "선택 안함"은 센티널 값으로 표현하고 저장 직전에 해제로 되돌린다.
+const NO_OCCASION = '__none__';
+
 export default function EditOutfitPage() {
   const router = useRouter();
   const params = useParams();
@@ -63,6 +67,8 @@ export default function EditOutfitPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // 저장·삭제 실패 안내 — alert()는 화면 밖 모달이라 접근성·검증 모두에서 사라진다
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // 모든 아이템 (아이템 선택용)
   const [allItems, setAllItems] = useState<InventoryItem[]>([]);
@@ -160,52 +166,50 @@ export default function EditOutfitPage() {
     setStep('details');
   };
 
-  // 저장
+  // 저장 — API 경유 (서버가 소유권을 확인하고 clerk_user_id 스코프로 갱신한다.
+  // 클라이언트 직접 update는 소유자 조건 없이 id만 걸어 RLS에만 기대고 있었다)
   const handleSave = async () => {
-    if (!supabase || selectedItems.length === 0) return;
+    if (selectedItems.length === 0) return;
 
     setSaving(true);
+    setActionError(null);
     try {
-      const { error } = await supabase
-        .from('saved_outfits')
-        .update({
+      const res = await fetch(`/api/inventory/outfits/${outfitId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: name || null,
           description: description || null,
-          item_ids: selectedItems.map((i) => i.id),
+          itemIds: selectedItems.map((i) => i.id),
           season: seasons,
+          // 센티널은 onValueChange에서 이미 ''로 되돌아온다 → 미선택은 null로 저장(해제)
           occasion: occasion || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', outfitId);
+        }),
+      });
 
-      if (error) {
-        console.error('[EditOutfit] Save error:', error);
-        throw error;
-      }
+      if (!res.ok) throw new Error(`save failed: ${res.status}`);
 
       router.push(`/closet/outfits/${outfitId}`);
     } catch (error) {
-      console.error('[EditOutfit] Error:', error);
-      alert('저장 중 오류가 발생했어요.');
+      console.error('[EditOutfit] Save error:', error);
+      setActionError('코디를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setSaving(false);
     }
   };
 
-  // 삭제
+  // 삭제 — 실패를 조용히 삼키던 경로(에러면 아무 일도 안 일어남)를 정직하게 알린다
   const handleDelete = async () => {
-    if (!supabase) return;
-
     setDeleting(true);
+    setActionError(null);
     try {
-      const { error } = await supabase.from('saved_outfits').delete().eq('id', outfitId);
+      const res = await fetch(`/api/inventory/outfits/${outfitId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`delete failed: ${res.status}`);
 
-      if (!error) {
-        router.push('/closet/outfits');
-      }
+      router.push('/closet/outfits');
     } catch (error) {
       console.error('[EditOutfit] Delete error:', error);
-      alert('삭제 중 오류가 발생했어요.');
+      setActionError('코디를 삭제하지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setDeleting(false);
     }
@@ -256,7 +260,13 @@ export default function EditOutfitPage() {
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive">
+              {/* 아이콘 단독 버튼 — 라벨이 없으면 스크린리더에 "버튼"으로만 읽힌다 */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive"
+                aria-label="코디 삭제"
+              >
                 <Trash2 className="w-5 h-5" />
               </Button>
             </AlertDialogTrigger>
@@ -340,12 +350,15 @@ export default function EditOutfitPage() {
             {/* 상황 */}
             <div className="space-y-2">
               <Label>상황</Label>
-              <Select value={occasion} onValueChange={(v) => setOccasion(v as Occasion)}>
-                <SelectTrigger>
+              <Select
+                value={occasion}
+                onValueChange={(v) => setOccasion(v === NO_OCCASION ? '' : (v as Occasion))}
+              >
+                <SelectTrigger data-testid="occasion-select">
                   <SelectValue placeholder="상황 선택 (선택)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">선택 안함</SelectItem>
+                  <SelectItem value={NO_OCCASION}>선택 안함</SelectItem>
                   {(Object.keys(OCCASION_LABELS) as Occasion[]).map((o) => (
                     <SelectItem key={o} value={o}>
                       {OCCASION_LABELS[o]}
@@ -354,6 +367,16 @@ export default function EditOutfitPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {actionError && (
+              <p
+                data-testid="outfit-action-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
+                {actionError}
+              </p>
+            )}
 
             {/* 저장 버튼 */}
             <Button
