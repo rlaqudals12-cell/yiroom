@@ -17,6 +17,15 @@ import { z } from 'zod';
 export const AXIS_CODES = ['personal_color', 'skin', 'body', 'hair', 'makeup'] as const;
 export type AxisCode = (typeof AXIS_CODES)[number];
 
+/** 축 코드 → 결과 테이블 (session_id FK를 가진 5개 테이블) */
+export const AXIS_TABLES: Record<AxisCode, string> = {
+  personal_color: 'personal_color_assessments',
+  skin: 'skin_analyses',
+  body: 'body_analyses',
+  hair: 'hair_analyses',
+  makeup: 'makeup_analyses',
+};
+
 // ============================================
 // 2. 입력 스키마 (Zod)
 // ============================================
@@ -64,6 +73,17 @@ export type RecommendationGender = (typeof RECOMMENDATION_GENDERS)[number];
  */
 export const RECOMMENDATION_SITUATIONS = ['date', 'interview', 'daily', 'travel', 'party'] as const;
 export type RecommendationSituation = (typeof RECOMMENDATION_SITUATIONS)[number];
+
+/**
+ * 세션 questionnaire JSONB에 함께 저장되는 클라이언트 요청 상관 키.
+ *
+ * 왜 questionnaire 안인가: `integrated_analysis_sessions`에 전용 컬럼이 없고,
+ * prod 마이그레이션은 수동 gap-apply라 컬럼 추가 전까지 INSERT가 통째로 깨진다.
+ * 이미 있는 JSONB에 예약 키(`_` 접두)로 담아 스키마 변경 없이 상관관계를 만든다.
+ * 문진 값과 충돌하지 않도록 언더스코어 접두를 쓰고, 클라이언트가 questionnaire로
+ * 밀어 넣을 수 없게 별도 최상위 필드(`clientRequestId`)로만 받는다.
+ */
+export const CLIENT_REQUEST_ID_KEY = '_clientRequestId';
 
 /** 통합 분석 요청 입력 */
 export const integratedAnalysisInputSchema = z.object({
@@ -128,6 +148,15 @@ export const integratedAnalysisInputSchema = z.object({
 
   /** update 모드에서 재분석할 축. 비었으면 full처럼 전체 실행 */
   axes: z.array(z.enum(['personal_color', 'skin', 'body', 'hair', 'makeup'])).optional(),
+
+  /**
+   * 클라이언트가 만든 요청 상관 ID (선택).
+   *
+   * 왜 필요한가: 응답을 못 받은 채 화면을 벗어난 사용자가 돌아왔을 때, "그 분석"이
+   * 저장됐는지 확인할 방법이 시각 비교뿐이었다(±2분 창 → 직전 세션 오연결).
+   * 이 ID를 세션에 함께 저장해두면 시계가 아니라 정확한 일치로 복구할 수 있다.
+   */
+  clientRequestId: z.string().uuid().optional(),
 
   /** 분석 옵션 */
   options: z

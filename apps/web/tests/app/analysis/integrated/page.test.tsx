@@ -13,6 +13,9 @@ import IntegratedAnalysisInputPage from '@/app/(main)/analysis/integrated/page';
 
 const pushMock = vi.fn();
 let analysisCountValue = 0;
+let analysisStatusLoading = false;
+let analysisStatusError = false;
+const refetchMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
@@ -26,7 +29,12 @@ vi.mock('@/app/(main)/analysis/personal-color/_components/measure-contrast', () 
   measureContrastLevel: vi.fn().mockResolvedValue(null),
 }));
 vi.mock('@/hooks/useAnalysisStatus', () => ({
-  useAnalysisStatus: () => ({ analysisCount: analysisCountValue }),
+  useAnalysisStatus: () => ({
+    analysisCount: analysisCountValue,
+    isLoading: analysisStatusLoading,
+    hasError: analysisStatusError,
+    refetch: refetchMock,
+  }),
   invalidateAnalysisCache: vi.fn(),
 }));
 vi.mock('@/components/providers/gender-provider', () => ({
@@ -60,8 +68,8 @@ vi.mock('@/app/(main)/analysis/integrated/_components/ImageUploadSection', () =>
   ),
 }));
 vi.mock('@/app/(main)/analysis/integrated/_components/PendingAnalysisBanner', () => ({
-  PendingAnalysisBanner: ({ startedAt }: { startedAt: number }) => (
-    <div data-testid="mock-pending-banner">{startedAt}</div>
+  PendingAnalysisBanner: ({ requestId }: { requestId: string }) => (
+    <div data-testid="mock-pending-banner">{requestId}</div>
   ),
 }));
 vi.mock('@/app/(main)/analysis/integrated/_components/QuestionnaireForm', () => ({
@@ -83,6 +91,7 @@ function deselectAllAxes(): void {
 }
 
 const PENDING_KEY = 'yiroom:integrated:pending';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** fetch 응답 스텁 — json() 파싱 실패까지 재현 가능 */
 function stubFetch(options: {
@@ -109,6 +118,8 @@ async function submitWithFace(): Promise<void> {
 describe('IntegratedAnalysisInputPage — 재분석 0축 가드', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    analysisStatusLoading = false;
+    analysisStatusError = false;
   });
 
   it('복귀 사용자가 축을 전부 해제하면 제출이 비활성화되고 인라인 에러가 보인다', () => {
@@ -151,6 +162,8 @@ describe('IntegratedAnalysisInputPage — 제출 실패 분기', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     analysisCountValue = 0;
+    analysisStatusLoading = false;
+    analysisStatusError = false;
     sessionStorage.clear();
   });
 
@@ -226,6 +239,8 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     analysisCountValue = 0;
+    analysisStatusLoading = false;
+    analysisStatusError = false;
     sessionStorage.clear();
   });
 
@@ -233,10 +248,11 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     vi.unstubAllGlobals();
   });
 
-  it('제출 시 진행 마커를 기록하고 분석 중 이탈 경고를 등록한다', async () => {
+  it('제출 시 상관 ID 마커를 기록하고 분석 중 이탈 경고를 등록한다', async () => {
     const addListenerSpy = vi.spyOn(window, 'addEventListener');
     // 응답이 오지 않는 상태 = 분석 진행 중
-    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})));
+    const fetchMock = vi.fn().mockReturnValue(new Promise(() => {}));
+    vi.stubGlobal('fetch', fetchMock);
     render(<IntegratedAnalysisInputPage />);
 
     await submitWithFace();
@@ -244,7 +260,11 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     await waitFor(() => {
       expect(screen.getByTestId('integrated-submitting')).toBeInTheDocument();
     });
-    expect(Number(sessionStorage.getItem(PENDING_KEY))).toBeGreaterThan(0);
+    const marker = sessionStorage.getItem(PENDING_KEY);
+    expect(marker).toMatch(UUID_RE);
+    // 같은 ID를 서버에도 보내야 복구 조회가 성립한다
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.clientRequestId).toBe(marker);
     expect(addListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     addListenerSpy.mockRestore();
   });
@@ -261,8 +281,50 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     expect(sessionStorage.getItem(PENDING_KEY)).toBeNull();
   });
 
-  it('실패하면 마커를 남기지 않는다 (에러는 이미 화면에 보임)', async () => {
+  // 회귀 방지(외부 리뷰 #3): 타임아웃·5xx·네트워크 예외는 서버에서 분석이 끝났을 수 있다.
+  // 마커를 지우면 이미 저장된 결과로 돌아갈 길이 사라져 사용자가 5축을 다시 태운다.
+  it('게이트웨이 타임아웃(504)에는 마커를 남긴다 — 서버에서 끝났을 수 있다', async () => {
     stubFetch({ status: 504, jsonThrows: true });
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    await waitFor(() => expect(screen.getByTestId('integrated-submit-error')).toBeInTheDocument());
+    expect(sessionStorage.getItem(PENDING_KEY)).toMatch(UUID_RE);
+  });
+
+  it('500 서버 오류에도 마커를 남긴다', async () => {
+    stubFetch({ status: 500, json: { success: false, error: { userMessage: '서버 오류' } } });
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    await waitFor(() => expect(screen.getByTestId('integrated-submit-error')).toBeInTheDocument());
+    expect(sessionStorage.getItem(PENDING_KEY)).toMatch(UUID_RE);
+  });
+
+  it('네트워크 예외에도 마커를 남긴다', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    await waitFor(() => expect(screen.getByTestId('integrated-submit-error')).toBeInTheDocument());
+    expect(sessionStorage.getItem(PENDING_KEY)).toMatch(UUID_RE);
+  });
+
+  it('서버가 확실히 거절한 429는 마커를 지운다 (분석이 시작조차 안 됨)', async () => {
+    stubFetch({ status: 429, json: { error: '오늘 분석 횟수를 모두 사용했어요.' } });
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    await waitFor(() => expect(screen.getByTestId('integrated-submit-error')).toBeInTheDocument());
+    expect(sessionStorage.getItem(PENDING_KEY)).toBeNull();
+  });
+
+  it('400 검증 실패도 마커를 지운다', async () => {
+    stubFetch({ status: 400, json: { success: false, error: { userMessage: '입력 오류' } } });
     render(<IntegratedAnalysisInputPage />);
 
     await submitWithFace();
@@ -272,10 +334,12 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
   });
 
   it('마커가 남은 채 재진입하면 복구 배너를 띄운다', () => {
-    sessionStorage.setItem(PENDING_KEY, String(Date.now()));
+    sessionStorage.setItem(PENDING_KEY, '11111111-2222-4333-8444-555555555555');
     render(<IntegratedAnalysisInputPage />);
 
-    expect(screen.getByTestId('mock-pending-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-pending-banner')).toHaveTextContent(
+      '11111111-2222-4333-8444-555555555555'
+    );
   });
 
   it('마커가 없으면 복구 배너를 띄우지 않는다', () => {
@@ -283,10 +347,70 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     expect(screen.queryByTestId('mock-pending-banner')).not.toBeInTheDocument();
   });
 
-  it('깨진 마커 값은 무시한다', () => {
-    sessionStorage.setItem(PENDING_KEY, 'not-a-number');
+  it('구버전(시각) 마커는 상관 ID가 없으므로 폐기한다', () => {
+    sessionStorage.setItem(PENDING_KEY, String(Date.now()));
     render(<IntegratedAnalysisInputPage />);
     expect(screen.queryByTestId('mock-pending-banner')).not.toBeInTheDocument();
+    expect(sessionStorage.getItem(PENDING_KEY)).toBeNull();
+  });
+
+  it('깨진 마커 값은 무시한다', () => {
+    sessionStorage.setItem(PENDING_KEY, 'not-a-uuid');
+    render(<IntegratedAnalysisInputPage />);
+    expect(screen.queryByTestId('mock-pending-banner')).not.toBeInTheDocument();
+  });
+});
+
+// 회귀 방지(외부 리뷰 #6): 이력이 확정되기 전 analysisCount는 0 — 복귀 사용자도 "신규"로
+// 보여, 축 선택 없이 제출되면 mode 미전송 = 5축 전체 재분석(프로필 덮어쓰기)이 된다.
+describe('IntegratedAnalysisInputPage — 분석 이력 확정 전 제출 차단', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    analysisCountValue = 0;
+    analysisStatusLoading = false;
+    analysisStatusError = false;
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('이력 조회 중에는 제출 버튼이 비활성화된다', () => {
+    analysisStatusLoading = true;
+    render(<IntegratedAnalysisInputPage />);
+
+    fireEvent.click(screen.getByTestId('mock-set-face'));
+
+    expect(screen.getByRole('button', { name: '내 정체성 알아보기' })).toBeDisabled();
+  });
+
+  it('이력 조회 중에는 제출해도 분석 요청이 나가지 않는다', async () => {
+    analysisStatusLoading = true;
+    const fetchMock = stubFetch({ status: 200, json: { success: true } });
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    // 확정 전이면 5축 전체 재분석(프로필 덮어쓰기)이 될 수 있으므로 요청 자체를 막는다
+    await waitFor(() => {
+      expect(screen.queryByTestId('integrated-submitting')).not.toBeInTheDocument();
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('이력 조회 실패 시 재시도 UI를 띄우고 제출을 막는다', async () => {
+    analysisStatusError = true;
+    const fetchMock = stubFetch({ status: 200, json: { success: true } });
+    render(<IntegratedAnalysisInputPage />);
+
+    fireEvent.click(screen.getByTestId('mock-set-face'));
+    expect(screen.getByTestId('analysis-status-error')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '내 정체성 알아보기' })).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('analysis-status-retry'));
+    expect(refetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
@@ -294,6 +418,8 @@ describe('IntegratedAnalysisInputPage — 사전 고지 문구', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     analysisCountValue = 0;
+    analysisStatusLoading = false;
+    analysisStatusError = false;
     sessionStorage.clear();
   });
 

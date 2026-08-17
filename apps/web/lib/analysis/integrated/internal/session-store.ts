@@ -9,6 +9,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { CLIENT_REQUEST_ID_KEY } from '../types';
 import type { AxisCode, IntegratedSessionRow, PersonaProfile, SessionStatus } from '../types';
 
 /** 세션 생성 입력 */
@@ -19,6 +20,11 @@ export interface CreateSessionInput {
   faceImageUrl: string | null;
   bodyImageUrl: string | null;
   questionnaire: Record<string, unknown>;
+  /**
+   * 클라이언트 요청 상관 ID (선택) — questionnaire JSONB의 예약 키로 함께 저장한다.
+   * 이탈 복구 배너가 "이번 요청의 세션"을 시각이 아니라 정확한 일치로 찾는 근거.
+   */
+  clientRequestId?: string;
 }
 
 /** 세션 종료 입력 */
@@ -44,7 +50,10 @@ export async function createSession(input: CreateSessionInput): Promise<Integrat
     clerk_user_id: input.clerkUserId,
     face_image_url: input.faceImageUrl,
     body_image_url: input.bodyImageUrl,
-    questionnaire: input.questionnaire,
+    // 상관 ID는 예약 키로 함께 저장 (전용 컬럼 없음 — types.ts CLIENT_REQUEST_ID_KEY 주석 참조)
+    questionnaire: input.clientRequestId
+      ? { ...input.questionnaire, [CLIENT_REQUEST_ID_KEY]: input.clientRequestId }
+      : input.questionnaire,
     status: 'pending',
     axes_completed: [],
     axes_failed: [],

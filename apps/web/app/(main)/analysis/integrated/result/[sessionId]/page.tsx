@@ -12,10 +12,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { CalendarCheck, ChevronRight } from 'lucide-react';
-import {
-  fetchIntegratedResult,
-  fetchLatestPersonalColor,
-} from '@/lib/analysis/integrated/internal/result-fetcher';
+import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
 // internal 소비 관행(result-fetcher와 동일) — 구버전 세션에 저장된 페르소나 문구
 // (원시 영문 피부타입·"바이탈리티"·"을(를)" 병기)를 표시 시점에 정본 라벨로 교정.
 import { repairLegacyPersona } from '@/lib/analysis/integrated/internal/persona-repair';
@@ -69,22 +66,36 @@ import { ShareReportButton } from './_components/ShareReportButton';
  *
  * usedFallback: 세션 used_fallback에 담긴 실제 Mock 대체 여부를 전달한다
  * (과거 false 하드코딩은 통합 리포트가 축별 Mock을 숨기던 정직성 결함이었음).
+ *
+ * fetchFailed: 조회 자체가 실패한 축. "결과 없음"과 구분한다 — 일시적 장애를
+ * "분석 안 함"으로 표시하면 사용자가 이미 한 분석을 다시 하게 된다.
  */
 function toAxisResult<T>(
   record: AxisDbRecord | null,
   mapper: (r: AxisDbRecord) => T,
-  usedFallback: boolean
+  usedFallback: boolean,
+  fetchFailed = false
 ): AxisResult<T> {
   if (!record) {
-    return {
-      success: false,
-      error: {
-        code: 'MISSING_INPUT',
-        message: 'No DB record',
-        userMessage: '분석 결과가 없어요.',
-        retryable: true,
-      },
-    };
+    return fetchFailed
+      ? {
+          success: false,
+          error: {
+            code: 'UNKNOWN',
+            message: 'Axis fetch failed',
+            userMessage: '결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+            retryable: true,
+          },
+        }
+      : {
+          success: false,
+          error: {
+            code: 'MISSING_INPUT',
+            message: 'No DB record',
+            userMessage: '분석 결과가 없어요.',
+            retryable: true,
+          },
+        };
   }
   return { success: true, usedFallback, data: mapper(record) };
 }
@@ -403,20 +414,6 @@ function buildAxisSummaries(
   };
 }
 
-/**
- * 퍼컬 축 레코드 해석 — 프로필 폴백(ADR-109 프로필 중심).
- * 이 세션에 퍼컬 축이 없으면 사용자의 최신 단독 진단을 반영한다 — 단독 퍼컬을 마친
- * 사용자의 공유카드·리포트가 빈 껍데기로 퇴화하던 결함 수리(2026-08-17).
- * 실측된 본인 진단만 사용(지어내지 않음), 반영 시 페이지 고지로 정직하게 표시.
- */
-async function resolvePcRecord(
-  sessionPc: AxisDbRecord | null
-): Promise<{ pcRecord: AxisDbRecord | null; pcFromProfile: boolean }> {
-  if (sessionPc) return { pcRecord: sessionPc, pcFromProfile: false };
-  const profileRecord = await fetchLatestPersonalColor();
-  return { pcRecord: profileRecord, pcFromProfile: profileRecord !== null };
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('analysis.integratedResult');
   return {
@@ -424,6 +421,15 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t('meta.description'),
   };
 }
+
+/** 축 코드 → 축 이름 i18n 키 (프로필 폴백 고지 문구용) */
+const AXIS_LABEL_KEY = {
+  personal_color: 'axes.personalColor',
+  skin: 'axes.skin',
+  body: 'axes.body',
+  hair: 'axes.hair',
+  makeup: 'axes.makeup',
+} as const satisfies Record<AxisCode, string>;
 
 // locale → toLocaleString용 BCP47 (외국어 사용자에게 한국어 날짜 포맷 노출 방지)
 const DATE_LOCALE: Record<string, string> = {
@@ -471,8 +477,15 @@ export default async function IntegratedResultPage({
     notFound();
   }
 
-  const { session, axes } = data;
-  const { pcRecord, pcFromProfile } = await resolvePcRecord(axes.personalColor);
+  const { session, axes, axesFromProfile, axesFetchFailed } = data;
+  // 이번 세션에 없던 축은 fetcher가 사용자의 최신 진단으로 이미 채웠다 (ADR-109 "유지" 약속).
+  // 여기서는 그 사실을 고지하기 위해 목록만 라벨로 바꾼다.
+  const pcRecord = axes.personalColor;
+  const fetchFailedSet = new Set<AxisCode>(axesFetchFailed);
+  const profileFallbackLabels =
+    axesFromProfile.length > 0
+      ? axesFromProfile.map((axis) => t(AXIS_LABEL_KEY[axis])).join(' · ')
+      : null;
   // 저장된 persona는 생성 시점 문자열 — 구버전 Mock 템플릿의 원시값·조사 병기를 표시 시점 교정
   const persona = repairLegacyPersona(session.persona ?? null);
 
@@ -497,7 +510,8 @@ export default async function IntegratedResultPage({
         undertone: String(r.undertone ?? ''),
         confidence: Number(r.confidence ?? 0),
       }),
-      usedFallbackSet.has('personal_color')
+      usedFallbackSet.has('personal_color'),
+      fetchFailedSet.has('personal_color')
     ),
     skin: toAxisResult<SkinAxisData>(
       axes.skin,
@@ -505,28 +519,32 @@ export default async function IntegratedResultPage({
         skinType: String(r.skin_type ?? ''),
         overallScore: Number(r.overall_score ?? 0),
       }),
-      usedFallbackSet.has('skin')
+      usedFallbackSet.has('skin'),
+      fetchFailedSet.has('skin')
     ),
     body: toAxisResult<BodyAxisData>(
       axes.body,
       (r) => ({
         bodyType: String(r.body_type ?? ''),
       }),
-      usedFallbackSet.has('body')
+      usedFallbackSet.has('body'),
+      fetchFailedSet.has('body')
     ),
     hair: toAxisResult<HairAxisData>(
       axes.hair,
       (r) => ({
         faceShape: String(r.face_shape ?? ''),
       }),
-      usedFallbackSet.has('hair')
+      usedFallbackSet.has('hair'),
+      fetchFailedSet.has('hair')
     ),
     makeup: toAxisResult<MakeupAxisData>(
       axes.makeup,
       (r) => ({
         baseRecommendation: extractNested(r, 'recommendations', 'baseRecommendation'),
       }),
-      usedFallbackSet.has('makeup')
+      usedFallbackSet.has('makeup'),
+      fetchFailedSet.has('makeup')
     ),
   };
 
@@ -689,13 +707,14 @@ export default async function IntegratedResultPage({
         {/* 정직성: Mock Fallback으로 대체된 축을 샘플 결과로 명시 (감사 B7) */}
         <AxisFallbackNotice usedFallback={usedFallbackAxes} />
 
-        {/* 프로필 폴백 고지 — 이 세션엔 퍼컬 축이 없어 최신 단독 진단을 반영했음을 정직하게 표시 */}
-        {pcFromProfile && (
+        {/* 프로필 폴백 고지 — 이번 세션에 없던 축을 최신 진단으로 채웠음을 정직하게 표시
+            (선택 재분석에서 유지한 축·단독 진단만 마친 축 모두 포함) */}
+        {profileFallbackLabels && (
           <p
             className="rounded-2xl border bg-card px-4 py-3 text-xs text-muted-foreground"
-            data-testid="pc-profile-fallback-notice"
+            data-testid="profile-fallback-notice"
           >
-            {t('pcProfileFallback')}
+            {t('profileFallback', { axes: profileFallbackLabels })}
           </p>
         )}
 

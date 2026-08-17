@@ -14,7 +14,8 @@ import {
   FAST_MODEL,
   outputLanguageDirective,
 } from '@/lib/gemini/client';
-import type { OutputLocale } from '@/lib/gemini/client';
+import type { GeminiCallParams, OutputLocale } from '@/lib/gemini/client';
+import { withTimeout, withRetry, createAbortTimeout } from '@/lib/utils/timeout';
 import { z } from 'zod';
 import type {
   SkinZoneType,
@@ -52,39 +53,61 @@ const geminiV2Config = {
 };
 
 // =============================================================================
+// 호출 예산 (함수 상한 안에서 끝나도록 고정)
+// =============================================================================
+
+/**
+ * 축당 1회 호출 타임아웃.
+ *
+ * 왜 25초인가 (예산 계산): 통합 라우트의 `maxDuration = 60`이 하드 상한이고,
+ * 그 안에서 이미지 업로드·품질 게이트·DB 저장·persona 합성까지 끝나야 한다.
+ * 축 하나에 허용되는 총 예산을 55초로 잡으면 `25s(1차) + 1s(대기) + 25s(2차) = 51s`.
+ * 예전 값(30s × 2 + 1s = 61s)은 함수 상한을 넘겨, 재시도가 완주하기 전에
+ * 게이트웨이가 504로 끊어 "타임아웃 폴백"조차 못 하고 요청 전체가 죽었다.
+ */
+const V2_CALL_TIMEOUT_MS = 25_000;
+
+/** 축당 총 예산 상한 (검증·회귀 테스트용 상수 — maxDuration=60s보다 반드시 작아야 한다) */
+export const V2_CALL_BUDGET_MS = 55_000;
+
+/** 재시도: 1회(총 2시도), 고정 1초 대기 — 지수 백오프는 예산을 넘긴다 */
+const V2_RETRY_OPTIONS = { maxRetries: 1, delayMs: 1000, exponential: false } as const;
+
+// =============================================================================
 // 유틸리티 함수
 // =============================================================================
 
 /**
- * 타임아웃 적용 Promise 래퍼
+ * 예산이 걸린 Gemini 호출 (타임아웃 + 재시도 + 원 요청 중단).
+ *
+ * 정본 유틸(`lib/utils/timeout`)을 쓴다 — 이 파일에 있던 사본은 성공 시 타이머를
+ * 해제하지 않아, 응답이 빨라도 타임아웃 타이머가 최대 30초 동안 이벤트 루프에
+ * 남아 서버리스 함수 종료를 지연시켰다.
+ *
+ * AbortController를 함께 거는 이유: 타임아웃은 "기다리기를 포기"할 뿐 원 요청을
+ * 멈추지 않는다. 중단하지 않으면 포기한 호출이 함수가 죽을 때까지 계속 살아 있다.
  */
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  errorMessage: string
-): Promise<T> {
-  const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
-  );
-  return Promise.race([promise, timeout]);
-}
-
-/**
- * 재시도 로직
- */
-async function withRetry<T>(fn: () => Promise<T>, maxRetries: number, delayMs: number): Promise<T> {
-  let lastError: Error | null = null;
-  for (let i = 0; i <= maxRetries; i++) {
+async function callGeminiWithBudget(
+  params: GeminiCallParams,
+  timeoutMessage: string
+): Promise<{ text: string }> {
+  return withRetry(async () => {
+    const { controller, clear } = createAbortTimeout(V2_CALL_TIMEOUT_MS);
     try {
-      return await fn();
-    } catch (error) {
-      lastError = error as Error;
-      if (i < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
+      return await withTimeout(
+        generateContent({
+          ...params,
+          config: { ...params.config, abortSignal: controller.signal },
+        }),
+        V2_CALL_TIMEOUT_MS,
+        timeoutMessage
+      );
+    } finally {
+      // 성공이든 실패든 타이머 해제 + 미완 요청 중단 (이미 끝난 요청엔 무해)
+      clear();
+      controller.abort();
     }
-  }
-  throw lastError;
+  }, V2_RETRY_OPTIONS);
 }
 
 /**
@@ -316,34 +339,28 @@ export async function analyzeSkinV2WithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
-    const geminiResult = await withRetry(
-      () =>
-        withTimeout(
-          generateContent({
-            model: FAST_MODEL, // 피부 7존 = 구조화 추출 — lite 스키마 완전 준수·3~7초 (2026-07-07 A/B)
-            contents: [
-              {
-                // 결과 자유 텍스트(concerns 등)만 사용자 언어로 (JSON 필드·enum은 영문 유지 = 파싱 규칙 보존)
-                text: priorHint
-                  ? `${SKIN_V2_PROMPT}
+    // 예산 내 호출 (25초 × 2시도 + 1초 = 51초 < maxDuration 60초)
+    const geminiResult = await callGeminiWithBudget(
+      {
+        model: FAST_MODEL, // 피부 7존 = 구조화 추출 — lite 스키마 완전 준수·3~7초 (2026-07-07 A/B)
+        contents: [
+          {
+            // 결과 자유 텍스트(concerns 등)만 사용자 언어로 (JSON 필드·enum은 영문 유지 = 파싱 규칙 보존)
+            text: priorHint
+              ? `${SKIN_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}
 
 ${priorHint}`
-                  : `${SKIN_V2_PROMPT}
+              : `${SKIN_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}`,
-              },
-              imagePart,
-            ],
-            config: geminiV2Config,
-          }),
-          30000,
-          '[S-2 Gemini] Timeout'
-        ),
-      1,
-      1000
+          },
+          imagePart,
+        ],
+        config: geminiV2Config,
+      },
+      '[S-2 Gemini] Timeout'
     );
 
     const text = geminiResult.text;
@@ -480,19 +497,13 @@ export async function extractSkinColorWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
-    const geminiResult = await withRetry(
-      () =>
-        withTimeout(
-          generateContent({
-            contents: [{ text: PERSONAL_COLOR_V2_PROMPT }, imagePart],
-            config: geminiV2Config,
-          }),
-          30000,
-          '[PC-2 Gemini] Timeout'
-        ),
-      1,
-      1000
+    // 예산 내 호출 (25초 × 2시도 + 1초 = 51초 < maxDuration 60초)
+    const geminiResult = await callGeminiWithBudget(
+      {
+        contents: [{ text: PERSONAL_COLOR_V2_PROMPT }, imagePart],
+        config: geminiV2Config,
+      },
+      '[PC-2 Gemini] Timeout'
     );
 
     const text = geminiResult.text;
@@ -628,33 +639,27 @@ export async function analyzeBodyWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초 - 전신 분석은 조금 더 시간 필요) + 재시도 (최대 2회)
-    const geminiResult = await withRetry(
-      () =>
-        withTimeout(
-          generateContent({
-            contents: [
-              {
-                // 결과 자유 텍스트(스타일링 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
-                text: priorHint
-                  ? `${BODY_V2_PROMPT}
+    // 예산 내 호출 (25초 × 2시도 + 1초 = 51초 < maxDuration 60초)
+    const geminiResult = await callGeminiWithBudget(
+      {
+        contents: [
+          {
+            // 결과 자유 텍스트(스타일링 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
+            text: priorHint
+              ? `${BODY_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}
 
 ${priorHint}`
-                  : `${BODY_V2_PROMPT}
+              : `${BODY_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}`,
-              },
-              imagePart,
-            ],
-            config: geminiV2Config,
-          }),
-          30000,
-          '[C-2 Gemini] Timeout'
-        ),
-      1,
-      1000
+          },
+          imagePart,
+        ],
+        config: geminiV2Config,
+      },
+      '[C-2 Gemini] Timeout'
     );
 
     const text = geminiResult.text;
@@ -841,33 +846,27 @@ export async function analyzeHairWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (30초 — 3.5-flash 상세 분석 지연, 2026-07-07) + 재시도 (최대 2회)
-    const geminiResult = await withRetry(
-      () =>
-        withTimeout(
-          generateContent({
-            contents: [
-              {
-                // 결과 자유 텍스트(스타일 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
-                text: priorHint
-                  ? `${HAIR_V2_PROMPT}
+    // 예산 내 호출 (25초 × 2시도 + 1초 = 51초 < maxDuration 60초)
+    const geminiResult = await callGeminiWithBudget(
+      {
+        contents: [
+          {
+            // 결과 자유 텍스트(스타일 추천)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
+            text: priorHint
+              ? `${HAIR_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}
 
 ${priorHint}`
-                  : `${HAIR_V2_PROMPT}
+              : `${HAIR_V2_PROMPT}
 
 ${outputLanguageDirective(locale)}`,
-              },
-              imagePart,
-            ],
-            config: geminiV2Config,
-          }),
-          30000,
-          '[H-1 Gemini] Timeout'
-        ),
-      1,
-      1000
+          },
+          imagePart,
+        ],
+        config: geminiV2Config,
+      },
+      '[H-1 Gemini] Timeout'
     );
 
     const text = geminiResult.text;
@@ -1041,23 +1040,17 @@ export async function analyzeOralWithGemini(
   try {
     const imagePart = formatImageForGemini(imageBase64);
 
-    // 타임아웃 (5초 - 구강 분석은 복잡함) + 재시도 (최대 2회)
-    const geminiResult = await withRetry(
-      () =>
-        withTimeout(
-          generateContent({
-            // 결과 자유 텍스트(권장 사항)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
-            contents: [
-              { text: `${ORAL_HEALTH_PROMPT}\n\n${outputLanguageDirective(locale)}` },
-              imagePart,
-            ],
-            config: geminiV2Config,
-          }),
-          30000,
-          '[OH-1 Gemini] Timeout'
-        ),
-      1,
-      1000
+    // 예산 내 호출 (25초 × 2시도 + 1초 = 51초 < maxDuration 60초)
+    const geminiResult = await callGeminiWithBudget(
+      {
+        // 결과 자유 텍스트(권장 사항)만 사용자 언어로 (JSON 필드·enum은 영문 유지)
+        contents: [
+          { text: `${ORAL_HEALTH_PROMPT}\n\n${outputLanguageDirective(locale)}` },
+          imagePart,
+        ],
+        config: geminiV2Config,
+      },
+      '[OH-1 Gemini] Timeout'
     );
 
     const text = geminiResult.text;

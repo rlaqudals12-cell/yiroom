@@ -21,8 +21,14 @@ import type {
   SkinAxisData,
   BodyAxisData,
   HairAxisData,
+  MakeupAxisData,
 } from './types';
-import { createSession, finalizeSession, markSessionFailed } from './internal/session-store';
+import {
+  createSession,
+  finalizeSession,
+  markSessionFailed,
+  type FinalizeSessionInput,
+} from './internal/session-store';
 import {
   runPersonalColorAxis,
   runSkinAxis,
@@ -30,6 +36,12 @@ import {
   runHairAxis,
 } from './internal/axis-adapters';
 import { runMakeupComposer } from './internal/makeup-composer';
+import {
+  carryLatestHair,
+  carryLatestPersonalColor,
+  carryLatestSkin,
+  type CarriedAxis,
+} from './internal/profile-fallback';
 import { uploadSessionImages } from './internal/storage-uploader';
 import { composePersona } from './internal/persona-composer';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
@@ -77,6 +89,112 @@ function settledToAxisResult<T>(
       retryable: true,
     },
   };
+}
+
+/** finalize 재시도 간격 (짧은 순간 장애 흡수용 — 함수 예산을 먹지 않는 범위) */
+const FINALIZE_RETRY_DELAY_MS = 500;
+
+/**
+ * 세션 finalize 실패 (축 결과는 이미 저장됨).
+ *
+ * 별도 타입인 이유: 이 실패는 "분석 실패"가 아니라 "기록 미완"이다.
+ * 세션을 failed로 낙인찍으면 저장된 축 결과가 실패로 위장되므로, 상위 catch가
+ * markSessionFailed를 건너뛰도록 구분한다(세션은 pending으로 남아 복구 대상이 된다).
+ */
+export class SessionFinalizeError extends Error {
+  constructor(
+    readonly sessionId: string,
+    readonly cause: unknown
+  ) {
+    super(`[Integrated] finalize failed for session ${sessionId}: ${String(cause)}`);
+    this.name = 'SessionFinalizeError';
+  }
+}
+
+/**
+ * finalize를 일관성 경계로 취급 — 1회 재시도, 그래도 실패면 오류로 전파.
+ *
+ * 왜: 예전엔 finalize 실패를 삼키고 성공을 반환했다. 그러면 세션 행은 pending인데
+ * 클라이언트는 "완료"로 알고 복구 마커를 지워, 사용자가 결과로 돌아갈 길이 사라졌다
+ * (축 결과는 DB에 있는데 아무도 못 찾는 상태). 실패는 실패로 알린다.
+ */
+async function finalizeSessionWithRetry(input: FinalizeSessionInput): Promise<void> {
+  try {
+    await finalizeSession(input);
+    return;
+  } catch (firstError) {
+    console.error('[Integrated] finalize failed, retrying once:', firstError);
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, FINALIZE_RETRY_DELAY_MS));
+
+  try {
+    await finalizeSession(input);
+  } catch (retryError) {
+    throw new SessionFinalizeError(input.sessionId, retryError);
+  }
+}
+
+/**
+ * M-1 composer 입력 해석 — 이번 세션에서 재실행하지 않은 축은 프로필 최신값을 승계.
+ *
+ * 왜: M-1은 PC+S 결과의 조합이라, 메이크업만 다시 분석하면 두 축이 SKIPPED 센티널로
+ * 들어와 항상 REQUIRES_PC_AND_S로 실패했다("메이크업만 재분석"이 원천 불가능).
+ * 실측된 본인 최신 진단만 승계하며, 그 진단이 Mock이었으면 폴백 표시도 함께 승계한다.
+ */
+async function resolveCarriedAxis<T>(
+  isSelected: boolean,
+  liveResult: AxisResult<T>,
+  carry: () => Promise<CarriedAxis<T> | null>
+): Promise<AxisResult<T>> {
+  if (isSelected) return liveResult;
+  const carried = await carry();
+  // 승계할 실측 진단이 없으면 센티널 유지 → composer가 정직하게 실패 사유를 남긴다
+  if (!carried) return liveResult;
+  return { success: true, usedFallback: carried.usedFallback, data: carried.data };
+}
+
+/**
+ * 세션을 failed로 기록 — 단, finalize 실패는 예외.
+ *
+ * finalize 실패는 "분석 실패"가 아니라 "기록 미완"이다. 저장된 축 결과를 failed로
+ * 위장하지 않고 pending으로 남겨야 복구(상관 ID 조회)가 정직하게 동작한다.
+ */
+async function markFailedUnlessFinalizeError(sessionId: string, error: unknown): Promise<void> {
+  if (error instanceof SessionFinalizeError) return;
+  await markSessionFailed(sessionId, ['personal_color', 'skin', 'body', 'hair', 'makeup']);
+}
+
+/**
+ * M-1 composer 실행 (PC+S 의존, 얼굴형은 H에서 승계).
+ *
+ * update에서 makeup 미선택이거나 skipMakeup이면 실행하지 않는다.
+ * 이번에 재실행하지 않은 PC·S·H는 프로필 최신 진단을 승계한다 — 승계할 진단이 없으면
+ * (= 단 한 번도 진단하지 않음) 센티널이 남아 composer가 REQUIRES_PC_AND_S로 정직하게 실패한다.
+ */
+async function runMakeupAxis(params: {
+  sessionId: string;
+  clerkUserId: string;
+  selected: Set<AxisCode>;
+  skipMakeup: boolean;
+  live: {
+    pc: AxisResult<PersonalColorAxisData>;
+    skin: AxisResult<SkinAxisData>;
+    hair: AxisResult<HairAxisData>;
+  };
+}): Promise<AxisResult<MakeupAxisData>> {
+  const { sessionId, clerkUserId, selected, skipMakeup, live } = params;
+  if (!selected.has('makeup') || skipMakeup) return SKIPPED_AXIS;
+
+  const [pcForMakeup, skinForMakeup, hairForMakeup] = await Promise.all([
+    resolveCarriedAxis(selected.has('personal_color'), live.pc, () =>
+      carryLatestPersonalColor(clerkUserId)
+    ),
+    resolveCarriedAxis(selected.has('skin'), live.skin, () => carryLatestSkin(clerkUserId)),
+    resolveCarriedAxis(selected.has('hair'), live.hair, () => carryLatestHair(clerkUserId)),
+  ]);
+
+  return runMakeupComposer(sessionId, clerkUserId, pcForMakeup, skinForMakeup, hairForMakeup);
 }
 
 /**
@@ -139,6 +257,8 @@ export async function runIntegratedAnalysis(
     faceImageUrl: uploadedUrls.faceImageUrl,
     bodyImageUrl: uploadedUrls.bodyImageUrl,
     questionnaire: input.questionnaire as unknown as Record<string, unknown>,
+    // 이탈 복구용 상관 ID — 클라이언트가 보냈을 때만 (구 클라이언트는 미전송)
+    ...(input.clientRequestId ? { clientRequestId: input.clientRequestId } : {}),
   });
 
   try {
@@ -169,13 +289,14 @@ export async function runIntegratedAnalysis(
     const body = settledToAxisResult(bodySettled, '체형');
     const hair = settledToAxisResult(hairSettled, '헤어');
 
-    // 3. M-1 composer (PC+S 의존). update에서 makeup 미선택이거나 skipMakeup이면 실행 안 함
-    // (makeup 선택했어도 pc/skin이 이번에 재실행 안 됐으면 composer가 REQUIRES_PC_AND_S로 자연 스킵)
-    // hair를 함께 넘기는 이유: 얼굴형은 H-1(Gemini)만 실측한다 — composer가 상수로 지어내지 않고 승계.
-    const makeup =
-      !selected.has('makeup') || input.options.skipMakeup
-        ? SKIPPED_AXIS
-        : await runMakeupComposer(sessionId, clerkUserId, pc, skin, hair);
+    // 3. M-1 composer (상세는 runMakeupAxis 주석 참조)
+    const makeup = await runMakeupAxis({
+      sessionId,
+      clerkUserId,
+      selected,
+      skipMakeup: input.options.skipMakeup,
+      live: { pc, skin, hair },
+    });
 
     // 4. 축 집계
     const axesCompleted: AxisCode[] = [];
@@ -217,20 +338,15 @@ export async function runIntegratedAnalysis(
       input.options.locale
     );
 
-    // 6. 세션 finalize (persona 포함)
-    try {
-      await finalizeSession({
-        sessionId,
-        status,
-        axesCompleted,
-        axesFailed,
-        usedFallback,
-        persona,
-      });
-    } catch (finalizeError) {
-      // 왜: finalize 실패는 치명적이지 않음 — 결과는 이미 각 테이블에 저장됨
-      console.error('[Integrated] finalize failed, continuing with result:', finalizeError);
-    }
+    // 6. 세션 finalize (persona 포함) — 일관성 경계. 실패하면 성공을 반환하지 않는다.
+    await finalizeSessionWithRetry({
+      sessionId,
+      status,
+      axesCompleted,
+      axesFailed,
+      usedFallback,
+      persona,
+    });
 
     // ADR-109 Phase 2: 완료 축별 게이미피케이션 부여 (개별 분석과 동등 — 통합 경로 누락 보존·수정).
     // 배지 축(PC/피부/체형)은 XP+배지+전체배지, 헤어/메이크업은 XP만. 실패해도 결과 반환엔 영향 없음.
@@ -269,8 +385,7 @@ export async function runIntegratedAnalysis(
     };
   } catch (orchestratorError) {
     // 왜: 여기 오면 Promise.allSettled 외부의 예외 (createSession은 이미 위에서 처리)
-    // 세션을 failed로 마킹하고 에러 전파
-    await markSessionFailed(sessionId, ['personal_color', 'skin', 'body', 'hair', 'makeup']);
+    await markFailedUnlessFinalizeError(sessionId, orchestratorError);
     throw orchestratorError;
   }
 }

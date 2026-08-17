@@ -559,7 +559,7 @@
         "retryHint": "실패한 축은 개별 분석으로 다시 시도해주세요.",
         "reanalyzeAxis": "{axis} 다시 분석"
       },
-      "pcProfileFallback": "이번 세션에서는 퍼스널컬러가 분석되지 않아, 회원님의 최근 퍼스널컬러 진단 결과를 반영했어요.",
+      "profileFallback": "{axes} 항목은 이번에 다시 분석하지 않아, 회원님의 최근 진단 결과를 그대로 반영했어요.",
       "persona": {
         "ariaLabel": "내 프로필",
         "badge": "내 프로필",
@@ -800,6 +800,8 @@
     "copyFailed": "복사에 실패했습니다",
     "kakaoFailed": "카카오톡 공유에 실패했습니다",
     "imageSaved": "이미지가 저장되었습니다. Instagram에서 공유해주세요!",
+    "imageSavedLinkCopied": "이미지를 저장하고 링크도 클립보드에 복사했어요",
+    "imageSavedCopyLinkHint": "이미지를 저장했어요. 아래 링크를 함께 올려주세요",
     "imageFailed": "이미지 저장에 실패했습니다",
     "shareFailed": "공유 중 오류가 발생했습니다",
     "sharePrepareFailed": "공유 준비 중 오류가 발생했습니다",

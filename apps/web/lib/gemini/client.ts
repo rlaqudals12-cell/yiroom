@@ -35,6 +35,14 @@ export interface GeminiConfig {
   responseSchema?: Record<string, unknown>;
   /** 3.5-flash thinking 제어 — 구조화 추출은 'low' (기본 medium은 느리고 재현성 저하) */
   thinkingConfig?: { thinkingLevel?: string };
+  /**
+   * 요청 중단 신호 (SDK GenerateContentConfig.abortSignal로 그대로 전달).
+   *
+   * 왜: 타임아웃으로 "포기"한 호출도 중단하지 않으면 서버리스 함수가 끝날 때까지
+   * 원 요청이 살아서 예산(Fluid CPU·네트워크)을 계속 먹는다. 호출부가 타임아웃과
+   * 함께 abort를 걸 수 있도록 경계에 노출한다.
+   */
+  abortSignal?: AbortSignal;
 }
 
 export interface GeminiCallParams {

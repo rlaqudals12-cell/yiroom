@@ -559,7 +559,7 @@
         "retryHint": "请通过各自的单项分析重新尝试失败的维度。",
         "reanalyzeAxis": "重新分析{axis}"
       },
-      "pcProfileFallback": "本次分析未包含个人色彩，已为你套用最近一次的个人色彩诊断结果。",
+      "profileFallback": "本次未重新分析{axes}，因此沿用你最近一次的诊断结果。",
       "persona": {
         "ariaLabel": "我的画像",
         "badge": "我的画像",
@@ -800,6 +800,8 @@
     "copyFailed": "复制失败",
     "kakaoFailed": "KakaoTalk分享失���",
     "imageSaved": "图片已保存，请在Instagram分享！",
+    "imageSavedLinkCopied": "已保存图片，并将链接复制到剪贴板",
+    "imageSavedCopyLinkHint": "已保存图片。请连同下方链接一起发布",
     "imageFailed": "图片保存失败",
     "shareFailed": "分享时出错",
     "sharePrepareFailed": "准备分享时出错",

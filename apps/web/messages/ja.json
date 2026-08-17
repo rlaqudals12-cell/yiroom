@@ -559,7 +559,7 @@
         "retryHint": "失敗した軸は個別分析で再度お試しください。",
         "reanalyzeAxis": "{axis}を再分析"
       },
-      "pcProfileFallback": "今回のセッションではパーソナルカラーが分析されなかったため、直近のパーソナルカラー診断結果を反映しています。",
+      "profileFallback": "今回は{axes}を再分析していないため、直近の診断結果をそのまま反映しています。",
       "persona": {
         "ariaLabel": "マイプロフィール",
         "badge": "マイプロフィール",
@@ -800,6 +800,8 @@
     "copyFailed": "コピーに失敗しました",
     "kakaoFailed": "カカオトーク共有に失敗しました",
     "imageSaved": "画像が保存されました。Instagramで共有してください！",
+    "imageSavedLinkCopied": "画像を保存し、リンクもクリップボードにコピーしました",
+    "imageSavedCopyLinkHint": "画像を保存しました。下のリンクも一緒に投稿してください",
     "imageFailed": "画像の保存に失敗しました",
     "shareFailed": "共有中にエラーが発生しました",
     "sharePrepareFailed": "共有準備中にエラーが発生しました",

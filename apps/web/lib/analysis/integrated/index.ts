@@ -94,4 +94,7 @@ export type {
 // 추천 분기용 상수 (성별/상황 옵션 — UI 렌더링)
 export { RECOMMENDATION_GENDERS, RECOMMENDATION_SITUATIONS } from './types';
 
+// 이탈 복구 상관 키 — 입력 페이지가 세션을 정확히 되찾는 데 사용 (client-safe 상수)
+export { CLIENT_REQUEST_ID_KEY } from './types';
+
 // 내부 구현(internal/)은 외부에 노출하지 않음

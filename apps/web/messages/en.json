@@ -559,7 +559,7 @@
         "retryHint": "Please re-run the failed axes through their individual analyses.",
         "reanalyzeAxis": "Re-analyze {axis}"
       },
-      "pcProfileFallback": "Personal color wasn't analyzed in this session, so we've applied your most recent personal color diagnosis.",
+      "profileFallback": "We didn't re-analyze {axes} this time, so your most recent diagnosis is shown as is.",
       "persona": {
         "ariaLabel": "My profile",
         "badge": "My profile",
@@ -800,6 +800,8 @@
     "copyFailed": "Copy failed",
     "kakaoFailed": "Failed to share on KakaoTalk",
     "imageSaved": "Image saved. Share it on Instagram!",
+    "imageSavedLinkCopied": "Image saved and the link was copied to your clipboard",
+    "imageSavedCopyLinkHint": "Image saved. Please post it with the link below",
     "imageFailed": "Failed to save image",
     "shareFailed": "An error occurred while sharing",
     "sharePrepareFailed": "An error occurred while preparing to share",
